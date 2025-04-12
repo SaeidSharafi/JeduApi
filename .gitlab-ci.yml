@@ -6,7 +6,6 @@ workflow:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 variables:
-  GIT_CLONE_URL: "https://gitlab.barazman.dev/kuro/jeduapi.git"
   # PHP/Composer config
   COMPOSER_CACHE_DIR: "$CI_PROJECT_DIR/.composer-cache"
   COMPOSER_PREFER_DIST: "true"

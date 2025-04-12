@@ -2,14 +2,14 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
+use App\Models\Admin;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-class UserFactory extends Factory
+class AdminFactory extends Factory
 {
-    protected $model = User::class;
+    protected $model = Admin::class;
 
     public function definition(): array
     {
@@ -39,9 +39,9 @@ class UserFactory extends Factory
 
     public function withOtp(string $code = '123456'): self
     {
-        return $this->afterCreating(function (User $user) use ($code) {
-            $user->otp()->create([
-                'identifier' => $user->email,
+        return $this->afterCreating(function (Admin $admin) use ($code) {
+            $admin->otp()->create([
+                'identifier' => $admin->email,
                 'type' => 'email',
                 'code' => $code,
                 'expires_at' => now()->addMinutes(5),
