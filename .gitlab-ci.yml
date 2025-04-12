@@ -1,0 +1,120 @@
+workflow:
+  rules:
+    # Run on pushes to main or develop branches
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "dev"'
+    # Run for merge requests
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+image: php:8.2-cli
+
+variables:
+  # PHP/Composer config
+  COMPOSER_CACHE_DIR: "$CI_PROJECT_DIR/.composer-cache"
+  COMPOSER_PREFER_DIST: "true"
+  COMPOSER_NO_INTERACTION: "1"
+
+  # Laravel Testing Environment Config
+  APP_ENV: 'testing'
+  APP_KEY: ''
+  BCRYPT_ROUNDS: 4
+  CACHE_DRIVER: 'array'
+  SESSION_DRIVER: 'array'
+
+  # --- PostgreSQL Configuration ---
+  DB_CONNECTION: 'pgsql'
+  DB_HOST: 'postgres'
+  DB_PORT: '5432'
+  DB_DATABASE: 'testing_db'
+  DB_USERNAME: 'gitlab_ci_user'
+  DB_PASSWORD: 'gitlab_ci_password'
+  # --- End PostgreSQL Configuration ---
+
+stages:
+  - setup
+  - quality
+  - test
+# - deploy       # Placeholder for deployment stages
+
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG-composer-pgsql"
+  paths:
+    - vendor/
+    - $COMPOSER_CACHE_DIR
+
+# --- Stage: Setup ---
+
+install_dependencies:
+  stage: setup
+  script:
+    - apt-get update -yqq
+    - apt-get install -yqq --no-install-recommends \
+      git \
+      unzip \
+      zip \
+      libzip-dev \
+      libpq-dev \ 
+      libpng-dev \
+      libjpeg-dev \
+      libfreetype6-dev \
+
+    - docker-php-ext-install pdo pdo_pgsql zip bcmath gd # <--- Added pdo_pgsql
+
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+    - composer install --optimize-autoloader --no-progress
+
+  artifacts:
+    paths:
+      - vendor/
+    expire_in: 1 hour
+
+# --- Stage: Quality ---
+
+code_style:
+  stage: quality
+  needs: [install_dependencies]
+  script:
+    - echo "Checking code style with Pint..."
+    - ./vendor/bin/pint --test -v --ansi
+  allow_failure: false
+
+static_analysis:
+  stage: quality
+  needs: [install_dependencies]
+  script:
+    - echo "Preparing environment for Larastan..."
+    - cp .env.example .env
+    - php artisan key:generate --ansi
+    - echo "Running static analysis with Larastan..."
+    - ./vendor/bin/phpstan analyse
+  allow_failure: false
+
+# --- Stage: Test ---
+
+pest_tests:
+  stage: test
+  needs: [install_dependencies]
+  services:
+    - name: postgres:17
+      alias: postgres
+      variables:
+        POSTGRES_DB: $DB_DATABASE
+        POSTGRES_USER: $DB_USERNAME
+        POSTGRES_PASSWORD: $DB_PASSWORD
+        POSTGRES_HOST_AUTH_METHOD: trust
+
+  script:
+    - echo "Setting up Laravel test environment..."
+    - cp .env.example .env
+    - php artisan key:generate --ansi
+    - php artisan config:clear --ansi
+
+    - echo "Waiting for PostgreSQL service to start..."
+    - sleep 10
+
+    - echo "Running database migrations..."
+    - php artisan migrate --force --ansi
+
+    - echo "Running Pest tests..."
+    - ./vendor/bin/pest --colors=never
