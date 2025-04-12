@@ -5,9 +5,8 @@ workflow:
     # Run for merge requests
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
-image: php:8.2-cli
-
 variables:
+  GIT_CLONE_URL: "https://gitlab.barazman.dev/kuro/jeduapi.git"
   # PHP/Composer config
   COMPOSER_CACHE_DIR: "$CI_PROJECT_DIR/.composer-cache"
   COMPOSER_PREFER_DIST: "true"
@@ -28,6 +27,8 @@ variables:
   DB_USERNAME: 'gitlab_ci_user'
   DB_PASSWORD: 'gitlab_ci_password'
   # --- End PostgreSQL Configuration ---
+
+image: php:8.2-cli
 
 stages:
   - setup
