@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1\Admin\Auth;
 
-use App\Actions\Auth\VerifyOtpForResetAction;
-use App\Actions\Auth\AuthenticateUserAction;
+use App\Actions\Api\V1\Auth\VerifyOtpForResetAction;
+use App\Actions\Api\V1\Auth\AuthenticateUserAction;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\V1\VerifyOtpRequest;
+use App\Http\Requests\Api\V1\Auth\VerifyOtpRequest;
 use App\Models\Admin;
 use Illuminate\Http\JsonResponse;
 
-class OtpVerificationController extends Controller
+class AdminOtpVerificationController extends Controller
 {
     public function __construct(
         protected VerifyOtpForResetAction $verifyOtpForReset,

@@ -10,3 +10,7 @@ Route::get('/health-check', function () {
             'message' => 'API is up and running',
         ]);
 });
+
+require_once 'auth.php';
+
+require_once 'auth.php';

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1\Admin\Auth;
 
-use App\Actions\Auth\RequestOtpAction;
+use App\Actions\Api\V1\Auth\RequestOtpAction;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\V1\RequestOtpRequest;
+use App\Http\Requests\Api\V1\Auth\RequestOtpRequest;
 use Illuminate\Http\JsonResponse;
 
-class RequestOtpController extends Controller
+class AdminRequestOtpController extends Controller
 {
     public function __construct(
         protected RequestOtpAction $action

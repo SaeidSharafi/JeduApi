@@ -2,7 +2,9 @@
 
 namespace App\Notifications\Api\V1\Auth;
 
+use App\Dto\OtpManager\SentOtpDto;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class OtpSmsNotification extends Notification
@@ -10,20 +12,22 @@ class OtpSmsNotification extends Notification
     use Queueable;
 
     public function __construct(
-        protected string $otp
+        protected SentOtpDto $otp
     ) {
     }
 
     public function via(object $notifiable): array
     {
-        return ['array']; // Dummy channel that just stores the notification
+        return ['mail'];
     }
 
-    public function toArray(object $notifiable): array
+    public function toMail(object $notifiable): MailMessage
     {
-        return [
-            'phone' => $notifiable->phone,
-            'message' => "Your OTP code is: {$this->otp}. Valid for 5 minutes.",
-        ];
+        return (new MailMessage())
+            ->subject('Your Login OTP Code')
+            ->line('Your OTP code is: ' . $this->otp->code)
+            ->line('Your Phone Number is: ' . $notifiable->phone)
+            ->line('This code will expire in 5 minutes.')
+            ->line('If you did not request this code, please ignore this email.');
     }
 }

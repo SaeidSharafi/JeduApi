@@ -12,9 +12,10 @@ class RequestOtpAction
     ) {
     }
 
-    public function execute(string $identifier, string $type, string $purpose, string $guard = 'user'): array
+    public function execute(string $identifier, string $purpose, string $guard = 'user'): array
     {
         $model = $guard === 'admin' ? Admin::class : User::class;
+        $type = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
 
         $user = $model::when(
             $type === 'email',
@@ -37,7 +38,7 @@ class RequestOtpAction
             ];
         }
 
-        $this->generateOtp->execute($user);
+        $this->generateOtp->execute($user, $purpose);
 
         return [
             'status' => 'success',

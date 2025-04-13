@@ -15,8 +15,7 @@ class OtpRequest extends FormRequest
     {
         return [
             'identifier' => ['required', 'string'],
-            'type' => ['required', 'string', 'in:email,phone'],
-            'purpose' => ['required', 'string', 'in:LOGIN,PASSWORD_RESET'],
+            'purpose' => ['required', 'string', 'in:LOGIN,PASSWORD_RESET,REGISTER'],
         ];
     }
 }

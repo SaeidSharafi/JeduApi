@@ -18,7 +18,6 @@ class RequestOtpController extends Controller
     {
         $result = $this->action->execute(
             $request->identifier,
-            $request->type,
             $request->purpose
         );
 

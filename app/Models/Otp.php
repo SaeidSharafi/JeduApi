@@ -8,8 +8,9 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class Otp extends Model
 {
     protected $fillable = [
-        'identifier',
-        'type',
+        'identfier',
+        'identfier_type',
+        'purpose',
         'code',
         'expires_at'
     ];

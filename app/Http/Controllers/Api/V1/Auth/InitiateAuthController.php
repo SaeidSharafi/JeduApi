@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Actions\Auth\InitiateAuthAction;
+use App\Actions\Api\V1\Auth\InitiateAuthAction;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\V1\InitiateAuthRequest;
+use App\Http\Requests\Api\V1\Auth\InitiateAuthRequest;
 use Illuminate\Http\JsonResponse;
 
 class InitiateAuthController extends Controller
@@ -18,7 +18,7 @@ class InitiateAuthController extends Controller
     {
         $result = $this->action->execute(
             $request->identifier,
-            $request->type
+            'customer'
         );
 
         return response()->json($result);

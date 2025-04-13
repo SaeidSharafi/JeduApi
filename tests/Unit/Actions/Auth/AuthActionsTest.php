@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\Actions\Auth;
 
-use App\Actions\Auth\InitiateAuthAction;
-use App\Actions\Auth\PasswordLoginAction;
-use App\Actions\Auth\ResetPasswordAction;
+use App\Actions\Api\V1\Auth\InitiateAuthAction;
+use App\Actions\Api\V1\Auth\PasswordLoginAction;
+use App\Actions\Api\V1\Auth\ResetPasswordAction;
 use App\Actions\GenerateOtpAction;
 use App\Actions\VerifyOtpAction;
 use App\Models\User;

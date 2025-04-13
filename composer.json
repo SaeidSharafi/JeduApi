@@ -13,7 +13,8 @@
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
-        "spatie/laravel-query-builder": "^6.3"
+        "spatie/laravel-query-builder": "^6.3",
+        "salehhashemi/laravel-otp-manager": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -38,6 +39,15 @@
             "Tests\\": "tests/"
         }
     },
+    "repository": [
+        {
+            "type": "path",
+            "url": "packages/salehhashemi/laravel-otp-manager",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

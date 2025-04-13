@@ -7,10 +7,10 @@ use App\Models\Admin;
 
 class InitiateAuthAction
 {
-    public function execute(string $identifier, string $type, string $guard = 'user'): array
+    public function execute(string $identifier, string $guard = 'user'): array
     {
         $model = $guard === 'admin' ? Admin::class : User::class;
-
+        $type = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
         $user = $model::when(
             $type === 'email',
             fn ($q) => $q->where('email', $identifier),
@@ -24,9 +24,20 @@ class InitiateAuthAction
                     'message' => 'Admin account not found.'
                 ];
             }
+            if ($type === 'email') {
+                return [
+                    'action' => 'REGISTER',
+                    'message' => 'User not found. Registration required.'
+                ];
+            }
+            User::create(
+                [
+                    'phone' => $identifier,
+                ]
+            );
             return [
-                'action' => 'REGISTER',
-                'message' => 'User not found. Registration required.'
+                'action' => 'OTP_REGISTER',
+                'message' => 'Please request OTP to Register.'
             ];
         }
 

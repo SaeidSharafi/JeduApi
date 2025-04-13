@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Actions\Auth\PasswordLoginAction;
+use App\Actions\Api\V1\Auth\PasswordLoginAction;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\V1\LoginRequest;
+
+use App\Http\Requests\Api\V1\Auth\LoginRequest;
 use Illuminate\Http\JsonResponse;
 
 class PasswordLoginController extends Controller
@@ -23,6 +24,4 @@ class PasswordLoginController extends Controller
 
         return response()->json($result);
     }
-}
- }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Contracts\Otpable;
+use App\Traits\HasOtp;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -9,10 +11,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail, Otpable
 {
     use HasApiTokens;
     use HasFactory;
+    use HasOtp;
     use Notifiable;
 
     protected $fillable = [
@@ -32,10 +35,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password' => 'hashed',
     ];
 
-    public function otp(): MorphMany
-    {
-        return $this->morphMany(Otp::class, 'otpable');
-    }
+
 
     public function hasSetPassword(): bool
     {
@@ -45,15 +45,5 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getEmailForPasswordReset(): string
     {
         return $this->email;
-    }
-
-    public function routeNotificationForMail(): string
-    {
-        return $this->email;
-    }
-
-    public function routeNotificationForVonage(): string
-    {
-        return $this->phone;
     }
 }

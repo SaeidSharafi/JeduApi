@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1\Admin\Auth;
 
-use App\Actions\Auth\ResetPasswordAction;
+use App\Actions\Api\V1\Auth\ResetPasswordAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\Auth\ResetPasswordOtpRequest;
 use Illuminate\Http\JsonResponse;
 
-class ResetPasswordController extends Controller
+class AdminResetPasswordController extends Controller
 {
     public function __construct(
         protected ResetPasswordAction $action

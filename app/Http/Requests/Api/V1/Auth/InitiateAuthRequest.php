@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1\Auth;
 
+use App\Rules\EmailOrPhoneRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class InitiateAuthRequest extends FormRequest
@@ -14,8 +15,7 @@ class InitiateAuthRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'identifier' => ['required', 'string'],
-            'type' => ['required', 'string', 'in:email,phone'],
+            'identifier' => ['required', 'string', new EmailOrPhoneRule()],
         ];
     }
 }

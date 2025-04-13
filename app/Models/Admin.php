@@ -46,14 +46,4 @@ class Admin extends Authenticatable implements MustVerifyEmail
     {
         return $this->email;
     }
-
-    public function routeNotificationForMail(): string
-    {
-        return $this->email;
-    }
-
-    public function routeNotificationForVonage(): string
-    {
-        return $this->phone;
-    }
 }
