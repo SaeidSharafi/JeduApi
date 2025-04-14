@@ -2,36 +2,40 @@
 
 namespace App\Actions\Api\V1\Auth;
 
-use App\Models\Admin;
-use App\Models\User;
+use App\Enums\OtpType;
+use App\Exceptions\InvalidOtpCode;
+use App\Exceptions\UserDoesNotHavePasswordException;
+use App\Exceptions\UserNotFoundException;
+use App\Services\OtpManagerService;
 use Illuminate\Support\Facades\Hash;
 
-class ResetPasswordAction
+class ResetPasswordAction extends AuthAction
 {
     public function __construct(
-        protected VerifyOtpAction $verifyOtp
-    ) {
-    }
+        protected OtpManagerService $otpManager,
+    ) {}
 
     public function execute(
         string $identifier,
-        string $type,
-        string $otp,
+        string $trackingCode,
+        string $otpCode,
         string $password,
         string $guard = 'user'
     ): void {
-        $model = $guard === 'admin' ? Admin::class : User::class;
+        $user = $this->getUser($identifier, $guard);
 
-        $user = $model::when(
-            $type === 'email',
-            fn ($q) => $q->where('email', $identifier),
-            fn ($q) => $q->where('phone', $identifier)
-        )->firstOrFail();
+        if (! $user) {
+            throw new UserNotFoundException();
+        }
 
-        // Verify OTP first
-        $this->verifyOtp->execute($user, $otp);
+        if (! $user->hasSetPassword()) {
+            throw new UserDoesNotHavePasswordException;
+        }
 
-        // If OTP is valid, update password
+        if (! $this->otpManager->verify($identifier, $guard, $otpCode, $trackingCode, OtpType::RESET_PASSWORD)) {
+            throw new InvalidOtpCode;
+        }
+
         $user->password = Hash::make($password);
         $user->save();
     }

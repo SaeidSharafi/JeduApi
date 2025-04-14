@@ -15,7 +15,18 @@ class InitiateAuthRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'identifier' => ['required', 'string', new EmailOrPhoneRule()],
+            'identifier' => ['required', 'string', new EmailOrPhoneRule],
+        ];
+    }
+
+    public function bodyParameters(): array
+    {
+        return [
+            'identifier' => [
+                'description' => 'Email or Phone number of the user',
+                'required' => true,
+                'example' => '09351234567',
+            ],
         ];
     }
 }

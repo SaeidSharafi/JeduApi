@@ -2,10 +2,10 @@
 
 namespace App\Events;
 
+use App\Contracts\OtpTypeInterface;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use App\Contracts\OtpTypeInterface;
 
 class OtpPrepared
 {
@@ -17,7 +17,8 @@ class OtpPrepared
      * @param  array<string, string>  $params
      */
     public function __construct(
-        public readonly string $mobile,
+        public readonly string $indentifier,
+        public readonly string $guard,
         public readonly string $code,
         public readonly ?OtpTypeInterface $type,
         public string $trackingCode,

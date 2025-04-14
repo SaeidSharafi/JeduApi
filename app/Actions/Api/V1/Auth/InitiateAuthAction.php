@@ -2,55 +2,40 @@
 
 namespace App\Actions\Api\V1\Auth;
 
+use App\Dto\OtpManager\SentOtpDto;
+use App\Enums\OtpType;
+use App\Exceptions\UserHasPasswordException;
+use App\Exceptions\UserNotFoundException;
 use App\Models\User;
-use App\Models\Admin;
 
-class InitiateAuthAction
+class InitiateAuthAction extends AuthAction
 {
-    public function execute(string $identifier, string $guard = 'user'): array
-    {
-        $model = $guard === 'admin' ? Admin::class : User::class;
-        $type = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
-        $user = $model::when(
-            $type === 'email',
-            fn ($q) => $q->where('email', $identifier),
-            fn ($q) => $q->where('phone', $identifier)
-        )->first();
+    public function __construct(
+        protected GenerateOtpAction $generateOtp,
+        protected AuthenticateUserAction $authenticateUser,
+    ) {}
 
-        if (!$user) {
-            if ($guard === 'admin') {
-                return [
-                    'action' => 'NOT_FOUND',
-                    'message' => 'Admin account not found.'
-                ];
+    public function execute(string $identifier, string $guard = 'user'): SentOtpDto
+    {
+        $user = $this->getUser($identifier, $guard);
+
+        if (! $user) {
+            if ($guard === 'admin' || $this->getIndetifierType($identifier) === 'email') {
+                throw new UserNotFoundException;
             }
-            if ($type === 'email') {
-                return [
-                    'action' => 'REGISTER',
-                    'message' => 'User not found. Registration required.'
-                ];
-            }
-            User::create(
+            $user = User::create(
                 [
                     'phone' => $identifier,
                 ]
             );
-            return [
-                'action' => 'OTP_REGISTER',
-                'message' => 'Please request OTP to Register.'
-            ];
+
+            return $this->generateOtp->execute($user, OtpType::SIGNUP);
         }
 
         if ($user->hasSetPassword()) {
-            return [
-                'action' => 'PASSWORD_LOGIN',
-                'message' => 'Please login with password.'
-            ];
+            throw new UserHasPasswordException;
         }
 
-        return [
-            'action' => 'OTP_LOGIN',
-            'message' => 'Please request OTP to login.'
-        ];
+        return $this->generateOtp->execute($user, OtpType::SIGNIN);
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Api\V1\Auth;
 
+use App\Enums\OtpType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class OtpRequest extends FormRequest
 {
@@ -15,7 +17,24 @@ class OtpRequest extends FormRequest
     {
         return [
             'identifier' => ['required', 'string'],
-            'purpose' => ['required', 'string', 'in:LOGIN,PASSWORD_RESET,REGISTER'],
+            'otp_type' => ['required', 'string', Rule::enum(OtpType::class)],
+        ];
+    }
+
+    public function bodyParameters(): array
+    {
+        return [
+            'identifier' => [
+                'description' => 'The phone number or email address of the user',
+                'required' => true,
+                'example' => '09351234567',
+            ],
+            'otp_type' => [
+                'description' => 'The type of OTP to send (login/registration or password reset)',
+                'required' => true,
+                'enum' => OtpType::cases(),
+                'example' => OtpType::SIGNIN->value,
+            ],
         ];
     }
 }

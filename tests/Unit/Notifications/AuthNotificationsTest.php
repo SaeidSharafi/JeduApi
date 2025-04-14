@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Notifications;
 
-use App\Models\User;
 use App\Models\Admin;
+use App\Models\User;
 use App\Notifications\OtpEmailNotification;
 use App\Notifications\OtpSmsNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -11,7 +11,7 @@ use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
-test('OtpEmailNotification contains otp code', function () {
+test('OtpEmailNotification contains otp code', function (): void {
     $otp = '123456';
     $notification = new OtpEmailNotification($otp);
     $user = User::factory()->create();
@@ -24,7 +24,7 @@ test('OtpEmailNotification contains otp code', function () {
         ->and($mailData['introLines'][0])->toContain($otp);
 });
 
-test('OtpSmsNotification builds correct message array', function () {
+test('OtpSmsNotification builds correct message array', function (): void {
     $otp = '123456';
     $notification = new OtpSmsNotification($otp);
     $user = User::factory()->create(['phone' => '1234567890']);
@@ -37,7 +37,7 @@ test('OtpSmsNotification builds correct message array', function () {
         ->and($message['message'])->toContain($otp);
 });
 
-test('notifications work with both User and Admin models', function () {
+test('notifications work with both User and Admin models', function (): void {
     $otp = '123456';
     $emailNotification = new OtpEmailNotification($otp);
     $smsNotification = new OtpSmsNotification($otp);

@@ -2,34 +2,36 @@
 
 namespace App\Actions\Api\V1\Auth;
 
+use App\Exceptions\UserNotFoundException;
 use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\NewAccessToken;
 
-class PasswordLoginAction
+class PasswordLoginAction extends AuthAction
 {
     public function __construct(
         protected AuthenticateUserAction $authenticateUser
-    ) {
-    }
+    ) {}
 
-    public function execute(string $identifier, string $type, string $password, string $guard = 'user'): array
+    public function execute(null|User|Admin|string $identifier, string $type, string $password, string $guard = 'user'): NewAccessToken
     {
-        $model = $guard === 'admin' ? Admin::class : User::class;
 
-        $user = $model::when(
-            $type === 'email',
-            fn ($q) => $q->where('email', $identifier),
-            fn ($q) => $q->where('phone', $identifier)
-        )->firstOrFail();
+        if ($identifier && is_string($identifier)) {
+            $identifier = $this->getUser($identifier, $guard);
+        }
 
-        if (!$user->hasSetPassword() || !Hash::check($password, $user->password)) {
+        if (! $identifier) {
+            throw new UserNotFoundException();
+        }
+
+        if (! $identifier->hasSetPassword() || ! Hash::check($password, $identifier->password)) {
             throw ValidationException::withMessages([
                 'password' => ['The provided credentials are incorrect.'],
             ]);
         }
 
-        return $this->authenticateUser->execute($user, $guard);
+        return $this->authenticateUser->execute($identifier, $guard);
     }
 }

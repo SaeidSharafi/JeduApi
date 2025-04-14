@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1\Auth;
 
+use App\Rules\EmailOrPhoneRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class LoginRequest extends FormRequest
@@ -14,9 +15,24 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email'],
+            'identifier' => ['required', new EmailOrPhoneRule],
             'password' => ['sometimes', 'string'],
-            'otp' => ['sometimes', 'string', 'size:6'],
+        ];
+    }
+
+    public function bodyParameters(): array
+    {
+        return [
+            'identifier' => [
+                'description' => 'Email or Phone number of the user',
+                'required' => true,
+                'example' => '09351234567',
+            ],
+            'password' => [
+                'description' => 'Password of the user',
+                'required' => true,
+                'example' => '12345678',
+            ],
         ];
     }
 }

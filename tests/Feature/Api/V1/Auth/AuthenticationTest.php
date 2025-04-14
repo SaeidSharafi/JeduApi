@@ -3,93 +3,93 @@
 namespace Tests\Feature\Api\V1\Auth;
 
 use App\Models\User;
+use App\Notifications\OtpEmailNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
-use App\Notifications\OtpEmailNotification;
 use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Notification::fake();
 });
 
-test('user can initiate authentication with email', function () {
+test('user can initiate authentication with email', function (): void {
     $user = User::factory()->create([
         'email' => 'test@example.com',
-        'password' => null
+        'password' => null,
     ]);
 
     $response = $this->postJson('/api/v1/auth/initiate', [
         'identifier' => 'test@example.com',
-        'type' => 'email'
+        'type' => 'email',
     ]);
 
     $response->assertOk()
         ->assertJson([
             'action' => 'OTP_LOGIN',
-            'message' => 'Please request OTP to login.'
+            'message' => 'Please request OTP to login.',
         ]);
 });
 
-test('user can initiate authentication with phone', function () {
+test('user can initiate authentication with phone', function (): void {
     $user = User::factory()->create([
         'phone' => '1234567890',
-        'password' => null
+        'password' => null,
     ]);
 
     $response = $this->postJson('/api/v1/auth/initiate', [
         'identifier' => '1234567890',
-        'type' => 'phone'
+        'type' => 'phone',
     ]);
 
     $response->assertOk()
         ->assertJson([
             'action' => 'OTP_LOGIN',
-            'message' => 'Please request OTP to login.'
+            'message' => 'Please request OTP to login.',
         ]);
 });
 
-test('user with password gets password login action', function () {
+test('user with password gets password login action', function (): void {
     $user = User::factory()->create([
         'email' => 'test@example.com',
-        'password' => Hash::make('password123')
+        'password' => Hash::make('password123'),
     ]);
 
     $response = $this->postJson('/api/v1/auth/initiate', [
         'identifier' => 'test@example.com',
-        'type' => 'email'
+        'type' => 'email',
     ]);
 
     $response->assertOk()
         ->assertJson([
             'action' => 'PASSWORD_LOGIN',
-            'message' => 'Please login with password.'
+            'message' => 'Please login with password.',
         ]);
 });
 
-test('non existent user gets register action', function () {
+test('non existent user gets register action', function (): void {
     $response = $this->postJson('/api/v1/auth/initiate', [
         'identifier' => 'nonexistent@example.com',
-        'type' => 'email'
+        'type' => 'email',
     ]);
 
     $response->assertOk()
         ->assertJson([
             'action' => 'REGISTER',
-            'message' => 'User not found. Registration required.'
+            'message' => 'User not found. Registration required.',
         ]);
 });
 
-test('user can request otp', function () {
+test('user can request otp', function (): void {
     $user = User::factory()->create(['email' => 'test@example.com']);
 
     $response = $this->postJson('/api/v1/auth/otp/request', [
         'identifier' => 'test@example.com',
         'type' => 'email',
-        'purpose' => 'LOGIN'
+        'purpose' => 'LOGIN',
     ]);
 
     $response->assertOk()
@@ -98,54 +98,54 @@ test('user can request otp', function () {
     Notification::assertSentTo($user, OtpEmailNotification::class);
 });
 
-test('user can verify otp and login', function () {
+test('user can verify otp and login', function (): void {
     $otp = '123456';
     $user = User::factory()->withOtp($otp)->create([
-        'email' => 'test@example.com'
+        'email' => 'test@example.com',
     ]);
 
     $response = $this->postJson('/api/v1/auth/otp/verify', [
         'identifier' => 'test@example.com',
         'type' => 'email',
         'otp' => $otp,
-        'purpose' => 'LOGIN'
+        'purpose' => 'LOGIN',
     ]);
 
     $response->assertOk()
         ->assertJsonStructure([
             'access_token',
             'token_type',
-            'user'
+            'user',
         ]);
 });
 
-test('user can login with password', function () {
+test('user can login with password', function (): void {
     $user = User::factory()->create([
         'email' => 'test@example.com',
-        'password' => Hash::make('password123')
+        'password' => Hash::make('password123'),
     ]);
 
     $response = $this->postJson('/api/v1/auth/login/password', [
         'identifier' => 'test@example.com',
         'type' => 'email',
-        'password' => 'password123'
+        'password' => 'password123',
     ]);
 
     $response->assertOk()
         ->assertJsonStructure([
             'access_token',
             'token_type',
-            'user'
+            'user',
         ]);
 });
 
-test('user can request password reset', function () {
+test('user can request password reset', function (): void {
     $user = User::factory()->create(['email' => 'test@example.com']);
 
     $response = $this->postJson('/api/v1/auth/otp/request', [
         'identifier' => 'test@example.com',
         'type' => 'email',
-        'purpose' => 'PASSWORD_RESET'
+        'purpose' => 'PASSWORD_RESET',
     ]);
 
     $response->assertOk()
@@ -154,27 +154,27 @@ test('user can request password reset', function () {
     Notification::assertSentTo($user, OtpEmailNotification::class);
 });
 
-test('user can verify otp for password reset', function () {
+test('user can verify otp for password reset', function (): void {
     $otp = '123456';
     $user = User::factory()->withOtp($otp)->create([
-        'email' => 'test@example.com'
+        'email' => 'test@example.com',
     ]);
 
     $response = $this->postJson('/api/v1/auth/otp/verify', [
         'identifier' => 'test@example.com',
         'type' => 'email',
         'otp' => $otp,
-        'purpose' => 'PASSWORD_RESET'
+        'purpose' => 'PASSWORD_RESET',
     ]);
 
     $response->assertOk()
         ->assertJsonStructure([
             'reset_token',
-            'message'
+            'message',
         ]);
 });
 
-test('user can reset password with valid reset token', function () {
+test('user can reset password with valid reset token', function (): void {
     $user = User::factory()->create(['email' => 'test@example.com']);
     $token = Password::createToken($user);
 
@@ -183,7 +183,7 @@ test('user can reset password with valid reset token', function () {
         'type' => 'email',
         'token' => $token,
         'password' => 'newpassword123',
-        'password_confirmation' => 'newpassword123'
+        'password_confirmation' => 'newpassword123',
     ]);
 
     $response->assertOk()
@@ -192,7 +192,7 @@ test('user can reset password with valid reset token', function () {
     expect(Hash::check('newpassword123', $user->fresh()->password))->toBeTrue();
 });
 
-test('authenticated user can logout', function () {
+test('authenticated user can logout', function (): void {
     $user = User::factory()->create();
     $token = $user->createToken('auth_token')->plainTextToken;
 

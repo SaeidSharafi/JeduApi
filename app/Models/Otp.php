@@ -10,13 +10,13 @@ class Otp extends Model
     protected $fillable = [
         'identfier',
         'identfier_type',
-        'purpose',
+        'otp_type',
         'code',
-        'expires_at'
+        'expires_at',
     ];
 
     protected $casts = [
-        'expires_at' => 'datetime'
+        'expires_at' => 'datetime',
     ];
 
     public function otpable(): MorphTo

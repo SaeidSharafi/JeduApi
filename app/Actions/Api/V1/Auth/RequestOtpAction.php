@@ -2,47 +2,25 @@
 
 namespace App\Actions\Api\V1\Auth;
 
-use App\Models\Admin;
-use App\Models\User;
+use App\Dto\OtpManager\SentOtpDto;
+use App\Enums\OtpType;
+use App\Exceptions\UserNotFoundException;
 
-class RequestOtpAction
+class RequestOtpAction extends AuthAction
 {
     public function __construct(
         protected GenerateOtpAction $generateOtp
-    ) {
-    }
+    ) {}
 
-    public function execute(string $identifier, string $purpose, string $guard = 'user'): array
+    public function execute(string $identifier, OtpType $otpType, string $guard = 'user'): SentOtpDto
     {
-        $model = $guard === 'admin' ? Admin::class : User::class;
-        $type = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
 
-        $user = $model::when(
-            $type === 'email',
-            fn ($q) => $q->where('email', $identifier),
-            fn ($q) => $q->where('phone', $identifier)
-        )->first();
+        $user = $this->getUser($identifier, $guard);
 
-        // Always return success for users to prevent enumeration
-        // For admins we want to fail fast if account doesn't exist
-        if (!$user) {
-            if ($guard === 'admin') {
-                return [
-                    'status' => 'error',
-                    'message' => 'Admin account not found.'
-                ];
-            }
-            return [
-                'status' => 'success',
-                'message' => 'If the user exists, an OTP has been sent.'
-            ];
+        if (! $user) {
+            throw new UserNotFoundException;
         }
 
-        $this->generateOtp->execute($user, $purpose);
-
-        return [
-            'status' => 'success',
-            'message' => 'OTP has been sent.'
-        ];
+        return $this->generateOtp->execute($user, $otpType);
     }
 }

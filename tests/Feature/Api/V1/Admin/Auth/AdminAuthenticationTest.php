@@ -3,56 +3,56 @@
 namespace Tests\Feature\Api\V1\Admin\Auth;
 
 use App\Models\Admin;
+use App\Notifications\OtpEmailNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
-use App\Notifications\OtpEmailNotification;
 use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Notification::fake();
 });
 
-test('admin can initiate authentication with email', function () {
+test('admin can initiate authentication with email', function (): void {
     $admin = Admin::factory()->create([
         'email' => 'admin@example.com',
-        'password' => null
+        'password' => null,
     ]);
 
     $response = $this->postJson('/api/v1/admin/auth/initiate', [
         'identifier' => 'admin@example.com',
-        'type' => 'email'
+        'type' => 'email',
     ]);
 
     $response->assertOk()
         ->assertJson([
             'action' => 'OTP_LOGIN',
-            'message' => 'Please request OTP to login.'
+            'message' => 'Please request OTP to login.',
         ]);
 });
 
-test('non existent admin gets error', function () {
+test('non existent admin gets error', function (): void {
     $response = $this->postJson('/api/v1/admin/auth/initiate', [
         'identifier' => 'nonexistent@example.com',
-        'type' => 'email'
+        'type' => 'email',
     ]);
 
     $response->assertJson([
         'action' => 'NOT_FOUND',
-        'message' => 'Admin account not found.'
+        'message' => 'Admin account not found.',
     ]);
 });
 
-test('admin can request otp', function () {
+test('admin can request otp', function (): void {
     $admin = Admin::factory()->create(['email' => 'admin@example.com']);
 
     $response = $this->postJson('/api/v1/admin/auth/otp/request', [
         'identifier' => 'admin@example.com',
         'type' => 'email',
-        'purpose' => 'LOGIN'
+        'purpose' => 'LOGIN',
     ]);
 
     $response->assertOk()
@@ -61,81 +61,81 @@ test('admin can request otp', function () {
     Notification::assertSentTo($admin, OtpEmailNotification::class);
 });
 
-test('admin can verify otp and login', function () {
+test('admin can verify otp and login', function (): void {
     $otp = '123456';
     $admin = Admin::factory()->withOtp($otp)->create([
-        'email' => 'admin@example.com'
+        'email' => 'admin@example.com',
     ]);
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
         'identifier' => 'admin@example.com',
         'type' => 'email',
         'otp' => $otp,
-        'purpose' => 'LOGIN'
+        'purpose' => 'LOGIN',
     ]);
 
     $response->assertOk()
         ->assertJsonStructure([
             'access_token',
             'token_type',
-            'admin'
+            'admin',
         ]);
 });
 
-test('admin can login with password', function () {
+test('admin can login with password', function (): void {
     $admin = Admin::factory()->create([
         'email' => 'admin@example.com',
-        'password' => Hash::make('password123')
+        'password' => Hash::make('password123'),
     ]);
 
     $response = $this->postJson('/api/v1/admin/auth/login/password', [
         'identifier' => 'admin@example.com',
         'type' => 'email',
-        'password' => 'password123'
+        'password' => 'password123',
     ]);
 
     $response->assertOk()
         ->assertJsonStructure([
             'access_token',
             'token_type',
-            'admin'
+            'admin',
         ]);
 });
 
-test('admin can request password reset', function () {
+test('admin can request password reset', function (): void {
     $admin = Admin::factory()->create(['email' => 'admin@example.com']);
 
     $response = $this->postJson('/api/v1/admin/auth/otp/request', [
         'identifier' => 'admin@example.com',
         'type' => 'email',
-        'purpose' => 'PASSWORD_RESET'
+        'purpose' => 'PASSWORD_RESET',
     ]);
 
     $response->assertOk();
     Notification::assertSentTo($admin, OtpEmailNotification::class);
 });
 
-test('admin can verify otp for password reset', function () {
+test('admin can verify otp for password reset', function (): void {
     $otp = '123456';
     $admin = Admin::factory()->withOtp($otp)->create([
-        'email' => 'admin@example.com'
+        'email' => 'admin@example.com',
     ]);
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
         'identifier' => 'admin@example.com',
         'type' => 'email',
         'otp' => $otp,
-        'purpose' => 'PASSWORD_RESET'
+        'purpose' => 'PASSWORD_RESET',
     ]);
 
     $response->assertOk()
         ->assertJsonStructure([
             'reset_token',
-            'message'
+            'message',
         ]);
 });
 
-test('admin can reset password with valid reset token', function () {
+test('admin can reset password with valid reset token', function (): void {
     $admin = Admin::factory()->create(['email' => 'admin@example.com']);
     $token = Password::broker('admins')->createToken($admin);
 
@@ -144,7 +144,7 @@ test('admin can reset password with valid reset token', function () {
         'type' => 'email',
         'token' => $token,
         'password' => 'newpassword123',
-        'password_confirmation' => 'newpassword123'
+        'password_confirmation' => 'newpassword123',
     ]);
 
     $response->assertOk()
@@ -153,7 +153,7 @@ test('admin can reset password with valid reset token', function () {
     expect(Hash::check('newpassword123', $admin->fresh()->password))->toBeTrue();
 });
 
-test('admin can logout', function () {
+test('admin can logout', function (): void {
     $admin = Admin::factory()->create();
     $token = $admin->createToken('admin_token')->plainTextToken;
 

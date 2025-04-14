@@ -9,70 +9,70 @@ use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
-test('admin auth requires valid email format', function () {
+test('admin auth requires valid email format', function (): void {
     $response = $this->postJson('/api/v1/admin/auth/initiate', [
         'identifier' => 'not-an-email',
-        'type' => 'email'
+        'type' => 'email',
     ]);
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['identifier']);
 });
 
-test('admin otp request requires valid purpose', function () {
+test('admin otp request requires valid purpose', function (): void {
     $admin = Admin::factory()->create();
 
     $response = $this->postJson('/api/v1/admin/auth/otp/request', [
         'identifier' => $admin->email,
         'type' => 'email',
-        'purpose' => 'INVALID'
+        'purpose' => 'INVALID',
     ]);
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['purpose']);
 });
 
-test('admin otp verification requires valid purpose', function () {
+test('admin otp verification requires valid purpose', function (): void {
     $admin = Admin::factory()->withOtp('123456')->create();
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
         'identifier' => $admin->email,
         'type' => 'email',
         'otp' => '123456',
-        'purpose' => 'INVALID'
+        'purpose' => 'INVALID',
     ]);
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['purpose']);
 });
 
-test('admin otp verification requires valid identifier', function () {
+test('admin otp verification requires valid identifier', function (): void {
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
         'identifier' => 'invalid-email',
         'type' => 'email',
         'otp' => '111111',
-        'purpose' => 'LOGIN'
+        'purpose' => 'LOGIN',
     ]);
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['identifier']);
 });
 
-test('admin otp verification fails with wrong otp', function () {
+test('admin otp verification fails with wrong otp', function (): void {
     $admin = Admin::factory()->withOtp('123456')->create();
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
         'identifier' => $admin->email,
         'type' => 'email',
         'otp' => '111111',
-        'purpose' => 'LOGIN'
+        'purpose' => 'LOGIN',
     ]);
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['otp']);
 });
 
-test('admin otp verification fails with expired otp', function () {
+test('admin otp verification fails with expired otp', function (): void {
     $admin = Admin::factory()->create();
 
     // Create expired OTP
@@ -80,21 +80,21 @@ test('admin otp verification fails with expired otp', function () {
         'identifier' => $admin->email,
         'type' => 'email',
         'code' => '123456',
-        'expires_at' => now()->subMinutes(6)
+        'expires_at' => now()->subMinutes(6),
     ]);
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
         'identifier' => $admin->email,
         'type' => 'email',
         'otp' => '123456',
-        'purpose' => 'LOGIN'
+        'purpose' => 'LOGIN',
     ]);
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['otp']);
 });
 
-test('admin password reset requires strong password', function () {
+test('admin password reset requires strong password', function (): void {
     $admin = Admin::factory()->create(['email' => 'admin@example.com']);
     $token = Password::broker('admins')->createToken($admin);
 
@@ -103,16 +103,16 @@ test('admin password reset requires strong password', function () {
         'type' => 'email',
         'token' => $token,
         'password' => 'weak',
-        'password_confirmation' => 'weak'
+        'password_confirmation' => 'weak',
     ]);
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['password']);
 });
 
-test('admin cannot use expired reset token', function () {
+test('admin cannot use expired reset token', function (): void {
     $admin = Admin::factory()->create([
-        'reset_token' => null // expired or used token
+        'reset_token' => null, // expired or used token
     ]);
 
     $response = $this->postJson('/api/v1/admin/auth/password/reset/otp', [
@@ -120,14 +120,14 @@ test('admin cannot use expired reset token', function () {
         'type' => 'email',
         'reset_token' => 'any-token',
         'password' => 'newpassword123',
-        'password_confirmation' => 'newpassword123'
+        'password_confirmation' => 'newpassword123',
     ]);
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['reset_token']);
 });
 
-test('admin cannot use invalid reset token', function () {
+test('admin cannot use invalid reset token', function (): void {
     $admin = Admin::factory()->create(['email' => 'admin@example.com']);
 
     $response = $this->postJson('/api/v1/admin/auth/password/reset/otp', [
@@ -135,34 +135,34 @@ test('admin cannot use invalid reset token', function () {
         'type' => 'email',
         'token' => 'invalid-token',
         'password' => 'newpassword123',
-        'password_confirmation' => 'newpassword123'
+        'password_confirmation' => 'newpassword123',
     ]);
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['token']);
 });
 
-test('admin auth with non-existent account returns proper error', function () {
+test('admin auth with non-existent account returns proper error', function (): void {
     $response = $this->postJson('/api/v1/admin/auth/otp/request', [
         'identifier' => 'nonexistent@example.com',
         'type' => 'email',
-        'purpose' => 'LOGIN'
+        'purpose' => 'LOGIN',
     ]);
 
     $response->assertNotFound()
         ->assertJson([
             'status' => 'error',
-            'message' => 'Admin account not found.'
+            'message' => 'Admin account not found.',
         ]);
 });
 
-test('admin logout requires valid auth token', function () {
+test('admin logout requires valid auth token', function (): void {
     $response = $this->postJson('/api/v1/admin/auth/logout');
 
     $response->assertStatus(401);
 });
 
-test('admin cannot use invalid auth token', function () {
+test('admin cannot use invalid auth token', function (): void {
     $response = $this->withHeader('Authorization', 'Bearer invalid-token')
         ->postJson('/api/v1/admin/auth/logout');
 
