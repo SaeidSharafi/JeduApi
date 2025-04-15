@@ -64,7 +64,11 @@ class AdminOtpAuthenticationController extends Controller
             $type === 'email',
             fn($q) => $q->where('email', $request->identifier),
             fn($q) => $q->where('phone', $request->identifier)
-        )->firstOrFail();
+        )->first();
+
+        if (!$user) {
+            return response()->notFound(message: "User not found");
+        }
 
         if (!$this->vertifyOtpAction->execute(
             $request->identifier,

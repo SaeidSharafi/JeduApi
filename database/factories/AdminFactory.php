@@ -2,7 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Dto\OtpManager\OtpDto;
 use App\Models\Admin;
+use App\Services\OtpManagerService;
+use App\Enums\OtpType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -17,7 +20,6 @@ class AdminFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->unique()->phoneNumber(),
-            'email_verified_at' => now(),
             'password' => null,
             'remember_token' => Str::random(10),
         ];
@@ -40,13 +42,11 @@ class AdminFactory extends Factory
     public function withOtp(string $code = '123456'): self
     {
         return $this->afterCreating(function (Admin $admin) use ($code) {
-            $admin->otp()->create([
-                'identifier' => $admin->email,
-                'type' => 'email',
-                'code' => $code,
-                'expires_at' => now()->addMinutes(5),
-                'purpose' => 'LOGIN'
-            ]);
+            $otpService = app(OtpManagerService::class);
+            $otpService->send($admin->email, 'admin', OtpType::SIGNIN);
+            $otpDto = new OtpDto($code, $this->trackingCode);
+            $cacheKey = sprintf('otp_%s_%s_%s_%s', $admin->email, 'admin', 'value', OtpType::SIGNIN->value);
+            cache()->put($cacheKey, $otpDto);
         });
     }
 }

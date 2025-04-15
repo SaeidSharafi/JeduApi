@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api\V1\Auth;
 
 use App\Enums\OtpType;
+use App\Rules\EmailOrPhoneRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,8 +17,8 @@ class VerifyOtpRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'identifier' => ['required', 'string'],
-            'otp_code' => ['required', 'string', 'size:4'],
+            'identifier' => ['required', 'string', new EmailOrPhoneRule()],
+            'otp_code' => ['required', 'numeric', 'min:'.config('otp.code_min'),'max:'.config('otp.code_max')],
             'tracking_code' => ['required', 'string'],
             'otp_type' => ['required', 'string', Rule::enum(OtpType::class)],
         ];

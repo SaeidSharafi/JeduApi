@@ -32,11 +32,6 @@ class Admin extends Authenticatable implements MustVerifyEmail
         'password' => 'hashed',
     ];
 
-    public function otp(): MorphMany
-    {
-        return $this->morphMany(Otp::class, 'otpable');
-    }
-
     public function hasSetPassword(): bool
     {
         return !is_null($this->password);

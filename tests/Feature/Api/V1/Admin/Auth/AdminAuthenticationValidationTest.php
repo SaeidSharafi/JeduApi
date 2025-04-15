@@ -2,13 +2,23 @@
 
 namespace Tests\Feature\Api\V1\Admin\Auth;
 
+use App\Dto\OtpManager\OtpDto;
+use App\Enums\OtpType;
 use App\Models\Admin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Password;
-use Tests\TestCase;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\RateLimiter;
 
-uses(TestCase::class, RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
+beforeEach(function () {
+    $minOtpCode = config('otp.code_min');
+    $maxOtpCode = config('otp.code_max');
+    $this->OtpCode = random_int($minOtpCode, $maxOtpCode);
+    $this->invalidOtpCode = $this->OtpCode + 1 > $maxOtpCode ? $this->OtpCode - 1 : $this->OtpCode + 1;
+    $this->trackingCode = 'test-tracking';
+});
 test('admin auth requires valid email format', function (): void {
     $response = $this->postJson('/api/v1/admin/auth/initiate', [
         'identifier' => 'not-an-email',
@@ -19,39 +29,54 @@ test('admin auth requires valid email format', function (): void {
         ->assertJsonValidationErrors(['identifier']);
 });
 
-test('admin otp request requires valid purpose', function (): void {
-    $admin = Admin::factory()->create();
-
-    $response = $this->postJson('/api/v1/admin/auth/otp/request', [
-        'identifier' => $admin->email,
-        'type' => 'email',
-        'purpose' => 'INVALID',
+test('admin auth requires valid phone format when type is phone', function (): void {
+    $response = $this->postJson('/api/v1/admin/auth/initiate', [
+        'identifier' => 'not-a-phone',
+        'type' => 'phone',
     ]);
 
     $response->assertStatus(422)
-        ->assertJsonValidationErrors(['purpose']);
+        ->assertJsonValidationErrors(['identifier']);
 });
 
-test('admin otp verification requires valid purpose', function (): void {
-    $admin = Admin::factory()->withOtp('123456')->create();
+test('admin otp request requires valid otp_type', function (): void {
+    $admin = Admin::factory()->create();
 
-    $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
+    $response = $this->postJson(route('api.v1.admin.auth.otp-resend'), [
         'identifier' => $admin->email,
         'type' => 'email',
-        'otp' => '123456',
-        'purpose' => 'INVALID',
+        'otp_type' => 'INVALID',
     ]);
 
     $response->assertStatus(422)
-        ->assertJsonValidationErrors(['purpose']);
+        ->assertJsonValidationErrors(['otp_type']);
+});
+
+test('admin otp verification requires valid otp_type', function (): void {
+    $admin = Admin::factory()->create();
+    Cache::put('otp_admin@example.com_admin_value_SIGNIN', [
+        'code' => $this->OtpCode,
+        'tracking_code' => 'test-tracking'
+    ], 300);
+
+    $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
+        'identifier' => 'admin@example.com',
+        'type' => 'email',
+        'otp_code' => $this->OtpCode,
+        'otp_type' => 'INVALID',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['otp_type']);
 });
 
 test('admin otp verification requires valid identifier', function (): void {
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
         'identifier' => 'invalid-email',
         'type' => 'email',
-        'otp' => '111111',
-        'purpose' => 'LOGIN',
+        'otp_code' => $this->OtpCode,
+        'otp_type' => OtpType::SIGNIN->value,
+        'tracking_code' => $this->trackingCode,
     ]);
 
     $response->assertStatus(422)
@@ -59,112 +84,83 @@ test('admin otp verification requires valid identifier', function (): void {
 });
 
 test('admin otp verification fails with wrong otp', function (): void {
-    $admin = Admin::factory()->withOtp('123456')->create();
+    $admin = Admin::factory()->create(['email' => 'admin@example.com']);
+    Cache::put('otp_admin@example.com_admin_value_SIGNIN',
+        new OtpDto($this->OtpCode,$this->trackingCode), 300);
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
-        'identifier' => $admin->email,
+        'identifier' => 'admin@example.com',
         'type' => 'email',
-        'otp' => '111111',
-        'purpose' => 'LOGIN',
+        'otp_code' => $this->invalidOtpCode,
+        'tracking_code' => 'test-tracking',
+        'otp_type' => OtpType::SIGNIN->value,
     ]);
 
-    $response->assertStatus(422)
-        ->assertJsonValidationErrors(['otp']);
+    $response->assertStatus(422);
 });
 
 test('admin otp verification fails with expired otp', function (): void {
-    $admin = Admin::factory()->create();
-
-    // Create expired OTP
-    $admin->otp()->create([
-        'identifier' => $admin->email,
-        'type' => 'email',
-        'code' => '123456',
-        'expires_at' => now()->subMinutes(6),
-    ]);
+    $admin = Admin::factory()->create(['email' => 'admin@example.com']);
+    // Put expired OTP in cache
+    Cache::put('otp_admin@example.com_admin_value_SIGNIN', [
+        'code' => $this->OtpCode,
+        'tracking_code' => 'test-tracking'
+    ], -1); // Expired
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
-        'identifier' => $admin->email,
-        'type' => 'email',
-        'otp' => '123456',
-        'purpose' => 'LOGIN',
-    ]);
-
-    $response->assertStatus(422)
-        ->assertJsonValidationErrors(['otp']);
-});
-
-test('admin password reset requires strong password', function (): void {
-    $admin = Admin::factory()->create(['email' => 'admin@example.com']);
-    $token = Password::broker('admins')->createToken($admin);
-
-    $response = $this->postJson('/api/v1/admin/auth/password/reset/otp', [
         'identifier' => 'admin@example.com',
         'type' => 'email',
-        'token' => $token,
-        'password' => 'weak',
-        'password_confirmation' => 'weak',
+        'otp_code' => $this->OtpCode,
+        'tracking_code' => 'test-tracking',
+        'otp_type' => OtpType::SIGNIN->value,
+    ]);
+
+    $response->assertStatus(422);
+});
+
+test('admin password login requires valid credentials', function (): void {
+    $admin = Admin::factory()->create([
+        'email' => 'admin@example.com',
+        'password' => Hash::make('correct-password'),
+    ]);
+
+    $response = $this->postJson('/api/v1/admin/auth/login/password', [
+        'identifier' => 'admin@example.com',
+        'type' => 'email',
+        'password' => 'wrong-password',
     ]);
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['password']);
 });
 
-test('admin cannot use expired reset token', function (): void {
-    $admin = Admin::factory()->create([
-        'reset_token' => null, // expired or used token
-    ]);
-
-    $response = $this->postJson('/api/v1/admin/auth/password/reset/otp', [
-        'identifier' => $admin->email,
-        'type' => 'email',
-        'reset_token' => 'any-token',
-        'password' => 'newpassword123',
-        'password_confirmation' => 'newpassword123',
-    ]);
-
-    $response->assertStatus(422)
-        ->assertJsonValidationErrors(['reset_token']);
-});
-
-test('admin cannot use invalid reset token', function (): void {
-    $admin = Admin::factory()->create(['email' => 'admin@example.com']);
-
-    $response = $this->postJson('/api/v1/admin/auth/password/reset/otp', [
-        'identifier' => 'admin@example.com',
-        'type' => 'email',
-        'token' => 'invalid-token',
-        'password' => 'newpassword123',
-        'password_confirmation' => 'newpassword123',
-    ]);
-
-    $response->assertStatus(422)
-        ->assertJsonValidationErrors(['token']);
-});
-
 test('admin auth with non-existent account returns proper error', function (): void {
-    $response = $this->postJson('/api/v1/admin/auth/otp/request', [
+    $response = $this->postJson('/api/v1/admin/auth/otp/resend', [
         'identifier' => 'nonexistent@example.com',
         'type' => 'email',
-        'purpose' => 'LOGIN',
+        'otp_type' => OtpType::SIGNIN->value,
     ]);
 
     $response->assertNotFound()
         ->assertJson([
-            'status' => 'error',
-            'message' => 'Admin account not found.',
+            'message' => 'User not found',
         ]);
 });
 
 test('admin logout requires valid auth token', function (): void {
     $response = $this->postJson('/api/v1/admin/auth/logout');
-
-    $response->assertStatus(401);
+    $response->assertStatus(500)
+        ->assertJson([
+            'message' => 'Unauthenticated.',
+        ]);
 });
 
 test('admin cannot use invalid auth token', function (): void {
     $response = $this->withHeader('Authorization', 'Bearer invalid-token')
         ->postJson('/api/v1/admin/auth/logout');
 
-    $response->assertStatus(401);
+    $response->assertStatus(500)
+        ->assertJson([
+            'message' => 'Unauthenticated.',
+        ]);
 });

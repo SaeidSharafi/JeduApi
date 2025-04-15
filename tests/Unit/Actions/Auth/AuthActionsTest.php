@@ -4,121 +4,93 @@ namespace Tests\Unit\Actions\Auth;
 
 use App\Actions\Api\V1\Auth\InitiateAuthAction;
 use App\Actions\Api\V1\Auth\PasswordLoginAction;
-use App\Actions\Api\V1\Auth\ResetPasswordAction;
-use App\Actions\GenerateOtpAction;
-use App\Actions\VerifyOtpAction;
+use App\Actions\Api\V1\Auth\AuthenticateUserAction;
+use App\Actions\Api\V1\Auth\GenerateOtpAction;
+use App\Dto\OtpManager\SentOtpDto;
 use App\Models\User;
-use App\Notifications\OtpEmailNotification;
-use App\Notifications\OtpSmsNotification;
+use App\Services\OtpManagerService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
-use Tests\TestCase;
+use Mockery;
+use Laravel\Sanctum\NewAccessToken;
+use App\Exceptions\UserHasPasswordException;
+use App\Enums\OtpType;
 
-uses(TestCase::class, RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     Notification::fake();
 });
 
 test('InitiateAuthAction returns correct action for user without password', function (): void {
-    $action = new InitiateAuthAction;
-    $user = User::factory()->create(['password' => null]);
+    $mockGenerateOtp = Mockery::mock(GenerateOtpAction::class);
+    $mockAuthenticateUser = Mockery::mock(AuthenticateUserAction::class);
 
-    $result = $action->execute($user->email, 'email');
+    app()->instance(GenerateOtpAction::class, $mockGenerateOtp);
+    app()->instance(AuthenticateUserAction::class, $mockAuthenticateUser);
 
-    expect($result)->toBe([
-        'action' => 'OTP_LOGIN',
-        'message' => 'Please request OTP to login.',
-    ]);
+    $action = app()->make(InitiateAuthAction::class);
+    $user = User::factory()->create(['password' => null])->fresh();
+
+    $placeholderCode = 123456;
+    $placeholderTrackingCode = 'mock-uuid-test-code';
+    $placeholderWaitingTime = 60;
+
+    $mockGenerateOtp->shouldReceive('execute')
+        ->once()
+        ->with(
+            Mockery::on(function (User $argumentUser) use ($user) {
+                return $argumentUser instanceof User && $argumentUser->is($user);
+            }),
+            OtpType::SIGNIN
+        )
+        ->andReturn(
+            new SentOtpDto(
+                code: $placeholderCode,
+                otpType: OtpType::SIGNIN,
+                waitingTime: $placeholderWaitingTime,
+                trackingCode: $placeholderTrackingCode
+            )
+        );
+
+    $result = $action->execute($user->email);
+
+    expect($result)->toBeInstanceOf(SentOtpDto::class)
+    ->and($result->otpType)->toBe(OtpType::SIGNIN)
+        ->and($result->code)->toBe($placeholderCode)
+        ->and($result->trackingCode)->toBe($placeholderTrackingCode);
 });
 
 test('InitiateAuthAction returns correct action for user with password', function (): void {
-    $action = new InitiateAuthAction;
+    $mockGenerateOtp = Mockery::mock(GenerateOtpAction::class);
+    $mockAuthenticateUser = Mockery::mock(AuthenticateUserAction::class);
+    app()->instance(GenerateOtpAction::class, $mockGenerateOtp);
+    app()->instance(AuthenticateUserAction::class, $mockAuthenticateUser);
+    $action = app()->make(InitiateAuthAction::class);
     $user = User::factory()->create(['password' => Hash::make('password')]);
-
-    $result = $action->execute($user->email, 'email');
-
-    expect($result)->toBe([
-        'action' => 'PASSWORD_LOGIN',
-        'message' => 'Please login with password.',
-    ]);
-});
-
-test('GenerateOtpAction creates and sends OTP', function (): void {
-    $action = new GenerateOtpAction;
-    $user = User::factory()->create();
-
-    $action->execute($user);
-
-    $user->refresh();
-    expect($user->otp)->not->toBeNull()
-        ->and($user->otp_expires_at)->not->toBeNull();
-
-    Notification::assertSentTo($user, OtpEmailNotification::class);
-});
-
-test('GenerateOtpAction sends SMS for users with phone numbers', function (): void {
-    $action = new GenerateOtpAction;
-    $user = User::factory()->create(['phone' => '1234567890']);
-
-    $action->execute($user);
-
-    Notification::assertSentTo($user, OtpSmsNotification::class);
-});
-
-test('VerifyOtpAction validates OTP correctly', function (): void {
-    $action = new VerifyOtpAction;
-    $otp = '123456';
-    $user = User::factory()->create([
-        'otp' => $otp,
-        'otp_expires_at' => now()->addMinutes(5),
-    ]);
-
-    expect(fn () => $action->execute($user, $otp))->not->toThrow(ValidationException::class);
-});
-
-test('VerifyOtpAction rejects invalid OTP', function (): void {
-    $action = new VerifyOtpAction;
-    $user = User::factory()->create([
-        'otp' => '123456',
-        'otp_expires_at' => now()->addMinutes(5),
-    ]);
-
-    expect(fn () => $action->execute($user, 'wrong-otp'))
-        ->toThrow(ValidationException::class, 'The OTP code is invalid or has expired.');
-});
-
-test('VerifyOtpAction rejects expired OTP', function (): void {
-    $action = new VerifyOtpAction;
-    $otp = '123456';
-    $user = User::factory()->create([
-        'otp' => $otp,
-        'otp_expires_at' => now()->subMinutes(5),
-    ]);
-
-    expect(fn () => $action->execute($user, $otp))
-        ->toThrow(ValidationException::class, 'The OTP code is invalid or has expired.');
+    // Should throw UserHasPasswordException
+    expect(fn () => $action->execute($user->email, 'email'))
+        ->toThrow(UserHasPasswordException::class);
 });
 
 test('PasswordLoginAction authenticates valid credentials', function (): void {
-    $action = new PasswordLoginAction;
+    $mockAuthenticateUser = Mockery::mock(AuthenticateUserAction::class);
+    $mockToken = Mockery::mock(NewAccessToken::class);
+    $mockAuthenticateUser->shouldReceive('execute')->andReturn($mockToken);
+    $action = new PasswordLoginAction($mockAuthenticateUser);
     $password = 'password123';
     $user = User::factory()->create([
         'password' => Hash::make($password),
     ]);
-
     $result = $action->execute($user->email, 'email', $password);
-
-    expect($result)
-        ->toHaveKey('access_token')
-        ->toHaveKey('token_type')
-        ->toHaveKey('user');
+    expect($result)->toBe($mockToken);
 });
 
 test('PasswordLoginAction rejects invalid credentials', function (): void {
-    $action = new PasswordLoginAction;
+    $mockAuthenticateUser = Mockery::mock(AuthenticateUserAction::class);
+    $action = new PasswordLoginAction($mockAuthenticateUser);
     $user = User::factory()->create([
         'password' => Hash::make('correct-password'),
     ]);
@@ -127,26 +99,10 @@ test('PasswordLoginAction rejects invalid credentials', function (): void {
         ->toThrow(ValidationException::class, 'The provided credentials are incorrect.');
 });
 
-test('ResetPasswordAction updates password with valid token', function (): void {
-    $action = new ResetPasswordAction;
-    $resetToken = 'valid-token';
-    $user = User::factory()->create([
-        'reset_token' => Hash::make($resetToken),
-    ]);
+test('PasswordLoginAction handles missing user', function (): void {
+    $mockAuthenticateUser = Mockery::mock(AuthenticateUserAction::class);
+    $action = new PasswordLoginAction($mockAuthenticateUser);
 
-    $action->execute($user->email, 'email', $resetToken, 'new-password');
-
-    $user->refresh();
-    expect(Hash::check('new-password', $user->password))->toBeTrue()
-        ->and($user->reset_token)->toBeNull();
-});
-
-test('ResetPasswordAction rejects invalid reset token', function (): void {
-    $action = new ResetPasswordAction;
-    $user = User::factory()->create([
-        'reset_token' => Hash::make('valid-token'),
-    ]);
-
-    expect(fn () => $action->execute($user->email, 'email', 'invalid-token', 'new-password'))
-        ->toThrow(ValidationException::class, 'Invalid or expired reset token.');
+    expect(fn () => $action->execute('nonexistent@example.com', 'email', 'password123'))
+        ->toThrow(\App\Exceptions\UserNotFoundException::class);
 });

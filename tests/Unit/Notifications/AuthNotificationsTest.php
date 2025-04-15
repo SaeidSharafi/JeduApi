@@ -4,63 +4,82 @@ namespace Tests\Unit\Notifications;
 
 use App\Models\Admin;
 use App\Models\User;
-use App\Notifications\OtpEmailNotification;
-use App\Notifications\OtpSmsNotification;
+use App\Events\OtpPrepared;
+use App\Enums\OtpType;
+use App\Notifications\Api\V1\Auth\OtpEmailNotification;
+use App\Notifications\Api\V1\Auth\OtpSmsNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Illuminate\Support\Facades\Notification;
 
-uses(TestCase::class, RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
-test('OtpEmailNotification contains otp code', function (): void {
+beforeEach(function (): void {
+    Notification::fake();
+});
+
+test('OtpEmailNotification contains expected data', function (): void {
     $otp = '123456';
     $notification = new OtpEmailNotification($otp);
-    $user = User::factory()->create();
+    $user = User::factory()->create(['email' => 'test@example.com']);
 
-    $mailMessage = $notification->toMail($user);
-    $mailData = $mailMessage->data();
+    $mailData = $notification->toMail($user);
+    $mailView = $mailData->render();
 
-    expect($mailMessage->subject)->toBe('Your Login OTP Code')
-        ->and($mailData['introLines'])->toBeArray()
-        ->and($mailData['introLines'][0])->toContain($otp);
+    expect($mailData->subject)->toBe('Your Login OTP Code')
+        ->and($mailView->toHtml())->toMatch("/\b{$otp}\b/m");
 });
 
-test('OtpSmsNotification builds correct message array', function (): void {
+test('OtpSmsNotification contains expected data', function (): void {
     $otp = '123456';
+    $otp = new OtpPrepared('09321456987', 'user', $otp, OtpType::SIGNIN, 'test-tracking', []);
     $notification = new OtpSmsNotification($otp);
-    $user = User::factory()->create(['phone' => '1234567890']);
+    $user = User::factory()->create(['phone' => '09321456987']);
 
-    $message = $notification->toArray($user);
+    $mailData = $notification->toMail($user);
+    $mailView = $mailData->render();
 
-    expect($message)
-        ->toHaveKey('phone', '1234567890')
-        ->toHaveKey('message')
-        ->and($message['message'])->toContain($otp);
+    expect($mailData->subject)->toBe('Your Login OTP Code')
+        ->and($mailView->toHtml())->toMatch("/\b{$otp->code}\b/m")
+        ->and($mailView->toHtml())->toMatch("/\b{$user->phone}\b/m");
 });
 
-test('notifications work with both User and Admin models', function (): void {
-    $otp = '123456';
-    $emailNotification = new OtpEmailNotification($otp);
-    $smsNotification = new OtpSmsNotification($otp);
+test('notifications handle different guard types correctly', function (): void {
+    $code = '123456';
+    $identifier = '1234567890';
+    $trackingCode = 'test-tracking';
 
-    $user = User::factory()->create(['phone' => '1234567890']);
-    $admin = Admin::factory()->create(['phone' => '0987654321']);
+    // Test user guard
+    $userEvent = new OtpPrepared(
+        indentifier: $identifier,
+        guard: 'user',
+        code: $code,
+        type: OtpType::SIGNIN,
+        trackingCode: $trackingCode,
+        params: []
+    );
+    $userNotification = new OtpSmsNotification($userEvent);
+    $user = User::factory()->create(['phone' => $identifier]);
 
-    // Test email notifications
-    $userMail = $emailNotification->toMail($user);
-    $adminMail = $emailNotification->toMail($admin);
+    // Test admin guard
+    $adminEvent = new OtpPrepared(
+        indentifier: $identifier,
+        guard: 'admin',
+        code: $code,
+        type: OtpType::SIGNIN,
+        trackingCode: $trackingCode,
+        params: []
+    );
+    $adminNotification = new OtpSmsNotification($adminEvent);
+    $admin = Admin::factory()->create(['phone' => $identifier]);
 
-    $userMailData = $userMail->data();
-    $adminMailData = $adminMail->data();
-
-    expect($userMailData['introLines'][0])->toContain($otp)
-        ->and($adminMailData['introLines'][0])->toContain($otp);
-
-    // Test SMS notifications
-    $userSms = $smsNotification->toArray($user);
-    $adminSms = $smsNotification->toArray($admin);
-
-    expect($userSms['phone'])->toBe('1234567890')
-        ->and($adminSms['phone'])->toBe('0987654321')
-        ->and($userSms['message'])->toContain($otp)
-        ->and($adminSms['message'])->toContain($otp);
+    $userMailData = $userNotification->toMail($user);
+    $adminMailData = $adminNotification->toMail($admin);
+    expect($userEvent->guard)->toBe('user')
+        ->and($adminEvent->guard)->toBe('admin')
+        ->and($userMailData->subject)->toBe('Your Login OTP Code')
+        ->and($userMailData->render()->toHtml())->toMatch("/\b{$code}\b/m")
+        ->and($userMailData->render()->toHtml())->toMatch("/\b{$user->phone}\b/m")
+        ->and($adminMailData->subject)->toBe('Your Login OTP Code')
+        ->and($adminMailData->render()->toHtml())->toMatch("/\b{$code}\b/m")
+        ->and($adminMailData->render()->toHtml())->toMatch("/\b{$admin->phone}\b/m");
 });

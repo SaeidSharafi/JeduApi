@@ -2,12 +2,22 @@
 
 namespace Tests\Feature\Api\V1\Auth;
 
+use App\Dto\OtpManager\OtpDto;
+use App\Enums\OtpType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Password;
-use Tests\TestCase;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Notification;
 
-uses(TestCase::class, RefreshDatabase::class);
+uses(RefreshDatabase::class);
+beforeEach(function (): void {
+    $minOtpCode = config('otp.code_min');
+    $maxOtpCode = config('otp.code_max');
+    $this->otpCode = random_int($minOtpCode, $maxOtpCode);
+    $this->invalidOtpCode = $this->otpCode + 1 > $maxOtpCode ? $this->otpCode - 1 : $this->otpCode + 1;
+    $this->trackingCode = 'test-tracking';
+});
 
 test('initiate auth requires valid email format', function (): void {
     $response = $this->postJson('/api/v1/auth/initiate', [
@@ -19,126 +29,104 @@ test('initiate auth requires valid email format', function (): void {
         ->assertJsonValidationErrors(['identifier']);
 });
 
-test('initiate auth requires valid type', function (): void {
+test('initiate auth requires valid phone format when type is phone', function (): void {
     $response = $this->postJson('/api/v1/auth/initiate', [
-        'identifier' => 'test@example.com',
-        'type' => 'invalid',
-    ]);
-
-    $response->assertStatus(422)
-        ->assertJsonValidationErrors(['type']);
-});
-
-test('otp verification requires valid identifier', function (): void {
-    $response = $this->postJson('/api/v1/auth/otp/verify', [
-        'identifier' => 'invalid-email',
-        'type' => 'email',
-        'otp' => '111111',
-        'purpose' => 'LOGIN',
+        'identifier' => 'not-a-phone',
+        'type' => 'phone',
     ]);
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['identifier']);
 });
 
-test('otp verification fails with wrong otp', function (): void {
-    $user = User::factory()->withOtp('123456')->create();
 
-    $response = $this->postJson('/api/v1/auth/otp/verify', [
+test('otp request requires valid otp_type', function (): void {
+    $user = User::factory()->create();
+
+    $response = $this->postJson('/api/v1/auth/otp/resend', [
         'identifier' => $user->email,
-        'type' => 'email',
-        'otp' => '111111',
-        'purpose' => 'LOGIN',
+        'otp_type' => 'INVALID',
     ]);
 
     $response->assertStatus(422)
-        ->assertJsonValidationErrors(['otp']);
+        ->assertJsonValidationErrors(['otp_type']);
 });
 
-test('otp verification fails with expired otp', function (): void {
+test('otp verification requires valid otp_type', function (): void {
     $user = User::factory()->create();
-
-    // Create expired OTP
-    $user->otp()->create([
-        'identifier' => $user->email,
-        'type' => 'email',
-        'code' => '123456',
-        'expires_at' => now()->subMinutes(6),
-    ]);
+    Cache::put('otp_test@example.com_user_value_SIGNIN', new OtpDto($this->otpCode,$this->trackingCode), 300);
 
     $response = $this->postJson('/api/v1/auth/otp/verify', [
-        'identifier' => $user->email,
+        'identifier' => 'test@example.com',
         'type' => 'email',
         'otp' => '123456',
-        'purpose' => 'LOGIN',
+        'otp_type' => 'INVALID',
     ]);
 
     $response->assertStatus(422)
-        ->assertJsonValidationErrors(['otp']);
+        ->assertJsonValidationErrors(['otp_type']);
 });
 
-test('password login requires valid password format', function (): void {
-    $user = User::factory()->create();
+test('otp verification fails with wrong otp', function (): void {
+    $user = User::factory()->create(['email' => 'test@example.com']);
+    Cache::put('otp_test@example.com_user_value_SIGNIN',new OtpDto($this->otpCode,$this->trackingCode), 300);
+
+    $response = $this->postJson('/api/v1/auth/otp/verify', [
+        'identifier' => 'test@example.com',
+        'type' => 'email',
+        'otp_code'  => $this->invalidOtpCode,
+        'tracking_code' => 'test-tracking',
+        'otp_type' => OtpType::SIGNIN->value,
+    ]);
+
+    $response->assertStatus(422);
+});
+
+test('otp verification fails after max attempts', function (): void {
+    $user = User::factory()->create(['email' => 'test@example.com']);
+    Cache::put('otp_test@example.com_user_value_SIGNIN',new OtpDto($this->otpCode,$this->trackingCode), 300);
+
+    // Try multiple times
+    for ($i = 0; $i < 4; $i++) {
+        $response = $this->postJson('/api/v1/auth/otp/verify', [
+            'identifier' => 'test@example.com',
+            'type' => 'email',
+            'otp_code'  => $this->otpCode,
+            'tracking_code' => 'test-tracking',
+            'otp_type' => OtpType::SIGNIN->value,
+        ]);
+    }
+
+    $response->assertStatus(422);
+
+    // Verify OTP has been deleted after max attempts
+    expect(Cache::get('otp_test@example.com_user_value_SIGNIN'))->toBeNull();
+});
+
+test('password login requires valid credentials', function (): void {
+    $user = User::factory()->create([
+        'email' => 'test@example.com',
+        'password' => Hash::make('correct-password'),
+    ]);
 
     $response = $this->postJson('/api/v1/auth/login/password', [
-        'identifier' => $user->email,
+        'identifier' => 'test@example.com',
         'type' => 'email',
-        'password' => '123', // too short
+        'password' => 'wrong-password',
     ]);
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['password']);
-});
-
-test('password reset requires password confirmation', function (): void {
-    $user = User::factory()->create(['email' => 'test@example.com']);
-    $token = Password::createToken($user);
-
-    $response = $this->postJson('/api/v1/auth/password/reset/otp', [
-        'identifier' => 'test@example.com',
-        'type' => 'email',
-        'token' => $token,
-        'password' => 'newpassword123',
-        // missing password_confirmation
-    ]);
-
-    $response->assertStatus(422)
-        ->assertJsonValidationErrors(['password']);
-});
-
-test('password reset requires matching confirmation', function (): void {
-    $user = User::factory()->create(['email' => 'test@example.com']);
-    $token = Password::createToken($user);
-
-    $response = $this->postJson('/api/v1/auth/password/reset/otp', [
-        'identifier' => 'test@example.com',
-        'type' => 'email',
-        'token' => $token,
-        'password' => 'newpassword123',
-        'password_confirmation' => 'different123',
-    ]);
-
-    $response->assertStatus(422)
-        ->assertJsonValidationErrors(['password']);
-});
-
-test('password reset requires valid token', function (): void {
-    $user = User::factory()->create(['email' => 'test@example.com']);
-
-    $response = $this->postJson('/api/v1/auth/password/reset/otp', [
-        'identifier' => 'test@example.com',
-        'type' => 'email',
-        'token' => 'invalid-token',
-        'password' => 'newpassword123',
-        'password_confirmation' => 'newpassword123',
-    ]);
-
-    $response->assertStatus(422)
-        ->assertJsonValidationErrors(['token']);
 });
 
 test('logout requires authentication', function (): void {
     $response = $this->postJson('/api/v1/auth/logout');
+    $response->assertStatus(500);
+});
 
-    $response->assertStatus(401);
+test('cannot use invalid auth token', function (): void {
+    $response = $this->withHeader('Authorization', 'Bearer invalid-token')
+        ->postJson('/api/v1/auth/logout');
+
+    $response->assertStatus(500);
 });

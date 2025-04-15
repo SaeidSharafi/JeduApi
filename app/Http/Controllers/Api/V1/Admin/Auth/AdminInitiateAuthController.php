@@ -69,7 +69,7 @@ class AdminInitiateAuthController extends Controller
                 'login_method' => 'PASSWORD',
             ], 'User has set password');
         } catch (UserNotFoundException $exception) {
-            return response()->notfound('User not found');
+            return response()->notFound('User not found');
         }
     }
 }
