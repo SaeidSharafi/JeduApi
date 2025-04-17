@@ -2,12 +2,12 @@
 
 namespace Tests\Unit\Notifications;
 
+use App\Enums\OtpType;
+use App\Events\OtpPrepared;
 use App\Models\Admin;
 use App\Models\User;
-use App\Events\OtpPrepared;
-use App\Enums\OtpType;
-use App\Notifications\Api\V1\Auth\OtpEmailNotification;
-use App\Notifications\Api\V1\Auth\OtpSmsNotification;
+use App\Notifications\Auth\OtpEmailNotification;
+use App\Notifications\Auth\OtpSmsNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 

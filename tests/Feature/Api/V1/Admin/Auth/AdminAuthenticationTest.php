@@ -3,16 +3,14 @@
 namespace Tests\Feature\Api\V1\Admin\Auth;
 
 use App\Dto\OtpManager\OtpDto;
-use App\Dto\OtpManager\SentOtpDto;
 use App\Enums\OtpType;
 use App\Models\Admin;
-use App\Notifications\Api\V1\Auth\OtpEmailNotification;
-use App\Notifications\Api\V1\Auth\OtpSmsNotification;
+use App\Notifications\Auth\OtpEmailNotification;
+use App\Notifications\Auth\OtpSmsNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Route;
 
 uses(RefreshDatabase::class);
 

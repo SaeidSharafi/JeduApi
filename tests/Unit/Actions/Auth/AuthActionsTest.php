@@ -2,21 +2,20 @@
 
 namespace Tests\Unit\Actions\Auth;
 
-use App\Actions\Api\V1\Auth\InitiateAuthAction;
-use App\Actions\Api\V1\Auth\PasswordLoginAction;
-use App\Actions\Api\V1\Auth\AuthenticateUserAction;
-use App\Actions\Api\V1\Auth\GenerateOtpAction;
+use App\Actions\Auth\AuthenticateUserAction;
+use App\Actions\Auth\GenerateOtpAction;
+use App\Actions\Auth\InitiateAuthAction;
+use App\Actions\Auth\PasswordLoginAction;
 use App\Dto\OtpManager\SentOtpDto;
+use App\Enums\OtpType;
+use App\Exceptions\UserHasPasswordException;
 use App\Models\User;
-use App\Services\OtpManagerService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
-use Mockery;
 use Laravel\Sanctum\NewAccessToken;
-use App\Exceptions\UserHasPasswordException;
-use App\Enums\OtpType;
+use Mockery;
 
 uses(RefreshDatabase::class);
 

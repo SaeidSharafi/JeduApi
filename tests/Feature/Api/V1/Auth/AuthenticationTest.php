@@ -2,19 +2,19 @@
 
 namespace Tests\Feature\Api\V1\Auth;
 
-use App\Actions\Api\V1\Auth\GenerateOtpAction;
+use App\Actions\Auth\GenerateOtpAction;
 use App\Dto\OtpManager\OtpDto;
 use App\Dto\OtpManager\SentOtpDto;
+use App\Enums\OtpType;
 use App\Events\OtpPrepared;
 use App\Models\User;
-use App\Notifications\Api\V1\Auth\OtpEmailNotification;
-use App\Notifications\Api\V1\Auth\OtpSmsNotification;
-use App\Enums\OtpType;
+use App\Notifications\Auth\OtpEmailNotification;
+use App\Notifications\Auth\OtpSmsNotification;
 use App\Services\OtpManagerService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 uses(RefreshDatabase::class);

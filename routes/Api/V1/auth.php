@@ -1,19 +1,19 @@
 <?php
 
-use App\Http\Controllers\Api\V1\Admin\Auth\AdminForgotPasswordController;
-use App\Http\Controllers\Api\V1\Admin\Auth\AdminInitiateAuthController;
-use App\Http\Controllers\Api\V1\Admin\Auth\AdminLogoutController;
-use App\Http\Controllers\Api\V1\Admin\Auth\AdminOtpAuthenticationController;
-use App\Http\Controllers\Api\V1\Admin\Auth\AdminPasswordLoginController;
-use App\Http\Controllers\Api\V1\Admin\Auth\AdminResendOtpController;
-use App\Http\Controllers\Api\V1\Admin\Auth\AdminResetPasswordController;
-use App\Http\Controllers\Api\V1\Auth\ForgotPasswordController;
-use App\Http\Controllers\Api\V1\Auth\InitiateAuthController;
-use App\Http\Controllers\Api\V1\Auth\LogoutController;
-use App\Http\Controllers\Api\V1\Auth\OtpAuthenticationController;
-use App\Http\Controllers\Api\V1\Auth\PasswordLoginController;
-use App\Http\Controllers\Api\V1\Auth\ResetPasswordController;
-use App\Http\Controllers\Api\V1\Auth\ResnedOtpController;
+use App\Http\Controllers\Api\Admin\Auth\AdminForgotPasswordController;
+use App\Http\Controllers\Api\Admin\Auth\AdminInitiateAuthController;
+use App\Http\Controllers\Api\Admin\Auth\AdminLogoutController;
+use App\Http\Controllers\Api\Admin\Auth\AdminOtpAuthenticationController;
+use App\Http\Controllers\Api\Admin\Auth\AdminPasswordLoginController;
+use App\Http\Controllers\Api\Admin\Auth\AdminResendOtpController;
+use App\Http\Controllers\Api\Admin\Auth\AdminResetPasswordController;
+use App\Http\Controllers\Api\Auth\ForgotPasswordController;
+use App\Http\Controllers\Api\Auth\InitiateAuthController;
+use App\Http\Controllers\Api\Auth\LogoutController;
+use App\Http\Controllers\Api\Auth\OtpAuthenticationController;
+use App\Http\Controllers\Api\Auth\PasswordLoginController;
+use App\Http\Controllers\Api\Auth\ResetPasswordController;
+use App\Http\Controllers\Api\Auth\ResnedOtpController;
 
 Route::prefix('auth')->name('auth.')->group(function (): void {
     Route::post('initiate', InitiateAuthController::class)->name('initiate');

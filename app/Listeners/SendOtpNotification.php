@@ -5,8 +5,8 @@ namespace App\Listeners;
 use App\Events\OtpPrepared;
 use App\Models\Admin;
 use App\Models\User;
-use App\Notifications\Api\V1\Auth\OtpEmailNotification;
-use App\Notifications\Api\V1\Auth\OtpSmsNotification;
+use App\Notifications\Auth\OtpEmailNotification;
+use App\Notifications\Auth\OtpSmsNotification;
 
 class SendOtpNotification
 {
