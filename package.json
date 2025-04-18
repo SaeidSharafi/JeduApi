@@ -1,5 +1,9 @@
 {
+    "name": "@acecr-qazvin/jedu-shop",
     "private": true,
+    "version": "1.0.0",
+    "license": "UNLICENSED",
+    "author": "جهاددانشگاهی قزوین (ACECR Qazvin)",
     "type": "module",
     "scripts": {
         "build": "vite build",

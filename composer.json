@@ -1,13 +1,15 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "acecr-qazvin/jedu-shop",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "ACECR Qazvin (جهاددانشگاهی قزوین) Jedu EShop API Application",
     "keywords": [
-        "laravel",
-        "framework"
+        "acecr",
+        "jedu",
+        "eshop",
+        "api"
     ],
-    "license": "MIT",
+    "license": "proprietary",
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",
