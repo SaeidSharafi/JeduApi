@@ -20,6 +20,9 @@ class LoginRequest extends FormRequest
         ];
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function bodyParameters(): array
     {
         return [

@@ -6,6 +6,8 @@ use App\Actions\Auth\AuthenticateUserAction;
 use App\Actions\Auth\VertifyOtpAction;
 use App\Contracts\ApiResponseInterface;
 use App\Enums\OtpType;
+use App\Exceptions\InvalidOtpCode;
+use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyOtpRequest;
 use App\Http\Resources\Auth\UserResource;
@@ -16,7 +18,8 @@ class OtpAuthenticationController extends Controller
     public function __construct(
         protected VertifyOtpAction $vertifyOtpAction,
         protected AuthenticateUserAction $authenticateUser,
-    ) {}
+    ) {
+    }
 
     /**
      * Verify an OTP code and potentially log in/register
@@ -55,29 +58,27 @@ class OtpAuthenticationController extends Controller
      */
     public function __invoke(VerifyOtpRequest $request): ApiResponseInterface
     {
-        $type = filter_var($request->identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
-        $user = User::when(
-            $type === 'email',
-            fn ($q) => $q->where('email', $request->identifier),
-            fn ($q) => $q->where('phone', $request->identifier)
-        )->firstOrFail();
-
-        if (! $this->vertifyOtpAction->execute(
-            $request->identifier,
-            $request->tracking_code,
-            $request->otp_code,
-            OtpType::from($request->otp_type))
-        ) {
-            return response()->validationError(message: 'Invalid OTP code');
+        try {
+            $user = $this->vertifyOtpAction->execute(
+                $request->identifier,
+                $request->tracking_code,
+                $request->otp_code,
+                OtpType::from($request->otp_type));
+            $token = $this->authenticateUser->execute($user);
+        } catch (UserNotFoundException) {
+            return response()->notFound('User not found');
+        } catch (InvalidOtpCode $e) {
+            return response()->validationError(
+                message: 'Invalid OTP code'
+            );
         }
-        $token = $this->authenticateUser->execute($user);
 
         return response()->success(
             [
-                'token' => $token->plainTextToken,
+                'token'      => $token->plainTextToken,
                 'expires_at' => $token->accessToken->expires_at,
-                'type' => 'Bearer',
-                'user' => UserResource::make($user),
+                'type'       => 'Bearer',
+                'user'       => UserResource::make($user),
             ]
         );
     }

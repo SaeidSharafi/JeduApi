@@ -13,12 +13,14 @@ class AdminInitiateAuthController extends Controller
 {
     public function __construct(
         protected InitiateAuthAction $action
-    ) {}
+    ) {
+    }
 
     /**
      * Initiate authentication flow
      *
-     * User provides phone or email. API determines the next step (e.g., prompt for password, request OTP, user not found)
+     * User provides phone or email. API determines the next step (e.g., prompt for password, request OTP, user not
+     * found)
      *
      * @group Admin Authentication
      * @response 201{
@@ -59,9 +61,9 @@ class AdminInitiateAuthController extends Controller
 
             return response()->success([
                 'tracking_code' => $otpSent->trackingCode,
-                'otp_type' => $otpSent->otpType->value,
-                'identifier' => $request->identifier,
-                'login_method' => 'OTP',
+                'otp_type'      => $otpSent->otpType->value,
+                'identifier'    => $request->identifier,
+                'login_method'  => 'OTP',
             ], 'OTP sent successfully');
 
         } catch (UserHasPasswordException $e) {

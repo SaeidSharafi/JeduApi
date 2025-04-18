@@ -7,8 +7,11 @@ use App\Actions\Auth\AuthenticateUserAction;
 use App\Actions\Auth\VertifyOtpAction;
 use App\Contracts\ApiResponseInterface;
 use App\Enums\OtpType;
+use App\Exceptions\InvalidOtpCode;
+use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyOtpRequest;
+use App\Http\Resources\Auth\AdminResource;
 use App\Http\Resources\Auth\UserResource;
 use App\Models\Admin;
 
@@ -56,35 +59,28 @@ class AdminOtpAuthenticationController extends Controller
      */
     public function __invoke(VerifyOtpRequest $request): ApiResponseInterface
     {
-        $type = filter_var($request->identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
-        $user = Admin::when(
-            $type === 'email',
-            fn($q) => $q->where('email', $request->identifier),
-            fn($q) => $q->where('phone', $request->identifier)
-        )->first();
-
-        if (!$user) {
-            return response()->notFound(message: "User not found");
+        try {
+            $user = $this->vertifyOtpAction->execute(
+                $request->identifier,
+                $request->tracking_code,
+                $request->otp_code,
+                OtpType::from($request->otp_type),
+                guard: 'admin'
+            );
+            $token = $this->authenticateUser->execute($user);
+        } catch (UserNotFoundException) {
+            return response()->notFound('User not found');
+        } catch (InvalidOtpCode $e) {
+            return response()->validationError(
+                message: 'Invalid OTP code'
+            );
         }
-
-        if (!$this->vertifyOtpAction->execute(
-            $request->identifier,
-            $request->tracking_code,
-            $request->otp_code,
-            OtpType::from($request->otp_type),
-            guard: 'admin'
-        )
-        ) {
-            return response()->validationError(message: "Invalid OTP code");
-        }
-        $token = $this->authenticateUser->execute($user, 'admin');
-
         return response()->success(
             [
                 'token' => $token->plainTextToken,
                 'expires_at' => $token->accessToken->expires_at,
                 'type' => 'Bearer',
-                'user' => UserResource::make($user)
+                'user' => AdminResource::make($user)
             ], 'Authenticated successfully');
     }
 }

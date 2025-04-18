@@ -13,6 +13,7 @@ class ResetPasswordAction extends AuthAction
 {
     public function __construct(
         protected OtpManagerService $otpManager,
+        protected VertifyOtpAction $verifyOtpAction
     ) {}
 
     public function execute(
@@ -29,11 +30,13 @@ class ResetPasswordAction extends AuthAction
         }
 
         if (! $user->hasSetPassword()) {
-            throw new UserDoesNotHavePasswordException;
+            throw new UserDoesNotHavePasswordException();
         }
 
-        if (! $this->otpManager->verify($identifier, $guard, $otpCode, $trackingCode, OtpType::RESET_PASSWORD)) {
-            throw new InvalidOtpCode;
+        try {
+           $this->verifyOtpAction->execute($user, $trackingCode, $otpCode, OtpType::RESET_PASSWORD, $guard);
+        }catch (InvalidOtpCode $e){
+            throw new InvalidOtpCode();
         }
 
         $user->password = Hash::make($password);

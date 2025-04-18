@@ -21,6 +21,9 @@ class OtpRequest extends FormRequest
         ];
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function bodyParameters(): array
     {
         return [

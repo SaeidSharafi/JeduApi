@@ -19,7 +19,7 @@ class OtpManagerService
 
     private ?OtpTypeInterface $type = null;
 
-    private int $waitingTime;
+    protected int $waitingTime;
 
     public function __construct()
     {
@@ -31,7 +31,7 @@ class OtpManagerService
     {
 
         $this->type = $type;
-        $this->trackingCode = Str::uuid()->toString();
+        $this->trackingCode = $this->generateTrackingCode();
 
         $otp = new SentOtpDto($this->getNewCode($indentifier, $guard), $type, $this->waitingTime, $this->trackingCode);
 
@@ -162,10 +162,7 @@ class OtpManagerService
 
     protected function getNewCode(string $indentifier, string $guard): int
     {
-        $min = config('otp.code_min');
-        $max = config('otp.code_max');
-
-        $otp = random_int($min, $max);
+        $otp = $this->generateCode();
 
         $otpDto = new OtpDto($otp, $this->trackingCode);
 
@@ -175,6 +172,17 @@ class OtpManagerService
         return $otp;
     }
 
+    protected function generateCode(): int{
+        $min = config('otp.code_min');
+        $max = config('otp.code_max');
+
+         return random_int($min, $max);
+    }
+
+    protected function generateTrackingCode(): string
+    {
+        return Str::uuid()->toString();
+    }
     protected function getCacheKey(string $indentifier, string $guard, string $for): string
     {
         return sprintf(

@@ -60,7 +60,7 @@ class ResetPasswordController extends Controller
                 $request->password,
             );
 
-            return response()->success('Password reset OTP sent successfully');
+            return response()->success(message: 'Password reset successfully');
         } catch (UserDoesNotHavePasswordException $exception) {
             return response()->validationError(
                 message: 'User does not have password'

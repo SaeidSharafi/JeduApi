@@ -20,7 +20,6 @@ class ForgotPasswordAction extends AuthAction
         if (! $user) {
             throw new UserNotFoundException();
         }
-
         if ($user->hasSetPassword()) {
             return $this->generateOtp->execute($user, OtpType::RESET_PASSWORD);
         }

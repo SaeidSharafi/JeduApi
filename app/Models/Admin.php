@@ -36,9 +36,4 @@ class Admin extends Authenticatable implements MustVerifyEmail
     {
         return !is_null($this->password);
     }
-
-    public function getEmailForPasswordReset(): string
-    {
-        return $this->email;
-    }
 }

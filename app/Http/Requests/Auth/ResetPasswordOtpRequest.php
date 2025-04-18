@@ -15,12 +15,15 @@ class ResetPasswordOtpRequest extends FormRequest
     {
         return [
             'identifier' => ['required', 'string'],
-            'otp_code' => ['required', 'string', 'size:4'],
+            'otp_code' => ['required', 'numeric', 'min:'.config('otp.code_min'),'max:'.config('otp.code_max')],
             'tracking_code' => ['required', 'string'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ];
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function bodyParameters(): array
     {
         return [

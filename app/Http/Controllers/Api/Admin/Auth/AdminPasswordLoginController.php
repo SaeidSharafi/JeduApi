@@ -6,6 +6,7 @@ use App\Actions\Auth\PasswordLoginAction;
 use App\Contracts\ApiResponseInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Resources\Auth\AdminResource;
 use App\Http\Resources\Auth\UserResource;
 use App\Models\Admin;
 
@@ -78,7 +79,7 @@ class AdminPasswordLoginController extends Controller
             'token' => $token->plainTextToken,
             'expires_at' => $token->accessToken->expires_at,
             'type' => 'Bearer',
-            'user' => UserResource::make($user),
+            'user' => AdminResource::make($user),
         ], 'User Logged in successfully');
     }
 }

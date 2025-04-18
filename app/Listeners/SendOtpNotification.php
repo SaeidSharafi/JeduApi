@@ -25,7 +25,7 @@ class SendOtpNotification
             fn ($q) => $q->where('email', $indentifier),
             fn ($q) => $q->where('phone', $indentifier)
         )->first();
-        if (app()->isLocal()) {
+        if (app()->isLocal() || app()->environment('testing')) {
             $user->email = $user->phone.'@example.com';
         }
         $user->notify(new OtpSmsNotification($event));

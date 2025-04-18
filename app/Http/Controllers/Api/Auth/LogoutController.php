@@ -23,11 +23,6 @@ class LogoutController extends Controller
      */
     public function __invoke(Request $request): JsonResponse
     {
-        if (!$request->user('user')->currentAccessToken()){
-            return new JsonResponse([
-                'message' => 'Unauthenticated.'
-            ], 401);
-        }
         $request->user()->currentAccessToken()->delete();
 
         return response()->noContentJson();

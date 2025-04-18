@@ -19,7 +19,7 @@ class AdminFactory extends Factory
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'phone' => fake()->unique()->phoneNumber(),
+            'phone' => fake()->unique()->numerify("09########"),
             'password' => null,
             'remember_token' => Str::random(10),
         ];
