@@ -84,7 +84,7 @@ test('otp verification fails with wrong otp', function (): void {
 
 test('otp verification fails after max attempts', function (): void {
     $user = User::factory()->create(['email' => 'test@example.com']);
-    Cache::put('otp_test@example.com_user_value_SIGNIN',new OtpDto($this->otpCode,$this->trackingCode), 300);
+    Cache::put("otp_{$user->phone}_user_value_SIGNIN",new OtpDto($this->otpCode,$this->trackingCode), 300);
 
     // Try multiple times
     for ($i = 0; $i < 4; $i++) {
@@ -100,7 +100,7 @@ test('otp verification fails after max attempts', function (): void {
     $response->assertStatus(422);
 
     // Verify OTP has been deleted after max attempts
-    expect(Cache::get('otp_test@example.com_user_value_SIGNIN'))->toBeNull();
+    expect(Cache::get("otp_{$user->phone}_user_value_SIGNIN"))->toBeNull();
 });
 
 test('password login requires valid credentials', function (): void {

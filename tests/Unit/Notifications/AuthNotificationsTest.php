@@ -28,7 +28,25 @@ test('OtpEmailNotification contains expected data', function (): void {
     expect($mailData->subject)->toBe('Your Login OTP Code')
         ->and($mailView->toHtml())->toMatch("/\b{$otp}\b/m");
 });
+test('user email is set to use phone plus @example.com if email is null in testing environemnt', function (): void {
+    $user = User::factory()->create(['phone' => '09321456987', 'email' => null]);
 
+    event(
+        new OtpPrepared(
+            indentifier: '09321456987',
+            guard: 'user',
+            code: '123456',
+            type: OtpType::SIGNIN,
+            trackingCode: 'test-tracking',
+            params: []
+        )
+    );
+
+    Notification::assertSentTo($user,OtpEmailNotification::class);
+    Notification::assertSentTo($user,OtpSmsNotification::class);
+
+
+});
 test('OtpSmsNotification contains expected data', function (): void {
     $otp = '123456';
     $otp = new OtpPrepared('09321456987', 'user', $otp, OtpType::SIGNIN, 'test-tracking', []);

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\Admin\Auth;
 
-use App\Actions\Api\V1\Auth\VerifyOtpForResetAction;
 use App\Actions\Auth\AuthenticateUserAction;
 use App\Actions\Auth\VertifyOtpAction;
 use App\Contracts\ApiResponseInterface;
@@ -12,8 +11,6 @@ use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyOtpRequest;
 use App\Http\Resources\Auth\AdminResource;
-use App\Http\Resources\Auth\UserResource;
-use App\Models\Admin;
 
 class AdminOtpAuthenticationController extends Controller
 {

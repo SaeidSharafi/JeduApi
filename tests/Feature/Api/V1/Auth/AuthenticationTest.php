@@ -28,31 +28,54 @@ beforeEach(function (): void {
     $maxOtpCode = config('otp.code_max');
     $this->otpCode = (string) random_int($minOtpCode, $maxOtpCode);
     $this->trackingCode = 'test-tracking';
-});
 
+    $waitingTime = 120;
+    $otpManagerMock = $this->mock(OtpManagerService::class)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('generateTrackingCode')
+        ->withNoArgs()
+        ->andReturn($this->trackingCode)
+        ->shouldReceive('generateCode')
+        ->withNoArgs()
+        ->andReturn($this->otpCode)
+        ->getMock();
+    $reflection = new \ReflectionClass($otpManagerMock);
+    $property = $reflection->getProperty('waitingTime');
+    $property->setValue($otpManagerMock, $waitingTime);
+
+});
+test('new user can initiate authentication with phone', function (): void {
+    $response = $this->postJson(route('api.v1.auth.initiate'), [
+        'identifier' => '09301234567',
+    ]);
+
+    $response
+        ->assertOk()
+        ->assertJson([
+            'message'  => 'OTP sent successfully',
+            "data"     => [
+                "tracking_code" => $this->trackingCode,
+                "otp_type"      => OtpType::SIGNUP->value,
+                "identifier"    => "09301234567",
+                "login_method"  => "OTP"
+            ],
+            "metadata" => []
+        ]);
+});
+test('new user can not initiate authentication with email', function (): void {
+    $response = $this->postJson(route('api.v1.auth.initiate'), [
+        'identifier' => 'test@example.com',
+    ]);
+
+    $response->assertNotFound();
+});
 test('user can initiate authentication with email', function (): void {
     $user = User::factory()->create([
         'email'    => 'test@example.com',
         'password' => null,
     ]);
-    $mockGenerateOtp = \Mockery::mock(GenerateOtpAction::class);
-    app()->instance(GenerateOtpAction::class, $mockGenerateOtp);
-    $mockGenerateOtp->shouldReceive('execute')
-        ->once()
-        ->with(
-            \Mockery::on(function (User $argumentUser) use ($user) {
-                return $argumentUser instanceof User && $argumentUser->is($user);
-            }),
-            OtpType::SIGNIN
-        )
-        ->andReturn(
-            new SentOtpDto(
-                code: '1234',
-                otpType: OtpType::SIGNIN,
-                waitingTime: 120,
-                trackingCode: "tracking_code_1234"
-            )
-        );
+
     $response = $this->postJson(route('api.v1.auth.initiate'), [
         'identifier' => 'test@example.com',
     ]);
@@ -62,7 +85,7 @@ test('user can initiate authentication with email', function (): void {
         ->assertJson([
             'message'  => 'OTP sent successfully',
             "data"     => [
-                "tracking_code" => "tracking_code_1234",
+                "tracking_code" => $this->trackingCode,
                 "otp_type"      => "SIGNIN",
                 "identifier"    => "test@example.com",
                 "login_method"  => "OTP"
@@ -76,24 +99,7 @@ test('user can initiate authentication with phone', function (): void {
         'phone'    => '09301234567',
         'password' => null,
     ]);
-    $mockGenerateOtp = \Mockery::mock(GenerateOtpAction::class);
-    app()->instance(GenerateOtpAction::class, $mockGenerateOtp);
-    $mockGenerateOtp->shouldReceive('execute')
-        ->once()
-        ->with(
-            \Mockery::on(function (User $argumentUser) use ($user) {
-                return $argumentUser instanceof User && $argumentUser->is($user);
-            }),
-            OtpType::SIGNIN
-        )
-        ->andReturn(
-            new SentOtpDto(
-                code: '1234',
-                otpType: OtpType::SIGNIN,
-                waitingTime: 120,
-                trackingCode: "tracking_code_1234"
-            )
-        );
+
     $response = $this->postJson(route('api.v1.auth.initiate'), [
         'identifier' => '09301234567',
     ]);
@@ -103,7 +109,7 @@ test('user can initiate authentication with phone', function (): void {
         ->assertJson([
             'message'  => 'OTP sent successfully',
             "data"     => [
-                "tracking_code" => "tracking_code_1234",
+                "tracking_code" => $this->trackingCode,
                 "otp_type"      => "SIGNIN",
                 "identifier"    => "09301234567",
                 "login_method"  => "OTP"
@@ -146,36 +152,6 @@ test('non existent user con not register with email', function (): void {
 test('user can request resend otp', function (): void {
     $user = User::factory()->create(['email' => 'test@example.com']);
 
-    $mockOtpManager = \Mockery::mock(OtpManagerService::class)->makePartial(); // Use makePartial if some methods need real logic, often not needed here
-    app()->instance(OtpManagerService::class, $mockOtpManager);
-
-    // 4. Define controlled return value and expected service call
-    $expectedIdentifier = $user->phone; // Or email, depending on OtpManagerService logic
-    $expectedGuard = 'user';
-    $expectedOtpType = OtpType::SIGNIN;
-    $controlledTrackingCode = 'tracking_code_resend_1234';
-    $controlledCode = 5678; // Example
-
-    $controlledReturnDto = new SentOtpDto(
-        code: $controlledCode,
-        otpType: $expectedOtpType,
-        waitingTime: 120,
-        trackingCode: $controlledTrackingCode
-    );
-    $mockOtpManager->shouldReceive('sendAndRetryCheck')
-        ->once()
-        ->with($expectedIdentifier, $expectedGuard, $expectedOtpType)
-        ->andReturnUsing(function ($identifier, $guard, $type) use ($user, $controlledReturnDto, $controlledCode, $controlledTrackingCode, $expectedOtpType) {
-            event(new OtpPrepared(
-                indentifier: $identifier,
-                guard: $guard,
-                code: (string) $controlledCode,
-                type: $expectedOtpType,
-                trackingCode: $controlledTrackingCode,
-                params: [] // Add any params your listener might need
-            ));
-            return $controlledReturnDto;
-        });
 
     $response = $this->postJson(route('api.v1.auth.otp-resend'), [
         'identifier' => 'test@example.com',
@@ -185,7 +161,7 @@ test('user can request resend otp', function (): void {
         ->assertJson([
             'message'  => 'OTP resent successfully',
             "data"     => [
-                "tracking_code" => $controlledTrackingCode,
+                "tracking_code" => $this->trackingCode,
                 "otp_type"      => "SIGNIN",
                 "identifier"    => "test@example.com",
                 "login_method"  => "OTP"
@@ -195,39 +171,18 @@ test('user can request resend otp', function (): void {
 
     Notification::assertSentTo($user, OtpEmailNotification::class);
 });
+test('non existent user can not request otp', function (): void {
 
+    $response = $this->postJson(route('api.v1.auth.otp-resend'), [
+        'identifier' => 'test@example.com',
+        'otp_type'  => OtpType::SIGNIN->value,
+    ]);
+    $response->assertNotFound();
+
+    Notification::assertNothingSent();
+});
 test('user can request otp with phone', function (): void {
     $user = User::factory()->create(['phone' => '09301234567']);
-    $mockOtpManager = \Mockery::mock(OtpManagerService::class)->makePartial(); // Use makePartial if some methods need real logic, often not needed here
-    app()->instance(OtpManagerService::class, $mockOtpManager);
-
-    // 4. Define controlled return value and expected service call
-    $expectedIdentifier = $user->phone; // Or email, depending on OtpManagerService logic
-    $expectedGuard = 'user';
-    $expectedOtpType = OtpType::SIGNIN;
-    $controlledTrackingCode = 'tracking_code_resend_1234';
-    $controlledCode = 5678; // Example
-
-    $controlledReturnDto = new SentOtpDto(
-        code: $controlledCode,
-        otpType: $expectedOtpType,
-        waitingTime: 120,
-        trackingCode: $controlledTrackingCode
-    );
-    $mockOtpManager->shouldReceive('sendAndRetryCheck')
-        ->once()
-        ->with($expectedIdentifier, $expectedGuard, $expectedOtpType)
-        ->andReturnUsing(function ($identifier, $guard, $type) use ($user, $controlledReturnDto, $controlledCode, $controlledTrackingCode, $expectedOtpType) {
-            event(new OtpPrepared(
-                indentifier: $identifier,
-                guard: $guard,
-                code: (string) $controlledCode,
-                type: $expectedOtpType,
-                trackingCode: $controlledTrackingCode,
-                params: [] // Add any params your listener might need
-            ));
-            return $controlledReturnDto;
-        });
 
     $response = $this->postJson(route('api.v1.auth.otp-resend'), [
         'identifier' => '09301234567',
@@ -239,7 +194,7 @@ test('user can request otp with phone', function (): void {
         ->assertJson([
             'message'  => 'OTP resent successfully',
             "data"     => [
-                "tracking_code" => $controlledTrackingCode,
+                "tracking_code" => $this->trackingCode,
                 "otp_type"      => "SIGNIN",
                 "identifier"    => "09301234567",
                 "login_method"  => "OTP"
@@ -252,15 +207,16 @@ test('user can request otp with phone', function (): void {
 
 test('user can verify otp and login', function (): void {
     $user = User::factory()->create(['email' => 'test@example.com']);
-    $trackingCode = 'test-tracking';
 
-    Cache::put('otp_test@example.com_user_value_SIGNIN', new OtpDto($this->otpCode, $trackingCode), 300);
+    $this->postJson(route('api.v1.auth.initiate'), [
+        'identifier'    => 'test@example.com',
+    ]);
 
     $response = $this->postJson(route('api.v1.auth.otp-verify'), [
         'identifier'    => 'test@example.com',
         'type'          => 'email',
         'otp_code'  => $this->otpCode,
-        'tracking_code' => $trackingCode,
+        'tracking_code' => $this->trackingCode,
         'otp_type'    => OtpType::SIGNIN->value,
     ]);
 
@@ -325,7 +281,14 @@ test('user can login with password', function (): void {
             ]
         ]);
 });
+test('non existent user can not login with password', function (): void {
+    $response = $this->postJson(route('api.v1.auth.password-login'), [
+        'identifier' => 'test@example.com',
+        'password'   => 'password123',
+    ]);
 
+    $response->assertNotFound();
+});
 test('user can login with phone and password', function (): void {
     $user = User::factory()->create([
         'phone'    => '09301234567',
@@ -349,7 +312,18 @@ test('user can login with phone and password', function (): void {
             ]
         ]);
 });
+test('non existent user can not verify otp', function (): void {
 
+    $response = $this->postJson(route('api.v1.auth.otp-verify'), [
+        'identifier'    => 'test@example.com',
+        'type'          => 'email',
+        'otp_code'  => $this->otpCode,
+        'tracking_code' => $this->trackingCode,
+        'otp_type'    => OtpType::SIGNIN->value,
+    ]);
+
+    $response->assertNotFound();
+});
 test('authenticated user can logout', function (): void {
     $user = User::factory()->create();
     $token = $user->createToken('auth_token')->plainTextToken;
