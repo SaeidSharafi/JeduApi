@@ -5,4 +5,5 @@ return [
     App\Providers\EventServiceProvider::class,
     App\Providers\ResponseMacroServiceProvider::class,
     App\Providers\AuthServiceProvider::class,
+    App\Providers\ScribeServiceProvider::class,
 ];

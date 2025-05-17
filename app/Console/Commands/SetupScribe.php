@@ -32,7 +32,7 @@ class SetupScribe extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $connectionName = $this->option('connection');
         $configPath = "database.connections.$connectionName";

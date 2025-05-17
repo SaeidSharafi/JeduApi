@@ -46,7 +46,7 @@ class GetFromLaravelDataBase extends Strategy
         return $this->normaliseArrayAndObjectParameters($parametersFromLaravelData);
     }
 
-    protected function getRouteValidationRules(Data $data)
+    protected function getRouteValidationRules(Data $data): mixed
     {
         if (method_exists($data, 'getValidationRules')) {
             $properties = get_object_vars($data);
@@ -56,7 +56,7 @@ class GetFromLaravelDataBase extends Strategy
         return [];
     }
 
-    protected function getCustomParameterData(Data $data)
+    protected function getCustomParameterData(Data $data): mixed
     {
         if (method_exists($data, $this->customParameterDataMethodName)) {
             return call_user_func_array([$data, $this->customParameterDataMethodName], []);
@@ -67,7 +67,7 @@ class GetFromLaravelDataBase extends Strategy
         return [];
     }
 
-    protected function getMissingCustomDataMessage($parameterName): string
+    protected function getMissingCustomDataMessage(string $parameterName): string
     {
         return "No data found for parameter '$parameterName' in your {$this->customParameterDataMethodName}() method. Add an entry for '$parameterName' so you can add a description and example.";
     }
