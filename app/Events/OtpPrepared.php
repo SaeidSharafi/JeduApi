@@ -17,7 +17,7 @@ class OtpPrepared
      * @param  array<string, string>  $params
      */
     public function __construct(
-        public readonly string $indentifier,
+        public readonly string $identifier,
         public readonly string $guard,
         public readonly string $code,
         public readonly ?OtpTypeInterface $type,

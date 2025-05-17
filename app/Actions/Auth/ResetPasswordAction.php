@@ -13,7 +13,7 @@ class ResetPasswordAction extends AuthAction
 {
     public function __construct(
         protected OtpManagerService $otpManager,
-        protected VertifyOtpAction $verifyOtpAction
+        protected VerifyOtpAction $verifyOtpAction
     ) {}
 
     public function execute(

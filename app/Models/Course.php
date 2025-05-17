@@ -16,7 +16,7 @@ class Course extends Model
         'name',
         'short_name',
         'description',
-        'default_teahcer_info',
+        'default_teacher_info',
         'meta_title',
         'meta_description',
         'meta_keywords',

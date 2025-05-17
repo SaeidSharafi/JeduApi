@@ -10,7 +10,7 @@ test('to array', function (): void {
             'name'                 => $course->name,
             'short_name'           => $course->short_name,
             'description'          => $course->description,
-            'default_teahcer_info' => $course->default_teahcer_info,
+            'default_teacher_info' => $course->default_teacher_info,
             'meta_title'           => $course->meta_title,
             'meta_description'     => $course->meta_description,
             'meta_keywords'        => $course->meta_keywords,

@@ -13,7 +13,7 @@ abstract class AuthAction
         return $guard === 'admin' ? Admin::class : User::class;
     }
 
-    public function getIndetifierType(string $identifier): string
+    public function getIdentifierType(string $identifier): string
     {
         return filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
     }
@@ -23,7 +23,7 @@ abstract class AuthAction
         $model = $this->getModel($guard);
 
         return $model::when(
-            $this->getIndetifierType($identifier) === 'email',
+            $this->getIdentifierType($identifier) === 'email',
             fn(Builder $q) => $q->where('email', $identifier),
             fn(Builder $q) => $q->where('phone', $identifier)
         )->first();

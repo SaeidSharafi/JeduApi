@@ -12,7 +12,7 @@ class CourseData extends Data
      * name
      * short_name
      * description
-     * default_teahcer_info
+     * default_teacher_info
      * meta_title
      * meta_description
      * meta_keywords
@@ -28,7 +28,7 @@ class CourseData extends Data
         #[Validation\StringType, Validation\Max(1000)]
         public ?string $description,
         #[Validation\StringType, Validation\Max(1000)]
-        public ?string $default_teahcer_info,
+        public ?string $default_teacher_info,
         #[Validation\StringType, Validation\Max(191)]
         public ?string $meta_title,
         #[Validation\StringType, Validation\Max(191)]

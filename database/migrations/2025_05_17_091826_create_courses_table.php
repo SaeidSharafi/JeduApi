@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->string('name');
             $table->string('short_name');
             $table->text('description')->nullable();
-            $table->text('default_teahcer_info')->nullable();
+            $table->text('default_teacher_info')->nullable();
             $table->string('meta_title')->nullable();
             $table->string('meta_description')->nullable();
             $table->string('meta_keywords')->nullable();

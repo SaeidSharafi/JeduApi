@@ -12,17 +12,17 @@ use Spatie\Permission\Models\Role;
 trait AuthTestTrait
 {
     protected Authenticatable $user;
-    public function unauthorized_user($gaurd = 'admin'): self
+    public function unauthorized_user($guard = 'admin'): self
     {
         if ( ! isset($this->user)) {
             $this->user = Admin::factory()->create();
         }
-        return $this->actingAs($this->user->fresh(),$gaurd);
+        return $this->actingAs($this->user->fresh(),$guard);
     }
 
     public function authorized_user(
         array $permission,
-        $gaurd = 'admin'
+        $guard = 'admin'
     ): self {
         if ( ! isset($this->user)) {
             $this->user = Admin::factory()->create();
@@ -30,14 +30,14 @@ trait AuthTestTrait
         $role = Role::updateOrCreate([
             'name'          => 'manager_test',
             'label'         => 'ManagerTest',
-            'guard_name'    => $gaurd,
+            'guard_name'    => $guard,
         ]);
 
         $role->syncPermissions($permission);
 
         $this->user->assignRole('manager_test');
 
-        return $this->actingAs($this->user->fresh(), $gaurd);
+        return $this->actingAs($this->user->fresh(), $guard);
     }
 
     public function student(): self
@@ -47,7 +47,7 @@ trait AuthTestTrait
         return $this->actingAs($this->user->fresh(),'user');
     }
 
-    public function admin_user($gaurd = 'admin'): self
+    public function admin_user($guard = 'admin'): self
     {
         $this->user = Admin::forceCreate(
             Admin::factory()->make([
@@ -56,6 +56,6 @@ trait AuthTestTrait
                 'is_admin' => true])->toArray()
         );
 
-        return $this->actingAs($this->user->fresh(), $gaurd);
+        return $this->actingAs($this->user->fresh(), $guard);
     }
 }

@@ -1,0 +1,42 @@
+{
+    "preset": "laravel",
+    "ignore": {
+        "words": [
+            "php",
+            "roadmap",
+            "otpable",
+            "dto",
+            "filesystems",
+            "dockerfile",
+            "supervisord",
+            "pgsql",
+            "favicon",
+            "navbar",
+            "js",
+            "tryitout",
+            "signup",
+            "signin",
+            "eca",
+            "upq",
+            "yi",
+            "cro",
+            "wo",
+            "csns",
+            "jua",
+            "iqin",
+            "vnr",
+            "pjuy",
+            "fil",
+            "xxd",
+            "afbf",
+            "resned"
+        ],
+        "paths": [
+            "public",
+            "docker",
+            "storage",
+            "vendor",
+            "node_modules"
+        ]
+    }
+}

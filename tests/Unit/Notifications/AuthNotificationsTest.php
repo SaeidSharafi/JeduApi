@@ -32,7 +32,7 @@ test('user email is set to use phone plus @example.com if email is null in testi
 
     event(
         new OtpPrepared(
-            indentifier: '09321456987',
+            identifier: '09321456987',
             guard: 'user',
             code: '123456',
             type: OtpType::SIGNIN,
@@ -67,7 +67,7 @@ test('notifications handle different guard types correctly', function (): void {
 
     // Test user guard
     $userEvent = new OtpPrepared(
-        indentifier: $identifier,
+        identifier: $identifier,
         guard: 'user',
         code: $code,
         type: OtpType::SIGNIN,
@@ -79,7 +79,7 @@ test('notifications handle different guard types correctly', function (): void {
 
     // Test admin guard
     $adminEvent = new OtpPrepared(
-        indentifier: $identifier,
+        identifier: $identifier,
         guard: 'admin',
         code: $code,
         type: OtpType::SIGNIN,

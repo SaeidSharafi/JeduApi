@@ -14,7 +14,7 @@ class CourseResponseData extends Data
      * name
      * short_name
      * description
-     * default_teahcer_info
+     * default_teacher_info
      * meta_title
      * meta_description
      * meta_keywords
@@ -25,7 +25,7 @@ class CourseResponseData extends Data
         public string $name,
         public string $short_name,
         public ?string $description,
-        public ?string $default_teahcer_info,
+        public ?string $default_teacher_info,
         public ?string $meta_title,
         public ?string $meta_description,
         public ?string $meta_keywords,

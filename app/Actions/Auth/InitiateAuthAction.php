@@ -20,7 +20,7 @@ class InitiateAuthAction extends AuthAction
         $user = $this->getUser($identifier, $guard);
 
         if (! $user) {
-            if ($guard === 'admin' || $this->getIndetifierType($identifier) === 'email') {
+            if ($guard === 'admin' || $this->getIdentifierType($identifier) === 'email') {
                 throw new UserNotFoundException;
             }
             $user = User::create(

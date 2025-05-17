@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Actions\Auth\AuthenticateUserAction;
-use App\Actions\Auth\VertifyOtpAction;
+use App\Actions\Auth\VerifyOtpAction;
 use App\Contracts\ApiResponseInterface;
 use App\Enums\OtpType;
 use App\Exceptions\InvalidOtpCode;
@@ -16,7 +16,7 @@ use App\Models\User;
 class OtpAuthenticationController extends Controller
 {
     public function __construct(
-        protected VertifyOtpAction $vertifyOtpAction,
+        protected VerifyOtpAction $verifyOtpAction,
         protected AuthenticateUserAction $authenticateUser,
     ) {
     }
@@ -59,7 +59,7 @@ class OtpAuthenticationController extends Controller
     public function __invoke(VerifyOtpRequest $request): ApiResponseInterface
     {
         try {
-            $user = $this->vertifyOtpAction->execute(
+            $user = $this->verifyOtpAction->execute(
                 $request->identifier,
                 $request->tracking_code,
                 $request->otp_code,

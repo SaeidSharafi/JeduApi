@@ -23,7 +23,7 @@ class CourseFactory extends Factory
             'name' => $this->faker->sentence(3),
             'short_name' => $this->faker->word(),
             'description' => $this->faker->paragraph(),
-            'default_teahcer_info' => $this->faker->paragraph(),
+            'default_teacher_info' => $this->faker->paragraph(),
             'meta_title' => $this->faker->sentence(3),
             'meta_description' => $this->faker->sentence(10),
             'meta_keywords' => $this->faker->words(5, true),

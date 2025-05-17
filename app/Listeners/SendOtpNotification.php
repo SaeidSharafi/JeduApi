@@ -16,15 +16,15 @@ class SendOtpNotification
      */
     public function handle(OtpPrepared $event): void
     {
-        $indentifier = $event->indentifier;
+        $identifier = $event->identifier;
         $guard = $event->guard;
         $otpCode = $event->code;
 
         $model = $guard === 'admin' ? Admin::class : User::class;
         $user = $model::when(
-            filter_var($indentifier, FILTER_VALIDATE_EMAIL),
-            fn(Builder $q) => $q->where('email', $indentifier),
-            fn(Builder $q) => $q->where('phone', $indentifier)
+            filter_var($identifier, FILTER_VALIDATE_EMAIL),
+            fn(Builder $q) => $q->where('email', $identifier),
+            fn(Builder $q) => $q->where('phone', $identifier)
         )->first();
         if (app()->isLocal() || app()->environment('testing')) {
             $user->email = $user->phone.'@example.com';

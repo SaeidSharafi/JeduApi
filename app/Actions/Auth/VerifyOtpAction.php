@@ -9,7 +9,7 @@ use App\Models\Admin;
 use App\Models\User;
 use App\Services\OtpManagerService;
 
-class VertifyOtpAction extends AuthAction
+class VerifyOtpAction extends AuthAction
 {
     public function __construct(
         protected OtpManagerService $otpManagerService,
