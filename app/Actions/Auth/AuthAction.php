@@ -4,6 +4,7 @@ namespace App\Actions\Auth;
 
 use App\Models\Admin;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 
 abstract class AuthAction
 {
@@ -17,14 +18,14 @@ abstract class AuthAction
         return filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
     }
 
-    public function getUser($identifier, $guard): User|Admin|null
+    public function getUser(string $identifier, string $guard): User|Admin|null
     {
         $model = $this->getModel($guard);
 
         return $model::when(
             $this->getIndetifierType($identifier) === 'email',
-            fn ($q) => $q->where('email', $identifier),
-            fn ($q) => $q->where('phone', $identifier)
+            fn(Builder $q) => $q->where('email', $identifier),
+            fn(Builder $q) => $q->where('phone', $identifier)
         )->first();
     }
 }

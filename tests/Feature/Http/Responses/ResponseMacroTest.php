@@ -2,7 +2,7 @@
 
 use Symfony\Component\HttpFoundation\Response;
 
-test('success response returns correct structure', function () {
+test('success response returns correct structure', function (): void {
     $data = ['key' => 'value'];
     $message = 'Test success message';
 
@@ -15,7 +15,7 @@ test('success response returns correct structure', function () {
         ->toHaveKey('metadata');
 });
 
-test('created response returns 201 status code', function () {
+test('created response returns 201 status code', function (): void {
     $data = ['id' => 1];
     $message = 'Resource created';
 
@@ -28,14 +28,14 @@ test('created response returns 201 status code', function () {
         ->toHaveKey('metadata');
 });
 
-test('no content response returns 204 status code', function () {
+test('no content response returns 204 status code', function (): void {
     $response = response()->noContentJson();
 
     expect($response->getStatusCode())->toBe(Response::HTTP_NO_CONTENT)
         ->and($response->getContent())->toBe('{}');
 });
 
-test('error response returns correct structure', function () {
+test('error response returns correct structure', function (): void {
     $message = 'Test error message';
     $errors = ['field' => 'error details'];
 
@@ -48,7 +48,7 @@ test('error response returns correct structure', function () {
         ->toHaveKey('metadata');
 });
 
-test('validation error response returns 422 status code', function () {
+test('validation error response returns 422 status code', function (): void {
     $message = 'Validation failed';
 
     $response = response()->validationError($message)->toResponse(request());
@@ -60,7 +60,7 @@ test('validation error response returns 422 status code', function () {
         ->toHaveKey('metadata');
 });
 
-test('validation errors response includes error details', function () {
+test('validation errors response includes error details', function (): void {
     $errors = ['email' => ['Invalid email format']];
     $message = 'Validation failed';
 
@@ -73,7 +73,7 @@ test('validation errors response includes error details', function () {
         ->toHaveKey('metadata');
 });
 
-test('not found response returns 404 status code', function () {
+test('not found response returns 404 status code', function (): void {
     $message = 'Resource not found';
 
     $response = response()->notFound($message)->toResponse(request());
@@ -85,7 +85,7 @@ test('not found response returns 404 status code', function () {
         ->toHaveKey('metadata');
 });
 
-test('forbidden response returns 403 status code', function () {
+test('forbidden response returns 403 status code', function (): void {
     $message = 'Access denied';
 
     $response = response()->forbidden($message)->toResponse(request());
@@ -97,7 +97,7 @@ test('forbidden response returns 403 status code', function () {
         ->toHaveKey('metadata');
 });
 
-test('unauthorized response returns 401 status code', function () {
+test('unauthorized response returns 401 status code', function (): void {
     $message = 'Unauthorized access';
 
     $response = response()->unauthorized($message)->toResponse(request());
@@ -109,7 +109,7 @@ test('unauthorized response returns 401 status code', function () {
         ->toHaveKey('metadata');
 });
 
-test('method not allowed response returns 405 status code', function () {
+test('method not allowed response returns 405 status code', function (): void {
     $message = 'Method not allowed';
 
     $response = response()->methodNotAllowed($message)->toResponse(request());
@@ -121,7 +121,7 @@ test('method not allowed response returns 405 status code', function () {
         ->toHaveKey('metadata');
 });
 
-test('server error response returns 500 status code', function () {
+test('server error response returns 500 status code', function (): void {
     $message = 'Server error occurred';
     $exception = new Exception('Test exception');
 

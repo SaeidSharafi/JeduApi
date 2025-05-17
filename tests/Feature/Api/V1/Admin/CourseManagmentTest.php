@@ -1,6 +1,6 @@
 <?php
 
-it('can view list of courses', function () {
+it('can view list of courses', function (): void {
     $courses = \App\Models\Course::factory(5)->create();
     $response = $this->getJson(route('api.v1.admin.course.index'));
     $response
@@ -24,7 +24,7 @@ it('can view list of courses', function () {
         ]);
 });
 
-it('can create a new course with valida data', function () {
+it('can create a new course with valida data', function (): void {
     $courseData = \App\Models\Course::factory()->make()->toArray();
     $course = \App\Data\Course\CourseData::from($courseData);
     $response = $this->postJson(route('api.v1.admin.course.store'), $courseData);
@@ -45,7 +45,7 @@ it('can create a new course with valida data', function () {
         ]);
 });
 
-it('can not create a new course with invalid data', function () {
+it('can not create a new course with invalid data', function (): void {
     $courseData = \App\Models\Course::factory()->make([
         'slug'                 => null,
         'name'                 => null,
@@ -68,7 +68,7 @@ it('can not create a new course with invalid data', function () {
         ]);
 });
 
-it('can not create a new course with invalid slug', function () {
+it('can not create a new course with invalid slug', function (): void {
     $courseData = \App\Models\Course::factory()->make([
         'slug' => 'invalid slug',
     ])->toArray();
@@ -80,7 +80,7 @@ it('can not create a new course with invalid slug', function () {
         ]);
 });
 
-it('can view a course', function () {
+it('can view a course', function (): void {
     $course = \App\Models\Course::factory()->create();
     $response = $this->getJson(route('api.v1.admin.course.show', $course->id));
     $response
@@ -100,7 +100,7 @@ it('can view a course', function () {
         ]);
 });
 
-it('can edit a course', function () {
+it('can edit a course', function (): void {
     $course = \App\Models\Course::factory()->create();
     $courseData = \App\Models\Course::factory()->make()->toArray();
     $response = $this->getJson(route('api.v1.admin.course.edit', $course->id));
@@ -136,7 +136,7 @@ it('can edit a course', function () {
         ]);
 });
 
-it('can not edit a course with invalid data', function () {
+it('can not edit a course with invalid data', function (): void {
     $course = \App\Models\Course::factory()->create();
     $courseData = \App\Models\Course::factory()->make([
         'slug'                 => null,
@@ -160,7 +160,7 @@ it('can not edit a course with invalid data', function () {
         ]);
 });
 
-it('can not edit a course with invalid slug', function () {
+it('can not edit a course with invalid slug', function (): void {
     $course = \App\Models\Course::factory()->create();
     $courseData = \App\Models\Course::factory()->make([
         'slug' => 'invalid slug',
@@ -173,7 +173,7 @@ it('can not edit a course with invalid slug', function () {
         ]);
 });
 
-it('can delete a course', function () {
+it('can delete a course', function (): void {
     $course = \App\Models\Course::factory()->create();
     $response = $this->deleteJson(route('api.v1.admin.course.destroy', $course->id));
     $response->assertStatus(204);

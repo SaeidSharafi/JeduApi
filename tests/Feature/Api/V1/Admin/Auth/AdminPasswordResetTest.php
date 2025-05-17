@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Notification::fake();
 
     // Setup test OTP data
@@ -36,7 +36,7 @@ beforeEach(function () {
     $property = $reflection->getProperty('waitingTime');
     $property->setValue($otpManagerMock, $waitingTime);
 });
-test('admin can request password reset otp', function () {
+test('admin can request password reset otp', function (): void {
     $admin = Admin::factory()->create([
         'email'    => 'admin1@example.com',
         'phone'    => '09301234567',
@@ -61,7 +61,7 @@ test('admin can request password reset otp', function () {
     Notification::assertSentTo($admin, OtpEmailNotification::class);
 });
 
-test('admin without password cannot request password reset', function () {
+test('admin without password cannot request password reset', function (): void {
     Admin::factory()->create([
         'email'    => 'admin2@example.com',
         'phone'    => '09301234567',
@@ -78,7 +78,7 @@ test('admin without password cannot request password reset', function () {
         ]);
 });
 
-test('non existent admin cannot request password reset', function () {
+test('non existent admin cannot request password reset', function (): void {
     $response = $this->postJson(route('api.v1.admin.auth.forgot-password'), [
         'identifier' => 'nonexistent@example.com',
     ]);
@@ -88,7 +88,7 @@ test('non existent admin cannot request password reset', function () {
             'message' => 'User not found'
         ]);
 });
-test('admin without password cannot reset password', function () {
+test('admin without password cannot reset password', function (): void {
     Admin::factory()->create([
         'email' => 'user2@example.com',
         'password' => null,
@@ -106,7 +106,7 @@ test('admin without password cannot reset password', function () {
             'message' => 'User does not have password'
         ]);
 });
-test('admin can reset password with valid otp', function () {
+test('admin can reset password with valid otp', function (): void {
     $admin = Admin::factory()->create([
         'email'    => 'admin3@example.com',
         'phone'    => '09301234567',
@@ -141,7 +141,7 @@ test('admin can reset password with valid otp', function () {
     expect(Hash::check('newpassword', $admin->password))->toBeTrue();
 });
 
-test('admin cannot reset password with invalid otp', function () {
+test('admin cannot reset password with invalid otp', function (): void {
     $admin = Admin::factory()->create([
         'email'    => 'admin4@example.com',
         'phone'    => '09301234567',

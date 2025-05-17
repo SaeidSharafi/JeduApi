@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\RateLimiter;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $minOtpCode = config('otp.code_min');
     $maxOtpCode = config('otp.code_max');
     $this->OtpCode = random_int($minOtpCode, $maxOtpCode);

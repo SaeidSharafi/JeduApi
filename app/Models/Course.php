@@ -24,9 +24,12 @@ class Course extends Model
         'created_by'
     ];
 
-    protected $casts = [
-        'status' => CourseStatusEnum::class,
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'status' => CourseStatusEnum::class,
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
 }

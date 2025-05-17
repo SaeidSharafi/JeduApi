@@ -94,7 +94,7 @@ test('PasswordLoginAction rejects invalid credentials', function (): void {
         'password' => Hash::make('correct-password'),
     ]);
 
-    expect(fn (): array => $action->execute($user->email, 'email', 'wrong-password'))
+    expect(fn (): NewAccessToken => $action->execute($user->email, 'email', 'wrong-password'))
         ->toThrow(ValidationException::class, 'The provided credentials are incorrect.');
 });
 
@@ -102,6 +102,6 @@ test('PasswordLoginAction handles missing user', function (): void {
     $mockAuthenticateUser = Mockery::mock(AuthenticateUserAction::class);
     $action = new PasswordLoginAction($mockAuthenticateUser);
 
-    expect(fn () => $action->execute('nonexistent@example.com', 'email', 'password123'))
+    expect(fn (): \Laravel\Sanctum\NewAccessToken => $action->execute('nonexistent@example.com', 'email', 'password123'))
         ->toThrow(\App\Exceptions\UserNotFoundException::class);
 });

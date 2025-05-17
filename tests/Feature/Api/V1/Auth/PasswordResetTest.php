@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Notification::fake();
 
     // Setup test OTP data
@@ -37,7 +37,7 @@ beforeEach(function () {
     $property->setValue($otpManagerMock, $waitingTime);
 });
 
-test('user can request password reset otp', function () {
+test('user can request password reset otp', function (): void {
     $user = User::factory()->create([
         'email' => 'user1@example.com',
         'password' => Hash::make('oldpassword'),
@@ -60,7 +60,7 @@ test('user can request password reset otp', function () {
     Notification::assertSentTo($user, OtpEmailNotification::class);
 });
 
-test('user without password cannot request password reset', function () {
+test('user without password cannot request password reset', function (): void {
     User::factory()->create([
         'email' => 'user2@example.com',
         'password' => null,
@@ -76,7 +76,7 @@ test('user without password cannot request password reset', function () {
         ]);
 });
 
-test('non existent user cannot request password reset', function () {
+test('non existent user cannot request password reset', function (): void {
     $response = $this->postJson(route('api.v1.auth.forgot-password'), [
         'identifier' => 'nonexistent@example.com',
     ]);
@@ -86,7 +86,7 @@ test('non existent user cannot request password reset', function () {
             'message' => 'User not found'
         ]);
 });
-test('non existent user cannot reset password', function () {
+test('non existent user cannot reset password', function (): void {
     // Act: Post to the password-reset endpoint with a non-existent user
     $response = $this->postJson(route('api.v1.auth.password-reset'), [
         'identifier' => 'nonexistent@example.com',
@@ -101,7 +101,7 @@ test('non existent user cannot reset password', function () {
             'message' => 'User not found'
         ]);
 });
-test('user without password cannot reset password', function () {
+test('user without password cannot reset password', function (): void {
     User::factory()->create([
         'email' => 'user2@example.com',
         'password' => null,
@@ -120,7 +120,7 @@ test('user without password cannot reset password', function () {
         ]);
 });
 
-test('user can reset password with valid otp', function () {
+test('user can reset password with valid otp', function (): void {
     $user = User::factory()->create([
         'email' => 'user3@example.com',
         'phone' => '09301234567',
@@ -151,7 +151,7 @@ test('user can reset password with valid otp', function () {
     expect(Hash::check('newpassword', $user->password))->toBeTrue();
 });
 
-test('user cannot reset password with invalid otp', function () {
+test('user cannot reset password with invalid otp', function (): void {
     $user = User::factory()->create([
         'email' => 'user4@example.com',
         'phone' => '09301234567',
@@ -183,7 +183,7 @@ test('user cannot reset password with invalid otp', function () {
     expect(Hash::check('oldpassword', $user->password))->toBeTrue();
 });
 
-test('password reset requires password confirmation', function () {
+test('password reset requires password confirmation', function (): void {
     $user = User::factory()->create([
         'email' => 'user5@example.com',
         'phone' => '09301234567',
@@ -213,7 +213,7 @@ test('password reset requires password confirmation', function () {
     expect(Hash::check('oldpassword', $user->password))->toBeTrue();
 });
 
-test('passwords must match for reset', function () {
+test('passwords must match for reset', function (): void {
     $user = User::factory()->create([
         'email' => 'user6@example.com',
         'phone' => '09301234567',

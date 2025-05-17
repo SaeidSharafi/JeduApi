@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->otpService = app(OtpManagerService::class);
     $this->identifier = '09351234567';
     $this->guard = 'user';
@@ -19,7 +19,7 @@ beforeEach(function () {
     Cache::flush();
 });
 
-test('it can generate and send otp', function () {
+test('it can generate and send otp', function (): void {
     $result = $this->otpService->send($this->identifier, $this->guard, $this->otpType);
 
     expect($result)
@@ -31,7 +31,7 @@ test('it can generate and send otp', function () {
     Event::assertDispatched(OtpPrepared::class);
 });
 
-test('it stores otp in cache with correct structure', function () {
+test('it stores otp in cache with correct structure', function (): void {
     $result = $this->otpService->send($this->identifier, $this->guard, $this->otpType);
 
     $cachedOtp = $this->otpService->getVerifyCode($this->identifier, $this->guard, $this->otpType);
@@ -42,14 +42,14 @@ test('it stores otp in cache with correct structure', function () {
         ->and($cachedOtp->trackingCode)->toBe($result->trackingCode);
 });
 
-test('it enforces waiting time between otp requests', function () {
+test('it enforces waiting time between otp requests', function (): void {
     $this->otpService->send($this->identifier, $this->guard, $this->otpType);
 
     expect(fn () => $this->otpService->sendAndRetryCheck($this->identifier, $this->guard, $this->otpType))
         ->toThrow(ValidationException::class);
 });
 
-test('it allows new otp request after waiting time', function () {
+test('it allows new otp request after waiting time', function (): void {
     $this->otpService->send($this->identifier, $this->guard, $this->otpType);
 
     // Move time forward past waiting period
@@ -61,7 +61,7 @@ test('it allows new otp request after waiting time', function () {
     expect($result)->toBeInstanceOf(SentOtpDto::class);
 });
 
-test('it verifies correct otp successfully', function () {
+test('it verifies correct otp successfully', function (): void {
     $sent = $this->otpService->send($this->identifier, $this->guard, $this->otpType);
 
     $result = $this->otpService->verify(
@@ -75,7 +75,7 @@ test('it verifies correct otp successfully', function () {
     expect($result)->toBeTrue();
 });
 
-test('it fails verification with incorrect otp', function () {
+test('it fails verification with incorrect otp', function (): void {
     $sent = $this->otpService->send($this->identifier, $this->guard, $this->otpType);
 
     $result = $this->otpService->verify(
@@ -89,7 +89,7 @@ test('it fails verification with incorrect otp', function () {
     expect($result)->toBeFalse();
 });
 
-test('it fails verification with incorrect tracking code', function () {
+test('it fails verification with incorrect tracking code', function (): void {
     $sent = $this->otpService->send($this->identifier, $this->guard, $this->otpType);
 
     $result = $this->otpService->verify(
@@ -103,7 +103,7 @@ test('it fails verification with incorrect tracking code', function () {
     expect($result)->toBeFalse();
 });
 
-test('it blocks verification after max attempts', function () {
+test('it blocks verification after max attempts', function (): void {
     $sent = $this->otpService->send($this->identifier, $this->guard, $this->otpType);
     $maxAttempts = config('otp.max_verify_attempts', 3);
 
@@ -128,7 +128,7 @@ test('it blocks verification after max attempts', function () {
     ))->toThrow(ValidationException::class);
 });
 
-test('it deletes otp after successful verification', function () {
+test('it deletes otp after successful verification', function (): void {
     $sent = $this->otpService->send($this->identifier, $this->guard, $this->otpType);
 
     $this->otpService->verify(
@@ -143,7 +143,7 @@ test('it deletes otp after successful verification', function () {
     expect($cachedOtp)->toBeNull();
 });
 
-test('it handles empty identifier correctly', function () {
+test('it handles empty identifier correctly', function (): void {
     $sentAt = $this->otpService->getSentAt('', $this->guard, $this->otpType);
     $hasBeenSent = $this->otpService->isVerifyCodeHasBeenSent('', $this->guard, $this->otpType);
 
@@ -151,7 +151,7 @@ test('it handles empty identifier correctly', function () {
         ->and($hasBeenSent)->toBeFalse();
 });
 
-test('it returns correct sent at time', function () {
+test('it returns correct sent at time', function (): void {
     $now = time();
     $this->otpService->send($this->identifier, $this->guard, $this->otpType);
 

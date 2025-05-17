@@ -1,6 +1,6 @@
 <?php
 
-test('to array', function () {
+test('to array', function (): void {
     $user = \App\Models\User::factory()->create()->fresh();
     expect($user->toArray())
         ->toEqual([

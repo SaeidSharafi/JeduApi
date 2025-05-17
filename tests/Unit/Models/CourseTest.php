@@ -1,6 +1,6 @@
 <?php
 
-test('to array', function () {
+test('to array', function (): void {
     $course = \App\Models\Course::factory()->create()->fresh();
 
     expect($course->toArray())

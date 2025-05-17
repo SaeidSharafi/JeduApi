@@ -1,6 +1,6 @@
 <?php
 
-test('to array', function () {
+test('to array', function (): void {
     $admin = \App\Models\Admin::factory()->create()->fresh();
     expect($admin->toArray())
         ->toEqual([

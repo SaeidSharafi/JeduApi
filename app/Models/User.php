@@ -26,16 +26,18 @@ class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
-    protected $casts = [
-        'phone_verified_at' => 'datetime',
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
-
 
 
     public function hasSetPassword(): bool
     {
         return !is_null($this->password);
+    }
+    protected function casts(): array
+    {
+        return [
+            'phone_verified_at' => 'datetime',
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
     }
 }

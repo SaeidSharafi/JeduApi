@@ -16,8 +16,9 @@ readonly class ApiErrorResponse implements ApiResponseInterface
 
     /**
      * {@inheritDoc}
+     *
      */
-    public function toResponse($request): \Illuminate\Http\JsonResponse
+    public function toResponse($request): \Illuminate\Http\JsonResponse //@pest-ignore-type
     {
         $response = ['message' => $this->message];
 

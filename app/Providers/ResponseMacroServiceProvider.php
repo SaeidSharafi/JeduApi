@@ -27,7 +27,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
          * @return \Illuminate\Http\JsonResponse
          */
         $responseFactory->macro('success',
-            function ($data = null, string $message = 'Operation successful.'): ApiResponseInterface {
+            function (mixed $data = null, string $message = 'Operation successful.'): ApiResponseInterface {
 
                 return new ApiSuccessResponse($message, $data);
             });
@@ -40,7 +40,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
          * @return \Illuminate\Http\JsonResponse
          */
         $responseFactory->macro('created',
-            function ($data = null, string $message = 'Resource created successfully.'): ApiResponseInterface {
+            function (mixed $data = null, string $message = 'Resource created successfully.'): ApiResponseInterface {
                 return new ApiSuccessResponse($message, $data, HttpStatus::HTTP_CREATED);
             });
 
@@ -66,7 +66,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
          * @return \Illuminate\Http\JsonResponse
          */
         $responseFactory->macro('error',
-            function (string $message, int $status = HttpStatus::HTTP_BAD_REQUEST, $errors = null): ApiResponseInterface {
+            function (string $message, int $status = HttpStatus::HTTP_BAD_REQUEST,mixed $errors = null): ApiResponseInterface {
                 return new ApiFailResponse($message, $errors, $status);
             });
 
@@ -93,7 +93,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
          * @return \Illuminate\Http\JsonResponse
          */
         $responseFactory->macro('validationErrors',
-            function ($errors, string $message = 'The given data was invalid.'): ApiResponseInterface {
+            function (mixed $errors, string $message = 'The given data was invalid.'): ApiResponseInterface {
                 $errorPayload = ($errors instanceof Validator) ? $errors->errors()->toArray() : $errors;
 
                 return new ApiFailResponse($message, $errorPayload, HttpStatus::HTTP_UNPROCESSABLE_ENTITY);

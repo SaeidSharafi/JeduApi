@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\Auth\UserResource;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 
 class PasswordLoginController extends Controller
 {
@@ -65,8 +66,8 @@ class PasswordLoginController extends Controller
 
         $user = User::when(
             $type === 'email',
-            fn($q) => $q->where('email', $request->identifier),
-            fn($q) => $q->where('phone', $request->identifier)
+            fn(Builder $q) => $q->where('email', $request->identifier),
+            fn(Builder $q) => $q->where('phone', $request->identifier)
         )->first();
 
         try {

@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Models\User;
 use App\Notifications\Auth\OtpEmailNotification;
 use App\Notifications\Auth\OtpSmsNotification;
+use Illuminate\Database\Eloquent\Builder;
 
 class SendOtpNotification
 {
@@ -22,8 +23,8 @@ class SendOtpNotification
         $model = $guard === 'admin' ? Admin::class : User::class;
         $user = $model::when(
             filter_var($indentifier, FILTER_VALIDATE_EMAIL),
-            fn ($q) => $q->where('email', $indentifier),
-            fn ($q) => $q->where('phone', $indentifier)
+            fn(Builder $q) => $q->where('email', $indentifier),
+            fn(Builder $q) => $q->where('phone', $indentifier)
         )->first();
         if (app()->isLocal() || app()->environment('testing')) {
             $user->email = $user->phone.'@example.com';

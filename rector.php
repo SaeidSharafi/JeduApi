@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
+use RectorLaravel\Set\LaravelLevelSetList;
+use RectorLaravel\Set\LaravelSetList;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -16,6 +18,10 @@ return RectorConfig::configure()
     ])
     // uncomment to reach your current PHP version
     // ->withPhpSets(php83: true)
-    ->withTypeCoverageLevel(8)
+        ->withSets([
+        LaravelLevelSetList::UP_TO_LARAVEL_120,
+        LaravelSetList::LARAVEL_COLLECTION,
+    ])
+    ->withTypeCoverageLevel(10)
     ->withDeadCodeLevel(4)
     ->withCodeQualityLevel(4);

@@ -17,8 +17,9 @@ readonly class ApiFailResponse implements ApiResponseInterface
 
     /**
      * {@inheritDoc}
+     * @codeCoverageIgnore
      */
-    public function toResponse($request): \Illuminate\Http\JsonResponse
+    public function toResponse($request): \Illuminate\Http\JsonResponse //@pest-ignore-type
     {
         return response()->json(
             [

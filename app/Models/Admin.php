@@ -27,13 +27,15 @@ class Admin extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
-
     public function hasSetPassword(): bool
     {
         return !is_null($this->password);
+    }
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
     }
 }

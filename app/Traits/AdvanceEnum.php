@@ -38,7 +38,7 @@ trait AdvanceEnum
     public function getKeyValuePairs(): array
     {
         $keyValuePairs = [];
-        foreach (self::cases() as $key => $value) {
+        foreach (self::cases() as $value) {
             $keyValuePairs[$value->value] = $value->traslate();
         }
         return $keyValuePairs;
@@ -52,7 +52,7 @@ trait AdvanceEnum
     public function getValueLabel(): array
     {
         return array_map(
-            fn($case) => [
+            fn($case): array => [
                 'value' => $case->value,
                 'label' => $case->traslate(),
             ],
