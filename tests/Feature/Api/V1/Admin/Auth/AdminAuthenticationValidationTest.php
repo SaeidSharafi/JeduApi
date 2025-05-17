@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Feature\Api\V1\Admin\Auth;
-
 use App\Dto\OtpManager\OtpDto;
 use App\Enums\OtpType;
 use App\Models\Admin;

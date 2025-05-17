@@ -1,6 +1,5 @@
 <?php
 
-namespace Tests\Unit\Notifications;
 
 use App\Enums\OtpType;
 use App\Events\OtpPrepared;

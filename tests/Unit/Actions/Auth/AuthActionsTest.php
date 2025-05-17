@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Unit\Actions\Auth;
-
 use App\Actions\Auth\AuthenticateUserAction;
 use App\Actions\Auth\GenerateOtpAction;
 use App\Actions\Auth\InitiateAuthAction;
@@ -15,7 +13,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\NewAccessToken;
-use Mockery;
 
 uses(RefreshDatabase::class);
 

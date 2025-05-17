@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Feature\Api\V1\Auth;
-
 use App\Actions\Auth\GenerateOtpAction;
 use App\Dto\OtpManager\OtpDto;
 use App\Dto\OtpManager\SentOtpDto;
