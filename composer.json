@@ -19,7 +19,8 @@
         "saeidsharafi/laravel-permission-generator": "^1.1",
         "spatie/laravel-data": "^4.15",
         "spatie/laravel-permission": "^6.18",
-        "spatie/laravel-query-builder": "^6.3"
+        "spatie/laravel-query-builder": "^6.3",
+      "ext-pdo": "*"
     },
     "require-dev": {
         "driftingly/rector-laravel": "^2.0",

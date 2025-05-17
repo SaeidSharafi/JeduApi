@@ -43,7 +43,7 @@ final class UserFactory extends Factory
         ]);
     }
 
-    public function withOtp(string $code = '123456'): self
+    public function withOtp(int $code = 123456): self
     {
         return $this->afterCreating(function (User $user) use ($code) {
             $otpService = app(OtpManagerService::class);

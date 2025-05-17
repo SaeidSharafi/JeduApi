@@ -41,7 +41,7 @@ final class AdminFactory extends Factory
         ]);
     }
 
-    public function withOtp(string $code = '123456'): self
+    public function withOtp(int $code = 123456): self
     {
         return $this->afterCreating(function (Admin $admin) use ($code) {
             $otpService = app(OtpManagerService::class);
