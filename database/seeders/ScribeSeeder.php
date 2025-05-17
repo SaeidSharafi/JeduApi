@@ -22,7 +22,7 @@ final class ScribeSeeder extends Seeder
         ]);
 
         Course::query()->truncate();
-        Course::factory(10)->create([
+        Course::factory(100)->create([
             'created_by' => Admin::query()->first()->id,
         ]);
 
