@@ -47,7 +47,7 @@ return [
     // - "static" will generate a static HTMl page in the /public/docs folder,
     // - "laravel" will generate the documentation as a Blade view, so you can add routing and authentication.
     // - "external_static" and "external_laravel" do the same as above, but pass the OpenAPI spec as a URL to an external UI template
-    'type' => 'laravel',
+    'type' => 'static',
 
     // See https://scribe.knuckles.wtf/laravel/reference/config#theme for supported options
     'theme' => 'default',
@@ -111,7 +111,7 @@ return [
 
         // The value of the parameter to be used by Scribe to authenticate response calls.
         // This will NOT be included in the generated documentation. If empty, Scribe will use a random value.
-        'use_value' => env('SCRIBE_AUTH_KEY'),
+        'use_value' => null,
 
         // Placeholder your users will see for the auth parameter in the example requests.
         // Set this to null if you want Scribe to use a random value as placeholder instead.
@@ -222,10 +222,11 @@ return [
             ...Defaults::URL_PARAMETERS_STRATEGIES,
         ],
         'queryParameters' => [
-            ...Defaults::QUERY_PARAMETERS_STRATEGIES,
+            ...Defaults::QUERY_PARAMETERS_STRATEGIES
         ],
         'bodyParameters' => [
             ...Defaults::BODY_PARAMETERS_STRATEGIES,
+            \App\Scribe\Extracting\Strategies\BodyParameters\GetFromLaravelData::class,
         ],
         'responses' => configureStrategy(
             Defaults::RESPONSES_STRATEGIES,
@@ -234,6 +235,7 @@ return [
                 // Recommended: disable debug mode in response calls to avoid error stack traces in responses
                 config: [
                     'app.debug' => false,
+                    'database.default' => 'sqlite_scribe',
                 ]
             )
         ),
@@ -245,7 +247,7 @@ return [
     // For response calls, API resource responses and transformer responses,
     // Scribe will try to start database transactions, so no changes are persisted to your database.
     // Tell Scribe which connections should be transacted here. If you only use one db connection, you can leave this as is.
-    'database_connections_to_transact' => [config('database.default')],
+    'database_connections_to_transact' => ['sqlite_scribe'],
 
     'fractal' => [
         // If you are using a custom serializer with league/fractal, you can specify it here.

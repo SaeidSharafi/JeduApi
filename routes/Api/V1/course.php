@@ -15,8 +15,10 @@ use App\Http\Controllers\Api\Auth\PasswordLoginController;
 use App\Http\Controllers\Api\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\Auth\ResnedOtpController;
 
-// Admin Auth Routes
-Route::prefix('admin')->name('admin.')->group(function (): void {
-   Route::resource('course', \App\Http\Controllers\Api\Admin\CourseController::class)
-   ;
+Route::middleware('auth:admin')->group(function (): void {
+    Route::prefix('admin')->name('admin.')->group(function (): void {
+        Route::resource('course', \App\Http\Controllers\Api\Admin\CourseController::class)
+        ;
+    });
 });
+

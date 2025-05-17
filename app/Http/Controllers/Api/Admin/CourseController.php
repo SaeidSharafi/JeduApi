@@ -9,13 +9,28 @@ use App\Http\Controllers\Controller;
 use App\Models\Course;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Response;
 use Spatie\QueryBuilder\QueryBuilder;
 
+/**
+ * @group Course Management
+ *
+ * APIs for managing courses
+ * @authenticated Admin
+ */
 class CourseController extends Controller
 {
 
     /**
-     * Display a listing of the resource.
+     * return a list of the courses.
+     *
+     * @queryParam filter[slug] string Filter by course slug. Example: math-101
+     * @queryParam filter[name] string Filter by course name. Example: Mathematics
+     * @queryParam filter[short_name] string Filter by course short name. Example: MATH
+     * @queryParam filter[status] string Filter by course status. Example: active
+     * @queryParam sort string Sort by a field. Allowed values: slug, name, short_name, status. Prefix with '-' for descending order (e.g., -name for descending by name). Example: name
+     * @queryParam page integer Page number for pagination. Example: 2
+     * @queryParam per_page integer Number of results per page. Example: 15
      */
     public function index():  ApiResponseInterface
     {
@@ -26,11 +41,11 @@ class CourseController extends Controller
             ->paginate()
             ->appends(request()->query());
 
-        return response()->success(data: CourseResponseData::collect($courses)->toArray());
+        return Response::success(data: CourseResponseData::collect($courses)->toArray());
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Create a new course.
      */
     public function store(CourseData $data):  ApiResponseInterface
     {
@@ -42,7 +57,8 @@ class CourseController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     *  return the specified course detail.
+     *
      */
     public function show(Course $course):  ApiResponseInterface
     {
@@ -52,7 +68,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * return the specified course detail for edit.
      */
     public function edit(Course $course):  ApiResponseInterface
     {
@@ -62,7 +78,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified course.
      */
     public function update(CourseData $data, Course $course):  ApiResponseInterface
     {
@@ -72,7 +88,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified course
      */
     public function destroy(Course $course): JsonResponse
     {

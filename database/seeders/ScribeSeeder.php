@@ -1,0 +1,28 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Admin;
+use App\Models\Course;
+use Illuminate\Database\Seeder;
+
+class ScribeSeeder extends Seeder
+{
+    public function run(): void
+    {
+        Admin::query()->truncate();
+        Admin::forceCreate([
+            'name'     => 'Admin',
+            'email'    => 'admin@example.com',
+            'phone' => '9300000000',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
+        ]);
+
+        Course::query()->truncate();
+        Course::factory(10)->create([
+            'created_by' => Admin::query()->first()->id,
+        ]);
+
+    }
+}

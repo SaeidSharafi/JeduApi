@@ -41,7 +41,12 @@ return [
             'journal_mode' => null,
             'synchronous' => null,
         ],
-
+        'sqlite_scribe' => [
+            'driver' => 'sqlite',
+            'database' => env('SCRIBE_DB_DATABASE', database_path('scribe_testing.sqlite')),
+            'prefix' => '',
+            'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
+        ],
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),

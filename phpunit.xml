@@ -18,6 +18,8 @@
         </include>
         <exclude>
             <file>app/Enums/PermissionEnum.php</file>
+            <file>app/Console/Commands/SetupScribe.php</file>
+            <directory>app/Scribe</directory>
         </exclude>
     </source>
     <php>

@@ -19,7 +19,7 @@ class PasswordLoginController extends Controller
     }
 
     /**
-     * Authenticate Admin with identifier (phone/email) and password
+     * Authenticate User (Customer) with identifier (phone/email) and password
      *
      * Used when the /auth/initiate step determines a password exists and is required.
      *

@@ -24,3 +24,5 @@ yarn-error.log
 /.scribe
 /public/vendor
 /resources/views/scribe
+/public/docs
+scribe_testing.sqlite
