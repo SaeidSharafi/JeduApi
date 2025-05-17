@@ -1,7 +1,11 @@
 <?php
 
+uses(\Tests\AuthTestTrait::class);
 it('can view list of courses', function (): void {
     $courses = \App\Models\Course::factory(5)->create();
+    $this->authorized_user([
+        \App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
+    ]);
     $response = $this->getJson(route('api.v1.admin.course.index'));
     $response
         ->assertStatus(200)
@@ -27,6 +31,9 @@ it('can view list of courses', function (): void {
 it('can create a new course with valida data', function (): void {
     $courseData = \App\Models\Course::factory()->make()->toArray();
     $course = \App\Data\Course\CourseData::from($courseData);
+    $this->authorized_user([
+        \App\Enums\PermissionEnum::COURSE_CREATE->value,
+    ]);
     $response = $this->postJson(route('api.v1.admin.course.store'), $courseData);
     $response
         ->assertStatus(201)
@@ -57,6 +64,9 @@ it('can not create a new course with invalid data', function (): void {
         'meta_keywords'        => null,
         'status'               => null,
     ])->toArray();
+    $this->authorized_user([
+        \App\Enums\PermissionEnum::COURSE_CREATE->value,
+    ]);
     $response = $this->postJson(route('api.v1.admin.course.store'), $courseData);
     $response
         ->assertStatus(422)
@@ -72,6 +82,9 @@ it('can not create a new course with invalid slug', function (): void {
     $courseData = \App\Models\Course::factory()->make([
         'slug' => 'invalid slug',
     ])->toArray();
+    $this->authorized_user([
+        \App\Enums\PermissionEnum::COURSE_CREATE->value,
+    ]);
     $response = $this->postJson(route('api.v1.admin.course.store'), $courseData);
     $response
         ->assertStatus(422)
@@ -82,6 +95,9 @@ it('can not create a new course with invalid slug', function (): void {
 
 it('can view a course', function (): void {
     $course = \App\Models\Course::factory()->create();
+    $this->authorized_user([
+        \App\Enums\PermissionEnum::COURSE_VIEW->value,
+    ]);
     $response = $this->getJson(route('api.v1.admin.course.show', $course->id));
     $response
         ->assertStatus(200)
@@ -103,6 +119,9 @@ it('can view a course', function (): void {
 it('can edit a course', function (): void {
     $course = \App\Models\Course::factory()->create();
     $courseData = \App\Models\Course::factory()->make()->toArray();
+    $this->authorized_user([
+        \App\Enums\PermissionEnum::COURSE_UPDATE->value,
+    ]);
     $response = $this->getJson(route('api.v1.admin.course.edit', $course->id));
     $response->assertSuccessful()
         ->assertJson([
@@ -138,6 +157,9 @@ it('can edit a course', function (): void {
 
 it('can not edit a course with invalid data', function (): void {
     $course = \App\Models\Course::factory()->create();
+    $this->authorized_user([
+        \App\Enums\PermissionEnum::COURSE_UPDATE->value,
+    ]);
     $courseData = \App\Models\Course::factory()->make([
         'slug'                 => null,
         'name'                 => null,
@@ -165,6 +187,9 @@ it('can not edit a course with invalid slug', function (): void {
     $courseData = \App\Models\Course::factory()->make([
         'slug' => 'invalid slug',
     ])->toArray();
+    $this->authorized_user([
+        \App\Enums\PermissionEnum::COURSE_UPDATE->value,
+    ]);
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), $courseData);
     $response
         ->assertStatus(422)
@@ -175,6 +200,9 @@ it('can not edit a course with invalid slug', function (): void {
 
 it('can delete a course', function (): void {
     $course = \App\Models\Course::factory()->create();
+    $this->authorized_user([
+        \App\Enums\PermissionEnum::COURSE_DELETE->value,
+    ]);
     $response = $this->deleteJson(route('api.v1.admin.course.destroy', $course->id));
     $response->assertStatus(204);
     $this->assertDatabaseMissing('courses', [

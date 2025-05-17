@@ -12,9 +12,9 @@ enum PermissionEnum: string
 {
     case COURSE_CREATE = 'courses.create';
     case COURSE_DELETE = 'courses.delete';
-    case COURSE_DELETE_ANY = 'courses.delete_any';
+    case COURSE_DELETE_OWN = 'courses.delete_own';
     case COURSE_UPDATE = 'courses.update';
-    case COURSE_UPDATE_ANY = 'courses.update_any';
+    case COURSE_UPDATE_OWN = 'courses.update_own';
     case COURSE_VIEW = 'courses.view';
     case COURSE_VIEW_ANY = 'courses.view_any';
 

@@ -56,8 +56,10 @@ return [
         'course' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
-            PermissionAction::UPDATE_SCOPED,
-            PermissionAction::DELETE_SCOPED,
+            PermissionAction::UPDATE,
+            PermissionAction::UPDATE_OWN,
+            PermissionAction::DELETE,
+            PermissionAction::DELETE_OWN,
         ]
         /*
         'user' => [

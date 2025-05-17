@@ -193,9 +193,4 @@ class OtpManagerService
             $this->type?->identifier()
         );
     }
-
-    protected function validateMobile(string $indentifier): void
-    {
-        $this->mobileValidator->validate($indentifier);
-    }
 }
