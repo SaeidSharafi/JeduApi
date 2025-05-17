@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Course;
 
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\CourseStatusEnum;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
-use \Spatie\LaravelData\Attributes\Validation;
-class CourseResponseData extends Data
+
+final class CourseResponseData extends Data
 {
     /**
      * slug
@@ -29,9 +31,7 @@ class CourseResponseData extends Data
         public ?string $meta_title,
         public ?string $meta_description,
         public ?string $meta_keywords,
-        #[WithCast(CourseStatusEnum::class),WithTransformer(TranslatableEnumData::class)]
+        #[WithCast(CourseStatusEnum::class), WithTransformer(TranslatableEnumData::class)]
         public CourseStatusEnum $status
-    )
-    {
-    }
+    ) {}
 }

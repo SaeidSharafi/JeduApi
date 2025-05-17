@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Actions\Auth\ResetPasswordAction;
@@ -10,7 +12,7 @@ use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ResetPasswordOtpRequest;
 
-class ResetPasswordController extends Controller
+final class ResetPasswordController extends Controller
 {
     public function __construct(
         protected ResetPasswordAction $action
@@ -22,9 +24,10 @@ class ResetPasswordController extends Controller
      * Requires the phone number and the reset OTP token obtained from a successful OTP verification
      *
      *
-     * @throws \App\Exceptions\UserNotFoundException
+     * @throws UserNotFoundException
      *
      * @group User Authentication
+     *
      * @response  {
      * "message": "Operation successful.",
      * "data": "Password reset OTP sent successfully",
@@ -69,7 +72,7 @@ class ResetPasswordController extends Controller
             return response()->validationError(
                 message: 'Invalid OTP code'
             );
-        }catch (UserNotFoundException $exception){
+        } catch (UserNotFoundException $exception) {
             return response()->notFound(
                 message: 'User not found'
             );

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Scribe\Extracting\Strategies;
 
 use Illuminate\Routing\Route;
@@ -12,9 +14,9 @@ use ReflectionException;
 use ReflectionFunctionAbstract;
 use ReflectionUnionType;
 use Spatie\LaravelData\Data;
-class GetFromLaravelDataBase extends Strategy
-{
 
+abstract class GetFromLaravelDataBase extends Strategy
+{
     use ParsesValidationRules;
 
     protected string $customParameterDataMethodName = '';
@@ -24,32 +26,11 @@ class GetFromLaravelDataBase extends Strategy
         return $this->getParametersFromLaravelData($endpointData->method, $endpointData->route);
     }
 
-    private function getParametersFromLaravelData(\ReflectionFunctionAbstract $method, Route $route): array
-    {
-        if (!$laravelDataReflectionClass = $this->getLaravelDataReflectionClass($method)) {
-            return [];
-        }
-
-        if (!$this->isLaravelDataMeantForThisStrategy($laravelDataReflectionClass)) {
-            return [];
-        }
-
-        $className = $laravelDataReflectionClass->getName();
-
-        $laravelData = (new ReflectionClass($className))->newInstanceWithoutConstructor();
-
-        $parametersFromLaravelData = $this->getParametersFromValidationRules(
-            $this->getRouteValidationRules($laravelData),
-            $this->getCustomParameterData($laravelData)
-        );
-
-        return $this->normaliseArrayAndObjectParameters($parametersFromLaravelData);
-    }
-
     protected function getRouteValidationRules(Data $data): mixed
     {
         if (method_exists($data, 'getValidationRules')) {
             $properties = get_object_vars($data);
+
             return app()->call([$data, 'getValidationRules'], ['payload' => $properties]);
         }
 
@@ -62,7 +43,7 @@ class GetFromLaravelDataBase extends Strategy
             return call_user_func_array([$data, $this->customParameterDataMethodName], []);
         }
 
-        c::warn("No {$this->customParameterDataMethodName}() method found in " . get_class($data) . ". Scribe will only be able to extract basic information from the rules() method.");
+        c::warn("No {$this->customParameterDataMethodName}() method found in ".get_class($data).'. Scribe will only be able to extract basic information from the rules() method.');
 
         return [];
     }
@@ -76,11 +57,15 @@ class GetFromLaravelDataBase extends Strategy
     {
         foreach ($method->getParameters() as $argument) {
             $argType = $argument->getType();
-            if ($argType === null || $argType instanceof ReflectionUnionType) continue;
+            if ($argType === null || $argType instanceof ReflectionUnionType) {
+                continue;
+            }
 
             $argumentClassName = $argType->getName();
 
-            if (!class_exists($argumentClassName)) continue;
+            if (! class_exists($argumentClassName)) {
+                continue;
+            }
 
             try {
                 $argumentClass = new ReflectionClass($argumentClassName);
@@ -100,5 +85,27 @@ class GetFromLaravelDataBase extends Strategy
     protected function isLaravelDataMeantForThisStrategy(ReflectionClass $laravelDataReflectionClass): bool
     {
         return $laravelDataReflectionClass->hasMethod($this->customParameterDataMethodName);
+    }
+
+    private function getParametersFromLaravelData(ReflectionFunctionAbstract $method, Route $route): array
+    {
+        if (! $laravelDataReflectionClass = $this->getLaravelDataReflectionClass($method)) {
+            return [];
+        }
+
+        if (! $this->isLaravelDataMeantForThisStrategy($laravelDataReflectionClass)) {
+            return [];
+        }
+
+        $className = $laravelDataReflectionClass->getName();
+
+        $laravelData = (new ReflectionClass($className))->newInstanceWithoutConstructor();
+
+        $parametersFromLaravelData = $this->getParametersFromValidationRules(
+            $this->getRouteValidationRules($laravelData),
+            $this->getCustomParameterData($laravelData)
+        );
+
+        return $this->normaliseArrayAndObjectParameters($parametersFromLaravelData);
     }
 }

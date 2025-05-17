@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Course;
 
 use App\Enums\CourseStatusEnum;
+use Spatie\LaravelData\Attributes\Validation;
 use Spatie\LaravelData\Data;
-use \Spatie\LaravelData\Attributes\Validation;
-class CourseData extends Data
+
+final class CourseData extends Data
 {
     /**
      * slug
@@ -38,7 +41,5 @@ class CourseData extends Data
         #[Validation\Enum(CourseStatusEnum::class)]
         #[WithCast(CourseStatusEnum::class)]
         public CourseStatusEnum $status
-    )
-    {
-    }
+    ) {}
 }

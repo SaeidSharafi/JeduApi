@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Api\Admin\Auth\AdminForgotPasswordController;
 use App\Http\Controllers\Api\Admin\Auth\AdminInitiateAuthController;
 use App\Http\Controllers\Api\Admin\Auth\AdminLogoutController;

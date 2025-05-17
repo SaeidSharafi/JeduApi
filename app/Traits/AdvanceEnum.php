@@ -1,19 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Traits;
 
 trait AdvanceEnum
 {
-    public function translate(): string
-    {
-        $key =  class_basename($this);
-        return __("enums.{$key}.{$this->value}");
-    }
-
     /**
      * Get all status values as an array.
      *
-     * @return array<string>
+     * @return array<int,string>
      */
     public static function getAllValues(): array
     {
@@ -23,17 +19,24 @@ trait AdvanceEnum
     /**
      * Get all status names (enum case names) as an array.
      *
-     * @return array<string>
+     * @return array<int,string>
      */
     public static function getAllNames(): array
     {
         return array_column(self::cases(), 'name');
     }
 
+    public function translate(): string
+    {
+        $key = class_basename($this);
+
+        return __("enums.{$key}.{$this->value}");
+    }
+
     /**
      * Get Key-Value Pairs for Enum
      *
-     * @return array<string>
+     * @return array<string,string>
      */
     public function getKeyValuePairs(): array
     {
@@ -41,18 +44,19 @@ trait AdvanceEnum
         foreach (self::cases() as $value) {
             $keyValuePairs[$value->value] = $value->translate();
         }
+
         return $keyValuePairs;
     }
 
     /**
      * get Value Label array
      *
-     * @return array<string>
+     * @return array<int, array<string, string>>
      */
     public function getValueLabel(): array
     {
         return array_map(
-            fn($case): array => [
+            fn ($case): array => [
                 'value' => $case->value,
                 'label' => $case->translate(),
             ],

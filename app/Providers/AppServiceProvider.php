@@ -1,20 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
+use App\Contracts\OtpGeneratorInterface;
 use App\Models\Admin;
 use App\Models\User;
+use App\Services\DefaultOtpGenerator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
-class AppServiceProvider extends ServiceProvider
+final class AppServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(OtpGeneratorInterface::class, DefaultOtpGenerator::class);
     }
 
     /**
@@ -23,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::before(function (Admin|User $user, mixed $ability) {
-            return $user->is_admin ? true : null;
+            return ($user instanceof Admin && $user->is_admin) ? true : null;
         });
     }
 }

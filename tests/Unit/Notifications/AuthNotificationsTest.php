@@ -1,5 +1,6 @@
 <?php
 
+declare(strict_types=1);
 
 use App\Enums\OtpType;
 use App\Events\OtpPrepared;
@@ -41,9 +42,8 @@ test('user email is set to use phone plus @example.com if email is null in testi
         )
     );
 
-    Notification::assertSentTo($user,OtpEmailNotification::class);
-    Notification::assertSentTo($user,OtpSmsNotification::class);
-
+    Notification::assertSentTo($user, OtpEmailNotification::class);
+    Notification::assertSentTo($user, OtpSmsNotification::class);
 
 });
 test('OtpSmsNotification contains expected data', function (): void {

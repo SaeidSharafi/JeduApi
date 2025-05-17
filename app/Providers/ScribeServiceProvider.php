@@ -1,17 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use App\Models\Admin;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Knuckles\Camel\Extraction\ExtractedEndpointData;
 use Knuckles\Scribe\Scribe;
 use phpDocumentor\Reflection\Exception;
 
-class ScribeServiceProvider extends ServiceProvider
+final class ScribeServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
@@ -26,20 +26,20 @@ class ScribeServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (class_exists(\Knuckles\Scribe\Scribe::class)) {
+        if (class_exists(Scribe::class)) {
             Scribe::beforeResponseCall(function (
                 Request $request,
                 ExtractedEndpointData $endpointData
-            ) {
+            ): void {
                 $admin = Admin::first();
-                if (!$admin) {
-                    \Illuminate\Support\Facades\Log::error("Scribe beforeResponseCall: Admin not found!");
-                    throw new Exception("Scribe beforeResponseCall: Admin not found!");
+                if (! $admin) {
+                    \Illuminate\Support\Facades\Log::error('Scribe beforeResponseCall: Admin not found!');
+                    throw new Exception('Scribe beforeResponseCall: Admin not found!');
                 }
                 $token = $admin->createToken('token')->plainTextToken;
 
-                $request->headers->add(["Authorization" => "Bearer $token"]);
-                $request->server->set("HTTP_AUTHORIZATION", "Bearer $token");
+                $request->headers->add(['Authorization' => "Bearer $token"]);
+                $request->server->set('HTTP_AUTHORIZATION', "Bearer $token");
             });
         }
     }

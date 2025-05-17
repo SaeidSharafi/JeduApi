@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Rules;
 
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Support\Facades\Validator;
 
-class EmailOrPhoneRule implements ValidationRule
+final class EmailOrPhoneRule implements ValidationRule
 {
     /**
      * Run the validation rule.
@@ -15,7 +16,7 @@ class EmailOrPhoneRule implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (filter_var($value, FILTER_VALIDATE_EMAIL)){
+        if (filter_var($value, FILTER_VALIDATE_EMAIL)) {
             return;
         }
         if (preg_match("/^0?9[0-1-2-3-9]\d{8}$/", $value)) {

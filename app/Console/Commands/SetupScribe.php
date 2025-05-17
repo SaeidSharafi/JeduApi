@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use Database\Seeders\ScribeSeeder;
@@ -8,8 +10,9 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use PDOException;
 
-class SetupScribe extends Command
+final class SetupScribe extends Command
 {
     /**
      * The name and signature of the console command.
@@ -37,8 +40,9 @@ class SetupScribe extends Command
         $connectionName = $this->option('connection');
         $configPath = "database.connections.$connectionName";
 
-        if (!Config::has($configPath)) {
+        if (! Config::has($configPath)) {
             $this->error("Database connection '{$connectionName}' not found in config/database.php.");
+
             return Command::FAILURE;
         }
 
@@ -49,18 +53,17 @@ class SetupScribe extends Command
         if ($dbConfig['driver'] === 'sqlite' && $dbPath && $dbPath !== ':memory:') {
             // Ensure the directory exists
             $dbDir = dirname($dbPath);
-            if (!File::isDirectory($dbDir)) {
+            if (! File::isDirectory($dbDir)) {
                 File::makeDirectory($dbDir, 0755, true, true);
             }
             // Touch the file to ensure it exists for migrations if --fresh is not used
-            if (!File::exists($dbPath) || $this->option('fresh')) {
+            if (! File::exists($dbPath) || $this->option('fresh')) {
                 File::put($dbPath, ''); // Create or clear the file
                 $this->info("SQLite database file created/cleared at: {$dbPath}");
             }
         } elseif ($dbConfig['driver'] === 'sqlite' && $dbPath === ':memory:') {
             $this->info("Using in-memory SQLite database for connection '{$connectionName}'.");
         }
-
 
         $this->info("Setting up database for Scribe using connection: {$connectionName}");
 
@@ -75,9 +78,10 @@ class SetupScribe extends Command
             // Test connection (optional, but good for early feedback)
             DB::connection($connectionName)->getPdo();
             $this->info("Successfully connected to '{$connectionName}'.");
-        } catch (\PDOException $e) {
-            $this->error("Could not connect to the database '{$connectionName}': " . $e->getMessage());
+        } catch (PDOException $e) {
+            $this->error("Could not connect to the database '{$connectionName}': ".$e->getMessage());
             Config::set('database.default', $originalDefaultConnection); // Reset default connection
+
             return Command::FAILURE;
         }
 
@@ -94,6 +98,7 @@ class SetupScribe extends Command
         } else {
             $this->error('Migrations failed.');
             Config::set('database.default', $originalDefaultConnection); // Reset default connection
+
             return Command::FAILURE;
         }
 
@@ -103,12 +108,8 @@ class SetupScribe extends Command
                 '--database' => $connectionName,
                 '--force' => true,
             ];
-            if ($seederClass) {
-                $seedOptions['--class'] = $seederClass;
-                $this->line("Running: php artisan db:seed --database={$connectionName} --class={$seederClass} --force");
-            } else {
-                $this->line("Running: php artisan db:seed --database={$connectionName} --force");
-            }
+            $seedOptions['--class'] = $seederClass;
+            $this->line("Running: php artisan db:seed --database={$connectionName} --class={$seederClass} --force");
 
             $seedingExitCode = Artisan::call('db:seed', $seedOptions);
 
@@ -117,6 +118,7 @@ class SetupScribe extends Command
             } else {
                 $this->error('Seeding failed.');
                 Config::set('database.default', $originalDefaultConnection); // Reset default connection
+
                 return Command::FAILURE;
             }
         }
@@ -124,7 +126,6 @@ class SetupScribe extends Command
         // Restore the original default connection
         Config::set('database.default', $originalDefaultConnection);
         $this->info("Database setup for Scribe on '{$connectionName}' complete.");
-
 
         $this->call('scribe:generate');
 

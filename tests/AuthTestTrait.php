@@ -1,36 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Foundation\Testing\Concerns\InteractsWithAuthentication;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 trait AuthTestTrait
 {
     protected Authenticatable $user;
+
     public function unauthorized_user($guard = 'admin'): self
     {
-        if ( ! isset($this->user)) {
+        if (! isset($this->user)) {
             $this->user = Admin::factory()->create();
         }
-        return $this->actingAs($this->user->fresh(),$guard);
+
+        return $this->actingAs($this->user->fresh(), $guard);
     }
 
     public function authorized_user(
         array $permission,
         $guard = 'admin'
     ): self {
-        if ( ! isset($this->user)) {
+        if (! isset($this->user)) {
             $this->user = Admin::factory()->create();
         }
         $role = Role::updateOrCreate([
-            'name'          => 'manager_test',
-            'label'         => 'ManagerTest',
-            'guard_name'    => $guard,
+            'name' => 'manager_test',
+            'label' => 'ManagerTest',
+            'guard_name' => $guard,
         ]);
 
         $role->syncPermissions($permission);
@@ -44,7 +46,7 @@ trait AuthTestTrait
     {
         $this->user = User::factory()->create();
 
-        return $this->actingAs($this->user->fresh(),'user');
+        return $this->actingAs($this->user->fresh(), 'user');
     }
 
     public function admin_user($guard = 'admin'): self

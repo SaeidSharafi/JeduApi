@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\CourseStatusEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Course extends Model
+final class Course extends Model
 {
     /** @use HasFactory<\Database\Factories\CourseFactory> */
     use HasFactory;
@@ -21,7 +23,7 @@ class Course extends Model
         'meta_description',
         'meta_keywords',
         'status',
-        'created_by'
+        'created_by',
     ];
 
     protected function casts(): array

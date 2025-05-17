@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\Auth;
 
 use App\Actions\Auth\RequestOtpAction;
@@ -9,12 +11,11 @@ use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\OtpRequest;
 
-class AdminResendOtpController extends Controller
+final class AdminResendOtpController extends Controller
 {
     public function __construct(
         protected RequestOtpAction $action
-    ) {
-    }
+    ) {}
 
     /**
      * Resned an OTP code via SMS or Email
@@ -22,10 +23,9 @@ class AdminResendOtpController extends Controller
      * Re-Sends an OTP to the user's phone number (or Email) for a specific
      * purpose (login/registration or password reset).
      *
-     * @param  OtpRequest  $request
      *
-     * @return ApiResponseInterface
      * @group Admin Authentication
+     *
      * @response {
      *  "message": "OTP resent successfully",
      *  "data": {
@@ -62,12 +62,12 @@ class AdminResendOtpController extends Controller
 
             return response()->success([
                 'tracking_code' => $result->trackingCode,
-                'otp_type'      => $result->otpType->value,
-                'identifier'    => $request->identifier,
-                'login_method'  => 'OTP',
+                'otp_type' => $result->otpType->identifier(),
+                'identifier' => $request->identifier,
+                'login_method' => 'OTP',
             ], 'OTP resent successfully');
 
-        }catch (UserNotFoundException $exception) {
+        } catch (UserNotFoundException $exception) {
             return response()->notFound('User not found');
         }
 

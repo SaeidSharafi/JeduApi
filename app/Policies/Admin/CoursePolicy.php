@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\Admin;
 
 use App\Enums\PermissionEnum;
-use App\Models\Course;
 use App\Models\Admin;
+use App\Models\Course;
 
-class CoursePolicy
+final class CoursePolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -47,5 +49,4 @@ class CoursePolicy
     {
         return $user->can(PermissionEnum::COURSE_DELETE->value);
     }
-
 }

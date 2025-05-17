@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Auth;
 
 use App\Enums\OtpType;
@@ -7,18 +9,21 @@ use App\Rules\EmailOrPhoneRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class VerifyOtpRequest extends FormRequest
+final class VerifyOtpRequest extends FormRequest
 {
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * @return array<string, list<mixed>>
+     */
     public function rules(): array
     {
         return [
             'identifier' => ['required', 'string', new EmailOrPhoneRule()],
-            'otp_code' => ['required', 'numeric', 'min:'.config('otp.code_min'),'max:'.config('otp.code_max')],
+            'otp_code' => ['required', 'integer', 'min:'.config('otp.code_min'), 'max:'.config('otp.code_max')],
             'tracking_code' => ['required', 'string'],
             'otp_type' => ['required', 'string', Rule::enum(OtpType::class)],
         ];
@@ -26,6 +31,8 @@ class VerifyOtpRequest extends FormRequest
 
     /**
      * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
      */
     public function bodyParameters(): array
     {

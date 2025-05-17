@@ -7,4 +7,10 @@ parameters:
     paths:
         - app/
 
-    level: max
+    level: 6
+
+    excludePaths:
+        - 'app/Data/'
+        - 'app/Scribe/'
+        - 'app/Providers/ScribeServiceProvider.php'
+

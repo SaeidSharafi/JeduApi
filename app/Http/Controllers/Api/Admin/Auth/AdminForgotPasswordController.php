@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\Auth;
 
 use App\Actions\Auth\ForgotPasswordAction;
@@ -9,7 +11,7 @@ use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\InitiateAuthRequest;
 
-class AdminForgotPasswordController extends Controller
+final class AdminForgotPasswordController extends Controller
 {
     public function __construct(
         protected ForgotPasswordAction $action
@@ -21,9 +23,10 @@ class AdminForgotPasswordController extends Controller
      * Check if admin exists and send OTP to reset password
      *
      *
-     * @throws \App\Exceptions\UserNotFoundException
+     * @throws UserNotFoundException
      *
      * @group Admin Authentication
+     *
      * @response {
      *     "tracking_code": "string",
      *     "otp_type": "string",
@@ -31,7 +34,7 @@ class AdminForgotPasswordController extends Controller
      *  }
      *  @response status=401 { "message" : 'User does not have password'}
      *  @response status=404 { "message" : 'User Not found'}
-        */
+     */
     public function __invoke(InitiateAuthRequest $request): ApiResponseInterface
     {
         try {
@@ -42,7 +45,7 @@ class AdminForgotPasswordController extends Controller
 
             return response()->success([
                 'tracking_code' => $otpSent->trackingCode,
-                'otp_type' => $otpSent->otpType->value,
+                'otp_type' => $otpSent->otpType->identifier(),
                 'identifier' => $request->identifier,
                 'login_method' => 'OTP',
             ], 'OTP sent successfully');

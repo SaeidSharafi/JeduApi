@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Actions\Auth\InitiateAuthAction;
@@ -9,12 +11,11 @@ use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\InitiateAuthRequest;
 
-class InitiateAuthController extends Controller
+final class InitiateAuthController extends Controller
 {
     public function __construct(
         protected InitiateAuthAction $action
-    ) {
-    }
+    ) {}
 
     /**
      * Initiate authentication flow
@@ -24,6 +25,7 @@ class InitiateAuthController extends Controller
      *
      *
      * @group User Authentication
+     *
      * @response 201{
      *         "message": "OTP sent successfully",
      *         "data": {
@@ -51,8 +53,6 @@ class InitiateAuthController extends Controller
      *          },
      *          "metadata": []
      * }
-     *
-     *
      */
     public function __invoke(InitiateAuthRequest $request): ApiResponseInterface
     {
@@ -63,9 +63,9 @@ class InitiateAuthController extends Controller
 
             return response()->success([
                 'tracking_code' => $otpSent->trackingCode,
-                'otp_type'      => $otpSent->otpType->value,
-                'identifier'    => $request->identifier,
-                'login_method'  => 'OTP',
+                'otp_type' => $otpSent->otpType->identifier(),
+                'identifier' => $request->identifier,
+                'login_method' => 'OTP',
             ], 'OTP sent successfully');
 
         } catch (UserHasPasswordException $e) {

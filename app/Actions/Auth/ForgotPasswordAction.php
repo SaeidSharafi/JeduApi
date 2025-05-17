@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Auth;
 
 use App\Dto\OtpManager\SentOtpDto;
@@ -7,7 +9,7 @@ use App\Enums\OtpType;
 use App\Exceptions\UserDoesNotHavePasswordException;
 use App\Exceptions\UserNotFoundException;
 
-class ForgotPasswordAction extends AuthAction
+final class ForgotPasswordAction extends AuthAction
 {
     public function __construct(
         protected GenerateOtpAction $generateOtp,

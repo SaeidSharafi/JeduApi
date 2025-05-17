@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use App\Dto\OtpManager\OtpDto;
 
-describe('OtpDto', function () {
-    it('constructs and returns correct array', function () {
+describe('OtpDto', function (): void {
+    it('constructs and returns correct array', function (): void {
         $code = 123456;
         $trackingCode = 'track-abc-789';
         $dto = new OtpDto($code, $trackingCode);
@@ -20,7 +20,7 @@ describe('OtpDto', function () {
         ]);
     });
 
-    it('handles edge cases for code and trackingCode', function () {
+    it('handles edge cases for code and trackingCode', function (): void {
         $dto = new OtpDto(0, '');
         expect($dto->code)->toBe(0);
         expect($dto->trackingCode)->toBe('');

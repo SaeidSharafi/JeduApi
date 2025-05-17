@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class AdminLogoutController extends Controller
+final class AdminLogoutController extends Controller
 {
     /**
      * Logout the current Admin
@@ -15,6 +17,7 @@ class AdminLogoutController extends Controller
      * @group Admin Authentication
      *
      * @authenticated
+     *
      * @response 500{
      *  "message": "Unauthenticated."
      *  }

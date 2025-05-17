@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Actions\Auth\AuthenticateUserAction;
 use App\Actions\Auth\GenerateOtpAction;
 use App\Actions\Auth\InitiateAuthAction;
@@ -54,7 +56,7 @@ test('InitiateAuthAction returns correct action for user without password', func
     $result = $action->execute($user->email);
 
     expect($result)->toBeInstanceOf(SentOtpDto::class)
-    ->and($result->otpType)->toBe(OtpType::SIGNIN)
+        ->and($result->otpType)->toBe(OtpType::SIGNIN)
         ->and($result->code)->toBe($placeholderCode)
         ->and($result->trackingCode)->toBe($placeholderTrackingCode);
 });
@@ -99,6 +101,6 @@ test('PasswordLoginAction handles missing user', function (): void {
     $mockAuthenticateUser = Mockery::mock(AuthenticateUserAction::class);
     $action = new PasswordLoginAction($mockAuthenticateUser);
 
-    expect(fn (): \Laravel\Sanctum\NewAccessToken => $action->execute('nonexistent@example.com', 'email', 'password123'))
-        ->toThrow(\App\Exceptions\UserNotFoundException::class);
+    expect(fn (): NewAccessToken => $action->execute('nonexistent@example.com', 'email', 'password123'))
+        ->toThrow(App\Exceptions\UserNotFoundException::class);
 });

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Symfony\Component\HttpFoundation\Response;
 
 test('success response returns correct structure', function (): void {

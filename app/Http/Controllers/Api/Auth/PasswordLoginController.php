@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Actions\Auth\PasswordLoginAction;
@@ -11,12 +13,11 @@ use App\Http\Resources\Auth\UserResource;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
-class PasswordLoginController extends Controller
+final class PasswordLoginController extends Controller
 {
     public function __construct(
         protected PasswordLoginAction $action
-    ) {
-    }
+    ) {}
 
     /**
      * Authenticate User (Customer) with identifier (phone/email) and password
@@ -24,9 +25,10 @@ class PasswordLoginController extends Controller
      * Used when the /auth/initiate step determines a password exists and is required.
      *
      *
-     * @throws \App\Exceptions\UserNotFoundException
+     * @throws UserNotFoundException
      *
      * @group User Authentication
+     *
      * @response {
      *      "message": "User Logged in successfully",
      *      "data": {
@@ -49,7 +51,6 @@ class PasswordLoginController extends Controller
      *      "errors": null,
      *      "metadata": []
      * }
-     *
      * @response 422{
      *      "message": "The provided credentials are incorrect.",
      *      "errors": {
@@ -66,8 +67,8 @@ class PasswordLoginController extends Controller
 
         $user = User::when(
             $type === 'email',
-            fn(Builder $q) => $q->where('email', $request->identifier),
-            fn(Builder $q) => $q->where('phone', $request->identifier)
+            fn (Builder $q) => $q->where('email', $request->identifier),
+            fn (Builder $q) => $q->where('phone', $request->identifier)
         )->first();
 
         try {
@@ -78,10 +79,10 @@ class PasswordLoginController extends Controller
             );
 
             return response()->success([
-                'token'      => $token->plainTextToken,
+                'token' => $token->plainTextToken,
                 'expires_at' => $token->accessToken->expires_at,
-                'type'       => 'Bearer',
-                'user'       => UserResource::make($user),
+                'type' => 'Bearer',
+                'user' => UserResource::make($user),
             ], 'User Logged in successfully');
         } catch (UserNotFoundException $exception) {
             return response()->notFound(

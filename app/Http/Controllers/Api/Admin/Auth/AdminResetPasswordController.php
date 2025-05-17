@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\Auth;
 
 use App\Actions\Auth\ResetPasswordAction;
@@ -9,7 +11,7 @@ use App\Exceptions\UserDoesNotHavePasswordException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ResetPasswordOtpRequest;
 
-class AdminResetPasswordController extends Controller
+final class AdminResetPasswordController extends Controller
 {
     public function __construct(
         protected ResetPasswordAction $action
@@ -24,6 +26,7 @@ class AdminResetPasswordController extends Controller
      * @throws \App\Exceptions\UserNotFoundException
      *
      * @group Admin Authentication
+     *
      * @response  {
      *  "message": "Operation successful.",
      *  "data": "Password reset OTP sent successfully",

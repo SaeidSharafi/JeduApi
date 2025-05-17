@@ -5,8 +5,8 @@ declare(strict_types=1);
 use App\Rules\IranMobilePhoneRule;
 use Illuminate\Support\Facades\Validator;
 
-describe('IranMobilePhoneRule', function () {
-    it('accepts valid mobile numbers', function () {
+describe('IranMobilePhoneRule', function (): void {
+    it('accepts valid mobile numbers', function (): void {
         $rule = new IranMobilePhoneRule();
         $validMobiles = [
             '09123456789', // 09X
@@ -26,7 +26,7 @@ describe('IranMobilePhoneRule', function () {
         }
     });
 
-    it('rejects invalid mobile numbers', function () {
+    it('rejects invalid mobile numbers', function (): void {
         $rule = new IranMobilePhoneRule();
         $invalidMobiles = [
             'not-a-number',
@@ -36,8 +36,8 @@ describe('IranMobilePhoneRule', function () {
         ];
         foreach ($invalidMobiles as $mobile) {
             $validator = Validator::make(['mobile' => $mobile], ['mobile' => [$rule]]);
-            if (!$validator->fails()) {
-                fwrite(STDERR, "Failed to reject invalid: " . var_export($mobile, true) . "\n");
+            if (! $validator->fails()) {
+                fwrite(STDERR, 'Failed to reject invalid: '.var_export($mobile, true)."\n");
             }
             expect($validator->fails())->toBeTrue();
         }

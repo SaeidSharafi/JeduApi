@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use App\Contracts\ApiResponseInterface;
@@ -9,9 +11,11 @@ use App\Http\Responses\ApiSuccessResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Validator;
 use Symfony\Component\HttpFoundation\Response as HttpStatus;
+use Throwable;
 
-class ResponseMacroServiceProvider extends ServiceProvider
+final class ResponseMacroServiceProvider extends ServiceProvider
 {
     public function register(): void {}
 
@@ -24,7 +28,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
          *
          * @param  mixed|null  $data  Data payload (optional).
          * @param  string  $message  Success message (optional).
-         * @return \Illuminate\Http\JsonResponse
+         * @return JsonResponse
          */
         $responseFactory->macro('success',
             function (mixed $data = null, string $message = 'Operation successful.'): ApiResponseInterface {
@@ -37,7 +41,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
          *
          * @param  mixed|null  $data  Created resource data (optional).
          * @param  string  $message  Success message (optional).
-         * @return \Illuminate\Http\JsonResponse
+         * @return JsonResponse
          */
         $responseFactory->macro('created',
             function (mixed $data = null, string $message = 'Resource created successfully.'): ApiResponseInterface {
@@ -48,7 +52,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
          * No content response (204 No Content)
          * Used for successful actions that don't return a body (e.g., delete).
          *
-         * @return \Illuminate\Http\JsonResponse
+         * @return JsonResponse
          */
         $responseFactory->macro('noContentJson', function () use ($responseFactory): JsonResponse {
             // Strictly, 204 should have NO body, json(null) ensures correct Content-Type header if needed
@@ -63,10 +67,10 @@ class ResponseMacroServiceProvider extends ServiceProvider
          * @param  string  $message  Error message.
          * @param  int  $status  HTTP status code.
          * @param  mixed|null  $errors  Optional detailed errors.
-         * @return \Illuminate\Http\JsonResponse
+         * @return JsonResponse
          */
         $responseFactory->macro('error',
-            function (string $message, int $status = HttpStatus::HTTP_BAD_REQUEST,mixed $errors = null): ApiResponseInterface {
+            function (string $message, int $status = HttpStatus::HTTP_BAD_REQUEST, mixed $errors = null): ApiResponseInterface {
                 return new ApiFailResponse($message, $errors, $status);
             });
 
@@ -75,7 +79,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
          *
          * @param  \Illuminate\Contracts\Validation\Validator|array  $errors  Validator instance or errors array.
          * @param  string  $message  Error message (optional).
-         * @return \Illuminate\Http\JsonResponse
+         * @return JsonResponse
          */
         $responseFactory->macro('validationError',
             function (string $message = 'The given data was invalid.') use ($responseFactory): ApiResponseInterface {
@@ -90,11 +94,11 @@ class ResponseMacroServiceProvider extends ServiceProvider
          *
          * @param  \Illuminate\Contracts\Validation\Validator|array  $errors  Validator instance or errors array.
          * @param  string  $message  Error message (optional).
-         * @return \Illuminate\Http\JsonResponse
+         * @return JsonResponse
          */
         $responseFactory->macro('validationErrors',
             function (mixed $errors, string $message = 'The given data was invalid.'): ApiResponseInterface {
-                $errorPayload = ($errors instanceof Validator) ? $errors->errors()->toArray() : $errors;
+                $errorPayload = ($errors instanceof \Illuminate\Contracts\Validation\Validator) ? $errors->errors()->toArray() : $errors;
 
                 return new ApiFailResponse($message, $errorPayload, HttpStatus::HTTP_UNPROCESSABLE_ENTITY);
             });
@@ -103,7 +107,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
          * Not Found response (404 Not Found)
          *
          * @param  string  $message  Error message (optional).
-         * @return \Illuminate\Http\JsonResponse
+         * @return JsonResponse
          */
         $responseFactory->macro('notFound',
             function (string $message = 'Resource not found.') use ($responseFactory): ApiResponseInterface {
@@ -114,7 +118,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
          * Forbidden response (403 Forbidden)
          *
          * @param  string  $message  Error message (optional).
-         * @return \Illuminate\Http\JsonResponse
+         * @return JsonResponse
          */
         $responseFactory->macro('forbidden',
             function (string $message = 'This action is forbidden.') use ($responseFactory): ApiResponseInterface {
@@ -125,7 +129,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
          * Unauthorized response (401 Unauthorized)
          *
          * @param  string  $message  Error message (optional).
-         * @return \Illuminate\Http\JsonResponse
+         * @return JsonResponse
          */
         $responseFactory->macro('unauthorized',
             function (string $message = 'Authentication required.') use ($responseFactory): ApiResponseInterface {
@@ -136,7 +140,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
          * Method Not Allowed response (405 Method Not Allowed)
          *
          * @param  string  $message  Error message (optional).
-         * @return \Illuminate\Http\JsonResponse
+         * @return JsonResponse
          */
         $responseFactory->macro('methodNotAllowed',
             function (string $message = 'Method not allowed for this resource.') use ($responseFactory): ApiResponseInterface {
@@ -150,10 +154,10 @@ class ResponseMacroServiceProvider extends ServiceProvider
          *
          * @param  string  $message  Error message (optional).
          * @param  mixed|null  $errors  Optional detailed errors (use cautiously in production).
-         * @return \Illuminate\Http\JsonResponse
+         * @return JsonResponse
          */
         $responseFactory->macro('serverError',
-            function (string $message = 'An internal server error occurred.', ?\Throwable $exception = null): ApiResponseInterface {
+            function (string $message = 'An internal server error occurred.', ?Throwable $exception = null): ApiResponseInterface {
                 // In production, you might want to log the actual error but return a generic message.
                 // You could add logic here based on app environment.
                 return new ApiErrorResponse($message, $exception, HttpStatus::HTTP_INTERNAL_SERVER_ERROR);

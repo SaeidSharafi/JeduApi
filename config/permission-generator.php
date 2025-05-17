@@ -1,6 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 use SaeidSharafi\LaravelPermissionGenerator\Enums\PermissionAction;
+
 // You might also import your application's custom Enums if using option #4 below
 // use App\Enums\MyCustomActions;
 
@@ -60,7 +63,7 @@ return [
             PermissionAction::UPDATE_OWN,
             PermissionAction::DELETE,
             PermissionAction::DELETE_OWN,
-        ]
+        ],
         /*
         'user' => [
             PermissionAction::VIEW_SCOPED,      // Standard Enum: users.view_any, users.view

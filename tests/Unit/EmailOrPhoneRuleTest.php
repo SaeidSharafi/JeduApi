@@ -5,8 +5,8 @@ declare(strict_types=1);
 use App\Rules\EmailOrPhoneRule;
 use Illuminate\Support\Facades\Validator;
 
-describe('EmailOrPhoneRule', function () {
-    it('accepts valid email addresses', function () {
+describe('EmailOrPhoneRule', function (): void {
+    it('accepts valid email addresses', function (): void {
         $rule = new EmailOrPhoneRule();
         $emails = [
             'user@example.com',
@@ -19,7 +19,7 @@ describe('EmailOrPhoneRule', function () {
         }
     });
 
-    it('accepts valid mobile numbers', function () {
+    it('accepts valid mobile numbers', function (): void {
         $rule = new EmailOrPhoneRule();
         $mobiles = [
             '09123456789', // 09X
@@ -33,7 +33,7 @@ describe('EmailOrPhoneRule', function () {
         }
     });
 
-    it('accepts valid landline numbers', function () {
+    it('accepts valid landline numbers', function (): void {
         $rule = new EmailOrPhoneRule();
         $landlines = [
             '02112345678',
@@ -46,7 +46,7 @@ describe('EmailOrPhoneRule', function () {
         }
     });
 
-    it('rejects invalid values', function () {
+    it('rejects invalid values', function (): void {
         $rule = new EmailOrPhoneRule();
         $invalids = [
             'not-an-email',
@@ -62,7 +62,7 @@ describe('EmailOrPhoneRule', function () {
         }
     });
 
-    it('rejects null values as invalid', function () {
+    it('rejects null values as invalid', function (): void {
         $rule = new EmailOrPhoneRule();
         $validator = Validator::make(['contact' => null], ['contact' => ['required', $rule]]);
         expect($validator->fails())->toBeTrue();

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Actions\Auth\AuthenticateUserAction;
@@ -13,13 +15,12 @@ use App\Http\Requests\Auth\VerifyOtpRequest;
 use App\Http\Resources\Auth\UserResource;
 use App\Models\User;
 
-class OtpAuthenticationController extends Controller
+final class OtpAuthenticationController extends Controller
 {
     public function __construct(
         protected VerifyOtpAction $verifyOtpAction,
         protected AuthenticateUserAction $authenticateUser,
-    ) {
-    }
+    ) {}
 
     /**
      * Verify an OTP code and potentially log in/register
@@ -28,7 +29,7 @@ class OtpAuthenticationController extends Controller
      * If valid for login/registration, authenticates the user (creating if necessary) and returns auth token.
      *
      *
-     * @throws \App\Exceptions\InvalidOtpCode
+     * @throws InvalidOtpCode
      *
      * @group User Authentication
      *
@@ -54,7 +55,6 @@ class OtpAuthenticationController extends Controller
      * "errors": null,
      * "metadata": []
      * }
-     *
      */
     public function __invoke(VerifyOtpRequest $request): ApiResponseInterface
     {
@@ -62,7 +62,7 @@ class OtpAuthenticationController extends Controller
             $user = $this->verifyOtpAction->execute(
                 $request->identifier,
                 $request->tracking_code,
-                $request->otp_code,
+                (int) $request->otp_code,
                 OtpType::from($request->otp_type));
             $token = $this->authenticateUser->execute($user);
         } catch (UserNotFoundException) {
@@ -75,10 +75,10 @@ class OtpAuthenticationController extends Controller
 
         return response()->success(
             [
-                'token'      => $token->plainTextToken,
+                'token' => $token->plainTextToken,
                 'expires_at' => $token->accessToken->expires_at,
-                'type'       => 'Bearer',
-                'user'       => UserResource::make($user),
+                'type' => 'Bearer',
+                'user' => UserResource::make($user),
             ]
         );
     }

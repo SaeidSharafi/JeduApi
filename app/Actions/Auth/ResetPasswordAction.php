@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Auth;
 
 use App\Enums\OtpType;
@@ -9,7 +11,7 @@ use App\Exceptions\UserNotFoundException;
 use App\Services\OtpManagerService;
 use Illuminate\Support\Facades\Hash;
 
-class ResetPasswordAction extends AuthAction
+final class ResetPasswordAction extends AuthAction
 {
     public function __construct(
         protected OtpManagerService $otpManager,
@@ -19,7 +21,7 @@ class ResetPasswordAction extends AuthAction
     public function execute(
         string $identifier,
         string $trackingCode,
-        string $otpCode,
+        int $otpCode,
         string $password,
         string $guard = 'user'
     ): void {
@@ -34,8 +36,8 @@ class ResetPasswordAction extends AuthAction
         }
 
         try {
-           $this->verifyOtpAction->execute($user, $trackingCode, $otpCode, OtpType::RESET_PASSWORD, $guard);
-        }catch (InvalidOtpCode $e){
+            $this->verifyOtpAction->execute($user, $trackingCode, $otpCode, OtpType::RESET_PASSWORD, $guard);
+        } catch (InvalidOtpCode $e) {
             throw new InvalidOtpCode();
         }
 

@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Dto\OtpManager;
 
-use App\Enums\OtpType;
+use App\Contracts\OtpTypeInterface;
 
-class SentOtpDto
+final class SentOtpDto
 {
     public int $code;
 
-    public ?OtpType $otpType;
+    public ?OtpTypeInterface $otpType;
 
     public string $trackingCode;
 
     private int $waitingTime;
 
-    public function __construct(int $code, OtpType $otpType, int $waitingTime, string $trackingCode)
+    public function __construct(int $code, OtpTypeInterface $otpType, int $waitingTime, string $trackingCode)
     {
         $this->code = $code;
         $this->otpType = $otpType;

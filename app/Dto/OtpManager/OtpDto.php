@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Dto\OtpManager;
 
-class OtpDto
+final class OtpDto
 {
     public int $code;
 

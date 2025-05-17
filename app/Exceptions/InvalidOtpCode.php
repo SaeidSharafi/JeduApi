@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Exceptions;
 
 use Exception;
 
-class InvalidOtpCode extends Exception {}
+final class InvalidOtpCode extends Exception {}

@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Dto\OtpManager\OtpDto;
 use App\Enums\OtpType;
 use App\Models\Admin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Hash;
 
 uses(RefreshDatabase::class);
 
@@ -54,7 +55,7 @@ test('admin otp verification requires valid otp_type', function (): void {
     $admin = Admin::factory()->create();
     Cache::put('otp_admin@example.com_admin_value_SIGNIN', [
         'code' => $this->OtpCode,
-        'tracking_code' => 'test-tracking'
+        'tracking_code' => 'test-tracking',
     ], 300);
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
@@ -84,7 +85,7 @@ test('admin otp verification requires valid identifier', function (): void {
 test('admin otp verification fails with wrong otp', function (): void {
     $admin = Admin::factory()->create(['email' => 'admin@example.com']);
     Cache::put('otp_admin@example.com_admin_value_SIGNIN',
-        new OtpDto($this->OtpCode,$this->trackingCode), 300);
+        new OtpDto($this->OtpCode, $this->trackingCode), 300);
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
         'identifier' => 'admin@example.com',
@@ -102,7 +103,7 @@ test('admin otp verification fails with expired otp', function (): void {
     // Put expired OTP in cache
     Cache::put('otp_admin@example.com_admin_value_SIGNIN', [
         'code' => $this->OtpCode,
-        'tracking_code' => 'test-tracking'
+        'tracking_code' => 'test-tracking',
     ], -1); // Expired
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [

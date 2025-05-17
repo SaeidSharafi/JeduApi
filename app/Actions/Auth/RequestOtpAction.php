@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Auth;
 
 use App\Dto\OtpManager\SentOtpDto;
 use App\Enums\OtpType;
 use App\Exceptions\UserNotFoundException;
 
-class RequestOtpAction extends AuthAction
+final class RequestOtpAction extends AuthAction
 {
     public function __construct(
         protected GenerateOtpAction $generateOtp

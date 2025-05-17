@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Contracts\ApiResponseInterface;
@@ -16,11 +18,11 @@ use Spatie\QueryBuilder\QueryBuilder;
  * @group Course Management
  *
  * APIs for managing courses
+ *
  * @authenticated Admin
  */
-class CourseController extends Controller
+final class CourseController extends Controller
 {
-
     /**
      * return a list of the courses.
      *
@@ -32,7 +34,7 @@ class CourseController extends Controller
      * @queryParam page integer Page number for pagination. Example: 2
      * @queryParam per_page integer Number of results per page. Example: 15
      */
-    public function index():  ApiResponseInterface
+    public function index(): ApiResponseInterface
     {
         Gate::authorize('viewAny', Course::class);
         $courses = QueryBuilder::for(Course::class)
@@ -47,9 +49,9 @@ class CourseController extends Controller
     /**
      * Create a new course.
      */
-    public function store(CourseData $data):  ApiResponseInterface
+    public function store(CourseData $data): ApiResponseInterface
     {
-        Gate::authorize('create',Course::class);
+        Gate::authorize('create', Course::class);
 
         $course = Course::query()->create($data->all());
 
@@ -58,11 +60,10 @@ class CourseController extends Controller
 
     /**
      *  return the specified course detail.
-     *
      */
-    public function show(Course $course):  ApiResponseInterface
+    public function show(Course $course): ApiResponseInterface
     {
-        Gate::authorize('view',$course);
+        Gate::authorize('view', $course);
 
         return response()->success(CourseResponseData::from($course)->toArray());
     }
@@ -70,7 +71,7 @@ class CourseController extends Controller
     /**
      * return the specified course detail for edit.
      */
-    public function edit(Course $course):  ApiResponseInterface
+    public function edit(Course $course): ApiResponseInterface
     {
         Gate::authorize('update', $course);
 
@@ -80,10 +81,11 @@ class CourseController extends Controller
     /**
      * Update the specified course.
      */
-    public function update(CourseData $data, Course $course):  ApiResponseInterface
+    public function update(CourseData $data, Course $course): ApiResponseInterface
     {
         Gate::authorize('update', $course);
         $course->update($data->all());
+
         return response()->success(CourseResponseData::from($course)->toArray());
     }
 
@@ -94,6 +96,7 @@ class CourseController extends Controller
     {
         Gate::authorize('delete', $course);
         $course->delete();
+
         return response()->noContentJson();
     }
 }

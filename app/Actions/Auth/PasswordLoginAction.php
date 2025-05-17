@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Auth;
 
 use App\Exceptions\UserNotFoundException;
@@ -9,7 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\NewAccessToken;
 
-class PasswordLoginAction extends AuthAction
+final class PasswordLoginAction extends AuthAction
 {
     public function __construct(
         protected AuthenticateUserAction $authenticateUser

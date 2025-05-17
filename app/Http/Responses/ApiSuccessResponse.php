@@ -1,12 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Responses;
 
 use App\Contracts\ApiResponseInterface;
 use Symfony\Component\HttpFoundation\Response;
 
-readonly class ApiSuccessResponse implements ApiResponseInterface
+final readonly class ApiSuccessResponse implements ApiResponseInterface
 {
+    /**
+     * Create a new instance of the ApiSuccessResponse.
+     *
+     * @param  array<string, mixed>  $metadata
+     * @param  array<string, string>  $headers
+     */
     public function __construct(
         private mixed $message,
         private mixed $data,
@@ -17,9 +25,10 @@ readonly class ApiSuccessResponse implements ApiResponseInterface
 
     /**
      * {@inheritDoc}
+     *
      * @codeCoverageIgnore
      */
-    public function toResponse($request): \Illuminate\Http\JsonResponse //@pest-ignore-type
+    public function toResponse($request): \Illuminate\Http\JsonResponse // @pest-ignore-type
     {
         return response()->json(
             [

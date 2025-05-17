@@ -1,21 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ResetPasswordOtpRequest extends FormRequest
+final class ResetPasswordOtpRequest extends FormRequest
 {
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * @return array<string, list<mixed>>
+     */
     public function rules(): array
     {
         return [
             'identifier' => ['required', 'string'],
-            'otp_code' => ['required', 'numeric', 'min:'.config('otp.code_min'),'max:'.config('otp.code_max')],
+            'otp_code' => ['required', 'integer', 'min:'.config('otp.code_min'), 'max:'.config('otp.code_max')],
             'tracking_code' => ['required', 'string'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ];
@@ -23,6 +28,8 @@ class ResetPasswordOtpRequest extends FormRequest
 
     /**
      * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
      */
     public function bodyParameters(): array
     {

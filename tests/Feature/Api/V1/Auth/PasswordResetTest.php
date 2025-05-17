@@ -1,13 +1,12 @@
 <?php
 
-use App\Enums\OtpType;
+declare(strict_types=1);
+
 use App\Models\User;
-use App\Models\Admin;
 use App\Notifications\Auth\OtpEmailNotification;
-use App\Services\OtpManagerService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
@@ -21,20 +20,11 @@ beforeEach(function (): void {
     $this->invalidOtpCode = $this->otpCode + 1 > $maxOtpCode ? $this->otpCode - 1 : $this->otpCode + 1;
     $this->trackingCode = 'test-tracking';
     $waitingTime = 120;
-
-    $otpManagerMock =  $this->mock(OtpManagerService::class)
-        ->makePartial()
-        ->shouldAllowMockingProtectedMethods()
-        ->shouldReceive('generateTrackingCode')
-        ->withNoArgs()
-        ->andReturn($this->trackingCode)
-        ->shouldReceive('generateCode')
-        ->withNoArgs()
-        ->andReturn($this->otpCode)
-        ->getMock();
-    $reflection = new \ReflectionClass($otpManagerMock);
-    $property = $reflection->getProperty('waitingTime');
-    $property->setValue($otpManagerMock, $waitingTime);
+    $fakeGenerator = $this->app->make(App\Contracts\OtpGeneratorInterface::class);
+    if ($fakeGenerator instanceof Tests\Fakes\FakeOtpGenerator) {
+        $fakeGenerator->setNextOtpCode($this->otpCode)
+            ->setNextTrackingCode($this->trackingCode);
+    }
 });
 
 test('user can request password reset otp', function (): void {
@@ -53,8 +43,8 @@ test('user can request password reset otp', function (): void {
             'data' => [
                 'tracking_code',
                 'otp_type',
-                'identifier'
-            ]
+                'identifier',
+            ],
         ]);
 
     Notification::assertSentTo($user, OtpEmailNotification::class);
@@ -72,7 +62,7 @@ test('user without password cannot request password reset', function (): void {
 
     $response->assertStatus(422)
         ->assertJson([
-            'message' => 'User does not have password'
+            'message' => 'User does not have password',
         ]);
 });
 
@@ -83,7 +73,7 @@ test('non existent user cannot request password reset', function (): void {
 
     $response->assertNotFound()
         ->assertJson([
-            'message' => 'User not found'
+            'message' => 'User not found',
         ]);
 });
 test('non existent user cannot reset password', function (): void {
@@ -98,7 +88,7 @@ test('non existent user cannot reset password', function (): void {
 
     $response->assertNotFound()
         ->assertJson([
-            'message' => 'User not found'
+            'message' => 'User not found',
         ]);
 });
 test('user without password cannot reset password', function (): void {
@@ -116,7 +106,7 @@ test('user without password cannot reset password', function (): void {
     ]);
     $response->assertStatus(422)
         ->assertJson([
-            'message' => 'User does not have password'
+            'message' => 'User does not have password',
         ]);
 });
 
@@ -143,7 +133,7 @@ test('user can reset password with valid otp', function (): void {
     $response
         ->assertOk()
         ->assertJson([
-            'message' => 'Password reset successfully'
+            'message' => 'Password reset successfully',
         ]);
 
     // Verify password was actually changed
@@ -175,7 +165,7 @@ test('user cannot reset password with invalid otp', function (): void {
 
     $response->assertStatus(422)
         ->assertJson([
-            'message' => 'Invalid OTP code'
+            'message' => 'Invalid OTP code',
         ]);
 
     // Verify password was not changed

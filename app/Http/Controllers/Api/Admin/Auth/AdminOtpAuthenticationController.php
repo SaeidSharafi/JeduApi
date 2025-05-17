@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\Auth;
 
 use App\Actions\Auth\AuthenticateUserAction;
@@ -12,13 +14,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyOtpRequest;
 use App\Http\Resources\Auth\AdminResource;
 
-class AdminOtpAuthenticationController extends Controller
+final class AdminOtpAuthenticationController extends Controller
 {
     public function __construct(
         protected VerifyOtpAction $verifyOtpAction,
         protected AuthenticateUserAction $authenticateUser
-    ) {
-    }
+    ) {}
 
     /**
      * Verify an OTP code and potentially log in/register
@@ -26,11 +27,11 @@ class AdminOtpAuthenticationController extends Controller
      * User submits phone number (or email if already registered) and OTP code.
      * If valid for login/registration, authenticates the user (creating if necessary) and returns auth token.
      *
-     * @param  VerifyOtpRequest  $request
      *
-     * @return ApiResponseInterface
-     * @throws \App\Exceptions\InvalidOtpCode
+     * @throws InvalidOtpCode
+     *
      * @group Admin Authentication
+     *
      * @response 200{
      *  "message": "User Logged in successfully",
      *  "data": {
@@ -60,7 +61,7 @@ class AdminOtpAuthenticationController extends Controller
             $user = $this->verifyOtpAction->execute(
                 $request->identifier,
                 $request->tracking_code,
-                $request->otp_code,
+                (int) $request->otp_code,
                 OtpType::from($request->otp_type),
                 guard: 'admin'
             );
@@ -72,12 +73,13 @@ class AdminOtpAuthenticationController extends Controller
                 message: 'Invalid OTP code'
             );
         }
+
         return response()->success(
             [
                 'token' => $token->plainTextToken,
                 'expires_at' => $token->accessToken->expires_at,
                 'type' => 'Bearer',
-                'user' => AdminResource::make($user)
+                'user' => AdminResource::make($user),
             ], 'Authenticated successfully');
     }
 }

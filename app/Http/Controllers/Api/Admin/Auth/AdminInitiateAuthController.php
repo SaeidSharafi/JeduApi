@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\Auth;
 
 use App\Actions\Auth\InitiateAuthAction;
@@ -9,12 +11,11 @@ use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\InitiateAuthRequest;
 
-class AdminInitiateAuthController extends Controller
+final class AdminInitiateAuthController extends Controller
 {
     public function __construct(
         protected InitiateAuthAction $action
-    ) {
-    }
+    ) {}
 
     /**
      * Initiate authentication flow
@@ -23,6 +24,7 @@ class AdminInitiateAuthController extends Controller
      * found)
      *
      * @group Admin Authentication
+     *
      * @response 201{
      *          "message": "OTP sent successfully",
      *          "data": {
@@ -61,9 +63,9 @@ class AdminInitiateAuthController extends Controller
 
             return response()->success([
                 'tracking_code' => $otpSent->trackingCode,
-                'otp_type'      => $otpSent->otpType->value,
-                'identifier'    => $request->identifier,
-                'login_method'  => 'OTP',
+                'otp_type' => $otpSent->otpType->identifier(),
+                'identifier' => $request->identifier,
+                'login_method' => 'OTP',
             ], 'OTP sent successfully');
 
         } catch (UserHasPasswordException $e) {

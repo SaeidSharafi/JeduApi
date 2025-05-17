@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Dto\OtpManager\OtpDto;
 use App\Enums\OtpType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Hash;
 
 uses(RefreshDatabase::class);
 beforeEach(function (): void {
@@ -37,7 +38,6 @@ test('initiate auth requires valid phone format when type is phone', function ()
         ->assertJsonValidationErrors(['identifier']);
 });
 
-
 test('otp request requires valid otp_type', function (): void {
     $user = User::factory()->create();
 
@@ -52,7 +52,7 @@ test('otp request requires valid otp_type', function (): void {
 
 test('otp verification requires valid otp_type', function (): void {
     $user = User::factory()->create();
-    Cache::put('otp_test@example.com_user_value_SIGNIN', new OtpDto($this->otpCode,$this->trackingCode), 300);
+    Cache::put('otp_test@example.com_user_value_SIGNIN', new OtpDto($this->otpCode, $this->trackingCode), 300);
 
     $response = $this->postJson('/api/v1/auth/otp/verify', [
         'identifier' => 'test@example.com',
@@ -67,12 +67,12 @@ test('otp verification requires valid otp_type', function (): void {
 
 test('otp verification fails with wrong otp', function (): void {
     $user = User::factory()->create(['email' => 'test@example.com']);
-    Cache::put('otp_test@example.com_user_value_SIGNIN',new OtpDto($this->otpCode,$this->trackingCode), 300);
+    Cache::put('otp_test@example.com_user_value_SIGNIN', new OtpDto($this->otpCode, $this->trackingCode), 300);
 
     $response = $this->postJson('/api/v1/auth/otp/verify', [
         'identifier' => 'test@example.com',
         'type' => 'email',
-        'otp_code'  => $this->invalidOtpCode,
+        'otp_code' => $this->invalidOtpCode,
         'tracking_code' => 'test-tracking',
         'otp_type' => OtpType::SIGNIN->value,
     ]);
@@ -82,14 +82,14 @@ test('otp verification fails with wrong otp', function (): void {
 
 test('otp verification fails after max attempts', function (): void {
     $user = User::factory()->create(['email' => 'test@example.com']);
-    Cache::put("otp_{$user->phone}_user_value_SIGNIN",new OtpDto($this->otpCode,$this->trackingCode), 300);
+    Cache::put("otp_{$user->phone}_user_value_SIGNIN", new OtpDto($this->otpCode, $this->trackingCode), 300);
 
     // Try multiple times
     for ($i = 0; $i < 4; $i++) {
         $response = $this->postJson('/api/v1/auth/otp/verify', [
             'identifier' => 'test@example.com',
             'type' => 'email',
-            'otp_code'  => $this->otpCode,
+            'otp_code' => $this->otpCode,
             'tracking_code' => 'test-tracking',
             'otp_type' => OtpType::SIGNIN->value,
         ]);

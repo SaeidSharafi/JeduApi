@@ -4,34 +4,47 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Contracts\OtpGeneratorInterface;
 use App\Contracts\OtpTypeInterface;
 use App\Dto\OtpManager\OtpDto;
 use App\Dto\OtpManager\SentOtpDto;
 use App\Events\OtpPrepared;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-class OtpManagerService
+final class OtpManagerService
 {
     private string $trackingCode;
 
     private ?OtpTypeInterface $type = null;
 
-    protected int $waitingTime;
+    private int $waitingTime;
 
-    public function __construct()
+    private OtpGeneratorInterface $otpGenerator;
+
+    public function __construct(OtpGeneratorInterface $otpGenerator)
     {
+        $this->otpGenerator = $otpGenerator;
         $this->waitingTime = config('otp.waiting_time');
 
     }
 
-    public function send(string $identifier, string $guard, ?OtpTypeInterface $type = null, array $params = []): SentOtpDto
-    {
+    /**
+     * @template TK
+     * @template TV
+     *
+     * @param  array<TK,TV>  $params
+     */
+    public function send(
+        string $identifier,
+        string $guard,
+        ?OtpTypeInterface $type = null,
+        array $params = []
+    ): SentOtpDto {
 
         $this->type = $type;
-        $this->trackingCode = $this->generateTrackingCode();
+        $this->trackingCode = $this->otpGenerator->generateTrackingCode();
 
         $otp = new SentOtpDto($this->getNewCode($identifier, $guard), $type, $this->waitingTime, $this->trackingCode);
 
@@ -40,14 +53,25 @@ class OtpManagerService
             guard: $guard,
             code: (string) $otp->code,
             type: $type,
-            trackingCode: $otp->trackingCode, params: $params,
+            trackingCode: $otp->trackingCode,
+            params: $params,
         ));
 
         return $otp;
     }
 
-    public function sendAndRetryCheck(string $identifier, string $guard, ?OtpTypeInterface $type = null, array $params = []): SentOtpDto
-    {
+    /**
+     * @template TK
+     * @template TV
+     *
+     * @param  array<TK,TV>  $params
+     */
+    public function sendAndRetryCheck(
+        string $identifier,
+        string $guard,
+        ?OtpTypeInterface $type = null,
+        array $params = []
+    ): SentOtpDto {
 
         $this->type = $type;
 
@@ -70,8 +94,13 @@ class OtpManagerService
         ]);
     }
 
-    public function verify(string $identifier, string $guard, int $otp, string $trackingCode, ?OtpTypeInterface $type = null): bool
-    {
+    public function verify(
+        string $identifier,
+        string $guard,
+        int $otp,
+        string $trackingCode,
+        ?OtpTypeInterface $type = null
+    ): bool {
 
         $this->type = $type;
         $this->trackingCode = $trackingCode;
@@ -90,33 +119,6 @@ class OtpManagerService
         $this->deleteVerifyCode($identifier, $guard, $type);
 
         return true;
-    }
-
-    protected function handleVerificationAttempt(string $identifier, string $guard): void
-    {
-        $attemptsKey = $this->getCacheKey($identifier, $guard, 'verify_attempts');
-
-        $maxAttempts = config('otp.max_verify_attempts', 3);
-
-        $attempts = Cache::get($attemptsKey, 0) + 1;
-
-        if ($attempts > $maxAttempts) {
-            $this->deleteVerifyCode($identifier, $guard, $this->type);
-            Cache::forget($attemptsKey);
-
-            throw ValidationException::withMessages([
-                'otp' => [__('otp-manager::otp.request_new')],
-            ]);
-        }
-
-        Cache::put($attemptsKey, $attempts, $this->waitingTime);
-    }
-
-    protected function resetSendAttempts(string $identifier, string $guard): void
-    {
-        $attemptsKey = $this->getCacheKey($identifier, $guard, 'verify_attempts');
-
-        Cache::forget($attemptsKey);
     }
 
     public function getVerifyCode(string $identifier, string $guard, ?OtpTypeInterface $type = null): ?OtpDto
@@ -160,9 +162,36 @@ class OtpManagerService
         return Cache::get($this->getCacheKey($identifier, $guard, 'value')) !== null;
     }
 
-    protected function getNewCode(string $identifier, string $guard): int
+    private function handleVerificationAttempt(string $identifier, string $guard): void
     {
-        $otp = $this->generateCode();
+        $attemptsKey = $this->getCacheKey($identifier, $guard, 'verify_attempts');
+
+        $maxAttempts = config('otp.max_verify_attempts', 3);
+
+        $attempts = Cache::get($attemptsKey, 0) + 1;
+
+        if ($attempts > $maxAttempts) {
+            $this->deleteVerifyCode($identifier, $guard, $this->type);
+            Cache::forget($attemptsKey);
+
+            throw ValidationException::withMessages([
+                'otp' => [__('otp-manager::otp.request_new')],
+            ]);
+        }
+
+        Cache::put($attemptsKey, $attempts, $this->waitingTime);
+    }
+
+    private function resetSendAttempts(string $identifier, string $guard): void
+    {
+        $attemptsKey = $this->getCacheKey($identifier, $guard, 'verify_attempts');
+
+        Cache::forget($attemptsKey);
+    }
+
+    private function getNewCode(string $identifier, string $guard): int
+    {
+        $otp = $this->otpGenerator->generateCode();
 
         $otpDto = new OtpDto($otp, $this->trackingCode);
 
@@ -172,18 +201,7 @@ class OtpManagerService
         return $otp;
     }
 
-    protected function generateCode(): int{
-        $min = config('otp.code_min');
-        $max = config('otp.code_max');
-
-         return random_int($min, $max);
-    }
-
-    protected function generateTrackingCode(): string
-    {
-        return Str::uuid()->toString();
-    }
-    protected function getCacheKey(string $identifier, string $guard, string $for): string
+    private function getCacheKey(string $identifier, string $guard, string $for): string
     {
         return sprintf(
             'otp_%s_%s_%s_%s',

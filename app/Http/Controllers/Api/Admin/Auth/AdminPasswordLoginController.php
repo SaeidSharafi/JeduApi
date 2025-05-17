@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\Auth;
 
 use App\Actions\Auth\PasswordLoginAction;
@@ -7,16 +9,14 @@ use App\Contracts\ApiResponseInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\Auth\AdminResource;
-use App\Http\Resources\Auth\UserResource;
 use App\Models\Admin;
 use Illuminate\Database\Eloquent\Builder;
 
-class AdminPasswordLoginController extends Controller
+final class AdminPasswordLoginController extends Controller
 {
     public function __construct(
         protected PasswordLoginAction $action
-    ) {
-    }
+    ) {}
 
     /**
      * Authenticate Admin with identifier (phone/email) and password
@@ -27,6 +27,7 @@ class AdminPasswordLoginController extends Controller
      * @throws \App\Exceptions\UserNotFoundException
      *
      * @group Admin Authentication
+     *
      * @response {
      *       "message": "User Logged in successfully",
      *       "data": {
@@ -49,7 +50,6 @@ class AdminPasswordLoginController extends Controller
      *       "errors": null,
      *       "metadata": []
      *  }
-     *
      * @response 422{
      *       "message": "The provided credentials are incorrect.",
      *       "errors": {
@@ -66,8 +66,8 @@ class AdminPasswordLoginController extends Controller
 
         $user = Admin::when(
             $type === 'email',
-            fn(Builder $q) => $q->where('email', $request->identifier),
-            fn(Builder $q) => $q->where('phone', $request->identifier)
+            fn (Builder $q) => $q->where('email', $request->identifier),
+            fn (Builder $q) => $q->where('phone', $request->identifier)
         )->firstOrFail();
 
         $token = $this->action->execute(
@@ -78,10 +78,10 @@ class AdminPasswordLoginController extends Controller
         );
 
         return response()->success([
-            'token'      => $token->plainTextToken,
+            'token' => $token->plainTextToken,
             'expires_at' => $token->accessToken->expires_at,
-            'type'       => 'Bearer',
-            'user'       => AdminResource::make($user),
+            'type' => 'Bearer',
+            'user' => AdminResource::make($user),
         ], 'User Logged in successfully');
     }
 }

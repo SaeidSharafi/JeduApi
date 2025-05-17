@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Knuckles\Scribe\Config\AuthIn;
 use Knuckles\Scribe\Config\Defaults;
 use Knuckles\Scribe\Extracting\Strategies;
@@ -222,11 +224,11 @@ return [
             ...Defaults::URL_PARAMETERS_STRATEGIES,
         ],
         'queryParameters' => [
-            ...Defaults::QUERY_PARAMETERS_STRATEGIES
+            ...Defaults::QUERY_PARAMETERS_STRATEGIES,
         ],
         'bodyParameters' => [
             ...Defaults::BODY_PARAMETERS_STRATEGIES,
-            \App\Scribe\Extracting\Strategies\BodyParameters\GetFromLaravelData::class,
+            App\Scribe\Extracting\Strategies\BodyParameters\GetFromLaravelData::class,
         ],
         'responses' => configureStrategy(
             Defaults::RESPONSES_STRATEGIES,

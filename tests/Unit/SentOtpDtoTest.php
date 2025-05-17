@@ -5,8 +5,8 @@ declare(strict_types=1);
 use App\Dto\OtpManager\SentOtpDto;
 use App\Enums\OtpType;
 
-describe('SentOtpDto', function () {
-    it('constructs and returns correct array', function () {
+describe('SentOtpDto', function (): void {
+    it('constructs and returns correct array', function (): void {
         $code = 654321;
         $otpType = OtpType::SIGNIN;
         $waitingTime = 120;
@@ -26,11 +26,11 @@ describe('SentOtpDto', function () {
         ]);
     });
 
-    it('throws TypeError if otpType is not provided', function () {
+    it('throws TypeError if otpType is not provided', function (): void {
         $code = 111111;
         $waitingTime = 0;
         $trackingCode = 'empty-track';
-        $closure = fn() => new SentOtpDto($code, null, $waitingTime, $trackingCode);
+        $closure = fn (): SentOtpDto => new SentOtpDto($code, null, $waitingTime, $trackingCode);
         expect($closure)->toThrow(TypeError::class);
     });
 });

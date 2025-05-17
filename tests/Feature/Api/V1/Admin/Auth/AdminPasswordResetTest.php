@@ -1,13 +1,13 @@
 <?php
 
-use App\Enums\OtpType;
-use App\Models\User;
+declare(strict_types=1);
+
 use App\Models\Admin;
+use App\Models\User;
 use App\Notifications\Auth\OtpEmailNotification;
-use App\Services\OtpManagerService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
@@ -21,25 +21,16 @@ beforeEach(function (): void {
     $this->invalidOtpCode = $this->otpCode + 1 > $maxOtpCode ? $this->otpCode - 1 : $this->otpCode + 1;
     $this->trackingCode = 'test-tracking';
 
-    $waitingTime = 120;
-    $otpManagerMock = $this->mock(OtpManagerService::class)
-        ->makePartial()
-        ->shouldAllowMockingProtectedMethods()
-        ->shouldReceive('generateTrackingCode')
-        ->withNoArgs()
-        ->andReturn($this->trackingCode)
-        ->shouldReceive('generateCode')
-        ->withNoArgs()
-        ->andReturn($this->otpCode)
-        ->getMock();
-    $reflection = new \ReflectionClass($otpManagerMock);
-    $property = $reflection->getProperty('waitingTime');
-    $property->setValue($otpManagerMock, $waitingTime);
+    $fakeGenerator = $this->app->make(App\Contracts\OtpGeneratorInterface::class);
+    if ($fakeGenerator instanceof Tests\Fakes\FakeOtpGenerator) {
+        $fakeGenerator->setNextOtpCode($this->otpCode)
+            ->setNextTrackingCode($this->trackingCode);
+    }
 });
 test('admin can request password reset otp', function (): void {
     $admin = Admin::factory()->create([
-        'email'    => 'admin1@example.com',
-        'phone'    => '09301234567',
+        'email' => 'admin1@example.com',
+        'phone' => '09301234567',
         'password' => Hash::make('oldpassword'),
     ]);
 
@@ -54,8 +45,8 @@ test('admin can request password reset otp', function (): void {
                 'tracking_code',
                 'otp_type',
                 'identifier',
-                'login_method'
-            ]
+                'login_method',
+            ],
         ]);
 
     Notification::assertSentTo($admin, OtpEmailNotification::class);
@@ -63,8 +54,8 @@ test('admin can request password reset otp', function (): void {
 
 test('admin without password cannot request password reset', function (): void {
     Admin::factory()->create([
-        'email'    => 'admin2@example.com',
-        'phone'    => '09301234567',
+        'email' => 'admin2@example.com',
+        'phone' => '09301234567',
         'password' => null,
     ]);
 
@@ -74,7 +65,7 @@ test('admin without password cannot request password reset', function (): void {
 
     $response->assertStatus(422)
         ->assertJson([
-            'message' => 'User does not have password'
+            'message' => 'User does not have password',
         ]);
 });
 
@@ -85,7 +76,7 @@ test('non existent admin cannot request password reset', function (): void {
 
     $response->assertNotFound()
         ->assertJson([
-            'message' => 'User not found'
+            'message' => 'User not found',
         ]);
 });
 test('admin without password cannot reset password', function (): void {
@@ -103,13 +94,13 @@ test('admin without password cannot reset password', function (): void {
     ]);
     $response->assertStatus(422)
         ->assertJson([
-            'message' => 'User does not have password'
+            'message' => 'User does not have password',
         ]);
 });
 test('admin can reset password with valid otp', function (): void {
     $admin = Admin::factory()->create([
-        'email'    => 'admin3@example.com',
-        'phone'    => '09301234567',
+        'email' => 'admin3@example.com',
+        'phone' => '09301234567',
         'password' => Hash::make('oldpassword'),
     ]);
 
@@ -121,19 +112,19 @@ test('admin can reset password with valid otp', function (): void {
 
     // Then reset password with OTP
     $response = $this->postJson(route('api.v1.admin.auth.password-reset'), [
-        'identifier'            => 'admin3@example.com',
-        'tracking_code'         => $trackingCode,
-        'otp_code'              => $this->otpCode,
-        'password'              => 'newpassword',
+        'identifier' => 'admin3@example.com',
+        'tracking_code' => $trackingCode,
+        'otp_code' => $this->otpCode,
+        'password' => 'newpassword',
         'password_confirmation' => 'newpassword',
     ]);
 
     $response
         ->assertOk()
         ->assertJson([
-            "message"  => "Operation successful.",
-            "data"     => "Password reset OTP sent successfully",
-            "metadata" => []
+            'message' => 'Operation successful.',
+            'data' => 'Password reset OTP sent successfully',
+            'metadata' => [],
         ]);
 
     // Verify password was actually changed
@@ -143,8 +134,8 @@ test('admin can reset password with valid otp', function (): void {
 
 test('admin cannot reset password with invalid otp', function (): void {
     $admin = Admin::factory()->create([
-        'email'    => 'admin4@example.com',
-        'phone'    => '09301234567',
+        'email' => 'admin4@example.com',
+        'phone' => '09301234567',
         'password' => Hash::make('oldpassword'),
     ]);
 
@@ -157,16 +148,16 @@ test('admin cannot reset password with invalid otp', function (): void {
 
     // Try resetting with invalid OTP
     $response = $this->postJson(route('api.v1.admin.auth.password-reset'), [
-        'identifier'            => 'admin4@example.com',
-        'tracking_code'         => $trackingCode,
-        'otp_code'              => $this->invalidOtpCode,
-        'password'              => 'newpassword',
+        'identifier' => 'admin4@example.com',
+        'tracking_code' => $trackingCode,
+        'otp_code' => $this->invalidOtpCode,
+        'password' => 'newpassword',
         'password_confirmation' => 'newpassword',
     ]);
 
     $response->assertStatus(422)
         ->assertJson([
-            'message' => 'Invalid OTP code'
+            'message' => 'Invalid OTP code',
         ]);
 
     // Verify password was not changed

@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications\Auth;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class OtpEmailNotification extends Notification
+final class OtpEmailNotification extends Notification
 {
     use Queueable;
 
@@ -14,6 +16,11 @@ class OtpEmailNotification extends Notification
         protected string $otpCode
     ) {}
 
+    /**
+     * Get the notification's delivery channels.
+     *
+     * @return array<string>
+     */
     public function via(object $notifiable): array
     {
         return ['mail'];

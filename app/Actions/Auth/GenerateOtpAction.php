@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Auth;
 
 use App\Dto\OtpManager\SentOtpDto;
@@ -8,7 +10,7 @@ use App\Models\Admin;
 use App\Models\User;
 use App\Services\OtpManagerService;
 
-class GenerateOtpAction
+final class GenerateOtpAction
 {
     public function execute(User|Admin $user, OtpType $otpType): SentOtpDto
     {

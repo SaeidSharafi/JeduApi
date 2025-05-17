@@ -1,16 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Dto\OtpManager\OtpDto;
+use App\Enums\OtpType;
 use App\Models\Admin;
 use App\Services\OtpManagerService;
-use App\Enums\OtpType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-class AdminFactory extends Factory
+final class AdminFactory extends Factory
 {
     protected $model = Admin::class;
 
@@ -19,7 +21,7 @@ class AdminFactory extends Factory
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'phone' => fake()->unique()->numerify("09########"),
+            'phone' => fake()->unique()->numerify('09########'),
             'password' => null,
             'remember_token' => Str::random(10),
         ];
@@ -28,14 +30,14 @@ class AdminFactory extends Factory
     public function withPassword(): self
     {
         return $this->state(fn (array $attributes) => [
-            'password' => Hash::make('password123')
+            'password' => Hash::make('password123'),
         ]);
     }
 
     public function unverified(): self
     {
         return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null
+            'email_verified_at' => null,
         ]);
     }
 

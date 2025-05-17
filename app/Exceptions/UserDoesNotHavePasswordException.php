@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Exceptions;
 
 use Exception;
 
-class UserDoesNotHavePasswordException extends Exception {}
+final class UserDoesNotHavePasswordException extends Exception {}
