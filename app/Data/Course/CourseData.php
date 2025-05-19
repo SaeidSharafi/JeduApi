@@ -67,8 +67,9 @@ final class CourseData extends Data
                 'alpha_dash',
                 'max:191',
                 Rule::unique('courses', 'slug')->where(function ($query) use ($context) {
-                    if (data_get($context->fullPayload, 'id')) {
-                        $query->whereNot('id', data_get($context->fullPayload, 'id'));
+                    $course = request()->route()->parameter('course');
+                    if ($course && $course->id) {
+                        $query->whereNot('id', $course->id);
                     }
                     return $query;
                 })
@@ -100,6 +101,11 @@ final class CourseData extends Data
         ];
     }
 
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
     public function bodyParameters(): array
     {
         return [

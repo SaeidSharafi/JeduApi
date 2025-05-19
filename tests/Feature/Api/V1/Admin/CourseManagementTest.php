@@ -89,7 +89,21 @@ it('can not create a new course with invalid data', function (): void {
             'status',
         ]);
 });
-
+it('can not create a new course with smiliar slug', function (): void {
+    $course = App\Models\Course::factory()->create();
+    $courseData = App\Models\Course::factory()->make([
+        'slug' => $course->slug,
+    ])->toArray();
+    $this->authorized_user([
+        App\Enums\PermissionEnum::COURSE_CREATE->value,
+    ]);
+    $response = $this->postJson(route('api.v1.admin.course.store'), $courseData);
+    $response
+        ->assertStatus(422)
+        ->assertJsonValidationErrors([
+            'slug',
+        ]);
+});
 it('can not create a new course with invalid slug', function (): void {
     $courseData = App\Models\Course::factory()->make([
         'slug' => 'invalid slug',
@@ -219,6 +233,62 @@ it('can edit a course', function (): void {
         'mediable_type' => \App\Models\Course::class,
         'tag' => 'gallery',
     ]);
+});
+it('can pass slug unique check', function (): void {
+    $course = App\Models\Course::factory()->create();
+    $courseData = App\Models\Course::factory()->make(
+        [
+            'slug' => $course->slug,
+        ]
+    )->toArray();
+    $this->authorized_user([
+        App\Enums\PermissionEnum::COURSE_UPDATE->value,
+    ]);
+
+    $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
+        ...$courseData,
+        'media' => [
+            'gallery'     => [],
+            'thumbnail'   => [],
+            'cover'       => null,
+            'certificate' => [],
+        ],
+    ]);
+    $response->assertSuccessful();
+
+    assertDatabaseHas('courses', [
+        'id' => $course->id,
+        'slug' => $courseData['slug'],
+        'full_name' => $courseData['full_name'],
+        'short_name' => $courseData['short_name'],
+        'description' => $courseData['description'],
+        'duration' => $courseData['duration'],
+    ]);
+
+});
+it('can not edit a course with duplicate slug', function (): void {
+    $course2 = App\Models\Course::factory()->create();
+    $course = App\Models\Course::factory()->create();
+    $courseData = App\Models\Course::factory()->make(
+        [
+            'slug' => $course2->slug,
+        ]
+    )->toArray();
+    $this->authorized_user([
+        App\Enums\PermissionEnum::COURSE_UPDATE->value,
+    ]);
+
+    $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
+        ...$courseData,
+        'media' => [
+            'gallery'     => [],
+            'thumbnail'   => [],
+            'cover'       => null,
+            'certificate' => [],
+        ],
+    ]);
+    $response->assertInvalid(['slug']);
+
 });
 
 it('can not edit a course with invalid data', function (): void {

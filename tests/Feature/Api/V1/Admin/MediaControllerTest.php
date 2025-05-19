@@ -32,5 +32,21 @@ describe('Admin MediaController', function () {
         $media = Media::find($mediaId);
         expect($media)->not()->toBeNull()
             ->and($media->getAttribute('alt'))->toBe('Test Alt Text');
+
+        $response = $this->getJson(route('api.v1.admin.media.view', ['media' => $mediaId]));
+        $response->assertStatus(200)
+            ->assertJson(function (\Illuminate\Testing\Fluent\AssertableJson $json) use ($mediaId) {
+                $json
+                    ->has('data')
+                    ->where('data.id', $mediaId)
+                    ->where('data.alt', 'Test Alt Text')
+                    ->has('data.url')
+                    ->has('data.size')
+                    ->has('data.file_name')
+                    ->has('data.mime_type')
+                    ->has('data.extension')
+                    ->has('data.tag')
+                    ->etc();
+            });
     });
 });
