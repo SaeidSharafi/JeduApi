@@ -1,0 +1,49 @@
+users { id pk, name, email, phone, status }
+enrollments { id pk, user_id, order_item_id, product_delivery_option_id, enrollment_status, access_start_date, access_end_date, certificate_url }
+addresses { id pk, user_id, label, address_line1, city, country_code }
+password_resets { email pk, token }
+roles { id pk, name }
+permissions { id pk, name }
+role_user { user_id pk, role_id pk }
+permission_role { permission_id pk, role_id pk }
+vendors { id pk, user_owner_id, name, slug, status }
+courses { id pk, slug, full_name, description, outcomes_json, curriculum_summary_text, difficulty_level, sample_certificate_image_url }
+seminars { id pk, name, slug, description }
+files { id pk, name, slug, base_file_url, file_type, is_attachable_to_course }
+course_files { course_id pk, file_id pk, purpose }
+teachers { id pk, name, title, bio, expertise_tags }
+categories { id pk, parent_id, name, slug, level, is_featured }
+terms { id pk, name, status, start_date, end_date }
+products { id pk, vendor_id, item_type, item_id, term_id, status, is_visible, average_rating, review_count }
+product_delivery_options { id pk, product_id, name, delivery_method, price, capacity }
+prepayment_options { id pk, amount, label, is_active }
+product_delivery_option_prepayments { product_delivery_option_id pk, prepayment_option_id pk }
+product_category { product_id pk, category_id pk }
+product_teachers { product_id pk, teacher_id pk, role }
+shopping_cart { id pk, user_id, session_id, product_delivery_option_id, price_at_add }
+orders { id pk, order_number, user_id, total_price, status, payment_gateway }
+order_items { id pk, order_id, product_delivery_option_id, price, product_snapshot, status }
+payments { id pk, order_id, user_id, amount, gateway, status }
+discounts { id pk, name, code, type, value, start_date, end_date, is_active }
+order_discounts { order_id pk, discount_id pk, discount_amount_applied }
+discount_rules { id pk, discount_id, rule_type, rule_data }
+wallet_transactions { id pk, user_id, amount, type, balance_after, order_id }
+blogs { id pk, author_id, title, slug, content, status, published_at }
+blog_categories { id pk, name, slug }
+blog_post_category { blog_id pk, category_id pk }
+reviews { id pk, user_id, product_id, rating, comment, status }
+wishlist_items { id pk, user_id, product_id }
+surveys { id pk, name, questions, status, related_product_id, related_course_id }
+survey_responses { id pk, survey_id, user_id, response, submitted_at }
+support_tickets { id pk, user_id, ticket_number, subject, status, assigned_to, priority }
+support_ticket_replies { id pk, ticket_id, user_id, message }
+settings { id pk, group, key, value }
+frontend_elements { id pk, element_type, location, title, link_url, sort_order, is_active }
+sms_providers { id pk, name, api_key, sender_id, is_active }
+sms_templates { id pk, sms_provider_id, name, event_trigger, template_text, is_active }
+notifications { id pk, user_id, type, title, message, read_at }
+product_testimonials { id pk, product_id, author_name, testimonial_text, rating_display }
+course_prerequisites { id pk, course_id, prerequisite_type, description_text, required_product_id }
+related_products { product_id pk, related_product_id pk, relation_type }
+faqs { id pk, product_id, course_id, category_id, question, answer }
+partners { id pk, name, website_url, description }

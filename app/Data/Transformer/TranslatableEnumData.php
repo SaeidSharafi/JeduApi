@@ -12,6 +12,9 @@ final class TranslatableEnumData implements Transformer
 {
     public function transform(DataProperty $property, mixed $value, TransformationContext $context): mixed
     {
-        return $value->translate();
+        return [
+            'value' => $value->value,
+            'label' => $value->translate(),
+        ];
     }
 }

@@ -14,14 +14,22 @@ return new class extends Migration
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
             $table->string('slug')->unique();
-            $table->string('name');
-            $table->string('short_name');
+            $table->enum('status', CourseStatusEnum::getAllValues())->default(CourseStatusEnum::DRAFT->value);
+            $table->string('full_name');
+            $table->string('short_name')->nullable();
             $table->text('description')->nullable();
-            $table->text('default_teacher_info')->nullable();
+            $table->string('sample_certificate_image_url')->nullable();
+            $table->integer('duration')->nullable();
+            $table->enum('difficulty_level',\App\Enums\CourseDifficultyLevelEnum::getAllValues());
+            $table->text('career_prospects_text')->nullable();
+            $table->text('curriculum_summary_text')->nullable(); // e.g., "1 فصل، 20 درس، 4 تمرین"
+            $table->json('outcomes_json')->nullable(); // What students will learn
+            $table->text('default_teacher_info')->nullable(); // Fallback teacher info
+            $table->json('additional_info')->nullable(); // For any other structured course-specific info
             $table->string('meta_title')->nullable();
-            $table->string('meta_description')->nullable();
-            $table->string('meta_keywords')->nullable();
-            $table->enum('status', CourseStatusEnum::getAllValues())->default(CourseStatusEnum::PUBLISHED->value);
+            $table->text('meta_description')->nullable();
+            $table->text('meta_keywords')->nullable();
+            $table->json('properties')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('admins', 'id')->nullOnDelete();
             $table->timestamps();
         });

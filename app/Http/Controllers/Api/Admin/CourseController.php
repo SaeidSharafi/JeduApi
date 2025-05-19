@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Course\CourseData;
 use App\Data\Course\CourseResponseData;
+use App\Data\Transformer\MediaData;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use Illuminate\Http\JsonResponse;
@@ -53,9 +54,22 @@ final class CourseController extends Controller
     {
         Gate::authorize('create', Course::class);
 
-        $course = Course::query()->create($data->all());
+        $mediaInput = $data->only('media')->all() ?? [];
+        $course = Course::query()->create($data->except('media')->all());
 
-        return response()->created(CourseResponseData::from($course)->toArray());
+        // Attach media by tag if media input is provided (expects array: tag => [media_id,...])
+        foreach ($mediaInput as $tag => $mediaIds) {
+            if (is_array($mediaIds)) {
+                foreach ($mediaIds as $mediaId) {
+                    $media = \Plank\Mediable\Media::find($mediaId);
+                    if ($media) {
+                        $course->attachMedia($media, $tag);
+                    }
+                }
+            }
+        }
+
+        return response()->created();
     }
 
     /**
@@ -65,7 +79,17 @@ final class CourseController extends Controller
     {
         Gate::authorize('view', $course);
 
-        return response()->success(CourseResponseData::from($course)->toArray());
+        $media = [];
+        foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
+            $media[$tag] = $course->getMedia($tag)
+                ->map(fn($m) => MediaData::fromModel($m, $tag))
+                ->toArray();
+        }
+
+        return response()->success(CourseResponseData::from([
+            ...$course->toArray(),
+            'media' => $media,
+        ])->toArray());
     }
 
     /**
@@ -75,7 +99,17 @@ final class CourseController extends Controller
     {
         Gate::authorize('update', $course);
 
-        return response()->success(CourseData::from($course)->toArray());
+        $media = [];
+        foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
+            $media[$tag] = $course->getMedia($tag)
+                ->map(fn($m) => MediaData::fromModel($m, $tag))
+                ->toArray();
+        }
+
+        return response()->success(CourseData::from([
+            ...$course->toArray(),
+            'media' => $media,
+        ]));
     }
 
     /**
@@ -84,7 +118,18 @@ final class CourseController extends Controller
     public function update(CourseData $data, Course $course): ApiResponseInterface
     {
         Gate::authorize('update', $course);
-        $course->update($data->all());
+
+        $course->update($data->except('media')->all());
+
+        $mediaInput = $data->media ?? [];
+
+        // Sync media by tag if media input is provided (expects array: tag => [media_id,...])
+        foreach (['gallery', 'video', 'thumbnail', 'certificate'] as $tag) {
+            $mediaIds = $mediaInput[$tag] ?? null;
+            if (is_array($mediaIds)) {
+                $course->syncMedia($mediaIds, $tag);
+            }
+        }
 
         return response()->success(CourseResponseData::from($course)->toArray());
     }
