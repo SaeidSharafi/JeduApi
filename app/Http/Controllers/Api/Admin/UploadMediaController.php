@@ -21,6 +21,10 @@ class UploadMediaController extends Controller
      *
      * @authenticated
      * @group Media Management
+     *
+     * @bodyParam file file required The media file to upload
+     * @bodyParam alt string optional The alt text for the media file
+     *
      * @response 201 {
      *    "message": "Media file uploaded successfully",
      *    "data": {
@@ -39,7 +43,7 @@ class UploadMediaController extends Controller
     public function __invoke(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|max:10240', // 10MB max
+            'file' => 'required|file|max:10240',
             'alt' => 'nullable|string|max:255',
         ]);
 
