@@ -29,7 +29,6 @@ test('to array', function (): void {
             'created_at' => $course->created_at->toISOString(),
             'updated_at' => $course->updated_at->toISOString(),
 
-
         ]);
 
 });

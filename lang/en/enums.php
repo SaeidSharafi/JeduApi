@@ -3,15 +3,15 @@
 declare(strict_types=1);
 
 return [
-    'CourseStatusEnum'          => [
-        'draft'     => 'پیش‌نویس',
+    'CourseStatusEnum' => [
+        'draft' => 'پیش‌نویس',
         'published' => 'منتشر شده',
-        'archived'  => 'آرشیو',
+        'archived' => 'آرشیو',
     ],
     'CourseDifficultyLevelEnum' => [
-        'beginner'     => 'مبتدی',
+        'beginner' => 'مبتدی',
         'intermediate' => 'متوسط',
-        'advanced'     => 'پیشرفته',
-        'expert'       => 'کارشناس',
+        'advanced' => 'پیشرفته',
+        'expert' => 'کارشناس',
     ],
 ];

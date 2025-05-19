@@ -1,19 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Plank\Mediable\Media;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
-     *
-     * @return void
      */
     public function up(): void
     {
-        if (!Schema::hasTable('media')) {
+        if (! Schema::hasTable('media')) {
             Schema::create(
                 'media',
                 function (Blueprint $table) {
@@ -31,7 +32,7 @@ return new class extends Migration {
             );
         }
 
-        if (!Schema::hasTable('mediables')) {
+        if (! Schema::hasTable('mediables')) {
             Schema::create(
                 'mediables',
                 function (Blueprint $table) {
@@ -48,8 +49,6 @@ return new class extends Migration {
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
     public function down(): void
     {

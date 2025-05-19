@@ -82,7 +82,7 @@ final class CourseController extends Controller
         $media = [];
         foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
             $media[$tag] = $course->getMedia($tag)
-                ->map(fn($m) => MediaData::fromModel($m, $tag))
+                ->map(fn ($m) => MediaData::fromModel($m, $tag))
                 ->toArray();
         }
 
@@ -102,7 +102,7 @@ final class CourseController extends Controller
         $media = [];
         foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
             $media[$tag] = $course->getMedia($tag)
-                ->map(fn($m) => MediaData::fromModel($m, $tag))
+                ->map(fn ($m) => MediaData::fromModel($m, $tag))
                 ->toArray();
         }
 

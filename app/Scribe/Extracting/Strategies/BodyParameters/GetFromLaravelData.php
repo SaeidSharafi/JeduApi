@@ -16,7 +16,7 @@ final class GetFromLaravelData extends GetFromLaravelDataBase
         // Only use this FormRequest for body params if there's no "Query parameters" in the docblock
         // Or there's a bodyParameters() method
         $formRequestDocBlock = $laravelDataReflectionClass->getDocComment();
-        if (!$formRequestDocBlock){
+        if (! $formRequestDocBlock) {
             return true;
         }
         if (str_contains(mb_strtolower($formRequestDocBlock), 'query parameters')

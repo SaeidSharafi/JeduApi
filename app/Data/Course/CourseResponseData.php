@@ -14,7 +14,6 @@ use Spatie\LaravelData\Data;
 
 final class CourseResponseData extends Data
 {
-
     public function __construct(
         public string $slug,
         public string $full_name, // Changed from name
@@ -35,6 +34,5 @@ final class CourseResponseData extends Data
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public CourseStatusEnum $status,
         public array $media = [],
-    ) {
-    }
+    ) {}
 }

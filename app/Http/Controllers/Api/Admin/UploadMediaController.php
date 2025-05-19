@@ -10,16 +10,16 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Plank\Mediable\Facades\MediaUploader;
 
-class UploadMediaController extends Controller
+final class UploadMediaController extends Controller
 {
     /**
      * Upload a media file and return its info.
      *
-     * @param Request $request
      *
      * @return \Illuminate\Http\JsonResponse
      *
      * @authenticated
+     *
      * @group Media Management
      *
      * @bodyParam file file required The media file to upload
@@ -49,13 +49,12 @@ class UploadMediaController extends Controller
 
         /** @var UploadedFile $file */
         $file = $request->file('file');
-        $alt = (string)$request->string('alt');
+        $alt = (string) $request->string('alt');
         $media = MediaUploader::fromSource($file)
             ->toDisk(config('mediable.default_disk', 'public'))
             ->withAltAttribute($alt)
             ->onDuplicateIncrement()
             ->upload();
-
 
         return response()->created(MediaData::fromModel($media), 'Media file uploaded successfully');
     }

@@ -37,7 +37,7 @@ final class CourseFactory extends Factory
             'default_teacher_info' => $this->faker->persianWords(5, true),
             'additional_info' => [],
             'meta_title' => $this->faker->persianWords(5, true),
-            'meta_description' =>$this->faker->persianParagraph(),
+            'meta_description' => $this->faker->persianParagraph(),
             'meta_keywords' => $this->faker->persianWords(8, true),
             'properties' => [],
             'status' => $this->faker->randomElement(CourseStatusEnum::getAllValues()),

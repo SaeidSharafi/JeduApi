@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Api\Admin\UploadMediaController;
 use App\Http\Controllers\Api\Admin\ViewMediaController;
 

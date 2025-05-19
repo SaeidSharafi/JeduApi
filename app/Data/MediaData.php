@@ -17,7 +17,7 @@ use Spatie\LaravelData\Data;
  * @property string $extension
  * @property string $tag
  */
-class MediaData extends Data
+final class MediaData extends Data
 {
     public function __construct(
         public int $id,

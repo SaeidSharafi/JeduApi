@@ -7,22 +7,20 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Data\MediaData;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
-use Plank\Mediable\Facades\MediaUploader;
 use Plank\Mediable\Media;
 
-class ViewMediaController extends Controller
+final class ViewMediaController extends Controller
 {
     /**
      * retun a media file info.
      *
-     * @param  Request  $request
-     * @param  Media  $media
      *
      * @return \Illuminate\Http\JsonResponse
      *
      * @authenticated
+     *
      * @group Media Management
+     *
      * @response 200 {
      *   "message": "Media file retrieved successfully",
      *   "data": {
@@ -40,6 +38,6 @@ class ViewMediaController extends Controller
      */
     public function __invoke(Request $request, Media $media)
     {
-        return response()->success( MediaData::fromModel($media), 'Media file retrieved successfully');
+        return response()->success(MediaData::fromModel($media), 'Media file retrieved successfully');
     }
 }

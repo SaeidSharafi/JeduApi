@@ -6,7 +6,6 @@ namespace Database\Seeders;
 
 use App\Models\Admin;
 use App\Models\Course;
-use Faker\Factory;
 use Illuminate\Database\Seeder;
 
 final class ScribeSeeder extends Seeder
