@@ -94,10 +94,111 @@ final class CourseData extends Data
             'media.gallery'           => ['nullable', 'array'],
             'media.cover'             => ['nullable', 'array'],
             'media.video'             => ['nullable', 'array'],
-            'media.cover.*'             => ['nullable', 'integer', 'exists:media,id'],
+            'media.cover.*'           => ['nullable', 'integer', 'exists:media,id'],
             'media.gallery.*'         => ['nullable', 'integer', 'exists:media,id'],
             'media.video.*'           => ['nullable', 'integer', 'exists:media,id'],
         ];
     }
 
+    public function bodyParameters(): array
+    {
+        return [
+            'slug'                    => [
+                'description' => 'Slug of the course',
+                'required'    => true,
+                'example'     => 'course-slug',
+            ],
+            'full_name'               => [
+                'description' => 'Full name of the course',
+                'required'    => true,
+                'example'     => 'Full Course Name',
+            ],
+            'short_name'              => [
+                'description' => 'Short name of the course',
+                'required'    => true,
+                'example'     => 'Short Course Name',
+            ],
+            'description'             => [
+                'description' => 'Description of the course',
+                'required'    => false,
+                'example'     => 'This is a course description',
+            ],
+            'duration'                => [
+                'description' => 'Duration of the course in minutes',
+                'required'    => false,
+                'example'     => 120,
+            ],
+            'difficulty_level'        => [
+                'description' => 'Difficulty level of the course',
+                'required'    => true,
+                'example'     => CourseDifficultyLevelEnum::BEGINNER->value,
+            ],
+            'career_prospects_text'   => [
+                'description' => 'Career prospects text of the course',
+                'required'    => false,
+                'example'     => 'Career prospects text',
+            ],
+            'curriculum_summary_text' => [
+                'description' => 'Curriculum summary text of the course',
+                'required'    => false,
+                'example'     => 'Curriculum summary text',
+            ],
+            'outcomes_json'           => [
+                'description' => 'Outcomes JSON of the course',
+                'required'    => false,
+                'example'     => json_encode(['outcome1' => 'Text', 'outcome2' => 'Text']),
+            ],
+            'default_teacher_info'    => [
+                'description' => 'Default teacher info of the course',
+                'required'    => false,
+                'example'     => 'Default teacher info',
+            ],
+            'additional_info'         => [
+                'description' => 'Additional info of the course',
+                'required'    => false,
+                'example'     => json_encode(['info1', 'info2']),
+            ],
+            'meta_title'              => [
+                'description' => 'Meta title of the course',
+                'required'    => false,
+                'example'     => 'Meta title',
+            ],
+            'meta_description'        => [
+                'description' => 'Meta description of the course',
+                'required'    => false,
+                'example'     => 'Meta description',
+            ],
+            'meta_keywords'           => [
+                'description' => 'Meta keywords of the course',
+                'required'    => false,
+                'example'     => 'Meta keywords',
+            ],
+            'properties'              => [
+                'description' => 'Properties of the course',
+                'required'    => false,
+                'example'     => json_encode(['property1', 'property2']),
+            ],
+            'status'                  => [
+                'description' => 'Status of the course',
+                'required'    => true,
+                'example'     => CourseStatusEnum::DRAFT->value,
+            ],
+            'media' => [
+                'description' => 'Media of the course',
+                'required'    => true,
+                'gallery' => [
+                    'example' => [1],
+                    'description' => 'Array of media ids for gallery',
+                ],
+                'cover'   => [
+                    'example' => [1],
+                    'description' => 'Array of media ids for gallery',
+                ],
+                'video'   => [
+                    'example' => [1],
+                    'description' => 'Array of media ids for video',
+                ],
+            ],
+        ];
+    }
 }

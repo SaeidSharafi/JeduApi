@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2d496222d621b4ac1259af67d7a3bb18",
+    "content-hash": "1e7732234ff73ab1c12d6a2fce5deec0",
     "packages": [
         {
             "name": "amphp/amp",
@@ -2097,6 +2097,50 @@
                 }
             ],
             "time": "2025-02-27T13:08:55+00:00"
+        },
+        {
+            "name": "kasraghoreyshi/persian-faker",
+            "version": "v1.04",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/kasraghoreyshi/persian-faker.git",
+                "reference": "69fa80c57903531b41d0f7ac3f7234b807ad76a9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/kasraghoreyshi/persian-faker/zipball/69fa80c57903531b41d0f7ac3f7234b807ad76a9",
+                "reference": "69fa80c57903531b41d0f7ac3f7234b807ad76a9",
+                "shasum": ""
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Kasraghoreyshi\\PersianFaker\\PersianFakerServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Kasraghoreyshi\\PersianFaker\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "kasraghoreyshi",
+                    "email": "kasra.ghoreyshi84@gmail.com"
+                }
+            ],
+            "description": "Persian faker functions for laravel",
+            "support": {
+                "issues": "https://github.com/kasraghoreyshi/persian-faker/issues",
+                "source": "https://github.com/kasraghoreyshi/persian-faker/tree/v1.04"
+            },
+            "time": "2021-04-26T09:16:13+00:00"
         },
         {
             "name": "kelunik/certificate",

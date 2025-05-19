@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Data\Transformer;
+namespace App\Data;
 
 use Plank\Mediable\Media;
 use Spatie\LaravelData\Data;

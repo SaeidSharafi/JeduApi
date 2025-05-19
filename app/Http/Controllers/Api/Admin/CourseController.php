@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Course\CourseData;
 use App\Data\Course\CourseResponseData;
-use App\Data\Transformer\MediaData;
+use App\Data\MediaData;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use Illuminate\Http\JsonResponse;
