@@ -6,8 +6,8 @@ use Illuminate\Http\UploadedFile;
 use Plank\Mediable\Media;
 
 uses(Tests\AuthTestTrait::class);
-describe('Admin MediaController', function () {
-    it('can upload a media file and returns correct structure', function () {
+describe('Admin MediaController', function (): void {
+    it('can upload a media file and returns correct structure', function (): void {
         $this->authorized_user([]);
         $file = UploadedFile::fake()->image('test-image.jpg');
         $response = $this->postJson(route('api.v1.admin.media.upload'), [
@@ -35,7 +35,7 @@ describe('Admin MediaController', function () {
 
         $response = $this->getJson(route('api.v1.admin.media.view', ['media' => $mediaId]));
         $response->assertStatus(200)
-            ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($mediaId) {
+            ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($mediaId): void {
                 $json
                     ->has('data')
                     ->where('data.id', $mediaId)

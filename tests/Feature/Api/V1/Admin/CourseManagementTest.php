@@ -8,7 +8,7 @@ use function Pest\Laravel\assertDatabaseHas;
 
 uses(Tests\AuthTestTrait::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
 });
 it('can view list of courses', function (): void {
@@ -128,7 +128,7 @@ it('can view a course', function (): void {
     $response = $this->getJson(route('api.v1.admin.course.show', $course->id));
     $response
         ->assertStatus(200)
-        ->assertJson(function (AssertableJson $response) use ($course) {
+        ->assertJson(function (AssertableJson $response) use ($course): void {
             $response->where('data', [
                 'slug' => $course->slug,
                 'full_name' => $course->full_name,
@@ -170,7 +170,7 @@ it('can edit a course', function (): void {
     ]);
     $response = $this->getJson(route('api.v1.admin.course.edit', $course->id));
     $response->assertSuccessful()
-        ->assertJson(function (AssertableJson $response) use ($course) {
+        ->assertJson(function (AssertableJson $response) use ($course): void {
             $response->where('data', [
                 'slug' => $course->slug,
                 'full_name' => $course->full_name,

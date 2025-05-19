@@ -29,7 +29,10 @@
             "fil",
             "xxd",
             "afbf",
-            "resned"
+            "resned",
+            "erd",
+            "mediable",
+            "jpg"
         ],
         "paths": [
             "public",

@@ -79,6 +79,7 @@
         "refactor": "rector",
         "test:type-coverage": "pest --type-coverage --min=100",
         "test:typos": "peck",
+        "test:typos-ignore": "peck --ignore-all",
         "test:lint": [
             "pint --test"
         ],

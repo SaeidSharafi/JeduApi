@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\MediaData;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -12,10 +13,9 @@ use Plank\Mediable\Media;
 final class ViewMediaController extends Controller
 {
     /**
-     * retun a media file info.
+     * return a media file info.
      *
      *
-     * @return \Illuminate\Http\JsonResponse
      *
      * @authenticated
      *
@@ -33,10 +33,10 @@ final class ViewMediaController extends Controller
      *      "extension": "jpg",
      *      "tag": null
      *   },
-     *   metdata: []
+     *   metadata: []
      * }
      */
-    public function __invoke(Request $request, Media $media)
+    public function __invoke(Request $request, Media $media): ApiResponseInterface
     {
         return response()->success(MediaData::fromModel($media), 'Media file retrieved successfully');
     }

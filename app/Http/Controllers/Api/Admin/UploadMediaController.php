@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\MediaData;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -16,7 +17,6 @@ final class UploadMediaController extends Controller
      * Upload a media file and return its info.
      *
      *
-     * @return \Illuminate\Http\JsonResponse
      *
      * @authenticated
      *
@@ -37,10 +37,10 @@ final class UploadMediaController extends Controller
      *       "extension": "jpg",
      *       "tag": null
      *    },
-     *    metdata: []
+     *    metadata: []
      *  }
      */
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): ApiResponseInterface
     {
         $request->validate([
             'file' => 'required|file|max:10240',

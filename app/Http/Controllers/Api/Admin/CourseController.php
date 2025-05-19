@@ -54,7 +54,7 @@ final class CourseController extends Controller
     {
         Gate::authorize('create', Course::class);
 
-        $mediaInput = $data->only('media')->all() ?? [];
+        $mediaInput = $data->only('media')->all() ?: [];
         $course = Course::query()->create($data->except('media')->all());
 
         // Attach media by tag if media input is provided (expects array: tag => [media_id,...])
@@ -82,7 +82,7 @@ final class CourseController extends Controller
         $media = [];
         foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
             $media[$tag] = $course->getMedia($tag)
-                ->map(fn ($m) => MediaData::fromModel($m, $tag))
+                ->map(fn ($m): \App\Data\MediaData => MediaData::fromModel($m, $tag))
                 ->toArray();
         }
 
@@ -102,7 +102,7 @@ final class CourseController extends Controller
         $media = [];
         foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
             $media[$tag] = $course->getMedia($tag)
-                ->map(fn ($m) => MediaData::fromModel($m, $tag))
+                ->map(fn ($m): \App\Data\MediaData => MediaData::fromModel($m, $tag))
                 ->toArray();
         }
 
