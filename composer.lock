@@ -5023,16 +5023,16 @@
         },
         {
             "name": "saeidsharafi/laravel-permission-generator",
-            "version": "v1.1.0",
+            "version": "v1.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/SaeidSharafi/laravel-permission-generator.git",
-                "reference": "2ba1fc9846d00daf6a44b5a1ab86ead11007851e"
+                "reference": "681a19877b054903e0200a2a67e8ba925cc9c137"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/SaeidSharafi/laravel-permission-generator/zipball/2ba1fc9846d00daf6a44b5a1ab86ead11007851e",
-                "reference": "2ba1fc9846d00daf6a44b5a1ab86ead11007851e",
+                "url": "https://api.github.com/repos/SaeidSharafi/laravel-permission-generator/zipball/681a19877b054903e0200a2a67e8ba925cc9c137",
+                "reference": "681a19877b054903e0200a2a67e8ba925cc9c137",
                 "shasum": ""
             },
             "require": {
@@ -5081,9 +5081,9 @@
             ],
             "support": {
                 "issues": "https://github.com/SaeidSharafi/laravel-permission-generator/issues",
-                "source": "https://github.com/SaeidSharafi/laravel-permission-generator/tree/v1.1.0"
+                "source": "https://github.com/SaeidSharafi/laravel-permission-generator/tree/v1.1.2"
             },
-            "time": "2025-03-29T11:12:36+00:00"
+            "time": "2025-05-17T12:09:39+00:00"
         },
         {
             "name": "spatie/image-optimizer",
