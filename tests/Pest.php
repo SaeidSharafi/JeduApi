@@ -14,8 +14,9 @@ declare(strict_types=1);
 */
 
 uses(Tests\TestCase::class)
-    ->in('Feature', 'Unit');
-
+    ->in('Feature');
+uses(Tests\TestCaseUnit::class)
+    ->in('Unit');
 /*
 |--------------------------------------------------------------------------
 | Expectations
