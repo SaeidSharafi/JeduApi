@@ -18,20 +18,38 @@ class ProcessGitHubDeploymentJob extends SpatieProcessWebhookJob
      */
     public function handle(): void
     {
-        Log::channel('deployment')->info('Deployment job started.', ['payload' => $this->webhookCall->payload]);
-
-        // Optional: You can inspect $this->webhookCall->payload to make decisions
-        // For example, only deploy if it's a push to the 'main' branch
         $payload = $this->webhookCall->payload;
-        if (!isset($payload['ref']) || $payload['ref'] !== 'refs/heads/main') {
-            Log::channel('deployment')->info('Deployment skipped: Not a push to main branch.', ['ref' => $payload['ref'] ?? 'N/A']);
+        $eventName = $this->webhookCall->header('X-GitHub-Event');
+
+        Log::channel('deployment')->info('GitHub Webhook received.', [
+            'event' => $eventName,
+            'delivery_id' => $this->webhookCall->header('X-GitHub-Delivery'),
+            'payload_action' => $payload['action'] ?? 'N/A',
+        ]);
+
+        if ($eventName !== 'workflow_run' || !isset($payload['action']) || $payload['action'] !== 'completed') {
+            Log::channel('deployment')->info('Skipping: Not a completed workflow_run event.');
             return;
         }
+
+        $workflowRun = $payload['workflow_run'];
+        if ($workflowRun['conclusion'] !== 'success') {
+            Log::channel('deployment')->info('Skipping: Workflow run did not conclude with success.', ['conclusion' => $workflowRun['conclusion']]);
+            return;
+        }
+
+        if ($workflowRun['head_branch'] !== 'main') {
+            Log::channel('deployment')->info('Skipping: Not for the main branch.', ['branch' => $workflowRun['head_branch']]);
+            return;
+        }
+
+        Log::channel('deployment')->info('Conditions met. Proceeding with deployment via laravel-updater.', [
+            'commit_sha' => $workflowRun['head_commit']['id'] ?? 'N/A'
+        ]);
+
         try {
             Log::channel('deployment')->info('Attempting update using laravel-updater...');
 
-            // Execute the update process (git pull + commands from laravel-updater config)
-            // The Updater facade should handle logging internally as well if configured
             Updater::update();
 
             Log::channel('deployment')->info('Laravel Updater process completed.');
