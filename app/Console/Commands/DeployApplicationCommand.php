@@ -76,9 +76,12 @@ class DeployApplicationCommand extends Command
                     return Command::FAILURE;
                 }
             }
-            $artisanCommands = ["{$artisanScript} optimize:clear",];
+            $artisanCommands = ["{$artisanScript} optimize:clear"];
             if (!app()->isProduction()) {
                 $artisanCommands[] = "{$artisanScript} migrate:fresh";
+            }
+            $artisanCommands[] = "{$artisanScript} permission:sync";
+            if (!app()->isProduction()) {
                 $artisanCommands[] = "{$artisanScript} scribe:setup --fresh --seed";
             }
             $artisanCommands[] = "{$artisanScript} optimize";
