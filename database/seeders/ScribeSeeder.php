@@ -7,6 +7,9 @@ namespace Database\Seeders;
 use App\Models\Admin;
 use App\Models\Course;
 use Illuminate\Database\Seeder;
+use Illuminate\Http\File;
+use Plank\Mediable\Facades\MediaUploader;
+use Plank\Mediable\Media;
 
 final class ScribeSeeder extends Seeder
 {
@@ -21,9 +24,26 @@ final class ScribeSeeder extends Seeder
             'password' => bcrypt('password'),
             'is_admin' => true,
         ]);
+        Media::query()
+            ->where('directory', 'fake-media')
+            ->orWhere('directory', 'fake-media/uploads')
+            ->delete();
+
+        \Storage::disk('public')->deleteDirectory('fake-media');
+        $path = base_path(). "/resources/seed-media/placeholder.mp4";
+        \Storage::disk('public')->putFileAs('fake-media',new File($path), "placeholder1.mp4");
+        \Storage::disk('public')->putFileAs('fake-media',new File($path), "placeholder2.mp4");
+        \Storage::disk('public')->putFileAs('fake-media',new File($path), "placeholder3.mp4");
+        MediaUploader::importPath('public', 'fake-media/placeholder1.mp4');
+        MediaUploader::importPath('public', 'fake-media/placeholder2.mp4');
+        MediaUploader::importPath('public', 'fake-media/placeholder3.mp4');
+
+
 
         Course::query()->truncate();
-        Course::factory(100)->create([
+        Course::factory(100)
+            ->withMedia(['gallery','cover','video'])
+            ->create([
             'created_by' => Admin::query()->first()->id,
         ]);
 
