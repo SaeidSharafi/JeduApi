@@ -3,6 +3,8 @@ name: Tests
 on:
   push:
     branches: [ main ]
+    paths: ['app/**','tests/**', 'lang/**', 'config/**', 'composer.json', 'composer.lock', '.env.example',
+            'phpunit.xml', 'routes', '.github/workflows/tests.yml',]]
   pull_request:
     branches: [ main ]
 jobs:
