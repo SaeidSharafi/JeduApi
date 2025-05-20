@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Contracts\ApiResponseInterface;
 use App\Data\Course\CreateCourseData;
-use App\Data\Course\ShowCourseData;
 use App\Data\Course\ResponseCourseData;
+use App\Data\Course\ShowCourseData;
 use App\Data\MediaData;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
@@ -83,7 +83,7 @@ final class CourseController extends Controller
         $media = [];
         foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
             $media[$tag] = $course->getMedia($tag)
-                ->map(fn ($m): \App\Data\MediaData => MediaData::fromModel($m, $tag))
+                ->map(fn ($m): MediaData => MediaData::fromModel($m, $tag))
                 ->toArray();
         }
 

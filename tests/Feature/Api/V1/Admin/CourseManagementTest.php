@@ -56,9 +56,9 @@ it('can create a new course with valida data', function (): void {
     $response = $this->postJson(route('api.v1.admin.course.store'), [
         ...$courseData,
         'media' => [
-            'gallery'     => [$mediaId],
-            'thumbnail'   => [],
-            'cover'       => [],
+            'gallery' => [$mediaId],
+            'thumbnail' => [],
+            'cover' => [],
             'certificate' => [],
         ],
     ]);
@@ -67,15 +67,15 @@ it('can create a new course with valida data', function (): void {
 
 it('can not create a new course with invalid data', function (): void {
     $courseData = App\Models\Course::factory()->make([
-        'slug'                 => null,
-        'full_name'            => null, // Changed from name
-        'short_name'           => null,
-        'description'          => null,
+        'slug' => null,
+        'full_name' => null, // Changed from name
+        'short_name' => null,
+        'description' => null,
         'default_teacher_info' => null,
-        'meta_title'           => null,
-        'meta_description'     => null,
-        'meta_keywords'        => null,
-        'status'               => null,
+        'meta_title' => null,
+        'meta_description' => null,
+        'meta_keywords' => null,
+        'status' => null,
     ])->toArray();
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_CREATE->value,
@@ -182,7 +182,7 @@ it('can edit a course', function (): void {
     $file = Illuminate\Http\UploadedFile::fake()->image('cover.jpg');
     $uploadResponse = $this->postJson(route('api.v1.admin.media.upload'), [
         'file' => $file,
-        'alt'  => 'Test Alt',
+        'alt' => 'Test Alt',
     ]);
     $uploadResponse->assertStatus(201);
     $mediaId = $uploadResponse->json('data.id');
@@ -190,32 +190,32 @@ it('can edit a course', function (): void {
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
         ...$courseData,
         'media' => [
-            'gallery'     => [$mediaId],
-            'thumbnail'   => [],
-            'cover'       => null,
+            'gallery' => [$mediaId],
+            'thumbnail' => [],
+            'cover' => null,
             'certificate' => [],
         ],
     ]);
     $response->assertStatus(200);
 
     assertDatabaseHas('courses', [
-        'id'          => $course->id,
-        'slug'        => $courseData['slug'],
-        'full_name'   => $courseData['full_name'],
-        'short_name'  => $courseData['short_name'],
+        'id' => $course->id,
+        'slug' => $courseData['slug'],
+        'full_name' => $courseData['full_name'],
+        'short_name' => $courseData['short_name'],
         'description' => $courseData['description'],
-        'duration'    => $courseData['duration'],
+        'duration' => $courseData['duration'],
     ]);
 
     assertDatabaseHas('media', [
-        'id'  => $mediaId,
+        'id' => $mediaId,
         'alt' => 'Test Alt',
     ]);
     assertDatabaseHas('mediables', [
-        'media_id'      => $mediaId,
-        'mediable_id'   => $course->id,
+        'media_id' => $mediaId,
+        'mediable_id' => $course->id,
         'mediable_type' => App\Models\Course::class,
-        'tag'           => 'gallery',
+        'tag' => 'gallery',
     ]);
 });
 it('can pass slug unique check', function (): void {
@@ -232,21 +232,21 @@ it('can pass slug unique check', function (): void {
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
         ...$courseData,
         'media' => [
-            'gallery'     => [],
-            'thumbnail'   => [],
-            'cover'       => null,
+            'gallery' => [],
+            'thumbnail' => [],
+            'cover' => null,
             'certificate' => [],
         ],
     ]);
     $response->assertSuccessful();
 
     assertDatabaseHas('courses', [
-        'id'          => $course->id,
-        'slug'        => $courseData['slug'],
-        'full_name'   => $courseData['full_name'],
-        'short_name'  => $courseData['short_name'],
+        'id' => $course->id,
+        'slug' => $courseData['slug'],
+        'full_name' => $courseData['full_name'],
+        'short_name' => $courseData['short_name'],
         'description' => $courseData['description'],
-        'duration'    => $courseData['duration'],
+        'duration' => $courseData['duration'],
     ]);
 
 });
@@ -265,9 +265,9 @@ it('can not edit a course with duplicate slug', function (): void {
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
         ...$courseData,
         'media' => [
-            'gallery'     => [],
-            'thumbnail'   => [],
-            'cover'       => null,
+            'gallery' => [],
+            'thumbnail' => [],
+            'cover' => null,
             'certificate' => [],
         ],
     ]);
@@ -281,15 +281,15 @@ it('can not edit a course with invalid data', function (): void {
         App\Enums\PermissionEnum::COURSE_UPDATE->value,
     ]);
     $courseData = App\Models\Course::factory()->make([
-        'slug'                 => null,
-        'full_name'            => null, // Changed from name
-        'short_name'           => null,
-        'description'          => null,
+        'slug' => null,
+        'full_name' => null, // Changed from name
+        'short_name' => null,
+        'description' => null,
         'default_teacher_info' => null,
-        'meta_title'           => null,
-        'meta_description'     => null,
-        'meta_keywords'        => null,
-        'status'               => null,
+        'meta_title' => null,
+        'meta_description' => null,
+        'meta_keywords' => null,
+        'status' => null,
     ])->toArray();
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), $courseData);
     $response
