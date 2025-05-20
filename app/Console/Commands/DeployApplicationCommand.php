@@ -67,10 +67,11 @@ class DeployApplicationCommand extends Command
                 return Command::FAILURE;
             }
 
-            if (app()->isProduction()) {
+            if (app()->environment() !== 'local') {
+                $noDev= app()->isProduction() ? "--no-dev" : "";
                 $this->line('Composer: Installing dependencies...');
                 Log::channel('deployment')->info('Composer: Installing dependencies...');
-                $composerCommand = 'composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader';
+                $composerCommand = "composer install --no-interaction {$noDev} --prefer-dist --optimize-autoloader";
                 if (!$this->runProcess($composerCommand, $projectPath)) {
                     return Command::FAILURE;
                 }
