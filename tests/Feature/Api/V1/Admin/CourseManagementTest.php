@@ -42,7 +42,7 @@ it('can view list of courses', function (): void {
 
 it('can create a new course with valida data', function (): void {
     $courseData = App\Models\Course::factory()->make()->toArray();
-    $course = App\Data\Course\CourseData::from($courseData);
+    $course = App\Data\Course\CreateCourseData::from($courseData);
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_CREATE->value,
     ]);
@@ -56,9 +56,9 @@ it('can create a new course with valida data', function (): void {
     $response = $this->postJson(route('api.v1.admin.course.store'), [
         ...$courseData,
         'media' => [
-            'gallery' => [$mediaId],
-            'thumbnail' => [],
-            'cover' => [],
+            'gallery'     => [$mediaId],
+            'thumbnail'   => [],
+            'cover'       => [],
             'certificate' => [],
         ],
     ]);
@@ -67,15 +67,15 @@ it('can create a new course with valida data', function (): void {
 
 it('can not create a new course with invalid data', function (): void {
     $courseData = App\Models\Course::factory()->make([
-        'slug' => null,
-        'full_name' => null, // Changed from name
-        'short_name' => null,
-        'description' => null,
+        'slug'                 => null,
+        'full_name'            => null, // Changed from name
+        'short_name'           => null,
+        'description'          => null,
         'default_teacher_info' => null,
-        'meta_title' => null,
-        'meta_description' => null,
-        'meta_keywords' => null,
-        'status' => null,
+        'meta_title'           => null,
+        'meta_description'     => null,
+        'meta_keywords'        => null,
+        'status'               => null,
     ])->toArray();
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_CREATE->value,
@@ -121,44 +121,54 @@ it('can not create a new course with invalid slug', function (): void {
 });
 
 it('can view a course', function (): void {
-    $course = App\Models\Course::factory()->create();
+    $course = App\Models\Course::factory()
+        ->withMedia(['cover'])
+        ->create();
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_VIEW->value,
     ]);
     $response = $this->getJson(route('api.v1.admin.course.show', $course->id));
+    $media = $course->getMedia('cover')->first();
     $response
         ->assertStatus(200)
-        ->assertJson(function (AssertableJson $response) use ($course): void {
-            $response->where('data', [
-                'slug' => $course->slug,
-                'full_name' => $course->full_name,
-                'short_name' => $course->short_name,
-                'description' => $course->description,
-                'duration' => $course->duration,
-                'difficulty_level' => [
+        ->assertJson(function (AssertableJson $response) use ($media, $course): void {
+            $response
+                ->where('data.id', $course->id)
+                ->where('data.slug', $course->slug)
+                ->where('data.full_name', $course->full_name)
+                ->where('data.short_name', $course->short_name)
+                ->where('data.description', $course->description)
+                ->where('data.duration', $course->duration)
+                ->where('data.difficulty_level', [
                     'value' => $course->difficulty_level->value,
                     'label' => $course->difficulty_level->translate(),
-                ],
-                'career_prospects_text' => $course->career_prospects_text,
-                'curriculum_summary_text' => $course->curriculum_summary_text,
-                'outcomes_json' => $course->outcomes_json,
-                'default_teacher_info' => $course->default_teacher_info,
-                'additional_info' => $course->additional_info,
-                'meta_title' => $course->meta_title,
-                'meta_description' => $course->meta_description,
-                'meta_keywords' => $course->meta_keywords,
-                'properties' => $course->properties,
-                'status' => [
+                ])
+                ->where('data.career_prospects_text', $course->career_prospects_text)
+                ->where('data.curriculum_summary_text', $course->curriculum_summary_text)
+                ->where('data.outcomes_json', $course->outcomes_json)
+                ->where('data.default_teacher_info', $course->default_teacher_info)
+                ->where('data.additional_info', $course->additional_info)
+                ->where('data.meta_title', $course->meta_title)
+                ->where('data.meta_description', $course->meta_description)
+                ->where('data.meta_keywords', $course->meta_keywords)
+                ->where('data.properties', $course->properties)
+                ->where('data.status', [
                     'value' => $course->status->value,
                     'label' => $course->status->translate(),
-                ],
-                'media' => [
-                    'gallery' => [],
-                    'video' => [],
-                    'cover' => [],
-                    'certificate' => [],
-                ],
-            ])->etc();
+                ])
+                ->has('data.media.gallery', 0)
+                ->has('data.media.video', 0)
+                ->has('data.media.cover', 1)
+                ->where('data.media.cover.0.id', $media->id)
+                ->where('data.media.cover.0.url', $media->getUrl())
+                ->where('data.media.cover.0.size', $media->size)
+                ->where('data.media.cover.0.file_name', $media->filename)
+                ->where('data.media.cover.0.alt', $media->getAttribute('alt'))
+                ->where('data.media.cover.0.mime_type', $media->mime_type)
+                ->where('data.media.cover.0.extension', $media->extension)
+                ->where('data.media.cover.0.tag', 'cover')
+                ->has('data.media.certificate', 0)
+                ->etc();
         });
 });
 
@@ -168,38 +178,11 @@ it('can edit a course', function (): void {
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_UPDATE->value,
     ]);
-    $response = $this->getJson(route('api.v1.admin.course.edit', $course->id));
-    $response->assertSuccessful()
-        ->assertJson(function (AssertableJson $response) use ($course): void {
-            $response->where('data', [
-                'slug' => $course->slug,
-                'full_name' => $course->full_name,
-                'short_name' => $course->short_name,
-                'description' => $course->description,
-                'duration' => $course->duration,
-                'difficulty_level' => $course->difficulty_level->value,
-                'career_prospects_text' => $course->career_prospects_text,
-                'curriculum_summary_text' => $course->curriculum_summary_text,
-                'outcomes_json' => $course->outcomes_json,
-                'default_teacher_info' => $course->default_teacher_info,
-                'additional_info' => $course->additional_info,
-                'meta_title' => $course->meta_title,
-                'meta_description' => $course->meta_description,
-                'meta_keywords' => $course->meta_keywords,
-                'properties' => $course->properties,
-                'status' => $course->status->value,
-                'media' => [
-                    'gallery' => [],
-                    'video' => [],
-                    'cover' => [],
-                    'certificate' => [],
-                ],
-            ])->etc();
-        });
+
     $file = Illuminate\Http\UploadedFile::fake()->image('cover.jpg');
     $uploadResponse = $this->postJson(route('api.v1.admin.media.upload'), [
         'file' => $file,
-        'alt' => 'Test Alt',
+        'alt'  => 'Test Alt',
     ]);
     $uploadResponse->assertStatus(201);
     $mediaId = $uploadResponse->json('data.id');
@@ -207,32 +190,32 @@ it('can edit a course', function (): void {
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
         ...$courseData,
         'media' => [
-            'gallery' => [$mediaId],
-            'thumbnail' => [],
-            'cover' => null,
+            'gallery'     => [$mediaId],
+            'thumbnail'   => [],
+            'cover'       => null,
             'certificate' => [],
         ],
     ]);
     $response->assertStatus(200);
 
     assertDatabaseHas('courses', [
-        'id' => $course->id,
-        'slug' => $courseData['slug'],
-        'full_name' => $courseData['full_name'],
-        'short_name' => $courseData['short_name'],
+        'id'          => $course->id,
+        'slug'        => $courseData['slug'],
+        'full_name'   => $courseData['full_name'],
+        'short_name'  => $courseData['short_name'],
         'description' => $courseData['description'],
-        'duration' => $courseData['duration'],
+        'duration'    => $courseData['duration'],
     ]);
 
     assertDatabaseHas('media', [
-        'id' => $mediaId,
+        'id'  => $mediaId,
         'alt' => 'Test Alt',
     ]);
     assertDatabaseHas('mediables', [
-        'media_id' => $mediaId,
-        'mediable_id' => $course->id,
+        'media_id'      => $mediaId,
+        'mediable_id'   => $course->id,
         'mediable_type' => App\Models\Course::class,
-        'tag' => 'gallery',
+        'tag'           => 'gallery',
     ]);
 });
 it('can pass slug unique check', function (): void {
@@ -249,21 +232,21 @@ it('can pass slug unique check', function (): void {
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
         ...$courseData,
         'media' => [
-            'gallery' => [],
-            'thumbnail' => [],
-            'cover' => null,
+            'gallery'     => [],
+            'thumbnail'   => [],
+            'cover'       => null,
             'certificate' => [],
         ],
     ]);
     $response->assertSuccessful();
 
     assertDatabaseHas('courses', [
-        'id' => $course->id,
-        'slug' => $courseData['slug'],
-        'full_name' => $courseData['full_name'],
-        'short_name' => $courseData['short_name'],
+        'id'          => $course->id,
+        'slug'        => $courseData['slug'],
+        'full_name'   => $courseData['full_name'],
+        'short_name'  => $courseData['short_name'],
         'description' => $courseData['description'],
-        'duration' => $courseData['duration'],
+        'duration'    => $courseData['duration'],
     ]);
 
 });
@@ -282,9 +265,9 @@ it('can not edit a course with duplicate slug', function (): void {
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
         ...$courseData,
         'media' => [
-            'gallery' => [],
-            'thumbnail' => [],
-            'cover' => null,
+            'gallery'     => [],
+            'thumbnail'   => [],
+            'cover'       => null,
             'certificate' => [],
         ],
     ]);
@@ -298,15 +281,15 @@ it('can not edit a course with invalid data', function (): void {
         App\Enums\PermissionEnum::COURSE_UPDATE->value,
     ]);
     $courseData = App\Models\Course::factory()->make([
-        'slug' => null,
-        'full_name' => null, // Changed from name
-        'short_name' => null,
-        'description' => null,
+        'slug'                 => null,
+        'full_name'            => null, // Changed from name
+        'short_name'           => null,
+        'description'          => null,
         'default_teacher_info' => null,
-        'meta_title' => null,
-        'meta_description' => null,
-        'meta_keywords' => null,
-        'status' => null,
+        'meta_title'           => null,
+        'meta_description'     => null,
+        'meta_keywords'        => null,
+        'status'               => null,
     ])->toArray();
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), $courseData);
     $response

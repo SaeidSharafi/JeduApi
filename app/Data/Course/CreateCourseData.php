@@ -12,7 +12,7 @@ use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-final class CourseData extends Data
+final class CreateCourseData extends Data
 {
     /**
      * slug

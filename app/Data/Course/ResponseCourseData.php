@@ -12,7 +12,7 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-final class CourseResponseData extends Data
+final class ResponseCourseData extends Data
 {
     public function __construct(
         public string $slug,

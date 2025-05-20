@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Contracts\ApiResponseInterface;
-use App\Data\Course\CourseData;
-use App\Data\Course\CourseResponseData;
+use App\Data\Course\CreateCourseData;
+use App\Data\Course\ShowCourseData;
+use App\Data\Course\ResponseCourseData;
 use App\Data\MediaData;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
@@ -44,13 +45,13 @@ final class CourseController extends Controller
             ->paginate()
             ->appends(request()->query());
 
-        return Response::success(data: CourseResponseData::collect($courses)->toArray());
+        return Response::success(data: ResponseCourseData::collect($courses)->toArray());
     }
 
     /**
      * Create a new course.
      */
-    public function store(CourseData $data): ApiResponseInterface
+    public function store(CreateCourseData $data): ApiResponseInterface
     {
         Gate::authorize('create', Course::class);
 
@@ -86,27 +87,7 @@ final class CourseController extends Controller
                 ->toArray();
         }
 
-        return response()->success(CourseResponseData::from([
-            ...$course->toArray(),
-            'media' => $media,
-        ])->toArray());
-    }
-
-    /**
-     * return the specified course detail for edit.
-     */
-    public function edit(Course $course): ApiResponseInterface
-    {
-        Gate::authorize('update', $course);
-
-        $media = [];
-        foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
-            $media[$tag] = $course->getMedia($tag)
-                ->map(fn ($m): \App\Data\MediaData => MediaData::fromModel($m, $tag))
-                ->toArray();
-        }
-
-        return response()->success(CourseData::from([
+        return response()->success(ShowCourseData::from([
             ...$course->toArray(),
             'media' => $media,
         ]));
@@ -115,7 +96,7 @@ final class CourseController extends Controller
     /**
      * Update the specified course.
      */
-    public function update(CourseData $data, Course $course): ApiResponseInterface
+    public function update(CreateCourseData $data, Course $course): ApiResponseInterface
     {
         Gate::authorize('update', $course);
 
@@ -131,7 +112,7 @@ final class CourseController extends Controller
             }
         }
 
-        return response()->success(CourseResponseData::from($course)->toArray());
+        return response()->success(ShowCourseData::from($course)->toArray());
     }
 
     /**
