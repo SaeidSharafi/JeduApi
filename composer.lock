@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f028c420ae17c7927b9bb27ef8965133",
+    "content-hash": "e83037319eb10ea68fb0a00e760f362c",
     "packages": [
         {
             "name": "amphp/amp",
@@ -5084,88 +5084,6 @@
                 "source": "https://github.com/SaeidSharafi/laravel-permission-generator/tree/v1.1.2"
             },
             "time": "2025-05-17T12:09:39+00:00"
-        },
-        {
-            "name": "salahhusa9/laravel-updater",
-            "version": "v1.3.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/salahhusa9/laravel-updater.git",
-                "reference": "88d5257c34ddd71fdb53fe2ef964f24239004aa4"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/salahhusa9/laravel-updater/zipball/88d5257c34ddd71fdb53fe2ef964f24239004aa4",
-                "reference": "88d5257c34ddd71fdb53fe2ef964f24239004aa4",
-                "shasum": ""
-            },
-            "require": {
-                "guzzlehttp/guzzle": "^7.8",
-                "illuminate/contracts": "^10.0|^11.0|^12.0",
-                "php": "^8.1|^8.2",
-                "spatie/laravel-package-tools": "^1.0",
-                "symfony/process": "^6.3|^7.0"
-            },
-            "require-dev": {
-                "laravel/pint": "^1.0",
-                "nunomaduro/collision": "^7.8|^8.0",
-                "orchestra/testbench": "10.1.0",
-                "pestphp/pest": "^2.20|^3.0",
-                "pestphp/pest-plugin-arch": "^2.0|^3.0",
-                "pestphp/pest-plugin-laravel": "^2.0|^3.0"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "aliases": {
-                        "Updater": "Salahhusa9\\Updater\\Facades\\Updater"
-                    },
-                    "providers": [
-                        "Salahhusa9\\Updater\\UpdaterServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Salahhusa9\\Updater\\": "src/",
-                    "Salahhusa9\\Updater\\Database\\Factories\\": "database/factories/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "salahhusa9",
-                    "email": "salahhusa9@gmail.com",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Laravel Updater is a simple yet powerful package for updater your Laravel applications. It makes it easy to upgrade your application to the latest version with just one command.",
-            "homepage": "https://github.com/salahhusa9/laravel-updater",
-            "keywords": [
-                "laravel",
-                "laravel package",
-                "laravel package self updater",
-                "laravel package update",
-                "laravel package update itself",
-                "laravel package updater",
-                "laravel self updater",
-                "laravel-updater",
-                "salahhusa9"
-            ],
-            "support": {
-                "issues": "https://github.com/salahhusa9/laravel-updater/issues",
-                "source": "https://github.com/salahhusa9/laravel-updater/tree/v1.3.0"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/salahhusa9",
-                    "type": "github"
-                }
-            ],
-            "time": "2025-04-01T16:43:47+00:00"
         },
         {
             "name": "spatie/image-optimizer",

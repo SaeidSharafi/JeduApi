@@ -25,7 +25,7 @@ return [
              *
              * It should implement \Spatie\WebhookClient\SignatureValidator\SignatureValidator
              */
-            'signature_validator' => \app\GitHubSignatureValidator::class,
+            'signature_validator' => \App\SignatureValidator\GitHubSignatureValidator::class,
 
             /*
              * This class determines if the webhook call should be stored and processed.

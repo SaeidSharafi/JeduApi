@@ -6,6 +6,10 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Process;
+use Psy\Command\Command;
 use Salahhusa9\Updater\Facades\Updater;
 use Spatie\WebhookClient\Jobs\ProcessWebhookJob as SpatieProcessWebhookJob;
 
@@ -19,11 +23,11 @@ class ProcessGitHubDeploymentJob extends SpatieProcessWebhookJob
     public function handle(): void
     {
         $payload = $this->webhookCall->payload;
-        $eventName = $this->webhookCall->header('X-GitHub-Event');
+        $eventName = $this->webhookCall->headerBag()->get('X-GitHub-Event');
 
         Log::channel('deployment')->info('GitHub Webhook received.', [
             'event' => $eventName,
-            'delivery_id' => $this->webhookCall->header('X-GitHub-Delivery'),
+            'delivery_id' => $this->webhookCall->headerBag()->get('X-GitHub-Delivery'),
             'payload_action' => $payload['action'] ?? 'N/A',
         ]);
 
@@ -49,10 +53,14 @@ class ProcessGitHubDeploymentJob extends SpatieProcessWebhookJob
 
         try {
             Log::channel('deployment')->info('Attempting update using laravel-updater...');
-
-            Updater::update();
-
-            Log::channel('deployment')->info('Laravel Updater process completed.');
+            $exitCode = Artisan::call('app:deploy-application');
+            if ($exitCode === Command::SUCCESS) {
+                Log::channel('deployment')->info('Artisan app:deploy-application command executed successfully by job.');
+            } else {
+                Log::channel('deployment')->error('Artisan app:deploy-application command failed or returned non-zero exit code.', ['exit_code' => $exitCode]);
+                $this->fail(new \Exception('Artisan app:deploy-application command failed. Exit code: ' . $exitCode));
+                return;
+            }
 
         } catch (\Exception $e) {
             Log::channel('deployment')->error('Deployment failed via laravel-updater: ' . $e->getMessage(), [

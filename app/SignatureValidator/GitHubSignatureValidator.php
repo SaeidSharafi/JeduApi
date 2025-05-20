@@ -1,11 +1,13 @@
 <?php
 
-namespace app;
+namespace App\SignatureValidator;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Spatie\WebhookClient\Exceptions\InvalidConfig;
 use Spatie\WebhookClient\SignatureValidator\SignatureValidator;
 use Spatie\WebhookClient\WebhookConfig;
+
 class GitHubSignatureValidator implements SignatureValidator
 {
     public function isValid(Request $request, WebhookConfig $config): bool
@@ -22,19 +24,19 @@ class GitHubSignatureValidator implements SignatureValidator
         }
 
         if (strpos($headerSignature, '=') === false) {
-            // Signature format is unexpected (missing '=')
             return false;
         }
         list($usedAlgorithm, $signatureValueFromHeader) = explode('=', $headerSignature, 2);
 
-        // Optional: verify $usedAlgorithm is 'sha256' if you want to be strict
-        if ($usedAlgorithm !== 'sha256') {
-            // Log::warning("Unexpected algorithm used: {$usedAlgorithm}");
-            // return false; // Or proceed if you don't care about the algo name itself
+        $computedSignature = hash_hmac('sha256', $request->getContent(), $signingSecret);
+        $result = hash_equals($computedSignature, $signatureValueFromHeader);
+        if (!$result) {
+            Log::channel('deployment')->debug('Signature mismatch', [
+                'computed' => $computedSignature,
+                'header' => $signatureValueFromHeader
+            ]);
         }
 
-        $computedSignature = hash_hmac('sha256', $request->getContent(), $signingSecret);
-
-        return hash_equals($computedSignature, $signatureValueFromHeader);
+        return $result;
     }
 }

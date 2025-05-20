@@ -125,4 +125,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'git_deploy_username' => env('GIT_USERNAME'),
+    'git_deploy_pat' => env('GIT_PAT'),
+
 ];
