@@ -1,8 +1,10 @@
 # Jedu EShop API
 
 <p align="center">
-<a href="https://github.com/SaeidSharafi/JeduShop/actions"><img src="https://github.com/SaeidSharafi/JeduShop/workflows/Tests/badge.svg" alt="Build Status"></a>
-<a href="https://codecov.io/gh/SaeidSharafi/JeduShop"><img src="https://codecov.io/gh/SaeidSharafi/JeduShop/branch/main/graph/badge.svg" alt="codecov"></a>
+<a href="https://github.com/SaeidSharafi/JeduApi/actions"><img src="https://github.com/SaeidSharafi/JeduApi/workflows/Tests/badge.svg" alt="Build Status"></a>
+<a href="https://codecov.io/gh/SaeidSharafi/JeduApi" > 
+ <img src="https://codecov.io/gh/SaeidSharafi/JeduApi/branch/dev/graph/badge.svg?token=Tm2qNDCYx1"/> 
+ </a>
 <a href="#"><img src="https://img.shields.io/badge/PHP-8.2-777BB4.svg?style=flat&logo=php" alt="PHP Version"></a>
 <a href="#"><img src="https://img.shields.io/badge/License-Proprietary-red.svg" alt="License: ACECR Qazvin Proprietary"></a>
 </p>
