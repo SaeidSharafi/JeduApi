@@ -77,7 +77,7 @@ class DeployApplicationCommand extends Command
             }
             $artisanCommands = ["{$artisanScript} optimize:clear",];
             if (!app()->isProduction()) {
-                $artisanCommands[] = "{$artisanScript} migrate --fresh";
+                $artisanCommands[] = "{$artisanScript} migrate:fresh";
                 $artisanCommands[] = "{$artisanScript} scribe:setup --fresh --seed";
             }
             $artisanCommands[] = "{$artisanScript} optimize";
