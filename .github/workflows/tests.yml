@@ -79,9 +79,15 @@ jobs:
           DB_DATABASE: testing
           DB_USERNAME: sail
           DB_PASSWORD: password
-        run: ./vendor/bin/pest --coverage --coverage-clover=coverage.xml
+        run: ./vendor/bin/pest --coverage --coverage-clover=coverage.xml --log-junit junit.xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
