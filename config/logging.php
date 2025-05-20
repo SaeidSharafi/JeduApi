@@ -53,7 +53,12 @@ return [
     */
 
     'channels' => [
-
+        'deployment' => array(
+            'driver' => 'single',
+            'path' => storage_path('logs/deployment.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 14,
+        ),
         'stack' => [
             'driver' => 'stack',
             'channels' => explode(',', env('LOG_STACK', 'single')),

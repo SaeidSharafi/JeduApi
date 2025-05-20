@@ -18,7 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/Api/V1/api.php'));
         }
     )
-    ->withMiddleware(function (Middleware $middleware): void {})
+    ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->validateCsrfTokens(except: [
+            '/webhooks/github-deployer'
+        ]);
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->renderable(function (Illuminate\Validation\ValidationException $e, $request) {
             if ($request->expectsJson()) {
