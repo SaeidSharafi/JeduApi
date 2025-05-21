@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\Course\CreateCourseAction;
+use App\Actions\Course\DeleteCourseAction;
+use App\Actions\Course\UpdateCourseAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Course\CreateCourseData;
 use App\Data\Course\ResponseCourseData;
@@ -51,24 +54,11 @@ final class CourseController extends Controller
     /**
      * Create a new course.
      */
-    public function store(CreateCourseData $data): ApiResponseInterface
+    public function store(CreateCourseData $data, CreateCourseAction $action): ApiResponseInterface
     {
         Gate::authorize('create', Course::class);
 
-        $mediaInput = $data->only('media')->all() ?: [];
-        $course = Course::query()->create($data->except('media')->all());
-
-        // Attach media by tag if media input is provided (expects array: tag => [media_id,...])
-        foreach ($mediaInput as $tag => $mediaIds) {
-            if (is_array($mediaIds)) {
-                foreach ($mediaIds as $mediaId) {
-                    $media = \Plank\Mediable\Media::find($mediaId);
-                    if ($media) {
-                        $course->attachMedia($media, $tag);
-                    }
-                }
-            }
-        }
+        $action->handle($data);
 
         return response()->created();
     }
@@ -96,33 +86,20 @@ final class CourseController extends Controller
     /**
      * Update the specified course.
      */
-    public function update(CreateCourseData $data, Course $course): ApiResponseInterface
+    public function update(CreateCourseData $data, Course $course, UpdateCourseAction $action): ApiResponseInterface
     {
         Gate::authorize('update', $course);
-
-        $course->update($data->except('media')->all());
-
-        $mediaInput = $data->media ?? [];
-
-        // Sync media by tag if media input is provided (expects array: tag => [media_id,...])
-        foreach (['gallery', 'video', 'thumbnail', 'certificate'] as $tag) {
-            $mediaIds = $mediaInput[$tag] ?? null;
-            if (is_array($mediaIds)) {
-                $course->syncMedia($mediaIds, $tag);
-            }
-        }
-
+        $action->handle($data, $course);
         return response()->success(ShowCourseData::from($course)->toArray());
     }
 
     /**
      * Remove the specified course
      */
-    public function destroy(Course $course): JsonResponse
+    public function destroy(Course $course, DeleteCourseAction $action): JsonResponse
     {
         Gate::authorize('delete', $course);
-        $course->delete();
-
+        $action->handle($course);
         return response()->noContentJson();
     }
 }
