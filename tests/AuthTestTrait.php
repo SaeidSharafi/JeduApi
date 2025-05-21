@@ -23,7 +23,7 @@ trait AuthTestTrait
     }
 
     public function authorized_user(
-        array $permission,
+        array $permission = [],
         $guard = 'admin'
     ): self {
         if (! isset($this->user)) {
