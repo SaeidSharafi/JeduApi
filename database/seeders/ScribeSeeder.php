@@ -31,13 +31,19 @@ final class ScribeSeeder extends Seeder
             ->delete();
 
         Storage::disk('public')->deleteDirectory('fake-media');
-        $path = base_path().'/resources/seed-media/placeholder.mp4';
-        Storage::disk('public')->putFileAs('fake-media', new File($path), 'placeholder1.mp4');
-        Storage::disk('public')->putFileAs('fake-media', new File($path), 'placeholder2.mp4');
-        Storage::disk('public')->putFileAs('fake-media', new File($path), 'placeholder3.mp4');
+        $videoPath = base_path().'/resources/seed-media/placeholder.mp4';
+        $coverPath = base_path().'/resources/seed-media/fake-cover.svg';
+        $galleryPath = base_path().'/resources/seed-media/fake-gallery.svg';
+        Storage::disk('public')->putFileAs('fake-media', new File($videoPath), 'placeholder1.mp4');
+        Storage::disk('public')->putFileAs('fake-media', new File($videoPath), 'placeholder2.mp4');
+        Storage::disk('public')->putFileAs('fake-media', new File($videoPath), 'placeholder3.mp4');
+        Storage::disk('public')->putFileAs('fake-media', new File($coverPath), 'fake-cover.svg');
+        Storage::disk('public')->putFileAs('fake-media', new File($galleryPath), 'fake-gallery.svg');
         MediaUploader::importPath('public', 'fake-media/placeholder1.mp4');
         MediaUploader::importPath('public', 'fake-media/placeholder2.mp4');
         MediaUploader::importPath('public', 'fake-media/placeholder3.mp4');
+        MediaUploader::importPath('public', 'fake-media/fake-cover.svg');
+        MediaUploader::importPath('public', 'fake-media/fake-gallery.svg');
 
         Course::query()->truncate();
         Course::factory(100)
