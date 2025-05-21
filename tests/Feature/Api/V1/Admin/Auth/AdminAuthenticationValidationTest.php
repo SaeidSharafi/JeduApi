@@ -148,7 +148,7 @@ test('admin auth with non-existent account returns proper error', function (): v
 
 test('admin logout requires valid auth token', function (): void {
     $response = $this->postJson('/api/v1/admin/auth/logout');
-    $response->assertStatus(500)
+    $response->assertStatus(401)
         ->assertJson([
             'message' => 'Unauthenticated.',
         ]);
@@ -158,7 +158,7 @@ test('admin cannot use invalid auth token', function (): void {
     $response = $this->withHeader('Authorization', 'Bearer invalid-token')
         ->postJson('/api/v1/admin/auth/logout');
 
-    $response->assertStatus(500)
+    $response->assertStatus(401)
         ->assertJson([
             'message' => 'Unauthenticated.',
         ]);
