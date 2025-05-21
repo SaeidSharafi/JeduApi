@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Enums;
 
 /**
@@ -12,6 +10,13 @@ namespace App\Enums;
  */
 enum PermissionEnum: string
 {
+    case CATEGORY_CREATE = 'categories.create';
+    case CATEGORY_DELETE = 'categories.delete';
+    case CATEGORY_DELETE_OWN = 'categories.delete_own';
+    case CATEGORY_UPDATE = 'categories.update';
+    case CATEGORY_UPDATE_OWN = 'categories.update_own';
+    case CATEGORY_VIEW = 'categories.view';
+    case CATEGORY_VIEW_ANY = 'categories.view_any';
     case COURSE_CREATE = 'courses.create';
     case COURSE_DELETE = 'courses.delete';
     case COURSE_DELETE_OWN = 'courses.delete_own';
@@ -22,7 +27,6 @@ enum PermissionEnum: string
 
     /**
      * Get all permission values as an array.
-     *
      * @return array<string>
      */
     public static function getAllValues(): array
@@ -32,7 +36,6 @@ enum PermissionEnum: string
 
     /**
      * Get all permission names (enum case names) as an array.
-     *
      * @return array<string>
      */
     public static function getAllNames(): array

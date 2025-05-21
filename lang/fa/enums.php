@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'CourseStatusEnum' => [
+    'PublicationStatusEnum' => [
         'draft' => 'پیش‌نویس',
         'published' => 'منتشر شده',
         'archived' => 'آرشیو',

@@ -1,0 +1,15 @@
+{
+  "message": "The field1 is invalid. (and 2 more errors)",
+  "errors": {
+    "field1": [
+      "The field1 is invalid."
+    ],
+    "field2": [
+      "The field2 is invalid."
+    ],
+    "field3": [
+      "The field3 is invalid."
+    ]
+  },
+  "metadata": []
+}

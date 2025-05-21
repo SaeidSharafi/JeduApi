@@ -1,0 +1,34 @@
+{
+  "message": "Operation successful.",
+  "data": {
+    "id": 1,
+    "name": "قرص",
+    "slug": "dolores-sunt-cupiditate-qui-qui",
+    "status": {
+      "value": "published",
+      "label": "منتشر شده"
+    },
+    "parent_id": null,
+    "description": "Dolore maiores officiis cum sint. Reiciendis fugiat vel dolorum occaecati eligendi. Voluptatum aut commodi laboriosam sunt provident. Voluptas assumenda ea minus maiores tempora quod.",
+    "color_scheme": "#8aa72b",
+    "meta_title": "قفل بالین برق دیجیتال اتوبوس صف هنر.",
+    "meta_description": "عدد آرایش محفل شب میز ژاکت. دامنه مدار ملل خیابان قلم دکان بلیط دریا. نقاشی محل قلم جنگل چرخ میوه.",
+    "meta_keywords": "ملت مدرسه ماکت",
+    "properties": [],
+    "additional_info": [],
+    "media": {
+      "icon": null,
+      "image": {
+        "id": 26,
+        "url": "http://jedu.test/storage/fake-media/placeholder.svg",
+        "size": 809,
+        "file_name": "placeholder",
+        "alt": "",
+        "mime_type": "image/svg+xml",
+        "extension": "svg",
+        "tag": "image"
+      }
+    }
+  },
+  "metadata": []
+}
