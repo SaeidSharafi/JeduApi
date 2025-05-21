@@ -119,12 +119,12 @@ test('password login requires valid credentials', function (): void {
 
 test('logout requires authentication', function (): void {
     $response = $this->postJson('/api/v1/auth/logout');
-    $response->assertStatus(500);
+    $response->assertStatus(401);
 });
 
 test('cannot use invalid auth token', function (): void {
     $response = $this->withHeader('Authorization', 'Bearer invalid-token')
         ->postJson('/api/v1/auth/logout');
 
-    $response->assertStatus(500);
+    $response->assertStatus(401);
 });
