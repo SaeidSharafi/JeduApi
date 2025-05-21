@@ -124,10 +124,16 @@ it('can view a course', function (): void {
     $course = App\Models\Course::factory()
         ->withMedia(['cover'])
         ->create();
+    Storage::fake('public');
+    $cover = \MediaUploader::fromSource(\Illuminate\Http\UploadedFile::fake()->image('course.jpg'))
+        ->toDisk('public')
+        ->upload();
+    $course->attachMedia($cover,'cover');
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_VIEW->value,
     ]);
     $response = $this->getJson(route('api.v1.admin.course.show', $course->id));
+
     $media = $course->getMedia('cover')->first();
     $response
         ->assertStatus(200)
