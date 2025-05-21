@@ -13,6 +13,7 @@ use App\Data\Category\CreateCategoryData;
 use App\Data\Category\ShowCategoryData;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -103,7 +104,7 @@ final class CategoryController extends Controller
      *
      * @responseFile 404 responses/404.json
      */
-    public function destroy(Category $category, DeleteCategoryAction $action): ApiResponseInterface
+    public function destroy(Category $category, DeleteCategoryAction $action): JsonResponse
     {
         Gate::authorize('delete', $category);
         $action->handle($category);
