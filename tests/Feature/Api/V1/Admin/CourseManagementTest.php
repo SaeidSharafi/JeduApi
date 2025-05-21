@@ -319,7 +319,13 @@ it('can not edit a course with invalid slug', function (): void {
 });
 
 it('can delete a course', function (): void {
-    $course = App\Models\Course::factory()->create();
+    Storage::fake('public');
+    $this->media = \MediaUploader::fromSource(\Illuminate\Http\UploadedFile::fake()->image('course.jpg'))
+        ->toDisk('public')
+        ->upload();
+    $course = App\Models\Course::factory()
+        ->create();
+    $course->attachMedia($this->media,  'gallery');
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_DELETE->value,
     ]);
@@ -327,5 +333,12 @@ it('can delete a course', function (): void {
     $response->assertStatus(204);
     $this->assertDatabaseMissing('courses', [
         'id' => $course->id,
+    ]);
+    $this->assertDatabaseMissing('mediables', [
+        'mediable_id' => $course->id,
+        'mediable_type' => App\Models\Course::class,
+    ]);
+    $this->assertDatabaseMissing('media', [
+        'id' => $this->media->id,
     ]);
 });
