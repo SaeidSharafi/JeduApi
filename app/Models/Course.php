@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\CourseDifficultyLevelEnum;
-use App\Enums\CourseStatusEnum;
+use App\Enums\PublicationStatusEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Plank\Mediable\Mediable;
@@ -40,7 +40,7 @@ final class Course extends Model
     protected function casts(): array
     {
         return [
-            'status' => CourseStatusEnum::class,
+            'status' => PublicationStatusEnum::class,
             'difficulty_level' => CourseDifficultyLevelEnum::class,
             'outcomes_json' => 'array',
             'additional_info' => 'array',

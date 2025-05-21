@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Enums\CourseDifficultyLevelEnum;
-use App\Enums\CourseStatusEnum;
+use App\Enums\PublicationStatusEnum;
 use App\Models\Admin;
 use App\Models\Course;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -43,7 +43,7 @@ final class CourseFactory extends Factory
             'meta_description' => $this->faker->persianParagraph(),
             'meta_keywords' => $this->faker->persianWords(8, true),
             'properties' => [],
-            'status' => $this->faker->randomElement(CourseStatusEnum::getAllValues()),
+            'status' => $this->faker->randomElement(PublicationStatusEnum::getAllValues()),
             'created_by' => Admin::factory(),
         ];
     }

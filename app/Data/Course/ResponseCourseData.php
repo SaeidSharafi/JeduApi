@@ -6,7 +6,7 @@ namespace App\Data\Course;
 
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\CourseDifficultyLevelEnum;
-use App\Enums\CourseStatusEnum;
+use App\Enums\PublicationStatusEnum;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
@@ -32,7 +32,7 @@ final class ResponseCourseData extends Data
         public ?string $meta_keywords,
         public ?array $properties,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
-        public CourseStatusEnum $status,
+        public PublicationStatusEnum $status,
         public array $media = [],
     ) {}
 }

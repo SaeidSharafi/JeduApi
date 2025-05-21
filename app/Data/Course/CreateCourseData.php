@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Course;
 
 use App\Enums\CourseDifficultyLevelEnum;
-use App\Enums\CourseStatusEnum;
+use App\Enums\PublicationStatusEnum;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\EnumCast;
@@ -51,7 +51,7 @@ final class CreateCourseData extends Data
         public ?string $meta_keywords,
         public ?array $properties,
         #[WithCast(EnumCast::class)]
-        public CourseStatusEnum $status,
+        public PublicationStatusEnum $status,
         public array $media = [],
     ) {}
 
@@ -88,7 +88,7 @@ final class CreateCourseData extends Data
             'meta_description' => ['nullable', 'string', 'max:65535'],
             'meta_keywords' => ['nullable', 'string', 'max:65535'],
             'properties' => ['nullable', 'array'],
-            'status' => ['required', Rule::enum(CourseStatusEnum::class)],
+            'status' => ['required', Rule::enum(PublicationStatusEnum::class)],
             'media' => ['required', 'array'],
             'media.gallery' => ['nullable', 'array'],
             'media.cover' => ['nullable', 'array'],
@@ -185,7 +185,7 @@ final class CreateCourseData extends Data
             'status' => [
                 'description' => 'Status of the course',
                 'required' => true,
-                'example' => CourseStatusEnum::DRAFT->value,
+                'example' => PublicationStatusEnum::DRAFT->value,
             ],
             'media' => [
                 'description' => 'Media of the course',

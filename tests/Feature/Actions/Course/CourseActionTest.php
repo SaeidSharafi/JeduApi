@@ -29,7 +29,7 @@ describe('CourseActionTest', function () {
                 'slug'       => 'test-course',
                 'full_name'  => 'Test Course',
                 'short_name' => 'TC',
-                'status'     => \App\Enums\CourseStatusEnum::DRAFT->value,
+                'status'     => \App\Enums\PublicationStatusEnum::DRAFT->value,
             ]
         )->toArray();
         $data = CreateCourseData::from([
@@ -53,7 +53,7 @@ describe('CourseActionTest', function () {
             ->and($course)->not()->toBeNull()
             ->and($course->full_name)->toBe('Test Course')
             ->and($course->short_name)->toBe('TC')
-            ->and($course->status)->toBe(\App\Enums\CourseStatusEnum::DRAFT);
+            ->and($course->status)->toBe(\App\Enums\PublicationStatusEnum::DRAFT);
     });
 
     test('UpdateCourseAction successfully update course', function () {
@@ -63,14 +63,14 @@ describe('CourseActionTest', function () {
                 'slug'       => 'test-course',
                 'full_name'  => 'Updated Course Name',
                 'short_name' => 'TC',
-                'status'     => \App\Enums\CourseStatusEnum::DRAFT->value,
+                'status'     => \App\Enums\PublicationStatusEnum::DRAFT->value,
             ]
         )->toArray();
         $data = CreateCourseData::from([
             ...$course->toArray(),
             'full_name'  => 'Updated Course Name',
             'short_name' => 'UC',
-            'status'     => \App\Enums\CourseStatusEnum::PUBLISHED->value,
+            'status'     => \App\Enums\PublicationStatusEnum::PUBLISHED->value,
             'media' => [
                 'gallery'     => [$this->media2->id],
                 'video'       => [$this->media2->id],
@@ -87,7 +87,7 @@ describe('CourseActionTest', function () {
         expect($course)->not()->toBeNull()
             ->and($course->full_name)->toBe('Updated Course Name')
             ->and($course->short_name)->toBe('UC')
-            ->and($course->status)->toBe(\App\Enums\CourseStatusEnum::PUBLISHED)
+            ->and($course->status)->toBe(\App\Enums\PublicationStatusEnum::PUBLISHED)
         ->and($course->media)->toHaveCount(3)
         ->and($course->media?->first()?->id)->toBe($this->media2->id);
     });
