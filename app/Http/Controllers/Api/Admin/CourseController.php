@@ -90,6 +90,7 @@ final class CourseController extends Controller
     {
         Gate::authorize('update', $course);
         $action->handle($data, $course);
+
         return response()->success(ShowCourseData::from($course)->toArray());
     }
 
@@ -100,6 +101,7 @@ final class CourseController extends Controller
     {
         Gate::authorize('delete', $course);
         $action->handle($course);
+
         return response()->noContentJson();
     }
 }

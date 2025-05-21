@@ -125,10 +125,10 @@ it('can view a course', function (): void {
         ->withMedia(['cover'])
         ->create();
     Storage::fake('public');
-    $cover = \MediaUploader::fromSource(\Illuminate\Http\UploadedFile::fake()->image('course.jpg'))
+    $cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('course.jpg'))
         ->toDisk('public')
         ->upload();
-    $course->attachMedia($cover,'cover');
+    $course->attachMedia($cover, 'cover');
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_VIEW->value,
     ]);
@@ -326,12 +326,12 @@ it('can not edit a course with invalid slug', function (): void {
 
 it('can delete a course', function (): void {
     Storage::fake('public');
-    $this->media = \MediaUploader::fromSource(\Illuminate\Http\UploadedFile::fake()->image('course.jpg'))
+    $this->media = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('course.jpg'))
         ->toDisk('public')
         ->upload();
     $course = App\Models\Course::factory()
         ->create();
-    $course->attachMedia($this->media,  'gallery');
+    $course->attachMedia($this->media, 'gallery');
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_DELETE->value,
     ]);

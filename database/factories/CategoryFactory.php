@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Models\Category;
@@ -8,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Plank\Mediable\Media;
 
 /** @mixin Factory<Category> */
-class CategoryFactory extends Factory
+final class CategoryFactory extends Factory
 {
     protected $model = Category::class;
 
@@ -34,33 +36,34 @@ class CategoryFactory extends Factory
     public function withImage(): static
     {
         return $this->afterCreating(function (Category $category) {
-                $media = Media::query()
-                    ->where('directory', 'fake-media')
-                    ->whereLike('filename', "%placeholder%")
-                    ->where('extension', 'svg')
-                    ->inRandomOrder()
-                    ->first();
-                $category->attachMedia($media, 'image');
-                $category->image_url = $media->getUrl();
-                $category->save();
+            $media = Media::query()
+                ->where('directory', 'fake-media')
+                ->whereLike('filename', '%placeholder%')
+                ->where('extension', 'svg')
+                ->inRandomOrder()
+                ->first();
+            $category->attachMedia($media, 'image');
+            $category->image_url = $media->getUrl();
+            $category->save();
         });
     }
 
     public function withIcon(): static
     {
         return $this->afterCreating(function (Category $category) {
-                $media = Media::query()
-                    ->where('directory', 'fake-media')
-                    ->whereLike('filename', "%icon%")
-                    ->where('extension', 'svg')
-                    ->inRandomOrder()
-                    ->first();
-                $category->attachMedia($media, "icon");
-                $category->icon_url = $media->getUrl();
-                $category->save();
+            $media = Media::query()
+                ->where('directory', 'fake-media')
+                ->whereLike('filename', '%icon%')
+                ->where('extension', 'svg')
+                ->inRandomOrder()
+                ->first();
+            $category->attachMedia($media, 'icon');
+            $category->icon_url = $media->getUrl();
+            $category->save();
 
         });
     }
+
     /**
      * Attach fake SVG media with tag text to the course (state method)
      */
@@ -78,5 +81,4 @@ class CategoryFactory extends Factory
             }
         });
     }
-
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,8 +18,8 @@ return new class extends Migration
             $table->foreignId('parent_id')->nullable()->constrained('categories')->restrictOnDelete();
             $table->string('name')->unique();
             $table->string('slug')->unique();
-            $table->enum('status', \App\Enums\PublicationStatusEnum::getAllValues())
-                ->default(\App\Enums\PublicationStatusEnum::PUBLISHED->value);
+            $table->enum('status', App\Enums\PublicationStatusEnum::getAllValues())
+                ->default(App\Enums\PublicationStatusEnum::PUBLISHED->value);
             $table->string('description')->nullable();
             $table->string('image_url')->nullable();
             $table->string('icon_url')->nullable();

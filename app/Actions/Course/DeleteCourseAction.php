@@ -14,7 +14,7 @@ final readonly class DeleteCourseAction
      */
     public function handle(Course $course): void
     {
-        DB::transaction(function () use($course): void {
+        DB::transaction(function () use ($course): void {
             $course->media()->delete();
             $course->delete();
         });

@@ -1,12 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 
-class DeployApplicationCommand extends Command
+final class DeployApplicationCommand extends Command
 {
     /**
      * The name and signature of the console command.
@@ -40,6 +43,7 @@ class DeployApplicationCommand extends Command
         if (empty($gitUsername) || empty($gitPat)) {
             $this->error('✘ Git username or PAT not configured in .env (GIT_DEPLOY_USERNAME, GIT_DEPLOY_PAT).');
             Log::channel('deployment')->error('✘ Git username or PAT not configured.');
+
             return Command::FAILURE;
         }
 
@@ -51,37 +55,37 @@ class DeployApplicationCommand extends Command
             if (app()->isProduction()) {
                 $this->line('Git: Resetting local changes...');
                 Log::channel('deployment')->info('Git: Resetting local changes...');
-                if (!$this->runProcess('git reset --hard HEAD', $projectPath)) {
+                if (! $this->runProcess('git reset --hard HEAD', $projectPath)) {
                     return Command::FAILURE;
                 }
             }
 
-            //$this->line('Git: Cleaning untracked files...');
-            //Log::channel('deployment')->info('Git: Cleaning untracked files...');
-            //if (!$this->runProcess('git clean -fd', $projectPath)) return Command::FAILURE;
+            // $this->line('Git: Cleaning untracked files...');
+            // Log::channel('deployment')->info('Git: Cleaning untracked files...');
+            // if (!$this->runProcess('git clean -fd', $projectPath)) return Command::FAILURE;
 
             $this->line("Git: Pulling 'main' branch from {$expectedRepo}...");
             Log::channel('deployment')->info("Git: Pulling 'main' branch from {$expectedRepo}...");
             $pullCommand = "git pull {$remoteUrlWithCreds} main";
-            if (!$this->runProcess($pullCommand, $projectPath)) {
+            if (! $this->runProcess($pullCommand, $projectPath)) {
                 return Command::FAILURE;
             }
 
             if (app()->environment() !== 'local') {
-                $noDev= app()->isProduction() ? "--no-dev" : "";
+                $noDev = app()->isProduction() ? '--no-dev' : '';
                 $this->line('Composer: Installing dependencies...');
                 Log::channel('deployment')->info('Composer: Installing dependencies...');
                 $composerCommand = "{$phpExecutable} /usr/local/bin/composer install --no-interaction {$noDev} --prefer-dist --optimize-autoloader";
-                if (!$this->runProcess($composerCommand, $projectPath)) {
+                if (! $this->runProcess($composerCommand, $projectPath)) {
                     return Command::FAILURE;
                 }
             }
             $artisanCommands = ["{$artisanScript} optimize:clear"];
-            if (!app()->isProduction()) {
+            if (! app()->isProduction()) {
                 $artisanCommands[] = "{$artisanScript} migrate:fresh";
             }
             $artisanCommands[] = "{$artisanScript} permission:sync";
-            if (!app()->isProduction()) {
+            if (! app()->isProduction()) {
                 $artisanCommands[] = "{$artisanScript} scribe:setup --fresh --seed";
             }
             $artisanCommands[] = "{$artisanScript} optimize";
@@ -89,7 +93,7 @@ class DeployApplicationCommand extends Command
             foreach ($artisanCommands as $command) {
                 $this->line("Artisan: Running '{$command}'...");
                 Log::channel('deployment')->info("Artisan: Running '{$command}'...");
-                if (!$this->runProcess($command, $projectPath)) {
+                if (! $this->runProcess($command, $projectPath)) {
                     // Decide if one failed artisan command should stop the whole deployment
                     $this->error("✘ Artisan command '{$command}' failed.");
                     // return Command::FAILURE; // Uncomment to stop on first Artisan error
@@ -98,12 +102,14 @@ class DeployApplicationCommand extends Command
 
             $this->info('✅ Application deployed successfully!');
             Log::channel('deployment')->info('✅ Deployment completed successfully via Artisan command.');
+
             return Command::SUCCESS;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('✘ General deployment exception: '.$e->getMessage());
             Log::channel('deployment')->error('✘ General deployment exception: '.$e->getMessage(),
                 ['trace' => $e->getTraceAsString()]);
+
             return Command::FAILURE;
         }
     }
@@ -119,13 +125,15 @@ class DeployApplicationCommand extends Command
         if ($process->successful()) {
             $this->line($process->output()); // Output to console for manual runs
             Log::channel('deployment')->info("Success: {$command}", ['output' => $process->output()]);
+
             return true;
-        } else {
-            $this->error("Failed: {$command}");
-            $this->error("Error Output: ".$process->errorOutput());
-            Log::channel('deployment')
-                ->error("Failed: {$command}", ['output' => $process->output(), 'error' => $process->errorOutput()]);
-            return false;
         }
+        $this->error("Failed: {$command}");
+        $this->error('Error Output: '.$process->errorOutput());
+        Log::channel('deployment')
+            ->error("Failed: {$command}", ['output' => $process->output(), 'error' => $process->errorOutput()]);
+
+        return false;
+
     }
 }

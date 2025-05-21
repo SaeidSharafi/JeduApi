@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\Admin;
 
 use App\Enums\PermissionEnum;
-use App\Models\Category;
 use App\Models\Admin;
+use App\Models\Category;
 
-class CategoryPolicy
+final class CategoryPolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -47,5 +49,4 @@ class CategoryPolicy
     {
         return $user->can(PermissionEnum::CATEGORY_DELETE->value);
     }
-
 }

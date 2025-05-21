@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Category;
 
 use App\Data\MediaData;
@@ -11,7 +13,7 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-class ShowCategoryData extends Data
+final class ShowCategoryData extends Data
 {
     public function __construct(
         public int $id,
@@ -28,8 +30,7 @@ class ShowCategoryData extends Data
         public ?array $properties = null,
         public ?array $additional_info = null,
         public ?array $media = [],
-    ) {
-    }
+    ) {}
 
     public static function fromModel(Category $category): self
     {
@@ -58,10 +59,9 @@ class ShowCategoryData extends Data
             properties: $category->properties,
             additional_info: $category->additional_info,
             media: [
-                'icon'  => $icon?->toArray(),
+                'icon' => $icon?->toArray(),
                 'image' => $image?->toArray(),
             ],
         );
     }
-
 }

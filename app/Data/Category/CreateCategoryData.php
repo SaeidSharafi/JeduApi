@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Category;
 
-use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\WithCast;
@@ -10,7 +11,7 @@ use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class CreateCategoryData extends Data
+final class CreateCategoryData extends Data
 {
     public function __construct(
         public string $name,
@@ -26,9 +27,7 @@ class CreateCategoryData extends Data
         public ?array $properties = null,
         public ?array $additional_info = null,
         public ?array $media = [],
-    )
-    {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {

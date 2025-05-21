@@ -9,7 +9,6 @@ use App\Enums\PublicationStatusEnum;
 use App\Models\Admin;
 use App\Models\Course;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Plank\Mediable\Facades\MediaUploader;
 use Plank\Mediable\Media;
 
 /**
@@ -75,5 +74,4 @@ final class CourseFactory extends Factory
             }
         });
     }
-
 }

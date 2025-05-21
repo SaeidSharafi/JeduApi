@@ -9,9 +9,10 @@ use Spatie\WebhookClient\Exceptions\InvalidConfig;
 describe('GitHubSignatureValidator', function () {
     beforeEach(function () {
         $this->makeConfig = function ($secret, $header) {
-            $config = Mockery::mock(\Spatie\WebhookClient\WebhookConfig::class);
+            $config = Mockery::mock(Spatie\WebhookClient\WebhookConfig::class);
             $config->signingSecret = $secret;
             $config->signatureHeaderName = $header;
+
             return $config;
         };
     });
@@ -20,7 +21,7 @@ describe('GitHubSignatureValidator', function () {
         $secret = 'test_secret';
         $payload = '{"foo":"bar"}';
         $signature = hash_hmac('sha256', $payload, $secret);
-        $header = 'sha256=' . $signature;
+        $header = 'sha256='.$signature;
 
         $request = Request::create('/', 'POST', [], [], [], [], $payload);
         $request->headers->set('X-Hub-Signature-256', $header);
@@ -54,7 +55,7 @@ describe('GitHubSignatureValidator', function () {
     it('throws if signing secret is missing', function () {
         $payload = '{"foo":"bar"}';
         $signature = hash_hmac('sha256', $payload, 'irrelevant');
-        $header = 'sha256=' . $signature;
+        $header = 'sha256='.$signature;
         $request = Request::create('/', 'POST', [], [], [], [], $payload);
         $request->headers->set('X-Hub-Signature-256', $header);
         $config = ($this->makeConfig)('', 'X-Hub-Signature-256');

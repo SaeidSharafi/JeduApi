@@ -27,7 +27,7 @@ final class MediaData extends Data
         public string $alt,
         public string $mime_type,
         public string $extension,
-        public ?string $tag= null,
+        public ?string $tag = null,
     ) {}
 
     public static function fromModel(Media $media, ?string $tag = null): self

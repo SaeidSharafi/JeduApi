@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums;
 
 /**
@@ -27,6 +29,7 @@ enum PermissionEnum: string
 
     /**
      * Get all permission values as an array.
+     *
      * @return array<string>
      */
     public static function getAllValues(): array
@@ -36,6 +39,7 @@ enum PermissionEnum: string
 
     /**
      * Get all permission names (enum case names) as an array.
+     *
      * @return array<string>
      */
     public static function getAllNames(): array

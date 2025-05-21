@@ -40,7 +40,7 @@ return [
 
             // Exclude these routes even if they matched the rules above.
             'exclude' => [
-                 'api.v1.webhook-client-github-deployer'
+                'api.v1.webhook-client-github-deployer',
             ],
         ],
     ],

@@ -27,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->validateCsrfTokens(except: [
-            '/webhooks/github-deployer'
+            '/webhooks/github-deployer',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -43,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 // Use your specific macro for validation errors
                 return response()->validationErrors($e->errors(), $e->getMessage());
             }
+
             return null;
         });
 
@@ -52,6 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 // Use your 'unauthorized' macro
                 return response()->unauthorized($e->getMessage());
             }
+
             return null;
         });
 
@@ -61,6 +63,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($isApiRequest($request)) {
                 return response()->forbidden($e->getMessage());
             }
+
             return null;
         });
 
@@ -69,8 +72,10 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($isApiRequest($request)) {
                 // Extract model name for a slightly more specific message if desired
                 $modelName = class_basename($e->getModel());
+
                 return response()->notFound("Resource '{$modelName}' not found.");
             }
+
             return null;
         });
 
@@ -79,6 +84,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($isApiRequest($request)) {
                 return response()->notFound($e->getMessage() ?: 'The requested resource was not found.');
             }
+
             return null;
         });
 
@@ -87,25 +93,27 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($isApiRequest($request)) {
                 return response()->methodNotAllowed($e->getMessage() ?: 'Method not allowed for this resource.');
             }
+
             return null;
         });
 
         // 7. Other generic HttpExceptions (e.g., 419 CSRF, 400 Bad Request not caught by others)
         $exceptions->renderable(function (
-            \Symfony\Component\HttpKernel\Exception\HttpException $e,
+            Symfony\Component\HttpKernel\Exception\HttpException $e,
             Request $request
         ) use ($isApiRequest) {
             if ($isApiRequest($request)) {
                 return response()->error($e->getMessage(), $e->getStatusCode());
             }
+
             return null;
         });
 
         // 8. Generic Fallback for any other Throwable (defaults to 500 Internal Server Error)
         $exceptions->renderable(function (Throwable $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
-                if (app()->isProduction()){
-                    \Log::error($e->getMessage(), ['exception' => $e]);
+                if (app()->isProduction()) {
+                    Log::error($e->getMessage(), ['exception' => $e]);
                 }
 
                 $message = config('app.debug') ? $e->getMessage() : 'An internal server error occurred.';
@@ -113,6 +121,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
                 return response()->serverError($message, $exceptionForMacro);
             }
+
             return null;
         });
     })->create();

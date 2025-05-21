@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\SignatureValidator;
 
 use Illuminate\Http\Request;
@@ -8,7 +10,7 @@ use Spatie\WebhookClient\Exceptions\InvalidConfig;
 use Spatie\WebhookClient\SignatureValidator\SignatureValidator;
 use Spatie\WebhookClient\WebhookConfig;
 
-class GitHubSignatureValidator implements SignatureValidator
+final class GitHubSignatureValidator implements SignatureValidator
 {
     public function isValid(Request $request, WebhookConfig $config): bool
     {
@@ -23,17 +25,17 @@ class GitHubSignatureValidator implements SignatureValidator
             throw InvalidConfig::signingSecretNotSet();
         }
 
-        if (strpos($headerSignature, '=') === false) {
+        if (mb_strpos($headerSignature, '=') === false) {
             return false;
         }
-        list($usedAlgorithm, $signatureValueFromHeader) = explode('=', $headerSignature, 2);
+        [$usedAlgorithm, $signatureValueFromHeader] = explode('=', $headerSignature, 2);
 
         $computedSignature = hash_hmac('sha256', $request->getContent(), $signingSecret);
         $result = hash_equals($computedSignature, $signatureValueFromHeader);
-        if (!$result) {
+        if (! $result) {
             Log::channel('deployment')->debug('Signature mismatch', [
                 'computed' => $computedSignature,
-                'header' => $signatureValueFromHeader
+                'header' => $signatureValueFromHeader,
             ]);
         }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Data\Category\CategoryListItemData;
 
 it('create CategoryListItemData from Category', function () {
@@ -19,7 +21,7 @@ it('create CategoryListItemData from Category', function () {
             'image_url' => $category->image_url,
             'icon_url' => $category->icon_url,
             'created_by' => $category->created_by,
-            'created_at' => (string)$category->created_at,
-            'updated_at' => (string)$category->updated_at,
+            'created_at' => (string) $category->created_at,
+            'updated_at' => (string) $category->updated_at,
         ]);
 });
