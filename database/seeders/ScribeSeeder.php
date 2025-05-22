@@ -12,7 +12,6 @@ use Illuminate\Http\File;
 use Illuminate\Support\Facades\DB;
 use Plank\Mediable\Facades\MediaUploader;
 use Plank\Mediable\Media;
-use Plank\Mediable\Mediable;
 use Storage;
 
 final class ScribeSeeder extends Seeder
@@ -20,12 +19,13 @@ final class ScribeSeeder extends Seeder
     public function run(): void
     {
 
-        if (app()->isProduction()){
+        if (app()->isProduction()) {
             $this->command->error('You cannot run this seeder in production.');
+
             return;
         }
 
-        if (app()->environment() === 'local'){
+        if (app()->environment() === 'local') {
             DB::statement('SET FOREIGN_KEY_CHECKS = 0');
             DB::table('mediables')->truncate();
             Media::query()->truncate();
@@ -56,7 +56,6 @@ final class ScribeSeeder extends Seeder
         MediaUploader::importPath('public', 'fake-media/fake-gallery.svg');
         MediaUploader::importPath('public', 'fake-media/placeholder.svg');
         MediaUploader::importPath('public', 'fake-media/icon.svg');
-
 
         Admin::forceCreate([
             'name' => 'Admin',

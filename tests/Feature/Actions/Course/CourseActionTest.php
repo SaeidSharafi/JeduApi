@@ -13,10 +13,10 @@ describe('CourseActionTest', function () {
     beforeEach(function () {
         Storage::fake('public');
 
-        $this->media = \MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('course.jpg'))
+        $this->media = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('course.jpg'))
             ->toDisk('public')
             ->upload();
-        $this->media2 = \MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('course2.jpg'))
+        $this->media2 = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('course2.jpg'))
             ->toDisk('public')
             ->upload();
     });
