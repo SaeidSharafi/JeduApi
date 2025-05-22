@@ -25,7 +25,7 @@ use Spatie\QueryBuilder\QueryBuilder;
 final class CategoryController extends Controller
 {
     /**
-     * retrun a listing of the categories.
+     * return a listing of the categories.
      *
      * @queryParam filter[slug] string Filter by category slug. Example: electronics
      * @queryParam filter[name] string Filter by category name. Example: Electronics
@@ -66,7 +66,7 @@ final class CategoryController extends Controller
     }
 
     /**
-     * retrun the specified category.
+     * return the specified category.
      *
      * @responseFile 200 responses/category/show.json
      * @responseFile 404 responses/404.json

@@ -32,7 +32,8 @@
             "resned",
             "erd",
             "mediable",
-            "jpg"
+            "jpg",
+            "svg"
         ],
         "paths": [
             "public",
