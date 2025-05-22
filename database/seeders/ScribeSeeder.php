@@ -9,8 +9,10 @@ use App\Models\Category;
 use App\Models\Course;
 use Illuminate\Database\Seeder;
 use Illuminate\Http\File;
+use Illuminate\Support\Facades\DB;
 use Plank\Mediable\Facades\MediaUploader;
 use Plank\Mediable\Media;
+use Plank\Mediable\Mediable;
 use Storage;
 
 final class ScribeSeeder extends Seeder
@@ -18,18 +20,21 @@ final class ScribeSeeder extends Seeder
     public function run(): void
     {
 
-        Admin::query()->truncate();
-        Admin::forceCreate([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-            'phone' => '9300000000',
-            'password' => bcrypt('password'),
-            'is_admin' => true,
-        ]);
-        Media::query()
-            ->where('directory', 'fake-media')
-            ->orWhere('directory', 'fake-media/uploads')
-            ->delete();
+        if (app()->isProduction()){
+            $this->command->error('You cannot run this seeder in production.');
+            return;
+        }
+
+        if (app()->environment() === 'local'){
+            DB::statement('SET FOREIGN_KEY_CHECKS = 0');
+            DB::table('mediables')->truncate();
+            Media::query()->truncate();
+            Course::query()->truncate();
+            Category::query()->truncate();
+            Media::query()->truncate();
+            Admin::query()->truncate();
+            DB::statement('SET FOREIGN_KEY_CHECKS = 1');
+        }
 
         Storage::disk('public')->deleteDirectory('fake-media');
         $videoPath = base_path().'/resources/seed-media/placeholder.mp4';
@@ -52,14 +57,20 @@ final class ScribeSeeder extends Seeder
         MediaUploader::importPath('public', 'fake-media/placeholder.svg');
         MediaUploader::importPath('public', 'fake-media/icon.svg');
 
-        Course::query()->truncate();
+
+        Admin::forceCreate([
+            'name' => 'Admin',
+            'email' => 'admin@example.com',
+            'phone' => '9300000000',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
+        ]);
         Course::factory(100)
             ->withMedia(['gallery', 'cover', 'video'])
             ->create([
                 'created_by' => Admin::query()->first()->id,
             ]);
 
-        Category::query()->truncate();
         Category::factory(100)
             ->withIcon()
             ->withImage()
