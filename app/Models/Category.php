@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Database\Factories\AdminFactory;
 use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Plank\Mediable\Mediable;
 
-
 final class Category extends Model
 {
     /** @use HasFactory<CategoryFactory> */
     use HasFactory;
+
     use Mediable;
 
     protected $fillable = [
@@ -34,6 +33,14 @@ final class Category extends Model
         'additional_info',
     ];
 
+    /**
+     * @return BelongsToMany<Course,$this>
+     */
+    public function courses(): BelongsToMany
+    {
+        return $this->belongsToMany(Course::class, 'category_course');
+    }
+
     protected function casts(): array
     {
         return [
@@ -43,13 +50,5 @@ final class Category extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsToMany<Course,$this>
-     */
-    public function courses(): BelongsToMany
-    {
-        return $this->belongsToMany(Course::class, 'category_course');
     }
 }

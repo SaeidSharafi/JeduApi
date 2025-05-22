@@ -27,7 +27,7 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Model::preventLazyLoading(!app()->isProduction());
+        Model::preventLazyLoading(! app()->isProduction());
         Gate::before(function (Admin|User $user, mixed $ability) {
             return ($user instanceof Admin && $user->is_admin) ? true : null;
         });

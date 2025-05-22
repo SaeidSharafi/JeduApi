@@ -77,7 +77,6 @@ final class ScribeSeeder extends Seeder
                 'created_by' => Admin::query()->first()->id,
             ]);
 
-
     }
 
     protected function disableForeignKeyChecks(): void
@@ -96,6 +95,7 @@ final class ScribeSeeder extends Seeder
                 break;
         }
     }
+
     protected function enableForeignKeyChecks(): void
     {
         $driver = DB::connection()->getDriverName();

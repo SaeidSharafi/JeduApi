@@ -9,7 +9,6 @@ use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Optional;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;

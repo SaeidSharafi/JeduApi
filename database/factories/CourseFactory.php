@@ -48,13 +48,14 @@ final class CourseFactory extends Factory
         ];
     }
 
-    public function withCategory(int $categoryCount = 1): CourseFactory
+    public function withCategory(int $categoryCount = 1): self
     {
         return $this->afterCreating(function (Course $course) use ($categoryCount) {
             if (Category::query()->count() < 10) {
                 $course->categories()->attach(
-                    \App\Models\Category::factory()->count($categoryCount)->create()
+                    Category::factory()->count($categoryCount)->create()
                 );
+
                 return;
             }
 
@@ -71,7 +72,7 @@ final class CourseFactory extends Factory
     /**
      * Attach fake SVG media with tag text to the course (state method)
      */
-    public function withMedia(array $tags = ['gallery']): CourseFactory
+    public function withMedia(array $tags = ['gallery']): self
     {
         return $this->afterCreating(function (Course $course) use ($tags) {
             foreach ($tags as $tag) {

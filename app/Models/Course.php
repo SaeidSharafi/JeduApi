@@ -39,25 +39,25 @@ final class Course extends Model
             'created_by',
         ];
 
-    protected function casts(): array
-    {
-        return [
-            'status'                       => PublicationStatusEnum::class,
-            'difficulty_level'             => CourseDifficultyLevelEnum::class,
-            'outcomes_json'                => 'array',
-            'additional_info'              => 'array',
-            'properties'                   => 'array',
-            'total_video_duration_minutes' => 'integer',
-            'created_at'                   => 'datetime',
-            'updated_at'                   => 'datetime',
-        ];
-    }
-
     /**
      * @return BelongsToMany<Category,$this>
      */
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Category::class);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'status' => PublicationStatusEnum::class,
+            'difficulty_level' => CourseDifficultyLevelEnum::class,
+            'outcomes_json' => 'array',
+            'additional_info' => 'array',
+            'properties' => 'array',
+            'total_video_duration_minutes' => 'integer',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
     }
 }

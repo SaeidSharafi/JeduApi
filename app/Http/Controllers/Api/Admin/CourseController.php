@@ -8,8 +8,8 @@ use App\Actions\Course\CreateCourseAction;
 use App\Actions\Course\DeleteCourseAction;
 use App\Actions\Course\UpdateCourseAction;
 use App\Contracts\ApiResponseInterface;
-use App\Data\Course\CreateCourseData;
 use App\Data\Course\CourseListItemData;
+use App\Data\Course\CreateCourseData;
 use App\Data\Course\ShowCourseData;
 use App\Data\MediaData;
 use App\Http\Controllers\Controller;
@@ -114,6 +114,7 @@ final class CourseController extends Controller
      * Remove the specified course
      *
      * @response 204
+     *
      * @responseFile 404 responses/404.json
      * @responseFile 422 responses/422.json
      */

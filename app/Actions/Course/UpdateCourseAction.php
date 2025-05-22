@@ -16,7 +16,7 @@ final readonly class UpdateCourseAction
     public function handle(CreateCourseData $data, Course $course): void
     {
         DB::transaction(function () use ($data, $course): void {
-            $course->update($data->except('media','categories')->all());
+            $course->update($data->except('media', 'categories')->all());
 
             $mediaInput = $data->media ?? [];
             $categories = $data->categories ?? [];

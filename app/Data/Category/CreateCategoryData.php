@@ -28,13 +28,12 @@ final class CreateCategoryData extends Data
         public ?array $properties = null,
         public ?array $additional_info = null,
         public ?array $media = [],
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {
         return [
-            'slug'             => [
+            'slug' => [
                 'required',
                 'string',
                 'alpha_dash',
@@ -48,19 +47,19 @@ final class CreateCategoryData extends Data
                     return $query;
                 }),
             ],
-            'name'             => ['required', 'string', 'max:191'],
-            'status'           => ['required', Rule::enum(PublicationStatusEnum::class)],
-            'description'      => ['nullable', 'string', 'max:65535'],
-            'parent_id'        => ['nullable', 'integer', 'exists:categories,id'],
-            'color_scheme'     => ['nullable', 'string'],
-            'meta_title'       => ['nullable', 'string', 'max:191'],
+            'name' => ['required', 'string', 'max:191'],
+            'status' => ['required', Rule::enum(PublicationStatusEnum::class)],
+            'description' => ['nullable', 'string', 'max:65535'],
+            'parent_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'color_scheme' => ['nullable', 'string'],
+            'meta_title' => ['nullable', 'string', 'max:191'],
             'meta_description' => ['nullable', 'string', 'max:65535'],
-            'meta_keywords'    => ['nullable', 'string', 'max:65535'],
-            'properties'       => ['nullable', 'array'],
-            'additional_info'  => ['nullable', 'array'],
-            'media'            => ['required', 'array'],
-            'media.icon'       => ['nullable', 'integer', 'exists:media,id'],
-            'media.image'      => ['nullable', 'integer', 'exists:media,id'],
+            'meta_keywords' => ['nullable', 'string', 'max:65535'],
+            'properties' => ['nullable', 'array'],
+            'additional_info' => ['nullable', 'array'],
+            'media' => ['required', 'array'],
+            'media.icon' => ['nullable', 'integer', 'exists:media,id'],
+            'media.image' => ['nullable', 'integer', 'exists:media,id'],
         ];
     }
 }
