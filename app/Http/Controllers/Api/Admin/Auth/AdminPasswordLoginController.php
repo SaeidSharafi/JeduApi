@@ -6,17 +6,20 @@ namespace App\Http\Controllers\Api\Admin\Auth;
 
 use App\Actions\Auth\PasswordLoginAction;
 use App\Contracts\ApiResponseInterface;
+use App\Data\Auth\AdminData;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Resources\Auth\AdminResource;
 use App\Models\Admin;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
+use Spatie\Permission\Models\Permission;
 
 final class AdminPasswordLoginController extends Controller
 {
     public function __construct(
         protected PasswordLoginAction $action
-    ) {}
+    ) {
+    }
 
     /**
      * Authenticate Admin with identifier (phone/email) and password
@@ -28,23 +31,7 @@ final class AdminPasswordLoginController extends Controller
      *
      * @group Admin Authentication
      *
-     * @response {
-     *       "message": "User Logged in successfully",
-     *       "data": {
-     *           "token": "8|juaIqinWuRHiE2vnr3TGr7Pjuy04oHFFilPXxd2Y26f5f131",
-     *           "expires_at": null,
-     *           "type": "Bearer",
-     *           "user": {
-     *               "id": 1,
-     *               "name": null,
-     *               "phone": "09359933642",
-     *               "email": null,
-     *               "phone_verified_at": null,
-     *               "email_verified_at": null
-     *           }
-     *       },
-     *       "metadata": []
-     *  }
+     * @responseFile 200 responses/auth/admin.login.json
      * @response 404 {
      *       "message": "User not found",
      *       "errors": null,
@@ -66,8 +53,8 @@ final class AdminPasswordLoginController extends Controller
 
         $user = Admin::when(
             $type === 'email',
-            fn (Builder $q) => $q->where('email', $request->identifier),
-            fn (Builder $q) => $q->where('phone', $request->identifier)
+            fn(Builder $q) => $q->where('email', $request->identifier),
+            fn(Builder $q) => $q->where('phone', $request->identifier)
         )->firstOrFail();
 
         $token = $this->action->execute(
@@ -76,12 +63,19 @@ final class AdminPasswordLoginController extends Controller
             $request->password,
             guard: 'admin'
         );
-
+        $permissions = Cache::rememberForever(config('cache.keys.all_permissions'), function () {
+            return Permission::query()->where('guard_name','admin')->get()->pluck('name')->toArray();
+        });
         return response()->success([
-            'token' => $token->plainTextToken,
-            'expires_at' => $token->accessToken->expires_at,
-            'type' => 'Bearer',
-            'user' => AdminResource::make($user),
+            'token'       => $token->plainTextToken,
+            'expires_at'  => $token->accessToken->expires_at,
+            'type'        => 'Bearer',
+            'user'        => AdminData::from($user)
+                ->additional([
+                    'roles'       => $user->getRoleNames(),
+                    'permissions' => $user->getAllPermissions()->pluck('name'),
+                ]),
+            'permissions' => $permissions,
         ], 'User Logged in successfully');
     }
 }

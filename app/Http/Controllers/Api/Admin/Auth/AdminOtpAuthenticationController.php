@@ -7,12 +7,14 @@ namespace App\Http\Controllers\Api\Admin\Auth;
 use App\Actions\Auth\AuthenticateUserAction;
 use App\Actions\Auth\VerifyOtpAction;
 use App\Contracts\ApiResponseInterface;
+use App\Data\Auth\AdminData;
 use App\Enums\OtpType;
 use App\Exceptions\InvalidOtpCode;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyOtpRequest;
-use App\Http\Resources\Auth\AdminResource;
+use Illuminate\Support\Facades\Cache;
+use Spatie\Permission\Models\Permission;
 
 final class AdminOtpAuthenticationController extends Controller
 {
@@ -32,23 +34,7 @@ final class AdminOtpAuthenticationController extends Controller
      *
      * @group Admin Authentication
      *
-     * @response 200{
-     *  "message": "User Logged in successfully",
-     *  "data": {
-     *  "token": "11|fudCok5UpqHuOiYiK8croExt91j2p667woCSNS5e7ba9305b",
-     *  "expires_at": null,
-     *  "type": "Bearer",
-     *  "user": {
-     *  "id": 1,
-     *  "name": null,
-     *  "phone": "09351234567",
-     *  "email": "09351234567@example.com",
-     *  "phone_verified_at": null,
-     *  "email_verified_at": null
-     *  }
-     *  },
-     *  "metadata": []
-     *  }
+     * @responseFile 200 responses/auth/admin.login.json
      * @response 422 {
      *  "message": "Invalid OTP code",
      *  "errors": null,
@@ -73,13 +59,16 @@ final class AdminOtpAuthenticationController extends Controller
                 message: 'Invalid OTP code'
             );
         }
-
+        $permissions = Cache::rememberForever(config('cache.keys.all_permissions'), function () {
+            return Permission::query()->where('guard_name','admin')->get()->pluck('name')->toArray();
+        });
         return response()->success(
             [
                 'token' => $token->plainTextToken,
                 'expires_at' => $token->accessToken->expires_at,
                 'type' => 'Bearer',
-                'user' => AdminResource::make($user),
+                'user' => AdminData::from($user),
+                'permissions' => $permissions,
             ], 'Authenticated successfully');
     }
 }

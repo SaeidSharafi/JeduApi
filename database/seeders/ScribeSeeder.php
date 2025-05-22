@@ -12,6 +12,8 @@ use Illuminate\Http\File;
 use Illuminate\Support\Facades\DB;
 use Plank\Mediable\Facades\MediaUploader;
 use Plank\Mediable\Media;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Storage;
 
 final class ScribeSeeder extends Seeder
@@ -57,13 +59,24 @@ final class ScribeSeeder extends Seeder
         MediaUploader::importPath('public', 'fake-media/placeholder.svg');
         MediaUploader::importPath('public', 'fake-media/icon.svg');
 
-        Admin::forceCreate([
+        $user = Admin::forceCreate([
             'name' => 'Admin',
             'email' => 'admin@example.com',
             'phone' => '9300000000',
             'password' => bcrypt('password'),
             'is_admin' => true,
         ]);
+        $role = Role::firstOrCreate(
+            [
+                'name'         => 'admin',
+                'guard_name'   => 'admin',
+                'label' => 'Admin',
+            ]
+        );
+        $permissions = Permission::query()->where('guard_name','admin')->get()->pluck('name')->toArray();
+        $role->syncPermissions($permissions);
+        $user->assignRole('admin');
+
         Category::factory(100)
             ->withIcon()
             ->withImage()

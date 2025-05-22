@@ -1,0 +1,50 @@
+{
+  "message": "User Logged in successfully",
+  "data": {
+    "token": "<token>",
+    "expires_at": null,
+    "type": "Bearer",
+    "user": {
+      "id": 1,
+      "name": "Admin",
+      "phone": "9000000000",
+      "email": "user@example.com",
+      "roles": [
+        "admin"
+      ],
+      "permissions": [
+        "categories.create",
+        "categories.delete",
+        "categories.delete_own",
+        "categories.update",
+        "categories.update_own",
+        "categories.view",
+        "categories.view_any",
+        "courses.create",
+        "courses.delete",
+        "courses.delete_own",
+        "courses.update",
+        "courses.update_own",
+        "courses.view",
+        "courses.view_any"
+      ]
+    },
+    "permissions": [
+      "categories.create",
+      "categories.delete",
+      "categories.delete_own",
+      "categories.update",
+      "categories.update_own",
+      "categories.view",
+      "categories.view_any",
+      "courses.create",
+      "courses.delete",
+      "courses.delete_own",
+      "courses.update",
+      "courses.update_own",
+      "courses.view",
+      "courses.view_any"
+    ]
+  },
+  "metadata": []
+}
