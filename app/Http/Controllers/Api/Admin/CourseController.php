@@ -17,6 +17,7 @@ use App\Models\Course;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
+use Plank\Mediable\Media;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
@@ -45,9 +46,9 @@ final class CourseController extends Controller
     {
         Gate::authorize('viewAny', Course::class);
         $courses = QueryBuilder::for(Course::class)
-            ->with('categories')
             ->allowedFilters(['slug', 'name', 'short_name', 'status'])
             ->allowedSorts(['slug', 'name', 'short_name', 'status'])
+            ->with('categories')
             ->paginate()
             ->appends(request()->query());
 
@@ -83,7 +84,7 @@ final class CourseController extends Controller
         $media = [];
         foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
             $media[$tag] = $course->getMedia($tag)
-                ->map(fn ($m): MediaData => MediaData::fromModel($m, $tag))
+                ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag))
                 ->toArray();
         }
 

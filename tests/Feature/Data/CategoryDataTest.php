@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Data\Category\CategoryListItemData;
 
-it('create CategoryListItemData from Category', function () {
+it('create CategoryListItemData from Category', function (): void {
     $category = App\Models\Category::factory()->create()->fresh();
 
     $categoryListItemData = CategoryListItemData::from($category);

@@ -213,7 +213,7 @@ it('can view a course', function (): void {
                     'value' => $course->status->value,
                     'label' => $course->status->translate(),
                 ])
-                ->where('data.categories', $categories->map(fn($category) => [
+                ->where('data.categories', $categories->map(fn($category): array => [
                     'id'         => $category->id,
                     'name'       => $category->name,
                     'slug'       => $category->slug,

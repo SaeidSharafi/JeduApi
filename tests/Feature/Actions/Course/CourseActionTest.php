@@ -8,9 +8,9 @@ use App\Actions\Course\UpdateCourseAction;
 use App\Data\Course\CreateCourseData;
 use App\Models\Course;
 
-describe('CourseActionTest', function () {
+describe('CourseActionTest', function (): void {
     uses()->group('unit', 'actions', 'course');
-    beforeEach(function () {
+    beforeEach(function (): void {
         Storage::fake('public');
 
         $this->media = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('course.jpg'))
@@ -20,7 +20,7 @@ describe('CourseActionTest', function () {
             ->toDisk('public')
             ->upload();
     });
-    test('CreateCourseAction successfully create course', function () {
+    test('CreateCourseAction successfully create course', function (): void {
 
         Course::factory()->make()->toArray();
         $courseData = Course::factory()->make(
@@ -55,7 +55,7 @@ describe('CourseActionTest', function () {
             ->and($course->status)->toBe(App\Enums\PublicationStatusEnum::DRAFT);
     });
 
-    test('UpdateCourseAction successfully update course', function () {
+    test('UpdateCourseAction successfully update course', function (): void {
         $course = Course::factory()->create();
         $courseData = Course::factory()->make(
             [
@@ -91,7 +91,7 @@ describe('CourseActionTest', function () {
             ->and($course->media?->first()?->id)->toBe($this->media2->id);
     });
 
-    test('DeleteCourseAction successfully delete course', function () {
+    test('DeleteCourseAction successfully delete course', function (): void {
         $course = Course::factory()->create([
             'full_name' => 'Course to be deleted',
             'short_name' => 'CTBD',

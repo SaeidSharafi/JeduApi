@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Category;
 
-test('to Array', function () {
+test('to Array', function (): void {
     $category = Category::factory()->create();
 
     expect($category)->toBeInstanceOf(Category::class)
@@ -29,7 +29,7 @@ test('to Array', function () {
         ]);
 });
 
-test('relation courses', function () {
+test('relation courses', function (): void {
     $category = Category::factory()->create();
     $course = App\Models\Course::factory()->create();
     $category->courses()->attach($course->id);

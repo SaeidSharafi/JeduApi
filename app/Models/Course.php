@@ -53,6 +53,9 @@ final class Course extends Model
         ];
     }
 
+    /**
+     * @return BelongsToMany<Category,$this>
+     */
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Category::class);

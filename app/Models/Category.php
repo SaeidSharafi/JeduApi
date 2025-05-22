@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\AdminFactory;
+use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Plank\Mediable\Mediable;
 
+
 final class Category extends Model
 {
+    /** @use HasFactory<CategoryFactory> */
     use HasFactory;
     use Mediable;
 
@@ -41,6 +45,9 @@ final class Category extends Model
         ];
     }
 
+    /**
+     * @return BelongsToMany<Course,$this>
+     */
     public function courses(): BelongsToMany
     {
         return $this->belongsToMany(Course::class, 'category_course');
