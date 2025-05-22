@@ -17,7 +17,9 @@ final readonly class CreateCourseAction
     {
         DB::transaction(function () use ($data): void {
             $mediaToAttach = $data->media ?? [];
-            $course = Course::query()->create($data->except('media')->all());
+            $categoriesToAttach = $data->categories ?? [];
+            $course = Course::query()->create($data->except('media','categories')->all());
+            $course->categories()->attach($categoriesToAttach);
             foreach ($mediaToAttach as $tag => $mediaIds) {
                 if (is_array($mediaIds)) {
                     foreach ($mediaIds as $mediaId) {

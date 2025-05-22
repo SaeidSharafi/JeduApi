@@ -28,3 +28,16 @@ test('to Array', function () {
             'updated_at' => $category->updated_at->toISOString(),
         ]);
 });
+
+test('relation courses', function () {
+    $category = Category::factory()->create();
+    $course = App\Models\Course::factory()->create();
+    $category->courses()->attach($course->id);
+
+    expect($category->courses)
+        ->toHaveCount(1)
+        ->and($category->courses->first())
+        ->toBeInstanceOf(App\Models\Course::class)
+        ->and($category->courses->first()->id)
+        ->toEqual($course->id);
+});

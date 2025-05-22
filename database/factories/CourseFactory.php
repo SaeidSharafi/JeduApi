@@ -7,6 +7,7 @@ namespace Database\Factories;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Models\Admin;
+use App\Models\Category;
 use App\Models\Course;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Plank\Mediable\Media;
@@ -47,10 +48,30 @@ final class CourseFactory extends Factory
         ];
     }
 
+    public function withCategory(int $categoryCount = 1): CourseFactory
+    {
+        return $this->afterCreating(function (Course $course) use ($categoryCount) {
+            if (Category::query()->count() < 10) {
+                $course->categories()->attach(
+                    \App\Models\Category::factory()->count($categoryCount)->create()
+                );
+                return;
+            }
+
+            $course->categories()->attach(
+                Category::query()
+                    ->inRandomOrder()
+                    ->take($categoryCount)
+                    ->get()
+            );
+
+        });
+    }
+
     /**
      * Attach fake SVG media with tag text to the course (state method)
      */
-    public function withMedia(array $tags = ['gallery']): static
+    public function withMedia(array $tags = ['gallery']): CourseFactory
     {
         return $this->afterCreating(function (Course $course) use ($tags) {
             foreach ($tags as $tag) {

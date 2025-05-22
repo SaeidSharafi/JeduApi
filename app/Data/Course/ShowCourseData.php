@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Data\Course;
 
+use App\Data\Category\CategoryListItemData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\DataCollection;
 
 final class ShowCourseData extends Data
 {
@@ -34,6 +37,8 @@ final class ShowCourseData extends Data
         public ?array $properties,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public PublicationStatusEnum $status,
+        #[DataCollectionOf(CategoryListItemData::class)]
+        public ?DataCollection $categories,
         public array $media = [],
     ) {}
 }

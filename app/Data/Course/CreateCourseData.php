@@ -52,6 +52,7 @@ final class CreateCourseData extends Data
         public ?array $properties,
         #[WithCast(EnumCast::class)]
         public PublicationStatusEnum $status,
+        public array $categories = [],
         public array $media = [],
     ) {}
 
@@ -89,6 +90,12 @@ final class CreateCourseData extends Data
             'meta_keywords' => ['nullable', 'string', 'max:65535'],
             'properties' => ['nullable', 'array'],
             'status' => ['required', Rule::enum(PublicationStatusEnum::class)],
+            'categories' => ['nullable', 'array'],
+            'categories.*' => [
+                'nullable',
+                'integer',
+                'exists:categories,id',
+            ],
             'media' => ['required', 'array'],
             'media.gallery' => ['nullable', 'array'],
             'media.cover' => ['nullable', 'array'],

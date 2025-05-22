@@ -32,3 +32,22 @@ test('to array', function (): void {
         ]);
 
 });
+
+test('relation categories', function (): void {
+    $course = App\Models\Course::factory()->create();
+    $category = App\Models\Category::factory()->create();
+    $course->categories()->attach($category->id);
+
+    expect($course->categories)
+        ->toHaveCount(1)
+        ->and($course->categories->first())
+        ->toBeInstanceOf(App\Models\Category::class)
+        ->and($course->categories->first()->id)
+        ->toEqual($category->id);
+
+    $categories = App\Models\Category::factory()->count(3)->create();
+    $course->categories()->sync($categories);
+    $course->refresh();
+    expect($course->categories)
+        ->toHaveCount(3);
+});
