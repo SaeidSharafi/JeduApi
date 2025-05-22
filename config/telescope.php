@@ -1,6 +1,7 @@
 <?php
 
-use Laravel\Telescope\Http\Middleware\Authorize;
+declare(strict_types=1);
+
 use Laravel\Telescope\Watchers;
 
 return [
@@ -93,7 +94,7 @@ return [
     */
 
     'middleware' => [
-        \App\Http\Middleware\TelescopeBasicAuth::class,
+        App\Http\Middleware\TelescopeBasicAuth::class,
     ],
 
     /*
@@ -108,7 +109,7 @@ return [
     */
 
     'only_paths' => [
-         'api/*'
+        'api/*',
     ],
 
     'ignore_paths' => [

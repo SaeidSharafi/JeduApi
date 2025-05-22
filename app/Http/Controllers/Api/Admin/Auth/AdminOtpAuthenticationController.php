@@ -35,6 +35,7 @@ final class AdminOtpAuthenticationController extends Controller
      * @group Admin Authentication
      *
      * @responseFile 200 responses/auth/admin.login.json
+     *
      * @response 422 {
      *  "message": "Invalid OTP code",
      *  "errors": null,
@@ -60,8 +61,9 @@ final class AdminOtpAuthenticationController extends Controller
             );
         }
         $permissions = Cache::rememberForever(config('cache.keys.all_permissions'), function () {
-            return Permission::query()->where('guard_name','admin')->get()->pluck('name')->toArray();
+            return Permission::query()->where('guard_name', 'admin')->get()->pluck('name')->toArray();
         });
+
         return response()->success(
             [
                 'token' => $token->plainTextToken,

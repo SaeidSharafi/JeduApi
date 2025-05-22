@@ -18,8 +18,7 @@ final class AdminPasswordLoginController extends Controller
 {
     public function __construct(
         protected PasswordLoginAction $action
-    ) {
-    }
+    ) {}
 
     /**
      * Authenticate Admin with identifier (phone/email) and password
@@ -32,6 +31,7 @@ final class AdminPasswordLoginController extends Controller
      * @group Admin Authentication
      *
      * @responseFile 200 responses/auth/admin.login.json
+     *
      * @response 404 {
      *       "message": "User not found",
      *       "errors": null,
@@ -53,8 +53,8 @@ final class AdminPasswordLoginController extends Controller
 
         $user = Admin::when(
             $type === 'email',
-            fn(Builder $q) => $q->where('email', $request->identifier),
-            fn(Builder $q) => $q->where('phone', $request->identifier)
+            fn (Builder $q) => $q->where('email', $request->identifier),
+            fn (Builder $q) => $q->where('phone', $request->identifier)
         )->firstOrFail();
 
         $token = $this->action->execute(
@@ -64,15 +64,16 @@ final class AdminPasswordLoginController extends Controller
             guard: 'admin'
         );
         $permissions = Cache::rememberForever(config('cache.keys.all_permissions'), function () {
-            return Permission::query()->where('guard_name','admin')->get()->pluck('name')->toArray();
+            return Permission::query()->where('guard_name', 'admin')->get()->pluck('name')->toArray();
         });
+
         return response()->success([
-            'token'       => $token->plainTextToken,
-            'expires_at'  => $token->accessToken->expires_at,
-            'type'        => 'Bearer',
-            'user'        => AdminData::from($user)
+            'token' => $token->plainTextToken,
+            'expires_at' => $token->accessToken->expires_at,
+            'type' => 'Bearer',
+            'user' => AdminData::from($user)
                 ->additional([
-                    'roles'       => $user->getRoleNames(),
+                    'roles' => $user->getRoleNames(),
                     'permissions' => $user->getAllPermissions()->pluck('name'),
                 ]),
             'permissions' => $permissions,

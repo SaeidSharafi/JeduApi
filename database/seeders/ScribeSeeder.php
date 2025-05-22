@@ -68,12 +68,12 @@ final class ScribeSeeder extends Seeder
         ]);
         $role = Role::firstOrCreate(
             [
-                'name'         => 'admin',
-                'guard_name'   => 'admin',
+                'name' => 'admin',
+                'guard_name' => 'admin',
                 'label' => 'Admin',
             ]
         );
-        $permissions = Permission::query()->where('guard_name','admin')->get()->pluck('name')->toArray();
+        $permissions = Permission::query()->where('guard_name', 'admin')->get()->pluck('name')->toArray();
         $role->syncPermissions($permissions);
         $user->assignRole('admin');
 

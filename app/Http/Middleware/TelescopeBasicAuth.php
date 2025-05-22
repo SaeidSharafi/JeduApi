@@ -1,21 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class TelescopeBasicAuth
+final class TelescopeBasicAuth
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!app()->environment('dev')) {
+        if (! app()->environment('dev')) {
             return $next($request);
         }
 
@@ -26,6 +28,7 @@ class TelescopeBasicAuth
         if (empty($expectedUser) || empty($expectedPass)) {
             // Log an error for the admin to see
             logger()->error('Telescope dev credentials are not set in .env file.');
+
             return response('Unauthorized. Configuration error.', 401);
         }
 
@@ -38,6 +41,7 @@ class TelescopeBasicAuth
 
         // Credentials do not match or were not provided
         $headers = ['WWW-Authenticate' => 'Basic realm="Telescope Dev Access"'];
+
         return response('Unauthorized.', 401, $headers);
     }
 }

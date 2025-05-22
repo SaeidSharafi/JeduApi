@@ -110,6 +110,6 @@ return [
     'keys' => [
         'all_permissions' => 'all_permissions',
         'all_roles' => 'all_roles',
-        ]
+    ],
 
 ];
