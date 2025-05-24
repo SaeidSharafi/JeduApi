@@ -29,6 +29,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             '/webhooks/github-deployer',
         ]);
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->is('api/*') || $request->is('admin/*') || $request->expectsJson()) {
+                return null;
+            }
+            return null;
+        });
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $isApiRequest = function (Request $request) {
