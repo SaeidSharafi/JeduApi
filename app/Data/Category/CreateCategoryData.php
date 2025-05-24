@@ -28,12 +28,13 @@ final class CreateCategoryData extends Data
         public ?array $properties = null,
         public ?array $additional_info = null,
         public ?array $media = [],
-    ) {}
+    ) {
+    }
 
     public static function rules(ValidationContext $context): array
     {
         return [
-            'slug' => [
+            'slug'             => [
                 'required',
                 'string',
                 'alpha_dash',
@@ -47,19 +48,89 @@ final class CreateCategoryData extends Data
                     return $query;
                 }),
             ],
-            'name' => ['required', 'string', 'max:191'],
-            'status' => ['required', Rule::enum(PublicationStatusEnum::class)],
-            'description' => ['nullable', 'string', 'max:65535'],
-            'parent_id' => ['nullable', 'integer', 'exists:categories,id'],
-            'color_scheme' => ['nullable', 'string'],
-            'meta_title' => ['nullable', 'string', 'max:191'],
+            'name'             => ['required', 'string', 'max:191'],
+            'status'           => ['required', Rule::enum(PublicationStatusEnum::class)],
+            'description'      => ['nullable', 'string', 'max:65535'],
+            'parent_id'        => ['nullable', 'integer', 'exists:categories,id'],
+            'color_scheme'     => ['nullable', 'string'],
+            'meta_title'       => ['nullable', 'string', 'max:191'],
             'meta_description' => ['nullable', 'string', 'max:65535'],
-            'meta_keywords' => ['nullable', 'string', 'max:65535'],
-            'properties' => ['nullable', 'array'],
-            'additional_info' => ['nullable', 'array'],
-            'media' => ['required', 'array'],
-            'media.icon' => ['nullable', 'integer', 'exists:media,id'],
-            'media.image' => ['nullable', 'integer', 'exists:media,id'],
+            'meta_keywords'    => ['nullable', 'string', 'max:65535'],
+            'properties'       => ['nullable', 'array'],
+            'additional_info'  => ['nullable', 'array'],
+            'media'            => ['required', 'array'],
+            'media.icon'       => ['nullable', 'integer', 'exists:media,id'],
+            'media.image'      => ['nullable', 'integer', 'exists:media,id'],
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'name'             => [
+                'description' => 'The name of the category.',
+                'example'     => 'Web Development',
+            ],
+            'slug'             => [
+                'description' => 'The unique slug for the category.',
+                'example'     => 'web-development',
+            ],
+            'status'           => [
+                'description' => 'The publication status of the category.',
+                'example'     => PublicationStatusEnum::PUBLISHED->value,
+            ],
+            'parent_id'        => [
+                'description' => 'The ID of the parent category, if any.',
+                'example'     => 1,
+            ],
+            'description'      => [
+                'description' => 'A brief description of the category.',
+                'example'     => 'This category includes all courses related to web development.',
+            ],
+            'color_scheme'     => [
+                'description' => 'The color scheme for the category, used for UI representation.',
+                'example'     => '#3490dc',
+            ],
+            'meta_title'       => [
+                'description' => 'The meta title for SEO purposes.',
+                'example'     => 'Web Development Courses',
+            ],
+            'meta_description' => [
+                'description' => 'The meta description for SEO purposes.',
+                'example'     => 'Explore our comprehensive web development courses.',
+            ],
+            'meta_keywords'    => [
+                'description' => 'The meta keywords for SEO purposes.',
+                'example'     => 'web development, programming, coding',
+            ],
+            'properties'       => [
+                'description' => 'Additional properties for the category, if any.',
+                'example'     => ['difficulty' => 'beginner', 'language' => 'English'],
+            ],
+            'additional_info'  => [
+                'description' => 'Any additional information related to the category.',
+                'example'     => ['created_by' => 'admin', 'created_at' => '2023-10-01'],
+            ],
+            'media'            => [
+                'description' => 'Media associated with the category.',
+                'example'     => [
+                    'icon'  => 1, // Media ID for the icon
+                    'image' => 2, // Media ID for the image
+                ],
+            ],
+            'media.icon'       => [
+                'description' => 'The media ID for the category icon. (as an array)',
+                'example'     => 1,
+            ],
+            'media.image'      => [
+                'description' => 'The media ID for the category image. (as an array)',
+                'example'     => 2,
+            ],
         ];
     }
 }

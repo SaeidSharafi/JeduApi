@@ -53,14 +53,15 @@ final class CreateCourseData extends Data
         public ?array $properties,
         #[WithCast(EnumCast::class)]
         public PublicationStatusEnum $status,
-        public array $categories = [],
+        public array $categories,
         public array $media = [],
-    ) {}
+    ) {
+    }
 
     public static function rules(ValidationContext $context): array
     {
         return [
-            'slug' => [
+            'slug'                    => [
                 'required',
                 'string',
                 'alpha_dash',
@@ -74,36 +75,32 @@ final class CreateCourseData extends Data
                     return $query;
                 }),
             ],
-            'full_name' => ['required', 'string', 'max:191'],
-            'short_name' => ['required', 'string', 'max:60'],
-            'description' => ['nullable', 'string', 'max:65535'],
-            'duration' => ['nullable', 'integer', 'min:1'],
-            'difficulty_level' => [
+            'full_name'               => ['required', 'string', 'max:191'],
+            'short_name'              => ['required', 'string', 'max:60'],
+            'description'             => ['nullable', 'string', 'max:65535'],
+            'duration'                => ['nullable', 'integer', 'min:1'],
+            'difficulty_level'        => [
                 'required', Rule::enum(CourseDifficultyLevelEnum::class),
             ],
-            'career_prospects_text' => ['nullable', 'string', 'max:65535'],
+            'career_prospects_text'   => ['nullable', 'string', 'max:65535'],
             'curriculum_summary_text' => ['nullable', 'string', 'max:65535'],
-            'outcomes_json' => ['nullable', 'array'],
-            'default_teacher_info' => ['nullable', 'string', 'max:1000'],
-            'additional_info' => ['nullable', 'array'],
-            'meta_title' => ['nullable', 'string', 'max:191'],
-            'meta_description' => ['nullable', 'string', 'max:65535'],
-            'meta_keywords' => ['nullable', 'string', 'max:65535'],
-            'properties' => ['nullable', 'array'],
-            'status' => ['required', Rule::enum(PublicationStatusEnum::class)],
-            'categories' => ['nullable', 'array'],
-            'categories.*' => [
-                'nullable',
-                'integer',
-                'exists:categories,id',
-            ],
-            'media' => ['required', 'array'],
-            'media.gallery' => ['nullable', 'array'],
-            'media.cover' => ['nullable', 'array'],
-            'media.video' => ['nullable', 'array'],
-            'media.cover.*' => ['nullable', 'integer', 'exists:media,id'],
-            'media.gallery.*' => ['nullable', 'integer', 'exists:media,id'],
-            'media.video.*' => ['nullable', 'integer', 'exists:media,id'],
+            'outcomes_json'           => ['required', 'array'],
+            'default_teacher_info'    => ['nullable', 'string', 'max:1000'],
+            'additional_info'         => ['nullable', 'array'],
+            'meta_title'              => ['nullable', 'string', 'max:191'],
+            'meta_description'        => ['nullable', 'string', 'max:65535'],
+            'meta_keywords'           => ['nullable', 'string', 'max:65535'],
+            'properties'              => ['nullable', 'array'],
+            'status'                  => ['required', Rule::enum(PublicationStatusEnum::class)],
+            'categories'              => ['required', 'array'],
+            'categories.*'            => ['required', 'integer', 'exists:categories,id'],
+            'media'                   => ['required', 'array'],
+            'media.gallery'           => ['nullable', 'array'],
+            'media.cover'             => ['required', 'array'],
+            'media.video'             => ['nullable', 'array'],
+            'media.cover.*'           => ['required', 'integer', 'exists:media,id'],
+            'media.gallery.*'         => ['nullable', 'integer', 'exists:media,id'],
+            'media.video.*'           => ['nullable', 'integer', 'exists:media,id'],
         ];
     }
 
@@ -115,101 +112,116 @@ final class CreateCourseData extends Data
     public function bodyParameters(): array
     {
         return [
-            'slug' => [
+            'slug'                    => [
                 'description' => 'Slug of the course',
-                'required' => true,
-                'example' => 'course-slug',
+                'required'    => true,
+                'example'     => 'course-slug',
             ],
-            'full_name' => [
+            'full_name'               => [
                 'description' => 'Full name of the course',
-                'required' => true,
-                'example' => 'Full Course Name',
+                'required'    => true,
+                'example'     => 'Full Course Name',
             ],
-            'short_name' => [
+            'short_name'              => [
                 'description' => 'Short name of the course',
-                'required' => true,
-                'example' => 'Short Course Name',
+                'required'    => true,
+                'example'     => 'Short Course Name',
             ],
-            'description' => [
+            'description'             => [
                 'description' => 'Description of the course',
-                'required' => false,
-                'example' => 'This is a course description',
+                'required'    => false,
+                'example'     => 'This is a course description',
             ],
-            'duration' => [
+            'duration'                => [
                 'description' => 'Duration of the course in minutes',
-                'required' => false,
-                'example' => 120,
+                'required'    => false,
+                'example'     => 120,
             ],
-            'difficulty_level' => [
+            'difficulty_level'        => [
                 'description' => 'Difficulty level of the course',
-                'required' => true,
-                'example' => CourseDifficultyLevelEnum::BEGINNER->value,
+                'required'    => true,
+                'example'     => CourseDifficultyLevelEnum::BEGINNER->value,
             ],
-            'career_prospects_text' => [
+            'career_prospects_text'   => [
                 'description' => 'Career prospects text of the course',
-                'required' => false,
-                'example' => 'Career prospects text',
+                'required'    => false,
+                'example'     => 'Career prospects text',
             ],
             'curriculum_summary_text' => [
                 'description' => 'Curriculum summary text of the course',
-                'required' => false,
-                'example' => 'Curriculum summary text',
+                'required'    => false,
+                'example'     => 'Curriculum summary text',
             ],
-            'outcomes_json' => [
+            'outcomes_json'           => [
                 'description' => 'Outcomes JSON of the course',
-                'required' => false,
-                'example' => json_encode(['outcome1' => 'Text', 'outcome2' => 'Text']),
+                'required'    => false,
+                'example'     => json_encode(['outcome1' => 'Text', 'outcome2' => 'Text']),
             ],
-            'default_teacher_info' => [
+            'default_teacher_info'    => [
                 'description' => 'Default teacher info of the course',
-                'required' => false,
-                'example' => 'Default teacher info',
+                'required'    => false,
+                'example'     => 'Default teacher info',
             ],
-            'additional_info' => [
-                'description' => 'Additional info of the course',
-                'required' => false,
-                'example' => json_encode(['info1', 'info2']),
+            'additional_info'         => [
+                'description' => 'Additional info of the course (JSON format)',
+                'required'    => false,
+                'example'     => json_encode(['info1', 'info2']),
             ],
-            'meta_title' => [
+            'meta_title'              => [
                 'description' => 'Meta title of the course',
-                'required' => false,
-                'example' => 'Meta title',
+                'required'    => false,
+                'example'     => 'Meta title',
             ],
-            'meta_description' => [
+            'meta_description'        => [
                 'description' => 'Meta description of the course',
-                'required' => false,
-                'example' => 'Meta description',
+                'example'     => 'Meta description',
             ],
-            'meta_keywords' => [
+            'meta_keywords'           => [
                 'description' => 'Meta keywords of the course',
-                'required' => false,
-                'example' => 'Meta keywords',
+                'example'     => 'Meta keywords',
             ],
-            'properties' => [
-                'description' => 'Properties of the course',
-                'required' => false,
-                'example' => json_encode(['property1', 'property2']),
+            'properties'              => [
+                'description' => 'Properties of the course (JSON format)',
+                'example'     => json_encode(['property1', 'property2']),
             ],
-            'status' => [
+            'status'                  => [
                 'description' => 'Status of the course',
-                'required' => true,
-                'example' => PublicationStatusEnum::DRAFT->value,
+                'example'     => PublicationStatusEnum::DRAFT->value,
             ],
-            'media' => [
+            'categories'              => [
+                'description' => 'Array of category ids for the course',
+                'example'     => [1, 2, 3],
+            ],
+            'categories.*'            => [
+                'description' => 'Array of category ids for the course',
+                'example'     => 1,
+            ],
+            'media'                   => [
                 'description' => 'Media of the course',
-                'required' => true,
-                'gallery' => [
-                    'example' => [1],
-                    'description' => 'Array of media ids for gallery',
-                ],
-                'cover' => [
-                    'example' => [1],
-                    'description' => 'Array of media ids for gallery',
-                ],
-                'video' => [
-                    'example' => [1],
-                    'description' => 'Array of media ids for video',
-                ],
+            ],
+            'media.gallery'           => [
+                'description' => 'media ids for gallery',
+                'example'     => [1, 2, 3],
+            ],
+            'media.cover'             => [
+                'description' => 'media ids for cover',
+                'example'     => [1],
+            ],
+            'media.video'             => [
+                'description' => 'media ids for video',
+                'example'     => [1],
+            ],
+            'media.cover.*'           => [
+                'description' => 'Array of media ids for cover',
+                'example'     => 1,
+            ],
+            'media.gallery.*'         => [
+                'description' => 'Array of media ids for gallery',
+                'example'     => 1,
+            ],
+            'media.video.*'           => [
+                'description' => 'Array of media ids for video',
+                'example'     => 1,
             ],
         ];
     }
