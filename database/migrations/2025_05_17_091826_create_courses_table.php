@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    use App\Traits\HasMetaTagsMigration;
+
     public function up(): void
     {
         Schema::create('courses', function (Blueprint $table) {
@@ -26,9 +28,7 @@ return new class extends Migration
             $table->json('outcomes_json')->nullable(); // What students will learn
             $table->text('default_teacher_info')->nullable(); // Fallback teacher info
             $table->json('additional_info')->nullable(); // For any other structured course-specific info
-            $table->string('meta_title')->nullable();
-            $table->text('meta_description')->nullable();
-            $table->text('meta_keywords')->nullable();
+            $this->addMetaTagColumns($table);
             $table->json('properties')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('admins', 'id')->nullOnDelete();
             $table->timestamps();

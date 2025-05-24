@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\DigitalAssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Plank\Mediable\Mediable;
 
 final class DigitalAsset extends Model
 {
+    /** @use  HasFactory<DigitalAssetFactory>*/
     use HasFactory;
+
     use Mediable;
 
     protected $fillable = [

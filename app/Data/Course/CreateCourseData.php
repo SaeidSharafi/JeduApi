@@ -6,6 +6,7 @@ namespace App\Data\Course;
 
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
+use App\Traits\ValidatesMetaTags;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\WithCast;
@@ -15,25 +16,8 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 final class CreateCourseData extends Data
 {
-    /**
-     * slug
-     * full_name // Changed from name
-     * short_name
-     * description
-     * sample_certificate_image_url
-     * total_video_duration_minutes
-     * difficulty_level
-     * career_prospects_text
-     * curriculum_summary_text
-     * outcomes_json
-     * default_teacher_info
-     * additional_info
-     * meta_title
-     * meta_description
-     * meta_keywords
-     * properties
-     * status
-     */
+    use ValidatesMetaTags;
+
     public function __construct(
         public string $slug,
         public string $full_name,
@@ -59,48 +43,48 @@ final class CreateCourseData extends Data
 
     public static function rules(ValidationContext $context): array
     {
-        return [
-            'slug' => [
-                'required',
-                'string',
-                'alpha_dash',
-                'max:191',
-                Rule::unique('courses', 'slug')->where(function (Builder $query) {
-                    $course = request()->route()->parameter('course');
-                    if ($course && $course->id) {
-                        $query->whereNot('id', $course->id);
-                    }
+        return array_merge(
+            [
+                'slug' => [
+                    'required',
+                    'string',
+                    'alpha_dash',
+                    'max:191',
+                    Rule::unique('courses', 'slug')->where(function (Builder $query) {
+                        $course = request()->route()->parameter('course');
+                        if ($course && $course->id) {
+                            $query->whereNot('id', $course->id);
+                        }
 
-                    return $query;
-                }),
+                        return $query;
+                    }),
+                ],
+                'full_name'        => ['required', 'string', 'max:191'],
+                'short_name'       => ['required', 'string', 'max:60'],
+                'description'      => ['nullable', 'string', 'max:65535'],
+                'duration'         => ['nullable', 'integer', 'min:1'],
+                'difficulty_level' => [
+                    'required', Rule::enum(CourseDifficultyLevelEnum::class),
+                ],
+                'career_prospects_text'   => ['nullable', 'string', 'max:65535'],
+                'curriculum_summary_text' => ['nullable', 'string', 'max:65535'],
+                'outcomes_json'           => ['required', 'array'],
+                'default_teacher_info'    => ['nullable', 'string', 'max:1000'],
+                'additional_info'         => ['nullable', 'array'],
+                'properties'              => ['nullable', 'array'],
+                'status'                  => ['required', Rule::enum(PublicationStatusEnum::class)],
+                'categories'              => ['required', 'array'],
+                'categories.*'            => ['required', 'integer', 'exists:categories,id'],
+                'media'                   => ['required', 'array'],
+                'media.gallery'           => ['nullable', 'array'],
+                'media.cover'             => ['required', 'array'],
+                'media.video'             => ['nullable', 'array'],
+                'media.cover.*'           => ['required', 'integer', 'exists:media,id'],
+                'media.gallery.*'         => ['nullable', 'integer', 'exists:media,id'],
+                'media.video.*'           => ['nullable', 'integer', 'exists:media,id'],
             ],
-            'full_name'        => ['required', 'string', 'max:191'],
-            'short_name'       => ['required', 'string', 'max:60'],
-            'description'      => ['nullable', 'string', 'max:65535'],
-            'duration'         => ['nullable', 'integer', 'min:1'],
-            'difficulty_level' => [
-                'required', Rule::enum(CourseDifficultyLevelEnum::class),
-            ],
-            'career_prospects_text'   => ['nullable', 'string', 'max:65535'],
-            'curriculum_summary_text' => ['nullable', 'string', 'max:65535'],
-            'outcomes_json'           => ['required', 'array'],
-            'default_teacher_info'    => ['nullable', 'string', 'max:1000'],
-            'additional_info'         => ['nullable', 'array'],
-            'meta_title'              => ['nullable', 'string', 'max:191'],
-            'meta_description'        => ['nullable', 'string', 'max:65535'],
-            'meta_keywords'           => ['nullable', 'string', 'max:65535'],
-            'properties'              => ['nullable', 'array'],
-            'status'                  => ['required', Rule::enum(PublicationStatusEnum::class)],
-            'categories'              => ['required', 'array'],
-            'categories.*'            => ['required', 'integer', 'exists:categories,id'],
-            'media'                   => ['required', 'array'],
-            'media.gallery'           => ['nullable', 'array'],
-            'media.cover'             => ['required', 'array'],
-            'media.video'             => ['nullable', 'array'],
-            'media.cover.*'           => ['required', 'integer', 'exists:media,id'],
-            'media.gallery.*'         => ['nullable', 'integer', 'exists:media,id'],
-            'media.video.*'           => ['nullable', 'integer', 'exists:media,id'],
-        ];
+            self::metaTagValidationRules()
+        );
     }
 
     /**
@@ -167,17 +151,16 @@ final class CreateCourseData extends Data
                 'example'     => json_encode(['info1', 'info2']),
             ],
             'meta_title' => [
-                'description' => 'Meta title of the course',
-                'required'    => false,
-                'example'     => 'Meta title',
+                'description' => 'The meta title for the digital asset, used for SEO.',
+                'example'     => 'Digital Asset Meta Title',
             ],
             'meta_description' => [
-                'description' => 'Meta description of the course',
-                'example'     => 'Meta description',
+                'description' => 'The meta description for the digital asset, used for SEO.',
+                'example'     => 'This is a meta description for the digital asset.',
             ],
             'meta_keywords' => [
-                'description' => 'Meta keywords of the course',
-                'example'     => 'Meta keywords',
+                'description' => 'Meta keywords for the digital asset, used for SEO.',
+                'example'     => 'meta keyword1, meta keyword2',
             ],
             'properties' => [
                 'description' => 'Properties of the course (JSON format)',

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Category;
 
 use App\Enums\PublicationStatusEnum;
+use App\Traits\ValidatesMetaTags;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\WithCast;
@@ -14,6 +15,8 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 final class CreateCategoryData extends Data
 {
+    use ValidatesMetaTags;
+
     public function __construct(
         public string $name,
         public string $slug,
@@ -32,35 +35,35 @@ final class CreateCategoryData extends Data
 
     public static function rules(ValidationContext $context): array
     {
-        return [
-            'slug' => [
-                'required',
-                'string',
-                'alpha_dash',
-                'max:191',
-                Rule::unique('categories', 'slug')->where(function (Builder $query) {
-                    $category = request()->route()->parameter('category');
-                    if ($category && $category->id) {
-                        $query->whereNot('id', $category->id);
-                    }
+        return array_merge(
+            [
+                'slug' => [
+                    'required',
+                    'string',
+                    'alpha_dash',
+                    'max:191',
+                    Rule::unique('categories', 'slug')->where(function (Builder $query) {
+                        $category = request()->route()->parameter('category');
+                        if ($category && $category->id) {
+                            $query->whereNot('id', $category->id);
+                        }
 
-                    return $query;
-                }),
+                        return $query;
+                    }),
+                ],
+                'name'            => ['required', 'string', 'max:191'],
+                'status'          => ['required', Rule::enum(PublicationStatusEnum::class)],
+                'description'     => ['nullable', 'string', 'max:65535'],
+                'parent_id'       => ['nullable', 'integer', 'exists:categories,id'],
+                'color_scheme'    => ['nullable', 'string'],
+                'properties'      => ['nullable', 'array'],
+                'additional_info' => ['nullable', 'array'],
+                'media'           => ['required', 'array'],
+                'media.icon'      => ['nullable', 'integer', 'exists:media,id'],
+                'media.image'     => ['nullable', 'integer', 'exists:media,id'],
             ],
-            'name'             => ['required', 'string', 'max:191'],
-            'status'           => ['required', Rule::enum(PublicationStatusEnum::class)],
-            'description'      => ['nullable', 'string', 'max:65535'],
-            'parent_id'        => ['nullable', 'integer', 'exists:categories,id'],
-            'color_scheme'     => ['nullable', 'string'],
-            'meta_title'       => ['nullable', 'string', 'max:191'],
-            'meta_description' => ['nullable', 'string', 'max:65535'],
-            'meta_keywords'    => ['nullable', 'string', 'max:65535'],
-            'properties'       => ['nullable', 'array'],
-            'additional_info'  => ['nullable', 'array'],
-            'media'            => ['required', 'array'],
-            'media.icon'       => ['nullable', 'integer', 'exists:media,id'],
-            'media.image'      => ['nullable', 'integer', 'exists:media,id'],
-        ];
+            self::metaTagValidationRules()
+        );
     }
 
     /**
@@ -96,16 +99,16 @@ final class CreateCategoryData extends Data
                 'example'     => '#3490dc',
             ],
             'meta_title' => [
-                'description' => 'The meta title for SEO purposes.',
-                'example'     => 'Web Development Courses',
+                'description' => 'The meta title for the digital asset, used for SEO.',
+                'example'     => 'Digital Asset Meta Title',
             ],
             'meta_description' => [
-                'description' => 'The meta description for SEO purposes.',
-                'example'     => 'Explore our comprehensive web development courses.',
+                'description' => 'The meta description for the digital asset, used for SEO.',
+                'example'     => 'This is a meta description for the digital asset.',
             ],
             'meta_keywords' => [
-                'description' => 'The meta keywords for SEO purposes.',
-                'example'     => 'web development, programming, coding',
+                'description' => 'Meta keywords for the digital asset, used for SEO.',
+                'example'     => 'meta keyword1, meta keyword2',
             ],
             'properties' => [
                 'description' => 'Additional properties for the category, if any.',

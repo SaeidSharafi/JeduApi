@@ -7,6 +7,7 @@ namespace Database\Factories;
 use App\Models\Category;
 use App\Models\Course;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 use Plank\Mediable\Media;
 
 /** @mixin Factory<Category> */
@@ -16,6 +17,7 @@ final class CategoryFactory extends Factory
 
     public function definition(): array
     {
+
         return [
             'name'             => $this->faker->unique()->persianWord(),
             'slug'             => $this->faker->unique()->slug,
@@ -24,9 +26,9 @@ final class CategoryFactory extends Factory
             'image_url'        => $this->faker->imageUrl(),
             'icon_url'         => $this->faker->imageUrl(),
             'color_scheme'     => $this->faker->hexColor,
-            'meta_title'       => $this->faker->persianSentence(),
-            'meta_description' => $this->faker->persianText(),
-            'meta_keywords'    => $this->faker->persianWords(3, true),
+            'meta_title'       => mb_trim(Str::take($this->faker->persianWords(4, true), 70)),
+            'meta_description' => mb_trim(Str::take($this->faker->persianParagraph(), 160)),
+            'meta_keywords'    => mb_trim(Str::take(implode(',', $this->faker->persianWords(3)), 255)),
             'properties'       => [],
             'additional_info'  => [],
             'created_by'       => \App\Models\Admin::factory(),

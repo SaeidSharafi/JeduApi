@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    use App\Traits\HasMetaTagsMigration;
+
     /**
      * Run the migrations.
      */
@@ -24,9 +26,7 @@ return new class extends Migration
             $table->string('image_url')->nullable();
             $table->string('icon_url')->nullable();
             $table->string('color_scheme')->nullable();
-            $table->string('meta_title')->nullable();
-            $table->string('meta_description')->nullable();
-            $table->string('meta_keywords')->nullable();
+            $this->addMetaTagColumns($table);
             $table->json('properties')->nullable();
             $table->json('additional_info')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('admins')->nullOnDelete();
