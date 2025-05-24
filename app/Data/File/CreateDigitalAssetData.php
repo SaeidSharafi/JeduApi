@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\File;
 
 use App\Enums\PublicationStatusEnum;
@@ -12,7 +14,7 @@ use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-class CreateDigitalAssetData extends Data
+final class CreateDigitalAssetData extends Data
 {
     use ValidatesMetaTags;
 
@@ -21,7 +23,7 @@ class CreateDigitalAssetData extends Data
         public string $slug,
         public ?string $description,
         public ?string $version,
-        public bool $is_attachable_to_course = false,
+        public bool $is_attachable_to_course,
         #[WithCast(EnumCast::class)]
         public PublicationStatusEnum $status,
         public ?int $created_by,
@@ -29,20 +31,19 @@ class CreateDigitalAssetData extends Data
         public ?string $meta_title,
         public ?string $meta_description,
         public ?string $meta_keywords,
-        #[WithCast(DateTimeInterfaceCast::class,'Y-m-d H:i:s')]
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Carbon $published_at,
         public ?int $page_count,
         public ?int $duration_seconds,
         public array $attachments = []
-    ) {
-    }
+    ) {}
 
     public static function rules(): array
     {
 
         return array_merge(
             [
-                'name'                    => ['required', 'string', 'max:255'],
+                'name' => ['required', 'string', 'max:255'],
                 'slug' => [
                     'required',
                     'string',
@@ -53,21 +54,22 @@ class CreateDigitalAssetData extends Data
                         if ($asset && $asset->id) {
                             $query->whereNot('id', $asset->id);
                         }
+
                         return $query;
                     }),
                 ],
-                'description'             => ['nullable', 'string'],
-                'version'                 => ['nullable', 'string', 'max:50'],
+                'description' => ['nullable', 'string'],
+                'version' => ['nullable', 'string', 'max:50'],
                 'is_attachable_to_course' => ['nullable', 'boolean'],
-                'status'                  => ['required', Rule::enum(PublicationStatusEnum::class)],
-                'created_by'              => ['nullable', 'integer', 'exists:admins,id'],
-                'keywords'                => ['nullable', 'string', 'max:255'],
-                'published_at'            => ['nullable', 'date:Y-m-d H:i:s'],
-                'page_count'              => ['nullable', 'integer', 'min:0'],
-                'duration_seconds'        => ['nullable', 'integer', 'min:0'],
-                'attachments'             => ['array'],
-                'attachments.main'        => ['required', 'integer', 'exists:media,id'],
-                'attachments.preview'     => ['nullable', 'integer', 'exists:media,id'],
+                'status' => ['required', Rule::enum(PublicationStatusEnum::class)],
+                'created_by' => ['nullable', 'integer', 'exists:admins,id'],
+                'keywords' => ['nullable', 'string', 'max:255'],
+                'published_at' => ['nullable', 'date:Y-m-d H:i:s'],
+                'page_count' => ['nullable', 'integer', 'min:0'],
+                'duration_seconds' => ['nullable', 'integer', 'min:0'],
+                'attachments' => ['array'],
+                'attachments.main' => ['required', 'integer', 'exists:media,id'],
+                'attachments.preview' => ['nullable', 'integer', 'exists:media,id'],
             ],
             self::metaTagValidationRules()
         );

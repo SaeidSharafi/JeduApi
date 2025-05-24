@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Contracts\ApiResponseInterface;
-use App\Data\MediaData;
 use App\Data\PrivateFileData;
-use App\Enums\PermissionEnum;
 use App\Http\Controllers\Controller;
 use App\Models\DigitalAsset;
 use Illuminate\Http\Request;

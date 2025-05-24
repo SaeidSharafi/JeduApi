@@ -33,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('api/*') || $request->is('admin/*') || $request->expectsJson()) {
                 return null;
             }
+
             return null;
         });
 

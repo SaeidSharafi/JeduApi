@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\File\CreateDigitalAssetAction;
@@ -13,7 +15,6 @@ use App\Data\PrivateFileData;
 use App\Http\Controllers\Controller;
 use App\Models\DigitalAsset;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Plank\Mediable\Media;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -25,7 +26,7 @@ use Spatie\QueryBuilder\QueryBuilder;
  *
  * @authenticated Admin
  */
-class DigitalAssetController extends Controller
+final class DigitalAssetController extends Controller
 {
     /**
      * Display a listing of the digital assets.
@@ -36,7 +37,7 @@ class DigitalAssetController extends Controller
     {
         Gate::authorize('view-any', DigitalAsset::class);
         $files = QueryBuilder::for(DigitalAsset::class)
-            ->allowedFilters(['name', 'slug', 'description','status'])
+            ->allowedFilters(['name', 'slug', 'description', 'status'])
             ->allowedSorts(['name', 'slug', 'status'])
             ->paginate();
 
@@ -47,6 +48,7 @@ class DigitalAssetController extends Controller
 
     /**
      * Store a newly created digital asset in database.
+     *
      * @response 201
      */
     public function store(CreateDigitalAssetData $data, CreateDigitalAssetAction $action): ApiResponseInterface
@@ -76,7 +78,7 @@ class DigitalAssetController extends Controller
 
         return response()->success(ShowDigitalAssetData::from([
             ...$digitalAsset->toArray(),
-            //'categories' => $digitalAsset->categories,
+            // 'categories' => $digitalAsset->categories,
             'attachments' => $media,
         ]));
     }
@@ -103,7 +105,7 @@ class DigitalAssetController extends Controller
         return response()->success(
             ShowDigitalAssetData::from([
                 ...$digitalAsset->toArray(),
-                //'categories' => $file->categories,
+                // 'categories' => $file->categories,
                 'attachments' => $media,
             ])
         );
@@ -114,7 +116,7 @@ class DigitalAssetController extends Controller
      *
      * @response 204
      */
-    public function destroy(DigitalAsset $digitalAsset,DeleteDigitalAssetAction $action): JsonResponse
+    public function destroy(DigitalAsset $digitalAsset, DeleteDigitalAssetAction $action): JsonResponse
     {
         Gate::authorize('delete', $digitalAsset);
         $action->handle($digitalAsset);

@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Models\Admin;
-use App\Models\Course;
 use App\Models\DigitalAsset;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -12,7 +13,7 @@ use Plank\Mediable\Media;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\DigitalAsset>
  */
-class DigitalAssetFactory extends Factory
+final class DigitalAssetFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -31,9 +32,9 @@ class DigitalAssetFactory extends Factory
             'is_attachable_to_course' => $this->faker->boolean(),
             'status' => \App\Enums\PublicationStatusEnum::DRAFT->value,
             'keywords' => implode(',', $this->faker->words(3)),
-            'meta_title' => trim(Str::take($this->faker->words(4, true), 70)),
-            'meta_description' => trim(Str::take($this->faker->paragraph(), 160)),
-            'meta_keywords' =>  trim(Str::take(implode(',', $this->faker->words(3)), 255)),
+            'meta_title' => mb_trim(Str::take($this->faker->words(4, true), 70)),
+            'meta_description' => mb_trim(Str::take($this->faker->paragraph(), 160)),
+            'meta_keywords' => mb_trim(Str::take(implode(',', $this->faker->words(3)), 255)),
             'published_at' => $this->faker->optional()->dateTime()?->format('Y-m-d H:i:s'),
             'created_by' => Admin::factory(),
         ];
@@ -44,19 +45,19 @@ class DigitalAssetFactory extends Factory
         return $this->afterCreating(function (DigitalAsset $digitalAsset) {
             $media = Media::query()
                 ->where('directory', 'fake-media')
-                ->whereLike('filename', "%main%")
+                ->whereLike('filename', '%main%')
                 ->where('extension', 'svg')
                 ->inRandomOrder()
                 ->first();
-            $digitalAsset->attachMedia($media, "main");
+            $digitalAsset->attachMedia($media, 'main');
 
             $media = Media::query()
                 ->where('directory', 'fake-media')
-                ->whereLike('filename', "%preview%")
+                ->whereLike('filename', '%preview%')
                 ->where('extension', 'svg')
                 ->inRandomOrder()
                 ->first();
-            $digitalAsset->attachMedia($media, "preview");
+            $digitalAsset->attachMedia($media, 'preview');
         });
     }
 }

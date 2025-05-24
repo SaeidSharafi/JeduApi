@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Traits;
 
 use Illuminate\Database\Schema\Blueprint;
@@ -8,9 +10,6 @@ trait HasMetaTagsMigration
 {
     /**
      * Adds meta tag columns to the table.
-     *
-     * @param Blueprint $table
-     * @return void
      */
     protected function addMetaTagColumns(Blueprint $table): void
     {

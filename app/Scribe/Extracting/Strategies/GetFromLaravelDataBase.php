@@ -86,6 +86,7 @@ abstract class GetFromLaravelDataBase extends Strategy
     {
         return $laravelDataReflectionClass->hasMethod($this->customParameterDataMethodName);
     }
+
     protected function hasBodyParameter(ReflectionClass $laravelDataReflectionClass): bool
     {
         return $laravelDataReflectionClass->hasMethod($this->customParameterDataMethodName);

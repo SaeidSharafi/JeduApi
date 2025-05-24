@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\File;
 
 use App\Data\Transformer\TranslatableEnumData;
@@ -10,7 +12,7 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-class DigitalAssetListItemData extends Data
+final class DigitalAssetListItemData extends Data
 {
     public function __construct(
         public string $id,
@@ -27,6 +29,5 @@ class DigitalAssetListItemData extends Data
         public ?Carbon $created_at,
         #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public ?Carbon $updated_at,
-    ) {
-    }
+    ) {}
 }

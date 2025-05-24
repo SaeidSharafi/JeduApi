@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\DigitalAsset;
 
-uses(\Tests\AuthTestTrait::class);
+uses(Tests\AuthTestTrait::class);
 
 it('can get list of digital assets', function () {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
-    App\Models\DigitalAsset::factory()->count(10)->create();
+    DigitalAsset::factory()->count(10)->create();
     $response = $this->getJson(route('api.v1.admin.digital-asset.index'));
     $response->assertStatus(200)
         ->assertJsonStructure([
@@ -31,7 +33,7 @@ it('can get list of digital assets', function () {
 
 it('can get single digital asset', function () {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW->value]);
-    $digitalAsset = App\Models\DigitalAsset::factory()->create();
+    $digitalAsset = DigitalAsset::factory()->create();
     Storage::fake('local');
     $preview = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
         ->toDisk('local')
@@ -66,14 +68,13 @@ it('can get single digital asset', function () {
                 ->where('data.updated_at', $digitalAsset->updated_at?->format('Y-m-d H:i:s'))
                 ->where('data.attachments.preview.0.id', $preview->id)
                 ->where('data.attachments.main.0.id', $main->id)
-
-            ->etc();
+                ->etc();
         });
 });
 
 it('can create digital asset', function () {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_CREATE->value]);
-    $digitalAsset = App\Models\DigitalAsset::factory()->make();
+    $digitalAsset = DigitalAsset::factory()->make();
     Storage::fake('local');
     $preview = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
         ->toDisk('local')
@@ -116,11 +117,11 @@ it('can create digital asset', function () {
         'meta_description' => $digitalAsset->meta_description,
         'meta_keywords' => $digitalAsset->meta_keywords,
         'published_at' => $digitalAsset->published_at ? $digitalAsset->published_at->toISOString() : null,
-    ])->assertCount(1, App\Models\DigitalAsset::all());
+    ])->assertCount(1, DigitalAsset::all());
 
     $this->assertDatabaseHas('mediables', [
-        'mediable_type' => App\Models\DigitalAsset::class,
-        'mediable_id' => App\Models\DigitalAsset::latest()->first()->id,
+        'mediable_type' => DigitalAsset::class,
+        'mediable_id' => DigitalAsset::latest()->first()->id,
         'media_id' => $preview->id,
     ]);
 
@@ -128,7 +129,7 @@ it('can create digital asset', function () {
 
 it('can update digital asset', function () {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_UPDATE->value]);
-    $digitalAsset = App\Models\DigitalAsset::factory()->create()->fresh();
+    $digitalAsset = DigitalAsset::factory()->create()->fresh();
     $preview = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
         ->toDisk('local')
         ->upload();
@@ -138,7 +139,7 @@ it('can update digital asset', function () {
     $digitalAsset->attachMedia($preview, 'preview');
     $digitalAsset->attachMedia($main, 'main');
 
-    $updatedData = App\Models\DigitalAsset::factory()->make()->toArray();
+    $updatedData = DigitalAsset::factory()->make()->toArray();
     Storage::fake('local');
     $previewUpdate = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview_updated.pdf'))
         ->toDisk('local')
@@ -162,7 +163,7 @@ it('can update digital asset', function () {
                 ->where('data.is_attachable_to_course', $updatedData['is_attachable_to_course'])
                 ->where('data.status', [
                     'value' => $updatedData['status'],
-                    'label' => \App\Enums\PublicationStatusEnum::from($updatedData['status'])->translate(),
+                    'label' => App\Enums\PublicationStatusEnum::from($updatedData['status'])->translate(),
                 ])
                 ->where('data.keywords', $updatedData['keywords'])
                 ->where('data.meta_title', $updatedData['meta_title'])
@@ -183,45 +184,45 @@ it('can update digital asset', function () {
         'page_count' => $updatedData['page_count'],
         'duration_seconds' => $updatedData['duration_seconds'],
         'is_attachable_to_course' => $updatedData['is_attachable_to_course'],
-        'status' => \App\Enums\PublicationStatusEnum::from($updatedData['status'])->value,
+        'status' => App\Enums\PublicationStatusEnum::from($updatedData['status'])->value,
         'keywords' => $updatedData['keywords'],
         'meta_title' => $updatedData['meta_title'],
         'meta_description' => $updatedData['meta_description'],
         'meta_keywords' => $updatedData['meta_keywords'],
-        'published_at' => isset($updatedData['published_at']) ? \Carbon\Carbon::parse($updatedData['published_at'])->toISOString() : null,
-    ])->assertCount(1, App\Models\DigitalAsset::all());
+        'published_at' => isset($updatedData['published_at']) ? Carbon\Carbon::parse($updatedData['published_at'])->toISOString() : null,
+    ])->assertCount(1, DigitalAsset::all());
 
     $this->assertDatabaseHas('mediables', [
-        'mediable_type' => App\Models\DigitalAsset::class,
+        'mediable_type' => DigitalAsset::class,
         'mediable_id' => $digitalAsset->id,
         'media_id' => $previewUpdate->id,
     ]);
     $this->assertDatabaseHas('mediables', [
-        'mediable_type' => App\Models\DigitalAsset::class,
+        'mediable_type' => DigitalAsset::class,
         'mediable_id' => $digitalAsset->id,
         'media_id' => $mainUpdate->id,
     ]);
     $this->assertDatabaseMissing('mediables', [
-        'mediable_type' => App\Models\DigitalAsset::class,
+        'mediable_type' => DigitalAsset::class,
         'mediable_id' => $digitalAsset->id,
         'media_id' => $preview->id,
     ]);
     $this->assertDatabaseMissing('mediables', [
-        'mediable_type' => App\Models\DigitalAsset::class,
+        'mediable_type' => DigitalAsset::class,
         'mediable_id' => $digitalAsset->id,
         'media_id' => $main->id,
     ]);
 });
 it('can not update a digital asset with duplicate slug', function () {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_UPDATE->value]);
-    $digitalAsset = App\Models\DigitalAsset::factory()->create()->fresh();
-    $digitalAssetExist = App\Models\DigitalAsset::factory()->create(
+    $digitalAsset = DigitalAsset::factory()->create()->fresh();
+    $digitalAssetExist = DigitalAsset::factory()->create(
         ['slug' => 'existing-slug']
     )->fresh();
     $main = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('file.pdf'))
         ->toDisk('local')
         ->upload();
-    $updatedData = App\Models\DigitalAsset::factory()->make()->toArray();
+    $updatedData = DigitalAsset::factory()->make()->toArray();
     $updatedData['slug'] = 'existing-slug';
     $updatedData['attachments'] = [
         'main' => $main->id,
@@ -233,18 +234,18 @@ it('can not update a digital asset with duplicate slug', function () {
     $this->assertDatabaseMissing('digital_assets', [
         'id' => $digitalAsset->id,
         'name' => $updatedData['name'],
-        'slug' => "existing-slug",
+        'slug' => 'existing-slug',
         'description' => $updatedData['description'],
         'version' => $updatedData['version'],
         'page_count' => $updatedData['page_count'],
         'duration_seconds' => $updatedData['duration_seconds'],
         'is_attachable_to_course' => $updatedData['is_attachable_to_course'],
-        'status' => \App\Enums\PublicationStatusEnum::from($updatedData['status'])->value,
+        'status' => App\Enums\PublicationStatusEnum::from($updatedData['status'])->value,
         'keywords' => $updatedData['keywords'],
         'meta_title' => $updatedData['meta_title'],
         'meta_description' => $updatedData['meta_description'],
         'meta_keywords' => $updatedData['meta_keywords'],
-        'published_at' => isset($updatedData['published_at']) ? \Carbon\Carbon::parse($updatedData['published_at'])->toISOString() : null,
+        'published_at' => isset($updatedData['published_at']) ? Carbon\Carbon::parse($updatedData['published_at'])->toISOString() : null,
     ]);
 });
 

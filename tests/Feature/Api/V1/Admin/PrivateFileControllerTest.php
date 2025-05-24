@@ -8,7 +8,7 @@ use Plank\Mediable\Media;
 uses(Tests\AuthTestTrait::class);
 describe('Admin Private File', function (): void {
     it('can upload a private file and returns correct structure', function (): void {
-        $this->authorized_user([\App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
+        $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         $file = UploadedFile::fake()->image('test-image.jpg');
         $response = $this->postJson(route('api.v1.admin.private-upload.upload'), [
             'file' => $file,
@@ -52,20 +52,20 @@ describe('Admin Private File', function (): void {
     });
     it('can download a private file', function (): void {
         Storage::fake('local');
-        $file = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('course.jpg'))
+        $file = MediaUploader::fromSource(UploadedFile::fake()->image('course.jpg'))
             ->toDisk('local')
             ->upload();
 
-        $this->authorized_user([\App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
+        $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         $response = $this->get(route('api.v1.admin.private-upload.download', ['file' => $file->id]));
         $response->assertStatus(200)
             ->assertDownload("{$file->filename}.{$file->extension}");
     });
 
-    it('return 404 if file doesn\'t exist', function (): void {;
-        $this->authorized_user([\App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
+    it('return 404 if file doesn\'t exist', function (): void {
+        $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         Storage::fake('local');
-        $file = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('course.jpg'))
+        $file = MediaUploader::fromSource(UploadedFile::fake()->image('course.jpg'))
             ->toDisk('local')
             ->upload();
         Storage::disk('local')->delete("{$file->filename}.{$file->extension}");
@@ -75,7 +75,7 @@ describe('Admin Private File', function (): void {
 
     it('cannot download a private file without permission', function (): void {
         Storage::fake('local');
-        $file = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('course.jpg'))
+        $file = MediaUploader::fromSource(UploadedFile::fake()->image('course.jpg'))
             ->toDisk('local')
             ->upload();
 

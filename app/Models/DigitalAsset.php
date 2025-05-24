@@ -1,15 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Plank\Mediable\Mediable;
 
-class DigitalAsset extends Model
+final class DigitalAsset extends Model
 {
-    use Mediable;
     use HasFactory;
+    use Mediable;
 
     protected $fillable = [
         'name',

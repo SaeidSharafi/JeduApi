@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\Admin;
 
 use App\Enums\PermissionEnum;
-use App\Models\DigitalAsset;
 use App\Models\Admin;
+use App\Models\DigitalAsset;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class DigitalAssetPolicy
+final class DigitalAssetPolicy
 {
     use HandlesAuthorization;
 

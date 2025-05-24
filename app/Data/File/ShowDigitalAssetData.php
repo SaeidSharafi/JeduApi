@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\File;
 
 use App\Data\Transformer\TranslatableEnumData;
@@ -12,7 +14,7 @@ use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-class ShowDigitalAssetData extends Data
+final class ShowDigitalAssetData extends Data
 {
     use ValidatesMetaTags;
 
@@ -22,7 +24,7 @@ class ShowDigitalAssetData extends Data
         public string $slug,
         public ?string $description,
         public ?string $version,
-        public bool $is_attachable_to_course = false,
+        public bool $is_attachable_to_course,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public PublicationStatusEnum $status,
         public ?int $created_by,
@@ -39,6 +41,5 @@ class ShowDigitalAssetData extends Data
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Carbon $updated_at,
         public array $attachments = []
-    ) {
-    }
+    ) {}
 }

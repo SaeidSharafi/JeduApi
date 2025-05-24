@@ -1,12 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    use \App\Traits\HasMetaTagsMigration;
+    use App\Traits\HasMetaTagsMigration;
+
     /**
      * Run the migrations.
      */
@@ -21,8 +24,8 @@ return new class extends Migration
             $table->unsignedInteger('page_count')->nullable()->comment('For documents like PDFs');
             $table->unsignedInteger('duration_seconds')->nullable()->comment('For audio/video file types');
             $table->boolean('is_attachable_to_course')->default(false);
-            $table->enum('status', \App\Enums\PublicationStatusEnum::getAllValues())
-                ->default(\App\Enums\PublicationStatusEnum::DRAFT->value);
+            $table->enum('status', App\Enums\PublicationStatusEnum::getAllValues())
+                ->default(App\Enums\PublicationStatusEnum::DRAFT->value);
             $table->text('keywords')->nullable()->comment('Comma-separated keywords');
             $this->addMetaTagColumns($table);
             $table->timestamp('published_at')->nullable();

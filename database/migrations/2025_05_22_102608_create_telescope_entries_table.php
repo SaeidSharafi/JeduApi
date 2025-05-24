@@ -6,7 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Get the migration connection name.
      */
@@ -22,7 +23,7 @@ return new class extends Migration {
     {
         $schema = Schema::connection($this->getConnection());
 
-        if (!$schema->hasTable('telescope_entries')) {
+        if (! $schema->hasTable('telescope_entries')) {
             $schema->create('telescope_entries', function (Blueprint $table) {
                 $table->bigIncrements('sequence');
                 $table->uuid('uuid');
@@ -40,7 +41,7 @@ return new class extends Migration {
                 $table->index(['type', 'should_display_on_index']);
             });
         }
-        if (!$schema->hasTable('telescope_entries_tags')) {
+        if (! $schema->hasTable('telescope_entries_tags')) {
             $schema->create('telescope_entries_tags', function (Blueprint $table) {
                 $table->uuid('entry_uuid');
                 $table->string('tag');
@@ -54,7 +55,7 @@ return new class extends Migration {
                     ->onDelete('cascade');
             });
         }
-        if (!$schema->hasTable('telescope_monitoring')) {
+        if (! $schema->hasTable('telescope_monitoring')) {
             $schema->create('telescope_monitoring', function (Blueprint $table) {
                 $table->string('tag')->primary();
             });
