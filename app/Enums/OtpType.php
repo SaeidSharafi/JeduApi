@@ -8,9 +8,9 @@ use App\Contracts\OtpTypeInterface;
 
 enum OtpType: string implements OtpTypeInterface
 {
-    case SIGNUP = 'SIGNUP';
+    case SIGNUP         = 'SIGNUP';
     case RESET_PASSWORD = 'RESET_PASSWORD';
-    case SIGNIN = 'SIGNIN';
+    case SIGNIN         = 'SIGNIN';
 
     /**
      * {@inheritDoc}

@@ -18,7 +18,7 @@ final readonly class UpdateCourseAction
         DB::transaction(function () use ($data, $course): void {
             $course->update($data->except('media', 'categories')->all());
 
-            $mediaInput = $data->media ?? [];
+            $mediaInput = $data->media      ?? [];
             $categories = $data->categories ?? [];
             $course->categories()->sync($categories);
             foreach (['gallery', 'video', 'thumbnail', 'certificate'] as $tag) {

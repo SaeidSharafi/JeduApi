@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Validator;
 
 describe('IranMobilePhoneRule', function (): void {
     it('accepts valid mobile numbers', function (): void {
-        $rule = new IranMobilePhoneRule();
+        $rule         = new IranMobilePhoneRule();
         $validMobiles = [
             '09123456789', // 09X
             '9123456789',  // 9X (without leading 0)
@@ -27,7 +27,7 @@ describe('IranMobilePhoneRule', function (): void {
     });
 
     it('rejects invalid mobile numbers', function (): void {
-        $rule = new IranMobilePhoneRule();
+        $rule           = new IranMobilePhoneRule();
         $invalidMobiles = [
             'not-a-number',
             '12345',

@@ -19,11 +19,11 @@ final class SendOtpNotification
     public function handle(OtpPrepared $event): void
     {
         $identifier = $event->identifier;
-        $guard = $event->guard;
-        $otpCode = $event->code;
+        $guard      = $event->guard;
+        $otpCode    = $event->code;
 
         $model = $guard === 'admin' ? Admin::class : User::class;
-        $user = $model::when(
+        $user  = $model::when(
             filter_var($identifier, FILTER_VALIDATE_EMAIL),
             fn (Builder $q) => $q->where('email', $identifier),
             fn (Builder $q) => $q->where('phone', $identifier)

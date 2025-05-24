@@ -33,10 +33,10 @@ final class DeployApplicationCommand extends Command
         $this->info('🚀 Starting application deployment...');
         Log::channel('deployment')->info('🚀 Deployment initiated via Artisan command...');
 
-        $projectPath = base_path();
-        $gitUsername = config('app.git_deploy_username', config('app.git_deploy_username'));
-        $gitPat = config('app.git_deploy_pat', config('app.git_deploy_pat'));
-        $expectedRepo = 'SaeidSharafi/JeduApi'; // Your GitHub Owner/Repo
+        $projectPath   = base_path();
+        $gitUsername   = config('app.git_deploy_username', config('app.git_deploy_username'));
+        $gitPat        = config('app.git_deploy_pat', config('app.git_deploy_pat'));
+        $expectedRepo  = 'SaeidSharafi/JeduApi'; // Your GitHub Owner/Repo
         $phpExecutable = '/usr/bin/php8.4'; // Or your PHP path from config
         $artisanScript = "{$phpExecutable} {$projectPath}/artisan"; // Use a variable
 

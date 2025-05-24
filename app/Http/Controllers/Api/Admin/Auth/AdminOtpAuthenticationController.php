@@ -66,10 +66,10 @@ final class AdminOtpAuthenticationController extends Controller
 
         return response()->success(
             [
-                'token' => $token->plainTextToken,
-                'expires_at' => $token->accessToken->expires_at,
-                'type' => 'Bearer',
-                'user' => AdminData::from($user),
+                'token'       => $token->plainTextToken,
+                'expires_at'  => $token->accessToken->expires_at,
+                'type'        => 'Bearer',
+                'user'        => AdminData::from($user),
                 'permissions' => $permissions,
             ], 'Authenticated successfully');
     }

@@ -50,14 +50,14 @@ final class Course extends Model
     protected function casts(): array
     {
         return [
-            'status' => PublicationStatusEnum::class,
-            'difficulty_level' => CourseDifficultyLevelEnum::class,
-            'outcomes_json' => 'array',
-            'additional_info' => 'array',
-            'properties' => 'array',
+            'status'                       => PublicationStatusEnum::class,
+            'difficulty_level'             => CourseDifficultyLevelEnum::class,
+            'outcomes_json'                => 'array',
+            'additional_info'              => 'array',
+            'properties'                   => 'array',
             'total_video_duration_minutes' => 'integer',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
+            'created_at'                   => 'datetime',
+            'updated_at'                   => 'datetime',
         ];
     }
 }

@@ -20,9 +20,9 @@ uses(RefreshDatabase::class);
  */
 beforeEach(function (): void {
     Notification::fake();
-    $minOtpCode = config('otp.code_min');
-    $maxOtpCode = config('otp.code_max');
-    $this->otpCode = random_int($minOtpCode, $maxOtpCode);
+    $minOtpCode         = config('otp.code_min');
+    $maxOtpCode         = config('otp.code_max');
+    $this->otpCode      = random_int($minOtpCode, $maxOtpCode);
     $this->trackingCode = 'test-tracking';
 
     $fakeGenerator = $this->app->make(App\Contracts\OtpGeneratorInterface::class);
@@ -41,11 +41,11 @@ test('new user can initiate authentication with phone', function (): void {
         ->assertOk()
         ->assertJson([
             'message' => 'OTP sent successfully',
-            'data' => [
+            'data'    => [
                 'tracking_code' => $this->trackingCode,
-                'otp_type' => OtpType::SIGNUP->value,
-                'identifier' => '09301234567',
-                'login_method' => 'OTP',
+                'otp_type'      => OtpType::SIGNUP->value,
+                'identifier'    => '09301234567',
+                'login_method'  => 'OTP',
             ],
             'metadata' => [],
         ]);
@@ -59,7 +59,7 @@ test('new user can not initiate authentication with email', function (): void {
 });
 test('user can initiate authentication with email', function (): void {
     $user = User::factory()->create([
-        'email' => 'test@example.com',
+        'email'    => 'test@example.com',
         'password' => null,
     ]);
 
@@ -71,11 +71,11 @@ test('user can initiate authentication with email', function (): void {
         ->assertOk()
         ->assertJson([
             'message' => 'OTP sent successfully',
-            'data' => [
+            'data'    => [
                 'tracking_code' => $this->trackingCode,
-                'otp_type' => 'SIGNIN',
-                'identifier' => 'test@example.com',
-                'login_method' => 'OTP',
+                'otp_type'      => 'SIGNIN',
+                'identifier'    => 'test@example.com',
+                'login_method'  => 'OTP',
             ],
             'metadata' => [],
         ]);
@@ -83,7 +83,7 @@ test('user can initiate authentication with email', function (): void {
 
 test('user can initiate authentication with phone', function (): void {
     $user = User::factory()->create([
-        'phone' => '09301234567',
+        'phone'    => '09301234567',
         'password' => null,
     ]);
 
@@ -95,11 +95,11 @@ test('user can initiate authentication with phone', function (): void {
         ->assertOk()
         ->assertJson([
             'message' => 'OTP sent successfully',
-            'data' => [
+            'data'    => [
                 'tracking_code' => $this->trackingCode,
-                'otp_type' => 'SIGNIN',
-                'identifier' => '09301234567',
-                'login_method' => 'OTP',
+                'otp_type'      => 'SIGNIN',
+                'identifier'    => '09301234567',
+                'login_method'  => 'OTP',
             ],
             'metadata' => [],
         ]);
@@ -107,7 +107,7 @@ test('user can initiate authentication with phone', function (): void {
 
 test('user with password gets password login action', function (): void {
     $user = User::factory()->create([
-        'email' => 'test@example.com',
+        'email'    => 'test@example.com',
         'password' => Hash::make('password123'),
     ]);
 
@@ -118,7 +118,7 @@ test('user with password gets password login action', function (): void {
     $response->assertOk()
         ->assertJson([
             'message' => 'User has set password',
-            'data' => [
+            'data'    => [
                 'login_method' => 'PASSWORD',
             ],
             'metadata' => [],
@@ -141,16 +141,16 @@ test('user can request resend otp', function (): void {
 
     $response = $this->postJson(route('api.v1.auth.otp-resend'), [
         'identifier' => 'test@example.com',
-        'otp_type' => OtpType::SIGNIN->value,
+        'otp_type'   => OtpType::SIGNIN->value,
     ]);
     $response->assertOk()
         ->assertJson([
             'message' => 'OTP resent successfully',
-            'data' => [
+            'data'    => [
                 'tracking_code' => $this->trackingCode,
-                'otp_type' => 'SIGNIN',
-                'identifier' => 'test@example.com',
-                'login_method' => 'OTP',
+                'otp_type'      => 'SIGNIN',
+                'identifier'    => 'test@example.com',
+                'login_method'  => 'OTP',
             ],
             'metadata' => [],
         ]);
@@ -161,7 +161,7 @@ test('non existent user can not request otp', function (): void {
 
     $response = $this->postJson(route('api.v1.auth.otp-resend'), [
         'identifier' => 'test@example.com',
-        'otp_type' => OtpType::SIGNIN->value,
+        'otp_type'   => OtpType::SIGNIN->value,
     ]);
     $response->assertNotFound();
 
@@ -172,18 +172,18 @@ test('user can request otp with phone', function (): void {
 
     $response = $this->postJson(route('api.v1.auth.otp-resend'), [
         'identifier' => '09301234567',
-        'type' => 'phone',
-        'otp_type' => OtpType::SIGNIN->value,
+        'type'       => 'phone',
+        'otp_type'   => OtpType::SIGNIN->value,
     ]);
 
     $response->assertOk()
         ->assertJson([
             'message' => 'OTP resent successfully',
-            'data' => [
+            'data'    => [
                 'tracking_code' => $this->trackingCode,
-                'otp_type' => 'SIGNIN',
-                'identifier' => '09301234567',
-                'login_method' => 'OTP',
+                'otp_type'      => 'SIGNIN',
+                'identifier'    => '09301234567',
+                'login_method'  => 'OTP',
             ],
             'metadata' => [],
         ]);
@@ -199,11 +199,11 @@ test('user can verify otp and login', function (): void {
     ]);
 
     $response = $this->postJson(route('api.v1.auth.otp-verify'), [
-        'identifier' => 'test@example.com',
-        'type' => 'email',
-        'otp_code' => $this->otpCode,
+        'identifier'    => 'test@example.com',
+        'type'          => 'email',
+        'otp_code'      => $this->otpCode,
         'tracking_code' => $this->trackingCode,
-        'otp_type' => OtpType::SIGNIN->value,
+        'otp_type'      => OtpType::SIGNIN->value,
     ]);
 
     $response->assertOk()
@@ -219,17 +219,17 @@ test('user can verify otp and login', function (): void {
 });
 
 test('user can verify otp and login with phone', function (): void {
-    $user = User::factory()->create(['phone' => '09301234567']);
+    $user         = User::factory()->create(['phone' => '09301234567']);
     $trackingCode = 'test-tracking';
 
     Cache::put('otp_09301234567_user_value_SIGNIN', new OtpDto($this->otpCode, $trackingCode), 300);
 
     $response = $this->postJson(route('api.v1.auth.otp-verify'), [
-        'identifier' => '09301234567',
-        'type' => 'phone',
-        'otp_code' => $this->otpCode,
+        'identifier'    => '09301234567',
+        'type'          => 'phone',
+        'otp_code'      => $this->otpCode,
         'tracking_code' => $trackingCode,
-        'otp_type' => OtpType::SIGNIN->value,
+        'otp_type'      => OtpType::SIGNIN->value,
     ]);
 
     $response->assertOk()
@@ -246,14 +246,14 @@ test('user can verify otp and login with phone', function (): void {
 
 test('user can login with password', function (): void {
     $user = User::factory()->create([
-        'email' => 'test@example.com',
+        'email'    => 'test@example.com',
         'password' => Hash::make('password123'),
     ]);
 
     $response = $this->postJson(route('api.v1.auth.password-login'), [
         'identifier' => 'test@example.com',
-        'type' => 'email',
-        'password' => 'password123',
+        'type'       => 'email',
+        'password'   => 'password123',
     ]);
 
     $response->assertOk()
@@ -270,21 +270,21 @@ test('user can login with password', function (): void {
 test('non existent user can not login with password', function (): void {
     $response = $this->postJson(route('api.v1.auth.password-login'), [
         'identifier' => 'test@example.com',
-        'password' => 'password123',
+        'password'   => 'password123',
     ]);
 
     $response->assertNotFound();
 });
 test('user can login with phone and password', function (): void {
     $user = User::factory()->create([
-        'phone' => '09301234567',
+        'phone'    => '09301234567',
         'password' => Hash::make('password123'),
     ]);
 
     $response = $this->postJson(route('api.v1.auth.password-login'), [
         'identifier' => '09301234567',
-        'type' => 'phone',
-        'password' => 'password123',
+        'type'       => 'phone',
+        'password'   => 'password123',
     ]);
 
     $response->assertOk()
@@ -301,17 +301,17 @@ test('user can login with phone and password', function (): void {
 test('non existent user can not verify otp', function (): void {
 
     $response = $this->postJson(route('api.v1.auth.otp-verify'), [
-        'identifier' => 'test@example.com',
-        'type' => 'email',
-        'otp_code' => $this->otpCode,
+        'identifier'    => 'test@example.com',
+        'type'          => 'email',
+        'otp_code'      => $this->otpCode,
         'tracking_code' => $this->trackingCode,
-        'otp_type' => OtpType::SIGNIN->value,
+        'otp_type'      => OtpType::SIGNIN->value,
     ]);
 
     $response->assertNotFound();
 });
 test('authenticated user can logout', function (): void {
-    $user = User::factory()->create();
+    $user  = User::factory()->create();
     $token = $user->createToken('auth_token')->plainTextToken;
 
     $response = $this->withHeader('Authorization', "Bearer {$token}")

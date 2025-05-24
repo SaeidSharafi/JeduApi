@@ -45,13 +45,13 @@ final class UploadPrivateController extends Controller
 
         $request->validate([
             'file' => 'required|file|max:10240',
-            'alt' => 'nullable|string|max:255',
+            'alt'  => 'nullable|string|max:255',
         ]);
 
         /** @var UploadedFile $fileUpload */
         $fileUpload = $request->file('file');
-        $alt = (string) $request->string('alt');
-        $file = MediaUploader::fromSource($fileUpload)
+        $alt        = (string) $request->string('alt');
+        $file       = MediaUploader::fromSource($fileUpload)
             ->toDisk('local')
             ->withAltAttribute($alt)
             ->onDuplicateIncrement()

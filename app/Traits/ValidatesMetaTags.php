@@ -12,9 +12,9 @@ trait ValidatesMetaTags
     protected static function metaTagValidationRules(): array
     {
         return [
-            'meta_title' => ['required', 'string', 'max:70'],
+            'meta_title'       => ['required', 'string', 'max:70'],
             'meta_description' => ['required', 'string', 'min:70', 'max:160'],
-            'meta_keywords' => ['nullable', 'string', 'max:255'],
+            'meta_keywords'    => ['nullable', 'string', 'max:255'],
         ];
     }
 }

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 return [
     'PublicationStatusEnum' => [
-        'draft' => 'پیش‌نویس',
+        'draft'     => 'پیش‌نویس',
         'published' => 'منتشر شده',
-        'archived' => 'آرشیو',
+        'archived'  => 'آرشیو',
     ],
     'CourseDifficultyLevelEnum' => [
-        'beginner' => 'مبتدی',
+        'beginner'     => 'مبتدی',
         'intermediate' => 'متوسط',
-        'advanced' => 'پیشرفته',
-        'expert' => 'کارشناس',
+        'advanced'     => 'پیشرفته',
+        'expert'       => 'کارشناس',
     ],
 ];

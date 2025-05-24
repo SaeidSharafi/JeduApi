@@ -30,8 +30,8 @@ trait AuthTestTrait
             $this->user = Admin::factory()->create();
         }
         $role = Role::updateOrCreate([
-            'name' => 'manager_test',
-            'label' => 'ManagerTest',
+            'name'       => 'manager_test',
+            'label'      => 'ManagerTest',
             'guard_name' => $guard,
         ]);
 
@@ -53,8 +53,8 @@ trait AuthTestTrait
     {
         $this->user = Admin::forceCreate(
             Admin::factory()->make([
-                'phone' => '09300000000',
-                'email' => 'admin@example.com',
+                'phone'    => '09300000000',
+                'email'    => 'admin@example.com',
                 'is_admin' => true])->toArray()
         );
 

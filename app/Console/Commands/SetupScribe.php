@@ -38,7 +38,7 @@ final class SetupScribe extends Command
     public function handle(): int
     {
         $connectionName = $this->option('connection');
-        $configPath = "database.connections.$connectionName";
+        $configPath     = "database.connections.$connectionName";
 
         if (! Config::has($configPath)) {
             $this->error("Database connection '{$connectionName}' not found in config/database.php.");
@@ -47,7 +47,7 @@ final class SetupScribe extends Command
         }
 
         $dbConfig = Config::get($configPath);
-        $dbPath = $dbConfig['database'] ?? null;
+        $dbPath   = $dbConfig['database'] ?? null;
 
         // For file-based SQLite, ensure the file exists or can be created
         if ($dbConfig['driver'] === 'sqlite' && $dbPath && $dbPath !== ':memory:') {
@@ -90,7 +90,7 @@ final class SetupScribe extends Command
 
         $migrationExitCode = Artisan::call($migrateCommand, [
             '--database' => $connectionName,
-            '--force' => true, // Important for non-interactive environments
+            '--force'    => true, // Important for non-interactive environments
         ]);
 
         if ($migrationExitCode === 0) {
@@ -106,7 +106,7 @@ final class SetupScribe extends Command
             $seederClass = $this->option('seeder') ?: ScribeSeeder::class;
             $seedOptions = [
                 '--database' => $connectionName,
-                '--force' => true,
+                '--force'    => true,
             ];
             $seedOptions['--class'] = $seederClass;
             $this->line("Running: php artisan db:seed --database={$connectionName} --class={$seederClass} --force");

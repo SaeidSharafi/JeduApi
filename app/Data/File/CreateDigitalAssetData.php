@@ -58,18 +58,18 @@ final class CreateDigitalAssetData extends Data
                         return $query;
                     }),
                 ],
-                'description' => ['nullable', 'string'],
-                'version' => ['nullable', 'string', 'max:50'],
+                'description'             => ['nullable', 'string'],
+                'version'                 => ['nullable', 'string', 'max:50'],
                 'is_attachable_to_course' => ['nullable', 'boolean'],
-                'status' => ['required', Rule::enum(PublicationStatusEnum::class)],
-                'created_by' => ['nullable', 'integer', 'exists:admins,id'],
-                'keywords' => ['nullable', 'string', 'max:255'],
-                'published_at' => ['nullable', 'date:Y-m-d H:i:s'],
-                'page_count' => ['nullable', 'integer', 'min:0'],
-                'duration_seconds' => ['nullable', 'integer', 'min:0'],
-                'attachments' => ['array'],
-                'attachments.main' => ['required', 'integer', 'exists:media,id'],
-                'attachments.preview' => ['nullable', 'integer', 'exists:media,id'],
+                'status'                  => ['required', Rule::enum(PublicationStatusEnum::class)],
+                'created_by'              => ['nullable', 'integer', 'exists:admins,id'],
+                'keywords'                => ['nullable', 'string', 'max:255'],
+                'published_at'            => ['nullable', 'date:Y-m-d H:i:s'],
+                'page_count'              => ['nullable', 'integer', 'min:0'],
+                'duration_seconds'        => ['nullable', 'integer', 'min:0'],
+                'attachments'             => ['array'],
+                'attachments.main'        => ['required', 'integer', 'exists:media,id'],
+                'attachments.preview'     => ['nullable', 'integer', 'exists:media,id'],
             ],
             self::metaTagValidationRules()
         );
@@ -87,67 +87,67 @@ final class CreateDigitalAssetData extends Data
         return [
             'name' => [
                 'description' => 'The name of the digital asset.',
-                'example' => 'Digital Asset Name',
+                'example'     => 'Digital Asset Name',
             ],
             'slug' => [
                 'description' => 'A unique slug for the digital asset, used in URLs.',
-                'example' => 'digital-asset-name',
+                'example'     => 'digital-asset-name',
             ],
             'description' => [
                 'description' => 'A brief description of the digital asset.',
-                'example' => 'This is a description of the digital asset.',
+                'example'     => 'This is a description of the digital asset.',
             ],
             'version' => [
                 'description' => 'The version of the digital asset.',
-                'example' => '1.0.0',
+                'example'     => '1.0.0',
             ],
             'is_attachable_to_course' => [
                 'description' => 'Indicates if this asset can be attached to a course.',
-                'example' => true,
+                'example'     => true,
             ],
             'status' => [
                 'description' => 'The publication status of the digital asset.',
-                'example' => PublicationStatusEnum::PUBLISHED->value,
+                'example'     => PublicationStatusEnum::PUBLISHED->value,
             ],
             'page_count' => [
                 'description' => 'The number of pages in the digital asset, if applicable.',
-                'example' => 100,
+                'example'     => 100,
             ],
             'duration_seconds' => [
                 'description' => 'The duration of the digital asset in seconds, if applicable.',
-                'example' => 3600,
+                'example'     => 3600,
             ],
             'created_by' => [
                 'description' => 'The ID of the admin who created this digital asset.',
-                'example' => 1,
+                'example'     => 1,
             ],
             'published_at' => [
                 'description' => 'The date and time when the digital asset was published.',
-                'example' => '2023-10-01 12:00:00',
+                'example'     => '2023-10-01 12:00:00',
             ],
             'keywords' => [
                 'description' => 'Keywords associated with the digital asset for search optimization.',
-                'example' => 'keyword1, keyword2',
+                'example'     => 'keyword1, keyword2',
             ],
             'meta_title' => [
                 'description' => 'The meta title for the digital asset, used for SEO.',
-                'example' => 'Digital Asset Meta Title',
+                'example'     => 'Digital Asset Meta Title',
             ],
             'meta_description' => [
                 'description' => 'The meta description for the digital asset, used for SEO.',
-                'example' => 'This is a meta description for the digital asset.',
+                'example'     => 'This is a meta description for the digital asset.',
             ],
             'meta_keywords' => [
                 'description' => 'Meta keywords for the digital asset, used for SEO.',
-                'example' => 'meta keyword1, meta keyword2',
+                'example'     => 'meta keyword1, meta keyword2',
             ],
             'attachments.main' => [
                 'description' => 'The main attachment for the digital asset, typically a file ID.',
-                'example' => 1,
+                'example'     => 1,
             ],
             'attachments.preview' => [
                 'description' => 'An optional preview attachment for the digital asset, typically a file ID.',
-                'example' => 2,
+                'example'     => 2,
             ],
         ];
     }

@@ -41,11 +41,11 @@ final class ScribeSeeder extends Seeder
         }
 
         Storage::disk('public')->deleteDirectory('fake-media');
-        $videoPath = base_path().'/resources/seed-media/placeholder.mp4';
-        $coverPath = base_path().'/resources/seed-media/fake-cover.svg';
-        $galleryPath = base_path().'/resources/seed-media/fake-gallery.svg';
+        $videoPath       = base_path().'/resources/seed-media/placeholder.mp4';
+        $coverPath       = base_path().'/resources/seed-media/fake-cover.svg';
+        $galleryPath     = base_path().'/resources/seed-media/fake-gallery.svg';
         $palceHolderPath = base_path().'/resources/seed-media/placeholder.svg';
-        $iconPath = base_path().'/resources/seed-media/icon.svg';
+        $iconPath        = base_path().'/resources/seed-media/icon.svg';
         Storage::disk('public')->putFileAs('fake-media', new File($videoPath), 'placeholder1.mp4');
         Storage::disk('public')->putFileAs('fake-media', new File($videoPath), 'placeholder2.mp4');
         Storage::disk('public')->putFileAs('fake-media', new File($videoPath), 'placeholder3.mp4');
@@ -66,17 +66,17 @@ final class ScribeSeeder extends Seeder
         MediaUploader::importPath('public', 'fake-media/preview.svg');
 
         $user = Admin::forceCreate([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-            'phone' => '9300000000',
+            'name'     => 'Admin',
+            'email'    => 'admin@example.com',
+            'phone'    => '9300000000',
             'password' => bcrypt('password'),
             'is_admin' => true,
         ]);
         $role = Role::firstOrCreate(
             [
-                'name' => 'admin',
+                'name'       => 'admin',
                 'guard_name' => 'admin',
-                'label' => 'Admin',
+                'label'      => 'Admin',
             ]
         );
         $permissions = Permission::query()->where('guard_name', 'admin')->get()->pluck('name')->toArray();

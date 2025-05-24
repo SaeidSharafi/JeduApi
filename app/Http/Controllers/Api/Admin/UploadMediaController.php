@@ -44,12 +44,12 @@ final class UploadMediaController extends Controller
     {
         $request->validate([
             'file' => 'required|file|max:10240',
-            'alt' => 'nullable|string|max:255',
+            'alt'  => 'nullable|string|max:255',
         ]);
 
         /** @var UploadedFile $file */
-        $file = $request->file('file');
-        $alt = (string) $request->string('alt');
+        $file  = $request->file('file');
+        $alt   = (string) $request->string('alt');
         $media = MediaUploader::fromSource($file)
             ->toDisk(config('mediable.default_disk', 'public'))
             ->withAltAttribute($alt)

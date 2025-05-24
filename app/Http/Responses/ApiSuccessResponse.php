@@ -32,8 +32,8 @@ final readonly class ApiSuccessResponse implements ApiResponseInterface
     {
         return response()->json(
             [
-                'message' => $this->message,
-                'data' => $this->data,
+                'message'  => $this->message,
+                'data'     => $this->data,
                 'metadata' => $this->metadata,
             ],
             $this->code,

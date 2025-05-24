@@ -34,7 +34,7 @@ final class ShowCategoryData extends Data
 
     public static function fromModel(Category $category): self
     {
-        $icon = null;
+        $icon  = null;
         $image = null;
         if ($category->relationLoaded('media')) {
             $icon = $category->firstMedia('icon')
@@ -59,7 +59,7 @@ final class ShowCategoryData extends Data
             properties: $category->properties,
             additional_info: $category->additional_info,
             media: [
-                'icon' => $icon?->toArray(),
+                'icon'  => $icon?->toArray(),
                 'image' => $image?->toArray(),
             ],
         );

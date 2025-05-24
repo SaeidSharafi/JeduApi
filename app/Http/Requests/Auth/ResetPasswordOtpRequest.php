@@ -19,10 +19,10 @@ final class ResetPasswordOtpRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'identifier' => ['required', 'string'],
-            'otp_code' => ['required', 'integer', 'min:'.config('otp.code_min'), 'max:'.config('otp.code_max')],
+            'identifier'    => ['required', 'string'],
+            'otp_code'      => ['required', 'integer', 'min:'.config('otp.code_min'), 'max:'.config('otp.code_max')],
             'tracking_code' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password'      => ['required', 'string', 'min:8', 'confirmed'],
         ];
     }
 
@@ -36,28 +36,28 @@ final class ResetPasswordOtpRequest extends FormRequest
         return [
             'identifier' => [
                 'description' => 'The identifier of the user. It can be either phone number or email.',
-                'required' => true,
-                'example' => '09351234567',
+                'required'    => true,
+                'example'     => '09351234567',
             ],
             'otp_code' => [
                 'description' => 'The OTP code received by the user.',
-                'required' => true,
-                'example' => '1234',
+                'required'    => true,
+                'example'     => '1234',
             ],
             'tracking_code' => [
                 'description' => 'The tracking code of the OTP request.',
-                'required' => true,
-                'example' => 'f27873b9-23c3-49be-8667-90afd60bd6b9',
+                'required'    => true,
+                'example'     => 'f27873b9-23c3-49be-8667-90afd60bd6b9',
             ],
             'password' => [
                 'description' => 'The new password for the user.',
-                'required' => true,
-                'example' => '12345678',
+                'required'    => true,
+                'example'     => '12345678',
             ],
             'password_confirmation' => [
                 'description' => 'The new password confirmation for the user.',
-                'required' => true,
-                'example' => '12345678',
+                'required'    => true,
+                'example'     => '12345678',
             ],
         ];
     }

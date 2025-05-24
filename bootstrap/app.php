@@ -124,7 +124,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     Log::error($e->getMessage(), ['exception' => $e]);
                 }
 
-                $message = config('app.debug') ? $e->getMessage() : 'An internal server error occurred.';
+                $message           = config('app.debug') ? $e->getMessage() : 'An internal server error occurred.';
                 $exceptionForMacro = config('app.debug') ? $e : null;
 
                 return response()->serverError($message, $exceptionForMacro);

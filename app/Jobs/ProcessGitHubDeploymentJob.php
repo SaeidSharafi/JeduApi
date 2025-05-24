@@ -24,12 +24,12 @@ final class ProcessGitHubDeploymentJob extends SpatieProcessWebhookJob
      */
     public function handle(): void
     {
-        $payload = $this->webhookCall->payload;
+        $payload   = $this->webhookCall->payload;
         $eventName = $this->webhookCall->headerBag()->get('X-GitHub-Event');
 
         Log::channel('deployment')->info('GitHub Webhook received.', [
-            'event' => $eventName,
-            'delivery_id' => $this->webhookCall->headerBag()->get('X-GitHub-Delivery'),
+            'event'          => $eventName,
+            'delivery_id'    => $this->webhookCall->headerBag()->get('X-GitHub-Delivery'),
             'payload_action' => $payload['action'] ?? 'N/A',
         ]);
 

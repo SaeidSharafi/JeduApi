@@ -9,10 +9,10 @@ uses(Tests\AuthTestTrait::class);
 describe('Admin MediaController', function (): void {
     it('can upload a media file and returns correct structure', function (): void {
         $this->authorized_user([]);
-        $file = UploadedFile::fake()->image('test-image.jpg');
+        $file     = UploadedFile::fake()->image('test-image.jpg');
         $response = $this->postJson(route('api.v1.admin.media.upload'), [
             'file' => $file,
-            'alt' => 'Test Alt Text',
+            'alt'  => 'Test Alt Text',
         ]);
         $response->assertStatus(201)
             ->assertJsonStructure([

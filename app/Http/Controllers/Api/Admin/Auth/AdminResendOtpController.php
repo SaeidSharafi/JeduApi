@@ -62,9 +62,9 @@ final class AdminResendOtpController extends Controller
 
             return response()->success([
                 'tracking_code' => $result->trackingCode,
-                'otp_type' => $result->otpType->identifier(),
-                'identifier' => $request->identifier,
-                'login_method' => 'OTP',
+                'otp_type'      => $result->otpType->identifier(),
+                'identifier'    => $request->identifier,
+                'login_method'  => 'OTP',
             ], 'OTP resent successfully');
 
         } catch (UserNotFoundException $exception) {

@@ -16,9 +16,9 @@ uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     Notification::fake();
-    $minOtpCode = config('otp.code_min');
-    $maxOtpCode = config('otp.code_max');
-    $this->otpCode = random_int($minOtpCode, $maxOtpCode);
+    $minOtpCode         = config('otp.code_min');
+    $maxOtpCode         = config('otp.code_max');
+    $this->otpCode      = random_int($minOtpCode, $maxOtpCode);
     $this->trackingCode = 'test-tracking';
 
     $fakeGenerator = $this->app->make(App\Contracts\OtpGeneratorInterface::class);
@@ -30,13 +30,13 @@ beforeEach(function (): void {
 
 test('admin can initiate authentication with email', function (): void {
     $admin = Admin::factory()->create([
-        'email' => 'admin@example.com',
+        'email'    => 'admin@example.com',
         'password' => null,
     ]);
 
     $response = $this->postJson('/api/v1/admin/auth/initiate', [
         'identifier' => 'admin@example.com',
-        'type' => 'email',
+        'type'       => 'email',
     ]);
 
     $response->assertOk()
@@ -58,7 +58,7 @@ test('admin can initiate authentication with email', function (): void {
 
 test('admin can initiate authentication with phone', function (): void {
     $admin = Admin::factory()->create([
-        'phone' => '09351236547',
+        'phone'    => '09351236547',
         'password' => null,
     ]);
 
@@ -99,7 +99,7 @@ test('admin can reset otp', function (): void {
 
     $response = $this->postJson(route('api.v1.admin.auth.otp-resend'), [
         'identifier' => 'admin@example.com',
-        'otp_type' => OtpType::SIGNIN->value,
+        'otp_type'   => OtpType::SIGNIN->value,
     ]);
 
     $response->assertOk()
@@ -121,7 +121,7 @@ test('admin can resend otp with phone', function (): void {
 
     $response = $this->postJson(\route('api.v1.admin.auth.otp-resend'), [
         'identifier' => '09326542145',
-        'otp_type' => OtpType::SIGNIN->value,
+        'otp_type'   => OtpType::SIGNIN->value,
     ]);
 
     $response->assertOk()
@@ -139,7 +139,7 @@ test('admin can resend otp with phone', function (): void {
 });
 test('admin with password gets password login action', function (): void {
     $user = Admin::factory()->create([
-        'email' => 'test@example.com',
+        'email'    => 'test@example.com',
         'password' => Hash::make('password123'),
     ]);
 
@@ -150,7 +150,7 @@ test('admin with password gets password login action', function (): void {
     $response->assertOk()
         ->assertJson([
             'message' => 'User has set password',
-            'data' => [
+            'data'    => [
                 'login_method' => 'PASSWORD',
             ],
             'metadata' => [],
@@ -163,10 +163,10 @@ test('admin can verify otp and login', function (): void {
     ]);
 
     $response = $this->postJson(\route('api.v1.admin.auth.otp-verify'), [
-        'identifier' => 'admin@example.com',
-        'otp_code' => $this->otpCode,
+        'identifier'    => 'admin@example.com',
+        'otp_code'      => $this->otpCode,
         'tracking_code' => $this->trackingCode,
-        'otp_type' => OtpType::SIGNIN->value,
+        'otp_type'      => OtpType::SIGNIN->value,
     ]);
 
     $response
@@ -183,17 +183,17 @@ test('admin can verify otp and login', function (): void {
 });
 
 test('admin can verify otp and login with phone', function (): void {
-    $admin = Admin::factory()->create(['phone' => '09301234567']);
+    $admin        = Admin::factory()->create(['phone' => '09301234567']);
     $trackingCode = 'test-tracking';
 
     Cache::put('otp_09301234567_admin_value_SIGNIN', new OtpDto($this->otpCode, $trackingCode), 300);
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
-        'identifier' => '09301234567',
-        'type' => 'phone',
-        'otp_code' => $this->otpCode,
+        'identifier'    => '09301234567',
+        'type'          => 'phone',
+        'otp_code'      => $this->otpCode,
         'tracking_code' => $trackingCode,
-        'otp_type' => OtpType::SIGNIN->value,
+        'otp_type'      => OtpType::SIGNIN->value,
     ]);
 
     $response->assertOk()
@@ -210,14 +210,14 @@ test('admin can verify otp and login with phone', function (): void {
 
 test('admin can login with password', function (): void {
     $admin = Admin::factory()->create([
-        'email' => 'admin@example.com',
+        'email'    => 'admin@example.com',
         'password' => Hash::make('password123'),
     ]);
 
     $response = $this->postJson('/api/v1/admin/auth/login/password', [
         'identifier' => 'admin@example.com',
-        'type' => 'email',
-        'password' => 'password123',
+        'type'       => 'email',
+        'password'   => 'password123',
     ]);
 
     $response->assertOk()
@@ -234,14 +234,14 @@ test('admin can login with password', function (): void {
 
 test('admin can login with phone and password', function (): void {
     $admin = Admin::factory()->create([
-        'phone' => '09301234567',
+        'phone'    => '09301234567',
         'password' => Hash::make('password123'),
     ]);
 
     $response = $this->postJson('/api/v1/admin/auth/login/password', [
         'identifier' => '09301234567',
-        'type' => 'phone',
-        'password' => 'password123',
+        'type'       => 'phone',
+        'password'   => 'password123',
     ]);
 
     $response->assertOk()
@@ -258,11 +258,11 @@ test('admin can login with phone and password', function (): void {
 test('non existent admin can not verify otp', function (): void {
 
     $response = $this->postJson(route('api.v1.admin.auth.otp-verify'), [
-        'identifier' => 'test@example.com',
-        'type' => 'email',
-        'otp_code' => $this->otpCode,
+        'identifier'    => 'test@example.com',
+        'type'          => 'email',
+        'otp_code'      => $this->otpCode,
         'tracking_code' => $this->trackingCode,
-        'otp_type' => OtpType::SIGNIN->value,
+        'otp_type'      => OtpType::SIGNIN->value,
     ]);
 
     $response->assertNotFound();

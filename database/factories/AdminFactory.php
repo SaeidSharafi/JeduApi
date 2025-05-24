@@ -19,10 +19,10 @@ final class AdminFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'phone' => fake()->unique()->numerify('09########'),
-            'password' => null,
+            'name'           => fake()->name(),
+            'email'          => fake()->unique()->safeEmail(),
+            'phone'          => fake()->unique()->numerify('09########'),
+            'password'       => null,
             'remember_token' => Str::random(10),
         ];
     }
@@ -46,7 +46,7 @@ final class AdminFactory extends Factory
         return $this->afterCreating(function (Admin $admin) use ($code) {
             $otpService = app(OtpManagerService::class);
             $otpService->send($admin->email, 'admin', OtpType::SIGNIN);
-            $otpDto = new OtpDto($code, $this->trackingCode);
+            $otpDto   = new OtpDto($code, $this->trackingCode);
             $cacheKey = sprintf('otp_%s_%s_%s_%s', $admin->email, 'admin', 'value', OtpType::SIGNIN->value);
             cache()->put($cacheKey, $otpDto);
         });

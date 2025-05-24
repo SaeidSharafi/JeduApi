@@ -21,7 +21,7 @@ final class LoginRequest extends FormRequest
     {
         return [
             'identifier' => ['required', new EmailOrPhoneRule],
-            'password' => ['sometimes', 'string'],
+            'password'   => ['sometimes', 'string'],
         ];
     }
 
@@ -35,13 +35,13 @@ final class LoginRequest extends FormRequest
         return [
             'identifier' => [
                 'description' => 'Email or Phone number of the user',
-                'required' => true,
-                'example' => '09351234567',
+                'required'    => true,
+                'example'     => '09351234567',
             ],
             'password' => [
                 'description' => 'Password of the user',
-                'required' => true,
-                'example' => '12345678',
+                'required'    => true,
+                'example'     => '12345678',
             ],
         ];
     }

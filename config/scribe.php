@@ -217,7 +217,7 @@ return [
             ...Defaults::HEADERS_STRATEGIES,
             Strategies\StaticData::withSettings(data: [
                 'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
+                'Accept'       => 'application/json',
             ]),
         ],
         'urlParameters' => [
@@ -236,7 +236,7 @@ return [
                 only: ['GET *'],
                 // Recommended: disable debug mode in response calls to avoid error stack traces in responses
                 config: [
-                    'app.debug' => false,
+                    'app.debug'        => false,
                     'database.default' => 'sqlite_scribe',
                 ]
             )

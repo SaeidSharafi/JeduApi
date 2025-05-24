@@ -44,11 +44,11 @@ final class Category extends Model
     protected function casts(): array
     {
         return [
-            'status' => \App\Enums\PublicationStatusEnum::class,
-            'properties' => 'array',
+            'status'          => \App\Enums\PublicationStatusEnum::class,
+            'properties'      => 'array',
             'additional_info' => 'array',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
+            'created_at'      => 'datetime',
+            'updated_at'      => 'datetime',
         ];
     }
 }

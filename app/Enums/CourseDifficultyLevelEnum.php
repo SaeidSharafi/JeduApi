@@ -10,9 +10,9 @@ enum CourseDifficultyLevelEnum: string
 {
     use AdvanceEnum;
 
-    case BEGINNER = 'beginner';
+    case BEGINNER     = 'beginner';
     case INTERMEDIATE = 'intermediate';
-    case ADVANCED = 'advanced';
-    case EXPERT = 'expert';
+    case ADVANCED     = 'advanced';
+    case EXPERT       = 'expert';
 
 }

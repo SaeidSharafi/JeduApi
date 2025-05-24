@@ -9,10 +9,10 @@ uses(Tests\AuthTestTrait::class);
 describe('Admin Private File', function (): void {
     it('can upload a private file and returns correct structure', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
-        $file = UploadedFile::fake()->image('test-image.jpg');
+        $file     = UploadedFile::fake()->image('test-image.jpg');
         $response = $this->postJson(route('api.v1.admin.private-upload.upload'), [
             'file' => $file,
-            'alt' => 'Test Alt Text',
+            'alt'  => 'Test Alt Text',
         ]);
         $response->assertStatus(201)
             ->assertJsonStructure([

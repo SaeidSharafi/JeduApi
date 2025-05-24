@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Validator;
 
 describe('EmailOrPhoneRule', function (): void {
     it('accepts valid email addresses', function (): void {
-        $rule = new EmailOrPhoneRule();
+        $rule   = new EmailOrPhoneRule();
         $emails = [
             'user@example.com',
             'test.user+alias@domain.co',
@@ -20,7 +20,7 @@ describe('EmailOrPhoneRule', function (): void {
     });
 
     it('accepts valid mobile numbers', function (): void {
-        $rule = new EmailOrPhoneRule();
+        $rule    = new EmailOrPhoneRule();
         $mobiles = [
             '09123456789', // 09X
             '9123456789',  // 9X (without leading 0)
@@ -34,7 +34,7 @@ describe('EmailOrPhoneRule', function (): void {
     });
 
     it('accepts valid landline numbers', function (): void {
-        $rule = new EmailOrPhoneRule();
+        $rule      = new EmailOrPhoneRule();
         $landlines = [
             '02112345678',
             '03112345678',
@@ -47,7 +47,7 @@ describe('EmailOrPhoneRule', function (): void {
     });
 
     it('rejects invalid values', function (): void {
-        $rule = new EmailOrPhoneRule();
+        $rule     = new EmailOrPhoneRule();
         $invalids = [
             'not-an-email',
             '12345',
@@ -63,7 +63,7 @@ describe('EmailOrPhoneRule', function (): void {
     });
 
     it('rejects null values as invalid', function (): void {
-        $rule = new EmailOrPhoneRule();
+        $rule      = new EmailOrPhoneRule();
         $validator = Validator::make(['contact' => null], ['contact' => ['required', $rule]]);
         expect($validator->fails())->toBeTrue();
     });

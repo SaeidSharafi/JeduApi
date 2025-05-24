@@ -31,11 +31,11 @@ final class GitHubSignatureValidator implements SignatureValidator
         [$usedAlgorithm, $signatureValueFromHeader] = explode('=', $headerSignature, 2);
 
         $computedSignature = hash_hmac('sha256', $request->getContent(), $signingSecret);
-        $result = hash_equals($computedSignature, $signatureValueFromHeader);
+        $result            = hash_equals($computedSignature, $signatureValueFromHeader);
         if (! $result) {
             Log::channel('deployment')->debug('Signature mismatch', [
                 'computed' => $computedSignature,
-                'header' => $signatureValueFromHeader,
+                'header'   => $signatureValueFromHeader,
             ]);
         }
 

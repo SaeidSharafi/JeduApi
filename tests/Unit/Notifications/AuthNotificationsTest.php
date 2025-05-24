@@ -18,9 +18,9 @@ beforeEach(function (): void {
 });
 
 test('OtpEmailNotification contains expected data', function (): void {
-    $otp = '123456';
+    $otp          = '123456';
     $notification = new OtpEmailNotification($otp);
-    $user = User::factory()->create(['email' => 'test@example.com']);
+    $user         = User::factory()->create(['email' => 'test@example.com']);
 
     $mailData = $notification->toMail($user);
     $mailView = $mailData->render();
@@ -47,10 +47,10 @@ test('user email is set to use phone plus @example.com if email is null in testi
 
 });
 test('OtpSmsNotification contains expected data', function (): void {
-    $otp = '123456';
-    $otp = new OtpPrepared('09321456987', 'user', $otp, OtpType::SIGNIN, 'test-tracking', []);
+    $otp          = '123456';
+    $otp          = new OtpPrepared('09321456987', 'user', $otp, OtpType::SIGNIN, 'test-tracking', []);
     $notification = new OtpSmsNotification($otp);
-    $user = User::factory()->create(['phone' => '09321456987']);
+    $user         = User::factory()->create(['phone' => '09321456987']);
 
     $mailData = $notification->toMail($user);
     $mailView = $mailData->render();
@@ -61,8 +61,8 @@ test('OtpSmsNotification contains expected data', function (): void {
 });
 
 test('notifications handle different guard types correctly', function (): void {
-    $code = '123456';
-    $identifier = '1234567890';
+    $code         = '123456';
+    $identifier   = '1234567890';
     $trackingCode = 'test-tracking';
 
     // Test user guard
@@ -75,7 +75,7 @@ test('notifications handle different guard types correctly', function (): void {
         params: []
     );
     $userNotification = new OtpSmsNotification($userEvent);
-    $user = User::factory()->create(['phone' => $identifier]);
+    $user             = User::factory()->create(['phone' => $identifier]);
 
     // Test admin guard
     $adminEvent = new OtpPrepared(
@@ -87,9 +87,9 @@ test('notifications handle different guard types correctly', function (): void {
         params: []
     );
     $adminNotification = new OtpSmsNotification($adminEvent);
-    $admin = Admin::factory()->create(['phone' => $identifier]);
+    $admin             = Admin::factory()->create(['phone' => $identifier]);
 
-    $userMailData = $userNotification->toMail($user);
+    $userMailData  = $userNotification->toMail($user);
     $adminMailData = $adminNotification->toMail($admin);
     expect($userEvent->guard)->toBe('user')
         ->and($adminEvent->guard)->toBe('admin')

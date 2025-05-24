@@ -19,13 +19,13 @@ final class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'phone' => fake()->unique()->numerify('09########'),
+            'name'              => fake()->name(),
+            'email'             => fake()->unique()->safeEmail(),
+            'phone'             => fake()->unique()->numerify('09########'),
             'email_verified_at' => now(),
             'phone_verified_at' => now(),
-            'password' => null,
-            'remember_token' => Str::random(10),
+            'password'          => null,
+            'remember_token'    => Str::random(10),
         ];
     }
 
@@ -48,7 +48,7 @@ final class UserFactory extends Factory
         return $this->afterCreating(function (User $user) use ($code) {
             $otpService = app(OtpManagerService::class);
             $otpService->send($user->email, 'user', OtpType::SIGNIN);
-            $otpDto = new OtpDto($code, $this->trackingCode);
+            $otpDto   = new OtpDto($code, $this->trackingCode);
             $cacheKey = sprintf('otp_%s_%s_%s_%s', $user->email, 'user', 'value', OtpType::SIGNIN->value);
             cache()->put($cacheKey, $otpDto);
         });

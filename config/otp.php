@@ -38,7 +38,7 @@ return [
     |
     */
     'rate_limiting' => [
-        'max_attempts' => 5,
+        'max_attempts'  => 5,
         'decay_minutes' => 1,
     ],
 

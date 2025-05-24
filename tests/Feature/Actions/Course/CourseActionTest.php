@@ -25,23 +25,23 @@ describe('CourseActionTest', function (): void {
         Course::factory()->make()->toArray();
         $courseData = Course::factory()->make(
             [
-                'slug' => 'test-course',
-                'full_name' => 'Test Course',
+                'slug'       => 'test-course',
+                'full_name'  => 'Test Course',
                 'short_name' => 'TC',
-                'status' => App\Enums\PublicationStatusEnum::DRAFT->value,
+                'status'     => App\Enums\PublicationStatusEnum::DRAFT->value,
             ]
         )->toArray();
-        $category = \App\Models\Category::factory()->create([
+        $category = App\Models\Category::factory()->create([
             'name' => 'Test Category',
             'slug' => 'test-category',
         ]);
         $data = CreateCourseData::from([
             ...$courseData,
             'categories' => [$category->id],
-            'media' => [
-                'gallery' => [$this->media->id],
-                'video' => [$this->media->id],
-                'thumbnail' => [$this->media->id],
+            'media'      => [
+                'gallery'     => [$this->media->id],
+                'video'       => [$this->media->id],
+                'thumbnail'   => [$this->media->id],
                 'certificate' => [$this->media->id],
             ],
         ]);
@@ -66,22 +66,22 @@ describe('CourseActionTest', function (): void {
             ->create()->fresh();
         $courseData = Course::factory()->make(
             [
-                'slug' => 'test-course',
-                'full_name' => 'Updated Course Name',
+                'slug'       => 'test-course',
+                'full_name'  => 'Updated Course Name',
                 'short_name' => 'TC',
-                'status' => App\Enums\PublicationStatusEnum::DRAFT->value,
+                'status'     => App\Enums\PublicationStatusEnum::DRAFT->value,
             ]
         )->toArray();
         $data = CreateCourseData::from([
             ...$course->toArray(),
-            'full_name' => 'Updated Course Name',
+            'full_name'  => 'Updated Course Name',
             'short_name' => 'UC',
-            'status' => App\Enums\PublicationStatusEnum::PUBLISHED->value,
+            'status'     => App\Enums\PublicationStatusEnum::PUBLISHED->value,
             'categories' => $course->categories->pluck('id')->toArray(),
-            'media' => [
-                'gallery' => [$this->media2->id],
-                'video' => [$this->media2->id],
-                'thumbnail' => [$this->media2->id],
+            'media'      => [
+                'gallery'     => [$this->media2->id],
+                'video'       => [$this->media2->id],
+                'thumbnail'   => [$this->media2->id],
                 'certificate' => [],
             ],
         ]);
@@ -101,9 +101,9 @@ describe('CourseActionTest', function (): void {
 
     test('DeleteCourseAction successfully delete course', function (): void {
         $course = Course::factory()->create([
-            'full_name' => 'Course to be deleted',
+            'full_name'  => 'Course to be deleted',
             'short_name' => 'CTBD',
-            'slug' => 'course-to-be-deleted',
+            'slug'       => 'course-to-be-deleted',
         ]);
 
         $action = new DeleteCourseAction();

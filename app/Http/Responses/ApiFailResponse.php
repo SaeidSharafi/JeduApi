@@ -32,8 +32,8 @@ final readonly class ApiFailResponse implements ApiResponseInterface
     {
         return response()->json(
             [
-                'message' => $this->message,
-                'errors' => $this->errors,
+                'message'  => $this->message,
+                'errors'   => $this->errors,
                 'metadata' => $this->metadata,
             ],
             $this->code,

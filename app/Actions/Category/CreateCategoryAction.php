@@ -16,7 +16,7 @@ final readonly class CreateCategoryAction
     public function handle(CreateCategoryData $data): void
     {
         DB::transaction(function () use ($data): void {
-            $media = $data->media ?? [];
+            $media    = $data->media ?? [];
             $category = Category::query()->create($data->except('media')->toArray());
             if ($media['image'] ?? null) {
                 $category->syncMedia(data_get($media, 'image'), 'image');

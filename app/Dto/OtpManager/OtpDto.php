@@ -12,7 +12,7 @@ final class OtpDto
 
     public function __construct(int $code, string $trackingCode)
     {
-        $this->code = $code;
+        $this->code         = $code;
         $this->trackingCode = $trackingCode;
     }
 
@@ -22,7 +22,7 @@ final class OtpDto
     public function toArray(): array
     {
         return [
-            'code' => $this->code,
+            'code'          => $this->code,
             'tracking_code' => $this->trackingCode,
         ];
     }

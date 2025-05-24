@@ -16,7 +16,7 @@ final readonly class CreateDigitalAssetAction
     public function handle(CreateDigitalAssetData $data): void
     {
         DB::transaction(function () use ($data): void {
-            $attachments = $data->attachments ?: [];
+            $attachments  = $data->attachments ?: [];
             $digitalAsset = DigitalAsset::query()->create($data->except('attachments')->toArray())->fresh();
             if ($preview = data_get($attachments, 'preview')) {
                 $digitalAsset->syncMedia($preview, 'preview');

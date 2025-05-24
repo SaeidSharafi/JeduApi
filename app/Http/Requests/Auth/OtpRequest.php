@@ -22,7 +22,7 @@ final class OtpRequest extends FormRequest
     {
         return [
             'identifier' => ['required', 'string'],
-            'otp_type' => ['required', 'string', Rule::enum(OtpType::class)],
+            'otp_type'   => ['required', 'string', Rule::enum(OtpType::class)],
         ];
     }
 
@@ -36,14 +36,14 @@ final class OtpRequest extends FormRequest
         return [
             'identifier' => [
                 'description' => 'The phone number or email address of the user',
-                'required' => true,
-                'example' => '09351234567',
+                'required'    => true,
+                'example'     => '09351234567',
             ],
             'otp_type' => [
                 'description' => 'The type of OTP to send (login/registration or password reset)',
-                'required' => true,
-                'enum' => OtpType::cases(),
-                'example' => OtpType::SIGNIN->value,
+                'required'    => true,
+                'enum'        => OtpType::cases(),
+                'example'     => OtpType::SIGNIN->value,
             ],
         ];
     }

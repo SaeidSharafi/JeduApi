@@ -12,16 +12,16 @@ use Illuminate\Support\Facades\Hash;
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    $minOtpCode = config('otp.code_min');
-    $maxOtpCode = config('otp.code_max');
-    $this->OtpCode = random_int($minOtpCode, $maxOtpCode);
+    $minOtpCode           = config('otp.code_min');
+    $maxOtpCode           = config('otp.code_max');
+    $this->OtpCode        = random_int($minOtpCode, $maxOtpCode);
     $this->invalidOtpCode = $this->OtpCode + 1 > $maxOtpCode ? $this->OtpCode - 1 : $this->OtpCode + 1;
-    $this->trackingCode = 'test-tracking';
+    $this->trackingCode   = 'test-tracking';
 });
 test('admin auth requires valid email format', function (): void {
     $response = $this->postJson('/api/v1/admin/auth/initiate', [
         'identifier' => 'not-an-email',
-        'type' => 'email',
+        'type'       => 'email',
     ]);
 
     $response->assertStatus(422)
@@ -31,7 +31,7 @@ test('admin auth requires valid email format', function (): void {
 test('admin auth requires valid phone format when type is phone', function (): void {
     $response = $this->postJson('/api/v1/admin/auth/initiate', [
         'identifier' => 'not-a-phone',
-        'type' => 'phone',
+        'type'       => 'phone',
     ]);
 
     $response->assertStatus(422)
@@ -43,8 +43,8 @@ test('admin otp request requires valid otp_type', function (): void {
 
     $response = $this->postJson(route('api.v1.admin.auth.otp-resend'), [
         'identifier' => $admin->email,
-        'type' => 'email',
-        'otp_type' => 'INVALID',
+        'type'       => 'email',
+        'otp_type'   => 'INVALID',
     ]);
 
     $response->assertStatus(422)
@@ -54,15 +54,15 @@ test('admin otp request requires valid otp_type', function (): void {
 test('admin otp verification requires valid otp_type', function (): void {
     $admin = Admin::factory()->create();
     Cache::put('otp_admin@example.com_admin_value_SIGNIN', [
-        'code' => $this->OtpCode,
+        'code'          => $this->OtpCode,
         'tracking_code' => 'test-tracking',
     ], 300);
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
         'identifier' => 'admin@example.com',
-        'type' => 'email',
-        'otp_code' => $this->OtpCode,
-        'otp_type' => 'INVALID',
+        'type'       => 'email',
+        'otp_code'   => $this->OtpCode,
+        'otp_type'   => 'INVALID',
     ]);
 
     $response->assertStatus(422)
@@ -71,10 +71,10 @@ test('admin otp verification requires valid otp_type', function (): void {
 
 test('admin otp verification requires valid identifier', function (): void {
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
-        'identifier' => 'invalid-email',
-        'type' => 'email',
-        'otp_code' => $this->OtpCode,
-        'otp_type' => OtpType::SIGNIN->value,
+        'identifier'    => 'invalid-email',
+        'type'          => 'email',
+        'otp_code'      => $this->OtpCode,
+        'otp_type'      => OtpType::SIGNIN->value,
         'tracking_code' => $this->trackingCode,
     ]);
 
@@ -88,11 +88,11 @@ test('admin otp verification fails with wrong otp', function (): void {
         new OtpDto($this->OtpCode, $this->trackingCode), 300);
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
-        'identifier' => 'admin@example.com',
-        'type' => 'email',
-        'otp_code' => $this->invalidOtpCode,
+        'identifier'    => 'admin@example.com',
+        'type'          => 'email',
+        'otp_code'      => $this->invalidOtpCode,
         'tracking_code' => 'test-tracking',
-        'otp_type' => OtpType::SIGNIN->value,
+        'otp_type'      => OtpType::SIGNIN->value,
     ]);
 
     $response->assertStatus(422);
@@ -102,16 +102,16 @@ test('admin otp verification fails with expired otp', function (): void {
     $admin = Admin::factory()->create(['email' => 'admin@example.com']);
     // Put expired OTP in cache
     Cache::put('otp_admin@example.com_admin_value_SIGNIN', [
-        'code' => $this->OtpCode,
+        'code'          => $this->OtpCode,
         'tracking_code' => 'test-tracking',
     ], -1); // Expired
 
     $response = $this->postJson('/api/v1/admin/auth/otp/verify', [
-        'identifier' => 'admin@example.com',
-        'type' => 'email',
-        'otp_code' => $this->OtpCode,
+        'identifier'    => 'admin@example.com',
+        'type'          => 'email',
+        'otp_code'      => $this->OtpCode,
         'tracking_code' => 'test-tracking',
-        'otp_type' => OtpType::SIGNIN->value,
+        'otp_type'      => OtpType::SIGNIN->value,
     ]);
 
     $response->assertStatus(422);
@@ -119,14 +119,14 @@ test('admin otp verification fails with expired otp', function (): void {
 
 test('admin password login requires valid credentials', function (): void {
     $admin = Admin::factory()->create([
-        'email' => 'admin@example.com',
+        'email'    => 'admin@example.com',
         'password' => Hash::make('correct-password'),
     ]);
 
     $response = $this->postJson('/api/v1/admin/auth/login/password', [
         'identifier' => 'admin@example.com',
-        'type' => 'email',
-        'password' => 'wrong-password',
+        'type'       => 'email',
+        'password'   => 'wrong-password',
     ]);
 
     $response->assertStatus(422)
@@ -136,8 +136,8 @@ test('admin password login requires valid credentials', function (): void {
 test('admin auth with non-existent account returns proper error', function (): void {
     $response = $this->postJson('/api/v1/admin/auth/otp/resend', [
         'identifier' => 'nonexistent@example.com',
-        'type' => 'email',
-        'otp_type' => OtpType::SIGNIN->value,
+        'type'       => 'email',
+        'otp_type'   => OtpType::SIGNIN->value,
     ]);
 
     $response->assertNotFound()

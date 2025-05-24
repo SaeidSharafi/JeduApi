@@ -17,7 +17,7 @@ describe('OtpManagerService', function (): void {
     beforeEach(function (): void {
         Cache::flush();
         Event::fake();
-        $this->expectedOtpCode = 123456;
+        $this->expectedOtpCode      = 123456;
         $this->expectedTrackingCode = 'test-tracking';
         // Configure the FakeOtpGenerator
         /** @var FakeOtpGenerator $fakeGenerator */
@@ -32,17 +32,17 @@ describe('OtpManagerService', function (): void {
 
         // Common test data
         $this->identifier = '09123456789';
-        $this->guard = 'user';
-        $this->otpType = OtpType::SIGNIN;
-        $this->params = ['foo' => 'bar'];
+        $this->guard      = 'user';
+        $this->otpType    = OtpType::SIGNIN;
+        $this->params     = ['foo' => 'bar'];
     });
 
     it('generates and sends OTP, triggers event, and returns SentOtpDto', function (): void {
 
         $identifier = '09123456789';
-        $guard = 'user';
-        $otpType = OtpType::SIGNIN;
-        $params = ['foo' => 'bar'];
+        $guard      = 'user';
+        $otpType    = OtpType::SIGNIN;
+        $params     = ['foo' => 'bar'];
 
         $sentOtp = $this->service->send($identifier, $guard, $otpType, $params);
         expect($sentOtp)->toBeInstanceOf(SentOtpDto::class);
@@ -54,8 +54,8 @@ describe('OtpManagerService', function (): void {
     it('prevents resend within waiting time and throws ValidationException', function (): void {
 
         $identifier = '09123456789';
-        $guard = 'user';
-        $otpType = OtpType::SIGNIN;
+        $guard      = 'user';
+        $otpType    = OtpType::SIGNIN;
         $this->service->send($identifier, $guard, $otpType);
         // Simulate just sent (no time passed)
         expect(fn () => $this->service->sendAndRetryCheck($identifier, $guard, $otpType))->toThrow(ValidationException::class);
@@ -64,8 +64,8 @@ describe('OtpManagerService', function (): void {
     it('allows resend after waiting time', function (): void {
 
         $identifier = '09123456789';
-        $guard = 'user';
-        $otpType = OtpType::SIGNIN;
+        $guard      = 'user';
+        $otpType    = OtpType::SIGNIN;
         $this->service->send($identifier, $guard, $otpType);
         // Simulate time passed
         $createdKey = (new ReflectionClass($this->service))->getMethod('getCacheKey')->invoke($this->service, $identifier, $guard, 'created');
@@ -77,19 +77,19 @@ describe('OtpManagerService', function (): void {
     it('verifies correct OTP and tracking code', function (): void {
 
         $identifier = '09123456789';
-        $guard = 'user';
-        $otpType = OtpType::SIGNIN;
-        $sentOtp = $this->service->send($identifier, $guard, $otpType);
-        $result = $this->service->verify($identifier, $guard, $this->expectedOtpCode, $this->expectedTrackingCode, $otpType);
+        $guard      = 'user';
+        $otpType    = OtpType::SIGNIN;
+        $sentOtp    = $this->service->send($identifier, $guard, $otpType);
+        $result     = $this->service->verify($identifier, $guard, $this->expectedOtpCode, $this->expectedTrackingCode, $otpType);
         expect($result)->toBeTrue();
     });
 
     it('fails verification with wrong code or tracking code', function (): void {
 
         $identifier = '09123456789';
-        $guard = 'user';
-        $otpType = OtpType::SIGNIN;
-        $sentOtp = $this->service->send($identifier, $guard, $otpType);
+        $guard      = 'user';
+        $otpType    = OtpType::SIGNIN;
+        $sentOtp    = $this->service->send($identifier, $guard, $otpType);
         expect($this->service->verify($identifier, $guard, 999999, $this->expectedTrackingCode, $otpType))->toBeFalse();
         expect($this->service->verify($identifier, $guard, $this->expectedOtpCode, 'wrong-track', $otpType))->toBeFalse();
     });
@@ -97,9 +97,9 @@ describe('OtpManagerService', function (): void {
     it('resets attempts after successful verification', function (): void {
 
         $identifier = '09123456789';
-        $guard = 'user';
-        $otpType = OtpType::SIGNIN;
-        $sentOtp = $this->service->send($identifier, $guard, $otpType);
+        $guard      = 'user';
+        $otpType    = OtpType::SIGNIN;
+        $sentOtp    = $this->service->send($identifier, $guard, $otpType);
         // Simulate failed attempts
         $attemptsKey = (new ReflectionClass($this->service))->getMethod('getCacheKey')->invoke($this->service, $identifier, $guard, 'verify_attempts');
         Cache::put($attemptsKey, 2);
@@ -109,10 +109,10 @@ describe('OtpManagerService', function (): void {
 
     it('deletes OTP after max failed attempts and throws ValidationException', function (): void {
 
-        $identifier = '09123456789';
-        $guard = 'user';
-        $otpType = OtpType::SIGNIN;
-        $sentOtp = $this->service->send($identifier, $guard, $otpType);
+        $identifier  = '09123456789';
+        $guard       = 'user';
+        $otpType     = OtpType::SIGNIN;
+        $sentOtp     = $this->service->send($identifier, $guard, $otpType);
         $attemptsKey = (new ReflectionClass($this->service))->getMethod('getCacheKey')->invoke($this->service, $identifier, $guard, 'verify_attempts');
         Cache::put($attemptsKey, config('otp.max_verify_attempts', 3));
         expect(fn () => $this->service->verify($identifier, $guard, 999999, $this->expectedTrackingCode, $otpType))->toThrow(ValidationException::class);
@@ -122,10 +122,10 @@ describe('OtpManagerService', function (): void {
     it('getVerifyCode and deleteVerifyCode work as expected', function (): void {
 
         $identifier = '09123456789';
-        $guard = 'user';
-        $otpType = OtpType::SIGNIN;
-        $sentOtp = $this->service->send($identifier, $guard, $otpType);
-        $otpDto = $this->service->getVerifyCode($identifier, $guard, $otpType);
+        $guard      = 'user';
+        $otpType    = OtpType::SIGNIN;
+        $sentOtp    = $this->service->send($identifier, $guard, $otpType);
+        $otpDto     = $this->service->getVerifyCode($identifier, $guard, $otpType);
         expect($otpDto)->toBeInstanceOf(OtpDto::class);
         $deleted = $this->service->deleteVerifyCode($identifier, $guard, $otpType);
         expect($deleted)->toBeTrue();
@@ -134,8 +134,8 @@ describe('OtpManagerService', function (): void {
     it('getSentAt returns null if idnetifier is empty', function (): void {
 
         $identifier = '09123456789';
-        $guard = 'user';
-        $otpType = OtpType::SIGNIN;
+        $guard      = 'user';
+        $otpType    = OtpType::SIGNIN;
         expect($this->service->getSentAt('', $guard, $otpType))->toBeNull();
         $this->service->send($identifier, $guard, $otpType);
         expect($this->service->getSentAt('', $guard, $otpType))->toBeNull;
@@ -144,8 +144,8 @@ describe('OtpManagerService', function (): void {
     it('getSentAt returns correct Carbon instance or null', function (): void {
 
         $identifier = '09123456789';
-        $guard = 'user';
-        $otpType = OtpType::SIGNIN;
+        $guard      = 'user';
+        $otpType    = OtpType::SIGNIN;
         expect($this->service->getSentAt($identifier, $guard, $otpType))->toBeNull();
         $this->service->send($identifier, $guard, $otpType);
         expect($this->service->getSentAt($identifier, $guard, $otpType))->toBeInstanceOf(Carbon::class);
@@ -153,8 +153,8 @@ describe('OtpManagerService', function (): void {
     it('isVerifyCodeHasBeenSent returns false if identifier is mepty', function (): void {
 
         $identifier = '09123456789';
-        $guard = 'user';
-        $otpType = OtpType::SIGNIN;
+        $guard      = 'user';
+        $otpType    = OtpType::SIGNIN;
         expect($this->service->isVerifyCodeHasBeenSent($identifier, $guard, $otpType))->toBeFalse();
         $this->service->send($identifier, $guard, $otpType);
         expect($this->service->isVerifyCodeHasBeenSent('', $guard, $otpType))->toBeFalse();
@@ -162,8 +162,8 @@ describe('OtpManagerService', function (): void {
     it('isVerifyCodeHasBeenSent returns true/false as expected', function (): void {
 
         $identifier = '09123456789';
-        $guard = 'user';
-        $otpType = OtpType::SIGNIN;
+        $guard      = 'user';
+        $otpType    = OtpType::SIGNIN;
         expect($this->service->isVerifyCodeHasBeenSent($identifier, $guard, $otpType))->toBeFalse();
         $this->service->send($identifier, $guard, $otpType);
         expect($this->service->isVerifyCodeHasBeenSent($identifier, $guard, $otpType))->toBeTrue();

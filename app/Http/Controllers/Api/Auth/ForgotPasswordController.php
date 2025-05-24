@@ -44,8 +44,8 @@ final class ForgotPasswordController extends Controller
 
             return response()->success([
                 'tracking_code' => $otpSent->trackingCode,
-                'otp_type' => $otpSent->otpType->identifier(),
-                'identifier' => $request->identifier,
+                'otp_type'      => $otpSent->otpType->identifier(),
+                'identifier'    => $request->identifier,
             ], 'OTP sent successfully');
 
         } catch (UserDoesNotHavePasswordException $e) {

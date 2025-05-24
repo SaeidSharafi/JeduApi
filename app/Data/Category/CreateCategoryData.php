@@ -19,22 +19,21 @@ final class CreateCategoryData extends Data
         public string $slug,
         #[WithCast(EnumCast::class)]
         public PublicationStatusEnum $status,
-        public ?int $parent_id = null,
-        public ?string $description = null,
-        public ?string $color_scheme = null,
-        public ?string $meta_title = null,
-        public ?string $meta_description = null,
-        public ?string $meta_keywords = null,
-        public ?array $properties = null,
-        public ?array $additional_info = null,
+        public ?int $parent_id,
+        public ?string $description,
+        public ?string $color_scheme,
+        public ?string $meta_title,
+        public ?string $meta_description,
+        public ?string $meta_keywords,
+        public ?array $properties,
+        public ?array $additional_info,
         public ?array $media = [],
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {
         return [
-            'slug'             => [
+            'slug' => [
                 'required',
                 'string',
                 'alpha_dash',
@@ -72,31 +71,31 @@ final class CreateCategoryData extends Data
     public function bodyParameters(): array
     {
         return [
-            'name'             => [
+            'name' => [
                 'description' => 'The name of the category.',
                 'example'     => 'Web Development',
             ],
-            'slug'             => [
+            'slug' => [
                 'description' => 'The unique slug for the category.',
                 'example'     => 'web-development',
             ],
-            'status'           => [
+            'status' => [
                 'description' => 'The publication status of the category.',
                 'example'     => PublicationStatusEnum::PUBLISHED->value,
             ],
-            'parent_id'        => [
+            'parent_id' => [
                 'description' => 'The ID of the parent category, if any.',
                 'example'     => 1,
             ],
-            'description'      => [
+            'description' => [
                 'description' => 'A brief description of the category.',
                 'example'     => 'This category includes all courses related to web development.',
             ],
-            'color_scheme'     => [
+            'color_scheme' => [
                 'description' => 'The color scheme for the category, used for UI representation.',
                 'example'     => '#3490dc',
             ],
-            'meta_title'       => [
+            'meta_title' => [
                 'description' => 'The meta title for SEO purposes.',
                 'example'     => 'Web Development Courses',
             ],
@@ -104,30 +103,30 @@ final class CreateCategoryData extends Data
                 'description' => 'The meta description for SEO purposes.',
                 'example'     => 'Explore our comprehensive web development courses.',
             ],
-            'meta_keywords'    => [
+            'meta_keywords' => [
                 'description' => 'The meta keywords for SEO purposes.',
                 'example'     => 'web development, programming, coding',
             ],
-            'properties'       => [
+            'properties' => [
                 'description' => 'Additional properties for the category, if any.',
                 'example'     => ['difficulty' => 'beginner', 'language' => 'English'],
             ],
-            'additional_info'  => [
+            'additional_info' => [
                 'description' => 'Any additional information related to the category.',
                 'example'     => ['created_by' => 'admin', 'created_at' => '2023-10-01'],
             ],
-            'media'            => [
+            'media' => [
                 'description' => 'Media associated with the category.',
                 'example'     => [
                     'icon'  => 1, // Media ID for the icon
                     'image' => 2, // Media ID for the image
                 ],
             ],
-            'media.icon'       => [
+            'media.icon' => [
                 'description' => 'The media ID for the category icon. (as an array)',
                 'example'     => 1,
             ],
-            'media.image'      => [
+            'media.image' => [
                 'description' => 'The media ID for the category image. (as an array)',
                 'example'     => 2,
             ],

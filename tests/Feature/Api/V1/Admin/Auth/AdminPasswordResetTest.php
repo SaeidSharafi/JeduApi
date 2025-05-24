@@ -15,11 +15,11 @@ beforeEach(function (): void {
     Notification::fake();
 
     // Setup test OTP data
-    $minOtpCode = config('otp.code_min');
-    $maxOtpCode = config('otp.code_max');
-    $this->otpCode = random_int($minOtpCode, $maxOtpCode);
+    $minOtpCode           = config('otp.code_min');
+    $maxOtpCode           = config('otp.code_max');
+    $this->otpCode        = random_int($minOtpCode, $maxOtpCode);
     $this->invalidOtpCode = $this->otpCode + 1 > $maxOtpCode ? $this->otpCode - 1 : $this->otpCode + 1;
-    $this->trackingCode = 'test-tracking';
+    $this->trackingCode   = 'test-tracking';
 
     $fakeGenerator = $this->app->make(App\Contracts\OtpGeneratorInterface::class);
     if ($fakeGenerator instanceof Tests\Fakes\FakeOtpGenerator) {
@@ -29,8 +29,8 @@ beforeEach(function (): void {
 });
 test('admin can request password reset otp', function (): void {
     $admin = Admin::factory()->create([
-        'email' => 'admin1@example.com',
-        'phone' => '09301234567',
+        'email'    => 'admin1@example.com',
+        'phone'    => '09301234567',
         'password' => Hash::make('oldpassword'),
     ]);
 
@@ -54,8 +54,8 @@ test('admin can request password reset otp', function (): void {
 
 test('admin without password cannot request password reset', function (): void {
     Admin::factory()->create([
-        'email' => 'admin2@example.com',
-        'phone' => '09301234567',
+        'email'    => 'admin2@example.com',
+        'phone'    => '09301234567',
         'password' => null,
     ]);
 
@@ -81,15 +81,15 @@ test('non existent admin cannot request password reset', function (): void {
 });
 test('admin without password cannot reset password', function (): void {
     Admin::factory()->create([
-        'email' => 'user2@example.com',
+        'email'    => 'user2@example.com',
         'password' => null,
     ]);
 
     $response = $this->postJson(route('api.v1.admin.auth.password-reset'), [
-        'identifier' => 'user2@example.com',
-        'tracking_code' => $this->trackingCode,
-        'otp_code' => $this->otpCode, // Doesn't matter, user won't be found first
-        'password' => 'newpassword',
+        'identifier'            => 'user2@example.com',
+        'tracking_code'         => $this->trackingCode,
+        'otp_code'              => $this->otpCode, // Doesn't matter, user won't be found first
+        'password'              => 'newpassword',
         'password_confirmation' => 'newpassword',
     ]);
     $response->assertStatus(422)
@@ -99,8 +99,8 @@ test('admin without password cannot reset password', function (): void {
 });
 test('admin can reset password with valid otp', function (): void {
     $admin = Admin::factory()->create([
-        'email' => 'admin3@example.com',
-        'phone' => '09301234567',
+        'email'    => 'admin3@example.com',
+        'phone'    => '09301234567',
         'password' => Hash::make('oldpassword'),
     ]);
 
@@ -112,18 +112,18 @@ test('admin can reset password with valid otp', function (): void {
 
     // Then reset password with OTP
     $response = $this->postJson(route('api.v1.admin.auth.password-reset'), [
-        'identifier' => 'admin3@example.com',
-        'tracking_code' => $trackingCode,
-        'otp_code' => $this->otpCode,
-        'password' => 'newpassword',
+        'identifier'            => 'admin3@example.com',
+        'tracking_code'         => $trackingCode,
+        'otp_code'              => $this->otpCode,
+        'password'              => 'newpassword',
         'password_confirmation' => 'newpassword',
     ]);
 
     $response
         ->assertOk()
         ->assertJson([
-            'message' => 'Operation successful.',
-            'data' => 'Password reset OTP sent successfully',
+            'message'  => 'Operation successful.',
+            'data'     => 'Password reset OTP sent successfully',
             'metadata' => [],
         ]);
 
@@ -134,8 +134,8 @@ test('admin can reset password with valid otp', function (): void {
 
 test('admin cannot reset password with invalid otp', function (): void {
     $admin = Admin::factory()->create([
-        'email' => 'admin4@example.com',
-        'phone' => '09301234567',
+        'email'    => 'admin4@example.com',
+        'phone'    => '09301234567',
         'password' => Hash::make('oldpassword'),
     ]);
 
@@ -148,10 +148,10 @@ test('admin cannot reset password with invalid otp', function (): void {
 
     // Try resetting with invalid OTP
     $response = $this->postJson(route('api.v1.admin.auth.password-reset'), [
-        'identifier' => 'admin4@example.com',
-        'tracking_code' => $trackingCode,
-        'otp_code' => $this->invalidOtpCode,
-        'password' => 'newpassword',
+        'identifier'            => 'admin4@example.com',
+        'tracking_code'         => $trackingCode,
+        'otp_code'              => $this->invalidOtpCode,
+        'password'              => 'newpassword',
         'password_confirmation' => 'newpassword',
     ]);
 

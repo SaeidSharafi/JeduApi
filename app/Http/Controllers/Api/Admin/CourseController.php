@@ -91,7 +91,7 @@ final class CourseController extends Controller
         return response()->success(ShowCourseData::from([
             ...$course->toArray(),
             'categories' => $course->categories,
-            'media' => $media,
+            'media'      => $media,
         ]));
     }
 

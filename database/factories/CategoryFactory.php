@@ -17,19 +17,19 @@ final class CategoryFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->persianWord(),
-            'slug' => $this->faker->unique()->slug,
-            'status' => \App\Enums\PublicationStatusEnum::PUBLISHED,
-            'description' => $this->faker->text,
-            'image_url' => $this->faker->imageUrl(),
-            'icon_url' => $this->faker->imageUrl(),
-            'color_scheme' => $this->faker->hexColor,
-            'meta_title' => $this->faker->persianSentence(),
+            'name'             => $this->faker->unique()->persianWord(),
+            'slug'             => $this->faker->unique()->slug,
+            'status'           => \App\Enums\PublicationStatusEnum::PUBLISHED,
+            'description'      => $this->faker->text,
+            'image_url'        => $this->faker->imageUrl(),
+            'icon_url'         => $this->faker->imageUrl(),
+            'color_scheme'     => $this->faker->hexColor,
+            'meta_title'       => $this->faker->persianSentence(),
             'meta_description' => $this->faker->persianText(),
-            'meta_keywords' => $this->faker->persianWords(3, true),
-            'properties' => [],
-            'additional_info' => [],
-            'created_by' => \App\Models\Admin::factory(),
+            'meta_keywords'    => $this->faker->persianWords(3, true),
+            'properties'       => [],
+            'additional_info'  => [],
+            'created_by'       => \App\Models\Admin::factory(),
         ];
     }
 

@@ -30,9 +30,9 @@ final readonly class ApiErrorResponse implements ApiResponseInterface
         if (! is_null($this->exception) && config('app.debug')) {
             $response['debug'] = [
                 'message' => $this->exception->getMessage(),
-                'file' => $this->exception->getFile(),
-                'line' => $this->exception->getLine(),
-                'trace' => $this->exception->getTraceAsString(),
+                'file'    => $this->exception->getFile(),
+                'line'    => $this->exception->getLine(),
+                'trace'   => $this->exception->getTraceAsString(),
             ];
         }
 

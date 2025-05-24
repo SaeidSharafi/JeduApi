@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Symfony\Component\HttpFoundation\Response;
 
 test('success response returns correct structure', function (): void {
-    $data = ['key' => 'value'];
+    $data    = ['key' => 'value'];
     $message = 'Test success message';
 
     $response = response()->success($data, $message)->toResponse(request());
@@ -18,7 +18,7 @@ test('success response returns correct structure', function (): void {
 });
 
 test('created response returns 201 status code', function (): void {
-    $data = ['id' => 1];
+    $data    = ['id' => 1];
     $message = 'Resource created';
 
     $response = response()->created($data, $message)->toResponse(request());
@@ -39,7 +39,7 @@ test('no content response returns 204 status code', function (): void {
 
 test('error response returns correct structure', function (): void {
     $message = 'Test error message';
-    $errors = ['field' => 'error details'];
+    $errors  = ['field' => 'error details'];
 
     $response = response()->error($message, Response::HTTP_BAD_REQUEST, $errors)->toResponse(request());
 
@@ -63,7 +63,7 @@ test('validation error response returns 422 status code', function (): void {
 });
 
 test('validation errors response includes error details', function (): void {
-    $errors = ['email' => ['Invalid email format']];
+    $errors  = ['email' => ['Invalid email format']];
     $message = 'Validation failed';
 
     $response = response()->validationErrors($errors, $message)->toResponse(request());
@@ -124,7 +124,7 @@ test('method not allowed response returns 405 status code', function (): void {
 });
 
 test('server error response returns 500 status code', function (): void {
-    $message = 'Server error occurred';
+    $message   = 'Server error occurred';
     $exception = new Exception('Test exception');
 
     $response = response()->serverError($message, $exception)->toResponse(request());

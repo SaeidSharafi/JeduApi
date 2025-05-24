@@ -26,7 +26,7 @@ final class OtpManagerService
     public function __construct(OtpGeneratorInterface $otpGenerator)
     {
         $this->otpGenerator = $otpGenerator;
-        $this->waitingTime = config('otp.waiting_time');
+        $this->waitingTime  = config('otp.waiting_time');
 
     }
 
@@ -43,7 +43,7 @@ final class OtpManagerService
         array $params = []
     ): SentOtpDto {
 
-        $this->type = $type;
+        $this->type         = $type;
         $this->trackingCode = $this->otpGenerator->generateTrackingCode();
 
         $otp = new SentOtpDto($this->getNewCode($identifier, $guard), $type, $this->waitingTime, $this->trackingCode);
@@ -102,7 +102,7 @@ final class OtpManagerService
         ?OtpTypeInterface $type = null
     ): bool {
 
-        $this->type = $type;
+        $this->type         = $type;
         $this->trackingCode = $trackingCode;
 
         $otpDto = $this->getVerifyCode($identifier, $guard, $type);

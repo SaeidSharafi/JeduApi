@@ -63,9 +63,9 @@ final class InitiateAuthController extends Controller
 
             return response()->success([
                 'tracking_code' => $otpSent->trackingCode,
-                'otp_type' => $otpSent->otpType->identifier(),
-                'identifier' => $request->identifier,
-                'login_method' => 'OTP',
+                'otp_type'      => $otpSent->otpType->identifier(),
+                'identifier'    => $request->identifier,
+                'login_method'  => 'OTP',
             ], 'OTP sent successfully');
 
         } catch (UserHasPasswordException $e) {

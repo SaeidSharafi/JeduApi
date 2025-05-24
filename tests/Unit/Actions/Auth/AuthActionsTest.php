@@ -23,18 +23,18 @@ beforeEach(function (): void {
 });
 
 test('InitiateAuthAction returns correct action for user without password', function (): void {
-    $mockGenerateOtp = Mockery::mock(GenerateOtpAction::class);
+    $mockGenerateOtp      = Mockery::mock(GenerateOtpAction::class);
     $mockAuthenticateUser = Mockery::mock(AuthenticateUserAction::class);
 
     app()->instance(GenerateOtpAction::class, $mockGenerateOtp);
     app()->instance(AuthenticateUserAction::class, $mockAuthenticateUser);
 
     $action = app()->make(InitiateAuthAction::class);
-    $user = User::factory()->create(['password' => null])->fresh();
+    $user   = User::factory()->create(['password' => null])->fresh();
 
-    $placeholderCode = 123456;
+    $placeholderCode         = 123456;
     $placeholderTrackingCode = 'mock-uuid-test-code';
-    $placeholderWaitingTime = 60;
+    $placeholderWaitingTime  = 60;
 
     $mockGenerateOtp->shouldReceive('execute')
         ->once()
@@ -62,12 +62,12 @@ test('InitiateAuthAction returns correct action for user without password', func
 });
 
 test('InitiateAuthAction returns correct action for user with password', function (): void {
-    $mockGenerateOtp = Mockery::mock(GenerateOtpAction::class);
+    $mockGenerateOtp      = Mockery::mock(GenerateOtpAction::class);
     $mockAuthenticateUser = Mockery::mock(AuthenticateUserAction::class);
     app()->instance(GenerateOtpAction::class, $mockGenerateOtp);
     app()->instance(AuthenticateUserAction::class, $mockAuthenticateUser);
     $action = app()->make(InitiateAuthAction::class);
-    $user = User::factory()->create(['password' => Hash::make('password')]);
+    $user   = User::factory()->create(['password' => Hash::make('password')]);
     // Should throw UserHasPasswordException
     expect(fn () => $action->execute($user->email, 'email'))
         ->toThrow(UserHasPasswordException::class);
@@ -75,11 +75,11 @@ test('InitiateAuthAction returns correct action for user with password', functio
 
 test('PasswordLoginAction authenticates valid credentials', function (): void {
     $mockAuthenticateUser = Mockery::mock(AuthenticateUserAction::class);
-    $mockToken = Mockery::mock(NewAccessToken::class);
+    $mockToken            = Mockery::mock(NewAccessToken::class);
     $mockAuthenticateUser->shouldReceive('execute')->andReturn($mockToken);
-    $action = new PasswordLoginAction($mockAuthenticateUser);
+    $action   = new PasswordLoginAction($mockAuthenticateUser);
     $password = 'password123';
-    $user = User::factory()->create([
+    $user     = User::factory()->create([
         'password' => Hash::make($password),
     ]);
     $result = $action->execute($user->email, 'email', $password);
@@ -88,8 +88,8 @@ test('PasswordLoginAction authenticates valid credentials', function (): void {
 
 test('PasswordLoginAction rejects invalid credentials', function (): void {
     $mockAuthenticateUser = Mockery::mock(AuthenticateUserAction::class);
-    $action = new PasswordLoginAction($mockAuthenticateUser);
-    $user = User::factory()->create([
+    $action               = new PasswordLoginAction($mockAuthenticateUser);
+    $user                 = User::factory()->create([
         'password' => Hash::make('correct-password'),
     ]);
 
@@ -99,7 +99,7 @@ test('PasswordLoginAction rejects invalid credentials', function (): void {
 
 test('PasswordLoginAction handles missing user', function (): void {
     $mockAuthenticateUser = Mockery::mock(AuthenticateUserAction::class);
-    $action = new PasswordLoginAction($mockAuthenticateUser);
+    $action               = new PasswordLoginAction($mockAuthenticateUser);
 
     expect(fn (): NewAccessToken => $action->execute('nonexistent@example.com', 'email', 'password123'))
         ->toThrow(App\Exceptions\UserNotFoundException::class);

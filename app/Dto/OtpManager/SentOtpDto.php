@@ -18,9 +18,9 @@ final class SentOtpDto
 
     public function __construct(int $code, OtpTypeInterface $otpType, int $waitingTime, string $trackingCode)
     {
-        $this->code = $code;
-        $this->otpType = $otpType;
-        $this->waitingTime = $waitingTime;
+        $this->code         = $code;
+        $this->otpType      = $otpType;
+        $this->waitingTime  = $waitingTime;
         $this->trackingCode = $trackingCode;
     }
 
@@ -30,10 +30,10 @@ final class SentOtpDto
     public function toArray(): array
     {
         return [
-            'code' => $this->code,
-            'otpType' => $this->otpType,
+            'code'          => $this->code,
+            'otpType'       => $this->otpType,
             'tracking_code' => $this->trackingCode,
-            'waiting_time' => $this->waitingTime,
+            'waiting_time'  => $this->waitingTime,
         ];
     }
 }

@@ -79,10 +79,10 @@ final class PasswordLoginController extends Controller
             );
 
             return response()->success([
-                'token' => $token->plainTextToken,
+                'token'      => $token->plainTextToken,
                 'expires_at' => $token->accessToken->expires_at,
-                'type' => 'Bearer',
-                'user' => UserResource::make($user),
+                'type'       => 'Bearer',
+                'user'       => UserResource::make($user),
             ], 'User Logged in successfully');
         } catch (UserNotFoundException $exception) {
             return response()->notFound(
