@@ -1,0 +1,281 @@
+<?php
+
+use App\Models\DigitalAsset;
+
+uses(\Tests\AuthTestTrait::class);
+
+it('can get list of digital assets', function () {
+    $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
+    App\Models\DigitalAsset::factory()->count(10)->create();
+    $response = $this->getJson(route('api.v1.admin.digital-asset.index'));
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'data' => [
+                'data' => [
+                    '*' => [
+                        'id',
+                        'name',
+                        'slug',
+                        'status',
+                        'is_attachable_to_course',
+                        'version',
+                        'published_at',
+                        'created_by',
+                        'created_at',
+                        'updated_at',
+                    ],
+                ],
+            ],
+        ]);
+});
+
+it('can get single digital asset', function () {
+    $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW->value]);
+    $digitalAsset = App\Models\DigitalAsset::factory()->create();
+    Storage::fake('local');
+    $preview = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
+        ->toDisk('local')
+        ->upload();
+    $main = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('file.pdf'))
+        ->toDisk('local')
+        ->upload();
+    $digitalAsset->attachMedia($preview, 'preview');
+    $digitalAsset->attachMedia($main, 'main');
+    $response = $this->getJson(route('api.v1.admin.digital-asset.show', $digitalAsset));
+    $response->assertStatus(200)
+        ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($main, $preview, $digitalAsset) {
+            $json->where('data.id', $digitalAsset->id)
+                ->where('data.name', $digitalAsset->name)
+                ->where('data.slug', $digitalAsset->slug)
+                ->where('data.description', $digitalAsset->description)
+                ->where('data.version', $digitalAsset->version)
+                ->where('data.page_count', $digitalAsset->page_count)
+                ->where('data.duration_seconds', $digitalAsset->duration_seconds)
+                ->where('data.is_attachable_to_course', $digitalAsset->is_attachable_to_course)
+                ->where('data.status', [
+                    'value' => $digitalAsset->status->value,
+                    'label' => $digitalAsset->status->translate(),
+                ])
+                ->where('data.keywords', $digitalAsset->keywords)
+                ->where('data.meta_title', $digitalAsset->meta_title)
+                ->where('data.meta_description', $digitalAsset->meta_description)
+                ->where('data.meta_keywords', $digitalAsset->meta_keywords)
+                ->where('data.published_at', $digitalAsset->published_at?->format('Y-m-d H:i:s'))
+                ->where('data.created_by', $digitalAsset->created_by)
+                ->where('data.created_at', $digitalAsset->created_at->format('Y-m-d H:i:s'))
+                ->where('data.updated_at', $digitalAsset->updated_at?->format('Y-m-d H:i:s'))
+                ->where('data.attachments.preview.0.id', $preview->id)
+                ->where('data.attachments.main.0.id', $main->id)
+
+            ->etc();
+        });
+});
+
+it('can create digital asset', function () {
+    $this->authorized_user([App\Enums\PermissionEnum::FILE_CREATE->value]);
+    $digitalAsset = App\Models\DigitalAsset::factory()->make();
+    Storage::fake('local');
+    $preview = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
+        ->toDisk('local')
+        ->upload();
+    $main = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('file.pdf'))
+        ->toDisk('local')
+        ->upload();
+    $response = $this->postJson(route('api.v1.admin.digital-asset.store'), [
+        'name' => $digitalAsset->name,
+        'slug' => $digitalAsset->slug,
+        'description' => $digitalAsset->description,
+        'version' => $digitalAsset->version,
+        'page_count' => $digitalAsset->page_count,
+        'duration_seconds' => $digitalAsset->duration_seconds,
+        'is_attachable_to_course' => $digitalAsset->is_attachable_to_course,
+        'status' => $digitalAsset->status,
+        'keywords' => $digitalAsset->keywords,
+        'meta_title' => $digitalAsset->meta_title,
+        'meta_description' => $digitalAsset->meta_description,
+        'meta_keywords' => $digitalAsset->meta_keywords,
+        'published_at' => $digitalAsset->published_at ? $digitalAsset->published_at->format('Y-m-d H:i:s') : null,
+        'attachments' => [
+            'preview' => $preview->id,
+            'main' => $main->id,
+        ],
+    ]);
+    $response->assertStatus(201);
+
+    $this->assertDatabaseHas('digital_assets', [
+        'name' => $digitalAsset->name,
+        'slug' => $digitalAsset->slug,
+        'description' => $digitalAsset->description,
+        'version' => $digitalAsset->version,
+        'page_count' => $digitalAsset->page_count,
+        'duration_seconds' => $digitalAsset->duration_seconds,
+        'is_attachable_to_course' => $digitalAsset->is_attachable_to_course,
+        'status' => $digitalAsset->status,
+        'keywords' => $digitalAsset->keywords,
+        'meta_title' => $digitalAsset->meta_title,
+        'meta_description' => $digitalAsset->meta_description,
+        'meta_keywords' => $digitalAsset->meta_keywords,
+        'published_at' => $digitalAsset->published_at ? $digitalAsset->published_at->toISOString() : null,
+    ])->assertCount(1, App\Models\DigitalAsset::all());
+
+    $this->assertDatabaseHas('mediables', [
+        'mediable_type' => App\Models\DigitalAsset::class,
+        'mediable_id' => App\Models\DigitalAsset::latest()->first()->id,
+        'media_id' => $preview->id,
+    ]);
+
+});
+
+it('can update digital asset', function () {
+    $this->authorized_user([App\Enums\PermissionEnum::FILE_UPDATE->value]);
+    $digitalAsset = App\Models\DigitalAsset::factory()->create()->fresh();
+    $preview = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
+        ->toDisk('local')
+        ->upload();
+    $main = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('file.pdf'))
+        ->toDisk('local')
+        ->upload();
+    $digitalAsset->attachMedia($preview, 'preview');
+    $digitalAsset->attachMedia($main, 'main');
+
+    $updatedData = App\Models\DigitalAsset::factory()->make()->toArray();
+    Storage::fake('local');
+    $previewUpdate = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview_updated.pdf'))
+        ->toDisk('local')
+        ->upload();
+    $mainUpdate = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('file_updated.pdf'))
+        ->toDisk('local')
+        ->upload();
+    $updatedData['attachments'] = [
+        'preview' => $previewUpdate->id,
+        'main' => $mainUpdate->id,
+    ];
+    $response = $this->putJson(route('api.v1.admin.digital-asset.update', $digitalAsset), $updatedData);
+    $response->assertStatus(200)
+        ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($updatedData) {
+            $json->where('data.name', $updatedData['name'])
+                ->where('data.slug', $updatedData['slug'])
+                ->where('data.description', $updatedData['description'])
+                ->where('data.version', $updatedData['version'])
+                ->where('data.page_count', $updatedData['page_count'])
+                ->where('data.duration_seconds', $updatedData['duration_seconds'])
+                ->where('data.is_attachable_to_course', $updatedData['is_attachable_to_course'])
+                ->where('data.status', [
+                    'value' => $updatedData['status'],
+                    'label' => \App\Enums\PublicationStatusEnum::from($updatedData['status'])->translate(),
+                ])
+                ->where('data.keywords', $updatedData['keywords'])
+                ->where('data.meta_title', $updatedData['meta_title'])
+                ->where('data.meta_description', $updatedData['meta_description'])
+                ->where('data.meta_keywords', $updatedData['meta_keywords'])
+                ->where('data.published_at', $updatedData['published_at'] ?? null)
+                ->where('data.attachments.preview.0.id', $updatedData['attachments']['preview'])
+                ->where('data.attachments.main.0.id', $updatedData['attachments']['main'])
+                ->etc();
+        });
+
+    $this->assertDatabaseHas('digital_assets', [
+        'id' => $digitalAsset->id,
+        'name' => $updatedData['name'],
+        'slug' => $updatedData['slug'],
+        'description' => $updatedData['description'],
+        'version' => $updatedData['version'],
+        'page_count' => $updatedData['page_count'],
+        'duration_seconds' => $updatedData['duration_seconds'],
+        'is_attachable_to_course' => $updatedData['is_attachable_to_course'],
+        'status' => \App\Enums\PublicationStatusEnum::from($updatedData['status'])->value,
+        'keywords' => $updatedData['keywords'],
+        'meta_title' => $updatedData['meta_title'],
+        'meta_description' => $updatedData['meta_description'],
+        'meta_keywords' => $updatedData['meta_keywords'],
+        'published_at' => isset($updatedData['published_at']) ? \Carbon\Carbon::parse($updatedData['published_at'])->toISOString() : null,
+    ])->assertCount(1, App\Models\DigitalAsset::all());
+
+    $this->assertDatabaseHas('mediables', [
+        'mediable_type' => App\Models\DigitalAsset::class,
+        'mediable_id' => $digitalAsset->id,
+        'media_id' => $previewUpdate->id,
+    ]);
+    $this->assertDatabaseHas('mediables', [
+        'mediable_type' => App\Models\DigitalAsset::class,
+        'mediable_id' => $digitalAsset->id,
+        'media_id' => $mainUpdate->id,
+    ]);
+    $this->assertDatabaseMissing('mediables', [
+        'mediable_type' => App\Models\DigitalAsset::class,
+        'mediable_id' => $digitalAsset->id,
+        'media_id' => $preview->id,
+    ]);
+    $this->assertDatabaseMissing('mediables', [
+        'mediable_type' => App\Models\DigitalAsset::class,
+        'mediable_id' => $digitalAsset->id,
+        'media_id' => $main->id,
+    ]);
+});
+it('can not update a digital asset with duplicate slug', function () {
+    $this->authorized_user([App\Enums\PermissionEnum::FILE_UPDATE->value]);
+    $digitalAsset = App\Models\DigitalAsset::factory()->create()->fresh();
+    $digitalAssetExist = App\Models\DigitalAsset::factory()->create(
+        ['slug' => 'existing-slug']
+    )->fresh();
+    $main = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('file.pdf'))
+        ->toDisk('local')
+        ->upload();
+    $updatedData = App\Models\DigitalAsset::factory()->make()->toArray();
+    $updatedData['slug'] = 'existing-slug';
+    $updatedData['attachments'] = [
+        'main' => $main->id,
+    ];
+    $response = $this->putJson(route('api.v1.admin.digital-asset.update', $digitalAsset), $updatedData);
+    $response->assertInvalid(['slug'])
+        ->assertStatus(422);
+
+    $this->assertDatabaseMissing('digital_assets', [
+        'id' => $digitalAsset->id,
+        'name' => $updatedData['name'],
+        'slug' => "existing-slug",
+        'description' => $updatedData['description'],
+        'version' => $updatedData['version'],
+        'page_count' => $updatedData['page_count'],
+        'duration_seconds' => $updatedData['duration_seconds'],
+        'is_attachable_to_course' => $updatedData['is_attachable_to_course'],
+        'status' => \App\Enums\PublicationStatusEnum::from($updatedData['status'])->value,
+        'keywords' => $updatedData['keywords'],
+        'meta_title' => $updatedData['meta_title'],
+        'meta_description' => $updatedData['meta_description'],
+        'meta_keywords' => $updatedData['meta_keywords'],
+        'published_at' => isset($updatedData['published_at']) ? \Carbon\Carbon::parse($updatedData['published_at'])->toISOString() : null,
+    ]);
+});
+
+it('can delete digital asset', function () {
+    $this->authorized_user([App\Enums\PermissionEnum::FILE_DELETE->value]);
+
+    $digitalAsset = DigitalAsset::factory()->create()->fresh();
+    $preview = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
+        ->toDisk('local')
+        ->upload();
+    $main = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('file.pdf'))
+        ->toDisk('local')
+        ->upload();
+    $digitalAsset->attachMedia($preview, 'preview');
+    $digitalAsset->attachMedia($main, 'main');
+
+    $response = $this->deleteJson(route('api.v1.admin.digital-asset.destroy', $digitalAsset));
+    $response->assertStatus(204);
+
+    $this->assertDatabaseMissing('digital_assets', [
+        'id' => $digitalAsset->id,
+    ]);
+
+    $this->assertDatabaseMissing('mediables', [
+        'mediable_type' => DigitalAsset::class,
+        'mediable_id' => $digitalAsset->id,
+        'media_id' => $preview->id,
+    ]);
+    $this->assertDatabaseMissing('mediables', [
+        'mediable_type' => DigitalAsset::class,
+        'mediable_id' => $digitalAsset->id,
+        'media_id' => $main->id,
+    ]);
+});

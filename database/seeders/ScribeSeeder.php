@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Models\Admin;
 use App\Models\Category;
 use App\Models\Course;
+use App\Models\DigitalAsset;
 use Illuminate\Database\Seeder;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +34,7 @@ final class ScribeSeeder extends Seeder
             Media::query()->truncate();
             Course::query()->truncate();
             Category::query()->truncate();
+            DigitalAsset::query()->truncate();
             Media::query()->truncate();
             Admin::query()->truncate();
             $this->enableForeignKeyChecks();
@@ -51,6 +53,8 @@ final class ScribeSeeder extends Seeder
         Storage::disk('public')->putFileAs('fake-media', new File($galleryPath), 'fake-gallery.svg');
         Storage::disk('public')->putFileAs('fake-media', new File($palceHolderPath), 'placeholder.svg');
         Storage::disk('public')->putFileAs('fake-media', new File($iconPath), 'icon.svg');
+        Storage::disk('public')->putFileAs('fake-media', new File($palceHolderPath), 'main.svg');
+        Storage::disk('public')->putFileAs('fake-media', new File($palceHolderPath), 'preview.svg');
         MediaUploader::importPath('public', 'fake-media/placeholder1.mp4');
         MediaUploader::importPath('public', 'fake-media/placeholder2.mp4');
         MediaUploader::importPath('public', 'fake-media/placeholder3.mp4');
@@ -58,6 +62,8 @@ final class ScribeSeeder extends Seeder
         MediaUploader::importPath('public', 'fake-media/fake-gallery.svg');
         MediaUploader::importPath('public', 'fake-media/placeholder.svg');
         MediaUploader::importPath('public', 'fake-media/icon.svg');
+        MediaUploader::importPath('public', 'fake-media/main.svg');
+        MediaUploader::importPath('public', 'fake-media/preview.svg');
 
         $user = Admin::forceCreate([
             'name' => 'Admin',
@@ -86,6 +92,12 @@ final class ScribeSeeder extends Seeder
         Course::factory(100)
             ->withMedia(['gallery', 'cover', 'video'])
             ->withCategory(3)
+            ->create([
+                'created_by' => Admin::query()->first()->id,
+            ]);
+
+        DigitalAsset::factory(100)
+            ->withFile()
             ->create([
                 'created_by' => Admin::query()->first()->id,
             ]);

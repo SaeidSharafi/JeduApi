@@ -82,7 +82,11 @@ abstract class GetFromLaravelDataBase extends Strategy
         return null;
     }
 
-    protected function isLaravelDataMeantForThisStrategy(ReflectionClass $laravelDataReflectionClass): bool
+    protected function hasDocBlock(ReflectionClass $laravelDataReflectionClass): bool
+    {
+        return $laravelDataReflectionClass->hasMethod($this->customParameterDataMethodName);
+    }
+    protected function hasBodyParameter(ReflectionClass $laravelDataReflectionClass): bool
     {
         return $laravelDataReflectionClass->hasMethod($this->customParameterDataMethodName);
     }

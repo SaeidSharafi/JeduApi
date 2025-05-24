@@ -54,8 +54,6 @@ return [
      *      create the single permission `resource.approve_scoped`.
      */
     'resources' => [
-
-        /* --- Example Resource Definitions --- */
         'course' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
@@ -65,6 +63,14 @@ return [
             PermissionAction::DELETE_OWN,
         ],
         'category' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::UPDATE_OWN,
+            PermissionAction::DELETE,
+            PermissionAction::DELETE_OWN,
+        ],
+        'file' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,

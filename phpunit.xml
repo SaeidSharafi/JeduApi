@@ -22,6 +22,8 @@
             <file>app/Providers/ScribeServiceProvider.php</file>
             <file>app/Jobs/ProcessGitHubDeploymentJob.php</file>
             <file>app/Console/Commands/DeployApplicationCommand.php</file>
+            <file>app/Providers/TelescopeServiceProvider.php</file>
+            <file>app/Http/Middleware/TelescopeBasicAuth.php</file>
             <directory>app/Scribe</directory>
         </exclude>
     </source>

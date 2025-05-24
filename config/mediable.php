@@ -34,6 +34,7 @@ return [
      */
     'allowed_disks' => [
         'public',
+        'local',
     ],
 
     /*

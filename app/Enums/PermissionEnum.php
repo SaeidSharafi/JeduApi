@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Enums;
 
 /**
@@ -26,10 +24,16 @@ enum PermissionEnum: string
     case COURSE_UPDATE_OWN = 'courses.update_own';
     case COURSE_VIEW = 'courses.view';
     case COURSE_VIEW_ANY = 'courses.view_any';
+    case FILE_CREATE = 'files.create';
+    case FILE_DELETE = 'files.delete';
+    case FILE_DELETE_OWN = 'files.delete_own';
+    case FILE_UPDATE = 'files.update';
+    case FILE_UPDATE_OWN = 'files.update_own';
+    case FILE_VIEW = 'files.view';
+    case FILE_VIEW_ANY = 'files.view_any';
 
     /**
      * Get all permission values as an array.
-     *
      * @return array<string>
      */
     public static function getAllValues(): array
@@ -39,7 +43,6 @@ enum PermissionEnum: string
 
     /**
      * Get all permission names (enum case names) as an array.
-     *
      * @return array<string>
      */
     public static function getAllNames(): array

@@ -1,0 +1,291 @@
+{
+  "message": "Operation successful.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "id": "1",
+        "name": "الماس",
+        "slug": "quis-commodi-facilis-ea-et-sequi",
+        "is_attachable_to_course": true,
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "version": "veniam",
+        "published_at": null,
+        "created_by": 1,
+        "created_at": "2025-05-24 14:02:51",
+        "updated_at": "2025-05-24 14:02:51"
+      },
+      {
+        "id": "2",
+        "name": "کمک",
+        "slug": "omnis-iste-reiciendis-omnis-est",
+        "is_attachable_to_course": false,
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "version": "nesciunt",
+        "published_at": "2002-02-22 11:52:16",
+        "created_by": 1,
+        "created_at": "2025-05-24 14:02:51",
+        "updated_at": "2025-05-24 14:02:51"
+      },
+      {
+        "id": "3",
+        "name": "لباس",
+        "slug": "et-enim-quam-neque-sed",
+        "is_attachable_to_course": true,
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "version": "est",
+        "published_at": "2002-01-01 17:09:40",
+        "created_by": 1,
+        "created_at": "2025-05-24 14:02:51",
+        "updated_at": "2025-05-24 14:02:51"
+      },
+      {
+        "id": "4",
+        "name": "عدالت",
+        "slug": "qui-distinctio-commodi-incidunt-molestiae-commodi",
+        "is_attachable_to_course": true,
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "version": "aperiam",
+        "published_at": "1995-12-27 21:01:05",
+        "created_by": 1,
+        "created_at": "2025-05-24 14:02:51",
+        "updated_at": "2025-05-24 14:02:51"
+      },
+      {
+        "id": "5",
+        "name": "ساحل",
+        "slug": "beatae-ab-non-doloribus-est-et-voluptatum",
+        "is_attachable_to_course": false,
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "version": "quos",
+        "published_at": null,
+        "created_by": 1,
+        "created_at": "2025-05-24 14:02:51",
+        "updated_at": "2025-05-24 14:02:51"
+      },
+      {
+        "id": "6",
+        "name": "نقاشی",
+        "slug": "cum-eveniet-est-illo-commodi-laboriosam-qui-numquam",
+        "is_attachable_to_course": false,
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "version": "atque",
+        "published_at": "2016-04-21 04:05:17",
+        "created_by": 1,
+        "created_at": "2025-05-24 14:02:51",
+        "updated_at": "2025-05-24 14:02:51"
+      },
+      {
+        "id": "7",
+        "name": "بلیط",
+        "slug": "enim-sunt-omnis-quod-consequatur",
+        "is_attachable_to_course": false,
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "version": "voluptas",
+        "published_at": "2018-02-24 19:15:45",
+        "created_by": 1,
+        "created_at": "2025-05-24 14:02:52",
+        "updated_at": "2025-05-24 14:02:52"
+      },
+      {
+        "id": "8",
+        "name": "ماکت",
+        "slug": "nisi-perspiciatis-optio-dolorem-vel-et-aut-voluptate",
+        "is_attachable_to_course": false,
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "version": "aliquid",
+        "published_at": null,
+        "created_by": 1,
+        "created_at": "2025-05-24 14:02:52",
+        "updated_at": "2025-05-24 14:02:52"
+      },
+      {
+        "id": "9",
+        "name": "عطر",
+        "slug": "enim-quo-ratione-odit-culpa-mollitia-soluta",
+        "is_attachable_to_course": true,
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "version": "magni",
+        "published_at": null,
+        "created_by": 1,
+        "created_at": "2025-05-24 14:02:52",
+        "updated_at": "2025-05-24 14:02:52"
+      },
+      {
+        "id": "10",
+        "name": "مهد",
+        "slug": "quis-ratione-culpa-facilis-id-molestiae",
+        "is_attachable_to_course": false,
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "version": "est",
+        "published_at": null,
+        "created_by": 1,
+        "created_at": "2025-05-24 14:02:52",
+        "updated_at": "2025-05-24 14:02:52"
+      },
+      {
+        "id": "11",
+        "name": "درخت",
+        "slug": "nulla-placeat-consequatur-reiciendis-ullam",
+        "is_attachable_to_course": false,
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "version": "quia",
+        "published_at": null,
+        "created_by": 1,
+        "created_at": "2025-05-24 14:02:52",
+        "updated_at": "2025-05-24 14:02:52"
+      },
+      {
+        "id": "12",
+        "name": "صف",
+        "slug": "voluptas-quis-architecto-voluptatem-id-et-autem-non-aut",
+        "is_attachable_to_course": true,
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "version": "fuga",
+        "published_at": null,
+        "created_by": 1,
+        "created_at": "2025-05-24 14:02:52",
+        "updated_at": "2025-05-24 14:02:52"
+      },
+      {
+        "id": "13",
+        "name": "نوازش",
+        "slug": "dolores-dolorem-reiciendis-nisi-dolorem",
+        "is_attachable_to_course": true,
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "version": "vel",
+        "published_at": "1977-09-23 06:54:37",
+        "created_by": 1,
+        "created_at": "2025-05-24 14:02:52",
+        "updated_at": "2025-05-24 14:02:52"
+      },
+      {
+        "id": "14",
+        "name": "دریا",
+        "slug": "provident-aut-facere-id-consectetur",
+        "is_attachable_to_course": true,
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "version": "accusamus",
+        "published_at": "2018-03-20 18:37:09",
+        "created_by": 1,
+        "created_at": "2025-05-24 14:02:52",
+        "updated_at": "2025-05-24 14:02:52"
+      },
+      {
+        "id": "15",
+        "name": "ثروت",
+        "slug": "eius-vero-ipsum-beatae-nihil-maiores-cupiditate-neque",
+        "is_attachable_to_course": false,
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "version": "quis",
+        "published_at": null,
+        "created_by": 1,
+        "created_at": "2025-05-24 14:02:52",
+        "updated_at": "2025-05-24 14:02:52"
+      }
+    ],
+    "first_page_url": "http://jedu.test/api/v1/admin/digital-asset?page=1",
+    "from": 1,
+    "last_page": 7,
+    "last_page_url": "http://jedu.test/api/v1/admin/digital-asset?page=7",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; Previous",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/digital-asset?page=1",
+        "label": "1",
+        "active": true
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/digital-asset?page=2",
+        "label": "2",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/digital-asset?page=3",
+        "label": "3",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/digital-asset?page=4",
+        "label": "4",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/digital-asset?page=5",
+        "label": "5",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/digital-asset?page=6",
+        "label": "6",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/digital-asset?page=7",
+        "label": "7",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/digital-asset?page=2",
+        "label": "Next &raquo;",
+        "active": false
+      }
+    ],
+    "next_page_url": "http://jedu.test/api/v1/admin/digital-asset?page=2",
+    "path": "http://jedu.test/api/v1/admin/digital-asset",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 15,
+    "total": 100
+  },
+  "metadata": []
+}
