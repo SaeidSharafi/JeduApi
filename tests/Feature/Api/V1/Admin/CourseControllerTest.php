@@ -10,6 +10,7 @@ uses(Tests\AuthTestTrait::class);
 
 beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
+    Storage::fake('public');
 });
 it('can view list of courses', function (): void {
     $courses = App\Models\Course::factory(5)->create();
@@ -77,7 +78,6 @@ it('can create a new course with valid data', function (): void {
     $mediaId = $uploadResponse->json('data.id');
     expect($mediaId)->not()->toBeNull();
     $categories = App\Models\Category::factory(2)->create()->pluck('id')->toArray();
-    Storage::fake('public');
     $cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
         ->toDisk('public')
         ->upload();
@@ -185,9 +185,7 @@ it('can view a course', function (): void {
         ->withMedia(['cover'])
         ->create();
     $course->categories()->sync($categories);
-
-    Storage::fake('public');
-    $cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('course.jpg'))
+    $cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('gallery.jpg'))
         ->toDisk('public')
         ->upload();
     $course->attachMedia($cover, 'cover');
@@ -255,7 +253,7 @@ it('can edit a course', function (): void {
         App\Enums\PermissionEnum::COURSE_UPDATE->value,
     ]);
 
-    $file           = Illuminate\Http\UploadedFile::fake()->image('cover.jpg');
+    $file           = Illuminate\Http\UploadedFile::fake()->image('gallery.jpg');
     $uploadResponse = $this->postJson(route('api.v1.admin.media.upload'), [
         'file' => $file,
         'alt'  => 'Test Alt',
@@ -264,7 +262,7 @@ it('can edit a course', function (): void {
     $mediaId = $uploadResponse->json('data.id');
     expect($mediaId)->not()->toBeNull();
     $categories = App\Models\Category::factory(3)->create()->pluck('id')->toArray();
-    Storage::fake('public');
+
     $cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
         ->toDisk('public')
         ->upload();
@@ -313,7 +311,6 @@ it('can pass slug unique check', function (): void {
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_UPDATE->value,
     ]);
-    Storage::fake('public');
     $cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
         ->toDisk('public')
         ->upload();
@@ -408,8 +405,7 @@ it('can not edit a course with invalid slug', function (): void {
 });
 
 it('can delete a course', function (): void {
-    Storage::fake('public');
-    $this->media = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('course.jpg'))
+    $this->media = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('gallery.jpg'))
         ->toDisk('public')
         ->upload();
     $course = App\Models\Course::factory()

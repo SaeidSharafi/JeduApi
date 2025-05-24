@@ -27,7 +27,7 @@ final class CategoryFactory extends Factory
             'icon_url'         => $this->faker->imageUrl(),
             'color_scheme'     => $this->faker->hexColor,
             'meta_title'       => mb_trim(Str::take($this->faker->persianWords(4, true), 70)),
-            'meta_description' => mb_trim(Str::take($this->faker->persianParagraph(), 160)),
+            'meta_description'     => mb_trim(Str::take($this->faker->persianParagraph(20, false), 100)),
             'meta_keywords'    => mb_trim(Str::take(implode(',', $this->faker->persianWords(3)), 255)),
             'properties'       => [],
             'additional_info'  => [],

@@ -79,7 +79,7 @@ jobs:
           DB_DATABASE: testing
           DB_USERNAME: sail
           DB_PASSWORD: password
-        run: ./vendor/bin/pest --coverage --coverage-clover=coverage.xml --log-junit junit.xml
+        run: ./vendor/bin/pest --parallel --coverage --coverage-clover=coverage.xml --log-junit junit.xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
