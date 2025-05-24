@@ -69,7 +69,7 @@ it('can create a new course with valid data', function (): void {
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_CREATE->value,
     ]);
-    $file           = Illuminate\Http\UploadedFile::fake()->image('cover.jpg');
+    $file           = Illuminate\Http\UploadedFile::fake()->image('gallery.jpg');
     $uploadResponse = $this->postJson(route('api.v1.admin.media.upload'), [
         'file' => $file,
     ]);
