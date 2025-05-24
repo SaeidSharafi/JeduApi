@@ -64,8 +64,8 @@ it('can view list of courses', function (): void {
 });
 
 it('can create a new course with valid data', function (): void {
-    $courseData = App\Models\Course::factory()->make()->toArray();
-    $course = App\Data\Course\CreateCourseData::from($courseData);
+    $courseData = App\Models\Course::factory()->make();
+
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_CREATE->value,
     ]);
@@ -77,27 +77,31 @@ it('can create a new course with valid data', function (): void {
     $mediaId = $uploadResponse->json('data.id');
     expect($mediaId)->not()->toBeNull();
     $categories = App\Models\Category::factory(2)->create()->pluck('id')->toArray();
+    Storage::fake('public');
+    $cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
+        ->toDisk('public')
+        ->upload();
     $response = $this->postJson(route('api.v1.admin.course.store'), [
-        ...$courseData,
+        ...$courseData->toArray(),
         'categories' => $categories,
         'media' => [
             'gallery' => [$mediaId],
             'thumbnail' => [],
-            'cover' => [],
+            'cover' => [$cover->id],
             'certificate' => [],
         ],
     ]);
     $response->assertStatus(201);
 
     assertDatabaseHas('courses', [
-        'slug' => $course->slug,
-        'full_name' => $course->full_name,
-        'short_name' => $course->short_name,
-        'description' => $course->description,
-        'duration' => $course->duration,
+        'slug' => $courseData->slug,
+        'full_name' => $courseData->full_name,
+        'short_name' => $courseData->short_name,
+        'description' => $courseData->description,
+        'duration' => $courseData->duration,
     ]);
     $course = App\Models\Course::query()
-        ->where('slug', $course->slug)
+        ->where('slug', $courseData->slug)
         ->first();
     assertDatabaseHas('media', [
         'id' => $mediaId,
@@ -260,13 +264,17 @@ it('can edit a course', function (): void {
     $mediaId = $uploadResponse->json('data.id');
     expect($mediaId)->not()->toBeNull();
     $categories = App\Models\Category::factory(3)->create()->pluck('id')->toArray();
+    Storage::fake('public');
+    $cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
+        ->toDisk('public')
+        ->upload();
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
         ...$courseData,
         'categories' => $categories,
         'media' => [
             'gallery' => [$mediaId],
             'thumbnail' => [],
-            'cover' => null,
+            'cover' => [$cover->id],
             'certificate' => [],
         ],
     ]);
@@ -293,7 +301,10 @@ it('can edit a course', function (): void {
     ]);
 });
 it('can pass slug unique check', function (): void {
-    $course = App\Models\Course::factory()->create();
+    $course = App\Models\Course::factory()
+        ->withCategory()
+        ->create();
+    $category = App\Models\Category::factory()->create();
     $courseData = App\Models\Course::factory()->make(
         [
             'slug' => $course->slug,
@@ -302,13 +313,17 @@ it('can pass slug unique check', function (): void {
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_UPDATE->value,
     ]);
-
+    Storage::fake('public');
+    $cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
+        ->toDisk('public')
+        ->upload();
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
         ...$courseData,
+        'categories' => [$category->id],
         'media' => [
             'gallery' => [],
             'thumbnail' => [],
-            'cover' => null,
+            'cover' => [$cover->id],
             'certificate' => [],
         ],
     ]);

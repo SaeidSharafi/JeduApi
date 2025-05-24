@@ -31,8 +31,13 @@ describe('CourseActionTest', function (): void {
                 'status' => App\Enums\PublicationStatusEnum::DRAFT->value,
             ]
         )->toArray();
+        $category = \App\Models\Category::factory()->create([
+            'name' => 'Test Category',
+            'slug' => 'test-category',
+        ]);
         $data = CreateCourseData::from([
             ...$courseData,
+            'categories' => [$category->id],
             'media' => [
                 'gallery' => [$this->media->id],
                 'video' => [$this->media->id],
@@ -56,7 +61,9 @@ describe('CourseActionTest', function (): void {
     });
 
     test('UpdateCourseAction successfully update course', function (): void {
-        $course = Course::factory()->create();
+        $course = Course::factory()
+            ->withCategory()
+            ->create()->fresh();
         $courseData = Course::factory()->make(
             [
                 'slug' => 'test-course',
@@ -70,6 +77,7 @@ describe('CourseActionTest', function (): void {
             'full_name' => 'Updated Course Name',
             'short_name' => 'UC',
             'status' => App\Enums\PublicationStatusEnum::PUBLISHED->value,
+            'categories' => $course->categories->pluck('id')->toArray(),
             'media' => [
                 'gallery' => [$this->media2->id],
                 'video' => [$this->media2->id],
