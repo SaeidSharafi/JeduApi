@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\File;
+namespace App\Actions\DigitalAsset;
 
 use App\Data\File\CreateDigitalAssetData;
 use App\Models\DigitalAsset;

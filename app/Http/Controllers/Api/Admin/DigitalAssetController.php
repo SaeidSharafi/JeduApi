@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\File\CreateDigitalAssetAction;
-use App\Actions\File\DeleteDigitalAssetAction;
-use App\Actions\File\UpdateDigitalAssetAction;
+use App\Actions\DigitalAsset\CreateDigitalAssetAction;
+use App\Actions\DigitalAsset\DeleteDigitalAssetAction;
+use App\Actions\DigitalAsset\UpdateDigitalAssetAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\File\CreateDigitalAssetData;
 use App\Data\File\DigitalAssetListItemData;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\File;
+namespace App\Actions\DigitalAsset;
 
 use App\Models\DigitalAsset;
 use Illuminate\Support\Facades\DB;
