@@ -98,6 +98,7 @@ final class ScribeSeeder extends Seeder
 
         DigitalAsset::factory(100)
             ->withFile()
+            ->withCategory()
             ->create([
                 'created_by' => Admin::query()->first()->id,
             ]);

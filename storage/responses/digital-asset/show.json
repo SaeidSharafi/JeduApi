@@ -2,25 +2,41 @@
   "message": "Operation successful.",
   "data": {
     "id": 1,
-    "name": "الماس",
-    "slug": "quis-commodi-facilis-ea-et-sequi",
-    "description": "دفترچه ماکت اپلیکیشن تیم ملت.",
-    "version": "veniam",
+    "name": "پول",
+    "slug": "veritatis-enim-iusto-quo-vel-quia-deserunt-odio",
+    "description": "اسکله الماس تصویر آخر کلمه محل کلمه ساحل.",
+    "version": "sit",
     "is_attachable_to_course": true,
     "status": {
       "value": "draft",
       "label": "پیش‌نویس"
     },
     "created_by": 1,
-    "keywords": "dolorem,voluptatem,eos",
-    "meta_title": "maxime aut explicabo velit",
-    "meta_description": "Eius delectus eos aut. Omnis iure ut magni consectetur accusantium.",
-    "meta_keywords": "tempora,nihil,enim",
+    "keywords": "آسمان,ثروت,هتل",
+    "meta_title": "آشیانه پل روزنامه فرش",
+    "meta_description": "دریاچه میز کلید پول ملک. دانه آسمان صندلی قهوه دارو عطر مدرسه ساختار. آرایش دفترچه ساز ساحل سریال عد",
+    "meta_keywords": "روزنامه,برنامه,باغ",
     "published_at": null,
-    "page_count": 75,
-    "duration_seconds": 393,
-    "created_at": "2025-05-24 14:02:51",
-    "updated_at": "2025-05-24 14:02:51",
+    "page_count": 5,
+    "duration_seconds": 98,
+    "created_at": "2025-05-25 11:02:17",
+    "updated_at": "2025-05-25 11:02:17",
+    "categories": [
+      {
+        "id": 53,
+        "name": "مجله",
+        "slug": "quia-reprehenderit-non-quia",
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "created_by": 1,
+        "created_at": "2025-05-25 11:02:13",
+        "updated_at": "2025-05-25 11:02:14"
+      }
+    ],
     "attachments": {
       "main": [
         {
