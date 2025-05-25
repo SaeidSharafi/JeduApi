@@ -7,7 +7,7 @@ namespace App\Models;
 use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Plank\Mediable\Mediable;
 
 final class Category extends Model
@@ -34,11 +34,19 @@ final class Category extends Model
     ];
 
     /**
-     * @return BelongsToMany<Course,$this>
+     * @return MorphToMany<Course,$this>
      */
-    public function courses(): BelongsToMany
+    public function courses(): MorphToMany
     {
-        return $this->belongsToMany(Course::class, 'category_course');
+        return $this->morphedByMany(Course::class, 'categorizable');
+    }
+
+    /**
+     * @return MorphToMany<DigitalAsset,$this>
+     */
+    public function digitalAssets(): MorphToMany
+    {
+        return $this->morphedByMany(DigitalAsset::class, 'categorizable');
     }
 
     protected function casts(): array

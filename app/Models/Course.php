@@ -8,7 +8,7 @@ use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Plank\Mediable\Mediable;
 
 final class Course extends Model
@@ -40,11 +40,11 @@ final class Course extends Model
         ];
 
     /**
-     * @return BelongsToMany<Category,$this>
+     * @return MorphToMany<Category,$this>
      */
-    public function categories(): BelongsToMany
+    public function categories(): MorphToMany
     {
-        return $this->belongsToMany(Category::class);
+        return $this->morphToMany(Category::class, 'categorizable', 'categorizables', null, 'category_id');
     }
 
     protected function casts(): array

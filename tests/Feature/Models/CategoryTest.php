@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Category;
-
+use App\Models\Course;
 test('to Array', function (): void {
     $category = Category::factory()->create();
 
@@ -29,15 +29,15 @@ test('to Array', function (): void {
         ]);
 });
 
-test('relation courses', function (): void {
+test('relation categorizable for Courses', function (): void {
     $category = Category::factory()->create();
-    $course   = App\Models\Course::factory()->create();
-    $category->courses()->attach($course->id);
+    $course   = Course::factory()->create();
+    $category->courses()->attach($course);
 
     expect($category->courses)
         ->toHaveCount(1)
         ->and($category->courses->first())
-        ->toBeInstanceOf(App\Models\Course::class)
+        ->toBeInstanceOf(Course::class)
         ->and($category->courses->first()->id)
         ->toEqual($course->id);
 });

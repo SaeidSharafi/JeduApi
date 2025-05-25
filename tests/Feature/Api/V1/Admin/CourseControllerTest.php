@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\MorphTypeEnum;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 use function Pest\Laravel\assertDatabaseHas;
@@ -78,7 +79,7 @@ it('can create a new course with valid data', function (): void {
     $mediaId = $uploadResponse->json('data.id');
     expect($mediaId)->not()->toBeNull();
     $categories = App\Models\Category::factory(2)->create()->pluck('id')->toArray();
-    $cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
+    $cover      = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
         ->toDisk('public')
         ->upload();
     $response = $this->postJson(route('api.v1.admin.course.store'), [
@@ -110,16 +111,18 @@ it('can create a new course with valid data', function (): void {
     assertDatabaseHas('mediables', [
         'media_id'      => $mediaId,
         'mediable_id'   => $course->id,
-        'mediable_type' => App\Models\Course::class,
+        'mediable_type' => MorphTypeEnum::COURSE->value,
         'tag'           => 'gallery',
     ]);
-    assertDatabaseHas('category_course', [
-        'course_id'   => $course->id,
-        'category_id' => $categories[0],
+    assertDatabaseHas('categorizables', [
+        'categorizable_id'   => $course->id,
+        'categorizable_type' => MorphTypeEnum::COURSE->value,
+        'category_id'        => $categories[0],
     ]);
-    assertDatabaseHas('category_course', [
-        'course_id'   => $course->id,
-        'category_id' => $categories[1],
+    assertDatabaseHas('categorizables', [
+        'categorizable_id'   => $course->id,
+        'categorizable_type' => MorphTypeEnum::COURSE->value,
+        'category_id'        => $categories[1],
     ]);
 });
 
@@ -294,7 +297,7 @@ it('can edit a course', function (): void {
     assertDatabaseHas('mediables', [
         'media_id'      => $mediaId,
         'mediable_id'   => $course->id,
-        'mediable_type' => App\Models\Course::class,
+        'mediable_type' => MorphTypeEnum::COURSE->value,
         'tag'           => 'gallery',
     ]);
 });
@@ -421,7 +424,7 @@ it('can delete a course', function (): void {
     ]);
     $this->assertDatabaseMissing('mediables', [
         'mediable_id'   => $course->id,
-        'mediable_type' => App\Models\Course::class,
+        'mediable_type' => MorphTypeEnum::COURSE->value,
     ]);
     $this->assertDatabaseMissing('media', [
         'id' => $this->media->id,
