@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\MorphTypeEnum;
 use App\Models\DigitalAsset;
 
 uses(Tests\AuthTestTrait::class);
@@ -82,7 +83,9 @@ it('can create digital asset', function () {
     $main = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('file.pdf'))
         ->toDisk('local')
         ->upload();
-    $response = $this->postJson(route('api.v1.admin.digital-asset.store'), [
+
+    $categories = App\Models\Category::factory()->count(2)->create();
+    $response   = $this->postJson(route('api.v1.admin.digital-asset.store'), [
         'name'                    => $digitalAsset->name,
         'slug'                    => $digitalAsset->slug,
         'description'             => $digitalAsset->description,
@@ -96,6 +99,7 @@ it('can create digital asset', function () {
         'meta_description'        => $digitalAsset->meta_description,
         'meta_keywords'           => $digitalAsset->meta_keywords,
         'published_at'            => $digitalAsset->published_at ? $digitalAsset->published_at->format('Y-m-d H:i:s') : null,
+        'categories'              => $categories->pluck('id')->toArray(),
         'attachments'             => [
             'preview' => $preview->id,
             'main'    => $main->id,
@@ -120,9 +124,21 @@ it('can create digital asset', function () {
     ])->assertCount(1, DigitalAsset::all());
 
     $this->assertDatabaseHas('mediables', [
-        'mediable_type' => DigitalAsset::class,
+        'mediable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
         'mediable_id'   => DigitalAsset::latest()->first()->id,
         'media_id'      => $preview->id,
+    ]);
+    $categories = $categories->all();
+    $this->assertDatabaseHas('mediables', [
+        'mediable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
+        'mediable_id'   => DigitalAsset::latest()->first()->id,
+        'media_id'      => $main->id,
+    ]);
+
+    $this->assertDatabaseHas('categorizables', [
+        'categorizable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
+        'categorizable_id'   => DigitalAsset::latest()->first()->id,
+        'category_id'        => $categories[0]->id,
     ]);
 
 });
@@ -151,7 +167,9 @@ it('can update digital asset', function () {
         'preview' => $previewUpdate->id,
         'main'    => $mainUpdate->id,
     ];
-    $response = $this->putJson(route('api.v1.admin.digital-asset.update', $digitalAsset), $updatedData);
+    $categories                = App\Models\Category::factory()->count(2)->create();
+    $updatedData['categories'] = $categories->pluck('id')->toArray();
+    $response                  = $this->putJson(route('api.v1.admin.digital-asset.update', $digitalAsset), $updatedData);
     $response->assertStatus(200)
         ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($updatedData) {
             $json->where('data.name', $updatedData['name'])
@@ -170,6 +188,7 @@ it('can update digital asset', function () {
                 ->where('data.meta_description', $updatedData['meta_description'])
                 ->where('data.meta_keywords', $updatedData['meta_keywords'])
                 ->where('data.published_at', $updatedData['published_at'] ?? null)
+                ->has('data.categories', 2)
                 ->where('data.attachments.preview.0.id', $updatedData['attachments']['preview'])
                 ->where('data.attachments.main.0.id', $updatedData['attachments']['main'])
                 ->etc();
@@ -193,25 +212,37 @@ it('can update digital asset', function () {
     ])->assertCount(1, DigitalAsset::all());
 
     $this->assertDatabaseHas('mediables', [
-        'mediable_type' => DigitalAsset::class,
+        'mediable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
         'mediable_id'   => $digitalAsset->id,
         'media_id'      => $previewUpdate->id,
     ]);
     $this->assertDatabaseHas('mediables', [
-        'mediable_type' => DigitalAsset::class,
+        'mediable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
         'mediable_id'   => $digitalAsset->id,
         'media_id'      => $mainUpdate->id,
     ]);
+
+    $this->assertDatabaseHas('categorizables', [
+        'categorizable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
+        'categorizable_id'   => $digitalAsset->id,
+        'category_id'        => $categories[0]->id,
+    ]);
+    $this->assertDatabaseHas('categorizables', [
+        'categorizable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
+        'categorizable_id'   => $digitalAsset->id,
+        'category_id'        => $categories[1]->id,
+    ]);
     $this->assertDatabaseMissing('mediables', [
-        'mediable_type' => DigitalAsset::class,
+        'mediable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
         'mediable_id'   => $digitalAsset->id,
         'media_id'      => $preview->id,
     ]);
     $this->assertDatabaseMissing('mediables', [
-        'mediable_type' => DigitalAsset::class,
+        'mediable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
         'mediable_id'   => $digitalAsset->id,
         'media_id'      => $main->id,
     ]);
+
 });
 it('can not update a digital asset with duplicate slug', function () {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_UPDATE->value]);
@@ -223,7 +254,9 @@ it('can not update a digital asset with duplicate slug', function () {
         ->toDisk('local')
         ->upload();
     $updatedData                = DigitalAsset::factory()->make()->toArray();
+    $categories                 = App\Models\Category::factory()->count(2)->create();
     $updatedData['slug']        = 'existing-slug';
+    $updatedData['categories']  = $categories->pluck('id')->toArray();
     $updatedData['attachments'] = [
         'main' => $main->id,
     ];
@@ -270,12 +303,12 @@ it('can delete digital asset', function () {
     ]);
 
     $this->assertDatabaseMissing('mediables', [
-        'mediable_type' => DigitalAsset::class,
+        'mediable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
         'mediable_id'   => $digitalAsset->id,
         'media_id'      => $preview->id,
     ]);
     $this->assertDatabaseMissing('mediables', [
-        'mediable_type' => DigitalAsset::class,
+        'mediable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
         'mediable_id'   => $digitalAsset->id,
         'media_id'      => $main->id,
     ]);

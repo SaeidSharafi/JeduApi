@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace App\Data\File;
 
+use App\Data\Category\CategoryListItemData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\PublicationStatusEnum;
 use App\Traits\ValidatesMetaTags;
 use Carbon\Carbon;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\DataCollection;
 
 final class ShowDigitalAssetData extends Data
 {
@@ -40,6 +43,8 @@ final class ShowDigitalAssetData extends Data
         public ?Carbon $created_at,
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Carbon $updated_at,
+        #[DataCollectionOf(CategoryListItemData::class)]
+        public ?DataCollection $categories,
         public array $attachments = []
     ) {}
 }

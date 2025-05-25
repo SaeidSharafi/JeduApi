@@ -35,6 +35,7 @@ final class CreateDigitalAssetData extends Data
         public ?Carbon $published_at,
         public ?int $page_count,
         public ?int $duration_seconds,
+        public array $categories = [],
         public array $attachments = []
     ) {}
 
@@ -67,6 +68,8 @@ final class CreateDigitalAssetData extends Data
                 'published_at'            => ['nullable', 'date:Y-m-d H:i:s'],
                 'page_count'              => ['nullable', 'integer', 'min:0'],
                 'duration_seconds'        => ['nullable', 'integer', 'min:0'],
+                'categories'              => ['required', 'array'],
+                'categories.*'            => ['required', 'integer', 'exists:categories,id'],
                 'attachments'             => ['array'],
                 'attachments.main'        => ['required', 'integer', 'exists:media,id'],
                 'attachments.preview'     => ['nullable', 'integer', 'exists:media,id'],
@@ -140,6 +143,14 @@ final class CreateDigitalAssetData extends Data
             'meta_keywords' => [
                 'description' => 'Meta keywords for the digital asset, used for SEO.',
                 'example'     => 'meta keyword1, meta keyword2',
+            ],
+            'categories' => [
+                'description' => 'An array of category IDs to which the digital asset belongs.',
+                'example'     => [1, 2, 3],
+            ],
+            'categories.*' => [
+                'description' => 'An array of category IDs to which the digital asset belongs.',
+                'example'     => 1,
             ],
             'attachments.main' => [
                 'description' => 'The main attachment for the digital asset, typically a file ID.',

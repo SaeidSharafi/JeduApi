@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Models\Category;
 use App\Models\Course;
+use App\Models\DigitalAsset;
+
 test('to Array', function (): void {
     $category = Category::factory()->create();
 
@@ -40,4 +42,17 @@ test('relation categorizable for Courses', function (): void {
         ->toBeInstanceOf(Course::class)
         ->and($category->courses->first()->id)
         ->toEqual($course->id);
+});
+
+test('relation categorizable for Digital Assets', function (): void {
+    $category = Category::factory()->create();
+    $asset    = DigitalAsset::factory()->create();
+    $category->digitalAssets()->attach($asset);
+
+    expect($category->digitalAssets)
+        ->toHaveCount(1)
+        ->and($category->digitalAssets->first())
+        ->toBeInstanceOf(DigitalAsset::class)
+        ->and($category->digitalAssets->first()->id)
+        ->toEqual($asset->id);
 });

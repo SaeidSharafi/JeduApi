@@ -7,6 +7,7 @@ namespace App\Models;
 use Database\Factories\DigitalAssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Plank\Mediable\Mediable;
 
 final class DigitalAsset extends Model
@@ -39,4 +40,12 @@ final class DigitalAsset extends Model
         'created_at'   => 'datetime:Y-m-d H:i:s',
         'updated_at'   => 'datetime:Y-m-d H:i:s',
     ];
+
+    /**
+     * @return MorphToMany<Category,$this>
+     */
+    public function categories(): MorphToMany
+    {
+        return $this->morphToMany(Category::class, 'categorizable', 'categorizables', null, 'category_id');
+    }
 }

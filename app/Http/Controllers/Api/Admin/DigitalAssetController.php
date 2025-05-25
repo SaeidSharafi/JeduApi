@@ -78,7 +78,7 @@ final class DigitalAssetController extends Controller
 
         return response()->success(ShowDigitalAssetData::from([
             ...$digitalAsset->toArray(),
-            // 'categories' => $digitalAsset->categories,
+            'categories'  => $digitalAsset->categories,
             'attachments' => $media,
         ]));
     }
@@ -105,7 +105,7 @@ final class DigitalAssetController extends Controller
         return response()->success(
             ShowDigitalAssetData::from([
                 ...$digitalAsset->toArray(),
-                // 'categories' => $file->categories,
+                'categories'  => $digitalAsset->categories,
                 'attachments' => $media,
             ])
         );
