@@ -260,8 +260,8 @@ it('can view list of courses', function (): void {
                     'image_url'  => $category->image_url,
                     'icon_url'   => $category->icon_url,
                     'created_by' => $category->created_by,
-                    'created_at' => $category->created_at->format('Y-m-d H:i:s'),
-                    'updated_at' => $category->updated_at?->format('Y-m-d H:i:s'),
+                    'created_at' => $this->toJalalitString($category->created_at),
+                    'updated_at' => $this->toJalalitString($category->updated_at),
                 ]))
                 ->where('digital_assets', $expectedCourse->digitalAssets?->map(fn (App\Models\DigitalAsset $asset): array => [
                     'id'                      => $asset->id,
@@ -273,10 +273,10 @@ it('can view list of courses', function (): void {
                         'label' => $asset->status->translate(),
                     ],
                     'version'      => $asset->version,
-                    'published_at' => $asset->published_at?->format('Y-m-d H:i:s'),
+                    'published_at' => $this->toJalalitString($asset->published_at),
                     'created_by'   => $asset->created_by,
-                    'created_at'   => $asset->created_at->format('Y-m-d H:i:s'),
-                    'updated_at'   => $asset->updated_at?->format('Y-m-d H:i:s'),
+                    'created_at'   => $this->toJalalitString($asset->created_at),
+                    'updated_at'   => $this->toJalalitString($asset->updated_at),
                 ]))
                 ->etc();
         }
@@ -472,8 +472,8 @@ it('can view a course', function (): void {
                     'image_url'  => $category->image_url,
                     'icon_url'   => $category->icon_url,
                     'created_by' => $category->created_by,
-                    'created_at' => $category->created_at->format('Y-m-d H:i:s'),
-                    'updated_at' => $category->updated_at?->format('Y-m-d H:i:s'),
+                    'created_at' => $this->toJalalitString($category->created_at),
+                    'updated_at' => $this->toJalalitString($category->updated_at),
                 ]))
                 ->where('data.digital_assets', $digitalAssets->map(fn (App\Models\DigitalAsset $asset): array => [
                     'id'                      => $asset->id,
@@ -485,10 +485,10 @@ it('can view a course', function (): void {
                         'label' => $asset->status->translate(),
                     ],
                     'version'      => $asset->version,
-                    'published_at' => $asset->published_at?->format('Y-m-d H:i:s'),
+                    'published_at' => $this->toJalalitString($asset->published_at),
                     'created_by'   => $asset->created_by,
-                    'created_at'   => $asset->created_at->format('Y-m-d H:i:s'),
-                    'updated_at'   => $asset->updated_at?->format('Y-m-d H:i:s'),
+                    'created_at'   => $this->toJalalitString($asset->created_at),
+                    'updated_at'   => $this->toJalalitString($asset->updated_at),
                 ]))
                 ->has('data.media.gallery', 0)
                 ->has('data.media.video', 0)

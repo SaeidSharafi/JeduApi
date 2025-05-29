@@ -10,7 +10,7 @@ abstract class TestCase extends BaseTestCase
 {
     //use CreatesApplication;
     use RefreshDatabase;
-
+    use DateUtilTestTrait;
 
     protected function setUp(): void
     {

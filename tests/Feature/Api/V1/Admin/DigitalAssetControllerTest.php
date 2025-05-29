@@ -147,10 +147,10 @@ it('can get single digital asset', function () {
                 ->where('data.meta_title', $digitalAsset->meta_title)
                 ->where('data.meta_description', $digitalAsset->meta_description)
                 ->where('data.meta_keywords', $digitalAsset->meta_keywords)
-                ->where('data.published_at', $digitalAsset->published_at?->format('Y-m-d H:i:s'))
+                ->where('data.published_at', $this->toJalalitString($digitalAsset->published_at))
                 ->where('data.created_by', $digitalAsset->created_by)
-                ->where('data.created_at', $digitalAsset->created_at->format('Y-m-d H:i:s'))
-                ->where('data.updated_at', $digitalAsset->updated_at?->format('Y-m-d H:i:s'))
+                ->where('data.created_at', $this->toJalalitString($digitalAsset->created_at))
+                ->where('data.updated_at', $this->toJalalitString($digitalAsset->updated_at))
                 ->where('data.attachments.preview.0.id', $preview->id)
                 ->where('data.attachments.main.0.id', $main->id)
                 ->etc();
@@ -159,7 +159,8 @@ it('can get single digital asset', function () {
 
 it('can create digital asset', function () {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_CREATE->value]);
-    $digitalAsset = DigitalAsset::factory()->make();
+    $digitalAsset = DigitalAsset::factory()
+        ->make();
     Storage::fake('local');
     $preview = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
         ->toDisk('local')
@@ -182,7 +183,7 @@ it('can create digital asset', function () {
         'meta_title'              => $digitalAsset->meta_title,
         'meta_description'        => $digitalAsset->meta_description,
         'meta_keywords'           => $digitalAsset->meta_keywords,
-        'published_at'            => $digitalAsset->published_at ? $digitalAsset->published_at->format('Y-m-d H:i:s') : null,
+        'published_at'            => $this->toJalalitString($digitalAsset->published_at),
         'categories'              => $categories->pluck('id')->toArray(),
         'attachments'             => [
             'preview' => $preview->id,
@@ -204,7 +205,8 @@ it('can create digital asset', function () {
         'meta_title'              => $digitalAsset->meta_title,
         'meta_description'        => $digitalAsset->meta_description,
         'meta_keywords'           => $digitalAsset->meta_keywords,
-        'published_at'            => $digitalAsset->published_at ? $digitalAsset->published_at->toISOString() : null,
+        'published_at'            => $this->formatDate($digitalAsset->published_at),
+
     ])->assertCount(1, DigitalAsset::all());
 
     $this->assertDatabaseHas('mediables', [
@@ -238,8 +240,9 @@ it('can update digital asset', function () {
         ->upload();
     $digitalAsset->attachMedia($preview, 'preview');
     $digitalAsset->attachMedia($main, 'main');
-
-    $updatedData = DigitalAsset::factory()->make()->toArray();
+    $digitalAssetUpdate = DigitalAsset::factory()
+        ->make();
+    $updatedData = $digitalAssetUpdate->toArray();
     Storage::fake('local');
     $previewUpdate = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview_updated.pdf'))
         ->toDisk('local')
@@ -251,9 +254,10 @@ it('can update digital asset', function () {
         'preview' => $previewUpdate->id,
         'main'    => $mainUpdate->id,
     ];
-    $categories                = App\Models\Category::factory()->count(2)->create();
-    $updatedData['categories'] = $categories->pluck('id')->toArray();
-    $response                  = $this->putJson(route('api.v1.admin.digital-asset.update', $digitalAsset), $updatedData);
+    $categories                  = App\Models\Category::factory()->count(2)->create();
+    $updatedData['categories']   = $categories->pluck('id')->toArray();
+    $updatedData['published_at'] = $this->toJalalitString($updatedData['published_at']);
+    $response                    = $this->putJson(route('api.v1.admin.digital-asset.update', $digitalAsset), $updatedData);
     $response->assertStatus(200)
         ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($updatedData) {
             $json->where('data.name', $updatedData['name'])
@@ -292,7 +296,7 @@ it('can update digital asset', function () {
         'meta_title'              => $updatedData['meta_title'],
         'meta_description'        => $updatedData['meta_description'],
         'meta_keywords'           => $updatedData['meta_keywords'],
-        'published_at'            => isset($updatedData['published_at']) ? Carbon\Carbon::parse($updatedData['published_at'])->toISOString() : null,
+        'published_at'            => $this->formatDate($digitalAssetUpdate->published_at),
     ])->assertCount(1, DigitalAsset::all());
 
     $this->assertDatabaseHas('mediables', [
@@ -362,7 +366,9 @@ it('can not update a digital asset with duplicate slug', function () {
         'meta_title'              => $updatedData['meta_title'],
         'meta_description'        => $updatedData['meta_description'],
         'meta_keywords'           => $updatedData['meta_keywords'],
-        'published_at'            => isset($updatedData['published_at']) ? Carbon\Carbon::parse($updatedData['published_at'])->toISOString() : null,
+        'published_at'            => isset($updatedData['published_at'])
+            ? $this->parseGregorianDate($updatedData['published_at'])
+            : null,
     ]);
 });
 
