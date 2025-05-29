@@ -19,6 +19,186 @@ beforeEach(function (): void {
         ->toDisk('public')
         ->upload();
 });
+
+describe('list filters',function (): void {
+    it('can filter courses by status', function (): void {
+        $courses = App\Models\Course::factory(5)
+            ->withCategory()
+            ->withDigitalAssets()
+            ->create([
+                'status' => \App\Enums\PublicationStatusEnum::PUBLISHED->value
+            ])
+            ->fresh();
+        $draftCourse = App\Models\Course::factory()
+            ->withCategory()
+            ->withDigitalAssets()
+            ->create([
+                'status' => \App\Enums\PublicationStatusEnum::DRAFT->value
+            ])
+            ->fresh();
+        $this->authorized_user([
+            App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
+        ]);
+        $response = $this->getJson(route('api.v1.admin.course.index', [
+            'filter' => [
+                'status' => \App\Enums\PublicationStatusEnum::DRAFT->value,
+            ],
+        ]));
+        $response
+            ->assertStatus(200)
+            ->assertJsonCount(1, 'data.data');
+    });
+
+    it('can filter courses by slug', function (): void {
+        $courses = App\Models\Course::factory(5)
+            ->withCategory()
+            ->withDigitalAssets()
+            ->create()
+            ->fresh();
+
+        $this->authorized_user([
+            App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
+        ]);
+        $response = $this->getJson(route('api.v1.admin.course.index', [
+            'filter' => [
+                'slug' => $courses[0]->slug,
+            ],
+        ]));
+        $response
+            ->assertStatus(200)
+            ->assertJsonCount(1, 'data.data');
+    });
+
+    it('can filter courses by full name', function (): void {
+        $courses = App\Models\Course::factory(5)
+            ->withCategory()
+            ->withDigitalAssets()
+            ->create()
+            ->fresh();
+
+        $customNameCourse = App\Models\Course::factory()->create([
+            'full_name' => 'Custom Course Name',
+        ]);
+        $courses->load('categories', 'digitalAssets');
+        $this->authorized_user([
+            App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
+        ]);
+        $response = $this->getJson(route('api.v1.admin.course.index', [
+            'filter' => [
+                'full_name' => $customNameCourse->full_name,
+            ],
+        ]));
+        $response
+            ->assertStatus(200)
+            ->assertJsonCount(1, 'data.data');
+    });
+
+    it('can filter courses by short name', function (): void {
+        $courses = App\Models\Course::factory(5)
+            ->withCategory()
+            ->withDigitalAssets()
+            ->create()
+            ->fresh();
+
+        $customNameCourse = App\Models\Course::factory()->create([
+            'short_name' => 'Custom Course Short Name',
+        ]);
+        $courses->load('categories', 'digitalAssets');
+        $this->authorized_user([
+            App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
+        ]);
+        $response = $this->getJson(route('api.v1.admin.course.index', [
+            'filter' => [
+                'short_name' => $customNameCourse->short_name,
+            ],
+        ]));
+        $response
+            ->assertStatus(200)
+            ->assertJsonCount(1, 'data.data');
+    });
+
+    it('can sort courses by slug', function (): void {
+        App\Models\Course::factory(5)
+            ->withCategory()
+            ->withDigitalAssets()
+            ->create();
+
+        $this->authorized_user([
+            App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
+        ]);
+        $response = $this->getJson(route('api.v1.admin.course.index', [
+            'sort' => 'slug',
+        ]));
+       $courses =  \App\Models\Course::query()->orderBy('slug')->get();
+        // Assert that the response has same order as the database
+        $response
+            ->assertStatus(200)
+            ->assertJson(function (AssertableJson $json) use ($courses): void {
+                $json->has('data.data', 5)
+                    ->where('data.data.0.slug', $courses[0]->slug)
+                    ->where('data.data.1.slug', $courses[1]->slug)
+                    ->where('data.data.2.slug', $courses[2]->slug)
+                    ->where('data.data.3.slug', $courses[3]->slug)
+                    ->where('data.data.4.slug', $courses[4]->slug)
+                    ->etc();
+            });
+
+
+    });
+
+    it('can sort courses by name', function (): void {
+         App\Models\Course::factory(5)
+            ->withCategory()
+            ->withDigitalAssets()
+            ->create();
+
+        $this->authorized_user([
+            App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
+        ]);
+        $response = $this->getJson(route('api.v1.admin.course.index', [
+            'sort' => 'full_name',
+        ]));
+        $courses =  \App\Models\Course::query()->orderBy('full_name')->get();
+        $response
+            ->assertStatus(200)
+            ->assertJson(function (AssertableJson $json) use ($courses): void {
+                $json->has('data.data', 5)
+                    ->where('data.data.0.slug', $courses[0]->slug)
+                    ->where('data.data.1.slug', $courses[1]->slug)
+                    ->where('data.data.2.slug', $courses[2]->slug)
+                    ->where('data.data.3.slug', $courses[3]->slug)
+                    ->where('data.data.4.slug', $courses[4]->slug)
+                    ->etc();
+            });
+    });
+
+    it('can sort courses by short name', function (): void {
+        App\Models\Course::factory(5)
+            ->withCategory()
+            ->withDigitalAssets()
+            ->create();
+        $this->authorized_user([
+            App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
+        ]);
+        $response = $this->getJson(route('api.v1.admin.course.index', [
+            'sort' => 'short_name',
+        ]));
+        $courses =  \App\Models\Course::query()->orderBy('short_name')->get();
+        $response
+            ->assertStatus(200)
+            ->assertJson(function (AssertableJson $json) use ($courses): void {
+                $json->has('data.data', 5)
+                    ->where('data.data.0.slug', $courses[0]->slug)
+                    ->where('data.data.1.slug', $courses[1]->slug)
+                    ->where('data.data.2.slug', $courses[2]->slug)
+                    ->where('data.data.3.slug', $courses[3]->slug)
+                    ->where('data.data.4.slug', $courses[4]->slug)
+                    ->etc();
+            });
+    });
+
+
+});
 it('can view list of courses', function (): void {
     $courses = App\Models\Course::factory(5)
         ->withCategory()

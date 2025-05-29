@@ -17,6 +17,7 @@ use App\Models\DigitalAsset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 use Plank\Mediable\Media;
+use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
@@ -39,7 +40,6 @@ final class DigitalAssetController extends Controller
      * @queryParam per_page int Number of items per page. Default is 15.
      * @queryParam filter[name] string Filter by asset name.
      * @queryParam filter[slug] string Filter by asset slug.
-     * @queryParam filter[description] string Filter by asset description.
      * @queryParam filter[status] string Filter by asset status (e.g., published, draft).
      * @queryParam filter[is_attachable_to_course] boolean Filter by whether the asset is attachable to a course.
      * @queryParam sort string Sort by asset name, slug, or status. Prefix with '-' for descending order (e.g., -name).
@@ -50,7 +50,9 @@ final class DigitalAssetController extends Controller
     {
         Gate::authorize('view-any', DigitalAsset::class);
         $files = QueryBuilder::for(DigitalAsset::class)
-            ->allowedFilters(['name', 'slug', 'description', 'status', 'is_attachable_to_course'])
+            ->allowedFilters(['name', 'slug', 'status',
+                              AllowedFilter::exact('is_attachable_to_course')
+                ])
             ->allowedSorts(['name', 'slug', 'status'])
             ->paginate();
 

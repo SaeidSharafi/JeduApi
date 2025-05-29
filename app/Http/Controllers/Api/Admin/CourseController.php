@@ -33,7 +33,7 @@ final class CourseController extends Controller
      * return a list of the courses.
      *
      * @queryParam filter[slug] string Filter by course slug. Example: math-101
-     * @queryParam filter[name] string Filter by course name. Example: Mathematics
+     * @queryParam filter[full_name] string Filter by course name. Example: Mathematics
      * @queryParam filter[short_name] string Filter by course short name. Example: MATH
      * @queryParam filter[status] string Filter by course status. Example: active
      * @queryParam sort string Sort by a field. Allowed values: slug, name, short_name, status. Prefix with '-' for descending order (e.g., -name for descending by name). Example: name
@@ -46,8 +46,8 @@ final class CourseController extends Controller
     {
         Gate::authorize('viewAny', Course::class);
         $courses = QueryBuilder::for(Course::class)
-            ->allowedFilters(['slug', 'name', 'short_name', 'status'])
-            ->allowedSorts(['slug', 'name', 'short_name', 'status'])
+            ->allowedFilters(['slug', 'full_name', 'short_name', 'status'])
+            ->allowedSorts(['slug', 'full_name', 'short_name', 'status'])
             ->with('categories', 'digitalAssets')
             ->paginate()
             ->appends(request()->query());
