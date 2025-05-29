@@ -31,16 +31,16 @@ describe('CourseActionTest', function (): void {
                 'status'     => App\Enums\PublicationStatusEnum::DRAFT->value,
             ]
         )->toArray();
-        $ditialAssets = \App\Models\DigitalAsset::factory(3)->create();
-        $category = App\Models\Category::factory()->create([
+        $ditialAssets = App\Models\DigitalAsset::factory(3)->create();
+        $category     = App\Models\Category::factory()->create([
             'name' => 'Test Category',
             'slug' => 'test-category',
         ]);
         $data = CreateCourseData::from([
             ...$courseData,
-            'categories' => [$category->id],
+            'categories'     => [$category->id],
             'digital_assets' => $ditialAssets->pluck('id')->toArray(),
-            'media'      => [
+            'media'          => [
                 'gallery'     => [$this->media->id],
                 'video'       => [$this->media->id],
                 'thumbnail'   => [$this->media->id],
@@ -73,7 +73,7 @@ describe('CourseActionTest', function (): void {
             ->withDigitalAssets()
             ->create()->fresh();
         $digitalAssetId = $course->digitalAssets->first()->id;
-        $courseData = Course::factory()->make(
+        $courseData     = Course::factory()->make(
             [
                 'slug'       => 'test-course',
                 'full_name'  => 'Updated Course Name',
@@ -81,16 +81,16 @@ describe('CourseActionTest', function (): void {
                 'status'     => App\Enums\PublicationStatusEnum::DRAFT->value,
             ]
         )->toArray();
-        $ditialAssets = \App\Models\DigitalAsset::factory(3)->create();
+        $ditialAssets = App\Models\DigitalAsset::factory(3)->create();
 
         $data = CreateCourseData::from([
             ...$course->toArray(),
-            'full_name'  => 'Updated Course Name',
-            'short_name' => 'UC',
-            'status'     => App\Enums\PublicationStatusEnum::PUBLISHED->value,
+            'full_name'      => 'Updated Course Name',
+            'short_name'     => 'UC',
+            'status'         => App\Enums\PublicationStatusEnum::PUBLISHED->value,
             'digital_assets' => $ditialAssets->pluck('id')->toArray(),
-            'categories' => $course->categories->pluck('id')->toArray(),
-            'media'      => [
+            'categories'     => $course->categories->pluck('id')->toArray(),
+            'media'          => [
                 'gallery'     => [$this->media2->id],
                 'video'       => [$this->media2->id],
                 'thumbnail'   => [$this->media2->id],
@@ -117,20 +117,20 @@ describe('CourseActionTest', function (): void {
             'status'     => App\Enums\PublicationStatusEnum::PUBLISHED->value,
         ]);
         \Pest\Laravel\assertDatabaseHas('assetables', [
-            'assetable_id'        => $course->id,
-            'assetable_type'      => \App\Enums\MorphTypeEnum::COURSE->value,
+            'assetable_id'     => $course->id,
+            'assetable_type'   => App\Enums\MorphTypeEnum::COURSE->value,
             'digital_asset_id' => $ditialAssets->first()->id,
         ]);
 
         \Pest\Laravel\assertDatabaseMissing('assetables', [
-            'assetable_id'        => $course->id,
-            'assetable_type'      => \App\Enums\MorphTypeEnum::COURSE->value,
+            'assetable_id'     => $course->id,
+            'assetable_type'   => App\Enums\MorphTypeEnum::COURSE->value,
             'digital_asset_id' => $digitalAssetId,
         ]);
 
         \Pest\Laravel\assertDatabaseHas('categorizables', [
             'categorizable_id'   => $course->id,
-            'categorizable_type' => \App\Enums\MorphTypeEnum::COURSE->value,
+            'categorizable_type' => App\Enums\MorphTypeEnum::COURSE->value,
             'category_id'        => $course->categories->first()->id,
         ]);
     });
@@ -140,10 +140,10 @@ describe('CourseActionTest', function (): void {
             ->withCategory()
             ->withDigitalAssets()
             ->create([
-            'full_name'  => 'Course to be deleted',
-            'short_name' => 'CTBD',
-            'slug'       => 'course-to-be-deleted',
-        ]);
+                'full_name'  => 'Course to be deleted',
+                'short_name' => 'CTBD',
+                'slug'       => 'course-to-be-deleted',
+            ]);
 
         $action = new DeleteCourseAction();
         $action->handle($course);
@@ -159,11 +159,11 @@ describe('CourseActionTest', function (): void {
         ]);
         \Pest\Laravel\assertDatabaseMissing('categorizables', [
             'categorizable_id'   => $course->id,
-            'categorizable_type' => \App\Enums\MorphTypeEnum::COURSE->value,
+            'categorizable_type' => App\Enums\MorphTypeEnum::COURSE->value,
         ]);
         \Pest\Laravel\assertDatabaseMissing('assetables', [
             'assetable_id'   => $course->id,
-            'assetable_type' => \App\Enums\MorphTypeEnum::COURSE->value,
+            'assetable_type' => App\Enums\MorphTypeEnum::COURSE->value,
         ]);
     });
 });

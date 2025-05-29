@@ -20,20 +20,20 @@ beforeEach(function (): void {
         ->upload();
 });
 
-describe('list filters',function (): void {
+describe('list filters', function (): void {
     it('can filter courses by status', function (): void {
         $courses = App\Models\Course::factory(5)
             ->withCategory()
             ->withDigitalAssets()
             ->create([
-                'status' => \App\Enums\PublicationStatusEnum::PUBLISHED->value
+                'status' => App\Enums\PublicationStatusEnum::PUBLISHED->value,
             ])
             ->fresh();
         $draftCourse = App\Models\Course::factory()
             ->withCategory()
             ->withDigitalAssets()
             ->create([
-                'status' => \App\Enums\PublicationStatusEnum::DRAFT->value
+                'status' => App\Enums\PublicationStatusEnum::DRAFT->value,
             ])
             ->fresh();
         $this->authorized_user([
@@ -41,7 +41,7 @@ describe('list filters',function (): void {
         ]);
         $response = $this->getJson(route('api.v1.admin.course.index', [
             'filter' => [
-                'status' => \App\Enums\PublicationStatusEnum::DRAFT->value,
+                'status' => App\Enums\PublicationStatusEnum::DRAFT->value,
             ],
         ]));
         $response
@@ -129,7 +129,7 @@ describe('list filters',function (): void {
         $response = $this->getJson(route('api.v1.admin.course.index', [
             'sort' => 'slug',
         ]));
-       $courses =  \App\Models\Course::query()->orderBy('slug')->get();
+        $courses = App\Models\Course::query()->orderBy('slug')->get();
         // Assert that the response has same order as the database
         $response
             ->assertStatus(200)
@@ -143,11 +143,10 @@ describe('list filters',function (): void {
                     ->etc();
             });
 
-
     });
 
     it('can sort courses by name', function (): void {
-         App\Models\Course::factory(5)
+        App\Models\Course::factory(5)
             ->withCategory()
             ->withDigitalAssets()
             ->create();
@@ -158,7 +157,7 @@ describe('list filters',function (): void {
         $response = $this->getJson(route('api.v1.admin.course.index', [
             'sort' => 'full_name',
         ]));
-        $courses =  \App\Models\Course::query()->orderBy('full_name')->get();
+        $courses = App\Models\Course::query()->orderBy('full_name')->get();
         $response
             ->assertStatus(200)
             ->assertJson(function (AssertableJson $json) use ($courses): void {
@@ -183,7 +182,7 @@ describe('list filters',function (): void {
         $response = $this->getJson(route('api.v1.admin.course.index', [
             'sort' => 'short_name',
         ]));
-        $courses =  \App\Models\Course::query()->orderBy('short_name')->get();
+        $courses = App\Models\Course::query()->orderBy('short_name')->get();
         $response
             ->assertStatus(200)
             ->assertJson(function (AssertableJson $json) use ($courses): void {
@@ -196,7 +195,6 @@ describe('list filters',function (): void {
                     ->etc();
             });
     });
-
 
 });
 it('can view list of courses', function (): void {
@@ -251,11 +249,11 @@ it('can view list of courses', function (): void {
                 ->where('difficulty_level.value', $expectedCourse->difficulty_level->value)
                 ->where('status.value', $expectedCourse->status->value)
                 ->where('created_by', $expectedCourse->created_by)
-                ->where('categories', $expectedCourse->categories->map(fn($category): array => [
-                    'id'         => $category->id,
-                    'name'       => $category->name,
-                    'slug'       => $category->slug,
-                    'status'     => [
+                ->where('categories', $expectedCourse->categories->map(fn ($category): array => [
+                    'id'     => $category->id,
+                    'name'   => $category->name,
+                    'slug'   => $category->slug,
+                    'status' => [
                         'value' => $category->status->value,
                         'label' => $category->status->translate(),
                     ],
@@ -265,20 +263,20 @@ it('can view list of courses', function (): void {
                     'created_at' => $category->created_at->format('Y-m-d H:i:s'),
                     'updated_at' => $category->updated_at?->format('Y-m-d H:i:s'),
                 ]))
-                ->where('digital_assets', $expectedCourse->digitalAssets?->map(fn(\App\Models\DigitalAsset $asset): array => [
-                    'id' => $asset->id,
-                    'name' => $asset->name,
-                    'slug' => $asset->slug,
+                ->where('digital_assets', $expectedCourse->digitalAssets?->map(fn (App\Models\DigitalAsset $asset): array => [
+                    'id'                      => $asset->id,
+                    'name'                    => $asset->name,
+                    'slug'                    => $asset->slug,
                     'is_attachable_to_course' => $asset->is_attachable_to_course,
-                    'status'     => [
+                    'status'                  => [
                         'value' => $asset->status->value,
                         'label' => $asset->status->translate(),
                     ],
-                    'version' => $asset->version,
+                    'version'      => $asset->version,
                     'published_at' => $asset->published_at?->format('Y-m-d H:i:s'),
-                    'created_by' => $asset->created_by,
-                    'created_at' => $asset->created_at->format('Y-m-d H:i:s'),
-                    'updated_at' => $asset->updated_at?->format('Y-m-d H:i:s'),
+                    'created_by'   => $asset->created_by,
+                    'created_at'   => $asset->created_at->format('Y-m-d H:i:s'),
+                    'updated_at'   => $asset->updated_at?->format('Y-m-d H:i:s'),
                 ]))
                 ->etc();
         }
@@ -292,14 +290,13 @@ it('can create a new course with valid data', function (): void {
         App\Enums\PermissionEnum::COURSE_CREATE->value,
     ]);
 
-
-    $categories = App\Models\Category::factory(2)->create()->pluck('id')->toArray();
+    $categories   = App\Models\Category::factory(2)->create()->pluck('id')->toArray();
     $ditialAssets = App\Models\DigitalAsset::factory(2)->create();
-    $response = $this->postJson(route('api.v1.admin.course.store'), [
+    $response     = $this->postJson(route('api.v1.admin.course.store'), [
         ...$courseData->toArray(),
-        'categories' => $categories,
+        'categories'     => $categories,
         'digital_assets' => $ditialAssets->pluck('id')->toArray(),
-        'media'      => [
+        'media'          => [
             'gallery'     => [$this->gallery->id],
             'thumbnail'   => [],
             'cover'       => [$this->cover->id],
@@ -376,7 +373,7 @@ it('can not create a new course with invalid data', function (): void {
         ]);
 });
 it('can not create a new course with smiliar slug', function (): void {
-    $course = App\Models\Course::factory()->create();
+    $course     = App\Models\Course::factory()->create();
     $courseData = App\Models\Course::factory()->make([
         'slug' => $course->slug,
     ])->toArray();
@@ -416,7 +413,7 @@ it('can not create a new course with non-attachable digital asset', function ():
         [
             ...$courseData,
             'digital_assets' => [$digitalAsset->id],
-            'media'      => [
+            'media'          => [
                 'gallery'     => [$this->gallery->id],
                 'thumbnail'   => [],
                 'cover'       => [$this->cover->id],
@@ -431,9 +428,9 @@ it('can not create a new course with non-attachable digital asset', function ():
         ]);
 });
 it('can view a course', function (): void {
-    $categories = App\Models\Category::factory(3)->create();
+    $categories    = App\Models\Category::factory(3)->create();
     $digitalAssets = App\Models\DigitalAsset::factory(2)->create();
-    $course = App\Models\Course::factory()
+    $course        = App\Models\Course::factory()
         ->create();
     $course->categories()->sync($categories);
     $course->digitalAssets()->sync($digitalAssets);
@@ -464,11 +461,11 @@ it('can view a course', function (): void {
                     'value' => $course->status->value,
                     'label' => $course->status->translate(),
                 ])
-                ->where('data.categories', $categories->map(fn($category): array => [
-                    'id'         => $category->id,
-                    'name'       => $category->name,
-                    'slug'       => $category->slug,
-                    'status'     => [
+                ->where('data.categories', $categories->map(fn ($category): array => [
+                    'id'     => $category->id,
+                    'name'   => $category->name,
+                    'slug'   => $category->slug,
+                    'status' => [
                         'value' => $category->status->value,
                         'label' => $category->status->translate(),
                     ],
@@ -478,20 +475,20 @@ it('can view a course', function (): void {
                     'created_at' => $category->created_at->format('Y-m-d H:i:s'),
                     'updated_at' => $category->updated_at?->format('Y-m-d H:i:s'),
                 ]))
-                ->where('data.digital_assets', $digitalAssets->map(fn(\App\Models\DigitalAsset $asset): array => [
-                    'id' => $asset->id,
-                    'name' => $asset->name,
-                    'slug' => $asset->slug,
+                ->where('data.digital_assets', $digitalAssets->map(fn (App\Models\DigitalAsset $asset): array => [
+                    'id'                      => $asset->id,
+                    'name'                    => $asset->name,
+                    'slug'                    => $asset->slug,
                     'is_attachable_to_course' => $asset->is_attachable_to_course,
-                    'status'     => [
+                    'status'                  => [
                         'value' => $asset->status->value,
                         'label' => $asset->status->translate(),
                     ],
-                    'version' => $asset->version,
+                    'version'      => $asset->version,
                     'published_at' => $asset->published_at?->format('Y-m-d H:i:s'),
-                    'created_by' => $asset->created_by,
-                    'created_at' => $asset->created_at->format('Y-m-d H:i:s'),
-                    'updated_at' => $asset->updated_at?->format('Y-m-d H:i:s'),
+                    'created_by'   => $asset->created_by,
+                    'created_at'   => $asset->created_at->format('Y-m-d H:i:s'),
+                    'updated_at'   => $asset->updated_at?->format('Y-m-d H:i:s'),
                 ]))
                 ->has('data.media.gallery', 0)
                 ->has('data.media.video', 0)
@@ -517,14 +514,14 @@ it('can edit a course', function (): void {
         App\Enums\PermissionEnum::COURSE_UPDATE->value,
     ]);
 
-    $categories = App\Models\Category::factory(3)->create()->pluck('id')->toArray();
+    $categories    = App\Models\Category::factory(3)->create()->pluck('id')->toArray();
     $digitalAssets = App\Models\DigitalAsset::factory(2)->create();
 
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
         ...$courseData,
-        'categories' => $categories,
+        'categories'     => $categories,
         'digital_assets' => $digitalAssets->pluck('id')->toArray(),
-        'media'      => [
+        'media'          => [
             'gallery'     => [$this->gallery->id],
             'thumbnail'   => [],
             'cover'       => [$this->cover->id],
@@ -574,7 +571,7 @@ it('can pass slug unique check', function (): void {
     $course = App\Models\Course::factory()
         ->withCategory()
         ->create();
-    $category = App\Models\Category::factory()->create();
+    $category   = App\Models\Category::factory()->create();
     $courseData = App\Models\Course::factory()->make(
         [
             'slug' => $course->slug,
@@ -607,8 +604,8 @@ it('can pass slug unique check', function (): void {
 
 });
 it('can not edit a course with duplicate slug', function (): void {
-    $course2 = App\Models\Course::factory()->create();
-    $course = App\Models\Course::factory()->create();
+    $course2    = App\Models\Course::factory()->create();
+    $course     = App\Models\Course::factory()->create();
     $courseData = App\Models\Course::factory()->make(
         [
             'slug' => $course2->slug,
@@ -659,7 +656,7 @@ it('can not edit a course with invalid data', function (): void {
 });
 
 it('can not edit a course with invalid slug', function (): void {
-    $course = App\Models\Course::factory()->create();
+    $course     = App\Models\Course::factory()->create();
     $courseData = App\Models\Course::factory()->make([
         'slug' => 'invalid slug',
     ])->toArray();

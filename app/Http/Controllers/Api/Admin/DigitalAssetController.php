@@ -51,8 +51,8 @@ final class DigitalAssetController extends Controller
         Gate::authorize('view-any', DigitalAsset::class);
         $files = QueryBuilder::for(DigitalAsset::class)
             ->allowedFilters(['name', 'slug', 'status',
-                              AllowedFilter::exact('is_attachable_to_course')
-                ])
+                AllowedFilter::exact('is_attachable_to_course'),
+            ])
             ->allowedSorts(['name', 'slug', 'status'])
             ->paginate();
 

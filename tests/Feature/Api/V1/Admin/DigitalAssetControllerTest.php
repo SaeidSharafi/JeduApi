@@ -6,12 +6,12 @@ use App\Enums\MorphTypeEnum;
 use App\Models\DigitalAsset;
 
 uses(Tests\AuthTestTrait::class);
-describe('list filters',function (): void {
+describe('list filters', function (): void {
     it('can filter by name', function () {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(10)->create();
         $digitalAsset = DigitalAsset::factory()->create(['name' => 'Test Asset']);
-        $response = $this->getJson(route('api.v1.admin.digital-asset.index', ['filter[name]' => $digitalAsset->name]));
+        $response     = $this->getJson(route('api.v1.admin.digital-asset.index', ['filter[name]' => $digitalAsset->name]));
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data.data')
             ->assertJsonFragment(['name' => $digitalAsset->name]);
@@ -21,7 +21,7 @@ describe('list filters',function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(10)->create();
         $digitalAsset = DigitalAsset::factory()->create(['slug' => 'test-asset']);
-        $response = $this->getJson(route('api.v1.admin.digital-asset.index', ['filter[slug]' => $digitalAsset->slug]));
+        $response     = $this->getJson(route('api.v1.admin.digital-asset.index', ['filter[slug]' => $digitalAsset->slug]));
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data.data')
             ->assertJsonFragment(['slug' => $digitalAsset->slug]);
@@ -30,7 +30,7 @@ describe('list filters',function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(10)->create();
         $digitalAsset = DigitalAsset::factory()->create(['status' => 'published']);
-        $response = $this->getJson(route('api.v1.admin.digital-asset.index', ['filter[status]' => $digitalAsset->status->value]));
+        $response     = $this->getJson(route('api.v1.admin.digital-asset.index', ['filter[status]' => $digitalAsset->status->value]));
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data.data')
             ->assertJsonFragment(['slug' => $digitalAsset->slug]);
@@ -41,7 +41,7 @@ describe('list filters',function (): void {
             ->nonAttachable()
             ->create();
         $digitalAsset = DigitalAsset::factory()->create(['is_attachable_to_course' => true]);
-        $response = $this->getJson(route('api.v1.admin.digital-asset.index', ['filter[is_attachable_to_course]' => 'true']));
+        $response     = $this->getJson(route('api.v1.admin.digital-asset.index', ['filter[is_attachable_to_course]' => 'true']));
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data.data')
             ->assertJsonFragment(['slug' => $digitalAsset->slug]);
@@ -50,7 +50,7 @@ describe('list filters',function (): void {
     it('can sort by name', function () {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(5)->create();
-        $response = $this->getJson(route('api.v1.admin.digital-asset.index', ['sort' => 'name']));
+        $response      = $this->getJson(route('api.v1.admin.digital-asset.index', ['sort' => 'name']));
         $digitalAssets = DigitalAsset::orderBy('name')->get();
         $response->assertStatus(200)
             ->assertJsonCount(5, 'data.data')
@@ -79,7 +79,7 @@ describe('list filters',function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(5)
             ->create();
-        $response = $this->getJson(route('api.v1.admin.digital-asset.index', ['sort' => 'status']));
+        $response      = $this->getJson(route('api.v1.admin.digital-asset.index', ['sort' => 'status']));
         $digitalAssets = DigitalAsset::orderBy('status')->get();
         $response->assertStatus(200)
             ->assertJsonCount(5, 'data.data')

@@ -104,8 +104,6 @@ final class ScribeSeeder extends Seeder
                 'created_by' => Admin::query()->first()->id,
             ]);
 
-
-
     }
 
     protected function disableForeignKeyChecks(): void

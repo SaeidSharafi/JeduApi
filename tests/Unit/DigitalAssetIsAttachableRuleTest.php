@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Rules\EmailOrPhoneRule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
 

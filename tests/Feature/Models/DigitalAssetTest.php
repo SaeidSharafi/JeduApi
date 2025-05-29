@@ -7,30 +7,30 @@ test('to array', function (): void {
 
     expect($digitalAsset->toArray())
         ->toEqual([
-            'id' => $digitalAsset->id,
-            'name' => $digitalAsset->name,
-            'slug' => $digitalAsset->slug,
-            'description' => $digitalAsset->description,
-            'version' => $digitalAsset->version,
-            'page_count' => $digitalAsset->page_count,
-            'duration_seconds' => $digitalAsset->duration_seconds,
-            'keywords' => $digitalAsset->keywords,
-            'meta_title' => $digitalAsset->meta_title,
-            'meta_description' => $digitalAsset->meta_description,
-            'meta_keywords' => $digitalAsset->meta_keywords,
+            'id'                      => $digitalAsset->id,
+            'name'                    => $digitalAsset->name,
+            'slug'                    => $digitalAsset->slug,
+            'description'             => $digitalAsset->description,
+            'version'                 => $digitalAsset->version,
+            'page_count'              => $digitalAsset->page_count,
+            'duration_seconds'        => $digitalAsset->duration_seconds,
+            'keywords'                => $digitalAsset->keywords,
+            'meta_title'              => $digitalAsset->meta_title,
+            'meta_description'        => $digitalAsset->meta_description,
+            'meta_keywords'           => $digitalAsset->meta_keywords,
             'is_attachable_to_course' => $digitalAsset->is_attachable_to_course,
-            'status' => $digitalAsset->status->value,
-            'published_at' => $digitalAsset->published_at?->format('Y-m-d H:i:s'),
-            'created_by' => $digitalAsset->created_by,
-            'created_at' => $digitalAsset->created_at?->format('Y-m-d H:i:s'),
-            'updated_at' => $digitalAsset->updated_at?->format('Y-m-d H:i:s'),
+            'status'                  => $digitalAsset->status->value,
+            'published_at'            => $digitalAsset->published_at?->format('Y-m-d H:i:s'),
+            'created_by'              => $digitalAsset->created_by,
+            'created_at'              => $digitalAsset->created_at?->format('Y-m-d H:i:s'),
+            'updated_at'              => $digitalAsset->updated_at?->format('Y-m-d H:i:s'),
         ])->toBeArray();
 
 });
 
 test('relation categories', function (): void {
-    $digitalAsset   = App\Models\DigitalAsset::factory()->create();
-    $category = App\Models\Category::factory()->create();
+    $digitalAsset = App\Models\DigitalAsset::factory()->create();
+    $category     = App\Models\Category::factory()->create();
     $digitalAsset->categories()->attach($category->id);
 
     expect($digitalAsset->categories)
@@ -49,7 +49,7 @@ test('relation categories', function (): void {
 
 test('relation courses', function (): void {
     $digitalAsset = App\Models\DigitalAsset::factory()->create();
-    $course = App\Models\Course::factory()->create();
+    $course       = App\Models\Course::factory()->create();
     $digitalAsset->courses()->attach($course->id);
 
     expect($digitalAsset->courses)

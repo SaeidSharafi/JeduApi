@@ -106,6 +106,7 @@ final class CourseFactory extends Factory
                 return $this;
             }
         }
+
         return $this->afterCreating(function (Course $course) use ($count) {
             if (DigitalAsset::query()->count() < 20) {
                 $course->digitalAssets()->attach(
