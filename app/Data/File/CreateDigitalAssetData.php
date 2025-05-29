@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\File;
 
+use App\Data\Transformer\CarbonFromJalaliString;
 use App\Enums\PublicationStatusEnum;
 use App\Traits\ValidatesMetaTags;
 use Carbon\Carbon;
@@ -31,7 +32,7 @@ final class CreateDigitalAssetData extends Data
         public ?string $meta_title,
         public ?string $meta_description,
         public ?string $meta_keywords,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
+        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]
         public ?Carbon $published_at,
         public ?int $page_count,
         public ?int $duration_seconds,
@@ -65,7 +66,7 @@ final class CreateDigitalAssetData extends Data
                 'status'                  => ['required', Rule::enum(PublicationStatusEnum::class)],
                 'created_by'              => ['nullable', 'integer', 'exists:admins,id'],
                 'keywords'                => ['nullable', 'string', 'max:255'],
-                'published_at'            => ['nullable', 'date:Y-m-d H:i:s'],
+                'published_at'            => ['nullable', 'jdate:Y-m-d H:i:s'],
                 'page_count'              => ['nullable', 'integer', 'min:0'],
                 'duration_seconds'        => ['nullable', 'integer', 'min:0'],
                 'categories'              => ['required', 'array'],
@@ -126,7 +127,7 @@ final class CreateDigitalAssetData extends Data
             ],
             'published_at' => [
                 'description' => 'The date and time when the digital asset was published.',
-                'example'     => '2023-10-01 12:00:00',
+                'example'     => '1403-10-01 12:00:00',
             ],
             'keywords' => [
                 'description' => 'Keywords associated with the digital asset for search optimization.',

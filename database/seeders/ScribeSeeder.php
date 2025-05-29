@@ -10,6 +10,7 @@ use App\Models\Course;
 use App\Models\DigitalAsset;
 use Illuminate\Database\Seeder;
 use Illuminate\Http\File;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Plank\Mediable\Facades\MediaUploader;
 use Plank\Mediable\Media;
@@ -79,21 +80,25 @@ final class ScribeSeeder extends Seeder
                 'label'      => 'Admin',
             ]
         );
+        Artisan::call('permissions:sync', [
+            '--guard' => 'admin',
+        ]);
+
         $permissions = Permission::query()->where('guard_name', 'admin')->get()->pluck('name')->toArray();
         $role->syncPermissions($permissions);
         $user->assignRole('admin');
-
+        $admin =  Admin::query()->first();
         Category::factory(100)
             ->withIcon()
             ->withImage()
             ->create([
-                'created_by' => Admin::query()->first()->id,
+                'created_by' => $admin->id,
             ]);
         DigitalAsset::factory(100)
             ->withFile()
             ->withCategory()
             ->create([
-                'created_by' => Admin::query()->first()->id,
+                'created_by' => $admin->id,
             ]);
 
         Course::factory(100)
@@ -101,7 +106,7 @@ final class ScribeSeeder extends Seeder
             ->withCategory(3)
             ->withDigitalAssets(2, true)
             ->create([
-                'created_by' => Admin::query()->first()->id,
+                'created_by' => $admin->id,
             ]);
 
     }

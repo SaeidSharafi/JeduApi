@@ -9,7 +9,7 @@ use App\Data\File\DigitalAssetListItemData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
-use Illuminate\Support\Carbon;
+use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\WithCast;
@@ -37,8 +37,8 @@ final class CourseListItemData extends Data
         public ?DataCollection $digital_assets,
         public ?int $created_by,
         #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
-        public Carbon $created_at,
+        public Verta $created_at,
         #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
-        public Carbon $updated_at,
+        public Verta $updated_at,
     ) {}
 }

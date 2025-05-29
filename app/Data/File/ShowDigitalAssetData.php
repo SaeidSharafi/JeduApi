@@ -8,7 +8,7 @@ use App\Data\Category\CategoryListItemData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\PublicationStatusEnum;
 use App\Traits\ValidatesMetaTags;
-use Carbon\Carbon;
+use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
@@ -36,13 +36,13 @@ final class ShowDigitalAssetData extends Data
         public ?string $meta_description,
         public ?string $meta_keywords,
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
-        public ?Carbon $published_at,
+        public ?Verta $published_at,
         public ?int $page_count,
         public ?int $duration_seconds,
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
-        public ?Carbon $created_at,
+        public ?Verta $created_at,
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
-        public ?Carbon $updated_at,
+        public ?Verta $updated_at,
         #[DataCollectionOf(CategoryListItemData::class)]
         public ?DataCollection $categories,
         public array $attachments = []

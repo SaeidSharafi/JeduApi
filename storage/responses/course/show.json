@@ -2,48 +2,62 @@
   "message": "Operation successful.",
   "data": {
     "id": 1,
-    "slug": "nam-soluta-fuga-debitis-est-perferendis",
-    "full_name": "ملک پول آب",
-    "short_name": "نان",
-    "description": "صوت جنگل صندوق جنگل چای دارو دکان. ملل جایزه لیوان موسیقی عدد پارو. صندوق برنامه اسکله خودرو آلاچیق صندلی دامنه سلول. ملک گلیم کلمه میز ماکت تاکسی.",
-    "duration": 35,
+    "slug": "dolorum-officia-qui-ut-tempora-ducimus",
+    "full_name": "آتش پوستر خط",
+    "short_name": "گلیم",
+    "description": "کمک ساختار مجله علم محل جنگل موسیقی سلول. نان پیچ عدالت تاکسی مشک فرش اتوبوس آسمان. اپلیکیشن کنترل صندوق نمک صف.",
+    "duration": 92,
     "difficulty_level": {
-      "value": "advanced",
-      "label": "پیشرفته"
+      "value": "beginner",
+      "label": "مبتدی"
     },
-    "career_prospects_text": "مهد بلیط سریال گوشی خیابان سلول چرخ. ثروت سریال ماکت شب مجله جام. پارو روزنامه ساز اپلیکیشن سریال.",
-    "curriculum_summary_text": "خیابان کمک بانک دارو خط",
+    "career_prospects_text": "میز دامنه موسیقی شب دوربین دکان. نمک دکان قضا میوه باغ. میوه هتل بانک تیم دریا جنگل دیجیتال ملت. بالین دفتر کنترل عطر پل قرص شیر پول.",
+    "curriculum_summary_text": "درخت قلم بانک اتوبوس مدار",
     "outcomes_json": {
       "outcome1": [
-        "الکتریک مدار قضا قهوه لیوان ملل بالش دفتر.",
-        "قلم پارو عدالت آخر لوازم شهر قلم.",
-        "جنگل دفترچه ملت میز فرش صندوق طبیعت.",
-        "پیچ قلم باغ صف کلید غذا.",
-        "شب جام تیم بدل کامپیوتر دریاچه."
+        "برق چرخ قلم جنگل نمک دیجیتال صندلی طبیعت ملل.",
+        "الماس درخت مربع گوشی ساعت گوشی ساختار.",
+        "پارو کمک موج خیابان شن دفترچه.",
+        "بالین ژاکت مشک شن درخت بلیط نقاشی قرص.",
+        "مربع کشاورز دانه کمک مربع غذا پیچ."
       ],
       "outcome2": [
-        "دارو دفتر پوشاک ساختار کامپیوتر شن میوه.",
-        "لیوان آسمان باغ اسکله طبیعت ملل دکان دریاچه سریال.",
-        "برق آشیانه لباس ژاکت کلمه.",
-        "دفتر پیچ کاغذ ژاکت اسکله تاکسی.",
-        "قهوه کاغذ دریا علم لیوان سریال باغ تصویر."
+        "قهوه صندلی برف صندوق صندوق.",
+        "مدار عطر سلول عدد لیوان آلاچیق برف پول.",
+        "بالش ملک شهر قضا دریاچه کاغذ ثروت.",
+        "مجله اسکله لباس جام ملت.",
+        "قضا صندلی سایت عطر نوازش طبیعت هتل مدرسه."
       ]
     },
-    "default_teacher_info": "ملت خط گلیم سلول صوت",
+    "default_teacher_info": "بلیط مهد چای آخر مهد",
     "additional_info": [],
-    "meta_title": "شن آب مدار برنامه",
-    "meta_description": "برف صف خودرو ژاکت دارو اپلیکیشن اسکله گردو. بانک قفل قرص گوشی نوازش قرص قرص. بلیط برنامه ژاکت مدار ا",
-    "meta_keywords": "کامپیوتر,ساعت,پوشاک",
+    "meta_title": "قفل کلمه اسکله چرخ",
+    "meta_description": "قفل صندوق برف دفتر برنامه مشک. خودرو موج درخت ژاکت دفترچه موسیقی پل. آشیانه چای تاکسی نور دریاچه. دو",
+    "meta_keywords": "دریاچه,بدل,اسکله",
     "properties": [],
     "status": {
-      "value": "archived",
-      "label": "آرشیو"
+      "value": "published",
+      "label": "منتشر شده"
     },
     "categories": [
       {
-        "id": 16,
+        "id": 54,
+        "name": "صف",
+        "slug": "in-at-beatae-dolores-eos-necessitatibus-corporis-voluptate-quis",
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "created_by": 1,
+        "created_at": "1404-03-08 08:51:08",
+        "updated_at": "1404-03-08 08:51:09"
+      },
+      {
+        "id": 65,
         "name": "اسکله",
-        "slug": "pariatur-quia-commodi-minima-et-et-cumque-omnis",
+        "slug": "similique-in-iusto-voluptatem-eum-aut",
         "status": {
           "value": "published",
           "label": "منتشر شده"
@@ -51,13 +65,13 @@
         "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
         "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
         "created_by": 1,
-        "created_at": "2025-05-29 07:41:01",
-        "updated_at": "2025-05-29 07:41:01"
+        "created_at": "1404-03-08 08:51:08",
+        "updated_at": "1404-03-08 08:51:09"
       },
       {
-        "id": 20,
-        "name": "ماکت",
-        "slug": "ducimus-molestias-amet-omnis-quibusdam",
+        "id": 78,
+        "name": "دکان",
+        "slug": "corporis-inventore-id-qui-eos-vero-magni",
         "status": {
           "value": "published",
           "label": "منتشر شده"
@@ -65,56 +79,11 @@
         "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
         "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
         "created_by": 1,
-        "created_at": "2025-05-29 07:41:01",
-        "updated_at": "2025-05-29 07:41:01"
-      },
-      {
-        "id": 100,
-        "name": "غذا",
-        "slug": "sed-illum-et-maxime-laudantium-harum",
-        "status": {
-          "value": "published",
-          "label": "منتشر شده"
-        },
-        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-        "created_by": 1,
-        "created_at": "2025-05-29 07:41:01",
-        "updated_at": "2025-05-29 07:41:03"
+        "created_at": "1404-03-08 08:51:08",
+        "updated_at": "1404-03-08 08:51:09"
       }
     ],
-    "digital_assets": [
-      {
-        "id": 4,
-        "name": "تصویر",
-        "slug": "architecto-perferendis-temporibus-deleniti-aut-expedita-et",
-        "is_attachable_to_course": false,
-        "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
-        },
-        "version": "mollitia",
-        "published_at": null,
-        "created_by": 1,
-        "created_at": "2025-05-29 07:41:03",
-        "updated_at": "2025-05-29 07:41:03"
-      },
-      {
-        "id": 25,
-        "name": "الکتریک",
-        "slug": "molestiae-magnam-vel-est-quasi",
-        "is_attachable_to_course": true,
-        "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
-        },
-        "version": "non",
-        "published_at": null,
-        "created_by": 1,
-        "created_at": "2025-05-29 07:41:03",
-        "updated_at": "2025-05-29 07:41:03"
-      }
-    ],
+    "digital_assets": [],
     "media": {
       "gallery": [
         {
@@ -130,10 +99,10 @@
       ],
       "video": [
         {
-          "id": 2,
-          "url": "http://jedu.test/storage/fake-media/placeholder2.mp4",
+          "id": 3,
+          "url": "http://jedu.test/storage/fake-media/placeholder3.mp4",
           "size": 9362122,
-          "file_name": "placeholder2",
+          "file_name": "placeholder3",
           "alt": "",
           "mime_type": "video/mp4",
           "extension": "mp4",

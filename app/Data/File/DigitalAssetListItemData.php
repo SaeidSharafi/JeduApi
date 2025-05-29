@@ -6,7 +6,7 @@ namespace App\Data\File;
 
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\PublicationStatusEnum;
-use Illuminate\Support\Carbon;
+use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
@@ -23,11 +23,11 @@ final class DigitalAssetListItemData extends Data
         public PublicationStatusEnum $status,
         public ?string $version,
         #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
-        public ?Carbon $published_at,
+        public ?Verta $published_at,
         public ?int $created_by,
         #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
-        public ?Carbon $created_at,
+        public ?Verta $created_at,
         #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
-        public ?Carbon $updated_at,
+        public ?Verta $updated_at,
     ) {}
 }

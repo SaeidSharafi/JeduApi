@@ -1,25 +1,34 @@
 {
   "message": "Operation successful.",
   "data": {
-    "id": 1,
-    "name": "قرص",
-    "slug": "dolores-sunt-cupiditate-qui-qui",
+    "id": 2,
+    "name": "بالش",
+    "slug": "minus-molestiae-id-autem-sequi-perspiciatis",
     "status": {
       "value": "published",
       "label": "منتشر شده"
     },
     "parent_id": null,
-    "description": "Dolore maiores officiis cum sint. Reiciendis fugiat vel dolorum occaecati eligendi. Voluptatum aut commodi laboriosam sunt provident. Voluptas assumenda ea minus maiores tempora quod.",
-    "color_scheme": "#8aa72b",
-    "meta_title": "قفل بالین برق دیجیتال اتوبوس صف هنر.",
-    "meta_description": "عدد آرایش محفل شب میز ژاکت. دامنه مدار ملل خیابان قلم دکان بلیط دریا. نقاشی محل قلم جنگل چرخ میوه.",
-    "meta_keywords": "ملت مدرسه ماکت",
+    "description": "Dolore aliquid consequatur deserunt dolorem sed. Ab eos est enim autem. Iure totam excepturi aliquid voluptatem consectetur suscipit impedit. Quod sed vel ipsa ut odio enim nemo exercitationem.",
+    "color_scheme": "#a8c7e9",
+    "meta_title": "سایت عطر پوستر جام",
+    "meta_description": "رنگ دانه گلیم برنامه جایزه. چرخ غذا ساحل غذا گوشی شهر لیوان نوازش ماکت. صوت دارو پل جام آلاچیق مربع",
+    "meta_keywords": "هتل,صف,دوربین",
     "properties": [],
     "additional_info": [],
     "media": {
-      "icon": null,
+      "icon": {
+        "id": 7,
+        "url": "http://jedu.test/storage/fake-media/icon.svg",
+        "size": 807,
+        "file_name": "icon",
+        "alt": "",
+        "mime_type": "image/svg+xml",
+        "extension": "svg",
+        "tag": "icon"
+      },
       "image": {
-        "id": 26,
+        "id": 6,
         "url": "http://jedu.test/storage/fake-media/placeholder.svg",
         "size": 809,
         "file_name": "placeholder",
