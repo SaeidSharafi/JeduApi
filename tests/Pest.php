@@ -13,6 +13,8 @@ declare(strict_types=1);
 |
 */
 
+use Illuminate\Support\Collection;
+
 uses(Tests\TestCase::class)
     ->in('Feature');
 uses(Tests\TestCaseUnit::class)
@@ -31,7 +33,10 @@ uses(Tests\TestCaseUnit::class)
 expect()->extend('toBeOne', function () {
     return $this->toBe(1);
 });
-
+expect()->extend('toBeInCollection',
+    function (Collection $collection, string $column) {
+        return $collection->contains($column, $this->value);
+    });
 /*
 |--------------------------------------------------------------------------
 | Functions

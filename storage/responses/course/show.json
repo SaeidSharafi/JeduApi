@@ -2,38 +2,38 @@
   "message": "Operation successful.",
   "data": {
     "id": 1,
-    "slug": "saepe-quidem-culpa-voluptas",
-    "full_name": "دریا قهوه علم",
-    "short_name": "دانه",
-    "description": "شیر بلیط کشاورز دانه پول غذا. عدد پارو نمک برنامه بدل بدل آشیانه. عطر دریاچه جام درخت بالش.",
-    "duration": 25,
+    "slug": "nam-soluta-fuga-debitis-est-perferendis",
+    "full_name": "ملک پول آب",
+    "short_name": "نان",
+    "description": "صوت جنگل صندوق جنگل چای دارو دکان. ملل جایزه لیوان موسیقی عدد پارو. صندوق برنامه اسکله خودرو آلاچیق صندلی دامنه سلول. ملک گلیم کلمه میز ماکت تاکسی.",
+    "duration": 35,
     "difficulty_level": {
-      "value": "beginner",
-      "label": "مبتدی"
+      "value": "advanced",
+      "label": "پیشرفته"
     },
-    "career_prospects_text": "آلاچیق بلیط چای محل جایزه شیر نقاشی پوستر. مهد گوشی دارو میوه بانک عطر. دارو طبیعت ملت ثروت نور.",
-    "curriculum_summary_text": "محل جنگل آلاچیق کنترل شن",
+    "career_prospects_text": "مهد بلیط سریال گوشی خیابان سلول چرخ. ثروت سریال ماکت شب مجله جام. پارو روزنامه ساز اپلیکیشن سریال.",
+    "curriculum_summary_text": "خیابان کمک بانک دارو خط",
     "outcomes_json": {
       "outcome1": [
-        "بالین فیلم کمک ابزار گردو اتوبوس لوازم فیلم.",
-        "صندوق ژاکت بانک عدد دامنه مجله لوازم.",
-        "گلیم تیم پوستر موسیقی.",
-        "نقاشی محل ابزار باغ خط بلیط فرش.",
-        "کلمه گردو چرخ برف فرش دریا ژاکت لوازم."
+        "الکتریک مدار قضا قهوه لیوان ملل بالش دفتر.",
+        "قلم پارو عدالت آخر لوازم شهر قلم.",
+        "جنگل دفترچه ملت میز فرش صندوق طبیعت.",
+        "پیچ قلم باغ صف کلید غذا.",
+        "شب جام تیم بدل کامپیوتر دریاچه."
       ],
       "outcome2": [
-        "دریا پایه پل پوستر آلاچیق کلید نور آب.",
-        "پول مدار کامپیوتر نقاشی دامنه.",
-        "تیم رنگ دفتر تصویر ساعت دکان لوازم اسکله.",
-        "دامنه صندوق ساعت میز قرص برف شن کاغذ.",
-        "برق باغ عدالت کلید هنر."
+        "دارو دفتر پوشاک ساختار کامپیوتر شن میوه.",
+        "لیوان آسمان باغ اسکله طبیعت ملل دکان دریاچه سریال.",
+        "برق آشیانه لباس ژاکت کلمه.",
+        "دفتر پیچ کاغذ ژاکت اسکله تاکسی.",
+        "قهوه کاغذ دریا علم لیوان سریال باغ تصویر."
       ]
     },
-    "default_teacher_info": "درخت هتل آخر تاکسی محل",
+    "default_teacher_info": "ملت خط گلیم سلول صوت",
     "additional_info": [],
-    "meta_title": "آرایش نمک کنترل درخت عدد",
-    "meta_description": "الکتریک کاغذ گلیم تصویر. بانک پرنده نوازش ابزار دامنه. سریال صوت عدالت فرش اسکله باغ. دایره بانک بانک ماکت تیم.",
-    "meta_keywords": "مربع اتوبوس کاغذ کلمه غذا بدل عطر چای",
+    "meta_title": "شن آب مدار برنامه",
+    "meta_description": "برف صف خودرو ژاکت دارو اپلیکیشن اسکله گردو. بانک قفل قرص گوشی نوازش قرص قرص. بلیط برنامه ژاکت مدار ا",
+    "meta_keywords": "کامپیوتر,ساعت,پوشاک",
     "properties": [],
     "status": {
       "value": "archived",
@@ -41,46 +41,78 @@
     },
     "categories": [
       {
-        "id": 6,
+        "id": 16,
+        "name": "اسکله",
+        "slug": "pariatur-quia-commodi-minima-et-et-cumque-omnis",
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "created_by": 1,
+        "created_at": "2025-05-29 07:41:01",
+        "updated_at": "2025-05-29 07:41:01"
+      },
+      {
+        "id": 20,
+        "name": "ماکت",
+        "slug": "ducimus-molestias-amet-omnis-quibusdam",
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "created_by": 1,
+        "created_at": "2025-05-29 07:41:01",
+        "updated_at": "2025-05-29 07:41:01"
+      },
+      {
+        "id": 100,
+        "name": "غذا",
+        "slug": "sed-illum-et-maxime-laudantium-harum",
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "created_by": 1,
+        "created_at": "2025-05-29 07:41:01",
+        "updated_at": "2025-05-29 07:41:03"
+      }
+    ],
+    "digital_assets": [
+      {
+        "id": 4,
         "name": "تصویر",
-        "slug": "aspernatur-recusandae-veritatis-dicta-illum-tempora-consequatur",
+        "slug": "architecto-perferendis-temporibus-deleniti-aut-expedita-et",
+        "is_attachable_to_course": false,
         "status": {
-          "value": "published",
-          "label": "منتشر شده"
+          "value": "draft",
+          "label": "پیش‌نویس"
         },
-        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "version": "mollitia",
+        "published_at": null,
         "created_by": 1,
-        "created_at": "2025-05-22 08:31:55",
-        "updated_at": "2025-05-22 08:31:55"
+        "created_at": "2025-05-29 07:41:03",
+        "updated_at": "2025-05-29 07:41:03"
       },
       {
-        "id": 19,
-        "name": "کنترل",
-        "slug": "unde-vitae-qui-error-temporibus-et",
+        "id": 25,
+        "name": "الکتریک",
+        "slug": "molestiae-magnam-vel-est-quasi",
+        "is_attachable_to_course": true,
         "status": {
-          "value": "published",
-          "label": "منتشر شده"
+          "value": "draft",
+          "label": "پیش‌نویس"
         },
-        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "version": "non",
+        "published_at": null,
         "created_by": 1,
-        "created_at": "2025-05-22 08:31:55",
-        "updated_at": "2025-05-22 08:31:55"
-      },
-      {
-        "id": 58,
-        "name": "لوازم",
-        "slug": "enim-est-ab-praesentium-maxime-voluptates",
-        "status": {
-          "value": "published",
-          "label": "منتشر شده"
-        },
-        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-        "created_by": 1,
-        "created_at": "2025-05-22 08:31:55",
-        "updated_at": "2025-05-22 08:31:56"
+        "created_at": "2025-05-29 07:41:03",
+        "updated_at": "2025-05-29 07:41:03"
       }
     ],
     "media": {
@@ -120,18 +152,7 @@
           "tag": "cover"
         }
       ],
-      "certificate": [
-        {
-          "id": 6,
-          "url": "http://jedu.test/storage/fake-media/fake-certificate.png",
-          "size": 2056,
-          "file_name": "fake-certificate",
-          "alt": "",
-          "mime_type": "image/png",
-          "extension": "png",
-          "tag": "certificate"
-        }
-      ]
+      "certificate": []
     }
   },
   "metadata": []

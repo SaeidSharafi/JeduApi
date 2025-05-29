@@ -16,11 +16,14 @@ final readonly class UpdateCourseAction
     public function handle(CreateCourseData $data, Course $course): void
     {
         DB::transaction(function () use ($data, $course): void {
-            $course->update($data->except('media', 'categories')->all());
+            $course->update($data->except('media', 'categories', 'digital_assets')->all());
 
-            $mediaInput = $data->media      ?? [];
-            $categories = $data->categories ?? [];
+            $mediaInput    = $data->media          ?? [];
+            $categories    = $data->categories     ?? [];
+            $digitalAssets = $data->digital_assets ?? [];
             $course->categories()->sync($categories);
+            $course->digitalAssets()->sync($digitalAssets);
+
             foreach (['gallery', 'video', 'thumbnail', 'certificate'] as $tag) {
                 $mediaIds = $mediaInput[$tag] ?? null;
                 if (is_array($mediaIds)) {

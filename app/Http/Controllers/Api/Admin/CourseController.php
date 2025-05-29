@@ -48,7 +48,7 @@ final class CourseController extends Controller
         $courses = QueryBuilder::for(Course::class)
             ->allowedFilters(['slug', 'name', 'short_name', 'status'])
             ->allowedSorts(['slug', 'name', 'short_name', 'status'])
-            ->with('categories')
+            ->with('categories', 'digitalAssets')
             ->paginate()
             ->appends(request()->query());
 
@@ -79,7 +79,7 @@ final class CourseController extends Controller
     public function show(Course $course): ApiResponseInterface
     {
         Gate::authorize('view', $course);
-        $course->load('categories');
+        $course->load('categories', 'digitalAssets');
 
         $media = [];
         foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {

@@ -15,7 +15,7 @@ use Spatie\LaravelData\Data;
 final class DigitalAssetListItemData extends Data
 {
     public function __construct(
-        public string $id,
+        public int $id,
         public string $name,
         public string $slug,
         public bool $is_attachable_to_course,

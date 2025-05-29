@@ -9,6 +9,7 @@ use App\Enums\PublicationStatusEnum;
 use App\Models\Admin;
 use App\Models\Category;
 use App\Models\Course;
+use App\Models\DigitalAsset;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use Plank\Mediable\Media;
@@ -95,6 +96,30 @@ final class CourseFactory extends Factory
                     ->first();
                 $course->attachMedia($media, $tag);
             }
+        });
+    }
+
+    public function withDigitalAssets(int $count = 1, bool $optional = false): self
+    {
+        if ($optional) {
+            if (random_int(0, 100) < 35) {
+                return $this;
+            }
+        }
+        return $this->afterCreating(function (Course $course) use ($count) {
+            if (DigitalAsset::query()->count() < 20) {
+                $course->digitalAssets()->attach(
+                    DigitalAsset::factory()->count($count)->create()
+                );
+
+                return;
+            }
+            $course->digitalAssets()->attach(
+                DigitalAsset::query()
+                    ->inRandomOrder()
+                    ->take($count)
+                    ->get()
+            );
         });
     }
 }

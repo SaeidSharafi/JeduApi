@@ -47,6 +47,14 @@ final class Course extends Model
         return $this->morphToMany(Category::class, 'categorizable', 'categorizables', null, 'category_id');
     }
 
+    /**
+     * @return MorphToMany<DigitalAsset,$this>
+     */
+    public function digitalAssets(): MorphToMany
+    {
+        return $this->morphToMany(DigitalAsset::class, 'assetable');
+    }
+
     protected function casts(): array
     {
         return [

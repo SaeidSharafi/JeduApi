@@ -6,6 +6,7 @@ namespace App\Data\Course;
 
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
+use App\Rules\DigitalAssetIsAttachableRule;
 use App\Traits\ValidatesMetaTags;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
@@ -38,14 +39,16 @@ final class CreateCourseData extends Data
         #[WithCast(EnumCast::class)]
         public PublicationStatusEnum $status,
         public array $categories,
+        public array $digital_assets = [],
         public array $media = [],
-    ) {}
+    ) {
+    }
 
     public static function rules(ValidationContext $context): array
     {
         return array_merge(
             [
-                'slug' => [
+                'slug'                    => [
                     'required',
                     'string',
                     'alpha_dash',
@@ -59,11 +62,11 @@ final class CreateCourseData extends Data
                         return $query;
                     }),
                 ],
-                'full_name'        => ['required', 'string', 'max:191'],
-                'short_name'       => ['required', 'string', 'max:60'],
-                'description'      => ['nullable', 'string', 'max:65535'],
-                'duration'         => ['nullable', 'integer', 'min:1'],
-                'difficulty_level' => [
+                'full_name'               => ['required', 'string', 'max:191'],
+                'short_name'              => ['required', 'string', 'max:60'],
+                'description'             => ['nullable', 'string', 'max:65535'],
+                'duration'                => ['nullable', 'integer', 'min:1'],
+                'difficulty_level'        => [
                     'required', Rule::enum(CourseDifficultyLevelEnum::class),
                 ],
                 'career_prospects_text'   => ['nullable', 'string', 'max:65535'],
@@ -72,9 +75,10 @@ final class CreateCourseData extends Data
                 'default_teacher_info'    => ['nullable', 'string', 'max:1000'],
                 'additional_info'         => ['nullable', 'array'],
                 'properties'              => ['nullable', 'array'],
-                'status'                  => ['required', Rule::enum(PublicationStatusEnum::class)],
+                'status'                  => ['required',],
                 'categories'              => ['required', 'array'],
                 'categories.*'            => ['required', 'integer', 'exists:categories,id'],
+                'digital_assets'          => ['required', 'array', new DigitalAssetIsAttachableRule()],
                 'media'                   => ['required', 'array'],
                 'media.gallery'           => ['nullable', 'array'],
                 'media.cover'             => ['required', 'array'],
@@ -95,37 +99,37 @@ final class CreateCourseData extends Data
     public function bodyParameters(): array
     {
         return [
-            'slug' => [
+            'slug'                    => [
                 'description' => 'Slug of the course',
                 'required'    => true,
                 'example'     => 'course-slug',
             ],
-            'full_name' => [
+            'full_name'               => [
                 'description' => 'Full name of the course',
                 'required'    => true,
                 'example'     => 'Full Course Name',
             ],
-            'short_name' => [
+            'short_name'              => [
                 'description' => 'Short name of the course',
                 'required'    => true,
                 'example'     => 'Short Course Name',
             ],
-            'description' => [
+            'description'             => [
                 'description' => 'Description of the course',
                 'required'    => false,
                 'example'     => 'This is a course description',
             ],
-            'duration' => [
+            'duration'                => [
                 'description' => 'Duration of the course in minutes',
                 'required'    => false,
                 'example'     => 120,
             ],
-            'difficulty_level' => [
+            'difficulty_level'        => [
                 'description' => 'Difficulty level of the course',
                 'required'    => true,
                 'example'     => CourseDifficultyLevelEnum::BEGINNER->value,
             ],
-            'career_prospects_text' => [
+            'career_prospects_text'   => [
                 'description' => 'Career prospects text of the course',
                 'required'    => false,
                 'example'     => 'Career prospects text',
@@ -135,73 +139,73 @@ final class CreateCourseData extends Data
                 'required'    => false,
                 'example'     => 'Curriculum summary text',
             ],
-            'outcomes_json' => [
+            'outcomes_json'           => [
                 'description' => 'Outcomes JSON of the course',
                 'required'    => false,
                 'example'     => json_encode(['outcome1' => 'Text', 'outcome2' => 'Text']),
             ],
-            'default_teacher_info' => [
+            'default_teacher_info'    => [
                 'description' => 'Default teacher info of the course',
                 'required'    => false,
                 'example'     => 'Default teacher info',
             ],
-            'additional_info' => [
+            'additional_info'         => [
                 'description' => 'Additional info of the course (JSON format)',
                 'required'    => false,
                 'example'     => json_encode(['info1', 'info2']),
             ],
-            'meta_title' => [
+            'meta_title'              => [
                 'description' => 'The meta title for the digital asset, used for SEO.',
                 'example'     => 'Digital Asset Meta Title',
             ],
-            'meta_description' => [
+            'meta_description'        => [
                 'description' => 'The meta description for the digital asset, used for SEO.',
                 'example'     => 'This is a meta description for the digital asset.',
             ],
-            'meta_keywords' => [
+            'meta_keywords'           => [
                 'description' => 'Meta keywords for the digital asset, used for SEO.',
                 'example'     => 'meta keyword1, meta keyword2',
             ],
-            'properties' => [
+            'properties'              => [
                 'description' => 'Properties of the course (JSON format)',
                 'example'     => json_encode(['property1', 'property2']),
             ],
-            'status' => [
+            'status'                  => [
                 'description' => 'Status of the course',
                 'example'     => PublicationStatusEnum::DRAFT->value,
             ],
-            'categories' => [
+            'categories'              => [
                 'description' => 'Array of category ids for the course',
                 'example'     => [1, 2, 3],
             ],
-            'categories.*' => [
+            'categories.*'            => [
                 'description' => 'Array of category ids for the course',
                 'example'     => 1,
             ],
-            'media' => [
+            'media'                   => [
                 'description' => 'Media of the course',
             ],
-            'media.gallery' => [
+            'media.gallery'           => [
                 'description' => 'media ids for gallery',
                 'example'     => [1, 2, 3],
             ],
-            'media.cover' => [
+            'media.cover'             => [
                 'description' => 'media ids for cover',
                 'example'     => [1],
             ],
-            'media.video' => [
+            'media.video'             => [
                 'description' => 'media ids for video',
                 'example'     => [1],
             ],
-            'media.cover.*' => [
+            'media.cover.*'           => [
                 'description' => 'Array of media ids for cover',
                 'example'     => 1,
             ],
-            'media.gallery.*' => [
+            'media.gallery.*'         => [
                 'description' => 'Array of media ids for gallery',
                 'example'     => 1,
             ],
-            'media.video.*' => [
+            'media.video.*'           => [
                 'description' => 'Array of media ids for video',
                 'example'     => 1,
             ],

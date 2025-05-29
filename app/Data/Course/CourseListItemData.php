@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Data\Course;
 
 use App\Data\Category\CategoryListItemData;
+use App\Data\File\DigitalAssetListItemData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
 use Illuminate\Support\Carbon;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
@@ -30,6 +32,9 @@ final class CourseListItemData extends Data
         public PublicationStatusEnum $status,
         #[DataCollectionOf(CategoryListItemData::class)]
         public ?DataCollection $categories,
+        #[DataCollectionOf(DigitalAssetListItemData::class)]
+        #[MapInputName('digital_assets')]
+        public ?DataCollection $digital_assets,
         public ?int $created_by,
         #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Carbon $created_at,

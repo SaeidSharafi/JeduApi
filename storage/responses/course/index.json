@@ -4,12 +4,294 @@
     "current_page": 1,
     "data": [
       {
-        "slug": "saepe-quidem-culpa-voluptas",
-        "full_name": "دریا قهوه علم",
-        "short_name": "دانه",
+        "slug": "nam-soluta-fuga-debitis-est-perferendis",
+        "full_name": "ملک پول آب",
+        "short_name": "نان",
         "difficulty_level": {
-          "value": "beginner",
-          "label": "مبتدی"
+          "value": "advanced",
+          "label": "پیشرفته"
+        },
+        "additional_info": [],
+        "properties": [],
+        "status": {
+          "value": "archived",
+          "label": "آرشیو"
+        },
+        "categories": [
+          {
+            "id": 16,
+            "name": "اسکله",
+            "slug": "pariatur-quia-commodi-minima-et-et-cumque-omnis",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "2025-05-29 07:41:01",
+            "updated_at": "2025-05-29 07:41:01"
+          },
+          {
+            "id": 20,
+            "name": "ماکت",
+            "slug": "ducimus-molestias-amet-omnis-quibusdam",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "2025-05-29 07:41:01",
+            "updated_at": "2025-05-29 07:41:01"
+          },
+          {
+            "id": 100,
+            "name": "غذا",
+            "slug": "sed-illum-et-maxime-laudantium-harum",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "2025-05-29 07:41:01",
+            "updated_at": "2025-05-29 07:41:03"
+          }
+        ],
+        "digital_assets": [
+          {
+            "id": 4,
+            "name": "تصویر",
+            "slug": "architecto-perferendis-temporibus-deleniti-aut-expedita-et",
+            "is_attachable_to_course": false,
+            "status": {
+              "value": "draft",
+              "label": "پیش‌نویس"
+            },
+            "version": "mollitia",
+            "published_at": null,
+            "created_by": 1,
+            "created_at": "2025-05-29 07:41:03",
+            "updated_at": "2025-05-29 07:41:03"
+          },
+          {
+            "id": 25,
+            "name": "الکتریک",
+            "slug": "molestiae-magnam-vel-est-quasi",
+            "is_attachable_to_course": true,
+            "status": {
+              "value": "draft",
+              "label": "پیش‌نویس"
+            },
+            "version": "non",
+            "published_at": null,
+            "created_by": 1,
+            "created_at": "2025-05-29 07:41:03",
+            "updated_at": "2025-05-29 07:41:03"
+          }
+        ],
+        "created_by": 1,
+        "created_at": "2025-05-29 07:41:04",
+        "updated_at": "2025-05-29 07:41:04"
+      },
+      {
+        "slug": "ut-incidunt-harum-et-exercitationem",
+        "full_name": "شیر هنر بالین",
+        "short_name": "پول",
+        "difficulty_level": {
+          "value": "advanced",
+          "label": "پیشرفته"
+        },
+        "additional_info": [],
+        "properties": [],
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "categories": [
+          {
+            "id": 37,
+            "name": "لوازم",
+            "slug": "aut-ipsam-aspernatur-omnis",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "2025-05-29 07:41:01",
+            "updated_at": "2025-05-29 07:41:01"
+          },
+          {
+            "id": 77,
+            "name": "شب",
+            "slug": "alias-eos-tenetur-at-possimus-veniam-aliquam",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "2025-05-29 07:41:01",
+            "updated_at": "2025-05-29 07:41:02"
+          },
+          {
+            "id": 18,
+            "name": "کلمه",
+            "slug": "deserunt-sunt-suscipit-error-autem-atque-ut-quia-alias",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "2025-05-29 07:41:01",
+            "updated_at": "2025-05-29 07:41:01"
+          }
+        ],
+        "digital_assets": [
+          {
+            "id": 77,
+            "name": "درخت",
+            "slug": "omnis-nam-velit-quibusdam-provident-necessitatibus",
+            "is_attachable_to_course": false,
+            "status": {
+              "value": "draft",
+              "label": "پیش‌نویس"
+            },
+            "version": "non",
+            "published_at": "2008-01-18 09:42:24",
+            "created_by": 1,
+            "created_at": "2025-05-29 07:41:03",
+            "updated_at": "2025-05-29 07:41:03"
+          },
+          {
+            "id": 23,
+            "name": "عدالت",
+            "slug": "asperiores-culpa-nisi-in-necessitatibus-vitae-corrupti-iure-maiores",
+            "is_attachable_to_course": true,
+            "status": {
+              "value": "draft",
+              "label": "پیش‌نویس"
+            },
+            "version": "quia",
+            "published_at": "2016-11-22 19:16:53",
+            "created_by": 1,
+            "created_at": "2025-05-29 07:41:03",
+            "updated_at": "2025-05-29 07:41:03"
+          }
+        ],
+        "created_by": 1,
+        "created_at": "2025-05-29 07:41:04",
+        "updated_at": "2025-05-29 07:41:04"
+      },
+      {
+        "slug": "quis-ad-perspiciatis-dicta-eligendi-repudiandae-quisquam-dolores",
+        "full_name": "دریا پول عدالت",
+        "short_name": "مشک",
+        "difficulty_level": {
+          "value": "intermediate",
+          "label": "متوسط"
+        },
+        "additional_info": [],
+        "properties": [],
+        "status": {
+          "value": "archived",
+          "label": "آرشیو"
+        },
+        "categories": [
+          {
+            "id": 5,
+            "name": "مدرسه",
+            "slug": "et-est-debitis-magnam-et",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "2025-05-29 07:41:01",
+            "updated_at": "2025-05-29 07:41:01"
+          },
+          {
+            "id": 84,
+            "name": "لباس",
+            "slug": "qui-aliquam-dolores-vitae",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "2025-05-29 07:41:01",
+            "updated_at": "2025-05-29 07:41:02"
+          },
+          {
+            "id": 38,
+            "name": "پرنده",
+            "slug": "ut-quia-molestias-iusto-qui",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "2025-05-29 07:41:01",
+            "updated_at": "2025-05-29 07:41:01"
+          }
+        ],
+        "digital_assets": [
+          {
+            "id": 71,
+            "name": "ساز",
+            "slug": "commodi-excepturi-dolor-illo-soluta-necessitatibus",
+            "is_attachable_to_course": false,
+            "status": {
+              "value": "draft",
+              "label": "پیش‌نویس"
+            },
+            "version": "quo",
+            "published_at": null,
+            "created_by": 1,
+            "created_at": "2025-05-29 07:41:03",
+            "updated_at": "2025-05-29 07:41:03"
+          },
+          {
+            "id": 23,
+            "name": "عدالت",
+            "slug": "asperiores-culpa-nisi-in-necessitatibus-vitae-corrupti-iure-maiores",
+            "is_attachable_to_course": true,
+            "status": {
+              "value": "draft",
+              "label": "پیش‌نویس"
+            },
+            "version": "quia",
+            "published_at": "2016-11-22 19:16:53",
+            "created_by": 1,
+            "created_at": "2025-05-29 07:41:03",
+            "updated_at": "2025-05-29 07:41:03"
+          }
+        ],
+        "created_by": 1,
+        "created_at": "2025-05-29 07:41:04",
+        "updated_at": "2025-05-29 07:41:04"
+      },
+      {
+        "slug": "rerum-architecto-et-facilis-totam-ut-expedita-et-ut",
+        "full_name": "پوشاک هتل لیوان",
+        "short_name": "چای",
+        "difficulty_level": {
+          "value": "advanced",
+          "label": "پیشرفته"
         },
         "additional_info": [],
         "properties": [],
@@ -20,8 +302,8 @@
         "categories": [
           {
             "id": 6,
-            "name": "تصویر",
-            "slug": "aspernatur-recusandae-veritatis-dicta-illum-tempora-consequatur",
+            "name": "بالش",
+            "slug": "non-quidem-enim-non-non-vitae-sit",
             "status": {
               "value": "published",
               "label": "منتشر شده"
@@ -29,247 +311,13 @@
             "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
             "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
             "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:55"
+            "created_at": "2025-05-29 07:41:01",
+            "updated_at": "2025-05-29 07:41:01"
           },
-          {
-            "id": 58,
-            "name": "لوازم",
-            "slug": "enim-est-ab-praesentium-maxime-voluptates",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          },
-          {
-            "id": 19,
-            "name": "کنترل",
-            "slug": "unde-vitae-qui-error-temporibus-et",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:55"
-          }
-        ],
-        "created_by": 1,
-        "created_at": "2025-05-22 08:31:57",
-        "updated_at": "2025-05-22 08:31:57"
-      },
-      {
-        "slug": "cupiditate-ab-qui-sint-consequuntur-dolorem",
-        "full_name": "صف محل سایت",
-        "short_name": "ثروت",
-        "difficulty_level": {
-          "value": "beginner",
-          "label": "مبتدی"
-        },
-        "additional_info": [],
-        "properties": [],
-        "status": {
-          "value": "archived",
-          "label": "آرشیو"
-        },
-        "categories": [
-          {
-            "id": 25,
-            "name": "مدار",
-            "slug": "commodi-error-numquam-dolorum",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:55"
-          },
-          {
-            "id": 57,
-            "name": "آشیانه",
-            "slug": "nihil-sit-vitae-ab-inventore-quod",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          },
-          {
-            "id": 86,
-            "name": "صندلی",
-            "slug": "inventore-eum-eum-deleniti-saepe-quos-molestiae",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          }
-        ],
-        "created_by": 1,
-        "created_at": "2025-05-22 08:31:57",
-        "updated_at": "2025-05-22 08:31:57"
-      },
-      {
-        "slug": "eaque-repudiandae-maiores-accusantium-dolorem-accusamus",
-        "full_name": "دریاچه نمک سریال",
-        "short_name": "دفترچه",
-        "difficulty_level": {
-          "value": "advanced",
-          "label": "پیشرفته"
-        },
-        "additional_info": [],
-        "properties": [],
-        "status": {
-          "value": "published",
-          "label": "منتشر شده"
-        },
-        "categories": [
-          {
-            "id": 23,
-            "name": "دفتر",
-            "slug": "doloribus-in-corrupti-repellat-unde-aliquid-beatae-id",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:55"
-          },
-          {
-            "id": 16,
-            "name": "عدالت",
-            "slug": "quibusdam-voluptatem-quam-dolorum-natus",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:55"
-          },
-          {
-            "id": 41,
-            "name": "الکتریک",
-            "slug": "aliquam-sit-omnis-molestiae-mollitia-vero",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          }
-        ],
-        "created_by": 1,
-        "created_at": "2025-05-22 08:31:57",
-        "updated_at": "2025-05-22 08:31:57"
-      },
-      {
-        "slug": "quia-aperiam-voluptas-sunt-unde-molestias-optio",
-        "full_name": "ساختار الکتریک سریال",
-        "short_name": "برق",
-        "difficulty_level": {
-          "value": "expert",
-          "label": "کارشناس"
-        },
-        "additional_info": [],
-        "properties": [],
-        "status": {
-          "value": "archived",
-          "label": "آرشیو"
-        },
-        "categories": [
-          {
-            "id": 17,
-            "name": "محفل",
-            "slug": "pariatur-harum-necessitatibus-ipsam-eum-doloremque",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:55"
-          },
-          {
-            "id": 29,
-            "name": "دریاچه",
-            "slug": "qui-excepturi-et-optio-nesciunt-rerum",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          },
-          {
-            "id": 77,
-            "name": "لباس",
-            "slug": "dolores-id-laboriosam-a-similique",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          }
-        ],
-        "created_by": 1,
-        "created_at": "2025-05-22 08:31:57",
-        "updated_at": "2025-05-22 08:31:57"
-      },
-      {
-        "slug": "molestiae-perferendis-esse-officiis-quaerat",
-        "full_name": "مشک الکتریک خط",
-        "short_name": "میز",
-        "difficulty_level": {
-          "value": "beginner",
-          "label": "مبتدی"
-        },
-        "additional_info": [],
-        "properties": [],
-        "status": {
-          "value": "archived",
-          "label": "آرشیو"
-        },
-        "categories": [
           {
             "id": 100,
-            "name": "جام",
-            "slug": "qui-fuga-architecto-sed-illo-omnis-sit-iure",
+            "name": "غذا",
+            "slug": "sed-illum-et-maxime-laudantium-harum",
             "status": {
               "value": "published",
               "label": "منتشر شده"
@@ -277,13 +325,13 @@
             "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
             "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
             "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:57"
+            "created_at": "2025-05-29 07:41:01",
+            "updated_at": "2025-05-29 07:41:03"
           },
           {
-            "id": 1,
-            "name": "دیجیتال",
-            "slug": "sunt-mollitia-architecto-possimus-maxime-doloremque-aut",
+            "id": 17,
+            "name": "شیر",
+            "slug": "et-rerum-expedita-vero-perspiciatis-provident-adipisci-quia-ducimus",
             "status": {
               "value": "published",
               "label": "منتشر شده"
@@ -291,466 +339,50 @@
             "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
             "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
             "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:55"
-          },
-          {
-            "id": 95,
-            "name": "جایزه",
-            "slug": "nisi-saepe-eligendi-delectus-sit-illo-nemo",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:57"
+            "created_at": "2025-05-29 07:41:01",
+            "updated_at": "2025-05-29 07:41:01"
           }
         ],
-        "created_by": 1,
-        "created_at": "2025-05-22 08:31:57",
-        "updated_at": "2025-05-22 08:31:57"
-      },
-      {
-        "slug": "esse-architecto-autem-et-veniam-consequatur-ex-optio",
-        "full_name": "ملل گردو باغ",
-        "short_name": "محفل",
-        "difficulty_level": {
-          "value": "intermediate",
-          "label": "متوسط"
-        },
-        "additional_info": [],
-        "properties": [],
-        "status": {
-          "value": "published",
-          "label": "منتشر شده"
-        },
-        "categories": [
+        "digital_assets": [
           {
-            "id": 59,
-            "name": "خیابان",
-            "slug": "ut-est-aut-sapiente-et-quia-harum",
+            "id": 81,
+            "name": "علم",
+            "slug": "et-quas-ad-voluptate-placeat-quasi",
+            "is_attachable_to_course": false,
             "status": {
-              "value": "published",
-              "label": "منتشر شده"
+              "value": "draft",
+              "label": "پیش‌نویس"
             },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "version": "delectus",
+            "published_at": null,
             "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          },
-          {
-            "id": 44,
-            "name": "شن",
-            "slug": "dolores-atque-corrupti-aspernatur",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          },
-          {
-            "id": 52,
-            "name": "بلیط",
-            "slug": "ipsa-voluptas-facilis-ab-ad-omnis",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          }
-        ],
-        "created_by": 1,
-        "created_at": "2025-05-22 08:31:57",
-        "updated_at": "2025-05-22 08:31:57"
-      },
-      {
-        "slug": "autem-enim-dolor-unde-et-quisquam",
-        "full_name": "پرنده ساختار جام",
-        "short_name": "پیچ",
-        "difficulty_level": {
-          "value": "expert",
-          "label": "کارشناس"
-        },
-        "additional_info": [],
-        "properties": [],
-        "status": {
-          "value": "published",
-          "label": "منتشر شده"
-        },
-        "categories": [
-          {
-            "id": 55,
-            "name": "دایره",
-            "slug": "omnis-totam-quia-est-sit-perspiciatis-tempore-fuga",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          },
-          {
-            "id": 57,
-            "name": "آشیانه",
-            "slug": "nihil-sit-vitae-ab-inventore-quod",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          },
-          {
-            "id": 63,
-            "name": "دریا",
-            "slug": "aut-dicta-omnis-enim-dolores-eum-nihil-quidem",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          }
-        ],
-        "created_by": 1,
-        "created_at": "2025-05-22 08:31:57",
-        "updated_at": "2025-05-22 08:31:57"
-      },
-      {
-        "slug": "repellat-praesentium-natus-est-molestias-et-omnis-quae",
-        "full_name": "لیوان پیچ جنگل",
-        "short_name": "گردو",
-        "difficulty_level": {
-          "value": "beginner",
-          "label": "مبتدی"
-        },
-        "additional_info": [],
-        "properties": [],
-        "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
-        },
-        "categories": [
-          {
-            "id": 74,
-            "name": "برنامه",
-            "slug": "saepe-similique-cumque-sit-inventore-repellendus-sint-eius",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          },
-          {
-            "id": 93,
-            "name": "ملل",
-            "slug": "voluptatem-ipsum-nulla-necessitatibus",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:57"
-          },
-          {
-            "id": 8,
-            "name": "ساحل",
-            "slug": "vitae-et-iure-quam",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:55"
-          }
-        ],
-        "created_by": 1,
-        "created_at": "2025-05-22 08:31:57",
-        "updated_at": "2025-05-22 08:31:57"
-      },
-      {
-        "slug": "et-eligendi-autem-accusamus-laudantium-soluta-doloremque",
-        "full_name": "کاغذ برف الکتریک",
-        "short_name": "دامنه",
-        "difficulty_level": {
-          "value": "expert",
-          "label": "کارشناس"
-        },
-        "additional_info": [],
-        "properties": [],
-        "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
-        },
-        "categories": [
-          {
-            "id": 5,
-            "name": "نان",
-            "slug": "asperiores-aut-sapiente-aut",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:55"
-          },
-          {
-            "id": 73,
-            "name": "دارو",
-            "slug": "sit-laudantium-quo-ut-aliquid",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          },
-          {
-            "id": 91,
-            "name": "موج",
-            "slug": "reiciendis-temporibus-fugit-architecto-eum-esse-similique-totam",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          }
-        ],
-        "created_by": 1,
-        "created_at": "2025-05-22 08:31:57",
-        "updated_at": "2025-05-22 08:31:57"
-      },
-      {
-        "slug": "similique-est-recusandae-non-labore-in-voluptas-accusamus-sit",
-        "full_name": "کامپیوتر کنترل اسکله",
-        "short_name": "برق",
-        "difficulty_level": {
-          "value": "beginner",
-          "label": "مبتدی"
-        },
-        "additional_info": [],
-        "properties": [],
-        "status": {
-          "value": "published",
-          "label": "منتشر شده"
-        },
-        "categories": [
-          {
-            "id": 86,
-            "name": "صندلی",
-            "slug": "inventore-eum-eum-deleniti-saepe-quos-molestiae",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
+            "created_at": "2025-05-29 07:41:03",
+            "updated_at": "2025-05-29 07:41:03"
           },
           {
             "id": 80,
-            "name": "نوازش",
-            "slug": "rerum-saepe-quam-et",
+            "name": "درخت",
+            "slug": "necessitatibus-ut-molestias-non-esse",
+            "is_attachable_to_course": false,
             "status": {
-              "value": "published",
-              "label": "منتشر شده"
+              "value": "draft",
+              "label": "پیش‌نویس"
             },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "version": "aliquid",
+            "published_at": "2003-12-17 09:45:20",
             "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          },
-          {
-            "id": 53,
-            "name": "کشاورز",
-            "slug": "voluptates-omnis-ipsam-soluta-nemo",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
+            "created_at": "2025-05-29 07:41:03",
+            "updated_at": "2025-05-29 07:41:03"
           }
         ],
         "created_by": 1,
-        "created_at": "2025-05-22 08:31:57",
-        "updated_at": "2025-05-22 08:31:57"
+        "created_at": "2025-05-29 07:41:04",
+        "updated_at": "2025-05-29 07:41:04"
       },
       {
-        "slug": "vitae-praesentium-nisi-distinctio-autem-voluptatibus-porro",
-        "full_name": "پارو پرنده طبیعت",
-        "short_name": "موج",
-        "difficulty_level": {
-          "value": "advanced",
-          "label": "پیشرفته"
-        },
-        "additional_info": [],
-        "properties": [],
-        "status": {
-          "value": "archived",
-          "label": "آرشیو"
-        },
-        "categories": [
-          {
-            "id": 68,
-            "name": "نمک",
-            "slug": "voluptatem-neque-quia-qui-quas",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          },
-          {
-            "id": 81,
-            "name": "فیلم",
-            "slug": "architecto-eius-unde-quis-nobis",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          },
-          {
-            "id": 24,
-            "name": "کلمه",
-            "slug": "vel-voluptates-dolorem-voluptatum",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:55"
-          }
-        ],
-        "created_by": 1,
-        "created_at": "2025-05-22 08:31:57",
-        "updated_at": "2025-05-22 08:31:57"
-      },
-      {
-        "slug": "possimus-fugit-et-et-non-ut-dolores",
-        "full_name": "پیچ پل نان",
-        "short_name": "قلم",
-        "difficulty_level": {
-          "value": "beginner",
-          "label": "مبتدی"
-        },
-        "additional_info": [],
-        "properties": [],
-        "status": {
-          "value": "archived",
-          "label": "آرشیو"
-        },
-        "categories": [
-          {
-            "id": 95,
-            "name": "جایزه",
-            "slug": "nisi-saepe-eligendi-delectus-sit-illo-nemo",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:57"
-          },
-          {
-            "id": 72,
-            "name": "پوستر",
-            "slug": "ex-quos-et-suscipit-voluptatem-natus-qui-itaque",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          },
-          {
-            "id": 38,
-            "name": "آلاچیق",
-            "slug": "aspernatur-porro-nesciunt-est",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          }
-        ],
-        "created_by": 1,
-        "created_at": "2025-05-22 08:31:57",
-        "updated_at": "2025-05-22 08:31:57"
-      },
-      {
-        "slug": "culpa-ut-rerum-voluptate-ratione",
-        "full_name": "آخر بالین خط",
-        "short_name": "خودرو",
+        "slug": "cumque-in-velit-aperiam-enim-voluptas-laborum",
+        "full_name": "تیم الکتریک شهر",
+        "short_name": "بانک",
         "difficulty_level": {
           "value": "intermediate",
           "label": "متوسط"
@@ -761,58 +393,76 @@
           "value": "published",
           "label": "منتشر شده"
         },
-        "categories": [
-          {
-            "id": 13,
-            "name": "موسیقی",
-            "slug": "quod-rerum-ut-placeat-magni-atque-quia",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:55"
-          },
-          {
-            "id": 40,
-            "name": "صندوق",
-            "slug": "quia-sed-repellat-ut-dolorem",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          },
-          {
-            "id": 91,
-            "name": "موج",
-            "slug": "reiciendis-temporibus-fugit-architecto-eum-esse-similique-totam",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          }
-        ],
+        "categories": [],
+        "digital_assets": [],
         "created_by": 1,
-        "created_at": "2025-05-22 08:31:57",
-        "updated_at": "2025-05-22 08:31:57"
+        "created_at": "2025-05-29 07:41:04",
+        "updated_at": "2025-05-29 07:41:04"
       },
       {
-        "slug": "natus-repellendus-cumque-animi-porro-quo-vitae",
-        "full_name": "عدد صوت لیوان",
-        "short_name": "پرنده",
+        "slug": "quasi-minima-autem-consectetur-eos-libero-enim-tempora",
+        "full_name": "سریال مهد صندلی",
+        "short_name": "نقاشی",
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
+        },
+        "additional_info": [],
+        "properties": [],
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [],
+        "digital_assets": [],
+        "created_by": 1,
+        "created_at": "2025-05-29 07:41:04",
+        "updated_at": "2025-05-29 07:41:04"
+      },
+      {
+        "slug": "atque-sed-perspiciatis-ratione-enim-repudiandae",
+        "full_name": "فیلم دریاچه صوت",
+        "short_name": "قفل",
+        "difficulty_level": {
+          "value": "expert",
+          "label": "کارشناس"
+        },
+        "additional_info": [],
+        "properties": [],
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [],
+        "digital_assets": [],
+        "created_by": 1,
+        "created_at": "2025-05-29 07:41:04",
+        "updated_at": "2025-05-29 07:41:04"
+      },
+      {
+        "slug": "qui-alias-eum-facere-suscipit-molestiae-et-praesentium",
+        "full_name": "پل تیم پارو",
+        "short_name": "شن",
+        "difficulty_level": {
+          "value": "intermediate",
+          "label": "متوسط"
+        },
+        "additional_info": [],
+        "properties": [],
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [],
+        "digital_assets": [],
+        "created_by": 1,
+        "created_at": "2025-05-29 07:41:04",
+        "updated_at": "2025-05-29 07:41:04"
+      },
+      {
+        "slug": "nobis-qui-sed-ipsa-praesentium",
+        "full_name": "آب دایره دارو",
+        "short_name": "اسکله",
         "difficulty_level": {
           "value": "advanced",
           "label": "پیشرفته"
@@ -823,58 +473,16 @@
           "value": "draft",
           "label": "پیش‌نویس"
         },
-        "categories": [
-          {
-            "id": 24,
-            "name": "کلمه",
-            "slug": "vel-voluptates-dolorem-voluptatum",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:55"
-          },
-          {
-            "id": 41,
-            "name": "الکتریک",
-            "slug": "aliquam-sit-omnis-molestiae-mollitia-vero",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          },
-          {
-            "id": 67,
-            "name": "پیچ",
-            "slug": "repellendus-et-ab-ratione-accusamus-perspiciatis",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          }
-        ],
+        "categories": [],
+        "digital_assets": [],
         "created_by": 1,
-        "created_at": "2025-05-22 08:31:57",
-        "updated_at": "2025-05-22 08:31:57"
+        "created_at": "2025-05-29 07:41:04",
+        "updated_at": "2025-05-29 07:41:04"
       },
       {
-        "slug": "porro-veniam-sit-illo-autem-laboriosam-ut-odio",
-        "full_name": "پارو محل ملل",
-        "short_name": "پوشاک",
+        "slug": "et-et-possimus-sed-voluptatem",
+        "full_name": "مهد خیابان کمک",
+        "short_name": "دایره",
         "difficulty_level": {
           "value": "expert",
           "label": "کارشناس"
@@ -885,53 +493,111 @@
           "value": "draft",
           "label": "پیش‌نویس"
         },
-        "categories": [
-          {
-            "id": 85,
-            "name": "طبیعت",
-            "slug": "aliquid-rerum-dolorem-fuga-repellat-qui-ut",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          },
-          {
-            "id": 14,
-            "name": "باغ",
-            "slug": "dignissimos-eligendi-et-sint",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:55"
-          },
-          {
-            "id": 59,
-            "name": "خیابان",
-            "slug": "ut-est-aut-sapiente-et-quia-harum",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "2025-05-22 08:31:55",
-            "updated_at": "2025-05-22 08:31:56"
-          }
-        ],
+        "categories": [],
+        "digital_assets": [],
         "created_by": 1,
-        "created_at": "2025-05-22 08:31:57",
-        "updated_at": "2025-05-22 08:31:57"
+        "created_at": "2025-05-29 07:41:04",
+        "updated_at": "2025-05-29 07:41:04"
+      },
+      {
+        "slug": "voluptatem-vero-deserunt-non-nobis-impedit-distinctio-sequi",
+        "full_name": "شب ملت لوازم",
+        "short_name": "فرش",
+        "difficulty_level": {
+          "value": "intermediate",
+          "label": "متوسط"
+        },
+        "additional_info": [],
+        "properties": [],
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "categories": [],
+        "digital_assets": [],
+        "created_by": 1,
+        "created_at": "2025-05-29 07:41:04",
+        "updated_at": "2025-05-29 07:41:04"
+      },
+      {
+        "slug": "dolorem-et-accusantium-veniam-itaque",
+        "full_name": "آشیانه عطر برق",
+        "short_name": "برنامه",
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
+        },
+        "additional_info": [],
+        "properties": [],
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [],
+        "digital_assets": [],
+        "created_by": 1,
+        "created_at": "2025-05-29 07:41:04",
+        "updated_at": "2025-05-29 07:41:04"
+      },
+      {
+        "slug": "rerum-sunt-sint-quo-et-molestiae-tenetur",
+        "full_name": "شیر لیوان گردو",
+        "short_name": "دریاچه",
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
+        },
+        "additional_info": [],
+        "properties": [],
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "categories": [],
+        "digital_assets": [],
+        "created_by": 1,
+        "created_at": "2025-05-29 07:41:04",
+        "updated_at": "2025-05-29 07:41:04"
+      },
+      {
+        "slug": "veritatis-ducimus-optio-perspiciatis-minima-voluptas",
+        "full_name": "پوشاک نان کنترل",
+        "short_name": "کشاورز",
+        "difficulty_level": {
+          "value": "advanced",
+          "label": "پیشرفته"
+        },
+        "additional_info": [],
+        "properties": [],
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [],
+        "digital_assets": [],
+        "created_by": 1,
+        "created_at": "2025-05-29 07:41:04",
+        "updated_at": "2025-05-29 07:41:04"
+      },
+      {
+        "slug": "sint-esse-consequatur-sit",
+        "full_name": "پیچ آسمان آب",
+        "short_name": "مربع",
+        "difficulty_level": {
+          "value": "expert",
+          "label": "کارشناس"
+        },
+        "additional_info": [],
+        "properties": [],
+        "status": {
+          "value": "archived",
+          "label": "آرشیو"
+        },
+        "categories": [],
+        "digital_assets": [],
+        "created_by": 1,
+        "created_at": "2025-05-29 07:41:04",
+        "updated_at": "2025-05-29 07:41:04"
       }
     ],
     "first_page_url": "http://jedu.test/api/v1/admin/course?per_page=15&page=1",

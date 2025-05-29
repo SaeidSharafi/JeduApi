@@ -16,10 +16,12 @@ final readonly class CreateCourseAction
     public function handle(CreateCourseData $data): void
     {
         DB::transaction(function () use ($data): void {
-            $mediaToAttach      = $data->media      ?? [];
-            $categoriesToAttach = $data->categories ?? [];
-            $course             = Course::query()->create($data->except('media', 'categories')->all());
+            $mediaToAttach       = $data->media          ?? [];
+            $categoriesToAttach  = $data->categories     ?? [];
+            $digitalAssetsAttach = $data->digital_assets ?? [];
+            $course              = Course::query()->create($data->except('media', 'categories', 'digital_assets')->all());
             $course->categories()->attach($categoriesToAttach);
+            $course->digitalAssets()->attach($digitalAssetsAttach);
             foreach ($mediaToAttach as $tag => $mediaIds) {
                 if (is_array($mediaIds)) {
                     foreach ($mediaIds as $mediaId) {

@@ -89,19 +89,22 @@ final class ScribeSeeder extends Seeder
             ->create([
                 'created_by' => Admin::query()->first()->id,
             ]);
-        Course::factory(100)
-            ->withMedia(['gallery', 'cover', 'video'])
-            ->withCategory(3)
-            ->create([
-                'created_by' => Admin::query()->first()->id,
-            ]);
-
         DigitalAsset::factory(100)
             ->withFile()
             ->withCategory()
             ->create([
                 'created_by' => Admin::query()->first()->id,
             ]);
+
+        Course::factory(100)
+            ->withMedia(['gallery', 'cover', 'video'])
+            ->withCategory(3)
+            ->withDigitalAssets(2, true)
+            ->create([
+                'created_by' => Admin::query()->first()->id,
+            ]);
+
+
 
     }
 

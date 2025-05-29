@@ -12,10 +12,20 @@ uses(Tests\AuthTestTrait::class);
 beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
+    $this->cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
+        ->toDisk('public')
+        ->upload();
+    $this->gallery = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('gallery.jpg'))
+        ->toDisk('public')
+        ->upload();
 });
 it('can view list of courses', function (): void {
-    $courses = App\Models\Course::factory(5)->create();
-
+    $courses = App\Models\Course::factory(5)
+        ->withCategory()
+        ->withDigitalAssets()
+        ->create()
+        ->fresh();
+    $courses->load('categories', 'digitalAssets');
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
     ]);
@@ -34,6 +44,7 @@ it('can view list of courses', function (): void {
                         'properties',
                         'status',
                         'categories',
+                        'digital_assets',
                         'created_by',
                         'created_at',
                         'updated_at',
@@ -60,6 +71,35 @@ it('can view list of courses', function (): void {
                 ->where('difficulty_level.value', $expectedCourse->difficulty_level->value)
                 ->where('status.value', $expectedCourse->status->value)
                 ->where('created_by', $expectedCourse->created_by)
+                ->where('categories', $expectedCourse->categories->map(fn($category): array => [
+                    'id'         => $category->id,
+                    'name'       => $category->name,
+                    'slug'       => $category->slug,
+                    'status'     => [
+                        'value' => $category->status->value,
+                        'label' => $category->status->translate(),
+                    ],
+                    'image_url'  => $category->image_url,
+                    'icon_url'   => $category->icon_url,
+                    'created_by' => $category->created_by,
+                    'created_at' => $category->created_at->format('Y-m-d H:i:s'),
+                    'updated_at' => $category->updated_at?->format('Y-m-d H:i:s'),
+                ]))
+                ->where('digital_assets', $expectedCourse->digitalAssets?->map(fn(\App\Models\DigitalAsset $asset): array => [
+                    'id' => $asset->id,
+                    'name' => $asset->name,
+                    'slug' => $asset->slug,
+                    'is_attachable_to_course' => $asset->is_attachable_to_course,
+                    'status'     => [
+                        'value' => $asset->status->value,
+                        'label' => $asset->status->translate(),
+                    ],
+                    'version' => $asset->version,
+                    'published_at' => $asset->published_at?->format('Y-m-d H:i:s'),
+                    'created_by' => $asset->created_by,
+                    'created_at' => $asset->created_at->format('Y-m-d H:i:s'),
+                    'updated_at' => $asset->updated_at?->format('Y-m-d H:i:s'),
+                ]))
                 ->etc();
         }
     }
@@ -71,24 +111,18 @@ it('can create a new course with valid data', function (): void {
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_CREATE->value,
     ]);
-    $file           = Illuminate\Http\UploadedFile::fake()->image('gallery.jpg');
-    $uploadResponse = $this->postJson(route('api.v1.admin.media.upload'), [
-        'file' => $file,
-    ]);
-    $uploadResponse->assertStatus(201);
-    $mediaId = $uploadResponse->json('data.id');
-    expect($mediaId)->not()->toBeNull();
+
+
     $categories = App\Models\Category::factory(2)->create()->pluck('id')->toArray();
-    $cover      = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
-        ->toDisk('public')
-        ->upload();
+    $ditialAssets = App\Models\DigitalAsset::factory(2)->create();
     $response = $this->postJson(route('api.v1.admin.course.store'), [
         ...$courseData->toArray(),
         'categories' => $categories,
+        'digital_assets' => $ditialAssets->pluck('id')->toArray(),
         'media'      => [
-            'gallery'     => [$mediaId],
+            'gallery'     => [$this->gallery->id],
             'thumbnail'   => [],
-            'cover'       => [$cover->id],
+            'cover'       => [$this->cover->id],
             'certificate' => [],
         ],
     ]);
@@ -105,11 +139,11 @@ it('can create a new course with valid data', function (): void {
         ->where('slug', $courseData->slug)
         ->first();
     assertDatabaseHas('media', [
-        'id'  => $mediaId,
+        'id'  => $this->gallery->id,
         'alt' => '',
     ]);
     assertDatabaseHas('mediables', [
-        'media_id'      => $mediaId,
+        'media_id'      => $this->gallery->id,
         'mediable_id'   => $course->id,
         'mediable_type' => MorphTypeEnum::COURSE->value,
         'tag'           => 'gallery',
@@ -123,6 +157,16 @@ it('can create a new course with valid data', function (): void {
         'categorizable_id'   => $course->id,
         'categorizable_type' => MorphTypeEnum::COURSE->value,
         'category_id'        => $categories[1],
+    ]);
+    assertDatabaseHas('assetables', [
+        'digital_asset_id' => $ditialAssets[0]->id,
+        'assetable_id'     => $course->id,
+        'assetable_type'   => MorphTypeEnum::COURSE->value,
+    ]);
+    assertDatabaseHas('assetables', [
+        'digital_asset_id' => $ditialAssets[1]->id,
+        'assetable_id'     => $course->id,
+        'assetable_type'   => MorphTypeEnum::COURSE->value,
     ]);
 });
 
@@ -152,7 +196,7 @@ it('can not create a new course with invalid data', function (): void {
         ]);
 });
 it('can not create a new course with smiliar slug', function (): void {
-    $course     = App\Models\Course::factory()->create();
+    $course = App\Models\Course::factory()->create();
     $courseData = App\Models\Course::factory()->make([
         'slug' => $course->slug,
     ])->toArray();
@@ -180,18 +224,40 @@ it('can not create a new course with invalid slug', function (): void {
             'slug',
         ]);
 });
-
+it('can not create a new course with non-attachable digital asset', function (): void {
+    $courseData = App\Models\Course::factory()->make()->toArray();
+    $this->authorized_user([
+        App\Enums\PermissionEnum::COURSE_CREATE->value,
+    ]);
+    $digitalAsset = App\Models\DigitalAsset::factory()->create([
+        'is_attachable_to_course' => false,
+    ]);
+    $response = $this->postJson(route('api.v1.admin.course.store'),
+        [
+            ...$courseData,
+            'digital_assets' => [$digitalAsset->id],
+            'media'      => [
+                'gallery'     => [$this->gallery->id],
+                'thumbnail'   => [],
+                'cover'       => [$this->cover->id],
+                'certificate' => [],
+            ],
+        ]
+    );
+    $response
+        ->assertStatus(422)
+        ->assertJsonValidationErrors([
+            'digital_assets',
+        ]);
+});
 it('can view a course', function (): void {
     $categories = App\Models\Category::factory(3)->create();
-
+    $digitalAssets = App\Models\DigitalAsset::factory(2)->create();
     $course = App\Models\Course::factory()
-        ->withMedia(['cover'])
         ->create();
     $course->categories()->sync($categories);
-    $cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('gallery.jpg'))
-        ->toDisk('public')
-        ->upload();
-    $course->attachMedia($cover, 'cover');
+    $course->digitalAssets()->sync($digitalAssets);
+    $course->attachMedia($this->cover, 'cover');
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_VIEW->value,
     ]);
@@ -201,7 +267,7 @@ it('can view a course', function (): void {
 
     $response
         ->assertStatus(200)
-        ->assertJson(function (AssertableJson $response) use ($categories, $media, $course): void {
+        ->assertJson(function (AssertableJson $response) use ($digitalAssets, $categories, $media, $course): void {
             $response
                 ->where('data.id', $course->id)
                 ->where('data.slug', $course->slug)
@@ -218,11 +284,11 @@ it('can view a course', function (): void {
                     'value' => $course->status->value,
                     'label' => $course->status->translate(),
                 ])
-                ->where('data.categories', $categories->map(fn ($category): array => [
-                    'id'     => $category->id,
-                    'name'   => $category->name,
-                    'slug'   => $category->slug,
-                    'status' => [
+                ->where('data.categories', $categories->map(fn($category): array => [
+                    'id'         => $category->id,
+                    'name'       => $category->name,
+                    'slug'       => $category->slug,
+                    'status'     => [
                         'value' => $category->status->value,
                         'label' => $category->status->translate(),
                     ],
@@ -231,6 +297,21 @@ it('can view a course', function (): void {
                     'created_by' => $category->created_by,
                     'created_at' => $category->created_at->format('Y-m-d H:i:s'),
                     'updated_at' => $category->updated_at?->format('Y-m-d H:i:s'),
+                ]))
+                ->where('data.digital_assets', $digitalAssets->map(fn(\App\Models\DigitalAsset $asset): array => [
+                    'id' => $asset->id,
+                    'name' => $asset->name,
+                    'slug' => $asset->slug,
+                    'is_attachable_to_course' => $asset->is_attachable_to_course,
+                    'status'     => [
+                        'value' => $asset->status->value,
+                        'label' => $asset->status->translate(),
+                    ],
+                    'version' => $asset->version,
+                    'published_at' => $asset->published_at?->format('Y-m-d H:i:s'),
+                    'created_by' => $asset->created_by,
+                    'created_at' => $asset->created_at->format('Y-m-d H:i:s'),
+                    'updated_at' => $asset->updated_at?->format('Y-m-d H:i:s'),
                 ]))
                 ->has('data.media.gallery', 0)
                 ->has('data.media.video', 0)
@@ -256,26 +337,17 @@ it('can edit a course', function (): void {
         App\Enums\PermissionEnum::COURSE_UPDATE->value,
     ]);
 
-    $file           = Illuminate\Http\UploadedFile::fake()->image('gallery.jpg');
-    $uploadResponse = $this->postJson(route('api.v1.admin.media.upload'), [
-        'file' => $file,
-        'alt'  => 'Test Alt',
-    ]);
-    $uploadResponse->assertStatus(201);
-    $mediaId = $uploadResponse->json('data.id');
-    expect($mediaId)->not()->toBeNull();
     $categories = App\Models\Category::factory(3)->create()->pluck('id')->toArray();
+    $digitalAssets = App\Models\DigitalAsset::factory(2)->create();
 
-    $cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
-        ->toDisk('public')
-        ->upload();
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
         ...$courseData,
         'categories' => $categories,
+        'digital_assets' => $digitalAssets->pluck('id')->toArray(),
         'media'      => [
-            'gallery'     => [$mediaId],
+            'gallery'     => [$this->gallery->id],
             'thumbnail'   => [],
-            'cover'       => [$cover->id],
+            'cover'       => [$this->cover->id],
             'certificate' => [],
         ],
     ]);
@@ -290,22 +362,39 @@ it('can edit a course', function (): void {
         'duration'    => $courseData['duration'],
     ]);
 
-    assertDatabaseHas('media', [
-        'id'  => $mediaId,
-        'alt' => 'Test Alt',
-    ]);
     assertDatabaseHas('mediables', [
-        'media_id'      => $mediaId,
+        'media_id'      => $this->gallery->id,
         'mediable_id'   => $course->id,
         'mediable_type' => MorphTypeEnum::COURSE->value,
         'tag'           => 'gallery',
+    ]);
+
+    assertDatabaseHas('categorizables', [
+        'categorizable_id'   => $course->id,
+        'categorizable_type' => MorphTypeEnum::COURSE->value,
+        'category_id'        => $categories[0],
+    ]);
+    assertDatabaseHas('categorizables', [
+        'categorizable_id'   => $course->id,
+        'categorizable_type' => MorphTypeEnum::COURSE->value,
+        'category_id'        => $categories[1],
+    ]);
+    assertDatabaseHas('assetables', [
+        'digital_asset_id' => $digitalAssets[0]->id,
+        'assetable_id'     => $course->id,
+        'assetable_type'   => MorphTypeEnum::COURSE->value,
+    ]);
+    assertDatabaseHas('assetables', [
+        'digital_asset_id' => $digitalAssets[1]->id,
+        'assetable_id'     => $course->id,
+        'assetable_type'   => MorphTypeEnum::COURSE->value,
     ]);
 });
 it('can pass slug unique check', function (): void {
     $course = App\Models\Course::factory()
         ->withCategory()
         ->create();
-    $category   = App\Models\Category::factory()->create();
+    $category = App\Models\Category::factory()->create();
     $courseData = App\Models\Course::factory()->make(
         [
             'slug' => $course->slug,
@@ -314,16 +403,14 @@ it('can pass slug unique check', function (): void {
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_UPDATE->value,
     ]);
-    $cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
-        ->toDisk('public')
-        ->upload();
+
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
         ...$courseData,
         'categories' => [$category->id],
         'media'      => [
             'gallery'     => [],
             'thumbnail'   => [],
-            'cover'       => [$cover->id],
+            'cover'       => [$this->cover->id],
             'certificate' => [],
         ],
     ]);
@@ -340,8 +427,8 @@ it('can pass slug unique check', function (): void {
 
 });
 it('can not edit a course with duplicate slug', function (): void {
-    $course2    = App\Models\Course::factory()->create();
-    $course     = App\Models\Course::factory()->create();
+    $course2 = App\Models\Course::factory()->create();
+    $course = App\Models\Course::factory()->create();
     $courseData = App\Models\Course::factory()->make(
         [
             'slug' => $course2->slug,
@@ -392,7 +479,7 @@ it('can not edit a course with invalid data', function (): void {
 });
 
 it('can not edit a course with invalid slug', function (): void {
-    $course     = App\Models\Course::factory()->create();
+    $course = App\Models\Course::factory()->create();
     $courseData = App\Models\Course::factory()->make([
         'slug' => 'invalid slug',
     ])->toArray();

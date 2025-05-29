@@ -31,13 +31,26 @@ final class DigitalAssetController extends Controller
     /**
      * Display a listing of the digital assets.
      *
+     * This endpoint returns a paginated list of digital assets with optional filtering and sorting.
+     * You can filter by name, slug, description, status, and whether the asset is attachable to a course.
+     * You can also sort the results by name, slug, or status.
+     *
+     * @queryParam page int Page number to retrieve. Default is 1.
+     * @queryParam per_page int Number of items per page. Default is 15.
+     * @queryParam filter[name] string Filter by asset name.
+     * @queryParam filter[slug] string Filter by asset slug.
+     * @queryParam filter[description] string Filter by asset description.
+     * @queryParam filter[status] string Filter by asset status (e.g., published, draft).
+     * @queryParam filter[is_attachable_to_course] boolean Filter by whether the asset is attachable to a course.
+     * @queryParam sort string Sort by asset name, slug, or status. Prefix with '-' for descending order (e.g., -name).
+     *
      * @responseFile 200 responses/digital-asset/index.json
      */
     public function index(): ApiResponseInterface
     {
         Gate::authorize('view-any', DigitalAsset::class);
         $files = QueryBuilder::for(DigitalAsset::class)
-            ->allowedFilters(['name', 'slug', 'description', 'status'])
+            ->allowedFilters(['name', 'slug', 'description', 'status', 'is_attachable_to_course'])
             ->allowedSorts(['name', 'slug', 'status'])
             ->paginate();
 

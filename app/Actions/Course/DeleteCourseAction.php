@@ -16,6 +16,8 @@ final readonly class DeleteCourseAction
     {
         DB::transaction(function () use ($course): void {
             $course->media()->delete();
+            $course->digitalAssets()->detach();
+            $course->categories()->detach();
             $course->delete();
         });
     }

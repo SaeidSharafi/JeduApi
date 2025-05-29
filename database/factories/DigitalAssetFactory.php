@@ -30,7 +30,7 @@ final class DigitalAssetFactory extends Factory
             'version'                 => $this->faker->word(),
             'page_count'              => $this->faker->numberBetween(1, 100),
             'duration_seconds'        => $this->faker->numberBetween(60, 3600),
-            'is_attachable_to_course' => $this->faker->boolean(),
+            'is_attachable_to_course' => true,
             'status'                  => \App\Enums\PublicationStatusEnum::DRAFT->value,
             'keywords'                => implode(',', $this->faker->persianWords(3)),
             'meta_title'              => mb_trim(Str::take($this->faker->persianWords(4, true), 70)),
@@ -39,6 +39,15 @@ final class DigitalAssetFactory extends Factory
             'published_at'            => $this->faker->optional()->dateTime()?->format('Y-m-d H:i:s'),
             'created_by'              => Admin::factory(),
         ];
+    }
+
+    public function nonAttachable()
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'is_attachable_to_course' => false,
+            ];
+        });
     }
 
     public function withFile(): self
