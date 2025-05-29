@@ -20,6 +20,7 @@
         "laravel/tinker": "^2.10.1",
         "nunomaduro/essentials": "@dev",
         "plank/laravel-mediable": "^6.3",
+        "sadegh19b/laravel-persian-validation": "^2.0",
         "saeidsharafi/laravel-permission-generator": "^1.1",
         "spatie/laravel-data": "^4.15",
         "spatie/laravel-permission": "^6.18",
