@@ -28,8 +28,8 @@ final class SeminarFactory extends Factory
     public function definition(): array
     {
         return [
-            'full_name'                     => $this->faker->sentence(3),
-            'short_name'                     => $this->faker->sentence(2),
+            'full_name'                => $this->faker->sentence(3),
+            'short_name'               => $this->faker->sentence(2),
             'subtitle'                 => $this->faker->sentence(6),
             'slug'                     => $this->faker->slug(),
             'description'              => $this->faker->paragraph(),

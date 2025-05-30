@@ -18,8 +18,10 @@ final class Seminar extends Model
     use HasAssets;
     use HasAuditor;
     use HasCategories;
+
     /** @use HasFactory<\Database\Factories\SeminarFactory> */
     use HasFactory;
+
     use Mediable;
 
     protected $fillable = [

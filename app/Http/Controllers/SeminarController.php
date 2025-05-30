@@ -20,6 +20,7 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 /**
  * @authenticated admin
+ *
  * @group Seminar Manamgemnt
  * APIs for managing seminars
  */
@@ -76,7 +77,7 @@ final class SeminarController extends Controller
     public function show(Seminar $seminar): ApiResponseInterface
     {
         Gate::authorize('view', $seminar);
-        $seminar->load('categories','digitalAssets');
+        $seminar->load('categories', 'digitalAssets');
         $media = [];
         foreach (['gallery', 'video', 'cover'] as $tag) {
             $media[$tag] = $seminar->getMedia($tag)
@@ -106,20 +107,21 @@ final class SeminarController extends Controller
     {
         Gate::authorize('update', $seminar);
         $action->handle($data, $seminar);
-        $seminar->load('categories','digitalAssets');
+        $seminar->load('categories', 'digitalAssets');
         $media = [];
         foreach (['gallery', 'video', 'cover'] as $tag) {
             $media[$tag] = $seminar->getMedia($tag)
                 ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag))
                 ->toArray();
         }
+
         return response()->success(ShowSeminarData::from(
             [
                 ...$seminar->toArray(),
                 'categories' => $seminar->categories,
                 'media'      => $media,
             ]
-        ),message: __('messages.updated', ['model' => __('models.seminar')]));
+        ), message: __('messages.updated', ['model' => __('models.seminar')]));
     }
 
     /**

@@ -12,9 +12,9 @@ final class UpdateSeminarAction
     public function handle(CreateSeminarData $data, Seminar $seminar): void
     {
         $seminar->update($data->except('media', 'categories', 'digital_assets')->all());
-        $mediaToAttach       = $data->media      ?? [];
-        $categoriesToAttach  = $data->categories ?? [];
-        $digitalAssetsAttach = $data->digital_assets          ?? [];
+        $mediaToAttach       = $data->media          ?? [];
+        $categoriesToAttach  = $data->categories     ?? [];
+        $digitalAssetsAttach = $data->digital_assets ?? [];
         $seminar->categories()->sync($categoriesToAttach);
         $seminar->digitalAssets()->sync($digitalAssetsAttach);
         foreach (['gallery', 'video', 'cover'] as $tag) {

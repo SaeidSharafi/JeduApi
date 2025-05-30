@@ -7,7 +7,6 @@ namespace App\Data\Category;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\PublicationStatusEnum;
 use Hekmatinasser\Verta\Verta;
-use Illuminate\Support\Carbon;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;

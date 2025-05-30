@@ -42,16 +42,15 @@ final class CreateSeminarData extends Data
         public array $categories,
         public array $digital_assets = [],
         public array $media = [],
-    ) {
-    }
+    ) {}
 
     public static function rules(): array
     {
         return array_merge([
-            'full_name'                => ['required', 'string', 'max:255'],
-            'short_name'               => ['required', 'string', 'max:255'],
-            'subtitle'                 => ['nullable', 'string', 'max:255'],
-            'slug'                     => [
+            'full_name'  => ['required', 'string', 'max:255'],
+            'short_name' => ['required', 'string', 'max:255'],
+            'subtitle'   => ['nullable', 'string', 'max:255'],
+            'slug'       => [
                 'required',
                 'string',
                 'alpha_dash',
@@ -65,7 +64,7 @@ final class CreateSeminarData extends Data
                     return $query;
                 }),
             ],
-            'status'                    => ['required', Rule::enum(PublicationStatusEnum::class)],
+            'status'                   => ['required', Rule::enum(PublicationStatusEnum::class)],
             'level'                    => ['nullable', Rule::enum(CourseDifficultyLevelEnum::class)],
             'provides_certificate'     => ['boolean'],
             'description'              => ['nullable', 'string'],

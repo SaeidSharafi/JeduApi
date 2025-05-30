@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Policies\Admin;
 
 use App\Enums\PermissionEnum;
-use App\Models\Seminar;
 use App\Models\Admin;
+use App\Models\Seminar;
 
 final class SeminarPolicy
 {

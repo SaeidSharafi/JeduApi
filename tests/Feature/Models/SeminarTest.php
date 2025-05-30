@@ -7,34 +7,34 @@ test('to array', function (): void {
 
     expect($seminar->toArray())
         ->toEqual([
-            'id'                           => $seminar->id,
-            'slug'                         => $seminar->slug,
-            'full_name'                    => $seminar->full_name,
-            'short_name'                   => $seminar->short_name,
-            'subtitle'                     => $seminar->subtitle,
-            'learning_objectives'          => $seminar->learning_objectives,
-            'target_audience'              => $seminar->target_audience,
-            'prerequisites'                => $seminar->prerequisites,
-            'promo_video_external_url'     => $seminar->promo_video_external_url,
-            'estimated_duration_desc'      => $seminar->estimated_duration_desc,
-            'level'                        => $seminar->level->value,
-            'provides_certificate'         => $seminar->provides_certificate,
-            'faq'                          => $seminar->faq,
-            'keywords'                     => $seminar->keywords,
-            'description'                  => $seminar->description,
-            'meta_title'                   => $seminar->meta_title,
-            'meta_description'             => $seminar->meta_description,
-            'meta_keywords'                => $seminar->meta_keywords,
-            'status'                       => $seminar->status->value,
-            'created_by'                   => $seminar->created_by,
-            'created_at'                   => $seminar->created_at->format('Y-m-d H:i:s'),
-            'updated_at'                   => $seminar->updated_at->format('Y-m-d H:i:s'),
+            'id'                       => $seminar->id,
+            'slug'                     => $seminar->slug,
+            'full_name'                => $seminar->full_name,
+            'short_name'               => $seminar->short_name,
+            'subtitle'                 => $seminar->subtitle,
+            'learning_objectives'      => $seminar->learning_objectives,
+            'target_audience'          => $seminar->target_audience,
+            'prerequisites'            => $seminar->prerequisites,
+            'promo_video_external_url' => $seminar->promo_video_external_url,
+            'estimated_duration_desc'  => $seminar->estimated_duration_desc,
+            'level'                    => $seminar->level->value,
+            'provides_certificate'     => $seminar->provides_certificate,
+            'faq'                      => $seminar->faq,
+            'keywords'                 => $seminar->keywords,
+            'description'              => $seminar->description,
+            'meta_title'               => $seminar->meta_title,
+            'meta_description'         => $seminar->meta_description,
+            'meta_keywords'            => $seminar->meta_keywords,
+            'status'                   => $seminar->status->value,
+            'created_by'               => $seminar->created_by,
+            'created_at'               => $seminar->created_at->format('Y-m-d H:i:s'),
+            'updated_at'               => $seminar->updated_at->format('Y-m-d H:i:s'),
         ]);
 
 });
 
 test('relation categories', function (): void {
-    $seminar   = App\Models\Seminar::factory()->create();
+    $seminar  = App\Models\Seminar::factory()->create();
     $category = App\Models\Category::factory()->create();
     $seminar->categories()->attach($category->id);
 
@@ -53,7 +53,7 @@ test('relation categories', function (): void {
 });
 
 test('relation digital assets', function (): void {
-    $seminar = App\Models\Seminar::factory()->create();
+    $seminar      = App\Models\Seminar::factory()->create();
     $digitalAsset = App\Models\DigitalAsset::factory()->create();
     $seminar->digitalAssets()->attach($digitalAsset->id);
 
@@ -72,9 +72,9 @@ test('relation digital assets', function (): void {
 });
 
 test('relation auditor', function (): void {
-    $seminar = App\Models\Seminar::factory()->create();
-    $auditor = App\Models\Admin::factory()->create();
-    $anotherAuditor = App\Models\Admin::factory()->create();
+    $seminar             = App\Models\Seminar::factory()->create();
+    $auditor             = App\Models\Admin::factory()->create();
+    $anotherAuditor      = App\Models\Admin::factory()->create();
     $seminar->created_by = $auditor->id;
     $seminar->save();
     $seminar->refresh();

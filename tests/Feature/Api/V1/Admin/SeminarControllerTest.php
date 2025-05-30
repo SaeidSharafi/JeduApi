@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Category;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-uses(\Tests\AuthTestTrait::class);
+uses(Tests\AuthTestTrait::class);
 
 beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
@@ -29,8 +31,8 @@ describe('list filters', function (): void {
         ]);
         $response = $this->getJson(route('api.v1.admin.seminar.index', [
             'filter' => [
-                'full_name' => 'Test Seminar'
-            ]
+                'full_name' => 'Test Seminar',
+            ],
         ]));
 
         $response->assertOk()
@@ -81,7 +83,7 @@ describe('list filters', function (): void {
     });
     it('should return seminars with pagination', function (): void {
         App\Models\Seminar::factory()->count(20)->create();
-        $seminars = \App\Models\Seminar::query()->orderBy('created_at', 'desc')->get();
+        $seminars = App\Models\Seminar::query()->orderBy('created_at', 'desc')->get();
         $this->authorized_user([
             App\Enums\PermissionEnum::SEMINAR_VIEW_ANY->value,
         ]);
@@ -135,7 +137,7 @@ describe('SeminarController', function (): void {
             ->withCategory(3)
             ->withDigitalAssets()
             ->create()
-        ->fresh();
+            ->fresh();
         $seminars->load('categories', 'digitalAssets');
         $this->authorized_user([
             App\Enums\PermissionEnum::SEMINAR_VIEW_ANY->value,
@@ -147,48 +149,48 @@ describe('SeminarController', function (): void {
         $response
             ->assertJsonCount(10, 'data.data')
             ->assertJsonStructure([
-            'data' => [
                 'data' => [
-                    '*' => [
-                        'id',
-                        'full_name',
-                        'short_name',
-                        'slug',
-                        'status',
-                        'created_by',
-                        'created_at',
-                        'updated_at',
-                        'categories' => [
-                            '*' => [
-                                'id',
-                                'name',
-                                'slug',
-                                'status',
-                                'image_url',
-                                'icon_url',
-                                'created_by',
-                                'created_at',
-                                'updated_at',
-                            ]
+                    'data' => [
+                        '*' => [
+                            'id',
+                            'full_name',
+                            'short_name',
+                            'slug',
+                            'status',
+                            'created_by',
+                            'created_at',
+                            'updated_at',
+                            'categories' => [
+                                '*' => [
+                                    'id',
+                                    'name',
+                                    'slug',
+                                    'status',
+                                    'image_url',
+                                    'icon_url',
+                                    'created_by',
+                                    'created_at',
+                                    'updated_at',
+                                ],
+                            ],
+                            'digital_assets' => [
+                                '*' => [
+                                    'id',
+                                    'name',
+                                    'slug',
+                                    'is_attachable_to_course',
+                                    'status',
+                                    'version',
+                                    'published_at',
+                                    'created_by',
+                                    'created_at',
+                                    'updated_at',
+                                ],
+                            ],
                         ],
-                        'digital_assets' => [
-                            '*' => [
-                                'id',
-                                'name',
-                                'slug',
-                                'is_attachable_to_course',
-                                'status',
-                                'version',
-                                'published_at',
-                                'created_by',
-                                'created_at',
-                                'updated_at'
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ]);
+                    ],
+                ],
+            ]);
         $actualDataItems = collect($response->json('data.data'));
 
         foreach ($seminars as $expectedSeminar) {
@@ -241,9 +243,9 @@ describe('SeminarController', function (): void {
     });
 
     it('should show a seminar with categories and digital assets', function (): void {
-        $seminar = App\Models\Seminar::factory()->create();
+        $seminar       = App\Models\Seminar::factory()->create();
         $digitalAssets = App\Models\DigitalAsset::factory(2)->create();
-        $categories = App\Models\Category::factory(3)->create();
+        $categories    = Category::factory(3)->create();
         $seminar->digitalAssets()->attach($digitalAssets);
         $seminar->categories()->attach($categories);
 
@@ -259,11 +261,11 @@ describe('SeminarController', function (): void {
             ->assertJsonFragment(['slug' => $seminar->slug])
             ->assertJson(function (AssertableJson $json) use ($digitalAssets, $categories) {
                 $json
-                    ->where('data.categories', $categories->map(fn($category): array => [
-                        'id'         => $category->id,
-                        'name'       => $category->name,
-                        'slug'       => $category->slug,
-                        'status'     => [
+                    ->where('data.categories', $categories->map(fn ($category): array => [
+                        'id'     => $category->id,
+                        'name'   => $category->name,
+                        'slug'   => $category->slug,
+                        'status' => [
                             'value' => $category->status->value,
                             'label' => $category->status->translate(),
                         ],
@@ -273,7 +275,7 @@ describe('SeminarController', function (): void {
                         'created_at' => $this->toJalalitString($category->created_at),
                         'updated_at' => $this->toJalalitString($category->updated_at),
                     ]))
-                    ->where('data.digital_assets', $digitalAssets->map(fn(App\Models\DigitalAsset $asset): array => [
+                    ->where('data.digital_assets', $digitalAssets->map(fn (App\Models\DigitalAsset $asset): array => [
                         'id'                      => $asset->id,
                         'name'                    => $asset->name,
                         'slug'                    => $asset->slug,
@@ -282,11 +284,11 @@ describe('SeminarController', function (): void {
                             'value' => $asset->status->value,
                             'label' => $asset->status->translate(),
                         ],
-                        'version'                 => $asset->version,
-                        'published_at'            => $this->toJalalitString($asset->published_at),
-                        'created_by'              => $asset->created_by,
-                        'created_at'              => $this->toJalalitString($asset->created_at),
-                        'updated_at'              => $this->toJalalitString($asset->updated_at),
+                        'version'      => $asset->version,
+                        'published_at' => $this->toJalalitString($asset->published_at),
+                        'created_by'   => $asset->created_by,
+                        'created_at'   => $this->toJalalitString($asset->created_at),
+                        'updated_at'   => $this->toJalalitString($asset->updated_at),
                     ]))
                     ->etc();
             });
@@ -297,9 +299,9 @@ describe('SeminarController', function (): void {
             App\Enums\PermissionEnum::SEMINAR_CREATE->value,
         ]);
 
-        $seminarData = App\Models\Seminar::factory()->make()->toArray();
-        $cateogires = App\Models\Category::factory()->count(2)->create();
-        $seminarData['categories'] = $cateogires->pluck('id')->toArray();
+        $seminarData                   = App\Models\Seminar::factory()->make()->toArray();
+        $cateogires                    = Category::factory()->count(2)->create();
+        $seminarData['categories']     = $cateogires->pluck('id')->toArray();
         $seminarData['digital_assets'] = App\Models\DigitalAsset::factory()->count(2)->create()->pluck('id')->toArray();
 
         $response = $this->postJson(route('api.v1.admin.seminar.store'), [
@@ -312,7 +314,7 @@ describe('SeminarController', function (): void {
         ]);
 
         $response->assertCreated();
-        $seminar = \App\Models\Seminar::first();
+        $seminar = App\Models\Seminar::first();
         $this->assertDatabaseCount('seminars', 1);
         $this->assertDatabaseHas('seminars', [
             'full_name'  => $seminarData['full_name'],
@@ -322,14 +324,14 @@ describe('SeminarController', function (): void {
         $this->assertDatabaseHas('categorizables',
             [
                 'categorizable_id'   => $seminar->id,
-                'categorizable_type' => \App\Enums\MorphTypeEnum::SEMINAR->value,
+                'categorizable_type' => App\Enums\MorphTypeEnum::SEMINAR->value,
                 'category_id'        => $cateogires[0]->id,
             ]
         );
         $this->assertDatabaseHas('categorizables',
             [
                 'categorizable_id'   => $seminar->id,
-                'categorizable_type' => \App\Enums\MorphTypeEnum::SEMINAR->value,
+                'categorizable_type' => App\Enums\MorphTypeEnum::SEMINAR->value,
                 'category_id'        => $cateogires[1]->id,
             ]
         );
@@ -337,37 +339,37 @@ describe('SeminarController', function (): void {
         $this->assertDatabaseHas('assetables',
             [
                 'assetable_id'     => $seminar->id,
-                'assetable_type'   => \App\Enums\MorphTypeEnum::SEMINAR->value,
+                'assetable_type'   => App\Enums\MorphTypeEnum::SEMINAR->value,
                 'digital_asset_id' => $seminarData['digital_assets'][0],
             ]
         );
         $this->assertDatabaseHas('assetables',
             [
                 'assetable_id'     => $seminar->id,
-                'assetable_type'   => \App\Enums\MorphTypeEnum::SEMINAR->value,
+                'assetable_type'   => App\Enums\MorphTypeEnum::SEMINAR->value,
                 'digital_asset_id' => $seminarData['digital_assets'][1],
             ]
         );
         $this->assertDatabaseHas('mediables', [
             'mediable_id'   => $seminar->id,
-            'mediable_type' => \App\Enums\MorphTypeEnum::SEMINAR->value,
+            'mediable_type' => App\Enums\MorphTypeEnum::SEMINAR->value,
             'media_id'      => $this->cover->id,
         ]);
         $this->assertDatabaseHas('mediables', [
             'mediable_id'   => $seminar->id,
-            'mediable_type' => \App\Enums\MorphTypeEnum::SEMINAR->value,
+            'mediable_type' => App\Enums\MorphTypeEnum::SEMINAR->value,
             'media_id'      => $this->gallery->id,
         ]);
         $this->assertDatabaseHas('mediables', [
             'mediable_id'   => $seminar->id,
-            'mediable_type' => \App\Enums\MorphTypeEnum::SEMINAR->value,
+            'mediable_type' => App\Enums\MorphTypeEnum::SEMINAR->value,
             'media_id'      => $this->video->id,
         ]);
     });
 
     it('should not create a seminar without required permissions', function (): void {
         $seminarData = App\Models\Seminar::factory()->make()->toArray();
-        $response = $this->postJson(route('api.v1.admin.seminar.store'), $seminarData);
+        $response    = $this->postJson(route('api.v1.admin.seminar.store'), $seminarData);
 
         $response->assertUnauthorized();
     });
@@ -379,7 +381,7 @@ describe('SeminarController', function (): void {
     });
 
     it('should not show a seminar without required permissions', function (): void {
-        $seminar = App\Models\Seminar::factory()->create();
+        $seminar  = App\Models\Seminar::factory()->create();
         $response = $this->getJson(route('api.v1.admin.seminar.show', ['seminar' => $seminar->id]));
 
         $response->assertUnauthorized();
@@ -399,7 +401,7 @@ describe('SeminarController', function (): void {
     });
 
     it('should not update a seminar without required permissions', function (): void {
-        $seminar = App\Models\Seminar::factory()->create();
+        $seminar  = App\Models\Seminar::factory()->create();
         $response = $this->putJson(route('api.v1.admin.seminar.update', ['seminar' => $seminar->id]), [
             'full_name' => 'Updated Seminar Name',
         ]);
@@ -414,9 +416,9 @@ describe('SeminarController', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::SEMINAR_UPDATE->value,
         ]);
-        $categories = App\Models\Category::factory()->count(5)->create();
-        $category = $categories->first();
-        $response = $this->putJson(route('api.v1.admin.seminar.update', ['seminar' => $seminar->id]), [
+        $categories = Category::factory()->count(5)->create();
+        $category   = $categories->first();
+        $response   = $this->putJson(route('api.v1.admin.seminar.update', ['seminar' => $seminar->id]), [
             ...$seminar->toArray(),
             'full_name'  => 'Updated Seminar Name',
             'short_name' => 'Updated Short Name',
@@ -445,7 +447,7 @@ describe('SeminarController', function (): void {
         $this->assertDatabaseMissing('seminars', ['id' => $seminar->id]);
     });
     it('should not delete a seminar without required permissions', function (): void {
-        $seminar = App\Models\Seminar::factory()->create();
+        $seminar  = App\Models\Seminar::factory()->create();
         $response = $this->deleteJson(route('api.v1.admin.seminar.destroy', ['seminar' => $seminar->id]));
 
         $response->assertUnauthorized();
