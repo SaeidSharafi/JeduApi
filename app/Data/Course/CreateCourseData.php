@@ -39,7 +39,7 @@ final class CreateCourseData extends Data
         #[WithCast(EnumCast::class)]
         public PublicationStatusEnum $status,
         public array $categories,
-        public array $digital_assets = [],
+        public array $digital_assets,
         public array $media = [],
     ) {}
 
@@ -179,6 +179,14 @@ final class CreateCourseData extends Data
             ],
             'categories.*' => [
                 'description' => 'Array of category ids for the course',
+                'example'     => 1,
+            ],
+            'digital_assets' => [
+                'description' => 'Array of digital asset ids for the course',
+                'example'     => [1, 2, 3],
+            ],
+            'digital_assets.*' => [
+                'description' => 'Array of digital asset ids for the course',
                 'example'     => 1,
             ],
             'media' => [

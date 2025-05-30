@@ -40,7 +40,7 @@ final class CreateSeminarData extends Data
         public ?string $meta_description,
         public ?string $meta_keywords,
         public array $categories,
-        public array $digital_assets = [],
+        public array $digital_assets,
         public array $media = [],
     ) {}
 
@@ -189,6 +189,14 @@ final class CreateSeminarData extends Data
             ],
             'categories.*' => [
                 'description' => 'Array of category ids for the course',
+                'example'     => 1,
+            ],
+            'digital_assets' => [
+                'description' => 'Array of digital asset ids for the course',
+                'example'     => [1, 2, 3],
+            ],
+            'digital_assets.*' => [
+                'description' => 'Array of digital asset ids for the course',
                 'example'     => 1,
             ],
             'media' => [
