@@ -23,6 +23,8 @@ it('return model class correctly', function () {
     expect($modelClass)->toBe(App\Models\Category::class);
     $modelClass = App\Enums\MorphTypeEnum::COURSE->getModelClass();
     expect($modelClass)->toBe(App\Models\Course::class);
+    $modelClass = App\Enums\MorphTypeEnum::SEMINAR->getModelClass();
+    expect($modelClass)->toBe(App\Models\Seminar::class);
     $modelClass = App\Enums\MorphTypeEnum::DIGITAL_ASSET->getModelClass();
     expect($modelClass)->toBe(App\Models\DigitalAsset::class);
     $modelClass = App\Enums\MorphTypeEnum::ADMIN->getModelClass();
@@ -35,9 +37,10 @@ it('return model class correctly', function () {
 it('return morph map correctly', function () {
     $morphMap = App\Enums\MorphTypeEnum::forMorphMap();
     expect($morphMap)->toBeArray()
-        ->toHaveCount(5)
+        ->toHaveCount(6)
         ->toHaveKey('category', App\Models\Category::class)
         ->toHaveKey('course', App\Models\Course::class)
+        ->toHaveKey('seminar', App\Models\Seminar::class)
         ->toHaveKey('digital_asset', App\Models\DigitalAsset::class)
         ->toHaveKey('admin', App\Models\Admin::class)
         ->toHaveKey('user', App\Models\User::class);

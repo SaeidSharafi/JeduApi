@@ -1,0 +1,125 @@
+{
+  "message": "Operation successful.",
+  "data": {
+    "id": 1,
+    "full_name": "Eaque beatae nisi ut.",
+    "short_name": "Vitae doloribus.",
+    "subtitle": "Ipsum quia voluptate vero nihil eos placeat.",
+    "slug": "qui-sit-suscipit-quos",
+    "status": {
+      "value": "draft",
+      "label": "پیش‌نویس"
+    },
+    "level": {
+      "value": "expert",
+      "label": "کارشناس"
+    },
+    "provides_certificate": false,
+    "description": "In asperiores cumque aut. Veniam voluptas corporis aliquid quis. Sed tempore officiis a laudantium sit.",
+    "learning_objectives": "Excepturi magnam sapiente cum explicabo dolore provident. Blanditiis libero vel incidunt accusantium dolor magni dolore sed. Ut velit similique libero quos perspiciatis placeat repellendus.",
+    "target_audience": "Recusandae explicabo mollitia ut molestias reiciendis autem asperiores dicta. Inventore temporibus facere dicta ea veniam. Nostrum rerum assumenda fugiat eius.",
+    "prerequisites": "Sequi aut quis inventore officia quaerat libero. Quod eveniet voluptatum aut qui libero hic. Reiciendis rem excepturi quidem nisi consequatur. At suscipit quam et odit natus expedita.",
+    "promo_video_external_url": "http://asadi.com/voluptas-repellendus-temporibus-dolor-debitis.html",
+    "estimated_duration_desc": "Provident est quis dolor delectus.",
+    "faq": [
+      {
+        "question": "Praesentium eum aspernatur reiciendis qui assumenda necessitatibus.",
+        "answer": "Ut ea ea enim vel vero quia quas. Iusto rerum magni omnis enim. Commodi aut ut earum voluptates."
+      },
+      {
+        "question": "Est unde architecto autem ea iste repellendus debitis.",
+        "answer": "Fugiat perspiciatis consequuntur iste quas nesciunt. Praesentium id cum saepe omnis sint eaque nulla. Non voluptatem molestiae eligendi corrupti."
+      }
+    ],
+    "keywords": "possimus,asperiores,possimus,non,esse",
+    "meta_title": "بانک جام چای شب",
+    "meta_description": "ملل برف صف میز قضا آب بانک. ساز ساختار برنامه محفل کاغذ. پوستر برق جنگل نمک دامنه رنگ مدرسه تیم. رنگ",
+    "meta_keywords": "سایت,تاکسی,آخر",
+    "categories": [
+      {
+        "id": 22,
+        "name": "برف",
+        "slug": "alias-doloremque-quod-et-eum-aspernatur-aut",
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "created_by": 1,
+        "created_at": "1404-03-09 08:44:13",
+        "updated_at": "1404-03-09 08:44:14"
+      },
+      {
+        "id": 45,
+        "name": "موج",
+        "slug": "illum-nemo-dolor-aliquid-explicabo",
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "created_by": 1,
+        "created_at": "1404-03-09 08:44:13",
+        "updated_at": "1404-03-09 08:44:14"
+      },
+      {
+        "id": 70,
+        "name": "آتش",
+        "slug": "enim-ducimus-nihil-necessitatibus-nihil-non-et",
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "created_by": 1,
+        "created_at": "1404-03-09 08:44:13",
+        "updated_at": "1404-03-09 08:44:15"
+      }
+    ],
+    "digital_assets": [],
+    "media": {
+      "gallery": [
+        {
+          "id": 5,
+          "url": "http://jedu.test/storage/fake-media/fake-gallery.svg",
+          "size": 896,
+          "file_name": "fake-gallery",
+          "alt": "",
+          "mime_type": "image/svg+xml",
+          "extension": "svg",
+          "tag": "gallery"
+        }
+      ],
+      "video": [
+        {
+          "id": 3,
+          "url": "http://jedu.test/storage/fake-media/placeholder3.mp4",
+          "size": 9362122,
+          "file_name": "placeholder3",
+          "alt": "",
+          "mime_type": "video/mp4",
+          "extension": "mp4",
+          "tag": "video"
+        }
+      ],
+      "cover": [
+        {
+          "id": 4,
+          "url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+          "size": 894,
+          "file_name": "fake-cover",
+          "alt": "",
+          "mime_type": "image/svg+xml",
+          "extension": "svg",
+          "tag": "cover"
+        }
+      ]
+    },
+    "created_at": "1404-03-09 08:44:19",
+    "updated_at": "1404-03-09 08:44:19"
+  },
+  "metadata": []
+}

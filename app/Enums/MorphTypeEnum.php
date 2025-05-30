@@ -8,6 +8,7 @@ use App\Models\Admin;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
+use App\Models\Seminar;
 use App\Models\User;
 use App\Traits\AdvanceEnum;
 
@@ -17,6 +18,7 @@ enum MorphTypeEnum: string
 
     case CATEGORY      = 'category';
     case COURSE        = 'course';
+    case SEMINAR       = 'seminar';
     case DIGITAL_ASSET = 'digital_asset';
     case ADMIN         = 'admin';
     case USER          = 'user';
@@ -47,6 +49,7 @@ enum MorphTypeEnum: string
         return match ($this) {
             self::CATEGORY      => Category::class,
             self::COURSE        => Course::class,
+            self::SEMINAR       => Seminar::class,
             self::DIGITAL_ASSET => DigitalAsset::class,
             self::ADMIN         => Admin::class,
             self::USER          => User::class,

@@ -8,6 +8,7 @@ use App\Models\Admin;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
+use App\Models\Seminar;
 use Illuminate\Database\Seeder;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\Artisan;
@@ -34,6 +35,7 @@ final class ScribeSeeder extends Seeder
             DB::table('mediables')->truncate();
             Media::query()->truncate();
             Course::query()->truncate();
+            Seminar::query()->truncate();
             Category::query()->truncate();
             DigitalAsset::query()->truncate();
             Media::query()->truncate();
@@ -87,7 +89,7 @@ final class ScribeSeeder extends Seeder
         $permissions = Permission::query()->where('guard_name', 'admin')->get()->pluck('name')->toArray();
         $role->syncPermissions($permissions);
         $user->assignRole('admin');
-        $admin =  Admin::query()->first();
+        $admin = Admin::query()->first();
         Category::factory(100)
             ->withIcon()
             ->withImage()
@@ -108,7 +110,13 @@ final class ScribeSeeder extends Seeder
             ->create([
                 'created_by' => $admin->id,
             ]);
-
+        Seminar::factory(100)
+            ->withMedia(['gallery', 'cover', 'video'])
+            ->withCategory(3)
+            ->withDigitalAssets(2, true)
+            ->create([
+                'created_by' => $admin->id,
+            ]);
     }
 
     protected function disableForeignKeyChecks(): void

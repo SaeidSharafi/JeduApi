@@ -78,6 +78,14 @@ return [
             PermissionAction::DELETE,
             PermissionAction::DELETE_OWN,
         ],
+        'seminar' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::UPDATE_OWN,
+            PermissionAction::DELETE,
+            PermissionAction::DELETE_OWN,
+        ],
         /*
         'user' => [
             PermissionAction::VIEW_SCOPED,      // Standard Enum: users.view_any, users.view

@@ -33,6 +33,13 @@ enum PermissionEnum: string
     case FILE_UPDATE_OWN     = 'files.update_own';
     case FILE_VIEW           = 'files.view';
     case FILE_VIEW_ANY       = 'files.view_any';
+    case SEMINAR_CREATE      = 'seminars.create';
+    case SEMINAR_DELETE      = 'seminars.delete';
+    case SEMINAR_DELETE_OWN  = 'seminars.delete_own';
+    case SEMINAR_UPDATE      = 'seminars.update';
+    case SEMINAR_UPDATE_OWN  = 'seminars.update_own';
+    case SEMINAR_VIEW        = 'seminars.view';
+    case SEMINAR_VIEW_ANY    = 'seminars.view_any';
 
     /**
      * Get all permission values as an array.

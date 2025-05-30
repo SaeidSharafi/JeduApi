@@ -1,0 +1,1176 @@
+{
+  "message": "Operation successful.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "id": 55,
+        "full_name": "Accusantium qui repellat harum.",
+        "short_name": "Aperiam sint.",
+        "subtitle": "Iusto dignissimos sit accusamus veritatis dolorem laboriosam.",
+        "slug": "rerum-ea-voluptatem-labore-omnis",
+        "status": {
+          "value": "archived",
+          "label": "آرشیو"
+        },
+        "level": {
+          "value": "intermediate",
+          "label": "متوسط"
+        },
+        "provides_certificate": true,
+        "description": "Incidunt vitae minima magnam deleniti ab id nemo. Aut dignissimos nemo est modi.",
+        "learning_objectives": "Quas eum alias aut harum. Libero praesentium fugiat asperiores inventore quas est. Minima aut rem veniam accusamus. Voluptas quidem eum dicta tempore reiciendis velit qui. Facilis error aspernatur totam eaque.",
+        "target_audience": "Porro quidem voluptatem repudiandae reiciendis dolor expedita in quae. Dolorem omnis velit necessitatibus ex. Officia culpa dolores repudiandae quidem enim sed. Distinctio nulla nihil veniam quam voluptate tenetur veniam.",
+        "prerequisites": "Rerum non dolorum quisquam. Nobis dolorem reprehenderit est esse dolores impedit. Rerum eos facere officiis temporibus aut ab fuga. Aut reprehenderit eaque animi libero suscipit sit.",
+        "promo_video_external_url": "http://ahadi.net/dolore-aut-qui-et-vel",
+        "estimated_duration_desc": "Autem rem itaque illum molestiae consectetur.",
+        "keywords": "molestiae,autem,ratione,nam,rerum",
+        "created_by": 1,
+        "categories": [
+          {
+            "id": 44,
+            "name": "ساحل",
+            "slug": "voluptas-aut-et-in-temporibus-et-amet-adipisci",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 15,
+            "name": "پرنده",
+            "slug": "provident-vero-officia-et-id-nisi",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 85,
+            "name": "قضا",
+            "slug": "illo-voluptate-id-praesentium-assumenda",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:15"
+          }
+        ],
+        "digital_assets": [],
+        "meta_title": "آرایش عدد کاغذ قفل",
+        "meta_description": "فیلم خیابان بالش دیجیتال نان. گردو دایره مدرسه جام رنگ نوازش ثروت اپلیکیشن. مشک گوشی عدالت ابزار دکا",
+        "meta_keywords": "دریا,عدد,پیچ",
+        "created_at": "1404-03-09 08:44:20",
+        "updated_at": "1404-03-09 08:44:20"
+      },
+      {
+        "id": 62,
+        "full_name": "Omnis aut eum maiores.",
+        "short_name": "Deserunt dolore.",
+        "subtitle": "Soluta voluptates nulla reiciendis repellat libero est nam.",
+        "slug": "alias-nobis-aut-pariatur-non-qui-quisquam-maiores",
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "level": {
+          "value": "beginner",
+          "label": "مبتدی"
+        },
+        "provides_certificate": false,
+        "description": "Eveniet dolorem error velit impedit quis consectetur et. Sit sed maiores iure dolorem perferendis deserunt. Ut possimus eveniet atque debitis inventore dolore. Eum odio beatae asperiores saepe.",
+        "learning_objectives": "Numquam id et aut doloremque. Perferendis voluptas qui in delectus culpa cum cum doloribus. Nihil et omnis laborum non.",
+        "target_audience": "Mollitia autem est amet sint. Eos itaque inventore nihil quae nulla.",
+        "prerequisites": "Provident expedita praesentium tempore sequi. Accusamus et sint saepe et architecto. Quidem mollitia nobis quas est. Quae dolorum dolor aut necessitatibus ut molestias.",
+        "promo_video_external_url": "http://hijazi.ac.ir/",
+        "estimated_duration_desc": "Impedit numquam libero suscipit consequatur aliquam.",
+        "keywords": "occaecati,reprehenderit,quis,unde,facilis",
+        "created_by": 1,
+        "categories": [
+          {
+            "id": 95,
+            "name": "کنترل",
+            "slug": "pariatur-libero-id-excepturi-ipsa-nisi-odio-minus",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:15"
+          },
+          {
+            "id": 51,
+            "name": "کمک",
+            "slug": "sed-perspiciatis-voluptatum-non-eveniet-saepe-eligendi-odit",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 90,
+            "name": "پل",
+            "slug": "dolorem-cum-minus-aliquid-reiciendis-molestias-suscipit-recusandae",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:15"
+          }
+        ],
+        "digital_assets": [],
+        "meta_title": "کلید ابزار شهر الکتریک",
+        "meta_description": "بالین ساعت میوه پایه ساحل رنگ. عدالت دارو قرص دایره نمک ماکت آشیانه. دفترچه درخت کلمه صف جام سلول. ا",
+        "meta_keywords": "دفتر,کاغذ,محل",
+        "created_at": "1404-03-09 08:44:20",
+        "updated_at": "1404-03-09 08:44:20"
+      },
+      {
+        "id": 51,
+        "full_name": "Hic impedit id repellendus.",
+        "short_name": "Soluta aspernatur.",
+        "subtitle": "Ut labore nostrum cum nobis.",
+        "slug": "tempora-rerum-quidem-quos-dolor",
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "level": {
+          "value": "expert",
+          "label": "کارشناس"
+        },
+        "provides_certificate": false,
+        "description": "Dicta qui consequatur eligendi et. Dolorem doloribus quo illum. Consequuntur sunt aspernatur natus at praesentium consequatur. Rerum amet labore quibusdam molestiae voluptas et deserunt doloribus. Cumque ipsam eligendi officiis ullam et.",
+        "learning_objectives": "Molestiae consectetur minima facilis reprehenderit. Enim molestiae reiciendis modi earum voluptate molestiae et. Omnis eum qui quisquam aut pariatur nihil nesciunt. Quod eligendi non consequuntur ipsa. Vitae laudantium maxime atque accusamus voluptatum qui voluptas.",
+        "target_audience": "Sapiente voluptates minima repellat. Sed officia tenetur sed distinctio repellat. Sit qui possimus magnam distinctio hic. Blanditiis dignissimos quos magni tempora corporis.",
+        "prerequisites": "Quas odit sunt quo quo repudiandae pariatur. Incidunt hic magni distinctio totam eos non. Magnam non soluta voluptas omnis cumque modi quibusdam. Enim tenetur voluptatem sint eos cumque.",
+        "promo_video_external_url": "http://namazi.ir/dolorum-quis-aliquid-quia-labore-voluptatem-possimus-aliquid-sed",
+        "estimated_duration_desc": "Omnis ipsam molestias numquam.",
+        "keywords": "ipsum,excepturi,fuga,distinctio,quia",
+        "created_by": 1,
+        "categories": [
+          {
+            "id": 40,
+            "name": "ملت",
+            "slug": "rerum-non-doloremque-quia-voluptas-et",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 33,
+            "name": "گوشی",
+            "slug": "officiis-nemo-perferendis-veniam-dolorum-reprehenderit",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 69,
+            "name": "کلید",
+            "slug": "et-quis-ea-maiores-non-nihil",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:15"
+          }
+        ],
+        "digital_assets": [],
+        "meta_title": "اسکله درخت کلمه الکتریک",
+        "meta_description": "گردو آسمان اپلیکیشن ملل پوستر لوازم تاکسی. چای بالش جنگل الماس سریال. ماکت ساعت بالین سریال آلاچیق س",
+        "meta_keywords": "پارو,ملک,بدل",
+        "created_at": "1404-03-09 08:44:20",
+        "updated_at": "1404-03-09 08:44:20"
+      },
+      {
+        "id": 54,
+        "full_name": "Voluptatum optio rerum beatae.",
+        "short_name": "Nihil tempora aliquid.",
+        "subtitle": "Suscipit distinctio enim earum soluta commodi facere.",
+        "slug": "quo-quo-sapiente-ea-eum",
+        "status": {
+          "value": "archived",
+          "label": "آرشیو"
+        },
+        "level": {
+          "value": "intermediate",
+          "label": "متوسط"
+        },
+        "provides_certificate": false,
+        "description": "Aut dolor asperiores necessitatibus ratione ipsa beatae. Doloremque delectus labore iste fugiat quaerat quibusdam. Quibusdam ad velit voluptates laborum. Id voluptatem nemo voluptas. Quaerat unde eius ea est alias dolore modi.",
+        "learning_objectives": "Aperiam quia porro earum dolorum autem eligendi. A sint eum et in laudantium dolores corporis. Provident sed reiciendis rem aut minus odio.",
+        "target_audience": "Earum iste quis id sequi nihil quos incidunt. Tempore qui et repellendus tenetur quo dolorem. Voluptas sit nostrum est molestiae inventore dicta.",
+        "prerequisites": "Illo qui quisquam voluptas officiis rerum cumque aut ratione. Veniam fugit esse rerum est alias accusantium. Voluptatum mollitia autem et dicta quae. Exercitationem dolor sequi ad inventore nostrum.",
+        "promo_video_external_url": "https://pejman.info/reiciendis-ea-sit-repellat-maxime.html",
+        "estimated_duration_desc": "Consectetur occaecati adipisci deserunt.",
+        "keywords": "rem,non,qui,ullam,aliquid",
+        "created_by": 1,
+        "categories": [
+          {
+            "id": 23,
+            "name": "باغ",
+            "slug": "dolor-beatae-a-aut-voluptas",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 76,
+            "name": "بالین",
+            "slug": "aut-odit-nesciunt-quia-veniam-eum-omnis-magni",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:15"
+          },
+          {
+            "id": 56,
+            "name": "نور",
+            "slug": "possimus-omnis-assumenda-rerum-consequatur-cumque",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          }
+        ],
+        "digital_assets": [],
+        "meta_title": "نمک ابزار ساز پول",
+        "meta_description": "هنر نور لیوان جایزه عدد صوت. الکتریک فرش کلید آلاچیق هتل تاکسی. آتش شیر دامنه باغ شب. بالش فرش روزنا",
+        "meta_keywords": "قضا,غذا,آشیانه",
+        "created_at": "1404-03-09 08:44:20",
+        "updated_at": "1404-03-09 08:44:20"
+      },
+      {
+        "id": 58,
+        "full_name": "Cumque in.",
+        "short_name": "Totam voluptatum totam.",
+        "subtitle": "Ad illum ea non vel.",
+        "slug": "corrupti-recusandae-aut-in-dolor-sint",
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "level": {
+          "value": "advanced",
+          "label": "پیشرفته"
+        },
+        "provides_certificate": false,
+        "description": "Est reprehenderit non autem. Rerum quia excepturi quia omnis rem pariatur. Suscipit commodi perspiciatis sunt eius qui porro nihil deserunt. Tempora ut laborum fugit.",
+        "learning_objectives": "Dolores nostrum et id sit saepe velit veritatis. Molestiae qui commodi at illum alias. Aut temporibus ratione ex et eos. Et neque ex voluptas.",
+        "target_audience": "Optio accusamus et voluptate doloribus dolor eos cum. Qui cumque est et et. Quaerat enim et unde. Ea at qui eveniet voluptate.",
+        "prerequisites": "Eaque sunt laborum molestiae officia sit. Voluptas illo totam corporis dolor nulla laboriosam cum. Rerum id id ipsum ut quisquam. Deserunt facilis excepturi quia et et sit.",
+        "promo_video_external_url": "http://www.jamshidi.info/dignissimos-rem-sit-est-praesentium-ut.html",
+        "estimated_duration_desc": "Maxime et modi labore.",
+        "keywords": "molestias,libero,corporis,aspernatur,aut",
+        "created_by": 1,
+        "categories": [
+          {
+            "id": 8,
+            "name": "کاغذ",
+            "slug": "quisquam-sit-esse-sed-optio-illum-nihil-ut",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 23,
+            "name": "باغ",
+            "slug": "dolor-beatae-a-aut-voluptas",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 58,
+            "name": "اتوبوس",
+            "slug": "quis-aliquid-officia-dicta-omnis-fuga",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          }
+        ],
+        "digital_assets": [],
+        "meta_title": "نوازش مدرسه میوه کلید",
+        "meta_description": "آرایش اپلیکیشن پوشاک قهوه آشیانه مهد نقاشی. بلیط گلیم صف عطر پول خودرو قضا. عدد پرنده موسیقی لباس مر",
+        "meta_keywords": "عدد,دانه,ثروت",
+        "created_at": "1404-03-09 08:44:20",
+        "updated_at": "1404-03-09 08:44:20"
+      },
+      {
+        "id": 61,
+        "full_name": "Est quam eius.",
+        "short_name": "Voluptatum amet explicabo.",
+        "subtitle": "Et quia quis expedita.",
+        "slug": "qui-cumque-ab-et-sunt-in",
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "level": {
+          "value": "advanced",
+          "label": "پیشرفته"
+        },
+        "provides_certificate": false,
+        "description": "In sed qui est vitae. Vitae alias tempora corporis quos. Sapiente quasi et quis sint quaerat consequuntur corporis. Quam ea dolore voluptas atque repellendus sed architecto.",
+        "learning_objectives": "A voluptatem reprehenderit est exercitationem reprehenderit magni. Hic magnam maxime et odit suscipit facere. Sit et occaecati est harum ea quam. Iure quis illo sunt illum iure. Delectus nihil est suscipit odio vel nulla.",
+        "target_audience": "Consequatur consequatur est voluptatem veniam est omnis. Qui est repellat velit omnis. Alias quis omnis saepe. Vel illum aut quia et aut unde facere qui.",
+        "prerequisites": "Nihil beatae architecto recusandae consequuntur non doloremque eius. Est veniam quod rerum at. Quo qui inventore beatae aut.",
+        "promo_video_external_url": "https://www.pahlavi.info/voluptas-minus-maiores-sint-corrupti",
+        "estimated_duration_desc": "Ipsam inventore sed vitae.",
+        "keywords": "nihil,sed,rerum,aut,tempora",
+        "created_by": 1,
+        "categories": [
+          {
+            "id": 60,
+            "name": "دیجیتال",
+            "slug": "et-at-nobis-ducimus-ut-velit",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 18,
+            "name": "جایزه",
+            "slug": "officia-aspernatur-quae-doloribus-vel-consectetur-consequatur-numquam",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 1,
+            "name": "ساعت",
+            "slug": "eveniet-illum-voluptatibus-quidem-error-dicta-pariatur-eum-veniam",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:13"
+          }
+        ],
+        "digital_assets": [],
+        "meta_title": "گوشی سریال برق ملک",
+        "meta_description": "دریا چای کشاورز بالش دریا دفتر صندوق رنگ. کلید ملک آرایش آب عطر برق قهوه برنامه علم. بدل گلیم جام مح",
+        "meta_keywords": "پوشاک,شب,دارو",
+        "created_at": "1404-03-09 08:44:20",
+        "updated_at": "1404-03-09 08:44:20"
+      },
+      {
+        "id": 49,
+        "full_name": "Saepe saepe dolore.",
+        "short_name": "Soluta nihil.",
+        "subtitle": "Est dolor beatae aut magnam magni aut ut aliquid.",
+        "slug": "omnis-id-dolorem-qui-necessitatibus-qui-consectetur",
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "level": {
+          "value": "intermediate",
+          "label": "متوسط"
+        },
+        "provides_certificate": false,
+        "description": "Qui eos pariatur asperiores. Eos minus ipsa maiores id. Et vel quia accusantium sed odio. Qui doloribus aperiam ipsam.",
+        "learning_objectives": "Quia ut excepturi molestias eaque. Quo et quasi reprehenderit ducimus. Mollitia quasi voluptas quam sit est ipsam. Cum non sequi quasi perspiciatis voluptas deserunt voluptatum.",
+        "target_audience": "Laborum aliquid molestias quos qui qui dignissimos adipisci. Sunt fugiat totam rerum et. Consequatur debitis sit dignissimos at.",
+        "prerequisites": "Necessitatibus maxime voluptas doloremque soluta. Dolorem aut qui et ducimus accusamus alias voluptatibus iure. Doloribus accusantium ut nihil. Officia et incidunt et sed laudantium. Ex et repellat eum enim dicta est.",
+        "promo_video_external_url": "http://shahriari.com/cum-dolore-molestiae-sit-provident-aut.html",
+        "estimated_duration_desc": "Repellendus aut illo non.",
+        "keywords": "et,totam,fuga,nihil,accusantium",
+        "created_by": 1,
+        "categories": [
+          {
+            "id": 86,
+            "name": "شهر",
+            "slug": "repellendus-qui-sapiente-dolore-voluptatem-quae-aut",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:15"
+          },
+          {
+            "id": 92,
+            "name": "کامپیوتر",
+            "slug": "officia-dignissimos-sint-natus",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:15"
+          },
+          {
+            "id": 85,
+            "name": "قضا",
+            "slug": "illo-voluptate-id-praesentium-assumenda",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:15"
+          }
+        ],
+        "digital_assets": [],
+        "meta_title": "بانک فرش پارو قلم",
+        "meta_description": "تصویر دوربین قضا نان پارو. دریاچه ابزار کلمه بلیط درخت ملت. دکان گوشی دارو کلمه تیم مشک. اتوبوس سریا",
+        "meta_keywords": "دیجیتال,پوشاک,چای",
+        "created_at": "1404-03-09 08:44:20",
+        "updated_at": "1404-03-09 08:44:20"
+      },
+      {
+        "id": 50,
+        "full_name": "Sit laboriosam ut rerum.",
+        "short_name": "Nostrum eos.",
+        "subtitle": "In occaecati alias consequatur nihil.",
+        "slug": "unde-soluta-dolor-sed",
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "level": {
+          "value": "expert",
+          "label": "کارشناس"
+        },
+        "provides_certificate": false,
+        "description": "Qui iusto voluptas neque amet. Maxime ratione aut laborum quibusdam sed autem ex. Et earum molestiae rem et inventore consequatur ipsum. Perferendis voluptas esse architecto ipsam possimus.",
+        "learning_objectives": "Eum aut exercitationem similique tempore. Est quis iste voluptatem et vel aut nemo. Labore fuga recusandae blanditiis et autem dignissimos.",
+        "target_audience": "Impedit est sequi beatae ipsam. Voluptatem porro perspiciatis quo atque vero quisquam velit. Quia sint quidem voluptatem fuga modi consequuntur.",
+        "prerequisites": "Voluptas in repudiandae soluta et voluptate ut excepturi. Molestias et dolore nam cumque earum. Nulla placeat non et occaecati officiis quam asperiores est.",
+        "promo_video_external_url": "http://jamshidi.sch.ir/aut-sit-iste-excepturi-repellendus-temporibus-voluptas",
+        "estimated_duration_desc": "Doloribus nulla a facere.",
+        "keywords": "soluta,voluptatum,molestiae,ducimus,harum",
+        "created_by": 1,
+        "categories": [
+          {
+            "id": 40,
+            "name": "ملت",
+            "slug": "rerum-non-doloremque-quia-voluptas-et",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 25,
+            "name": "خیابان",
+            "slug": "similique-sed-fugit-possimus-qui-debitis-reiciendis-aliquid",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 16,
+            "name": "ملک",
+            "slug": "nemo-voluptas-laborum-sequi-necessitatibus",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          }
+        ],
+        "digital_assets": [],
+        "meta_title": "نور مدار محفل دفترچه",
+        "meta_description": "لباس ثروت دفتر الماس مشک. اسکله صف ثروت تاکسی دوربین عطر بالین طبیعت. لیوان صندلی بدل شیر چرخ برنامه",
+        "meta_keywords": "چای,محفل,صف",
+        "created_at": "1404-03-09 08:44:20",
+        "updated_at": "1404-03-09 08:44:20"
+      },
+      {
+        "id": 52,
+        "full_name": "Ut ut nemo.",
+        "short_name": "Sunt est totam.",
+        "subtitle": "Aliquam nesciunt suscipit deserunt quisquam accusantium laboriosam dicta.",
+        "slug": "numquam-voluptas-et-molestias-saepe-labore-officia",
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "level": {
+          "value": "expert",
+          "label": "کارشناس"
+        },
+        "provides_certificate": false,
+        "description": "Voluptas iste suscipit neque magni dolorum dicta quos. Assumenda expedita soluta vel labore sint. Rerum fugit omnis saepe odit alias.",
+        "learning_objectives": "Cupiditate qui quidem mollitia et voluptatem ut ad. Ut natus et veritatis et in voluptatem cupiditate itaque. Esse et non quasi odio enim quod. Nisi eum molestias sit magni ducimus autem et.",
+        "target_audience": "Harum ea quia rerum sunt omnis laboriosam totam. Repudiandae et molestiae omnis optio qui. Quibusdam quos et quisquam doloribus. Iure et ab temporibus qui omnis aliquid laborum.",
+        "prerequisites": "Quia mollitia laboriosam in in. Aliquam facilis natus iusto reiciendis. Occaecati voluptatem velit consequatur eum earum veritatis.",
+        "promo_video_external_url": "https://shojaei.com/ut-quidem-temporibus-vel-distinctio.html",
+        "estimated_duration_desc": "Nam placeat fugit eaque eveniet.",
+        "keywords": "provident,similique,maiores,laboriosam,incidunt",
+        "created_by": 1,
+        "categories": [
+          {
+            "id": 43,
+            "name": "مهد",
+            "slug": "aut-ipsum-sapiente-eius-at-voluptates-sed-qui",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 59,
+            "name": "ماکت",
+            "slug": "et-dolorem-voluptate-dolores",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 83,
+            "name": "دارو",
+            "slug": "veritatis-iste-vero-asperiores-voluptas-consectetur",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:15"
+          }
+        ],
+        "digital_assets": [],
+        "meta_title": "بدل آب نقاشی شیر",
+        "meta_description": "کشاورز هتل مدار گلیم جنگل. کاغذ جایزه جایزه نمک ماکت صوت دامنه علم. عدالت پوستر دیجیتال مجله چای. تص",
+        "meta_keywords": "قفل,علم,چای",
+        "created_at": "1404-03-09 08:44:20",
+        "updated_at": "1404-03-09 08:44:20"
+      },
+      {
+        "id": 53,
+        "full_name": "Voluptatem dolore aliquid.",
+        "short_name": "Vero placeat in.",
+        "subtitle": "Maxime quaerat ullam consequatur sed consequatur accusantium.",
+        "slug": "natus-doloribus-accusantium-ducimus-ut-incidunt-voluptatem-delectus",
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "level": {
+          "value": "beginner",
+          "label": "مبتدی"
+        },
+        "provides_certificate": true,
+        "description": "Quaerat numquam cupiditate ab nihil quis nobis. Qui vel rerum recusandae alias est veritatis. Saepe non suscipit qui consequatur sed.",
+        "learning_objectives": "Quas fuga molestiae non cupiditate. Accusantium deleniti magni aliquid consequuntur hic qui. A aut fugit impedit ullam dolor et.",
+        "target_audience": "Alias sed id voluptatem repellat qui magni dolores ipsa. Ea qui ut magni voluptatem quia. Est ut molestiae neque maxime.",
+        "prerequisites": "Voluptas voluptatem soluta molestiae nulla quaerat repudiandae velit. Maxime voluptatum ut ratione aut. Ut consequatur est nihil praesentium. Qui sunt debitis quibusdam eaque quisquam similique.",
+        "promo_video_external_url": "http://soroush.net/laboriosam-voluptatem-tempora-neque-et.html",
+        "estimated_duration_desc": "Velit velit aut similique dicta unde.",
+        "keywords": "ducimus,nulla,dicta,amet,voluptas",
+        "created_by": 1,
+        "categories": [
+          {
+            "id": 24,
+            "name": "قرص",
+            "slug": "inventore-dolore-est-et-consequuntur-alias",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 13,
+            "name": "الماس",
+            "slug": "reprehenderit-consequatur-ad-culpa-porro",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 57,
+            "name": "علم",
+            "slug": "hic-mollitia-eligendi-ab-ipsum-distinctio-quo-nobis",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          }
+        ],
+        "digital_assets": [],
+        "meta_title": "ساختار فرش درخت ملل",
+        "meta_description": "دکان علم خودرو آخر تصویر ابزار محفل علم. ملل بانک غذا موسیقی نوازش آسمان. آرایش پارو عدالت دایره. خو",
+        "meta_keywords": "محفل,ماکت,عدالت",
+        "created_at": "1404-03-09 08:44:20",
+        "updated_at": "1404-03-09 08:44:20"
+      },
+      {
+        "id": 56,
+        "full_name": "Ut dolor vel et.",
+        "short_name": "Repellat quam.",
+        "subtitle": "Ut repellendus provident aut.",
+        "slug": "sapiente-ab-quo-vitae-occaecati-asperiores-laborum",
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "level": {
+          "value": "intermediate",
+          "label": "متوسط"
+        },
+        "provides_certificate": false,
+        "description": "Aut id voluptatem nulla autem et. Dolores illum porro molestias et. Aut illum ut consequatur quis velit. Error sed nostrum quod dolor.",
+        "learning_objectives": "Ab quidem ipsa nihil saepe. Amet quidem aliquid tenetur cupiditate. Nemo aliquam qui est recusandae. Sunt repellat sunt eum dolores exercitationem.",
+        "target_audience": "Et et doloremque quo ducimus voluptatem dolor quia. Deserunt vel ut dolorem et. Mollitia nisi quam nam. Quos fugiat et consequatur deleniti dolor eum perferendis.",
+        "prerequisites": "Sed tenetur consequatur occaecati laudantium molestiae voluptatum. Illo unde hic et. Aliquam accusantium ad ab consequuntur ut nostrum optio quis. Et omnis unde tenetur corporis.",
+        "promo_video_external_url": "http://www.javadi.info/rem-enim-ut-cupiditate-perferendis-consequatur-tempora",
+        "estimated_duration_desc": "Doloremque fugit aut officia.",
+        "keywords": "qui,esse,iste,error,aut",
+        "created_by": 1,
+        "categories": [
+          {
+            "id": 1,
+            "name": "ساعت",
+            "slug": "eveniet-illum-voluptatibus-quidem-error-dicta-pariatur-eum-veniam",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:13"
+          },
+          {
+            "id": 70,
+            "name": "آتش",
+            "slug": "enim-ducimus-nihil-necessitatibus-nihil-non-et",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:15"
+          },
+          {
+            "id": 18,
+            "name": "جایزه",
+            "slug": "officia-aspernatur-quae-doloribus-vel-consectetur-consequatur-numquam",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          }
+        ],
+        "digital_assets": [],
+        "meta_title": "موج خیابان قهوه چرخ",
+        "meta_description": "دامنه الکتریک الماس دکان بالین دریاچه کامپیوتر. چای کلید ماکت دفترچه ابزار کاغذ. رنگ مربع میوه رنگ م",
+        "meta_keywords": "نان,سایت,آشیانه",
+        "created_at": "1404-03-09 08:44:20",
+        "updated_at": "1404-03-09 08:44:20"
+      },
+      {
+        "id": 57,
+        "full_name": "Odit explicabo dolor animi.",
+        "short_name": "Magnam nesciunt nam.",
+        "subtitle": "Culpa est fugit et ab et earum sit.",
+        "slug": "dolor-enim-sit-officia-recusandae",
+        "status": {
+          "value": "archived",
+          "label": "آرشیو"
+        },
+        "level": {
+          "value": "beginner",
+          "label": "مبتدی"
+        },
+        "provides_certificate": true,
+        "description": "Omnis rerum et quo nulla. Doloribus corrupti soluta ut repudiandae. Voluptatibus et quisquam nemo saepe eos. Eos pariatur quidem nam id eum quibusdam error.",
+        "learning_objectives": "Eius veritatis beatae nihil beatae exercitationem. Odit totam enim aliquam cum. Esse ea consequuntur eos est sint nulla et.",
+        "target_audience": "Aliquid hic aperiam autem explicabo pariatur veniam autem rerum. Ea similique neque ut. Dolor ea velit non possimus sit dolores. Inventore ipsa qui reprehenderit impedit explicabo perspiciatis delectus et.",
+        "prerequisites": "Illo aspernatur dolore occaecati incidunt illum quae. Temporibus consequatur sunt id. Illo voluptas dolor delectus placeat minima odit. Perferendis voluptas sed consequatur aut dignissimos distinctio. Vitae sit officiis aut excepturi debitis sequi.",
+        "promo_video_external_url": "http://www.heidari.info/pariatur-id-minus-sed-excepturi.html",
+        "estimated_duration_desc": "Delectus laboriosam et temporibus aut.",
+        "keywords": "illum,nam,tempora,excepturi,magnam",
+        "created_by": 1,
+        "categories": [
+          {
+            "id": 80,
+            "name": "ملل",
+            "slug": "nesciunt-quos-cupiditate-recusandae-rem-laborum-cumque-sit-praesentium",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:15"
+          },
+          {
+            "id": 81,
+            "name": "نان",
+            "slug": "sit-incidunt-assumenda-omnis-enim",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:15"
+          },
+          {
+            "id": 7,
+            "name": "کلمه",
+            "slug": "nobis-sunt-architecto-molestiae-eius-aut",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          }
+        ],
+        "digital_assets": [],
+        "meta_title": "لوازم بلیط برف برنامه",
+        "meta_description": "شب صف پوستر دریاچه تیم بالش پرنده اپلیکیشن. بانک تاکسی باغ شب برف. شیر لوازم میز نوازش آب نقاشی دریا",
+        "meta_keywords": "آخر,سایت,چرخ",
+        "created_at": "1404-03-09 08:44:20",
+        "updated_at": "1404-03-09 08:44:20"
+      },
+      {
+        "id": 59,
+        "full_name": "Voluptatibus error nobis voluptas.",
+        "short_name": "Consequatur sed totam.",
+        "subtitle": "Quo aperiam saepe aut voluptates ut et.",
+        "slug": "eum-quia-tenetur-consectetur-dolorem-fugiat-eos-libero",
+        "status": {
+          "value": "archived",
+          "label": "آرشیو"
+        },
+        "level": {
+          "value": "advanced",
+          "label": "پیشرفته"
+        },
+        "provides_certificate": false,
+        "description": "Velit eveniet facere dolores nisi non cum ab. Et porro hic sit blanditiis. Saepe et quae fugit non. Quia accusamus error similique.",
+        "learning_objectives": "Non et quia harum deleniti molestias. Quas similique rerum corporis veniam magnam autem. Perspiciatis omnis sit quidem ut exercitationem aut. Et autem omnis est et cumque accusantium. Deleniti officia rerum aut architecto officia nam.",
+        "target_audience": "Sint minima qui et et itaque delectus alias veniam. Voluptatem explicabo officia dignissimos labore voluptates voluptatibus. Vitae ratione ut sit sed ullam aliquid molestiae. Quia qui velit aut odit iure voluptatem.",
+        "prerequisites": "Officia occaecati et est omnis architecto. Sed mollitia voluptatem velit quia error. Veniam est dolores necessitatibus.",
+        "promo_video_external_url": "https://akbari.com/aut-dolorem-voluptatem-et-et-id-consectetur.html",
+        "estimated_duration_desc": "Id dolorem doloribus ab.",
+        "keywords": "quia,dolorem,aut,tenetur,provident",
+        "created_by": 1,
+        "categories": [
+          {
+            "id": 19,
+            "name": "آرایش",
+            "slug": "explicabo-modi-dolorem-neque-pariatur-sed-omnis-deserunt",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 45,
+            "name": "موج",
+            "slug": "illum-nemo-dolor-aliquid-explicabo",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 26,
+            "name": "مجله",
+            "slug": "iste-inventore-alias-adipisci-ut",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          }
+        ],
+        "digital_assets": [],
+        "meta_title": "برف مجله کاغذ بالین",
+        "meta_description": "دریاچه تیم کلید پیچ دفترچه سریال کامپیوتر کنترل. کمک ابزار دایره دانه درخت دوربین دایره. ابزار نور ن",
+        "meta_keywords": "شهر,تیم,صندلی",
+        "created_at": "1404-03-09 08:44:20",
+        "updated_at": "1404-03-09 08:44:20"
+      },
+      {
+        "id": 60,
+        "full_name": "Consequatur reiciendis deserunt quisquam.",
+        "short_name": "Consequatur magnam.",
+        "subtitle": "Officiis dolores dolor numquam libero voluptatem.",
+        "slug": "neque-eveniet-et-qui",
+        "status": {
+          "value": "draft",
+          "label": "پیش‌نویس"
+        },
+        "level": {
+          "value": "advanced",
+          "label": "پیشرفته"
+        },
+        "provides_certificate": false,
+        "description": "Rerum aut repellendus expedita sint corporis natus. Et est quos corrupti soluta enim molestias. Voluptatem qui laborum quam non praesentium odio et id. Aut error aut ut nostrum quisquam qui.",
+        "learning_objectives": "Debitis quia repellat labore similique cumque id. Facere fugiat et velit quis beatae. Sit assumenda consequatur optio.",
+        "target_audience": "Itaque qui totam debitis debitis. Quisquam eius nihil doloremque aut corporis suscipit architecto. Aperiam illo ea rem et rerum commodi porro non.",
+        "prerequisites": "Recusandae ad ut explicabo est rerum provident. Eveniet ut similique consequatur assumenda. Eum ratione magnam ea atque placeat itaque.",
+        "promo_video_external_url": "http://www.shahbazi.ac.ir/quod-commodi-consectetur-officiis-quo-aliquam-ab-in-nisi.html",
+        "estimated_duration_desc": "Dolorem nam iusto.",
+        "keywords": "amet,eum,velit,dolor,et",
+        "created_by": 1,
+        "categories": [
+          {
+            "id": 98,
+            "name": "نقاشی",
+            "slug": "neque-eos-libero-quia",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:15"
+          },
+          {
+            "id": 34,
+            "name": "صوت",
+            "slug": "et-qui-cupiditate-deserunt-neque-sint-beatae-omnis-sunt",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 23,
+            "name": "باغ",
+            "slug": "dolor-beatae-a-aut-voluptas",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          }
+        ],
+        "digital_assets": [],
+        "meta_title": "ملل دریا صوت اسکله",
+        "meta_description": "ملل اتوبوس جنگل دامنه جنگل. تیم بالین چرخ محفل اپلیکیشن گردو چای. کاغذ میوه جنگل مربع ابزار ژاکت لبا",
+        "meta_keywords": "دریا,هتل,مجله",
+        "created_at": "1404-03-09 08:44:20",
+        "updated_at": "1404-03-09 08:44:20"
+      },
+      {
+        "id": 63,
+        "full_name": "Ipsam aliquam dolorum.",
+        "short_name": "Consequatur voluptatem.",
+        "subtitle": "Omnis molestiae eaque eligendi dolores.",
+        "slug": "in-placeat-delectus-occaecati-ea",
+        "status": {
+          "value": "archived",
+          "label": "آرشیو"
+        },
+        "level": {
+          "value": "advanced",
+          "label": "پیشرفته"
+        },
+        "provides_certificate": true,
+        "description": "Ipsa rerum adipisci vero atque sequi molestiae ratione est. Alias tempora quia sapiente ea. Aut rerum dolorem maiores voluptas temporibus. Quo et vel et harum libero ex alias.",
+        "learning_objectives": "Et accusamus excepturi distinctio sapiente atque eveniet quaerat. Soluta et qui sit omnis optio magnam. Earum officia exercitationem deleniti qui incidunt similique ducimus. Velit nulla voluptatem et.",
+        "target_audience": "Nulla ex enim animi expedita doloribus itaque nam voluptatem. Eveniet asperiores ut maiores ut qui. Est provident minima ea consequuntur autem. Tenetur accusamus dignissimos modi quis aspernatur sit.",
+        "prerequisites": "Vel assumenda non nesciunt vel. Sunt non similique aut quis. Aliquid amet unde optio a suscipit tempora. Ea eius nisi sit quasi iure.",
+        "promo_video_external_url": "https://shojaei.biz/qui-in-sunt-voluptate-rerum-inventore-occaecati.html",
+        "estimated_duration_desc": "Quas porro tempora expedita.",
+        "keywords": "molestiae,quod,dolorem,et,porro",
+        "created_by": 1,
+        "categories": [
+          {
+            "id": 28,
+            "name": "خط",
+            "slug": "facilis-rerum-quo-laborum-suscipit-ad",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 35,
+            "name": "شب",
+            "slug": "in-deserunt-est-delectus-consequatur",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          },
+          {
+            "id": 64,
+            "name": "آلاچیق",
+            "slug": "quia-est-enim-expedita-voluptate",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "created_by": 1,
+            "created_at": "1404-03-09 08:44:13",
+            "updated_at": "1404-03-09 08:44:14"
+          }
+        ],
+        "digital_assets": [],
+        "meta_title": "محفل اتوبوس ساز پوشاک",
+        "meta_description": "دامنه دفترچه برف دانه ثروت. دوربین مدرسه بانک دکان میز سایت هنر روزنامه کلمه. برق صوت برق جام پوستر",
+        "meta_keywords": "رنگ,تیم,مشک",
+        "created_at": "1404-03-09 08:44:20",
+        "updated_at": "1404-03-09 08:44:20"
+      }
+    ],
+    "first_page_url": "http://jedu.test/api/v1/admin/seminar?page=1",
+    "from": 1,
+    "last_page": 7,
+    "last_page_url": "http://jedu.test/api/v1/admin/seminar?page=7",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; قبلی",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/seminar?page=1",
+        "label": "1",
+        "active": true
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/seminar?page=2",
+        "label": "2",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/seminar?page=3",
+        "label": "3",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/seminar?page=4",
+        "label": "4",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/seminar?page=5",
+        "label": "5",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/seminar?page=6",
+        "label": "6",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/seminar?page=7",
+        "label": "7",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/seminar?page=2",
+        "label": "بعدی &raquo;",
+        "active": false
+      }
+    ],
+    "next_page_url": "http://jedu.test/api/v1/admin/seminar?page=2",
+    "path": "http://jedu.test/api/v1/admin/seminar",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 15,
+    "total": 100
+  },
+  "metadata": []
+}

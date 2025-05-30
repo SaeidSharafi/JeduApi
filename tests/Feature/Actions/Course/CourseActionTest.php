@@ -43,7 +43,7 @@ describe('CourseActionTest', function (): void {
             'media'          => [
                 'gallery'     => [$this->media->id],
                 'video'       => [$this->media->id],
-                'thumbnail'   => [$this->media->id],
+                'cover'   => [$this->media->id],
                 'certificate' => [$this->media->id],
             ],
         ]);
@@ -93,7 +93,7 @@ describe('CourseActionTest', function (): void {
             'media'          => [
                 'gallery'     => [$this->media2->id],
                 'video'       => [$this->media2->id],
-                'thumbnail'   => [$this->media2->id],
+                'cover'   => [$this->media2->id],
                 'certificate' => [],
             ],
         ]);
