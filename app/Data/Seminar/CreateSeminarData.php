@@ -92,6 +92,11 @@ final class CreateSeminarData extends Data
         );
     }
 
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
     public function bodyParameters(): array
     {
         return [
