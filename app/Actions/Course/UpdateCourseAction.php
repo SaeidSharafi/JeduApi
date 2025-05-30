@@ -24,7 +24,7 @@ final readonly class UpdateCourseAction
             $course->categories()->sync($categories);
             $course->digitalAssets()->sync($digitalAssets);
 
-            foreach (['gallery', 'video', 'thumbnail', 'certificate'] as $tag) {
+            foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
                 $mediaIds = $mediaInput[$tag] ?? null;
                 if (is_array($mediaIds)) {
                     $course->syncMedia($mediaIds, $tag);
