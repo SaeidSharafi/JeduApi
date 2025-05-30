@@ -45,6 +45,7 @@ final class ShowDigitalAssetData extends Data
         public ?Verta $updated_at,
         #[DataCollectionOf(CategoryListItemData::class)]
         public ?DataCollection $categories,
-        public array $attachments = []
+        public array $attachments = [],
+        public array $media,
     ) {}
 }

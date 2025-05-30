@@ -18,15 +18,18 @@ final readonly class CreateDigitalAssetAction
         DB::transaction(function () use ($data): void {
             $attachments        = $data->attachments ?: [];
             $categoriesToAttach = $data->categories ?? [];
+            $mediaToAttach       = $data->media          ?? [];
             $digitalAsset       = DigitalAsset::query()
-                ->create($data->except('attachments', 'categories')->toArray())
+                ->create($data->except('media', 'attachments', 'categories')->toArray())
                 ->fresh();
             $digitalAsset->categories()->attach($categoriesToAttach);
             if ($preview = data_get($attachments, 'preview')) {
                 $digitalAsset->syncMedia($preview, 'preview');
             }
             $digitalAsset->syncMedia(data_get($attachments, 'main'), 'main');
-
+            foreach ($mediaToAttach as $tag => $mediaIds) {
+                $digitalAsset->attachMedia($mediaIds, $tag);
+            }
         });
     }
 }

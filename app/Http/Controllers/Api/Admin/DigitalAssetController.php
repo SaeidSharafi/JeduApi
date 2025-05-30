@@ -11,6 +11,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\DigitalAsset\CreateDigitalAssetData;
 use App\Data\DigitalAsset\DigitalAssetListItemData;
 use App\Data\DigitalAsset\ShowDigitalAssetData;
+use App\Data\MediaData;
 use App\Data\PrivateFileData;
 use App\Http\Controllers\Controller;
 use App\Models\DigitalAsset;
@@ -84,17 +85,23 @@ final class DigitalAssetController extends Controller
     public function show(DigitalAsset $digitalAsset): ApiResponseInterface
     {
         Gate::authorize('view', $digitalAsset);
-        $media = [];
+        $attachments = [];
         foreach (['main', 'preview'] as $tag) {
-            $media[$tag] = $digitalAsset->getMedia($tag)
+            $attachments[$tag] = $digitalAsset->getMedia($tag)
                 ->map(fn (Media $m): PrivateFileData => PrivateFileData::fromModel($m, $tag))
                 ->toArray();
         }
-
+        $media = [];
+        foreach (['gallery', 'video', 'cover'] as $tag) {
+            $media[$tag] = $digitalAsset->getMedia($tag)
+                ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag))
+                ->toArray();
+        }
         return response()->success(ShowDigitalAssetData::from([
             ...$digitalAsset->toArray(),
             'categories'  => $digitalAsset->categories,
-            'attachments' => $media,
+            'attachments' => $attachments,
+            'media'       => $media,
         ]));
     }
 
@@ -110,18 +117,24 @@ final class DigitalAssetController extends Controller
         Gate::authorize('update', $digitalAsset);
         $action->handle($request, $digitalAsset);
         $digitalAsset->refresh();
-        $media = [];
+        $attachments = [];
         foreach (['main', 'preview'] as $tag) {
-            $media[$tag] = $digitalAsset->getMedia($tag)
+            $attachments[$tag] = $digitalAsset->getMedia($tag)
                 ->map(fn (Media $m): PrivateFileData => PrivateFileData::fromModel($m, $tag))
                 ->toArray();
         }
-
+        $media = [];
+        foreach (['gallery', 'video', 'cover'] as $tag) {
+            $media[$tag] = $digitalAsset->getMedia($tag)
+                ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag))
+                ->toArray();
+        }
         return response()->success(
             ShowDigitalAssetData::from([
                 ...$digitalAsset->toArray(),
                 'categories'  => $digitalAsset->categories,
-                'attachments' => $media,
+                'attachments' => $attachments,
+                'media'       => $media,
             ])
         );
     }

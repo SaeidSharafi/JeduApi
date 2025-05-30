@@ -35,8 +35,9 @@ final class CreateDigitalAssetData extends Data
         public ?Carbon $published_at,
         public ?int $page_count,
         public ?int $duration_seconds,
-        public array $categories = [],
-        public array $attachments = []
+        public array $categories,
+        public array $attachments,
+        public array $media = [],
     ) {}
 
     public static function rules(): array
@@ -73,6 +74,13 @@ final class CreateDigitalAssetData extends Data
                 'attachments'             => ['array'],
                 'attachments.main'        => ['required', 'integer', 'exists:media,id'],
                 'attachments.preview'     => ['nullable', 'integer', 'exists:media,id'],
+                'media'                    => ['required', 'array'],
+                'media.gallery'            => ['nullable', 'array'],
+                'media.cover'              => ['required', 'array'],
+                'media.video'              => ['nullable', 'array'],
+                'media.cover.*'            => ['required', 'integer', 'exists:media,id'],
+                'media.gallery.*'          => ['nullable', 'integer', 'exists:media,id'],
+                'media.video.*'            => ['nullable', 'integer', 'exists:media,id'],
             ],
             self::metaTagValidationRules()
         );
@@ -159,6 +167,33 @@ final class CreateDigitalAssetData extends Data
             'attachments.preview' => [
                 'description' => 'An optional preview attachment for the digital asset, typically a file ID.',
                 'example'     => 2,
+            ],
+            'media' => [
+                'description' => 'Media of the course',
+            ],
+            'media.gallery' => [
+                'description' => 'media ids for gallery',
+                'example'     => [1, 2, 3],
+            ],
+            'media.cover' => [
+                'description' => 'media ids for cover',
+                'example'     => [1],
+            ],
+            'media.video' => [
+                'description' => 'media ids for video',
+                'example'     => [1],
+            ],
+            'media.cover.*' => [
+                'description' => 'Array of media ids for cover',
+                'example'     => 1,
+            ],
+            'media.gallery.*' => [
+                'description' => 'Array of media ids for gallery',
+                'example'     => 1,
+            ],
+            'media.video.*' => [
+                'description' => 'Array of media ids for video',
+                'example'     => 1,
             ],
         ];
     }

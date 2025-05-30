@@ -6,6 +6,20 @@ use App\Enums\MorphTypeEnum;
 use App\Models\DigitalAsset;
 
 uses(Tests\AuthTestTrait::class);
+beforeEach(function (): void {
+    Illuminate\Http\UploadedFile::fake();
+    Storage::fake('public');
+    $this->cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
+        ->toDisk('public')
+        ->upload();
+    $this->gallery = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('gallery.jpg'))
+        ->toDisk('public')
+        ->upload();
+    $this->video = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()
+        ->create('video.mp4', 1000, 'video/mp4'))
+        ->toDisk('public')
+        ->upload();
+});
 describe('list filters', function (): void {
     it('can filter by name', function () {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
@@ -119,15 +133,19 @@ it('can get list of digital assets', function () {
 it('can get single digital asset', function () {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW->value]);
     $digitalAsset = DigitalAsset::factory()->create();
-    Storage::fake('local');
     $preview = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
         ->toDisk('local')
         ->upload();
     $main = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('file.pdf'))
         ->toDisk('local')
         ->upload();
+
+
     $digitalAsset->attachMedia($preview, 'preview');
     $digitalAsset->attachMedia($main, 'main');
+    $digitalAsset->attachMedia($this->cover, 'cover');
+    $digitalAsset->attachMedia($this->gallery, 'gallery');
+    $digitalAsset->attachMedia($this->video, 'video');
     $response = $this->getJson(route('api.v1.admin.digital-asset.show', $digitalAsset));
     $response->assertStatus(200)
         ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($main, $preview, $digitalAsset) {
@@ -153,6 +171,9 @@ it('can get single digital asset', function () {
                 ->where('data.updated_at', $this->toJalalitString($digitalAsset->updated_at))
                 ->where('data.attachments.preview.0.id', $preview->id)
                 ->where('data.attachments.main.0.id', $main->id)
+                ->where('data.media.cover.0.id', $this->cover->id)
+                ->where('data.media.gallery.0.id', $this->gallery->id)
+                ->where('data.media.video.0.id', $this->video->id)
                 ->etc();
         });
 });
@@ -189,6 +210,11 @@ it('can create digital asset', function () {
             'preview' => $preview->id,
             'main'    => $main->id,
         ],
+        'media'                   => [
+            'gallery' => [$this->gallery->id],
+            'cover'   => [$this->cover->id],
+            'video'   => [$this->video->id],
+        ],
     ]);
     $response->assertStatus(201);
 
@@ -221,6 +247,23 @@ it('can create digital asset', function () {
         'media_id'      => $main->id,
     ]);
 
+    $this->assertDatabaseHas('mediables', [
+        'mediable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
+        'mediable_id'   => DigitalAsset::latest()->first()->id,
+        'media_id'      => $this->cover->id,
+    ]);
+
+    $this->assertDatabaseHas('mediables', [
+        'mediable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
+        'mediable_id'   => DigitalAsset::latest()->first()->id,
+        'media_id'      => $this->gallery->id,
+    ]);
+    $this->assertDatabaseHas('mediables', [
+        'mediable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
+        'mediable_id'   => DigitalAsset::latest()->first()->id,
+        'media_id'      => $this->video->id,
+    ]);
+
     $this->assertDatabaseHas('categorizables', [
         'categorizable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
         'categorizable_id'   => DigitalAsset::latest()->first()->id,
@@ -243,7 +286,6 @@ it('can update digital asset', function () {
     $digitalAssetUpdate = DigitalAsset::factory()
         ->make();
     $updatedData = $digitalAssetUpdate->toArray();
-    Storage::fake('local');
     $previewUpdate = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview_updated.pdf'))
         ->toDisk('local')
         ->upload();
@@ -253,6 +295,11 @@ it('can update digital asset', function () {
     $updatedData['attachments'] = [
         'preview' => $previewUpdate->id,
         'main'    => $mainUpdate->id,
+    ];
+    $updatedData['media'] = [
+        'gallery' => [$this->gallery->id],
+        'cover'   => [$this->cover->id],
+        'video'   => [$this->video->id],
     ];
     $categories                  = App\Models\Category::factory()->count(2)->create();
     $updatedData['categories']   = $categories->pluck('id')->toArray();
@@ -279,6 +326,9 @@ it('can update digital asset', function () {
                 ->has('data.categories', 2)
                 ->where('data.attachments.preview.0.id', $updatedData['attachments']['preview'])
                 ->where('data.attachments.main.0.id', $updatedData['attachments']['main'])
+                ->where('data.media.gallery.0.id', $this->gallery->id)
+                ->where('data.media.cover.0.id', $this->cover->id)
+                ->where('data.media.video.0.id', $this->video->id)
                 ->etc();
         });
 
@@ -329,6 +379,22 @@ it('can update digital asset', function () {
         'mediable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
         'mediable_id'   => $digitalAsset->id,
         'media_id'      => $main->id,
+    ]);
+
+    $this->assertDatabaseHas('mediables', [
+        'mediable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
+        'mediable_id'   => $digitalAsset->id,
+        'media_id'      => $this->cover->id,
+    ]);
+    $this->assertDatabaseHas('mediables', [
+        'mediable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
+        'mediable_id'   => $digitalAsset->id,
+        'media_id'      => $this->gallery->id,
+    ]);
+    $this->assertDatabaseHas('mediables', [
+        'mediable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
+        'mediable_id'   => $digitalAsset->id,
+        'media_id'      => $this->video->id,
     ]);
 
 });
