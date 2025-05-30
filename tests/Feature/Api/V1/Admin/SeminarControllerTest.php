@@ -423,6 +423,7 @@ describe('SeminarController', function (): void {
             'full_name'  => 'Updated Seminar Name',
             'short_name' => 'Updated Short Name',
             'categories' => [$category->id],
+            'digital_assets' => App\Models\DigitalAsset::factory()->count(2)->create()->pluck('id')->toArray(),
             'media'      => [
                 'cover'   => [$this->cover->id],
                 'gallery' => [$this->gallery->id],

@@ -584,6 +584,7 @@ it('can pass slug unique check', function (): void {
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
         ...$courseData,
         'categories' => [$category->id],
+        'digital_assets' => [],
         'media'      => [
             'gallery'     => [],
             'thumbnail'   => [],
@@ -600,6 +601,28 @@ it('can pass slug unique check', function (): void {
         'short_name'  => $courseData['short_name'],
         'description' => $courseData['description'],
         'duration'    => $courseData['duration'],
+    ]);
+
+    assertDatabaseHas('categorizables', [
+        'categorizable_id'   => $course->id,
+        'categorizable_type' => MorphTypeEnum::COURSE->value,
+        'category_id'        => $category->id,
+    ]);
+    assertDatabaseHas('mediables', [
+        'media_id'      => $this->cover->id,
+        'mediable_id'   => $course->id,
+        'mediable_type' => MorphTypeEnum::COURSE->value,
+        'tag'           => 'cover',
+    ]);
+    $this->assertDatabaseMissing('mediables', [
+        'media_id'      => $this->gallery->id,
+        'mediable_id'   => $course->id,
+        'mediable_type' => MorphTypeEnum::COURSE->value,
+        'tag'           => 'gallery',
+    ]);
+    $this->assertDatabaseMissing('assetables', [
+        'assetable_id'     => $course->id,
+        'assetable_type'   => MorphTypeEnum::COURSE->value,
     ]);
 
 });

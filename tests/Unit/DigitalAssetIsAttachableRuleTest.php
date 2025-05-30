@@ -31,9 +31,9 @@ describe('DigitalAssetIsAttachableRule', function (): void {
             ->toEqual(__('validation.array_of_integer', ['attribute' => 'digital_assets']));
     });
 
-    it('fails validation for empty array', function (): void {
+    it('fails validation for non array', function (): void {
         $validator = Validator::make(
-            ['digital_assets' => []],
+            ['digital_assets' => 1],
             ['digital_assets' => [new App\Rules\DigitalAssetIsAttachableRule()]]
         );
 

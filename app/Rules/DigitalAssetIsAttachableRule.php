@@ -12,12 +12,8 @@ final class DigitalAssetIsAttachableRule implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-
-        if (! is_array($value) || empty($value)) {
-            $fail(__('validation.array', [
-                'attribute' => $attribute,
-            ]));
-
+        if (! is_array($value)) {
+            $fail(__('validation.array', ['attribute' => $attribute]));
             return;
         }
 

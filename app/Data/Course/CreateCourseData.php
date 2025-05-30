@@ -77,7 +77,7 @@ final class CreateCourseData extends Data
                 'status'                  => ['required'],
                 'categories'              => ['required', 'array'],
                 'categories.*'            => ['required', 'integer', 'exists:categories,id'],
-                'digital_assets'          => ['required', 'array', new DigitalAssetIsAttachableRule()],
+                'digital_assets'          => ['present', 'array', new DigitalAssetIsAttachableRule()],
                 'media'                   => ['required', 'array'],
                 'media.gallery'           => ['nullable', 'array'],
                 'media.cover'             => ['required', 'array'],
