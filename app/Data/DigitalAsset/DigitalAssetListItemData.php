@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Data\File;
+namespace App\Data\DigitalAsset;
 
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\PublicationStatusEnum;

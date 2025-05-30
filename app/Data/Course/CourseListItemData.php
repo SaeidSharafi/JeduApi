@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Course;
 
 use App\Data\Category\CategoryListItemData;
-use App\Data\File\DigitalAssetListItemData;
+use App\Data\DigitalAsset\DigitalAssetListItemData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;

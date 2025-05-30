@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\DigitalAsset;
 
-use App\Data\File\CreateDigitalAssetData;
+use App\Data\DigitalAsset\CreateDigitalAssetData;
 use App\Models\DigitalAsset;
 use Illuminate\Support\Facades\DB;
 
