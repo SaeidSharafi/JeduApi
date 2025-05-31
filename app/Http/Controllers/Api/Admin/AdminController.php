@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\Admin\CreateAdminAction;
@@ -17,7 +19,14 @@ use Illuminate\Support\Facades\Gate;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
-class AdminController extends Controller
+/**
+ * @group Admin Management
+ *
+ * APIs for managing admins in the system.
+ *
+ * @authenticated Admin
+ */
+final class AdminController extends Controller
 {
     /**
      * Display a listing of the Admin.
@@ -28,6 +37,8 @@ class AdminController extends Controller
      * @queryParam filter[role] string Filter by admin role name. Example: admin
      * @queryParam sort string Sort by a field. Allowed values: name, email, phone, created_at, updated_at.
      *              Prefix with '-' for descending order
+     *
+     * @responseFile 200 responses/admins/index.json
      */
     public function index(): ApiResponseInterface
     {
@@ -47,6 +58,9 @@ class AdminController extends Controller
 
     /**
      * Store a newly created Admin in database.
+     *
+     * @response 201
+     * @responseFile 403 responses/403.json
      */
     public function store(CreateAdminData $data, CreateAdminAction $action): ApiResponseInterface
     {
@@ -58,16 +72,25 @@ class AdminController extends Controller
 
     /**
      * Display the specified Admin.
+     *
+     * @responseFile 200 responses/admins/show.json
+     * @responseFile 403 responses/403.json
+     * @responseFile 404 responses/404.json
      */
     public function show(Admin $admin): ApiResponseInterface
     {
         Gate::authorize('view', $admin);
         $admin->load('roles');
+
         return response()->success(ShowAdminData::from($admin));
     }
 
     /**
      * Update the specified Admin in database.
+     *
+     * @responseFile 200 responses/admins/show.json
+     * @responseFile 403 responses/403.json
+     * @responseFile 404 responses/404.json
      */
     public function update(UpdateAdminData $data, Admin $admin, UpdateAdminAction $action): ApiResponseInterface
     {
@@ -79,8 +102,10 @@ class AdminController extends Controller
 
     /**
      * Remove the specified Admin from database.
+     *
+     * @response 204
      */
-    public function destroy(Admin $admin,DeleteAdminAction $action): JsonResponse
+    public function destroy(Admin $admin, DeleteAdminAction $action): JsonResponse
     {
         Gate::authorize('delete', $admin);
         $action->handle($admin);

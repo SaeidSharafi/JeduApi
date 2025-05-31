@@ -1,0 +1,18 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 1,
+    "name": "مدیر سایت",
+    "email": "admin412@example.com",
+    "phone": "930210304",
+    "is_admin": false,
+    "roles": [
+      {
+        "id": 1,
+        "name": "admin",
+        "label": "Admin"
+      }
+    ]
+  },
+  "metadata": []
+}
