@@ -10,6 +10,9 @@ use App\Http\Controllers\Api\Admin\ViewPrivateFileController;
 
 Route::middleware('auth:admin')->group(function (): void {
     Route::prefix('admin')->name('admin.')->group(function (): void {
+        Route::resource('admins', App\Http\Controllers\Api\Admin\AdminController::class)
+            ->only(['index', 'store', 'show', 'update', 'destroy']);
+
         Route::post('media/upload', UploadMediaController::class)->name('media.upload');
         Route::get('media/{media}', ViewMediaController::class)->name('media.view');
         Route::post('private-file/upload', UploadPrivateController::class)

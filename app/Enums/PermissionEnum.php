@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Enums;
 
 /**
@@ -12,38 +10,44 @@ namespace App\Enums;
  */
 enum PermissionEnum: string
 {
-    case CATEGORY_CREATE     = 'categories.create';
-    case CATEGORY_DELETE     = 'categories.delete';
+    case ADMIN_CREATE = 'admins.create';
+    case ADMIN_DELETE = 'admins.delete';
+    case ADMIN_IMPERSONATE = 'admins.impersonate';
+    case ADMIN_MANAGE_ROLES = 'admins.manage_roles';
+    case ADMIN_UPDATE = 'admins.update';
+    case ADMIN_VIEW = 'admins.view';
+    case ADMIN_VIEW_ANY = 'admins.view_any';
+    case CATEGORY_CREATE = 'categories.create';
+    case CATEGORY_DELETE = 'categories.delete';
     case CATEGORY_DELETE_OWN = 'categories.delete_own';
-    case CATEGORY_UPDATE     = 'categories.update';
+    case CATEGORY_UPDATE = 'categories.update';
     case CATEGORY_UPDATE_OWN = 'categories.update_own';
-    case CATEGORY_VIEW       = 'categories.view';
-    case CATEGORY_VIEW_ANY   = 'categories.view_any';
-    case COURSE_CREATE       = 'courses.create';
-    case COURSE_DELETE       = 'courses.delete';
-    case COURSE_DELETE_OWN   = 'courses.delete_own';
-    case COURSE_UPDATE       = 'courses.update';
-    case COURSE_UPDATE_OWN   = 'courses.update_own';
-    case COURSE_VIEW         = 'courses.view';
-    case COURSE_VIEW_ANY     = 'courses.view_any';
-    case FILE_CREATE         = 'files.create';
-    case FILE_DELETE         = 'files.delete';
-    case FILE_DELETE_OWN     = 'files.delete_own';
-    case FILE_UPDATE         = 'files.update';
-    case FILE_UPDATE_OWN     = 'files.update_own';
-    case FILE_VIEW           = 'files.view';
-    case FILE_VIEW_ANY       = 'files.view_any';
-    case SEMINAR_CREATE      = 'seminars.create';
-    case SEMINAR_DELETE      = 'seminars.delete';
-    case SEMINAR_DELETE_OWN  = 'seminars.delete_own';
-    case SEMINAR_UPDATE      = 'seminars.update';
-    case SEMINAR_UPDATE_OWN  = 'seminars.update_own';
-    case SEMINAR_VIEW        = 'seminars.view';
-    case SEMINAR_VIEW_ANY    = 'seminars.view_any';
+    case CATEGORY_VIEW = 'categories.view';
+    case CATEGORY_VIEW_ANY = 'categories.view_any';
+    case COURSE_CREATE = 'courses.create';
+    case COURSE_DELETE = 'courses.delete';
+    case COURSE_DELETE_OWN = 'courses.delete_own';
+    case COURSE_UPDATE = 'courses.update';
+    case COURSE_UPDATE_OWN = 'courses.update_own';
+    case COURSE_VIEW = 'courses.view';
+    case COURSE_VIEW_ANY = 'courses.view_any';
+    case FILE_CREATE = 'files.create';
+    case FILE_DELETE = 'files.delete';
+    case FILE_DELETE_OWN = 'files.delete_own';
+    case FILE_UPDATE = 'files.update';
+    case FILE_UPDATE_OWN = 'files.update_own';
+    case FILE_VIEW = 'files.view';
+    case FILE_VIEW_ANY = 'files.view_any';
+    case SEMINAR_CREATE = 'seminars.create';
+    case SEMINAR_DELETE = 'seminars.delete';
+    case SEMINAR_DELETE_OWN = 'seminars.delete_own';
+    case SEMINAR_UPDATE = 'seminars.update';
+    case SEMINAR_UPDATE_OWN = 'seminars.update_own';
+    case SEMINAR_VIEW = 'seminars.view';
+    case SEMINAR_VIEW_ANY = 'seminars.view_any';
 
     /**
      * Get all permission values as an array.
-     *
      * @return array<string>
      */
     public static function getAllValues(): array
@@ -53,7 +57,6 @@ enum PermissionEnum: string
 
     /**
      * Get all permission names (enum case names) as an array.
-     *
      * @return array<string>
      */
     public static function getAllNames(): array

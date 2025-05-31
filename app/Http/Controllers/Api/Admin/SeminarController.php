@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\Seminar\CreateSeminarAction;
 use App\Actions\Seminar\DeleteSeminarAction;
@@ -12,6 +12,7 @@ use App\Data\MediaData;
 use App\Data\Seminar\CreateSeminarData;
 use App\Data\Seminar\SeminarListItemData;
 use App\Data\Seminar\ShowSeminarData;
+use App\Http\Controllers\Controller;
 use App\Models\Seminar;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;

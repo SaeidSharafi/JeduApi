@@ -19,9 +19,9 @@ final class AdminFactory extends Factory
     public function definition(): array
     {
         return [
-            'name'           => fake()->name(),
-            'email'          => fake()->unique()->safeEmail(),
-            'phone'          => fake()->unique()->numerify('09########'),
+            'name'           => $this->faker->name(),
+            'email'          => $this->faker->unique()->safeEmail(),
+            'phone'          => $this->faker->unique()->mobile(),
             'password'       => null,
             'remember_token' => Str::random(10),
         ];
@@ -30,7 +30,7 @@ final class AdminFactory extends Factory
     public function withPassword(): self
     {
         return $this->state(fn (array $attributes) => [
-            'password' => Hash::make('password123'),
+            'password' => Hash::make(Str::random(10)),
         ]);
     }
 
@@ -49,6 +49,15 @@ final class AdminFactory extends Factory
             $otpDto   = new OtpDto($code, $this->trackingCode);
             $cacheKey = sprintf('otp_%s_%s_%s_%s', $admin->email, 'admin', 'value', OtpType::SIGNIN->value);
             cache()->put($cacheKey, $otpDto);
+        });
+    }
+
+    public function isSuperAdmin(): self
+    {
+        return $this->afterCreating(function (Admin $admin) {
+            $admin->is_admin = true;
+            $admin->save();
+            $admin->refresh();
         });
     }
 }

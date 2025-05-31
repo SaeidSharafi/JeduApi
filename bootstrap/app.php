@@ -49,7 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->renderable(function (ValidationException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
                 // Use your specific macro for validation errors
-                return response()->validationErrors($e->errors(), $e->getMessage());
+                return response()->validationErrors($e->errors());
             }
 
             return null;
@@ -59,7 +59,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->renderable(function (AuthenticationException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
                 // Use your 'unauthorized' macro
-                return response()->unauthorized($e->getMessage());
+                return response()->unauthorized(__('messages.unauthorized'), $e);
             }
 
             return null;
@@ -69,7 +69,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // (e.g., from Gate denials or Policies if user is authenticated but not authorized)
         $exceptions->renderable(function (AccessDeniedHttpException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
-                return response()->forbidden($e->getMessage());
+                return response()->forbidden(__('messages.forbidden'), $e);
             }
 
             return null;
@@ -78,10 +78,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // 4. ModelNotFoundException (Typically leads to 404)
         $exceptions->renderable(function (ModelNotFoundException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
-                // Extract model name for a slightly more specific message if desired
-                $modelName = class_basename($e->getModel());
-
-                return response()->notFound("Resource '{$modelName}' not found.");
+                return response()->notFound(model: $e->getModel());
             }
 
             return null;
@@ -90,7 +87,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // 5. NotFoundHttpException (404 Not Found - for routes or other non-model 404s)
         $exceptions->renderable(function (NotFoundHttpException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
-                return response()->notFound($e->getMessage() ?: 'The requested resource was not found.');
+                return response()->notFound();
             }
 
             return null;

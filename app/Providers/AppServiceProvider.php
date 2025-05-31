@@ -29,10 +29,10 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        include_once __DIR__.'/../Helpers/helpers.php';
+
         Model::preventLazyLoading(! app()->isProduction());
         Relation::enforceMorphMap(MorphTypeEnum::forMorphMap());
-        Gate::before(function (Admin|User $user, mixed $ability) {
-            return ($user instanceof Admin && $user->is_admin) ? true : null;
-        });
+
     }
 }

@@ -90,6 +90,8 @@ final class ScribeSeeder extends Seeder
         $role->syncPermissions($permissions);
         $user->assignRole('admin');
         $admin = Admin::query()->first();
+        Admin::factory(50)->create();
+
         Category::factory(100)
             ->withIcon()
             ->withImage()

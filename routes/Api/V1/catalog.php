@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\Admin\CourseController;
 use App\Http\Controllers\Api\Admin\DigitalAssetController;
-use App\Http\Controllers\SeminarController;
+use App\Http\Controllers\Api\Admin\SeminarController;
 
 Route::middleware('auth:admin')->group(function (): void {
     Route::prefix('admin')->name('admin.')->group(function (): void {

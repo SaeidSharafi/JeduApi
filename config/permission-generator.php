@@ -86,6 +86,14 @@ return [
             PermissionAction::DELETE,
             PermissionAction::DELETE_OWN,
         ],
+        'admin' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::DELETE,
+            'manage_roles',
+            'impersonate',
+        ],
         /*
         'user' => [
             PermissionAction::VIEW_SCOPED,      // Standard Enum: users.view_any, users.view
