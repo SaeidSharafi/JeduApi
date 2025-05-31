@@ -25,6 +25,7 @@
             <file>app/Providers/TelescopeServiceProvider.php</file>
             <file>app/Http/Middleware/TelescopeBasicAuth.php</file>
             <directory>app/Scribe</directory>
+            <directory>app/Faker</directory>
         </exclude>
     </source>
     <php>

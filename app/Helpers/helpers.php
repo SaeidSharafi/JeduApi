@@ -6,19 +6,16 @@ if (!function_exists('get_model_label')){
      * @param mixed $class
      * @return string
      */
-    function get_model_label(mixed $class): string
+    function get_model_label(string|object $class): string
     {
         if (is_object($class) || class_exists($class)) {
             return __('messages.models.' . strtolower(class_basename($class)));
         }
-        if (is_string($class)) {
-            return __('messages.models.' . strtolower($class));
-        }
-        return '';
+        return __('messages.models.' . strtolower($class));
     }
 }
 if (!function_exists('randomNumber')) {
-    function randomNumber($length = 20, $int = false)
+    function randomNumber($length = 20, $int = false): string|int
     {
         $numbers = "0123456789";
 

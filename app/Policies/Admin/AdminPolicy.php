@@ -43,7 +43,7 @@ class AdminPolicy
     public function delete(Admin $user, Admin $model): bool
     {
         if ($user->id === $model->id){
-            return true;
+            return false;
         }
         if ($user->is_admin && $model->is_admin) {
             return false;
@@ -51,7 +51,8 @@ class AdminPolicy
         if (!$user->is_admin && $model->is_admin){
             return false;
         }
-        return $user->can(PermissionEnum::ADMIN_DELETE) && $user->id !== $model->id;
+
+        return $user->can(PermissionEnum::ADMIN_DELETE);
     }
 
 }

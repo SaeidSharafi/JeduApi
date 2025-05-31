@@ -15,7 +15,7 @@ class UpdateAdminData extends Data
         public string $name,
         public string $email,
         public string $phone,
-        public string $password,
+        public ?string $password,
         public array $roles = [],
     ) {
     }
@@ -45,7 +45,7 @@ class UpdateAdminData extends Data
                     return $query;
                 }),
             ],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'roles'    => ['array'],
             'roles.*'  => ['exists:roles,name'],
         ];

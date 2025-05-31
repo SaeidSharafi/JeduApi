@@ -74,7 +74,7 @@ class AdminController extends Controller
         Gate::authorize('update', $admin);
         $action->handle($data, $admin);
 
-        return response()->updated(ShowAdminData::from($admin));
+        return response()->updated(ShowAdminData::from($admin), model: Admin::class);
     }
 
     /**

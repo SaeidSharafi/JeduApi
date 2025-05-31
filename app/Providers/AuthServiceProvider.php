@@ -27,10 +27,6 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::before(function (Admin|User $user, mixed $ability, mixed $arguments) {
             // if doing operaion on Super Admin handle authorization in AdminPolciy
             if (count($arguments) === 1 && $arguments[0] instanceof Admin) {
-                $admin = $arguments[0];
-                if ($user->id === $admin->id) {
-                    return true;
-                }
                 return null;
             }
             return ($user instanceof Admin && $user->is_admin) ? true : null;

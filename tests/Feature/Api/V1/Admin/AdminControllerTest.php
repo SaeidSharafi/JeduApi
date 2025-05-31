@@ -1,12 +1,14 @@
 <?php
 
+use Illuminate\Testing\Fluent\AssertableJson;
+
 uses(\Tests\AuthTestTrait::class);
 beforeEach(function () {
-    \Spatie\Permission\Models\Role::create([
+    $this->adminRole = \Spatie\Permission\Models\Role::create([
         'name' => 'admin',
         'label' => 'Admin',
         'guard_name' => 'admin',
-    ]);
+    ])->fresh();
 
     $this->data = \App\Models\Admin::factory()->make()->toArray();
     $this->data['password'] = 'password123';
@@ -154,7 +156,8 @@ describe('admin store', function (): void {
         ]);
 
         $response = $this->postJson(route('api.v1.admin.admins.store'), $this->data);
-        $response->assertCreated();
+        $response->assertCreated()
+            ->assertJsonFragment(['message' => __('messages.created', ['model' => __('messages.models.admin')])]);
 
         $this->assertDatabaseHas('admins', [
             'email' =>  $this->data['email'],
@@ -246,12 +249,28 @@ describe('admin store', function (): void {
 describe('admin show', function (): void {
     it('should return a specific admin', function () {
         $admin = \App\Models\Admin::factory()->create();
+        $admin->assignRole('admin');
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_VIEW->value,
         ]);
         $response = $this->getJson(route('api.v1.admin.admins.show', $admin));
         $response->assertOk()
-            ->assertJsonFragment(['email' => $admin->email]);
+            ->assertJsonFragment(['email' => $admin->email])
+            ->assertJson(function (AssertableJson $json) use ($admin): void {
+                $json->where('data.id', $admin->id)
+                    ->where('data.name', $admin->name)
+                    ->where('data.email', $admin->email)
+                    ->where('data.phone', $admin->phone)
+                    ->where('data.roles', [
+                        [
+                            'id' => $this->adminRole->id,
+                            'name' => $this->adminRole->name,
+                            'label' => $this->adminRole->label,
+                        ],
+                    ])
+                    ->etc();
+            })
+        ;
     });
 
     it('should not return a specific admin without required permissions', function () {
@@ -278,7 +297,8 @@ describe('admin update', function (): void {
         ]);
         $response = $this->putJson(route('api.v1.admin.admins.update', $admin), $this->data);
         $response->assertOk()
-            ->assertJsonFragment(['email' => $this->data['email']]);
+            ->assertJsonFragment(['email' => $this->data['email']])
+        ->assertJsonFragment(['message' => __('messages.updated', ['model' => __('messages.models.admin')])]);
 
         $this->assertDatabaseHas('admins', [
             'id' => $admin->id,
@@ -286,7 +306,24 @@ describe('admin update', function (): void {
             'phone' => $this->data['phone'],
         ]);
     });
+    it('should update an existing admin without changing password', function () {
+        $admin = \App\Models\Admin::factory()->create();
+        $passowrd = $admin->password;
+        $this->authorized_user([
+            App\Enums\PermissionEnum::ADMIN_UPDATE->value,
+        ]);
+        unset($this->data['password'], $this->data['password_confirmation']);
+        $response = $this->putJson(route('api.v1.admin.admins.update', $admin), $this->data);
+        $response->assertOk()
+            ->assertJsonFragment(['email' => $this->data['email']]);
 
+        $this->assertDatabaseHas('admins', [
+            'id' => $admin->id,
+            'email' => $this->data['email'],
+            'phone' => $this->data['phone'],
+            'password' => $passowrd,
+        ]);
+    });
     it('should not update an admin without required permissions', function () {
         $admin = \App\Models\Admin::factory()->create();
         $this->unauthorized_user();
@@ -369,6 +406,38 @@ describe('admin update', function (): void {
         $response = $this->putJson(route('api.v1.admin.admins.update', $admin), $this->data);
         $response->assertInvalid(['roles.0']);
     });
+    it('can update itslef', function () {
+        $this->authorized_user([
+            App\Enums\PermissionEnum::ADMIN_DELETE->value,
+        ]);
+        $data = [
+            'name' => 'Updated Name',
+            'email' => $this->user->email,
+            'phone' => $this->user->phone,
+        ];
+        $response = $this->putJson(route('api.v1.admin.admins.update', $this->user),$data);
+        $response->assertSuccessful();
+        $this->assertDatabaseHas('admins', [
+            'id' => $this->user->id,
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'phone' => $data['phone'],
+        ]);
+    });
+    it('should not update another super admin', function () {
+        $this->authorized_user([
+            App\Enums\PermissionEnum::ADMIN_DELETE->value,
+        ]);
+        $admin = \App\Models\Admin::factory()
+            ->isSuperAdmin()
+            ->create();
+        $response = $this->putJson(route('api.v1.admin.admins.update',$admin),$this->data);
+        $response->assertForbidden();
+
+        $this->admin_user();
+        $response = $this->putJson(route('api.v1.admin.admins.update',$admin),$this->data);
+        $response->assertForbidden();
+    });
 });
 
 describe('admin destroy', function (): void {
@@ -389,6 +458,14 @@ describe('admin destroy', function (): void {
         $admin = \App\Models\Admin::factory()->create();
         $this->unauthorized_user();
         $response = $this->deleteJson(route('api.v1.admin.admins.destroy', $admin));
+        $response->assertForbidden();
+    });
+    it('should not delete itslef', function () {
+        $this->authorized_user([
+            App\Enums\PermissionEnum::ADMIN_DELETE->value,
+        ]);
+
+        $response = $this->deleteJson(route('api.v1.admin.admins.destroy', $this->user));
         $response->assertForbidden();
     });
     it('should not delete another super admin', function () {
