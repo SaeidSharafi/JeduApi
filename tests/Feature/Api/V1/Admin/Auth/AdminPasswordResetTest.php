@@ -122,7 +122,7 @@ test('admin can reset password with valid otp', function (): void {
     $response
         ->assertOk()
         ->assertJson([
-            'message'  => 'Operation successful.',
+            'message'  => __('messages.success'),
             'data'     => 'Password reset OTP sent successfully',
             'metadata' => [],
         ]);

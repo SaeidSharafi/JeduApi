@@ -150,7 +150,7 @@ test('admin logout requires valid auth token', function (): void {
     $response = $this->postJson('/api/v1/admin/auth/logout');
     $response->assertStatus(401)
         ->assertJson([
-            'message' => 'Unauthenticated.',
+            'message' => __('messages.unauthorized'),
         ]);
 });
 
@@ -160,6 +160,6 @@ test('admin cannot use invalid auth token', function (): void {
 
     $response->assertStatus(401)
         ->assertJson([
-            'message' => 'Unauthenticated.',
+            'message' => __('messages.unauthorized'),
         ]);
 });
