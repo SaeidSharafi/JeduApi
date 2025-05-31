@@ -18,7 +18,7 @@ final readonly class CreateDigitalAssetAction
         DB::transaction(function () use ($data): void {
             $attachments        = $data->attachments ?: [];
             $categoriesToAttach = $data->categories ?? [];
-            $mediaToAttach       = $data->media          ?? [];
+            $mediaToAttach      = $data->media      ?? [];
             $digitalAsset       = DigitalAsset::query()
                 ->create($data->except('media', 'attachments', 'categories')->toArray())
                 ->fresh();

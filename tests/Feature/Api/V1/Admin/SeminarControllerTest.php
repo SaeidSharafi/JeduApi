@@ -420,11 +420,11 @@ describe('SeminarController', function (): void {
         $category   = $categories->first();
         $response   = $this->putJson(route('api.v1.admin.seminar.update', ['seminar' => $seminar->id]), [
             ...$seminar->toArray(),
-            'full_name'  => 'Updated Seminar Name',
-            'short_name' => 'Updated Short Name',
-            'categories' => [$category->id],
+            'full_name'      => 'Updated Seminar Name',
+            'short_name'     => 'Updated Short Name',
+            'categories'     => [$category->id],
             'digital_assets' => App\Models\DigitalAsset::factory()->count(2)->create()->pluck('id')->toArray(),
-            'media'      => [
+            'media'          => [
                 'cover'   => [$this->cover->id],
                 'gallery' => [$this->gallery->id],
                 'video'   => [$this->video->id],

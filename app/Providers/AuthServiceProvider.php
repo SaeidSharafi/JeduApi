@@ -29,6 +29,7 @@ final class AuthServiceProvider extends ServiceProvider
             if (count($arguments) === 1 && $arguments[0] instanceof Admin) {
                 return null;
             }
+
             return ($user instanceof Admin && $user->is_admin) ? true : null;
         });
 

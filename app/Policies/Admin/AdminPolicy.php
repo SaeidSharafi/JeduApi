@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\Admin;
 
 use App\Enums\PermissionEnum;
 use App\Models\Admin;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class AdminPolicy
+final class AdminPolicy
 {
     use HandlesAuthorization;
 
@@ -27,13 +29,13 @@ class AdminPolicy
 
     public function update(Admin $user, Admin $model): bool
     {
-        if ($user->id === $model->id){
+        if ($user->id === $model->id) {
             return true;
         }
         if ($user->is_admin && $model->is_admin) {
             return false;
         }
-        if (!$user->is_admin && $model->is_admin){
+        if (! $user->is_admin && $model->is_admin) {
             return false;
         }
 
@@ -42,17 +44,16 @@ class AdminPolicy
 
     public function delete(Admin $user, Admin $model): bool
     {
-        if ($user->id === $model->id){
+        if ($user->id === $model->id) {
             return false;
         }
         if ($user->is_admin && $model->is_admin) {
             return false;
         }
-        if (!$user->is_admin && $model->is_admin){
+        if (! $user->is_admin && $model->is_admin) {
             return false;
         }
 
         return $user->can(PermissionEnum::ADMIN_DELETE);
     }
-
 }

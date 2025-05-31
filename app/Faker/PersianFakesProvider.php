@@ -1,31 +1,34 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Faker;
 
 use Faker\Generator;
-use Faker\Provider\Base;
+use InvalidArgumentException;
 
-class PersianFakesProvider extends \Faker\Provider\Lorem
+final class PersianFakesProvider extends \Faker\Provider\Lorem
 {
-    protected static array|null  $persianWordList = null;
-    protected static array|null  $mobileList = null;
+    protected static ?array $persianWordList = null;
 
-     public function __construct(Generator $faker)
+    protected static ?array $mobileList = null;
+
+    public function __construct(Generator $faker)
     {
-        $varibales = new FakerVariables();
-        static::$persianWordList = $varibales->variable('words');
-        static::$mobileList = $varibales->variable('mobile');
+        $varibales             = new FakerVariables();
+        self::$persianWordList = $varibales->variable('words');
+        self::$mobileList      = $varibales->variable('mobile');
         parent::__construct($faker);
     }
 
     /**
      * @return string
-     * @example 'باغ'
      *
+     * @example 'باغ'
      */
-     public static function persianWord()
+    public static function persianWord()
     {
-        return static::randomElement(static::$persianWordList);
+        return self::randomElement(self::$persianWordList);
     }
 
     /**
@@ -33,17 +36,16 @@ class PersianFakesProvider extends \Faker\Provider\Lorem
      *
      * @param  int  $nb  how many words to return
      * @param  bool  $asText  if true the sentences are returned as one string
-     *
      * @return array|string
-     * @example array('باغ', 'آب', 'کتاب')
      *
+     * @example array('باغ', 'آب', 'کتاب')
      */
-     public static function persianWords($nb = 3, $asText = false)
+    public static function persianWords($nb = 3, $asText = false)
     {
         $words = [];
 
-        for ($i = 0; $i < $nb; ++$i) {
-            $words[] = static::persianWord();
+        for ($i = 0; $i < $nb; $i++) {
+            $words[] = self::persianWord();
         }
 
         return $asText ? implode(' ', $words) : $words;
@@ -54,13 +56,12 @@ class PersianFakesProvider extends \Faker\Provider\Lorem
      *
      * @param  int  $nbWords  around how many words the sentence should contain
      * @param  bool  $variableNbWords  set to false if you want exactly $nbWords returned,
-     *                              otherwise $nbWords may vary by +/-40% with a minimum of 1
-     *
+     *                                 otherwise $nbWords may vary by +/-40% with a minimum of 1
      * @return string
-     * @example 'باغ کتاب آب'
      *
+     * @example 'باغ کتاب آب'
      */
-     public static function persianSentence($nbWords = 6, $variableNbWords = true)
+    public static function persianSentence($nbWords = 6, $variableNbWords = true)
     {
         if ($nbWords <= 0) {
             return '';
@@ -70,7 +71,7 @@ class PersianFakesProvider extends \Faker\Provider\Lorem
             $nbWords = self::randomizeNbElements($nbWords);
         }
 
-        $words = static::persianWords($nbWords);
+        $words    = self::persianWords($nbWords);
         $words[0] = ucwords($words[0]);
 
         return implode(' ', $words).'.';
@@ -81,17 +82,16 @@ class PersianFakesProvider extends \Faker\Provider\Lorem
      *
      * @param  int  $nb  how many sentences to return
      * @param  bool  $asText  if true the sentences are returned as one string
-     *
      * @return array|string
-     * @example array('آب ابزار صندلی', 'باغ آب کتاب')
      *
+     * @example array('آب ابزار صندلی', 'باغ آب کتاب')
      */
-     public static function persianSentences($nb = 3, $asText = false)
+    public static function persianSentences($nb = 3, $asText = false)
     {
         $sentences = [];
 
-        for ($i = 0; $i < $nb; ++$i) {
-            $sentences[] = static::persianSentence();
+        for ($i = 0; $i < $nb; $i++) {
+            $sentences[] = self::persianSentence();
         }
 
         return $asText ? implode(' ', $sentences) : $sentences;
@@ -102,13 +102,12 @@ class PersianFakesProvider extends \Faker\Provider\Lorem
      *
      * @param  int  $nbSentences  around how many sentences the paragraph should contain
      * @param  bool  $variableNbSentences  set to false if you want exactly $nbSentences returned,
-     *                                  otherwise $nbSentences may vary by +/-40% with a minimum of 1
-     *
+     *                                     otherwise $nbSentences may vary by +/-40% with a minimum of 1
      * @return string
-     * @example 'کتاب ابزار پل مشک. مشک کتاب صندلی میز'
      *
+     * @example 'کتاب ابزار پل مشک. مشک کتاب صندلی میز'
      */
-     public static function persianParagraph($nbSentences = 3, $variableNbSentences = true)
+    public static function persianParagraph($nbSentences = 3, $variableNbSentences = true)
     {
         if ($nbSentences <= 0) {
             return '';
@@ -118,7 +117,7 @@ class PersianFakesProvider extends \Faker\Provider\Lorem
             $nbSentences = self::randomizeNbElements($nbSentences);
         }
 
-        return implode(' ', static::persianSentences($nbSentences));
+        return implode(' ', self::persianSentences($nbSentences));
     }
 
     /**
@@ -126,17 +125,16 @@ class PersianFakesProvider extends \Faker\Provider\Lorem
      *
      * @param  int  $nb  how many paragraphs to return
      * @param  bool  $asText  if true the paragraphs are returned as one string, separated by two newlines
-     *
      * @return array|string
-     * @example array($pargraph1, $paragraph2)
      *
+     * @example array($pargraph1, $paragraph2)
      */
-     public static function persianParagraphs($nb = 3, $asText = false)
+    public static function persianParagraphs($nb = 3, $asText = false)
     {
         $paragraphs = [];
 
-        for ($i = 0; $i < $nb; ++$i) {
-            $paragraphs[] = static::persianParagraph();
+        for ($i = 0; $i < $nb; $i++) {
+            $paragraphs[] = self::persianParagraph();
         }
 
         return $asText ? implode("\n\n", $paragraphs) : $paragraphs;
@@ -147,15 +145,14 @@ class PersianFakesProvider extends \Faker\Provider\Lorem
      * Depending on the $maxNbChars, returns a string made of persian words, persian sentences, or persian paragraphs.
      *
      * @param  int  $maxNbChars  Maximum number of characters the text should contain (minimum 5)
-     *
      * @return string
-     * @example 'میز کتاب صندلی'
      *
+     * @example 'میز کتاب صندلی'
      */
-     public static function persianText($maxNbChars = 200)
+    public static function persianText($maxNbChars = 200)
     {
         if ($maxNbChars < 5) {
-            throw new \InvalidArgumentException('persianText() faghat mitavanad motoone balaye 5 character ra tolid konad');
+            throw new InvalidArgumentException('persianText() faghat mitavanad motoone balaye 5 character ra tolid konad');
         }
 
         $type = ($maxNbChars < 25) ? 'persianWord' : (($maxNbChars < 100) ? 'persianSentence' : 'persianParagraph');
@@ -167,10 +164,10 @@ class PersianFakesProvider extends \Faker\Provider\Lorem
 
             // until $maxNbChars is reached
             while ($size < $maxNbChars) {
-                $word = ($size ? ' ' : '').static::$type();
+                $word   = ($size ? ' ' : '').self::$type();
                 $text[] = $word;
 
-                $size += strlen($word);
+                $size += mb_strlen($word);
             }
 
             array_pop($text);
@@ -187,11 +184,11 @@ class PersianFakesProvider extends \Faker\Provider\Lorem
         return implode('', $text);
     }
 
-     public static function mobile(): string
+    public static function mobile(): string
     {
-        $prefix = static::$mobileList[array_rand(static::$mobileList)];
-        $phone = ('0'.$prefix.randomNumber(7));
-        return (strlen($phone) !== 11 ? $phone.rand(1, 9) : $phone);
-    }
+        $prefix = self::$mobileList[array_rand(self::$mobileList)];
+        $phone  = ('0'.$prefix.randomNumber(7));
 
+        return mb_strlen($phone) !== 11 ? $phone.rand(1, 9) : $phone;
+    }
 }

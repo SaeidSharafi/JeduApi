@@ -17,13 +17,13 @@ final readonly class CreateAdminAction
     {
         DB::transaction(function () use ($data): void {
             $admin = \App\Models\Admin::create([
-                'name'  => $data->name,
-                'email' => $data->email,
-                'phone' => $data->phone,
+                'name'     => $data->name,
+                'email'    => $data->email,
+                'phone'    => $data->phone,
                 'password' => Hash::make($data->password),
             ]);
 
-            if (!empty($data->roles)) {
+            if (! empty($data->roles)) {
                 $admin->syncRoles($data->roles);
             }
 

@@ -6,12 +6,9 @@ namespace App\Providers;
 
 use App\Contracts\OtpGeneratorInterface;
 use App\Enums\MorphTypeEnum;
-use App\Models\Admin;
-use App\Models\User;
 use App\Services\DefaultOtpGenerator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 final class AppServiceProvider extends ServiceProvider

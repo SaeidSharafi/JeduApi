@@ -97,6 +97,7 @@ final class DigitalAssetController extends Controller
                 ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag))
                 ->toArray();
         }
+
         return response()->success(ShowDigitalAssetData::from([
             ...$digitalAsset->toArray(),
             'categories'  => $digitalAsset->categories,
@@ -129,6 +130,7 @@ final class DigitalAssetController extends Controller
                 ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag))
                 ->toArray();
         }
+
         return response()->success(
             ShowDigitalAssetData::from([
                 ...$digitalAsset->toArray(),

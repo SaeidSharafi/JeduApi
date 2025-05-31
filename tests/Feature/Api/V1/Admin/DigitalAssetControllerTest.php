@@ -133,13 +133,12 @@ it('can get list of digital assets', function () {
 it('can get single digital asset', function () {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW->value]);
     $digitalAsset = DigitalAsset::factory()->create();
-    $preview = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
+    $preview      = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
         ->toDisk('local')
         ->upload();
     $main = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('file.pdf'))
         ->toDisk('local')
         ->upload();
-
 
     $digitalAsset->attachMedia($preview, 'preview');
     $digitalAsset->attachMedia($main, 'main');
@@ -210,7 +209,7 @@ it('can create digital asset', function () {
             'preview' => $preview->id,
             'main'    => $main->id,
         ],
-        'media'                   => [
+        'media' => [
             'gallery' => [$this->gallery->id],
             'cover'   => [$this->cover->id],
             'video'   => [$this->video->id],
@@ -285,7 +284,7 @@ it('can update digital asset', function () {
     $digitalAsset->attachMedia($main, 'main');
     $digitalAssetUpdate = DigitalAsset::factory()
         ->make();
-    $updatedData = $digitalAssetUpdate->toArray();
+    $updatedData   = $digitalAssetUpdate->toArray();
     $previewUpdate = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview_updated.pdf'))
         ->toDisk('local')
         ->upload();

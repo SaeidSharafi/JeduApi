@@ -32,9 +32,10 @@ final class ResponseMacroServiceProvider extends ServiceProvider
          */
         $responseFactory->macro('success',
             function (mixed $data = null, ?string $message = null): ApiResponseInterface {
-                if (!$message) {
+                if (! $message) {
                     $message = __('messages.success');
                 }
+
                 return new ApiSuccessResponse($message, $data);
             });
 
@@ -47,13 +48,14 @@ final class ResponseMacroServiceProvider extends ServiceProvider
          * @return JsonResponse
          */
         $responseFactory->macro('created',
-            function (mixed $data = null, ?string $message = null,null|object|string $model = null): ApiResponseInterface {
-                if (!$message && !$model) {
+            function (mixed $data = null, ?string $message = null, null|object|string $model = null): ApiResponseInterface {
+                if (! $message && ! $model) {
                     $message = __('messages.created', ['model' => null]);
                 }
-                if (!$message && $model) {
+                if (! $message && $model) {
                     $message = __('messages.created', ['model' => get_model_label($model)]);
                 }
+
                 return new ApiSuccessResponse($message, $data, HttpStatus::HTTP_CREATED);
             });
 
@@ -66,13 +68,14 @@ final class ResponseMacroServiceProvider extends ServiceProvider
          * @return JsonResponse
          */
         $responseFactory->macro('updated',
-            function (mixed $data = null, ?string $message = null,null|object|string $model = null): ApiResponseInterface {
-                if (!$message && !$model) {
+            function (mixed $data = null, ?string $message = null, null|object|string $model = null): ApiResponseInterface {
+                if (! $message && ! $model) {
                     $message = __('messages.updated', ['model' => null]);
                 }
-                if (!$message && $model) {
+                if (! $message && $model) {
                     $message = __('messages.updated', ['model' => get_model_label($model)]);
                 }
+
                 return new ApiSuccessResponse($message, $data);
             });
 
@@ -100,6 +103,7 @@ final class ResponseMacroServiceProvider extends ServiceProvider
         $responseFactory->macro('error',
             function (string $message, int $status = HttpStatus::HTTP_BAD_REQUEST, mixed $errors = null): ApiResponseInterface {
                 $message = $message ?: __('messages.error');
+
                 return new ApiFailResponse($message, $errors, $status);
             });
 
@@ -112,9 +116,10 @@ final class ResponseMacroServiceProvider extends ServiceProvider
          */
         $responseFactory->macro('validationError',
             function (?string $message = null) use ($responseFactory): ApiResponseInterface {
-                if (!$message) {
+                if (! $message) {
                     $message = __('messages.validation_error');
                 }
+
                 return $responseFactory->error( // Reuse the generic error macro
                     $message,
                     HttpStatus::HTTP_UNPROCESSABLE_ENTITY
@@ -131,9 +136,10 @@ final class ResponseMacroServiceProvider extends ServiceProvider
         $responseFactory->macro('validationErrors',
             function (mixed $errors, ?string $message = null): ApiResponseInterface {
                 $errorPayload = ($errors instanceof \Illuminate\Contracts\Validation\Validator) ? $errors->errors()->toArray() : $errors;
-                if (!$message) {
+                if (! $message) {
                     $message = __('messages.validation_error');
                 }
+
                 return new ApiFailResponse($message, $errorPayload, HttpStatus::HTTP_UNPROCESSABLE_ENTITY);
             });
 
@@ -145,13 +151,14 @@ final class ResponseMacroServiceProvider extends ServiceProvider
          */
         $responseFactory->macro('notFound',
             function (?string $message = null, null|object|string $model = null) use ($responseFactory): ApiResponseInterface {
-                if (!$message && !$model) {
+                if (! $message && ! $model) {
                     $message = __('messages.resource_not_found');
                 }
 
-                if (!$message && $model) {
+                if (! $message && $model) {
                     $message = __('messages.not_found', ['model' => get_model_label($model)]);
                 }
+
                 return $responseFactory->error($message, HttpStatus::HTTP_NOT_FOUND);
             });
 
@@ -204,5 +211,4 @@ final class ResponseMacroServiceProvider extends ServiceProvider
                 return new ApiErrorResponse($message, $exception, HttpStatus::HTTP_INTERNAL_SERVER_ERROR);
             });
     }
-
 }

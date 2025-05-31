@@ -1,25 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Testing\Fluent\AssertableJson;
 
-uses(\Tests\AuthTestTrait::class);
+uses(Tests\AuthTestTrait::class);
 beforeEach(function () {
-    $this->adminRole = \Spatie\Permission\Models\Role::create([
-        'name' => 'admin',
-        'label' => 'Admin',
+    $this->adminRole = Spatie\Permission\Models\Role::create([
+        'name'       => 'admin',
+        'label'      => 'Admin',
         'guard_name' => 'admin',
     ])->fresh();
 
-    $this->data = \App\Models\Admin::factory()->make()->toArray();
-    $this->data['password'] = 'password123';
+    $this->data                          = App\Models\Admin::factory()->make()->toArray();
+    $this->data['password']              = 'password123';
     $this->data['password_confirmation'] = $this->data['password'];
-    $this->data['roles'] = ['admin'];
+    $this->data['roles']                 = ['admin'];
 });
 describe('list filters', function (): void {
     it('should filter by name', function () {
-        \App\Models\Admin::factory(20)->create();
-        $admin = \App\Models\Admin::factory()->create(['name' => 'John Doe']);
-         $this->authorized_user([
+        App\Models\Admin::factory(20)->create();
+        $admin = App\Models\Admin::factory()->create(['name' => 'John Doe']);
+        $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_VIEW_ANY->value,
         ]);
         $response = $this->getJson(route('api.v1.admin.admins.index', ['filter[name]' => 'John Doe']));
@@ -29,9 +31,9 @@ describe('list filters', function (): void {
     });
 
     it('should filter by email', function () {
-        \App\Models\Admin::factory(20)->create();
-        $admin = \App\Models\Admin::factory()->create(['email' => 'admin@example.com']);
-         $this->authorized_user([
+        App\Models\Admin::factory(20)->create();
+        $admin = App\Models\Admin::factory()->create(['email' => 'admin@example.com']);
+        $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_VIEW_ANY->value,
         ]);
         $response = $this->getJson(route('api.v1.admin.admins.index', ['filter[email]' => 'admin@example.com']));
@@ -41,9 +43,9 @@ describe('list filters', function (): void {
     });
 
     it('should filter by phone', function () {
-        \App\Models\Admin::factory(20)->create();
-        $admin = \App\Models\Admin::factory()->create(['phone' => '09301234567']);
-         $this->authorized_user([
+        App\Models\Admin::factory(20)->create();
+        $admin = App\Models\Admin::factory()->create(['phone' => '09301234567']);
+        $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_VIEW_ANY->value,
         ]);
         $response = $this->getJson(route('api.v1.admin.admins.index', ['filter[phone]' => '09301234567']));
@@ -53,10 +55,10 @@ describe('list filters', function (): void {
     });
 
     it('should filter by role', function () {
-        $admin = \App\Models\Admin::factory()->create();
+        $admin = App\Models\Admin::factory()->create();
         $admin->assignRole('admin');
-        \App\Models\Admin::factory(20)->create();
-         $this->authorized_user([
+        App\Models\Admin::factory(20)->create();
+        $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_VIEW_ANY->value,
         ]);
         $response = $this->getJson(route('api.v1.admin.admins.index', ['filter[role]' => 'admin']));
@@ -103,7 +105,7 @@ describe('list filters', function (): void {
 
 describe('admin list', function (): void {
     it('should return a list of admins', function () {
-        \App\Models\Admin::factory(20)->create();
+        App\Models\Admin::factory(20)->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_VIEW_ANY->value,
         ]);
@@ -129,7 +131,7 @@ describe('admin list', function (): void {
                                 ],
                             ],
                         ],
-                    ]
+                    ],
                 ],
             ]);
     });
@@ -160,18 +162,18 @@ describe('admin store', function (): void {
             ->assertJsonFragment(['message' => __('messages.created', ['model' => __('messages.models.admin')])]);
 
         $this->assertDatabaseHas('admins', [
-            'email' =>  $this->data['email'],
-            'phone' =>  $this->data['phone'],
+            'email' => $this->data['email'],
+            'phone' => $this->data['phone'],
         ]);
         $this->assertDatabaseHas('model_has_roles', [
-            'model_id' => \App\Models\Admin::where('email',  $this->data['email'])->first()->id,
-            'role_id'  => \Spatie\Permission\Models\Role::where('name', 'admin')->first()->id,
+            'model_id' => App\Models\Admin::where('email', $this->data['email'])->first()->id,
+            'role_id'  => Spatie\Permission\Models\Role::where('name', 'admin')->first()->id,
         ]);
     });
 
     it('should not create a new admin without required permissions', function () {
         $this->unauthorized_user();
-        $response = $this->postJson(route('api.v1.admin.admins.store'),  $this->data);
+        $response = $this->postJson(route('api.v1.admin.admins.store'), $this->data);
         $response->assertForbidden();
     });
     it('should not create a new admin with invalid data', function () {
@@ -180,7 +182,7 @@ describe('admin store', function (): void {
         ]);
 
         $this->data['email'] = 'invalid-email';
-        $response = $this->postJson(route('api.v1.admin.admins.store'),  $this->data);
+        $response            = $this->postJson(route('api.v1.admin.admins.store'), $this->data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['email']);
     });
@@ -188,9 +190,9 @@ describe('admin store', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_CREATE->value,
         ]);
-        $existingAdmin = \App\Models\Admin::factory()->create();
+        $existingAdmin       = App\Models\Admin::factory()->create();
         $this->data['email'] = $existingAdmin->email;
-        $response = $this->postJson(route('api.v1.admin.admins.store'), $this->data);
+        $response            = $this->postJson(route('api.v1.admin.admins.store'), $this->data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['email']);
     });
@@ -198,10 +200,10 @@ describe('admin store', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_CREATE->value,
         ]);
-        $existingAdmin = \App\Models\Admin::factory()->create();
+        $existingAdmin = App\Models\Admin::factory()->create();
 
         $this->data['phone'] = $existingAdmin->phone;
-        $response = $this->postJson(route('api.v1.admin.admins.store'), $this->data);
+        $response            = $this->postJson(route('api.v1.admin.admins.store'), $this->data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['phone']);
     });
@@ -211,7 +213,7 @@ describe('admin store', function (): void {
         ]);
 
         $this->data['phone'] = 'invalid-phone';
-        $response = $this->postJson(route('api.v1.admin.admins.store'), $this->data);
+        $response            = $this->postJson(route('api.v1.admin.admins.store'), $this->data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['phone']);
     });
@@ -220,7 +222,7 @@ describe('admin store', function (): void {
             App\Enums\PermissionEnum::ADMIN_CREATE->value,
         ]);
 
-        $this->data['password'] = 'short';
+        $this->data['password']              = 'short';
         $this->data['password_confirmation'] = $this->data['password'];
 
         $response = $this->postJson(route('api.v1.admin.admins.store'), $this->data);
@@ -232,7 +234,7 @@ describe('admin store', function (): void {
             App\Enums\PermissionEnum::ADMIN_CREATE->value,
         ]);
         $this->data['name'] = '';
-        $response = $this->postJson(route('api.v1.admin.admins.store'), $this->data);
+        $response           = $this->postJson(route('api.v1.admin.admins.store'), $this->data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['name']);
     });
@@ -241,14 +243,14 @@ describe('admin store', function (): void {
             App\Enums\PermissionEnum::ADMIN_CREATE->value,
         ]);
         $this->data['roles'] = ['invalid-role'];
-        $response = $this->postJson(route('api.v1.admin.admins.store'), $this->data);
+        $response            = $this->postJson(route('api.v1.admin.admins.store'), $this->data);
         $response->assertInvalid(['roles.0']);
     });
 });
 
 describe('admin show', function (): void {
     it('should return a specific admin', function () {
-        $admin = \App\Models\Admin::factory()->create();
+        $admin = App\Models\Admin::factory()->create();
         $admin->assignRole('admin');
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_VIEW->value,
@@ -263,18 +265,17 @@ describe('admin show', function (): void {
                     ->where('data.phone', $admin->phone)
                     ->where('data.roles', [
                         [
-                            'id' => $this->adminRole->id,
-                            'name' => $this->adminRole->name,
+                            'id'    => $this->adminRole->id,
+                            'name'  => $this->adminRole->name,
                             'label' => $this->adminRole->label,
                         ],
                     ])
                     ->etc();
-            })
-        ;
+            });
     });
 
     it('should not return a specific admin without required permissions', function () {
-        $admin = \App\Models\Admin::factory()->create();
+        $admin = App\Models\Admin::factory()->create();
         $this->unauthorized_user();
         $response = $this->getJson(route('api.v1.admin.admins.show', $admin));
         $response->assertForbidden();
@@ -291,23 +292,23 @@ describe('admin show', function (): void {
 
 describe('admin update', function (): void {
     it('should update an existing admin', function () {
-        $admin = \App\Models\Admin::factory()->create();
+        $admin = App\Models\Admin::factory()->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_UPDATE->value,
         ]);
         $response = $this->putJson(route('api.v1.admin.admins.update', $admin), $this->data);
         $response->assertOk()
             ->assertJsonFragment(['email' => $this->data['email']])
-        ->assertJsonFragment(['message' => __('messages.updated', ['model' => __('messages.models.admin')])]);
+            ->assertJsonFragment(['message' => __('messages.updated', ['model' => __('messages.models.admin')])]);
 
         $this->assertDatabaseHas('admins', [
-            'id' => $admin->id,
+            'id'    => $admin->id,
             'email' => $this->data['email'],
             'phone' => $this->data['phone'],
         ]);
     });
     it('should update an existing admin without changing password', function () {
-        $admin = \App\Models\Admin::factory()->create();
+        $admin    = App\Models\Admin::factory()->create();
         $passowrd = $admin->password;
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_UPDATE->value,
@@ -318,21 +319,21 @@ describe('admin update', function (): void {
             ->assertJsonFragment(['email' => $this->data['email']]);
 
         $this->assertDatabaseHas('admins', [
-            'id' => $admin->id,
-            'email' => $this->data['email'],
-            'phone' => $this->data['phone'],
+            'id'       => $admin->id,
+            'email'    => $this->data['email'],
+            'phone'    => $this->data['phone'],
             'password' => $passowrd,
         ]);
     });
     it('should not update an admin without required permissions', function () {
-        $admin = \App\Models\Admin::factory()->create();
+        $admin = App\Models\Admin::factory()->create();
         $this->unauthorized_user();
         $response = $this->putJson(route('api.v1.admin.admins.update', $admin), $this->data);
         $response->assertForbidden();
     });
 
     it('should not update an admin with invalid data', function () {
-        $admin = \App\Models\Admin::factory()->create();
+        $admin = App\Models\Admin::factory()->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_UPDATE->value,
         ]);
@@ -344,66 +345,66 @@ describe('admin update', function (): void {
     });
 
     it('should not update an admin with duplicate email', function () {
-        $admin1 = \App\Models\Admin::factory()->create();
-        $admin2 = \App\Models\Admin::factory()->create();
+        $admin1 = App\Models\Admin::factory()->create();
+        $admin2 = App\Models\Admin::factory()->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_UPDATE->value,
         ]);
         $this->data['email'] = $admin2->email;
-        $response = $this->putJson(route('api.v1.admin.admins.update', $admin1), $this->data);
+        $response            = $this->putJson(route('api.v1.admin.admins.update', $admin1), $this->data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['email']);
     });
 
     it('should not update an admin with duplicate phone', function () {
-        $admin1 = \App\Models\Admin::factory()->create();
-        $admin2 = \App\Models\Admin::factory()->create();
+        $admin1 = App\Models\Admin::factory()->create();
+        $admin2 = App\Models\Admin::factory()->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_UPDATE->value,
         ]);
         $this->data['phone'] = $admin2->phone;
-        $response = $this->putJson(route('api.v1.admin.admins.update', $admin1), $this->data);
+        $response            = $this->putJson(route('api.v1.admin.admins.update', $admin1), $this->data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['phone']);
     });
     it('should not update an admin with invalid phone', function () {
-        $admin = \App\Models\Admin::factory()->create();
+        $admin = App\Models\Admin::factory()->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_UPDATE->value,
         ]);
         $this->data['phone'] = 'invalid-phone';
-        $response = $this->putJson(route('api.v1.admin.admins.update', $admin), $this->data);
+        $response            = $this->putJson(route('api.v1.admin.admins.update', $admin), $this->data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['phone']);
     });
     it('should not update an admin with invalid password', function () {
-        $admin = \App\Models\Admin::factory()->create();
+        $admin = App\Models\Admin::factory()->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_UPDATE->value,
         ]);
-        $this->data['password'] = 'short';
-        $this->data['password_confirmation'] = $this->data['password'] ;
-        $response = $this->putJson(route('api.v1.admin.admins.update', $admin), $this->data);
+        $this->data['password']              = 'short';
+        $this->data['password_confirmation'] = $this->data['password'];
+        $response                            = $this->putJson(route('api.v1.admin.admins.update', $admin), $this->data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['password']);
     });
     it('should not update an admin with invalid name', function () {
-        $admin = \App\Models\Admin::factory()->create();
+        $admin = App\Models\Admin::factory()->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_UPDATE->value,
         ]);
         $this->data['name'] = '';
-        $response = $this->putJson(route('api.v1.admin.admins.update', $admin), $this->data);
+        $response           = $this->putJson(route('api.v1.admin.admins.update', $admin), $this->data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['name']);
     });
     it('should not update an admin with invalid role', function () {
-        $admin = \App\Models\Admin::factory()->create();
+        $admin = App\Models\Admin::factory()->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_UPDATE->value,
         ]);
         $this->data['roles'] = ['invalid-role'];
-        $response = $this->putJson(route('api.v1.admin.admins.update', $admin), $this->data);
+        $response            = $this->putJson(route('api.v1.admin.admins.update', $admin), $this->data);
         $response->assertInvalid(['roles.0']);
     });
     it('can update itslef', function () {
@@ -411,15 +412,15 @@ describe('admin update', function (): void {
             App\Enums\PermissionEnum::ADMIN_DELETE->value,
         ]);
         $data = [
-            'name' => 'Updated Name',
+            'name'  => 'Updated Name',
             'email' => $this->user->email,
             'phone' => $this->user->phone,
         ];
-        $response = $this->putJson(route('api.v1.admin.admins.update', $this->user),$data);
+        $response = $this->putJson(route('api.v1.admin.admins.update', $this->user), $data);
         $response->assertSuccessful();
         $this->assertDatabaseHas('admins', [
-            'id' => $this->user->id,
-            'name' => $data['name'],
+            'id'    => $this->user->id,
+            'name'  => $data['name'],
             'email' => $data['email'],
             'phone' => $data['phone'],
         ]);
@@ -428,21 +429,21 @@ describe('admin update', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_DELETE->value,
         ]);
-        $admin = \App\Models\Admin::factory()
+        $admin = App\Models\Admin::factory()
             ->isSuperAdmin()
             ->create();
-        $response = $this->putJson(route('api.v1.admin.admins.update',$admin),$this->data);
+        $response = $this->putJson(route('api.v1.admin.admins.update', $admin), $this->data);
         $response->assertForbidden();
 
         $this->admin_user();
-        $response = $this->putJson(route('api.v1.admin.admins.update',$admin),$this->data);
+        $response = $this->putJson(route('api.v1.admin.admins.update', $admin), $this->data);
         $response->assertForbidden();
     });
 });
 
 describe('admin destroy', function (): void {
     it('should delete an existing admin', function () {
-        $admin = \App\Models\Admin::factory()->create();
+        $admin = App\Models\Admin::factory()->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_DELETE->value,
         ]);
@@ -455,7 +456,7 @@ describe('admin destroy', function (): void {
     });
 
     it('should not delete an admin without required permissions', function () {
-        $admin = \App\Models\Admin::factory()->create();
+        $admin = App\Models\Admin::factory()->create();
         $this->unauthorized_user();
         $response = $this->deleteJson(route('api.v1.admin.admins.destroy', $admin));
         $response->assertForbidden();
@@ -472,7 +473,7 @@ describe('admin destroy', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::ADMIN_DELETE->value,
         ]);
-        $admin = \App\Models\Admin::factory()
+        $admin = App\Models\Admin::factory()
             ->isSuperAdmin()
             ->create();
         $response = $this->deleteJson(route('api.v1.admin.admins.destroy', $admin));

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin;
 
-use App\Data\Admin\CreateAdminData;
 use App\Data\Admin\UpdateAdminData;
 use App\Models\Admin;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +27,7 @@ final readonly class UpdateAdminAction
             }
             $admin->update($adminData);
 
-            if (!empty($data->roles)) {
+            if (! empty($data->roles)) {
                 $admin->syncRoles($data->roles);
             }
         });

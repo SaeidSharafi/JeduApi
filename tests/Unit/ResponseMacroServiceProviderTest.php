@@ -1,38 +1,40 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Responses\ApiErrorResponse;
 use App\Http\Responses\ApiFailResponse;
 use App\Http\Responses\ApiSuccessResponse;
 use App\Providers\ResponseMacroServiceProvider;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
-use Symfony\Component\HttpFoundation\Response as HttpStatus;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request; // Required for request() helper
+use Symfony\Component\HttpFoundation\Response as HttpStatus; // Required for request() helper
 
-
-if (!function_exists('get_model_label')) {
+if (! function_exists('get_model_label')) {
     function get_model_label(object|string $class): string
     {
         if (is_object($class) || class_exists($class)) {
-            return __('messages.models.' . strtolower(class_basename($class)));
+            return __('messages.models.'.mb_strtolower(class_basename($class)));
         }
         if (is_string($class)) {
-            return __('messages.models.' . strtolower($class));
+            return __('messages.models.'.mb_strtolower($class));
         }
+
         return '';
     }
 }
 
 // A dummy model for testing purposes
-if (!class_exists('App\Models\TestDummyModel')) {
-    class_alias(\stdClass::class, 'App\Models\TestDummyModel');
+if (! class_exists('App\Models\TestDummyModel')) {
+    class_alias(stdClass::class, 'App\Models\TestDummyModel');
 }
 
 describe('ResponseMacroServiceProvider', function () {
     beforeEach(function () {
         // Ensure a fresh request object for each test if request() helper is used.
-        $this->app->singleton('request', fn() => Request::create('/test', 'GET'));
+        $this->app->singleton('request', fn () => Request::create('/test', 'GET'));
         $this->app->register(ResponseMacroServiceProvider::class);
     });
 
@@ -50,7 +52,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseData['metadata'])->toBe([]);
 
         // Test with data and default message
-        $apiResponseDefault = Response::success($data);
+        $apiResponseDefault  = Response::success($data);
         $jsonResponseDefault = $apiResponseDefault->toResponse(request());
         $responseDataDefault = $jsonResponseDefault->getData(true);
         expect($responseDataDefault['message'])->toBe(__('messages.success'))
@@ -58,7 +60,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataDefault['metadata'])->toBe([]);
 
         // Test with null data and custom message
-        $apiResponseNull = Response::success(null, 'Action completed.');
+        $apiResponseNull  = Response::success(null, 'Action completed.');
         $jsonResponseNull = $apiResponseNull->toResponse(request());
         $responseDataNull = $jsonResponseNull->getData(true);
         expect($responseDataNull['message'])->toBe('Action completed.')
@@ -66,7 +68,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataNull['metadata'])->toBe([]);
 
         // Test with null data and default message
-        $apiResponseNullDefault = Response::success();
+        $apiResponseNullDefault  = Response::success();
         $jsonResponseNullDefault = $apiResponseNullDefault->toResponse(request());
         $responseDataNullDefault = $jsonResponseNullDefault->getData(true);
         expect($responseDataNullDefault['message'])->toBe(__('messages.success'))
@@ -75,8 +77,8 @@ describe('ResponseMacroServiceProvider', function () {
     });
 
     it('registers and uses created macro correctly', function () {
-        $data = ['id' => 1, 'name' => 'New Resource'];
-        $modelClass = \App\Models\TestDummyModel::class;
+        $data       = ['id' => 1, 'name' => 'New Resource'];
+        $modelClass = App\Models\TestDummyModel::class;
         $modelLabel = get_model_label($modelClass); // "test dummy model"
 
         // Test with data, custom message, and model
@@ -90,7 +92,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseData['metadata'])->toBe([]);
 
         // Test with data and model (default message)
-        $apiResponseModel = Response::created($data, null, $modelClass);
+        $apiResponseModel  = Response::created($data, null, $modelClass);
         $jsonResponseModel = $apiResponseModel->toResponse(request());
         $responseDataModel = $jsonResponseModel->getData(true);
         expect($responseDataModel['message'])->toBe(__('messages.created', ['model' => $modelLabel]))
@@ -98,7 +100,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataModel['metadata'])->toBe([]);
 
         // Test with data and no model (default message)
-        $apiResponseNoModel = Response::created($data);
+        $apiResponseNoModel  = Response::created($data);
         $jsonResponseNoModel = $apiResponseNoModel->toResponse(request());
         $responseDataNoModel = $jsonResponseNoModel->getData(true);
         expect($responseDataNoModel['message'])->toBe(__('messages.created', ['model' => null]))
@@ -106,7 +108,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataNoModel['metadata'])->toBe([]);
 
         // Test with null data and custom message (no model)
-        $apiResponseNullData = Response::created(null, 'Resource successfully made.');
+        $apiResponseNullData  = Response::created(null, 'Resource successfully made.');
         $jsonResponseNullData = $apiResponseNullData->toResponse(request());
         $responseDataNullData = $jsonResponseNullData->getData(true);
         expect($responseDataNullData['message'])->toBe('Resource successfully made.')
@@ -115,8 +117,8 @@ describe('ResponseMacroServiceProvider', function () {
     });
 
     it('registers and uses updated macro correctly', function () {
-        $data = ['id' => 1, 'name' => 'Updated Resource'];
-        $modelClass = \App\Models\TestDummyModel::class;
+        $data       = ['id' => 1, 'name' => 'Updated Resource'];
+        $modelClass = App\Models\TestDummyModel::class;
         $modelLabel = get_model_label($modelClass);
 
         // Test with data, custom message, and model
@@ -130,7 +132,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseData['metadata'])->toBe([]);
 
         // Test with data and model (default message)
-        $apiResponseModel = Response::updated($data, null, $modelClass);
+        $apiResponseModel  = Response::updated($data, null, $modelClass);
         $jsonResponseModel = $apiResponseModel->toResponse(request());
         $responseDataModel = $jsonResponseModel->getData(true);
         expect($responseDataModel['message'])->toBe(__('messages.updated', ['model' => $modelLabel]))
@@ -138,7 +140,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataModel['metadata'])->toBe([]);
 
         // Test with data and no model (default message)
-        $apiResponseNoModel = Response::updated($data);
+        $apiResponseNoModel  = Response::updated($data);
         $jsonResponseNoModel = $apiResponseNoModel->toResponse(request());
         $responseDataNoModel = $jsonResponseNoModel->getData(true);
         expect($responseDataNoModel['message'])->toBe(__('messages.updated', ['model' => null]))
@@ -146,7 +148,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataNoModel['metadata'])->toBe([]);
 
         // Test with null data and custom message (no model)
-        $apiResponseNullData = Response::updated(null, 'Resource successfully modified.');
+        $apiResponseNullData  = Response::updated(null, 'Resource successfully modified.');
         $jsonResponseNullData = $apiResponseNullData->toResponse(request());
         $responseDataNullData = $jsonResponseNullData->getData(true);
         expect($responseDataNullData['message'])->toBe('Resource successfully modified.')
@@ -172,8 +174,8 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseData['metadata'])->toBe([]);
 
         // Test with message, custom status, and errors
-        $errors = ['field' => ['Error detail']];
-        $apiResponseCustom = Response::error('Specific error', HttpStatus::HTTP_NOT_IMPLEMENTED, $errors);
+        $errors             = ['field' => ['Error detail']];
+        $apiResponseCustom  = Response::error('Specific error', HttpStatus::HTTP_NOT_IMPLEMENTED, $errors);
         $jsonResponseCustom = $apiResponseCustom->toResponse(request());
         expect($jsonResponseCustom->getStatusCode())->toBe(HttpStatus::HTTP_NOT_IMPLEMENTED);
         $responseDataCustom = $jsonResponseCustom->getData(true);
@@ -195,7 +197,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseData['metadata'])->toBe([]);
 
         // Test with custom message
-        $apiResponseCustom = Response::validationError('Your input is not valid.');
+        $apiResponseCustom  = Response::validationError('Your input is not valid.');
         $jsonResponseCustom = $apiResponseCustom->toResponse(request());
         $responseDataCustom = $jsonResponseCustom->getData(true);
         expect($responseDataCustom['message'])->toBe('Your input is not valid.')
@@ -219,7 +221,7 @@ describe('ResponseMacroServiceProvider', function () {
         // Test with Validator instance and custom message
         $validator = ValidatorFacade::make([], ['name' => 'required']);
         $validator->fails(); // Trigger error collection
-        $apiResponseValidator = Response::validationErrors($validator, 'Custom validation message');
+        $apiResponseValidator  = Response::validationErrors($validator, 'Custom validation message');
         $jsonResponseValidator = $apiResponseValidator->toResponse(request());
         $responseDataValidator = $jsonResponseValidator->getData(true);
         expect($responseDataValidator['message'])->toBe('Custom validation message')
@@ -228,7 +230,7 @@ describe('ResponseMacroServiceProvider', function () {
     });
 
     it('registers and uses notFound macro correctly', function () {
-        $modelClass = \App\Models\TestDummyModel::class;
+        $modelClass = App\Models\TestDummyModel::class;
         $modelLabel = get_model_label($modelClass);
 
         // Test with model and default message
@@ -242,7 +244,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseData['metadata'])->toBe([]);
 
         // Test with custom message
-        $apiResponseCustom = Response::notFound('The item you are looking for does not exist.');
+        $apiResponseCustom  = Response::notFound('The item you are looking for does not exist.');
         $jsonResponseCustom = $apiResponseCustom->toResponse(request());
         $responseDataCustom = $jsonResponseCustom->getData(true);
         expect($responseDataCustom['message'])->toBe('The item you are looking for does not exist.')
@@ -250,7 +252,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataCustom['metadata'])->toBe([]);
 
         // Test without model (generic message)
-        $apiResponseGeneric = Response::notFound();
+        $apiResponseGeneric  = Response::notFound();
         $jsonResponseGeneric = $apiResponseGeneric->toResponse(request());
         $responseDataGeneric = $jsonResponseGeneric->getData(true);
         expect($responseDataGeneric['message'])->toBe(__('messages.resource_not_found'))
@@ -270,8 +272,8 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseData['metadata'])->toBe([]);
 
         // Test with custom message and errors
-        $errors = ['permission' => ['Missing required permission']];
-        $apiResponseCustom = Response::forbidden('You shall not pass!', $errors);
+        $errors             = ['permission' => ['Missing required permission']];
+        $apiResponseCustom  = Response::forbidden('You shall not pass!', $errors);
         $jsonResponseCustom = $apiResponseCustom->toResponse(request());
         $responseDataCustom = $jsonResponseCustom->getData(true);
         expect($responseDataCustom['message'])->toBe('You shall not pass!')
@@ -291,8 +293,8 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseData['metadata'])->toBe([]);
 
         // Test with custom message and errors
-        $errors = ['token' => ['Invalid token']];
-        $apiResponseCustom = Response::unauthorized('Please log in.', $errors);
+        $errors             = ['token' => ['Invalid token']];
+        $apiResponseCustom  = Response::unauthorized('Please log in.', $errors);
         $jsonResponseCustom = $apiResponseCustom->toResponse(request());
         $responseDataCustom = $jsonResponseCustom->getData(true);
         expect($responseDataCustom['message'])->toBe('Please log in.')
@@ -312,7 +314,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseData['metadata'])->toBe([]);
 
         // Test with custom message
-        $apiResponseCustom = Response::methodNotAllowed('This HTTP method is not supported here.');
+        $apiResponseCustom  = Response::methodNotAllowed('This HTTP method is not supported here.');
         $jsonResponseCustom = $apiResponseCustom->toResponse(request());
         $responseDataCustom = $jsonResponseCustom->getData(true);
         expect($responseDataCustom['message'])->toBe('This HTTP method is not supported here.')
@@ -335,7 +337,7 @@ describe('ResponseMacroServiceProvider', function () {
 
         // Test with custom message and exception, app.debug = true
         config(['app.debug' => true]);
-        $exception = new \RuntimeException('Something broke');
+        $exception     = new RuntimeException('Something broke');
         $apiResponseEx = Response::serverError('A critical error happened.', $exception);
         expect($apiResponseEx)->toBeInstanceOf(ApiErrorResponse::class);
         $jsonResponseDebug = $apiResponseEx->toResponse(request());
