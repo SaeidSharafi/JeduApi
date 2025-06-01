@@ -6,7 +6,7 @@ namespace App\Data\Auth;
 
 use Spatie\LaravelData\Data;
 
-final class AdminData extends Data
+final class StaffData extends Data
 {
     public function __construct(
         public int $id,

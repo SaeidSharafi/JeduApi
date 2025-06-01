@@ -6,7 +6,7 @@ namespace Database\Factories;
 
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
-use App\Models\Admin;
+use App\Models\Staff;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
@@ -46,7 +46,7 @@ final class CourseFactory extends Factory
             'meta_keywords'        => mb_trim(Str::take(implode(',', $this->faker->persianWords(3)), 255)),
             'properties'           => [],
             'status'               => $this->faker->randomElement(PublicationStatusEnum::getAllValues()),
-            'created_by'           => Admin::factory(),
+            'created_by'           => Staff::factory(),
         ];
     }
 

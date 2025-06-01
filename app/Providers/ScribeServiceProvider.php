@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Models\Admin;
+use App\Models\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 use Knuckles\Camel\Extraction\ExtractedEndpointData;
@@ -31,12 +31,12 @@ final class ScribeServiceProvider extends ServiceProvider
                 Request $request,
                 ExtractedEndpointData $endpointData
             ): void {
-                $admin = Admin::first();
-                if (! $admin) {
+                $staff = Staff::first();
+                if (! $staff) {
                     \Illuminate\Support\Facades\Log::error('Scribe beforeResponseCall: Admin not found!');
                     throw new Exception('Scribe beforeResponseCall: Admin not found!');
                 }
-                $token = $admin->createToken('token')->plainTextToken;
+                $token = $staff->createToken('token')->plainTextToken;
 
                 $request->headers->add(['Authorization' => "Bearer $token"]);
                 $request->server->set('HTTP_AUTHORIZATION', "Bearer $token");

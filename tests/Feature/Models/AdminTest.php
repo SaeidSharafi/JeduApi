@@ -3,15 +3,15 @@
 declare(strict_types=1);
 
 test('to array', function (): void {
-    $admin = App\Models\Admin::factory()->create()->fresh();
-    expect($admin->toArray())
+    $staff = App\Models\Staff::factory()->create()->fresh();
+    expect($staff->toArray())
         ->toEqual([
-            'id'         => $admin->id,
-            'name'       => $admin->name,
-            'email'      => $admin->email,
-            'phone'      => $admin->phone,
-            'is_admin'   => $admin->is_admin,
-            'created_at' => $admin->created_at->toISOString(),
-            'updated_at' => $admin->updated_at->toISOString(),
+            'id'         => $staff->id,
+            'name'       => $staff->name,
+            'email'      => $staff->email,
+            'phone'      => $staff->phone,
+            'is_admin'   => $staff->is_admin,
+            'created_at' => $staff->created_at->toISOString(),
+            'updated_at' => $staff->updated_at->toISOString(),
         ]);
 });

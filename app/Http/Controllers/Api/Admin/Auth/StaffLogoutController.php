@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-final class AdminLogoutController extends Controller
+final class StaffLogoutController extends Controller
 {
     /**
      * Logout the current Admin
@@ -25,7 +25,7 @@ final class AdminLogoutController extends Controller
      */
     public function __invoke(Request $request): JsonResponse
     {
-        $request->user('admin')->currentAccessToken()->delete();
+        $request->user('staff')->currentAccessToken()->delete();
 
         return response()->noContentJson();
     }

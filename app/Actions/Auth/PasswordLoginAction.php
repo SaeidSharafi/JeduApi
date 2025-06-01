@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Auth;
 
 use App\Exceptions\UserNotFoundException;
-use App\Models\Admin;
+use App\Models\Staff;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -17,7 +17,7 @@ final class PasswordLoginAction extends AuthAction
         protected AuthenticateUserAction $authenticateUser
     ) {}
 
-    public function execute(null|User|Admin|string $identifier, string $type, string $password, string $guard = 'user'): NewAccessToken
+    public function execute(null|User|Staff|string $identifier, string $type, string $password, string $guard = 'user'): NewAccessToken
     {
 
         if ($identifier && is_string($identifier)) {

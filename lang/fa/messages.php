@@ -31,7 +31,7 @@ return [
 
     'models' => [
         'seminar'       => 'سمینار',
-        'admin'         => 'مدیر',
+        'staff'         => 'مدیر',
         'user'          => 'کاربر',
         'category'      => 'دسته‌بندی',
         'digital_asset' => 'دارایی دیجیتال',

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
-use App\Models\Admin;
+use App\Models\Staff;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 trait HasAuditor
@@ -18,6 +18,6 @@ trait HasAuditor
 
     public function auditor(): BelongsTo
     {
-        return $this->belongsTo(Admin::class, 'created_by');
+        return $this->belongsTo(Staff::class, 'created_by');
     }
 }

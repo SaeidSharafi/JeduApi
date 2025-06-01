@@ -7,7 +7,7 @@ namespace App\Actions\Auth;
 use App\Enums\OtpType;
 use App\Exceptions\InvalidOtpCode;
 use App\Exceptions\UserNotFoundException;
-use App\Models\Admin;
+use App\Models\Staff;
 use App\Models\User;
 use App\Services\OtpManagerService;
 
@@ -18,7 +18,7 @@ final class VerifyOtpAction extends AuthAction
         protected AuthenticateUserAction $authenticateUserAction
     ) {}
 
-    public function execute(string|Admin|User $identifier, string $trackingCode, int $otpCode, OtpType $otpType, string $guard = 'user'): Admin|User
+    public function execute(string|Staff|User $identifier, string $trackingCode, int $otpCode, OtpType $otpType, string $guard = 'user'): Staff|User
     {
         $user = $identifier;
         if (is_string($identifier)) {

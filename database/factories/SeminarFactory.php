@@ -6,7 +6,7 @@ namespace Database\Factories;
 
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
-use App\Models\Admin;
+use App\Models\Staff;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
@@ -46,7 +46,7 @@ final class SeminarFactory extends Factory
             ],
             'keywords'         => implode(',', $this->faker->words(5)),
             'status'           => $this->faker->randomElement(PublicationStatusEnum::getAllValues()),
-            'created_by'       => Admin::factory(),
+            'created_by'       => Staff::factory(),
             'meta_title'       => mb_trim(Str::take($this->faker->persianWords(4, true), 70)),
             'meta_description' => mb_trim(Str::take($this->faker->persianParagraph(20, false), 100)),
             'meta_keywords'    => mb_trim(Str::take(implode(',', $this->faker->persianWords(3)), 255)),

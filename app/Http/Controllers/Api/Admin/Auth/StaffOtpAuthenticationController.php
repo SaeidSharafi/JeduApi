@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Api\Admin\Auth;
 use App\Actions\Auth\AuthenticateUserAction;
 use App\Actions\Auth\VerifyOtpAction;
 use App\Contracts\ApiResponseInterface;
-use App\Data\Auth\AdminData;
+use App\Data\Auth\StaffData;
 use App\Enums\OtpType;
 use App\Exceptions\InvalidOtpCode;
 use App\Exceptions\UserNotFoundException;
@@ -16,7 +16,7 @@ use App\Http\Requests\Auth\VerifyOtpRequest;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\Models\Permission;
 
-final class AdminOtpAuthenticationController extends Controller
+final class StaffOtpAuthenticationController extends Controller
 {
     public function __construct(
         protected VerifyOtpAction $verifyOtpAction,
@@ -34,7 +34,7 @@ final class AdminOtpAuthenticationController extends Controller
      *
      * @group Admin Authentication
      *
-     * @responseFile 200 responses/auth/admin.login.json
+     * @responseFile 200 responses/auth/staff.login.json
      *
      * @response 422 {
      *  "message": "Invalid OTP code",
@@ -50,7 +50,7 @@ final class AdminOtpAuthenticationController extends Controller
                 $request->tracking_code,
                 (int) $request->otp_code,
                 OtpType::from($request->otp_type),
-                guard: 'admin'
+                guard: 'staff'
             );
             $token = $this->authenticateUser->execute($user);
         } catch (UserNotFoundException) {
@@ -61,7 +61,7 @@ final class AdminOtpAuthenticationController extends Controller
             );
         }
         $permissions = Cache::rememberForever(config('cache.keys.all_permissions'), function () {
-            return Permission::query()->where('guard_name', 'admin')->get()->pluck('name')->toArray();
+            return Permission::query()->where('guard_name', 'staff')->get()->pluck('name')->toArray();
         });
 
         return response()->success(
@@ -69,7 +69,7 @@ final class AdminOtpAuthenticationController extends Controller
                 'token'       => $token->plainTextToken,
                 'expires_at'  => $token->accessToken->expires_at,
                 'type'        => 'Bearer',
-                'user'        => AdminData::from($user),
+                'user'        => StaffData::from($user),
                 'permissions' => $permissions,
             ], 'Authenticated successfully');
     }

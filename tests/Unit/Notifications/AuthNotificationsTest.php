@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\OtpType;
 use App\Events\OtpPrepared;
-use App\Models\Admin;
+use App\Models\Staff;
 use App\Models\User;
 use App\Notifications\Auth\OtpEmailNotification;
 use App\Notifications\Auth\OtpSmsNotification;
@@ -77,26 +77,26 @@ test('notifications handle different guard types correctly', function (): void {
     $userNotification = new OtpSmsNotification($userEvent);
     $user             = User::factory()->create(['phone' => $identifier]);
 
-    // Test admin guard
-    $adminEvent = new OtpPrepared(
+    // Test staff guard
+    $staffEvent = new OtpPrepared(
         identifier: $identifier,
-        guard: 'admin',
+        guard: 'staff',
         code: $code,
         type: OtpType::SIGNIN,
         trackingCode: $trackingCode,
         params: []
     );
-    $adminNotification = new OtpSmsNotification($adminEvent);
-    $admin             = Admin::factory()->create(['phone' => $identifier]);
+    $staffNotification = new OtpSmsNotification($staffEvent);
+    $staff             = Staff::factory()->create(['phone' => $identifier]);
 
     $userMailData  = $userNotification->toMail($user);
-    $adminMailData = $adminNotification->toMail($admin);
+    $staffMailData = $staffNotification->toMail($staff);
     expect($userEvent->guard)->toBe('user')
-        ->and($adminEvent->guard)->toBe('admin')
+        ->and($staffEvent->guard)->toBe('staff')
         ->and($userMailData->subject)->toBe('Your Login OTP Code')
         ->and($userMailData->render()->toHtml())->toMatch("/\b{$code}\b/m")
         ->and($userMailData->render()->toHtml())->toMatch("/\b{$user->phone}\b/m")
-        ->and($adminMailData->subject)->toBe('Your Login OTP Code')
-        ->and($adminMailData->render()->toHtml())->toMatch("/\b{$code}\b/m")
-        ->and($adminMailData->render()->toHtml())->toMatch("/\b{$admin->phone}\b/m");
+        ->and($staffMailData->subject)->toBe('Your Login OTP Code')
+        ->and($staffMailData->render()->toHtml())->toMatch("/\b{$code}\b/m")
+        ->and($staffMailData->render()->toHtml())->toMatch("/\b{$staff->phone}\b/m");
 });

@@ -86,7 +86,7 @@ return [
             PermissionAction::DELETE,
             PermissionAction::DELETE_OWN,
         ],
-        'admin' => [
+        'staff' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
@@ -124,7 +124,7 @@ return [
      */
     'custom_permissions' => [
         /* Example:
-        'ACCESS_ADMIN_DASHBOARD' => 'admin.dashboard.access',
+        'ACCESS_ADMIN_DASHBOARD' => 'staff.dashboard.access',
         'VIEW_AUDIT_LOGS'        => 'system.audit.view',
         'MANAGE_SETTINGS'        => 'system.settings.manage',
         */

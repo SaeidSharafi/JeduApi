@@ -18,7 +18,7 @@ abstract class TestCase extends BaseTestCase
         $this->app->singleton(function ($app): \App\Contracts\OtpGeneratorInterface {
             return new \Tests\Fakes\FakeOtpGenerator();
         });
-        $this->artisan('permissions:sync --guard=admin');
+        $this->artisan('permissions:sync --guard=staff');
 
     }
 

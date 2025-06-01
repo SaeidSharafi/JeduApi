@@ -9,8 +9,8 @@ it('return alias correctly', function () {
     expect($alias)->toBe('course');
     $alias = App\Enums\MorphTypeEnum::getAlias(App\Models\DigitalAsset::class);
     expect($alias)->toBe('digital_asset');
-    $alias = App\Enums\MorphTypeEnum::getAlias(App\Models\Admin::class);
-    expect($alias)->toBe('admin');
+    $alias = App\Enums\MorphTypeEnum::getAlias(App\Models\Staff::class);
+    expect($alias)->toBe('staff');
     $alias = App\Enums\MorphTypeEnum::getAlias(App\Models\User::class);
     expect($alias)->toBe('user');
 
@@ -27,8 +27,8 @@ it('return model class correctly', function () {
     expect($modelClass)->toBe(App\Models\Seminar::class);
     $modelClass = App\Enums\MorphTypeEnum::DIGITAL_ASSET->getModelClass();
     expect($modelClass)->toBe(App\Models\DigitalAsset::class);
-    $modelClass = App\Enums\MorphTypeEnum::ADMIN->getModelClass();
-    expect($modelClass)->toBe(App\Models\Admin::class);
+    $modelClass = App\Enums\MorphTypeEnum::STAFF->getModelClass();
+    expect($modelClass)->toBe(App\Models\Staff::class);
     $modelClass = App\Enums\MorphTypeEnum::USER->getModelClass();
     expect($modelClass)->toBe(App\Models\User::class);
 
@@ -42,6 +42,6 @@ it('return morph map correctly', function () {
         ->toHaveKey('course', App\Models\Course::class)
         ->toHaveKey('seminar', App\Models\Seminar::class)
         ->toHaveKey('digital_asset', App\Models\DigitalAsset::class)
-        ->toHaveKey('admin', App\Models\Admin::class)
+        ->toHaveKey('staff', App\Models\Staff::class)
         ->toHaveKey('user', App\Models\User::class);
 });

@@ -5,29 +5,29 @@ declare(strict_types=1);
 namespace App\Policies\Admin;
 
 use App\Enums\PermissionEnum;
-use App\Models\Admin;
+use App\Models\Staff;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-final class AdminPolicy
+final class StaffPolicy
 {
     use HandlesAuthorization;
 
-    public function viewAny(Admin $user): bool
+    public function viewAny(Staff $user): bool
     {
-        return $user->can(PermissionEnum::ADMIN_VIEW_ANY);
+        return $user->can(PermissionEnum::STAFF_VIEW_ANY);
     }
 
-    public function view(Admin $user, Admin $model): bool
+    public function view(Staff $user, Staff $model): bool
     {
-        return $user->can(PermissionEnum::ADMIN_VIEW) || $user->id === $model->id;
+        return $user->can(PermissionEnum::STAFF_VIEW) || $user->id === $model->id;
     }
 
-    public function create(Admin $user): bool
+    public function create(Staff $user): bool
     {
-        return $user->can(PermissionEnum::ADMIN_CREATE);
+        return $user->can(PermissionEnum::STAFF_CREATE);
     }
 
-    public function update(Admin $user, Admin $model): bool
+    public function update(Staff $user, Staff $model): bool
     {
         if ($user->id === $model->id) {
             return true;
@@ -39,10 +39,10 @@ final class AdminPolicy
             return false;
         }
 
-        return $user->can(PermissionEnum::ADMIN_UPDATE);
+        return $user->can(PermissionEnum::STAFF_UPDATE);
     }
 
-    public function delete(Admin $user, Admin $model): bool
+    public function delete(Staff $user, Staff $model): bool
     {
         if ($user->id === $model->id) {
             return false;
@@ -54,6 +54,6 @@ final class AdminPolicy
             return false;
         }
 
-        return $user->can(PermissionEnum::ADMIN_DELETE);
+        return $user->can(PermissionEnum::STAFF_DELETE);
     }
 }

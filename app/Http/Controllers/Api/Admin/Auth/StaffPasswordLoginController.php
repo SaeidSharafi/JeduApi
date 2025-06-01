@@ -6,15 +6,15 @@ namespace App\Http\Controllers\Api\Admin\Auth;
 
 use App\Actions\Auth\PasswordLoginAction;
 use App\Contracts\ApiResponseInterface;
-use App\Data\Auth\AdminData;
+use App\Data\Auth\StaffData;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Models\Admin;
+use App\Models\Staff;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\Models\Permission;
 
-final class AdminPasswordLoginController extends Controller
+final class StaffPasswordLoginController extends Controller
 {
     public function __construct(
         protected PasswordLoginAction $action
@@ -30,7 +30,7 @@ final class AdminPasswordLoginController extends Controller
      *
      * @group Admin Authentication
      *
-     * @responseFile 200 responses/auth/admin.login.json
+     * @responseFile 200 responses/auth/staff.login.json
      *
      * @response 404 {
      *       "message": "User not found",
@@ -51,7 +51,7 @@ final class AdminPasswordLoginController extends Controller
     {
         $type = filter_var($request->identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
 
-        $user = Admin::when(
+        $user = Staff::when(
             $type === 'email',
             fn (Builder $q) => $q->where('email', $request->identifier),
             fn (Builder $q) => $q->where('phone', $request->identifier)
@@ -61,17 +61,17 @@ final class AdminPasswordLoginController extends Controller
             $user,
             $type,
             $request->password,
-            guard: 'admin'
+            guard: 'staff'
         );
         $permissions = Cache::rememberForever(config('cache.keys.all_permissions'), function () {
-            return Permission::query()->where('guard_name', 'admin')->get()->pluck('name')->toArray();
+            return Permission::query()->where('guard_name', 'staff')->get()->pluck('name')->toArray();
         });
 
         return response()->success([
             'token'      => $token->plainTextToken,
             'expires_at' => $token->accessToken->expires_at,
             'type'       => 'Bearer',
-            'user'       => AdminData::from($user)
+            'user'       => StaffData::from($user)
                 ->additional([
                     'roles'       => $user->getRoleNames(),
                     'permissions' => $user->getAllPermissions()->pluck('name'),

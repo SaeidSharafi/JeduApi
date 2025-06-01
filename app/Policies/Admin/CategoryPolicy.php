@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies\Admin;
 
 use App\Enums\PermissionEnum;
-use App\Models\Admin;
+use App\Models\Staff;
 use App\Models\Category;
 
 final class CategoryPolicy
@@ -13,7 +13,7 @@ final class CategoryPolicy
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(Admin $user): bool
+    public function viewAny(Staff $user): bool
     {
         return $user->can(PermissionEnum::CATEGORY_VIEW_ANY->value);
     }
@@ -21,7 +21,7 @@ final class CategoryPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(Admin $user, Category $category): bool
+    public function view(Staff $user, Category $category): bool
     {
         return $user->can(PermissionEnum::CATEGORY_VIEW->value);
     }
@@ -29,7 +29,7 @@ final class CategoryPolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(Admin $user): bool
+    public function create(Staff $user): bool
     {
         return $user->can(PermissionEnum::CATEGORY_CREATE->value);
     }
@@ -37,7 +37,7 @@ final class CategoryPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(Admin $user, Category $category): bool
+    public function update(Staff $user, Category $category): bool
     {
         return $user->can(PermissionEnum::CATEGORY_UPDATE->value);
     }
@@ -45,7 +45,7 @@ final class CategoryPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(Admin $user, Category $category): bool
+    public function delete(Staff $user, Category $category): bool
     {
         return $user->can(PermissionEnum::CATEGORY_DELETE->value);
     }

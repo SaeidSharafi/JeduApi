@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\Admin;
+use App\Models\Staff;
 use App\Models\Category;
 use App\Models\DigitalAsset;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -37,7 +37,7 @@ final class DigitalAssetFactory extends Factory
             'meta_description'        => mb_trim(Str::take($this->faker->persianParagraph(20, false), 100)),
             'meta_keywords'           => mb_trim(Str::take(implode(',', $this->faker->persianWords(3)), 255)),
             'published_at'            => $this->faker->dateTime()?->format('Y-m-d H:i:s'),
-            'created_by'              => Admin::factory(),
+            'created_by'              => Staff::factory(),
         ];
     }
 

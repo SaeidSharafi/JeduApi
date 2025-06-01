@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
-use App\Models\Admin;
+use App\Models\Staff;
 use App\Models\User;
 use App\Services\OtpManagerService;
 use Laravel\Sanctum\NewAccessToken;
@@ -15,9 +15,9 @@ final class AuthenticateUserAction
         protected OtpManagerService $otpManager,
     ) {}
 
-    public function execute(Admin|User $user, string $guard = 'user'): NewAccessToken
+    public function execute(Staff|User $user, string $guard = 'user'): NewAccessToken
     {
-        $tokenName = $guard === 'admin' ? 'admin_token' : 'auth_token';
+        $tokenName = $guard === 'staff' ? 'staff_token' : 'auth_token';
 
         return $user->createToken($tokenName);
 

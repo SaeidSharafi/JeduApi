@@ -73,8 +73,8 @@ test('relation digital assets', function (): void {
 
 test('relation auditor', function (): void {
     $seminar             = App\Models\Seminar::factory()->create();
-    $auditor             = App\Models\Admin::factory()->create();
-    $anotherAuditor      = App\Models\Admin::factory()->create();
+    $auditor             = App\Models\Staff::factory()->create();
+    $anotherAuditor      = App\Models\Staff::factory()->create();
     $seminar->created_by = $auditor->id;
     $seminar->save();
     $seminar->refresh();

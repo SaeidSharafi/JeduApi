@@ -20,7 +20,7 @@ final class ForgotPasswordController extends Controller
     /**
      * Forgot Password
      *
-     * Check if admin exists and send OTP to reset password
+     * Check if staff exists and send OTP to reset password
      *
      *
      * @throws UserNotFoundException

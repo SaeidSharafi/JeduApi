@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use App\Models\Admin;
+use App\Models\Staff;
 use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Spatie\Permission\Models\Role;
@@ -13,10 +13,10 @@ trait AuthTestTrait
 {
     protected Authenticatable $user;
 
-    public function unauthorized_user($guard = 'admin'): self
+    public function unauthorized_user($guard = 'staff'): self
     {
         if (! isset($this->user)) {
-            $this->user = Admin::factory()->create();
+            $this->user = Staff::factory()->create();
         }
 
         return $this->actingAs($this->user->fresh(), $guard);
@@ -24,10 +24,10 @@ trait AuthTestTrait
 
     public function authorized_user(
         array $permission = [],
-        $guard = 'admin'
+        $guard = 'staff'
     ): self {
         if (! isset($this->user)) {
-            $this->user = Admin::factory()->create();
+            $this->user = Staff::factory()->create();
         }
         $role = Role::updateOrCreate([
             'name'       => 'manager_test',
@@ -49,12 +49,12 @@ trait AuthTestTrait
         return $this->actingAs($this->user->fresh(), 'user');
     }
 
-    public function admin_user($guard = 'admin'): self
+    public function admin_user($guard = 'staff'): self
     {
-        $this->user = Admin::forceCreate(
-            Admin::factory()->make([
+        $this->user = Staff::forceCreate(
+            Staff::factory()->make([
                 'phone'    => '09300000000',
-                'email'    => 'admin@example.com',
+                'email'    => 'staff@example.com',
                 'is_admin' => true])->toArray()
         );
 

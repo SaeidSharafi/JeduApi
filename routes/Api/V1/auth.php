@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Api\Admin\Auth\AdminForgotPasswordController;
-use App\Http\Controllers\Api\Admin\Auth\AdminInitiateAuthController;
-use App\Http\Controllers\Api\Admin\Auth\AdminLogoutController;
-use App\Http\Controllers\Api\Admin\Auth\AdminOtpAuthenticationController;
-use App\Http\Controllers\Api\Admin\Auth\AdminPasswordLoginController;
-use App\Http\Controllers\Api\Admin\Auth\AdminResendOtpController;
-use App\Http\Controllers\Api\Admin\Auth\AdminResetPasswordController;
+use App\Http\Controllers\Api\Admin\Auth\StaffForgotPasswordController;
+use App\Http\Controllers\Api\Admin\Auth\StaffInitiateAuthController;
+use App\Http\Controllers\Api\Admin\Auth\StaffLogoutController;
+use App\Http\Controllers\Api\Admin\Auth\StaffOtpAuthenticationController;
+use App\Http\Controllers\Api\Admin\Auth\StaffPasswordLoginController;
+use App\Http\Controllers\Api\Admin\Auth\StaffResendOtpController;
+use App\Http\Controllers\Api\Admin\Auth\StaffResetPasswordController;
 use App\Http\Controllers\Api\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\Auth\InitiateAuthController;
 use App\Http\Controllers\Api\Auth\LogoutController;
@@ -29,11 +29,11 @@ Route::prefix('auth')->name('auth.')->group(function (): void {
 
 // Admin Auth Routes
 Route::prefix('admin/auth')->name('admin.auth.')->group(function (): void {
-    Route::post('initiate', AdminInitiateAuthController::class)->name('initiate');
-    Route::post('login/password', AdminPasswordLoginController::class)->name('password-login');
-    Route::post('otp/verify', AdminOtpAuthenticationController::class)->name('otp-verify');
-    Route::post('otp/resend', AdminResendOtpController::class)->name('otp-resend');
-    Route::post('password/reset', AdminForgotPasswordController::class)->name('forgot-password');
-    Route::post('password/reset/otp', AdminResetPasswordController::class)->name('password-reset');
-    Route::post('logout', AdminLogoutController::class)->middleware('auth:admin')->name('logout');
+    Route::post('initiate', StaffInitiateAuthController::class)->name('initiate');
+    Route::post('login/password', StaffPasswordLoginController::class)->name('password-login');
+    Route::post('otp/verify', StaffOtpAuthenticationController::class)->name('otp-verify');
+    Route::post('otp/resend', StaffResendOtpController::class)->name('otp-resend');
+    Route::post('password/reset', StaffForgotPasswordController::class)->name('forgot-password');
+    Route::post('password/reset/otp', StaffResetPasswordController::class)->name('password-reset');
+    Route::post('logout', StaffLogoutController::class)->middleware('auth:staff')->name('logout');
 });

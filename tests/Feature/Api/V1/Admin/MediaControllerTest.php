@@ -6,7 +6,7 @@ use Illuminate\Http\UploadedFile;
 use Plank\Mediable\Media;
 
 uses(Tests\AuthTestTrait::class);
-describe('Admin MediaController', function (): void {
+describe('Staff MediaController', function (): void {
     it('can upload a media file and returns correct structure', function (): void {
         $this->authorized_user([]);
         $file     = UploadedFile::fake()->image('test-image.jpg');

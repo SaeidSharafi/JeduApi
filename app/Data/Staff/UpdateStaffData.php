@@ -2,29 +2,50 @@
 
 declare(strict_types=1);
 
-namespace App\Data\Admin;
+namespace App\Data\Staff;
 
 use App\Rules\IranMobilePhoneRule;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-final class CreateAdminData extends Data
+final class UpdateStaffData extends Data
 {
     public function __construct(
         public string $name,
         public string $email,
         public string $phone,
-        public string $password,
+        public ?string $password,
         public array $roles = [],
     ) {}
 
     public static function rules(ValidationContext $context): array
     {
         return [
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', 'unique:admins,email'],
-            'phone'    => ['required', new IranMobilePhoneRule(), 'unique:admins,phone'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'name'  => ['required', 'string', 'max:255'],
+            'email' => [
+                'required', 'email', 'max:255',
+                Rule::unique('staff', 'email')->where(function (Builder $query) {
+                    $staff = request()->route()->parameter('staff');
+                    if ($staff && $staff->id) {
+                        $query->whereNot('id', $staff->id);
+                    }
+
+                    return $query;
+                }),
+            ],
+            'phone' => ['required', new IranMobilePhoneRule(),
+                Rule::unique('staff', 'phone')->where(function (Builder $query) {
+                    $staff = request()->route()->parameter('staff');
+                    if ($staff && $staff->id) {
+                        $query->whereNot('id', $staff->id);
+                    }
+
+                    return $query;
+                }),
+            ],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'roles'    => ['array'],
             'roles.*'  => ['exists:roles,name'],
         ];
@@ -39,11 +60,11 @@ final class CreateAdminData extends Data
     {
         return [
             'name' => [
-                'description' => 'The name of the admin.',
+                'description' => 'The name of the staff.',
                 'example'     => 'John Doe',
             ],
             'email' => [
-                'description' => 'The email address of the admin.',
+                'description' => 'The email address of the staff.',
                 'example'     => 'zbailey@example.net',
             ],
             'phone' => [

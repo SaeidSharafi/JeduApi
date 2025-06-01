@@ -11,7 +11,7 @@ use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\InitiateAuthRequest;
 
-final class AdminForgotPasswordController extends Controller
+final class StaffForgotPasswordController extends Controller
 {
     public function __construct(
         protected ForgotPasswordAction $action
@@ -20,7 +20,7 @@ final class AdminForgotPasswordController extends Controller
     /**
      * Forgot Password
      *
-     * Check if admin exists and send OTP to reset password
+     * Check if staff exists and send OTP to reset password
      *
      *
      * @throws UserNotFoundException
@@ -40,7 +40,7 @@ final class AdminForgotPasswordController extends Controller
         try {
             $otpSent = $this->action->execute(
                 $request->identifier,
-                'admin'
+                'staff'
             );
 
             return response()->success([

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Events\OtpPrepared;
-use App\Models\Admin;
+use App\Models\Staff;
 use App\Models\User;
 use App\Notifications\Auth\OtpEmailNotification;
 use App\Notifications\Auth\OtpSmsNotification;
@@ -22,7 +22,7 @@ final class SendOtpNotification
         $guard      = $event->guard;
         $otpCode    = $event->code;
 
-        $model = $guard === 'admin' ? Admin::class : User::class;
+        $model = $guard === 'staff' ? Staff::class : User::class;
         $user  = $model::when(
             filter_var($identifier, FILTER_VALIDATE_EMAIL),
             fn (Builder $q) => $q->where('email', $identifier),

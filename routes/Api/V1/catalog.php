@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\Admin\CourseController;
 use App\Http\Controllers\Api\Admin\DigitalAssetController;
 use App\Http\Controllers\Api\Admin\SeminarController;
 
-Route::middleware('auth:admin')->group(function (): void {
+Route::middleware('auth:staff')->group(function (): void {
     Route::prefix('admin')->name('admin.')->group(function (): void {
 
         Route::resource('course', CourseController::class)

@@ -20,7 +20,7 @@ use Plank\Mediable\Media;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
- * @authenticated admin
+ * @authenticated staff
  *
  * @group Seminar Manamgemnt
  * APIs for managing seminars

@@ -30,7 +30,7 @@ return new class extends Migration
             $table->json('additional_info')->nullable(); // For any other structured course-specific info
             $this->addMetaTagColumns($table);
             $table->json('properties')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('admins', 'id')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('staff', 'id')->nullOnDelete();
             $table->timestamps();
         });
     }

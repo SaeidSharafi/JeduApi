@@ -6,15 +6,15 @@ namespace Database\Factories;
 
 use App\Dto\OtpManager\OtpDto;
 use App\Enums\OtpType;
-use App\Models\Admin;
+use App\Models\Staff;
 use App\Services\OtpManagerService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-final class AdminFactory extends Factory
+final class StaffFactory extends Factory
 {
-    protected $model = Admin::class;
+    protected $model = Staff::class;
 
     public function definition(): array
     {
@@ -43,21 +43,21 @@ final class AdminFactory extends Factory
 
     public function withOtp(int $code = 123456): self
     {
-        return $this->afterCreating(function (Admin $admin) use ($code) {
+        return $this->afterCreating(function (Staff $staff) use ($code) {
             $otpService = app(OtpManagerService::class);
-            $otpService->send($admin->email, 'admin', OtpType::SIGNIN);
+            $otpService->send($staff->email, 'staff', OtpType::SIGNIN);
             $otpDto   = new OtpDto($code, $this->trackingCode);
-            $cacheKey = sprintf('otp_%s_%s_%s_%s', $admin->email, 'admin', 'value', OtpType::SIGNIN->value);
+            $cacheKey = sprintf('otp_%s_%s_%s_%s', $staff->email, 'staff', 'value', OtpType::SIGNIN->value);
             cache()->put($cacheKey, $otpDto);
         });
     }
 
     public function isSuperAdmin(): self
     {
-        return $this->afterCreating(function (Admin $admin) {
-            $admin->is_admin = true;
-            $admin->save();
-            $admin->refresh();
+        return $this->afterCreating(function (Staff $staff) {
+            $staff->is_admin = true;
+            $staff->save();
+            $staff->refresh();
         });
     }
 }

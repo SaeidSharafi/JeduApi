@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-use App\Models\Admin;
+use App\Models\Staff;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
@@ -20,7 +20,7 @@ enum MorphTypeEnum: string
     case COURSE        = 'course';
     case SEMINAR       = 'seminar';
     case DIGITAL_ASSET = 'digital_asset';
-    case ADMIN         = 'admin';
+    case STAFF         = 'staff';
     case USER          = 'user';
 
     public static function forMorphMap(): array
@@ -51,7 +51,7 @@ enum MorphTypeEnum: string
             self::COURSE        => Course::class,
             self::SEMINAR       => Seminar::class,
             self::DIGITAL_ASSET => DigitalAsset::class,
-            self::ADMIN         => Admin::class,
+            self::STAFF         => Staff::class,
             self::USER          => User::class,
         };
     }

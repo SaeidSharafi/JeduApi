@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Database\Factories\AdminFactory;
+use Database\Factories\StaffFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -12,17 +12,17 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-final class Admin extends Authenticatable implements MustVerifyEmail
+final class Staff extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens;
 
-    /** @use HasFactory<AdminFactory> */
+    /** @use HasFactory<StaffFactory> */
     use HasFactory;
 
     use HasRoles;
     use Notifiable;
 
-    protected string $guard_name = 'admin';
+    protected string $guard_name = 'staff';
 
     protected $fillable = [
         'name',

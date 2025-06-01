@@ -86,6 +86,6 @@ final class ProcessGitHubDeploymentJob extends SpatieProcessWebhookJob
     public function failed(Throwable $exception): void
     {
         Log::channel('deployment')->error('DEPLOYMENT JOB FAILED: '.$exception->getMessage());
-        // Send notification to admin
+        // Send notification to staff
     }
 }

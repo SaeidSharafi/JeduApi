@@ -11,7 +11,7 @@ use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\OtpRequest;
 
-final class AdminResendOtpController extends Controller
+final class StaffResendOtpController extends Controller
 {
     public function __construct(
         protected RequestOtpAction $action
@@ -57,7 +57,7 @@ final class AdminResendOtpController extends Controller
             $result = $this->action->execute(
                 $request->identifier,
                 OtpType::tryFrom($request->otp_type),
-                'admin'
+                'staff'
             );
 
             return response()->success([

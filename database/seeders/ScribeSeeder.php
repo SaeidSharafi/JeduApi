@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Models\Admin;
+use App\Models\Staff;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
@@ -39,7 +39,7 @@ final class ScribeSeeder extends Seeder
             Category::query()->truncate();
             DigitalAsset::query()->truncate();
             Media::query()->truncate();
-            Admin::query()->truncate();
+            Staff::query()->truncate();
             $this->enableForeignKeyChecks();
         }
 
@@ -68,9 +68,9 @@ final class ScribeSeeder extends Seeder
         MediaUploader::importPath('public', 'fake-media/main.svg');
         MediaUploader::importPath('public', 'fake-media/preview.svg');
 
-        $user = Admin::forceCreate([
+        $user = Staff::forceCreate([
             'name'     => 'Admin',
-            'email'    => 'admin@example.com',
+            'email'    => 'staff@example.com',
             'phone'    => '9300000000',
             'password' => bcrypt('password'),
             'is_admin' => true,
@@ -78,31 +78,31 @@ final class ScribeSeeder extends Seeder
         $role = Role::firstOrCreate(
             [
                 'name'       => 'admin',
-                'guard_name' => 'admin',
+                'guard_name' => 'staff',
                 'label'      => 'Admin',
             ]
         );
         Artisan::call('permissions:sync', [
-            '--guard' => 'admin',
+            '--guard' => 'staff',
         ]);
 
-        $permissions = Permission::query()->where('guard_name', 'admin')->get()->pluck('name')->toArray();
+        $permissions = Permission::query()->where('guard_name', 'staff')->get()->pluck('name')->toArray();
         $role->syncPermissions($permissions);
         $user->assignRole('admin');
-        $admin = Admin::query()->first();
-        Admin::factory(50)->create();
+        $staff = Staff::query()->first();
+        Staff::factory(50)->create();
 
         Category::factory(100)
             ->withIcon()
             ->withImage()
             ->create([
-                'created_by' => $admin->id,
+                'created_by' => $staff->id,
             ]);
         DigitalAsset::factory(100)
             ->withFile()
             ->withCategory()
             ->create([
-                'created_by' => $admin->id,
+                'created_by' => $staff->id,
             ]);
 
         Course::factory(100)
@@ -110,14 +110,14 @@ final class ScribeSeeder extends Seeder
             ->withCategory(3)
             ->withDigitalAssets(2, true)
             ->create([
-                'created_by' => $admin->id,
+                'created_by' => $staff->id,
             ]);
         Seminar::factory(100)
             ->withMedia(['gallery', 'cover', 'video'])
             ->withCategory(3)
             ->withDigitalAssets(2, true)
             ->create([
-                'created_by' => $admin->id,
+                'created_by' => $staff->id,
             ]);
     }
 

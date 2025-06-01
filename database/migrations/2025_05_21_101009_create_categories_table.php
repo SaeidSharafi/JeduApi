@@ -29,7 +29,7 @@ return new class extends Migration
             $this->addMetaTagColumns($table);
             $table->json('properties')->nullable();
             $table->json('additional_info')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('admins')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('staff')->nullOnDelete();
             $table->timestamps();
         });
     }

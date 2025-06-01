@@ -11,7 +11,7 @@ use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\InitiateAuthRequest;
 
-final class AdminInitiateAuthController extends Controller
+final class StaffInitiateAuthController extends Controller
 {
     public function __construct(
         protected InitiateAuthAction $action
@@ -58,7 +58,7 @@ final class AdminInitiateAuthController extends Controller
         try {
             $otpSent = $this->action->execute(
                 $request->identifier,
-                'admin'
+                'staff'
             );
 
             return response()->success([

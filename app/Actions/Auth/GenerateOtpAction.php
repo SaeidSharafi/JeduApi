@@ -6,15 +6,15 @@ namespace App\Actions\Auth;
 
 use App\Dto\OtpManager\SentOtpDto;
 use App\Enums\OtpType;
-use App\Models\Admin;
+use App\Models\Staff;
 use App\Models\User;
 use App\Services\OtpManagerService;
 
 final class GenerateOtpAction
 {
-    public function execute(User|Admin $user, OtpType $otpType): SentOtpDto
+    public function execute(User|Staff $user, OtpType $otpType): SentOtpDto
     {
-        $guard = $user instanceof Admin ? 'admin' : 'user';
+        $guard = $user instanceof Staff ? 'staff' : 'user';
 
         return app(OtpManagerService::class)->sendAndRetryCheck($user->phone, $guard, $otpType);
     }

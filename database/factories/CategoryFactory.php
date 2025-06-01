@@ -31,7 +31,7 @@ final class CategoryFactory extends Factory
             'meta_keywords'    => mb_trim(Str::take(implode(',', $this->faker->persianWords(3)), 255)),
             'properties'       => [],
             'additional_info'  => [],
-            'created_by'       => \App\Models\Admin::factory(),
+            'created_by'       => \App\Models\Staff::factory(),
         ];
     }
 

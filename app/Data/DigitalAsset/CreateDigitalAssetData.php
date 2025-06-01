@@ -64,7 +64,7 @@ final class CreateDigitalAssetData extends Data
                 'version'                 => ['nullable', 'string', 'max:50'],
                 'is_attachable_to_course' => ['nullable', 'boolean'],
                 'status'                  => ['required', Rule::enum(PublicationStatusEnum::class)],
-                'created_by'              => ['nullable', 'integer', 'exists:admins,id'],
+                'created_by'              => ['nullable', 'integer', 'exists:staff,id'],
                 'keywords'                => ['nullable', 'string', 'max:255'],
                 'published_at'            => ['nullable', 'jdate:Y-m-d H:i:s'],
                 'page_count'              => ['nullable', 'integer', 'min:0'],
@@ -129,7 +129,7 @@ final class CreateDigitalAssetData extends Data
                 'example'     => 3600,
             ],
             'created_by' => [
-                'description' => 'The ID of the admin who created this digital asset.',
+                'description' => 'The ID of the staff who created this digital asset.',
                 'example'     => 1,
             ],
             'published_at' => [

@@ -42,9 +42,9 @@ return [
             'driver'   => 'sanctum',
             'provider' => 'users',
         ],
-        'admin' => [
+        'staff' => [
             'driver'   => 'sanctum',
-            'provider' => 'admins',
+            'provider' => 'staff',
         ],
     ],
 
@@ -70,9 +70,9 @@ return [
             'driver' => 'eloquent',
             'model'  => App\Models\User::class,
         ],
-        'admins' => [
+        'staff' => [
             'driver' => 'eloquent',
-            'model'  => App\Models\Admin::class,
+            'model'  => App\Models\Staff::class,
         ],
     ],
 
@@ -102,9 +102,9 @@ return [
             'expire'   => 60,
             'throttle' => 60,
         ],
-        'admins' => [
-            'provider' => 'admins',
-            'table'    => 'admin_password_reset_tokens',
+        'staff' => [
+            'provider' => 'staff',
+            'table'    => 'staff_password_reset_tokens',
             'expire'   => 60,
             'throttle' => 60,
         ],

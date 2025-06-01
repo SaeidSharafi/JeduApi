@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Admin;
+namespace App\Actions\Staff;
 
-use App\Data\Admin\CreateAdminData;
+use App\Data\Staff\CreateStaffData;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-final readonly class CreateAdminAction
+final readonly class CreateStaffAction
 {
     /**
      * Execute the action.
      */
-    public function handle(CreateAdminData $data): void
+    public function handle(CreateStaffData $data): void
     {
         DB::transaction(function () use ($data): void {
-            $admin = \App\Models\Admin::create([
+            $staff = \App\Models\Staff::create([
                 'name'     => $data->name,
                 'email'    => $data->email,
                 'phone'    => $data->phone,
@@ -24,7 +24,7 @@ final readonly class CreateAdminAction
             ]);
 
             if (! empty($data->roles)) {
-                $admin->syncRoles($data->roles);
+                $staff->syncRoles($data->roles);
             }
 
             // Optionally, you can log the creation or perform additional actions here

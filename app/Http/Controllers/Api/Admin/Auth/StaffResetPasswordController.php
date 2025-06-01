@@ -11,7 +11,7 @@ use App\Exceptions\UserDoesNotHavePasswordException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ResetPasswordOtpRequest;
 
-final class AdminResetPasswordController extends Controller
+final class StaffResetPasswordController extends Controller
 {
     public function __construct(
         protected ResetPasswordAction $action
@@ -60,7 +60,7 @@ final class AdminResetPasswordController extends Controller
                 $request->tracking_code,
                 $request->otp_code,
                 $request->password,
-                'admin'
+                'staff'
             );
 
             return response()->success('Password reset OTP sent successfully');
