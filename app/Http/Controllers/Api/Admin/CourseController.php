@@ -25,7 +25,7 @@ use Spatie\QueryBuilder\QueryBuilder;
  *
  * APIs for managing courses
  *
- * @authenticated Admin
+ * @authenticated Staff
  */
 final class CourseController extends Controller
 {

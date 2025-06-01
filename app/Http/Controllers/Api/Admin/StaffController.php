@@ -20,11 +20,11 @@ use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
- * @group Admin Management
+ * @group Staff Management
  *
  * APIs for managing staff in the system.
  *
- * @authenticated Admin
+ * @authenticated Staff
  */
 final class StaffController extends Controller
 {
