@@ -11,10 +11,10 @@ use Illuminate\Http\Request;
 final class StaffLogoutController extends Controller
 {
     /**
-     * Logout the current Admin
+     * Logout the current Staff
      *
      *
-     * @group Admin Authentication
+     * @group Staff Authentication
      *
      * @authenticated
      *

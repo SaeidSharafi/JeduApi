@@ -23,7 +23,7 @@ final class StaffInitiateAuthController extends Controller
      * User provides phone or email. API determines the next step (e.g., prompt for password, request OTP, user not
      * found)
      *
-     * @group Admin Authentication
+     * @group Staff Authentication
      *
      * @response 201{
      *          "message": "OTP sent successfully",

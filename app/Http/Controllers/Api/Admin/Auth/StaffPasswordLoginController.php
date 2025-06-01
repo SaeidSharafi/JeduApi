@@ -21,14 +21,14 @@ final class StaffPasswordLoginController extends Controller
     ) {}
 
     /**
-     * Authenticate Admin with identifier (phone/email) and password
+     * Authenticate Staff with identifier (phone/email) and password
      *
      * Used when the /auth/initiate step determines a password exists and is required.
      *
      *
      * @throws \App\Exceptions\UserNotFoundException
      *
-     * @group Admin Authentication
+     * @group Staff Authentication
      *
      * @responseFile 200 responses/auth/staff.login.json
      *

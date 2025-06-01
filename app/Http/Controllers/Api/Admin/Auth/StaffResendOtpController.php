@@ -24,7 +24,7 @@ final class StaffResendOtpController extends Controller
      * purpose (login/registration or password reset).
      *
      *
-     * @group Admin Authentication
+     * @group Staff Authentication
      *
      * @response {
      *  "message": "OTP resent successfully",

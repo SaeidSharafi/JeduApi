@@ -25,7 +25,7 @@ final class StaffResetPasswordController extends Controller
      *
      * @throws \App\Exceptions\UserNotFoundException
      *
-     * @group Admin Authentication
+     * @group Staff Authentication
      *
      * @response  {
      *  "message": "Operation successful.",

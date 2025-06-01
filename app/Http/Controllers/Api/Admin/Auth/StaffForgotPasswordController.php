@@ -25,7 +25,7 @@ final class StaffForgotPasswordController extends Controller
      *
      * @throws UserNotFoundException
      *
-     * @group Admin Authentication
+     * @group Staff Authentication
      *
      * @response {
      *     "tracking_code": "string",
