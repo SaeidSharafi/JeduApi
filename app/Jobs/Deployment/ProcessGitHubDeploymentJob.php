@@ -2,16 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Jobs;
+namespace App\Jobs\Deployment;
 
-use Exception;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
-use Psy\Command\Command;
 use Spatie\WebhookClient\Jobs\ProcessWebhookJob as SpatieProcessWebhookJob;
 use Throwable;
 
@@ -19,6 +16,7 @@ final class ProcessGitHubDeploymentJob extends SpatieProcessWebhookJob
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public int $timeout = 300;
     /**
      * Execute the job.
      */
@@ -57,27 +55,42 @@ final class ProcessGitHubDeploymentJob extends SpatieProcessWebhookJob
         ]);
 
         try {
-            Log::channel('deployment')->info('Attempting update using laravel-updater...');
-            $exitCode = Artisan::call('app:deploy-application');
-            if ($exitCode === Command::SUCCESS) {
-                Log::channel('deployment')->info('Artisan app:deploy-application command executed successfully by job.');
-            } else {
-                Log::channel('deployment')->error('Artisan app:deploy-application command failed or returned non-zero exit code.', ['exit_code' => $exitCode]);
-                $this->fail(new Exception('Artisan app:deploy-application command failed. Exit code: '.$exitCode));
+            $projectPath   = base_path();
+            $gitUsername   = config('app.git_deploy_username');
+            $gitPat        = config('app.git_deploy_pat');
+            $expectedRepo  = 'SaeidSharafi/JeduApi';
 
+            if (empty($gitUsername) || empty($gitPat)) {
+                Log::channel('deployment')->error('✘ Git username or PAT not configured.');
+                $this->fail(new \Exception('Git credentials not configured for deployment pipeline.'));
                 return;
             }
+            $remoteUrlWithCreds = "https://{$gitUsername}:{$gitPat}@github.com/{$expectedRepo}.git";
 
-        } catch (Exception $e) {
-            Log::channel('deployment')->error('Deployment failed via laravel-updater: '.$e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
+            // Dispatch the first job in the sequence
+            GitPullJob::dispatch(
+                $projectPath,
+                $remoteUrlWithCreds,
+                $expectedRepo
+            )->allOnQueue($this->queue)
+            ->chain([
+                new ComposerInstallJob($projectPath),
+                new MigrationSetupJob($projectPath),
+                new ScribeSetupJob($projectPath),
+                new DemoSeedJob($projectPath),
             ]);
 
-            // $this->fail($e); // Mark the job as failed to retry if applicable
+            Log::channel('deployment')->info('Deployment job chain dispatched successfully by ProcessGitHubDeploymentJob.');
+
+        } catch (Throwable $e) { // Changed to Throwable
+            Log::channel('deployment')->error('Failed to dispatch initial deployment job: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->fail($e);
             return;
         }
 
-        Log::channel('deployment')->info('Deployment job finished successfully.');
+        Log::channel('deployment')->info('ProcessGitHubDeploymentJob finished (dispatched first sub-job).');
     }
 
     /**
@@ -85,7 +98,8 @@ final class ProcessGitHubDeploymentJob extends SpatieProcessWebhookJob
      */
     public function failed(Throwable $exception): void
     {
-        Log::channel('deployment')->error('DEPLOYMENT JOB FAILED: '.$exception->getMessage());
-        // Send notification to staff
+        Log::channel('deployment')->error('💥 ProcessGitHubDeploymentJob FAILED (Orchestrator): ' . $exception->getMessage(), [
+            'exception_details' => (string) $exception,
+        ]);
     }
 }
