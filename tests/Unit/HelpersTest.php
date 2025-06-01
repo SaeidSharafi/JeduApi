@@ -11,7 +11,7 @@ describe('get_model_label', function () {
     it('returns model label for an object', function () {
         $user  = new App\Models\User();
         $label = get_model_label($user);
-        expect($label)->toBe('messages.models.user');
+        expect($label)->toBe(__('messages.models.user'));
     });
 
     it('returns model label for a simple string if class does not exist', function () {

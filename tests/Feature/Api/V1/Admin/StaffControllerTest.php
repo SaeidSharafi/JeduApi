@@ -159,7 +159,7 @@ describe('admin store', function (): void {
 
         $response = $this->postJson(route('api.v1.admin.staff.store'), $this->data);
         $response->assertCreated()
-            ->assertJsonFragment(['message' => __('messages.created', ['model' => __('messages.models.admin')])]);
+            ->assertJsonFragment(['message' => __('messages.created', ['model' => __('messages.models.staff')])]);
 
         $this->assertDatabaseHas('staff', [
             'email' => $this->data['email'],
