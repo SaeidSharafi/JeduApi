@@ -7,43 +7,73 @@
     "permissions": [
       {
         "id": 8,
-        "name": "courses.create"
+        "name": "course.create",
+        "resource": "دوره ها",
+        "resourceKey": "course",
+        "label": "ایجاد"
       },
       {
         "id": 9,
-        "name": "courses.delete"
+        "name": "course.delete",
+        "resource": "دوره ها",
+        "resourceKey": "course",
+        "label": "حذف"
       },
       {
         "id": 11,
-        "name": "courses.update"
+        "name": "course.update",
+        "resource": "دوره ها",
+        "resourceKey": "course",
+        "label": "ویرایش"
       },
       {
         "id": 13,
-        "name": "courses.view"
+        "name": "course.view",
+        "resource": "دوره ها",
+        "resourceKey": "course",
+        "label": "مشاهده"
       },
       {
         "id": 14,
-        "name": "courses.view_any"
+        "name": "course.view_any",
+        "resource": "دوره ها",
+        "resourceKey": "course",
+        "label": "مشاهده همه"
       },
       {
         "id": 27,
-        "name": "seminars.create"
+        "name": "seminar.create",
+        "resource": "سمینار ها",
+        "resourceKey": "seminar",
+        "label": "ایجاد"
       },
       {
         "id": 28,
-        "name": "seminars.delete"
+        "name": "seminar.delete",
+        "resource": "سمینار ها",
+        "resourceKey": "seminar",
+        "label": "حذف"
       },
       {
         "id": 30,
-        "name": "seminars.update"
+        "name": "seminar.update",
+        "resource": "سمینار ها",
+        "resourceKey": "seminar",
+        "label": "ویرایش"
       },
       {
         "id": 32,
-        "name": "seminars.view"
+        "name": "seminar.view",
+        "resource": "سمینار ها",
+        "resourceKey": "seminar",
+        "label": "مشاهده"
       },
       {
         "id": 33,
-        "name": "seminars.view_any"
+        "name": "seminar.view_any",
+        "resource": "سمینار ها",
+        "resourceKey": "seminar",
+        "label": "مشاهده همه"
       }
     ]
   },

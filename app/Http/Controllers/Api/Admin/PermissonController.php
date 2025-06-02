@@ -3,13 +3,23 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\Role\OutputPermissionsAction;
-use App\Data\Role\PermissionData;
+use App\Contracts\ApiResponseInterface;
 use App\Http\Controllers\Controller;
-use Spatie\Permission\Models\Permission;
 
+/**
+ * @group Admin - Permissions
+ *
+ * APIs for getting all permissions
+ */
 class PermissonController extends Controller
 {
-    public function __invoke(OutputPermissionsAction $action)
+
+    /**
+     * Get all permissions
+     *
+     * @responseFile 200 responses/permissions.json
+     */
+    public function __invoke(OutputPermissionsAction $action): ApiResponseInterface
     {
         return response()->success($action->handle());
     }

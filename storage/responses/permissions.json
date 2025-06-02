@@ -1,0 +1,322 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "category": {
+      "label": "دسته بندی ها",
+      "resource": "category",
+      "permissions": [
+        {
+          "id": 1,
+          "name": "category.create",
+          "resource": "دسته بندی ها",
+          "resourceKey": "category",
+          "label": "ایجاد"
+        },
+        {
+          "id": 2,
+          "name": "category.delete",
+          "resource": "دسته بندی ها",
+          "resourceKey": "category",
+          "label": "حذف"
+        },
+        {
+          "id": 3,
+          "name": "category.delete_own",
+          "resource": "دسته بندی ها",
+          "resourceKey": "category",
+          "label": "حذف خود"
+        },
+        {
+          "id": 4,
+          "name": "category.update",
+          "resource": "دسته بندی ها",
+          "resourceKey": "category",
+          "label": "ویرایش"
+        },
+        {
+          "id": 5,
+          "name": "category.update_own",
+          "resource": "دسته بندی ها",
+          "resourceKey": "category",
+          "label": "ویرایش خود"
+        },
+        {
+          "id": 6,
+          "name": "category.view",
+          "resource": "دسته بندی ها",
+          "resourceKey": "category",
+          "label": "مشاهده"
+        },
+        {
+          "id": 7,
+          "name": "category.view_any",
+          "resource": "دسته بندی ها",
+          "resourceKey": "category",
+          "label": "مشاهده همه"
+        }
+      ]
+    },
+    "course": {
+      "label": "دوره ها",
+      "resource": "course",
+      "permissions": [
+        {
+          "id": 8,
+          "name": "course.create",
+          "resource": "دوره ها",
+          "resourceKey": "course",
+          "label": "ایجاد"
+        },
+        {
+          "id": 9,
+          "name": "course.delete",
+          "resource": "دوره ها",
+          "resourceKey": "course",
+          "label": "حذف"
+        },
+        {
+          "id": 10,
+          "name": "course.delete_own",
+          "resource": "دوره ها",
+          "resourceKey": "course",
+          "label": "حذف خود"
+        },
+        {
+          "id": 11,
+          "name": "course.update",
+          "resource": "دوره ها",
+          "resourceKey": "course",
+          "label": "ویرایش"
+        },
+        {
+          "id": 12,
+          "name": "course.update_own",
+          "resource": "دوره ها",
+          "resourceKey": "course",
+          "label": "ویرایش خود"
+        },
+        {
+          "id": 13,
+          "name": "course.view",
+          "resource": "دوره ها",
+          "resourceKey": "course",
+          "label": "مشاهده"
+        },
+        {
+          "id": 14,
+          "name": "course.view_any",
+          "resource": "دوره ها",
+          "resourceKey": "course",
+          "label": "مشاهده همه"
+        }
+      ]
+    },
+    "file": {
+      "label": "فایل های خصوصی",
+      "resource": "file",
+      "permissions": [
+        {
+          "id": 15,
+          "name": "file.create",
+          "resource": "فایل های خصوصی",
+          "resourceKey": "file",
+          "label": "ایجاد"
+        },
+        {
+          "id": 16,
+          "name": "file.delete",
+          "resource": "فایل های خصوصی",
+          "resourceKey": "file",
+          "label": "حذف"
+        },
+        {
+          "id": 17,
+          "name": "file.delete_own",
+          "resource": "فایل های خصوصی",
+          "resourceKey": "file",
+          "label": "حذف خود"
+        },
+        {
+          "id": 18,
+          "name": "file.update",
+          "resource": "فایل های خصوصی",
+          "resourceKey": "file",
+          "label": "ویرایش"
+        },
+        {
+          "id": 19,
+          "name": "file.update_own",
+          "resource": "فایل های خصوصی",
+          "resourceKey": "file",
+          "label": "ویرایش خود"
+        },
+        {
+          "id": 20,
+          "name": "file.view",
+          "resource": "فایل های خصوصی",
+          "resourceKey": "file",
+          "label": "مشاهده"
+        },
+        {
+          "id": 21,
+          "name": "file.view_any",
+          "resource": "فایل های خصوصی",
+          "resourceKey": "file",
+          "label": "مشاهده همه"
+        }
+      ]
+    },
+    "role": {
+      "label": "نقش ها",
+      "resource": "role",
+      "permissions": [
+        {
+          "id": 22,
+          "name": "role.create",
+          "resource": "نقش ها",
+          "resourceKey": "role",
+          "label": "ایجاد"
+        },
+        {
+          "id": 23,
+          "name": "role.delete",
+          "resource": "نقش ها",
+          "resourceKey": "role",
+          "label": "حذف"
+        },
+        {
+          "id": 24,
+          "name": "role.update",
+          "resource": "نقش ها",
+          "resourceKey": "role",
+          "label": "ویرایش"
+        },
+        {
+          "id": 25,
+          "name": "role.view",
+          "resource": "نقش ها",
+          "resourceKey": "role",
+          "label": "مشاهده"
+        },
+        {
+          "id": 26,
+          "name": "role.view_any",
+          "resource": "نقش ها",
+          "resourceKey": "role",
+          "label": "مشاهده همه"
+        }
+      ]
+    },
+    "seminar": {
+      "label": "سمینار ها",
+      "resource": "seminar",
+      "permissions": [
+        {
+          "id": 27,
+          "name": "seminar.create",
+          "resource": "سمینار ها",
+          "resourceKey": "seminar",
+          "label": "ایجاد"
+        },
+        {
+          "id": 28,
+          "name": "seminar.delete",
+          "resource": "سمینار ها",
+          "resourceKey": "seminar",
+          "label": "حذف"
+        },
+        {
+          "id": 29,
+          "name": "seminar.delete_own",
+          "resource": "سمینار ها",
+          "resourceKey": "seminar",
+          "label": "حذف خود"
+        },
+        {
+          "id": 30,
+          "name": "seminar.update",
+          "resource": "سمینار ها",
+          "resourceKey": "seminar",
+          "label": "ویرایش"
+        },
+        {
+          "id": 31,
+          "name": "seminar.update_own",
+          "resource": "سمینار ها",
+          "resourceKey": "seminar",
+          "label": "ویرایش خود"
+        },
+        {
+          "id": 32,
+          "name": "seminar.view",
+          "resource": "سمینار ها",
+          "resourceKey": "seminar",
+          "label": "مشاهده"
+        },
+        {
+          "id": 33,
+          "name": "seminar.view_any",
+          "resource": "سمینار ها",
+          "resourceKey": "seminar",
+          "label": "مشاهده همه"
+        }
+      ]
+    },
+    "staff": {
+      "label": "کاربران",
+      "resource": "staff",
+      "permissions": [
+        {
+          "id": 34,
+          "name": "staff.create",
+          "resource": "کاربران",
+          "resourceKey": "staff",
+          "label": "ایجاد"
+        },
+        {
+          "id": 35,
+          "name": "staff.delete",
+          "resource": "کاربران",
+          "resourceKey": "staff",
+          "label": "حذف"
+        },
+        {
+          "id": 36,
+          "name": "staff.impersonate",
+          "resource": "کاربران",
+          "resourceKey": "staff",
+          "label": " ورود به عنوان کاربر"
+        },
+        {
+          "id": 37,
+          "name": "staff.manage_roles",
+          "resource": "کاربران",
+          "resourceKey": "staff",
+          "label": "مدیریت نقش ها"
+        },
+        {
+          "id": 38,
+          "name": "staff.update",
+          "resource": "کاربران",
+          "resourceKey": "staff",
+          "label": "ویرایش"
+        },
+        {
+          "id": 39,
+          "name": "staff.view",
+          "resource": "کاربران",
+          "resourceKey": "staff",
+          "label": "مشاهده"
+        },
+        {
+          "id": 40,
+          "name": "staff.view_any",
+          "resource": "کاربران",
+          "resourceKey": "staff",
+          "label": "مشاهده همه"
+        }
+      ]
+    }
+  },
+  "metadata": []
+}
