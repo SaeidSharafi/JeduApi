@@ -11,6 +11,13 @@ use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\InitiateAuthRequest;
 
+/**
+ * @group Admin - Staff Auth
+ *
+ * APIs for staff authentication
+ *
+ * @authenticated Staff
+ */
 final class StaffForgotPasswordController extends Controller
 {
     public function __construct(
@@ -25,7 +32,6 @@ final class StaffForgotPasswordController extends Controller
      *
      * @throws UserNotFoundException
      *
-     * @group Staff Authentication
      *
      * @response {
      *     "tracking_code": "string",

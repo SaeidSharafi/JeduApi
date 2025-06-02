@@ -21,7 +21,7 @@ final class ViewPrivateFileController extends Controller
      *
      * @authenticated
      *
-     * @group Private File Management
+     * @group Admin - Private File Management
      *
      * @response 200 {
      *   "message": "Private file retrieved successfully",

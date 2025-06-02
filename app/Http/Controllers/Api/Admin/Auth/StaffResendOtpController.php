@@ -11,6 +11,13 @@ use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\OtpRequest;
 
+/**
+ * @group Admin - Staff Auth
+ *
+ * APIs for staff authentication
+ *
+ * @authenticated Staff
+ */
 final class StaffResendOtpController extends Controller
 {
     public function __construct(
@@ -24,7 +31,6 @@ final class StaffResendOtpController extends Controller
      * purpose (login/registration or password reset).
      *
      *
-     * @group Staff Authentication
      *
      * @response {
      *  "message": "OTP resent successfully",

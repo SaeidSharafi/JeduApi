@@ -11,6 +11,13 @@ use App\Exceptions\UserDoesNotHavePasswordException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ResetPasswordOtpRequest;
 
+/**
+ * @group Admin - Staff Auth
+ *
+ * APIs for staff authentication
+ *
+ * @authenticated Staff
+ */
 final class StaffResetPasswordController extends Controller
 {
     public function __construct(
@@ -25,7 +32,6 @@ final class StaffResetPasswordController extends Controller
      *
      * @throws \App\Exceptions\UserNotFoundException
      *
-     * @group Staff Authentication
      *
      * @response  {
      *  "message": "Operation successful.",

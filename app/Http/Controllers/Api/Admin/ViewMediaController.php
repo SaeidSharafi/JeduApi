@@ -19,7 +19,7 @@ final class ViewMediaController extends Controller
      *
      * @authenticated
      *
-     * @group Media Management
+     * @group Admin - Media Management
      *
      * @response 200 {
      *   "message": "Media file retrieved successfully",

@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Gate;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
- * @group Category Managment
+ * @group Admin - Category Managment
  *
  * @authenticated
  */

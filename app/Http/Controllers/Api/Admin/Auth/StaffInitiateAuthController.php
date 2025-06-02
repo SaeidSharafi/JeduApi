@@ -11,6 +11,13 @@ use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\InitiateAuthRequest;
 
+/**
+ * @group Admin - Staff Auth
+ *
+ * APIs for staff authentication
+ *
+ * @authenticated Staff
+ */
 final class StaffInitiateAuthController extends Controller
 {
     public function __construct(
@@ -23,7 +30,6 @@ final class StaffInitiateAuthController extends Controller
      * User provides phone or email. API determines the next step (e.g., prompt for password, request OTP, user not
      * found)
      *
-     * @group Staff Authentication
      *
      * @response 201{
      *          "message": "OTP sent successfully",

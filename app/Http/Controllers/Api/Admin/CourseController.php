@@ -21,7 +21,7 @@ use Plank\Mediable\Media;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
- * @group Course Management
+ * @group Admin - Course Management
  *
  * APIs for managing courses
  *

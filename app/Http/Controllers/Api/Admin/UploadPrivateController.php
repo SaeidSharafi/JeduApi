@@ -20,7 +20,7 @@ final class UploadPrivateController extends Controller
      *
      * @authenticated
      *
-     * @group Private File Management
+     * @group Admin - Private File Management
      *
      * @bodyParam file file required The file to upload
      * @bodyParam alt string optional The alt text for the file

@@ -22,7 +22,7 @@ use Spatie\QueryBuilder\QueryBuilder;
 /**
  * @authenticated staff
  *
- * @group Seminar Manamgemnt
+ * @group Admin - Seminar Manamgemnt
  * APIs for managing seminars
  */
 final class SeminarController extends Controller

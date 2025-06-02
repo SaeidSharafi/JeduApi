@@ -20,7 +20,7 @@ use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
- * @group Staff Management
+ * @group Admin - Staff Management
  *
  * APIs for managing staff in the system.
  *

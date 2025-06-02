@@ -8,13 +8,19 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @group Admin - Staff Auth
+ *
+ * APIs for staff authentication
+ *
+ * @authenticated Staff
+ */
 final class StaffLogoutController extends Controller
 {
     /**
      * Logout the current Staff
      *
      *
-     * @group Staff Authentication
      *
      * @authenticated
      *

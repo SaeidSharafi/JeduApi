@@ -14,6 +14,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\Models\Permission;
 
+/**
+ * @group Admin - Staff Auth
+ *
+ * APIs for staff authentication
+ *
+ * @authenticated Staff
+ */
 final class StaffPasswordLoginController extends Controller
 {
     public function __construct(
@@ -28,7 +35,7 @@ final class StaffPasswordLoginController extends Controller
      *
      * @throws \App\Exceptions\UserNotFoundException
      *
-     * @group Staff Authentication
+
      *
      * @responseFile 200 responses/auth/staff.login.json
      *

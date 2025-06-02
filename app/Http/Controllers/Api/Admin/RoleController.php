@@ -14,7 +14,7 @@ use Spatie\Permission\Models\Role;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
- * @group Admin - Roles
+ * @group Admin - Admin - Roles
  *
  * APIs for managing roles in the admin panel.
  *

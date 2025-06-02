@@ -22,7 +22,7 @@ use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
- * @group Digital Asset Management
+ * @group Admin - Digital Asset Management
  *
  * APIs for managing digital assets
  *

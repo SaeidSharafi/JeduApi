@@ -16,6 +16,13 @@ use App\Http\Requests\Auth\VerifyOtpRequest;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\Models\Permission;
 
+/**
+ * @group Admin - Staff Auth
+ *
+ * APIs for staff authentication
+ *
+ * @authenticated Staff
+ */
 final class StaffOtpAuthenticationController extends Controller
 {
     public function __construct(
@@ -32,7 +39,6 @@ final class StaffOtpAuthenticationController extends Controller
      *
      * @throws InvalidOtpCode
      *
-     * @group Staff Authentication
      *
      * @responseFile 200 responses/auth/staff.login.json
      *

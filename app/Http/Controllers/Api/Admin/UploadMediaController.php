@@ -20,7 +20,7 @@ final class UploadMediaController extends Controller
      *
      * @authenticated
      *
-     * @group Media Management
+     * @group Admin - Media Management
      *
      * @bodyParam file file required The media file to upload
      * @bodyParam alt string optional The alt text for the media file

@@ -19,7 +19,7 @@ final class PrivateFileDownloadController extends Controller
      *
      * @authenticated
      *
-     * @group Private File Management
+     * @group Admin - Private File Management
      *
      * @response 200 <<binary>> file,
      *
