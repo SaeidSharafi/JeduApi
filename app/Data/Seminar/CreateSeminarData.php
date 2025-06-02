@@ -95,6 +95,26 @@ final class CreateSeminarData extends Data
     /**
      * @codeCoverageIgnore
      *
+     * @return array<string, string>
+     */
+    public static function attributes(...$args): array
+    {
+        return [
+         'level' => __('validation.attributes.seminar.level'),
+         'provides_certificate' => __('validation.attributes.seminar.provides_certificate'),
+         'learning_objectives' => __('validation.attributes.seminar.learning_objectives'),
+         'target_audience' => __('validation.attributes.seminar.target_audience'),
+         'prerequisites' => __('validation.attributes.seminar.prerequisites'),
+         'promo_video_external_url' => __('validation.attributes.seminar.promo_video_external_url'),
+         'estimated_duration_desc' => __('validation.attributes.seminar.estimated_duration_desc'),
+         'faq' => __('validation.attributes.seminar.faq'),
+         'keywords' => __('validation.attributes.seminar.keywords'),
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
      * @return array<string, array<string, mixed>>
      */
     public function bodyParameters(): array

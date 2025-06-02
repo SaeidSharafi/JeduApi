@@ -69,6 +69,31 @@ final class CreateCategoryData extends Data
     /**
      * @codeCoverageIgnore
      *
+     * @return array<string, string>
+     */
+    public static function attributes(...$args): array
+    {
+        return [
+            'name'            => __('validation.attributes.category.name'),
+            'slug'            => __('validation.attributes.slug'),
+            'status'          => __('validation.attributes.category.status'),
+            'parent_id'       => __('validation.attributes.category.parent_id'),
+            'description'     => __('validation.attributes.category.description'),
+            'color_scheme'    => __('validation.attributes.category.color_scheme'),
+            'meta_title'      => __('validation.attributes.meta_title'),
+            'meta_description' => __('validation.attributes.meta_description'),
+            'meta_keywords'   => __('validation.attributes.meta_keywords'),
+            'properties'      => __('validation.attributes.properties'),
+            'additional_info' => __('validation.attributes.additional_info'),
+            'media'           => __('validation.attributes.media.self'),
+            'media.icon'      => __('validation.attributes.media.icon'),
+            'media.image'     => __('validation.attributes.media.image'),
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
      * @return array<string, array<string, mixed>>
      */
     public function bodyParameters(): array

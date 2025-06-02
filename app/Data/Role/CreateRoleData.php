@@ -25,6 +25,19 @@ final class CreateRoleData extends Data
             'permissions.*' => ['string', 'distinct', 'exists:permissions,name'],
         ];
     }
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, string>
+     */
+    public static function attributes(...$args): array
+    {
+        return [
+            'name'        => __('validation.attributes.role.name'),
+            'label'       => __('validation.attributes.role.label'),
+            'permissions' => __('validation.attributes.role.permissions'),
+        ];
+    }
 
     /**
      * @codeCoverageIgnore
