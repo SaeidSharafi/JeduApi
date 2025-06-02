@@ -19,7 +19,7 @@ final class CreateRoleData extends Data
     public static function rules(ValidationContext $context): array
     {
         return [
-            'name'          => ['required', 'string', 'max:255', 'unique:roles,name'],
+            'name'          => ['required', 'string','alpha_num', 'max:60', 'unique:roles,name'],
             'label'         => ['required', 'string', 'max:255'],
             'permissions'   => ['present', 'array'],
             'permissions.*' => ['string', 'distinct', 'exists:permissions,name'],

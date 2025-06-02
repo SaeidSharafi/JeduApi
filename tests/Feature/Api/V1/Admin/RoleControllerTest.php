@@ -106,7 +106,7 @@ it('can update a role', function () {
         'guard_name' => 'staff',
     ]);
     $data = [
-        'name' => 'Updated Role',
+        'name' => 'UpdatedRole',
         'label' => 'Updated Role Label',
         'guard_name' => 'staff',
         'permissions' => [
@@ -127,7 +127,7 @@ it('can not update it\'s own role', function () {
     ]);
     $this->user->assignRole($role);
     $data = [
-        'name' => 'Updated Role',
+        'name' => 'UpdatedRole',
         'label' => 'Updated Role Label',
         'guard_name' => 'staff',
         'permissions' => [
