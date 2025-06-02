@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\PermissionEnum;
 use App\Models\Staff;
 use App\Models\Category;
 use App\Models\Course;
@@ -82,12 +83,43 @@ final class ScribeSeeder extends Seeder
                 'label'      => 'Admin',
             ]
         );
+        $manager = Role::firstOrCreate(
+            [
+                'name'       => 'manager',
+                'guard_name' => 'staff',
+                'label'      => 'Manager',
+            ]
+        );
+        $edito = Role::firstOrCreate(
+            [
+                'name'       => 'editor',
+                'guard_name' => 'staff',
+                'label'      => 'Editor',
+            ]
+        );
         Artisan::call('permissions:sync', [
             '--guard' => 'staff',
         ]);
 
         $permissions = Permission::query()->where('guard_name', 'staff')->get()->pluck('name')->toArray();
         $role->syncPermissions($permissions);
+        $manager->syncPermissions([
+            PermissionEnum::COURSE_VIEW->value,
+            PermissionEnum::COURSE_VIEW_ANY->value,
+            PermissionEnum::COURSE_CREATE->value,
+            PermissionEnum::COURSE_UPDATE->value,
+            PermissionEnum::COURSE_DELETE->value,
+            PermissionEnum::SEMINAR_VIEW->value,
+            PermissionEnum::SEMINAR_VIEW_ANY->value,
+            PermissionEnum::SEMINAR_CREATE->value,
+            PermissionEnum::SEMINAR_UPDATE->value,
+            PermissionEnum::SEMINAR_DELETE->value,
+        ]);
+
+        $edito->syncPermissions([
+            PermissionEnum::COURSE_UPDATE->value,
+            PermissionEnum::SEMINAR_UPDATE->value,
+        ]);
         $user->assignRole('admin');
         $staff = Staff::query()->first();
         Staff::factory(50)->create();

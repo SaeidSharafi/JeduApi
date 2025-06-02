@@ -13,10 +13,24 @@ use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Role;
 use Spatie\QueryBuilder\QueryBuilder;
 
+/**
+ * @group Admin - Roles
+ *
+ * APIs for managing roles in the admin panel.
+ *
+ * @authenticated
+ */
 class RoleController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the roles.
+     *
+     * @queryParam filter[name] string Filter roles by name. Example: admin
+     * @queryParam sort string Sort roles by a field. Allowed values: name.
+     *   Prefix with '-' for descending order (e.g., -name for descending by name). Example: name
+     * @queryParam per_page integer Number of results per page. Default is 15. Example: 20
+     *
+     * @responseFile 200 responses/role/index.json
      */
     public function index()
     {
@@ -30,7 +44,10 @@ class RoleController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created role in storage.
+     *
+     * @response 201
+     * @response 403
      */
     public function store(CreateRoleData $data, CreateRoleAction $action)
     {
@@ -40,7 +57,11 @@ class RoleController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified role.
+     *
+     * @responseFile 200 responses/role/show.json
+     * @response 403
+     * @response 404
      */
     public function show(Role $role)
     {
@@ -51,7 +72,11 @@ class RoleController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified role in storage.
+     *
+     * @responseFile 200 responses/role/show.json
+     * @response 403
+     * @response 404
      */
     public function update(CreateRoleData $data, Role $role, UpdateRoleAction $action)
     {
@@ -63,7 +88,9 @@ class RoleController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified role from storage.
+     *
+     * @response 204
      */
     public function destroy(Role $role, DeleteRoleAction $action)
     {

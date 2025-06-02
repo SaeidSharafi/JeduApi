@@ -1,0 +1,51 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 2,
+    "name": "manager",
+    "label": "Manager",
+    "permissions": [
+      {
+        "id": 8,
+        "name": "courses.create"
+      },
+      {
+        "id": 9,
+        "name": "courses.delete"
+      },
+      {
+        "id": 11,
+        "name": "courses.update"
+      },
+      {
+        "id": 13,
+        "name": "courses.view"
+      },
+      {
+        "id": 14,
+        "name": "courses.view_any"
+      },
+      {
+        "id": 27,
+        "name": "seminars.create"
+      },
+      {
+        "id": 28,
+        "name": "seminars.delete"
+      },
+      {
+        "id": 30,
+        "name": "seminars.update"
+      },
+      {
+        "id": 32,
+        "name": "seminars.view"
+      },
+      {
+        "id": 33,
+        "name": "seminars.view_any"
+      }
+    ]
+  },
+  "metadata": []
+}
