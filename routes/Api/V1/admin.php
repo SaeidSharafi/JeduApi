@@ -12,6 +12,8 @@ Route::middleware('auth:staff')->group(function (): void {
     Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::resource('staff', App\Http\Controllers\Api\Admin\StaffController::class)
             ->only(['index', 'store', 'show', 'update', 'destroy']);
+        Route::resource('roles', App\Http\Controllers\Api\Admin\RoleController::class)
+            ->only(['index', 'store', 'show', 'update', 'destroy']);
 
         Route::post('media/upload', UploadMediaController::class)->name('media.upload');
         Route::get('media/{media}', ViewMediaController::class)->name('media.view');

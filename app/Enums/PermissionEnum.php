@@ -31,6 +31,11 @@ enum PermissionEnum: string
     case FILE_UPDATE_OWN = 'files.update_own';
     case FILE_VIEW = 'files.view';
     case FILE_VIEW_ANY = 'files.view_any';
+    case ROLE_CREATE = 'roles.create';
+    case ROLE_DELETE = 'roles.delete';
+    case ROLE_UPDATE = 'roles.update';
+    case ROLE_VIEW = 'roles.view';
+    case ROLE_VIEW_ANY = 'roles.view_any';
     case SEMINAR_CREATE = 'seminars.create';
     case SEMINAR_DELETE = 'seminars.delete';
     case SEMINAR_DELETE_OWN = 'seminars.delete_own';
