@@ -21,8 +21,9 @@ use Spatie\LaravelData\DataCollection;
 final class CourseListItemData extends Data
 {
     public function __construct(
+        public int $id,
         public string $slug,
-        public string $full_name, // Changed from name
+        public string $full_name,
         public string $short_name,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public CourseDifficultyLevelEnum $difficulty_level,
