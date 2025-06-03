@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
-use App\Dto\OtpManager\SentOtpDto;
+use App\Data\OtpManager\SentOtpDto;
 use App\Enums\OtpType;
 use App\Models\Staff;
 use App\Models\User;

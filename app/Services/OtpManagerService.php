@@ -6,8 +6,8 @@ namespace App\Services;
 
 use App\Contracts\OtpGeneratorInterface;
 use App\Contracts\OtpTypeInterface;
-use App\Dto\OtpManager\OtpDto;
-use App\Dto\OtpManager\SentOtpDto;
+use App\Data\OtpManager\OtpDto;
+use App\Data\OtpManager\SentOtpDto;
 use App\Events\OtpPrepared;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;

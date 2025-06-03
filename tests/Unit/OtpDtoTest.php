@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Dto\OtpManager\OtpDto;
+use App\Data\OtpManager\OtpDto;
 
 describe('OtpDto', function (): void {
     it('constructs and returns correct array', function (): void {

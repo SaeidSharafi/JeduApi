@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Contracts\OtpGeneratorInterface;
-use App\Dto\OtpManager\OtpDto;
-use App\Dto\OtpManager\SentOtpDto;
+use App\Data\OtpManager\OtpDto;
+use App\Data\OtpManager\SentOtpDto;
 use App\Enums\OtpType;
 use App\Services\OtpManagerService;
 use Illuminate\Support\Carbon;

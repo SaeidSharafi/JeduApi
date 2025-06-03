@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Dto\OtpManager;
+namespace App\Data\OtpManager;
 
 final class OtpDto
 {

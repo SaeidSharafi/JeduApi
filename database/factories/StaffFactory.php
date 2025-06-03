@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Dto\OtpManager\OtpDto;
+use App\Data\OtpManager\OtpDto;
 use App\Enums\OtpType;
 use App\Models\Staff;
 use App\Services\OtpManagerService;

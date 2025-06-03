@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Dto\OtpManager\SentOtpDto;
+use App\Data\OtpManager\SentOtpDto;
 use App\Enums\OtpType;
 
 describe('SentOtpDto', function (): void {

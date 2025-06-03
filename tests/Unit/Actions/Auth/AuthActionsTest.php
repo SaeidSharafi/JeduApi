@@ -6,7 +6,7 @@ use App\Actions\Auth\AuthenticateUserAction;
 use App\Actions\Auth\GenerateOtpAction;
 use App\Actions\Auth\InitiateAuthAction;
 use App\Actions\Auth\PasswordLoginAction;
-use App\Dto\OtpManager\SentOtpDto;
+use App\Data\OtpManager\SentOtpDto;
 use App\Enums\OtpType;
 use App\Exceptions\UserHasPasswordException;
 use App\Models\User;
