@@ -17,6 +17,10 @@ Route::middleware('auth:staff')->group(function (): void {
         Route::get('permission', App\Http\Controllers\Api\Admin\PermissonController::class)
             ->name('permission.index');
 
+
+        Route::resource('teacher', App\Http\Controllers\Api\Admin\TeacherController::class)
+            ->only(['index', 'store', 'show', 'update', 'destroy']);
+
         Route::post('media/upload', UploadMediaController::class)->name('media.upload');
         Route::get('media/{media}', ViewMediaController::class)->name('media.view');
         Route::post('private-file/upload', UploadPrivateController::class)

@@ -35,5 +35,7 @@ return [
         'user'          => 'کاربر',
         'category'      => 'دسته‌بندی',
         'digital_asset' => 'دارایی دیجیتال',
+        'course'        => 'دوره',
+        'teacher'       => 'مدرس',
     ],
 ];

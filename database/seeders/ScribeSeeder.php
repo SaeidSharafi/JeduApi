@@ -10,6 +10,8 @@ use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Seminar;
+use App\Models\Teacher;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\Artisan;
@@ -41,6 +43,8 @@ final class ScribeSeeder extends Seeder
             DigitalAsset::query()->truncate();
             Media::query()->truncate();
             Staff::query()->truncate();
+            Teacher::query()->truncate();
+            User::query()->truncate();
             $this->enableForeignKeyChecks();
         }
 
@@ -76,6 +80,7 @@ final class ScribeSeeder extends Seeder
             'password' => bcrypt('password'),
             'is_admin' => true,
         ]);
+        User::factory(10)->create();
         $role = Role::firstOrCreate(
             [
                 'name'       => 'admin',
@@ -151,6 +156,8 @@ final class ScribeSeeder extends Seeder
             ->create([
                 'created_by' => $staff->id,
             ]);
+
+        Teacher::factory(25)->create();
     }
 
     protected function disableForeignKeyChecks(): void

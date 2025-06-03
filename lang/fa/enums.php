@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'PublicationStatusEnum' => [
+    'PublicationStatusEnum'     => [
         'draft'     => 'پیش‌نویس',
         'published' => 'منتشر شده',
         'archived'  => 'آرشیو',
@@ -13,5 +13,9 @@ return [
         'intermediate' => 'متوسط',
         'advanced'     => 'پیشرفته',
         'expert'       => 'کارشناس',
+    ],
+    'GenderEnum'                => [
+        'male'   => 'مرد',
+        'female' => 'زن',
     ],
 ];

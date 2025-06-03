@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Seminar;
+use App\Models\Teacher;
 use App\Models\User;
 use App\Traits\AdvanceEnum;
 
@@ -23,6 +24,7 @@ enum MorphTypeEnum: string
     case STAFF         = 'staff';
     case USER          = 'user';
 
+    case TEACHER       = 'teacher';
     public static function forMorphMap(): array
     {
         $map = [];
@@ -53,6 +55,7 @@ enum MorphTypeEnum: string
             self::DIGITAL_ASSET => DigitalAsset::class,
             self::STAFF         => Staff::class,
             self::USER          => User::class,
+            self::TEACHER       => Teacher::class,
         };
     }
 }

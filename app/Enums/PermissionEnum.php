@@ -50,6 +50,11 @@ enum PermissionEnum: string
     case STAFF_UPDATE = 'staff.update';
     case STAFF_VIEW = 'staff.view';
     case STAFF_VIEW_ANY = 'staff.view_any';
+    case TEACHER_CREATE = 'teacher.create';
+    case TEACHER_DELETE = 'teacher.delete';
+    case TEACHER_UPDATE = 'teacher.update';
+    case TEACHER_VIEW = 'teacher.view';
+    case TEACHER_VIEW_ANY = 'teacher.view_any';
 
     /**
      * Get all permission values as an array.

@@ -1,0 +1,29 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "first_name": "ستاره",
+    "last_name": "لاهوتی",
+    "bio": "بانک خودرو لباس بدل قرص مشک باغ کلید. مهد گلیم پارو پیچ ماکت.",
+    "rate": 3.21,
+    "email": "pouros.antoinette@example.net",
+    "phone": "09188027842",
+    "gender": {
+      "value": "male",
+      "label": "مرد"
+    },
+    "birth_date": "1370-01-08",
+    "social_links": {
+      "facebook": "https://jacobs.com/odio-perferendis-et-perspiciatis-fuga-molestiae-omnis-reiciendis.html",
+      "twitter": "http://www.hahn.org/voluptas-et-est-facere-rerum-et-modi-sint",
+      "linkedin": "http://www.lueilwitz.info/"
+    },
+    "user": {
+      "id": 11,
+      "name": "ستاره لاهوتی",
+      "email": "khomeini.amir@example.org",
+      "phone": "0954109216"
+    },
+    "media": []
+  },
+  "metadata": []
+}
