@@ -16,9 +16,7 @@ declare(strict_types=1);
 use Illuminate\Support\Collection;
 
 uses(Tests\TestCase::class)
-    ->in('Feature');
-uses(Tests\TestCaseUnit::class)
-    ->in('Unit');
+    ->in('Feature','Unit');
 /*
 |--------------------------------------------------------------------------
 | Expectations
