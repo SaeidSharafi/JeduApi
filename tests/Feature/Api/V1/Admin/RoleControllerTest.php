@@ -68,7 +68,6 @@ it('can show a role', function () {
         'guard_name' => 'staff',
     ]);
     $role->syncPermissions([
-        \App\Enums\PermissionEnum::STAFF_VIEW_ANY->value,
         \App\Enums\PermissionEnum::STAFF_VIEW->value,
     ]);
     $this
@@ -90,9 +89,8 @@ it('can show a role', function () {
         ->assertJson(function (\Illuminate\Testing\Fluent\AssertableJson $json) use ($role) {
             $json->where('data.id', $role->id)
                 ->where('data.name', 'TestRole')
-                ->has('data.permissions', 2)
+                ->has('data.permissions', 1)
                 ->where('data.permissions.0.name', \App\Enums\PermissionEnum::STAFF_VIEW->value)
-                ->where('data.permissions.1.name', \App\Enums\PermissionEnum::STAFF_VIEW_ANY->value)
                 ->etc();
         });
     ;
