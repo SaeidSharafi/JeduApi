@@ -16,7 +16,8 @@ Route::middleware('auth:staff')->group(function (): void {
             ->only(['index', 'store', 'show', 'update', 'destroy']);
         Route::get('permission', App\Http\Controllers\Api\Admin\PermissonController::class)
             ->name('permission.index');
-
+        Route::resource('vendor', App\Http\Controllers\Api\Admin\VendorController::class)
+            ->only(['index', 'store', 'show', 'update', 'destroy']);
 
         Route::resource('teacher', App\Http\Controllers\Api\Admin\TeacherController::class)
             ->only(['index', 'store', 'show', 'update', 'destroy']);

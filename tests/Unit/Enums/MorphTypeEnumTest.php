@@ -15,6 +15,8 @@ it('return alias correctly', function () {
     expect($alias)->toBe('user');
     $alias = App\Enums\MorphTypeEnum::getAlias(App\Models\Teacher::class);
     expect($alias)->toBe('teacher');
+    $alias = App\Enums\MorphTypeEnum::getAlias(App\Models\Vendor::class);
+    expect($alias)->toBe('vendor');
 
     $alias = App\Enums\MorphTypeEnum::getAlias('non_existent_class');
     expect($alias)->toBeNull();
@@ -35,18 +37,21 @@ it('return model class correctly', function () {
     expect($modelClass)->toBe(App\Models\User::class);
     $modelClass = App\Enums\MorphTypeEnum::TEACHER->getModelClass();
     expect($modelClass)->toBe(App\Models\Teacher::class);
+    $modelClass = App\Enums\MorphTypeEnum::VENDOR->getModelClass();
+    expect($modelClass)->toBe(App\Models\Vendor::class);
 
 });
 
 it('return morph map correctly', function () {
     $morphMap = App\Enums\MorphTypeEnum::forMorphMap();
     expect($morphMap)->toBeArray()
-        ->toHaveCount(7)
+        ->toHaveCount(8)
         ->toHaveKey('category', App\Models\Category::class)
         ->toHaveKey('course', App\Models\Course::class)
         ->toHaveKey('seminar', App\Models\Seminar::class)
         ->toHaveKey('digital_asset', App\Models\DigitalAsset::class)
         ->toHaveKey('staff', App\Models\Staff::class)
         ->toHaveKey('teacher', App\Models\Teacher::class)
+        ->toHaveKey('vendor', App\Models\Vendor::class)
         ->toHaveKey('user', App\Models\User::class);
 });

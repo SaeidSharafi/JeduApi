@@ -1,0 +1,55 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 1,
+    "name": "Mann Group",
+    "email": "eldora42@example.org",
+    "phone": "02813830488",
+    "phone2": "03034519758",
+    "address": "22460 Borer Stream\nEast Brett, OR 09831-8698",
+    "map_location": "http://christiansen.org/autem-et-consequatur-non-sequi.html",
+    "logo_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+    "favicon_url": "http://jedu.test/storage/fake-media/icon.svg",
+    "social_links": {
+      "facebook": "http://www.bahringer.com/ut-perspiciatis-veritatis-accusantium-nostrum",
+      "twitter": "http://www.parker.biz/natus-delectus-itaque-et-qui-placeat-consequatur",
+      "instagram": "http://www.nolan.com/et-qui-fugit-saepe-blanditiis-sit-iste-aut.html",
+      "linkedin": "http://www.ritchie.org/corrupti-qui-aut-quia-rem-modi-necessitatibus-aut.html"
+    },
+    "theme_options": {
+      "primary_color": "#5a5489",
+      "secondary_color": "#a7ccc7",
+      "font_family": "voluptates",
+      "layout": "full-width"
+    },
+    "media": {
+      "logo": [
+        {
+          "id": 6,
+          "url": "http://jedu.test/storage/fake-media/placeholder.svg",
+          "size": 809,
+          "file_name": "placeholder",
+          "alt": "",
+          "mime_type": "image/svg+xml",
+          "extension": "svg",
+          "tag": "logo"
+        }
+      ],
+      "favicon": [
+        {
+          "id": 7,
+          "url": "http://jedu.test/storage/fake-media/icon.svg",
+          "size": 807,
+          "file_name": "icon",
+          "alt": "",
+          "mime_type": "image/svg+xml",
+          "extension": "svg",
+          "tag": "favicon"
+        }
+      ]
+    },
+    "created_at": "1404-03-14 15:00:27",
+    "updated_at": "1404-03-14 15:00:27"
+  },
+  "metadata": []
+}

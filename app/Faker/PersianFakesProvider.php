@@ -12,12 +12,14 @@ final class PersianFakesProvider extends \Faker\Provider\Lorem
     protected static ?array $persianWordList = null;
 
     protected static ?array $mobileList = null;
+    protected static ?array $phoneList = null;
 
     public function __construct(Generator $faker)
     {
         $varibales             = new FakerVariables();
         self::$persianWordList = $varibales->variable('words');
         self::$mobileList      = $varibales->variable('mobile');
+        self::$phoneList      = $varibales->variable('phone');
         parent::__construct($faker);
     }
 
@@ -188,6 +190,14 @@ final class PersianFakesProvider extends \Faker\Provider\Lorem
     {
         $prefix = self::$mobileList[array_rand(self::$mobileList)];
         $phone  = ('0'.$prefix.randomNumber(7));
+
+        return mb_strlen($phone) !== 11 ? $phone.rand(1, 9) : $phone;
+    }
+
+    public static function iranPhone(): string
+    {
+        $prefix = self::$phoneList[array_rand(self::$phoneList)];
+        $phone  = ('0'.$prefix.randomNumber(8));
 
         return mb_strlen($phone) !== 11 ? $phone.rand(1, 9) : $phone;
     }

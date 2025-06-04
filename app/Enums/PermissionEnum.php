@@ -55,6 +55,11 @@ enum PermissionEnum: string
     case TEACHER_UPDATE = 'teacher.update';
     case TEACHER_VIEW = 'teacher.view';
     case TEACHER_VIEW_ANY = 'teacher.view_any';
+    case VENDOR_CREATE = 'vendor.create';
+    case VENDOR_DELETE = 'vendor.delete';
+    case VENDOR_UPDATE = 'vendor.update';
+    case VENDOR_VIEW = 'vendor.view';
+    case VENDOR_VIEW_ANY = 'vendor.view_any';
 
     /**
      * Get all permission values as an array.

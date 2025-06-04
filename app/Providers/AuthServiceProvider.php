@@ -11,6 +11,7 @@ use App\Models\DigitalAsset;
 use App\Models\Seminar;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Models\Vendor;
 use App\Policies\Admin\RolePolicy;
 use App\Policies\Admin\StaffPolicy;
 use App\Policies\Admin\CategoryPolicy;
@@ -18,6 +19,7 @@ use App\Policies\Admin\CoursePolicy;
 use App\Policies\Admin\DigitalAssetPolicy;
 use App\Policies\Admin\SeminarPolicy;
 use App\Policies\Admin\TeacherPolicy;
+use App\Policies\Admin\VendorPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Permission\Models\Role;
@@ -37,6 +39,7 @@ final class AuthServiceProvider extends ServiceProvider
             return ($user instanceof Staff && $user->is_admin) ? true : null;
         });
 
+        Gate::policy(Vendor::class, VendorPolicy::class);
         Gate::policy(Staff::class, StaffPolicy::class);
         Gate::policy(Role::class, RolePolicy::class);
         Gate::policy(Course::class, CoursePolicy::class);

@@ -1,0 +1,128 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "id": 1,
+        "name": "Mann Group",
+        "email": "eldora42@example.org",
+        "phone": "02813830488",
+        "phone2": "03034519758",
+        "address": "22460 Borer Stream\nEast Brett, OR 09831-8698",
+        "map_location": "http://christiansen.org/autem-et-consequatur-non-sequi.html",
+        "logo_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+        "favicon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "social_links": {
+          "facebook": "http://www.bahringer.com/ut-perspiciatis-veritatis-accusantium-nostrum",
+          "twitter": "http://www.parker.biz/natus-delectus-itaque-et-qui-placeat-consequatur",
+          "instagram": "http://www.nolan.com/et-qui-fugit-saepe-blanditiis-sit-iste-aut.html",
+          "linkedin": "http://www.ritchie.org/corrupti-qui-aut-quia-rem-modi-necessitatibus-aut.html"
+        },
+        "theme_options": {
+          "primary_color": "#5a5489",
+          "secondary_color": "#a7ccc7",
+          "font_family": "voluptates",
+          "layout": "full-width"
+        }
+      },
+      {
+        "id": 2,
+        "name": "Adams-Wilderman",
+        "email": "pollich.henry@example.org",
+        "phone": "03854827985",
+        "phone2": null,
+        "address": "250 Mose Plains Suite 185\nNew Saigefort, OR 07899",
+        "map_location": "http://www.marvin.com/eos-suscipit-nulla-ipsum-voluptatem",
+        "logo_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+        "favicon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "social_links": {
+          "facebook": "http://www.rippin.com/",
+          "twitter": "https://www.ryan.com/enim-quas-est-at-id",
+          "instagram": "http://kessler.org/distinctio-iure-rerum-asperiores-et-quam",
+          "linkedin": "https://heidenreich.info/incidunt-mollitia-molestiae-voluptatibus-delectus.html"
+        },
+        "theme_options": {
+          "primary_color": "#3ac03a",
+          "secondary_color": "#e9bcef",
+          "font_family": "sint",
+          "layout": "boxed"
+        }
+      },
+      {
+        "id": 3,
+        "name": "Medhurst LLC",
+        "email": "swift.dean@example.com",
+        "phone": "02454739241",
+        "phone2": "03348494356",
+        "address": "75023 Xavier Squares Apt. 615\nLake Hubertton, ID 14293",
+        "map_location": "http://metz.info/nemo-est-reprehenderit-sunt-voluptates-fugit-dolor",
+        "logo_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+        "favicon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "social_links": {
+          "facebook": "http://www.schowalter.com/",
+          "twitter": "http://mitchell.com/consectetur-ea-id-error-non-odio-ex-dolorem-tempore.html",
+          "instagram": "http://baumbach.info/et-animi-nemo-ut-et-unde-omnis",
+          "linkedin": "http://considine.net/aperiam-et-occaecati-totam-odio"
+        },
+        "theme_options": {
+          "primary_color": "#fd0ba4",
+          "secondary_color": "#0fd7a2",
+          "font_family": "ex",
+          "layout": "full-width"
+        }
+      },
+      {
+        "id": 4,
+        "name": "Hyatt-Shields",
+        "email": "pouros.caterina@example.net",
+        "phone": "03636959057",
+        "phone2": null,
+        "address": "4787 Delphine Run\nEast Hazleland, NV 18258",
+        "map_location": "http://www.abbott.org/eos-sunt-consequatur-est",
+        "logo_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+        "favicon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "social_links": {
+          "facebook": "http://herzog.biz/nihil-sunt-similique-delectus",
+          "twitter": "http://www.hudson.org/ut-qui-doloribus-consequatur-accusantium",
+          "instagram": "http://ward.com/sit-optio-autem-nihil-vel-itaque-ab",
+          "linkedin": "https://gusikowski.com/aliquid-sint-eligendi-porro-magni-dolorum-iste-voluptas-itaque.html"
+        },
+        "theme_options": {
+          "primary_color": "#a04f94",
+          "secondary_color": "#a086d1",
+          "font_family": "voluptas",
+          "layout": "boxed"
+        }
+      }
+    ],
+    "first_page_url": "http://jedu.test/api/v1/admin/vendor?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "http://jedu.test/api/v1/admin/vendor?page=1",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; قبلی",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/vendor?page=1",
+        "label": "1",
+        "active": true
+      },
+      {
+        "url": null,
+        "label": "بعدی &raquo;",
+        "active": false
+      }
+    ],
+    "next_page_url": null,
+    "path": "http://jedu.test/api/v1/admin/vendor",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 4,
+    "total": 4
+  },
+  "metadata": []
+}

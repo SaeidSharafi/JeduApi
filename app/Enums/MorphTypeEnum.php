@@ -11,6 +11,7 @@ use App\Models\DigitalAsset;
 use App\Models\Seminar;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Models\Vendor;
 use App\Traits\AdvanceEnum;
 
 enum MorphTypeEnum: string
@@ -25,6 +26,7 @@ enum MorphTypeEnum: string
     case USER          = 'user';
 
     case TEACHER       = 'teacher';
+    case VENDOR        = 'vendor';
     public static function forMorphMap(): array
     {
         $map = [];
@@ -56,6 +58,7 @@ enum MorphTypeEnum: string
             self::STAFF         => Staff::class,
             self::USER          => User::class,
             self::TEACHER       => Teacher::class,
+            self::VENDOR        => Vendor::class,
         };
     }
 }

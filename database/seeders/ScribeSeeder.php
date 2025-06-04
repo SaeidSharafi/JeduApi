@@ -12,6 +12,7 @@ use App\Models\DigitalAsset;
 use App\Models\Seminar;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Models\Vendor;
 use Illuminate\Database\Seeder;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\Artisan;
@@ -44,6 +45,7 @@ final class ScribeSeeder extends Seeder
             Media::query()->truncate();
             Staff::query()->truncate();
             Teacher::query()->truncate();
+            Vendor::query()->truncate();
             User::query()->truncate();
             $this->enableForeignKeyChecks();
         }
@@ -128,7 +130,9 @@ final class ScribeSeeder extends Seeder
         $user->assignRole('admin');
         $staff = Staff::query()->first();
         Staff::factory(50)->create();
-
+        Vendor::factory(4)
+            ->withMedia()
+            ->create();
         Category::factory(100)
             ->withIcon()
             ->withImage()
