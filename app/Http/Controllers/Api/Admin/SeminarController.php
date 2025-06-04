@@ -50,7 +50,8 @@ final class SeminarController extends Controller
             ->allowedSorts(['full_name', 'short_name', 'slug', 'created_at', 'updated_at'])
             ->defaultSort('-created_at')
             ->with('categories', 'digitalAssets')
-            ->paginate(request()->get('per_page', 15));
+            ->paginate(request()->integer('per_page', 15))
+            ->withQueryString();
 
         return response()->success(SeminarListItemData::collect($seminars));
     }

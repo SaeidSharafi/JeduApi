@@ -55,7 +55,8 @@ final class DigitalAssetController extends Controller
                 AllowedFilter::exact('is_attachable_to_course'),
             ])
             ->allowedSorts(['name', 'slug', 'status'])
-            ->paginate();
+            ->paginate(request()->integer('per_page', 15))
+            ->withQueryString();
 
         return response()->success(
             DigitalAssetListItemData::collect($files)

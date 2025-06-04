@@ -38,7 +38,8 @@ class RoleController extends Controller
         $roles = QueryBuilder::for(Role::class)
             ->allowedFilters(['name'])
             ->allowedSorts(['name'])
-            ->paginate(request()->integer('per_page', 15));
+            ->paginate(request()->integer('per_page', 15))
+            ->withQueryString();
 
         return response()->success(RoleListItemData::collect($roles));
     }

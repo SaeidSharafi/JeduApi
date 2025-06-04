@@ -43,7 +43,7 @@ final class CategoryController extends Controller
             ->allowedFilters(['name', 'slug', 'status'])
             ->allowedSorts(['name', 'slug', 'status'])
             ->allowedIncludes(['createdBy'])
-            ->paginate()
+            ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
         return response()->success(CategoryListItemData::collect($categories));
