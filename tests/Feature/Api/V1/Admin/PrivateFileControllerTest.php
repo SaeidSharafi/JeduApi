@@ -6,6 +6,9 @@ use Illuminate\Http\UploadedFile;
 use Plank\Mediable\Media;
 
 uses(Tests\AuthTestTrait::class);
+beforeEach(function () {
+    Storage::fake('local');
+});
 describe('Admin Private File', function (): void {
     it('can upload a private file and returns correct structure', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
@@ -51,7 +54,6 @@ describe('Admin Private File', function (): void {
             });
     });
     it('can download a private file', function (): void {
-        Storage::fake('local');
         $file = MediaUploader::fromSource(UploadedFile::fake()->image('course.jpg'))
             ->toDisk('local')
             ->upload();
@@ -64,7 +66,6 @@ describe('Admin Private File', function (): void {
 
     it('return 404 if file doesn\'t exist', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
-        Storage::fake('local');
         $file = MediaUploader::fromSource(UploadedFile::fake()->image('course.jpg'))
             ->toDisk('local')
             ->upload();
@@ -74,7 +75,6 @@ describe('Admin Private File', function (): void {
     });
 
     it('cannot download a private file without permission', function (): void {
-        Storage::fake('local');
         $file = MediaUploader::fromSource(UploadedFile::fake()->image('course.jpg'))
             ->toDisk('local')
             ->upload();

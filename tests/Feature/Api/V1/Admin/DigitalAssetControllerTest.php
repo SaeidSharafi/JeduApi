@@ -9,6 +9,7 @@ uses(Tests\AuthTestTrait::class);
 beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
+    Storage::fake('local');
     $this->cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
         ->toDisk('public')
         ->upload();

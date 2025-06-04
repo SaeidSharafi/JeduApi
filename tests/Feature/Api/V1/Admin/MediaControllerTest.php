@@ -6,6 +6,9 @@ use Illuminate\Http\UploadedFile;
 use Plank\Mediable\Media;
 
 uses(Tests\AuthTestTrait::class);
+beforeEach(function () {
+    Storage::fake('public');
+});
 describe('Staff MediaController', function (): void {
     it('can upload a media file and returns correct structure', function (): void {
         $this->authorized_user([]);
