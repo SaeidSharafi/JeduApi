@@ -38,6 +38,7 @@ final class ViewMediaController extends Controller
      */
     public function __invoke(Request $request, Media $media): ApiResponseInterface
     {
-        return response()->success(MediaData::fromModel($media), 'Media file retrieved successfully');
+        $media->load('variants');
+        return response()->success(MediaData::fromModel($media), message: __('messages.media_retrieved'));
     }
 }

@@ -42,6 +42,6 @@ final class ViewPrivateFileController extends Controller
     {
         Gate::authorize('view-any', DigitalAsset::class);
 
-        return response()->success(PrivateFileData::fromModel($file), 'Private File retrieved successfully');
+        return response()->success(PrivateFileData::fromModel($file), __('messages.success'));
     }
 }

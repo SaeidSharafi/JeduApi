@@ -8,31 +8,31 @@ return [
      *
      * Set to `null` in order to use the default database connection
      */
-    'connection_name' => null,
+    'connection_name'          => null,
 
     /*
      * FQCN of the model to use for media
      *
      * Should extend `Plank\Mediable\Media`
      */
-    'model' => Plank\Mediable\Media::class,
+    'model'                    => Plank\Mediable\Media::class,
 
     /*
      * Name to be used for mediables joining table
      */
-    'mediables_table' => 'mediables',
+    'mediables_table'          => 'mediables',
 
     /*
      * Filesystem disk to use if none is specified
      */
-    'default_disk' => 'public',
+    'default_disk'             => 'public',
 
     /*
      * Filesystems that can be used for media storage
      *
      * Uploader will throw an exception if a disk not in this list is selected
      */
-    'allowed_disks' => [
+    'allowed_disks'            => [
         'public',
         'local',
     ],
@@ -40,7 +40,7 @@ return [
     /*
      * The maximum file size in bytes for a single uploaded file
      */
-    'max_size' => 1024 * 1024 * 10,
+    'max_size'                 => 1024 * 1024 * 10,
 
     /*
      * What to do if a duplicate file is uploaded.
@@ -51,12 +51,12 @@ return [
      * * `'replace'` : the old file and media model is deleted
      * * `'error'`: an Exception is thrown
      */
-    'on_duplicate' => Plank\Mediable\MediaUploader::ON_DUPLICATE_INCREMENT,
+    'on_duplicate'             => Plank\Mediable\MediaUploader::ON_DUPLICATE_INCREMENT,
 
     /*
      * Reject files unless both their mime and extension are recognized and both match a single aggregate type
      */
-    'strict_type_checking' => false,
+    'strict_type_checking'     => false,
 
     /*
      * Reject files whose mime type or extension is not recognized
@@ -68,22 +68,22 @@ return [
      * Prefer the client-provided MIME type over the one inferred from the file contents, if provided
      * May be slightly faster to compute, but is not guaranteed to be accurate if the source is untrusted
      */
-    'prefer_client_mime_type' => false,
+    'prefer_client_mime_type'  => false,
 
     /*
      * Only allow files with specific MIME type(s) to be uploaded
      */
-    'allowed_mime_types' => [],
+    'allowed_mime_types'       => [],
 
     /*
      * Only allow files with specific file extension(s) to be uploaded
      */
-    'allowed_extensions' => [],
+    'allowed_extensions'       => [],
 
     /*
      * Only allow files matching specific aggregate type(s) to be uploaded
      */
-    'allowed_aggregate_types' => [],
+    'allowed_aggregate_types'  => [],
 
     /*
      * List of aggregate types recognized by the application
@@ -91,8 +91,8 @@ return [
      * Each type should list the MIME types and extensions
      * that should be recognized for the type
      */
-    'aggregate_types' => [
-        Plank\Mediable\Media::TYPE_IMAGE => [
+    'aggregate_types'          => [
+        Plank\Mediable\Media::TYPE_IMAGE        => [
             'mime_types' => [
                 'image/jpeg',
                 'image/png',
@@ -115,7 +115,7 @@ return [
                 'svg',
             ],
         ],
-        Plank\Mediable\Media::TYPE_PDF => [
+        Plank\Mediable\Media::TYPE_PDF          => [
             'mime_types' => [
                 'application/pdf',
             ],
@@ -123,7 +123,7 @@ return [
                 'pdf',
             ],
         ],
-        Plank\Mediable\Media::TYPE_AUDIO => [
+        Plank\Mediable\Media::TYPE_AUDIO        => [
             'mime_types' => [
                 'audio/aac',
                 'audio/ogg',
@@ -140,7 +140,7 @@ return [
                 'wav',
             ],
         ],
-        Plank\Mediable\Media::TYPE_VIDEO => [
+        Plank\Mediable\Media::TYPE_VIDEO        => [
             'mime_types' => [
                 'video/mp4',
                 'video/mpeg',
@@ -155,7 +155,7 @@ return [
                 'webm',
             ],
         ],
-        Plank\Mediable\Media::TYPE_ARCHIVE => [
+        Plank\Mediable\Media::TYPE_ARCHIVE      => [
             'mime_types' => [
                 'application/zip',
                 'application/x-compressed-zip',
@@ -165,7 +165,7 @@ return [
                 'zip',
             ],
         ],
-        Plank\Mediable\Media::TYPE_DOCUMENT => [
+        Plank\Mediable\Media::TYPE_DOCUMENT     => [
             'mime_types' => [
                 'text/plain',
                 'application/plain',
@@ -184,7 +184,7 @@ return [
                 'json',
             ],
         ],
-        Plank\Mediable\Media::TYPE_SPREADSHEET => [
+        Plank\Mediable\Media::TYPE_SPREADSHEET  => [
             'mime_types' => [
                 'application/vnd.ms-excel',
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -213,8 +213,8 @@ return [
      *
      * Adapters can map either to a class or a pattern (regex)
      */
-    'source_adapters' => [
-        'class' => [
+    'source_adapters'          => [
+        'class'   => [
             Symfony\Component\HttpFoundation\File\UploadedFile::class => Plank\Mediable\SourceAdapters\UploadedFileAdapter::class,
             Symfony\Component\HttpFoundation\File\File::class         => Plank\Mediable\SourceAdapters\FileAdapter::class,
             Psr\Http\Message\StreamInterface::class                   => Plank\Mediable\SourceAdapters\StreamAdapter::class,
@@ -231,7 +231,7 @@ return [
      * List of URL Generators to use for handling various filesystem drivers
      *
      */
-    'url_generators' => [
+    'url_generators'           => [
         'local' => Plank\Mediable\UrlGenerators\LocalUrlGenerator::class,
         's3'    => Plank\Mediable\UrlGenerators\S3UrlGenerator::class,
     ],
@@ -241,28 +241,28 @@ return [
      *
      * If true, will automatically reload media the next time `getMedia()`, `getMediaMatchAll()` or `getAllMediaByTag()` are called.
      */
-    'rehydrate_media' => true,
+    'rehydrate_media'          => true,
 
     /**
      * Detach associated media when mediable model is soft deleted.
      */
-    'detach_on_soft_delete' => false,
+    'detach_on_soft_delete'    => false,
 
     /**
      * Prevents loading migrations from the package.
      *
      * Use this if you are renaming the published migrations and want to prevent them from being loaded twice.
      */
-    'ignore_migrations' => false,
+    'ignore_migrations'        => false,
 
     /**
      * Configuration for image optimization
      */
-    'image_optimization' => [
+    'image_optimization'       => [
         /**
          * Whether to apply image optimization after performing image manipulations by default
          */
-        'enabled' => true,
+        'enabled'    => true,
         /**
          * array of optimizers to use, which should implement \Spatie\ImageOptimizer\Optimizer
          * Each can be passed an array of command line arguments to be passed to the optimizer
@@ -273,27 +273,27 @@ return [
                 '--strip-all',
                 '--all-progressive',
             ],
-            Spatie\ImageOptimizer\Optimizers\Pngquant::class => [
+            Spatie\ImageOptimizer\Optimizers\Pngquant::class  => [
                 '--quality=85',
                 '--force',
                 '--skip-if-larger',
             ],
-            Spatie\ImageOptimizer\Optimizers\Optipng::class => [
+            Spatie\ImageOptimizer\Optimizers\Optipng::class   => [
                 '-i0',
                 '-o2',
                 '-quiet',
             ],
-            Spatie\ImageOptimizer\Optimizers\Gifsicle::class => [
+            Spatie\ImageOptimizer\Optimizers\Gifsicle::class  => [
                 '-b',
                 '-O3',
             ],
-            Spatie\ImageOptimizer\Optimizers\Cwebp::class => [
+            Spatie\ImageOptimizer\Optimizers\Cwebp::class     => [
                 '-q 80',
                 '-m 6',
                 '-pass 10',
                 '-mt',
             ],
-            Spatie\ImageOptimizer\Optimizers\Avifenc::class => [
+            Spatie\ImageOptimizer\Optimizers\Avifenc::class   => [
                 '-a cq-level=23',
                 '-j all',
                 '--min 0',
@@ -303,6 +303,16 @@ return [
                 '-a end-usage=q',
                 '-a tune=ssim',
             ],
+        ],
+    ],
+
+    /**
+     * Configuration for image variants
+     */
+    'image_variants'           => [
+        'thumb' => [
+            'width' => 100,
+            'height' => 100,
         ],
     ],
 ];

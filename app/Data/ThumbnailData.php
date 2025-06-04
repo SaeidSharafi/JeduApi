@@ -18,7 +18,7 @@ use Spatie\LaravelData\Data;
  * @property string $extension
  * @property string $tag
  */
-final class MediaData extends Data
+final class ThumbnailData extends Data
 {
     public function __construct(
         public int $id,
@@ -28,20 +28,10 @@ final class MediaData extends Data
         public string $alt,
         public string $mime_type,
         public string $extension,
-        public ?string $tag = null,
-        public ?ThumbnailData $thumbnail,
     ) {}
 
     public static function fromModel(Media $media, ?string $tag = null ): self
     {
-        $thumbnail = null;
-        if ($media->isOriginal()){
-            if ($media->relationLoaded('variants')){
-                $thumbnail = $media->findVariant('thumb');
-                $thumbnail = $thumbnail ? ThumbnailData::fromModel($thumbnail) : null;
-            }
-
-        }
 
         return new self(
             $media->id,
@@ -51,8 +41,6 @@ final class MediaData extends Data
             $media->getAttribute('alt'),
             $media->mime_type,
             $media->extension,
-            $tag,
-            $thumbnail
         );
     }
 }

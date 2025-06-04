@@ -85,6 +85,9 @@ final class DigitalAssetController extends Controller
     public function show(DigitalAsset $digitalAsset): ApiResponseInterface
     {
         Gate::authorize('view', $digitalAsset);
+        $digitalAsset
+            ->load('categories')
+            ->loadMediaWithVariantsMatchAll();
         $attachments = [];
         foreach (['main', 'preview'] as $tag) {
             $attachments[$tag] = $digitalAsset->getMedia($tag)
@@ -118,6 +121,9 @@ final class DigitalAssetController extends Controller
         Gate::authorize('update', $digitalAsset);
         $action->handle($request, $digitalAsset);
         $digitalAsset->refresh();
+        $digitalAsset
+            ->load('categories')
+            ->loadMediaWithVariantsMatchAll();
         $attachments = [];
         foreach (['main', 'preview'] as $tag) {
             $attachments[$tag] = $digitalAsset->getMedia($tag)

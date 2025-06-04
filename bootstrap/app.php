@@ -116,23 +116,85 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // 8. Generic Fallback for any other Throwable (defaults to 500 Internal Server Error)
         $exceptions->renderable(function (Throwable $e, Request $request) use ($isApiRequest) {
+            $isLikelySafeToUseConfig = !($e instanceof \ParseError); // Basic check
+            $isDebug = false; // Default to not debug for safety
+
+            if ($isLikelySafeToUseConfig && app()->bound('config')) {
+                try {
+                    $isDebug = config('app.debug', false);
+                } catch (\Throwable $configEx) {
+                    // Config access failed, assume not debug mode for safety, or log this specific failure.
+                    // error_log("Error handler: Failed to access config: " . $configEx->getMessage());
+                    $isDebug = false; // Or true, if you prefer to default to verbose on config failure
+                }
+            } elseif ($e instanceof \ParseError) {
+                // For ParseError, if we even reach here, assume debug is desired for max info,
+                // but we can't trust config().
+                // The actual ParseError message will be the most valuable.
+                $isDebug = true;
+            }
+
+
             if ($isApiRequest($request)) {
-                if (app()->isProduction()) {
-                    Log::error($e->getMessage(), ['exception' => $e]);
+                $responsePayload = [];
+                $baseMessage = 'An internal server error occurred.'; // Simplest fallback
+
+                // Attempt to get a localized message only if config seems safe
+                if ($isLikelySafeToUseConfig && app()->bound('config') && function_exists('__')) {
+                    try {
+                        $baseMessage = __('messages.server_error');
+                    } catch (\Throwable $localizationError) {
+                        // Could log $localizationError if $isLikelySafeToUseConfig
+                    }
                 }
 
-                $response['message']  = config('app.debug') ? $e->getMessage() : __('messages.server_error');
-                if (config('app.debug')) {
-                    $response['debug'] = [
-                        'message' => $e->getMessage(),
-                        'file'    => $e->getFile(),
-                        'line'    => $e->getLine(),
-                        'trace'   => $e->getTraceAsString(),
-                    ];
+                $responsePayload['message'] = ($isDebug && !($e instanceof \ParseError)) ? $e->getMessage() : $baseMessage;
+                // For ParseError, $e->getMessage() IS the critical info.
+                if ($e instanceof \ParseError) {
+                    $responsePayload['message'] = "Parse Error: " . $e->getMessage();
                 }
-                return response()->json($response, 500);
+
+
+                if ($isDebug) {
+                    $responsePayload['debug'] = [
+                        'exception_class' => get_class($e),
+                        'message'         => $e->getMessage(), // Can be redundant with top-level message
+                        'file'            => $e->getFile(),
+                        'line'            => $e->getLine(),
+                    ];
+                    // For ParseError, trace might not be very useful or available.
+                    // Only add trace if not a ParseError and isDebug.
+                    if (!($e instanceof \ParseError)) {
+                        try {
+                            $traceString = $e->getTraceAsString();
+                            json_encode($traceString); // Test encodability
+                            if (json_last_error() === JSON_ERROR_NONE) {
+                                $responsePayload['debug']['trace'] = $traceString;
+                            } else {
+                                $responsePayload['debug']['trace'] = 'Trace not encodable: ' . json_last_error_msg();
+                            }
+                        } catch (\Throwable $traceEx) {
+                            $responsePayload['debug']['trace_error'] = 'Could not get trace: ' . $traceEx->getMessage();
+                        }
+                    }
+                }
+
+                // Attempt to send JSON. If json_encode itself fails, this might still be empty.
+                try {
+                    return response()->json($responsePayload, 500);
+                } catch (\Throwable $jsonException) {
+                    // VERY last resort if even building the JsonResponse fails.
+                    // error_log("FATAL: Could not construct JSON response in error handler: " . $jsonException->getMessage());
+                    // Return a plain text response as Symfony Response might be available
+                    return new \Symfony\Component\HttpFoundation\Response(
+                        "Internal Server Error. Details unavailable. Check server logs. Exception: " . get_class($e),
+                        500,
+                        ['Content-Type' => 'text/plain']
+                    );
+                }
             }
 
             return null;
         });
+
     })->create();

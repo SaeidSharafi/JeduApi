@@ -9,7 +9,11 @@ use App\Data\MediaData;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Intervention\Image\Image;
 use Plank\Mediable\Facades\MediaUploader;
+use Plank\Mediable\ImageManipulation;
+use Plank\Mediable\Jobs\CreateImageVariants;
+use Plank\Mediable\Media;
 
 final class UploadMediaController extends Controller
 {
@@ -50,12 +54,15 @@ final class UploadMediaController extends Controller
         /** @var UploadedFile $file */
         $file  = $request->file('file');
         $alt   = (string) $request->string('alt');
+
         $media = MediaUploader::fromSource($file)
             ->toDisk(config('mediable.default_disk', 'public'))
             ->withAltAttribute($alt)
             ->onDuplicateIncrement()
             ->upload();
 
-        return response()->created(MediaData::fromModel($media), 'Media file uploaded successfully');
+        CreateImageVariants::dispatch($media, 'thumb');
+
+        return response()->created(MediaData::fromModel($media), message: __('messages.success'));
     }
 }

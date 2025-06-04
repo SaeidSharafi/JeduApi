@@ -10,6 +10,10 @@ use App\Services\DefaultOtpGenerator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
+use Intervention\Image\Image;
+use Plank\Mediable\Facades\ImageManipulator;
+use Plank\Mediable\ImageManipulation;
+use Plank\Mediable\Media;
 
 final class AppServiceProvider extends ServiceProvider
 {
@@ -28,8 +32,21 @@ final class AppServiceProvider extends ServiceProvider
     {
         include_once __DIR__.'/../Helpers/helpers.php';
 
-        Model::preventLazyLoading(! app()->isProduction());
+        Model::preventLazyLoading(!app()->isProduction());
         Relation::enforceMorphMap(MorphTypeEnum::forMorphMap());
-
+        ImageManipulator::defineVariant(
+            'thumb',
+           ImageManipulation::make(function (
+                Image $image,
+                Media $originalMedia
+            ) {
+                $image->cover(
+                    config('mediable.image_variants.thumb.width'),
+                    config('mediable.image_variants.thumb.height')
+                );
+            })
+               ->toDestination(config('mediable.default_disk', 'public'),'thumb')
+               ->optimize()->outputWebpFormat(),
+        );
     }
 }

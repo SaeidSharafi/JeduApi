@@ -36,7 +36,8 @@ final class CourseController extends Controller
      * @queryParam filter[full_name] string Filter by course name. Example: Mathematics
      * @queryParam filter[short_name] string Filter by course short name. Example: MATH
      * @queryParam filter[status] string Filter by course status. Example: active
-     * @queryParam sort string Sort by a field. Allowed values: slug, name, short_name, status. Prefix with '-' for descending order (e.g., -name for descending by name). Example: name
+     * @queryParam sort string Sort by a field. Allowed values: slug, name, short_name, status. Prefix with '-' for
+     *     descending order (e.g., -name for descending by name). Example: name
      * @queryParam page integer Page number for pagination. Example: 2
      * @queryParam per_page integer Number of results per page. Example: 15
      *
@@ -79,12 +80,13 @@ final class CourseController extends Controller
     public function show(Course $course): ApiResponseInterface
     {
         Gate::authorize('view', $course);
-        $course->load('categories', 'digitalAssets');
+        $course->load('categories', 'digitalAssets')
+            ->loadMediaWithVariantsMatchAll();
 
         $media = [];
         foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
             $media[$tag] = $course->getMedia($tag)
-                ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag))
+                ->map(fn(Media $m): MediaData => MediaData::fromModel($m, $tag))
                 ->toArray();
         }
 
@@ -106,7 +108,9 @@ final class CourseController extends Controller
     {
         Gate::authorize('update', $course);
         $action->handle($data, $course);
-
+        $course
+            ->load('categories', 'digitalAssets')
+            ->loadMediaWithVariantsMatchAll();
         return response()->success(ShowCourseData::from($course)->toArray());
     }
 

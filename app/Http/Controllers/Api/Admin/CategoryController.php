@@ -74,7 +74,7 @@ final class CategoryController extends Controller
     public function show(Category $category): ApiResponseInterface
     {
         Gate::authorize('view', $category);
-        $category->load(['media']);
+        $category->loadMediaWithVariantsMatchAll();
 
         return response()->success(
             ShowCategoryData::from($category)
@@ -92,7 +92,9 @@ final class CategoryController extends Controller
     {
         Gate::authorize('update', $category);
         $action->handle($data, $category);
-
+        $category
+            ->refresh()
+            ->loadMediaWithVariantsMatchAll();
         return response()->success(
             ShowCategoryData::from($category),
             __('catalog.category.message.updated')

@@ -78,7 +78,9 @@ final class SeminarController extends Controller
     public function show(Seminar $seminar): ApiResponseInterface
     {
         Gate::authorize('view', $seminar);
-        $seminar->load('categories', 'digitalAssets');
+        $seminar
+            ->load('categories', 'digitalAssets')
+            ->loadMediaWithVariantsMatchAll();
         $media = [];
         foreach (['gallery', 'video', 'cover'] as $tag) {
             $media[$tag] = $seminar->getMedia($tag)
@@ -108,7 +110,9 @@ final class SeminarController extends Controller
     {
         Gate::authorize('update', $seminar);
         $action->handle($data, $seminar);
-        $seminar->load('categories', 'digitalAssets');
+        $seminar
+            ->load('categories', 'digitalAssets')
+            ->loadMediaWithVariantsMatchAll();
         $media = [];
         foreach (['gallery', 'video', 'cover'] as $tag) {
             $media[$tag] = $seminar->getMedia($tag)
