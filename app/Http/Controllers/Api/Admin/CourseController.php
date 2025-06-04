@@ -50,8 +50,8 @@ final class CourseController extends Controller
             ->allowedFilters(['slug', 'full_name', 'short_name', 'status'])
             ->allowedSorts(['slug', 'full_name', 'short_name', 'status'])
             ->with('categories', 'digitalAssets')
-            ->paginate()
-            ->appends(request()->query());
+            ->paginate(request()->integer('per_page', 15))
+            ->withQueryString();
 
         return Response::success(data: CourseListItemData::collect($courses)->toArray());
     }
@@ -111,7 +111,18 @@ final class CourseController extends Controller
         $course
             ->load('categories', 'digitalAssets')
             ->loadMediaWithVariantsMatchAll();
-        return response()->success(ShowCourseData::from($course)->toArray());
+        $media = [];
+        foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
+            $media[$tag] = $course->getMedia($tag)
+                ->map(fn(Media $m): MediaData => MediaData::fromModel($m, $tag))
+                ->toArray();
+        }
+
+        return response()->success(ShowCourseData::from([
+            ...$course->toArray(),
+            'categories' => $course->categories,
+            'media'      => $media,
+        ])->toArray());
     }
 
     /**
