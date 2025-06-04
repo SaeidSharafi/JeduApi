@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\Admin\FileManagement\UploadMediaController;
+use App\Http\Controllers\Api\Admin\FileManagement\UploadPrivateController;
+use App\Http\Controllers\Api\Admin\FileManagement\ViewMediaController;
+use App\Http\Controllers\Api\Admin\FileManagement\ViewPrivateFileController;
 use App\Http\Controllers\Api\Admin\PrivateFileDownloadController;
-use App\Http\Controllers\Api\Admin\UploadMediaController;
-use App\Http\Controllers\Api\Admin\UploadPrivateController;
-use App\Http\Controllers\Api\Admin\ViewMediaController;
-use App\Http\Controllers\Api\Admin\ViewPrivateFileController;
 
 Route::middleware('auth:staff')->group(function (): void {
     Route::prefix('admin')->name('admin.')->group(function (): void {
