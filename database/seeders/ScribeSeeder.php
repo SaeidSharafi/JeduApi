@@ -11,6 +11,7 @@ use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Seminar;
 use App\Models\Teacher;
+use App\Models\Term;
 use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Database\Seeder;
@@ -46,6 +47,7 @@ final class ScribeSeeder extends Seeder
             Staff::query()->truncate();
             Teacher::query()->truncate();
             Vendor::query()->truncate();
+            Term::query()->truncate();
             User::query()->truncate();
             $this->enableForeignKeyChecks();
         }
@@ -133,6 +135,7 @@ final class ScribeSeeder extends Seeder
         Vendor::factory(4)
             ->withMedia()
             ->create();
+        Term::factory(10)->create();
         Category::factory(100)
             ->withIcon()
             ->withImage()

@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Actions\Term;
+
+use App\Data\Term\CreateTermData;
+use App\Models\Term;
+
+class CreateTermAction
+{
+    public function execute(CreateTermData $data): Term
+    {
+        return Term::create($data->toArray());
+    }
+}

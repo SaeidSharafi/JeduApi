@@ -55,6 +55,11 @@ enum PermissionEnum: string
     case TEACHER_UPDATE = 'teacher.update';
     case TEACHER_VIEW = 'teacher.view';
     case TEACHER_VIEW_ANY = 'teacher.view_any';
+    case TERM_CREATE = 'term.create';
+    case TERM_DELETE = 'term.delete';
+    case TERM_UPDATE = 'term.update';
+    case TERM_VIEW = 'term.view';
+    case TERM_VIEW_ANY = 'term.view_any';
     case VENDOR_CREATE = 'vendor.create';
     case VENDOR_DELETE = 'vendor.delete';
     case VENDOR_UPDATE = 'vendor.update';

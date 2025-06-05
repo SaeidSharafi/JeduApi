@@ -18,4 +18,9 @@ return [
         'male'   => 'مرد',
         'female' => 'زن',
     ],
+    'TermStatusEnum'            => [
+        'active'   => 'فعال',
+        'inactive' => 'غیرفعال',
+        'planning' => 'در حال برنامه‌ریزی',
+    ],
 ];

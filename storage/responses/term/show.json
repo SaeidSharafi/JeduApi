@@ -1,0 +1,17 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 1,
+    "name": "Fall 2004",
+    "status": {
+      "value": "inactive",
+      "label": "غیرفعال"
+    },
+    "academic_year": "1982-1983",
+    "start_date": "1361-06-30",
+    "end_date": "1361-09-30",
+    "created_at": "1404-03-15 15:03:00",
+    "updated_at": "1404-03-15 15:03:00"
+  },
+  "metadata": []
+}

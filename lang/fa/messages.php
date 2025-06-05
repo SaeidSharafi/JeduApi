@@ -42,5 +42,6 @@ return [
         'digital_asset' => 'دارایی دیجیتال',
         'course'        => 'دوره',
         'teacher'       => 'مدرس',
+        'term'          => 'ترم',
     ],
 ];
