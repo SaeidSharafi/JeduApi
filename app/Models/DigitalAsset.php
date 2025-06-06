@@ -4,18 +4,24 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\ProductableContract;
+use App\Data\MediaData;
+use App\Traits\IsProductable;
 use Database\Factories\DigitalAssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Plank\Mediable\Media;
 use Plank\Mediable\Mediable;
 
-final class DigitalAsset extends Model
+final class DigitalAsset extends Model implements ProductableContract
 {
     /** @use  HasFactory<DigitalAssetFactory>*/
     use HasFactory;
 
     use Mediable;
+    use IsProductable;
 
     protected $fillable = [
         'name',

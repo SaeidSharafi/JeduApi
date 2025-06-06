@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\DigitalAsset;
 
+use App\Contracts\ProductableDataContract;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\PublicationStatusEnum;
 use Hekmatinasser\Verta\Verta;
@@ -12,7 +13,7 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-final class DigitalAssetListItemData extends Data
+final class DigitalAssetListItemData extends Data implements ProductableDataContract
 {
     public function __construct(
         public int $id,

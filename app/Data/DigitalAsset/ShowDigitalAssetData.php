@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\DigitalAsset;
 
+use App\Contracts\ProductableDataContract;
 use App\Data\Category\CategoryListItemData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\PublicationStatusEnum;
@@ -17,7 +18,7 @@ use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\DataCollection;
 
-final class ShowDigitalAssetData extends Data
+final class ShowDigitalAssetData extends Data implements ProductableDataContract
 {
     use ValidatesMetaTags;
 

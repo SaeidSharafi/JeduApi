@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\Admin\CourseController;
 use App\Http\Controllers\Api\Admin\DigitalAssetController;
+use App\Http\Controllers\Api\Admin\ProductController;
 use App\Http\Controllers\Api\Admin\SeminarController;
 
 Route::middleware('auth:staff')->group(function (): void {
@@ -20,6 +21,9 @@ Route::middleware('auth:staff')->group(function (): void {
             ->except(['edit', 'create']);
 
         Route::resource('category', CategoryController::class)
+            ->except(['edit', 'create']);
+
+        Route::resource('product', ProductController::class)
             ->except(['edit', 'create']);
     });
 });

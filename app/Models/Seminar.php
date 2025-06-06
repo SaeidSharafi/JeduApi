@@ -4,21 +4,27 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\ProductableContract;
+use App\Data\MediaData;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Traits\HasAssets;
 use App\Traits\HasAuditor;
 use App\Traits\HasCategories;
+use App\Traits\IsProductable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Plank\Mediable\Media;
 use Plank\Mediable\Mediable;
 
-final class Seminar extends Model
+final class Seminar extends Model implements ProductableContract
 {
     use HasAssets;
     use HasAuditor;
     use HasCategories;
-
+    use IsProductable;
     /** @use HasFactory<\Database\Factories\SeminarFactory> */
     use HasFactory;
 
@@ -56,5 +62,19 @@ final class Seminar extends Model
             'created_at'           => 'datetime:Y-m-d H:i:s',
             'updated_at'           => 'datetime:Y-m-d H:i:s',
         ];
+    }
+
+    public function getProductableMedia(): array
+    {
+        if ($this->relationLoaded('media')) {
+            $media = [];
+            foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
+                $media[$tag] = $this->getMedia($tag)
+                    ->map(fn(Media $m): MediaData => MediaData::fromModel($m, $tag))
+                    ->toArray();
+            }
+            return $media;
+        }
+        return [];
     }
 }

@@ -4,19 +4,25 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\ProductableContract;
+use App\Data\MediaData;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
+use App\Traits\IsProductable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Plank\Mediable\Media;
 use Plank\Mediable\Mediable;
 
-final class Course extends Model
+final class Course extends Model implements ProductableContract
 {
     /** @use HasFactory<\Database\Factories\CourseFactory> */
     use HasFactory;
 
     use Mediable;
+    use IsProductable;
 
     protected $fillable
         = [
@@ -38,6 +44,8 @@ final class Course extends Model
             'status',
             'created_by',
         ];
+
+
 
     /**
      * @return MorphToMany<Category,$this>
@@ -67,5 +75,19 @@ final class Course extends Model
             'created_at'                   => 'datetime',
             'updated_at'                   => 'datetime',
         ];
+    }
+
+    public function getProductableMedia(): array
+    {
+        if ($this->relationLoaded('media')) {
+            $media = [];
+            foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
+                $media[$tag] = $this->getMedia($tag)
+                    ->map(fn(Media $m): MediaData => MediaData::fromModel($m, $tag))
+                    ->toArray();
+            }
+            return $media;
+        }
+        return [];
     }
 }
