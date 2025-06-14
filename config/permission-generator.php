@@ -118,6 +118,12 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
+        'product' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::DELETE,
+        ],
         /*
         'user' => [
             PermissionAction::VIEW_SCOPED,      // Standard Enum: users.view_any, users.view

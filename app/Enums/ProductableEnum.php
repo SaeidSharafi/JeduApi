@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-use App\Models\Product;
 use App\Models\Staff;
 use App\Models\Category;
 use App\Models\Course;
@@ -15,29 +14,12 @@ use App\Models\User;
 use App\Models\Vendor;
 use App\Traits\AdvanceEnum;
 
-enum MorphTypeEnum: string
+enum ProductableEnum: string
 {
     use AdvanceEnum;
-
-    case CATEGORY      = 'category';
     case COURSE        = 'course';
     case SEMINAR       = 'seminar';
     case DIGITAL_ASSET = 'digital_asset';
-    case STAFF         = 'staff';
-    case USER          = 'user';
-
-    case TEACHER       = 'teacher';
-    case VENDOR        = 'vendor';
-    case PRODUCT       = 'product';
-    public static function forMorphMap(): array
-    {
-        $map = [];
-        foreach (self::cases() as $case) {
-            $map[$case->value] = $case->getModelClass();
-        }
-
-        return $map;
-    }
 
     public static function getAlias(string $modelClass): ?string
     {
@@ -53,15 +35,9 @@ enum MorphTypeEnum: string
     public function getModelClass(): string
     {
         return match ($this) {
-            self::CATEGORY      => Category::class,
             self::COURSE        => Course::class,
             self::SEMINAR       => Seminar::class,
             self::DIGITAL_ASSET => DigitalAsset::class,
-            self::STAFF         => Staff::class,
-            self::USER          => User::class,
-            self::TEACHER       => Teacher::class,
-            self::VENDOR        => Vendor::class,
-            self::PRODUCT       => Product::class,
         };
     }
 }

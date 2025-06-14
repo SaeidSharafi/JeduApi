@@ -4,21 +4,23 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Models\Staff;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
+use App\Models\Product;
 use App\Models\Seminar;
+use App\Models\Staff;
 use App\Models\Teacher;
 use App\Models\Term;
 use App\Models\User;
 use App\Models\Vendor;
-use App\Policies\Admin\RolePolicy;
-use App\Policies\Admin\StaffPolicy;
 use App\Policies\Admin\CategoryPolicy;
 use App\Policies\Admin\CoursePolicy;
 use App\Policies\Admin\DigitalAssetPolicy;
+use App\Policies\Admin\ProductPolicy;
+use App\Policies\Admin\RolePolicy;
 use App\Policies\Admin\SeminarPolicy;
+use App\Policies\Admin\StaffPolicy;
 use App\Policies\Admin\TeacherPolicy;
 use App\Policies\Admin\TermPolicy;
 use App\Policies\Admin\VendorPolicy;
@@ -50,5 +52,6 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(Seminar::class, SeminarPolicy::class);
         Gate::policy(Teacher::class, TeacherPolicy::class);
         Gate::policy(Term::class, TermPolicy::class);
+        Gate::policy(Product::class, ProductPolicy::class);
     }
 }

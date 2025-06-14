@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\DeliveryMethodEnum;
+use App\Enums\FulfillmentTypeEnum;
+use App\Enums\PublicationStatusEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -35,8 +38,13 @@ class ProductDeliveryOption extends Model
             'is_prepayment_available'   => 'boolean',
             'details_json'              => 'array',
             'is_featured'               => 'boolean',
-            'featured_price_start_date' => 'datetime',
-            'featured_price_end_date'   => 'datetime',
+            'status'                    => PublicationStatusEnum::class,
+            'fulfillment_type'          => FulfillmentTypeEnum::class,
+            'delivery_method'           => DeliveryMethodEnum::class,
+            'featured_price_start_date' => 'datetime:Y-m-d H:i:s',
+            'featured_price_end_date'   => 'datetime:Y-m-d H:i:s',
+            'created_at'                => 'datetime:Y-m-d H:i:s',
+            'updated_at'                => 'datetime:Y-m-d H:i:s',
         ];
     }
 

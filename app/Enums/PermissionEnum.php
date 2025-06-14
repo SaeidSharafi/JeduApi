@@ -31,6 +31,11 @@ enum PermissionEnum: string
     case FILE_UPDATE_OWN = 'file.update_own';
     case FILE_VIEW = 'file.view';
     case FILE_VIEW_ANY = 'file.view_any';
+    case PRODUCT_CREATE = 'product.create';
+    case PRODUCT_DELETE = 'product.delete';
+    case PRODUCT_UPDATE = 'product.update';
+    case PRODUCT_VIEW = 'product.view';
+    case PRODUCT_VIEW_ANY = 'product.view_any';
     case ROLE_CREATE = 'role.create';
     case ROLE_DELETE = 'role.delete';
     case ROLE_UPDATE = 'role.update';

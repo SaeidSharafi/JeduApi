@@ -75,12 +75,4 @@ class Product extends Model
         return $this->hasMany(ProductDeliveryOption::class);
     }
 
-    /**
-     * @return HasMany<Teacher, $this>
-     */
-    public function productTeachers(): HasMany
-    {
-        return $this->hasMany(Teacher::class);
-    }
-
 }

@@ -37,6 +37,7 @@ enum FulfillmentTypeEnum: string
 
     public static function getDeliveryMethodsFor(string $fulfillmentType): array
     {
-        return FulfillmentTypeEnum::tryFrom($fulfillmentType)->getDelivieryMethods();
+        $fulfillmentType = FulfillmentTypeEnum::tryFrom($fulfillmentType);
+        return $fulfillmentType ? $fulfillmentType->getDelivieryMethods() : [];
     }
 }

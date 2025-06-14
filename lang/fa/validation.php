@@ -154,7 +154,7 @@ return [
     'url'                  => 'فرمت آدرس :attribute اشتباه است.',
     'ulid'                 => ':attribute باید یک فرمت درست ULID باشد.',
     'uuid'                 => ':attribute باید یک فرمت درست UUID باشد.',
-
+    'productable_exist' => 'یک محصول فعال (منتشر شده) برای این :type با نام :name وجود دارد. لطفا ابتدا محصول قبلی را از حالت اتشار خارج کنید.',
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Language Lines
@@ -317,5 +317,18 @@ return [
             'bio'  => 'بیوگرافی',
             'rate' => 'امتیاز',
         ],
+        'product'               => [
+            'vendor_id'         => 'شناسه فروشنده',
+            'productable_type'  => 'نوع محصول',
+            'productable_id'    => 'شناسه قالب محصول',
+            'term'              => 'ترم',
+            'status'            => 'وضعیت انتشار',
+            'is_visible'        => 'قابل مشاهده',
+            'short_description' => 'توضیحات کوتاه',
+            'short_name'        => 'نام کوتاه',
+            'name'              => 'نام محصول',
+            'is_featured'       => 'ویژه',
+            'details_json'      => 'جزئیات محصول',
+        ]
     ],
 ];

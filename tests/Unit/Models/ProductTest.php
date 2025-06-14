@@ -1,0 +1,57 @@
+<?php
+
+declare(strict_types=1);
+
+test('to array', function (): void {
+    $product = App\Models\Product::factory()->create()->fresh();
+
+    expect($product->toArray())
+        ->toEqual([
+            'id' => $product->id,
+            'vendor_id' => $product->vendor_id,
+            'productable_id' => $product->productable_id,
+            'productable_type' => $product->productable_type,
+            'term_id' => $product->term_id,
+            'status' => $product->status->value,
+            'is_visible' => $product->is_visible,
+            'short_description' => $product->short_description,
+            'short_name' => $product->short_name,
+            'name' => $product->name,
+            'is_featured' => $product->is_featured,
+            'details_json' => $product->details_json,
+            'created_at' => $product->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $product->updated_at?->format('Y-m-d H:i:s'),
+        ]);
+
+});
+
+test('relation categories', function (): void {
+    $product   = App\Models\Product::factory()->create();
+    $category = App\Models\Category::factory()->create();
+    $product->categories()->attach($category->id);
+
+    expect($product->categories)
+        ->toHaveCount(1)
+        ->and($product->categories->first())
+        ->toBeInstanceOf(App\Models\Category::class)
+        ->and($product->categories->first()->id)
+        ->toEqual($category->id);
+
+    $categories = App\Models\Category::factory()->count(3)->create();
+    $product->categories()->sync($categories);
+    $product->refresh();
+    expect($product->categories)
+        ->toHaveCount(3);
+});
+
+test('relation product_delivery_options', function () {
+    $product = App\Models\Product::factory()->create();
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
+
+    expect($product->productDeliveryOptions)
+        ->toHaveCount(1)
+        ->and($product->productDeliveryOptions->first())
+        ->toBeInstanceOf(App\Models\ProductDeliveryOption::class)
+        ->and($product->productDeliveryOptions->first()->id)
+        ->toEqual($deliveryOption->id);
+});

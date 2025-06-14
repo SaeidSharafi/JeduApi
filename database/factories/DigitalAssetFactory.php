@@ -49,7 +49,30 @@ final class DigitalAssetFactory extends Factory
             ];
         });
     }
+    public function withMedia(array $tags = ['gallery']): self
+    {
+        return $this->afterCreating(function (DigitalAsset $digitalAsset) use ($tags) {
+            foreach ($tags as $tag) {
+                if ($tag === 'video') {
+                    $media = Media::query()
+                        ->where('directory', 'fake-media')
+                        ->where('extension', 'mp4')
+                        ->inRandomOrder()
+                        ->first();
+                    $digitalAsset->attachMedia($media, $tag);
 
+                    continue;
+                }
+                $media = Media::query()
+                    ->where('directory', 'fake-media')
+                    ->whereLike('filename', "%$tag%")
+                    ->where('extension', 'svg')
+                    ->inRandomOrder()
+                    ->first();
+                $digitalAsset->attachMedia($media, $tag);
+            }
+        });
+    }
     public function withFile(): self
     {
         return $this->afterCreating(function (DigitalAsset $digitalAsset) {

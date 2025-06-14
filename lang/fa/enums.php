@@ -23,4 +23,19 @@ return [
         'inactive' => 'غیرفعال',
         'planning' => 'در حال برنامه‌ریزی',
     ],
+    'MorphTypeEnum'             => [
+        'course'   => 'دوره',
+        'seminar'  => 'سمینار',
+        'digital_asset'  => 'فایل',
+        'product'  => 'محصول',
+        'staff'   => 'کارمند',
+        'user'    => 'کاربر',
+        'teacher' => 'مدرس',
+        'vendor'  => 'فروشنده',
+    ],
+    'ProductableEnum'           => [
+        'course'   => 'دوره',
+        'seminar'  => 'سمینار',
+        'digital_asset'  => 'فایل',
+    ],
 ];
