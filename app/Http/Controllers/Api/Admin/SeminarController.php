@@ -82,12 +82,7 @@ final class SeminarController extends Controller
         $seminar
             ->load('categories', 'digitalAssets')
             ->loadMediaWithVariantsMatchAll();
-        $media = [];
-        foreach (['gallery', 'video', 'cover'] as $tag) {
-            $media[$tag] = $seminar->getMedia($tag)
-                ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag))
-                ->toArray();
-        }
+        $media = $seminar->getProductableMedia();
 
         return response()->success(
             ShowSeminarData::from(
@@ -114,12 +109,7 @@ final class SeminarController extends Controller
         $seminar
             ->load('categories', 'digitalAssets')
             ->loadMediaWithVariantsMatchAll();
-        $media = [];
-        foreach (['gallery', 'video', 'cover'] as $tag) {
-            $media[$tag] = $seminar->getMedia($tag)
-                ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag))
-                ->toArray();
-        }
+        $media = $seminar->getProductableMedia();
 
         return response()->success(ShowSeminarData::from(
             [

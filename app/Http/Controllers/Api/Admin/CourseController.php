@@ -83,12 +83,7 @@ final class CourseController extends Controller
         $course->load('categories', 'digitalAssets')
             ->loadMediaWithVariantsMatchAll();
 
-        $media = [];
-        foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
-            $media[$tag] = $course->getMedia($tag)
-                ->map(fn(Media $m): MediaData => MediaData::fromModel($m, $tag))
-                ->toArray();
-        }
+        $media = $course->getProductableMedia();
 
         return response()->success(ShowCourseData::from([
             ...$course->toArray(),
@@ -111,12 +106,7 @@ final class CourseController extends Controller
         $course
             ->load('categories', 'digitalAssets')
             ->loadMediaWithVariantsMatchAll();
-        $media = [];
-        foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
-            $media[$tag] = $course->getMedia($tag)
-                ->map(fn(Media $m): MediaData => MediaData::fromModel($m, $tag))
-                ->toArray();
-        }
+        $media = $course->getProductableMedia();
 
         return response()->success(ShowCourseData::from([
             ...$course->toArray(),
