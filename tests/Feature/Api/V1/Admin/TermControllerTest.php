@@ -12,11 +12,11 @@ describe('TermController List Filters', function (): void {
     it('should filter by name', function () {
         $this->authorized_user([\App\Enums\PermissionEnum::TERM_VIEW_ANY]);
         Term::factory(20)->create();
-        Term::factory()->create(['name' => 'Fall 2024']);
-        $response = $this->getJson(route('api.v1.admin.term.index', ['filter' => ['name' => 'Fall 2024']]));
+        Term::factory()->create(['name' => 'XFall 2024']);
+        $response = $this->getJson(route('api.v1.admin.term.index', ['filter' => ['name' => 'XFall 2024']]));
         $response->assertOk();
         $response->assertJsonCount(1, 'data.data');
-        $response->assertJsonFragment(['name' => 'Fall 2024']);
+        $response->assertJsonFragment(['name' => 'XFall 2024']);
     });
 
     it('should filter by status', function () {
