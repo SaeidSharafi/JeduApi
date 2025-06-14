@@ -76,7 +76,9 @@ trait IsProductable
 
     public function loadProductableMedia(array $tags = []): void
     {
-        $this->loadMediaAndVariantsMatchAll($tags);
+        if (method_exists($this, 'loadMediaWithVariantsMatchAll')) {
+            $this->loadMediaWithVariantsMatchAll($tags);
+        }
     }
 
     public function loadProductableCategories(): void
