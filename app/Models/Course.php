@@ -72,22 +72,8 @@ final class Course extends Model implements ProductableContract
             'additional_info'              => 'array',
             'properties'                   => 'array',
             'total_video_duration_minutes' => 'integer',
-            'created_at'                   => 'datetime',
-            'updated_at'                   => 'datetime',
+            'created_at'                   => 'datetime:Y-m-d H:i:s',
+            'updated_at'                   => 'datetime:Y-m-d H:i:s',
         ];
-    }
-
-    public function getProductableMedia(): array
-    {
-        if ($this->relationLoaded('media')) {
-            $media = [];
-            foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
-                $media[$tag] = $this->getMedia($tag)
-                    ->map(fn(Media $m): MediaData => MediaData::fromModel($m, $tag))
-                    ->toArray();
-            }
-            return $media;
-        }
-        return [];
     }
 }
