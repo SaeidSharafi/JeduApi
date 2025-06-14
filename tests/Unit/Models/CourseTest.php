@@ -26,8 +26,8 @@ test('to array', function (): void {
             'properties'                   => $course->properties,
             'status'                       => $course->status->value,
             'created_by'                   => $course->created_by,
-            'created_at'                   => $course->created_at->toISOString(),
-            'updated_at'                   => $course->updated_at->toISOString(),
+            'created_at'                   => $course->created_at->format('Y-m-d H:i:s'),
+            'updated_at'                   => $course->updated_at->format('Y-m-d H:i:s'),
 
         ]);
 
@@ -50,4 +50,18 @@ test('relation categories', function (): void {
     $course->refresh();
     expect($course->categories)
         ->toHaveCount(3);
+});
+test('relation products', function (): void {
+    $course = App\Models\Course::factory()->create();
+    $product = App\Models\Product::factory()->create([
+        'productable_id' => $course->id,
+        'productable_type' => App\Enums\ProductableEnum::COURSE->value,
+    ]);
+
+    expect($course->products)
+        ->toHaveCount(1)
+        ->and($course->products->first())
+        ->toBeInstanceOf(App\Models\Product::class)
+        ->and($course->products->first()->id)
+        ->toEqual($product->id);
 });
