@@ -1,0 +1,66 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "id": 14,
+      "title": "Bins PLC",
+      "subtitle": "659 Jast Gateway Suite 521\nSipesmouth, WA 18325-7936",
+      "image_url": "https://via.placeholder.com/640x480.png/006622?text=placeat"
+    },
+    {
+      "id": 22,
+      "title": "Bosco Group",
+      "subtitle": "654 Mozell Trail\nLake Kendallberg, MI 58690",
+      "image_url": "https://via.placeholder.com/640x480.png/001144?text=quos"
+    },
+    {
+      "id": 27,
+      "title": "Bosco-Roob",
+      "subtitle": "218 Jaskolski Point Apt. 502\nWeissnatbury, VT 24789-4785",
+      "image_url": "https://via.placeholder.com/640x480.png/00cc77?text=maxime"
+    },
+    {
+      "id": 4,
+      "title": "Brown-Tremblay",
+      "subtitle": "666 Alva Terrace\nTillmanfort, NH 49110",
+      "image_url": "http://jedu.test/storage/fake-media/placeholder.svg"
+    },
+    {
+      "id": 17,
+      "title": "Fahey and Sons",
+      "subtitle": "88093 Ignatius Hill\nNew Veronafurt, CO 85460-0407",
+      "image_url": "https://via.placeholder.com/640x480.png/0022cc?text=reprehenderit"
+    },
+    {
+      "id": 12,
+      "title": "Grant PLC",
+      "subtitle": "45428 Ledner Hollow\nNorth Keaton, IA 69465",
+      "image_url": "https://via.placeholder.com/640x480.png/004499?text=tenetur"
+    },
+    {
+      "id": 15,
+      "title": "Hane-Bashirian",
+      "subtitle": "552 Landen Cove Apt. 169\nTamiafort, CO 01299",
+      "image_url": "https://via.placeholder.com/640x480.png/0066ee?text=expedita"
+    },
+    {
+      "id": 13,
+      "title": "Hudson, Stroman and Ernser",
+      "subtitle": "55322 Feil Junction Apt. 485\nPort Zitatown, KY 53368-6649",
+      "image_url": "https://via.placeholder.com/640x480.png/00bb22?text=dolorem"
+    },
+    {
+      "id": 26,
+      "title": "Kiehn-Marks",
+      "subtitle": "2260 Elisa Cape Apt. 698\nMalikaborough, NH 41986-1196",
+      "image_url": "https://via.placeholder.com/640x480.png/00ffbb?text=error"
+    },
+    {
+      "id": 23,
+      "title": "Kuhn-Hessel",
+      "subtitle": "643 Witting Harbors Apt. 854\nNew Maurine, KS 32776",
+      "image_url": "https://via.placeholder.com/640x480.png/005577?text=sit"
+    }
+  ],
+  "metadata": []
+}

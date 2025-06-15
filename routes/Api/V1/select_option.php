@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\SelectOptions\CategorySelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\TermSelectOptionController;
+use App\Http\Controllers\Api\Admin\SelectOptions\VendorSelectOptionController;
 
 Route::middleware('auth:staff')
     ->prefix('admin')->name('admin.')
@@ -10,4 +11,6 @@ Route::middleware('auth:staff')
             ->name('select-option.category');
         Route::get('select-option/term', TermSelectOptionController::class)
             ->name('select-option.term');
+        Route::get('select-option/vendor', VendorSelectOptionController::class)
+            ->name('select-option.vendor');
 });
