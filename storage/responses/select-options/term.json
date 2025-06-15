@@ -1,0 +1,66 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "id": 21,
+      "title": "Fall 1973",
+      "subtitle": "1988-1989",
+      "image_url": null
+    },
+    {
+      "id": 23,
+      "title": "Fall 1985",
+      "subtitle": "1986-1987",
+      "image_url": null
+    },
+    {
+      "id": 20,
+      "title": "Fall 1987",
+      "subtitle": "2022-2023",
+      "image_url": null
+    },
+    {
+      "id": 3,
+      "title": "Fall 1989",
+      "subtitle": "2018-2019",
+      "image_url": null
+    },
+    {
+      "id": 6,
+      "title": "Fall 2010",
+      "subtitle": "2017-2018",
+      "image_url": null
+    },
+    {
+      "id": 10,
+      "title": "Fall 2017",
+      "subtitle": "2007-2008",
+      "image_url": null
+    },
+    {
+      "id": 5,
+      "title": "Fall 2019",
+      "subtitle": "1974-1975",
+      "image_url": null
+    },
+    {
+      "id": 11,
+      "title": "Fall 2023",
+      "subtitle": "1972-1973",
+      "image_url": null
+    },
+    {
+      "id": 9,
+      "title": "Spring 1974",
+      "subtitle": "1977-1978",
+      "image_url": null
+    },
+    {
+      "id": 31,
+      "title": "Spring 1978",
+      "subtitle": "2009-2010",
+      "image_url": null
+    }
+  ],
+  "metadata": []
+}
