@@ -13,7 +13,7 @@ class DirectDownloadDetailsData extends Data implements DeliveryOptionDetialData
     public function __construct(
         public int $max_downloads,
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
-        public ?Verta $expiration_date = null,
+        public ?Verta $expiration_date,
     )
     {
     }

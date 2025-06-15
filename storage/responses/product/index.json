@@ -1,0 +1,400 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "id": 1,
+        "is_visible": false,
+        "short_description": "Nihil non in commodi voluptatem at ratione. Et necessitatibus vitae odit non repellendus ut. Dolorem ut libero rerum qui sit suscipit id.",
+        "short_name": "Alexie Dickens",
+        "name": "Keon Sanford",
+        "is_featured": false,
+        "vendor": {
+          "id": 5,
+          "name": "Monahan-Carroll",
+          "email": "shawn56@example.org",
+          "phone": "03915040927",
+          "logo_url": "https://via.placeholder.com/640x480.png/00aa44?text=natus"
+        },
+        "productable_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "productable_data": {
+          "id": 101,
+          "name": "جنگل",
+          "slug": "excepturi-minima-ut-eos-quam-consectetur-aut-temporibus-magni",
+          "is_attachable_to_course": true,
+          "status": {
+            "value": "draft",
+            "label": "پیش‌نویس"
+          },
+          "version": "aut",
+          "published_at": "1371-11-13 05:32:22",
+          "created_by": 52,
+          "created_at": "1404-03-25 11:14:19",
+          "updated_at": "1404-03-25 11:14:19"
+        },
+        "term": {
+          "id": 11,
+          "name": "Fall 2023",
+          "status": {
+            "value": "inactive",
+            "label": "غیرفعال"
+          },
+          "academic_year": "1972-1973",
+          "start_date": "1351-04-09",
+          "end_date": "1351-07-08",
+          "created_at": "1404-03-25 11:14:19",
+          "updated_at": "1404-03-25 11:14:19"
+        },
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "details_json": []
+      },
+      {
+        "id": 2,
+        "is_visible": false,
+        "short_description": "Animi et vitae fugit hic mollitia quo. Eos necessitatibus et aut molestias rerum architecto. Sequi est perspiciatis aliquam ad.",
+        "short_name": "Koby Leuschke",
+        "name": "Shyanne Flatley",
+        "is_featured": true,
+        "vendor": {
+          "id": 6,
+          "name": "Watsica-Hickle",
+          "email": "carissa.purdy@example.com",
+          "phone": "03164861771",
+          "logo_url": "https://via.placeholder.com/640x480.png/008811?text=aut"
+        },
+        "productable_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "productable_data": {
+          "id": 102,
+          "name": "آلاچیق",
+          "slug": "quidem-consequuntur-distinctio-quis-qui-aut-sit-dignissimos",
+          "is_attachable_to_course": true,
+          "status": {
+            "value": "draft",
+            "label": "پیش‌نویس"
+          },
+          "version": "itaque",
+          "published_at": "1384-08-14 00:37:05",
+          "created_by": 53,
+          "created_at": "1404-03-25 11:14:19",
+          "updated_at": "1404-03-25 11:14:19"
+        },
+        "term": {
+          "id": 12,
+          "name": "Summer 1974",
+          "status": {
+            "value": "inactive",
+            "label": "غیرفعال"
+          },
+          "academic_year": "2008-2009",
+          "start_date": "1387-03-11",
+          "end_date": "1387-06-10",
+          "created_at": "1404-03-25 11:14:19",
+          "updated_at": "1404-03-25 11:14:19"
+        },
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "details_json": []
+      },
+      {
+        "id": 7,
+        "is_visible": true,
+        "short_description": "Itaque et qui quis et odio officia. Officiis tempora voluptatem est fuga aut explicabo. Error illum saepe voluptatem voluptatibus rerum in aliquam. Ex magni incidunt iusto odio qui eum.",
+        "short_name": "Mr. Reymundo Muller",
+        "name": "Odessa Runolfsson Sr.",
+        "is_featured": false,
+        "vendor": {
+          "id": 11,
+          "name": "Mayer-Schiller",
+          "email": "vickie.grant@example.com",
+          "phone": "02148149506",
+          "logo_url": "https://via.placeholder.com/640x480.png/008800?text=voluptatem"
+        },
+        "productable_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "productable_data": {
+          "id": 107,
+          "name": "ملل",
+          "slug": "reprehenderit-eum-sit-molestias-voluptatem",
+          "is_attachable_to_course": true,
+          "status": {
+            "value": "draft",
+            "label": "پیش‌نویس"
+          },
+          "version": "deserunt",
+          "published_at": "1356-11-27 05:17:45",
+          "created_by": 58,
+          "created_at": "1404-03-25 11:14:19",
+          "updated_at": "1404-03-25 11:14:19"
+        },
+        "term": {
+          "id": 17,
+          "name": "Spring 2020",
+          "status": {
+            "value": "planning",
+            "label": "در حال برنامه‌ریزی"
+          },
+          "academic_year": "2018-2019",
+          "start_date": "1397-07-17",
+          "end_date": "1397-10-19",
+          "created_at": "1404-03-25 11:14:19",
+          "updated_at": "1404-03-25 11:14:19"
+        },
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "details_json": []
+      },
+      {
+        "id": 9,
+        "is_visible": true,
+        "short_description": "Nihil recusandae quaerat voluptatem totam inventore. Magnam provident optio fugit repellendus. Hic dignissimos inventore perspiciatis vel.",
+        "short_name": "Liliane Pagac II",
+        "name": "Weston Heaney",
+        "is_featured": false,
+        "vendor": {
+          "id": 13,
+          "name": "Hudson, Stroman and Ernser",
+          "email": "harmon33@example.org",
+          "phone": "03593385327",
+          "logo_url": "https://via.placeholder.com/640x480.png/00bb22?text=dolorem"
+        },
+        "productable_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "productable_data": {
+          "id": 109,
+          "name": "ابزار",
+          "slug": "quae-ex-illo-culpa-inventore-qui-et-dolor",
+          "is_attachable_to_course": true,
+          "status": {
+            "value": "draft",
+            "label": "پیش‌نویس"
+          },
+          "version": "enim",
+          "published_at": "1400-09-13 09:00:42",
+          "created_by": 60,
+          "created_at": "1404-03-25 11:14:19",
+          "updated_at": "1404-03-25 11:14:19"
+        },
+        "term": {
+          "id": 19,
+          "name": "Spring 2024",
+          "status": {
+            "value": "planning",
+            "label": "در حال برنامه‌ریزی"
+          },
+          "academic_year": "2006-2007",
+          "start_date": "1385-08-21",
+          "end_date": "1385-11-23",
+          "created_at": "1404-03-25 11:14:19",
+          "updated_at": "1404-03-25 11:14:19"
+        },
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "details_json": []
+      },
+      {
+        "id": 10,
+        "is_visible": false,
+        "short_description": "Ipsum inventore sint quo architecto et sequi. Nisi autem velit reprehenderit mollitia. Quasi animi autem ipsam nihil ea. Consequuntur culpa consequatur corrupti voluptas totam sint.",
+        "short_name": "Alverta Howe",
+        "name": "Jensen Rogahn",
+        "is_featured": false,
+        "vendor": {
+          "id": 14,
+          "name": "Bins PLC",
+          "email": "malika.ziemann@example.net",
+          "phone": "03364435292",
+          "logo_url": "https://via.placeholder.com/640x480.png/006622?text=placeat"
+        },
+        "productable_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "productable_data": {
+          "id": 110,
+          "name": "بانک",
+          "slug": "nemo-sed-enim-officia-ullam",
+          "is_attachable_to_course": true,
+          "status": {
+            "value": "draft",
+            "label": "پیش‌نویس"
+          },
+          "version": "dolor",
+          "published_at": "1356-12-04 02:21:31",
+          "created_by": 61,
+          "created_at": "1404-03-25 11:14:19",
+          "updated_at": "1404-03-25 11:14:19"
+        },
+        "term": {
+          "id": 20,
+          "name": "Fall 1987",
+          "status": {
+            "value": "planning",
+            "label": "در حال برنامه‌ریزی"
+          },
+          "academic_year": "2022-2023",
+          "start_date": "1401-01-03",
+          "end_date": "1401-04-02",
+          "created_at": "1404-03-25 11:14:19",
+          "updated_at": "1404-03-25 11:14:19"
+        },
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "details_json": []
+      },
+      {
+        "id": 12,
+        "is_visible": false,
+        "short_description": "Autem soluta fuga delectus explicabo qui ipsam et. Atque deleniti voluptatum laudantium illo quia. Nostrum voluptatibus possimus autem et blanditiis. Ut repudiandae quos porro a.",
+        "short_name": "Berniece Carroll",
+        "name": "Cooper Nienow",
+        "is_featured": true,
+        "vendor": {
+          "id": 16,
+          "name": "McDermott LLC",
+          "email": "oliver22@example.net",
+          "phone": "02513816172",
+          "logo_url": "https://via.placeholder.com/640x480.png/003366?text=laborum"
+        },
+        "productable_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "productable_data": {
+          "id": 112,
+          "name": "آرایش",
+          "slug": "aperiam-eveniet-qui-illo-qui-vel-sed-in",
+          "is_attachable_to_course": true,
+          "status": {
+            "value": "draft",
+            "label": "پیش‌نویس"
+          },
+          "version": "eveniet",
+          "published_at": "1360-10-06 03:34:25",
+          "created_by": 63,
+          "created_at": "1404-03-25 11:14:19",
+          "updated_at": "1404-03-25 11:14:19"
+        },
+        "term": {
+          "id": 22,
+          "name": "Summer 1993",
+          "status": {
+            "value": "inactive",
+            "label": "غیرفعال"
+          },
+          "academic_year": "1971-1972",
+          "start_date": "1350-01-25",
+          "end_date": "1350-04-23",
+          "created_at": "1404-03-25 11:14:19",
+          "updated_at": "1404-03-25 11:14:19"
+        },
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "details_json": []
+      },
+      {
+        "id": 23,
+        "is_visible": false,
+        "short_description": "Deserunt molestiae reprehenderit molestias minus. Iure expedita libero est sunt. Aut totam incidunt et.",
+        "short_name": "Armando Gulgowski",
+        "name": "Theodora Auer",
+        "is_featured": true,
+        "vendor": {
+          "id": 27,
+          "name": "Bosco-Roob",
+          "email": "hector25@example.com",
+          "phone": "02285659583",
+          "logo_url": "https://via.placeholder.com/640x480.png/00cc77?text=maxime"
+        },
+        "productable_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "productable_data": {
+          "id": 123,
+          "name": "برف",
+          "slug": "nisi-asperiores-qui-ipsum-minus",
+          "is_attachable_to_course": true,
+          "status": {
+            "value": "draft",
+            "label": "پیش‌نویس"
+          },
+          "version": "praesentium",
+          "published_at": "1380-06-14 03:44:49",
+          "created_by": 74,
+          "created_at": "1404-03-25 11:14:19",
+          "updated_at": "1404-03-25 11:14:19"
+        },
+        "term": {
+          "id": 33,
+          "name": "Summer 1982",
+          "status": {
+            "value": "planning",
+            "label": "در حال برنامه‌ریزی"
+          },
+          "academic_year": "1989-1990",
+          "start_date": "1368-06-16",
+          "end_date": "1368-09-16",
+          "created_at": "1404-03-25 11:14:19",
+          "updated_at": "1404-03-25 11:14:19"
+        },
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "details_json": []
+      }
+    ],
+    "first_page_url": "http://jedu.test/api/v1/admin/product?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "http://jedu.test/api/v1/admin/product?page=1",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; قبلی",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/product?page=1",
+        "label": "1",
+        "active": true
+      },
+      {
+        "url": null,
+        "label": "بعدی &raquo;",
+        "active": false
+      }
+    ],
+    "next_page_url": null,
+    "path": "http://jedu.test/api/v1/admin/product",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 7,
+    "total": 7
+  },
+  "metadata": []
+}

@@ -55,6 +55,7 @@ it('return InPersonDetailsData if delivery_method is IN_PERSON', function () {
         'location' => 'Test Location',
         'duration' => '20 Minute',
         'schedule' => 'Sun-Mon',
+        'additional_info' => null
     ];
     $delivery_option = $caster->cast($this->mockProperty, $detials, $properties, $this->mockContext);
     expect($delivery_option)

@@ -11,7 +11,7 @@ class InPersonDetailsData extends Data implements DeliveryOptionDetialDataContra
         public string $location,
         public string $duration,
         public string $schedule,
-        public ?string $additional_info = null,
+        public ?string $additional_info,
     )
     {
     }

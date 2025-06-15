@@ -4,6 +4,7 @@ namespace App\Data\ProductDeliveryOption;
 
 use App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction;
 use App\Data\Transformer\CarbonFromJalaliString;
+use App\Enums\DeliveryMethodEnum;
 use App\Enums\FulfillmentTypeEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Rules\ProductDeliveryOptionCheckRule;
@@ -48,7 +49,8 @@ class ProductDeliveryOptionCreateData extends Data
             'name'                      => ['required', 'string', 'max:255'],
             'sku'                       => ['required', 'string', 'max:255', 'unique:product_delivery_options,sku'],
             'fulfillment_type'          => ['required', 'bail', 'string', Rule::enum(FulfillmentTypeEnum::class)],
-            'delivery_method'           => ['required', 'bail', 'string', new ProductDeliveryOptionCheckRule()],
+            'delivery_method'           => ['required', 'bail', 'string',Rule::enum(DeliveryMethodEnum::class),
+                                            new ProductDeliveryOptionCheckRule()],
             'price'                     => ['required', 'integer', 'min:0'],
             'capacity'                  => ['nullable', 'integer', 'min:0'],
             'status'                    => ['required', 'string', Rule::enum(PublicationStatusEnum::class)],
@@ -60,12 +62,12 @@ class ProductDeliveryOptionCreateData extends Data
             'featured_price_start_date' => ['nullable', 'date_format:Y-m-d H:i:s'],
             'featured_price_end_date'   => ['nullable', 'date_format:Y-m-d H:i:s', 'after:featured_price_start_date'],
         ];
+
         $detailsRulesAction = app(GetDeliveryDetailsValidationRulesAction::class);
         $conditionalDetailsRules = $detailsRulesAction->handle(
             $context->payload['fulfillment_type'] ?? null,
             $context->payload['delivery_method'] ?? null,
-            $context->payload['details'] ?? null,
-            'details'
+            $context->payload['details'] ?? null
         );
         return array_merge($baseRules, $conditionalDetailsRules);
     }
@@ -121,7 +123,18 @@ class ProductDeliveryOptionCreateData extends Data
                 'example'     => 'online_service',
             ],
             'delivery_method'                 => [
-                'description' => 'Method of delivery for the option',
+                'description' => 'Method of delivery for the option, it needs to be one of the delivery methods defined for `fulfillment_type`: 
+                 - digital  
+                    - direct_download
+                 - physical (**NOT IMPLEMENTED YET**)
+                 - online_service 
+                    - lms_moodle
+                    - live_session_bbb
+                    - live_session_skyroom
+                 - offline_service 
+                    - video_platform_spotplayer
+                 - in_person_service 
+                    - in_person',
                 'required'    => true,
                 'example'     => 'lms_moodle',
             ],
@@ -161,79 +174,159 @@ class ProductDeliveryOptionCreateData extends Data
                 ],
             ],
             'details.course_idnumber'         => [
-                'description' => 'Course ID number in Moodle (required when delivery_method is lms_moodle)',
+                'description' => 'For `lms_moodle`. Course ID number in Moodle (required)',
                 'required'    => false,
                 'example'     => 'COURSE-001',
             ],
-            'details.activiyId'               => [
-                'description' => 'Activity ID in Moodle (required when delivery_method is lms_moodle)',
+            'details.activity_id'               => [
+                'description' => 'For `lms_moodle`. Activity ID in Moodle (required)',
                 'required'    => false,
                 'example'     => 1,
             ],
             'details.enrollment_start_date'   => [
-                'description' => 'Enrollment start date for Moodle course (when delivery_method is lms_moodle)',
+                'description' => 'For `lms_moodle`. Enrollment start date for Moodle course',
                 'required'    => false,
                 'example'     => '2025-06-15 09:00:00',
             ],
             'details.enrollment_end_date'     => [
-                'description' => 'Enrollment end date for Moodle course (when delivery_method is lms_moodle)',
+                'description' => 'For `lms_moodle`. Enrollment end date for Moodle course',
                 'required'    => false,
                 'example'     => '2025-12-31 23:59:59',
             ],
             'details.max_downloads'           => [
-                'description' => 'Maximum number of downloads allowed (required when delivery_method is direct_download)',
+                'description' => 'For `direct_download`. Maximum number of downloads allowed (required)',
                 'required'    => false,
                 'example'     => 5,
             ],
             'details.expiration_date'         => [
-                'description' => 'Download expiration date (when delivery_method is direct_download)',
+                'description' => 'When delivery_method is direct_download. Download expiration date',
                 'required'    => false,
                 'example'     => '2025-12-31 23:59:59',
             ],
             'details.location'                => [
-                'description' => 'Physical location for in-person sessions (required when delivery_method is in_person)',
+                'description' => 'For `in_person`. Physical location for in-person sessions (required)',
                 'required'    => false,
                 'example'     => 'Room 101, Main Building',
             ],
             'details.duration'                => [
-                'description' => 'Duration of in-person session (required when delivery_method is in_person)',
+                'description' => 'For `in_person`. Duration of in-person session (required)',
                 'required'    => false,
                 'example'     => '2 hours',
             ],
             'details.schedule'                => [
-                'description' => 'Schedule for in-person session (required when delivery_method is in_person)',
+                'description' => 'For `in_person`. Schedule for in-person session (required)',
                 'required'    => false,
                 'example'     => 'Saturdays 9:00-11:00',
             ],
             'details.additional_info'         => [
-                'description' => 'Additional information for in-person session (when delivery_method is in_person)',
+                'description' => 'For `in_person`. Additional information for in-person session',
                 'required'    => false,
                 'example'     => 'Please bring your own laptop',
             ],
             'details.course_id'               => [
-                'description' => 'Course ID in SpotPlayer (required when delivery_method is video_platform_spotplayer)',
+                'description' => 'For `video_platform_spotplayer`. Course ID in SpotPlayer (requiredr)',
                 'required'    => false,
                 'example'     => 'SP-COURSE-001',
             ],
             'details.moderator_password'      => [
-                'description' => 'Moderator password for BigBlueButton session (when delivery_method is live_session_bbb)',
+                'description' => 'For `live_session_bbb`. Moderator password for BigBlueButton session',
                 'required'    => false,
                 'example'     => 'mod123',
             ],
             'details.attendee_password'       => [
-                'description' => 'Attendee password for live session (when delivery_method is live_session_bbb or live_session_skyroom)',
+                'description' => 'For `live_session_bbb` or `live_session_skyroom`. Attendee password for live session',
                 'required'    => false,
                 'example'     => 'attend123',
             ],
             'details.record_session'          => [
-                'description' => 'Whether to record the live session (when delivery_method is live_session_bbb or live_session_skyroom)',
+                'description' => 'For `live_session_bbb` or `live_session_skyroom`. Whether to record the live session',
                 'required'    => false,
                 'example'     => true,
             ],
             'details.meeting_name_identifier' => [
-                'description' => 'Meeting name identifier for Skyroom (required when delivery_method is live_session_skyroom)',
+                'description' => 'For `live_session_skyroom`. Meeting name identifier for Skyroom (required)',
                 'required'    => false,
                 'example'     => 'course-001-session',
+            ],
+            'details.session_duration'        => [
+                'description' => 'For `live_session_bbb` or `live_session_skyroom`. Duration of the live session in minutes',
+                'required'    => false,
+                'example'     => 60,
+            ],
+            'details.default_presentation_url' => [
+                'description' => 'For `live_session_bbb` or `live_session_skyroom`. Default presentation URL for the session',
+                'required'    => false,
+                'example'     => 'https://example.com/presentation',
+            ],
+            'details.admin_notes'             => [
+                'description' => 'For `live_session_bbb` or `live_session_skyroom`. Admin notes for the session',
+                'required'    => false,
+                'example'     => 'This is a test session for course 001',
+            ],
+            'details.webcams_only_for_moderator' => [
+                'description' => 'For `live_session_bbb`. Whether webcams are only for the moderator',
+                'required'    => false,
+                'example'     => true,
+            ],
+            'details.mute_on_start'           => [
+                'description' => 'For `live_session_bbb`. Whether to mute all participants on start',
+                'required'    => false,
+                'example'     => true,
+            ],
+            'details.allow_mods_to_unmute_users' => [
+                'description' => 'For `live_session_bbb`. Whether moderators can unmute users',
+                'required'    => false,
+                'example'     => true,
+            ],
+            'details.lock_settings_disable_cam' => [
+                'description' => 'For `live_session_bbb`. Whether to disable camera for participants',
+                'required'    => false,
+                'example'     => false,
+            ],
+            'details.lock_settings_disable_mic' => [
+                'description' => 'For `live_session_bbb`. Whether to disable microphone for participants',
+                'required'    => false,
+                'example'     => false,
+            ],
+            'details.lock_settings_disable_private_chat' => [
+                'description' => 'For `live_session_bbb`. Whether to disable private chat for participants',
+                'required'    => false,
+                'example'     => false,
+            ],
+            'details.lock_settings_disable_public_chat' => [
+                'description' => 'For `live_session_bbb`. Whether to disable public chat for participants',
+                'required'    => false,
+                'example'     => false,
+            ],
+            'details.lock_settings_disable_note' => [
+                'description' => 'For `live_session_bbb`. Whether to disable note-taking for participants',
+                'required'    => false,
+                'example'     => false,
+            ],
+            'details.lock_settings_locked_layout' => [
+                'description' => 'For `live_session_bbb`. Whether to lock the layout settings for the session',
+                'required'    => false,
+                'example'     => false,
+            ],
+            'details.welcome_message'         => [
+                'description' => 'For `live_session_bbb` or `live_session_skyroom`. Welcome message for the session',
+                'required'    => false,
+                'example'     => 'Welcome to the live session!',
+            ],
+            'details.planned_duration_minutes' => [
+                'description' => 'For `live_session_skyroom`. Planned duration of the session in minutes',
+                'required'    => false,
+                'example'     => 90,
+            ],
+            'details.allow_start_stop_recording' => [
+                'description' => 'For `live_session_bbb`. Whether moderators can start/stop recording during the session',
+                'required'    => false,
+                'example'     => true,
+            ],
+            'details.auto_start_recording'   => [
+                'description' => 'For `live_session_bbb` or `live_session_skyroom`. Whether to automatically start recording the session',
+                'required'    => false,
+                'example'     => true,
             ],
             'is_featured'                     => [
                 'description' => 'Whether this delivery option is featured',

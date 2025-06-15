@@ -18,6 +18,36 @@ final readonly class GetDeliveryDetailsValidationRulesAction
         ?array $detailsData,
         string $prefix = 'details'
     ): array {
+
+        // @codeCoverageIgnoreStart
+        $isGeneratingScribeDocs = app()->runningInConsole()
+            && isset($_SERVER['argv'])
+            && (
+                in_array('scribe:generate', $_SERVER['argv'])
+                || in_array('scribe:setup', $_SERVER['argv'])
+            );
+        if ($isGeneratingScribeDocs) {
+            $allDetailsRules = [];
+            $detailsRulesAction = app(GetDeliveryDetailsValidationRulesAction::class);
+
+            foreach (FulfillmentTypeEnum::cases() as $fulfillmentType) {
+                foreach (DeliveryMethodEnum::cases() as $deliveryMethod) {
+                    $rules = [];
+                    if ($fulfillmentType->hasDeliveryMethod($deliveryMethod)){
+                        $dtoClass = $deliveryMethod->getDetailsDtoClass();
+                        foreach ($dtoClass::getValidationRules($detailsData ?? []) as $key => $rule) {
+                            $newKey = $prefix ? "{$prefix}.{$key}" : $key;
+                            $rules[$newKey] = $rule;
+                        }
+                    }
+                    $allDetailsRules = array_merge($allDetailsRules, $rules);
+                }
+            }
+            return  $allDetailsRules;
+        }
+        // @codeCoverageIgnoreEnd
+
+
         $fulfillmentType = FulfillmentTypeEnum::tryFrom($fulfillmentType ?? '');
         $deliveryMethod = DeliveryMethodEnum::tryFrom($deliveryMethodString ?? '');
         if (!$deliveryMethod || !$fulfillmentType) {

@@ -14,15 +14,32 @@ use App\Enums\PublicationStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
+/**
+ * @group Admin - Product Management
+ *
+ * APIs for managing products in the admin panel.
+ *
+ * @authenticated Staff
+ */
 class ProductController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the products.
+     *
+     * @queryParam filter[name] string Filter by product name. Example: Book
+     * @queryParam filter[short_name] string Filter by product short name. Example: BK
+     * @queryParam filter[is_visible] boolean Filter by visibility. Example: 1
+     * @queryParam filter[is_featured] boolean Filter by featured status. Example: 0
+     * @queryParam filter[status] string Filter by publication status. Example: published
+     * @queryParam sort string Sort by a field. Allowed values: created_at, updated_at, name, short_name, status, is_visible, is_featured. Prefix with '-' for descending order. Example: -created_at
+     * @queryParam page integer Page number for pagination. Example: 2
+     * @queryParam perPage integer Number of results per page. Example: 15
+     *
+     * @responseFile 200 responses/product/index.json
      */
     public function index(): ApiResponseInterface
     {
@@ -45,7 +62,10 @@ class ProductController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created product in storage.
+     *
+     * @responseFile 201 responses/201.json
+     * @responseFile 422 responses/422.json
      */
     public function store(ProductCreateData $data, CreateProductAction $action): ApiResponseInterface
     {
@@ -56,7 +76,11 @@ class ProductController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified product.
+     *
+     * @responseFile 200 responses/product/show.json
+     * @responseFile 404 responses/404.json
+     * @responseFile 422 responses/422.json
      */
     public function show(Product $product): ApiResponseInterface
     {
@@ -68,7 +92,11 @@ class ProductController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified product in storage.
+     *
+     * @responseFile 200 responses/product/show.json
+     * @responseFile 404 responses/404.json
+     * @responseFile 422 responses/422.json
      */
     public function update(ProductUpdateData $data, Product $product, UpdateProductAction $action): ApiResponseInterface
     {
@@ -82,7 +110,11 @@ class ProductController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified product from storage.
+     *
+     * @response 204
+     * @responseFile 404 responses/404.json
+     * @responseFile 422 responses/422.json
      */
     public function destroy(Product $product, DeleteProductAction $action): JsonResponse
     {

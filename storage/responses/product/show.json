@@ -1,0 +1,50 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 1,
+    "vendor_id": 5,
+    "product_type": {
+      "value": "digital_asset",
+      "label": "فایل"
+    },
+    "product_data": {
+      "id": 101,
+      "name": "جنگل",
+      "slug": "excepturi-minima-ut-eos-quam-consectetur-aut-temporibus-magni",
+      "is_attachable_to_course": true,
+      "status": {
+        "value": "draft",
+        "label": "پیش‌نویس"
+      },
+      "version": "aut",
+      "published_at": "1371-11-13 05:32:22",
+      "created_by": 52,
+      "created_at": "1404-03-25 11:14:19",
+      "updated_at": "1404-03-25 11:14:19"
+    },
+    "term": {
+      "id": 11,
+      "name": "Fall 2023",
+      "status": {
+        "value": "inactive",
+        "label": "غیرفعال"
+      },
+      "academic_year": "1972-1973",
+      "start_date": "1351-04-09",
+      "end_date": "1351-07-08",
+      "created_at": "1404-03-25 11:14:19",
+      "updated_at": "1404-03-25 11:14:19"
+    },
+    "status": {
+      "value": "published",
+      "label": "منتشر شده"
+    },
+    "is_visible": false,
+    "short_description": "Nihil non in commodi voluptatem at ratione. Et necessitatibus vitae odit non repellendus ut. Dolorem ut libero rerum qui sit suscipit id.",
+    "short_name": "Alexie Dickens",
+    "name": "Keon Sanford",
+    "is_featured": false,
+    "details_json": []
+  },
+  "metadata": []
+}

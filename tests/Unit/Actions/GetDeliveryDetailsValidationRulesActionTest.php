@@ -122,6 +122,7 @@ $fulfillmentDeliveryPairsWithDetails = [
             'location' => 'Test Location',
             'duration' => '20 Minute',
             'schedule' => 'Sun-Mon',
+            'additional_info' => null,
         ],
     ],
 ];
@@ -159,6 +160,7 @@ it('creates delivery validation rules for IN_PERSON', function () {
         'location' => 'Test Location',
         'duration' => '20 Minute',
         'schedule' => 'Sun-Mon',
+        'additional_info' => null,
     ];
     $expectedRules = \App\Data\ProductDeliveryOption\DetailsData\InPersonDetailsData::getValidationRules($detailsData);
     $action = new \App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
