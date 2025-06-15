@@ -15,6 +15,7 @@ final readonly class DeleteProductAction
     public function handle(Product $product): void
     {
         DB::transaction(function () use ($product): void {
+            $product->productDeliveryOptions()->delete();
             $product->delete();
         });
     }

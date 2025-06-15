@@ -33,6 +33,11 @@ enum PermissionEnum: string
     case FILE_VIEW_ANY = 'file.view_any';
     case PRODUCT_CREATE = 'product.create';
     case PRODUCT_DELETE = 'product.delete';
+    case PRODUCT_DELIVERY_OPTION_CREATE = 'product_delivery_option.create';
+    case PRODUCT_DELIVERY_OPTION_DELETE = 'product_delivery_option.delete';
+    case PRODUCT_DELIVERY_OPTION_UPDATE = 'product_delivery_option.update';
+    case PRODUCT_DELIVERY_OPTION_VIEW = 'product_delivery_option.view';
+    case PRODUCT_DELIVERY_OPTION_VIEW_ANY = 'product_delivery_option.view_any';
     case PRODUCT_UPDATE = 'product.update';
     case PRODUCT_VIEW = 'product.view';
     case PRODUCT_VIEW_ANY = 'product.view_any';

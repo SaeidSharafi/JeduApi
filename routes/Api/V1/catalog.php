@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\Admin\CourseController;
 use App\Http\Controllers\Api\Admin\DigitalAssetController;
 use App\Http\Controllers\Api\Admin\ProductController;
+use App\Http\Controllers\Api\Admin\ProductDeliveryOptionController;
 use App\Http\Controllers\Api\Admin\SeminarController;
 
 Route::middleware('auth:staff')->group(function (): void {
@@ -24,6 +25,9 @@ Route::middleware('auth:staff')->group(function (): void {
             ->except(['edit', 'create']);
 
         Route::resource('product', ProductController::class)
+            ->except(['edit', 'create']);
+
+        Route::resource('product/{product}/delivery-option', ProductDeliveryOptionController::class)
             ->except(['edit', 'create']);
     });
 });

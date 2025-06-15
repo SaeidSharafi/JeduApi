@@ -1,0 +1,31 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 1,
+    "name": "Walker Dickens",
+    "sku": "animi3",
+    "fulfillment_type": {
+      "value": "offline_service",
+      "label": "enums.FulfillmentTypeEnum.offline_service"
+    },
+    "delivery_method": {
+      "value": "video_platform_spotplayer",
+      "label": "enums.DeliveryMethodEnum.video_platform_spotplayer"
+    },
+    "price": 626,
+    "capacity": 544073,
+    "status": {
+      "value": "published",
+      "label": "منتشر شده"
+    },
+    "is_prepayment_available": true,
+    "prepayment_amount": 41564,
+    "details_json": [],
+    "is_featured": false,
+    "featured_price": 123,
+    "featured_price_start_date": "786-01--1090 18:05:48",
+    "featured_price_end_date": "786-01--1089 18:05:48",
+    "product": null
+  },
+  "metadata": []
+}

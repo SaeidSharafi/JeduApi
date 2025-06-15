@@ -40,4 +40,15 @@ enum FulfillmentTypeEnum: string
         $fulfillmentType = FulfillmentTypeEnum::tryFrom($fulfillmentType);
         return $fulfillmentType ? $fulfillmentType->getDelivieryMethods() : [];
     }
+
+    public function hasDeliveryMethod(DeliveryMethodEnum|string $deliveryMethod): bool
+    {
+        if (is_string($deliveryMethod)) {
+            $deliveryMethod = DeliveryMethodEnum::tryFrom($deliveryMethod);
+        }
+        if (in_array($deliveryMethod, $this->getDelivieryMethods())) {
+            return true;
+        }
+        return false;
+    }
 }

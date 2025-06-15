@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\PermissionEnum;
+use App\Models\Product;
 use App\Models\Staff;
 use App\Models\Category;
 use App\Models\Course;
@@ -165,6 +166,11 @@ final class ScribeSeeder extends Seeder
             ]);
 
         Teacher::factory(25)->create();
+
+        Product::factory(25)
+            ->withDeliveryOptions()
+            ->withCategory(3)
+            ->create();
     }
 
     protected function disableForeignKeyChecks(): void

@@ -16,12 +16,19 @@ class ProductDeliveryOptionFactory extends Factory
 
     public function definition(): array
     {
+        $ftype = $this->faker->randomElement([
+            FulfillmentTypeEnum::DIGITAL,
+            FulfillmentTypeEnum::ONLINE_SERVICE,
+            FulfillmentTypeEnum::IN_PERSON_SERVICE,
+            FulfillmentTypeEnum::OFFILNE_SERVICE,
+        ]);
+        $pdoType = $this->faker->randomElement($ftype->getDelivieryMethods());
         return [
             'product_id'                => Product::factory(),
             'name'                      => $this->faker->name(),
             'sku'                       => $this->faker->unique()->word(),
-            'fulfillment_type'          => $this->faker->randomElement(FulfillmentTypeEnum::getAllValues()),
-            'delivery_method'           => $this->faker->randomElement(DeliveryMethodEnum::getAllValues()),
+            'fulfillment_type'          => $ftype,
+            'delivery_method'           => $pdoType,
             'price'                     => $this->faker->randomNumber(),
             'capacity'                  => $this->faker->randomNumber(),
             'status'                    => $this->faker->randomElement(PublicationStatusEnum::getAllValues()),
@@ -31,7 +38,7 @@ class ProductDeliveryOptionFactory extends Factory
             'is_featured'               => $this->faker->boolean(),
             'featured_price'            => $this->faker->randomNumber(),
             'featured_price_start_date' => Carbon::now(),
-            'featured_price_end_date'   => Carbon::now(),
+            'featured_price_end_date'   => Carbon::now()->addDay(),
             'created_at'                => Carbon::now(),
             'updated_at'                => Carbon::now(),
         ];

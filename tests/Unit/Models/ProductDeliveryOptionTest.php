@@ -29,11 +29,22 @@ test('to array', function (): void {
 
 });
 
-test('relation producst', function (): void {
+test('relation products', function (): void {
     $product = App\Models\Product::factory()->create();
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
     expect($deliveryOption->product)
         ->toBeInstanceOf(App\Models\Product::class)
         ->and($deliveryOption->product->id)
         ->toEqual($product->id);
+});
+
+test('relation teachers', function (): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create();
+    $teachers = App\Models\Teacher::factory()->count(3)->create();
+    $deliveryOption->teachers()->attach($teachers->pluck('id'));
+    $deliveryOption->load('teachers');
+    expect($deliveryOption->teachers)
+        ->toHaveCount(3)
+        ->and($deliveryOption->teachers->first())
+        ->toBeInstanceOf(App\Models\Teacher::class);
 });

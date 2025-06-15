@@ -53,24 +53,36 @@ class ProductFactory extends Factory
         };
     }
 
-    public function withCategory(int $categoryCount = 1): self
+    public function withCategory(int $maxCategoryCount = 1): self
     {
-        return $this->afterCreating(function (Course $course) use ($categoryCount) {
+        $categoryCount = rand(1, $maxCategoryCount);
+        return $this->afterCreating(function (Product $product) use ($categoryCount) {
             if (Category::query()->count() < 10) {
-                $course->categories()->attach(
+                $product->categories()->attach(
                     Category::factory()->count($categoryCount)->create()
                 );
 
                 return;
             }
 
-            $course->categories()->attach(
+            $product->categories()->attach(
                 Category::query()
                     ->inRandomOrder()
                     ->take($categoryCount)
                     ->get()
             );
 
+        });
+    }
+
+    public function withDeliveryOptions(int $count = 3): static
+    {
+        return $this->afterCreating(function (Product $product) use ($count) {
+            $product->productDeliveryOptions()->saveMany(
+                \App\Models\ProductDeliveryOption::factory()->count($count)->make([
+                    'product_id' => $product->id,
+                ])
+            );
         });
     }
 }

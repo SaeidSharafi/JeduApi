@@ -10,8 +10,9 @@ return new class extends Migration {
         Schema::create('product_delivery_options', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('product_id');
+            $table->foreign('product_id')->references('id')->on('products')->cascadeOnDelete();
             $table->string('name');
-            $table->string('sku');
+            $table->string('sku')->unique();
             $table->string('fulfillment_type');
             $table->string('delivery_method');
             $table->unsignedBigInteger('price');
