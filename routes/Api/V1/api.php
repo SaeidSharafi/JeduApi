@@ -6,3 +6,4 @@ Illuminate\Support\Facades\Route::webhooks('webhooks/github-deployer', 'github-d
 require __DIR__.'/auth.php';
 require __DIR__.'/admin.php';
 require __DIR__.'/catalog.php';
+require __DIR__.'/select_option.php';
