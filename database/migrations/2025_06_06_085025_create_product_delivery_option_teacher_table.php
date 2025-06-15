@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::create('product_delivery_option_teacher', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('product_delivery_option_id');
-            $table->foreign('product_delivery_option_id')->references('id')->on('product_delivery_options')->restrictOnDelete();
+            $table->foreign('product_delivery_option_id','pdo_teacher_pdo_id_foreign')->references('id')->on('product_delivery_options')->restrictOnDelete();
             $table->unsignedBigInteger('teacher_id');
             $table->foreign('teacher_id')->references('id')->on('teachers')->restrictOnDelete();
 
