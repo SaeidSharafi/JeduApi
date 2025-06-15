@@ -6,7 +6,7 @@ use App\Data\Category\CategorySelectOptionData;
 use App\Http\Controllers\Controller;
 
 /**
- * @group Admin Select Options
+ * @group Admin - Select Options
  *
  * retrieve a list of categories for select options
  *
@@ -16,6 +16,8 @@ class CategorySelectOptionController extends Controller
 {
 
     /**
+     * Categories list
+     *
      * @queryParam  q string The search query for filtering categories (match name and slug). Example: "electronics"
      *
      * @responseFile 200 responses/select-options/category.json

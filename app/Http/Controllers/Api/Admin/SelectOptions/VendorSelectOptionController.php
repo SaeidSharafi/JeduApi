@@ -8,7 +8,7 @@ use App\Data\Term\VendorSelectOptionData;
 use App\Http\Controllers\Controller;
 
 /**
- * @group Admin Select Options
+ * @group Admin - Select Options
  *
  * @authenticated
  */
