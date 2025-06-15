@@ -1,0 +1,66 @@
+{
+    "message": "عملیات با موفقیت انجام شد.",
+    "data": [
+        {
+            "id": 57,
+            "title": "آب",
+            "subtitle": "voluptatibus-qui-ducimus-dolor-quas-fugit-dolorem-neque",
+            "image_url": "http://jedu.test/storage/fake-media/icon.svg"
+        },
+        {
+            "id": 89,
+            "title": "آتش",
+            "subtitle": "voluptatibus-aut-molestias-ea-tenetur",
+            "image_url": "http://jedu.test/storage/fake-media/icon.svg"
+        },
+        {
+            "id": 31,
+            "title": "آخر",
+            "subtitle": "suscipit-in-voluptas-velit",
+            "image_url": "http://jedu.test/storage/fake-media/icon.svg"
+        },
+        {
+            "id": 16,
+            "title": "آرایش",
+            "subtitle": "ut-perspiciatis-delectus-sed-illum-voluptas-velit-in-sit",
+            "image_url": "http://jedu.test/storage/fake-media/icon.svg"
+        },
+        {
+            "id": 68,
+            "title": "آسمان",
+            "subtitle": "ab-quasi-voluptatibus-amet-quasi",
+            "image_url": "http://jedu.test/storage/fake-media/icon.svg"
+        },
+        {
+            "id": 25,
+            "title": "آشیانه",
+            "subtitle": "voluptas-minus-esse-nesciunt-aut",
+            "image_url": "http://jedu.test/storage/fake-media/icon.svg"
+        },
+        {
+            "id": 90,
+            "title": "ابزار",
+            "subtitle": "suscipit-nihil-nemo-et-nulla-sapiente",
+            "image_url": "http://jedu.test/storage/fake-media/icon.svg"
+        },
+        {
+            "id": 2,
+            "title": "اپلیکیشن",
+            "subtitle": "debitis-reprehenderit-est-atque-dolores",
+            "image_url": "http://jedu.test/storage/fake-media/icon.svg"
+        },
+        {
+            "id": 1,
+            "title": "اتوبوس",
+            "subtitle": "facere-exercitationem-iusto-nobis-rerum-deleniti-voluptatem",
+            "image_url": "http://jedu.test/storage/fake-media/icon.svg"
+        },
+        {
+            "id": 32,
+            "title": "اسکله",
+            "subtitle": "quibusdam-nam-perferendis-voluptatibus-vero-enim-necessitatibus-dolorem",
+            "image_url": "http://jedu.test/storage/fake-media/icon.svg"
+        }
+    ],
+    "metadata": []
+}
