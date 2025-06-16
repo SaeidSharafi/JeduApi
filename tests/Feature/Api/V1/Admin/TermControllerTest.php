@@ -48,11 +48,11 @@ describe('TermController List Filters', function (): void {
     it('should filter by name and status', function () {
         $this->authorized_user([\App\Enums\PermissionEnum::TERM_VIEW_ANY]);
         Term::factory(20)->create();
-        Term::factory()->create(['name' => 'Spring 2025', 'status' => 'planning']);
-        $response = $this->getJson(route('api.v1.admin.term.index', ['filter' => ['name' => 'Spring 2025', 'status' => 'planning']]));
+        Term::factory()->create(['name' => 'XSpring 2025', 'status' => 'planning']);
+        $response = $this->getJson(route('api.v1.admin.term.index', ['filter' => ['name' => 'XSpring 2025', 'status' => 'planning']]));
         $response->assertOk();
         $response->assertJsonCount(1, 'data.data');
-        $response->assertJsonFragment(['name' => 'Spring 2025', 'status' => [
+        $response->assertJsonFragment(['name' => 'XSpring 2025', 'status' => [
             'label' => __('enums.TermStatusEnum.planning'),
             'value' => TermStatusEnum::PLANNING->value
         ]]);
