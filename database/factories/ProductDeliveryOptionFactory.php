@@ -7,6 +7,7 @@ use App\Enums\FulfillmentTypeEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
+use App\Models\Teacher;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
@@ -42,5 +43,19 @@ class ProductDeliveryOptionFactory extends Factory
             'created_at'                => Carbon::now(),
             'updated_at'                => Carbon::now(),
         ];
+    }
+
+    public function withTeachers(int $maxTeachers = 3, $fixedAmount = false): static
+    {
+        return $this->afterCreating(function (ProductDeliveryOption $deliveryOption,$fixedAmount) use ($maxTeachers) {
+            if (Teacher::count() < 10) {
+                Teacher::factory(15)->create();
+            }
+            $teachers = \App\Models\Teacher::query()
+                ->inRandomOrder()
+                ->take($fixedAmount ? $maxTeachers : rand(1, $maxTeachers))
+                ->pluck('id');
+            $deliveryOption->teachers()->attach($teachers->toArray());
+        });
     }
 }

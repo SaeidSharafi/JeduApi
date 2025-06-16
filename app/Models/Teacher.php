@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\GenderEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,27 +14,29 @@ class Teacher extends Model
     use HasFactory;
     use Mediable;
 
-    protected $fillable = [
-        'first_name',
-        'last_name',
-        'bio',
-        'rate',
-        'email',
-        'phone',
-        'gender',
-        'birth_date',
-        'social_links',
-        'user_id',
-    ];
+    protected $fillable
+        = [
+            'first_name',
+            'last_name',
+            'bio',
+            'rate',
+            'email',
+            'phone',
+            'gender',
+            'birth_date',
+            'social_links',
+            'user_id',
+        ];
 
     protected function casts(): array
     {
         return [
             'social_links' => 'json',
-            'rate' => 'float',
-            'birth_date' => 'date:Y-m-d',
-            'created_at' => 'date:Y-m-d H:i:s',
-            'updated_at' => 'date:Y-m-d H:i:s',
+            'rate'         => 'float',
+            'gender'       => GenderEnum::class,
+            'birth_date'   => 'date:Y-m-d',
+            'created_at'   => 'date:Y-m-d H:i:s',
+            'updated_at'   => 'date:Y-m-d H:i:s',
         ];
     }
 

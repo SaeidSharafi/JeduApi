@@ -354,6 +354,8 @@ return [
             'featured_price'            => 'قیمت ویژه',
             'featured_price_start_date' => 'تاریخ شروع قیمت ویژه',
             'featured_price_end_date'   => 'تاریخ پایان قیمت ویژه',
+            'teacher_id'               => 'شناسه مدرس',
+            'teachers'                 => 'مدرسین',
         ],
         'details'                 => [
             'course_id'                           => 'شناسه دوره',

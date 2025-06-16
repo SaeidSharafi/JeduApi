@@ -18,7 +18,9 @@ final readonly class UpdateProductDeliveryOptionAction
     public function handle(ProductDeliveryOptionUpdateData $data, ProductDeliveryOption $deliveryOption): ProductDeliveryOption
     {
         return DB::transaction(function () use($data,$deliveryOption): ProductDeliveryOption {
-            $deliveryOption->update($data->toArray());
+            $pdoData = $data->except('teachers')->toArray();
+            $deliveryOption->update($pdoData);
+            $deliveryOption->teachers()->sync($data->teachers);
             return $deliveryOption->fresh();
         });
     }

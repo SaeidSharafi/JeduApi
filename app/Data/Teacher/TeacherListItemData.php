@@ -28,7 +28,7 @@ class TeacherListItemData extends Data
         #[WithTransformer(DateTimeInterfaceTransformer::class, format: 'Y-m-d')]
         public ?Verta $birth_date,
         public ?array $social_links,
-        public ShowUserData $user
+        public ?ShowUserData $user
     ) {
     }
 }

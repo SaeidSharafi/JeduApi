@@ -2,30 +2,72 @@
   "message": "عملیات با موفقیت انجام شد.",
   "data": {
     "id": 1,
-    "name": "Walker Dickens",
-    "sku": "animi3",
+    "name": "Selena O'Reilly MD",
+    "sku": "est",
     "fulfillment_type": {
-      "value": "offline_service",
-      "label": "enums.FulfillmentTypeEnum.offline_service"
+      "value": "in_person_service",
+      "label": "سرویس حضوری"
     },
     "delivery_method": {
-      "value": "video_platform_spotplayer",
-      "label": "enums.DeliveryMethodEnum.video_platform_spotplayer"
+      "value": "in_person",
+      "label": "حضوری"
     },
-    "price": 626,
-    "capacity": 544073,
+    "price": 341728641,
+    "capacity": 5,
     "status": {
       "value": "published",
       "label": "منتشر شده"
     },
-    "is_prepayment_available": true,
-    "prepayment_amount": 41564,
-    "details_json": [],
-    "is_featured": false,
-    "featured_price": 123,
-    "featured_price_start_date": "786-01--1090 18:05:48",
-    "featured_price_end_date": "786-01--1089 18:05:48",
-    "product": null
+    "is_prepayment_available": false,
+    "prepayment_amount": 117,
+    "details": [],
+    "is_featured": true,
+    "featured_price": 629,
+    "featured_price_start_date": "1404-03-26 11:11:54",
+    "featured_price_end_date": "1404-03-27 11:11:54",
+    "teachers": [
+      {
+        "id": 6,
+        "first_name": "Clare",
+        "last_name": "Sipes",
+        "rate": 0.2,
+        "email": "beahan.ophelia@example.org",
+        "phone": "09337036570",
+        "gender": {
+          "value": "female",
+          "label": "زن"
+        },
+        "birth_date": "1354-07-26",
+        "social_links": {
+          "facebook": "https://www.ankunding.org/molestias-delectus-nam-quia-aliquid",
+          "twitter": "http://ledner.com/",
+          "linkedin": "http://www.langosh.net/dicta-voluptatem-sed-consequatur-reiciendis-totam"
+        },
+        "user": null
+      },
+      {
+        "id": 21,
+        "first_name": "Nico",
+        "last_name": "Waters",
+        "rate": 1.89,
+        "email": "rebeca.schuppe@example.com",
+        "phone": "09175254687",
+        "gender": {
+          "value": "male",
+          "label": "مرد"
+        },
+        "birth_date": "1384-06-10",
+        "social_links": {
+          "facebook": "http://www.ritchie.com/dolor-ea-id-id",
+          "twitter": "http://ruecker.net/",
+          "linkedin": "http://www.considine.com/excepturi-libero-sed-eligendi-culpa-sed"
+        },
+        "user": null
+      }
+    ],
+    "product": null,
+    "created_at": "1404-03-26 11:11:54",
+    "updated_at": "1404-03-26 11:11:54"
   },
   "metadata": []
 }

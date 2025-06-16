@@ -32,7 +32,7 @@ class ProductDeliveryOptionController extends Controller
     public function index(Product $product): ApiResponseInterface
     {
         Gate::authorize('view-any', ProductDeliveryOption::class);
-        $deliveryOptions = $product->productDeliveryOptions()->get();
+        $deliveryOptions = $product->productDeliveryOptions()->with('teachers')->get();
 
         return response()->success(ProductDeliveryOptionShowData::collect($deliveryOptions));
     }
@@ -49,6 +49,7 @@ class ProductDeliveryOptionController extends Controller
     ): ApiResponseInterface {
         Gate::authorize('create', ProductDeliveryOption::class);
         $deliveryOption = $action->handle($data, $product);
+        $deliveryOption->loadMissing('teachers');
         return response()->created(
             ProductDeliveryOptionShowData::from($deliveryOption),
             model: ProductDeliveryOption::class,
@@ -64,6 +65,7 @@ class ProductDeliveryOptionController extends Controller
     public function show(Product $product, ProductDeliveryOption $deliveryOption): ApiResponseInterface
     {
         Gate::authorize('view', $deliveryOption);
+        $deliveryOption->loadMissing('teachers');
         return response()->success(ProductDeliveryOptionShowData::from($deliveryOption));
     }
 
@@ -82,6 +84,7 @@ class ProductDeliveryOptionController extends Controller
     ): ApiResponseInterface {
         Gate::authorize('update', $deliveryOption);
         $deliveryOption = $action->handle($data, $deliveryOption);
+        $deliveryOption->loadMissing('teachers');
         return response()->updated(
             ProductDeliveryOptionShowData::from($deliveryOption),
             model: ProductDeliveryOption::class,

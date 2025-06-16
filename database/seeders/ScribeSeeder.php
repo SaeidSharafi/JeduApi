@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use App\Enums\PermissionEnum;
 use App\Models\Product;
+use App\Models\ProductDeliveryOption;
 use App\Models\Staff;
 use App\Models\Category;
 use App\Models\Course;
@@ -46,6 +47,8 @@ final class ScribeSeeder extends Seeder
             DigitalAsset::query()->truncate();
             Media::query()->truncate();
             Staff::query()->truncate();
+            ProductDeliveryOption::query()->truncate();
+            Product::query()->truncate();
             Teacher::query()->truncate();
             Vendor::query()->truncate();
             Term::query()->truncate();

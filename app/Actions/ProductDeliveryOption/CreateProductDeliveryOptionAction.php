@@ -17,7 +17,10 @@ final readonly class CreateProductDeliveryOptionAction
     public function handle(ProductDeliveryOptionCreateData $data, Product $product): ProductDeliveryOption
     {
         return DB::transaction(function () use($data,$product): ProductDeliveryOption {
-            return $product->productDeliveryOptions()->create($data->toArray())->fresh();
+            $pdoData = $data->except('teachers')->toArray();
+            $pdo = $product->productDeliveryOptions()->create($pdoData)->fresh();
+            $pdo->teachers()->attach($data->teachers);
+            return $pdo;
         });
     }
 }

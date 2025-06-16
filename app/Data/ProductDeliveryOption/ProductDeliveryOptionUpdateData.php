@@ -19,12 +19,13 @@ class ProductDeliveryOptionUpdateData extends Data
         public string $name,
         public string $sku,
         public int $price,
-        public ?int $capacity = null,
         public string $status = 'draft',
+        #[MapInputName('details')]
+        public array $details_json,
+        public array $teachers,
+        public ?int $capacity = null,
         public bool $is_prepayment_available = false,
         public ?int $prepayment_amount = null,
-        #[MapInputName('details')]
-        public ?array $details_json = null,
         public bool $is_featured = false,
         public ?int $featured_price = null,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]
@@ -64,6 +65,8 @@ class ProductDeliveryOptionUpdateData extends Data
             'featured_price'            => ['nullable', 'integer', 'min:0'],
             'featured_price_start_date' => ['nullable', 'date_format:Y-m-d H:i:s'],
             'featured_price_end_date'   => ['nullable', 'date_format:Y-m-d H:i:s', 'after:featured_price_start_date'],
+            'teachers'                  => ['required', 'array'],
+            'teachers.*'                => ['required', 'integer', 'exists:teachers,id'],
         ];
 
         // Get the existing delivery option to determine its delivery method for details validation
@@ -96,6 +99,8 @@ class ProductDeliveryOptionUpdateData extends Data
             'featured_price'            => __('validation.attributes.product_delivery_option.featured_price'),
             'featured_price_start_date' => __('validation.attributes.product_delivery_option.featured_price_start_date'),
             'featured_price_end_date'   => __('validation.attributes.product_delivery_option.featured_price_end_date'),
+            'teachers'                  => __('validation.attributes.product_delivery_option.teachers'),
+            'teachers.*'                => __('validation.attributes.product_delivery_option.teacher_id'),
         ];
     }
 
@@ -338,6 +343,16 @@ class ProductDeliveryOptionUpdateData extends Data
                 'description' => 'End date for featured pricing',
                 'required'    => false,
                 'example'     => '2025-07-15 23:59:59',
+            ],
+            'teachers'                        => [
+                'description' => 'List of teacher IDs associated with this delivery option',
+                'required'    => true,
+                'example'     => [1, 2, 3],
+            ],
+            'teachers.*'                      => [
+                'description' => 'List of teacher IDs associated with this delivery option',
+                'required'    => true,
+                'example'     => [1, 2, 3],
             ],
         ];
     }

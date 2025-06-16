@@ -5,18 +5,21 @@ namespace App\Data\ProductDeliveryOption;
 use App\Contracts\DeliveryOptionDetialDataContract;
 use App\Data\Casts\DeliveryOptionDetailCast;
 use App\Data\Product\ProductData;
+use App\Data\Teacher\TeacherListItemData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\DeliveryMethodEnum;
 use App\Enums\FulfillmentTypeEnum;
 use App\Enums\PublicationStatusEnum;
 use Hekmatinasser\Verta\Verta;
 use Illuminate\Support\Optional;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\DataCollection;
 
 class ProductDeliveryOptionShowData extends Data
 {
@@ -43,7 +46,13 @@ class ProductDeliveryOptionShowData extends Data
         public ?Verta $featured_price_start_date,
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Verta $featured_price_end_date,
+        #[DataCollectionOf(TeacherListItemData::class)]
+        public ?DataCollection $teachers,
         public Optional|null|ProductData $product,
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
+        public ?Verta $created_at = null,
+        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
+        public ?Verta $updated_at = null,
     ) {
     }
 }

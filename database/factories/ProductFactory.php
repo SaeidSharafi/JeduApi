@@ -78,11 +78,12 @@ class ProductFactory extends Factory
     public function withDeliveryOptions(int $count = 3): static
     {
         return $this->afterCreating(function (Product $product) use ($count) {
-            $product->productDeliveryOptions()->saveMany(
-                \App\Models\ProductDeliveryOption::factory()->count($count)->make([
+             \App\Models\ProductDeliveryOption::factory()
+                ->withTeachers()
+                ->count($count)
+                ->create([
                     'product_id' => $product->id,
-                ])
-            );
+                ]);
         });
     }
 }

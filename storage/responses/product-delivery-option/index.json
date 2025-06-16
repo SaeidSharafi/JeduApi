@@ -2,198 +2,185 @@
   "message": "عملیات با موفقیت انجام شد.",
   "data": [
     {
-      "id": 2,
-      "name": "Alyson Balistreri",
-      "sku": "recusandae",
+      "id": 1,
+      "name": "Selena O'Reilly MD",
+      "sku": "est",
       "fulfillment_type": {
-        "value": "online_service",
-        "label": "enums.FulfillmentTypeEnum.online_service"
+        "value": "in_person_service",
+        "label": "سرویس حضوری"
       },
       "delivery_method": {
-        "value": "lms_moodle",
-        "label": "enums.DeliveryMethodEnum.lms_moodle"
+        "value": "in_person",
+        "label": "حضوری"
       },
-      "price": 5808186,
-      "capacity": 99975,
+      "price": 341728641,
+      "capacity": 5,
+      "status": {
+        "value": "published",
+        "label": "منتشر شده"
+      },
+      "is_prepayment_available": false,
+      "prepayment_amount": 117,
+      "details": [],
+      "is_featured": true,
+      "featured_price": 629,
+      "featured_price_start_date": "1404-03-26 11:11:54",
+      "featured_price_end_date": "1404-03-27 11:11:54",
+      "teachers": [
+        {
+          "id": 6,
+          "first_name": "Clare",
+          "last_name": "Sipes",
+          "rate": 0.2,
+          "email": "beahan.ophelia@example.org",
+          "phone": "09337036570",
+          "gender": {
+            "value": "female",
+            "label": "زن"
+          },
+          "birth_date": "1354-07-26",
+          "social_links": {
+            "facebook": "https://www.ankunding.org/molestias-delectus-nam-quia-aliquid",
+            "twitter": "http://ledner.com/",
+            "linkedin": "http://www.langosh.net/dicta-voluptatem-sed-consequatur-reiciendis-totam"
+          },
+          "user": null
+        },
+        {
+          "id": 21,
+          "first_name": "Nico",
+          "last_name": "Waters",
+          "rate": 1.89,
+          "email": "rebeca.schuppe@example.com",
+          "phone": "09175254687",
+          "gender": {
+            "value": "male",
+            "label": "مرد"
+          },
+          "birth_date": "1384-06-10",
+          "social_links": {
+            "facebook": "http://www.ritchie.com/dolor-ea-id-id",
+            "twitter": "http://ruecker.net/",
+            "linkedin": "http://www.considine.com/excepturi-libero-sed-eligendi-culpa-sed"
+          },
+          "user": null
+        }
+      ],
+      "product": null
+    },
+    {
+      "id": 2,
+      "name": "Prof. Celestine Bauch Jr.",
+      "sku": "pariatur",
+      "fulfillment_type": {
+        "value": "in_person_service",
+        "label": "سرویس حضوری"
+      },
+      "delivery_method": {
+        "value": "in_person",
+        "label": "حضوری"
+      },
+      "price": 43,
+      "capacity": 24315488,
+      "status": {
+        "value": "draft",
+        "label": "پیش‌نویس"
+      },
+      "is_prepayment_available": true,
+      "prepayment_amount": 200545229,
+      "details": [],
+      "is_featured": false,
+      "featured_price": 70332821,
+      "featured_price_start_date": "1404-03-26 11:11:54",
+      "featured_price_end_date": "1404-03-27 11:11:54",
+      "teachers": [
+        {
+          "id": 8,
+          "first_name": "Cathryn",
+          "last_name": "Zulauf",
+          "rate": 0.02,
+          "email": "stephany.cormier@example.com",
+          "phone": "09383081816",
+          "gender": {
+            "value": "male",
+            "label": "مرد"
+          },
+          "birth_date": "1389-06-27",
+          "social_links": {
+            "facebook": "http://herman.com/ipsum-sint-incidunt-harum-tempore-in-mollitia.html",
+            "twitter": "http://langosh.org/adipisci-error-et-dolor-aut.html",
+            "linkedin": "http://russel.com/saepe-et-velit-dolore-autem-ipsa-est-excepturi"
+          },
+          "user": null
+        },
+        {
+          "id": 11,
+          "first_name": "Georgiana",
+          "last_name": "Baumbach",
+          "rate": 2.71,
+          "email": "dana.dooley@example.com",
+          "phone": "09212796785",
+          "gender": {
+            "value": "male",
+            "label": "مرد"
+          },
+          "birth_date": "1372-04-20",
+          "social_links": {
+            "facebook": "http://www.veum.com/",
+            "twitter": "http://www.batz.com/praesentium-voluptatum-accusamus-et-molestiae-est-eum",
+            "linkedin": "http://lakin.com/"
+          },
+          "user": null
+        }
+      ],
+      "product": null
+    },
+    {
+      "id": 3,
+      "name": "Ayla Stracke",
+      "sku": "aut",
+      "fulfillment_type": {
+        "value": "offline_service",
+        "label": "سرویس آفلاین"
+      },
+      "delivery_method": {
+        "value": "video_platform_spotplayer",
+        "label": "پلتفرم ویدیویی SpotPlayer"
+      },
+      "price": 7,
+      "capacity": 188951587,
       "status": {
         "value": "archived",
         "label": "آرشیو"
       },
       "is_prepayment_available": false,
-      "prepayment_amount": 645785,
-      "details_json": [],
+      "prepayment_amount": 7,
+      "details": [],
       "is_featured": false,
-      "featured_price": 217125300,
-      "featured_price_start_date": "1404-03-25 11:14:20",
-      "featured_price_end_date": "1404-03-25 11:14:20",
-      "product": null
-    },
-    {
-      "id": 3,
-      "name": "Prof. Patsy Mosciski DDS",
-      "sku": "ea",
-      "fulfillment_type": {
-        "value": "in_person_service",
-        "label": "enums.FulfillmentTypeEnum.in_person_service"
-      },
-      "delivery_method": {
-        "value": "in_person",
-        "label": "enums.DeliveryMethodEnum.in_person"
-      },
-      "price": 941,
-      "capacity": 26967852,
-      "status": {
-        "value": "archived",
-        "label": "آرشیو"
-      },
-      "is_prepayment_available": true,
-      "prepayment_amount": 5973630,
-      "details_json": [],
-      "is_featured": false,
-      "featured_price": 922605,
-      "featured_price_start_date": "1404-03-25 11:14:20",
-      "featured_price_end_date": "1404-03-25 11:14:20",
-      "product": null
-    },
-    {
-      "id": 76,
-      "name": "Walker Dickens",
-      "sku": "animi2",
-      "fulfillment_type": {
-        "value": "offline_service",
-        "label": "enums.FulfillmentTypeEnum.offline_service"
-      },
-      "delivery_method": {
-        "value": "video_platform_spotplayer",
-        "label": "enums.DeliveryMethodEnum.video_platform_spotplayer"
-      },
-      "price": 625,
-      "capacity": 544073,
-      "status": {
-        "value": "published",
-        "label": "منتشر شده"
-      },
-      "is_prepayment_available": true,
-      "prepayment_amount": 41564,
-      "details_json": [],
-      "is_featured": false,
-      "featured_price": 123,
-      "featured_price_start_date": "786-01--1090 18:05:48",
-      "featured_price_end_date": "786-01--1089 18:05:48",
-      "product": null
-    },
-    {
-      "id": 1,
-      "name": "Walker Dickens",
-      "sku": "animi3",
-      "fulfillment_type": {
-        "value": "offline_service",
-        "label": "enums.FulfillmentTypeEnum.offline_service"
-      },
-      "delivery_method": {
-        "value": "video_platform_spotplayer",
-        "label": "enums.DeliveryMethodEnum.video_platform_spotplayer"
-      },
-      "price": 626,
-      "capacity": 544073,
-      "status": {
-        "value": "published",
-        "label": "منتشر شده"
-      },
-      "is_prepayment_available": true,
-      "prepayment_amount": 41564,
-      "details_json": [],
-      "is_featured": false,
-      "featured_price": 123,
-      "featured_price_start_date": "786-01--1090 18:05:48",
-      "featured_price_end_date": "786-01--1089 18:05:48",
-      "product": null
-    },
-    {
-      "id": 77,
-      "name": "Walker Dickens",
-      "sku": "animis",
-      "fulfillment_type": {
-        "value": "offline_service",
-        "label": "enums.FulfillmentTypeEnum.offline_service"
-      },
-      "delivery_method": {
-        "value": "video_platform_spotplayer",
-        "label": "enums.DeliveryMethodEnum.video_platform_spotplayer"
-      },
-      "price": 626,
-      "capacity": 544073,
-      "status": {
-        "value": "published",
-        "label": "منتشر شده"
-      },
-      "is_prepayment_available": true,
-      "prepayment_amount": 41564,
-      "details_json": {
-        "courseId": "asdczxc1as52d"
-      },
-      "is_featured": false,
-      "featured_price": 123,
-      "featured_price_start_date": "1404-03-25 18:14:20",
-      "featured_price_end_date": "1404-03-26 18:14:20",
-      "product": null
-    },
-    {
-      "id": 78,
-      "name": "Walker Dickens",
-      "sku": "animis2",
-      "fulfillment_type": {
-        "value": "offline_service",
-        "label": "enums.FulfillmentTypeEnum.offline_service"
-      },
-      "delivery_method": {
-        "value": "video_platform_spotplayer",
-        "label": "enums.DeliveryMethodEnum.video_platform_spotplayer"
-      },
-      "price": 626,
-      "capacity": 544073,
-      "status": {
-        "value": "published",
-        "label": "منتشر شده"
-      },
-      "is_prepayment_available": true,
-      "prepayment_amount": 41564,
-      "details_json": {
-        "courseId": "asdczxc1as52d"
-      },
-      "is_featured": false,
-      "featured_price": 123,
-      "featured_price_start_date": "1404-03-25 18:14:20",
-      "featured_price_end_date": "1404-03-26 18:14:20",
-      "product": null
-    },
-    {
-      "id": 79,
-      "name": "Walker Dickens",
-      "sku": "animiss2",
-      "fulfillment_type": {
-        "value": "offline_service",
-        "label": "enums.FulfillmentTypeEnum.offline_service"
-      },
-      "delivery_method": {
-        "value": "video_platform_spotplayer",
-        "label": "enums.DeliveryMethodEnum.video_platform_spotplayer"
-      },
-      "price": 626,
-      "capacity": 544073,
-      "status": {
-        "value": "published",
-        "label": "منتشر شده"
-      },
-      "is_prepayment_available": true,
-      "prepayment_amount": 41564,
-      "details_json": {
-        "courseId": "asdczxc1aasdsads52d"
-      },
-      "is_featured": false,
-      "featured_price": 123,
-      "featured_price_start_date": "1404-03-25 18:14:20",
-      "featured_price_end_date": "1404-03-26 18:14:20",
+      "featured_price": 22765,
+      "featured_price_start_date": "1404-03-26 11:11:54",
+      "featured_price_end_date": "1404-03-27 11:11:54",
+      "teachers": [
+        {
+          "id": 10,
+          "first_name": "Eden",
+          "last_name": "Windler",
+          "rate": 3.66,
+          "email": "wlegros@example.org",
+          "phone": "09394079937",
+          "gender": {
+            "value": "female",
+            "label": "زن"
+          },
+          "birth_date": "1398-02-24",
+          "social_links": {
+            "facebook": "http://reilly.com/aut-ut-et-voluptas",
+            "twitter": "http://fritsch.org/voluptas-voluptatum-doloremque-debitis-quidem-illum-iure-itaque",
+            "linkedin": "https://prohaska.info/occaecati-qui-totam-ut-cupiditate.html"
+          },
+          "user": null
+        }
+      ],
       "product": null
     }
   ],
