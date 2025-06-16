@@ -37,7 +37,8 @@ final readonly class ApiSuccessResponse implements ApiResponseInterface
                 'metadata' => $this->metadata,
             ],
             $this->code,
-            $this->headers
+            $this->headers,
+            JSON_PRESERVE_ZERO_FRACTION
         );
     }
 }
