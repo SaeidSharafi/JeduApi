@@ -17,11 +17,12 @@ class TeacherSelectOptionController extends Controller
 {
 
     /**
-     * Vendors list
+     * Teachers list
      *
-     * @queryParam  q string The search query for filtering vendors (match name). Example: "vendor 1"
+     * @queryParam  q string The search query for filtering teachers (match combined [first_name and last_name],
+     *              email and phone. Example: "John Doe"
      *
-     * @responseFile 200 responses/select-options/vendor.json
+     * @responseFile 200 responses/select-options/teacher.json
      */
     public function __invoke()
     {
