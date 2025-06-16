@@ -27,14 +27,20 @@ class TermSelectOptionController extends Controller
     {
         $query = request()->string('q', '');
 
-        $categories = \App\Models\Term::query()
-            ->where('name', 'like', "%{$query}%")
-            ->orWhere('academic_year', 'like', "%{$query}%")
+        $terms = \App\Models\Term::query()
+            ->when($query, function ($term) use ($query) {
+                $term->where(function ($term) use ($query) {
+                    $term
+                        ->where('name', 'like', '%'.$query.'%')
+                        ->orWhere('academic_year', 'like', '%'.$query.'%')
+                    ;
+                });
+            })
             ->orderBy('name')
             ->limit(10)
             ->get(['id', 'name', 'academic_year']);
         return response()->success(
-            TermSelectOptionData::collect($categories)
+            TermSelectOptionData::collect($terms)
         );
     }
 }

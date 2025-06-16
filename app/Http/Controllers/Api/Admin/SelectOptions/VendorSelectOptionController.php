@@ -27,7 +27,13 @@ class VendorSelectOptionController extends Controller
         $query = request()->string('q', '');
 
         $vendors = \App\Models\Vendor::query()
-            ->where('name', 'like', "%{$query}%")
+            ->when($query, function ($vendor) use ($query) {
+                $vendor->where(function ($vendor) use ($query) {
+                    $vendor
+                        ->where('name', 'like', '%'.$query.'%')
+                    ;
+                });
+            })
             ->orderBy('name')
             ->limit(10)
             ->get(['id', 'name', 'address', 'logo_url']);

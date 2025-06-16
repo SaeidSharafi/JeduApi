@@ -28,8 +28,14 @@ class CategorySelectOptionController extends Controller
 
         $categories = \App\Models\Category::query()
             ->withMediaAndVariants(['icon'])
-            ->where('name', 'like', "%{$query}%")
-            ->orWhere('slug', 'like', "%{$query}%")
+            ->when($query, function ($category) use ($query) {
+                $category->where(function ($category) use ($query) {
+                    $category
+                        ->where('name', 'like', '%'.$query.'%')
+                        ->orWhere('slug', 'like', '%'.$query.'%')
+                    ;
+                });
+            })
             ->orderBy('name')
             ->limit(10)
             ->get(['id', 'name', 'slug', 'icon_url']);
