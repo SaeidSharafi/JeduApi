@@ -71,7 +71,7 @@ describe('User with permissions', function () {
                             'id'           => $teacher->id,
                             'first_name'   => $teacher->first_name,
                             'last_name'    => $teacher->last_name,
-                            'rate'         => $teacher->rate,
+                            'rate'         => (float)$teacher->rate,
                             'email'        => $teacher->email,
                             'phone'        => $teacher->phone,
                             'gender'       => [
