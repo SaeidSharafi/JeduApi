@@ -47,7 +47,7 @@ class TeacherFactory extends Factory
             foreach ($tags as $tag) {
                 $media = Media::query()
                     ->where('directory', 'fake-media')
-                    ->whereLike('filename', "%$tag%")
+                    ->whereLike('filename', "%placeholder%")
                     ->where('extension', 'svg')
                     ->inRandomOrder()
                     ->first();

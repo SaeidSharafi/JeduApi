@@ -168,7 +168,9 @@ final class ScribeSeeder extends Seeder
                 'created_by' => $staff->id,
             ]);
 
-        Teacher::factory(25)->create();
+        Teacher::factory(25)
+            ->withMedia()
+            ->create();
 
         Product::factory(25)
             ->withDeliveryOptions()
