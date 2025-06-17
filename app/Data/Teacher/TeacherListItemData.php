@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Teacher;
 
 use App\Data\Transformer\TranslatableEnumData;
@@ -13,7 +15,7 @@ use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer;
 
-class TeacherListItemData extends Data
+final class TeacherListItemData extends Data
 {
     public function __construct(
         public int $id,
@@ -29,6 +31,5 @@ class TeacherListItemData extends Data
         public ?Verta $birth_date,
         public ?array $social_links,
         public ?ShowUserData $user
-    ) {
-    }
+    ) {}
 }

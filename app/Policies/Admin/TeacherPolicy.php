@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\Admin;
 
 use App\Enums\PermissionEnum;
 use App\Models\Staff;
 use App\Models\Teacher;
 
-class TeacherPolicy
+final class TeacherPolicy
 {
     /**
      * Determine whether the Staff can view any models.

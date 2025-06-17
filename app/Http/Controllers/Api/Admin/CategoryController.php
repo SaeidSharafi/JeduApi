@@ -95,6 +95,7 @@ final class CategoryController extends Controller
         $category
             ->refresh()
             ->loadMediaWithVariantsMatchAll();
+
         return response()->success(
             ShowCategoryData::from($category),
             __('catalog.category.message.updated')

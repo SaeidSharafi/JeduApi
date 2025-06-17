@@ -21,7 +21,7 @@ final readonly class CreateRoleAction
                 'label' => $data->label,
             ]);
 
-            if (!empty($data->permissions)) {
+            if (! empty($data->permissions)) {
                 $role->syncPermissions($data->permissions);
             }
         });

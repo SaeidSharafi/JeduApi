@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Enums\ProductableEnum;
@@ -12,7 +14,7 @@ use App\Models\Vendor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
-class ProductFactory extends Factory
+final class ProductFactory extends Factory
 {
     protected $model = Product::class;
 
@@ -36,10 +38,11 @@ class ProductFactory extends Factory
     public function configure(): static
     {
         $type = $this->faker->randomElement(ProductableEnum::cases());
+
         return match ($type) {
             ProductableEnum::COURSE => $this->state([
                 'productable_type' => $type->value,
-                'productable_id'   => \App\Models\Course::factory(),
+                'productable_id'   => Course::factory(),
             ]),
             ProductableEnum::SEMINAR => $this->state([
                 'productable_type' => $type->value,
@@ -56,6 +59,7 @@ class ProductFactory extends Factory
     public function withCategory(int $maxCategoryCount = 1): self
     {
         $categoryCount = rand(1, $maxCategoryCount);
+
         return $this->afterCreating(function (Product $product) use ($categoryCount) {
             if (Category::query()->count() < 10) {
                 $product->categories()->attach(
@@ -78,7 +82,7 @@ class ProductFactory extends Factory
     public function withDeliveryOptions(int $count = 3): static
     {
         return $this->afterCreating(function (Product $product) use ($count) {
-             \App\Models\ProductDeliveryOption::factory()
+            \App\Models\ProductDeliveryOption::factory()
                 ->withTeachers()
                 ->count($count)
                 ->create([

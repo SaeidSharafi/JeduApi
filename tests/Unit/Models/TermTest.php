@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 test('to array', function () {
-    $term = \App\Models\Term::factory()->create()->fresh();
+    $term = App\Models\Term::factory()->create()->fresh();
 
     $array = $term->toArray();
     expect($array)->toBeArray()

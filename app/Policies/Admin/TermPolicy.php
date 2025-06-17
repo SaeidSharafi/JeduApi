@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Policies\Admin;
 
 use App\Enums\PermissionEnum;
-use App\Models\Term;
 use App\Models\Staff;
+use App\Models\Term;
 
-class TermPolicy
+final class TermPolicy
 {
     /**
      * Determine whether the user can view any terms.

@@ -1,10 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Actions\Product;
 
 use App\Data\Product\ProductCreateData;
-use App\Enums\ProductableEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +26,8 @@ final readonly class CreateProductAction
             }
             $product = Product::create($data->except('force_create', 'categories')->toArray())->fresh();
             $product->categories()->sync($data->categories);
-            return  $product;
+
+            return $product;
         });
     }
 }

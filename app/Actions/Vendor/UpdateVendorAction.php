@@ -15,17 +15,17 @@ final readonly class UpdateVendorAction
      */
     public function handle(CreateVendorData $data, Vendor $vendor): void
     {
-        DB::transaction(function () use($data,$vendor): void {
+        DB::transaction(function () use ($data, $vendor): void {
             $media = $data->media;
             foreach ($media as $tag => $mediaId) {
                 $vendor->syncMedia($mediaId, $tag);
             }
             $vendor->update([
-               ...$data->except('media')->toArray(),
-               'favicon_url' => $vendor->getMedia('favicon')->first()?->getUrl(),
-               'logo_url' => $vendor->getMedia('logo')->first()?->getUrl(),
+                ...$data->except('media')->toArray(),
+                'favicon_url' => $vendor->getMedia('favicon')->first()?->getUrl(),
+                'logo_url'    => $vendor->getMedia('logo')->first()?->getUrl(),
             ]);
-            $vendor->logo_url = null;
+            $vendor->logo_url    = null;
             $vendor->favicon_url = null;
 
         });

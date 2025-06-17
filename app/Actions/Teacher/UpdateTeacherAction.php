@@ -15,7 +15,7 @@ final readonly class UpdateTeacherAction
      */
     public function handle(CreateTeacherData $data, Teacher $teacher): void
     {
-        DB::transaction(function () use($data,$teacher): void {
+        DB::transaction(function () use ($data, $teacher): void {
             $media = $data->media ?? [];
             $teacher->update($data->except('media')->toArray());
 

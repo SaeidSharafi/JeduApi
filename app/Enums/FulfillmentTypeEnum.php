@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums;
 
 use App\Traits\AdvanceEnum;
@@ -7,11 +9,18 @@ use App\Traits\AdvanceEnum;
 enum FulfillmentTypeEnum: string
 {
     use AdvanceEnum;
-    case DIGITAL = 'digital';
-    case PHYSICAL = 'physical';
-    case ONLINE_SERVICE = 'online_service';
-    case OFFILNE_SERVICE = 'offline_service';
+    case DIGITAL           = 'digital';
+    case PHYSICAL          = 'physical';
+    case ONLINE_SERVICE    = 'online_service';
+    case OFFILNE_SERVICE   = 'offline_service';
     case IN_PERSON_SERVICE = 'in_person_service';
+
+    public static function getDeliveryMethodsFor(string $fulfillmentType): array
+    {
+        $fulfillmentType = FulfillmentTypeEnum::tryFrom($fulfillmentType);
+
+        return $fulfillmentType ? $fulfillmentType->getDelivieryMethods() : [];
+    }
 
     public function getDelivieryMethods(): array
     {
@@ -20,7 +29,7 @@ enum FulfillmentTypeEnum: string
                 DeliveryMethodEnum::DIRECT_DOWNLOAD,
 
             ],
-            self::PHYSICAL => [],
+            self::PHYSICAL       => [],
             self::ONLINE_SERVICE => [
                 DeliveryMethodEnum::LIVE_SESSION_BBB,
                 DeliveryMethodEnum::LIVE_SESSION_SKYROOM,
@@ -35,12 +44,6 @@ enum FulfillmentTypeEnum: string
         };
     }
 
-    public static function getDeliveryMethodsFor(string $fulfillmentType): array
-    {
-        $fulfillmentType = FulfillmentTypeEnum::tryFrom($fulfillmentType);
-        return $fulfillmentType ? $fulfillmentType->getDelivieryMethods() : [];
-    }
-
     public function hasDeliveryMethod(DeliveryMethodEnum|string $deliveryMethod): bool
     {
         if (is_string($deliveryMethod)) {
@@ -49,6 +52,7 @@ enum FulfillmentTypeEnum: string
         if (in_array($deliveryMethod, $this->getDelivieryMethods())) {
             return true;
         }
+
         return false;
     }
 }

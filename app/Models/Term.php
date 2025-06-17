@@ -8,7 +8,7 @@ use App\Enums\TermStatusEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Term extends Model
+final class Term extends Model
 {
     use HasFactory;
 
@@ -23,9 +23,9 @@ class Term extends Model
     protected function casts(): array
     {
         return [
-            'status' => TermStatusEnum::class,
+            'status'     => TermStatusEnum::class,
             'start_date' => 'datetime:Y-m-d',
-            'end_date' => 'datetime:Y-m-d',
+            'end_date'   => 'datetime:Y-m-d',
         ];
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\Vendor\CreateVendorAction;
@@ -10,11 +12,9 @@ use App\Data\MediaData;
 use App\Data\Vendor\CreateVendorData;
 use App\Data\Vendor\ShowVendorData;
 use App\Data\Vendor\VendorListItemData;
-use App\Enums\PermissionEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Vendor;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -25,7 +25,7 @@ use Spatie\QueryBuilder\QueryBuilder;
  *
  * @authenticated
  */
-class VendorController extends Controller
+final class VendorController extends Controller
 {
     /**
      * Display a listing of vendors.
@@ -121,6 +121,7 @@ class VendorController extends Controller
      * Remove the specified vendor from database.
      *
      * @response 204
+     *
      * @responseFile 403 responses/403.json
      * @responseFile 404 responses/404.json
      */

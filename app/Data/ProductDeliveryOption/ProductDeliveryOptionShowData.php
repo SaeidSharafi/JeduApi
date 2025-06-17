@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\ProductDeliveryOption;
 
 use App\Contracts\DeliveryOptionDetialDataContract;
@@ -21,7 +23,7 @@ use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\DataCollection;
 
-class ProductDeliveryOptionShowData extends Data
+final class ProductDeliveryOptionShowData extends Data
 {
     public function __construct(
         public int $id,
@@ -32,7 +34,7 @@ class ProductDeliveryOptionShowData extends Data
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public DeliveryMethodEnum $delivery_method,
         public int $price,
-        public ?int $capacity = null,
+        public ?int $capacity,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public PublicationStatusEnum $status,
         public bool $is_prepayment_available,
@@ -53,6 +55,5 @@ class ProductDeliveryOptionShowData extends Data
         public ?Verta $created_at = null,
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Verta $updated_at = null,
-    ) {
-    }
+    ) {}
 }

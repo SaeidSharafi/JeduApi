@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Data;
 
-use Illuminate\Support\Optional;
 use Plank\Mediable\Media;
 use Spatie\LaravelData\Data;
 
@@ -30,7 +29,7 @@ final class ThumbnailData extends Data
         public string $extension,
     ) {}
 
-    public static function fromModel(Media $media, ?string $tag = null ): self
+    public static function fromModel(Media $media, ?string $tag = null): self
     {
 
         return new self(

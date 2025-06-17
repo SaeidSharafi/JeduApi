@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\GenderEnum;
@@ -8,10 +10,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Plank\Mediable\Mediable;
 
-class Teacher extends Model
+final class Teacher extends Model
 {
     /** @use HasFactory<\Database\Factories\TeacherFactory> */
     use HasFactory;
+
     use Mediable;
 
     protected $fillable
@@ -28,6 +31,14 @@ class Teacher extends Model
             'user_id',
         ];
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     protected function casts(): array
     {
         return [
@@ -38,13 +49,5 @@ class Teacher extends Model
             'created_at'   => 'date:Y-m-d H:i:s',
             'updated_at'   => 'date:Y-m-d H:i:s',
         ];
-    }
-
-    /**
-     * @return BelongsTo<User, $this>
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
     }
 }

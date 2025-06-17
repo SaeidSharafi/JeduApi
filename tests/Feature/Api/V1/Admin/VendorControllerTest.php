@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Vendor;
 
-uses(\Tests\AuthTestTrait::class);
+uses(Tests\AuthTestTrait::class);
 beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
@@ -16,9 +18,9 @@ beforeEach(function (): void {
 
 describe('list filter', function (): void {
     it('filter vendors by name', function (): void {
-        $this->authorized_user([\App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
+        $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         Vendor::factory(10)->create();
-        $vendor = Vendor::factory()->create(['name' => 'Test Vendor']);
+        $vendor   = Vendor::factory()->create(['name' => 'Test Vendor']);
         $response = $this->getJson(route('api.v1.admin.vendor.index', ['filter' => ['name' => 'Test Vendor']]));
 
         $response->assertOk()
@@ -26,25 +28,25 @@ describe('list filter', function (): void {
             ->assertJsonCount(1, 'data.data');
     });
     it('filter vendors by email', function (): void {
-        $this->authorized_user([\App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
+        $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         Vendor::factory(10)->create();
-        $vendor = Vendor::factory()->create(['email' => 'vendor@example.com']);
+        $vendor   = Vendor::factory()->create(['email' => 'vendor@example.com']);
         $response = $this->getJson(route('api.v1.admin.vendor.index', ['filter' => ['email' => 'vendor@example.com']]));
         $response->assertOk()
             ->assertJsonFragment(['email' => 'vendor@example.com'])
             ->assertJsonCount(1, 'data.data');
     });
     it('filter vendors by phone', function (): void {
-        $this->authorized_user([\App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
+        $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         Vendor::factory(10)->create();
-        $vendor = Vendor::factory()->create(['phone' => '+1234567890']);
+        $vendor   = Vendor::factory()->create(['phone' => '+1234567890']);
         $response = $this->getJson(route('api.v1.admin.vendor.index', ['filter' => ['phone' => '+1234567890']]));
         $response->assertOk()
             ->assertJsonFragment(['phone' => '+1234567890'])
             ->assertJsonCount(1, 'data.data');
     });
     it('should return all vendors when no filter is applied', function (): void {
-        $this->authorized_user([\App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
+        $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         Vendor::factory(10)->create();
         $response = $this->getJson(route('api.v1.admin.vendor.index'));
 
@@ -53,7 +55,7 @@ describe('list filter', function (): void {
     });
 
     it('should return an empty list when no vendors match the filter', function (): void {
-        $this->authorized_user([\App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
+        $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         Vendor::factory(10)->create();
         $response = $this->getJson(route('api.v1.admin.vendor.index', ['filter' => ['name' => 'Nonexistent Vendor']]));
 
@@ -62,7 +64,7 @@ describe('list filter', function (): void {
     });
 
     it('should sort vendors by name', function (): void {
-        $this->authorized_user([\App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
+        $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         Vendor::factory()->create(['name' => 'B Vendor']);
         Vendor::factory()->create(['name' => 'A Vendor']);
         $response = $this->getJson(route('api.v1.admin.vendor.index', ['sort' => 'name']));
@@ -73,13 +75,13 @@ describe('list filter', function (): void {
             ->assertJsonCount(2, 'data.data');
     });
     it('should sort vendors by created_at', function (): void {
-        $this->authorized_user([\App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
-        $vendor1 = Vendor::factory()->create(['created_at' => now()->subDays(2)])->fresh();
-        $vendor2 = Vendor::factory()->create(['created_at' => now()->subDays(1)])->fresh();
+        $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
+        $vendor1  = Vendor::factory()->create(['created_at' => now()->subDays(2)])->fresh();
+        $vendor2  = Vendor::factory()->create(['created_at' => now()->subDays(1)])->fresh();
         $response = $this->getJson(route('api.v1.admin.vendor.index', ['sort' => '-created_at']));
 
         $response->assertOk()
-            ->assertJson(function (\Illuminate\Testing\Fluent\AssertableJson $json) use ($vendor2, $vendor1): void {
+            ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($vendor2, $vendor1): void {
                 $json->has('data.data', 2)
                     ->where('data.data.0.id', $vendor2->id)
                     ->where('data.data.1.id', $vendor1->id)
@@ -90,7 +92,7 @@ describe('list filter', function (): void {
 })->group('vendor');
 describe('CRUD', function (): void {
     it('should return a list of vendors', function (): void {
-        $this->authorized_user([\App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
+        $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         $response = $this->getJson(route('api.v1.admin.vendor.index'));
 
         $response->assertOk()
@@ -116,8 +118,8 @@ describe('CRUD', function (): void {
     });
 
     it('should create a new vendor', function (): void {
-        $this->authorized_user([\App\Enums\PermissionEnum::VENDOR_CREATE]);
-        $data = Vendor::factory()->make()->toArray();
+        $this->authorized_user([App\Enums\PermissionEnum::VENDOR_CREATE]);
+        $data          = Vendor::factory()->make()->toArray();
         $data['media'] = [
             'logo'    => $this->logo->id,
             'favicon' => $this->favicon->id,
@@ -136,20 +138,20 @@ describe('CRUD', function (): void {
         $vendor = Vendor::where('email', $data['email'])->first();
         $this->assertDatabaseHas('mediables', [
             'mediable_id'   => $vendor->id,
-            'mediable_type' => \App\Enums\MorphTypeEnum::VENDOR->value,
+            'mediable_type' => App\Enums\MorphTypeEnum::VENDOR->value,
             'media_id'      => $this->logo->id,
             'tag'           => 'logo',
         ]);
         $this->assertDatabaseHas('mediables', [
             'mediable_id'   => $vendor->id,
-            'mediable_type' => \App\Enums\MorphTypeEnum::VENDOR->value,
+            'mediable_type' => App\Enums\MorphTypeEnum::VENDOR->value,
             'media_id'      => $this->favicon->id,
             'tag'           => 'favicon',
         ]);
     });
 
     it('should show a vendor', function (): void {
-        $this->authorized_user([\App\Enums\PermissionEnum::VENDOR_VIEW]);
+        $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW]);
         $vendor = Vendor::factory()->create();
         $vendor->attachMedia($this->logo, 'logo');
         $vendor->attachMedia($this->favicon, 'favicon');
@@ -168,9 +170,9 @@ describe('CRUD', function (): void {
     });
 
     it('should update a vendor', function (): void {
-        $this->authorized_user([\App\Enums\PermissionEnum::VENDOR_UPDATE]);
-        $vendor = Vendor::factory()->create();
-        $data = Vendor::factory()->make()->toArray();
+        $this->authorized_user([App\Enums\PermissionEnum::VENDOR_UPDATE]);
+        $vendor        = Vendor::factory()->create();
+        $data          = Vendor::factory()->make()->toArray();
         $data['media'] = [
             'logo'    => $this->logo->id,
             'favicon' => $this->favicon->id,
@@ -189,20 +191,20 @@ describe('CRUD', function (): void {
         ]);
         $this->assertDatabaseHas('mediables', [
             'mediable_id'   => $vendor->id,
-            'mediable_type' => \App\Enums\MorphTypeEnum::VENDOR->value,
+            'mediable_type' => App\Enums\MorphTypeEnum::VENDOR->value,
             'media_id'      => $this->logo->id,
             'tag'           => 'logo',
         ]);
         $this->assertDatabaseHas('mediables', [
             'mediable_id'   => $vendor->id,
-            'mediable_type' => \App\Enums\MorphTypeEnum::VENDOR->value,
+            'mediable_type' => App\Enums\MorphTypeEnum::VENDOR->value,
             'media_id'      => $this->favicon->id,
             'tag'           => 'favicon',
         ]);
     });
 
     it('should delete a vendor', function (): void {
-        $this->authorized_user([\App\Enums\PermissionEnum::VENDOR_DELETE]);
+        $this->authorized_user([App\Enums\PermissionEnum::VENDOR_DELETE]);
         $vendor = Vendor::factory()->create();
         $vendor->attachMedia($this->logo, 'logo');
         $vendor->attachMedia($this->favicon, 'favicon');
@@ -212,12 +214,12 @@ describe('CRUD', function (): void {
         $this->assertDatabaseMissing('vendors', ['id' => $vendor->id]);
         $this->assertDatabaseMissing('mediables', [
             'mediable_id'   => $vendor->id,
-            'mediable_type' => \App\Enums\MorphTypeEnum::VENDOR->value,
+            'mediable_type' => App\Enums\MorphTypeEnum::VENDOR->value,
             'media_id'      => $this->logo->id,
         ]);
         $this->assertDatabaseMissing('mediables', [
             'mediable_id'   => $vendor->id,
-            'mediable_type' => \App\Enums\MorphTypeEnum::VENDOR->value,
+            'mediable_type' => App\Enums\MorphTypeEnum::VENDOR->value,
             'media_id'      => $this->favicon->id,
         ]);
         $this->assertDatabaseMissing('media', ['id' => $this->logo->id]);

@@ -8,9 +8,9 @@ use App\Actions\Staff\CreateStaffAction;
 use App\Actions\Staff\DeleteStaffAction;
 use App\Actions\Staff\UpdateStaffAction;
 use App\Contracts\ApiResponseInterface;
-use App\Data\Staff\StaffListItemData;
 use App\Data\Staff\CreateStaffData;
 use App\Data\Staff\ShowStaffData;
+use App\Data\Staff\StaffListItemData;
 use App\Data\Staff\UpdateStaffData;
 use App\Http\Controllers\Controller;
 use App\Models\Staff;
@@ -61,6 +61,7 @@ final class StaffController extends Controller
      * Store a newly created Staff in database.
      *
      * @response 201
+     *
      * @responseFile 403 responses/403.json
      */
     public function store(CreateStaffData $data, CreateStaffAction $action): ApiResponseInterface
@@ -78,12 +79,12 @@ final class StaffController extends Controller
      * @responseFile 403 responses/403.json
      * @responseFile 404 responses/404.json
      */
-    public function show(Staff  $staff): ApiResponseInterface
+    public function show(Staff $staff): ApiResponseInterface
     {
-        Gate::authorize('view',  $staff);
-         $staff->load('roles');
+        Gate::authorize('view', $staff);
+        $staff->load('roles');
 
-        return response()->success(ShowStaffData::from( $staff));
+        return response()->success(ShowStaffData::from($staff));
     }
 
     /**
@@ -93,12 +94,12 @@ final class StaffController extends Controller
      * @responseFile 403 responses/403.json
      * @responseFile 404 responses/404.json
      */
-    public function update(UpdateStaffData $data, Staff  $staff, UpdateStaffAction $action): ApiResponseInterface
+    public function update(UpdateStaffData $data, Staff $staff, UpdateStaffAction $action): ApiResponseInterface
     {
-        Gate::authorize('update',  $staff);
-        $action->handle($data,  $staff);
+        Gate::authorize('update', $staff);
+        $action->handle($data, $staff);
 
-        return response()->updated(ShowStaffData::from( $staff), model: Staff::class);
+        return response()->updated(ShowStaffData::from($staff), model: Staff::class);
     }
 
     /**
@@ -106,10 +107,10 @@ final class StaffController extends Controller
      *
      * @response 204
      */
-    public function destroy(Staff  $staff, DeleteStaffAction $action): JsonResponse
+    public function destroy(Staff $staff, DeleteStaffAction $action): JsonResponse
     {
-        Gate::authorize('delete',  $staff);
-        $action->handle( $staff);
+        Gate::authorize('delete', $staff);
+        $action->handle($staff);
 
         return response()->noContentJson();
 

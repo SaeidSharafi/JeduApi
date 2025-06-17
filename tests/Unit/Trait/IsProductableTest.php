@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 it('get getProductableMedia', function () {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
@@ -53,9 +55,9 @@ it('get getProductableAttachment', function () {
 });
 
 test('relation products', function (): void {
-    $course = App\Models\Course::factory()->create();
+    $course  = App\Models\Course::factory()->create();
     $product = App\Models\Product::factory()->create([
-        'productable_id' => $course->id,
+        'productable_id'   => $course->id,
         'productable_type' => App\Enums\ProductableEnum::COURSE->value,
     ]);
 
@@ -68,7 +70,7 @@ test('relation products', function (): void {
 });
 
 it('loades category relationship with loadProductableCategories fucntion', function () {
-    $course = App\Models\Course::factory()->create();
+    $course     = App\Models\Course::factory()->create();
     $categories = App\Models\Category::factory(3)->create();
     $course->categories()->sync($categories);
 

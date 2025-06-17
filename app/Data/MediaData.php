@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Data;
 
-use Illuminate\Support\Optional;
 use Plank\Mediable\Media;
 use Spatie\LaravelData\Data;
 
@@ -28,15 +27,15 @@ final class MediaData extends Data
         public string $alt,
         public string $mime_type,
         public string $extension,
-        public ?string $tag = null,
+        public ?string $tag,
         public ?ThumbnailData $thumbnail,
     ) {}
 
-    public static function fromModel(Media $media, ?string $tag = null ): self
+    public static function fromModel(Media $media, ?string $tag = null): self
     {
         $thumbnail = null;
-        if ($media->isOriginal()){
-            if ($media->relationLoaded('variants')){
+        if ($media->isOriginal()) {
+            if ($media->relationLoaded('variants')) {
                 $thumbnail = $media->findVariant('thumb');
                 $thumbnail = $thumbnail ? ThumbnailData::fromModel($thumbnail) : null;
             }

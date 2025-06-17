@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Traits\HasCategories;
@@ -8,12 +10,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
-class Product extends Model
+final class Product extends Model
 {
-    use HasFactory;
     use HasCategories;
+    use HasFactory;
 
     protected $fillable
         = [
@@ -30,22 +31,11 @@ class Product extends Model
             'details_json',
         ];
 
-    protected function casts(): array
-    {
-        return [
-            'is_visible'   => 'boolean',
-            'is_featured'  => 'boolean',
-            'details_json' => 'array',
-            'status'       => \App\Enums\PublicationStatusEnum::class,
-            'created_at'   => 'datetime:Y-m-d H:i:s',
-            'updated_at'   => 'datetime:Y-m-d H:i:s',
-        ];
-    }
-
     public function term(): BelongsTo
     {
         return $this->belongsTo(Term::class);
     }
+
     public function productable(): MorphTo
     {
         return $this->morphTo();
@@ -75,4 +65,15 @@ class Product extends Model
         return $this->hasMany(ProductDeliveryOption::class);
     }
 
+    protected function casts(): array
+    {
+        return [
+            'is_visible'   => 'boolean',
+            'is_featured'  => 'boolean',
+            'details_json' => 'array',
+            'status'       => \App\Enums\PublicationStatusEnum::class,
+            'created_at'   => 'datetime:Y-m-d H:i:s',
+            'updated_at'   => 'datetime:Y-m-d H:i:s',
+        ];
+    }
 }

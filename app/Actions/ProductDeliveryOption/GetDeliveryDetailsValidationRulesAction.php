@@ -27,44 +27,45 @@ final readonly class GetDeliveryDetailsValidationRulesAction
                 || in_array('scribe:setup', $_SERVER['argv'])
             );
         if ($isGeneratingScribeDocs) {
-            $allDetailsRules = [];
-            $detailsRulesAction = app(GetDeliveryDetailsValidationRulesAction::class);
+            $allDetailsRules    = [];
+            $detailsRulesAction = app(self::class);
 
             foreach (FulfillmentTypeEnum::cases() as $fulfillmentType) {
                 foreach (DeliveryMethodEnum::cases() as $deliveryMethod) {
                     $rules = [];
-                    if ($fulfillmentType->hasDeliveryMethod($deliveryMethod)){
+                    if ($fulfillmentType->hasDeliveryMethod($deliveryMethod)) {
                         $dtoClass = $deliveryMethod->getDetailsDtoClass();
                         foreach ($dtoClass::getValidationRules($detailsData ?? []) as $key => $rule) {
-                            $newKey = $prefix ? "{$prefix}.{$key}" : $key;
+                            $newKey         = $prefix ? "{$prefix}.{$key}" : $key;
                             $rules[$newKey] = $rule;
                         }
                     }
                     $allDetailsRules = array_merge($allDetailsRules, $rules);
                 }
             }
-            return  $allDetailsRules;
+
+            return $allDetailsRules;
         }
         // @codeCoverageIgnoreEnd
 
-
         $fulfillmentType = FulfillmentTypeEnum::tryFrom($fulfillmentType ?? '');
-        $deliveryMethod = DeliveryMethodEnum::tryFrom($deliveryMethodString ?? '');
-        if (!$deliveryMethod || !$fulfillmentType) {
+        $deliveryMethod  = DeliveryMethodEnum::tryFrom($deliveryMethodString ?? '');
+        if (! $deliveryMethod || ! $fulfillmentType) {
             return [];
         }
-        if (!$fulfillmentType->hasDeliveryMethod($deliveryMethod)) {
+        if (! $fulfillmentType->hasDeliveryMethod($deliveryMethod)) {
             return [];
         }
         $dtoClass = $deliveryMethod->getDetailsDtoClass();
 
         $rules = [];
         foreach ($dtoClass::getValidationRules($detailsData ?? []) as $key => $rule) {
-            $newKey = $prefix ? "{$prefix}.{$key}" : $key;
+            $newKey         = $prefix ? "{$prefix}.{$key}" : $key;
             $rules[$newKey] = $rule;
         }
-        $keys = array_keys($dtoClass::getValidationRules($detailsData ?? []));
+        $keys             = array_keys($dtoClass::getValidationRules($detailsData ?? []));
         $rules['details'] = ['required', 'array:'.implode(',', $keys)];
+
         return $rules;
 
     }

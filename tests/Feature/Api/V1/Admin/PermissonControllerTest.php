@@ -53,14 +53,14 @@ describe('permissions listing', function (): void {
                         })
                         ->etc();
                 })
-                ->has('data.role', function (AssertableJson $roleJson): void {
-                    $roleJson->has('label')
-                        ->has('resource')
-                        ->where('resource', 'role')
-                        ->has('permissions')
-                        ->etc();
-                })
-                ->etc();
+                    ->has('data.role', function (AssertableJson $roleJson): void {
+                        $roleJson->has('label')
+                            ->has('resource')
+                            ->where('resource', 'role')
+                            ->has('permissions')
+                            ->etc();
+                    })
+                    ->etc();
             });
     });
 
@@ -158,7 +158,7 @@ describe('permissions listing', function (): void {
         $data = $response->json('data');
 
         // Get first permission from any resource
-        $firstResource = array_values($data)[0];
+        $firstResource   = array_values($data)[0];
         $firstPermission = $firstResource['permissions'][0];
 
         // Verify the data structure matches PermissionData format
@@ -201,10 +201,10 @@ describe('permissions action integration', function (): void {
                 ->withNoArgs()
                 ->andReturn([
                     'test' => [
-                        'label' => 'Test Resource',
-                        'resource' => 'test',
+                        'label'       => 'Test Resource',
+                        'resource'    => 'test',
                         'permissions' => [],
-                    ]
+                    ],
                 ]);
         });
 
@@ -224,7 +224,7 @@ describe('permissions action integration', function (): void {
             ->assertJsonStructure([
                 'message',
                 'data',
-                'metadata'
+                'metadata',
             ]);
     });
 });

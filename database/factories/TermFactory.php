@@ -9,17 +9,18 @@ use App\Models\Term;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class TermFactory extends Factory
+final class TermFactory extends Factory
 {
     protected $model = Term::class;
 
     public function definition(): array
     {
-        $year = (int) $this->faker->year();
+        $year      = (int) $this->faker->year();
         $startDate = $this->faker->dateTimeBetween(
             startDate: "$year-01-01",
             endDate: "$year-12-31"
-        );;
+        );
+
         return [
             'name'          => $this->faker->randomElement(['Fall', 'Spring', 'Summer']).' '.$this->faker->year(),
             'status'        => $this->faker->randomElement(TermStatusEnum::getAllValues()),

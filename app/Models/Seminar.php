@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\ProductableContract;
-use App\Data\MediaData;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Traits\HasAssets;
@@ -21,9 +20,10 @@ final class Seminar extends Model implements ProductableContract
     use HasAssets;
     use HasAuditor;
     use HasCategories;
-    use IsProductable;
     /** @use HasFactory<\Database\Factories\SeminarFactory> */
     use HasFactory;
+
+    use IsProductable;
 
     use Mediable;
 

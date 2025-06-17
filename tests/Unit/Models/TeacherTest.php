@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 test('to array', function () {
-    $teahcer = \App\Models\Teacher::factory()->create()->fresh();
+    $teahcer = App\Models\Teacher::factory()->create()->fresh();
 
     $array = $teahcer->toArray();
     expect($array)->toBeArray()

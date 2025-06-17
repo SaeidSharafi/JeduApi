@@ -11,13 +11,11 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Course\CourseListItemData;
 use App\Data\Course\CreateCourseData;
 use App\Data\Course\ShowCourseData;
-use App\Data\MediaData;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
-use Plank\Mediable\Media;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**

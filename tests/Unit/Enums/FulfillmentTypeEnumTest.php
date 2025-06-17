@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 it('get delivery methods correctl for DIGITAL', function () {
     $fulfillmentType = App\Enums\FulfillmentTypeEnum::DIGITAL;
 

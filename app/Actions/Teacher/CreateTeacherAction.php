@@ -15,8 +15,8 @@ final readonly class CreateTeacherAction
      */
     public function handle(CreateTeacherData $data): void
     {
-        DB::transaction(function () use($data): void {
-            $media = $data->media ?? [];
+        DB::transaction(function () use ($data): void {
+            $media   = $data->media ?? [];
             $teacher = Teacher::query()->create($data->except('media')->toArray());
 
             foreach ($media as $tag => $mediaIds) {

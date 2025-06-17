@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'PublicationStatusEnum'     => [
+    'PublicationStatusEnum' => [
         'draft'     => 'پیش‌نویس',
         'published' => 'منتشر شده',
         'archived'  => 'آرشیو',
@@ -14,16 +14,16 @@ return [
         'advanced'     => 'پیشرفته',
         'expert'       => 'کارشناس',
     ],
-    'GenderEnum'                => [
+    'GenderEnum' => [
         'male'   => 'مرد',
         'female' => 'زن',
     ],
-    'TermStatusEnum'            => [
+    'TermStatusEnum' => [
         'active'   => 'فعال',
         'inactive' => 'غیرفعال',
         'planning' => 'در حال برنامه‌ریزی',
     ],
-    'MorphTypeEnum'             => [
+    'MorphTypeEnum' => [
         'course'        => 'دوره',
         'seminar'       => 'سمینار',
         'digital_asset' => 'فایل',
@@ -33,19 +33,19 @@ return [
         'teacher'       => 'مدرس',
         'vendor'        => 'فروشنده',
     ],
-    'ProductableEnum'           => [
+    'ProductableEnum' => [
         'course'        => 'دوره',
         'seminar'       => 'سمینار',
         'digital_asset' => 'فایل',
     ],
-    'FulfillmentTypeEnum'       => [
+    'FulfillmentTypeEnum' => [
         'digital'           => 'دیجیتال',
         'physical'          => 'فیزیکی',
         'online_service'    => 'سرویس آنلاین',
         'offline_service'   => 'سرویس آفلاین',
         'in_person_service' => 'سرویس حضوری',
     ],
-    'DeliveryMethodEnum'        => [
+    'DeliveryMethodEnum' => [
         'direct_download'           => 'دانلود مستقیم',
         'live_session_bbb'          => 'جلسه زنده با BBB',
         'live_session_skyroom'      => 'جلسه زنده با Skyroom',

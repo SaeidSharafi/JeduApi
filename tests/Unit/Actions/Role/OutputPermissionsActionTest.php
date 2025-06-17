@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Actions\Role\OutputPermissionsAction;
 use App\Data\Role\PermissionData;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Lang;
 use Spatie\Permission\Models\Permission;
 
 uses(RefreshDatabase::class);
@@ -17,8 +16,8 @@ describe('OutputPermissionsAction', function (): void {
     it('should group permissions by resource correctly', function () {
 
         $categoryCreate = Permission::create(['name' => 'category.create', 'guard_name' => 'staff']);
-        $categoryView = Permission::create(['name' => 'category.view', 'guard_name' => 'staff']);
-        $courseCreate = Permission::create(['name' => 'course.create', 'guard_name' => 'staff']);
+        $categoryView   = Permission::create(['name' => 'category.view', 'guard_name' => 'staff']);
+        $courseCreate   = Permission::create(['name' => 'course.create', 'guard_name' => 'staff']);
 
         $action = new OutputPermissionsAction();
         $result = $action->handle('staff');
@@ -39,7 +38,6 @@ describe('OutputPermissionsAction', function (): void {
         Permission::create(['name' => 'user.profile', 'guard_name' => 'user']);
         Permission::create(['name' => 'admin.manage', 'guard_name' => 'admin']);
 
-
         $action = new OutputPermissionsAction();
 
         // Test staff guard
@@ -47,7 +45,6 @@ describe('OutputPermissionsAction', function (): void {
         expect($staffResult)->toHaveKey('staff')
             ->and($staffResult)->not->toHaveKey('user')
             ->and($staffResult)->not->toHaveKey('admin');
-
 
         $userResult = $action->handle('user');
         expect($userResult)->toHaveKey('user')
@@ -86,7 +83,7 @@ describe('OutputPermissionsAction', function (): void {
 
         $impersonatePermission = $permissions->firstWhere('name', 'staff.impersonate');
         $manageRolesPermission = $permissions->firstWhere('name', 'staff.manage_roles');
-        $viewPermission = $permissions->firstWhere('name', 'staff.view');
+        $viewPermission        = $permissions->firstWhere('name', 'staff.view');
 
         expect($impersonatePermission['label'])->toBe(__('auth.permission.custom.staff.impersonate'))
             ->and($manageRolesPermission['label'])->toBe(__('auth.permission.custom.staff.manage_roles'))
@@ -118,7 +115,6 @@ describe('OutputPermissionsAction', function (): void {
     it('should use default staff guard when no guard specified', function () {
         Permission::create(['name' => 'staff.view', 'guard_name' => 'staff']);
         Permission::create(['name' => 'user.view', 'guard_name' => 'user']);
-
 
         $action = new OutputPermissionsAction();
 

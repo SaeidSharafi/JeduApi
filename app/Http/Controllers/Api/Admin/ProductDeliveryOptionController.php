@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\ProductDeliveryOption\CreateProductDeliveryOptionAction;
@@ -22,7 +24,7 @@ use Illuminate\Support\Facades\Gate;
  *
  * @authenticated Staff
  */
-class ProductDeliveryOptionController extends Controller
+final class ProductDeliveryOptionController extends Controller
 {
     /**
      * Get a list of delivery options for a product.
@@ -50,6 +52,7 @@ class ProductDeliveryOptionController extends Controller
         Gate::authorize('create', ProductDeliveryOption::class);
         $deliveryOption = $action->handle($data, $product);
         $deliveryOption->loadMissing('teachers');
+
         return response()->created(
             ProductDeliveryOptionShowData::from($deliveryOption),
             model: ProductDeliveryOption::class,
@@ -66,6 +69,7 @@ class ProductDeliveryOptionController extends Controller
     {
         Gate::authorize('view', $deliveryOption);
         $deliveryOption->loadMissing('teachers');
+
         return response()->success(ProductDeliveryOptionShowData::from($deliveryOption));
     }
 
@@ -85,6 +89,7 @@ class ProductDeliveryOptionController extends Controller
         Gate::authorize('update', $deliveryOption);
         $deliveryOption = $action->handle($data, $deliveryOption);
         $deliveryOption->loadMissing('teachers');
+
         return response()->updated(
             ProductDeliveryOptionShowData::from($deliveryOption),
             model: ProductDeliveryOption::class,
@@ -95,6 +100,7 @@ class ProductDeliveryOptionController extends Controller
      * Remove the specified delivery option.
      *
      * @response 204
+     *
      * @responseFile 404 responses/404.json
      * @responseFile 422 responses/422.json
      */
@@ -105,6 +111,7 @@ class ProductDeliveryOptionController extends Controller
     ): JsonResponse {
         Gate::authorize('delete', $deliveryOption);
         $action->handle($deliveryOption);
+
         return response()->noContentJson();
     }
 }

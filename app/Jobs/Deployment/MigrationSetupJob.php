@@ -1,15 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs\Deployment;
 
 use Illuminate\Support\Facades\Log;
 
-class MigrationSetupJob extends BaseDeploymentJob
+final class MigrationSetupJob extends BaseDeploymentJob
 {
-
-    public function __construct(protected string $projectPath)
-    {
-    }
+    public function __construct(protected string $projectPath) {}
 
     public function handle(): void
     {

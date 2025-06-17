@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\Staff;
 use App\Models\Category;
 use App\Models\DigitalAsset;
+use App\Models\Staff;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use Plank\Mediable\Media;
@@ -49,6 +49,7 @@ final class DigitalAssetFactory extends Factory
             ];
         });
     }
+
     public function withMedia(array $tags = ['gallery']): self
     {
         return $this->afterCreating(function (DigitalAsset $digitalAsset) use ($tags) {
@@ -73,6 +74,7 @@ final class DigitalAssetFactory extends Factory
             }
         });
     }
+
     public function withFile(): self
     {
         return $this->afterCreating(function (DigitalAsset $digitalAsset) {

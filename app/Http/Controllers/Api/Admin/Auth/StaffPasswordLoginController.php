@@ -35,8 +35,6 @@ final class StaffPasswordLoginController extends Controller
      *
      * @throws \App\Exceptions\UserNotFoundException
      *
-
-     *
      * @responseFile 200 responses/auth/staff.login.json
      *
      * @response 404 {

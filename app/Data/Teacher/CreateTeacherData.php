@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Teacher;
 
 use App\Enums\GenderEnum;
@@ -8,49 +10,50 @@ use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class CreateTeacherData extends Data
+final class CreateTeacherData extends Data
 {
     public function __construct(
         public string $first_name,
         public string $last_name,
         public string $bio,
-        public float $rate = 0.0,
+        public float $rate,
         public string $email,
         public string $phone,
         public string $gender,
-        public ?string $birth_date = null,
-        public ?array $social_links = null,
+        public ?string $birth_date,
+        public ?array $social_links,
         public int $user_id,
         public array $media,
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {
         return [
-            'first_name'     => ['required', 'string', 'max:255'],
-            'last_name'      => ['required', 'string', 'max:255'],
-            'bio'            => ['required', 'string', 'max:1000'],
-            'rate'           => ['required', 'numeric', 'min:0', 'max:5', 'nullable'],
-            'email'          => [
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name'  => ['required', 'string', 'max:255'],
+            'bio'        => ['required', 'string', 'max:1000'],
+            'rate'       => ['required', 'numeric', 'min:0', 'max:5', 'nullable'],
+            'email'      => [
                 'required', 'string', 'email', 'max:255',
                 Rule::unique('teachers', 'email')->where(function (Builder $query) {
                     $teacher = request()->route()->parameter('teacher');
                     if ($teacher && $teacher->id) {
                         $query->whereNot('id', $teacher->id);
                     }
+
                     return $query;
-                })
+                }),
             ],
-            'phone'          => [
+            'phone' => [
                 'required', 'string', 'max:20', 'nullable',
                 Rule::unique('teachers', 'phone')->where(function (Builder $query) {
                     $teacher = request()->route()->parameter('teacher');
                     if ($teacher && $teacher->id) {
                         $query->whereNot('id', $teacher->id);
                     }
+
                     return $query;
-                })
+                }),
             ],
             'gender'         => ['required', Rule::enum(GenderEnum::class)],
             'birth_date'     => ['nullable', 'date_format:Y-m-d'],
@@ -95,50 +98,50 @@ class CreateTeacherData extends Data
     public function bodyParameters(): array
     {
         return [
-            'first_name'    => [
+            'first_name' => [
                 'description' => __('validation.attributes.first_name'),
                 'example'     => 'John',
             ],
-            'last_name'     => [
+            'last_name' => [
                 'description' => __('validation.attributes.last_name'),
                 'example'     => 'Doe',
             ],
-            'bio'           => [
+            'bio' => [
                 'description' => __('validation.attributes.teacher.bio'),
                 'example'     => 'An experienced teacher with a passion for education.',
             ],
-            'rate'          => [
+            'rate' => [
                 'description' => __('validation.attributes.teacher.rate'),
                 'example'     => 4.5,
             ],
-            'email'         => [
+            'email' => [
                 'description' => __('validation.attributes.email'),
                 'example'     => 'teacher@example.com',
             ],
-            'phone'         => [
+            'phone' => [
                 'description' => __('validation.attributes.phone'),
                 'example'     => '+1234567890',
             ],
-            'gender'        => [
+            'gender' => [
                 'description' => __('validation.attributes.gender'),
                 'example'     => 'male',
             ],
-            'birth_date'    => [
+            'birth_date' => [
                 'description' => __('validation.attributes.birth_date'),
                 'example'     => '1990-01-01',
             ],
-            'social_links'  => [
+            'social_links' => [
                 'description' => __('validation.attributes.social_links'),
                 'example'     => [
                     'facebook' => 'https://www.facebook.com/teacher',
                     'twitter'  => 'https://www.twitter.com/teacher',
                 ],
             ],
-            'user_id'       => [
+            'user_id' => [
                 'description' => __('validation.attributes.user_id').' ('.__('doc.teacher.user_id').')',
                 'example'     => 1,
             ],
-            'media'         => [
+            'media' => [
                 'description' => __('validation.attributes.media.self'),
                 'example'     => [
                     'profile' => 1,

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-use App\Models\Product;
-use App\Models\Staff;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
+use App\Models\Product;
 use App\Models\Seminar;
+use App\Models\Staff;
 use App\Models\Teacher;
 use App\Models\User;
 use App\Models\Vendor;
@@ -26,9 +26,10 @@ enum MorphTypeEnum: string
     case STAFF         = 'staff';
     case USER          = 'user';
 
-    case TEACHER       = 'teacher';
-    case VENDOR        = 'vendor';
-    case PRODUCT       = 'product';
+    case TEACHER = 'teacher';
+    case VENDOR  = 'vendor';
+    case PRODUCT = 'product';
+
     public static function forMorphMap(): array
     {
         $map = [];

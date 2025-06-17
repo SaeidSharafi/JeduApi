@@ -1,15 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs\Deployment;
 
 use Illuminate\Support\Facades\Log;
 
-class ScribeSetupJob  extends BaseDeploymentJob
+final class ScribeSetupJob extends BaseDeploymentJob
 {
-
-    public function __construct(protected string $projectPath)
-    {
-    }
+    public function __construct(protected string $projectPath) {}
 
     public function handle(): void
     {
@@ -19,6 +18,7 @@ class ScribeSetupJob  extends BaseDeploymentJob
 
         if (app()->isProduction()) {
             Log::channel('deployment')->info('In production, skipping Scribe setup...');
+
             return;
         }
         $command = "{$artisanScript} scribe:setup --fresh --seed";

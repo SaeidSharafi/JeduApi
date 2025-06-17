@@ -1,15 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs\Deployment;
 
 use Illuminate\Support\Facades\Log;
 
-class GitPullJob extends BaseDeploymentJob
+final class GitPullJob extends BaseDeploymentJob
 {
     public int $timeout = 120;
-    public function __construct(protected string $projectPath, protected string $remoteUrlWithCreds, protected string $expectedRepo)
-    {
-    }
+
+    public function __construct(protected string $projectPath, protected string $remoteUrlWithCreds, protected string $expectedRepo) {}
 
     public function handle(): void
     {

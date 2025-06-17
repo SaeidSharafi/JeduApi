@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Api\Admin\SelectOptions\CategorySelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\TeacherSelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\TermSelectOptionController;
@@ -16,4 +18,4 @@ Route::middleware('auth:staff')
             ->name('select-option.vendor');
         Route::get('select-option/teacher', TeacherSelectOptionController::class)
             ->name('select-option.teacher');
-});
+    });

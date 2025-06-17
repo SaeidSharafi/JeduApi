@@ -1,11 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\ProductDeliveryOption;
 
 use App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction;
 use App\Data\Transformer\CarbonFromJalaliString;
-use App\Enums\FulfillmentTypeEnum;
-use App\Rules\ProductDeliveryOptionCheckRule;
 use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
@@ -13,13 +13,13 @@ use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class ProductDeliveryOptionUpdateData extends Data
+final class ProductDeliveryOptionUpdateData extends Data
 {
     public function __construct(
         public string $name,
         public string $sku,
         public int $price,
-        public string $status = 'draft',
+        public string $status,
         #[MapInputName('details')]
         public array $details_json,
         public array $teachers,
@@ -32,8 +32,7 @@ class ProductDeliveryOptionUpdateData extends Data
         public ?Carbon $featured_price_start_date = null,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]
         public ?Carbon $featured_price_end_date = null,
-    ) {
-    }
+    ) {}
 
     /**
      * Define the validation rules for the data.
@@ -43,8 +42,8 @@ class ProductDeliveryOptionUpdateData extends Data
     public static function rules(ValidationContext $context): array
     {
         $baseRules = [
-            'name'                      => ['required', 'string', 'max:255'],
-            'sku'                       => [
+            'name' => ['required', 'string', 'max:255'],
+            'sku'  => [
                 'required', 'string', 'max:255',
                 Rule::unique('product_delivery_options', 'sku')->where(function (Builder $query) {
                     $delivery_option = request()->route()->parameter('delivery_option');
@@ -70,17 +69,18 @@ class ProductDeliveryOptionUpdateData extends Data
         ];
 
         // Get the existing delivery option to determine its delivery method for details validation
-        $deliveryOption = request()->route()->parameter('delivery_option');
-        $deliveryMethod = $deliveryOption?->delivery_method?->value ?? $context->payload['delivery_method'] ?? null;
+        $deliveryOption  = request()->route()->parameter('delivery_option');
+        $deliveryMethod  = $deliveryOption?->delivery_method?->value  ?? $context->payload['delivery_method'] ?? null;
         $fulfillmentType = $deliveryOption?->fulfillment_type?->value ?? $context->payload['fulfillment_type'] ?? null;
 
-        $detailsRulesAction = app(GetDeliveryDetailsValidationRulesAction::class);
+        $detailsRulesAction      = app(GetDeliveryDetailsValidationRulesAction::class);
         $conditionalDetailsRules = $detailsRulesAction->handle(
             $fulfillmentType,
             $deliveryMethod,
             $context->payload['details'] ?? null,
             'details'
         );
+
         return array_merge($baseRules, $conditionalDetailsRules);
     }
 
@@ -124,42 +124,42 @@ class ProductDeliveryOptionUpdateData extends Data
     public function bodyParameters(): array
     {
         return [
-            'name'                            => [
+            'name' => [
                 'description' => 'Name of the delivery option',
                 'required'    => true,
                 'example'     => 'Online Live Session',
             ],
-            'sku'                             => [
+            'sku' => [
                 'description' => 'Unique SKU for the delivery option',
                 'required'    => true,
                 'example'     => 'COURSE-001-ONLINE',
             ],
-            'price'                           => [
+            'price' => [
                 'description' => 'Price of the delivery option in the smallest currency unit (e.g., cents)',
                 'required'    => true,
                 'example'     => 5000000,
             ],
-            'capacity'                        => [
+            'capacity' => [
                 'description' => 'Maximum capacity for this delivery option',
                 'required'    => false,
                 'example'     => 50,
             ],
-            'status'                          => [
+            'status' => [
                 'description' => 'Publication status of the delivery option',
                 'required'    => true,
                 'example'     => 'draft',
             ],
-            'is_prepayment_available'         => [
+            'is_prepayment_available' => [
                 'description' => 'Whether prepayment is available for this option',
                 'required'    => false,
                 'example'     => true,
             ],
-            'prepayment_amount'               => [
+            'prepayment_amount' => [
                 'description' => 'Amount required for prepayment in the smallest currency unit',
                 'required'    => false,
                 'example'     => 1000000,
             ],
-            'details'                         => [
+            'details' => [
                 'description' => 'Dynamic details object that varies based on delivery_method. See delivery method specific examples below.',
                 'required'    => true,
                 'example'     => [
@@ -169,72 +169,72 @@ class ProductDeliveryOptionUpdateData extends Data
                     'enrollment_end_date'   => '2025-12-31 23:59:59',
                 ],
             ],
-            'details.course_idnumber'         => [
+            'details.course_idnumber' => [
                 'description' => 'For `lms_moodle`. Course ID number in Moodle (required)',
                 'required'    => false,
                 'example'     => 'COURSE-001',
             ],
-            'details.activity_id'               => [
+            'details.activity_id' => [
                 'description' => 'For `lms_moodle`. Activity ID in Moodle (required)',
                 'required'    => false,
                 'example'     => 1,
             ],
-            'details.enrollment_start_date'   => [
+            'details.enrollment_start_date' => [
                 'description' => 'For `lms_moodle`. Enrollment start date for Moodle course',
                 'required'    => false,
                 'example'     => '2025-06-15 09:00:00',
             ],
-            'details.enrollment_end_date'     => [
+            'details.enrollment_end_date' => [
                 'description' => 'For `lms_moodle`. Enrollment end date for Moodle course',
                 'required'    => false,
                 'example'     => '2025-12-31 23:59:59',
             ],
-            'details.max_downloads'           => [
+            'details.max_downloads' => [
                 'description' => 'For `direct_download`. Maximum number of downloads allowed (required)',
                 'required'    => false,
                 'example'     => 5,
             ],
-            'details.expiration_date'         => [
+            'details.expiration_date' => [
                 'description' => 'When delivery_method is direct_download. Download expiration date',
                 'required'    => false,
                 'example'     => '2025-12-31 23:59:59',
             ],
-            'details.location'                => [
+            'details.location' => [
                 'description' => 'For `in_person`. Physical location for in-person sessions (required)',
                 'required'    => false,
                 'example'     => 'Room 101, Main Building',
             ],
-            'details.duration'                => [
+            'details.duration' => [
                 'description' => 'For `in_person`. Duration of in-person session (required)',
                 'required'    => false,
                 'example'     => '2 hours',
             ],
-            'details.schedule'                => [
+            'details.schedule' => [
                 'description' => 'For `in_person`. Schedule for in-person session (required)',
                 'required'    => false,
                 'example'     => 'Saturdays 9:00-11:00',
             ],
-            'details.additional_info'         => [
+            'details.additional_info' => [
                 'description' => 'For `in_person`. Additional information for in-person session',
                 'required'    => false,
                 'example'     => 'Please bring your own laptop',
             ],
-            'details.course_id'               => [
+            'details.course_id' => [
                 'description' => 'For `video_platform_spotplayer`. Course ID in SpotPlayer (requiredr)',
                 'required'    => false,
                 'example'     => 'SP-COURSE-001',
             ],
-            'details.moderator_password'      => [
+            'details.moderator_password' => [
                 'description' => 'For `live_session_bbb`. Moderator password for BigBlueButton session',
                 'required'    => false,
                 'example'     => 'mod123',
             ],
-            'details.attendee_password'       => [
+            'details.attendee_password' => [
                 'description' => 'For `live_session_bbb` or `live_session_skyroom`. Attendee password for live session',
                 'required'    => false,
                 'example'     => 'attend123',
             ],
-            'details.record_session'          => [
+            'details.record_session' => [
                 'description' => 'For `live_session_bbb` or `live_session_skyroom`. Whether to record the live session',
                 'required'    => false,
                 'example'     => true,
@@ -244,7 +244,7 @@ class ProductDeliveryOptionUpdateData extends Data
                 'required'    => false,
                 'example'     => 'course-001-session',
             ],
-            'details.session_duration'        => [
+            'details.session_duration' => [
                 'description' => 'For `live_session_bbb` or `live_session_skyroom`. Duration of the live session in minutes',
                 'required'    => false,
                 'example'     => 60,
@@ -254,7 +254,7 @@ class ProductDeliveryOptionUpdateData extends Data
                 'required'    => false,
                 'example'     => 'https://example.com/presentation',
             ],
-            'details.admin_notes'             => [
+            'details.admin_notes' => [
                 'description' => 'For `live_session_bbb` or `live_session_skyroom`. Admin notes for the session',
                 'required'    => false,
                 'example'     => 'This is a test session for course 001',
@@ -264,7 +264,7 @@ class ProductDeliveryOptionUpdateData extends Data
                 'required'    => false,
                 'example'     => true,
             ],
-            'details.mute_on_start'           => [
+            'details.mute_on_start' => [
                 'description' => 'For `live_session_bbb`. Whether to mute all participants on start',
                 'required'    => false,
                 'example'     => true,
@@ -304,7 +304,7 @@ class ProductDeliveryOptionUpdateData extends Data
                 'required'    => false,
                 'example'     => false,
             ],
-            'details.welcome_message'         => [
+            'details.welcome_message' => [
                 'description' => 'For `live_session_bbb` or `live_session_skyroom`. Welcome message for the session',
                 'required'    => false,
                 'example'     => 'Welcome to the live session!',
@@ -319,37 +319,37 @@ class ProductDeliveryOptionUpdateData extends Data
                 'required'    => false,
                 'example'     => true,
             ],
-            'details.auto_start_recording'   => [
+            'details.auto_start_recording' => [
                 'description' => 'For `live_session_bbb` or `live_session_skyroom`. Whether to automatically start recording the session',
                 'required'    => false,
                 'example'     => true,
             ],
-            'is_featured'                     => [
+            'is_featured' => [
                 'description' => 'Whether this delivery option is featured',
                 'required'    => true,
                 'example'     => false,
             ],
-            'featured_price'                  => [
+            'featured_price' => [
                 'description' => 'Featured price for the delivery option in the smallest currency unit',
                 'required'    => false,
                 'example'     => 4500000,
             ],
-            'featured_price_start_date'       => [
+            'featured_price_start_date' => [
                 'description' => 'Start date for featured pricing',
                 'required'    => false,
                 'example'     => '2025-06-15 00:00:00',
             ],
-            'featured_price_end_date'         => [
+            'featured_price_end_date' => [
                 'description' => 'End date for featured pricing',
                 'required'    => false,
                 'example'     => '2025-07-15 23:59:59',
             ],
-            'teachers'                        => [
+            'teachers' => [
                 'description' => 'List of teacher IDs associated with this delivery option',
                 'required'    => true,
                 'example'     => [1, 2, 3],
             ],
-            'teachers.*'                      => [
+            'teachers.*' => [
                 'description' => 'List of teacher IDs associated with this delivery option',
                 'required'    => true,
                 'example'     => [1, 2, 3],

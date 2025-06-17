@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\Admin;
 
 use App\Enums\PermissionEnum;
@@ -7,7 +9,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Staff;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class ProductDeliveryOptionPolicy
+final class ProductDeliveryOptionPolicy
 {
     use HandlesAuthorization;
 

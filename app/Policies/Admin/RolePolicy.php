@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\Admin;
 
 use App\Enums\PermissionEnum;
@@ -7,7 +9,7 @@ use App\Models\Staff;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Spatie\Permission\Models\Role;
 
-class RolePolicy
+final class RolePolicy
 {
     use HandlesAuthorization;
 
@@ -28,17 +30,19 @@ class RolePolicy
 
     public function update(Staff $user, Role $role): bool
     {
-        if ($user->hasRole($role->id)){
+        if ($user->hasRole($role->id)) {
             return false;
         }
+
         return $user->can(PermissionEnum::ROLE_UPDATE->value);
     }
 
     public function delete(Staff $user, Role $role): bool
     {
-        if ($user->hasRole($role->id)){
+        if ($user->hasRole($role->id)) {
             return false;
         }
+
         return $user->can(PermissionEnum::ROLE_DELETE->value);
     }
 }

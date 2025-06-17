@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Deployment;
 
+use Exception;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -17,6 +18,7 @@ final class ProcessGitHubDeploymentJob extends SpatieProcessWebhookJob
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 300;
+
     /**
      * Execute the job.
      */
@@ -55,14 +57,15 @@ final class ProcessGitHubDeploymentJob extends SpatieProcessWebhookJob
         ]);
 
         try {
-            $projectPath   = base_path();
-            $gitUsername   = config('app.git_deploy_username');
-            $gitPat        = config('app.git_deploy_pat');
-            $expectedRepo  = 'SaeidSharafi/JeduApi';
+            $projectPath  = base_path();
+            $gitUsername  = config('app.git_deploy_username');
+            $gitPat       = config('app.git_deploy_pat');
+            $expectedRepo = 'SaeidSharafi/JeduApi';
 
             if (empty($gitUsername) || empty($gitPat)) {
                 Log::channel('deployment')->error('✘ Git username or PAT not configured.');
-                $this->fail(new \Exception('Git credentials not configured for deployment pipeline.'));
+                $this->fail(new Exception('Git credentials not configured for deployment pipeline.'));
+
                 return;
             }
             $remoteUrlWithCreds = "https://{$gitUsername}:{$gitPat}@github.com/{$expectedRepo}.git";
@@ -73,12 +76,12 @@ final class ProcessGitHubDeploymentJob extends SpatieProcessWebhookJob
                 $remoteUrlWithCreds,
                 $expectedRepo
             )->allOnQueue($this->queue)
-            ->chain([
-                new ComposerInstallJob($projectPath),
-                new MigrationSetupJob($projectPath),
-                new ScribeSetupJob($projectPath),
-                new DemoSeedJob($projectPath),
-            ]);
+                ->chain([
+                    new ComposerInstallJob($projectPath),
+                    new MigrationSetupJob($projectPath),
+                    new ScribeSetupJob($projectPath),
+                    new DemoSeedJob($projectPath),
+                ]);
 
             Log::channel('deployment')->info('Deployment job chain dispatched successfully by ProcessGitHubDeploymentJob.');
 
@@ -87,6 +90,7 @@ final class ProcessGitHubDeploymentJob extends SpatieProcessWebhookJob
                 'trace' => $e->getTraceAsString(),
             ]);
             $this->fail($e);
+
             return;
         }
 
@@ -98,7 +102,7 @@ final class ProcessGitHubDeploymentJob extends SpatieProcessWebhookJob
      */
     public function failed(Throwable $exception): void
     {
-        Log::channel('deployment')->error('💥 ProcessGitHubDeploymentJob FAILED (Orchestrator): ' . $exception->getMessage(), [
+        Log::channel('deployment')->error('💥 ProcessGitHubDeploymentJob FAILED (Orchestrator): '.$exception->getMessage(), [
             'exception_details' => (string) $exception,
         ]);
     }

@@ -6,7 +6,7 @@ namespace App\Actions\Term;
 
 use App\Models\Term;
 
-class DeleteTermAction
+final class DeleteTermAction
 {
     public function execute(Term $term): void
     {

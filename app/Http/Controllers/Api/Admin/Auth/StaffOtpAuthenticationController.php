@@ -39,7 +39,6 @@ final class StaffOtpAuthenticationController extends Controller
      *
      * @throws InvalidOtpCode
      *
-     *
      * @responseFile 200 responses/auth/staff.login.json
      *
      * @response 422 {

@@ -1,11 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\SelectOptions;
 
-use App\Data\Category\CategorySelectOptionData;
 use App\Data\Teacher\TeacherSelectOptionData;
-use App\Data\Term\TermSelectOptionData;
-use App\Data\Term\VendorSelectOptionData;
 use App\Http\Controllers\Controller;
 
 /**
@@ -13,9 +12,8 @@ use App\Http\Controllers\Controller;
  *
  * @authenticated
  */
-class TeacherSelectOptionController extends Controller
+final class TeacherSelectOptionController extends Controller
 {
-
     /**
      * Teachers list
      *
@@ -33,14 +31,14 @@ class TeacherSelectOptionController extends Controller
                 $teacher->where(function ($teacher) use ($query) {
                     $teacher->whereRaw("concat(first_name, ' ', last_name) like ?", '%'.$query.'%')
                         ->orWhere('email', 'like', '%'.$query.'%')
-                        ->orWhere('phone', 'like', '%'.$query.'%')
-                    ;
+                        ->orWhere('phone', 'like', '%'.$query.'%');
                 });
             })
             ->withMediaAndVariants(['profile'])
             ->orderBy('last_name')
             ->limit(10)
             ->get(['id', 'first_name', 'last_name', 'email', 'phone']);
+
         return response()->success(
             TeacherSelectOptionData::collect($teachers)
         );

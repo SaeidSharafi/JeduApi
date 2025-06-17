@@ -19,7 +19,7 @@ final class ShowTermData extends Data
     public function __construct(
         public int $id,
         public string $name,
-        #[WithCast(EnumCast::class),  WithTransformer(TranslatableEnumData::class)]
+        #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public ?TermStatusEnum $status,
         public ?string $academic_year,
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Models\Vendor;
@@ -9,7 +11,7 @@ use Plank\Mediable\Media;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Vendor>
  */
-class VendorFactory extends Factory
+final class VendorFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -19,25 +21,25 @@ class VendorFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->company(),
-            'email' => $this->faker->unique()->safeEmail(),
-            'phone' => $this->faker->iranPhone(),
-            'phone2' => $this->faker->optional()->iranPhone(),
-            'address' => $this->faker->address(),
+            'name'         => $this->faker->company(),
+            'email'        => $this->faker->unique()->safeEmail(),
+            'phone'        => $this->faker->iranPhone(),
+            'phone2'       => $this->faker->optional()->iranPhone(),
+            'address'      => $this->faker->address(),
             'map_location' => $this->faker->url(),
-            'logo_url' => $this->faker->imageUrl(),
-            'favicon_url' => $this->faker->imageUrl(),
+            'logo_url'     => $this->faker->imageUrl(),
+            'favicon_url'  => $this->faker->imageUrl(),
             'social_links' => [
-                'facebook' => $this->faker->url(),
-                'twitter' => $this->faker->url(),
+                'facebook'  => $this->faker->url(),
+                'twitter'   => $this->faker->url(),
                 'instagram' => $this->faker->url(),
-                'linkedin' => $this->faker->url(),
+                'linkedin'  => $this->faker->url(),
             ],
             'theme_options' => [
-                'primary_color' => $this->faker->hexColor(),
+                'primary_color'   => $this->faker->hexColor(),
                 'secondary_color' => $this->faker->hexColor(),
-                'font_family' => $this->faker->word(),
-                'layout' => $this->faker->randomElement(['boxed', 'full-width']),
+                'font_family'     => $this->faker->word(),
+                'layout'          => $this->faker->randomElement(['boxed', 'full-width']),
             ],
         ];
     }
@@ -66,6 +68,7 @@ class VendorFactory extends Factory
             $vendor->save();
         });
     }
+
     public function withLogo(): static
     {
         return $this->afterCreating(function (Vendor $vendor) {

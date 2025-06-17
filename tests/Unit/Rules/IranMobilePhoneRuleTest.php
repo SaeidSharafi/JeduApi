@@ -32,7 +32,7 @@ describe('IranMobilePhoneRule', function (): void {
         }
     });
     it('accepts valid phone numbers', function (): void {
-        $rule         = new IranMobilePhoneRule();
+        $rule              = new IranMobilePhoneRule();
         $validPhoneNumbers = [
             '09123456789', // 09X
             '9123456789',  // 9X (without leading 0)

@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Vendor;
 
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Data;
 
-class ShowVendorData extends Data
+final class ShowVendorData extends Data
 {
     public function __construct(
         public int $id,
@@ -25,6 +27,5 @@ class ShowVendorData extends Data
         public Verta $created_at,
         #[WithCast(DateTimeInterfaceCast::class)]
         public Verta $updated_at
-    ) {
-    }
+    ) {}
 }

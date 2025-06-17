@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Product;
 
-use App\Contracts\ProductableContract;
 use App\Contracts\ProductableDataContract;
-use App\Data\Casts\MorphEnumCast;
 use App\Data\Casts\ProductableCast;
 use App\Data\Term\ShowTermData;
 use App\Data\Transformer\TranslatableEnumData;
@@ -15,7 +15,7 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-class ProductData extends Data
+final class ProductData extends Data
 {
     public function __construct(
         public int $id,
@@ -35,7 +35,5 @@ class ProductData extends Data
         public ?string $name,
         public bool $is_featured,
         public ?array $details_json
-    )
-    {
-    }
+    ) {}
 }

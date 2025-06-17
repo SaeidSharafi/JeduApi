@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\ProductDeliveryOption\DetailsData;
 
 use App\Contracts\DeliveryOptionDetialDataContract;
@@ -12,7 +14,7 @@ use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Attributes\Validation\Url;
 use Spatie\LaravelData\Data;
 
-class LiveSessionBbbDetailsData extends Data implements DeliveryOptionDetialDataContract
+final class LiveSessionBbbDetailsData extends Data implements DeliveryOptionDetialDataContract
 {
     public function __construct(
         #[Nullable, StringType, Max(255)]
@@ -68,7 +70,5 @@ class LiveSessionBbbDetailsData extends Data implements DeliveryOptionDetialData
 
         #[Nullable, StringType, Max(2000)]
         public ?string $admin_notes
-    )
-    {
-    }
+    ) {}
 }

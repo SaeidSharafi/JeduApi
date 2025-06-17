@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\Product\CreateProductAction;
@@ -25,7 +27,7 @@ use Spatie\QueryBuilder\QueryBuilder;
  *
  * @authenticated Staff
  */
-class ProductController extends Controller
+final class ProductController extends Controller
 {
     /**
      * Display a listing of the products.
@@ -52,9 +54,9 @@ class ProductController extends Controller
                 AllowedFilter::exact('is_featured'),
                 AllowedFilter::exact('status')->default(PublicationStatusEnum::PUBLISHED),
             ])
-            ->allowedSorts(['created_at','updated_at', 'name', 'short_name', 'status', 'is_visible', 'is_featured'])
+            ->allowedSorts(['created_at', 'updated_at', 'name', 'short_name', 'status', 'is_visible', 'is_featured'])
             ->defaultSort('-created_at')
-            ->with(['term','productable', 'vendor'])
+            ->with(['term', 'productable', 'vendor'])
             ->paginate(request()->input('perPage', 15))
             ->withQueryString();
 
@@ -71,7 +73,8 @@ class ProductController extends Controller
     {
         Gate::authorize('create', Product::class);
         $product = $action->handle($data);
-        $product->load(['productableWithAllRelations','term']);
+        $product->load(['productableWithAllRelations', 'term']);
+
         return response()->created(data: ProductData::from($product), model: Product::class);
     }
 
@@ -85,7 +88,8 @@ class ProductController extends Controller
     public function show(Product $product): ApiResponseInterface
     {
         Gate::authorize('view', $product);
-        $product->load(['productableWithAllRelations','term']);
+        $product->load(['productableWithAllRelations', 'term']);
+
         return response()->success(
             ProductData::from($product)->toArray()
         );
@@ -101,8 +105,9 @@ class ProductController extends Controller
     public function update(ProductUpdateData $data, Product $product, UpdateProductAction $action): ApiResponseInterface
     {
         Gate::authorize('update', $product);
-        $product = $action->handle($data,$product);
-        $product->load(['productableWithAllRelations','term', 'categories']);
+        $product = $action->handle($data, $product);
+        $product->load(['productableWithAllRelations', 'term', 'categories']);
+
         return response()->updated(
             ProductData::from($product)->toArray(),
             model: Product::class
@@ -113,6 +118,7 @@ class ProductController extends Controller
      * Remove the specified product from storage.
      *
      * @response 204
+     *
      * @responseFile 404 responses/404.json
      * @responseFile 422 responses/422.json
      */
@@ -120,6 +126,7 @@ class ProductController extends Controller
     {
         Gate::authorize('delete', $product);
         $action->handle($product);
+
         return response()->noContentJson();
     }
 }

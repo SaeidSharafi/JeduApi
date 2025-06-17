@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Rules;
 
 use App\Enums\ProductableEnum;
@@ -9,19 +11,20 @@ use Closure;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-class ProductableExistRule implements DataAwareRule,ValidationRule
+final class ProductableExistRule implements DataAwareRule, ValidationRule
 {
-    protected array $data = [];
+    private array $data = [];
+
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         $type = ProductableEnum::tryFrom(data_get($this->data, 'productable_type'));
-        if (!$type) {
+        if (! $type) {
             return;
         }
 
         $model = $type->getModelClass();
         if ($model::query()->where('id', $value)->doesntExist()) {
-            $fail(__('validation.exists', ['attribute' =>  __('validation.attributes.product.productable_type')]));
+            $fail(__('validation.exists', ['attribute' => __('validation.attributes.product.productable_type')]));
         }
         if (
             data_get($this->data, 'force_create')
@@ -29,7 +32,7 @@ class ProductableExistRule implements DataAwareRule,ValidationRule
         ) {
             return;
         }
-       $existingProduct = Product::query()
+        $existingProduct = Product::query()
             ->where('productable_id', $value)
             ->where('productable_type', $type->value)
             ->where('status', PublicationStatusEnum::PUBLISHED)
@@ -38,7 +41,7 @@ class ProductableExistRule implements DataAwareRule,ValidationRule
         if ($existingProduct) {
             $fail(__('validation.productable_exist', [
                 'type' => $type->translate(),
-                'name' => $existingProduct->name
+                'name' => $existingProduct->name,
             ]));
         }
     }
@@ -46,6 +49,7 @@ class ProductableExistRule implements DataAwareRule,ValidationRule
     public function setData(array $data): self
     {
         $this->data = $data;
+
         return $this;
     }
 }

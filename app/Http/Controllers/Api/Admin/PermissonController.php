@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\Role\OutputPermissionsAction;
@@ -11,9 +13,8 @@ use App\Http\Controllers\Controller;
  *
  * APIs for getting all permissions
  */
-class PermissonController extends Controller
+final class PermissonController extends Controller
 {
-
     /**
      * Get all permissions
      *

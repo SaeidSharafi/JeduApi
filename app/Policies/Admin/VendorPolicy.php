@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\Admin;
 
 use App\Enums\PermissionEnum;
 use App\Models\Staff;
 use App\Models\Vendor;
 
-class VendorPolicy
+final class VendorPolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -47,5 +49,4 @@ class VendorPolicy
     {
         return $user->can(PermissionEnum::VENDOR_DELETE);
     }
-
 }

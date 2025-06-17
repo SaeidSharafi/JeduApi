@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\SelectOptions;
 
 use App\Data\Category\CategorySelectOptionData;
@@ -12,9 +14,8 @@ use App\Http\Controllers\Controller;
  *
  * @authenticated
  */
-class CategorySelectOptionController extends Controller
+final class CategorySelectOptionController extends Controller
 {
-
     /**
      * Categories list
      *
@@ -32,13 +33,13 @@ class CategorySelectOptionController extends Controller
                 $category->where(function ($category) use ($query) {
                     $category
                         ->where('name', 'like', '%'.$query.'%')
-                        ->orWhere('slug', 'like', '%'.$query.'%')
-                    ;
+                        ->orWhere('slug', 'like', '%'.$query.'%');
                 });
             })
             ->orderBy('name')
             ->limit(10)
             ->get(['id', 'name', 'slug', 'icon_url']);
+
         return response()->success(
             CategorySelectOptionData::collect($categories)
         );

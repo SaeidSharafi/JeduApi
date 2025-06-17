@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Casts;
 
 use App\Contracts\DeliveryOptionDetialDataContract;
@@ -15,29 +17,29 @@ use Spatie\LaravelData\Casts\Cast;
 use Spatie\LaravelData\Support\Creation\CreationContext;
 use Spatie\LaravelData\Support\DataProperty;
 
-class DeliveryOptionDetailCast implements Cast
+final class DeliveryOptionDetailCast implements Cast
 {
     public function cast(DataProperty $property, mixed $value, array $properties, CreationContext $context): DeliveryOptionDetialDataContract
     {
         $fulfillmentType = $properties['fulfillment_type'] ?? null;
-        $deliveryMethod = $properties['delivery_method'] ?? null;
+        $deliveryMethod  = $properties['delivery_method']  ?? null;
 
-        if (!$fulfillmentType || !$deliveryMethod) {
+        if (! $fulfillmentType || ! $deliveryMethod) {
             return EmptyDetailsData::from([]);
         }
 
-        if (!$value) {
+        if (! $value) {
             return EmptyDetailsData::from([]);
         }
 
         return match ($deliveryMethod) {
-            DeliveryMethodEnum::LMS_MOODLE => LmsMoodleDetailsData::from($value),
-            DeliveryMethodEnum::DIRECT_DOWNLOAD => DirectDownloadDetailsData::from($value),
-            DeliveryMethodEnum::IN_PERSON => InPersonDetailsData::from($value),
-            DeliveryMethodEnum::LIVE_SESSION_BBB => LiveSessionBbbDetailsData::from($value),
-            DeliveryMethodEnum::LIVE_SESSION_SKYROOM => LiveSessionSkyroomDetailsData::from($value),
+            DeliveryMethodEnum::LMS_MOODLE                => LmsMoodleDetailsData::from($value),
+            DeliveryMethodEnum::DIRECT_DOWNLOAD           => DirectDownloadDetailsData::from($value),
+            DeliveryMethodEnum::IN_PERSON                 => InPersonDetailsData::from($value),
+            DeliveryMethodEnum::LIVE_SESSION_BBB          => LiveSessionBbbDetailsData::from($value),
+            DeliveryMethodEnum::LIVE_SESSION_SKYROOM      => LiveSessionSkyroomDetailsData::from($value),
             DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER => VideoPlatformSpotplayerDetailsData::from($value),
-            default => EmptyDetailsData::from([]),
+            default                                       => EmptyDetailsData::from([]),
         };
 
     }

@@ -23,14 +23,14 @@ test('to array', function (): void {
             'featured_price'            => $productDeliveryOption->featured_price,
             'featured_price_start_date' => $productDeliveryOption->featured_price_start_date?->format('Y-m-d H:i:s'),
             'featured_price_end_date'   => $productDeliveryOption->featured_price_end_date?->format('Y-m-d H:i:s'),
-            'created_at'               => $productDeliveryOption->created_at?->format('Y-m-d H:i:s'),
-            'updated_at'               => $productDeliveryOption->updated_at?->format('Y-m-d H:i:s'),
+            'created_at'                => $productDeliveryOption->created_at?->format('Y-m-d H:i:s'),
+            'updated_at'                => $productDeliveryOption->updated_at?->format('Y-m-d H:i:s'),
         ]);
 
 });
 
 test('relation products', function (): void {
-    $product = App\Models\Product::factory()->create();
+    $product        = App\Models\Product::factory()->create();
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
     expect($deliveryOption->product)
         ->toBeInstanceOf(App\Models\Product::class)
@@ -40,7 +40,7 @@ test('relation products', function (): void {
 
 test('relation teachers', function (): void {
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create();
-    $teachers = App\Models\Teacher::factory()->count(3)->create();
+    $teachers       = App\Models\Teacher::factory()->count(3)->create();
     $deliveryOption->teachers()->attach($teachers->pluck('id'));
     $deliveryOption->load('teachers');
     expect($deliveryOption->teachers)

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Casts;
 
 use App\Contracts\ProductableContract;
@@ -12,30 +14,29 @@ use App\Data\Seminar\ShowSeminarData;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Seminar;
+use InvalidArgumentException;
 use Spatie\LaravelData\Casts\Cast;
 use Spatie\LaravelData\Support\Creation\CreationContext;
 use Spatie\LaravelData\Support\DataProperty;
 
-readonly class ProductableCast implements Cast
+final readonly class ProductableCast implements Cast
 {
-    public function __construct(protected bool $short = false)
-    {
-    }
+    public function __construct(protected bool $short = false) {}
 
     public function cast(DataProperty $property, mixed $value, array $properties, CreationContext $context): mixed
     {
-        if (!$value) {
+        if (! $value) {
             return null;
         }
-        if (!($value instanceof ProductableContract)) {
-            throw new \InvalidArgumentException('Value must implement ProductableContract, ' . gettype($value) . ' given.');
+        if (! ($value instanceof ProductableContract)) {
+            throw new InvalidArgumentException('Value must implement ProductableContract, '.gettype($value).' given.');
         }
 
-       return  match (true){
-            $value instanceof Course => $this->getCourseData($value),
-            $value instanceof Seminar => $this->getSeminarData($value),
+        return match (true) {
+            $value instanceof Course       => $this->getCourseData($value),
+            $value instanceof Seminar      => $this->getSeminarData($value),
             $value instanceof DigitalAsset => $this->getDigitalAssetData($value),
-            default => throw new \InvalidArgumentException('Unsupported productable type: ' . get_class($value)),
+            default                        => throw new InvalidArgumentException('Unsupported productable type: '.get_class($value)),
         };
 
     }
@@ -45,14 +46,15 @@ readonly class ProductableCast implements Cast
         if ($this->short) {
             return CourseListItemData::from([
                 ...$value->toArray(),
-                'media' =>[],
-                'categories' => []
+                'media'      => [],
+                'categories' => [],
             ]);
         }
-        return  ShowCourseData::from([
+
+        return ShowCourseData::from([
             ...$value->toArray(),
-            'media' => $value->getProductableMedia(),
-            'categories' => $value->categories
+            'media'      => $value->getProductableMedia(),
+            'categories' => $value->categories,
         ]);
     }
 
@@ -61,33 +63,34 @@ readonly class ProductableCast implements Cast
         if ($this->short) {
             return SeminarListItemData::from([
                 ...$value->toArray(),
-                'media' => [],
-                'categories' => []
+                'media'      => [],
+                'categories' => [],
             ]);
         }
-       return ShowSeminarData::from([
+
+        return ShowSeminarData::from([
             ...$value->toArray(),
-            'media' => $value->getProductableMedia(),
-            'categories' => $value->categories
+            'media'      => $value->getProductableMedia(),
+            'categories' => $value->categories,
         ]);
     }
 
-    private function getDigitalAssetData($value): ShowDigitalAssetData|DIgitalAssetListItemData
+    private function getDigitalAssetData($value): ShowDigitalAssetData|DigitalAssetListItemData
     {
         if ($this->short) {
             return DigitalAssetListItemData::from([
                 ...$value->toArray(),
-                'media' => [],
+                'media'       => [],
                 'attachments' => $value->getProductableAttachment(),
-                'categories' => []
+                'categories'  => [],
             ]);
         }
+
         return ShowDigitalAssetData::from([
             ...$value->toArray(),
-            'media' => $value->getProductableMedia(),
+            'media'       => $value->getProductableMedia(),
             'attachments' => $value->getProductableAttachment(),
-            'categories' => $value->categories
+            'categories'  => $value->categories,
         ]);
     }
-
 }

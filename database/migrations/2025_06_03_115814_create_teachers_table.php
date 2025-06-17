@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -19,7 +21,7 @@ return new class extends Migration
             $table->float('rate')->nullable();
             $table->string('email')->unique();
             $table->string('phone')->nullable();
-            $table->enum('gender',['male', 'female'])->nullable();
+            $table->enum('gender', ['male', 'female'])->nullable();
             $table->date('birth_date')->nullable();
             $table->json('social_links')->nullable();
             $table->foreignId('user_id')->references('id')->on('users')->restrictOnDelete();

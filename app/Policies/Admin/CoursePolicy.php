@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Policies\Admin;
 
 use App\Enums\PermissionEnum;
-use App\Models\Staff;
 use App\Models\Course;
+use App\Models\Staff;
 
 final class CoursePolicy
 {

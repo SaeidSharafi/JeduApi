@@ -1,15 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs\Deployment;
 
 use Illuminate\Support\Facades\Log;
 
-class DemoSeedJob extends BaseDeploymentJob
+final class DemoSeedJob extends BaseDeploymentJob
 {
-
-    public function __construct(protected string $projectPath)
-    {
-    }
+    public function __construct(protected string $projectPath) {}
 
     public function handle(): void
     {
@@ -19,6 +18,7 @@ class DemoSeedJob extends BaseDeploymentJob
 
         if (app()->isProduction()) {
             Log::channel('deployment')->info('In production, skipping Demo seeding...');
+
             return;
         }
         $command = "{$artisanScript} db:seed --class=ScribeSeeder";

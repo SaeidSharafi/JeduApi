@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\Role\CreateRoleAction;
@@ -20,7 +22,7 @@ use Spatie\QueryBuilder\QueryBuilder;
  *
  * @authenticated
  */
-class RoleController extends Controller
+final class RoleController extends Controller
 {
     /**
      * Display a listing of the roles.
@@ -54,6 +56,7 @@ class RoleController extends Controller
     {
         Gate::authorize('create', Role::class);
         $action->handle($data);
+
         return response()->created();
     }
 
@@ -61,6 +64,7 @@ class RoleController extends Controller
      * Display the specified role.
      *
      * @responseFile 200 responses/role/show.json
+     *
      * @response 403
      * @response 404
      */
@@ -76,6 +80,7 @@ class RoleController extends Controller
      * Update the specified role in storage.
      *
      * @responseFile 200 responses/role/show.json
+     *
      * @response 403
      * @response 404
      */
@@ -97,6 +102,7 @@ class RoleController extends Controller
     {
         Gate::authorize('delete', $role);
         $action->handle($role);
+
         return response()->noContentJson();
     }
 }

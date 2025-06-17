@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,8 +17,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->nullable();
-            $table->string('phone',20)->nullable();
-            $table->string('phone2',20)->nullable();
+            $table->string('phone', 20)->nullable();
+            $table->string('phone2', 20)->nullable();
             $table->text('address')->nullable();
             $table->text('map_location')->nullable();
             $table->string('logo_url')->nullable();

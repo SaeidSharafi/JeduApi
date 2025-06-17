@@ -4,14 +4,9 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-use App\Models\Staff;
-use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Seminar;
-use App\Models\Teacher;
-use App\Models\User;
-use App\Models\Vendor;
 use App\Traits\AdvanceEnum;
 
 enum ProductableEnum: string

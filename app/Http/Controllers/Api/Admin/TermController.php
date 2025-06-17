@@ -7,14 +7,13 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Actions\Term\CreateTermAction;
 use App\Actions\Term\DeleteTermAction;
 use App\Actions\Term\UpdateTermAction;
+use App\Contracts\ApiResponseInterface;
 use App\Data\Term\CreateTermData;
 use App\Data\Term\ShowTermData;
 use App\Data\Term\TermListItemData;
-use App\Data\Term\UpdateTermData;
+use App\Http\Controllers\Controller;
 use App\Models\Term;
 use Illuminate\Support\Facades\Gate;
-use App\Contracts\ApiResponseInterface;
-use App\Http\Controllers\Controller;
 use Spatie\QueryBuilder\AllowedFilter;
 
 /**
@@ -43,8 +42,8 @@ final class TermController extends Controller
         Gate::authorize('view-any', Term::class);
         $terms = \Spatie\QueryBuilder\QueryBuilder::for(Term::class)
             ->allowedFilters(['name',
-                              AllowedFilter::exact('status'),
-                              'academic_year'])
+                AllowedFilter::exact('status'),
+                'academic_year'])
             ->allowedSorts(['name', 'status', 'academic_year', 'start_date', 'end_date'])
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
@@ -61,7 +60,8 @@ final class TermController extends Controller
     {
         Gate::authorize('create', Term::class);
         $action->execute($data);
-        return response()->created(model:  Term::class);
+
+        return response()->created(model: Term::class);
     }
 
     /**
@@ -74,6 +74,7 @@ final class TermController extends Controller
     public function show(Term $term): ApiResponseInterface
     {
         Gate::authorize('view', $term);
+
         return response()->success(ShowTermData::from($term));
     }
 
@@ -88,7 +89,8 @@ final class TermController extends Controller
     {
         Gate::authorize('update', $term);
         $term = $action->execute($term, $data);
-        return response()->updated(ShowTermData::from($term)->toArray(), model:  Term::class);
+
+        return response()->updated(ShowTermData::from($term)->toArray(), model: Term::class);
     }
 
     /**
@@ -103,6 +105,7 @@ final class TermController extends Controller
     {
         Gate::authorize('delete', $term);
         $action->execute($term);
+
         return response()->noContentJson();
     }
 }

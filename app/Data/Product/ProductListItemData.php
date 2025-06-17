@@ -1,15 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Product;
 
-use App\Contracts\ProductableContract;
 use App\Contracts\ProductableDataContract;
-use App\Data\Casts\MorphEnumCast;
 use App\Data\Casts\ProductableCast;
-use App\Data\Term\ShowTermData;
 use App\Data\Term\TermListItemData;
 use App\Data\Transformer\TranslatableEnumData;
-use App\Data\Vendor\VendorListItemData;
 use App\Data\Vendor\VendorShortListItemData;
 use App\Enums\MorphTypeEnum;
 use Spatie\LaravelData\Attributes\MapOutputName;
@@ -18,7 +16,7 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-class ProductListItemData extends Data
+final class ProductListItemData extends Data
 {
     public function __construct(
         public int $id,
@@ -37,7 +35,5 @@ class ProductListItemData extends Data
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public \App\Enums\PublicationStatusEnum $status,
         public ?array $details_json
-    )
-    {
-    }
+    ) {}
 }

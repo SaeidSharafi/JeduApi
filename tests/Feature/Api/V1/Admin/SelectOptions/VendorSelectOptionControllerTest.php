@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Vendor;
 
-uses(\Tests\AuthTestTrait::class);
+uses(Tests\AuthTestTrait::class);
 describe('Admin Vendor Select Option API', function () {
     it('returns filtered vendor select options', function () {
         $this->authorized_user();
@@ -10,23 +12,23 @@ describe('Admin Vendor Select Option API', function () {
         $logo = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('logo.jpg'))
             ->toDisk('public')
             ->upload();
-        \App\Models\Vendor::factory()->count(3)
+        Vendor::factory()->count(3)
             ->afterCreating(function (Vendor $vendor) use ($logo) {
                 $vendor->attachMedia($logo->id, 'logo');
                 $vendor->logo_url = $vendor->getMedia('logo')->first()->getUrl();
                 $vendor->save();
             })
             ->create();
-        $vendor = \App\Models\Vendor::factory()
+        $vendor = Vendor::factory()
             ->afterCreating(function (Vendor $vendor) use ($logo) {
                 $vendor->attachMedia($logo->id, 'logo');
                 $vendor->logo_url = $vendor->getMedia('logo')->first()->getUrl();
                 $vendor->save();
             })
             ->create([
-            'name' => 'TestVendor',
-            'address' => 'test address',
-        ])->fresh();
+                'name'    => 'TestVendor',
+                'address' => 'test address',
+            ])->fresh();
         $response = $this->getJson(
             route('api.v1.admin.select-option.vendor', ['q' => 'TestVendor'])
         );
@@ -43,8 +45,8 @@ describe('Admin Vendor Select Option API', function () {
             ],
         ]);
         $response->assertJsonFragment([
-            'title' => 'TestVendor',
-            'subtitle' => 'test address',
+            'title'     => 'TestVendor',
+            'subtitle'  => 'test address',
             'image_url' => $vendor->logo_url,
         ]);
     });

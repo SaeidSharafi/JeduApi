@@ -1,27 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Rules;
 
-use App\Enums\ProductableEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Models\Product;
 use Closure;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Validation\Rules\Enum;
 
-class PublishedProductExistRule implements DataAwareRule, ValidationRule
+final class PublishedProductExistRule implements DataAwareRule, ValidationRule
 {
-    public function __construct(protected readonly ?Product $product)
-    {
-    }
+    private array $data = [];
 
-    protected array $data = [];
+    public function __construct(protected readonly ?Product $product) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (!$this->product) {
-            $fail("Product is not set for validation.");
+        if (! $this->product) {
+            $fail('Product is not set for validation.');
+
             return;
         }
         if (PublicationStatusEnum::tryFrom($value) !== PublicationStatusEnum::PUBLISHED) {
@@ -33,7 +32,7 @@ class PublishedProductExistRule implements DataAwareRule, ValidationRule
             ->whereNot('id', $this->product->id)
             ->where('status', PublicationStatusEnum::PUBLISHED)
             ->first();
-        if ($existingProduct){
+        if ($existingProduct) {
             $fail("A published product already exists for this {$this->product->productable_type} with ID {$existingProduct->id}.");
         }
     }
@@ -41,6 +40,7 @@ class PublishedProductExistRule implements DataAwareRule, ValidationRule
     public function setData(array $data): self
     {
         $this->data = $data;
+
         return $this;
     }
 }

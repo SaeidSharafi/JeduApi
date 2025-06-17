@@ -99,15 +99,15 @@ final class CreateDigitalAssetData extends Data
     public static function attributes(...$args): array
     {
         return [
-            'name'                  => __('validation.attributes.digital_asset.name'),
-            'version'               => __('validation.attributes.digital_asset.version'),
+            'name'                    => __('validation.attributes.digital_asset.name'),
+            'version'                 => __('validation.attributes.digital_asset.version'),
             'is_attachable_to_course' => __('validation.attributes.digital_asset.is_attachable_to_course'),
-            'published_at'         => __('validation.attributes.digital_asset.published_at'),
-            'keywords'              => __('validation.attributes.digital_asset.keywords'),
-            'page_count'            => __('validation.attributes.digital_asset.page_count'),
-            'duration_seconds'      => __('validation.attributes.digital_asset.duration_seconds'),
-            'attachments.main'      => __('validation.attributes.digital_asset.attachments.main'),
-            'attachments.preview'   => __('validation.attributes.digital_asset.attachments.preview'),
+            'published_at'            => __('validation.attributes.digital_asset.published_at'),
+            'keywords'                => __('validation.attributes.digital_asset.keywords'),
+            'page_count'              => __('validation.attributes.digital_asset.page_count'),
+            'duration_seconds'        => __('validation.attributes.digital_asset.duration_seconds'),
+            'attachments.main'        => __('validation.attributes.digital_asset.attachments.main'),
+            'attachments.preview'     => __('validation.attributes.digital_asset.attachments.preview'),
 
         ];
     }

@@ -32,7 +32,6 @@ final class StaffForgotPasswordController extends Controller
      *
      * @throws UserNotFoundException
      *
-     *
      * @response {
      *     "tracking_code": "string",
      *     "otp_type": "string",

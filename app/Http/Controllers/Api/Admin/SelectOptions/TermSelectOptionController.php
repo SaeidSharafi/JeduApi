@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\SelectOptions;
 
-use App\Data\Category\CategorySelectOptionData;
 use App\Data\Term\TermSelectOptionData;
 use App\Http\Controllers\Controller;
 
@@ -13,9 +14,8 @@ use App\Http\Controllers\Controller;
  *
  * @authenticated
  */
-class TermSelectOptionController extends Controller
+final class TermSelectOptionController extends Controller
 {
-
     /**
      * Terms list
      *
@@ -32,13 +32,13 @@ class TermSelectOptionController extends Controller
                 $term->where(function ($term) use ($query) {
                     $term
                         ->where('name', 'like', '%'.$query.'%')
-                        ->orWhere('academic_year', 'like', '%'.$query.'%')
-                    ;
+                        ->orWhere('academic_year', 'like', '%'.$query.'%');
                 });
             })
             ->orderBy('name')
             ->limit(10)
             ->get(['id', 'name', 'academic_year']);
+
         return response()->success(
             TermSelectOptionData::collect($terms)
         );

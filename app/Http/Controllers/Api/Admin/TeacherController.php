@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\Teacher\CreateTeacherAction;
@@ -23,7 +25,7 @@ use Spatie\QueryBuilder\QueryBuilder;
  *
  * @authenticated Staff
  */
-class TeacherController extends Controller
+final class TeacherController extends Controller
 {
     /**
      * Display a listing of the teacher.
@@ -34,7 +36,6 @@ class TeacherController extends Controller
      * @queryParam filter[last_name] string Filter by teacher's last name. Example: Doe
      * @queryParam filter[email] string Filter by teacher's email. Example: teahcer@example.com
      * @queryParam filter[phone] string Filter by teacher's email. Example: 09315468795
-     *
      * @queryParam sort string Sort by a field. Allowed values: first_name, last_name, email, phone.
      *                      Prefix with '-' for descending order (e.g., -last_name for descending by last name).
      *                      Example: last_name
@@ -57,12 +58,14 @@ class TeacherController extends Controller
      * Store a newly created teacher in database.
      *
      * @response 201
+     *
      * @responseFile 422 responses/422.json
      */
     public function store(CreateTeacherData $data, CreateTeacherAction $action): ApiResponseInterface
     {
         Gate::authorize('create', Teacher::class);
         $action->handle($data);
+
         return response()->created(model: Teacher::class);
     }
 
@@ -83,6 +86,7 @@ class TeacherController extends Controller
                     return MediaData::fromModel($mediaItem, $tag);
                 });
             })->toArray();
+
         return response()->success(ShowTeacherData::from([
             ...$teacher->toArray(),
             'user'  => $teacher->user,
@@ -101,6 +105,7 @@ class TeacherController extends Controller
     {
         Gate::authorize('update', $teacher);
         $action->handle($data, $teacher);
+
         return response()->updated(model: Teacher::class);
     }
 
@@ -113,6 +118,7 @@ class TeacherController extends Controller
     {
         Gate::authorize('delete', $teacher);
         $action->handle($teacher);
+
         return response()->noContentJson();
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\DeliveryMethodEnum;
@@ -9,9 +11,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class ProductDeliveryOption extends Model
+final class ProductDeliveryOption extends Model
 {
     use HasFactory;
 
@@ -34,6 +35,16 @@ class ProductDeliveryOption extends Model
             'featured_price_end_date',
         ];
 
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function teachers(): BelongsToMany
+    {
+        return $this->belongsToMany(Teacher::class);
+    }
+
     protected function casts(): array
     {
         return [
@@ -48,15 +59,5 @@ class ProductDeliveryOption extends Model
             'created_at'                => 'datetime:Y-m-d H:i:s',
             'updated_at'                => 'datetime:Y-m-d H:i:s',
         ];
-    }
-
-    public function product(): BelongsTo
-    {
-        return $this->belongsTo(Product::class);
-    }
-
-    public function teachers(): BelongsToMany
-    {
-        return $this->belongsToMany(Teacher::class);
     }
 }

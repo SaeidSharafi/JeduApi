@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Vendor;
 
 use Spatie\LaravelData\Data;
 
-class VendorShortListItemData extends Data
+final class VendorShortListItemData extends Data
 {
     public function __construct(
         public int $id,
@@ -12,7 +14,5 @@ class VendorShortListItemData extends Data
         public ?string $email,
         public ?string $phone,
         public ?string $logo_url,
-    )
-    {
-    }
+    ) {}
 }

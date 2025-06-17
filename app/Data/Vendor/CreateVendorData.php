@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Vendor;
 
 use App\Rules\IranMobilePhoneRule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class CreateVendorData extends Data
+final class CreateVendorData extends Data
 {
     public function __construct(
         public string $name,
@@ -18,8 +20,7 @@ class CreateVendorData extends Data
         public ?array $social_links,
         public ?array $theme_options,
         public array $media,
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {
@@ -37,7 +38,6 @@ class CreateVendorData extends Data
             'media.favicon' => ['nullable', 'integer', 'exists:media,id'],
         ];
     }
-
 
     /**
      * @codeCoverageIgnore
@@ -74,8 +74,8 @@ class CreateVendorData extends Data
             'social_links' => [
                 'description' => 'Array of social media links',
                 'example'     => [
-                    'facebook' => 'https://facebook.com/vendor',
-                    'twitter'  => 'https://twitter.com/vendor',
+                    'facebook'  => 'https://facebook.com/vendor',
+                    'twitter'   => 'https://twitter.com/vendor',
                     'instagram' => 'https://instagram.com/vendor',
                 ],
             ],
@@ -99,5 +99,4 @@ class CreateVendorData extends Data
             ],
         ];
     }
-
 }

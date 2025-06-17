@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
-use App\Enums\DeliveryMethodEnum;
 use App\Enums\FulfillmentTypeEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Models\Product;
@@ -11,7 +12,7 @@ use App\Models\Teacher;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
-class ProductDeliveryOptionFactory extends Factory
+final class ProductDeliveryOptionFactory extends Factory
 {
     protected $model = ProductDeliveryOption::class;
 
@@ -24,6 +25,7 @@ class ProductDeliveryOptionFactory extends Factory
             FulfillmentTypeEnum::OFFILNE_SERVICE,
         ]);
         $pdoType = $this->faker->randomElement($ftype->getDelivieryMethods());
+
         return [
             'product_id'                => Product::factory(),
             'name'                      => $this->faker->name(),
@@ -47,11 +49,11 @@ class ProductDeliveryOptionFactory extends Factory
 
     public function withTeachers(int $maxTeachers = 3, $fixedAmount = false): static
     {
-        return $this->afterCreating(function (ProductDeliveryOption $deliveryOption,$fixedAmount) use ($maxTeachers) {
+        return $this->afterCreating(function (ProductDeliveryOption $deliveryOption, $fixedAmount) use ($maxTeachers) {
             if (Teacher::count() < 10) {
                 Teacher::factory(15)->create();
             }
-            $teachers = \App\Models\Teacher::query()
+            $teachers = Teacher::query()
                 ->inRandomOrder()
                 ->take($fixedAmount ? $maxTeachers : rand(1, $maxTeachers))
                 ->pluck('id');

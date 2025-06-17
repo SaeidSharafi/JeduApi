@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\PermissionEnum;
-use App\Models\Product;
-use App\Models\ProductDeliveryOption;
-use App\Models\Staff;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
+use App\Models\Product;
+use App\Models\ProductDeliveryOption;
 use App\Models\Seminar;
+use App\Models\Staff;
 use App\Models\Teacher;
 use App\Models\Term;
 use App\Models\User;

@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\SelectOptions;
 
-use App\Data\Category\CategorySelectOptionData;
-use App\Data\Term\TermSelectOptionData;
 use App\Data\Term\VendorSelectOptionData;
 use App\Http\Controllers\Controller;
 
@@ -12,9 +12,8 @@ use App\Http\Controllers\Controller;
  *
  * @authenticated
  */
-class VendorSelectOptionController extends Controller
+final class VendorSelectOptionController extends Controller
 {
-
     /**
      * Vendors list
      *
@@ -30,13 +29,13 @@ class VendorSelectOptionController extends Controller
             ->when($query, function ($vendor) use ($query) {
                 $vendor->where(function ($vendor) use ($query) {
                     $vendor
-                        ->where('name', 'like', '%'.$query.'%')
-                    ;
+                        ->where('name', 'like', '%'.$query.'%');
                 });
             })
             ->orderBy('name')
             ->limit(10)
             ->get(['id', 'name', 'address', 'logo_url']);
+
         return response()->success(
             VendorSelectOptionData::collect($vendors)
         );

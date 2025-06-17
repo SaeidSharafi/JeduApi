@@ -12,6 +12,7 @@ final class PersianFakesProvider extends \Faker\Provider\Lorem
     protected static ?array $persianWordList = null;
 
     protected static ?array $mobileList = null;
+
     protected static ?array $phoneList = null;
 
     public function __construct(Generator $faker)
@@ -19,7 +20,7 @@ final class PersianFakesProvider extends \Faker\Provider\Lorem
         $varibales             = new FakerVariables();
         self::$persianWordList = $varibales->variable('words');
         self::$mobileList      = $varibales->variable('mobile');
-        self::$phoneList      = $varibales->variable('phone');
+        self::$phoneList       = $varibales->variable('phone');
         parent::__construct($faker);
     }
 

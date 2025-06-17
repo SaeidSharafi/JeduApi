@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Teacher;
 
-uses(\Tests\AuthTestTrait::class);
+uses(Tests\AuthTestTrait::class);
 describe('Admin Teacher Select Option API', function () {
     it('returns filtered teacher select options', function () {
         $this->authorized_user();
@@ -10,21 +12,21 @@ describe('Admin Teacher Select Option API', function () {
         $profile = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('profile.jpg'))
             ->toDisk('public')
             ->upload();
-        \App\Models\Teacher::factory()->count(3)
+        Teacher::factory()->count(3)
             ->afterCreating(function (Teacher $teacher) use ($profile) {
                 $teacher->attachMedia($profile->id, 'profile');
             })
             ->create();
-        $teacher = \App\Models\Teacher::factory()
+        $teacher = Teacher::factory()
             ->afterCreating(function (Teacher $teacher) use ($profile) {
                 $teacher->attachMedia($profile->id, 'profile');
             })
             ->create([
-            'first_name' => 'Test',
-            'last_name' => 'Teacher',
-            'email' => 'example@example.com',
-            'phone' => '09305214697'
-        ])->fresh();
+                'first_name' => 'Test',
+                'last_name'  => 'Teacher',
+                'email'      => 'example@example.com',
+                'phone'      => '09305214697',
+            ])->fresh();
         $response = $this->getJson(
             route('api.v1.admin.select-option.teacher', ['q' => 'Test Teacher'])
         );
@@ -41,8 +43,8 @@ describe('Admin Teacher Select Option API', function () {
             ],
         ]);
         $response->assertJsonFragment([
-            'title' => 'Test Teacher',
-            'subtitle' => 'example@example.com (09305214697)',
+            'title'     => 'Test Teacher',
+            'subtitle'  => 'example@example.com (09305214697)',
             'image_url' => $profile->getUrl(),
         ]);
     });

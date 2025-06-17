@@ -5,15 +5,12 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\ProductableContract;
-use App\Data\MediaData;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Traits\IsProductable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Plank\Mediable\Media;
 use Plank\Mediable\Mediable;
 
 final class Course extends Model implements ProductableContract
@@ -21,8 +18,8 @@ final class Course extends Model implements ProductableContract
     /** @use HasFactory<\Database\Factories\CourseFactory> */
     use HasFactory;
 
-    use Mediable;
     use IsProductable;
+    use Mediable;
 
     protected $fillable
         = [
@@ -44,8 +41,6 @@ final class Course extends Model implements ProductableContract
             'status',
             'created_by',
         ];
-
-
 
     /**
      * @return MorphToMany<Category,$this>

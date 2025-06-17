@@ -8,7 +8,6 @@ use App\Actions\Seminar\CreateSeminarAction;
 use App\Actions\Seminar\DeleteSeminarAction;
 use App\Actions\Seminar\UpdateSeminarAction;
 use App\Contracts\ApiResponseInterface;
-use App\Data\MediaData;
 use App\Data\Seminar\CreateSeminarData;
 use App\Data\Seminar\SeminarListItemData;
 use App\Data\Seminar\ShowSeminarData;
@@ -16,7 +15,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Seminar;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
-use Plank\Mediable\Media;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**

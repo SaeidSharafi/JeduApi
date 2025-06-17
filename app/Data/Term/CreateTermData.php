@@ -20,8 +20,7 @@ final class CreateTermData extends Data
         public ?string $academic_year,
         public ?string $start_date,
         public ?string $end_date,
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {

@@ -7,7 +7,7 @@ namespace App\Actions\Term;
 use App\Data\Term\CreateTermData;
 use App\Models\Term;
 
-class CreateTermAction
+final class CreateTermAction
 {
     public function execute(CreateTermData $data): Term
     {

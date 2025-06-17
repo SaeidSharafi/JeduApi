@@ -32,7 +32,6 @@ final class StaffResetPasswordController extends Controller
      *
      * @throws \App\Exceptions\UserNotFoundException
      *
-     *
      * @response  {
      *  "message": "Operation successful.",
      *  "data": "Password reset OTP sent successfully",

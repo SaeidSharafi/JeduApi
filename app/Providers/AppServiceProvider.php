@@ -32,11 +32,11 @@ final class AppServiceProvider extends ServiceProvider
     {
         include_once __DIR__.'/../Helpers/helpers.php';
 
-        Model::preventLazyLoading(!app()->isProduction());
+        Model::preventLazyLoading(! app()->isProduction());
         Relation::enforceMorphMap(MorphTypeEnum::forMorphMap());
         ImageManipulator::defineVariant(
             'thumb',
-           ImageManipulation::make(function (
+            ImageManipulation::make(function (
                 Image $image,
                 Media $originalMedia
             ) {
@@ -45,8 +45,8 @@ final class AppServiceProvider extends ServiceProvider
                     config('mediable.image_variants.thumb.height')
                 );
             })
-               ->toDestination(config('mediable.default_disk', 'public'),'thumb')
-               ->optimize()->outputWebpFormat(),
+                ->toDestination(config('mediable.default_disk', 'public'), 'thumb')
+                ->optimize()->outputWebpFormat(),
         );
     }
 }

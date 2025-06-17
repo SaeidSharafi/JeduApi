@@ -21,22 +21,22 @@ return [
 
     'permission' => [
         'resource' => [
-            'course' => 'Courses',
-            'seminar' => 'Seminars',
-            'digital_asset' => 'Files',
-            'user'   => 'Users',
-            'role'   => 'Roles',
-            'media'  => 'Media',
-            'file'   => 'Private Files',
-            'category' => 'Categories',
-            'staff'  => 'Staff',
+            'course'            => 'Courses',
+            'seminar'           => 'Seminars',
+            'digital_asset'     => 'Files',
+            'user'              => 'Users',
+            'role'              => 'Roles',
+            'media'             => 'Media',
+            'file'              => 'Private Files',
+            'category'          => 'Categories',
+            'staff'             => 'Staff',
             'custom_permission' => 'Custom Permissions',
         ],
         'action' => [
             'view_any'     => 'View Any',
             'view'         => 'View',
             'view_scoped'  => 'View Scoped',
-            'view_own'   => 'View Own',
+            'view_own'     => 'View Own',
             'create'       => 'Create',
             'update'       => 'Update',
             'update_own'   => 'Update Own',
@@ -52,8 +52,8 @@ return [
             ],
         ],
         'custom_permission' => [ // Assuming 'custom_permission' from PermissionData.php needs a general label
-                                 'access_admin_panel' => 'Access Admin Panel', // Example, adjust as needed
-        ]
+            'access_admin_panel' => 'Access Admin Panel', // Example, adjust as needed
+        ],
     ],
 
 ];

@@ -7,26 +7,26 @@ test('to array', function (): void {
 
     expect($product->toArray())
         ->toEqual([
-            'id' => $product->id,
-            'vendor_id' => $product->vendor_id,
-            'productable_id' => $product->productable_id,
-            'productable_type' => $product->productable_type,
-            'term_id' => $product->term_id,
-            'status' => $product->status->value,
-            'is_visible' => $product->is_visible,
+            'id'                => $product->id,
+            'vendor_id'         => $product->vendor_id,
+            'productable_id'    => $product->productable_id,
+            'productable_type'  => $product->productable_type,
+            'term_id'           => $product->term_id,
+            'status'            => $product->status->value,
+            'is_visible'        => $product->is_visible,
             'short_description' => $product->short_description,
-            'short_name' => $product->short_name,
-            'name' => $product->name,
-            'is_featured' => $product->is_featured,
-            'details_json' => $product->details_json,
-            'created_at' => $product->created_at?->format('Y-m-d H:i:s'),
-            'updated_at' => $product->updated_at?->format('Y-m-d H:i:s'),
+            'short_name'        => $product->short_name,
+            'name'              => $product->name,
+            'is_featured'       => $product->is_featured,
+            'details_json'      => $product->details_json,
+            'created_at'        => $product->created_at?->format('Y-m-d H:i:s'),
+            'updated_at'        => $product->updated_at?->format('Y-m-d H:i:s'),
         ]);
 
 });
 
 test('relation categories', function (): void {
-    $product   = App\Models\Product::factory()->create();
+    $product  = App\Models\Product::factory()->create();
     $category = App\Models\Category::factory()->create();
     $product->categories()->attach($category->id);
 
@@ -45,7 +45,7 @@ test('relation categories', function (): void {
 });
 
 test('relation product_delivery_options', function () {
-    $product = App\Models\Product::factory()->create();
+    $product        = App\Models\Product::factory()->create();
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
 
     expect($product->productDeliveryOptions)

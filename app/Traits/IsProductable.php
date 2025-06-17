@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Traits;
 
 use App\Data\MediaData;
@@ -16,7 +18,7 @@ trait IsProductable
         return $this->morphMany(Product::class, 'productable');
     }
 
-    public function scopeWithProductableMedia(Builder $query,array $tags = []): Builder
+    public function scopeWithProductableMedia(Builder $query, array $tags = []): Builder
     {
         $query->withMediaAndVariantsMatchAll($tags);
 
@@ -38,6 +40,7 @@ trait IsProductable
 
         return $query;
     }
+
     public function getProductableMedia(): array
     {
 
@@ -45,13 +48,16 @@ trait IsProductable
             $media = [];
             foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
                 $media[$tag] = $this->getMedia($tag)
-                    ->map(fn(Media $m): MediaData => MediaData::fromModel($m, $tag))
+                    ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag))
                     ->toArray();
             }
+
             return $media;
         }
+
         return [];
     }
+
     public function getProductableAttachment(): array
     {
         if ($this->relationLoaded('media')) {
@@ -61,18 +67,19 @@ trait IsProductable
                     ->map(fn (Media $m): PrivateFileData => PrivateFileData::fromModel($m, $tag))
                     ->toArray();
             }
+
             return $attachments;
         }
+
         return [];
     }
 
-
-    //public function scopeWithProductableAuditor(Builder $query): Builder
-    //{
+    // public function scopeWithProductableAuditor(Builder $query): Builder
+    // {
     //    $query->with('auditor');
     //
     //    return $query;
-    //}
+    // }
 
     public function loadProductableMedia(array $tags = []): void
     {
@@ -83,7 +90,7 @@ trait IsProductable
 
     public function loadProductableCategories(): void
     {
-        if (!$this->relationLoaded('categories')) {
+        if (! $this->relationLoaded('categories')) {
             $this->load('categories');
         }
     }

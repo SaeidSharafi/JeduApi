@@ -1,13 +1,15 @@
 <?php
 
-uses(\Tests\AuthTestTrait::class);
+declare(strict_types=1);
+
+uses(Tests\AuthTestTrait::class);
 describe('Admin Category Select Option API', function () {
     it('returns filtered category select options', function () {
         $this->authorized_user();
-        \App\Models\Category::factory()->count(3)->create();
-        \App\Models\Category::factory()->create([
-            'name' => 'TestCategory',
-            'slug' => 'test-category',
+        App\Models\Category::factory()->count(3)->create();
+        App\Models\Category::factory()->create([
+            'name'     => 'TestCategory',
+            'slug'     => 'test-category',
             'icon_url' => 'http://example.com/icon.png',
         ]);
         $response = $this->getJson(
@@ -26,8 +28,8 @@ describe('Admin Category Select Option API', function () {
             ],
         ]);
         $response->assertJsonFragment([
-            'title' => 'TestCategory',
-            'subtitle' => 'test-category',
+            'title'     => 'TestCategory',
+            'subtitle'  => 'test-category',
             'image_url' => 'http://example.com/icon.png',
         ]);
     });

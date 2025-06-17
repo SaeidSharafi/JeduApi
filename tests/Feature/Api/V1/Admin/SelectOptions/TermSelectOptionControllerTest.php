@@ -1,12 +1,14 @@
 <?php
 
-uses(\Tests\AuthTestTrait::class);
+declare(strict_types=1);
+
+uses(Tests\AuthTestTrait::class);
 describe('Admin Term Select Option API', function () {
     it('returns filtered term select options', function () {
         $this->authorized_user();
-        \App\Models\Term::factory()->count(3)->create();
-        \App\Models\Term::factory()->create([
-            'name' => 'TestTerm',
+        App\Models\Term::factory()->count(3)->create();
+        App\Models\Term::factory()->create([
+            'name'          => 'TestTerm',
             'academic_year' => 'test-academic-year',
         ]);
         $response = $this->getJson(
@@ -25,8 +27,8 @@ describe('Admin Term Select Option API', function () {
             ],
         ]);
         $response->assertJsonFragment([
-            'title' => 'TestTerm',
-            'subtitle' => 'test-academic-year',
+            'title'     => 'TestTerm',
+            'subtitle'  => 'test-academic-year',
             'image_url' => null,
         ]);
     });

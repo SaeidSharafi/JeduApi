@@ -1,14 +1,16 @@
 <?php
+
+declare(strict_types=1);
 it('it return empty array for invalid types', function () {
-    $fulfillmentType = \App\Enums\FulfillmentTypeEnum::DIGITAL->value;
-    $deliveryMethod = \App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD->value;
-    $detailsData = [
+    $fulfillmentType = App\Enums\FulfillmentTypeEnum::DIGITAL->value;
+    $deliveryMethod  = App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD->value;
+    $detailsData     = [
         'max_downloads'   => 10,
         'expiration_date' => '2023-12-31 23:59:59',
     ];
-    $expectedRules = \App\Data\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData::getValidationRules($detailsData);
-    $action = new \App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
-    $rules = $action->handle(null, $deliveryMethod, $detailsData);
+    $expectedRules = App\Data\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData::getValidationRules($detailsData);
+    $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $rules         = $action->handle(null, $deliveryMethod, $detailsData);
     expect($rules)->toBeArray()->toBeEmpty();
 
     $rules = $action->handle($fulfillmentType, null, $detailsData);
@@ -23,21 +25,21 @@ it('it return empty array for invalid types', function () {
 // Dataset for valid fulfillmentType/deliveryMethod pairs
 $fulfillmentDeliveryPairs = [
     // DIGITAL
-    [\App\Enums\FulfillmentTypeEnum::DIGITAL->value, \App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD->value],
+    [App\Enums\FulfillmentTypeEnum::DIGITAL->value, App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD->value],
     // ONLINE_SERVICE
-    [\App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value, \App\Enums\DeliveryMethodEnum::LIVE_SESSION_BBB->value],
-    [\App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value, \App\Enums\DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value],
-    [\App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value, \App\Enums\DeliveryMethodEnum::LMS_MOODLE->value],
+    [App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value, App\Enums\DeliveryMethodEnum::LIVE_SESSION_BBB->value],
+    [App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value, App\Enums\DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value],
+    [App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value, App\Enums\DeliveryMethodEnum::LMS_MOODLE->value],
     // OFFILNE_SERVICE
-    [\App\Enums\FulfillmentTypeEnum::OFFILNE_SERVICE->value, \App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value],
+    [App\Enums\FulfillmentTypeEnum::OFFILNE_SERVICE->value, App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value],
     // IN_PERSON_SERVICE
-    [\App\Enums\FulfillmentTypeEnum::IN_PERSON_SERVICE->value, \App\Enums\DeliveryMethodEnum::IN_PERSON->value],
+    [App\Enums\FulfillmentTypeEnum::IN_PERSON_SERVICE->value, App\Enums\DeliveryMethodEnum::IN_PERSON->value],
 ];
 
 it('creates delivery validation rules for each valid fulfillmentType/deliveryMethod pair with empty details', function ($fulfillmentType, $deliveryMethod) {
     $detailsData = [];
-    $action = new \App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
-    $rules = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
+    $action      = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $rules       = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     expect($rules)->toBeArray();
 })->with($fulfillmentDeliveryPairs);
 
@@ -45,8 +47,8 @@ it('creates delivery validation rules for each valid fulfillmentType/deliveryMet
 $fulfillmentDeliveryPairsWithDetails = [
     // DIGITAL - DIRECT_DOWNLOAD
     [
-        \App\Enums\FulfillmentTypeEnum::DIGITAL->value,
-        \App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD->value,
+        App\Enums\FulfillmentTypeEnum::DIGITAL->value,
+        App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD->value,
         [
             'max_downloads'   => 10,
             'expiration_date' => '2023-12-31 23:59:59',
@@ -54,8 +56,8 @@ $fulfillmentDeliveryPairsWithDetails = [
     ],
     // ONLINE_SERVICE - LIVE_SESSION_BBB
     [
-        \App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value,
-        \App\Enums\DeliveryMethodEnum::LIVE_SESSION_BBB->value,
+        App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value,
+        App\Enums\DeliveryMethodEnum::LIVE_SESSION_BBB->value,
         [
             'moderator_password'                 => 'mod',
             'attendee_password'                  => 'att',
@@ -79,8 +81,8 @@ $fulfillmentDeliveryPairsWithDetails = [
     ],
     // ONLINE_SERVICE - LIVE_SESSION_SKYROOM
     [
-        \App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value,
-        \App\Enums\DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value,
+        App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value,
+        App\Enums\DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value,
         [
             'meeting_name_identifier'     => 'meeting123',
             'moderator_password_override' => 'mod123',
@@ -97,8 +99,8 @@ $fulfillmentDeliveryPairsWithDetails = [
     ],
     // ONLINE_SERVICE - LMS_MOODLE
     [
-        \App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value,
-        \App\Enums\DeliveryMethodEnum::LMS_MOODLE->value,
+        App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value,
+        App\Enums\DeliveryMethodEnum::LMS_MOODLE->value,
         [
             'course_idnumber'       => 'course123',
             'activity_id'           => 1,
@@ -108,45 +110,45 @@ $fulfillmentDeliveryPairsWithDetails = [
     ],
     // OFFILNE_SERVICE - VIDEO_PLATFORM_SPOTPLAYER
     [
-        \App\Enums\FulfillmentTypeEnum::OFFILNE_SERVICE->value,
-        \App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value,
+        App\Enums\FulfillmentTypeEnum::OFFILNE_SERVICE->value,
+        App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value,
         [
             'course_id' => 'course123',
         ],
     ],
     // IN_PERSON_SERVICE - IN_PERSON
     [
-        \App\Enums\FulfillmentTypeEnum::IN_PERSON_SERVICE->value,
-        \App\Enums\DeliveryMethodEnum::IN_PERSON->value,
+        App\Enums\FulfillmentTypeEnum::IN_PERSON_SERVICE->value,
+        App\Enums\DeliveryMethodEnum::IN_PERSON->value,
         [
-            'location' => 'Test Location',
-            'duration' => '20 Minute',
-            'schedule' => 'Sun-Mon',
+            'location'        => 'Test Location',
+            'duration'        => '20 Minute',
+            'schedule'        => 'Sun-Mon',
             'additional_info' => null,
         ],
     ],
 ];
 
 it('creates delivery validation rules for each valid fulfillmentType/deliveryMethod pair with sample details', function ($fulfillmentType, $deliveryMethod, $detailsData) {
-    $action = new \App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
-    $rules = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
+    $action = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $rules  = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     expect($rules)->toBeArray();
 
 })->with($fulfillmentDeliveryPairsWithDetails);
 
 it('creates delivery validation rules for DIRECT_DOWNLOAD', function () {
-    $fulfillmentType = \App\Enums\FulfillmentTypeEnum::DIGITAL->value;
-    $deliveryMethod = \App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD->value;
-    $detailsData = [
+    $fulfillmentType = App\Enums\FulfillmentTypeEnum::DIGITAL->value;
+    $deliveryMethod  = App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD->value;
+    $detailsData     = [
         'max_downloads'   => 10,
         'expiration_date' => '2023-12-31 23:59:59',
     ];
-    $expectedRules = \App\Data\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData::getValidationRules($detailsData);
-    $action = new \App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
-    $rules = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
+    $expectedRules = App\Data\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData::getValidationRules($detailsData);
+    $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     foreach ($expectedRules as $key => $expected) {
-        expect($rules)->toHaveKey('details.' . $key);
-        expect($rules['details.' . $key])->toBe($expected);
+        expect($rules)->toHaveKey('details.'.$key);
+        expect($rules['details.'.$key])->toBe($expected);
     }
     expect($rules)->toHaveKey('details');
     expect($rules['details'][0])->toBe('required');
@@ -154,20 +156,20 @@ it('creates delivery validation rules for DIRECT_DOWNLOAD', function () {
 });
 
 it('creates delivery validation rules for IN_PERSON', function () {
-    $fulfillmentType = \App\Enums\FulfillmentTypeEnum::IN_PERSON_SERVICE->value;
-    $deliveryMethod = \App\Enums\DeliveryMethodEnum::IN_PERSON->value;
-    $detailsData = [
-        'location' => 'Test Location',
-        'duration' => '20 Minute',
-        'schedule' => 'Sun-Mon',
+    $fulfillmentType = App\Enums\FulfillmentTypeEnum::IN_PERSON_SERVICE->value;
+    $deliveryMethod  = App\Enums\DeliveryMethodEnum::IN_PERSON->value;
+    $detailsData     = [
+        'location'        => 'Test Location',
+        'duration'        => '20 Minute',
+        'schedule'        => 'Sun-Mon',
         'additional_info' => null,
     ];
-    $expectedRules = \App\Data\ProductDeliveryOption\DetailsData\InPersonDetailsData::getValidationRules($detailsData);
-    $action = new \App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
-    $rules = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
+    $expectedRules = App\Data\ProductDeliveryOption\DetailsData\InPersonDetailsData::getValidationRules($detailsData);
+    $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     foreach ($expectedRules as $key => $expected) {
-        expect($rules)->toHaveKey('details.' . $key);
-        expect($rules['details.' . $key])->toBe($expected);
+        expect($rules)->toHaveKey('details.'.$key);
+        expect($rules['details.'.$key])->toBe($expected);
     }
     expect($rules)->toHaveKey('details');
     expect($rules['details'][0])->toBe('required');
@@ -175,20 +177,20 @@ it('creates delivery validation rules for IN_PERSON', function () {
 });
 
 it('creates delivery validation rules for LMS_MOODLE', function () {
-    $fulfillmentType = \App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value;
-    $deliveryMethod = \App\Enums\DeliveryMethodEnum::LMS_MOODLE->value;
-    $detailsData = [
+    $fulfillmentType = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value;
+    $deliveryMethod  = App\Enums\DeliveryMethodEnum::LMS_MOODLE->value;
+    $detailsData     = [
         'course_idnumber'       => 'course123',
         'activity_id'           => 1,
         'enrollment_start_date' => '2023-12-01 00:00:00',
         'enrollment_end_date'   => '2023-12-31 23:59:59',
     ];
-    $expectedRules = \App\Data\ProductDeliveryOption\DetailsData\LmsMoodleDetailsData::getValidationRules($detailsData);
-    $action = new \App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
-    $rules = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
+    $expectedRules = App\Data\ProductDeliveryOption\DetailsData\LmsMoodleDetailsData::getValidationRules($detailsData);
+    $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     foreach ($expectedRules as $key => $expected) {
-        expect($rules)->toHaveKey('details.' . $key);
-        expect($rules['details.' . $key])->toBe($expected);
+        expect($rules)->toHaveKey('details.'.$key);
+        expect($rules['details.'.$key])->toBe($expected);
     }
     expect($rules)->toHaveKey('details');
     expect($rules['details'][0])->toBe('required');
@@ -196,9 +198,9 @@ it('creates delivery validation rules for LMS_MOODLE', function () {
 });
 
 it('creates delivery validation rules for LIVE_SESSION_BBB', function () {
-    $fulfillmentType = \App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value;
-    $deliveryMethod = \App\Enums\DeliveryMethodEnum::LIVE_SESSION_BBB->value;
-    $detailsData = [
+    $fulfillmentType = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value;
+    $deliveryMethod  = App\Enums\DeliveryMethodEnum::LIVE_SESSION_BBB->value;
+    $detailsData     = [
         'moderator_password'                 => 'mod',
         'attendee_password'                  => 'att',
         'record_session'                     => true,
@@ -218,12 +220,12 @@ it('creates delivery validation rules for LIVE_SESSION_BBB', function () {
         'default_presentation_url'           => 'https://example.com/presentation',
         'admin_notes'                        => 'Admin Note',
     ];
-    $expectedRules = \App\Data\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData::getValidationRules($detailsData);
-    $action = new \App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
-    $rules = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
+    $expectedRules = App\Data\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData::getValidationRules($detailsData);
+    $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     foreach ($expectedRules as $key => $expected) {
-        expect($rules)->toHaveKey('details.' . $key);
-        expect($rules['details.' . $key])->toBe($expected);
+        expect($rules)->toHaveKey('details.'.$key);
+        expect($rules['details.'.$key])->toBe($expected);
     }
     expect($rules)->toHaveKey('details');
     expect($rules['details'][0])->toBe('required');
@@ -231,9 +233,9 @@ it('creates delivery validation rules for LIVE_SESSION_BBB', function () {
 });
 
 it('creates delivery validation rules for LIVE_SESSION_SKYROOM', function () {
-    $fulfillmentType = \App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value;
-    $deliveryMethod = \App\Enums\DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value;
-    $detailsData = [
+    $fulfillmentType = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value;
+    $deliveryMethod  = App\Enums\DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value;
+    $detailsData     = [
         'meeting_name_identifier'     => 'meeting123',
         'moderator_password_override' => 'mod123',
         'attendee_password'           => 'att123',
@@ -246,12 +248,12 @@ it('creates delivery validation rules for LIVE_SESSION_SKYROOM', function () {
         'default_presentation_url'    => 'https://example.com/skyroom-presentation',
         'admin_notes'                 => 'Admin notes for Skyroom session',
     ];
-    $expectedRules = \App\Data\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsData::getValidationRules($detailsData);
-    $action = new \App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
-    $rules = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
+    $expectedRules = App\Data\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsData::getValidationRules($detailsData);
+    $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     foreach ($expectedRules as $key => $expected) {
-        expect($rules)->toHaveKey('details.' . $key);
-        expect($rules['details.' . $key])->toBe($expected);
+        expect($rules)->toHaveKey('details.'.$key);
+        expect($rules['details.'.$key])->toBe($expected);
     }
     expect($rules)->toHaveKey('details');
     expect($rules['details'][0])->toBe('required');
@@ -259,18 +261,18 @@ it('creates delivery validation rules for LIVE_SESSION_SKYROOM', function () {
 });
 
 it('creates delivery validation rules for VIDEO_PLATFORM_SPOTPLAYER', function () {
-    $fulfillmentType = \App\Enums\FulfillmentTypeEnum::OFFILNE_SERVICE->value;
-    $deliveryMethod = \App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value;
-    $detailsData = [
+    $fulfillmentType = App\Enums\FulfillmentTypeEnum::OFFILNE_SERVICE->value;
+    $deliveryMethod  = App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value;
+    $detailsData     = [
         'course_id' => 'course123',
     ];
-    $expectedRules = \App\Data\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData::getValidationRules($detailsData);
-    $action = new \App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
-    $rules = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
+    $expectedRules = App\Data\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData::getValidationRules($detailsData);
+    $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
 
     foreach ($expectedRules as $key => $expected) {
-        expect($rules)->toHaveKey('details.' . $key);
-        expect($rules['details.' . $key])->toBe($expected);
+        expect($rules)->toHaveKey('details.'.$key);
+        expect($rules['details.'.$key])->toBe($expected);
     }
     expect($rules)->toHaveKey('details');
     expect($rules['details'][0])->toBe('required');
