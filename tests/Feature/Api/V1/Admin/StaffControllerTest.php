@@ -127,7 +127,6 @@ describe('admin list', function (): void {
                                     'id',
                                     'name',
                                     'label',
-                                    'guard_name',
                                 ],
                             ],
                         ],
