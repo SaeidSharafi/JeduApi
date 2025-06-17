@@ -17,6 +17,9 @@ final class ProductableExistRule implements DataAwareRule, ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
+        if (!data_get($this->data, 'productable_type')){
+            return;
+        }
         $type = ProductableEnum::tryFrom(data_get($this->data, 'productable_type'));
         if (! $type) {
             return;

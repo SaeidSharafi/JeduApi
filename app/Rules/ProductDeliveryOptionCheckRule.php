@@ -15,6 +15,9 @@ final class ProductDeliveryOptionCheckRule implements DataAwareRule, ValidationR
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
+        if (!data_get($this->data, 'fulfillment_type')){
+            return;
+        }
         $fullfillmentType = FulfillmentTypeEnum::tryFrom(data_get($this->data, 'fulfillment_type'));
         if (! $fullfillmentType || ! $value) {
             return;
