@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Validator;
 
 uses(RefreshDatabase::class);
 describe('ProductableExistRule', function (): void {
-    it('ignore checks if productable_type is empty', function (): void {
+    it('ignore checks if productable_type is empty or invalid', function (): void {
         $rule      = new ProductableExistRule();
         $course    = App\Models\Course::factory()->create()->fresh();
         $validator = Validator::make(
@@ -17,6 +17,19 @@ describe('ProductableExistRule', function (): void {
                 'force_create'     => false,
                 'productable_id'   => $course->id,
                 'productable_type' => null,
+            ],
+            [
+                'productable_id' => [$rule],
+            ]
+        );
+        expect($validator->passes())->toBeTrue();
+
+        $validator = Validator::make(
+            [
+                'status'           => App\Enums\PublicationStatusEnum::PUBLISHED->value,
+                'force_create'     => false,
+                'productable_id'   => $course->id,
+                'productable_type' => 'invalid_type',
             ],
             [
                 'productable_id' => [$rule],
