@@ -53,5 +53,10 @@ return [
         'video_platform_spotplayer' => 'پلتفرم ویدیویی SpotPlayer',
         'in_person'                 => 'حضوری',
     ],
+    'CivilIdTypeEnum' => [
+        'national_code' => 'کد ملی',
+        'passport'      => 'پاسپورت',
+        'immigrant_code'         => 'کد اتباع',
+    ],
 
 ];

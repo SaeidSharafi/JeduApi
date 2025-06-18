@@ -25,6 +25,7 @@ use App\Policies\Admin\SeminarPolicy;
 use App\Policies\Admin\StaffPolicy;
 use App\Policies\Admin\TeacherPolicy;
 use App\Policies\Admin\TermPolicy;
+use App\Policies\Admin\UserPolicy;
 use App\Policies\Admin\VendorPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -56,5 +57,6 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(Term::class, TermPolicy::class);
         Gate::policy(Product::class, ProductPolicy::class);
         Gate::policy(ProductDeliveryOption::class, ProductDeliveryOptionPolicy::class);
+        Gate::policy(User::class, UserPolicy::class);
     }
 }

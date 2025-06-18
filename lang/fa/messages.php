@@ -44,4 +44,8 @@ return [
         'teacher'       => 'مدرس',
         'term'          => 'ترم',
     ],
+
+    'errors' => [
+        'model_has_relationship_data' => ':model دارای داده‌های مرتبط (:related_model) است و نمی‌توان آن را حذف کرد.',
+    ]
 ];

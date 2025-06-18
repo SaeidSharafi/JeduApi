@@ -1,0 +1,22 @@
+<?php
+
+namespace App\Exceptions;
+
+use Exception;
+use Illuminate\Database\Eloquent\Model;
+use JetBrains\PhpStorm\Pure;
+
+class ModelHasRelationshipDataException extends Exception
+{
+    protected string $relatedModel;
+    #[Pure] public function __construct(string $relatedModel, string $message = "", int $code = 422, ?Throwable $previous = null)
+    {
+        $this->relatedModel = $relatedModel;
+        $message = $message ?: "The model has related data in the {$relatedModel} table. Please delete the related data first.";
+        parent::__construct($message, $code, $previous);
+    }
+
+    public function getRelatedModel(): string{
+        return $this->relatedModel;
+    }
+}

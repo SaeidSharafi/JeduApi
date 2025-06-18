@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Data\OtpManager\OtpDto;
+use App\Enums\CivilIdTypeEnum;
+use App\Enums\EducationLevelEnum;
+use App\Enums\EducationStatusEnum;
+use App\Enums\GenderEnum;
 use App\Enums\OtpType;
 use App\Models\User;
 use App\Services\OtpManagerService;
@@ -18,27 +22,41 @@ final class UserFactory extends Factory
 
     public function definition(): array
     {
+        $civilIdType = $this->faker->randomElement(CivilIdTypeEnum::getAllValues());
+        $civilId = match ($civilIdType) {
+            CivilIdTypeEnum::NATIONAL_CODE->value => $this->faker->numerify('##########'),
+            CivilIdTypeEnum::PASSPORT->value => $this->faker->numerify('#########'),
+            CivilIdTypeEnum::IMMIGRANT_CODE->value => $this->faker->numerify('##############'),
+        };
         return [
-            'name'              => fake()->name(),
-            'email'             => fake()->unique()->safeEmail(),
-            'phone'             => fake()->unique()->numerify('09########'),
+            'first_name'        => $this->faker->firstName,
+            'last_name'         => $this->faker->lastName,
+            'email'             => $this->faker->unique()->safeEmail(),
+            'phone'             => $this->faker->mobile(),
             'email_verified_at' => now(),
             'phone_verified_at' => now(),
             'password'          => null,
-            'remember_token'    => Str::random(10),
+            'civil_id'          => $civilId,
+            'civil_id_type'     => $civilIdType,
+            'date_of_birth'     => $this->faker->date(),
+            'phone2'            => $this->faker->mobile(),
+            'gender'            => $this->faker->randomElement(GenderEnum::getAllValues()),
+            'education_level'   => $this->faker->randomElement(EducationLevelEnum::getAllValues()),
+            'field_of_study'    => $this->faker->persianWord(),
+            'education_status'  => $this->faker->randomElement(EducationStatusEnum::getAllValues()),
         ];
     }
 
     public function withPassword(): self
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'password' => Hash::make('password123'),
         ]);
     }
 
     public function unverified(): self
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
     }
@@ -48,7 +66,7 @@ final class UserFactory extends Factory
         return $this->afterCreating(function (User $user) use ($code) {
             $otpService = app(OtpManagerService::class);
             $otpService->send($user->email, 'user', OtpType::SIGNIN);
-            $otpDto   = new OtpDto($code, $this->trackingCode);
+            $otpDto = new OtpDto($code, $this->trackingCode);
             $cacheKey = sprintf('otp_%s_%s_%s_%s', $user->email, 'user', 'value', OtpType::SIGNIN->value);
             cache()->put($cacheKey, $otpDto);
         });

@@ -131,4 +131,5 @@ return [
     'telescope_dev_user'     => env('TELESCOPE_DEV_USER'),
     'telescope_dev_password' => env('TELESCOPE_DEV_PASSWORD'),
 
+    'page_size' => env('APP_PAGE_SIZE', 15),
 ];

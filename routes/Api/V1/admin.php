@@ -30,7 +30,11 @@ Route::middleware('auth:staff')->group(function (): void {
             ->name('private-upload.view');
         Route::get('private-file/{file}/download', PrivateFileDownloadController::class)
             ->name('private-upload.download');
+
         Route::resource('term', App\Http\Controllers\Api\Admin\TermController::class)
+            ->only(['index', 'store', 'show', 'update', 'destroy']);
+
+        Route::resource('user', App\Http\Controllers\Api\Admin\UserController::class)
             ->only(['index', 'store', 'show', 'update', 'destroy']);
 
     });

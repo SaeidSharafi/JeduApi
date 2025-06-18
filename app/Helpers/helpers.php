@@ -40,3 +40,15 @@ if (! function_exists('randomNumber')) {
         return $number;
     }
 }
+
+if (!function_exists('getModelLabel')) {
+    function getModelLabel(string $modelClass): string
+    {
+        if (!class_exists($modelClass)) {
+            return __('messages.models.'.mb_strtolower($modelClass));
+        }
+        $modelName = class_basename($modelClass);
+
+        return __('messages.models.'.mb_strtolower($modelName));
+    }
+}

@@ -130,15 +130,14 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
-        /*
         'user' => [
-            PermissionAction::VIEW_SCOPED,      // Standard Enum: users.view_any, users.view
-            PermissionAction::CREATE,           // Standard Enum: users.create
-            'update_scoped',                    // Standard String: users.update_any, users.update
-            'delete_scoped',                    // Standard String: users.delete_any, users.delete
-            'manage_roles',                     // Custom String:   users.manage_roles
-            // MyCustomActions::IMPERSONATE,    // Custom Enum (if defined): users.impersonate (assuming value is 'impersonate')
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::DELETE,
         ],
+        /*
+
 
         'post' => [
             'view_scoped',                      // Standard String: posts.view_any, posts.view
