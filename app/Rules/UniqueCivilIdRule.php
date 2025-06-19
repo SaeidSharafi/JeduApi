@@ -35,7 +35,7 @@ class UniqueCivilIdRule implements ValidationRule, DataAwareRule
     {
         $idTypeInput = $this->data['civil_id_type'] ?? null;
 
-        if (is_null($idTypeInput)) {
+        if (is_null($idTypeInput) || empty($value)) {
             // This rule shouldn't run if the type is missing.
             // The 'required' rule on id_type should catch this, but this makes our rule robust.
             return;
@@ -53,7 +53,7 @@ class UniqueCivilIdRule implements ValidationRule, DataAwareRule
             $userId = $this->userId;
         }
 
-        if ($user = request()->route()->parameter('user')) {
+        if (!$userId && $user = request()?->route()?->parameter('user')) {
             $userId = $user->id;
         }
 

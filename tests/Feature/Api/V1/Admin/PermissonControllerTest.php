@@ -113,7 +113,8 @@ describe('permissions listing', function (): void {
 
     it('should only return permissions for staff guard', function () {
         // Create a permission for a different guard
-        Permission::create(['name' => 'user.view', 'guard_name' => 'user']);
+        Permission::create(['name' => 'permission_for_user_guard', 'guard_name' => 'user']);
+        Permission::create(['name' => 'permission_for_staff_guard', 'guard_name' => 'staff']);
 
         $this->authorized_user();
 
@@ -122,13 +123,9 @@ describe('permissions listing', function (): void {
         $response->assertOk();
 
         $data = $response->json('data');
-
-        // Should not contain user guard permissions
-        expect($data)->not->toHaveKey('user');
-
-        // Should contain staff guard permissions if any exist
-        // Since permissions are auto-generated, we expect staff permissions to be present
-        expect($data)->toHaveKey('staff');
+        foreach (data_get($data, 'custom_permission.permissions') as $permission) {
+            expect($permission['name'])->not->toBe('permission_for_user_guard');
+        }
     });
 
     it('should work with different guard when specified', function () {

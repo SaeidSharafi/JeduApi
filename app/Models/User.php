@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\CivilIdTypeEnum;
 use App\Enums\EducationLevelEnum;
 use App\Enums\EducationStatusEnum;
 use App\Enums\GenderEnum;
@@ -59,8 +60,8 @@ final class User extends Authenticatable implements MustVerifyEmail
     protected function casts(): array
     {
         return [
-            'phone_verified_at' => 'datetime',
-            'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime:Y-m-d H:i:s',
+            'email_verified_at' => 'datetime:Y-m-d H:i:s',
             'password'          => 'hashed',
             'date_of_birth'     => 'date:Y-m-d',
             'created_at'        => 'datetime:Y-m-d H:i:s',
@@ -68,6 +69,7 @@ final class User extends Authenticatable implements MustVerifyEmail
             'education_level'   => EducationLevelEnum::class,
             'education_status'  => EducationStatusEnum::class,
             'gender'            => GenderEnum::class,
+            'civil_id_type'     => CivilIdTypeEnum::class,
         ];
     }
 
@@ -82,7 +84,7 @@ final class User extends Authenticatable implements MustVerifyEmail
             && $this->last_name !== null
             && $this->email !== null
             && $this->phone !== null
-            && $this->national_code !== null
+            && $this->civil_id !== null
             && $this->date_of_birth !== null
             && $this->father_name !== null;
     }

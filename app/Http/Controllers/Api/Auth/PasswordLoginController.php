@@ -6,10 +6,10 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Actions\Auth\PasswordLoginAction;
 use App\Contracts\ApiResponseInterface;
+use App\Data\User\ShowUserData;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Resources\Auth\UserResource;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -82,7 +82,7 @@ final class PasswordLoginController extends Controller
                 'token'      => $token->plainTextToken,
                 'expires_at' => $token->accessToken->expires_at,
                 'type'       => 'Bearer',
-                'user'       => UserResource::make($user),
+                'user'       => ShowUserData::from($user),
             ], 'User Logged in successfully');
         } catch (UserNotFoundException $exception) {
             return response()->notFound(

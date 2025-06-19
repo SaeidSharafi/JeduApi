@@ -14,6 +14,8 @@ final readonly class DeleteUserAction
 {
     /**
      * Execute the action.
+     *
+     * @throws ModelHasRelationshipDataException|\Throwable
      */
     public function handle(User $user): void
     {

@@ -38,7 +38,8 @@ final class UserFactory extends Factory
             'password'          => null,
             'civil_id'          => $civilId,
             'civil_id_type'     => $civilIdType,
-            'date_of_birth'     => $this->faker->date(),
+            'date_of_birth'     => $this->faker->date(max: '1990-01-01'),
+            'father_name'       => $this->faker->name,
             'phone2'            => $this->faker->mobile(),
             'gender'            => $this->faker->randomElement(GenderEnum::getAllValues()),
             'education_level'   => $this->faker->randomElement(EducationLevelEnum::getAllValues()),
@@ -60,7 +61,27 @@ final class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
-
+    public function withNationalCode(): self
+    {
+        return $this->state(fn(array $attributes) => [
+            'civil_id' => $this->faker->numerify('##########'),
+            'civil_id_type' => CivilIdTypeEnum::NATIONAL_CODE->value,
+        ]);
+    }
+    public function withImmigrantCode(): self
+    {
+        return $this->state(fn(array $attributes) => [
+            'civil_id' => $this->faker->numerify('##############'),
+            'civil_id_type' => CivilIdTypeEnum::IMMIGRANT_CODE->value,
+        ]);
+    }
+    public function withPassport(): self
+    {
+        return $this->state(fn(array $attributes) => [
+            'civil_id' => $this->faker->numerify('#########'),
+            'civil_id_type' => CivilIdTypeEnum::PASSPORT->value,
+        ]);
+    }
     public function withOtp(int $code = 123456): self
     {
         return $this->afterCreating(function (User $user) use ($code) {

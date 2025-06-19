@@ -16,7 +16,8 @@ final readonly class UpdateUserAction
     public function handle(UserCreateData $data, User $user): User
     {
         return DB::transaction(function () use ($data, $user): User {
-            return $user->update($data->toArray())->fresh();
+            $user->update($data->toArray());
+            return $user->fresh();
         });
     }
 }

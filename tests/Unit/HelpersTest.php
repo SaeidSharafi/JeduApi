@@ -67,3 +67,17 @@ describe('randomNumber', function () {
             ->and($number)->toMatch('/^[1-9]$/');
     });
 });
+
+describe('getModelLabel', function (){
+    it('returns model label for a class string', function () {
+        $label = getModelLabel(\App\Models\User::class);
+
+        expect($label)->toBe(__('messages.models.user'));
+    });
+
+    it('returns label for invalid model', function () {
+        $label = getModelLabel('invalid_model');
+
+        expect($label)->toBe(__('messages.models.invalid_model'));
+    });
+});
