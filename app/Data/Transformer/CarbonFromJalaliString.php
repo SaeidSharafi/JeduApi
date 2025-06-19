@@ -22,7 +22,14 @@ final class CarbonFromJalaliString implements Cast
             return verta($value)->toCarbon();
         }
 
-        if (is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $value)) {
+        if (is_string($value)
+            && (
+                preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $value)
+                || preg_match('/^\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}$/', $value)
+                || preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)
+                ||  preg_match('/^\d{4}\/\d{2}\/d{2}$/', $value)
+            )
+        ) {
             // If the value is a Jalali date string in the format 'Y-m-d H:i:s'
             return Verta::parse($value)->toCarbon();
         }
