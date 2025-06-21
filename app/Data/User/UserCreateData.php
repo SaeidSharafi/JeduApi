@@ -73,4 +73,68 @@ final class UserCreateData extends Data
             ]
         ];
     }
+
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'phone' => [
+                'description' => 'The phone number of the user.',
+                'example'     => '09123456789',
+            ],
+            'first_name' => [
+                'description' => 'The first name of the user.',
+                'example'     => 'John',
+            ],
+            'last_name' => [
+                'description' => 'The last name of the user.',
+                'example'     => 'Doe',
+            ],
+            'email' => [
+                'description' => 'The email address of the user.',
+                'example'     => 'user@example.com',
+            ],
+            'phone2' => [
+                'description' => 'An optional secondary phone number for the user.',
+                'example'     => '09876543210',
+            ],
+            'civil_id' => [
+                'description' => 'The civil ID of the user.',
+                'example'     => '123456789',
+            ],
+            'civil_id_type' => [
+                'description' => 'The type of civil ID.',
+                'example'     => CivilIdTypeEnum::NATIONAL_CODE->value,
+            ],
+            'date_of_birth' => [
+                'description' => 'The date of birth of the user in Jalali format (Y-m-d).',
+                'example'     => '1400-01-01',
+            ],
+            'father_name' => [
+                'description' => 'The name of the user\'s father.',
+                'example'     => 'Ali',
+            ],
+            'gender' => [
+                'description' => 'gender of the user.',
+                'example' => GenderEnum::MALE->value,
+            ],
+            'education_level' => [
+                'description' => 'The education level of the user.',
+                'example'     => EducationLevelEnum::BACHELOR->value,
+            ],
+            'field_of_study' => [
+                'description' => 'The field of study of the user.',
+                'example'     => 'Computer Science',
+            ],
+            'education_status' => [
+                'description' => 'The education status of the user.',
+                'example'     => EducationStatusEnum::GRADUATED->value,
+            ],
+        ];
+    }
 }

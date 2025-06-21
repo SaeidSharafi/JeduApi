@@ -1,0 +1,32 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 1,
+    "phone": "09211550073",
+    "first_name": "Ruben",
+    "last_name": "Jacobi",
+    "email": "schiller.leda@example.com",
+    "phone2": "09106417636",
+    "civil_id": "97237506960062",
+    "civil_id_type": {
+      "value": "immigrant_code",
+      "label": "کد اتباع"
+    },
+    "date_of_birth": "1356-11-10",
+    "father_name": null,
+    "gender": {
+      "value": "female",
+      "label": "زن"
+    },
+    "education_level": {
+      "value": "postdoctoral",
+      "label": "enums.EducationLevelEnum.postdoctoral"
+    },
+    "field_of_study": "الکتریک",
+    "education_status": {
+      "value": "graduated",
+      "label": "enums.EducationStatusEnum.graduated"
+    }
+  },
+  "metadata": []
+}
