@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Category;
 
+use App\Exceptions\ModelHasRelationshipDataException;
+use App\Models\Categorizable;
 use App\Models\Category;
+use App\Models\Course;
+use App\Models\DigitalAsset;
 use Illuminate\Support\Facades\DB;
 
 final readonly class DeleteCategoryAction
@@ -15,6 +19,12 @@ final readonly class DeleteCategoryAction
     public function handle(Category $category): void
     {
         DB::transaction(function () use ($category): void {
+            if ($category->categorizable()->exists()) {
+                throw  new ModelHasRelationshipDataException(
+                    Categorizable::class,
+                    message: __('messages.errors.model_has_relationship_data_without_related_model')
+                );
+            }
             $category->media()->delete();
             $category->delete();
         });

@@ -172,7 +172,7 @@ final class ScribeSeeder extends Seeder
             ->withMedia()
             ->create();
 
-        Product::factory(25)
+        Product::factory(10)
             ->withDeliveryOptions()
             ->withCategory(3)
             ->create();

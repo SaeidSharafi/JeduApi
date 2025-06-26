@@ -11,6 +11,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Seminar\CreateSeminarData;
 use App\Data\Seminar\SeminarListItemData;
 use App\Data\Seminar\ShowSeminarData;
+use App\Exceptions\ModelHasRelationshipDataException;
 use App\Http\Controllers\Controller;
 use App\Models\Seminar;
 use Illuminate\Http\JsonResponse;
@@ -123,11 +124,14 @@ final class SeminarController extends Controller
      *
      * @response 204
      */
-    public function destroy(Seminar $seminar, DeleteSeminarAction $action): JsonResponse
+    public function destroy(Seminar $seminar, DeleteSeminarAction $action): JsonResponse|ApiResponseInterface
     {
         Gate::authorize('delete', $seminar);
-        $action->handle($seminar);
-
+        try {
+            $action->handle($seminar);
+        }catch (ModelHasRelationshipDataException $exception){
+            return response()->validationError(message: $exception->getMessage());
+        }
         return response()->noContentJson();
     }
 }

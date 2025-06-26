@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Plank\Mediable\Mediable;
 
 final class Vendor extends Model
@@ -28,6 +29,11 @@ final class Vendor extends Model
         'theme_options',
 
     ];
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
 
     protected function casts(): array
     {

@@ -29,7 +29,7 @@ final class ProductDeliveryOptionFactory extends Factory
         return [
             'product_id'                => Product::factory(),
             'name'                      => $this->faker->name(),
-            'sku'                       => $this->faker->unique()->word(),
+            'sku'                       => $this->faker->unique()->randomNumber(),
             'fulfillment_type'          => $ftype,
             'delivery_method'           => $pdoType,
             'price'                     => $this->faker->randomNumber(),

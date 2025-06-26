@@ -12,7 +12,12 @@ class ModelHasRelationshipDataException extends Exception
     #[Pure] public function __construct(string $relatedModel, string $message = "", int $code = 422, ?Throwable $previous = null)
     {
         $this->relatedModel = $relatedModel;
-        $message = $message ?: "The model has related data in the {$relatedModel} table. Please delete the related data first.";
+        $message = $message ?:  __(
+            'messages.errors.model_has_relationship_data',
+            [
+                'related_model' => getModelLabel($relatedModel),
+            ]
+        );
         parent::__construct($message, $code, $previous);
     }
 

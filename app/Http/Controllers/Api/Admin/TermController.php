@@ -11,6 +11,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Term\CreateTermData;
 use App\Data\Term\ShowTermData;
 use App\Data\Term\TermListItemData;
+use App\Exceptions\ModelHasRelationshipDataException;
 use App\Http\Controllers\Controller;
 use App\Models\Term;
 use Illuminate\Support\Facades\Gate;
@@ -101,10 +102,14 @@ final class TermController extends Controller
      * @responseFile 404 responses/404.json
      * @responseFile 422 responses/422.json
      */
-    public function destroy(Term $term, DeleteTermAction $action): \Illuminate\Http\JsonResponse
+    public function destroy(Term $term, DeleteTermAction $action): \Illuminate\Http\JsonResponse|ApiResponseInterface
     {
         Gate::authorize('delete', $term);
-        $action->execute($term);
+        try {
+            $action->execute($term);
+        }catch (ModelHasRelationshipDataException $exception){
+            return response()->validationError(message: $exception->getMessage());
+        }
 
         return response()->noContentJson();
     }

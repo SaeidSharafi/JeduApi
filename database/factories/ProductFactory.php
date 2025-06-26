@@ -20,6 +20,26 @@ final class ProductFactory extends Factory
 
     public function definition(): array
     {
+        $type = $this->faker->randomElement(ProductableEnum::cases());
+
+        switch ($type) {
+            case ProductableEnum::COURSE:
+                $productableType = ProductableEnum::COURSE->value;
+                $productableId = Course::factory();
+                break;
+            case ProductableEnum::SEMINAR:
+                $productableType = ProductableEnum::SEMINAR->value;
+                $productableId = \App\Models\Seminar::factory();
+                break;
+            case ProductableEnum::DIGITAL_ASSET:
+                $productableType = ProductableEnum::DIGITAL_ASSET->value;
+                $productableId = \App\Models\DigitalAsset::factory();
+                break;
+            default:
+                $productableType = ProductableEnum::COURSE->value;
+                $productableId = Course::factory();
+        }
+
         return [
             'vendor_id'         => Vendor::factory(),
             'term_id'           => Term::factory(),
@@ -32,28 +52,9 @@ final class ProductFactory extends Factory
             'details_json'      => [],
             'created_at'        => Carbon::now(),
             'updated_at'        => Carbon::now(),
+            'productable_type'  => $productableType,
+            'productable_id'    => $productableId,
         ];
-    }
-
-    public function configure(): static
-    {
-        $type = $this->faker->randomElement(ProductableEnum::cases());
-
-        return match ($type) {
-            ProductableEnum::COURSE => $this->state([
-                'productable_type' => $type->value,
-                'productable_id'   => Course::factory(),
-            ]),
-            ProductableEnum::SEMINAR => $this->state([
-                'productable_type' => $type->value,
-                'productable_id'   => \App\Models\Seminar::factory(),
-            ]),
-            ProductableEnum::DIGITAL_ASSET => $this->state([
-                'productable_type' => $type->value,
-                'productable_id'   => \App\Models\DigitalAsset::factory(),
-            ]),
-            default => $this,
-        };
     }
 
     public function withCategory(int $maxCategoryCount = 1): self
