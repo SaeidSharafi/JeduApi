@@ -469,3 +469,21 @@ it('can delete digital asset', function () {
         'media_id'      => $main->id,
     ]);
 });
+
+it('can not delete digital asset if there is related data', function (): void {
+    $this->authorized_user([App\Enums\PermissionEnum::FILE_DELETE]);
+    $digitalAsset = DigitalAsset::factory()->create()->fresh();
+    App\Models\Product::factory()->create([
+        'productable_id'   => $digitalAsset->id,
+        'productable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
+    ]);
+    $response = $this->deleteJson(route('api.v1.admin.digital-asset.destroy', $digitalAsset->id));
+    $response->assertStatus(422)
+        ->assertJsonFragment([
+            'message' => __('messages.errors.model_has_relationship_data',
+                ['related_model' => getModelLabel(\App\Models\Product::class)])
+        ]);
+    $this->assertDatabaseHas('digital_assets', [
+        'id' => $digitalAsset->id,
+    ]);
+});

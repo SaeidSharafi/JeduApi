@@ -99,7 +99,18 @@ describe('TermController Test', function () {
         $response->assertNoContent();
         $this->assertDatabaseMissing('terms', ['id' => $term->id]);
     });
-
+    it('should not delete a term with related data', function () {
+        $this->authorized_user([App\Enums\PermissionEnum::TERM_DELETE]);
+        $term     = Term::factory()->create();
+        \App\Models\Product::factory()->create(['term_id' => $term->id]);
+        $response = $this->deleteJson(route('api.v1.admin.term.destroy', ['term' => $term]));
+        $response->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => __('messages.errors.model_has_relationship_data',
+                    ['related_model' => getModelLabel(\App\Models\Product::class)])
+            ]);
+        $this->assertDatabaseHas('terms', ['id' => $term->id]);
+    });
     it('should not create a term with missing required fields', function () {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_CREATE]);
         $response = $this->postJson(route('api.v1.admin.term.store'), []);

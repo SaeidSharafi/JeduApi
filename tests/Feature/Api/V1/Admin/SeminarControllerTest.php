@@ -462,6 +462,25 @@ describe('SeminarController', function (): void {
 
         $response->assertNotFound();
     });
+    it('should delete not a seminar with related data', function (): void {
+        $seminar = App\Models\Seminar::factory()->create();
+        App\Models\Product::factory()->create([
+            'productable_id'   => $seminar->id,
+            'productable_type' => \App\Enums\MorphTypeEnum::SEMINAR->value,
+        ]);
+        $this->authorized_user([
+            App\Enums\PermissionEnum::SEMINAR_DELETE->value,
+        ]);
+
+        $response = $this->deleteJson(route('api.v1.admin.seminar.destroy', ['seminar' => $seminar->id]));
+        $response->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => __('messages.errors.model_has_relationship_data',
+                    ['related_model' => getModelLabel(\App\Models\Product::class)])
+            ]);
+        $this->assertDatabaseHas('seminars', ['id' => $seminar->id]);
+    });
+
     it('should not update a seminar that does not exist', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::SEMINAR_UPDATE->value,

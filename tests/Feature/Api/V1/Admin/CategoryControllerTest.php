@@ -141,7 +141,18 @@ it('can delete category', function (): void {
         'id' => $category->id,
     ]);
 });
-
+it('can not delete category if there is related data', function (): void {
+    $this->authorized_user([App\Enums\PermissionEnum::CATEGORY_DELETE->value]);
+    $category = App\Models\Category::factory()->create();
+    $product = App\Models\Product::factory()->create();
+    $product->categories()->attach($category->id);
+    $response = $this->deleteJson(route('api.v1.admin.category.destroy', ['category' => $category->id]));
+    $response->assertStatus(422)
+        ->assertJsonFragment(['message' => __('messages.errors.model_has_relationship_data_without_related_model')]);
+    $this->assertDatabaseHas('categories', [
+        'id' => $category->id,
+    ]);
+});
 it('can not access category without auth', function (): void {
     $this->unauthorized_user();
     $category = App\Models\Category::factory()->create();

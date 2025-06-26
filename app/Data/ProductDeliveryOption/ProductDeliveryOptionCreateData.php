@@ -49,7 +49,7 @@ final class ProductDeliveryOptionCreateData extends Data
     {
         $baseRules = [
             'name'             => ['required', 'string', 'max:255'],
-            'sku'              => ['required', 'string', 'max:255', 'unique:product_delivery_options,sku'],
+            'sku'              => ['required', 'alpha_dash', 'max:255', 'unique:product_delivery_options,sku'],
             'fulfillment_type' => ['required', 'bail', 'string', Rule::enum(FulfillmentTypeEnum::class)],
             'delivery_method'  => ['required', 'bail', 'string', Rule::enum(DeliveryMethodEnum::class),
                 new ProductDeliveryOptionCheckRule()],

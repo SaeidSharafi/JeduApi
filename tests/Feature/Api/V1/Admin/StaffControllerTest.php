@@ -298,7 +298,7 @@ describe('admin update', function (): void {
         $response = $this->putJson(route('api.v1.admin.staff.update', $staff), $this->data);
         $response->assertOk()
             ->assertJsonFragment(['email' => $this->data['email']])
-            ->assertJsonFragment(['message' => __('messages.updated', ['model' => __('messages.models.admin')])]);
+            ->assertJsonFragment(['message' => __('messages.updated', ['model' => __('messages.models.staff')])]);
 
         $this->assertDatabaseHas('staff', [
             'id'    => $staff->id,

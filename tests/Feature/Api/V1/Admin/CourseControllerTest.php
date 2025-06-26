@@ -249,11 +249,11 @@ it('can view list of courses', function (): void {
                 ->where('difficulty_level.value', $expectedCourse->difficulty_level->value)
                 ->where('status.value', $expectedCourse->status->value)
                 ->where('created_by', $expectedCourse->created_by)
-                ->where('categories', $expectedCourse->categories->map(fn ($category): array => [
-                    'id'     => $category->id,
-                    'name'   => $category->name,
-                    'slug'   => $category->slug,
-                    'status' => [
+                ->where('categories', $expectedCourse->categories->map(fn($category): array => [
+                    'id'         => $category->id,
+                    'name'       => $category->name,
+                    'slug'       => $category->slug,
+                    'status'     => [
                         'value' => $category->status->value,
                         'label' => $category->status->translate(),
                     ],
@@ -263,21 +263,22 @@ it('can view list of courses', function (): void {
                     'created_at' => $this->toJalalitString($category->created_at),
                     'updated_at' => $this->toJalalitString($category->updated_at),
                 ]))
-                ->where('digital_assets', $expectedCourse->digitalAssets?->map(fn (App\Models\DigitalAsset $asset): array => [
-                    'id'                      => $asset->id,
-                    'name'                    => $asset->name,
-                    'slug'                    => $asset->slug,
-                    'is_attachable_to_course' => $asset->is_attachable_to_course,
-                    'status'                  => [
-                        'value' => $asset->status->value,
-                        'label' => $asset->status->translate(),
-                    ],
-                    'version'      => $asset->version,
-                    'published_at' => $this->toJalalitString($asset->published_at),
-                    'created_by'   => $asset->created_by,
-                    'created_at'   => $this->toJalalitString($asset->created_at),
-                    'updated_at'   => $this->toJalalitString($asset->updated_at),
-                ]))
+                ->where('digital_assets',
+                    $expectedCourse->digitalAssets?->map(fn(App\Models\DigitalAsset $asset): array => [
+                        'id'                      => $asset->id,
+                        'name'                    => $asset->name,
+                        'slug'                    => $asset->slug,
+                        'is_attachable_to_course' => $asset->is_attachable_to_course,
+                        'status'                  => [
+                            'value' => $asset->status->value,
+                            'label' => $asset->status->translate(),
+                        ],
+                        'version'                 => $asset->version,
+                        'published_at'            => $this->toJalalitString($asset->published_at),
+                        'created_by'              => $asset->created_by,
+                        'created_at'              => $this->toJalalitString($asset->created_at),
+                        'updated_at'              => $this->toJalalitString($asset->updated_at),
+                    ]))
                 ->etc();
         }
     }
@@ -290,9 +291,9 @@ it('can create a new course with valid data', function (): void {
         App\Enums\PermissionEnum::COURSE_CREATE->value,
     ]);
 
-    $categories   = App\Models\Category::factory(2)->create()->pluck('id')->toArray();
+    $categories = App\Models\Category::factory(2)->create()->pluck('id')->toArray();
     $ditialAssets = App\Models\DigitalAsset::factory(2)->create();
-    $response     = $this->postJson(route('api.v1.admin.course.store'), [
+    $response = $this->postJson(route('api.v1.admin.course.store'), [
         ...$courseData->toArray(),
         'categories'     => $categories,
         'digital_assets' => $ditialAssets->pluck('id')->toArray(),
@@ -373,7 +374,7 @@ it('can not create a new course with invalid data', function (): void {
         ]);
 });
 it('can not create a new course with smiliar slug', function (): void {
-    $course     = App\Models\Course::factory()->create();
+    $course = App\Models\Course::factory()->create();
     $courseData = App\Models\Course::factory()->make([
         'slug' => $course->slug,
     ])->toArray();
@@ -428,9 +429,9 @@ it('can not create a new course with non-attachable digital asset', function ():
         ]);
 });
 it('can view a course', function (): void {
-    $categories    = App\Models\Category::factory(3)->create();
+    $categories = App\Models\Category::factory(3)->create();
     $digitalAssets = App\Models\DigitalAsset::factory(2)->create();
-    $course        = App\Models\Course::factory()
+    $course = App\Models\Course::factory()
         ->create();
     $course->categories()->sync($categories);
     $course->digitalAssets()->sync($digitalAssets);
@@ -461,11 +462,11 @@ it('can view a course', function (): void {
                     'value' => $course->status->value,
                     'label' => $course->status->translate(),
                 ])
-                ->where('data.categories', $categories->map(fn ($category): array => [
-                    'id'     => $category->id,
-                    'name'   => $category->name,
-                    'slug'   => $category->slug,
-                    'status' => [
+                ->where('data.categories', $categories->map(fn($category): array => [
+                    'id'         => $category->id,
+                    'name'       => $category->name,
+                    'slug'       => $category->slug,
+                    'status'     => [
                         'value' => $category->status->value,
                         'label' => $category->status->translate(),
                     ],
@@ -475,7 +476,7 @@ it('can view a course', function (): void {
                     'created_at' => $this->toJalalitString($category->created_at),
                     'updated_at' => $this->toJalalitString($category->updated_at),
                 ]))
-                ->where('data.digital_assets', $digitalAssets->map(fn (App\Models\DigitalAsset $asset): array => [
+                ->where('data.digital_assets', $digitalAssets->map(fn(App\Models\DigitalAsset $asset): array => [
                     'id'                      => $asset->id,
                     'name'                    => $asset->name,
                     'slug'                    => $asset->slug,
@@ -484,11 +485,11 @@ it('can view a course', function (): void {
                         'value' => $asset->status->value,
                         'label' => $asset->status->translate(),
                     ],
-                    'version'      => $asset->version,
-                    'published_at' => $this->toJalalitString($asset->published_at),
-                    'created_by'   => $asset->created_by,
-                    'created_at'   => $this->toJalalitString($asset->created_at),
-                    'updated_at'   => $this->toJalalitString($asset->updated_at),
+                    'version'                 => $asset->version,
+                    'published_at'            => $this->toJalalitString($asset->published_at),
+                    'created_by'              => $asset->created_by,
+                    'created_at'              => $this->toJalalitString($asset->created_at),
+                    'updated_at'              => $this->toJalalitString($asset->updated_at),
                 ]))
                 ->has('data.media.gallery', 0)
                 ->has('data.media.video', 0)
@@ -514,7 +515,7 @@ it('can edit a course', function (): void {
         App\Enums\PermissionEnum::COURSE_UPDATE->value,
     ]);
 
-    $categories    = App\Models\Category::factory(3)->create()->pluck('id')->toArray();
+    $categories = App\Models\Category::factory(3)->create()->pluck('id')->toArray();
     $digitalAssets = App\Models\DigitalAsset::factory(2)->create();
 
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
@@ -571,7 +572,7 @@ it('can pass slug unique check', function (): void {
     $course = App\Models\Course::factory()
         ->withCategory()
         ->create();
-    $category   = App\Models\Category::factory()->create();
+    $category = App\Models\Category::factory()->create();
     $courseData = App\Models\Course::factory()->make(
         [
             'slug' => $course->slug,
@@ -627,8 +628,8 @@ it('can pass slug unique check', function (): void {
 
 });
 it('can not edit a course with duplicate slug', function (): void {
-    $course2    = App\Models\Course::factory()->create();
-    $course     = App\Models\Course::factory()->create();
+    $course2 = App\Models\Course::factory()->create();
+    $course = App\Models\Course::factory()->create();
     $courseData = App\Models\Course::factory()->make(
         [
             'slug' => $course2->slug,
@@ -679,7 +680,7 @@ it('can not edit a course with invalid data', function (): void {
 });
 
 it('can not edit a course with invalid slug', function (): void {
-    $course     = App\Models\Course::factory()->create();
+    $course = App\Models\Course::factory()->create();
     $courseData = App\Models\Course::factory()->make([
         'slug' => 'invalid slug',
     ])->toArray();
@@ -715,5 +716,25 @@ it('can delete a course', function (): void {
     ]);
     $this->assertDatabaseMissing('media', [
         'id' => $this->media->id,
+    ]);
+});
+
+it('can not delete course if there is related data', function (): void {
+    $this->authorized_user([App\Enums\PermissionEnum::COURSE_DELETE->value]);
+    $course = App\Models\Course::factory()
+        ->create();
+    App\Models\Product::factory()->create([
+        'productable_id'   => $course->id,
+        'productable_type' => MorphTypeEnum::COURSE->value,
+    ]);
+    $response = $this->deleteJson(route('api.v1.admin.course.destroy', $course->id));
+
+    $response->assertStatus(422)
+        ->assertJsonFragment([
+            'message' => __('messages.errors.model_has_relationship_data',
+                ['related_model' => getModelLabel(\App\Models\Product::class)])
+        ]);
+    $this->assertDatabaseHas('courses', [
+        'id' => $course->id,
     ]);
 });

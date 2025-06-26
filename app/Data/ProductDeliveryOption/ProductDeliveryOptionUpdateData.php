@@ -44,7 +44,7 @@ final class ProductDeliveryOptionUpdateData extends Data
         $baseRules = [
             'name' => ['required', 'string', 'max:255'],
             'sku'  => [
-                'required', 'string', 'max:255',
+                'required', 'alpha_dash', 'max:255',
                 Rule::unique('product_delivery_options', 'sku')->where(function (Builder $query) {
                     $delivery_option = request()->route()->parameter('delivery_option');
                     if ($delivery_option && $delivery_option->id) {
