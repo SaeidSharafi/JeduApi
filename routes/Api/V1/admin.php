@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Admin\FileManagement\UploadMediaController;
 use App\Http\Controllers\Api\Admin\FileManagement\UploadPrivateController;
 use App\Http\Controllers\Api\Admin\FileManagement\ViewMediaController;
 use App\Http\Controllers\Api\Admin\FileManagement\ViewPrivateFileController;
+use App\Http\Controllers\Api\Admin\OrderController;
 use App\Http\Controllers\Api\Admin\PrivateFileDownloadController;
 
 Route::middleware('auth:staff')->group(function (): void {
@@ -35,6 +36,9 @@ Route::middleware('auth:staff')->group(function (): void {
             ->only(['index', 'store', 'show', 'update', 'destroy']);
 
         Route::resource('user', App\Http\Controllers\Api\Admin\UserController::class)
+            ->only(['index', 'store', 'show', 'update', 'destroy']);
+
+        Route::resource('order', OrderController::class)
             ->only(['index', 'store', 'show', 'update', 'destroy']);
 
     });

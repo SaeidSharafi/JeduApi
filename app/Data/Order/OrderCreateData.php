@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Data\Order;
+
+use App\Enums\OrderItemStatusEnum;
+use App\Enums\OrderStatusEnum;
+use Illuminate\Validation\Rule;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Support\Validation\ValidationContext;
+
+class OrderCreateData extends Data
+{
+    public function __construct(
+        public string $status,
+        public int $customer_id,
+        #[DataCollectionOf(OrderItemCreateData::class)]
+        public array $items,
+        public ?string $applied_coupon_code,
+        public ?string $admin_notes,
+    ) {
+    }
+
+    public static function rules(ValidationContext $context): array
+    {
+        return [
+            'status'                             => ['required', 'string', Rule::enum(OrderStatusEnum::class)],
+            'customer_id'                        => ['required', 'integer', 'exists:users,id'],
+            'applied_coupon_code'                => ['nullable', 'string', 'max:255'],
+            'admin_notes'                        => ['nullable', 'string', 'max:1000'],
+            'items'                              => ['required', 'array'],
+            'items.*.product_delivery_option_id' => ['required', 'integer', 'exists:product_delivery_options,id'],
+            'items.*.discount_amount'            => ['required', 'integer', 'min:0'],
+            'items.*.quantity'                   => ['nullable', 'integer', 'min:1'],
+            'items.*.tax_amount'                 => ['nullable', 'integer', 'min:0']
+        ];
+    }
+}

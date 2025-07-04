@@ -1,0 +1,17 @@
+<?php
+
+namespace App\Enums;
+
+use App\Traits\AdvanceEnum;
+
+enum OrderStatusEnum: string
+{
+    use AdvanceEnum;
+
+    case PENDING = 'pending';
+    case PROCESSING = 'processing';
+    case COMPLETED = 'completed';
+    case CANCELLED = 'cancelled';
+    case FAILED = 'failed';
+    case REFUNDED = 'refunded';
+}

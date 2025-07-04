@@ -48,5 +48,8 @@ return [
     'errors' => [
         'model_has_relationship_data'                       => 'The selected record has related data (:related_model) and cannot be deleted.',
         'model_has_relationship_data_without_related_model' => 'The selected record has related data and cannot be deleted.',
-    ]
+    ],
+    'order' => [
+        'items_already_purchased' => 'You have already purchased the following items: :products.',
+    ],
 ];

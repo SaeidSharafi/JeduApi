@@ -136,6 +136,12 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
+        'order' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::DELETE,
+        ],
         /*
 
 

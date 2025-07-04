@@ -50,7 +50,7 @@ final class ProductDeliveryOptionShowData extends Data
         public ?Verta $featured_price_end_date,
         #[DataCollectionOf(TeacherListItemData::class)]
         public ?DataCollection $teachers,
-        public Optional|null|ProductData $product,
+        public ?ProductData $product,
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Verta $created_at = null,
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]

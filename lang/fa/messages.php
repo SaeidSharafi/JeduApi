@@ -48,5 +48,8 @@ return [
     'errors' => [
         'model_has_relationship_data'                       => 'رکورد مورد نظر دارای داده‌های مرتبط (:related_model) است و نمی‌توان آن را حذف کرد.',
         'model_has_relationship_data_without_related_model' => 'رکورد مورد نظر دارای داده‌های مرتبط است و نمی‌توان آن را حذف کرد.',
-    ]
+    ],
+    'order' => [
+        'items_already_purchased' => 'کاربر قبلاً موارد زیر را خریداری کرده‌ است: :products.',
+    ],
 ];
