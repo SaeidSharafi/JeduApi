@@ -22,4 +22,19 @@ class OrderUpdateData extends Data
             'status' => ['required', 'string', Rule::enum(OrderStatusEnum::class)],
         ];
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'status' => [
+                'description' => 'Order status',
+                'example'     => OrderStatusEnum::PENDING->value,
+            ],
+        ];
+    }
 }
