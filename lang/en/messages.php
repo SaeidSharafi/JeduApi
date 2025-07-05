@@ -53,5 +53,7 @@ return [
         'items_already_purchased' => 'You have already purchased the following items: :products.',
         'item_already_purchased'  => 'You have already purchased this item.',
         'prepayment_not_available' => 'Pre-payment is not available for product :product.',
+        'payment_already_pending'  => 'Order :order_id has a pending payment.',
+        'order_amount_to_pay_is_zero' => 'The amount to pay for order :order_id is zero and does not require payment.',
     ],
 ];

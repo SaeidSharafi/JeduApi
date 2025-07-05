@@ -44,5 +44,8 @@ Route::middleware('auth:staff')->group(function (): void {
         Route::resource('order/{order}/order-item', App\Http\Controllers\Api\Admin\OrderItemController::class)
             ->only(['index', 'store', 'show']);
 
+        Route::resource('order/{order}/payment', App\Http\Controllers\Api\Admin\PaymentController::class)
+            ->only(['index', 'store', 'show', 'update', 'destroy']);
+
     });
 });

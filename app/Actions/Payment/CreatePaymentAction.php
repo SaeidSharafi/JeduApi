@@ -5,8 +5,9 @@ namespace App\Actions\Payment;
 use App\Data\Payment\PaymentCreateData;
 use App\Enums\OrderItemPaymentTypeEnum;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Staff;
-use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -17,11 +18,11 @@ class CreatePaymentAction
      * The amount is NOT taken from user input; it is calculated based on the
      * payment_type ('full_payment' or 'pre_payment') stored on the order items.
      */
-    public function handle(Order $order, PaymentCreateData $paymentData, Staff $adminUser): void
+    public function handle(Order $order, PaymentCreateData $paymentData, Authenticatable|Staff $adminUser): ?Payment
     {
         if ($order->payments()->where('status', 'pending')->exists()) {
             throw ValidationException::withMessages([
-                'payment' => 'This order already has a pending payment. Please complete or cancel it first.',
+                'payment' => __('messages.order.payment_already_pending', ['order_id' => $order->id]),
             ]);
         }
 
@@ -38,11 +39,11 @@ class CreatePaymentAction
         }
 
         if ($amountToPay <= 0) {
-            return;
+            return null;
         }
 
-        DB::transaction(function () use ($order, $paymentData, $adminUser, $amountToPay) {
-            $order->payments()->create([
+        return DB::transaction(function () use ($order, $paymentData, $adminUser, $amountToPay) {
+           return $order->payments()->create([
                 'customer_id' => $order->customer_id,
                 'staff_id'    => $adminUser->id,
                 'amount'      => $amountToPay,

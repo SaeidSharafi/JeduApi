@@ -50,8 +50,10 @@ return [
         'model_has_relationship_data_without_related_model' => 'رکورد مورد نظر دارای داده‌های مرتبط است و نمی‌توان آن را حذف کرد.',
     ],
     'order'  => [
-        'items_already_purchased' => 'کاربر قبلاً موارد زیر را خریداری کرده‌ است: :products.',
-        'item_already_purchased'  => 'کاربر قبلاً این مورد را خریداری کرده است.',
+        'items_already_purchased'  => 'کاربر قبلاً موارد زیر را خریداری کرده‌ است: :products.',
+        'item_already_purchased'   => 'کاربر قبلاً این مورد را خریداری کرده است.',
         'prepayment_not_available' => 'پرداخت پیش‌پرداخت برای محصول :product در دسترس نیست.',
+        'payment_already_pending'  => 'سفارش :order_id دارای پرداخت در انتظار است.',
+        'amount_to_pay_is_zero'    => 'مبلغ پرداختی برای سفارش :order_id صفر است و نیازی به پرداخت ندارد.',
     ],
 ];
