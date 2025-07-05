@@ -12,10 +12,10 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('order_id');
             $table->foreign('order_id')->references('id')->on('orders')->cascadeOnDelete();
-            $table->unsignedBigInteger('product_delivery_option_id');
+            $table->unsignedBigInteger('product_delivery_option_id')->nullable();
             $table->foreign('product_delivery_option_id')->references('id')->on('product_delivery_options')->nullOnDelete();
-            $table->unsignedBigInteger('vendor_id');
-            $table->foreign('vendor_id')->references('id')->on('vendors');
+            $table->unsignedBigInteger('vendor_id')->nullable();
+            $table->foreign('vendor_id')->references('id')->on('vendors')->nullOnDelete();
 
 
             $table->string('name');
