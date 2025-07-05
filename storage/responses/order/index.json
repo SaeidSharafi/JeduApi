@@ -4,94 +4,94 @@
     "current_page": 1,
     "data": [
       {
-        "id": 9,
-        "increment_id": "100000005",
-        "customer_first_name": "Lina",
-        "customer_last_name": "Schuster",
-        "customer_email": "vito.hintz@example.com",
-        "customer_phone": "09341747058",
-        "subtotal": 4754,
-        "discount_amount": 1000,
-        "tax_amount": 0,
-        "grand_total": 3754,
-        "status": {
-          "value": "pending",
-          "label": "enums.OrderStatusEnum.pending"
-        },
-        "created_at": "1404-04-13 13:33:09",
-        "updated_at": "1404-04-13 13:33:09"
-      },
-      {
-        "id": 8,
-        "increment_id": "100000004",
-        "customer_first_name": "Hermann",
-        "customer_last_name": "Wunsch",
-        "customer_email": "jewel.huels@example.com",
-        "customer_phone": "09187066165",
-        "subtotal": 4250,
-        "discount_amount": 1000,
-        "tax_amount": 0,
-        "grand_total": 3250,
-        "status": {
-          "value": "pending",
-          "label": "enums.OrderStatusEnum.pending"
-        },
-        "created_at": "1404-04-13 13:32:39",
-        "updated_at": "1404-04-13 13:32:39"
-      },
-      {
-        "id": 7,
-        "increment_id": "100000003",
-        "customer_first_name": "Hermann",
-        "customer_last_name": "Wunsch",
-        "customer_email": "jewel.huels@example.com",
-        "customer_phone": "09187066165",
-        "subtotal": 591826,
-        "discount_amount": 1000,
-        "tax_amount": 0,
-        "grand_total": 590826,
-        "status": {
-          "value": "pending",
-          "label": "enums.OrderStatusEnum.pending"
-        },
-        "created_at": "1404-04-13 13:32:26",
-        "updated_at": "1404-04-13 13:32:26"
-      },
-      {
-        "id": 6,
+        "id": 3,
         "increment_id": "100000002",
-        "customer_first_name": "Hermann",
-        "customer_last_name": "Wunsch",
-        "customer_email": "jewel.huels@example.com",
-        "customer_phone": "09187066165",
-        "subtotal": 7432,
-        "discount_amount": 1000,
+        "customer_first_name": "Judge",
+        "customer_last_name": "Kshlerin",
+        "customer_email": "pfeffer.bridgette@example.com",
+        "customer_phone": "09168713061",
+        "subtotal": 88430514,
+        "discount_amount": 0,
         "tax_amount": 0,
-        "grand_total": 6432,
-        "status": {
-          "value": "pending",
-          "label": "enums.OrderStatusEnum.pending"
-        },
-        "created_at": "1404-04-13 13:30:31",
-        "updated_at": "1404-04-13 13:30:31"
-      },
-      {
-        "id": 4,
-        "increment_id": "100000001",
-        "customer_first_name": "Michael",
-        "customer_last_name": "Connelly",
-        "customer_email": "bgoldner@example.org",
-        "customer_phone": "09371314836",
-        "subtotal": 937017224,
-        "discount_amount": 1000,
-        "tax_amount": 0,
-        "grand_total": 937016224,
+        "grand_total": 88430514,
+        "amount_paid": 41351,
+        "amount_refunded": 0,
+        "balance_due": 88389163,
         "status": {
           "value": "completed",
           "label": "enums.OrderStatusEnum.completed"
         },
-        "created_at": "1404-04-13 13:19:35",
-        "updated_at": "1404-04-13 13:42:50"
+        "payment_status": {
+          "value": "partially_paid",
+          "label": "enums.OrderPaymentStatusEnum.partially_paid"
+        },
+        "items": [
+          {
+            "id": 2,
+            "product_delivery_option_id": 1,
+            "discount_amount": 0,
+            "qty_ordered": 1,
+            "tax_amount": 0,
+            "name": "Orville Rogahn",
+            "sku": "in_person_service3453246",
+            "price": 88430514,
+            "total": 88430514,
+            "payment_type": {
+              "value": "pre_payment",
+              "label": "enums.OrderItemPaymentTypeEnum.pre_payment"
+            },
+            "prepayment_amount": 41351,
+            "qty_refunded": 0,
+            "total_refunded": 0
+          }
+        ],
+        "created_at": "1404-04-14 11:49:16",
+        "updated_at": "1404-04-14 11:49:16"
+      },
+      {
+        "id": 2,
+        "increment_id": "100000001",
+        "customer_first_name": "Calista",
+        "customer_last_name": "Bosco",
+        "customer_email": "jeremy.heller@example.org",
+        "customer_phone": "09133364424",
+        "subtotal": 88430514,
+        "discount_amount": 0,
+        "tax_amount": 0,
+        "grand_total": 88430514,
+        "amount_paid": 41351,
+        "amount_refunded": 0,
+        "balance_due": 88389163,
+        "status": {
+          "value": "completed",
+          "label": "enums.OrderStatusEnum.completed"
+        },
+        "payment_status": {
+          "value": "partially_paid",
+          "label": "enums.OrderPaymentStatusEnum.partially_paid"
+        },
+        "items": [
+          {
+            "id": 1,
+            "product_delivery_option_id": 1,
+            "discount_amount": 0,
+            "qty_ordered": 1,
+            "tax_amount": 0,
+            "name": "Orville Rogahn",
+            "sku": "in_person_service3453246",
+            "price": 88430514,
+            "total": 88430514,
+            "payment_type": {
+              "value": "pre_payment",
+              "label": "enums.OrderItemPaymentTypeEnum.pre_payment"
+            },
+            "prepayment_amount": 41351,
+            "qty_refunded": 0,
+            "total_refunded": 0
+          }
+        ],
+        "created_at": "1404-04-14 11:48:30",
+        "updated_at": "1404-04-14 11:48:30"
       }
     ],
     "first_page_url": "http://jedu.test/api/v1/admin/order?page=1",
@@ -119,8 +119,8 @@
     "path": "http://jedu.test/api/v1/admin/order",
     "per_page": 15,
     "prev_page_url": null,
-    "to": 5,
-    "total": 5
+    "to": 2,
+    "total": 2
   },
   "metadata": []
 }

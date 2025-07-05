@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderPaymentStatusEnum;
 use App\Enums\OrderStatusEnum;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,16 +18,23 @@ class Order extends Model
         = [
             'increment_id',
             'status',
+            'payment_status',
             'customer_id',
             'customer_email',
             'customer_phone',
             'customer_first_name',
             'customer_last_name',
             'customer_snapshot_json',
+            'total_item_count',
+            'total_qty_ordered',
             'subtotal',
             'discount_amount',
             'tax_amount',
             'grand_total',
+            'amount_paid',
+            'amount_refunded',
+            'balance_due',
+            'currency_code',
             'applied_coupon_code',
             'admin_notes'
         ];
@@ -40,6 +48,7 @@ class Order extends Model
             'tax_amount'             => 'integer',
             'grand_total'            => 'integer',
             'status'                 => OrderStatusEnum::class,
+            'payment_status'         => OrderPaymentStatusEnum::class,
             'created_at'             => 'datetime:Y-m-d H:i:s',
             'updated_at'             => 'datetime:Y-m-d H:i:s',
         ];

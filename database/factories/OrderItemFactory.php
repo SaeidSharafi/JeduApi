@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\OrderItemPaymentTypeEnum;
 use App\Enums\OrderItemStatusEnum;
 use App\Enums\OrderStatusEnum;
 use App\Models\Order;
@@ -22,7 +23,8 @@ class OrderItemFactory extends Factory
         return [
             'order_id'                   => Order::factory(),
             'product_delivery_option_id' => $product,
-            'quantity'                   => $this->faker->randomNumber(),
+            'qty_ordered'                => $this->faker->numberBetween(1, 10),
+            'payment_type'               => $this->faker->randomElement(OrderItemPaymentTypeEnum::getAllValues()),
             'name'                       => $this->faker->name(),
             'sku'                        => $this->faker->word(),
             'vendor_id'                  => Vendor::factory(),
@@ -31,6 +33,9 @@ class OrderItemFactory extends Factory
             'discount_amount'            => $this->faker->randomNumber(),
             'tax_amount'                 => $this->faker->randomNumber(),
             'total'                      => $this->faker->randomNumber(),
+            'prepayment_amount'          => $this->faker->randomNumber(),
+            'total_refunded'             => $this->faker->randomNumber(),
+            'qty_refunded'               => $this->faker->numberBetween(0, 5),
             'status'                     => $this->faker->randomElement(OrderItemStatusEnum::getAllValues()),
             'created_at'                 => Carbon::now(),
             'updated_at'                 => Carbon::now(),

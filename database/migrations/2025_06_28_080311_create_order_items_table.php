@@ -16,14 +16,23 @@ return new class extends Migration {
             $table->foreign('product_delivery_option_id')->references('id')->on('product_delivery_options')->nullOnDelete();
             $table->unsignedBigInteger('vendor_id');
             $table->foreign('vendor_id')->references('id')->on('vendors');
-            $table->integer('quantity')->default(1);
+
+
             $table->string('name');
             $table->string('sku');
             $table->jsonb('product_data_snapshot_json');
-            $table->unsignedBigInteger('price');
-            $table->unsignedBigInteger('discount_amount');
+            $table->integer('qty_ordered')->default(1);
+
+            $table->unsignedBigInteger('price')->comment('The FULL price per unit.');
+            $table->unsignedBigInteger('total')->comment('The FULL line item total (price * qty).');
+            $table->string('payment_type');
+            $table->unsignedBigInteger('prepayment_amount')->nullable()->comment('Required deposit for a single unit. Snapshot from the product.');
+            $table->unsignedBigInteger('discount_amount')->default(0);
             $table->unsignedBigInteger('tax_amount')->default(0);
-            $table->unsignedBigInteger('total');
+
+            $table->unsignedBigInteger('total_refunded')->default(0);
+            $table->integer('qty_refunded')->default(0);
+
             $table->enum('status', OrderItemStatusEnum::getAllValues())->default(OrderItemStatusEnum::ACTIVE);
             $table->timestamps();
         });

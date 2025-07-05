@@ -2,7 +2,9 @@
 
 use App\Actions\Order\CreateOrderAction;
 use App\Data\Order\OrderCreateData;
-use App\Enums\OrderItemStatusEnum;
+use App\Data\Order\OrderItemCreateData;
+use App\Enums\OrderItemPaymentTypeEnum;
+use App\Enums\OrderPaymentStatusEnum;
 use App\Enums\OrderStatusEnum;
 use App\Events\OrderCreatedEvent;
 use App\Models\Order;
@@ -13,100 +15,202 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
 
 describe('CreateOrderAction', function () {
+
     beforeEach(function () {
         Event::fake();
     });
 
-    it('creates an order successfully', function () {
+    // TEST 1: The main success case with full payment
+    test('it creates an order successfully with full payment', function () {
         $user = User::factory()->create();
-        $deliveryOption = ProductDeliveryOption::factory()->create();
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'price' => 100000, // Price per unit
+            'prepayment_amount' => 20000,
+        ]);
+
+        // Use the correct DTO for items
+        $items = [
+            new OrderItemCreateData(
+                product_delivery_option_id: $deliveryOption->id,
+                payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                discount_amount: 5000, // Discount per unit
+                qty_ordered: 2,
+                tax_amount: 1000, // Tax per unit
+            ),
+        ];
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PROCESSING->value,
+            customer_id: $user->id,
+            items: $items,
+            applied_coupon_code: null,
+            admin_notes: 'Test notes',
+        );
+
+        $order = (new CreateOrderAction())->handle($data);
+
+        // --- Assertions for the Order ---
+        expect($order)->toBeInstanceOf(Order::class);
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'customer_id' => $user->id,
+            'status' => OrderStatusEnum::PROCESSING->value,
+            'total_item_count' => 1,
+            'total_qty_ordered' => 2,
+            'subtotal' => 200000, // 100,000 * 2
+            'discount_amount' => 10000, // 5,000 * 2
+            'tax_amount' => 2000, // 1,000 * 2
+            'grand_total' => 192000, // (200000 - 10000 + 2000)
+            'amount_paid' => 192000, // Paid in full
+            'amount_refunded' => 0,
+            'balance_due' => 0,
+            'payment_status' => OrderPaymentStatusEnum::PAID->value,
+            'admin_notes' => 'Test notes',
+        ]);
+
+        // --- Assertions for the Order Item ---
+        expect($order->items)->toHaveCount(1);
+        $this->assertDatabaseHas('order_items', [
+            'order_id' => $order->id,
+            'product_delivery_option_id' => $deliveryOption->id,
+            'price' => 100000, // Snapshot of original price
+            'total' => 200000, // price * quantity
+            'qty_ordered' => 2,
+            'discount_amount' => 5000,
+            'tax_amount' => 1000,
+            'payment_type' => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+        ]);
+
+        Event::assertDispatched(OrderCreatedEvent::class);
+    });
+
+    // TEST 2: Success case with pre-payment
+    test('it creates an order with a correct partial payment status when using pre-payment', function () {
+        $user = User::factory()->create();
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'price' => 100000,
+            'prepayment_amount' => 25000, // Required pre-payment
+        ]);
+
+        $items = [
+            new OrderItemCreateData(
+                product_delivery_option_id: $deliveryOption->id,
+                payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                discount_amount: 0,
+                qty_ordered: 1,
+                tax_amount: 0,
+            ),
+        ];
 
         $data = new OrderCreateData(
             status: OrderStatusEnum::PENDING->value,
             customer_id: $user->id,
-            items: [
-                (object) [
-                    'product_delivery_option_id' => $deliveryOption->id,
-                    'quantity'                   => 2,
-                    'discount_amount'            => 100,
-                    'tax_amount'                 => 50,
-                ],
-            ],
+            items: $items,
             applied_coupon_code: null,
             admin_notes: null,
         );
 
-        $action = new CreateOrderAction();
-        $order = $action->handle($data);
+        $order = (new CreateOrderAction())->handle($data);
 
-        expect($order)->toBeInstanceOf(Order::class)
-            ->and($order->items)->toHaveCount(1)
-            ->and($order->items->first()->product_delivery_option_id)->toBe($deliveryOption->id)
-            ->and($order->items->first()->status)->toBe(OrderItemStatusEnum::ACTIVE);
-        \Pest\Laravel\assertDatabaseHas('orders', [
-            'customer_id' => $user->id,
-            'status'      => OrderStatusEnum::PENDING->value,
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'grand_total' => 100000,
+            'amount_paid' => 25000, // Correct pre-payment amount was paid
+            'balance_due' => 75000, // Correct remaining balance
+            'payment_status' => OrderPaymentStatusEnum::PARTIALLY_PAID->value, // Correct status
         ]);
-        \Pest\Laravel\assertDatabaseHas('order_items', [
-            'order_id'                   => $order->id,
-            'product_delivery_option_id' => $deliveryOption->id,
-            'quantity'                   => 2,
-            'discount_amount'            => 100,
-            'tax_amount'                 => 50,
+
+        $this->assertDatabaseHas('order_items', [
+            'order_id' => $order->id,
+            'payment_type' => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+            'prepayment_amount' => 25000, // The rule is snapshotted
         ]);
-        \Pest\Laravel\assertDatabaseCount('orders', 1);
-        \Pest\Laravel\assertDatabaseCount('order_items', 1);
-        Event::assertDispatched(OrderCreatedEvent::class);
     });
 
-    it('throws ValidationException if customer already purchased an item', function () {
+    // TEST 3: Validation failure for trying pre-payment when not allowed
+    test('it throws a validation exception if pre-payment is selected for a product that does not allow it', function () {
+        $user = User::factory()->create();
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'price' => 100000,
+            'prepayment_amount' => null,
+        ]);
+
+        $items = [
+            new OrderItemCreateData(
+                product_delivery_option_id: $deliveryOption->id,
+                payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                discount_amount: 0,
+                qty_ordered: 1,
+                tax_amount: 0,
+            ),
+        ];
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: $items,
+            applied_coupon_code: null,
+            admin_notes: null,
+        );
+
+        expect(fn() => (new CreateOrderAction())->handle($data))
+            ->toThrow(ValidationException::class);
+    });
+
+    // TEST 4: Validation for duplicate purchase (no major changes needed)
+    test('it throws ValidationException if customer already purchased an item', function () {
         $user = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $order = Order::factory()->create(['customer_id' => $user->id]);
         OrderItem::factory()->create([
-            'order_id'                   => $order->id,
+            'order_id' => $order->id,
             'product_delivery_option_id' => $deliveryOption->id,
         ]);
 
+        $items = [
+            new OrderItemCreateData(
+                product_delivery_option_id: $deliveryOption->id,
+                payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                discount_amount: 0,
+                qty_ordered: 1,
+                tax_amount: 0,
+            ),
+        ];
+
         $data = new OrderCreateData(
             status: OrderStatusEnum::PENDING->value,
             customer_id: $user->id,
-            items: [
-                (object) [
-                    'product_delivery_option_id' => $deliveryOption->id,
-                    'quantity'                   => 1,
-                    'discount_amount'            => 0,
-                    'tax_amount'                 => 0,
-                ],
-            ],
+            items: $items,
             applied_coupon_code: null,
             admin_notes: null,
         );
 
-        $action = new CreateOrderAction();
-        expect(fn() => $action->handle($data))->toThrow(ValidationException::class);
+        expect(fn() => (new CreateOrderAction())->handle($data))
+            ->toThrow(ValidationException::class);
     });
 
-    it('throws InvalidArgumentException if delivery option does not exist', function () {
+    test('it throws InvalidArgumentException if delivery option does not exist', function () {
         $user = User::factory()->create();
-        $invalidDeliveryOptionId = 999999;
+
+        $items = [
+            new OrderItemCreateData(
+                product_delivery_option_id: 99999, // Non-existent ID
+                payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                discount_amount: 0,
+                qty_ordered: 1,
+                tax_amount: 0,
+            ),
+        ];
 
         $data = new OrderCreateData(
             status: OrderStatusEnum::PENDING->value,
             customer_id: $user->id,
-            items: [
-                (object) [
-                    'product_delivery_option_id' => $invalidDeliveryOptionId,
-                    'quantity'                   => 1,
-                    'discount_amount'            => 0,
-                    'tax_amount'                 => 0,
-                ],
-            ],
+            items: $items,
             applied_coupon_code: null,
             admin_notes: null,
         );
 
-        $action = new CreateOrderAction();
-        expect(fn() => $action->handle($data))->toThrow(\InvalidArgumentException::class);
+        expect(fn() => (new CreateOrderAction())->handle($data))
+            ->toThrow(\InvalidArgumentException::class);
     });
 });

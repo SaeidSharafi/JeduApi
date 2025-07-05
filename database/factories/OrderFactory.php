@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\OrderPaymentStatusEnum;
 use App\Enums\OrderStatusEnum;
 use App\Models\Order;
 use App\Models\User;
@@ -24,10 +25,17 @@ class OrderFactory extends Factory
             'customer_first_name'    => $customer->first_name,
             'customer_last_name'     => $customer->last_name,
             'customer_snapshot_json' => $customer->toArray(),
+            'total_item_count'       => $this->faker->numberBetween(1, 10),
+            'total_qty_ordered'      => $this->faker->numberBetween(1, 100),
             'subtotal'               => $this->faker->randomNumber(),
             'discount_amount'        => $this->faker->randomNumber(),
             'tax_amount'             => $this->faker->randomNumber(),
             'grand_total'            => $this->faker->randomNumber(),
+            'amount_paid'            => $this->faker->randomNumber(),
+            'amount_refunded'        => $this->faker->randomNumber(),
+            'balance_due'            => $this->faker->randomNumber(),
+            'currency_code'          => $this->faker->currencyCode(),
+            'payment_status'         => $this->faker->randomElement(OrderPaymentStatusEnum::getAllValues()),
             'applied_coupon_code'    => $this->faker->word(),
             'admin_notes'            => $this->faker->word(),
             'created_at'             => Carbon::now(),

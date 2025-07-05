@@ -28,11 +28,7 @@ class OrderCreateData extends Data
             'customer_id'                        => ['required', 'integer', 'exists:users,id'],
             'applied_coupon_code'                => ['nullable', 'string', 'max:255'],
             'admin_notes'                        => ['nullable', 'string', 'max:1000'],
-            'items'                              => ['required', 'array'],
-            'items.*.product_delivery_option_id' => ['required', 'integer', 'exists:product_delivery_options,id'],
-            'items.*.discount_amount'            => ['required', 'integer', 'min:0'],
-            'items.*.quantity'                   => ['nullable', 'integer', 'min:1'],
-            'items.*.tax_amount'                 => ['nullable', 'integer', 'min:0']
+            'items'                              => ['required', 'array', 'min:1'],
         ];
     }
 }

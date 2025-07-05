@@ -13,7 +13,6 @@ use App\Data\Order\OrderUpdateData;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -31,6 +30,7 @@ class OrderController extends Controller
      * Display a listing of the orders.
      *
      * @queryParam filter[status] string Filter by order status. Example: completed
+     * @queryParam filter[payment_status] string Filter by payment status. Example: paid
      * @queryParam filter[customer_first_name] string Filter by customer's first name. Example: John
      * @queryParam filter[customer_last_name] string Filter by customer's last name. Example: Doe
      * @queryParam filter[customer_email] string Filter by customer's email. Example: John@example.com
@@ -52,11 +52,13 @@ class OrderController extends Controller
         Gate::authorize('view-any', Order::class);
         $orders = QueryBuilder::for(Order::class)
             ->allowedFilters([
-                'status',
                 'customer_first_name',
                 'customer_last_name', 'customer_email',
                 'customer_phone',
                 'increment_id',
+                AllowedFilter::exact('status'),
+                AllowedFilter::exact('customer_id'),
+                AllowedFilter::exact('payment_status'),
                 AllowedFilter::partial('product_name', 'items.name'),
                 AllowedFilter::partial('product_sku', 'items.sku'),
             ])

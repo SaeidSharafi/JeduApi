@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderItemPaymentTypeEnum;
 use App\Enums\OrderItemStatusEnum;
 use Database\Factories\OrderItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,16 +18,20 @@ class OrderItem extends Model
         = [
             'order_id',
             'product_delivery_option_id',
-            'quantity',
+            'vendor_id',
             'name',
             'sku',
-            'vendor_id',
             'product_data_snapshot_json',
+            'qty_ordered',
             'price',
+            'total',
+            'payment_type',
+            'prepayment_amount',
             'discount_amount',
             'tax_amount',
-            'total',
-            'status',
+            'total_refunded',
+            'qty_refunded',
+            'status'
         ];
 
     protected function casts(): array
@@ -34,6 +39,7 @@ class OrderItem extends Model
         return [
             'product_data_snapshot_json' => 'array',
             'status' => OrderItemStatusEnum::class,
+            'payment_type' => OrderItemPaymentTypeEnum::class,
             'created_at' => 'datetime:Y-m-d H:i:s',
             'updated_at' => 'datetime:Y-m-d H:i:s',
         ];

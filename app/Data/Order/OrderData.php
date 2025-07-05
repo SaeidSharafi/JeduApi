@@ -4,6 +4,7 @@ namespace App\Data\Order;
 
 use App\Data\Transformer\TranslatableEnumData;
 use App\Data\User\ShowUserData;
+use App\Enums\OrderPaymentStatusEnum;
 use App\Enums\OrderStatusEnum;
 use Hekmatinasser\Verta\Verta;
 use Illuminate\Support\Collection;
@@ -27,20 +28,29 @@ class OrderData extends Data
         public string $customer_phone,
         public string $customer_first_name,
         public string $customer_last_name,
-        #[MapInputName('customer_snapshot_json')]
-        public array $customer_snapshot,
+        public int $total_qty_ordered,
+        public int $total_item_count,
         public int $subtotal,
         public int $discount_amount,
         public int $tax_amount,
         public int $grand_total,
+        public int $amount_paid,
+        public int $amount_refunded,
+        public int $balance_due,
+        public ?string $currency_code = null,
+        public ?ShowUserData $customer = null,
+        #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
+        public ?OrderPaymentStatusEnum $payment_status = null,
         public ?string $applied_coupon_code = null,
         public ?string $admin_notes = null,
-        #[DataCollectionOf(OrderItemData::class)]
-        public Collection $items,
         #[WithTransformer(DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Verta $created_at,
         #[WithTransformer(DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Verta $updated_at,
+        #[MapInputName('customer_snapshot_json')]
+        public array $customer_snapshot,
+        #[DataCollectionOf(OrderItemData::class)]
+        public Collection $items,
     )
     {
     }
