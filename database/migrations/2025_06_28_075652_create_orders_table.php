@@ -14,7 +14,6 @@ return new class extends Migration {
 
             // --- Statuses ---
             $table->string('status')->comment('Tracks fulfillment (e.g., pending, completed).');
-            $table->string('payment_status')->comment('Tracks financial state (e.g., partially_paid, paid).');
 
             // --- Customer Details ---
             $table->foreignId('customer_id')->constrained('users');
@@ -33,11 +32,6 @@ return new class extends Migration {
             $table->unsignedBigInteger('discount_amount')->default(0)->comment('Cart-level discount.');
             $table->unsignedBigInteger('tax_amount')->default(0)->comment('Cart-level tax.');
             $table->unsignedBigInteger('grand_total')->comment('The final, total value of the order.');
-
-            // --- Payment & Balance Tracking ---
-            $table->unsignedBigInteger('amount_paid')->default(0)->comment('Total cash received from the customer.');
-            $table->unsignedBigInteger('amount_refunded')->default(0)->comment('Total cash returned to the customer.');
-            $table->unsignedBigInteger('balance_due')->comment('The remaining amount to be collected (grand_total - amount_paid).');
 
             // --- Metadata ---
             $table->string('currency_code')->default('IRR');

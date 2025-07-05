@@ -58,13 +58,13 @@ class OrderController extends Controller
                 'increment_id',
                 AllowedFilter::exact('status'),
                 AllowedFilter::exact('customer_id'),
-                AllowedFilter::exact('payment_status'),
+                AllowedFilter::exact('payment_status','payments.status'),
                 AllowedFilter::partial('product_name', 'items.name'),
                 AllowedFilter::partial('product_sku', 'items.sku'),
             ])
-            ->allowedSorts(['created_at'])
+            ->allowedSorts(['created_at','payments.status'])
             ->defaultSort('-created_at')
-            ->with(['items.vendor'])
+            ->with(['items.vendor','payments'])
             ->paginate(request()->integer('per_page', 15));
 
         return response()->success(OrderListItemData::collect($orders));

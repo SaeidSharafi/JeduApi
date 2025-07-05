@@ -2,6 +2,7 @@
 
 namespace App\Data\Order;
 
+use App\Data\Payment\PaymentData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\OrderPaymentStatusEnum;
 use App\Enums\OrderStatusEnum;
@@ -27,19 +28,22 @@ class OrderListItemData extends Data
         public int $discount_amount,
         public int $tax_amount,
         public int $grand_total,
-        public int $amount_paid,
-        public int $amount_refunded,
+        public int $total_paid,
         public int $balance_due,
+        public ?string $admin_notes = null,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public OrderStatusEnum $status,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public OrderPaymentStatusEnum $payment_status,
-        #[DataCollectionOf(OrderItemListItemData::class)]
-        public Collection $items,
         #[WithTransformer(DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Verta $created_at,
         #[WithTransformer(DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Verta $updated_at,
+        #[DataCollectionOf(PaymentData::class)]
+        public Collection $payments,
+        #[DataCollectionOf(OrderItemListItemData::class)]
+        public Collection $items,
+
     ) {
     }
 }

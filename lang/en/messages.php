@@ -51,5 +51,7 @@ return [
     ],
     'order' => [
         'items_already_purchased' => 'You have already purchased the following items: :products.',
+        'item_already_purchased'  => 'You have already purchased this item.',
+        'prepayment_not_available' => 'Pre-payment is not available for product :product.',
     ],
 ];

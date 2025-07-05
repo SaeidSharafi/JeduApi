@@ -8,7 +8,6 @@ test('to array', function () {
             'id' => $order->id,
             'increment_id' => $order->increment_id,
             'status' => $order->status->value,
-            'payment_status' => $order->payment_status->value,
             'customer_id' => $order->customer_id,
             'customer_email' => $order->customer_email,
             'customer_phone' => $order->customer_phone,
@@ -21,9 +20,6 @@ test('to array', function () {
             'discount_amount' => $order->discount_amount,
             'tax_amount' => $order->tax_amount,
             'grand_total' => $order->grand_total,
-            'amount_paid' => $order->amount_paid,
-            'amount_refunded' => $order->amount_refunded,
-            'balance_due' => $order->balance_due,
             'currency_code' => $order->currency_code,
             'applied_coupon_code' => $order->applied_coupon_code,
             'admin_notes' => $order->admin_notes,
@@ -51,6 +47,56 @@ test('items relationship', function () {
     $order->refresh();
     expect($order->items)
         ->toHaveCount(4);
+});
+
+test('payments relationship', function () {
+    $order = \App\Models\Order::factory()->create();
+    $payment = \App\Models\Payment::factory()->create([
+        'order_id' => $order->id,
+    ]);
+
+    expect($order->payments)
+        ->toHaveCount(1)
+        ->and($order->payments->first())
+        ->toBeInstanceOf(\App\Models\Payment::class)
+        ->and($order->payments->first()->id)
+        ->toEqual($payment->id);
+
+    $payments = \App\Models\Payment::factory()->count(3)->create([
+        'order_id' => $order->id,
+    ]);
+    $order->refresh();
+    expect($order->payments)
+        ->toHaveCount(4);
+});
+
+test('payment status', function () {
+    $order = \App\Models\Order::factory()->create();
+    expect($order->payment_status)
+        ->toEqual(\App\Enums\OrderPaymentStatusEnum::PENDING->value);
+
+    $payment = \App\Models\Payment::factory()->create([
+        'order_id' => $order->id,
+        'amount' => $order->grand_total,
+        'status' => \App\Enums\PaymentStatusEnum::COMPLETED,
+    ]);
+
+    expect($order->payment_status)
+        ->toEqual(\App\Enums\OrderPaymentStatusEnum::PAID->value);
+
+    $order = \App\Models\Order::factory()->create(
+        [
+            'grand_total' => 5000,
+        ]
+    );
+    $payment = \App\Models\Payment::factory()->create([
+        'order_id' => $order->id,
+        'amount' => 1000,
+        'status' => \App\Enums\PaymentStatusEnum::COMPLETED,
+    ]);
+    expect($order->payment_status)
+        ->toEqual(\App\Enums\OrderPaymentStatusEnum::PARTIALLY_PAID->value);
+
 });
 test('generate increment ID', function () {
     $order = \App\Models\Order::factory()->create();

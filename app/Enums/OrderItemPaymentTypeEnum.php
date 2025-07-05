@@ -10,4 +10,5 @@ enum OrderItemPaymentTypeEnum: string
 
     case PRE_PAYMENT = 'pre_payment';
     case FULL_PAYMENT = 'full_payment';
+    case INVOICE = 'invoice';
 }

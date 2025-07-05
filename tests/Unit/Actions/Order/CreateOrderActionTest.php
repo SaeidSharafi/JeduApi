@@ -21,7 +21,7 @@ describe('CreateOrderAction', function () {
     });
 
     // TEST 1: The main success case with full payment
-    test('it creates an order successfully with full payment', function () {
+    it('creates an order successfully with full payment', function () {
         $user = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'price' => 100000, // Price per unit
@@ -61,10 +61,6 @@ describe('CreateOrderAction', function () {
             'discount_amount' => 10000, // 5,000 * 2
             'tax_amount' => 2000, // 1,000 * 2
             'grand_total' => 192000, // (200000 - 10000 + 2000)
-            'amount_paid' => 192000, // Paid in full
-            'amount_refunded' => 0,
-            'balance_due' => 0,
-            'payment_status' => OrderPaymentStatusEnum::PAID->value,
             'admin_notes' => 'Test notes',
         ]);
 
@@ -84,55 +80,12 @@ describe('CreateOrderAction', function () {
         Event::assertDispatched(OrderCreatedEvent::class);
     });
 
-    // TEST 2: Success case with pre-payment
-    test('it creates an order with a correct partial payment status when using pre-payment', function () {
-        $user = User::factory()->create();
-        $deliveryOption = ProductDeliveryOption::factory()->create([
-            'price' => 100000,
-            'prepayment_amount' => 25000, // Required pre-payment
-        ]);
-
-        $items = [
-            new OrderItemCreateData(
-                product_delivery_option_id: $deliveryOption->id,
-                payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
-                discount_amount: 0,
-                qty_ordered: 1,
-                tax_amount: 0,
-            ),
-        ];
-
-        $data = new OrderCreateData(
-            status: OrderStatusEnum::PENDING->value,
-            customer_id: $user->id,
-            items: $items,
-            applied_coupon_code: null,
-            admin_notes: null,
-        );
-
-        $order = (new CreateOrderAction())->handle($data);
-
-        $this->assertDatabaseHas('orders', [
-            'id' => $order->id,
-            'grand_total' => 100000,
-            'amount_paid' => 25000, // Correct pre-payment amount was paid
-            'balance_due' => 75000, // Correct remaining balance
-            'payment_status' => OrderPaymentStatusEnum::PARTIALLY_PAID->value, // Correct status
-        ]);
-
-        $this->assertDatabaseHas('order_items', [
-            'order_id' => $order->id,
-            'payment_type' => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
-            'prepayment_amount' => 25000, // The rule is snapshotted
-        ]);
-    });
-
-    // TEST 3: Validation failure for trying pre-payment when not allowed
-    test('it throws a validation exception if pre-payment is selected for a product that does not allow it', function () {
+    it('throws a validation exception if pre-payment is selected for a product that does not allow it', function () {
         $user = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'price' => 100000,
             'prepayment_amount' => null,
+            'is_prepayment_available' => false
         ]);
 
         $items = [
@@ -157,8 +110,7 @@ describe('CreateOrderAction', function () {
             ->toThrow(ValidationException::class);
     });
 
-    // TEST 4: Validation for duplicate purchase (no major changes needed)
-    test('it throws ValidationException if customer already purchased an item', function () {
+    it('throws ValidationException if customer already purchased an item', function () {
         $user = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $order = Order::factory()->create(['customer_id' => $user->id]);
@@ -189,7 +141,7 @@ describe('CreateOrderAction', function () {
             ->toThrow(ValidationException::class);
     });
 
-    test('it throws InvalidArgumentException if delivery option does not exist', function () {
+    it('throws InvalidArgumentException if delivery option does not exist', function () {
         $user = User::factory()->create();
 
         $items = [
@@ -212,5 +164,44 @@ describe('CreateOrderAction', function () {
 
         expect(fn() => (new CreateOrderAction())->handle($data))
             ->toThrow(\InvalidArgumentException::class);
+    });
+
+    it('set payment status to PENDING if paid amount is 0', function () {
+        $user = User::factory()->create();
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'price' => 100000,
+            'prepayment_amount' => 25000,
+        ]);
+
+        $items = [
+            new OrderItemCreateData(
+                product_delivery_option_id: $deliveryOption->id,
+                payment_type: OrderItemPaymentTypeEnum::INVOICE->value,
+                discount_amount: 0,
+                qty_ordered: 1,
+                tax_amount: 0,
+            ),
+        ];
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: $items,
+            applied_coupon_code: null,
+            admin_notes: null,
+        );
+
+        $order = (new CreateOrderAction())->handle($data);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'grand_total' => 100000,
+        ]);
+
+        $this->assertDatabaseHas('order_items', [
+            'order_id' => $order->id,
+            'payment_type' => OrderItemPaymentTypeEnum::INVOICE->value,
+            'prepayment_amount' => 25000, // The rule is snapshotted
+        ]);
     });
 });

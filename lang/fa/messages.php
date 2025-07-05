@@ -52,5 +52,6 @@ return [
     'order'  => [
         'items_already_purchased' => 'کاربر قبلاً موارد زیر را خریداری کرده‌ است: :products.',
         'item_already_purchased'  => 'کاربر قبلاً این مورد را خریداری کرده است.',
+        'prepayment_not_available' => 'پرداخت پیش‌پرداخت برای محصول :product در دسترس نیست.',
     ],
 ];

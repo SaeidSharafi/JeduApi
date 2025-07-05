@@ -18,7 +18,6 @@ class Order extends Model
         = [
             'increment_id',
             'status',
-            'payment_status',
             'customer_id',
             'customer_email',
             'customer_phone',
@@ -31,14 +30,12 @@ class Order extends Model
             'discount_amount',
             'tax_amount',
             'grand_total',
-            'amount_paid',
-            'amount_refunded',
-            'balance_due',
             'currency_code',
             'applied_coupon_code',
             'admin_notes'
         ];
 
+    protected $with = ['payments'];
     protected function casts(): array
     {
         return [
@@ -73,5 +70,41 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function getTotalPaidAttribute(): int
+    {
+        return $this->payments()->where('status', 'completed')->sum('amount');
+    }
+
+    /**
+     * Accessor to get the current outstanding balance.
+     */
+    public function getBalanceDueAttribute(): int
+    {
+        return $this->grand_total - $this->total_paid;
+    }
+
+    /**
+     * Accessor to get the live payment status of the order.
+     */
+    public function getPaymentStatusAttribute(): string
+    {
+        $totalPaid = $this->total_paid;
+
+        if ($totalPaid >= $this->grand_total) {
+            return OrderPaymentStatusEnum::PAID->value;
+        }
+
+        if ($totalPaid > 0) {
+            return OrderPaymentStatusEnum::PARTIALLY_PAID->value;
+        }
+
+        return OrderPaymentStatusEnum::PENDING->value;
     }
 }

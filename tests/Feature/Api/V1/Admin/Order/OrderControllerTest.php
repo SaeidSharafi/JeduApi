@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\OrderItemPaymentTypeEnum;
 use App\Enums\OrderPaymentStatusEnum;
+use App\Enums\PaymentStatusEnum;
 use App\Enums\PermissionEnum;
 use App\Enums\OrderStatusEnum;
 use App\Models\Order;
@@ -24,7 +25,6 @@ describe('OrderController', function () {
         Order::factory()->create([
             'customer_id'         => $customer->id,
             'status'              => OrderStatusEnum::COMPLETED->value,
-            'payment_status'      => OrderPaymentStatusEnum::PAID->value,
             'increment_id'        => 1001,
             'customer_first_name' => 'John',
             'customer_email'      => 'john@example.com'
@@ -32,28 +32,38 @@ describe('OrderController', function () {
 
         // Create a partially paid order
         $partialOrder = Order::factory()->create([
-            'customer_id'    => $customer->id,
-            'status'         => OrderStatusEnum::PROCESSING->value,
-            'payment_status' => OrderPaymentStatusEnum::PARTIALLY_PAID->value,
+            'customer_id' => $customer->id,
+            'status'      => OrderStatusEnum::PROCESSING->value,
         ]);
+
         $product = ProductDeliveryOption::factory()->create(['name' => 'Widget', 'sku' => 'SKU123']);
         $partialOrder->items()->create([
-            'product_delivery_option_id' => $product->id, 'qty_ordered' => 1, 'name' => 'Widget', 'sku' => 'SKU123',
+            'product_delivery_option_id' => $product->id,
+            'qty_ordered'                => 1,
+            'name'                       => 'Widget',
+            'sku'                        => 'SKU123',
             'vendor_id'                  => \App\Models\Vendor::factory()->create()->id,
             'product_data_snapshot_json' => [],
             'price'                      => 1000, 'total' => 1000, 'discount_amount' => 0, 'tax_amount' => 0,
             'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
         ]);
-
+        $partialOrder->payments()->create([
+            'amount'      => 20000,
+            'method'      => 'online_gateway',
+            'status'      => PaymentStatusEnum::FAILED->value,
+            'admin_notes' => 'payment failed',
+            'staff_id'    => null,
+            'customer_id' => $customer->id,
+        ]);
         // Filter by status
+        $this->getJson(route('api.v1.admin.order.index',
+            ['filter[payment_status]' => PaymentStatusEnum::FAILED->value]))
+            ->assertOk()->assertJsonCount(1, 'data.data')
+            ->assertJsonPath('data.data.0.payments.0.status.value', PaymentStatusEnum::FAILED->value);
+
         $this->getJson(route('api.v1.admin.order.index', ['filter[status]' => OrderStatusEnum::COMPLETED->value]))
             ->assertOk()->assertJsonCount(1, 'data.data')
             ->assertJsonPath('data.data.0.status.value', OrderStatusEnum::COMPLETED->value);
-
-        $this->getJson(route('api.v1.admin.order.index',
-            ['filter[payment_status]' => OrderPaymentStatusEnum::PARTIALLY_PAID->value]))
-            ->assertOk()->assertJsonCount(1, 'data.data')
-            ->assertJsonPath('data.data.0.payment_status.value', OrderPaymentStatusEnum::PARTIALLY_PAID->value);
 
         // Filter by increment_id
         $this->getJson(route('api.v1.admin.order.index', ['filter[increment_id]' => '1001']))
@@ -98,14 +108,11 @@ describe('OrderController', function () {
                     'message',
                     'data' => [
                         'id', 'increment_id', 'status', 'payment_status', 'customer_id',
-                        'total_item_count', 'total_qty_ordered', 'grand_total', 'amount_paid',
-                        'amount_refunded', 'balance_due', 'items'
+                        'total_item_count', 'total_qty_ordered', 'grand_total', 'total_paid',
+                        'balance_due', 'items'
                     ],
                 ])
-                ->assertJsonPath('data.payment_status.value', OrderPaymentStatusEnum::PAID->value)
                 ->assertJsonPath('data.grand_total', 100000) // 50,000 * 2
-                ->assertJsonPath('data.amount_paid', 100000)
-                ->assertJsonPath('data.balance_due', 0)
                 ->assertJsonPath('data.total_item_count', 1)
                 ->assertJsonPath('data.total_qty_ordered', 2);
         });
@@ -114,7 +121,11 @@ describe('OrderController', function () {
         it('can create a partially paid order with permissions', function () {
             $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
             $user = User::factory()->create();
-            $product = ProductDeliveryOption::factory()->create(['price' => 100000, 'prepayment_amount' => 20000]);
+            $product = ProductDeliveryOption::factory()->create([
+                'price'             => 100000,
+                'prepayment_amount' => 20000,
+                'is_prepayment_available' => true
+            ]);
 
             $orderData = [
                 'status'      => OrderStatusEnum::PROCESSING->value,
@@ -131,30 +142,24 @@ describe('OrderController', function () {
             $response = $this->postJson(route('api.v1.admin.order.store'), $orderData);
 
             $response->assertStatus(201)
-                ->assertJsonPath('data.payment_status.value', OrderPaymentStatusEnum::PARTIALLY_PAID->value)
                 ->assertJsonPath('data.grand_total', 100000)
-                ->assertJsonPath('data.amount_paid', 20000)
-                ->assertJsonPath('data.balance_due', 80000);
+                ->assertJsonPath('data.balance_due', 100000);
         });
 
         // ---------- UPDATED: Show Test ----------
         it('can show an order with permissions', function () {
             $this->authorized_user([PermissionEnum::ORDER_VIEW->value]);
             $order = Order::factory()->create([
-                'payment_status' => OrderPaymentStatusEnum::PAID->value,
                 'grand_total'    => 5000,
-                'amount_paid'    => 5000,
             ]);
 
             $response = $this->getJson(route('api.v1.admin.order.show', ['order' => $order->id]));
             $response->assertStatus(200)
-                ->assertJsonStructure([ // Assert new structure
+                ->assertJsonStructure([
                                         'message',
-                                        'data' => ['id', 'payment_status', 'grand_total', 'amount_paid', 'balance_due'],
+                                        'data' => ['id', 'payment_status', 'grand_total', 'balance_due'],
                 ])
-                ->assertJsonPath('data.id', $order->id)
-                ->assertJsonPath('data.payment_status.value', OrderPaymentStatusEnum::PAID->value)
-                ->assertJsonPath('data.amount_paid', 5000);
+                ->assertJsonPath('data.id', $order->id);
         });
 
         it('can update an order with permissions', function () {
@@ -182,6 +187,7 @@ describe('OrderController', function () {
                     'metadata'
                 ])
                 ->assertJsonPath('data.status.value', OrderStatusEnum::COMPLETED->value)
+                ->assertJsonPath('data.payment_status.value', PaymentStatusEnum::PENDING->value)
                 ->assertJsonPath('data.id', $order->id);
             $this->assertDatabaseHas('orders', [
                 'id'     => $order->id,
