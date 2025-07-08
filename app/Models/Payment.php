@@ -18,6 +18,7 @@ class Payment extends Model
             'amount',
             'method',
             'status',
+            'data',
             'admin_notes'
         ];
 

@@ -21,6 +21,8 @@ return new class extends Migration {
             $table->enum('status', \App\Enums\PaymentStatusEnum::getAllValues())
                 ->default('pending')
                 ->comment('pending, completed, failed');
+            $table->jsonb('data')->nullable()
+                ->comment('Additional data related to the payment, e.g., transaction ID, gateway response, etc.');
             $table->text('admin_notes')->nullable();
 
             $table->timestamps();
