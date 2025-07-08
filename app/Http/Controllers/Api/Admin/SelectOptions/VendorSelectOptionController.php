@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\Admin\SelectOptions;
 
 use App\Data\Term\VendorSelectOptionData;
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * @group Admin - Select Options
@@ -24,6 +25,7 @@ final class VendorSelectOptionController extends Controller
     public function __invoke()
     {
         $query = request()->string('q', '');
+        $limit = request()->integer('limit', 10);
 
         $vendors = \App\Models\Vendor::query()
             ->when($query, function ($vendor) use ($query) {
@@ -33,7 +35,7 @@ final class VendorSelectOptionController extends Controller
                 });
             })
             ->orderBy('name')
-            ->limit(10)
+            ->when($limit, fn(Builder $q): Builder => $q->limit($limit))
             ->get(['id', 'name', 'address', 'logo_url']);
 
         return response()->success(

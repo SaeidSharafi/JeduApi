@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\Admin\SelectOptions;
 
 use App\Data\Term\TermSelectOptionData;
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * @group Admin - Select Options
@@ -26,6 +27,7 @@ final class TermSelectOptionController extends Controller
     public function __invoke()
     {
         $query = request()->string('q', '');
+        $limit = request()->integer('limit', 10);
 
         $terms = \App\Models\Term::query()
             ->when($query, function ($term) use ($query) {
@@ -36,7 +38,7 @@ final class TermSelectOptionController extends Controller
                 });
             })
             ->orderBy('name')
-            ->limit(10)
+            ->when($limit, fn(Builder $q): Builder => $q->limit($limit))
             ->get(['id', 'name', 'academic_year']);
 
         return response()->success(

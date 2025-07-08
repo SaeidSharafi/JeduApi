@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\Admin\SelectOptions;
 
 use App\Data\Teacher\TeacherSelectOptionData;
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * @group Admin - Select Options
@@ -25,6 +26,7 @@ final class TeacherSelectOptionController extends Controller
     public function __invoke()
     {
         $query = request()->string('q', '');
+        $limit = request()->integer('limit', 10);
 
         $teachers = \App\Models\Teacher::query()
             ->when($query, function ($teacher) use ($query) {
@@ -36,7 +38,7 @@ final class TeacherSelectOptionController extends Controller
             })
             ->withMediaAndVariants(['profile'])
             ->orderBy('last_name')
-            ->limit(10)
+            ->when($limit, fn(Builder $q): Builder => $q->limit($limit))
             ->get(['id', 'first_name', 'last_name', 'email', 'phone']);
 
         return response()->success(

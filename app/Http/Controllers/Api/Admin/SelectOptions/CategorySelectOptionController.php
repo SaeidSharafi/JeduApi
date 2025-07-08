@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\Admin\SelectOptions;
 
 use App\Data\Category\CategorySelectOptionData;
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * @group Admin - Select Options
@@ -26,6 +27,7 @@ final class CategorySelectOptionController extends Controller
     public function __invoke()
     {
         $query = request()->string('q', '');
+        $limit = request()->integer('limit', 10);
 
         $categories = \App\Models\Category::query()
             ->withMediaAndVariants(['icon'])
@@ -37,7 +39,7 @@ final class CategorySelectOptionController extends Controller
                 });
             })
             ->orderBy('name')
-            ->limit(10)
+            ->when($limit, fn(Builder $q): Builder => $q->limit($limit))
             ->get(['id', 'name', 'slug', 'icon_url']);
 
         return response()->success(
