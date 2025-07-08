@@ -39,6 +39,7 @@ describe('CreatePaymentAction', function () {
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::ONLINE_GATEWAY->value,
             status: PaymentStatusEnum::PENDING->value,
+            data: ['transaction_id' => 'txn_12345'],
             admin_notes: 'Initial online payment'
         );
 
@@ -75,6 +76,7 @@ describe('CreatePaymentAction', function () {
         (
             method: PaymentMethodEnum::ONLINE_GATEWAY->value,
             status: PaymentStatusEnum::PENDING->value,
+            data: ['transaction_id' => 'txn_12345'],
             admin_notes: null
         );
 
@@ -100,6 +102,7 @@ describe('CreatePaymentAction', function () {
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::ONLINE_GATEWAY->value,
             status: PaymentStatusEnum::PENDING->value,
+            data: ['transaction_id' => 'txn_12345'],
             admin_notes: null);
 
         // ACT & ASSERT: Expect a ValidationException when trying to create another one
@@ -123,6 +126,7 @@ describe('CreatePaymentAction', function () {
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::ONLINE_GATEWAY->value,
             status: PaymentStatusEnum::PENDING->value,
+            data: ['transaction_id' => 'txn_12345'],
             admin_notes: null);
 
         // ACT: Execute the action
@@ -149,6 +153,7 @@ describe('CreatePaymentAction', function () {
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::ONLINE_GATEWAY->value,
             status: PaymentStatusEnum::PENDING->value,
+            data: ['transaction_id' => 'txn_12345'],
             admin_notes: null);
 
         // ACT: Execute the action

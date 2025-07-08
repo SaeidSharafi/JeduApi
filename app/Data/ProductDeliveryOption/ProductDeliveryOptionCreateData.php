@@ -35,9 +35,17 @@ final class ProductDeliveryOptionCreateData extends Data
         public bool $is_featured = false,
         public ?int $featured_price = null,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]
-        public ?Carbon $featured_price_start_date = null,
+        public ?Carbon $featured_price_start_date,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]
-        public ?Carbon $featured_price_end_date = null,
+        public ?Carbon $featured_price_end_date,
+        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
+        public ?Carbon $registration_start_date,
+        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
+        public ?Carbon $registration_end_date,
+        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
+        public ?Carbon $available_from,
+        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
+        public ?Carbon $available_to,
     ) {}
 
     /**
@@ -63,6 +71,10 @@ final class ProductDeliveryOptionCreateData extends Data
             'featured_price'            => ['nullable', 'integer', 'min:0'],
             'featured_price_start_date' => ['nullable', 'date_format:Y-m-d H:i:s'],
             'featured_price_end_date'   => ['nullable', 'date_format:Y-m-d H:i:s', 'after:featured_price_start_date'],
+            'registration_start_date'   => ['nullable', 'date_format:Y-m-d'],
+            'registration_end_date'     => ['nullable', 'date_format:Y-m-d', 'after:registration_start_date'],
+            'available_from'            => ['nullable', 'date_format:Y-m-d'],
+            'available_to'              => ['nullable', 'date_format:Y-m-d', 'after:available_from'],
             'teachers'                  => ['required', 'array'],
             'teachers.*'                => ['required', 'integer', 'exists:teachers,id'],
         ];
@@ -177,7 +189,7 @@ final class ProductDeliveryOptionCreateData extends Data
                     'course_idnumber'       => 'COURSE-001',
                     'activiyId'             => 1,
                     'enrollment_start_date' => '2025-06-15 09:00:00',
-                    'enrollment_end_date'   => '2025-12-31 23:59:59',
+                    'enrollment_end_date'   => '1404-12-31 23:59:59',
                 ],
             ],
             'details.course_idnumber' => [
@@ -193,12 +205,12 @@ final class ProductDeliveryOptionCreateData extends Data
             'details.enrollment_start_date' => [
                 'description' => 'For `lms_moodle`. Enrollment start date for Moodle course',
                 'required'    => false,
-                'example'     => '2025-06-15 09:00:00',
+                'example'     => '1404-06-15 09:00:00',
             ],
             'details.enrollment_end_date' => [
                 'description' => 'For `lms_moodle`. Enrollment end date for Moodle course',
                 'required'    => false,
-                'example'     => '2025-12-31 23:59:59',
+                'example'     => '1404-12-31 23:59:59',
             ],
             'details.max_downloads' => [
                 'description' => 'For `direct_download`. Maximum number of downloads allowed (required)',
@@ -208,7 +220,7 @@ final class ProductDeliveryOptionCreateData extends Data
             'details.expiration_date' => [
                 'description' => 'When delivery_method is direct_download. Download expiration date',
                 'required'    => false,
-                'example'     => '2025-12-31 23:59:59',
+                'example'     => '1404-12-31 23:59:59',
             ],
             'details.location' => [
                 'description' => 'For `in_person`. Physical location for in-person sessions (required)',
@@ -341,19 +353,39 @@ final class ProductDeliveryOptionCreateData extends Data
                 'example'     => false,
             ],
             'featured_price' => [
-                'description' => 'Featured price for the delivery option in the smallest currency unit',
+                'description' => 'Featured price for the delivery option',
                 'required'    => false,
                 'example'     => 4500000,
             ],
             'featured_price_start_date' => [
                 'description' => 'Start date for featured pricing',
                 'required'    => false,
-                'example'     => '2025-06-15 00:00:00',
+                'example'     => '1404-06-15 00:00:00',
             ],
             'featured_price_end_date' => [
                 'description' => 'End date for featured pricing',
                 'required'    => false,
-                'example'     => '2025-07-15 23:59:59',
+                'example'     => '1404-07-15 23:59:59',
+            ],
+            'registration_start_date' => [
+                'description' => 'Start date for registration for this delivery option',
+                'required'    => false,
+                'example'     => '1404-06-01',
+            ],
+            'registration_end_date' => [
+                'description' => 'End date for registration for this delivery option',
+                'required'    => false,
+                'example'     => '1404-06-30',
+            ],
+            'available_from' => [
+                'description' => 'Start date for availability of this delivery option',
+                'required'    => false,
+                'example'     => '1404-06-01',
+            ],
+            'available_to' => [
+                'description' => 'End date for availability of this delivery option',
+                'required'    => false,
+                'example'     => '1404-12-31',
             ],
             'teachers' => [
                 'description' => 'List of teacher IDs associated with this delivery option',

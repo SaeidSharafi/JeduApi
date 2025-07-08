@@ -29,6 +29,10 @@ return new class extends Migration
             $table->unsignedBigInteger('featured_price')->nullable();
             $table->dateTime('featured_price_start_date')->nullable();
             $table->dateTime('featured_price_end_date')->nullable();
+            $table->date('registration_start_date')->nullable();
+            $table->date('registration_end_date')->nullable();
+            $table->date('available_from')->nullable();
+            $table->date('available_to')->nullable();
             $table->timestamps();
         });
     }
