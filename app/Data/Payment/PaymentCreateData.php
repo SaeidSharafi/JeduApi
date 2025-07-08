@@ -10,6 +10,7 @@ class PaymentCreateData extends Data
     public function __construct(
         public string $method,
         public string $status,
+        public ?array  $data,
         public ?string $admin_notes,
 
     )
@@ -21,7 +22,9 @@ class PaymentCreateData extends Data
         return [
             'method'      => ['required', 'string'],
             'status'      => ['required', 'string'],
+            'data'        => ['nullable', 'array'],
             'admin_notes' => ['nullable', 'string', 'max:1000'],
+
         ];
     }
 
@@ -40,6 +43,10 @@ class PaymentCreateData extends Data
             'status' => [
                 'description' => 'Current status of the payment',
                 'example'     => 'pending',
+            ],
+            'data' => [
+                'description' => 'Additional data related to the payment, such as transaction ID or gateway response',
+                'example'     => ['transaction_id' => '123456789'],
             ],
             'admin_notes' => [
                 'description' => 'Optional notes for administrative purposes',

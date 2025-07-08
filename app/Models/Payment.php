@@ -25,7 +25,8 @@ class Payment extends Model
     protected function casts(): array
     {
         return [
-            'status' => PaymentStatusEnum::class
+            'status' => PaymentStatusEnum::class,
+            'data'   => 'array',
         ];
     }
 }

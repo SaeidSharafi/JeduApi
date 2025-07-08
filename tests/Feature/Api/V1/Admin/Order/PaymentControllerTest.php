@@ -224,6 +224,9 @@ it('create partiall payment successfully', function () {
     $data = [
         'method'      => PaymentMethodEnum::ONLINE_GATEWAY,
         'status'      => PaymentStatusEnum::COMPLETED,
+        'data'        => [
+            'transaction_id' => '123456789',
+        ],
         'admin_notes' => 'Test payment',
     ];
 
@@ -245,13 +248,14 @@ it('create partiall payment successfully', function () {
     $order->refresh();
 
     $this->assertDatabaseHas('payments', [
-        'order_id'    => $order->id,
-        'customer_id' => $this->customer->id,
-        'staff_id'    => $this->user->id,
-        'amount'      => 500,
-        'method'      => PaymentMethodEnum::ONLINE_GATEWAY->value,
-        'status'      => PaymentStatusEnum::COMPLETED->value,
-        'admin_notes' => 'Test payment',
+        'order_id'             => $order->id,
+        'customer_id'          => $this->customer->id,
+        'staff_id'             => $this->user->id,
+        'amount'               => 500,
+        'method'               => PaymentMethodEnum::ONLINE_GATEWAY->value,
+        'status'               => PaymentStatusEnum::COMPLETED->value,
+        'data->transaction_id' => '123456789',
+        'admin_notes'          => 'Test payment',
     ]);
 
     $this->assertEquals($order->total_paid, 500);

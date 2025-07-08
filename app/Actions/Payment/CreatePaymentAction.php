@@ -49,6 +49,7 @@ class CreatePaymentAction
                 'amount'      => $amountToPay,
                 'method'      => $paymentData->method,
                 'status'      => $paymentData->status,
+                'data'        => $paymentData->data,
                 'admin_notes' => $paymentData->admin_notes,
             ]);
         });
