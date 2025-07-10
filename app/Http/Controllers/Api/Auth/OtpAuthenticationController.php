@@ -43,8 +43,17 @@ final class OtpAuthenticationController extends Controller
      * "name": null,
      * "phone": "09351234567",
      * "email": "09351234567@example.com",
-     * "phone_verified_at": null,
-     * "email_verified_at": null
+     * "first_name": "John",
+     * "last_name": "Doe",
+     * "phone2": null,
+     * "civil_id": 4310215648,
+     * "civil_id_type": "national_id",
+     * "date_of_birth": 1380-01-06,
+     * "father_name": "Ali",
+     * "gender" : "male",
+     * "education_level": "bachelor",
+     * "field_of_study": "Computer Science",
+     * "education_status": "graduated"
      * }
      * },
      * "metadata": []

@@ -17,7 +17,8 @@ final class PasswordLoginController extends Controller
 {
     public function __construct(
         protected PasswordLoginAction $action
-    ) {}
+    ) {
+    }
 
     /**
      * Authenticate User (Customer) with identifier (phone/email) and password
@@ -36,12 +37,20 @@ final class PasswordLoginController extends Controller
      *          "expires_at": null,
      *          "type": "Bearer",
      *          "user": {
-     *              "id": 1,
-     *              "name": null,
-     *              "phone": "09359933642",
-     *              "email": null,
-     *              "phone_verified_at": null,
-     *              "email_verified_at": null
+     *             "id": 1,
+     *             "phone": "09351234567",
+     *             "email": "customer@example.com",
+     *             "first_name": "John",
+     *             "last_name": "Doe",
+     *             "phone2": null,
+     *            "civil_id": "4310215648",
+     *             "civil_id_type": "national_id",
+     *            "date_of_birth": "1380-01-06",
+     *            "father_name": "Ali",
+     *            "gender" : "male",
+     *            "education_level": "bachelor",
+     *           "field_of_study": "Computer Science",
+     *           "education_status": "graduated",
      *          }
      *      },
      *      "metadata": []
@@ -67,8 +76,8 @@ final class PasswordLoginController extends Controller
 
         $user = User::when(
             $type === 'email',
-            fn (Builder $q) => $q->where('email', $request->identifier),
-            fn (Builder $q) => $q->where('phone', $request->identifier)
+            fn(Builder $q) => $q->where('email', $request->identifier),
+            fn(Builder $q) => $q->where('phone', $request->identifier)
         )->first();
 
         try {
