@@ -89,7 +89,7 @@ final class OtpManagerService
 
         throw ValidationException::withMessages([
             'otp' => [
-                trans('otp-manager::otp.throttle', ['seconds' => $remainingTime]),
+                trans('messages.auth.otp.throttle', ['seconds' => $remainingTime]),
             ],
         ]);
     }

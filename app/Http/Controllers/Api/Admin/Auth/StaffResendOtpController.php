@@ -43,10 +43,10 @@ final class StaffResendOtpController extends Controller
      *  "metadata": []
      *  }
      * @response 422{
-     *  "message": "otp-manager::otp.throttle",
+     *  "message": "'messages.auth.otp.otp.throttle",
      *  "errors": {
      *  "otp": [
-     *  "otp-manager::otp.throttle"
+     *  "'messages.auth.otp.otp.throttle"
      *  ]
      *  },
      *  "metadata": []
@@ -70,11 +70,12 @@ final class StaffResendOtpController extends Controller
                 'tracking_code' => $result->trackingCode,
                 'otp_type'      => $result->otpType->identifier(),
                 'identifier'    => $request->identifier,
+                'waiting_time'  => $result->waitingTime,
                 'login_method'  => 'OTP',
             ], 'OTP resent successfully');
 
         } catch (UserNotFoundException $exception) {
-            return response()->notFound('User not found');
+            return response()->notFound(__('messages.auth.login.not_found'));
         }
 
     }

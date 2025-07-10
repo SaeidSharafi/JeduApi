@@ -142,7 +142,7 @@ test('staff auth with non-existent account returns proper error', function (): v
 
     $response->assertNotFound()
         ->assertJson([
-            'message' => 'User not found',
+            'message' => __('messages.auth.login.not_found'),
         ]);
 });
 

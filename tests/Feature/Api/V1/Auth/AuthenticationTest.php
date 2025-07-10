@@ -40,7 +40,7 @@ test('new user can initiate authentication with phone', function (): void {
     $response
         ->assertOk()
         ->assertJson([
-            'message' => 'OTP sent successfully',
+            'message' => __('messages.auth.otp.sent'),
             'data'    => [
                 'tracking_code' => $this->trackingCode,
                 'otp_type'      => OtpType::SIGNUP->value,
@@ -70,7 +70,7 @@ test('user can initiate authentication with email', function (): void {
     $response
         ->assertOk()
         ->assertJson([
-            'message' => 'OTP sent successfully',
+            'message' => __('messages.auth.otp.sent'),
             'data'    => [
                 'tracking_code' => $this->trackingCode,
                 'otp_type'      => 'SIGNIN',
@@ -94,11 +94,12 @@ test('user can initiate authentication with phone', function (): void {
     $response
         ->assertOk()
         ->assertJson([
-            'message' => 'OTP sent successfully',
+            'message' => __('messages.auth.otp.sent'),
             'data'    => [
                 'tracking_code' => $this->trackingCode,
                 'otp_type'      => 'SIGNIN',
                 'identifier'    => '09301234567',
+                'waiting_time'  => config('otp.waiting_time'),
                 'login_method'  => 'OTP',
             ],
             'metadata' => [],
@@ -132,7 +133,7 @@ test('non existent user con not register with email', function (): void {
 
     $response->assertNotFound()
         ->assertJson([
-            'message' => 'User not found',
+            'message' => __('messages.auth.login.not_found'),
         ]);
 });
 
@@ -150,6 +151,7 @@ test('user can request resend otp', function (): void {
                 'tracking_code' => $this->trackingCode,
                 'otp_type'      => 'SIGNIN',
                 'identifier'    => 'test@example.com',
+                'waiting_time'  => config('otp.waiting_time'),
                 'login_method'  => 'OTP',
             ],
             'metadata' => [],
@@ -183,6 +185,7 @@ test('user can request otp with phone', function (): void {
                 'tracking_code' => $this->trackingCode,
                 'otp_type'      => 'SIGNIN',
                 'identifier'    => '09301234567',
+                'waiting_time'  => config('otp.waiting_time'),
                 'login_method'  => 'OTP',
             ],
             'metadata' => [],

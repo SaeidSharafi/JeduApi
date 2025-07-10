@@ -59,10 +59,10 @@ final class StaffOtpAuthenticationController extends Controller
             );
             $token = $this->authenticateUser->execute($user);
         } catch (UserNotFoundException) {
-            return response()->notFound('User not found');
+            return response()->notFound(__('messages.auth.login.not_found'));
         } catch (InvalidOtpCode $e) {
             return response()->validationError(
-                message: 'Invalid OTP code'
+                message: __('messages.auth.otp.invalid_code')
             );
         }
         $permissions = Cache::rememberForever(config('cache.keys.all_permissions'), function () {

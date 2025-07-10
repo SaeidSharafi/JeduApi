@@ -33,7 +33,7 @@ final class ForgotPasswordController extends Controller
      *    "identifier": "string"
      * }
      * @response status=401 { "message" : 'User does not have password'}
-     * @response status=404 { "message" : 'User Not found'}
+     * @response status=404 { "message" : 'User not found'}
      */
     public function __invoke(InitiateAuthRequest $request): ApiResponseInterface
     {
@@ -46,15 +46,15 @@ final class ForgotPasswordController extends Controller
                 'tracking_code' => $otpSent->trackingCode,
                 'otp_type'      => $otpSent->otpType->identifier(),
                 'identifier'    => $request->identifier,
-            ], 'OTP sent successfully');
+            ], __('messages.auth.otp.sent'));
 
         } catch (UserDoesNotHavePasswordException $e) {
             return response()->validationError(
-                message: 'User does not have password'
+                message: __('messages.auth.doesnot_have_password')
             );
         } catch (UserNotFoundException $e) {
             return response()->notFound(
-                message: 'User not found'
+                message: __('messages.auth.login.not_found')
             );
         }
     }

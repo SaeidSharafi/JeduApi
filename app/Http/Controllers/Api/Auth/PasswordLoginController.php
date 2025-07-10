@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Actions\Auth\PasswordLoginAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\User\ShowUserData;
+use App\Data\Shop\Customer\CustomerData;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
@@ -37,20 +38,33 @@ final class PasswordLoginController extends Controller
      *          "expires_at": null,
      *          "type": "Bearer",
      *          "user": {
-     *             "id": 1,
-     *             "phone": "09351234567",
-     *             "email": "customer@example.com",
-     *             "first_name": "John",
-     *             "last_name": "Doe",
-     *             "phone2": null,
-     *            "civil_id": "4310215648",
-     *             "civil_id_type": "national_id",
-     *            "date_of_birth": "1380-01-06",
-     *            "father_name": "Ali",
-     *            "gender" : "male",
-     *            "education_level": "bachelor",
-     *           "field_of_study": "Computer Science",
-     *           "education_status": "graduated",
+     *              "uuid": "0197f38e-84a3-70d3-ae33-73b777915eb2",
+     *              "phone": "09151235664",
+     *              "is_profile_completed": true,
+     *              "first_name": "Juvenal",
+     *              "last_name": "Murray",
+     *              "email": "vschiller@example.com",
+     *              "phone2": "09371134162",
+     *              "civil_id": "93530102067499",
+     *              "civil_id_type": {
+     *                  "value": "immigrant_code",
+     *                  "label": "کد اتباع"
+     *              },
+     *              "date_of_birth": "1353-01-16",
+     *              "father_name": "Prof. Solon Gutkowski",
+     *              "gender": {
+     *                  "value": "female",
+     *                  "label": "زن"
+     *              },
+     *              "education_level": {
+     *                      "value": "under_diploma",
+     *                      "label": "زیردیپلم"
+     *                  },
+     *              "field_of_study": "هنر",
+     *              "education_status": {
+     *                  "value": "student",
+     *                  "label": "دانشجو"
+     *              }
      *          }
      *      },
      *      "metadata": []
@@ -91,11 +105,11 @@ final class PasswordLoginController extends Controller
                 'token'      => $token->plainTextToken,
                 'expires_at' => $token->accessToken->expires_at,
                 'type'       => 'Bearer',
-                'user'       => ShowUserData::from($user),
-            ], 'User Logged in successfully');
+                'user'       => CustomerData::from($user),
+            ], __('messages.auth.login.success'));
         } catch (UserNotFoundException $exception) {
             return response()->notFound(
-                message: 'User not found'
+                message: __('messages.auth.login.not_found')
             );
         }
 

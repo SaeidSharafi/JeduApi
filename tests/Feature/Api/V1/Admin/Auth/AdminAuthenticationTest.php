@@ -90,7 +90,7 @@ test('non existent staff gets error', function (): void {
 
     $response->assertNotFound()
         ->assertJson([
-            'message' => 'User not found',
+            'message' => __('messages.auth.login.not_found'),
         ]);
 });
 

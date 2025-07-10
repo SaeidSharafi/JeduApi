@@ -56,4 +56,19 @@ return [
         'payment_already_pending'  => 'Order :order_id has a pending payment.',
         'order_amount_to_pay_is_zero' => 'The amount to pay for order :order_id is zero and does not require payment.',
     ],
+    'auth' => [
+        'otp' => [
+            'invalid_code' => 'The provided OTP code is invalid.',
+            'expired_code' => 'The OTP code has expired.',
+            'already_verified' => 'The phone number is already verified.',
+            'not_verified' => 'The phone number is not verified.',
+            'verification_required' => 'Phone number verification is required.',
+            'verification_failed' => 'Phone number verification failed. Please try again.',
+        ],
+        'login' => [
+            'success' => 'User logged in successfully.',
+            'not_found' => 'User not found.',
+            'invalid_credentials' => 'The provided credentials are incorrect.',
+        ],
+    ],
 ];

@@ -14,7 +14,7 @@ final class SentOtpDto
 
     public string $trackingCode;
 
-    private int $waitingTime;
+    public int $waitingTime;
 
     public function __construct(int $code, OtpTypeInterface $otpType, int $waitingTime, string $trackingCode)
     {

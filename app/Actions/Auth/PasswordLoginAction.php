@@ -30,7 +30,7 @@ final class PasswordLoginAction extends AuthAction
 
         if (! $identifier->hasSetPassword() || ! Hash::check($password, $identifier->password)) {
             throw ValidationException::withMessages([
-                'password' => ['The provided credentials are incorrect.'],
+                'password' => [__('messages.auth.login.invalid_credentials')],
             ]);
         }
 

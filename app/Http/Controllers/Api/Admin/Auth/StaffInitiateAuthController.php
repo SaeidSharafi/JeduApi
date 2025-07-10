@@ -71,15 +71,16 @@ final class StaffInitiateAuthController extends Controller
                 'tracking_code' => $otpSent->trackingCode,
                 'otp_type'      => $otpSent->otpType->identifier(),
                 'identifier'    => $request->identifier,
+                'waiting_time'  => $otpSent->waitingTime,
                 'login_method'  => 'OTP',
-            ], 'OTP sent successfully');
+            ], __('messages.auth.otp.sent'));
 
         } catch (UserHasPasswordException $e) {
             return response()->success([
                 'login_method' => 'PASSWORD',
             ], 'User has set password');
         } catch (UserNotFoundException $exception) {
-            return response()->notFound('User not found');
+            return response()->notFound(__('messages.auth.login.not_found'));
         }
     }
 }

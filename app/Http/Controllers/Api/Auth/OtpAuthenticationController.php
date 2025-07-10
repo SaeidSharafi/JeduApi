@@ -7,12 +7,15 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Actions\Auth\AuthenticateUserAction;
 use App\Actions\Auth\VerifyOtpAction;
 use App\Contracts\ApiResponseInterface;
+use App\Data\Admin\Course\ShowCourseData;
 use App\Data\Admin\User\ShowUserData;
+use App\Data\Shop\Customer\CustomerData;
 use App\Enums\OtpType;
 use App\Exceptions\InvalidOtpCode;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyOtpRequest;
+use App\Models\User;
 
 final class OtpAuthenticationController extends Controller
 {
@@ -32,40 +35,53 @@ final class OtpAuthenticationController extends Controller
      *
      * @group User Authentication
      *
-     * @response 200{
-     * "message": "User Logged in successfully",
-     * "data": {
-     * "token": "11|fudCok5UpqHuOiYiK8croExt91j2p667woCSNS5e7ba9305b",
-     * "expires_at": null,
-     * "type": "Bearer",
-     * "user": {
-     * "id": 1,
-     * "name": null,
-     * "phone": "09351234567",
-     * "email": "09351234567@example.com",
-     * "first_name": "John",
-     * "last_name": "Doe",
-     * "phone2": null,
-     * "civil_id": 4310215648,
-     * "civil_id_type": "national_id",
-     * "date_of_birth": 1380-01-06,
-     * "father_name": "Ali",
-     * "gender" : "male",
-     * "education_level": "bachelor",
-     * "field_of_study": "Computer Science",
-     * "education_status": "graduated"
-     * }
-     * },
-     * "metadata": []
-     * }
+     * @response {
+     *      "message": "User Logged in successfully",
+     *      "data": {
+     *          "token": "8|juaIqinWuRHiE2vnr3TGr7Pjuy04oHFFilPXxd2Y26f5f131",
+     *          "expires_at": null,
+     *          "type": "Bearer",
+     *          "user": {
+     *              "uuid": "0197f38e-84a3-70d3-ae33-73b777915eb2",
+     *              "phone": "09151235664",
+     *              "is_profile_completed": true,
+     *              "first_name": "Juvenal",
+     *              "last_name": "Murray",
+     *              "email": "vschiller@example.com",
+     *              "phone2": "09371134162",
+     *              "civil_id": "93530102067499",
+     *              "civil_id_type": {
+     *                  "value": "immigrant_code",
+     *                  "label": "کد اتباع"
+     *              },
+     *              "date_of_birth": "1353-01-16",
+     *              "father_name": "Prof. Solon Gutkowski",
+     *              "gender": {
+     *                  "value": "female",
+     *                  "label": "زن"
+     *              },
+     *              "education_level": {
+     *                      "value": "under_diploma",
+     *                      "label": "زیردیپلم"
+     *                  },
+     *              "field_of_study": "هنر",
+     *              "education_status": {
+     *                  "value": "student",
+     *                  "label": "دانشجو"
+     *              }
+     *          }
+     *      },
+     *      "metadata": []
+     *    }
      * @response 422 {
-     * "message": "Invalid OTP code",
-     * "errors": null,
-     * "metadata": []
+     *      "message": "Invalid OTP code",
+     *      "errors": null,
+     *      "metadata": []
      * }
      */
     public function __invoke(VerifyOtpRequest $request): ApiResponseInterface
     {
+
         try {
             $user = $this->verifyOtpAction->execute(
                 $request->identifier,
@@ -74,19 +90,18 @@ final class OtpAuthenticationController extends Controller
                 OtpType::from($request->otp_type));
             $token = $this->authenticateUser->execute($user);
         } catch (UserNotFoundException) {
-            return response()->notFound('User not found');
+            return response()->notFound(__('messages.auth.login.not_found'));
         } catch (InvalidOtpCode $e) {
             return response()->validationError(
-                message: 'Invalid OTP code'
+                message: __('messages.auth.otp.invalid_code')
             );
         }
-
         return response()->success(
             [
                 'token'      => $token->plainTextToken,
                 'expires_at' => $token->accessToken->expires_at,
                 'type'       => 'Bearer',
-                'user'       => ShowUserData::from($user),
+                'user'       => CustomerData::from($user),
             ]
         );
     }

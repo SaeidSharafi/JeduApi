@@ -94,7 +94,7 @@ test('PasswordLoginAction rejects invalid credentials', function (): void {
     ]);
 
     expect(fn (): NewAccessToken => $action->execute($user->email, 'email', 'wrong-password'))
-        ->toThrow(ValidationException::class, 'The provided credentials are incorrect.');
+        ->toThrow(ValidationException::class, __('messages.auth.login.invalid_credentials'));
 });
 
 test('PasswordLoginAction handles missing user', function (): void {

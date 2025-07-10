@@ -82,6 +82,6 @@ final class StaffPasswordLoginController extends Controller
                     'permissions' => $user->getAllPermissions()->pluck('name'),
                 ]),
             'permissions' => $permissions,
-        ], 'User Logged in successfully');
+        ], __('messages.auth.login.success'));
     }
 }

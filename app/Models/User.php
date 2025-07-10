@@ -10,6 +10,7 @@ use App\Enums\EducationStatusEnum;
 use App\Enums\GenderEnum;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -83,6 +84,14 @@ final class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasOne(Teacher::class);
     }
+
+    protected function isProfileCompleted(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->profileCompleted(),
+        );
+    }
+
 
     public function profileCompleted(): bool
     {

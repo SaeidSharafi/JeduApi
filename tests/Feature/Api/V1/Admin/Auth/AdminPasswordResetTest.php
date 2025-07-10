@@ -65,7 +65,7 @@ test('staff without password cannot request password reset', function (): void {
 
     $response->assertStatus(422)
         ->assertJson([
-            'message' => 'User does not have password',
+            'message' => __('messages.auth.doesnot_have_password'),
         ]);
 });
 
@@ -76,7 +76,7 @@ test('non existent staff cannot request password reset', function (): void {
 
     $response->assertNotFound()
         ->assertJson([
-            'message' => 'User not found',
+            'message' => __('messages.auth.login.not_found'),
         ]);
 });
 test('staff without password cannot reset password', function (): void {
@@ -94,7 +94,7 @@ test('staff without password cannot reset password', function (): void {
     ]);
     $response->assertStatus(422)
         ->assertJson([
-            'message' => 'User does not have password',
+            'message' => __('messages.auth.doesnot_have_password'),
         ]);
 });
 test('staff can reset password with valid otp', function (): void {
@@ -157,7 +157,7 @@ test('staff cannot reset password with invalid otp', function (): void {
 
     $response->assertStatus(422)
         ->assertJson([
-            'message' => 'Invalid OTP code',
+            'message' => __('messages.auth.otp.invalid_code'),
         ]);
 
     // Verify password was not changed
