@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions\User;
 
-use App\Data\User\UserCreateData;
 use App\Exceptions\ModelHasRelationshipDataException;
 use App\Models\Teacher;
 use App\Models\User;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin\SelectOptions;
 
-use App\Data\Term\TermSelectOptionData;
+use App\Data\Admin\Term\TermSelectOptionData;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
 

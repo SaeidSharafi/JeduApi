@@ -1,10 +1,9 @@
 <?php
 
 use App\Actions\Order\CreateOrderAction;
-use App\Data\Order\OrderCreateData;
-use App\Data\Order\OrderItemCreateData;
+use App\Data\Admin\Order\OrderCreateData;
+use App\Data\Admin\Order\OrderItemCreateData;
 use App\Enums\OrderItemPaymentTypeEnum;
-use App\Enums\OrderPaymentStatusEnum;
 use App\Enums\OrderStatusEnum;
 use App\Events\OrderCreatedEvent;
 use App\Events\OrderStatusUpdatedEvent;

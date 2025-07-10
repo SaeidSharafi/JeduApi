@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Admin\FileManagement;
 
 use App\Contracts\ApiResponseInterface;
-use App\Data\MediaData;
+use App\Data\Admin\MediaData;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Plank\Mediable\Media;

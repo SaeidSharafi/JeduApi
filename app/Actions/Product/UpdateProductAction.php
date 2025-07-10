@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Product;
 
-use App\Data\Product\ProductUpdateData;
+use App\Data\Admin\Product\ProductUpdateData;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 

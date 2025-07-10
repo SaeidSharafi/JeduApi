@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Teacher;
 
-use App\Data\Teacher\CreateTeacherData;
+use App\Data\Admin\Teacher\CreateTeacherData;
 use App\Models\Teacher;
 use Illuminate\Support\Facades\DB;
 

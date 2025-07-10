@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\Order\OrderItem\CreateOrderItemAction;
-use App\Data\Order\OrderItemCreateData;
-use App\Data\Order\OrderItemData;
-use App\Data\Order\OrderItemListItemData;
+use App\Data\Admin\Order\OrderItemCreateData;
+use App\Data\Admin\Order\OrderItemData;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
-use Illuminate\Http\Request;
 
 /**
  * @group Admin - Order Items

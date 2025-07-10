@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-use App\Data\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData;
-use App\Data\ProductDeliveryOption\DetailsData\InPersonDetailsData;
-use App\Data\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData;
-use App\Data\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsData;
-use App\Data\ProductDeliveryOption\DetailsData\LmsMoodleDetailsData;
-use App\Data\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData;
+use App\Data\Admin\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData;
+use App\Data\Admin\ProductDeliveryOption\DetailsData\InPersonDetailsData;
+use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData;
+use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsData;
+use App\Data\Admin\ProductDeliveryOption\DetailsData\LmsMoodleDetailsData;
+use App\Data\Admin\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData;
 use App\Traits\AdvanceEnum;
 
 enum DeliveryMethodEnum: string

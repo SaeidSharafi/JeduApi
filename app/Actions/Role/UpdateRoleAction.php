@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Role;
 
-use App\Data\Role\CreateRoleData;
+use App\Data\Admin\Role\CreateRoleData;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 

@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Actions\Role\OutputPermissionsAction;
-use App\Data\Role\PermissionData;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Spatie\Permission\Models\Permission;

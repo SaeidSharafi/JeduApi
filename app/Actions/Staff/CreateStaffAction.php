@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Staff;
 
-use App\Data\Staff\CreateStaffData;
+use App\Data\Admin\Staff\CreateStaffData;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 

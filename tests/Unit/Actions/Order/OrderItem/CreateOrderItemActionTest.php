@@ -1,7 +1,7 @@
 <?php
 
 use App\Actions\Order\OrderItem\CreateOrderItemAction;
-use App\Data\Order\OrderItemCreateData;
+use App\Data\Admin\Order\OrderItemCreateData;
 use App\Enums\OrderItemPaymentTypeEnum;
 use App\Models\Order;
 use App\Models\OrderItem;

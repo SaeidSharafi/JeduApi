@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Category;
 
-use App\Data\Category\CreateCategoryData;
+use App\Data\Admin\Category\CreateCategoryData;
 use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 

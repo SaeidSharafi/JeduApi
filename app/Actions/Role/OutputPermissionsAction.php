@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Role;
 
-use App\Data\Role\PermissionData;
+use App\Data\Admin\Role\PermissionData;
 use Spatie\Permission\Models\Permission;
 
 final readonly class OutputPermissionsAction

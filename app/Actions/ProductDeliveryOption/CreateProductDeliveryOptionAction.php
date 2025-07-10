@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\ProductDeliveryOption;
 
-use App\Data\ProductDeliveryOption\ProductDeliveryOptionCreateData;
+use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionCreateData;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use Illuminate\Support\Facades\DB;

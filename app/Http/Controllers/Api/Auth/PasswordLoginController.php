@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Actions\Auth\PasswordLoginAction;
 use App\Contracts\ApiResponseInterface;
-use App\Data\User\ShowUserData;
+use App\Data\Admin\User\ShowUserData;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;

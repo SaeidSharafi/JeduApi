@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Vendor;
 
-use App\Data\Vendor\CreateVendorData;
+use App\Data\Admin\Vendor\CreateVendorData;
 use App\Models\Vendor;
 use Illuminate\Support\Facades\DB;
 

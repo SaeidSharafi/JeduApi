@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Data\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData;
-use App\Data\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsData;
-use App\Data\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData;
+use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData;
+use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsData;
+use App\Data\Admin\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData;
 
 uses(Illuminate\Foundation\Testing\RefreshDatabase::class);
 beforeEach(function () {
@@ -18,7 +18,7 @@ it('return EmptyDetailsData if value is null', function () {
     $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD;
     $delivery_option                = $caster->cast($this->mockProperty, null, $properties, $this->mockContext);
     expect($delivery_option)->toBeInstanceOf(
-        App\Data\ProductDeliveryOption\DetailsData\EmptyDetailsData::class
+        \App\Data\Admin\ProductDeliveryOption\DetailsData\EmptyDetailsData::class
     );
 });
 
@@ -31,7 +31,7 @@ it('return EmptyDetailsData if fulfillment_type or delivery_method is null', fun
     ];
     $delivery_option = $caster->cast($this->mockProperty, $detials, $properties, $this->mockContext);
     expect($delivery_option)->toBeInstanceOf(
-        App\Data\ProductDeliveryOption\DetailsData\EmptyDetailsData::class
+        \App\Data\Admin\ProductDeliveryOption\DetailsData\EmptyDetailsData::class
     );
 });
 
@@ -45,7 +45,7 @@ it('return DirectDownloadDetailsData if delivery_method is DIRECT_DOWNLOAD', fun
     ];
     $delivery_option = $caster->cast($this->mockProperty, $detials, $properties, $this->mockContext);
     expect($delivery_option)->toBeInstanceOf(
-        App\Data\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData::class
+        \App\Data\Admin\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData::class
     );
 });
 
@@ -61,7 +61,7 @@ it('return InPersonDetailsData if delivery_method is IN_PERSON', function () {
     ];
     $delivery_option = $caster->cast($this->mockProperty, $detials, $properties, $this->mockContext);
     expect($delivery_option)
-        ->toBeInstanceOf(App\Data\ProductDeliveryOption\DetailsData\InPersonDetailsData::class)
+        ->toBeInstanceOf(\App\Data\Admin\ProductDeliveryOption\DetailsData\InPersonDetailsData::class)
         ->and($delivery_option->location)->toBe('Test Location')
         ->and($delivery_option->duration)->toBe('20 Minute')
         ->and($delivery_option->schedule)->toBe('Sun-Mon');
@@ -78,7 +78,7 @@ it('return LmsMoodleDetailsData if delivery_method is LMS_MOODLE', function () {
     ];
     $delivery_option = $caster->cast($this->mockProperty, $detials, $properties, $this->mockContext);
     expect($delivery_option)
-        ->toBeInstanceOf(App\Data\ProductDeliveryOption\DetailsData\LmsMoodleDetailsData::class)
+        ->toBeInstanceOf(\App\Data\Admin\ProductDeliveryOption\DetailsData\LmsMoodleDetailsData::class)
         ->and($delivery_option->course_idnumber)->toBe($detials['course_idnumber'])
         ->and($delivery_option->activity_id)->toBe($detials['activity_id'])
         ->and($delivery_option->enrollment_start_date->format('Y-m-d H:i:s'))

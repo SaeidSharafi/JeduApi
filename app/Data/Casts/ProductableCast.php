@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Data\Casts;
 
 use App\Contracts\ProductableContract;
-use App\Data\Course\CourseListItemData;
-use App\Data\Course\ShowCourseData;
-use App\Data\DigitalAsset\DigitalAssetListItemData;
-use App\Data\DigitalAsset\ShowDigitalAssetData;
-use App\Data\Seminar\SeminarListItemData;
-use App\Data\Seminar\ShowSeminarData;
+use App\Data\Admin\Course\CourseListItemData;
+use App\Data\Admin\Course\ShowCourseData;
+use App\Data\Admin\DigitalAsset\DigitalAssetListItemData;
+use App\Data\Admin\DigitalAsset\ShowDigitalAssetData;
+use App\Data\Admin\Seminar\SeminarListItemData;
+use App\Data\Admin\Seminar\ShowSeminarData;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Seminar;

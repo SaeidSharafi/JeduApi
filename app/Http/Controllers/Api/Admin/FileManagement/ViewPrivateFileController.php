@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Admin\FileManagement;
 
 use App\Contracts\ApiResponseInterface;
-use App\Data\PrivateFileData;
+use App\Data\Admin\PrivateFileData;
 use App\Http\Controllers\Controller;
 use App\Models\DigitalAsset;
 use Illuminate\Http\Request;

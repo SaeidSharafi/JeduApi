@@ -1,7 +1,7 @@
 <?php
 
 use App\Actions\Payment\CreatePaymentAction;
-use App\Data\Payment\PaymentCreateData;
+use App\Data\Admin\Payment\PaymentCreateData;
 use App\Enums\OrderItemPaymentTypeEnum;
 use App\Enums\PaymentMethodEnum;
 use App\Enums\PaymentStatusEnum;

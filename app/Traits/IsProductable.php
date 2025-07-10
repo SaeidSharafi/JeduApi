@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
-use App\Data\MediaData;
-use App\Data\PrivateFileData;
+use App\Data\Admin\MediaData;
+use App\Data\Admin\PrivateFileData;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\MorphMany;

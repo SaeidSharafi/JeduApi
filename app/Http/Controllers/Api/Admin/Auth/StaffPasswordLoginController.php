@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api\Admin\Auth;
 
 use App\Actions\Auth\PasswordLoginAction;
 use App\Contracts\ApiResponseInterface;
-use App\Data\Auth\StaffData;
+use App\Data\Admin\Auth\StaffData;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\Staff;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin\SelectOptions;
 
-use App\Data\Category\CategorySelectOptionData;
+use App\Data\Admin\Category\CategorySelectOptionData;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
 

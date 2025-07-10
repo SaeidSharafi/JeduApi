@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Actions\Course\CreateCourseAction;
 use App\Actions\Course\DeleteCourseAction;
 use App\Actions\Course\UpdateCourseAction;
-use App\Data\Course\CreateCourseData;
+use App\Data\Admin\Course\CreateCourseData;
 use App\Models\Course;
 
 describe('CourseActionTest', function (): void {

@@ -2,7 +2,7 @@
 
 namespace App\Actions\Payment;
 
-use App\Data\Payment\PaymentCreateData;
+use App\Data\Admin\Payment\PaymentCreateData;
 use App\Enums\OrderItemPaymentTypeEnum;
 use App\Models\Order;
 use App\Models\Payment;

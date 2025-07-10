@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Seminar;
 
-use App\Data\Seminar\CreateSeminarData;
+use App\Data\Admin\Seminar\CreateSeminarData;
 use App\Models\Seminar;
 
 final class UpdateSeminarAction

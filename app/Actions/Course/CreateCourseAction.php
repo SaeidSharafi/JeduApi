@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Course;
 
-use App\Data\Course\CreateCourseData;
+use App\Data\Admin\Course\CreateCourseData;
 use App\Models\Course;
 use Illuminate\Support\Facades\DB;
 
