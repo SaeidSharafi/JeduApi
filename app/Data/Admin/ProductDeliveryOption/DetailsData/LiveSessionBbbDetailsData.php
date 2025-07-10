@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Data\Admin\ProductDeliveryOption\DetailsData;
 
 use App\Contracts\DeliveryOptionDetialDataContract;
-use App\Data\ProductDeliveryOption\StringLength;
 use Spatie\LaravelData\Attributes\Validation\BooleanType;
 use Spatie\LaravelData\Attributes\Validation\IntegerType;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -59,7 +58,7 @@ final class LiveSessionBbbDetailsData extends Data implements DeliveryOptionDeti
         #[Nullable, BooleanType]
         public ?bool $lock_settings_locked_layout,
 
-        #[Nullable, StringLength(max: 255)]
+        #[Nullable, StringType, Max(255)]
         public ?string $welcome_message,
 
         #[Nullable, IntegerType] // In minutes

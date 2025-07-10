@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Data\Admin\ProductDeliveryOption;
 
 use App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction;
-use App\Data\ProductDeliveryOption\WithCast;
 use App\Data\Transformer\CarbonFromJalaliString;
 use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\MapInputName;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
