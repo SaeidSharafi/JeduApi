@@ -7,6 +7,7 @@ use App\Enums\OrderItemPaymentTypeEnum;
 use App\Enums\OrderPaymentStatusEnum;
 use App\Enums\OrderStatusEnum;
 use App\Events\OrderCreatedEvent;
+use App\Events\OrderStatusUpdatedEvent;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
@@ -17,7 +18,10 @@ use Illuminate\Validation\ValidationException;
 describe('CreateOrderAction', function () {
 
     beforeEach(function () {
-        Event::fake();
+        Event::fake([
+            OrderCreatedEvent::class,
+            OrderStatusUpdatedEvent::class,
+        ]);
     });
 
     // TEST 1: The main success case with full payment

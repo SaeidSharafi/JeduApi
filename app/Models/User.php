@@ -11,10 +11,10 @@ use App\Enums\GenderEnum;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
 final class User extends Authenticatable implements MustVerifyEmail
@@ -23,7 +23,6 @@ final class User extends Authenticatable implements MustVerifyEmail
 
     /** @use HasFactory<UserFactory> */
     use HasFactory;
-
     use Notifiable;
 
     protected string $guard_name = 'user';
@@ -51,6 +50,13 @@ final class User extends Authenticatable implements MustVerifyEmail
             'password',
             'remember_token',
         ];
+   protected static function boot(): void
+   {
+       parent::boot();
+       self::creating(function ($model) {
+           $model->uuid = (string) Str::uuid7();
+       });
+   }
 
     public function hasSetPassword(): bool
     {

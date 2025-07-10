@@ -9,6 +9,7 @@ test('to array', function (): void {
     expect($user->toArray())
         ->toEqual([
             'id'                => $user->id,
+            'uuid'              => $user->uuid,
             'first_name'        => $user->first_name,
             'last_name'         => $user->last_name,
             'email'             => $user->email,
