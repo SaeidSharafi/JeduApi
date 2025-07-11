@@ -13,8 +13,6 @@ class SmsChannel
      */
     public function send(object $notifiable, Notification $notification): void
     {
-        if (method_exists($notification, 'toSms')) {
-            $notification->toSms($notifiable);
-        }
+        $notification->toSms($notifiable);
     }
 }
