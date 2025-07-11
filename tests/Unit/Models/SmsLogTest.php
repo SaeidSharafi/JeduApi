@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 it('to array', function () {
-    $smsLog = \App\Models\SmsLog::create([
+    $smsLog = App\Models\SmsLog::create([
         'status'  => 200,
         'data'    => ['message_id' => '1234567890'],
         'content' => 'Test message content',
@@ -13,14 +15,14 @@ it('to array', function () {
 
     expect($smsLog->toArray())
         ->toEqual([
-            'id'        => $smsLog->id,
-            'status'    => $smsLog->status,
-            'data'      => $smsLog->data,
-            'content'   => $smsLog->content,
-            'type'      => $smsLog->type,
-            'to'        => $smsLog->to,
-            'from'      => $smsLog->from,
-            'sent_at'   => $smsLog->sent_at->format('Y-m-d H:i:s'),
+            'id'         => $smsLog->id,
+            'status'     => $smsLog->status,
+            'data'       => $smsLog->data,
+            'content'    => $smsLog->content,
+            'type'       => $smsLog->type,
+            'to'         => $smsLog->to,
+            'from'       => $smsLog->from,
+            'sent_at'    => $smsLog->sent_at->format('Y-m-d H:i:s'),
             'created_at' => $smsLog->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $smsLog->updated_at->format('Y-m-d H:i:s'),
         ]);

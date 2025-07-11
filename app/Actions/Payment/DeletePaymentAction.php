@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Payment;
 
 use App\Models\Order;
 use App\Models\Payment;
 
-class DeletePaymentAction
+final class DeletePaymentAction
 {
     /**
      * Updates an existing Payment record for an Order.

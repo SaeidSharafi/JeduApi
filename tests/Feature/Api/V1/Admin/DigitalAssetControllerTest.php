@@ -481,7 +481,7 @@ it('can not delete digital asset if there is related data', function (): void {
     $response->assertStatus(422)
         ->assertJsonFragment([
             'message' => __('messages.errors.model_has_relationship_data',
-                ['related_model' => getModelLabel(\App\Models\Product::class)])
+                ['related_model' => getModelLabel(App\Models\Product::class)]),
         ]);
     $this->assertDatabaseHas('digital_assets', [
         'id' => $digitalAsset->id,

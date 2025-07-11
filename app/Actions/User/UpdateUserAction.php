@@ -17,6 +17,7 @@ final readonly class UpdateUserAction
     {
         return DB::transaction(function () use ($data, $user): User {
             $user->update($data->toArray());
+
             return $user->fresh();
         });
     }

@@ -1,17 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\PaymentMethodEnum;
 use App\Enums\PaymentStatusEnum;
 
-uses(\Tests\AuthTestTrait::class);
+uses(Tests\AuthTestTrait::class);
 
 beforeEach(function () {
-    $this->customer = \App\Models\User::factory()->create();
+    $this->customer = App\Models\User::factory()->create();
 });
 it('returns order payments list', function () {
-    $this->authorized_user([\App\Enums\PermissionEnum::ORDER_VIEW->value]);
-    $order = \App\Models\Order::factory()->create();
-    $payment = \App\Models\Payment::factory()
+    $this->authorized_user([App\Enums\PermissionEnum::ORDER_VIEW->value]);
+    $order   = App\Models\Order::factory()->create();
+    $payment = App\Models\Payment::factory()
         ->create([
             'order_id'    => $order->id,
             'customer_id' => $this->customer->id,
@@ -21,7 +23,7 @@ it('returns order payments list', function () {
             'status'      => PaymentStatusEnum::COMPLETED,
             'admin_notes' => 'Test payment',
         ]);
-    \App\Models\Payment::factory()->create([
+    App\Models\Payment::factory()->create([
         'order_id' => $order->id,
     ]);
     $response = \Pest\Laravel\getJson("/api/v1/admin/order/{$order->id}/payment");
@@ -31,10 +33,10 @@ it('returns order payments list', function () {
         'data' => [
             [
                 'id', 'order_id', 'customer_id', 'staff_id', 'amount',
-                'method' => ['value', 'label'], 'status' => ['value', 'label'], 'admin_notes'
-            ]
+                'method' => ['value', 'label'], 'status' => ['value', 'label'], 'admin_notes',
+            ],
         ],
-        'metadata'
+        'metadata',
     ]);
     $response->assertJsonCount(2, 'data');
     $response->assertJsonFragment([
@@ -47,7 +49,7 @@ it('returns order payments list', function () {
             'label' => PaymentMethodEnum::ONLINE_GATEWAY->translate(),
             'value' => PaymentMethodEnum::ONLINE_GATEWAY->value,
         ],
-        'status'      => [
+        'status' => [
             'label' => PaymentStatusEnum::COMPLETED->translate(),
             'value' => PaymentStatusEnum::COMPLETED->value,
         ],
@@ -55,9 +57,9 @@ it('returns order payments list', function () {
     ]);
 });
 it('returns order payment detail', function () {
-    $this->authorized_user([\App\Enums\PermissionEnum::ORDER_VIEW->value]);
-    $order = \App\Models\Order::factory()->create();
-    $payment = \App\Models\Payment::factory()->create([
+    $this->authorized_user([App\Enums\PermissionEnum::ORDER_VIEW->value]);
+    $order   = App\Models\Order::factory()->create();
+    $payment = App\Models\Payment::factory()->create([
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
         'staff_id'    => $this->user->id,
@@ -72,9 +74,9 @@ it('returns order payment detail', function () {
         'message',
         'data' => [
             'id', 'order_id', 'customer_id', 'staff_id', 'amount',
-            'method' => ['value', 'label'], 'status' => ['value', 'label'], 'admin_notes'
+            'method' => ['value', 'label'], 'status' => ['value', 'label'], 'admin_notes',
         ],
-        'metadata'
+        'metadata',
     ]);
     $response->assertJson([
         'data' => [
@@ -87,26 +89,26 @@ it('returns order payment detail', function () {
                 'label' => PaymentMethodEnum::ONLINE_GATEWAY->translate(),
                 'value' => PaymentMethodEnum::ONLINE_GATEWAY->value,
             ],
-            'status'      => [
+            'status' => [
                 'label' => PaymentStatusEnum::COMPLETED->translate(),
                 'value' => PaymentStatusEnum::COMPLETED->value,
             ],
             'admin_notes' => $payment->admin_notes,
-        ]
+        ],
     ]);
 });
 it('create payment successfully', function () {
-    $product1 = \App\Models\ProductDeliveryOption::factory()
+    $product1 = App\Models\ProductDeliveryOption::factory()
         ->create([
             'price'                   => 1000,
-            'is_prepayment_available' => false
+            'is_prepayment_available' => false,
         ]);
-    $product2 = \App\Models\ProductDeliveryOption::factory()
+    $product2 = App\Models\ProductDeliveryOption::factory()
         ->create([
             'price'                   => 2000,
-            'is_prepayment_available' => false
+            'is_prepayment_available' => false,
         ]);
-    $order = \App\Models\Order::factory()->create([
+    $order = App\Models\Order::factory()->create([
         'customer_id'      => $this->customer->id,
         'total_item_count' => 2,
         'subtotal'         => $product1->price + $product2->price,
@@ -115,7 +117,7 @@ it('create payment successfully', function () {
         'tax_amount'       => 0,
     ])->fresh();
 
-    \App\Models\OrderItem::factory()
+    App\Models\OrderItem::factory()
         ->create([
             'qty_ordered'                => 1,
             'product_delivery_option_id' => $product1->id,
@@ -123,10 +125,10 @@ it('create payment successfully', function () {
             'price'                      => $product1->price,
             'discount_amount'            => 0,
             'order_id'                   => $order->id,
-            'payment_type'               => \App\Enums\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'payment_type'               => App\Enums\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'tax_amount'                 => 0,
         ]);
-    \App\Models\OrderItem::factory()
+    App\Models\OrderItem::factory()
         ->create([
             'qty_ordered'                => 1,
             'product_delivery_option_id' => $product2->id,
@@ -134,7 +136,7 @@ it('create payment successfully', function () {
             'price'                      => $product2->price,
             'discount_amount'            => 0,
             'order_id'                   => $order->id,
-            'payment_type'               => \App\Enums\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'payment_type'               => App\Enums\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'tax_amount'                 => 0,
         ]);
     $data = [
@@ -143,7 +145,7 @@ it('create payment successfully', function () {
         'admin_notes' => 'Test payment',
     ];
 
-    $this->authorized_user([\App\Enums\PermissionEnum::ORDER_CREATE]);
+    $this->authorized_user([App\Enums\PermissionEnum::ORDER_CREATE]);
     $response = $this->postJson(route('api.v1.admin.payment.store', ['order' => $order->id]), $data);
     $response->assertCreated()
         ->assertJsonStructure([
@@ -172,23 +174,23 @@ it('create payment successfully', function () {
 
     $this->assertEquals($order->total_paid, 3000);
     $this->assertEquals($order->balance_due, 0);
-    $this->assertEquals($order->payment_status, \App\Enums\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->payment_status, App\Enums\OrderPaymentStatusEnum::PAID->value);
 });
 
 it('create partiall payment successfully', function () {
-    $product1 = \App\Models\ProductDeliveryOption::factory()
+    $product1 = App\Models\ProductDeliveryOption::factory()
         ->create([
             'price'                   => 1000,
             'is_prepayment_available' => true,
             'prepayment_amount'       => 200,
         ]);
-    $product2 = \App\Models\ProductDeliveryOption::factory()
+    $product2 = App\Models\ProductDeliveryOption::factory()
         ->create([
             'price'                   => 2000,
             'is_prepayment_available' => true,
             'prepayment_amount'       => 300,
         ]);
-    $order = \App\Models\Order::factory()->create([
+    $order = App\Models\Order::factory()->create([
         'customer_id'      => $this->customer->id,
         'total_item_count' => 2,
         'subtotal'         => $product1->price + $product2->price,
@@ -197,7 +199,7 @@ it('create partiall payment successfully', function () {
         'tax_amount'       => 0,
     ])->fresh();
 
-    \App\Models\OrderItem::factory()
+    App\Models\OrderItem::factory()
         ->create([
             'qty_ordered'                => 1,
             'product_delivery_option_id' => $product1->id,
@@ -205,11 +207,11 @@ it('create partiall payment successfully', function () {
             'price'                      => $product1->price,
             'discount_amount'            => 0,
             'order_id'                   => $order->id,
-            'payment_type'               => \App\Enums\OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+            'payment_type'               => App\Enums\OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
             'prepayment_amount'          => $product1->prepayment_amount,
             'tax_amount'                 => 0,
         ]);
-    \App\Models\OrderItem::factory()
+    App\Models\OrderItem::factory()
         ->create([
             'qty_ordered'                => 1,
             'product_delivery_option_id' => $product2->id,
@@ -217,20 +219,20 @@ it('create partiall payment successfully', function () {
             'price'                      => $product2->price,
             'discount_amount'            => 0,
             'order_id'                   => $order->id,
-            'payment_type'               => \App\Enums\OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+            'payment_type'               => App\Enums\OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
             'prepayment_amount'          => $product2->prepayment_amount,
             'tax_amount'                 => 0,
         ]);
     $data = [
-        'method'      => PaymentMethodEnum::ONLINE_GATEWAY,
-        'status'      => PaymentStatusEnum::COMPLETED,
-        'data'        => [
+        'method' => PaymentMethodEnum::ONLINE_GATEWAY,
+        'status' => PaymentStatusEnum::COMPLETED,
+        'data'   => [
             'transaction_id' => '123456789',
         ],
         'admin_notes' => 'Test payment',
     ];
 
-    $this->authorized_user([\App\Enums\PermissionEnum::ORDER_CREATE]);
+    $this->authorized_user([App\Enums\PermissionEnum::ORDER_CREATE]);
     $response = $this->postJson(route('api.v1.admin.payment.store', ['order' => $order->id]), $data);
     $response->assertCreated()
         ->assertJsonStructure([
@@ -260,15 +262,15 @@ it('create partiall payment successfully', function () {
 
     $this->assertEquals($order->total_paid, 500);
     $this->assertEquals($order->balance_due, 2500);
-    $this->assertEquals($order->payment_status, \App\Enums\OrderPaymentStatusEnum::PARTIALLY_PAID->value);
+    $this->assertEquals($order->payment_status, App\Enums\OrderPaymentStatusEnum::PARTIALLY_PAID->value);
 });
 it('prevent creating payment if amount to pay is 0', function () {
-    $product = \App\Models\ProductDeliveryOption::factory()
+    $product = App\Models\ProductDeliveryOption::factory()
         ->create([
             'price'                   => 1000,
-            'is_prepayment_available' => false
+            'is_prepayment_available' => false,
         ]);
-    $order = \App\Models\Order::factory()->create([
+    $order = App\Models\Order::factory()->create([
         'customer_id'      => $this->customer->id,
         'total_item_count' => 2,
         'subtotal'         => $product->price,
@@ -276,7 +278,7 @@ it('prevent creating payment if amount to pay is 0', function () {
         'discount_amount'  => 1000, // This will make the total 0
         'tax_amount'       => 0,
     ])->fresh();
-    \App\Models\OrderItem::factory()
+    App\Models\OrderItem::factory()
         ->create([
             'qty_ordered'                => 1,
             'product_delivery_option_id' => $product->id,
@@ -284,7 +286,7 @@ it('prevent creating payment if amount to pay is 0', function () {
             'price'                      => $product->price,
             'discount_amount'            => 1000,
             'order_id'                   => $order->id,
-            'payment_type'               => \App\Enums\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'payment_type'               => App\Enums\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'tax_amount'                 => 0,
         ]);
     $data = [
@@ -293,7 +295,7 @@ it('prevent creating payment if amount to pay is 0', function () {
         'admin_notes' => 'Test payment',
     ];
 
-    $this->authorized_user([\App\Enums\PermissionEnum::ORDER_CREATE]);
+    $this->authorized_user([App\Enums\PermissionEnum::ORDER_CREATE]);
     $response = $this->postJson(route('api.v1.admin.payment.store', ['order' => $order->id]), $data);
     $response->assertStatus(400)
         ->assertJsonFragment([
@@ -307,11 +309,11 @@ it('prevent creating payment if amount to pay is 0', function () {
 
     $this->assertEquals($order->total_paid, 0);
     $this->assertEquals($order->balance_due, 0);
-    $this->assertEquals($order->payment_status, \App\Enums\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->payment_status, App\Enums\OrderPaymentStatusEnum::PAID->value);
 });
 it('can update payment data', function () {
-    $payment = \App\Models\Payment::factory()->create([
-        'order_id'    => \App\Models\Order::factory()->create(),
+    $payment = App\Models\Payment::factory()->create([
+        'order_id'    => App\Models\Order::factory()->create(),
         'customer_id' => $this->customer->id,
         'staff_id'    => null,
         'amount'      => 1000,
@@ -324,7 +326,7 @@ it('can update payment data', function () {
         'status'      => PaymentStatusEnum::COMPLETED,
         'admin_notes' => 'Updated payment',
     ];
-    $this->authorized_user([\App\Enums\PermissionEnum::ORDER_UPDATE]);
+    $this->authorized_user([App\Enums\PermissionEnum::ORDER_UPDATE]);
     $response = $this->putJson(route('api.v1.admin.payment.update',
         ['order' => $payment->order_id, 'payment' => $payment->id]), $data);
     $response->assertOk()
@@ -354,17 +356,17 @@ it('can update payment data', function () {
 });
 
 it('can delete payment', function () {
-    $product1 = \App\Models\ProductDeliveryOption::factory()
+    $product1 = App\Models\ProductDeliveryOption::factory()
         ->create([
             'price'                   => 1000,
-            'is_prepayment_available' => false
+            'is_prepayment_available' => false,
         ]);
-    $product2 = \App\Models\ProductDeliveryOption::factory()
+    $product2 = App\Models\ProductDeliveryOption::factory()
         ->create([
             'price'                   => 2000,
-            'is_prepayment_available' => false
+            'is_prepayment_available' => false,
         ]);
-    $order = \App\Models\Order::factory()->create([
+    $order = App\Models\Order::factory()->create([
         'customer_id'      => $this->customer->id,
         'total_item_count' => 2,
         'subtotal'         => $product1->price + $product2->price,
@@ -373,7 +375,7 @@ it('can delete payment', function () {
         'tax_amount'       => 0,
     ])->fresh();
 
-    \App\Models\OrderItem::factory()
+    App\Models\OrderItem::factory()
         ->create([
             'qty_ordered'                => 1,
             'product_delivery_option_id' => $product1->id,
@@ -381,10 +383,10 @@ it('can delete payment', function () {
             'price'                      => $product1->price,
             'discount_amount'            => 0,
             'order_id'                   => $order->id,
-            'payment_type'               => \App\Enums\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'payment_type'               => App\Enums\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'tax_amount'                 => 0,
         ]);
-    \App\Models\OrderItem::factory()
+    App\Models\OrderItem::factory()
         ->create([
             'qty_ordered'                => 1,
             'product_delivery_option_id' => $product2->id,
@@ -392,10 +394,10 @@ it('can delete payment', function () {
             'price'                      => $product2->price,
             'discount_amount'            => 0,
             'order_id'                   => $order->id,
-            'payment_type'               => \App\Enums\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'payment_type'               => App\Enums\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'tax_amount'                 => 0,
         ]);
-    $payment = \App\Models\Payment::factory()->create([
+    $payment = App\Models\Payment::factory()->create([
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
         'staff_id'    => null,
@@ -408,9 +410,9 @@ it('can delete payment', function () {
 
     $this->assertEquals($order->total_paid, 3000);
     $this->assertEquals($order->balance_due, 0);
-    $this->assertEquals($order->payment_status, \App\Enums\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->payment_status, App\Enums\OrderPaymentStatusEnum::PAID->value);
 
-    $this->authorized_user([\App\Enums\PermissionEnum::ORDER_DELETE]);
+    $this->authorized_user([App\Enums\PermissionEnum::ORDER_DELETE]);
     $response = $this->deleteJson(route('api.v1.admin.payment.destroy',
         ['order' => $order->id, 'payment' => $payment->id]));
     $response->assertNoContent();
@@ -427,5 +429,5 @@ it('can delete payment', function () {
     $order->refresh();
     $this->assertEquals($order->total_paid, 0);
     $this->assertEquals($order->balance_due, 3000);
-    $this->assertEquals($order->payment_status, \App\Enums\OrderPaymentStatusEnum::PENDING->value);
+    $this->assertEquals($order->payment_status, App\Enums\OrderPaymentStatusEnum::PENDING->value);
 });

@@ -1,21 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Admin\Payment;
 
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class PaymentCreateData extends Data
+final class PaymentCreateData extends Data
 {
     public function __construct(
         public string $method,
         public string $status,
-        public ?array  $data,
+        public ?array $data,
         public ?string $admin_notes,
 
-    )
-    {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {

@@ -18,6 +18,4 @@ final readonly class DeleteOrderAction
             $order->delete();
         });
     }
-
-
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Admin\Order;
 
 use App\Data\Admin\Payment\PaymentData;
@@ -15,7 +17,7 @@ use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer;
 
-class OrderListItemData extends Data
+final class OrderListItemData extends Data
 {
     public function __construct(
         public int $id,
@@ -30,7 +32,7 @@ class OrderListItemData extends Data
         public int $grand_total,
         public int $total_paid,
         public int $balance_due,
-        public ?string $admin_notes = null,
+        public ?string $admin_notes,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public OrderStatusEnum $status,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
@@ -44,6 +46,5 @@ class OrderListItemData extends Data
         #[DataCollectionOf(OrderItemListItemData::class)]
         public Collection $items,
 
-    ) {
-    }
+    ) {}
 }

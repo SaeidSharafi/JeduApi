@@ -8,7 +8,6 @@ use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Plank\Mediable\Mediable;
 
@@ -63,6 +62,7 @@ final class Category extends Model
     {
         return $this->hasMany(Categorizable::class);
     }
+
     /**
      * @return MorphToMany<Product,$this>
      */
@@ -70,9 +70,6 @@ final class Category extends Model
     {
         return $this->morphedByMany(Product::class, 'categorizable');
     }
-
-
-
 
     protected function casts(): array
     {

@@ -29,11 +29,11 @@ final class ProductDeliveryOptionCreateData extends Data
         public string $status,
         #[MapInputName('details')]
         public array $details_json,
-        public bool $is_prepayment_available = false,
-        public ?int $capacity = null,
-        public ?int $prepayment_amount = null,
-        public bool $is_featured = false,
-        public ?int $featured_price = null,
+        public bool $is_prepayment_available,
+        public ?int $capacity,
+        public ?int $prepayment_amount,
+        public bool $is_featured,
+        public ?int $featured_price,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]
         public ?Carbon $featured_price_start_date,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]

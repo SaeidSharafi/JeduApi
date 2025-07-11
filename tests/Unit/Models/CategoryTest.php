@@ -58,20 +58,20 @@ test('relation categorizable for Digital Assets', function (): void {
 });
 test('relation categorizable for seminars', function (): void {
     $category = Category::factory()->create();
-    $seminar    = \App\Models\Seminar::factory()->create();
+    $seminar  = App\Models\Seminar::factory()->create();
     $category->seminars()->attach($seminar);
 
     expect($category->seminars)
         ->toHaveCount(1)
         ->and($category->seminars->first())
-        ->toBeInstanceOf(\App\Models\Seminar::class)
+        ->toBeInstanceOf(App\Models\Seminar::class)
         ->and($category->seminars->first()->id)
         ->toEqual($seminar->id);
 });
 test('relation categorizable', function (): void {
     $category = Category::factory()->create();
-    $seminar    = \App\Models\Seminar::factory()->create();
-    $course    = \App\Models\Course::factory()->create();
+    $seminar  = App\Models\Seminar::factory()->create();
+    $course   = Course::factory()->create();
     $category->seminars()->attach($seminar);
     $category->courses()->attach($course);
 
@@ -80,12 +80,12 @@ test('relation categorizable', function (): void {
 });
 test('relation product', function (): void {
     $category = Category::factory()->create();
-    $product  = \App\Models\Product::factory()->create()->fresh();
+    $product  = App\Models\Product::factory()->create()->fresh();
     $category->products()->attach($product);
     expect($category->products)
         ->toHaveCount(1)
         ->and($category->products->first())
-        ->toBeInstanceOf(\App\Models\Product::class)
+        ->toBeInstanceOf(App\Models\Product::class)
         ->and($category->products->first()->id)
         ->toEqual($product->id);
 });

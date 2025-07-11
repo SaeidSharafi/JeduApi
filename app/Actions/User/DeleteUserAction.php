@@ -8,13 +8,14 @@ use App\Exceptions\ModelHasRelationshipDataException;
 use App\Models\Teacher;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 final readonly class DeleteUserAction
 {
     /**
      * Execute the action.
      *
-     * @throws ModelHasRelationshipDataException|\Throwable
+     * @throws ModelHasRelationshipDataException|Throwable
      */
     public function handle(User $user): void
     {
@@ -22,7 +23,7 @@ final readonly class DeleteUserAction
             if ($user->teacherData()->exists()) {
                 throw new ModelHasRelationshipDataException(relatedModel: Teacher::class);
             }
-           $user->delete();
+            $user->delete();
         });
     }
 }

@@ -132,14 +132,14 @@ describe('TeacherController Test', function () {
     });
     it('should not delete a teacher with related data', function () {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_DELETE]);
-        $teacher = App\Models\Teacher::factory()->create();
-        $delivery = \App\Models\ProductDeliveryOption::factory()->create();
+        $teacher  = App\Models\Teacher::factory()->create();
+        $delivery = App\Models\ProductDeliveryOption::factory()->create();
         $delivery->teachers()->attach($teacher->id);
         $response = $this->deleteJson(route('api.v1.admin.teacher.destroy', ['teacher' => $teacher]));
         $response->assertStatus(422)
             ->assertJsonFragment([
                 'message' => __('messages.errors.model_has_relationship_data',
-                    ['related_model' => getModelLabel(\App\Models\Product::class)])
+                    ['related_model' => getModelLabel(App\Models\Product::class)]),
             ]);
         $this->assertDatabaseHas('teachers', ['id' => $teacher->id]);
     });

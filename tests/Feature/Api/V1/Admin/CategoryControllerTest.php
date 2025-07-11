@@ -144,7 +144,7 @@ it('can delete category', function (): void {
 it('can not delete category if there is related data', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::CATEGORY_DELETE->value]);
     $category = App\Models\Category::factory()->create();
-    $product = App\Models\Product::factory()->create();
+    $product  = App\Models\Product::factory()->create();
     $product->categories()->attach($category->id);
     $response = $this->deleteJson(route('api.v1.admin.category.destroy', ['category' => $category->id]));
     $response->assertStatus(422)

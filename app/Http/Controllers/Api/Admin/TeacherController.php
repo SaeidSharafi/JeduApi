@@ -114,6 +114,7 @@ final class TeacherController extends Controller
      * Remove the specified teacher from database.
      *
      * @response 204
+     *
      * @responseFile  244 responses/422-delete.json
      */
     public function destroy(Teacher $teacher, DeleteTeacherAction $action): JsonResponse|ApiResponseInterface

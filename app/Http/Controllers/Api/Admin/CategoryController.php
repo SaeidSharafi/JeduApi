@@ -113,7 +113,7 @@ final class CategoryController extends Controller
         Gate::authorize('delete', $category);
         try {
             $action->handle($category);
-        }catch (ModelHasRelationshipDataException $exception){
+        } catch (ModelHasRelationshipDataException $exception) {
             return response()->validationError($exception->getMessage());
         }
 

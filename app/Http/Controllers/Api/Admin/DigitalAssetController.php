@@ -159,7 +159,7 @@ final class DigitalAssetController extends Controller
         Gate::authorize('delete', $digitalAsset);
         try {
             $action->handle($digitalAsset);
-        }catch (ModelHasRelationshipDataException $exception){
+        } catch (ModelHasRelationshipDataException $exception) {
             return response()->validationError(message: $exception->getMessage());
         }
 

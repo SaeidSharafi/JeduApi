@@ -38,7 +38,7 @@ final class TeacherSelectOptionController extends Controller
             })
             ->withMediaAndVariants(['profile'])
             ->orderBy('last_name')
-            ->when($limit, fn(Builder $q): Builder => $q->limit($limit))
+            ->when($limit, fn (Builder $q): Builder => $q->limit($limit))
             ->get(['id', 'first_name', 'last_name', 'email', 'phone']);
 
         return response()->success(

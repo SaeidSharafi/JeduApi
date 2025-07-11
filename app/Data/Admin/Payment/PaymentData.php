@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Admin\Payment;
 
 use App\Data\Transformer\TranslatableEnumData;
@@ -10,13 +12,13 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-class PaymentData extends Data
+final class PaymentData extends Data
 {
     public function __construct(
         public int $id,
         public int $order_id,
         public int $customer_id,
-        public ?int $staff_id = null,
+        public ?int $staff_id,
         public int $amount,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public PaymentMethodEnum $method,
@@ -24,7 +26,5 @@ class PaymentData extends Data
         public PaymentStatusEnum $status,
         public ?string $admin_notes = null,
 
-    )
-    {
-    }
+    ) {}
 }

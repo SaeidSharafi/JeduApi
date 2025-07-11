@@ -14,6 +14,7 @@ use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 // Make sure this is imported
 
@@ -30,39 +31,39 @@ final readonly class CreateOrderAction
         $this->validateNoDuplicatePurchases($data->customer_id, $deliveryOptionIds);
 
         $order = DB::transaction(function () use ($data): Order {
-            $customer = User::findOrFail($data->customer_id);
+            $customer          = User::findOrFail($data->customer_id);
             $deliveryOptionIds = collect($data->items)->pluck('product_delivery_option_id');
-            $deliveryOptions = ProductDeliveryOption::with(['product.vendor', 'product.productable', 'product.term'])
+            $deliveryOptions   = ProductDeliveryOption::with(['product.vendor', 'product.productable', 'product.term'])
                 ->find($deliveryOptionIds)
                 ->keyBy('id');
 
-            $orderItemsData = new Collection();
-            $subtotal = 0;
+            $orderItemsData      = new Collection();
+            $subtotal            = 0;
             $totalDiscountAmount = 0;
-            $taxAmount = 0;
+            $taxAmount           = 0;
 
             foreach ($data->items as $key => $itemData) {
                 $deliveryOption = $deliveryOptions->get($itemData->product_delivery_option_id);
-                if (!$deliveryOption) {
-                    throw new \InvalidArgumentException("Delivery option with ID {$itemData->product_delivery_option_id} not found.");
+                if (! $deliveryOption) {
+                    throw new InvalidArgumentException("Delivery option with ID {$itemData->product_delivery_option_id} not found.");
                 }
 
                 // --- Validate Payment Intent ---
                 // If admin chose 'pre_payment', make sure the product allows it.
                 if ($itemData->payment_type === 'pre_payment'
-                    && !$deliveryOption->is_prepayment_available
+                    && ! $deliveryOption->is_prepayment_available
                 ) {
                     throw ValidationException::withMessages([
-                        "items.{$key}" => __('messages.order.prepayment_not_available',[
+                        "items.{$key}" => __('messages.order.prepayment_not_available', [
                             'product' => $deliveryOption->product->name,
                         ]),
                     ]);
                 }
 
                 $itemTotal = ($deliveryOption->price * $itemData->qty_ordered);
-                $subtotal += $itemTotal;
+                $subtotal            += $itemTotal;
                 $totalDiscountAmount += ($itemData->discount_amount * $itemData->qty_ordered);
-                $taxAmount += ($itemData->tax_amount * $itemData->qty_ordered);
+                $taxAmount           += ($itemData->tax_amount * $itemData->qty_ordered);
 
                 $orderItemsData->push([
                     'product_delivery_option_id' => $itemData->product_delivery_option_id,
@@ -107,6 +108,7 @@ final readonly class CreateOrderAction
         });
 
         OrderCreatedEvent::dispatch($order);
+
         // Return the order with its relations so the controller can access them.
         return $order->load('items', 'payments');
     }

@@ -15,7 +15,7 @@ final readonly class CreateUserAction
      */
     public function handle(UserCreateData $data): User
     {
-        return DB::transaction(function () use($data): User {
+        return DB::transaction(function () use ($data): User {
             return User::create($data->toArray())->fresh();
         });
     }

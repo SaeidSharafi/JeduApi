@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Admin\Order;
 
 use App\Enums\OrderItemPaymentTypeEnum;
@@ -7,7 +9,7 @@ use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class OrderItemCreateData extends Data
+final class OrderItemCreateData extends Data
 {
     public function __construct(
         public int $product_delivery_option_id,
@@ -15,8 +17,7 @@ class OrderItemCreateData extends Data
         public int $discount_amount,
         public int $qty_ordered = 1,
         public int $tax_amount = 0,
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {
@@ -25,7 +26,7 @@ class OrderItemCreateData extends Data
             'payment_type'               => ['required', 'string', Rule::enum(OrderItemPaymentTypeEnum::class)],
             'discount_amount'            => ['required', 'integer', 'min:0'],
             'qty_ordered'                => ['nullable', 'integer', 'min:1'],
-            'tax_amount'                 => ['nullable', 'integer', 'min:0']
+            'tax_amount'                 => ['nullable', 'integer', 'min:0'],
         ];
     }
 }

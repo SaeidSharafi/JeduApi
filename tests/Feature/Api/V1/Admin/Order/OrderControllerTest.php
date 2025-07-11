@@ -3,13 +3,12 @@
 declare(strict_types=1);
 
 use App\Enums\OrderItemPaymentTypeEnum;
-use App\Enums\OrderPaymentStatusEnum;
+use App\Enums\OrderStatusEnum;
 use App\Enums\PaymentStatusEnum;
 use App\Enums\PermissionEnum;
-use App\Enums\OrderStatusEnum;
 use App\Models\Order;
-use App\Models\User;
 use App\Models\ProductDeliveryOption;
+use App\Models\User;
 use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
@@ -27,7 +26,7 @@ describe('OrderController', function () {
             'status'              => OrderStatusEnum::COMPLETED->value,
             'increment_id'        => 1001,
             'customer_first_name' => 'John',
-            'customer_email'      => 'john@example.com'
+            'customer_email'      => 'john@example.com',
         ]);
 
         // Create a partially paid order
@@ -42,7 +41,7 @@ describe('OrderController', function () {
             'qty_ordered'                => 1,
             'name'                       => 'Widget',
             'sku'                        => 'SKU123',
-            'vendor_id'                  => \App\Models\Vendor::factory()->create()->id,
+            'vendor_id'                  => App\Models\Vendor::factory()->create()->id,
             'product_data_snapshot_json' => [],
             'price'                      => 1000, 'total' => 1000, 'discount_amount' => 0, 'tax_amount' => 0,
             'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
@@ -83,7 +82,7 @@ describe('OrderController', function () {
         // ---------- REWRITTEN: Store Test ----------
         it('can create a fully paid order with permissions', function () {
             $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
-            $user = User::factory()->create();
+            $user    = User::factory()->create();
             $product = ProductDeliveryOption::factory()->create(['price' => 50000]);
 
             $orderData = [
@@ -96,7 +95,7 @@ describe('OrderController', function () {
                         'discount_amount'            => 0,
                         'qty_ordered'                => 2,
                         'tax_amount'                 => 0,
-                    ]
+                    ],
                 ],
                 'admin_notes' => 'Test order creation',
             ];
@@ -109,7 +108,7 @@ describe('OrderController', function () {
                     'data' => [
                         'id', 'increment_id', 'status', 'payment_status', 'customer_id',
                         'total_item_count', 'total_qty_ordered', 'grand_total', 'total_paid',
-                        'balance_due', 'items'
+                        'balance_due', 'items',
                     ],
                 ])
                 ->assertJsonPath('data.grand_total', 100000) // 50,000 * 2
@@ -120,11 +119,11 @@ describe('OrderController', function () {
         // ---------- NEW: Store test for partial payment ----------
         it('can create a partially paid order with permissions', function () {
             $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
-            $user = User::factory()->create();
+            $user    = User::factory()->create();
             $product = ProductDeliveryOption::factory()->create([
-                'price'             => 100000,
-                'prepayment_amount' => 20000,
-                'is_prepayment_available' => true
+                'price'                   => 100000,
+                'prepayment_amount'       => 20000,
+                'is_prepayment_available' => true,
             ]);
 
             $orderData = [
@@ -135,7 +134,7 @@ describe('OrderController', function () {
                         'product_delivery_option_id' => $product->id,
                         'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value, // Pay deposit
                         'discount_amount'            => 0, 'qty_ordered' => 1, 'tax_amount' => 0,
-                    ]
+                    ],
                 ],
             ];
 
@@ -150,14 +149,14 @@ describe('OrderController', function () {
         it('can show an order with permissions', function () {
             $this->authorized_user([PermissionEnum::ORDER_VIEW->value]);
             $order = Order::factory()->create([
-                'grand_total'    => 5000,
+                'grand_total' => 5000,
             ]);
 
             $response = $this->getJson(route('api.v1.admin.order.show', ['order' => $order->id]));
             $response->assertStatus(200)
                 ->assertJsonStructure([
-                                        'message',
-                                        'data' => ['id', 'payment_status', 'grand_total', 'balance_due'],
+                    'message',
+                    'data' => ['id', 'payment_status', 'grand_total', 'balance_due'],
                 ])
                 ->assertJsonPath('data.id', $order->id);
         });
@@ -166,7 +165,7 @@ describe('OrderController', function () {
             $this->authorized_user([
                 PermissionEnum::ORDER_UPDATE->value,
             ]);
-            $user = User::factory()->create();
+            $user  = User::factory()->create();
             $order = Order::factory()->create([
                 'customer_id'         => $user->id, 'status' => OrderStatusEnum::PENDING->value,
                 'applied_coupon_code' => 'OLD_COUPON', 'admin_notes' => 'Old notes',
@@ -182,9 +181,9 @@ describe('OrderController', function () {
                         'id', 'increment_id', 'status', 'customer_id', 'customer_email', 'customer_phone',
                         'customer_first_name', 'customer_last_name', 'customer_snapshot', 'subtotal',
                         'discount_amount', 'tax_amount', 'grand_total', 'applied_coupon_code', 'admin_notes',
-                        'items', 'created_at', 'updated_at'
+                        'items', 'created_at', 'updated_at',
                     ],
-                    'metadata'
+                    'metadata',
                 ])
                 ->assertJsonPath('data.status.value', OrderStatusEnum::COMPLETED->value)
                 ->assertJsonPath('data.payment_status.value', PaymentStatusEnum::PENDING->value)
@@ -199,23 +198,23 @@ describe('OrderController', function () {
             $this->authorized_user([
                 PermissionEnum::ORDER_DELETE->value,
             ]);
-            $user = User::factory()->create();
-            $order = Order::factory()->create(['customer_id' => $user->id]);
-            $product = \App\Models\ProductDeliveryOption::factory()->create();
-            $item = \App\Models\OrderItem::factory()->create(
+            $user    = User::factory()->create();
+            $order   = Order::factory()->create(['customer_id' => $user->id]);
+            $product = ProductDeliveryOption::factory()->create();
+            $item    = App\Models\OrderItem::factory()->create(
                 [
                     'order_id'                   => $order->id,
                     'product_delivery_option_id' => $product->id,
                     'qty_ordered'                => 1,
                     'name'                       => 'Delete Product',
                     'sku'                        => 'SKU_DELETE',
-                    'vendor_id'                  => \App\Models\Vendor::factory()->create()->id,
+                    'vendor_id'                  => App\Models\Vendor::factory()->create()->id,
                     'product_data_snapshot_json' => [],
                     'price'                      => 1000,
                     'discount_amount'            => 0,
                     'tax_amount'                 => 0,
                     'total'                      => 1000,
-                    'status'                     => \App\Enums\OrderItemStatusEnum::ACTIVE,
+                    'status'                     => App\Enums\OrderItemStatusEnum::ACTIVE,
                 ]
             );
             $response = $this->deleteJson(route('api.v1.admin.order.destroy', ['order' => $order->id]));
@@ -238,7 +237,7 @@ describe('OrderController', function () {
         $this->deleteJson(route('api.v1.admin.order.destroy', ['order' => $order->id]))->assertStatus(403);
         $this->putJson(route('api.v1.admin.order.update', ['order' => $order->id]),
             [
-                'status' => OrderStatusEnum::PENDING->value
+                'status' => OrderStatusEnum::PENDING->value,
             ]
         )->assertStatus(403);
         $this->postJson(route('api.v1.admin.order.store'), [
@@ -251,7 +250,7 @@ describe('OrderController', function () {
                     'discount_amount'            => 0,
                     'qty_ordered'                => 1,
                     'tax_amount'                 => 0,
-                ]
+                ],
             ],
         ])->assertStatus(403);
     });
@@ -271,7 +270,7 @@ describe('OrderController', function () {
             'status'      => OrderStatusEnum::PENDING->value,
             'customer_id' => $user->id,
             'items'       => [
-                [ /* item missing all required fields */]
+                [/* item missing all required fields */],
             ],
         ];
         $response = $this->postJson(route('api.v1.admin.order.store'), $data);

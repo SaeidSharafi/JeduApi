@@ -25,19 +25,19 @@ final class ProductFactory extends Factory
         switch ($type) {
             case ProductableEnum::COURSE:
                 $productableType = ProductableEnum::COURSE->value;
-                $productableId = Course::factory();
+                $productableId   = Course::factory();
                 break;
             case ProductableEnum::SEMINAR:
                 $productableType = ProductableEnum::SEMINAR->value;
-                $productableId = \App\Models\Seminar::factory();
+                $productableId   = \App\Models\Seminar::factory();
                 break;
             case ProductableEnum::DIGITAL_ASSET:
                 $productableType = ProductableEnum::DIGITAL_ASSET->value;
-                $productableId = \App\Models\DigitalAsset::factory();
+                $productableId   = \App\Models\DigitalAsset::factory();
                 break;
             default:
                 $productableType = ProductableEnum::COURSE->value;
-                $productableId = Course::factory();
+                $productableId   = Course::factory();
         }
 
         return [

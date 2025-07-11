@@ -6,9 +6,9 @@ namespace App\Data\Admin\Product;
 
 use App\Contracts\ProductableDataContract;
 use App\Data\Admin\Term\TermListItemData;
+use App\Data\Admin\Vendor\VendorShortListItemData;
 use App\Data\Casts\ProductableCast;
 use App\Data\Transformer\TranslatableEnumData;
-use App\Data\Admin\Vendor\VendorShortListItemData;
 use App\Enums\MorphTypeEnum;
 use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\WithCast;

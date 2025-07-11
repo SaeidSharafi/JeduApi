@@ -35,7 +35,7 @@ it('casts a Course instance to ShowCourseData', function () {
 
     $productable = $caster->cast($this->mockProperty, $course, [], $this->mockContext);
 
-    expect($productable)->toBeInstanceOf(\App\Data\Admin\Course\ShowCourseData::class)
+    expect($productable)->toBeInstanceOf(App\Data\Admin\Course\ShowCourseData::class)
         ->and($productable->short_name)->toBe('Test Course');
 });
 it('casts a Seminar instance to ShowSeminarData', function () {
@@ -48,7 +48,7 @@ it('casts a Seminar instance to ShowSeminarData', function () {
         );
     $productable = $caster->cast($this->mockProperty, $seminar, [], $this->mockContext);
 
-    expect($productable)->toBeInstanceOf(\App\Data\Admin\Seminar\ShowSeminarData::class)
+    expect($productable)->toBeInstanceOf(App\Data\Admin\Seminar\ShowSeminarData::class)
         ->and($productable->short_name)->toBe('Test Seminar');
 });
 it('casts a DigitalAsset instance to ShowDigitalAssetData', function () {
@@ -63,7 +63,7 @@ it('casts a DigitalAsset instance to ShowDigitalAssetData', function () {
 
     $productable = $caster->cast($this->mockProperty, $digitalAsset, [], $this->mockContext);
 
-    expect($productable)->toBeInstanceOf(\App\Data\Admin\DigitalAsset\ShowDigitalAssetData::class)
+    expect($productable)->toBeInstanceOf(App\Data\Admin\DigitalAsset\ShowDigitalAssetData::class)
         ->and($productable->name)->toBe('Test Digital Asset');
 });
 
@@ -78,7 +78,7 @@ it('casts a Course instance to CourseListItemData when short is true', function 
 
     $productable = $caster->cast($this->mockProperty, $course, [], $this->mockContext);
 
-    expect($productable)->toBeInstanceOf(\App\Data\Admin\Course\CourseListItemData::class)
+    expect($productable)->toBeInstanceOf(App\Data\Admin\Course\CourseListItemData::class)
         ->and($productable->short_name)->toBe('Test Course');
 });
 it('casts a Seminar instance to SeminarListItemData when short is true', function () {
@@ -92,7 +92,7 @@ it('casts a Seminar instance to SeminarListItemData when short is true', functio
 
     $productable = $caster->cast($this->mockProperty, $seminar, [], $this->mockContext);
 
-    expect($productable)->toBeInstanceOf(\App\Data\Admin\Seminar\SeminarListItemData::class)
+    expect($productable)->toBeInstanceOf(App\Data\Admin\Seminar\SeminarListItemData::class)
         ->and($productable->short_name)->toBe('Test Seminar');
 });
 it('casts a DigitalAsset instance to DigitalAssetListItemData when short is true', function () {
@@ -107,7 +107,7 @@ it('casts a DigitalAsset instance to DigitalAssetListItemData when short is true
 
     $productable = $caster->cast($this->mockProperty, $digitalAsset, [], $this->mockContext);
 
-    expect($productable)->toBeInstanceOf(\App\Data\Admin\DigitalAsset\DigitalAssetListItemData::class)
+    expect($productable)->toBeInstanceOf(App\Data\Admin\DigitalAsset\DigitalAssetListItemData::class)
         ->and($productable->name)->toBe('Test Digital Asset');
 });
 

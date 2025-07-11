@@ -8,7 +8,7 @@ it('it return empty array for invalid types', function () {
         'max_downloads'   => 10,
         'expiration_date' => '2023-12-31 23:59:59',
     ];
-    $expectedRules = \App\Data\Admin\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData::getValidationRules($detailsData);
+    $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData::getValidationRules($detailsData);
     $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules         = $action->handle(null, $deliveryMethod, $detailsData);
     expect($rules)->toBeArray()->toBeEmpty();
@@ -143,7 +143,7 @@ it('creates delivery validation rules for DIRECT_DOWNLOAD', function () {
         'max_downloads'   => 10,
         'expiration_date' => '2023-12-31 23:59:59',
     ];
-    $expectedRules = \App\Data\Admin\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData::getValidationRules($detailsData);
+    $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData::getValidationRules($detailsData);
     $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     foreach ($expectedRules as $key => $expected) {
@@ -164,7 +164,7 @@ it('creates delivery validation rules for IN_PERSON', function () {
         'schedule'        => 'Sun-Mon',
         'additional_info' => null,
     ];
-    $expectedRules = \App\Data\Admin\ProductDeliveryOption\DetailsData\InPersonDetailsData::getValidationRules($detailsData);
+    $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\InPersonDetailsData::getValidationRules($detailsData);
     $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     foreach ($expectedRules as $key => $expected) {
@@ -185,7 +185,7 @@ it('creates delivery validation rules for LMS_MOODLE', function () {
         'enrollment_start_date' => '2023-12-01 00:00:00',
         'enrollment_end_date'   => '2023-12-31 23:59:59',
     ];
-    $expectedRules = \App\Data\Admin\ProductDeliveryOption\DetailsData\LmsMoodleDetailsData::getValidationRules($detailsData);
+    $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\LmsMoodleDetailsData::getValidationRules($detailsData);
     $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     foreach ($expectedRules as $key => $expected) {
@@ -220,7 +220,7 @@ it('creates delivery validation rules for LIVE_SESSION_BBB', function () {
         'default_presentation_url'           => 'https://example.com/presentation',
         'admin_notes'                        => 'Admin Note',
     ];
-    $expectedRules = \App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData::getValidationRules($detailsData);
+    $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData::getValidationRules($detailsData);
     $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     foreach ($expectedRules as $key => $expected) {
@@ -248,7 +248,7 @@ it('creates delivery validation rules for LIVE_SESSION_SKYROOM', function () {
         'default_presentation_url'    => 'https://example.com/skyroom-presentation',
         'admin_notes'                 => 'Admin notes for Skyroom session',
     ];
-    $expectedRules = \App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsData::getValidationRules($detailsData);
+    $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsData::getValidationRules($detailsData);
     $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     foreach ($expectedRules as $key => $expected) {
@@ -266,7 +266,7 @@ it('creates delivery validation rules for VIDEO_PLATFORM_SPOTPLAYER', function (
     $detailsData     = [
         'course_id' => 'course123',
     ];
-    $expectedRules = \App\Data\Admin\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData::getValidationRules($detailsData);
+    $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData::getValidationRules($detailsData);
     $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
 

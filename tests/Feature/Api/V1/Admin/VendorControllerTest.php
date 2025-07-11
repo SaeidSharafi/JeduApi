@@ -20,7 +20,7 @@ describe('list filter', function (): void {
     it('filter vendors by name', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         Vendor::factory(10)->create();
-        $vendor = Vendor::factory()->create(['name' => 'Test Vendor']);
+        $vendor   = Vendor::factory()->create(['name' => 'Test Vendor']);
         $response = $this->getJson(route('api.v1.admin.vendor.index', ['filter' => ['name' => 'Test Vendor']]));
 
         $response->assertOk()
@@ -30,7 +30,7 @@ describe('list filter', function (): void {
     it('filter vendors by email', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         Vendor::factory(10)->create();
-        $vendor = Vendor::factory()->create(['email' => 'vendor@example.com']);
+        $vendor   = Vendor::factory()->create(['email' => 'vendor@example.com']);
         $response = $this->getJson(route('api.v1.admin.vendor.index', ['filter' => ['email' => 'vendor@example.com']]));
         $response->assertOk()
             ->assertJsonFragment(['email' => 'vendor@example.com'])
@@ -39,7 +39,7 @@ describe('list filter', function (): void {
     it('filter vendors by phone', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         Vendor::factory(10)->create();
-        $vendor = Vendor::factory()->create(['phone' => '+1234567890']);
+        $vendor   = Vendor::factory()->create(['phone' => '+1234567890']);
         $response = $this->getJson(route('api.v1.admin.vendor.index', ['filter' => ['phone' => '+1234567890']]));
         $response->assertOk()
             ->assertJsonFragment(['phone' => '+1234567890'])
@@ -76,8 +76,8 @@ describe('list filter', function (): void {
     });
     it('should sort vendors by created_at', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
-        $vendor1 = Vendor::factory()->create(['created_at' => now()->subDays(2)])->fresh();
-        $vendor2 = Vendor::factory()->create(['created_at' => now()->subDays(1)])->fresh();
+        $vendor1  = Vendor::factory()->create(['created_at' => now()->subDays(2)])->fresh();
+        $vendor2  = Vendor::factory()->create(['created_at' => now()->subDays(1)])->fresh();
         $response = $this->getJson(route('api.v1.admin.vendor.index', ['sort' => '-created_at']));
 
         $response->assertOk()
@@ -119,7 +119,7 @@ describe('CRUD', function (): void {
 
     it('should create a new vendor', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::VENDOR_CREATE]);
-        $data = Vendor::factory()->make()->toArray();
+        $data          = Vendor::factory()->make()->toArray();
         $data['media'] = [
             'logo'    => $this->logo->id,
             'favicon' => $this->favicon->id,
@@ -171,8 +171,8 @@ describe('CRUD', function (): void {
 
     it('should update a vendor', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::VENDOR_UPDATE]);
-        $vendor = Vendor::factory()->create();
-        $data = Vendor::factory()->make()->toArray();
+        $vendor        = Vendor::factory()->create();
+        $data          = Vendor::factory()->make()->toArray();
         $data['media'] = [
             'logo'    => $this->logo->id,
             'favicon' => $this->favicon->id,
@@ -229,13 +229,13 @@ describe('CRUD', function (): void {
     it('should not delete a vendor with related data', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::VENDOR_DELETE]);
         $vendor = Vendor::factory()->create();
-        \App\Models\Product::factory()->create(['vendor_id' => $vendor->id]);
+        App\Models\Product::factory()->create(['vendor_id' => $vendor->id]);
         $response = $this->deleteJson(route('api.v1.admin.vendor.destroy', ['vendor' => $vendor->id]));
         $response
             ->assertStatus(422)
             ->assertJsonFragment([
                 'message' => __('messages.errors.model_has_relationship_data',
-                    ['related_model' => getModelLabel(\App\Models\Product::class)])
+                    ['related_model' => getModelLabel(App\Models\Product::class)]),
             ]);
         $this->assertDatabaseHas('vendors', ['id' => $vendor->id]);
     });

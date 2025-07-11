@@ -129,7 +129,7 @@ final class CourseController extends Controller
         Gate::authorize('delete', $course);
         try {
             $action->handle($course);
-        }catch (ModelHasRelationshipDataException $exception){
+        } catch (ModelHasRelationshipDataException $exception) {
             return response()->validationError(message: $exception->getMessage());
         }
 

@@ -1,22 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\SmsLog;
+use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class IpPanelSmsService
+final class IpPanelSmsService
 {
-
     private string $baseUrl = 'https://api2.ippanel.com/api/v1';
+
     private ?string $apiKey;
-    private ?string $from;
+
+    private null|int|string $from;
 
     public function __construct()
     {
         $this->apiKey = config('services.ippanel.api_key');
-        $this->from = config('services.ippanel.from');
+        $this->from   = config('services.ippanel.from');
     }
 
     public function setApiKey(string $apiKey): void
@@ -24,7 +28,7 @@ class IpPanelSmsService
         $this->apiKey = $apiKey;
     }
 
-    public function setFrom(string $from): void
+    public function setFrom(int|string $from): void
     {
         $this->from = $from;
     }
@@ -34,9 +38,9 @@ class IpPanelSmsService
         $this->validateConfig();
         if (config('services.ippanel.sand_box')) {
             SmsLog::create([
-                'status'  => 200,
-                'data'    => [
-                    'message_id' => "Sandbox_".randomNumber(10)
+                'status' => 200,
+                'data'   => [
+                    'message_id' => 'Sandbox_'.randomNumber(10),
                 ],
                 'content' => $messeage,
                 'type'    => $type,
@@ -44,6 +48,7 @@ class IpPanelSmsService
                 'from'    => $this->from,
                 'sent_at' => now(),
             ]);
+
             return;
         }
         $response = Http::baseUrl($this->baseUrl)
@@ -87,11 +92,11 @@ class IpPanelSmsService
         $this->validateConfig();
         if (config('services.ippanel.sand_box')) {
             SmsLog::create([
-                'status'  => 200,
-                'data'    => [
+                'status' => 200,
+                'data'   => [
                     'pattern'    => $pattern,
                     'parameters' => $parameters,
-                    'message_id' => "Sandbox_".randomNumber(10)
+                    'message_id' => 'Sandbox_'.randomNumber(10),
                 ],
                 'content' => $messeage,
                 'type'    => $type,
@@ -99,6 +104,7 @@ class IpPanelSmsService
                 'from'    => $this->from,
                 'sent_at' => now(),
             ]);
+
             return;
         }
         $response = Http::baseUrl($this->baseUrl)
@@ -143,7 +149,7 @@ class IpPanelSmsService
     private function validateConfig(): void
     {
         if (is_null($this->apiKey) || is_null($this->from)) {
-            throw new \Exception('IPPanel API key or sender number is not configured.');
+            throw new Exception('IPPanel API key or sender number is not configured.');
         }
 
     }

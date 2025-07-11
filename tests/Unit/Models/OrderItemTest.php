@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 test('to array', function () {
-    $orderItem = \App\Models\OrderItem::factory()->create()->fresh();
+    $orderItem = App\Models\OrderItem::factory()->create()->fresh();
 
     expect($orderItem->toArray())
         ->toEqual([
@@ -28,19 +30,19 @@ test('to array', function () {
 });
 
 test('relation order', function () {
-    $orderItem = \App\Models\OrderItem::factory()->create();
+    $orderItem = App\Models\OrderItem::factory()->create();
 
     expect($orderItem->order)
-        ->toBeInstanceOf(\App\Models\Order::class)
+        ->toBeInstanceOf(App\Models\Order::class)
         ->and($orderItem->order->id)
         ->toEqual($orderItem->order_id);
 });
 
 test('relation vendor', function () {
-    $orderItem = \App\Models\OrderItem::factory()->create();
+    $orderItem = App\Models\OrderItem::factory()->create();
 
     expect($orderItem->vendor)
-        ->toBeInstanceOf(\App\Models\Vendor::class)
+        ->toBeInstanceOf(App\Models\Vendor::class)
         ->and($orderItem->vendor->id)
         ->toEqual($orderItem->vendor_id);
 });

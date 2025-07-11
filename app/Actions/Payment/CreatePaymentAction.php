@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Payment;
 
 use App\Data\Admin\Payment\PaymentCreateData;
@@ -11,7 +13,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-class CreatePaymentAction
+final class CreatePaymentAction
 {
     /**
      * Creates a new Payment record for an Order.
@@ -43,7 +45,7 @@ class CreatePaymentAction
         }
 
         return DB::transaction(function () use ($order, $paymentData, $adminUser, $amountToPay) {
-           return $order->payments()->create([
+            return $order->payments()->create([
                 'customer_id' => $order->customer_id,
                 'staff_id'    => $adminUser->id,
                 'amount'      => $amountToPay,
@@ -72,6 +74,7 @@ class CreatePaymentAction
                 $amount += $itemTotalAfterDiscounts;
             }
         }
+
         return $amount;
     }
 }

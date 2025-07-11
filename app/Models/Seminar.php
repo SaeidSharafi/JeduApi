@@ -20,11 +20,11 @@ final class Seminar extends Model implements ProductableContract
     use HasAssets;
     use HasAuditor;
     use HasCategories;
+
     /** @use HasFactory<\Database\Factories\SeminarFactory> */
     use HasFactory;
 
     use IsProductable;
-
     use Mediable;
 
     protected $fillable = [

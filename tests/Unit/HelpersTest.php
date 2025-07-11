@@ -68,9 +68,9 @@ describe('randomNumber', function () {
     });
 });
 
-describe('getModelLabel', function (){
+describe('getModelLabel', function () {
     it('returns model label for a class string', function () {
-        $label = getModelLabel(\App\Models\User::class);
+        $label = getModelLabel(App\Models\User::class);
 
         expect($label)->toBe(__('messages.models.user'));
     });
@@ -82,7 +82,7 @@ describe('getModelLabel', function (){
     });
 });
 
-describe("httpStatusText", function (){
+describe('httpStatusText', function () {
     it('returns localized text for a valid HTTP status code', function () {
         $text = httpStatusText(200);
         expect($text)->toBe(__('messages.http_status.200'));

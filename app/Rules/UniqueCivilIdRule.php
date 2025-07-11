@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Rules;
 
 use App\Enums\CivilIdTypeEnum;
@@ -8,13 +10,11 @@ use Closure;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-class UniqueCivilIdRule implements ValidationRule, DataAwareRule
+final class UniqueCivilIdRule implements DataAwareRule, ValidationRule
 {
-    protected array $data = [];
+    private array $data = [];
 
-    public function __construct(private readonly ?int $userId = null)
-    {
-    }
+    public function __construct(private readonly ?int $userId = null) {}
 
     /**
      * Set the data under validation.
@@ -23,6 +23,7 @@ class UniqueCivilIdRule implements ValidationRule, DataAwareRule
     public function setData(array $data): static
     {
         $this->data = $data;
+
         return $this;
     }
 
@@ -53,7 +54,7 @@ class UniqueCivilIdRule implements ValidationRule, DataAwareRule
             $userId = $this->userId;
         }
 
-        if (!$userId && $user = request()?->route()?->parameter('user')) {
+        if (! $userId && $user = request()?->route()?->parameter('user')) {
             $userId = $user->id;
         }
 
@@ -61,7 +62,7 @@ class UniqueCivilIdRule implements ValidationRule, DataAwareRule
             User::query()
                 ->where('civil_id', $value)
                 ->where('civil_id_type', $idTypeEnum->value)
-                ->when($userId, fn($query) => $query->whereNot('id', $userId))
+                ->when($userId, fn ($query) => $query->whereNot('id', $userId))
                 ->exists()
         ) {
             $fail(__('validation.unique', ['attribute' => __('validation.attributes.civil_id')]));

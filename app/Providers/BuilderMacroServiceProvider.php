@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
+use DateTimeInterface;
 use Hekmatinasser\Verta\Verta;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\ServiceProvider;
 
-class BuilderMacroServiceProvider extends ServiceProvider
+final class BuilderMacroServiceProvider extends ServiceProvider
 {
-
     /**
      * Bootstrap services.
      */
@@ -16,7 +18,7 @@ class BuilderMacroServiceProvider extends ServiceProvider
     {
         Builder::macro('whereJalaiDate', function (
             \Illuminate\Contracts\Database\Query\Expression|string $column,
-            \DateTimeInterface|string|null $operator,
+            DateTimeInterface|string|null $operator,
             Verta|string|null $value = null,
             $boolean = 'and'
         ): Builder {

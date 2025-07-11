@@ -1,15 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\OrderPaymentStatusEnum;
 use App\Enums\OrderStatusEnum;
 use Database\Factories\OrderFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Order extends Model
+final class Order extends Model
 {
     /** @use HasFactory<OrderFactory> */
     use HasFactory;
@@ -32,10 +35,11 @@ class Order extends Model
             'grand_total',
             'currency_code',
             'applied_coupon_code',
-            'admin_notes'
+            'admin_notes',
         ];
 
     protected $with = ['payments'];
+
     protected function casts(): array
     {
         return [
@@ -48,6 +52,7 @@ class Order extends Model
             'payment_status'         => OrderPaymentStatusEnum::class,
             'created_at'             => 'datetime:Y-m-d H:i:s',
             'updated_at'             => 'datetime:Y-m-d H:i:s',
+            'total_paid'             => 'integer',
         ];
     }
 
@@ -64,7 +69,7 @@ class Order extends Model
             return '100000001';
         }
 
-        return (string)(((int)$lastOrder->increment_id) + 1);
+        return (string) (((int) $lastOrder->increment_id) + 1);
     }
 
     public function items(): HasMany
@@ -77,34 +82,44 @@ class Order extends Model
         return $this->hasMany(Payment::class);
     }
 
-    public function getTotalPaidAttribute(): int
+    protected function totalPaid(): Attribute
     {
-        return $this->payments()->where('status', 'completed')->sum('amount');
+        return Attribute::make(
+            get: fn() => $this->payments()->where('status', 'completed')->sum('amount'),
+        );
     }
 
     /**
      * Accessor to get the current outstanding balance.
      */
-    public function getBalanceDueAttribute(): int
+    protected function balanceDue(): Attribute
     {
-        return $this->grand_total - $this->total_paid;
+        return Attribute::make(
+            get: fn() =>$this->grand_total - $this->total_paid,
+        );
     }
 
     /**
      * Accessor to get the live payment status of the order.
      */
-    public function getPaymentStatusAttribute(): string
+    public function paymentStatus(): Attribute
     {
-        $totalPaid = $this->total_paid;
+        return Attribute::make(
+            get: function (){
+                $totalPaid = $this->total_paid;
 
-        if ($totalPaid >= $this->grand_total) {
-            return OrderPaymentStatusEnum::PAID->value;
-        }
+                if ($totalPaid >= $this->grand_total) {
+                    return OrderPaymentStatusEnum::PAID->value;
+                }
 
-        if ($totalPaid > 0) {
-            return OrderPaymentStatusEnum::PARTIALLY_PAID->value;
-        }
+                if ($totalPaid > 0) {
+                    return OrderPaymentStatusEnum::PARTIALLY_PAID->value;
+                }
 
-        return OrderPaymentStatusEnum::PENDING->value;
+                return OrderPaymentStatusEnum::PENDING->value;
+            }
+        );
+
     }
+
 }

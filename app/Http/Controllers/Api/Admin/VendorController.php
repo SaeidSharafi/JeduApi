@@ -131,7 +131,7 @@ final class VendorController extends Controller
         Gate::authorize('delete', $vendor);
         try {
             $action->handle($vendor);
-        }catch (ModelHasRelationshipDataException $exception){
+        } catch (ModelHasRelationshipDataException $exception) {
             return response()->validationError(message: $exception->getMessage());
         }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\OrderItemPaymentTypeEnum;
@@ -9,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class OrderItem extends Model
+final class OrderItem extends Model
 {
     /** @use HasFactory<OrderItemFactory> */
     use HasFactory;
@@ -31,19 +33,8 @@ class OrderItem extends Model
             'tax_amount',
             'total_refunded',
             'qty_refunded',
-            'status'
+            'status',
         ];
-
-    protected function casts(): array
-    {
-        return [
-            'product_data_snapshot_json' => 'array',
-            'status' => OrderItemStatusEnum::class,
-            'payment_type' => OrderItemPaymentTypeEnum::class,
-            'created_at' => 'datetime:Y-m-d H:i:s',
-            'updated_at' => 'datetime:Y-m-d H:i:s',
-        ];
-    }
 
     public function order(): BelongsTo
     {
@@ -53,5 +44,16 @@ class OrderItem extends Model
     public function vendor(): BelongsTo
     {
         return $this->belongsTo(Vendor::class);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'product_data_snapshot_json' => 'array',
+            'status'                     => OrderItemStatusEnum::class,
+            'payment_type'               => OrderItemPaymentTypeEnum::class,
+            'created_at'                 => 'datetime:Y-m-d H:i:s',
+            'updated_at'                 => 'datetime:Y-m-d H:i:s',
+        ];
     }
 }

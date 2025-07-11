@@ -32,7 +32,7 @@ test('to array', function (): void {
 
 it('check profile completion', function () {
     $user = User::create([
-        'phone' => '0912365478'
+        'phone' => '0912365478',
     ])->fresh();
 
     expect($user->profileCompleted())->toBeFalse();
@@ -42,8 +42,8 @@ it('check profile completion', function () {
 });
 
 it('return teacher_data relationship', function () {
-    $user =  User::factory()->create();
-    $teacher = \App\Models\Teacher::factory()->create([
+    $user    = User::factory()->create();
+    $teacher = App\Models\Teacher::factory()->create([
         'user_id' => $user->id,
     ])->fresh();
     $user->load('teacherData');

@@ -39,7 +39,7 @@ final class CategorySelectOptionController extends Controller
                 });
             })
             ->orderBy('name')
-            ->when($limit, fn(Builder $q): Builder => $q->limit($limit))
+            ->when($limit, fn (Builder $q): Builder => $q->limit($limit))
             ->get(['id', 'name', 'slug', 'icon_url']);
 
         return response()->success(

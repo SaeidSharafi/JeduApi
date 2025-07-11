@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Admin\Order;
 
 use App\Enums\OrderItemPaymentTypeEnum;
@@ -9,7 +11,7 @@ use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class OrderCreateData extends Data
+final class OrderCreateData extends Data
 {
     public function __construct(
         public string $status,
@@ -18,8 +20,7 @@ class OrderCreateData extends Data
         public array $items,
         public ?string $applied_coupon_code,
         public ?string $admin_notes,
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {
@@ -33,7 +34,7 @@ class OrderCreateData extends Data
             'items.*.payment_type'               => ['required', 'string', Rule::enum(OrderItemPaymentTypeEnum::class)],
             'items.*.discount_amount'            => ['required', 'integer', 'min:0'],
             'items.*.qty_ordered'                => ['nullable', 'integer', 'min:1'],
-            'items.*.tax_amount'                 => ['nullable', 'integer', 'min:0']
+            'items.*.tax_amount'                 => ['nullable', 'integer', 'min:0'],
         ];
     }
 

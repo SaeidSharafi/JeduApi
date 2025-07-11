@@ -107,7 +107,7 @@ final class TermController extends Controller
         Gate::authorize('delete', $term);
         try {
             $action->execute($term);
-        }catch (ModelHasRelationshipDataException $exception){
+        } catch (ModelHasRelationshipDataException $exception) {
             return response()->validationError(message: $exception->getMessage());
         }
 

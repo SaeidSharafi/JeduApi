@@ -26,6 +26,7 @@ final class Term extends Model
     {
         return $this->hasMany(Product::class);
     }
+
     protected function casts(): array
     {
         return [

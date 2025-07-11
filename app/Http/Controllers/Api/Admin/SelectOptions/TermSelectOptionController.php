@@ -38,7 +38,7 @@ final class TermSelectOptionController extends Controller
                 });
             })
             ->orderBy('name')
-            ->when($limit, fn(Builder $q): Builder => $q->limit($limit))
+            ->when($limit, fn (Builder $q): Builder => $q->limit($limit))
             ->get(['id', 'name', 'academic_year']);
 
         return response()->success(

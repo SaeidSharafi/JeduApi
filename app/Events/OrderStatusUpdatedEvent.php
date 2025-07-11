@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Events;
 
 use App\Models\Order;
@@ -9,6 +11,5 @@ final readonly class OrderStatusUpdatedEvent
 {
     use Dispatchable;
 
-    public function __construct(public Order $order)
-    {}
+    public function __construct(public Order $order) {}
 }

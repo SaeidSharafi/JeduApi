@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Actions\Order\CreateOrderAction;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
@@ -25,9 +27,9 @@ describe('CreateOrderAction', function () {
 
     // TEST 1: The main success case with full payment
     it('creates an order successfully with full payment', function () {
-        $user = User::factory()->create();
+        $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
-            'price' => 100000, // Price per unit
+            'price'             => 100000, // Price per unit
             'prepayment_amount' => 20000,
         ]);
 
@@ -55,40 +57,40 @@ describe('CreateOrderAction', function () {
         // --- Assertions for the Order ---
         expect($order)->toBeInstanceOf(Order::class);
         $this->assertDatabaseHas('orders', [
-            'id' => $order->id,
-            'customer_id' => $user->id,
-            'status' => OrderStatusEnum::PROCESSING->value,
-            'total_item_count' => 1,
+            'id'                => $order->id,
+            'customer_id'       => $user->id,
+            'status'            => OrderStatusEnum::PROCESSING->value,
+            'total_item_count'  => 1,
             'total_qty_ordered' => 2,
-            'subtotal' => 200000, // 100,000 * 2
-            'discount_amount' => 10000, // 5,000 * 2
-            'tax_amount' => 2000, // 1,000 * 2
-            'grand_total' => 192000, // (200000 - 10000 + 2000)
-            'admin_notes' => 'Test notes',
+            'subtotal'          => 200000, // 100,000 * 2
+            'discount_amount'   => 10000, // 5,000 * 2
+            'tax_amount'        => 2000, // 1,000 * 2
+            'grand_total'       => 192000, // (200000 - 10000 + 2000)
+            'admin_notes'       => 'Test notes',
         ]);
 
         // --- Assertions for the Order Item ---
         expect($order->items)->toHaveCount(1);
         $this->assertDatabaseHas('order_items', [
-            'order_id' => $order->id,
+            'order_id'                   => $order->id,
             'product_delivery_option_id' => $deliveryOption->id,
-            'price' => 100000, // Snapshot of original price
-            'total' => 200000, // price * quantity
-            'qty_ordered' => 2,
-            'discount_amount' => 5000,
-            'tax_amount' => 1000,
-            'payment_type' => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'price'                      => 100000, // Snapshot of original price
+            'total'                      => 200000, // price * quantity
+            'qty_ordered'                => 2,
+            'discount_amount'            => 5000,
+            'tax_amount'                 => 1000,
+            'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
         ]);
 
         Event::assertDispatched(OrderCreatedEvent::class);
     });
 
     it('throws a validation exception if pre-payment is selected for a product that does not allow it', function () {
-        $user = User::factory()->create();
+        $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
-            'price' => 100000,
-            'prepayment_amount' => null,
-            'is_prepayment_available' => false
+            'price'                   => 100000,
+            'prepayment_amount'       => null,
+            'is_prepayment_available' => false,
         ]);
 
         $items = [
@@ -109,16 +111,16 @@ describe('CreateOrderAction', function () {
             admin_notes: null,
         );
 
-        expect(fn() => (new CreateOrderAction())->handle($data))
+        expect(fn () => (new CreateOrderAction())->handle($data))
             ->toThrow(ValidationException::class);
     });
 
     it('throws ValidationException if customer already purchased an item', function () {
-        $user = User::factory()->create();
+        $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
-        $order = Order::factory()->create(['customer_id' => $user->id]);
+        $order          = Order::factory()->create(['customer_id' => $user->id]);
         OrderItem::factory()->create([
-            'order_id' => $order->id,
+            'order_id'                   => $order->id,
             'product_delivery_option_id' => $deliveryOption->id,
         ]);
 
@@ -140,7 +142,7 @@ describe('CreateOrderAction', function () {
             admin_notes: null,
         );
 
-        expect(fn() => (new CreateOrderAction())->handle($data))
+        expect(fn () => (new CreateOrderAction())->handle($data))
             ->toThrow(ValidationException::class);
     });
 
@@ -165,14 +167,14 @@ describe('CreateOrderAction', function () {
             admin_notes: null,
         );
 
-        expect(fn() => (new CreateOrderAction())->handle($data))
-            ->toThrow(\InvalidArgumentException::class);
+        expect(fn () => (new CreateOrderAction())->handle($data))
+            ->toThrow(InvalidArgumentException::class);
     });
 
     it('set payment status to PENDING if paid amount is 0', function () {
-        $user = User::factory()->create();
+        $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
-            'price' => 100000,
+            'price'             => 100000,
             'prepayment_amount' => 25000,
         ]);
 
@@ -197,13 +199,13 @@ describe('CreateOrderAction', function () {
         $order = (new CreateOrderAction())->handle($data);
 
         $this->assertDatabaseHas('orders', [
-            'id' => $order->id,
+            'id'          => $order->id,
             'grand_total' => 100000,
         ]);
 
         $this->assertDatabaseHas('order_items', [
-            'order_id' => $order->id,
-            'payment_type' => OrderItemPaymentTypeEnum::INVOICE->value,
+            'order_id'          => $order->id,
+            'payment_type'      => OrderItemPaymentTypeEnum::INVOICE->value,
             'prepayment_amount' => 25000, // The rule is snapshotted
         ]);
     });

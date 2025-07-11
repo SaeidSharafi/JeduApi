@@ -21,9 +21,8 @@ final readonly class UpdateOrderAction
             $order->update($data->toArray());
             $order->refresh();
             OrderStatusUpdatedEvent::dispatch($order);
+
             return $order;
         });
     }
-
-
 }

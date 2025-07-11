@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\CivilIdTypeEnum;
 use App\Enums\PermissionEnum;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-uses(\Tests\AuthTestTrait::class);
+uses(Tests\AuthTestTrait::class);
 describe('list filters', function () {
     it('should return by name', function () {
         $this->authorized_user([PermissionEnum::USER_VIEW_ANY]);
@@ -58,7 +60,7 @@ describe('list filters', function () {
         $this->authorized_user([PermissionEnum::USER_VIEW_ANY]);
 
         User::factory(10)->create();
-        //using invalid civil id to prevent collision with factory geenrated models
+        // using invalid civil id to prevent collision with factory geenrated models
         $filteringUser = User::factory()
             ->create([
                 'civil_id' => 'XYZ',
@@ -85,7 +87,7 @@ describe('list filters', function () {
         $response = $this->getJson(
             route('api.v1.admin.user.index',
                 [
-                    'filter' => ['civil_id_type' => CivilIdTypeEnum::NATIONAL_CODE->value]
+                    'filter' => ['civil_id_type' => CivilIdTypeEnum::NATIONAL_CODE->value],
                 ]
             )
         );
@@ -95,20 +97,20 @@ describe('list filters', function () {
         $response->assertJsonFragment([
             'civil_id_type' => [
                 'label' => CivilIdTypeEnum::NATIONAL_CODE->translate(),
-                'value' => CivilIdTypeEnum::NATIONAL_CODE->value
-            ]
+                'value' => CivilIdTypeEnum::NATIONAL_CODE->value,
+            ],
         ]);
         $response->assertJsonMissing([
             'civil_id_type' => [
                 'label' => CivilIdTypeEnum::PASSPORT->translate(),
-                'value' => CivilIdTypeEnum::PASSPORT->value
-            ]
+                'value' => CivilIdTypeEnum::PASSPORT->value,
+            ],
         ]);
         $response->assertJsonMissing([
             'civil_id_type' => [
                 'label' => CivilIdTypeEnum::IMMIGRANT_CODE->translate(),
-                'value' => CivilIdTypeEnum::IMMIGRANT_CODE->value
-            ]
+                'value' => CivilIdTypeEnum::IMMIGRANT_CODE->value,
+            ],
         ]);
     });
 
@@ -116,7 +118,7 @@ describe('list filters', function () {
         $this->authorized_user([PermissionEnum::USER_VIEW_ANY]);
 
         User::factory(10)->create();
-        //using invalid civil id to prevent collision with factory geenrated models
+        // using invalid civil id to prevent collision with factory geenrated models
         $filteringUser1 = User::factory()
             ->create([
                 'date_of_birth' => '1991-01-01',
@@ -127,11 +129,10 @@ describe('list filters', function () {
             ])->fresh();
         $response = $this->getJson(route('api.v1.admin.user.index',
             [
-                'filter' =>
-                    [
-                        'date_of_birth_from' => '1369-10-11',
-                        'date_of_birth_to' => '1370-10-11',
-                    ]
+                'filter' => [
+                    'date_of_birth_from' => '1369-10-11',
+                    'date_of_birth_to'   => '1370-10-11',
+                ],
 
             ]));
 
@@ -145,8 +146,8 @@ describe('list filters', function () {
 describe('CRUD Autherized', function () {
     it('should return list of user', function () {
         $this->authorized_user([PermissionEnum::USER_VIEW_ANY]);
-        $users = User::factory(10)->create()->fresh();
-        $response = $this->getJson(route('api.v1.admin.user.index'));
+        $users           = User::factory(10)->create()->fresh();
+        $response        = $this->getJson(route('api.v1.admin.user.index'));
         $actualDataItems = collect($response->json('data.data'));
 
         foreach ($users as $expectedUser) {
@@ -167,22 +168,22 @@ describe('CRUD Autherized', function () {
                     ->where('civil_id', $expectedUser->civil_id)
                     ->where('civil_id_type', [
                         'label' => $expectedUser->civil_id_type->translate(),
-                        'value' => $expectedUser->civil_id_type->value
+                        'value' => $expectedUser->civil_id_type->value,
                     ])
                     ->where('date_of_birth', $this->toJalalitString($expectedUser->date_of_birth, 'Y-m-d'))
                     ->where('father_name', $expectedUser->father_name)
                     ->where('gender', [
                         'label' => $expectedUser->gender->translate(),
-                        'value' => $expectedUser->gender->value
+                        'value' => $expectedUser->gender->value,
                     ])
                     ->where('education_level', [
                         'label' => $expectedUser->education_level->translate(),
-                        'value' => $expectedUser->education_level->value
+                        'value' => $expectedUser->education_level->value,
                     ])
                     ->where('field_of_study', $expectedUser->field_of_study)
                     ->where('education_status', [
                         'label' => $expectedUser->education_status->translate(),
-                        'value' => $expectedUser->education_status->value
+                        'value' => $expectedUser->education_status->value,
                     ])
                     ->etc();
             }
@@ -191,10 +192,10 @@ describe('CRUD Autherized', function () {
 
     it('should create user', function () {
         $this->authorized_user([PermissionEnum::USER_CREATE]);
-        $user = User::factory()->withPassport()->make();
+        $user     = User::factory()->withPassport()->make();
         $userData = [
             ...$user->toArray(),
-            'date_of_birth' => verta($user->date_of_birth)->format('Y-m-d')
+            'date_of_birth' => verta($user->date_of_birth)->format('Y-m-d'),
         ];
         $response = $this->postJson(route('api.v1.admin.user.store'), $userData);
         $response->assertCreated();
@@ -207,22 +208,22 @@ describe('CRUD Autherized', function () {
                 ->where('data.civil_id', $user->civil_id)
                 ->where('data.civil_id_type', [
                     'label' => $user->civil_id_type->translate(),
-                    'value' => $user->civil_id_type->value
+                    'value' => $user->civil_id_type->value,
                 ])
                 ->where('data.date_of_birth', $this->toJalalitString($user->date_of_birth, 'Y-m-d'))
                 ->where('data.father_name', $user->father_name)
                 ->where('data.gender', [
                     'label' => $user->gender->translate(),
-                    'value' => $user->gender->value
+                    'value' => $user->gender->value,
                 ])
                 ->where('data.education_level', [
                     'label' => $user->education_level->translate(),
-                    'value' => $user->education_level->value
+                    'value' => $user->education_level->value,
                 ])
                 ->where('data.field_of_study', $user->field_of_study)
                 ->where('data.education_status', [
                     'label' => $user->education_status->translate(),
-                    'value' => $user->education_status->value
+                    'value' => $user->education_status->value,
                 ])
                 ->etc();
         });
@@ -261,22 +262,22 @@ describe('CRUD Autherized', function () {
                 ->where('data.civil_id', $user->civil_id)
                 ->where('data.civil_id_type', [
                     'label' => $user->civil_id_type->translate(),
-                    'value' => $user->civil_id_type->value
+                    'value' => $user->civil_id_type->value,
                 ])
                 ->where('data.date_of_birth', $this->toJalalitString($user->date_of_birth, 'Y-m-d'))
                 ->where('data.father_name', $user->father_name)
                 ->where('data.gender', [
                     'label' => $user->gender->translate(),
-                    'value' => $user->gender->value
+                    'value' => $user->gender->value,
                 ])
                 ->where('data.education_level', [
                     'label' => $user->education_level->translate(),
-                    'value' => $user->education_level->value
+                    'value' => $user->education_level->value,
                 ])
                 ->where('data.field_of_study', $user->field_of_study)
                 ->where('data.education_status', [
                     'label' => $user->education_status->translate(),
-                    'value' => $user->education_status->value
+                    'value' => $user->education_status->value,
                 ])
                 ->etc();
         });
@@ -284,7 +285,7 @@ describe('CRUD Autherized', function () {
 
     it('should update user', function () {
         $this->authorized_user([PermissionEnum::USER_UPDATE]);
-        $user = User::factory()->withPassport()->create();
+        $user           = User::factory()->withPassport()->create();
         $updateUserData = [
             ...$user->toArray(),
             'date_of_birth' => verta($user->date_of_birth)->format('Y-m-d'),
@@ -305,22 +306,22 @@ describe('CRUD Autherized', function () {
                 ->where('data.civil_id', $user->civil_id)
                 ->where('data.civil_id_type', [
                     'label' => $user->civil_id_type->translate(),
-                    'value' => $user->civil_id_type->value
+                    'value' => $user->civil_id_type->value,
                 ])
                 ->where('data.date_of_birth', $this->toJalalitString($user->date_of_birth, 'Y-m-d'))
                 ->where('data.father_name', $user->father_name)
                 ->where('data.gender', [
                     'label' => $user->gender->translate(),
-                    'value' => $user->gender->value
+                    'value' => $user->gender->value,
                 ])
                 ->where('data.education_level', [
                     'label' => $user->education_level->translate(),
-                    'value' => $user->education_level->value
+                    'value' => $user->education_level->value,
                 ])
                 ->where('data.field_of_study', $user->field_of_study)
                 ->where('data.education_status', [
                     'label' => $user->education_status->translate(),
-                    'value' => $user->education_status->value
+                    'value' => $user->education_status->value,
                 ])
                 ->etc();
         });
@@ -338,7 +339,7 @@ describe('CRUD Autherized', function () {
 
     it('should delete user', function () {
         $this->authorized_user([PermissionEnum::USER_DELETE]);
-        $user = User::factory()->create()->fresh();
+        $user     = User::factory()->create()->fresh();
         $response = $this->deleteJson(route('api.v1.admin.user.destroy', $user->id));
         $response->assertNoContent();
 
@@ -349,18 +350,18 @@ describe('CRUD Autherized', function () {
 
     it('should delete user if has related data (teacher', function () {
         $this->authorized_user([PermissionEnum::USER_DELETE]);
-        $user = User::factory()->create()->fresh();
-        $teacher = \App\Models\Teacher::factory()->create([
+        $user    = User::factory()->create()->fresh();
+        $teacher = App\Models\Teacher::factory()->create([
             'user_id' => $user->id,
         ]);
         $response = $this->deleteJson(route('api.v1.admin.user.destroy', $user->id));
         $response->assertUnprocessable();
-        $response->assertJson(function (AssertableJson $json) use ($user, $teacher) {
+        $response->assertJson(function (AssertableJson $json) {
             $json->where('message', __(
                 'messages.errors.model_has_relationship_data',
                 [
                     'model'         => __('messages.models.user'),
-                    'related_model' => getModelLabel(\App\Models\Teacher::class),
+                    'related_model' => getModelLabel(App\Models\Teacher::class),
                 ]
             ))->etc();
         });
@@ -374,7 +375,7 @@ describe('CRUD Unautherized', function () {
         $this->unauthorized_user();
     });
     it('should not return list of user', function () {
-        $users = User::factory(10)->create()->fresh();
+        $users    = User::factory(10)->create()->fresh();
         $response = $this->getJson(route('api.v1.admin.user.index'));
         $response->assertForbidden();
     });
@@ -411,7 +412,7 @@ describe('CRUD Unautherized', function () {
     });
 
     it('should update user', function () {
-        $user = User::factory()->withPassport()->create();
+        $user           = User::factory()->withPassport()->create();
         $updateUserData = [
             ...$user->toArray(),
             'date_of_birth' => '1360-01-01',
@@ -436,7 +437,7 @@ describe('CRUD Unautherized', function () {
     });
 
     it('should delete user', function () {
-        $user = User::factory()->create()->fresh();
+        $user     = User::factory()->create()->fresh();
         $response = $this->deleteJson(route('api.v1.admin.user.destroy', $user->id));
         $response->assertForbidden();
 
@@ -452,8 +453,8 @@ describe('Validations', function () {
         if ($validation_type === 'duplicated') {
             $user = User::factory()->create(
                 [
-                    "civil_id"      => "42532564865",
-                    "civil_id_type" => "passport",
+                    'civil_id'      => '42532564865',
+                    'civil_id_type' => 'passport',
                 ]
             )->fresh();
         }
@@ -465,30 +466,30 @@ describe('Validations', function () {
         [
             'duplicated',
             [
-                "civil_id"      => "42532564865",
-                "civil_id_type" => "passport",
+                'civil_id'      => '42532564865',
+                'civil_id_type' => 'passport',
             ],
         ],
         [
             'national_code',
             [
-                "civil_id"      => "5958136284",
-                "civil_id_type" => "national_code",
-            ]
+                'civil_id'      => '5958136284',
+                'civil_id_type' => 'national_code',
+            ],
         ],
         [
             'passport',
             [
-                "civil_id"      => "425",
-                "civil_id_type" => "passport",
+                'civil_id'      => '425',
+                'civil_id_type' => 'passport',
             ],
         ],
         [
             'immigrant_code',
             [
-                "civil_id"      => "161",
-                "civil_id_type" => "immigrant_code",
-            ]
+                'civil_id'      => '161',
+                'civil_id_type' => 'immigrant_code',
+            ],
         ],
     ]);
 });

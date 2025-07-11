@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Actions\Order\OrderItem\CreateOrderItemAction;
 use App\Data\Admin\Order\OrderItemCreateData;
 use App\Enums\OrderItemPaymentTypeEnum;
@@ -8,20 +10,21 @@ use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
 use App\Models\Vendor;
 use Illuminate\Validation\ValidationException;
+
 use function Pest\Laravel\assertDatabaseHas;
 
 describe('CreateOrderItemAction', function () {
     beforeEach(function () {
-        $this->vendor = Vendor::factory()->create();
+        $this->vendor         = Vendor::factory()->create();
         $this->deliveryOption = ProductDeliveryOption::factory()->create([
-            'price' => 1000,
+            'price'             => 1000,
             'prepayment_amount' => 200,
-            'sku' => 'SKU-123',
+            'sku'               => 'SKU-123',
         ]);
         $this->order = Order::factory()->create([
-            'subtotal' => 0,
+            'subtotal'        => 0,
             'discount_amount' => 0,
-            'tax_amount' => 0,
+            'tax_amount'      => 0,
         ]);
         $this->action = app(CreateOrderItemAction::class);
     });
@@ -42,7 +45,7 @@ describe('CreateOrderItemAction', function () {
             ->and($orderItem->tax_amount)->toBe(50)
             ->and($orderItem->payment_type->value)->toBe(OrderItemPaymentTypeEnum::FULL_PAYMENT->value);
         assertDatabaseHas('order_items', [
-            'id' => $orderItem->id,
+            'id'       => $orderItem->id,
             'order_id' => $this->order->id,
         ]);
     });
@@ -73,4 +76,3 @@ describe('CreateOrderItemAction', function () {
     });
 
 });
-

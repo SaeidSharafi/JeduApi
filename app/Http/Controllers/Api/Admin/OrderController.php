@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\Order\CreateOrderAction;
@@ -24,7 +26,7 @@ use Spatie\QueryBuilder\QueryBuilder;
  *
  * @authenticated
  */
-class OrderController extends Controller
+final class OrderController extends Controller
 {
     /**
      * Display a listing of the orders.
@@ -38,14 +40,12 @@ class OrderController extends Controller
      * @queryParam filter[increment_id] string Filter by order increment ID. Example: 1001
      * @queryParam filter[product_name] string Filter by item name in the order. Example: Widget
      * @queryParam filter[product_sku] string Filter by item SKU in the order. Example: SKU123
-     *
      * @queryParam sort string Sort by a field. Allowed values: created_at. Prefix with '-' for descending order (e.g.,
      *     -created_at).
      * @queryParam page integer Page number for pagination. Example: 2
      * @queryParam per_page integer Number of results per page. Example: 15
      *
      * @responseFile 200 responses/order/index.json
-     *
      */
     public function index(): ApiResponseInterface
     {
@@ -58,13 +58,13 @@ class OrderController extends Controller
                 'increment_id',
                 AllowedFilter::exact('status'),
                 AllowedFilter::exact('customer_id'),
-                AllowedFilter::exact('payment_status','payments.status'),
+                AllowedFilter::exact('payment_status', 'payments.status'),
                 AllowedFilter::partial('product_name', 'items.name'),
                 AllowedFilter::partial('product_sku', 'items.sku'),
             ])
-            ->allowedSorts(['created_at','payments.status'])
+            ->allowedSorts(['created_at', 'payments.status'])
             ->defaultSort('-created_at')
-            ->with(['items.vendor','payments'])
+            ->with(['items.vendor', 'payments'])
             ->paginate(request()->integer('per_page', 15));
 
         return response()->success(OrderListItemData::collect($orders));
@@ -82,6 +82,7 @@ class OrderController extends Controller
         Gate::authorize('create', Order::class);
         $order = $action->handle($data);
         $order->load('items.vendor');
+
         return response()->created(OrderData::from($order));
     }
 
@@ -96,6 +97,7 @@ class OrderController extends Controller
     {
         Gate::authorize('view', $order);
         $order->load('items.vendor');
+
         return response()->success(OrderData::from($order));
     }
 
@@ -112,6 +114,7 @@ class OrderController extends Controller
         Gate::authorize('update', $order);
         $order = $action->handle($data, $order);
         $order->load('items.vendor');
+
         return response()->success(OrderData::from($order));
     }
 
@@ -119,6 +122,7 @@ class OrderController extends Controller
      * Remove the specified order.
      *
      * @response 204
+     *
      * @responseFile 404 responses/404.json
      * @responseFile 403 responses/403.json
      */
@@ -126,6 +130,7 @@ class OrderController extends Controller
     {
         Gate::authorize('delete', $order);
         $action->handle($order);
+
         return response()->noContentJson();
     }
 }

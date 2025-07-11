@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('payments', function (Blueprint $table) {
@@ -18,7 +21,7 @@ return new class extends Migration {
                 ->nullOnDelete();
             $table->unsignedBigInteger('amount');
             $table->string('method')->comment('e.g., online_gateway, bank_transfer, admin_credit');
-            $table->enum('status', \App\Enums\PaymentStatusEnum::getAllValues())
+            $table->enum('status', App\Enums\PaymentStatusEnum::getAllValues())
                 ->default('pending')
                 ->comment('pending, completed, failed');
             $table->jsonb('data')->nullable()

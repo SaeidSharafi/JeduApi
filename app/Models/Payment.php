@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\PaymentStatusEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Payment extends Model
+final class Payment extends Model
 {
     use HasFactory;
 
@@ -19,12 +21,13 @@ class Payment extends Model
             'method',
             'status',
             'data',
-            'admin_notes'
+            'admin_notes',
         ];
 
     protected function casts(): array
     {
         return [
+            'amount' => 'integer',
             'status' => PaymentStatusEnum::class,
             'data'   => 'array',
         ];

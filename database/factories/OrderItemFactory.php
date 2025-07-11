@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Enums\OrderItemPaymentTypeEnum;
 use App\Enums\OrderItemStatusEnum;
-use App\Enums\OrderStatusEnum;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
@@ -12,7 +13,7 @@ use App\Models\Vendor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
-class OrderItemFactory extends Factory
+final class OrderItemFactory extends Factory
 {
     protected $model = OrderItem::class;
 

@@ -15,8 +15,7 @@ final class InitiateAuthController extends Controller
 {
     public function __construct(
         protected InitiateAuthAction $action
-    ) {
-    }
+    ) {}
 
     /**
      * Initiate authentication flow

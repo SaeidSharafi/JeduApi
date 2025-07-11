@@ -8,7 +8,6 @@ use App\Events\OtpPrepared;
 use App\Notifications\SmsChannel;
 use App\Services\IpPanelSmsService;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 final class OtpSmsNotification extends Notification
@@ -38,11 +37,11 @@ final class OtpSmsNotification extends Notification
         $this->smsService->sendPattern(
             pattern: 'mdoe1j1587',
             parameters: [
-                'code' => $this->otpCode->code
+                'code' => $this->otpCode->code,
             ],
             to: $notifiable->phone,
             messeage: 'Your OTP code is: *****',
-            type: "OTP"
+            type: 'OTP'
         );
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Payment;
 
 use App\Data\Admin\Payment\PaymentUpdateData;
@@ -7,7 +9,7 @@ use App\Enums\PaymentStatusEnum;
 use App\Models\Order;
 use App\Models\Payment;
 
-class UpdatePaymentAction
+final class UpdatePaymentAction
 {
     /**
      * Updates an existing Payment record for an Order.

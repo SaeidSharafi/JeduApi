@@ -27,18 +27,18 @@ final class ShowUserData extends Data
         public ?string $email,
         public ?string $phone2,
         public ?string $civil_id,
-        #[WithCast(EnumCast::class),WithTransformer(TranslatableEnumData::class)]
+        #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public CivilIdTypeEnum $civil_id_type,
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
         #[WithTransformer(DateTimeInterfaceTransformer::class, format: 'Y-m-d')]
         public ?Verta $date_of_birth,
         public ?string $father_name,
-        #[WithCast(EnumCast::class),WithTransformer(TranslatableEnumData::class)]
+        #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public ?GenderEnum $gender,
-        #[WithCast(EnumCast::class),WithTransformer(TranslatableEnumData::class)]
+        #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public ?EducationLevelEnum $education_level,
         public ?string $field_of_study,
-        #[WithCast(EnumCast::class),WithTransformer(TranslatableEnumData::class)]
+        #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public ?EducationStatusEnum $education_status,
     ) {}
 }

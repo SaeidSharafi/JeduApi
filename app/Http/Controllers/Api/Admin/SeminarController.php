@@ -129,9 +129,10 @@ final class SeminarController extends Controller
         Gate::authorize('delete', $seminar);
         try {
             $action->handle($seminar);
-        }catch (ModelHasRelationshipDataException $exception){
+        } catch (ModelHasRelationshipDataException $exception) {
             return response()->validationError(message: $exception->getMessage());
         }
+
         return response()->noContentJson();
     }
 }

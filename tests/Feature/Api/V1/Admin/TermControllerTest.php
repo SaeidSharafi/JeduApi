@@ -101,13 +101,13 @@ describe('TermController Test', function () {
     });
     it('should not delete a term with related data', function () {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_DELETE]);
-        $term     = Term::factory()->create();
-        \App\Models\Product::factory()->create(['term_id' => $term->id]);
+        $term = Term::factory()->create();
+        App\Models\Product::factory()->create(['term_id' => $term->id]);
         $response = $this->deleteJson(route('api.v1.admin.term.destroy', ['term' => $term]));
         $response->assertStatus(422)
             ->assertJsonFragment([
                 'message' => __('messages.errors.model_has_relationship_data',
-                    ['related_model' => getModelLabel(\App\Models\Product::class)])
+                    ['related_model' => getModelLabel(App\Models\Product::class)]),
             ]);
         $this->assertDatabaseHas('terms', ['id' => $term->id]);
     });

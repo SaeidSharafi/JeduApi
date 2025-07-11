@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Actions\Auth\PasswordLoginAction;
 use App\Contracts\ApiResponseInterface;
-use App\Data\Admin\User\ShowUserData;
 use App\Data\Shop\Customer\CustomerData;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
@@ -18,8 +17,7 @@ final class PasswordLoginController extends Controller
 {
     public function __construct(
         protected PasswordLoginAction $action
-    ) {
-    }
+    ) {}
 
     /**
      * Authenticate User (Customer) with identifier (phone/email) and password
@@ -90,8 +88,8 @@ final class PasswordLoginController extends Controller
 
         $user = User::when(
             $type === 'email',
-            fn(Builder $q) => $q->where('email', $request->identifier),
-            fn(Builder $q) => $q->where('phone', $request->identifier)
+            fn (Builder $q) => $q->where('email', $request->identifier),
+            fn (Builder $q) => $q->where('phone', $request->identifier)
         )->first();
 
         try {

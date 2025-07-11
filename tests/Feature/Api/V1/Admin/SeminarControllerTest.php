@@ -466,7 +466,7 @@ describe('SeminarController', function (): void {
         $seminar = App\Models\Seminar::factory()->create();
         App\Models\Product::factory()->create([
             'productable_id'   => $seminar->id,
-            'productable_type' => \App\Enums\MorphTypeEnum::SEMINAR->value,
+            'productable_type' => App\Enums\MorphTypeEnum::SEMINAR->value,
         ]);
         $this->authorized_user([
             App\Enums\PermissionEnum::SEMINAR_DELETE->value,
@@ -476,7 +476,7 @@ describe('SeminarController', function (): void {
         $response->assertStatus(422)
             ->assertJsonFragment([
                 'message' => __('messages.errors.model_has_relationship_data',
-                    ['related_model' => getModelLabel(\App\Models\Product::class)])
+                    ['related_model' => getModelLabel(App\Models\Product::class)]),
             ]);
         $this->assertDatabaseHas('seminars', ['id' => $seminar->id]);
     });

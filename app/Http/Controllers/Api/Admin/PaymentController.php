@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\Payment\CreatePaymentAction;
@@ -21,13 +23,10 @@ use App\Models\Payment;
  *
  * @authenticated
  */
-class PaymentController extends Controller
+final class PaymentController extends Controller
 {
     /**
      * Display a listing of the payments for a specific order.
-     *
-     * @param Order $order
-     * @return ApiResponseInterface
      */
     public function index(Order $order): ApiResponseInterface
     {
@@ -41,41 +40,37 @@ class PaymentController extends Controller
     /**
      * Store a newly created payment for an order.
      *
-     * @param PaymentCreateData $data
-     * @param Order $order
-     * @param CreatePaymentAction $action
      *
-     * @return ApiResponseInterface
      *
      * @responseFile 201 responses/payment/show.json
+     *
      * @response 400 scenario="amount to pay is zero" {
      *    "message": "The amount to pay is zero.",
      *    "errors": null,
      *    "metadata" => []
      * }
+     *
      * @responseFile 403 responses/403.json
      */
-    public function store(PaymentCreateData $data,Order $order, CreatePaymentAction $action): ApiResponseInterface
+    public function store(PaymentCreateData $data, Order $order, CreatePaymentAction $action): ApiResponseInterface
     {
         $payment = $action->handle($order, $data, auth()->user());
-        if (!$payment){
+        if (! $payment) {
             return response()->error(__('messages.order.amount_to_pay_is_zero'));
         }
+
         return response()->created(PaymentData::from($payment));
     }
 
     /**
      * Display the specified payment for an order.
      *
-     * @param Order $order
-     * @param Payment $payment
-     * @return ApiResponseInterface
      *
      * @responseFile 200 responses/payment/show.json
      * @responseFile 404 responses/404.json
      * @responseFile 403 responses/403.json
      */
-    public function show(Order $order,Payment $payment): ApiResponseInterface
+    public function show(Order $order, Payment $payment): ApiResponseInterface
     {
         return response()->success(PaymentData::from($payment));
     }
@@ -83,39 +78,33 @@ class PaymentController extends Controller
     /**
      * Update the specified payment for an order.
      *
-     * @param PaymentUpdateData $request
-     * @param Order $order
-     * @param Payment $payment
-     * @param UpdatePaymentAction $action
      *
-     * @return ApiResponseInterface
      *
      * @responseFile 200 responses/payment/show.json
      * @responseFile 404 responses/404.json
      * @responseFile 403 responses/403.json
      */
-    public function update(PaymentUpdateData $request,Order $order,Payment $payment, UpdatePaymentAction $action): ApiResponseInterface
+    public function update(PaymentUpdateData $request, Order $order, Payment $payment, UpdatePaymentAction $action): ApiResponseInterface
     {
         $payment = $action->handle($order, $payment, $request);
+
         return response()->success(PaymentData::from($payment));
     }
 
     /**
      * Remove the specified payment from an order.
      *
-     * @param Order $order
-     * @param Payment $payment
-     * @param DeletePaymentAction $action
      *
-     * @return \Illuminate\Http\JsonResponse
      *
      * @response 204 scenario="successful deletion"
+     *
      * @responseFile 404 responses/404.json
      * @responseFile 403 responses/403.json
      */
-    public function destroy(Order $order,Payment $payment, DeletePaymentAction $action): \Illuminate\Http\JsonResponse
+    public function destroy(Order $order, Payment $payment, DeletePaymentAction $action): \Illuminate\Http\JsonResponse
     {
         $action->handle($order, $payment);
+
         return response()->noContentJson();
     }
 }

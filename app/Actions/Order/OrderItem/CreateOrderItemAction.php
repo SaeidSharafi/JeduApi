@@ -12,13 +12,14 @@ use App\Models\ProductDeliveryOption;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 final readonly class CreateOrderItemAction
 {
     /**
      * Execute the action.
      */
-    public function handle(OrderItemCreateData $data,Order $order): OrderItem
+    public function handle(OrderItemCreateData $data, Order $order): OrderItem
     {
 
         // Check if the customer has already purchased any of the items before starting a transaction.
@@ -28,14 +29,14 @@ final readonly class CreateOrderItemAction
 
             $deliveryOption = ProductDeliveryOption::with(['product.productable', 'product.vendor', 'product.term'])
                 ->find($data->product_delivery_option_id);
-            if (!$deliveryOption) {
-                throw new \InvalidArgumentException(
+            if (! $deliveryOption) {
+                throw new InvalidArgumentException(
                     "Delivery option with ID {$data->product_delivery_option_id} not found."
                 );
             }
             $itemTotal = ($deliveryOption->price * $data->qty_ordered);
 
-           $orderItem = $order->items()->create([
+            $orderItem = $order->items()->create([
                 'product_delivery_option_id' => $data->product_delivery_option_id,
                 'vendor_id'                  => $deliveryOption->product->vendor_id,
                 'qty_ordered'                => $data->qty_ordered,
@@ -50,12 +51,14 @@ final readonly class CreateOrderItemAction
                 'payment_type'               => $data->payment_type,
             ]);
 
-            $order->subtotal += $itemTotal;
+            $order->subtotal        += $itemTotal;
             $order->discount_amount += ($data->discount_amount * $data->qty_ordered);
-            $order->tax_amount += ($data->tax_amount * $data->qty_ordered);
+            $order->tax_amount      += ($data->tax_amount * $data->qty_ordered);
             $order->save();
+
             return $orderItem->fresh();
         });
+
         return $orderItem;
     }
 

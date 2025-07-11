@@ -24,6 +24,7 @@ final class User extends Authenticatable implements MustVerifyEmail
 
     /** @use HasFactory<UserFactory> */
     use HasFactory;
+
     use Notifiable;
 
     protected string $guard_name = 'user';
@@ -51,17 +52,34 @@ final class User extends Authenticatable implements MustVerifyEmail
             'password',
             'remember_token',
         ];
-   protected static function boot(): void
-   {
-       parent::boot();
-       self::creating(function ($model) {
-           $model->uuid = (string) Str::uuid7();
-       });
-   }
 
     public function hasSetPassword(): bool
     {
-        return !is_null($this->password);
+        return ! is_null($this->password);
+    }
+
+    public function teacherData(): HasOne
+    {
+        return $this->hasOne(Teacher::class);
+    }
+
+    public function profileCompleted(): bool
+    {
+        return $this->first_name    !== null
+            && $this->last_name     !== null
+            && $this->email         !== null
+            && $this->phone         !== null
+            && $this->civil_id      !== null
+            && $this->date_of_birth !== null
+            && $this->father_name   !== null;
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+        self::creating(function ($model) {
+            $model->uuid = (string) Str::uuid7();
+        });
     }
 
     protected function casts(): array
@@ -80,27 +98,10 @@ final class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-    public function teacherData(): HasOne
-    {
-        return $this->hasOne(Teacher::class);
-    }
-
     protected function isProfileCompleted(): Attribute
     {
         return Attribute::make(
             get: fn () => $this->profileCompleted(),
         );
-    }
-
-
-    public function profileCompleted(): bool
-    {
-        return $this->first_name !== null
-            && $this->last_name !== null
-            && $this->email !== null
-            && $this->phone !== null
-            && $this->civil_id !== null
-            && $this->date_of_birth !== null
-            && $this->father_name !== null;
     }
 }

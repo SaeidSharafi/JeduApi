@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications;
 
-use Illuminate\Notifications\Events\NotificationFailed;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Log;
 
-class SmsChannel
+final class SmsChannel
 {
     /**
      * Send the given notification.

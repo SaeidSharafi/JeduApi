@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\OrderItemStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('order_items', function (Blueprint $table) {
@@ -16,7 +19,6 @@ return new class extends Migration {
             $table->foreign('product_delivery_option_id')->references('id')->on('product_delivery_options')->nullOnDelete();
             $table->unsignedBigInteger('vendor_id')->nullable();
             $table->foreign('vendor_id')->references('id')->on('vendors')->nullOnDelete();
-
 
             $table->string('name');
             $table->string('sku');

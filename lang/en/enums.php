@@ -14,21 +14,21 @@ return [
         'advanced'     => 'Advanced',
         'expert'       => 'Expert',
     ],
-    'PublicationStatusEnum'     => [
+    'PublicationStatusEnum' => [
         'draft'     => 'Draft',
         'published' => 'Published',
         'archived'  => 'Archived',
     ],
-    'GenderEnum'                => [
+    'GenderEnum' => [
         'male'   => 'Male',
         'female' => 'Female',
     ],
-    'TermStatusEnum'            => [
+    'TermStatusEnum' => [
         'active'   => 'Active',
         'inactive' => 'Inactive',
         'planning' => 'Planning',
     ],
-    'MorphTypeEnum'             => [
+    'MorphTypeEnum' => [
         'course'        => 'Course',
         'seminar'       => 'Seminar',
         'digital_asset' => 'Digital Asset',
@@ -38,19 +38,19 @@ return [
         'teacher'       => 'Teacher',
         'vendor'        => 'Vendor',
     ],
-    'ProductableEnum'           => [
+    'ProductableEnum' => [
         'course'        => 'Course',
         'seminar'       => 'Seminar',
         'digital_asset' => 'Digital Asset',
     ],
-    'FulfillmentTypeEnum'       => [
+    'FulfillmentTypeEnum' => [
         'digital'           => 'Digital',
         'physical'          => 'Physical',
         'online_service'    => 'Online Service',
         'offline_service'   => 'Offline Service',
         'in_person_service' => 'In-person Service',
     ],
-    'DeliveryMethodEnum'        => [
+    'DeliveryMethodEnum' => [
         'direct_download'           => 'Direct Download',
         'live_session_bbb'          => 'Live Session (BBB)',
         'live_session_skyroom'      => 'Live Session (Skyroom)',
@@ -58,12 +58,12 @@ return [
         'video_platform_spotplayer' => 'Video Platform (SpotPlayer)',
         'in_person'                 => 'In-person',
     ],
-    'CivilIdTypeEnum'           => [
+    'CivilIdTypeEnum' => [
         'national_code'  => 'National Code',
         'passport'       => 'Passport',
         'immigrant_code' => 'Immigrant Code',
     ],
-    'EducationLevelEnum'        => [
+    'EducationLevelEnum' => [
         'student'       => 'Student',
         'under_diploma' => 'Under Diploma',
         'diploma'       => 'Diploma',
@@ -72,30 +72,30 @@ return [
         'master'        => 'Master',
         'doctorate'     => 'Doctorate',
     ],
-    'EducationStatusEnum'       => [
+    'EducationStatusEnum' => [
         'student'   => 'Student',
         'college'   => 'College',
         'graduated' => 'Graduated',
         'employed'  => 'Employed',
     ],
-    'OrderItemStatusEnum'       => [
+    'OrderItemStatusEnum' => [
         'active'    => 'Active',
         'cancelled' => 'Cancelled',
         'refunded'  => 'Refunded',
     ],
-    'OrderItemPaymentTypeEnum'  => [
+    'OrderItemPaymentTypeEnum' => [
         'pre_payment'  => 'Pre-payment',
         'full_payment' => 'Full Payment',
         'invoice'      => 'Invoice',
     ],
-    'OrderPaymentStatusEnum'    => [
+    'OrderPaymentStatusEnum' => [
         'pending'            => 'Pending',
         'partially_paid'     => 'Partially Paid',
         'paid'               => 'Paid',
         'refunded'           => 'Refunded',
         'partially_refunded' => 'Partially Refunded',
     ],
-    'OrderStatusEnum'           => [
+    'OrderStatusEnum' => [
         'pending'    => 'Pending',
         'processing' => 'Processing',
         'completed'  => 'Completed',
@@ -103,11 +103,11 @@ return [
         'failed'     => 'Failed',
         'refunded'   => 'Refunded',
     ],
-    'PaymentMethodEnum'         => [
+    'PaymentMethodEnum' => [
         'bank_transfer'  => 'Bank Transfer',
         'online_gateway' => 'Online Gateway',
     ],
-    'PaymentStatusEnum'         => [
+    'PaymentStatusEnum' => [
         'pending'   => 'Pending',
         'completed' => 'Completed',
         'failed'    => 'Failed',

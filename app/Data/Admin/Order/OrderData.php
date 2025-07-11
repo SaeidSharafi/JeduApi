@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Admin\Order;
 
 use App\Data\Admin\User\ShowUserData;
@@ -16,7 +18,7 @@ use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer;
 
-class OrderData extends Data
+final class OrderData extends Data
 {
     public function __construct(
         public int $id,
@@ -36,12 +38,12 @@ class OrderData extends Data
         public int $grand_total,
         public int $total_paid,
         public int $balance_due,
-        public ?string $currency_code = null,
-        public ?ShowUserData $customer = null,
+        public ?string $currency_code,
+        public ?ShowUserData $customer,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
-        public ?OrderPaymentStatusEnum $payment_status = null,
-        public ?string $applied_coupon_code = null,
-        public ?string $admin_notes = null,
+        public ?OrderPaymentStatusEnum $payment_status,
+        public ?string $applied_coupon_code,
+        public ?string $admin_notes,
         #[WithTransformer(DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Verta $created_at,
         #[WithTransformer(DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
@@ -50,7 +52,5 @@ class OrderData extends Data
         public array $customer_snapshot,
         #[DataCollectionOf(OrderItemData::class)]
         public Collection $items,
-    )
-    {
-    }
+    ) {}
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Actions\Payment\CreatePaymentAction;
 use App\Data\Admin\Payment\PaymentCreateData;
 use App\Enums\OrderItemPaymentTypeEnum;
@@ -21,8 +23,8 @@ describe('CreatePaymentAction', function () {
 
     // Setup common users for all tests
     beforeEach(function () {
-        $this->adminUser = \App\Models\Staff::factory()->create();
-        $this->customer = User::factory()->create();
+        $this->adminUser = App\Models\Staff::factory()->create();
+        $this->customer  = User::factory()->create();
     });
 
     // Test the main success case for pre-payments
@@ -72,8 +74,7 @@ describe('CreatePaymentAction', function () {
             'payment_type'    => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'qty_ordered'     => 1,
         ]);
-        $paymentData = new PaymentCreateData
-        (
+        $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::ONLINE_GATEWAY->value,
             status: PaymentStatusEnum::PENDING->value,
             data: ['transaction_id' => 'txn_12345'],
@@ -106,7 +107,7 @@ describe('CreatePaymentAction', function () {
             admin_notes: null);
 
         // ACT & ASSERT: Expect a ValidationException when trying to create another one
-        expect(fn() => (new CreatePaymentAction())->handle($order, $paymentData, $this->adminUser))
+        expect(fn () => (new CreatePaymentAction())->handle($order, $paymentData, $this->adminUser))
             ->toThrow(ValidationException::class);
     });
 

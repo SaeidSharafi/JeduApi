@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Rules;
 
 use App\Enums\CivilIdTypeEnum;
@@ -7,9 +9,9 @@ use Closure;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-class CivilIdRule implements ValidationRule, DataAwareRule
+final class CivilIdRule implements DataAwareRule, ValidationRule
 {
-    protected array $data = [];
+    private array $data = [];
 
     /**
      * Set the data under validation.
@@ -18,6 +20,7 @@ class CivilIdRule implements ValidationRule, DataAwareRule
     public function setData(array $data): static
     {
         $this->data = $data;
+
         return $this;
     }
 
@@ -44,12 +47,12 @@ class CivilIdRule implements ValidationRule, DataAwareRule
         }
 
         $isValid = match ($idTypeEnum) {
-            CivilIdTypeEnum::NATIONAL_CODE => $this->validateNationalCode($value),
+            CivilIdTypeEnum::NATIONAL_CODE  => $this->validateNationalCode($value),
             CivilIdTypeEnum::IMMIGRANT_CODE => $this->validateImmigrantCode($value),
-            CivilIdTypeEnum::PASSPORT => $this->validatePassport($value),
+            CivilIdTypeEnum::PASSPORT       => $this->validatePassport($value),
         };
 
-        if (!$isValid) {
+        if (! $isValid) {
             $fail(__('validation.custom.civil_id.wrong', ['type' => $idTypeEnum->translate()]));
         }
 
@@ -73,7 +76,7 @@ class CivilIdRule implements ValidationRule, DataAwareRule
             $sum += ((10 - $i) * (int) (mb_substr($value, $i, 1)));
         }
 
-        $ret = $sum % 11;
+        $ret    = $sum % 11;
         $parity = (int) (mb_substr($value, 9, 1));
         if (($ret < 2 && $ret === $parity) || ($ret >= 2 && $ret === 11 - $parity)) {
             return true;
@@ -98,5 +101,4 @@ class CivilIdRule implements ValidationRule, DataAwareRule
         // General rule: 6-20 alphanumeric characters, case-insensitive.
         return preg_match('/^[A-Z0-9]{6,20}$/i', $value) === 1;
     }
-
 }

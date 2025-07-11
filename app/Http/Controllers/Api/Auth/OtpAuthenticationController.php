@@ -7,8 +7,6 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Actions\Auth\AuthenticateUserAction;
 use App\Actions\Auth\VerifyOtpAction;
 use App\Contracts\ApiResponseInterface;
-use App\Data\Admin\Course\ShowCourseData;
-use App\Data\Admin\User\ShowUserData;
 use App\Data\Shop\Customer\CustomerData;
 use App\Enums\OtpType;
 use App\Exceptions\InvalidOtpCode;
@@ -96,6 +94,7 @@ final class OtpAuthenticationController extends Controller
                 message: __('messages.auth.otp.invalid_code')
             );
         }
+
         return response()->success(
             [
                 'token'      => $token->plainTextToken,

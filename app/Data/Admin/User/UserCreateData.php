@@ -34,25 +34,24 @@ final class UserCreateData extends Data
         public ?string $education_level,
         public ?string $field_of_study,
         public ?string $education_status,
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {
         return [
-            'phone'            => [
+            'phone' => [
                 'required', 'string', 'max:15',
                 Rule::unique('users', 'phone')->ignore(
                     request()->route()->parameter('user')
-                )
+                ),
             ],
-            'first_name'       => ['required', 'string', 'max:100'],
-            'last_name'        => ['required', 'string', 'max:100'],
-            'email'            => [
+            'first_name' => ['required', 'string', 'max:100'],
+            'last_name'  => ['required', 'string', 'max:100'],
+            'email'      => [
                 'nullable', 'email', 'max:255',
                 Rule::unique('users', 'email')->ignore(
                     request()->route()->parameter('user')
-                )
+                ),
             ],
             'phone2'           => ['nullable', 'string', 'max:15'],
             'civil_id'         => ['required', 'string', 'max:20', new CivilIdRule(), new UniqueCivilIdRule()],
@@ -63,11 +62,10 @@ final class UserCreateData extends Data
             'education_level'  => ['nullable', 'string', 'max:20', Rule::enum(EducationLevelEnum::class)],
             'field_of_study'   => ['nullable', 'string', 'max:100'],
             'education_status' => [
-                'nullable', 'string', 'max:20', Rule::enum(EducationStatusEnum::class)
-            ]
+                'nullable', 'string', 'max:20', Rule::enum(EducationStatusEnum::class),
+            ],
         ];
     }
-
 
     /**
      * @codeCoverageIgnore
@@ -115,7 +113,7 @@ final class UserCreateData extends Data
             ],
             'gender' => [
                 'description' => 'gender of the user.',
-                'example' => GenderEnum::MALE->value,
+                'example'     => GenderEnum::MALE->value,
             ],
             'education_level' => [
                 'description' => 'The education level of the user.',
