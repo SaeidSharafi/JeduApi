@@ -52,3 +52,20 @@ if (!function_exists('getModelLabel')) {
         return __('messages.models.'.mb_strtolower($modelName));
     }
 }
+if (!function_exists('httpStatusText')) {
+    /**
+     * Get the human readable text for an HTTP status code using localization.
+     *
+     * @param int $code
+     * @return string
+     */
+    function httpStatusText(int $code): string
+    {
+        if ($code < 100 || $code > 599) {
+            return (string) $code;
+        }
+        $key = 'messages.http_status.' . $code;
+        $text = __($key);
+        return $text === $key ? (string) $code : $text;
+    }
+}

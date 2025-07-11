@@ -81,3 +81,20 @@ describe('getModelLabel', function (){
         expect($label)->toBe(__('messages.models.invalid_model'));
     });
 });
+
+describe("httpStatusText", function (){
+    it('returns localized text for a valid HTTP status code', function () {
+        $text = httpStatusText(200);
+        expect($text)->toBe(__('messages.http_status.200'));
+    });
+
+    it('returns localized text for a 404 status code', function () {
+        $text = httpStatusText(404);
+        expect($text)->toBe(__('messages.http_status.404'));
+    });
+
+    it('returns localized text for an unknown status code', function () {
+        $text = httpStatusText(999);
+        expect($text)->toBe('999');
+    });
+});

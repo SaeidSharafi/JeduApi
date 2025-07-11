@@ -71,4 +71,18 @@ return [
             'invalid_credentials' => 'The provided credentials are incorrect.',
         ],
     ],
+    'http_status' => [
+        200 => 'OK',
+        201 => 'Created',
+        202 => 'Accepted',
+        204 => 'No Content',
+        400 => 'Bad Request',
+        401 => 'Unauthorized',
+        403 => 'Forbidden',
+        404 => 'Not Found',
+        405 => 'Method Not Allowed',
+        409 => 'Conflict',
+        422 => 'Unprocessable Entity',
+        500 => 'Internal Server Error',
+    ],
 ];
