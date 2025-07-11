@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications\Auth;
 
+use App\Events\OtpPrepared;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -13,7 +14,7 @@ final class OtpEmailNotification extends Notification
     use Queueable;
 
     public function __construct(
-        protected string $otpCode
+        protected OtpPrepared $otpCode,
     ) {}
 
     /**
@@ -30,7 +31,7 @@ final class OtpEmailNotification extends Notification
     {
         return (new MailMessage)
             ->subject('Your Login OTP Code')
-            ->line('Your OTP code is: '.$this->otpCode)
+            ->line('Your OTP code is: '.$this->otpCode->code)
             ->line('This code will expire in 5 minutes.')
             ->line('If you did not request this code, please ignore this email.');
     }

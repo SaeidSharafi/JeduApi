@@ -20,7 +20,6 @@ final class SendOtpNotification
     {
         $identifier = $event->identifier;
         $guard      = $event->guard;
-        $otpCode    = $event->code;
 
         $model = $guard === 'staff' ? Staff::class : User::class;
         $user  = $model::when(
@@ -33,7 +32,7 @@ final class SendOtpNotification
         }
         $user->notify(new OtpSmsNotification($event));
         if ($user->email) {
-            $user->notify(new OtpEmailNotification($otpCode));
+            $user->notify(new OtpEmailNotification($event));
         }
     }
 }
