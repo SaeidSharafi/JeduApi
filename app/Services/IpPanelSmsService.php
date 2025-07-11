@@ -19,14 +19,24 @@ class IpPanelSmsService
         $this->from = config('services.ippanel.from');
     }
 
+    public function setApiKey(string $apiKey): void
+    {
+        $this->apiKey = $apiKey;
+    }
+
+    public function setFrom(string $from): void
+    {
+        $this->from = $from;
+    }
+
     public function send(array $to, string $messeage, string $type = 'custom'): void
     {
         $this->validateConfig();
-        if (config('services.ippanel.sand_box')){
+        if (config('services.ippanel.sand_box')) {
             SmsLog::create([
-                'status'  => 'Sandbox',
+                'status'  => 200,
                 'data'    => [
-                    'message_id', randomNumber(10)
+                    'message_id' => "Sandbox_".randomNumber(10)
                 ],
                 'content' => $messeage,
                 'type'    => $type,
@@ -54,7 +64,7 @@ class IpPanelSmsService
             'data'    => $response->json(),
             'content' => $messeage,
             'type'    => $type,
-            'to'      => implode(',', $to),
+            'to'      => $to,
             'from'    => $this->from,
             'sent_at' => now(),
         ]);
@@ -75,13 +85,13 @@ class IpPanelSmsService
     public function sendPattern(string $pattern, array $parameters, string $to, $messeage = '', $type = 'pattern'): void
     {
         $this->validateConfig();
-        if (config('services.ippanel.sand_box')){
+        if (config('services.ippanel.sand_box')) {
             SmsLog::create([
-                'status'  => 'Sandbox',
+                'status'  => 200,
                 'data'    => [
-                    'pattern'   => $pattern,
+                    'pattern'    => $pattern,
                     'parameters' => $parameters,
-                    'message_id', randomNumber(10)
+                    'message_id' => "Sandbox_".randomNumber(10)
                 ],
                 'content' => $messeage,
                 'type'    => $type,

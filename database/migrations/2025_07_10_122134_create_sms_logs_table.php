@@ -9,11 +9,11 @@ return new class extends Migration {
     {
         Schema::create('sms_logs', function (Blueprint $table) {
             $table->id();
-            $table->string('status');
+            $table->integer('status');
             $table->jsonb('data')->nullable();
             $table->text('content')->nullable();
             $table->string('type');
-            $table->string('to');
+            $table->jsonb('to');
             $table->string('from');
             $table->dateTime('sent_at');
             $table->timestamps();
