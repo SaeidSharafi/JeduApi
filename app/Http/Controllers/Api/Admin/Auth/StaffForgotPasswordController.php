@@ -25,7 +25,7 @@ final class StaffForgotPasswordController extends Controller
     ) {}
 
     /**
-     * Forgot Password
+     * Forgot Password for staff
      *
      * Check if staff exists and send OTP to reset password
      *

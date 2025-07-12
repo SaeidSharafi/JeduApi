@@ -25,7 +25,7 @@ final class StaffInitiateAuthController extends Controller
     ) {}
 
     /**
-     * Initiate authentication flow
+     * Initiate admin authentication flow
      *
      * User provides phone or email. API determines the next step (e.g., prompt for password, request OTP, user not
      * found)

@@ -25,7 +25,7 @@ final class StaffResetPasswordController extends Controller
     ) {}
 
     /**
-     * Reset password using OTP-derived reset token
+     * Reset password using OTP-derived reset token for staff
      *
      * Requires the phone number and the reset OTP token obtained from a successful OTP verification
      *

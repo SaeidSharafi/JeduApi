@@ -31,7 +31,7 @@ final class StaffOtpAuthenticationController extends Controller
     ) {}
 
     /**
-     * Verify an OTP code and potentially log in/register
+     * Verify an OTP code and potentially log in staff
      *
      * User submits phone number (or email if already registered) and OTP code.
      * If valid for login/registration, authenticates the user (creating if necessary) and returns auth token.
