@@ -1,6 +1,11 @@
 <?php
 
 declare(strict_types=1);
+
+use App\Events\OtpPrepared;
+use App\Notifications\Auth\OtpSmsNotification;
+use App\Notifications\SmsMessage;
+
 beforeEach(function (): void {
     Notification::fake();
     config()->set('services.ippanel.from', 1000);
@@ -19,18 +24,44 @@ beforeEach(function (): void {
         ]
     );
 });
-it('send Sms', function (): void {
-    $otp          = '123456';
-    $otp          = new App\Events\OtpPrepared('09321456987', 'user', $otp, App\Enums\OtpType::SIGNIN, 'test-tracking', []);
-    $notification = new App\Notifications\Auth\OtpSmsNotification($otp);
-    $user         = App\Models\User::factory()->create(['phone' => '09321456987']);
+describe('OTP SMS Notification', function () {
+    it('creates the correct sms message payload for customer', function () {
+        $user = new \App\Models\User();
+        $otpEvent =  new OtpPrepared(
+            identifier: '09321456987',
+            guard: 'user',
+            code: '123456',
+            type: \App\Enums\OtpType::SIGNIN,
+            trackingCode: 'test-tracking',
+            params: []
+        );
+        $notification = new OtpSmsNotification($otpEvent);
 
-    $notification->toSms($user);
+        $smsMessage = $notification->toSms($user);
 
-    $smsLog = App\Models\SmsLog::latest()->first();
-    expect($smsLog->status)->toBe(200)
-        ->and($smsLog->content)->toBe('Your OTP code is: *****')
-        ->and($smsLog->to)->toBe('09321456987')
-        ->and($smsLog->from)->toBe('1000')
-        ->and($smsLog->type)->toBe('OTP');
+        expect($smsMessage)->toBeInstanceOf(SmsMessage::class)
+            ->and($smsMessage->pattern)->toBe('mdoe1j1587')
+            ->and($smsMessage->parameters)->toBe(['code' => '123456'])
+            ->and($smsMessage->type)->toBe('OTP');
+    });
+
+    it('creates the correct sms message payload for Staff', function () {
+        $user = new \App\Models\Staff();
+        $otpEvent =  new OtpPrepared(
+            identifier: '09321456987',
+            guard: 'user',
+            code: '123456',
+            type: \App\Enums\OtpType::SIGNIN,
+            trackingCode: 'test-tracking',
+            params: []
+        );
+        $notification = new OtpSmsNotification($otpEvent);
+
+        $smsMessage = $notification->toSms($user);
+
+        expect($smsMessage)->toBeInstanceOf(SmsMessage::class)
+            ->and($smsMessage->pattern)->toBe('mdoe1j1587')
+            ->and($smsMessage->parameters)->toBe(['code' => '123456'])
+            ->and($smsMessage->type)->toBe('OTP');
+    });
 });

@@ -6,10 +6,11 @@ namespace App\Notifications\Auth;
 
 use App\Events\OtpPrepared;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-final class OtpEmailNotification extends Notification
+final class OtpEmailNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 

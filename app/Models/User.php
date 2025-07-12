@@ -104,4 +104,9 @@ final class User extends Authenticatable implements MustVerifyEmail
             get: fn () => $this->profileCompleted(),
         );
     }
+
+    public function routeNotificationForSms($notification): string
+    {
+        return $this->phone;
+    }
 }

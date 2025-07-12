@@ -79,11 +79,12 @@ final class IpPanelSmsService
                 'SMS sending failed',
                 [
                     'status'  => $response->status(),
-                    'message' => $response->body(),
+                    'message' => $response->json(),
                     'to'      => implode(',', $to),
                     'from'    => $this->from,
                 ]
             );
+            $response->throw();
         }
     }
 
@@ -138,11 +139,12 @@ final class IpPanelSmsService
                     'pattern' => $pattern,
                     'type'    => $type,
                     'status'  => $response->status(),
-                    'message' => $response->body(),
+                    'message' => $response->json(),
                     'to'      => $to,
                     'from'    => $this->from,
                 ]
             );
+            $response->throw();
         }
     }
 

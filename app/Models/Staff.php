@@ -48,4 +48,9 @@ final class Staff extends Authenticatable implements MustVerifyEmail
             'password'          => 'hashed',
         ];
     }
+
+    public function routeNotificationForSms($notification): string
+    {
+        return $this->phone;
+    }
 }

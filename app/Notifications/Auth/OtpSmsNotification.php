@@ -6,11 +6,13 @@ namespace App\Notifications\Auth;
 
 use App\Events\OtpPrepared;
 use App\Notifications\SmsChannel;
+use App\Notifications\SmsMessage;
 use App\Services\IpPanelSmsService;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-final class OtpSmsNotification extends Notification
+final class OtpSmsNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -32,16 +34,11 @@ final class OtpSmsNotification extends Notification
         return SmsChannel::class;
     }
 
-    public function toSms(object $notifiable): void
+    public function toSms(object $notifiable): SmsMessage
     {
-        $this->smsService->sendPattern(
-            pattern: 'mdoe1j1587',
-            parameters: [
-                'code' => $this->otpCode->code,
-            ],
-            to: $notifiable->phone,
-            messeage: 'Your OTP code is: *****',
-            type: 'OTP'
-        );
+        return (new SmsMessage)
+            ->pattern('mdoe1j1587', ['code' => $this->otpCode->code])
+            ->content('Your OTP code is: *****')
+            ->type('OTP');
     }
 }

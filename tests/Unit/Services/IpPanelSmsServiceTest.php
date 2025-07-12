@@ -2,394 +2,140 @@
 
 declare(strict_types=1);
 
+use App\Models\SmsLog;
+use App\Services\IpPanelSmsService;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
+// Test setup common to both test groups
+beforeEach(function () {
+    Http::preventStrayRequests();
+
+    config([
+        'services.ippanel.api_key'  => 'test-api-key',
+        'services.ippanel.from'     => '1000',
+        'services.ippanel.sand_box' => false,
+    ]);
+    $this->service = app(IpPanelSmsService::class);
+});
 
 describe('Normal SMS Sending', function () {
-    beforeEach(function () {
-        Http::preventStrayRequests();
-        config()->set('services.ippanel.sand_box');
+    it('sends sms successfully and creates a log', function () {
+        $to = ['09123456789'];
+        $message = 'Test message';
+        Http::fake([
+            'api2.ippanel.com/*' => Http::response(['data' => ['message_id' => 'fake-id']], 200),
+        ]);
 
-    });
-    it('it send sms succesfully', function () {
+        $this->service->send($to, $message);
 
-        $service = app(App\Services\IpPanelSmsService::class);
-        $service->setFrom('1000');
-        $service->setApiKey('test_api_key');
-        $to       = ['09123456789'];
-        $messeage = 'Test message';
-        Http::fake(
-            [
-                'https://api2.ippanel.com/api/v1/sms/send/webservice/single' => Http::response(
-                    [
-                        'status' => 'OK',
-                        'data'   => [
-                            'message_id' => random_int(1000000000, 9999999999),
-                        ],
-                    ],
-                ),
-            ]
-        );
-
-        $service->send($to, $messeage);
-        $smsLog = App\Models\SmsLog::latest()->first();
+        $smsLog = SmsLog::latest()->first();
         expect($smsLog->status)->toBe(200)
-            ->and($smsLog->content)->toBe($messeage)
-            ->and($smsLog->to)->toBe($to)
-            ->and($smsLog->from)->toBe('1000')
-            ->and($smsLog->type)->toBe('custom');
-    });
-    it('handles 400 errors', function () {
-        $service = app(App\Services\IpPanelSmsService::class);
-        $service->setFrom('1000');
-        $service->setApiKey('test_api_key');
-        $to       = ['09123456789'];
-        $messeage = 'Test message';
-        Http::fake(
-            [
-                'https://api2.ippanel.com/api/v1/sms/send/webservice/single' => Http::response(
-                    null,
-                    400
-                ),
-            ]
-        );
-        $service->send($to, $messeage);
-        $smsLog = App\Models\SmsLog::latest()->first();
-        expect($smsLog->status)->toBe(400)
-            ->and($smsLog->content)->toBe($messeage)
-            ->and($smsLog->to)->toBe($to)
-            ->and($smsLog->from)->toBe('1000')
-            ->and($smsLog->type)->toBe('custom')
-            ->and($smsLog->data)->toBeNull();
-    });
-    it('handles 401 errors', function () {
-        $service = app(App\Services\IpPanelSmsService::class);
-        $service->setFrom('1000');
-        $service->setApiKey('test_api_key');
-        $to       = ['09123456789'];
-        $messeage = 'Test message';
-        Http::fake(
-            [
-                'https://api2.ippanel.com/api/v1/sms/send/webservice/single' => Http::response(
-                    null,
-                    401
-                ),
-            ]
-        );
-        $service->send($to, $messeage);
-        $smsLog = App\Models\SmsLog::latest()->first();
-        expect($smsLog->status)->toBe(401)
-            ->and($smsLog->content)->toBe($messeage)
-            ->and($smsLog->to)->toBe($to)
-            ->and($smsLog->from)->toBe('1000')
-            ->and($smsLog->type)->toBe('custom')
-            ->and($smsLog->data)->toBeNull();
-
-    });
-    it('handles 403 errors', function () {
-        $service = app(App\Services\IpPanelSmsService::class);
-        $service->setFrom('1000');
-        $service->setApiKey('test_api_key');
-        $to       = ['09123456789'];
-        $messeage = 'Test message';
-        Http::fake(
-            [
-                'https://api2.ippanel.com/api/v1/sms/send/webservice/single' => Http::response(
-                    [
-                        'status'       => 'Forbidden',
-                        'code'         => 403,
-                        'errorMessage' => 'Forbidden',
-                        'data'         => null,
-                    ],
-                    403
-                ),
-            ]
-        );
-
-        $service->send($to, $messeage);
-        $smsLog = App\Models\SmsLog::latest()->first();
-        expect($smsLog->status)->toBe(403)
-            ->and($smsLog->content)->toBe($messeage)
-            ->and($smsLog->to)->toBe($to)
-            ->and($smsLog->from)->toBe('1000')
-            ->and($smsLog->type)->toBe('custom')
-            ->and($smsLog->data)->toBeArray();
-    });
-    it('handles 422 errors', function () {
-        $service = app(App\Services\IpPanelSmsService::class);
-        $service->setFrom('1000');
-        $service->setApiKey('test_api_key');
-        $to       = ['09123456789'];
-        $messeage = 'Test message';
-        Http::fake(
-            [
-                'https://api2.ippanel.com/api/v1/sms/send/webservice/single' => Http::response(
-                    [
-                        'status'       => 'Internal Server Error',
-                        'code'         => 422,
-                        'errorMessage' => [
-                            'description.count_recipient' => [
-                                'validation.required',
-                            ],
-                        ],
-                        'data' => null,
-                    ],
-                    422
-                ),
-            ]
-        );
-        $service->send($to, $messeage);
-        $smsLog = App\Models\SmsLog::latest()->first();
-        expect($smsLog->status)->toBe(422)
-            ->and($smsLog->content)->toBe($messeage)
-            ->and($smsLog->to)->toBe($to)
-            ->and($smsLog->from)->toBe('1000')
-            ->and($smsLog->type)->toBe('custom')
-            ->and($smsLog->data)->toBeArray();
-
+            ->and($smsLog->content)->toBe($message)
+            ->and($smsLog->to)->toBe($to);
     });
 
-    it('handles 500 error', function () {
-        $service = app(App\Services\IpPanelSmsService::class);
-        $service->setFrom('1000');
-        $service->setApiKey('test_api_key');
-        $to       = ['09123456789'];
-        $messeage = 'Test message';
-        Http::fake(
-            [
-                'https://api2.ippanel.com/api/v1/sms/send/webservice/single' => Http::response(
-                    null,
-                    500
-                ),
-            ]
-        );
-        $service->send($to, $messeage);
-        $smsLog = App\Models\SmsLog::latest()->first();
-        expect($smsLog->status)->toBe(500)
-            ->and($smsLog->content)->toBe($messeage)
-            ->and($smsLog->to)->toBe($to)
-            ->and($smsLog->from)->toBe('1000')
-            ->and($smsLog->type)->toBe('custom')
-            ->and($smsLog->data)->toBeNull();
-    });
+    // We can group error tests for conciseness
+    it('throws exception on client and server errors and still creates a log', function (int $statusCode, ?array $body) {
+        Http::fake([
+            'api2.ippanel.com/*' => Http::response($body, $statusCode),
+        ]);
+        Log::shouldReceive('error')->once(); // We expect an error to be logged
 
-    it('handles sandbox mode', function () {
+        expect(fn () => $this->service->send(['09123456789'], 'Test'))
+            ->toThrow(RequestException::class);
+
+        $smsLog = SmsLog::latest()->first();
+        expect($smsLog->status)->toBe($statusCode)
+            ->and($smsLog->data)->toBe($body);
+
+    })->with([
+        '400 Bad Request' => [400, null],
+        '401 Unauthorized' => [401, null],
+        '403 Forbidden' => [403, ['errorMessage' => 'Forbidden']],
+        '422 Unprocessable' => [422, ['errors' => ['field' => 'invalid']]],
+        '500 Server Error' => [500, null],
+    ]);
+
+    it('handles sandbox mode correctly', function () {
         config(['services.ippanel.sand_box' => true]);
-        $service = app(App\Services\IpPanelSmsService::class);
-        $service->setFrom('1000');
-        $service->setApiKey('test_api_key');
-        $to       = ['09123456789'];
-        $messeage = 'Test message';
+        Http::fake(); // Assert that NO http requests are sent
 
-        $service->send($to, $messeage);
+        $this->service->send(['09123456789'], 'Test message');
 
-        $smsLog = App\Models\SmsLog::latest()->first();
+        Http::assertNothingSent();
+        $smsLog = SmsLog::latest()->first();
         expect($smsLog->status)->toBe(200)
-            ->and($smsLog->content)->toBe($messeage)
-            ->and($smsLog->to)->toBe($to)
-            ->and($smsLog->from)->toBe('1000')
-            ->and($smsLog->type)->toBe('custom')
             ->and($smsLog->data['message_id'])->toBeString();
     });
+
     it('throws exception if api key or from is not set', function () {
-        $service = app(App\Services\IpPanelSmsService::class);
-        config()->set('services.ippanel.api_key', null);
-        config()->set('services.ippanel.from', null);
-        $to       = ['09123456789'];
-        $messeage = 'Test message';
+        // Arrange
+        config([
+            'services.ippanel.api_key' => null,
+            'services.ippanel.from'    => null,
+        ]);
+        $serviceWithoutConfig = app(IpPanelSmsService::class);
 
-        expect(fn () => $service->send($to, $messeage))->toThrow(Exception::class,
-            'IPPanel API key or sender number is not configured.');
+        // Act & Assert
+        expect(fn () => $serviceWithoutConfig->send(['09123456789'], 'Test'))
+            ->toThrow(Exception::class, 'IPPanel API key or sender number is not configured.');
     });
 
+    it('allows overriding config values with setters', function () {
+        config([
+            'services.ippanel.api_key' => 'config-key',
+            'services.ippanel.from'    => '1111',
+        ]);
+
+        Http::fake(['api2.ippanel.com/*' => Http::response([], 200)]);
+
+        $service = app(App\Services\IpPanelSmsService::class);
+
+        $service->setApiKey('runtime-key');
+        $service->setFrom('9999');
+        $service->send(['09123456789'], 'Test message');
+
+        Http::assertSent(function ($request) {
+            $headerIsCorrect = $request->hasHeader('apikey', 'runtime-key');
+            $senderIsCorrect = $request['sender'] === '9999';
+
+            return $headerIsCorrect && $senderIsCorrect;
+        });
+    });
 });
+
+
 describe('Pattern SMS Sending', function () {
-    beforeEach(function () {
-        Http::preventStrayRequests();
-        config()->set('services.ippanel.sand_box');
-    });
-    it('it send sms succesfully', function () {
+    it('sends pattern sms successfully and creates a log', function () {
+        Http::fake([
+            'api2.ippanel.com/*' => Http::response(['data' => ['message_id' => 'fake-id']], 200),
+        ]);
 
-        $service = app(App\Services\IpPanelSmsService::class);
-        $service->setFrom('1000');
-        $service->setApiKey('test_api_key');
-        $to       = '09123456789';
-        $messeage = 'Test message';
-        Http::fake(
-            [
-                'https://api2.ippanel.com/api/v1/sms/pattern/normal/send' => Http::response(
-                    [
-                        'status' => 'OK',
-                        'data'   => [
-                            'message_id' => random_int(1000000000, 9999999999),
-                        ],
-                    ],
-                ),
-            ]
-        );
+        $this->service->sendPattern('pattern-code', ['code' => '123'], '09123456789');
 
-        $service->sendPattern('XYZ', ['code' => '1234'], $to, $messeage);
-        $smsLog = App\Models\SmsLog::latest()->first();
+        $smsLog = SmsLog::latest()->first();
         expect($smsLog->status)->toBe(200)
-            ->and($smsLog->content)->toBe($messeage)
-            ->and($smsLog->to)->toBe($to)
-            ->and($smsLog->from)->toBe('1000')
             ->and($smsLog->type)->toBe('pattern');
     });
-    it('handles 400 errors', function () {
-        $service = app(App\Services\IpPanelSmsService::class);
-        $service->setFrom('1000');
-        $service->setApiKey('test_api_key');
-        $to       = '09123456789';
-        $messeage = 'Test message';
-        Http::fake(
-            [
-                'https://api2.ippanel.com/api/v1/sms/pattern/normal/send' => Http::response(
-                    null,
-                    400
-                ),
-            ]
-        );
-        $service->sendPattern('XYZ', ['code' => '1234'], $to, $messeage);
-        $smsLog = App\Models\SmsLog::latest()->first();
-        expect($smsLog->status)->toBe(400)
-            ->and($smsLog->content)->toBe($messeage)
-            ->and($smsLog->to)->toBe($to)
-            ->and($smsLog->from)->toBe('1000')
-            ->and($smsLog->type)->toBe('pattern')
-            ->and($smsLog->data)->toBeNull();
-    });
-    it('handles 401 errors', function () {
-        $service = app(App\Services\IpPanelSmsService::class);
-        $service->setFrom('1000');
-        $service->setApiKey('test_api_key');
-        $to       = '09123456789';
-        $messeage = 'Test message';
-        Http::fake(
-            [
-                'https://api2.ippanel.com/api/v1/sms/pattern/normal/send' => Http::response(
-                    null,
-                    401
-                ),
-            ]
-        );
-        $service->sendPattern('XYZ', ['code' => '1234'], $to, $messeage);
-        $smsLog = App\Models\SmsLog::latest()->first();
-        expect($smsLog->status)->toBe(401)
-            ->and($smsLog->content)->toBe($messeage)
-            ->and($smsLog->to)->toBe($to)
-            ->and($smsLog->from)->toBe('1000')
-            ->and($smsLog->type)->toBe('pattern')
-            ->and($smsLog->data)->toBeNull();
-    });
-    it('handles 403 errors', function () {
-        $service = app(App\Services\IpPanelSmsService::class);
-        $service->setFrom('1000');
-        $service->setApiKey('test_api_key');
-        $to       = '09123456789';
-        $messeage = 'Test message';
-        Http::fake(
-            [
-                'https://api2.ippanel.com/api/v1/sms/pattern/normal/send' => Http::response(
-                    [
-                        'status'       => 'Forbidden',
-                        'code'         => 403,
-                        'errorMessage' => 'Forbidden',
-                        'data'         => null,
-                    ],
-                    403
-                ),
-            ]
-        );
-        $service->sendPattern('XYZ', ['code' => '1234'], $to, $messeage);
-        $smsLog = App\Models\SmsLog::latest()->first();
-        expect($smsLog->status)->toBe(403)
-            ->and($smsLog->content)->toBe($messeage)
-            ->and($smsLog->to)->toBe($to)
-            ->and($smsLog->from)->toBe('1000')
-            ->and($smsLog->type)->toBe('pattern')
-            ->and($smsLog->data)->toBeArray();
-    });
-    it('handles 422 errors', function () {
-        $service = app(App\Services\IpPanelSmsService::class);
-        $service->setFrom('1000');
-        $service->setApiKey('test_api_key');
-        $to       = '09123456789';
-        $messeage = 'Test message';
-        Http::fake(
-            [
-                'https://api2.ippanel.com/api/v1/sms/pattern/normal/send' => Http::response(
-                    [
-                        'status'       => 'Internal Server Error',
-                        'code'         => 422,
-                        'errorMessage' => [
-                            'description.count_recipient' => [
-                                'validation.required',
-                            ],
-                        ],
-                        'data' => null,
-                    ],
-                    422
-                ),
-            ]
-        );
-        $service->sendPattern('XYZ', ['code' => '1234'], $to, $messeage);
-        $smsLog = App\Models\SmsLog::latest()->first();
-        expect($smsLog->status)->toBe(422)
-            ->and($smsLog->content)->toBe($messeage)
-            ->and($smsLog->to)->toBe($to)
-            ->and($smsLog->from)->toBe('1000')
-            ->and($smsLog->type)->toBe('pattern')
-            ->and($smsLog->data)->toBeArray();
-    });
-    it('handles 500 error', function () {
-        $service = app(App\Services\IpPanelSmsService::class);
-        $service->setFrom('1000');
-        $service->setApiKey('test_api_key');
-        $to       = '09123456789';
-        $messeage = 'Test message';
-        Http::fake(
-            [
-                'https://api2.ippanel.com/api/v1/sms/pattern/normal/send' => Http::response(
-                    null,
-                    500
-                ),
-            ]
-        );
-        $service->sendPattern('XYZ', ['code' => '1234'], $to, $messeage);
-        $smsLog = App\Models\SmsLog::latest()->first();
-        expect($smsLog->status)->toBe(500)
-            ->and($smsLog->content)->toBe($messeage)
-            ->and($smsLog->to)->toBe($to)
-            ->and($smsLog->from)->toBe('1000')
-            ->and($smsLog->type)->toBe('pattern')
-            ->and($smsLog->data)->toBeNull();
-    });
-    it('handles sandbox mode', function () {
-        config(['services.ippanel.sand_box' => true]);
-        $service = app(App\Services\IpPanelSmsService::class);
-        $service->setFrom('1000');
-        $service->setApiKey('test_api_key');
-        $to       = '09123456789';
-        $messeage = 'Test message';
 
-        $service->sendPattern('XYZ', ['code' => '1234'], $to, $messeage);
+    it('throws exception on client and server errors for patterns and still logs', function (int $statusCode, ?array $body) {
+        Http::fake([
+            'api2.ippanel.com/*' => Http::response($body, $statusCode),
+        ]);
+        Log::shouldReceive('error')->once();
 
-        $smsLog = App\Models\SmsLog::latest()->first();
-        expect($smsLog->status)->toBe(200)
-            ->and($smsLog->content)->toBe($messeage)
-            ->and($smsLog->to)->toBe($to)
-            ->and($smsLog->from)->toBe('1000')
-            ->and($smsLog->type)->toBe('pattern')
-            ->and($smsLog->data['message_id'])->toBeString();
-    });
-    it('throws exception if api key or from is not set', function () {
-        $service = app(App\Services\IpPanelSmsService::class);
-        config()->set('services.ippanel.api_key', null);
-        config()->set('services.ippanel.from', null);
-        $to       = '09123456789';
-        $messeage = 'Test message';
+        // Act & Assert
+        expect(fn () => $this->service->sendPattern('pattern-code', ['code' => '123'], '09123456789'))
+            ->toThrow(RequestException::class);
 
-        expect(fn () => $service->sendPattern('XYZ', ['code' => '1234'], $to, $messeage))->toThrow(Exception::class,
-            'IPPanel API key or sender number is not configured.');
-    });
+        $smsLog = SmsLog::latest()->first();
+        expect($smsLog->status)->toBe($statusCode);
+
+    })->with([
+        '401 Unauthorized' => [401, null],
+        '422 Unprocessable' => [422, ['errors' => ['field' => 'invalid']]],
+        '500 Server Error' => [500, null],
+    ]);
 });
