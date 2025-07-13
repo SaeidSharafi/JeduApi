@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\ProductDeliveryOption;
 
-use App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction;
+use App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction;
 use App\Data\Transformer\CarbonFromJalaliString;
 use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;

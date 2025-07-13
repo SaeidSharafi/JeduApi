@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\Role\CreateRoleAction;
-use App\Actions\Role\DeleteRoleAction;
-use App\Actions\Role\UpdateRoleAction;
+use App\Actions\Admin\Role\CreateRoleAction;
+use App\Actions\Admin\Role\DeleteRoleAction;
+use App\Actions\Admin\Role\UpdateRoleAction;
 use App\Data\Admin\Role\CreateRoleData;
 use App\Data\Admin\Role\RoleListItemData;
 use App\Data\Admin\Role\ShowRoleData;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\Order\CreateOrderAction;
-use App\Actions\Order\DeleteOrderAction;
-use App\Actions\Order\UpdateOrderAction;
+use App\Actions\Admin\Order\CreateOrderAction;
+use App\Actions\Admin\Order\DeleteOrderAction;
+use App\Actions\Admin\Order\UpdateOrderAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderData;

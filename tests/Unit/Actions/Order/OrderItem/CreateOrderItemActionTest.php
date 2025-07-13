@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Actions\Order\OrderItem\CreateOrderItemAction;
+use App\Actions\Admin\Order\OrderItem\CreateOrderItemAction;
 use App\Data\Admin\Order\OrderItemCreateData;
 use App\Enums\OrderItemPaymentTypeEnum;
 use App\Models\Order;
@@ -10,7 +10,6 @@ use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
 use App\Models\Vendor;
 use Illuminate\Validation\ValidationException;
-
 use function Pest\Laravel\assertDatabaseHas;
 
 describe('CreateOrderItemAction', function () {

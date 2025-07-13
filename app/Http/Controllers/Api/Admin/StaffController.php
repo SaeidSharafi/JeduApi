@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\Staff\CreateStaffAction;
-use App\Actions\Staff\DeleteStaffAction;
-use App\Actions\Staff\UpdateStaffAction;
+use App\Actions\Admin\Staff\CreateStaffAction;
+use App\Actions\Admin\Staff\DeleteStaffAction;
+use App\Actions\Admin\Staff\UpdateStaffAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Staff\CreateStaffData;
 use App\Data\Admin\Staff\ShowStaffData;

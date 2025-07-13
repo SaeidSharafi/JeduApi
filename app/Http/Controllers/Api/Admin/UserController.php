@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\User\CreateUserAction;
-use App\Actions\User\DeleteUserAction;
-use App\Actions\User\UpdateUserAction;
+use App\Actions\Admin\User\CreateUserAction;
+use App\Actions\Admin\User\DeleteUserAction;
+use App\Actions\Admin\User\UpdateUserAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\User\ShowUserData;
 use App\Data\Admin\User\UserCreateData;

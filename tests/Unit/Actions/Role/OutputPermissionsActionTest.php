@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Actions\Role\OutputPermissionsAction;
+use App\Actions\Admin\Role\OutputPermissionsAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
 

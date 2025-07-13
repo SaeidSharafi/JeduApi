@@ -9,7 +9,7 @@ it('it return empty array for invalid types', function () {
         'expiration_date' => '2023-12-31 23:59:59',
     ];
     $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData::getValidationRules($detailsData);
-    $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $action        = new \App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules         = $action->handle(null, $deliveryMethod, $detailsData);
     expect($rules)->toBeArray()->toBeEmpty();
 
@@ -38,7 +38,7 @@ $fulfillmentDeliveryPairs = [
 
 it('creates delivery validation rules for each valid fulfillmentType/deliveryMethod pair with empty details', function ($fulfillmentType, $deliveryMethod) {
     $detailsData = [];
-    $action      = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $action      = new \App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules       = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     expect($rules)->toBeArray();
 })->with($fulfillmentDeliveryPairs);
@@ -130,7 +130,7 @@ $fulfillmentDeliveryPairsWithDetails = [
 ];
 
 it('creates delivery validation rules for each valid fulfillmentType/deliveryMethod pair with sample details', function ($fulfillmentType, $deliveryMethod, $detailsData) {
-    $action = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $action = new \App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules  = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     expect($rules)->toBeArray();
 
@@ -144,7 +144,7 @@ it('creates delivery validation rules for DIRECT_DOWNLOAD', function () {
         'expiration_date' => '2023-12-31 23:59:59',
     ];
     $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData::getValidationRules($detailsData);
-    $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $action        = new \App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     foreach ($expectedRules as $key => $expected) {
         expect($rules)->toHaveKey('details.'.$key);
@@ -165,7 +165,7 @@ it('creates delivery validation rules for IN_PERSON', function () {
         'additional_info' => null,
     ];
     $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\InPersonDetailsData::getValidationRules($detailsData);
-    $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $action        = new \App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     foreach ($expectedRules as $key => $expected) {
         expect($rules)->toHaveKey('details.'.$key);
@@ -186,7 +186,7 @@ it('creates delivery validation rules for LMS_MOODLE', function () {
         'enrollment_end_date'   => '2023-12-31 23:59:59',
     ];
     $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\LmsMoodleDetailsData::getValidationRules($detailsData);
-    $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $action        = new \App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     foreach ($expectedRules as $key => $expected) {
         expect($rules)->toHaveKey('details.'.$key);
@@ -221,7 +221,7 @@ it('creates delivery validation rules for LIVE_SESSION_BBB', function () {
         'admin_notes'                        => 'Admin Note',
     ];
     $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData::getValidationRules($detailsData);
-    $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $action        = new \App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     foreach ($expectedRules as $key => $expected) {
         expect($rules)->toHaveKey('details.'.$key);
@@ -249,7 +249,7 @@ it('creates delivery validation rules for LIVE_SESSION_SKYROOM', function () {
         'admin_notes'                 => 'Admin notes for Skyroom session',
     ];
     $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsData::getValidationRules($detailsData);
-    $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $action        = new \App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     foreach ($expectedRules as $key => $expected) {
         expect($rules)->toHaveKey('details.'.$key);
@@ -267,7 +267,7 @@ it('creates delivery validation rules for VIDEO_PLATFORM_SPOTPLAYER', function (
         'course_id' => 'course123',
     ];
     $expectedRules = App\Data\Admin\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData::getValidationRules($detailsData);
-    $action        = new App\Actions\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $action        = new \App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules         = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
 
     foreach ($expectedRules as $key => $expected) {

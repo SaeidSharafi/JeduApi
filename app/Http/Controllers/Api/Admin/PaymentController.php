@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\Payment\CreatePaymentAction;
-use App\Actions\Payment\DeletePaymentAction;
-use App\Actions\Payment\UpdatePaymentAction;
+use App\Actions\Admin\Payment\CreatePaymentAction;
+use App\Actions\Admin\Payment\DeletePaymentAction;
+use App\Actions\Admin\Payment\UpdatePaymentAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Payment\PaymentCreateData;
 use App\Data\Admin\Payment\PaymentData;

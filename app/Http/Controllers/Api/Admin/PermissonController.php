@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\Role\OutputPermissionsAction;
+use App\Actions\Admin\Role\OutputPermissionsAction;
 use App\Contracts\ApiResponseInterface;
 use App\Http\Controllers\Controller;
 

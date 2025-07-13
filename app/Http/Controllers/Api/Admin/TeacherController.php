@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\Teacher\CreateTeacherAction;
-use App\Actions\Teacher\DeleteTeacherAction;
-use App\Actions\Teacher\UpdateTeacherAction;
+use App\Actions\Admin\Teacher\CreateTeacherAction;
+use App\Actions\Admin\Teacher\DeleteTeacherAction;
+use App\Actions\Admin\Teacher\UpdateTeacherAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\MediaData;
 use App\Data\Admin\Teacher\CreateTeacherData;

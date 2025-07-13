@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\Category\CreateCategoryAction;
-use App\Actions\Category\DeleteCategoryAction;
-use App\Actions\Category\UpdateCategoryAction;
+use App\Actions\Admin\Category\CreateCategoryAction;
+use App\Actions\Admin\Category\DeleteCategoryAction;
+use App\Actions\Admin\Category\UpdateCategoryAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Category\CategoryListItemData;
 use App\Data\Admin\Category\CreateCategoryData;

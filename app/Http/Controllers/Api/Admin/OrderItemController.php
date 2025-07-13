@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\Order\OrderItem\CreateOrderItemAction;
+use App\Actions\Admin\Order\OrderItem\CreateOrderItemAction;
 use App\Data\Admin\Order\OrderItemCreateData;
 use App\Data\Admin\Order\OrderItemData;
 use App\Http\Controllers\Controller;

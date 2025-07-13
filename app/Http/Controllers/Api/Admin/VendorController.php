@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\Vendor\CreateVendorAction;
-use App\Actions\Vendor\DeleteVendorAction;
-use App\Actions\Vendor\UpdateVendorAction;
+use App\Actions\Admin\Vendor\CreateVendorAction;
+use App\Actions\Admin\Vendor\DeleteVendorAction;
+use App\Actions\Admin\Vendor\UpdateVendorAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\MediaData;
 use App\Data\Admin\Vendor\CreateVendorData;

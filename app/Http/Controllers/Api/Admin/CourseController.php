@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\Course\CreateCourseAction;
-use App\Actions\Course\DeleteCourseAction;
-use App\Actions\Course\UpdateCourseAction;
+use App\Actions\Admin\Course\CreateCourseAction;
+use App\Actions\Admin\Course\DeleteCourseAction;
+use App\Actions\Admin\Course\UpdateCourseAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Course\CourseListItemData;
 use App\Data\Admin\Course\CreateCourseData;

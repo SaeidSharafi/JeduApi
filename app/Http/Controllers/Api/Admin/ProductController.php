@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\Product\CreateProductAction;
-use App\Actions\Product\DeleteProductAction;
-use App\Actions\Product\UpdateProductAction;
+use App\Actions\Admin\Product\CreateProductAction;
+use App\Actions\Admin\Product\DeleteProductAction;
+use App\Actions\Admin\Product\UpdateProductAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Product\ProductCreateData;
 use App\Data\Admin\Product\ProductData;

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Actions\Course\CreateCourseAction;
-use App\Actions\Course\DeleteCourseAction;
-use App\Actions\Course\UpdateCourseAction;
+use App\Actions\Admin\Course\CreateCourseAction;
+use App\Actions\Admin\Course\DeleteCourseAction;
+use App\Actions\Admin\Course\UpdateCourseAction;
 use App\Data\Admin\Course\CreateCourseData;
 use App\Models\Course;
 

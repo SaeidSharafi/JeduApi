@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\Term\CreateTermAction;
-use App\Actions\Term\DeleteTermAction;
-use App\Actions\Term\UpdateTermAction;
+use App\Actions\Admin\Term\CreateTermAction;
+use App\Actions\Admin\Term\DeleteTermAction;
+use App\Actions\Admin\Term\UpdateTermAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Term\CreateTermData;
 use App\Data\Admin\Term\ShowTermData;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Actions\Payment\CreatePaymentAction;
+use App\Actions\Admin\Payment\CreatePaymentAction;
 use App\Data\Admin\Payment\PaymentCreateData;
 use App\Enums\OrderItemPaymentTypeEnum;
 use App\Enums\PaymentMethodEnum;

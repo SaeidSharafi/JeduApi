@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin;
 
-use App\Actions\Seminar\CreateSeminarAction;
-use App\Actions\Seminar\DeleteSeminarAction;
-use App\Actions\Seminar\UpdateSeminarAction;
+use App\Actions\Admin\Seminar\CreateSeminarAction;
+use App\Actions\Admin\Seminar\DeleteSeminarAction;
+use App\Actions\Admin\Seminar\UpdateSeminarAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Seminar\CreateSeminarData;
 use App\Data\Admin\Seminar\SeminarListItemData;
