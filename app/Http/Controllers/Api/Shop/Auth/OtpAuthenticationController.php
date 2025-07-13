@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api\Auth;
+namespace App\Http\Controllers\Api\Shop\Auth;
 
 use App\Actions\Auth\AuthenticateUserAction;
 use App\Actions\Auth\VerifyOtpAction;
@@ -13,7 +13,6 @@ use App\Exceptions\InvalidOtpCode;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyOtpRequest;
-use App\Models\User;
 
 final class OtpAuthenticationController extends Controller
 {

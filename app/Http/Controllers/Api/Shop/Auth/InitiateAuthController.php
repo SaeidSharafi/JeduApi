@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api\Auth;
+namespace App\Http\Controllers\Api\Shop\Auth;
 
 use App\Actions\Auth\InitiateAuthAction;
 use App\Contracts\ApiResponseInterface;

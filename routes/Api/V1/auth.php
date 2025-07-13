@@ -9,13 +9,13 @@ use App\Http\Controllers\Api\Admin\Auth\StaffOtpAuthenticationController;
 use App\Http\Controllers\Api\Admin\Auth\StaffPasswordLoginController;
 use App\Http\Controllers\Api\Admin\Auth\StaffResendOtpController;
 use App\Http\Controllers\Api\Admin\Auth\StaffResetPasswordController;
-use App\Http\Controllers\Api\Auth\ForgotPasswordController;
-use App\Http\Controllers\Api\Auth\InitiateAuthController;
-use App\Http\Controllers\Api\Auth\LogoutController;
-use App\Http\Controllers\Api\Auth\OtpAuthenticationController;
-use App\Http\Controllers\Api\Auth\PasswordLoginController;
-use App\Http\Controllers\Api\Auth\ResetPasswordController;
-use App\Http\Controllers\Api\Auth\ResnedOtpController;
+use App\Http\Controllers\Api\Shop\Auth\ForgotPasswordController;
+use App\Http\Controllers\Api\Shop\Auth\InitiateAuthController;
+use App\Http\Controllers\Api\Shop\Auth\LogoutController;
+use App\Http\Controllers\Api\Shop\Auth\OtpAuthenticationController;
+use App\Http\Controllers\Api\Shop\Auth\PasswordLoginController;
+use App\Http\Controllers\Api\Shop\Auth\ResetPasswordController;
+use App\Http\Controllers\Api\Shop\Auth\ResnedOtpController;
 
 Route::prefix('auth')->name('auth.')->group(function (): void {
     Route::post('initiate', InitiateAuthController::class)->name('initiate');
