@@ -43,4 +43,8 @@ return [
         'sand_box' => env('IPPANEL_SANDBOX', false),
     ],
 
+    'email' => [
+        'use_fake_email' => env('EMAIL_USE_FAKE_EMAIL', false),
+    ],
+
 ];

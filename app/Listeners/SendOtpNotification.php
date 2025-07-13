@@ -19,16 +19,20 @@ final class SendOtpNotification
     public function handle(OtpPrepared $event): void
     {
         $identifier = $event->identifier;
-        $guard      = $event->guard;
+        $guard = $event->guard;
 
         $model = $guard === 'staff' ? Staff::class : User::class;
-        $user  = $model::when(
+        $user = $model::when(
             filter_var($identifier, FILTER_VALIDATE_EMAIL),
-            fn (Builder $q) => $q->where('email', $identifier),
-            fn (Builder $q) => $q->where('phone', $identifier)
+            fn(Builder $q) => $q->where('email', $identifier),
+            fn(Builder $q) => $q->where('phone', $identifier)
         )->first();
-        if (app()->isLocal() || app()->environment('testing')) {
+        if (
+            !$user->email
+            && (config('services.email.use_fake_email'))
+        ) {
             $user->email = $user->phone.'@example.com';
+            $user->save();
         }
         $user->notify(new OtpSmsNotification($event));
         if ($user->email) {

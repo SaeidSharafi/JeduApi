@@ -51,9 +51,9 @@ test('OtpEmailNotification contains expected data', function (): void {
     expect($mailData->subject)->toBe('Your Login OTP Code')
         ->and($mailView->toHtml())->toMatch("/\b{$otp->code}\b/m");
 });
-test('user email is set to use phone plus @example.com if email is null in testing environemnt', function (): void {
+test('user email is set to use phone plus @example.com if email is null and use_fake_email is true', function (): void {
     $user = User::factory()->create(['phone' => '09321456987', 'email' => null]);
-
+    config()->set('services.email.use_fake_email', true);
     event(
         new OtpPrepared(
             identifier: '09321456987',
