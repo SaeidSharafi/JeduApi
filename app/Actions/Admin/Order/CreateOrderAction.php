@@ -6,7 +6,9 @@ namespace App\Actions\Admin\Order;
 
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
+use App\Enums\EnrolmentStatusEnum;
 use App\Events\OrderCreatedEvent;
+use App\Models\Enrolment;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
@@ -103,6 +105,22 @@ final readonly class CreateOrderAction
             ]);
 
             $order->items()->createMany($orderItemsData->all());
+            $order->refresh();
+            $order->load('items', 'payments');
+            $order->items->each(function ($item) use ($data) {
+                Enrolment::create([
+                    'order_id'                   => $item->order_id,
+                    'order_item_id'              => $item->id,
+                    'customer_id'                => $data->customer_id,
+                    'product_delivery_option_id' => $item['product_delivery_option_id'],
+                    'enrollment_status'          => EnrolmentStatusEnum::PENDING_PROVISIONING,
+                    'access_start_date'          => null,
+                    'access_end_date'            => null,
+                    'external_enrollment_id'     => null,
+                    'provisioning_data'          => [],
+                    'notes'                      => null,
+                ]);
+            });
 
             return $order->fresh();
         });
