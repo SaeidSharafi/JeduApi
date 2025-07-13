@@ -42,9 +42,9 @@ trait AuthTestTrait
         return $this->actingAs($this->user->fresh(), $guard);
     }
 
-    public function student(): self
+    public function customer(?User $user = null): self
     {
-        $this->user = User::factory()->create();
+        $this->user = $user ?: User::factory()->create();
 
         return $this->actingAs($this->user->fresh(), 'user');
     }
@@ -55,7 +55,8 @@ trait AuthTestTrait
             Staff::factory()->make([
                 'phone'    => '09300000000',
                 'email'    => 'staff@example.com',
-                'is_admin' => true])->toArray()
+                'is_admin' => true,
+            ])->toArray()
         );
 
         return $this->actingAs($this->user->fresh(), $guard);

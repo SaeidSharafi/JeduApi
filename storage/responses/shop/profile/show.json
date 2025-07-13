@@ -1,0 +1,33 @@
+{
+  "message": "موارد کاربر با موفقیت به‌روزرسانی شد.",
+  "data": {
+    "uuid": "0197f45d-868d-70c0-b1bb-4fd86561d767",
+    "phone": "09301234567",
+    "is_profile_completed": true,
+    "first_name": "Saeed",
+    "last_name": "Sharafi",
+    "email": "09301234567@example.com",
+    "phone2": "09326547896",
+    "civil_id": "123456",
+    "civil_id_type": {
+      "value": "passport",
+      "label": "پاسپورت"
+    },
+    "date_of_birth": "1380-01-01",
+    "father_name": "hh",
+    "gender": {
+      "value": "male",
+      "label": "مرد"
+    },
+    "education_level": {
+      "value": "bachelor",
+      "label": "کارشناسی"
+    },
+    "field_of_study": "hghg",
+    "education_status": {
+      "value": "graduated",
+      "label": "فارغ‌التحصیل"
+    }
+  },
+  "metadata": []
+}

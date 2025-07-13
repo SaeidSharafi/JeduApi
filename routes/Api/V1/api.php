@@ -7,3 +7,5 @@ require __DIR__.'/auth.php';
 require __DIR__.'/admin.php';
 require __DIR__.'/catalog.php';
 require __DIR__.'/select_option.php';
+
+require __DIR__.'/shop.php';
