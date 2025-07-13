@@ -79,10 +79,9 @@ describe('OrderController', function () {
 
     // 2. CRUD and permissions
     describe('CRUD operations with permissions', function () {
-        // ---------- REWRITTEN: Store Test ----------
-        it('can create a fully paid order with permissions', function () {
+        it('can create an order with permissions (full payment option)', function () {
             $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
-            $user    = User::factory()->create();
+            $user = User::factory()->create();
             $product = ProductDeliveryOption::factory()->create(['price' => 50000]);
 
             $orderData = [
@@ -114,12 +113,33 @@ describe('OrderController', function () {
                 ->assertJsonPath('data.grand_total', 100000) // 50,000 * 2
                 ->assertJsonPath('data.total_item_count', 1)
                 ->assertJsonPath('data.total_qty_ordered', 2);
+
+            $this->assertDatabaseHas('orders', [
+                'customer_id' => $user->id,
+                'status'      => OrderStatusEnum::PENDING->value,
+                'grand_total' => 100000,
+            ]);
+
+            $this->assertDatabaseHas('order_items', [
+                'order_id'                   => $response->json('data.id'),
+                'product_delivery_option_id' => $product->id,
+                'qty_ordered'                => 2,
+                'price'                      => 50000,
+                'total'                      => 100000,
+                'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            ]);
+
+            $this->assertDatabaseHas('enrolments', [
+                'order_id'          => $response->json('data.id'),
+                'customer_id'       => $user->id,
+                'enrollment_status' => \App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING
+            ]);
+
         });
 
-        // ---------- NEW: Store test for partial payment ----------
         it('can create a partially paid order with permissions', function () {
             $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
-            $user    = User::factory()->create();
+            $user = User::factory()->create();
             $product = ProductDeliveryOption::factory()->create([
                 'price'                   => 100000,
                 'prepayment_amount'       => 20000,
@@ -145,7 +165,6 @@ describe('OrderController', function () {
                 ->assertJsonPath('data.balance_due', 100000);
         });
 
-        // ---------- UPDATED: Show Test ----------
         it('can show an order with permissions', function () {
             $this->authorized_user([PermissionEnum::ORDER_VIEW->value]);
             $order = Order::factory()->create([
@@ -165,13 +184,35 @@ describe('OrderController', function () {
             $this->authorized_user([
                 PermissionEnum::ORDER_UPDATE->value,
             ]);
-            $user  = User::factory()->create();
+            $user = User::factory()->create();
             $order = Order::factory()->create([
                 'customer_id'         => $user->id, 'status' => OrderStatusEnum::PENDING->value,
                 'applied_coupon_code' => 'OLD_COUPON', 'admin_notes' => 'Old notes',
             ]);
+            $prdouct_delivery_option = ProductDeliveryOption::factory()->create([
+                'price' => 1000,
+            ]);
+            $order->items()->create([
+                'product_delivery_option_id' => $prdouct_delivery_option->id,
+                'qty_ordered'                => 1,
+                'name'                       => 'Test Product',
+                'sku'                        => 'TEST_SKU',
+                'vendor_id'                  => App\Models\Vendor::factory()->create()->id,
+                'product_data_snapshot_json' => [],
+                'price'                      => 1000, 'total' => 1000, 'discount_amount' => 0, 'tax_amount' => 0,
+                'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            ]);
+            $order->items->each(function ($item) use ($user) {
+                $item->enrolment()->create([
+                    'customer_id'                => $user->id,
+                    'order_id'                   => $item->order_id,
+                    'product_delivery_option_id' => $item->product_delivery_option_id,
+                    'enrollment_status'          => \App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING,
+                ]);
+            });
+
             $updateData = [
-                'status' => OrderStatusEnum::COMPLETED->value,
+                'status' => OrderStatusEnum::CANCELLED->value,
             ];
             $response = $this->putJson(route('api.v1.admin.order.update', ['order' => $order->id]), $updateData);
             $response->assertStatus(200)
@@ -185,23 +226,32 @@ describe('OrderController', function () {
                     ],
                     'metadata',
                 ])
-                ->assertJsonPath('data.status.value', OrderStatusEnum::COMPLETED->value)
+                ->assertJsonPath('data.status.value', OrderStatusEnum::CANCELLED->value)
                 ->assertJsonPath('data.payment_status.value', PaymentStatusEnum::PENDING->value)
                 ->assertJsonPath('data.id', $order->id);
             $this->assertDatabaseHas('orders', [
                 'id'     => $order->id,
-                'status' => OrderStatusEnum::COMPLETED->value,
+                'status' => OrderStatusEnum::CANCELLED->value,
             ]);
+            $order->items->each(function ($item) use ($user) {
+                $this->assertDatabaseHas('enrolments', [
+                    'customer_id'                => $user->id,
+                    'order_id'                   => $item->order_id,
+                    'product_delivery_option_id' => $item->product_delivery_option_id,
+                    'enrollment_status'          => \App\Enums\EnrolmentStatusEnum::CANCELLED,
+                ]);
+            });
+
         });
 
         it('can delete an order with permissions', function () {
             $this->authorized_user([
                 PermissionEnum::ORDER_DELETE->value,
             ]);
-            $user    = User::factory()->create();
-            $order   = Order::factory()->create(['customer_id' => $user->id]);
+            $user = User::factory()->create();
+            $order = Order::factory()->create(['customer_id' => $user->id]);
             $product = ProductDeliveryOption::factory()->create();
-            $item    = App\Models\OrderItem::factory()->create(
+            $item = App\Models\OrderItem::factory()->create(
                 [
                     'order_id'                   => $order->id,
                     'product_delivery_option_id' => $product->id,
@@ -255,7 +305,6 @@ describe('OrderController', function () {
         ])->assertStatus(403);
     });
 
-    // ---------- REWRITTEN: Validation Tests ----------
     it('validates top-level required fields on create', function () {
         $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
         $response = $this->postJson(route('api.v1.admin.order.store'), []);
