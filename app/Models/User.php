@@ -12,6 +12,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -55,7 +56,7 @@ final class User extends Authenticatable implements MustVerifyEmail
 
     public function hasSetPassword(): bool
     {
-        return ! is_null($this->password);
+        return !is_null($this->password);
     }
 
     public function teacherData(): HasOne
@@ -63,15 +64,20 @@ final class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(Teacher::class);
     }
 
+    public function enrolments(): HasMany
+    {
+        return $this->hasMany(Enrolment::class, 'customer_id');
+    }
+
     public function profileCompleted(): bool
     {
-        return $this->first_name    !== null
-            && $this->last_name     !== null
-            && $this->email         !== null
-            && $this->phone         !== null
-            && $this->civil_id      !== null
+        return $this->first_name !== null
+            && $this->last_name !== null
+            && $this->email !== null
+            && $this->phone !== null
+            && $this->civil_id !== null
             && $this->date_of_birth !== null
-            && $this->father_name   !== null;
+            && $this->father_name !== null;
     }
 
     protected static function boot(): void
@@ -101,7 +107,7 @@ final class User extends Authenticatable implements MustVerifyEmail
     protected function isProfileCompleted(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->profileCompleted(),
+            get: fn() => $this->profileCompleted(),
         );
     }
 

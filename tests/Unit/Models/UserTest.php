@@ -49,3 +49,12 @@ it('return teacher_data relationship', function () {
     $user->load('teacherData');
     expect($user->teacherData->toArray())->toEqual($teacher->toArray());
 });
+
+it('return enrolments relationship', function () {
+    $user = User::factory()->create();
+    $enrolment = App\Models\Enrolment::factory()->create([
+        'customer_id' => $user->id,
+    ])->fresh();
+    $user->load('enrolments');
+    expect($user->enrolments->first()->toArray())->toEqual($enrolment->toArray());
+});

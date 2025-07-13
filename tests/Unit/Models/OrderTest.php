@@ -100,6 +100,28 @@ test('payment status', function () {
         ->toEqual(App\Enums\OrderPaymentStatusEnum::PARTIALLY_PAID->value);
 
 });
+
+test('enrolments relationship', function () {
+    $order = App\Models\Order::factory()->create();
+    $enrolment = App\Models\Enrolment::factory()->create([
+        'order_id' => $order->id,
+    ]);
+
+    expect($order->enrolments)
+        ->toHaveCount(1)
+        ->and($order->enrolments->first())
+        ->toBeInstanceOf(App\Models\Enrolment::class)
+        ->and($order->enrolments->first()->id)
+        ->toEqual($enrolment->id);
+
+    $enrolments = App\Models\Enrolment::factory()->count(3)->create([
+        'order_id' => $order->id,
+    ]);
+    $order->refresh();
+    expect($order->enrolments)
+        ->toHaveCount(4);
+});
+
 test('generate increment ID', function () {
     $order          = App\Models\Order::factory()->create();
     $newIncrementId = App\Models\Order::generateIncrementId();
@@ -109,3 +131,4 @@ test('generate increment ID', function () {
         ->and((int) $newIncrementId)
         ->toEqual((int) $order->increment_id + 1);
 });
+

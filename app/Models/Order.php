@@ -82,6 +82,11 @@ final class Order extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function enrolments(): HasMany
+    {
+        return $this->hasMany(Enrolment::class, 'order_id');
+    }
+
     protected function totalPaid(): Attribute
     {
         return Attribute::make(
