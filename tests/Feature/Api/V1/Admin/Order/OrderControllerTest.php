@@ -10,8 +10,10 @@ use App\Models\Order;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
 use Tests\AuthTestTrait;
+use \Illuminate\Support\Facades\Event;
 
 uses(AuthTestTrait::class);
+covers(\App\Http\Controllers\Api\Admin\OrderController::class);
 
 describe('OrderController', function () {
     // 1. Index filters and sorts
@@ -186,8 +188,11 @@ describe('OrderController', function () {
             ]);
             $user = User::factory()->create();
             $order = Order::factory()->create([
-                'customer_id'         => $user->id, 'status' => OrderStatusEnum::PENDING->value,
-                'applied_coupon_code' => 'OLD_COUPON', 'admin_notes' => 'Old notes',
+                'customer_id'         => $user->id,
+                'status'              => OrderStatusEnum::PENDING->value,
+                'applied_coupon_code' => 'OLD_COUPON',
+                'admin_notes'         => 'Old notes',
+                'grand_total'         => 1000,
             ]);
             $prdouct_delivery_option = ProductDeliveryOption::factory()->create([
                 'price' => 1000,
@@ -199,7 +204,10 @@ describe('OrderController', function () {
                 'sku'                        => 'TEST_SKU',
                 'vendor_id'                  => App\Models\Vendor::factory()->create()->id,
                 'product_data_snapshot_json' => [],
-                'price'                      => 1000, 'total' => 1000, 'discount_amount' => 0, 'tax_amount' => 0,
+                'price'                      => 1000,
+                'total'                      => 1000,
+                'discount_amount'            => 0,
+                'tax_amount'                 => 0,
                 'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             ]);
             $order->items->each(function ($item) use ($user) {
@@ -214,6 +222,9 @@ describe('OrderController', function () {
             $updateData = [
                 'status' => OrderStatusEnum::CANCELLED->value,
             ];
+            Event::fake([
+                \App\Events\OrderStatusUpdatedEvent::class
+            ]);
             $response = $this->putJson(route('api.v1.admin.order.update', ['order' => $order->id]), $updateData);
             $response->assertStatus(200)
                 ->assertJsonStructure([
@@ -229,6 +240,7 @@ describe('OrderController', function () {
                 ->assertJsonPath('data.status.value', OrderStatusEnum::CANCELLED->value)
                 ->assertJsonPath('data.payment_status.value', PaymentStatusEnum::PENDING->value)
                 ->assertJsonPath('data.id', $order->id);
+            Event::assertDispatched(\App\Events\OrderStatusUpdatedEvent::class);
             $this->assertDatabaseHas('orders', [
                 'id'     => $order->id,
                 'status' => OrderStatusEnum::CANCELLED->value,
