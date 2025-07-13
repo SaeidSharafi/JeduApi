@@ -8,7 +8,9 @@ use App\Enums\ProductableEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Models\Category;
 use App\Models\Course;
+use App\Models\DigitalAsset;
 use App\Models\Product;
+use App\Models\Seminar;
 use App\Models\Term;
 use App\Models\Vendor;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -25,19 +27,19 @@ final class ProductFactory extends Factory
         switch ($type) {
             case ProductableEnum::COURSE:
                 $productableType = ProductableEnum::COURSE->value;
-                $productableId   = Course::factory();
+                $productableId = Course::factory();
                 break;
             case ProductableEnum::SEMINAR:
                 $productableType = ProductableEnum::SEMINAR->value;
-                $productableId   = \App\Models\Seminar::factory();
+                $productableId = Seminar::factory();
                 break;
             case ProductableEnum::DIGITAL_ASSET:
                 $productableType = ProductableEnum::DIGITAL_ASSET->value;
-                $productableId   = \App\Models\DigitalAsset::factory();
+                $productableId = DigitalAsset::factory();
                 break;
             default:
                 $productableType = ProductableEnum::COURSE->value;
-                $productableId   = Course::factory();
+                $productableId = Course::factory();
         }
 
         return [
@@ -89,6 +91,36 @@ final class ProductFactory extends Factory
                 ->create([
                     'product_id' => $product->id,
                 ]);
+        });
+    }
+
+    public function useExistingRelations(): self
+    {
+        return $this->state(function (array $attributes) {
+            $vendor = Vendor::inRandomOrder()->first() ?? Vendor::factory()->create();
+            $term = Term::inRandomOrder()->first() ?? Term::factory()->create();
+            $type = $this->faker->randomElement(ProductableEnum::cases());
+
+            switch ($type) {
+                case ProductableEnum::SEMINAR:
+                    $productableType = ProductableEnum::SEMINAR->value;
+                    $productableId = Seminar::inRandomOrder()->first()->id;
+                    break;
+                case ProductableEnum::DIGITAL_ASSET:
+                    $productableType = ProductableEnum::DIGITAL_ASSET->value;
+                    $productableId = DigitalAsset::inRandomOrder()->first()->id;
+                    break;
+                case ProductableEnum::COURSE:
+                default:
+                    $productableType = ProductableEnum::COURSE->value;
+                    $productableId = Course::inRandomOrder()->first()->id;
+            }
+            return [
+                'vendor_id'        => $vendor->id,
+                'term_id'          => $term->id,
+                'productable_type' => $productableType,
+                'productable_id'   => $productableId,
+            ];
         });
     }
 }

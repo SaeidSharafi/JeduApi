@@ -14,13 +14,15 @@ class EnrolmentFactory extends Factory
 
     public function definition(): array
     {
-        $orderItem = OrderItem::factory()->create()->fresh();
         $startData = $this->faker->optional(0.7)->date;
         return [
-            'order_id'                   => $orderItem->order_id,
-            'order_item_id'              => $orderItem->id,
-            'customer_id'                => $orderItem->order->customer_id,
-            'product_delivery_option_id' => $orderItem->product_delivery_option_id,
+            'order_item_id'              => OrderItem::factory(),
+            'order_id'                   => fn(array $attributes
+            ) => OrderItem::find($attributes['order_item_id'])->order->id,
+            'customer_id'                => fn(array $attributes
+            ) => OrderItem::find($attributes['order_item_id'])->order->customer_id,
+            'product_delivery_option_id' => fn(array $attributes
+            ) => OrderItem::find($attributes['order_item_id'])->product_delivery_option_id,
             'enrollment_status'          => $this->faker->randomElement(\App\Enums\EnrolmentStatusEnum::getAllValues()),
             'access_start_date'          => $startData,
             'access_end_date'            => $startData ? Carbon::parse($startData)

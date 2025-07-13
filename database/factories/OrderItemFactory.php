@@ -6,6 +6,7 @@ namespace Database\Factories;
 
 use App\Enums\OrderItemPaymentTypeEnum;
 use App\Enums\OrderItemStatusEnum;
+use App\Models\Enrolment;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
@@ -20,16 +21,23 @@ final class OrderItemFactory extends Factory
     public function definition(): array
     {
         $product = ProductDeliveryOption::factory()->create()->fresh();
+        $productDeliveryOptionFactory = ProductDeliveryOption::factory();
 
         return [
             'order_id'                   => Order::factory(),
-            'product_delivery_option_id' => $product,
+            'product_delivery_option_id' => $productDeliveryOptionFactory,
             'qty_ordered'                => $this->faker->numberBetween(1, 10),
             'payment_type'               => $this->faker->randomElement(OrderItemPaymentTypeEnum::getAllValues()),
-            'name'                       => $this->faker->name(),
-            'sku'                        => $this->faker->word(),
+            'name'                       =>
+                fn(array $attributes
+                ) => ProductDeliveryOption::find($attributes['product_delivery_option_id'])->name,
+            'sku'                        =>
+                fn(array $attributes
+                ) => ProductDeliveryOption::find($attributes['product_delivery_option_id'])->sku,
+            'product_data_snapshot_json' =>
+                fn(array $attributes
+                ) => ProductDeliveryOption::find($attributes['product_delivery_option_id'])->product->toArray(),
             'vendor_id'                  => Vendor::factory(),
-            'product_data_snapshot_json' => $product->toArray(),
             'price'                      => $this->faker->randomNumber(),
             'discount_amount'            => $this->faker->randomNumber(),
             'tax_amount'                 => $this->faker->randomNumber(),
@@ -41,5 +49,39 @@ final class OrderItemFactory extends Factory
             'created_at'                 => Carbon::now(),
             'updated_at'                 => Carbon::now(),
         ];
+    }
+
+    public function useExistingRelations(): static
+    {
+        return $this->state(function (array $attributes) {
+            $productDeliveryOption = ProductDeliveryOption::inRandomOrder()->first() ?? ProductDeliveryOption::factory()->create();
+            $vendor = Vendor::inRandomOrder()->first() ?? Vendor::factory()->create();
+
+            return [
+                'product_delivery_option_id' => $productDeliveryOption->id,
+                'vendor_id'                  => $vendor->id,
+                'name'                       => $productDeliveryOption->name,
+                'sku'                        => $productDeliveryOption->sku,
+                'product_data_snapshot_json' => $productDeliveryOption->product->toArray(),
+            ];
+        });
+    }
+
+    /**
+     * STATE: Create a corresponding Enrolment for this OrderItem.
+     * This is the performant way to create a child record.
+     */
+    public function withEnrolment(): self
+    {
+        return $this->has(
+            Enrolment::factory()->state(function (array $attributes, OrderItem $orderItem) {
+                return [
+                    'order_id'                   => $orderItem->order_id,
+                    'customer_id'                => $orderItem->order->customer_id,
+                    'product_delivery_option_id' => $orderItem->product_delivery_option_id,
+                ];
+            }),
+            'enrolment' // The name of the hasOne relationship on the OrderItem model
+        );
     }
 }

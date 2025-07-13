@@ -8,6 +8,9 @@ use App\Enums\PermissionEnum;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
+use App\Models\Enrolment;
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\Seminar;
@@ -172,10 +175,22 @@ final class ScribeSeeder extends Seeder
             ->withMedia()
             ->create();
 
-        Product::factory(10)
+        Product::factory(100)
             ->withDeliveryOptions()
+            ->useExistingRelations()
             ->withCategory(3)
             ->create();
+        Order::factory(100)
+            ->useExistingCustomer()
+            ->has(
+                OrderItem::factory()
+                    ->count(rand(1, 3))
+                    ->useExistingRelations()
+                    ->withEnrolment(),
+                'items'
+            )
+            ->create();
+
     }
 
     protected function disableForeignKeyChecks(): void
