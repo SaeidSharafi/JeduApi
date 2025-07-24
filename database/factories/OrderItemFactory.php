@@ -20,7 +20,6 @@ final class OrderItemFactory extends Factory
 
     public function definition(): array
     {
-        $product = ProductDeliveryOption::factory()->create()->fresh();
         $productDeliveryOptionFactory = ProductDeliveryOption::factory();
 
         return [
