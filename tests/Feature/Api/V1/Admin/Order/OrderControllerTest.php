@@ -13,7 +13,6 @@ use Tests\AuthTestTrait;
 use \Illuminate\Support\Facades\Event;
 
 uses(AuthTestTrait::class);
-covers(\App\Http\Controllers\Api\Admin\OrderController::class);
 
 describe('OrderController', function () {
     // 1. Index filters and sorts
