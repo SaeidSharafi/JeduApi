@@ -12,7 +12,7 @@ trait HasAuditor
     public static function bootHasAuditor(): void
     {
         static::creating(function ($model) {
-            $model->created_by = auth()->user()?->id ?: $model->created_by;
+            $model->created_by = auth('staff')->user()?->id ?: $model->created_by;
         });
     }
 
