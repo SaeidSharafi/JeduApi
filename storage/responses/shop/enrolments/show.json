@@ -1,0 +1,44 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "uuid": "019803f5-0dbc-7325-aa7e-852eed356839",
+    "enrollment_status": {
+      "value": "expired",
+      "label": "enums.EnrolmentStatusEnum.expired"
+    },
+    "access_start_date": null,
+    "access_end_date": null,
+    "external_enrollment_id": "65526150",
+    "notes": "maiores",
+    "provisioning_data": [],
+    "is_virtual": true,
+    "product": {
+      "id": 107,
+      "productable_id": 102,
+      "name": "Kaylah Oberbrunner PhD",
+      "short_name": "Myron O'Hara",
+      "short_description": "Eum enim fugit numquam qui aspernatur. Quo aut a reprehenderit dolores perspiciatis repellat. Id aliquid perspiciatis qui aut vero. Accusamus et voluptas illo. Est nobis et laboriosam.",
+      "vendor": {
+        "id": 11,
+        "name": "Hettinger, Carroll and Davis"
+      },
+      "term": {
+        "id": 17,
+        "name": "Fall 1988"
+      },
+      "price": 8060485,
+      "fullfilment_type": {
+        "value": "offline_service",
+        "label": "سرویس آفلاین"
+      },
+      "delivery_method": {
+        "value": "video_platform_spotplayer",
+        "label": "پلتفرم ویدیویی SpotPlayer"
+      },
+      "status": "archived",
+      "productable_type": "digital_asset",
+      "cover": null
+    }
+  },
+  "metadata": []
+}

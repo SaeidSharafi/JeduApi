@@ -2,8 +2,7 @@
 
 namespace App\Data\Shop\MyCourses;
 
-use App\Data\Shop\Product\ProductCardData;
-use App\Data\Shop\Product\ProductData;
+use App\Data\Shop\Product\ProductDeliveryOptionCardData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\EnrolmentStatusEnum;
 use App\Models\OrderItem;
@@ -34,9 +33,11 @@ class EnrolmentData extends Data
         public ?array $provisioning_data,
         public ProductDeliveryOption $productDeliveryOption,
         public OrderItem $orderItem,
-        public ?ProductCardData $product = null,
+        public bool $is_virtual = false,
+        public ?ProductDeliveryOptionCardData $product = null,
     ) {
-        $this->product = ProductCardData::fromModel($productDeliveryOption->product);
+        $this->product = ProductDeliveryOptionCardData::fromModel($productDeliveryOption);
+        $this->is_virtual = $productDeliveryOption->delivery_method->isVirtual();
     }
 
     protected function exceptProperties(): array

@@ -71,6 +71,9 @@ return [
             'invalid_credentials' => 'The provided credentials are incorrect.',
         ],
     ],
+    'enrollments' => [
+        'not_found' => 'Enrollment not found.',
+    ],
     'http_status' => [
         200 => 'OK',
         201 => 'Created',
