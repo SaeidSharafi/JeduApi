@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 final class LogoutController extends Controller
 {
     /**
-     * Logout the current Staff
+     * Logout the current User
      *
      *
      * @group User Authentication
