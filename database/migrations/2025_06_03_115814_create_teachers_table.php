@@ -25,7 +25,7 @@ return new class extends Migration
             $table->date('birth_date')->nullable();
             $table->json('social_links')->nullable();
             $table->foreignId('user_id')->references('id')->on('users')->restrictOnDelete();
-            $table->foreignId('created_by')->nullable()->constrained('staff')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('staff', 'id')->nullOnDelete();
             $table->timestamps();
         });
     }

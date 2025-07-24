@@ -37,7 +37,7 @@ return new class extends Migration
             $table->text('keywords')->nullable()->comment('Comma-separated keywords');
             $table->enum('status', App\Enums\PublicationStatusEnum::getAllValues())
                 ->default(App\Enums\PublicationStatusEnum::DRAFT->value);
-            $table->foreignId('created_by')->nullable()->constrained('staff')->cascadeOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('staff', 'id')->nullOnDelete();
             $this->addMetaTagColumns($table);
             $table->timestamps();
         });

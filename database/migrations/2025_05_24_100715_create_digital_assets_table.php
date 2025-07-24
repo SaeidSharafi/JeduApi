@@ -29,7 +29,7 @@ return new class extends Migration
             $table->text('keywords')->nullable()->comment('Comma-separated keywords');
             $this->addMetaTagColumns($table);
             $table->timestamp('published_at')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('staff')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('staff', 'id')->nullOnDelete();
             $table->timestamps();
         });
     }
