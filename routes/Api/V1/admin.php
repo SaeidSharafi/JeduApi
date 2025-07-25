@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Admin\FileManagement\UploadMediaController;
 use App\Http\Controllers\Api\Admin\FileManagement\UploadPrivateController;
 use App\Http\Controllers\Api\Admin\FileManagement\ViewMediaController;
 use App\Http\Controllers\Api\Admin\FileManagement\ViewPrivateFileController;
+use App\Http\Controllers\Api\Admin\NextPaymentDetailsController;
 use App\Http\Controllers\Api\Admin\OrderController;
 use App\Http\Controllers\Api\Admin\PrivateFileDownloadController;
 
@@ -42,10 +43,13 @@ Route::middleware('auth:staff')->group(function (): void {
             ->only(['index', 'store', 'show', 'update', 'destroy']);
 
         Route::resource('order/{order}/order-item', App\Http\Controllers\Api\Admin\OrderItemController::class)
-            ->only(['index', 'store', 'show']);
+            ->only(['index', 'show']);
 
         Route::resource('order/{order}/payment', App\Http\Controllers\Api\Admin\PaymentController::class)
             ->only(['index', 'store', 'show', 'update', 'destroy']);
+
+        Route::get('order/{order}/next-payment-details', NextPaymentDetailsController::class)
+        ->name('next-payment-details');
 
     });
 });

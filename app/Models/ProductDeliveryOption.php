@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class ProductDeliveryOption extends Model
 {
@@ -49,6 +50,10 @@ final class ProductDeliveryOption extends Model
         return $this->belongsToMany(Teacher::class);
     }
 
+    public function enrolments(): HasMany
+    {
+        return $this->hasMany(Enrolment::class, 'product_delivery_option_id');
+    }
     public function scopeAvailable($query)
     {
         return $query->where('status', PublicationStatusEnum::PUBLISHED)

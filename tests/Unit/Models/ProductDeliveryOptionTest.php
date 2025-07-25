@@ -29,6 +29,7 @@ test('to array', function (): void {
             'available_to'              => $productDeliveryOption->available_to?->format('Y-m-d'),
             'created_at'                => $productDeliveryOption->created_at?->format('Y-m-d H:i:s'),
             'updated_at'                => $productDeliveryOption->updated_at?->format('Y-m-d H:i:s'),
+            'allow_multiple_quantity'   => $productDeliveryOption->allow_multiple_quantity,
         ]);
 
 });

@@ -14,6 +14,7 @@ use App\Data\Admin\Payment\PaymentUpdateData;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * @group Admin - Payments
@@ -30,6 +31,7 @@ final class PaymentController extends Controller
      */
     public function index(Order $order): ApiResponseInterface
     {
+        Gate::authorize('view', $order);
         $payments = $order->payments()
             ->latest()
             ->get();
@@ -54,10 +56,8 @@ final class PaymentController extends Controller
      */
     public function store(PaymentCreateData $data, Order $order, CreatePaymentAction $action): ApiResponseInterface
     {
+        Gate::authorize('create', Order::class);
         $payment = $action->handle($order, $data, auth()->user());
-        if (! $payment) {
-            return response()->error(__('messages.order.amount_to_pay_is_zero'));
-        }
 
         return response()->created(PaymentData::from($payment));
     }
@@ -72,6 +72,7 @@ final class PaymentController extends Controller
      */
     public function show(Order $order, Payment $payment): ApiResponseInterface
     {
+        Gate::authorize('view', $order);
         return response()->success(PaymentData::from($payment));
     }
 
@@ -86,6 +87,7 @@ final class PaymentController extends Controller
      */
     public function update(PaymentUpdateData $request, Order $order, Payment $payment, UpdatePaymentAction $action): ApiResponseInterface
     {
+        Gate::authorize('update', $order);
         $payment = $action->handle($order, $payment, $request);
 
         return response()->success(PaymentData::from($payment));
@@ -103,6 +105,7 @@ final class PaymentController extends Controller
      */
     public function destroy(Order $order, Payment $payment, DeletePaymentAction $action): \Illuminate\Http\JsonResponse
     {
+        Gate::authorize('delete', $order);
         $action->handle($order, $payment);
 
         return response()->noContentJson();

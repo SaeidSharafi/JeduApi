@@ -21,7 +21,7 @@ return new class extends Migration
                 ->nullOnDelete();
             $table->unsignedBigInteger('amount');
             $table->string('method')->comment('e.g., online_gateway, bank_transfer, admin_credit');
-            $table->enum('status', App\Enums\PaymentStatusEnum::getAllValues())
+            $table->enum('status', \App\Enums\Payment\PaymentStatusEnum::getAllValues())
                 ->default('pending')
                 ->comment('pending, completed, failed');
             $table->jsonb('data')->nullable()

@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-use App\Enums\OrderItemPaymentTypeEnum;
-use App\Enums\OrderStatusEnum;
-use App\Enums\PaymentStatusEnum;
+use App\Enums\Order\OrderItemPaymentTypeEnum;
+use App\Enums\Order\OrderStatusEnum;
+use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\PermissionEnum;
+use App\Enums\PublicationStatusEnum;
 use App\Models\Order;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
+use Illuminate\Support\Facades\Event;
 use Tests\AuthTestTrait;
-use \Illuminate\Support\Facades\Event;
 
 uses(AuthTestTrait::class);
 
@@ -80,10 +81,19 @@ describe('OrderController', function () {
 
     // 2. CRUD and permissions
     describe('CRUD operations with permissions', function () {
+        beforeEach(function (){
+            $this->product = \App\Models\Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        }
+        );
         it('can create an order with permissions (full payment option)', function () {
             $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
             $user = User::factory()->create();
-            $product = ProductDeliveryOption::factory()->create(['price' => 50000]);
+
+            $product = ProductDeliveryOption::factory()->create([
+                'product_id' => $this->product->id,
+                'status' => PublicationStatusEnum::PUBLISHED,
+                'price' => 50000
+            ]);
 
             $orderData = [
                 'status'      => OrderStatusEnum::PENDING->value,
@@ -93,7 +103,7 @@ describe('OrderController', function () {
                         'product_delivery_option_id' => $product->id,
                         'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value, // Pay in full
                         'discount_amount'            => 0,
-                        'qty_ordered'                => 2,
+                        'qty_ordered'                => 1,
                         'tax_amount'                 => 0,
                     ],
                 ],
@@ -111,22 +121,22 @@ describe('OrderController', function () {
                         'balance_due', 'items',
                     ],
                 ])
-                ->assertJsonPath('data.grand_total', 100000) // 50,000 * 2
+                ->assertJsonPath('data.grand_total', 50000)
                 ->assertJsonPath('data.total_item_count', 1)
-                ->assertJsonPath('data.total_qty_ordered', 2);
+                ->assertJsonPath('data.total_qty_ordered', 1);
 
             $this->assertDatabaseHas('orders', [
                 'customer_id' => $user->id,
                 'status'      => OrderStatusEnum::PENDING->value,
-                'grand_total' => 100000,
+                'grand_total' => 50000,
             ]);
 
             $this->assertDatabaseHas('order_items', [
                 'order_id'                   => $response->json('data.id'),
                 'product_delivery_option_id' => $product->id,
-                'qty_ordered'                => 2,
+                'qty_ordered'                => 1,
                 'price'                      => 50000,
-                'total'                      => 100000,
+                'total'                      => 50000,
                 'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             ]);
 
@@ -142,6 +152,8 @@ describe('OrderController', function () {
             $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
             $user = User::factory()->create();
             $product = ProductDeliveryOption::factory()->create([
+                'product_id' => $this->product->id,
+                'status' => PublicationStatusEnum::PUBLISHED,
                 'price'                   => 100000,
                 'prepayment_amount'       => 20000,
                 'is_prepayment_available' => true,
@@ -275,7 +287,7 @@ describe('OrderController', function () {
                     'discount_amount'            => 0,
                     'tax_amount'                 => 0,
                     'total'                      => 1000,
-                    'status'                     => App\Enums\OrderItemStatusEnum::ACTIVE,
+                    'status'                     => \App\Enums\Order\OrderItemStatusEnum::COMPLETED,
                 ]
             );
             $response = $this->deleteJson(route('api.v1.admin.order.destroy', ['order' => $order->id]));
@@ -286,6 +298,10 @@ describe('OrderController', function () {
             $this->assertDatabaseMissing('order_items', [
                 'order_id' => $order->id,
             ]);
+
+            $this->assertDatabaseMissing('enrolments', ['order_id' => $order->id]);
+            $this->assertDatabaseMissing('payments', ['order_id' => $order->id]);
+
         });
     });
 

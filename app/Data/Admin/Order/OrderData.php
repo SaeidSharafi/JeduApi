@@ -6,8 +6,8 @@ namespace App\Data\Admin\Order;
 
 use App\Data\Admin\User\ShowUserData;
 use App\Data\Transformer\TranslatableEnumData;
-use App\Enums\OrderPaymentStatusEnum;
-use App\Enums\OrderStatusEnum;
+use App\Enums\Order\OrderPaymentStatusEnum;
+use App\Enums\Order\OrderStatusEnum;
 use Hekmatinasser\Verta\Verta;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\Attributes\DataCollectionOf;

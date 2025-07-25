@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Data\Admin\Payment;
 
 use App\Data\Transformer\TranslatableEnumData;
-use App\Enums\PaymentMethodEnum;
-use App\Enums\PaymentStatusEnum;
+use App\Enums\Payment\PaymentMethodEnum;
+use App\Enums\Payment\PaymentStatusEnum;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;

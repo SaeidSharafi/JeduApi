@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('delivery_method');
             $table->unsignedBigInteger('price');
             $table->integer('capacity')->nullable();
+            $table->boolean('allow_multiple_quantity')->default(false);
             $table->enum('status', App\Enums\PublicationStatusEnum::getAllValues())
                 ->default(App\Enums\PublicationStatusEnum::DRAFT);
             $table->boolean('is_prepayment_available')->default(false);

@@ -75,16 +75,16 @@ test('payments relationship', function () {
 test('payment status', function () {
     $order = App\Models\Order::factory()->create();
     expect($order->payment_status)
-        ->toEqual(App\Enums\OrderPaymentStatusEnum::PENDING->value);
+        ->toEqual(\App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
 
     $payment = App\Models\Payment::factory()->create([
         'order_id' => $order->id,
         'amount'   => $order->grand_total,
-        'status'   => App\Enums\PaymentStatusEnum::COMPLETED,
+        'status'   => \App\Enums\Payment\PaymentStatusEnum::COMPLETED,
     ]);
 
     expect($order->payment_status)
-        ->toEqual(App\Enums\OrderPaymentStatusEnum::PAID->value);
+        ->toEqual(\App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
 
     $order = App\Models\Order::factory()->create(
         [
@@ -94,10 +94,10 @@ test('payment status', function () {
     $payment = App\Models\Payment::factory()->create([
         'order_id' => $order->id,
         'amount'   => 1000,
-        'status'   => App\Enums\PaymentStatusEnum::COMPLETED,
+        'status'   => \App\Enums\Payment\PaymentStatusEnum::COMPLETED,
     ]);
     expect($order->payment_status)
-        ->toEqual(App\Enums\OrderPaymentStatusEnum::PARTIALLY_PAID->value);
+        ->toEqual(\App\Enums\Order\OrderPaymentStatusEnum::PARTIALLY_PAID->value);
 
 });
 

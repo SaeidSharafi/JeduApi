@@ -45,18 +45,40 @@ return [
         'term'          => 'ترم',
     ],
 
-    'errors' => [
+    'errors'      => [
         'model_has_relationship_data'                       => 'رکورد مورد نظر دارای داده‌های مرتبط (:related_model) است و نمی‌توان آن را حذف کرد.',
         'model_has_relationship_data_without_related_model' => 'رکورد مورد نظر دارای داده‌های مرتبط است و نمی‌توان آن را حذف کرد.',
     ],
-    'order' => [
-        'items_already_purchased'  => 'کاربر قبلاً موارد زیر را خریداری کرده‌ است: :products.',
-        'item_already_purchased'   => 'کاربر قبلاً این مورد را خریداری کرده است.',
-        'prepayment_not_available' => 'پرداخت پیش‌پرداخت برای محصول :product در دسترس نیست.',
-        'payment_already_pending'  => 'سفارش :order_id دارای پرداخت در انتظار است.',
-        'amount_to_pay_is_zero'    => 'مبلغ پرداختی برای سفارش :order_id صفر است و نیازی به پرداخت ندارد.',
+    'order'       => [
+        'items_already_purchased'           => 'کاربر قبلاً موارد زیر را خریداری کرده‌ است: :products.',
+        'item_already_purchased'            => 'کاربر قبلاً این مورد را خریداری کرده است.',
+        'prepayment_not_available'          => 'پرداخت پیش‌پرداخت برای محصول :product در دسترس نیست.',
+        'payment_already_pending'           => 'سفارش :order_id دارای پرداخت در انتظار است.',
+        'amount_to_pay_is_zero'             => 'مبلغ پرداختی برای سفارش :order_id صفر است و نیازی به پرداخت ندارد.',
+        'insufficient_capacity'             => 'ظرفیت کافی برای :product وجود ندارد. فقط :available ظرفیت باقی مانده است.',
+        'quantity_not_allowed'              => 'فقط یک مورد از :product می‌تواند خریداری شود.',
+        'discount_exceeds_price'            => 'مبلغ تخفیف برای :product بیشتر از قیمت مورد است.',
+        'items_already_purchased_or_active' => 'کاربر قبلاً موارد زیر را خریداری کرده یا دارای ثبت‌نام فعال است: :products.',
+        'item_not_available'                => 'مورد :product در دسترس نیست.',
+        'already_fully_paid'                => 'سفارش :order_id قبلاً به طور کامل پرداخت شده است.',
+        'no_payment_required'               => 'هیچ پرداختی برای سفارش :order_id مورد نیاز نیست.',
+        'initial_payment_full'              => 'این یک پرداخت کامل و نهایی است که سفارش را به طور کامل تسویه می‌کند.',
+        'initial_payment_partial'           => 'این پرداخت فقط شامل پیش‌پرداخت‌ها می‌باشد. برای تسویه کامل، می‌توانید بعدا پرداخت دیگری اضافه کنید.',
+        'initial_payment_mixed'             => 'این یک پرداخت اولیه ترکیبی است. برخی از موارد به طور کامل پرداخت شده‌اند و برخی فقط هزینه پیش‌پرداخت را پوشش می‌دهند. پرداخت نهایی برای تسویه باقی‌مانده مورد نیاز است.',
+        'final_balance_payment_required'    => 'این عمل پرداخت نهایی را ثبت می‌کند و مبلغ باقی‌مانده برای مواردی که پیش‌پرداخت شده‌اند را تسویه می‌کند.',
+        'final_balance_payment'             => 'پرداخت نهایی',
+        'payment_method_not_supported'      => 'روش پرداخت انتخاب شده پشتیبانی نمی‌شود.',
+        'payment_method_not_available'      => 'روش پرداخت انتخاب شده در دسترس نیست.',
+        'payment_method_required'           => 'روش پرداخت مورد نیاز است.',
+        'payment_method_invalid'            => 'روش پرداخت انتخاب شده نامعتبر است.',
+        'payment_method_not_found'          => 'روش پرداخت مشخص شده یافت نشد.',
+        'payment_method_not_configured'     => 'روش پرداخت پیکربندی نشده است.',
+        'payment_method_disabled'           => 'روش پرداخت در حال حاضر غیرفعال است.',
+        'payment_method_unavailable'        => 'روش پرداخت در حال حاضر در دسترس نیست.',
+        'payment_method_error'              => 'خطایی در روش پرداخت رخ داده است. لطفاً دوباره تلاش کنید.',
+        'payment_method_not_allowed'        => 'روش پرداخت انتخاب شده برای این سفارش مجاز نیست.',
     ],
-    'auth' => [
+    'auth'        => [
         'doesnot_have_password' => 'کاربر رمز عبور ندارد.',
         'password_reset'        => 'رمز عبور شما با موفقیت تغییر یافت!',
         'otp'                   => [
@@ -68,7 +90,7 @@ return [
             'type_mismatch'  => 'نوع کد تأیید با نوع مورد انتظار مطابقت ندارد.',
             'throttle'       => 'لطفاً قبل از تلاش مجدد برای ارسال کد تأیید، :seconds ثانیه صبر کنید.',
         ],
-        'login' => [
+        'login'                 => [
             'success'             => 'کاربر با موفقیت وارد سیستم شد.',
             'not_found'           => 'کاربری با این شماره تلفن یا ایمیل یافت نشد.',
             'invalid_credentials' => 'اطلاعات کاربری وارد شده نادرست است.',

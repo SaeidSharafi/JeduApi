@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\Order;
 
 use App\Data\Transformer\TranslatableEnumData;
-use App\Enums\OrderItemPaymentTypeEnum;
+use App\Enums\Order\OrderItemPaymentTypeEnum;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;

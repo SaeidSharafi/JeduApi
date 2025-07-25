@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\OrderItemStatusEnum;
+use App\Enums\Order\OrderItemStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -35,7 +35,7 @@ return new class extends Migration
             $table->unsignedBigInteger('total_refunded')->default(0);
             $table->integer('qty_refunded')->default(0);
 
-            $table->enum('status', OrderItemStatusEnum::getAllValues())->default(OrderItemStatusEnum::ACTIVE);
+            $table->enum('status', OrderItemStatusEnum::getAllValues())->default(OrderItemStatusEnum::COMPLETED);
             $table->timestamps();
         });
     }

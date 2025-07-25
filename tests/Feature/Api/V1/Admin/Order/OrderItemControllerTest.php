@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Enums\OrderItemPaymentTypeEnum;
+use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
 use App\Models\Vendor;
-
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
 
@@ -93,40 +92,6 @@ describe('Admin OrderItemController', function () {
             'price'                      => 1000,
             'total'                      => 1000,
             'prepayment_amount'          => 200,
-        ]);
-    });
-
-    it('can create a new order item (store)', function () {
-        $this->authorized_user([App\Enums\PermissionEnum::ORDER_CREATE->value]);
-        $product = ProductDeliveryOption::factory()->create()->fresh();
-        $data    = [
-            'product_delivery_option_id' => $product->id,
-            'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
-            'discount_amount'            => 0,
-            'qty_ordered'                => 2,
-            'tax_amount'                 => 0,
-        ];
-        $response = postJson("/api/v1/admin/order/{$this->order->id}/order-item", $data);
-        $response->assertCreated();
-        $response->assertJsonStructure([
-            'message',
-            'data' => [
-                'id', 'Order_id', 'product_delivery_option_id', 'discount_amount', 'qty_ordered', 'tax_amount',
-                'name', 'sku', 'price', 'total', 'payment_type' => ['value', 'label'], 'prepayment_amount',
-                'qty_refunded', 'total_refunded', 'status' => ['value', 'label'], 'vendor', 'product_snapshot',
-            ],
-            'metadata',
-        ]);
-        $response->assertJsonFragment([
-            'Order_id'                   => $this->order->id,
-            'product_delivery_option_id' => $product->id,
-            'qty_ordered'                => 2,
-            'price'                      => $product->price,
-            'total'                      => $product->price * 2,
-            'payment_type'               => [
-                'label' => OrderItemPaymentTypeEnum::FULL_PAYMENT->translate(),
-                'value' => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
-            ],
         ]);
     });
 });

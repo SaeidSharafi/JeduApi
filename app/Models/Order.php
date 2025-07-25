@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\OrderPaymentStatusEnum;
-use App\Enums\OrderStatusEnum;
+use App\Enums\Order\OrderItemPaymentTypeEnum;
+use App\Enums\Order\OrderPaymentStatusEnum;
+use App\Enums\Order\OrderStatusEnum;
+use App\Enums\Payment\PaymentStatusEnum;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class Order extends Model
@@ -87,6 +90,10 @@ final class Order extends Model
         return $this->hasMany(Enrolment::class, 'order_id');
     }
 
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
     protected function totalPaid(): Attribute
     {
         return Attribute::make(
@@ -100,7 +107,7 @@ final class Order extends Model
     protected function balanceDue(): Attribute
     {
         return Attribute::make(
-            get: fn() =>$this->grand_total - $this->total_paid,
+            get: fn() => $this->grand_total - $this->total_paid,
         );
     }
 
@@ -110,7 +117,7 @@ final class Order extends Model
     public function paymentStatus(): Attribute
     {
         return Attribute::make(
-            get: function (){
+            get: function () {
                 $totalPaid = $this->total_paid;
 
                 if ($totalPaid >= $this->grand_total) {
@@ -126,5 +133,4 @@ final class Order extends Model
         );
 
     }
-
 }

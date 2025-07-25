@@ -6,8 +6,8 @@ namespace App\Data\Admin\Order;
 
 use App\Data\Admin\Vendor\ShowVendorData;
 use App\Data\Transformer\TranslatableEnumData;
-use App\Enums\OrderItemPaymentTypeEnum;
-use App\Enums\OrderItemStatusEnum;
+use App\Enums\Order\OrderItemPaymentTypeEnum;
+use App\Enums\Order\OrderItemStatusEnum;
 use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;

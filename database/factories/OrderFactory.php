@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\OrderStatusEnum;
+use App\Enums\Order\OrderStatusEnum;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;

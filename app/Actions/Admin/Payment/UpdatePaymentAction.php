@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Payment;
 
 use App\Data\Admin\Payment\PaymentUpdateData;
-use App\Enums\PaymentStatusEnum;
+use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Order;
 use App\Models\Payment;
 

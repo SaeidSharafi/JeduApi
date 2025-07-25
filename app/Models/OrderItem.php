@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\OrderItemPaymentTypeEnum;
-use App\Enums\OrderItemStatusEnum;
+use App\Enums\Order\OrderItemPaymentTypeEnum;
+use App\Enums\Order\OrderItemStatusEnum;
 use Database\Factories\OrderItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 final class OrderItem extends Model
@@ -50,6 +49,11 @@ final class OrderItem extends Model
     public function enrolment(): HasOne
     {
         return $this->hasOne(Enrolment::class, 'order_item_id');
+    }
+
+    public function productDeliveryOption(): BelongsTo
+    {
+        return $this->belongsTo(ProductDeliveryOption::class);
     }
     protected function casts(): array
     {

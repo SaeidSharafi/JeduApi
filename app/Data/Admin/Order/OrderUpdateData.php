@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Order;
 
-use App\Enums\OrderStatusEnum;
+use App\Enums\Order\OrderStatusEnum;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;

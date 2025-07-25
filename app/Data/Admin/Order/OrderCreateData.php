@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Order;
 
-use App\Enums\OrderItemPaymentTypeEnum;
-use App\Enums\OrderStatusEnum;
+use App\Enums\Order\OrderItemPaymentTypeEnum;
+use App\Enums\Order\OrderStatusEnum;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;

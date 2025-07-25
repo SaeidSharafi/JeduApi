@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\OrderItemPaymentTypeEnum;
-use App\Enums\OrderItemStatusEnum;
+use App\Enums\Order\OrderItemPaymentTypeEnum;
+use App\Enums\Order\OrderItemStatusEnum;
 use App\Models\Enrolment;
 use App\Models\Order;
 use App\Models\OrderItem;

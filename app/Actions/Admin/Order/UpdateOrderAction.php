@@ -6,7 +6,7 @@ namespace App\Actions\Admin\Order;
 
 use App\Data\Admin\Order\OrderUpdateData;
 use App\Enums\EnrolmentStatusEnum;
-use App\Enums\OrderStatusEnum;
+use App\Enums\Order\OrderStatusEnum;
 use App\Events\OrderStatusUpdatedEvent;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;

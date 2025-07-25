@@ -34,22 +34,6 @@ final class OrderItemController extends Controller
     }
 
     /**
-     * Store a newly created order item for an order.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * @responseFile 201 responses/order-item/show.json
-     * @responseFile 403 responses/403.json
-     */
-    public function store(Order $order, OrderItemCreateData $data, CreateOrderItemAction $action)
-    {
-        $orderItem = $action->handle($data, $order);
-        $orderItem->load(['vendor']);
-
-        return response()->created(OrderItemData::from($orderItem));
-    }
-
-    /**
      * Display the specified order item.
      *
      * @return \Illuminate\Http\JsonResponse

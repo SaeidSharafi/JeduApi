@@ -45,19 +45,42 @@ return [
         'term'          => 'Term',
     ],
 
-    'errors' => [
+    'errors'      => [
         'model_has_relationship_data'                       => 'The selected record has related data (:related_model) and cannot be deleted.',
         'model_has_relationship_data_without_related_model' => 'The selected record has related data and cannot be deleted.',
     ],
-    'order' => [
-        'items_already_purchased'     => 'You have already purchased the following items: :products.',
-        'item_already_purchased'      => 'You have already purchased this item.',
-        'prepayment_not_available'    => 'Pre-payment is not available for product :product.',
-        'payment_already_pending'     => 'Order :order_id has a pending payment.',
-        'order_amount_to_pay_is_zero' => 'The amount to pay for order :order_id is zero and does not require payment.',
+    'order'       => [
+        'items_already_purchased'           => 'You have already purchased the following items: :products.',
+        'item_already_purchased'            => 'You have already purchased this item.',
+        'prepayment_not_available'          => 'Pre-payment is not available for product :product.',
+        'order_amount_to_pay_is_zero'       => 'The amount to pay for order :order_id is zero and does not require payment.',
+        'insufficient_capacity'             => 'Not enough capacity for :product. Only :available left.',
+        'quantity_not_allowed'              => 'Only one item of :product can be purchased at a time.',
+        'discount_exceeds_price'            => 'The discount amount for :product exceeds the item price.',
+        'items_already_purchased_or_active' => 'User have already purchased or have an active enrollment for the following items: :products.',
+        'item_not_available'                => 'The item :product is not available for purchase.',
+        'already_fully_paid'                => 'Order :order_id is already fully paid.',
+        'amount_to_pay_is_zero'             => 'The amount to pay for order :order_id is zero.',
+        'no_payment_required'               => 'No payment is required for order :order_id.',
+        'initial_payment_full'              => 'This is a full and final payment that will settle the order completely.',
+        'initial_payment_partial'           => 'This is a payment covering the pre-payment fees. you can add another payment later to make the full payment.',
+        'initial_payment_mixed'             => 'This is an initial mixed payment. It covers the full cost of some items and only the pre-payment fee for others. A final balance payment will be required later.',
+        'final_balance_payment_required'    => 'This action will record the final balance payment, settling the remaining amount for items that were pre-paid.',
+        'final_balance_payment'             => 'Final Balance Payment',
+        'payment_already_pending'           => 'Order :order_id already has a pending payment.',
+        'payment_method_not_supported'      => 'The selected payment method is not supported.',
+        'payment_method_not_available'      => 'The selected payment method is not available.',
+        'payment_method_required'           => 'A payment method is required for this order.',
+        'payment_method_invalid'            => 'The selected payment method is invalid.',
+        'payment_method_not_found'          => 'The specified payment method was not found.',
+        'payment_method_not_configured'     => 'The payment method is not configured correctly.',
+        'payment_method_disabled'           => 'The payment method is currently disabled.',
+        'payment_method_unavailable'        => 'The payment method is currently unavailable.',
+        'payment_method_error'              => 'An error occurred with the payment method. Please try again.',
+        'payment_method_not_allowed'        => 'The selected payment method is not allowed for this order.',
     ],
-    'auth' => [
-        'otp' => [
+    'auth'        => [
+        'otp'   => [
             'invalid_code'          => 'The provided OTP code is invalid.',
             'expired_code'          => 'The OTP code has expired.',
             'already_verified'      => 'The phone number is already verified.',
