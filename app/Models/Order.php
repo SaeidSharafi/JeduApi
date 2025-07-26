@@ -137,17 +137,14 @@ final class Order extends Model
             get: function () {
                 $totalPaid = $this->total_paid;
 
-                if ($this->full_value_grand_total <= 0) {
+                if ($this->grand_total <= 0 && $totalPaid >= 0) {
                     return OrderPaymentStatusEnum::PAID->value;
                 }
 
-                // Rule 1: If the total paid meets or exceeds the TRUE full value, it's PAID.
-                if ($totalPaid >= $this->full_value_grand_total) {
+                if ($totalPaid >= $this->grand_total) {
                     return OrderPaymentStatusEnum::PAID->value;
                 }
 
-                // Rule 2: If ANY payment has been made, it's PARTIALLY_PAID.
-                // This now correctly covers pre-payment orders where total_paid > 0 but is less than the full_value_total.
                 if ($totalPaid > 0) {
                     return OrderPaymentStatusEnum::PARTIALLY_PAID->value;
                 }
@@ -156,6 +153,29 @@ final class Order extends Model
                 return OrderPaymentStatusEnum::PENDING->value;
             }
         );
+    }
 
+    public function overallPaymentStatus(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $totalPaid = $this->total_paid;
+                $fullValue = $this->full_value_grand_total;
+
+                if ($fullValue <= 0) {
+                    return OrderPaymentStatusEnum::PAID->value;
+                }
+
+                if ($totalPaid >= $fullValue) {
+                    return OrderPaymentStatusEnum::PAID->value;
+                }
+
+                if ($totalPaid > 0) {
+                    return OrderPaymentStatusEnum::PARTIALLY_PAID->value;
+                }
+
+                return OrderPaymentStatusEnum::PENDING->value;
+            }
+        );
     }
 }

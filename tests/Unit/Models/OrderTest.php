@@ -127,7 +127,9 @@ test('payment status', function () {
     ]);
     $order->refresh();
     expect($order->payment_status)
-        ->toEqual(OrderPaymentStatusEnum::PARTIALLY_PAID->value);
+        ->toEqual(OrderPaymentStatusEnum::PAID->value)
+        ->and($order->overall_payment_status)
+        ->toEqual(\App\Enums\Order\OrderPaymentStatusEnum::PARTIALLY_PAID->value);
 
 });
 

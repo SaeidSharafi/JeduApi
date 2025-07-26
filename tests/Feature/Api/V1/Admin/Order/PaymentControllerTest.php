@@ -177,6 +177,7 @@ it('create payment successfully', function () {
     $this->assertEquals($order->total_paid, 3000);
     $this->assertEquals($order->balance_due, 0);
     $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->overall_payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
 });
 
 it('create partiall payment successfully', function () {
@@ -260,7 +261,8 @@ it('create partiall payment successfully', function () {
 
     $this->assertEquals($order->total_paid, 500);
     $this->assertEquals($order->balance_due, 2500);
-    $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PARTIALLY_PAID->value);
+    $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->overall_payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PARTIALLY_PAID->value);
 });
 it('prevent creating payment if amount to pay is 0', function () {
     $product = App\Models\ProductDeliveryOption::factory()
@@ -309,6 +311,7 @@ it('prevent creating payment if amount to pay is 0', function () {
     $this->assertEquals($order->total_paid, 0);
     $this->assertEquals($order->balance_due, 0);
     $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->overall_payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
 });
 it('can update payment data', function () {
     $payment = App\Models\Payment::factory()->create([
@@ -407,6 +410,7 @@ it('can delete payment', function () {
     $this->assertEquals($order->total_paid, 3000);
     $this->assertEquals($order->balance_due, 0);
     $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->overall_payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
 
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_DELETE]);
     $response = $this->deleteJson(route('api.v1.admin.payment.destroy',
@@ -425,4 +429,5 @@ it('can delete payment', function () {
     $this->assertEquals($order->total_paid, 0);
     $this->assertEquals($order->balance_due, 3000);
     $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
+    $this->assertEquals($order->overall_payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
 });
