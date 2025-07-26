@@ -33,7 +33,7 @@ final class ProductDeliveryOptionFactory extends Factory
             'fulfillment_type'          => $ftype,
             'delivery_method'           => $pdoType,
             'price'                     => $this->faker->randomNumber(),
-            'capacity'                  => $this->faker->randomNumber(),
+            'capacity'                  => random_int(1,100),
             'status'                    => $this->faker->randomElement(PublicationStatusEnum::getAllValues()),
             'is_prepayment_available'   => $this->faker->boolean(),
             'prepayment_amount'         => $this->faker->randomNumber(),
