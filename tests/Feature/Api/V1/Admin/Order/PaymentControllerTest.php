@@ -356,8 +356,116 @@ it('can update payment data', function () {
         'admin_notes' => 'Updated payment',
     ]);
 });
+it('can not change completed payment status', function () {
+    $payment = App\Models\Payment::factory()->create([
+        'order_id'    => App\Models\Order::factory()->create(),
+        'customer_id' => $this->customer->id,
+        'created_by'  => null,
+        'amount'      => 1000,
+        'method'      => PaymentMethodEnum::ONLINE_GATEWAY,
+        'status'      => PaymentStatusEnum::COMPLETED,
+        'admin_notes' => 'Initial payment',
+    ]);
 
+    $data = [
+        'status'      => PaymentStatusEnum::PENDING,
+        'admin_notes' => 'Updated payment',
+    ];
+    $this->authorized_user([App\Enums\PermissionEnum::ORDER_UPDATE]);
+    $response = $this->putJson(route('api.v1.admin.payment.update',
+        ['order' => $payment->order_id, 'payment' => $payment->id]), $data);
+    $response->assertUnprocessable();
+    $response->assertJsonValidationErrors(
+        ['status' => __('messages.order.payment.update_completed_payment_status_error')]
+    );
+    $payment->refresh();
+    $this->assertDatabaseHas('payments', [
+        'id'          => $payment->id,
+        'order_id'    => $payment->order_id,
+        'customer_id' => $this->customer->id,
+        'created_by'  => null,
+        'amount'      => 1000,
+        'method'      => PaymentMethodEnum::ONLINE_GATEWAY->value,
+        'status'      => PaymentStatusEnum::COMPLETED->value,
+        'admin_notes' => 'Initial payment',
+    ]);
+});
 it('can delete payment', function () {
+    $product1 = App\Models\ProductDeliveryOption::factory()
+        ->create([
+            'price'                   => 1000,
+            'is_prepayment_available' => false,
+        ]);
+    $product2 = App\Models\ProductDeliveryOption::factory()
+        ->create([
+            'price'                   => 2000,
+            'is_prepayment_available' => false,
+        ]);
+    $items = [
+        [
+            'qty_ordered'                => 1,
+            'product_delivery_option_id' => $product1->id,
+            'total'                      => $product1->price,
+            'price'                      => $product1->price,
+            'discount_amount'            => 0,
+            'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'tax_amount'                 => 0,
+        ],
+        [
+            'qty_ordered'                => 1,
+            'product_delivery_option_id' => $product2->id,
+            'total'                      => $product2->price,
+            'price'                      => $product2->price,
+            'discount_amount'            => 0,
+            'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'tax_amount'                 => 0,
+        ]
+    ];
+
+    $order = \App\Models\Order::factory()
+        ->withCalculatedTotals($items)
+        ->create(
+            [
+                'customer_id' => $this->customer->id,
+            ]
+        );
+
+    $payment = App\Models\Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $this->customer->id,
+        'amount'      => 3000,
+        'method'      => PaymentMethodEnum::ONLINE_GATEWAY,
+        'status'      => PaymentStatusEnum::PENDING,
+        'admin_notes' => 'Initial payment',
+    ]);
+    $order->refresh();
+
+    $this->assertEquals($order->total_paid, 0);
+    $this->assertEquals($order->balance_due, 3000);
+    $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
+    $this->assertEquals($order->overall_payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
+
+    $this->authorized_user([App\Enums\PermissionEnum::ORDER_DELETE]);
+    $response = $this->deleteJson(route('api.v1.admin.payment.destroy',
+        ['order' => $order->id, 'payment' => $payment->id]));
+    $response->assertNoContent();
+    $this->assertDatabaseMissing('payments', [
+        'id'          => $payment->id,
+        'order_id'    => $order->id,
+        'customer_id' => $this->customer->id,
+        'amount'      => 300,
+        'method'      => PaymentMethodEnum::ONLINE_GATEWAY->value,
+        'status'      => PaymentStatusEnum::COMPLETED->value,
+        'admin_notes' => 'Initial payment',
+    ]);
+    $order->refresh();
+    $this->assertEquals($order->total_paid, 0);
+    $this->assertEquals($order->balance_due, 3000);
+    $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
+    $this->assertEquals($order->overall_payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
+});
+
+it('can not delete completed payment', function () {
     $product1 = App\Models\ProductDeliveryOption::factory()
         ->create([
             'price'                   => 1000,
@@ -415,19 +523,22 @@ it('can delete payment', function () {
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_DELETE]);
     $response = $this->deleteJson(route('api.v1.admin.payment.destroy',
         ['order' => $order->id, 'payment' => $payment->id]));
-    $response->assertNoContent();
-    $this->assertDatabaseMissing('payments', [
+    $response->assertUnprocessable();
+    $response->assertJsonValidationErrors(
+        ['payment' => __('messages.order.payment.delete_completed_payment_error')]
+    );
+    $this->assertDatabaseHas('payments', [
         'id'          => $payment->id,
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
-        'amount'      => 300,
+        'amount'      => 3000,
         'method'      => PaymentMethodEnum::ONLINE_GATEWAY->value,
         'status'      => PaymentStatusEnum::COMPLETED->value,
         'admin_notes' => 'Initial payment',
     ]);
     $order->refresh();
-    $this->assertEquals($order->total_paid, 0);
-    $this->assertEquals($order->balance_due, 3000);
-    $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
-    $this->assertEquals($order->overall_payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
+    $this->assertEquals($order->total_paid, 3000);
+    $this->assertEquals($order->balance_due, 0);
+    $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->overall_payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
 });

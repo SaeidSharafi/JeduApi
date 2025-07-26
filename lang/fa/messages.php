@@ -68,6 +68,8 @@ return [
         'final_balance_payment_required'    => 'این عمل پرداخت نهایی را ثبت می‌کند و مبلغ باقی‌مانده برای مواردی که پیش‌پرداخت شده‌اند را تسویه می‌کند.',
         'cannot_delete_order_with_payments' => 'نمی‌توان سفارش :order_id را حذف کرد زیرا دارای پرداختی می‌باشد.',
         'final_balance_payment'             => 'پرداخت نهایی',
+        'cannot_delete_non_pending_order'   => 'تنها سفارش‌هایی با وضعیت "در انتظار" می‌توانند حذف شوند. لطفاً به جای آن، این سفارش را لغو کنید.',
+        'cannot_delete_order_with_status'   => 'نمی‌توان سفارش :order_id را با وضعیت :status حذف کرد.',
         'payment_method_not_supported'      => 'روش پرداخت انتخاب شده پشتیبانی نمی‌شود.',
         'payment_method_not_available'      => 'روش پرداخت انتخاب شده در دسترس نیست.',
         'payment_method_required'           => 'روش پرداخت مورد نیاز است.',
@@ -78,6 +80,10 @@ return [
         'payment_method_unavailable'        => 'روش پرداخت در حال حاضر در دسترس نیست.',
         'payment_method_error'              => 'خطایی در روش پرداخت رخ داده است. لطفاً دوباره تلاش کنید.',
         'payment_method_not_allowed'        => 'روش پرداخت انتخاب شده برای این سفارش مجاز نیست.',
+        'payment'                           => [
+            'delete_completed_payment_error'        => 'نمی‌توان پرداخت تکمیل شده را حذف کرد.',
+            'update_completed_payment_status_error' => 'نمی‌توان وضعیت پرداخت تکمیل شده را به‌روزرسانی کرد.',
+        ],
     ],
     'auth'        => [
         'doesnot_have_password' => 'کاربر رمز عبور ندارد.',

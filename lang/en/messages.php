@@ -68,6 +68,8 @@ return [
         'final_balance_payment_required'    => 'This action will record the final balance payment, settling the remaining amount for items that were pre-paid.',
         'cannot_delete_order_with_payments' => 'Cannot delete order :order_id with payments that have a positive amount.',
         'final_balance_payment'             => 'Final Balance Payment',
+        'cannot_delete_non_pending_order' => 'Only orders with a "Pending" status can be deleted. Consider cancelling this order instead.',
+        'cannot_delete_order_with_status'   => 'Cannot delete order :order_id with status :status.',
         'payment_already_pending'           => 'Order :order_id already has a pending payment.',
         'payment_method_not_supported'      => 'The selected payment method is not supported.',
         'payment_method_not_available'      => 'The selected payment method is not available.',
@@ -79,6 +81,10 @@ return [
         'payment_method_unavailable'        => 'The payment method is currently unavailable.',
         'payment_method_error'              => 'An error occurred with the payment method. Please try again.',
         'payment_method_not_allowed'        => 'The selected payment method is not allowed for this order.',
+        'payment'                           => [
+            'delete_completed_payment_error'        => 'Cannot delete a completed payment.',
+            'update_completed_payment_status_error' => 'Cannot update a completed payment status.',
+        ]
     ],
     'auth'        => [
         'otp'   => [

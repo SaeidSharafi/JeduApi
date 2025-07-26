@@ -274,7 +274,7 @@ describe('OrderController', function () {
                 PermissionEnum::ORDER_DELETE->value,
             ]);
             $user = User::factory()->create();
-            $order = Order::factory()->create(['customer_id' => $user->id]);
+            $order = Order::factory()->create(['customer_id' => $user->id, 'status' => OrderStatusEnum::PENDING]);
             $product = ProductDeliveryOption::factory()->create();
             $item = App\Models\OrderItem::factory()->create(
                 [
@@ -289,7 +289,7 @@ describe('OrderController', function () {
                     'discount_amount'            => 0,
                     'tax_amount'                 => 0,
                     'total'                      => 1000,
-                    'status'                     => \App\Enums\Order\OrderItemStatusEnum::COMPLETED,
+                    'status'                     => \App\Enums\Order\OrderItemStatusEnum::PENDING,
                 ]
             );
             $item->enrolment()->create([
@@ -315,7 +315,8 @@ describe('OrderController', function () {
                 PermissionEnum::ORDER_DELETE->value,
             ]);
             $user = User::factory()->create();
-            $order = Order::factory()->create(['customer_id' => $user->id])->fresh();
+            $order = Order::factory()->create(['customer_id' => $user->id, 'status' => OrderStatusEnum::PENDING])
+                ->fresh();
             $product = ProductDeliveryOption::factory()->create()->fresh();
             $item = App\Models\OrderItem::factory()->create(
                 [
@@ -350,7 +351,10 @@ describe('OrderController', function () {
             $response = $this->deleteJson(route('api.v1.admin.order.destroy', ['order' => $order->id]));
             $response->assertStatus(422);
             $response->assertJsonValidationErrors(
-                ['order' => __('messages.order.cannot_delete_order_with_payments', ['order_id' => $order->increment_id])]
+                [
+                    'order' => __('messages.order.cannot_delete_order_with_payments',
+                        ['order_id' => $order->increment_id])
+                ]
             );
             $this->assertDatabaseHas('orders', [
                 'id' => $order->id,
@@ -361,6 +365,43 @@ describe('OrderController', function () {
 
             $this->assertDatabaseHas('enrolments', ['order_id' => $order->id]);
             $this->assertDatabaseHas('payments', ['order_id' => $order->id]);
+
+        });
+        it('can not delete a non PENDING order', function () {
+            $this->authorized_user([
+                PermissionEnum::ORDER_DELETE->value,
+            ]);
+            $user = User::factory()->create();
+            $order = Order::factory()->create(['customer_id' => $user->id, 'status' => OrderStatusEnum::COMPLETED])
+                ->fresh();
+            $product = ProductDeliveryOption::factory()->create()->fresh();
+            $item = App\Models\OrderItem::factory()->create(
+                [
+                    'order_id'                   => $order->id,
+                    'product_delivery_option_id' => $product->id,
+                    'qty_ordered'                => 1,
+                    'name'                       => 'Delete Product',
+                    'sku'                        => 'SKU_DELETE',
+                    'vendor_id'                  => App\Models\Vendor::factory()->create()->id,
+                    'product_data_snapshot_json' => [],
+                    'price'                      => 1000,
+                    'discount_amount'            => 0,
+                    'tax_amount'                 => 0,
+                    'total'                      => 1000,
+                    'status'                     => \App\Enums\Order\OrderItemStatusEnum::COMPLETED,
+                ]
+            );
+            $response = $this->deleteJson(route('api.v1.admin.order.destroy', ['order' => $order->id]));
+            $response->assertStatus(422);
+            $response->assertJsonValidationErrors(
+                ['order' => __('messages.order.cannot_delete_non_pending_order')]
+            );
+            $this->assertDatabaseHas('orders', [
+                'id' => $order->id,
+            ]);
+            $this->assertDatabaseHas('order_items', [
+                'order_id' => $order->id,
+            ]);
 
         });
     });

@@ -8,6 +8,7 @@ use App\Data\Admin\Payment\PaymentUpdateData;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Order;
 use App\Models\Payment;
+use Illuminate\Validation\ValidationException;
 
 final class UpdatePaymentAction
 {
@@ -16,6 +17,11 @@ final class UpdatePaymentAction
      */
     public function handle(Order $order, Payment $payment, PaymentUpdateData $paymentData): Payment
     {
+        if ($payment->status === PaymentStatusEnum::COMPLETED) {
+            throw ValidationException::withMessages(
+                ['status' => __('messages.order.payment.update_completed_payment_status_error')]
+            );
+        }
 
         if ($paymentData->status) {
             $payment->status = PaymentStatusEnum::from($paymentData->status);
