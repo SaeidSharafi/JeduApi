@@ -25,8 +25,6 @@ describe('NextPaymentDetailsController', function () {
         // Authorize a user with the correct permission to view orders.
         $this->authorized_user([PermissionEnum::ORDER_VIEW_ANY->value]);
 
-        // Create an order that has a balance due.
-        $order = Order::factory()->create(['grand_total' => 50000]);
         $product = \App\Models\Product::factory()->create([ 'status' => PublicationStatusEnum::PUBLISHED]);
         $pdo = \App\Models\ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
@@ -34,15 +32,19 @@ describe('NextPaymentDetailsController', function () {
             'delivery_method' => 'direct_download',
             'price' => 50000,
         ]);
-        OrderItem::factory()->create([
-            'order_id' => $order->id,
-            'product_delivery_option_id' => $pdo->id,
-            'qty_ordered' => 1,
-            'price' => 50000,
-            'total' => 50000,
-            'payment_type' => OrderItemPaymentTypeEnum::FULL_PAYMENT,
-        ]);
-
+        $items = [
+            [
+                'product_delivery_option_id' => $pdo->id,
+                'qty_ordered'                => 1,
+                'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                'total'                      => $pdo->price,
+                'price'                      => $pdo->price,
+                'name'                       => 'Workshop'
+            ]
+        ];
+        $order = Order::factory()
+            ->withCalculatedTotals($items)
+            ->create();
         // --- Act ---
         // Make a GET request to the invokable controller's route.
         $response = $this->getJson(route('api.v1.admin.next-payment-details', ['order' => $order->id]));

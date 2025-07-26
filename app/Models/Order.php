@@ -8,17 +8,20 @@ use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderPaymentStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Traits\HasAuditor;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 final class Order extends Model
 {
     /** @use HasFactory<OrderFactory> */
     use HasFactory;
+    use HasAuditor;
 
     protected $fillable
         = [
@@ -36,9 +39,11 @@ final class Order extends Model
             'discount_amount',
             'tax_amount',
             'grand_total',
+            'full_value_grand_total',
             'currency_code',
             'applied_coupon_code',
             'admin_notes',
+            'created_by',
         ];
 
     protected $with = ['payments'];
@@ -51,6 +56,7 @@ final class Order extends Model
             'discount_amount'        => 'integer',
             'tax_amount'             => 'integer',
             'grand_total'            => 'integer',
+            'full_value_grand_total' => 'integer',
             'status'                 => OrderStatusEnum::class,
             'payment_status'         => OrderPaymentStatusEnum::class,
             'created_at'             => 'datetime:Y-m-d H:i:s',
@@ -97,7 +103,18 @@ final class Order extends Model
     protected function totalPaid(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->payments()->where('status', 'completed')->sum('amount'),
+            get: function () {
+                // Check if the attribute from our 'withSum' query exists.
+                // The name laravel creates is {relation}_{function}_{column}
+                if (isset($this->completed_payments_sum_amount)) {
+                    // If it exists, just return the pre-calculated value. No new query is run.
+                    return (int) $this->completed_payments_sum_amount;
+                }
+
+                // Fallback for when the sum wasn't eager-loaded (e.g., on a 'show' page).
+                // This assumes the 'payments' relationship has already been loaded.
+                return $this->payments->where('status', 'completed')->sum('amount');
+            }
         );
     }
 
@@ -107,7 +124,7 @@ final class Order extends Model
     protected function balanceDue(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->grand_total - $this->total_paid,
+            get: fn() => $this->full_value_grand_total - $this->total_paid,
         );
     }
 
@@ -120,14 +137,22 @@ final class Order extends Model
             get: function () {
                 $totalPaid = $this->total_paid;
 
-                if ($totalPaid >= $this->grand_total) {
+                if ($this->full_value_grand_total <= 0) {
                     return OrderPaymentStatusEnum::PAID->value;
                 }
 
+                // Rule 1: If the total paid meets or exceeds the TRUE full value, it's PAID.
+                if ($totalPaid >= $this->full_value_grand_total) {
+                    return OrderPaymentStatusEnum::PAID->value;
+                }
+
+                // Rule 2: If ANY payment has been made, it's PARTIALLY_PAID.
+                // This now correctly covers pre-payment orders where total_paid > 0 but is less than the full_value_total.
                 if ($totalPaid > 0) {
                     return OrderPaymentStatusEnum::PARTIALLY_PAID->value;
                 }
 
+                // Rule 3: If no payment has been made, it's PENDING.
                 return OrderPaymentStatusEnum::PENDING->value;
             }
         );

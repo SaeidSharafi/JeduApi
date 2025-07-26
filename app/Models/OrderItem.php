@@ -10,6 +10,7 @@ use Database\Factories\OrderItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 final class OrderItem extends Model
@@ -46,6 +47,7 @@ final class OrderItem extends Model
     {
         return $this->belongsTo(Vendor::class);
     }
+
     public function enrolment(): HasOne
     {
         return $this->hasOne(Enrolment::class, 'order_item_id');
@@ -54,6 +56,11 @@ final class OrderItem extends Model
     public function productDeliveryOption(): BelongsTo
     {
         return $this->belongsTo(ProductDeliveryOption::class);
+    }
+
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class, 'order_item_id');
     }
     protected function casts(): array
     {

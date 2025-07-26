@@ -76,10 +76,9 @@ describe('UpdateOrderAndEnrollmentStatusesListener', function () {
             'enrollment_status' => EnrolmentStatusEnum::PENDING_PROVISIONING->value,
         ]);
 
-        // The pre-payment item is NOT complete because the order is not fully paid
         assertDatabaseHas('order_items', [
             'id' => $inPersonItem->id,
-            'status' => OrderItemStatusEnum::PENDING->value,
+            'status' => OrderItemStatusEnum::COMPLETED->value,
         ]);
         // The full-payment item IS complete because its share of the payment was covered
         assertDatabaseHas('order_items', [

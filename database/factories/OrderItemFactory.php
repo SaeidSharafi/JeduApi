@@ -37,13 +37,13 @@ final class OrderItemFactory extends Factory
                 fn(array $attributes
                 ) => ProductDeliveryOption::find($attributes['product_delivery_option_id'])->product->toArray(),
             'vendor_id'                  => Vendor::factory(),
-            'price'                      => $this->faker->randomNumber(),
-            'discount_amount'            => $this->faker->randomNumber(),
-            'tax_amount'                 => $this->faker->randomNumber(),
-            'total'                      => $this->faker->randomNumber(),
-            'prepayment_amount'          => $this->faker->randomNumber(),
-            'total_refunded'             => $this->faker->randomNumber(),
-            'qty_refunded'               => $this->faker->numberBetween(0, 5),
+            'price'                      => 0,
+            'discount_amount'            => 0,
+            'tax_amount'                 => 0,
+            'total'                      => 0,
+            'prepayment_amount'          => 0,
+            'total_refunded'             => 0,
+            'qty_refunded'               => 0,
             'status'                     => $this->faker->randomElement(OrderItemStatusEnum::getAllValues()),
             'created_at'                 => Carbon::now(),
             'updated_at'                 => Carbon::now(),
@@ -53,7 +53,8 @@ final class OrderItemFactory extends Factory
     public function useExistingRelations(): static
     {
         return $this->state(function (array $attributes) {
-            $productDeliveryOption = ProductDeliveryOption::inRandomOrder()->first() ?? ProductDeliveryOption::factory()->create();
+            $productDeliveryOption = ProductDeliveryOption::inRandomOrder()->first() ??
+                ProductDeliveryOption::factory()->create();
             $vendor = Vendor::inRandomOrder()->first() ?? Vendor::factory()->create();
 
             return [

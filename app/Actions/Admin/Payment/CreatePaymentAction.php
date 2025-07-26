@@ -114,7 +114,7 @@ final class CreatePaymentAction
     ): Payment {
         $payment = $order->payments()->create([
             'customer_id' => $order->customer_id,
-            'staff_id'    => $adminUser->id,
+            'created_by'  => $adminUser->id,
             'amount'      => $amount,
             'method'      => $method,
             'status'      => $status,
@@ -142,18 +142,7 @@ final class CreatePaymentAction
 
         // SCENARIO 1: This is the very first payment for the order.
         if (!$hasCompletedPayments) {
-            $initialAmount = 0.0;
-            foreach ($order->items as $item) {
-                // If an item is full payment, its entire total is due now.
-                if ($item->payment_type === OrderItemPaymentTypeEnum::FULL_PAYMENT) {
-                    $initialAmount += $item->total;
-                } // If an item is pre-payment, only its prepayment_amount is due now.
-                elseif ($item->payment_type === OrderItemPaymentTypeEnum::PRE_PAYMENT) {
-                    $initialAmount += ($item->prepayment_amount ?? 0) * $item->qty_ordered;
-                }
-                // No other types contribute to the initial payment.
-            }
-            return $initialAmount;
+            return $order->items->sum('total');
         }
 
         // SCENARIO 2: An initial payment was already made. The amount due now is simply the remaining balance.

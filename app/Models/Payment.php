@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Traits\HasAuditor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,17 +14,18 @@ final class Payment extends Model
 {
     /** @use HasFactory<\Database\Factories\PaymentFactory> */
     use HasFactory;
+    use HasAuditor;
 
     protected $fillable
         = [
             'order_id',
             'customer_id',
-            'staff_id',
             'amount',
             'method',
             'status',
             'data',
             'admin_notes',
+            'created_by',
         ];
 
     public function order(): BelongsTo

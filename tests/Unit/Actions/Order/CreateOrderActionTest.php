@@ -162,12 +162,17 @@ describe('CreateOrderAction', function () {
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id' => $product,
             'status'     => PublicationStatusEnum::PUBLISHED,
-            'price'      => 10000
+            'price'      => 10000,
+            'capacity'   => 10
         ]);
 
         $items = [
-            new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment',
-                discount_amount: 11000, qty_ordered: 1)
+            new OrderItemCreateData(
+                product_delivery_option_id: $deliveryOption->id,
+                payment_type: 'full_payment',
+                discount_amount: 11000,
+                qty_ordered: 1
+            )
         ];
         $data = new OrderCreateData(status: 'pending', customer_id: $user->id, items: $items, applied_coupon_code: null,
             admin_notes: null);
@@ -295,8 +300,8 @@ describe('CreateOrderAction', function () {
 
         $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         $deliveryOption = ProductDeliveryOption::factory()->create([
-            'product_id'              => $product->id,
-            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'product_id' => $product->id,
+            'status'     => PublicationStatusEnum::PUBLISHED,
         ]);
 
         $items = [

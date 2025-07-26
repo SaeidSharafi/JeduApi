@@ -16,4 +16,5 @@ enum OrderStatusEnum: string
     case CANCELLED  = 'cancelled';
     case FAILED     = 'failed';
     case REFUNDED   = 'refunded';
+    case PARTIALLY_REFUNDED   = 'partially_refunded';
 }

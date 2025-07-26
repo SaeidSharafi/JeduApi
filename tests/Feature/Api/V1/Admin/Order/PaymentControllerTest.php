@@ -17,7 +17,7 @@ it('returns order payments list', function () {
         ->create([
             'order_id'    => $order->id,
             'customer_id' => $this->customer->id,
-            'staff_id'    => $this->user->id,
+            'created_by'  => $this->user->id,
             'amount'      => 1000,
             'method'      => PaymentMethodEnum::ONLINE_GATEWAY,
             'status'      => PaymentStatusEnum::COMPLETED,
@@ -32,7 +32,7 @@ it('returns order payments list', function () {
         'message',
         'data' => [
             [
-                'id', 'order_id', 'customer_id', 'staff_id', 'amount',
+                'id', 'order_id', 'customer_id', 'created_by', 'amount',
                 'method' => ['value', 'label'], 'status' => ['value', 'label'], 'admin_notes',
             ],
         ],
@@ -43,7 +43,7 @@ it('returns order payments list', function () {
         'id'          => $payment->id,
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
-        'staff_id'    => $this->user->id,
+        'created_by'  => $this->user->id,
         'amount'      => $payment->amount,
         'method'      => [
             'label' => PaymentMethodEnum::ONLINE_GATEWAY->translate(),
@@ -62,7 +62,7 @@ it('returns order payment detail', function () {
     $payment = App\Models\Payment::factory()->create([
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
-        'staff_id'    => $this->user->id,
+        'created_by'  => $this->user->id,
         'amount'      => 1000,
         'method'      => PaymentMethodEnum::ONLINE_GATEWAY,
         'status'      => PaymentStatusEnum::COMPLETED,
@@ -73,7 +73,7 @@ it('returns order payment detail', function () {
     $response->assertJsonStructure([
         'message',
         'data' => [
-            'id', 'order_id', 'customer_id', 'staff_id', 'amount',
+            'id', 'order_id', 'customer_id', 'created_by', 'amount',
             'method' => ['value', 'label'], 'status' => ['value', 'label'], 'admin_notes',
         ],
         'metadata',
@@ -83,7 +83,7 @@ it('returns order payment detail', function () {
             'id'          => $payment->id,
             'order_id'    => $order->id,
             'customer_id' => $this->customer->id,
-            'staff_id'    => $this->user->id,
+            'created_by'  => $this->user->id,
             'amount'      => $payment->amount,
             'method'      => [
                 'label' => PaymentMethodEnum::ONLINE_GATEWAY->translate(),
@@ -108,37 +108,34 @@ it('create payment successfully', function () {
             'price'                   => 2000,
             'is_prepayment_available' => false,
         ]);
-    $order = App\Models\Order::factory()->create([
-        'customer_id'      => $this->customer->id,
-        'total_item_count' => 2,
-        'subtotal'         => $product1->price + $product2->price,
-        'grand_total'      => $product1->price + $product2->price,
-        'discount_amount'  => 0,
-        'tax_amount'       => 0,
-    ])->fresh();
 
-    App\Models\OrderItem::factory()
-        ->create([
+    $items = [
+        [
             'qty_ordered'                => 1,
             'product_delivery_option_id' => $product1->id,
             'total'                      => $product1->price,
             'price'                      => $product1->price,
             'discount_amount'            => 0,
-            'order_id'                   => $order->id,
             'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'tax_amount'                 => 0,
-        ]);
-    App\Models\OrderItem::factory()
-        ->create([
+        ],
+        [
             'qty_ordered'                => 1,
             'product_delivery_option_id' => $product2->id,
             'total'                      => $product2->price,
             'price'                      => $product2->price,
             'discount_amount'            => 0,
-            'order_id'                   => $order->id,
             'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'tax_amount'                 => 0,
-        ]);
+        ]
+    ];
+    $order = \App\Models\Order::factory()
+        ->withCalculatedTotals($items)
+        ->create(
+            [
+                'customer_id' => $this->customer->id,
+            ]
+        );
     $data = [
         'method'      => PaymentMethodEnum::BANK_TRANSFER,
         'status'      => PaymentStatusEnum::COMPLETED,
@@ -158,7 +155,7 @@ it('create payment successfully', function () {
                 'id',
                 'order_id',
                 'customer_id',
-                'staff_id',
+                'created_by',
                 'amount',
                 'method',
                 'status',
@@ -170,7 +167,7 @@ it('create payment successfully', function () {
     $this->assertDatabaseHas('payments', [
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
-        'staff_id'    => $this->user->id,
+        'created_by'  => $this->user->id,
         'amount'      => 3000,
         'method'      => PaymentMethodEnum::BANK_TRANSFER->value,
         'status'      => PaymentStatusEnum::COMPLETED->value,
@@ -195,39 +192,33 @@ it('create partiall payment successfully', function () {
             'is_prepayment_available' => true,
             'prepayment_amount'       => 300,
         ]);
-    $order = App\Models\Order::factory()->create([
-        'customer_id'      => $this->customer->id,
-        'total_item_count' => 2,
-        'subtotal'         => $product1->price + $product2->price,
-        'grand_total'      => $product1->price + $product2->price,
-        'discount_amount'  => 0,
-        'tax_amount'       => 0,
-    ])->fresh();
-
-    App\Models\OrderItem::factory()
-        ->create([
+    $items = [
+        [
             'qty_ordered'                => 1,
             'product_delivery_option_id' => $product1->id,
-            'total'                      => $product1->price,
+            'total'                      => $product1->prepayment_amount,
             'price'                      => $product1->price,
             'discount_amount'            => 0,
-            'order_id'                   => $order->id,
             'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
-            'prepayment_amount'          => $product1->prepayment_amount,
             'tax_amount'                 => 0,
-        ]);
-    App\Models\OrderItem::factory()
-        ->create([
+        ],
+        [
             'qty_ordered'                => 1,
             'product_delivery_option_id' => $product2->id,
-            'total'                      => $product2->price,
+            'total'                      => $product2->prepayment_amount,
             'price'                      => $product2->price,
             'discount_amount'            => 0,
-            'order_id'                   => $order->id,
             'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
-            'prepayment_amount'          => $product2->prepayment_amount,
             'tax_amount'                 => 0,
-        ]);
+        ]
+    ];
+    $order = \App\Models\Order::factory()
+        ->withCalculatedTotals($items)
+        ->create(
+            [
+                'customer_id' => $this->customer->id,
+            ]
+        );
     $data = [
         'method'      => PaymentMethodEnum::BANK_TRANSFER,
         'status'      => PaymentStatusEnum::COMPLETED,
@@ -247,7 +238,7 @@ it('create partiall payment successfully', function () {
                 'id',
                 'order_id',
                 'customer_id',
-                'staff_id',
+                'created_by',
                 'amount',
                 'method',
                 'status',
@@ -259,7 +250,7 @@ it('create partiall payment successfully', function () {
     $this->assertDatabaseHas('payments', [
         'order_id'             => $order->id,
         'customer_id'          => $this->customer->id,
-        'staff_id'             => $this->user->id,
+        'created_by'           => $this->user->id,
         'amount'               => 500,
         'method'               => PaymentMethodEnum::BANK_TRANSFER->value,
         'status'               => PaymentStatusEnum::COMPLETED->value,
@@ -323,7 +314,7 @@ it('can update payment data', function () {
     $payment = App\Models\Payment::factory()->create([
         'order_id'    => App\Models\Order::factory()->create(),
         'customer_id' => $this->customer->id,
-        'staff_id'    => null,
+        'created_by'  => null,
         'amount'      => 1000,
         'method'      => PaymentMethodEnum::ONLINE_GATEWAY,
         'status'      => PaymentStatusEnum::PENDING,
@@ -343,7 +334,7 @@ it('can update payment data', function () {
                 'id',
                 'order_id',
                 'customer_id',
-                'staff_id',
+                'created_by',
                 'amount',
                 'method',
                 'status',
@@ -355,7 +346,7 @@ it('can update payment data', function () {
         'id'          => $payment->id,
         'order_id'    => $payment->order_id,
         'customer_id' => $this->customer->id,
-        'staff_id'    => null,
+        'created_by'  => null,
         'amount'      => 1000,
         'method'      => PaymentMethodEnum::ONLINE_GATEWAY->value,
         'status'      => PaymentStatusEnum::COMPLETED->value,
@@ -374,41 +365,38 @@ it('can delete payment', function () {
             'price'                   => 2000,
             'is_prepayment_available' => false,
         ]);
-    $order = App\Models\Order::factory()->create([
-        'customer_id'      => $this->customer->id,
-        'total_item_count' => 2,
-        'subtotal'         => $product1->price + $product2->price,
-        'grand_total'      => $product1->price + $product2->price,
-        'discount_amount'  => 0,
-        'tax_amount'       => 0,
-    ])->fresh();
-
-    App\Models\OrderItem::factory()
-        ->create([
+    $items = [
+        [
             'qty_ordered'                => 1,
             'product_delivery_option_id' => $product1->id,
             'total'                      => $product1->price,
             'price'                      => $product1->price,
             'discount_amount'            => 0,
-            'order_id'                   => $order->id,
             'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'tax_amount'                 => 0,
-        ]);
-    App\Models\OrderItem::factory()
-        ->create([
+        ],
+        [
             'qty_ordered'                => 1,
             'product_delivery_option_id' => $product2->id,
             'total'                      => $product2->price,
             'price'                      => $product2->price,
             'discount_amount'            => 0,
-            'order_id'                   => $order->id,
             'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'tax_amount'                 => 0,
-        ]);
+        ]
+    ];
+
+    $order = \App\Models\Order::factory()
+        ->withCalculatedTotals($items)
+        ->create(
+            [
+                'customer_id' => $this->customer->id,
+            ]
+        );
+
     $payment = App\Models\Payment::factory()->create([
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
-        'staff_id'    => null,
         'amount'      => 3000,
         'method'      => PaymentMethodEnum::ONLINE_GATEWAY,
         'status'      => PaymentStatusEnum::COMPLETED,
@@ -428,7 +416,6 @@ it('can delete payment', function () {
         'id'          => $payment->id,
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
-        'staff_id'    => null,
         'amount'      => 300,
         'method'      => PaymentMethodEnum::ONLINE_GATEWAY->value,
         'status'      => PaymentStatusEnum::COMPLETED->value,

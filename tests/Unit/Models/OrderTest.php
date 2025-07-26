@@ -2,8 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Enums\Order\OrderItemPaymentTypeEnum;
+use App\Enums\Order\OrderPaymentStatusEnum;
+use App\Enums\Payment\PaymentStatusEnum;
+use App\Models\Order;
+
 test('to array', function () {
-    $order = App\Models\Order::factory()->create();
+    $order = App\Models\Order::factory()->create()->fresh();
 
     expect($order->toArray())
         ->toEqual([
@@ -22,17 +27,20 @@ test('to array', function () {
             'discount_amount'        => $order->discount_amount,
             'tax_amount'             => $order->tax_amount,
             'grand_total'            => $order->grand_total,
+            'full_value_grand_total' => $order->full_value_grand_total,
             'currency_code'          => $order->currency_code,
             'applied_coupon_code'    => $order->applied_coupon_code,
             'admin_notes'            => $order->admin_notes,
             'created_at'             => $order->created_at->format('Y-m-d H:i:s'),
             'updated_at'             => $order->updated_at->format('Y-m-d H:i:s'),
+            'created_by'             => $order->created_by,
+            'payments'               => $order->payments->toArray(),
         ]);
 });
 
 test('items relationship', function () {
     $order = App\Models\Order::factory()->create();
-    $item  = App\Models\OrderItem::factory()->create([
+    $item = App\Models\OrderItem::factory()->create([
         'order_id' => $order->id,
     ]);
 
@@ -52,7 +60,7 @@ test('items relationship', function () {
 });
 
 test('payments relationship', function () {
-    $order   = App\Models\Order::factory()->create();
+    $order = App\Models\Order::factory()->create();
     $payment = App\Models\Payment::factory()->create([
         'order_id' => $order->id,
     ]);
@@ -73,31 +81,53 @@ test('payments relationship', function () {
 });
 
 test('payment status', function () {
-    $order = App\Models\Order::factory()->create();
+    $items = [
+        [
+            'qty_ordered'  => 1,
+            'payment_type' => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'total'        => 10000,
+            'price'        => 10000,
+            'name'         => 'Workshop'
+        ]
+    ];
+    $order = Order::factory()
+        ->withCalculatedTotals($items)
+        ->create()
+        ->fresh();
     expect($order->payment_status)
-        ->toEqual(\App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
+        ->toEqual(OrderPaymentStatusEnum::PENDING->value);
 
     $payment = App\Models\Payment::factory()->create([
         'order_id' => $order->id,
         'amount'   => $order->grand_total,
-        'status'   => \App\Enums\Payment\PaymentStatusEnum::COMPLETED,
+        'status'   => PaymentStatusEnum::COMPLETED,
     ]);
-
+    $order->refresh();
     expect($order->payment_status)
-        ->toEqual(\App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
+        ->toEqual(OrderPaymentStatusEnum::PAID->value);
 
-    $order = App\Models\Order::factory()->create(
+    $items = [
         [
-            'grand_total' => 5000,
+            'qty_ordered'  => 1,
+            'payment_type' => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+            'total'        => 5000,
+            'price'        => 10000,
+            'name'         => 'Workshop'
         ]
-    );
+    ];
+    $order = Order::factory()
+        ->withCalculatedTotals($items)
+        ->create()
+        ->fresh();
+
     $payment = App\Models\Payment::factory()->create([
         'order_id' => $order->id,
-        'amount'   => 1000,
-        'status'   => \App\Enums\Payment\PaymentStatusEnum::COMPLETED,
+        'amount'   => 5000,
+        'status'   => PaymentStatusEnum::COMPLETED,
     ]);
+    $order->refresh();
     expect($order->payment_status)
-        ->toEqual(\App\Enums\Order\OrderPaymentStatusEnum::PARTIALLY_PAID->value);
+        ->toEqual(OrderPaymentStatusEnum::PARTIALLY_PAID->value);
 
 });
 
@@ -123,7 +153,7 @@ test('enrolments relationship', function () {
 });
 
 test('generate increment ID', function () {
-    $order          = App\Models\Order::factory()->create();
+    $order = App\Models\Order::factory()->create();
     $newIncrementId = App\Models\Order::generateIncrementId();
 
     expect($newIncrementId)

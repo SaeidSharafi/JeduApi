@@ -31,65 +31,74 @@ describe('GetNextPaymentDetailsAction', function () {
 
         $details = (new GetNextPaymentDetailsAction())->handle($order);
 
-        expect($details->amount_due)->toBe(0);
-        expect($details->payment_type->value)->toBe(NextPaymentTypeEnum::NONE->value);
-        expect($details->summary_description)->toContain(__('messages.order.no_payment_required'));
+        expect($details->amount_due)->toBe(0)
+            ->and($details->payment_type->value)->toBe(NextPaymentTypeEnum::NONE->value)
+            ->and($details->summary_description)->toContain(__('messages.order.no_payment_required'));
     });
 
     // Test for an initial payment that is also a full payment
     it('returns correct details for an initial, full payment', function () {
-        $order = Order::factory()->create(['grand_total' => 15000]);
         $prodcut = \App\Models\Product::factory()->create(['status' => \App\Enums\PublicationStatusEnum::PUBLISHED]);
         $prodcutDeliveryOption = \App\Models\ProductDeliveryOption::factory()->create([
             'product_id' => $prodcut->id,
             'price'      => 15000,
             'status'     => \App\Enums\PublicationStatusEnum::PUBLISHED
         ]);
-        $orderItem = \App\Models\OrderItem::factory()->create([
-            'order_id'                   => $order->id,
-            'product_delivery_option_id' => $prodcutDeliveryOption->id,
-            'qty_ordered'                => 1,
-            'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
-            'total'                      => 15000,
-            'name'                       => 'Full Course'
-        ]);
+        $items = [
+            [
+                'product_delivery_option_id' => $prodcutDeliveryOption->id,
+                'qty_ordered'                => 1,
+                'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                'total'                      => $prodcutDeliveryOption->price,
+                'price'                      => $prodcutDeliveryOption->price,
+                'name'                       => 'Full Course'
+            ]
+        ];
+        $order = Order::factory()
+            ->withCalculatedTotals($items)
+            ->create();
 
         $details = (new GetNextPaymentDetailsAction())->handle($order);
 
-        expect($details->amount_due)->toBe(15000);
-        expect($details->payment_type->value)->toBe('initial_payment');
-        expect($details->summary_description)->toContain('full and final payment');
-        expect($details->line_item_details[0]['items'][0])->toBe('Full Course');
+        expect($details->amount_due)->toBe(15000)
+            ->and($details->payment_type->value)->toBe('initial_payment')
+            ->and($details->summary_description)->toContain('full and final payment')
+            ->and($details->line_item_details[0]['items'][0])->toBe('Full Course');
     });
 
     // Test for an initial payment that is only a pre-payment
     it('returns correct details for an initial pre-payment', function () {
-        $order = Order::factory()->create(['grand_total' => 100000]);
         $prodcut = \App\Models\Product::factory()->create(['status' => \App\Enums\PublicationStatusEnum::PUBLISHED]);
         $prodcutDeliveryOption = \App\Models\ProductDeliveryOption::factory()->create([
             'product_id' => $prodcut->id,
-            'price'      => 15000,
-            'status'     => \App\Enums\PublicationStatusEnum::PUBLISHED
+            'price'      => 100000,
+            'status'     => \App\Enums\PublicationStatusEnum::PUBLISHED,
+            'is_prepayment_available' => true,
+            'prepayment_amount' => 20000
         ]);
-        $orderItem = \App\Models\OrderItem::factory()->create([
-            'order_id'                   => $order->id,
-            'product_delivery_option_id' => $prodcutDeliveryOption->id,
-            'qty_ordered'                => 1,
-            'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
-            'prepayment_amount'          => 20000,
-            'total'                      => 100000,
-            'name'                       => 'Workshop'
-        ]);
+        $items = [
+            [
+                'product_delivery_option_id' => $prodcutDeliveryOption->id,
+                'qty_ordered'                => 1,
+                'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                'total'                      => $prodcutDeliveryOption->prepayment_amount,
+                'price'                      => $prodcutDeliveryOption->price,
+                'name'                       => 'Workshop'
+            ],
+        ];
+        $order = Order::factory()
+            ->withCalculatedTotals($items)
+            ->create()
+            ->fresh();
 
         $details = (new GetNextPaymentDetailsAction())->handle($order);
 
-        expect($details->amount_due)->toBe(20000);
-        expect($details->payment_type->value)->toBe(NextPaymentTypeEnum::INITIAL_PAYMENT->value);
-        expect($details->summary_description)->toContain(__('messages.order.initial_payment_partial'));
-        expect($details->line_item_details[0]['items'][0])->toBe('Workshop');
+        expect($details->amount_due)->toBe(20000)
+            ->and($details->payment_type->value)->toBe(NextPaymentTypeEnum::INITIAL_PAYMENT->value)
+            ->and($details->summary_description)->toContain(__('messages.order.initial_payment_partial'))
+            ->and($details->line_item_details[0]['items'][0])->toBe('Workshop');
     });
     it('returns correct details for an initial pre-payment wit mixed payments', function () {
-        $order = Order::factory()->create(['grand_total' => 170000]);
         $prodcut = \App\Models\Product::factory()->create(['status' => \App\Enums\PublicationStatusEnum::PUBLISHED]);
         $prodcutDeliveryOption = \App\Models\ProductDeliveryOption::factory()->create([
             'product_id' => $prodcut->id,
@@ -97,54 +106,67 @@ describe('GetNextPaymentDetailsAction', function () {
             'status'     => \App\Enums\PublicationStatusEnum::PUBLISHED
         ]);
         $prodcutDeliveryOption2 = \App\Models\ProductDeliveryOption::factory()->create([
-            'product_id' => $prodcut->id,
-            'price'      => 100000,
-            'status'     => \App\Enums\PublicationStatusEnum::PUBLISHED,
+            'product_id'              => $prodcut->id,
+            'price'                   => 100000,
+            'status'                  => \App\Enums\PublicationStatusEnum::PUBLISHED,
             'is_prepayment_available' => true,
-            'prepayment_amount' => 20000
+            'prepayment_amount'       => 20000
         ]);
-        $orderItem = \App\Models\OrderItem::factory()->create([
-            'order_id'                   => $order->id,
-            'product_delivery_option_id' => $prodcutDeliveryOption->id,
-            'qty_ordered'                => 1,
-            'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
-            'prepayment_amount'          => 0,
-            'total'                      => 150000,
-            'name'                       => 'Workshop'
-        ]);
-        $orderItem = \App\Models\OrderItem::factory()->create([
-            'order_id'                   => $order->id,
-            'product_delivery_option_id' => $prodcutDeliveryOption->id,
-            'qty_ordered'                => 1,
-            'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
-            'prepayment_amount'          => 20000,
-            'total'                      => 100000,
-            'name'                       => 'Workshop'
-        ]);
+
+        $items = [
+            [
+                'product_delivery_option_id' => $prodcutDeliveryOption->id,
+                'qty_ordered'                => 1,
+                'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                'total'                      => $prodcutDeliveryOption->price,
+                'price'                      => $prodcutDeliveryOption->price,
+                'name'                       => 'Full Course'
+            ],
+            [
+                'product_delivery_option_id' => $prodcutDeliveryOption2->id,
+                'qty_ordered'                => 1,
+                'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                'total'                      => $prodcutDeliveryOption2->prepayment_amount,
+                'price'                      => $prodcutDeliveryOption2->price,
+                'name'                       => 'Workshop'
+            ]
+        ];
+        $order = Order::factory()
+            ->withCalculatedTotals($items)
+            ->create()
+            ->fresh();
+
         $details = (new GetNextPaymentDetailsAction())->handle($order);
 
-        expect($details->amount_due)->toBe(170000);
-        expect($details->payment_type->value)->toBe(NextPaymentTypeEnum::INITIAL_PAYMENT->value);
-        expect($details->summary_description)->toContain(__('messages.order.initial_payment_mixed'));
-        expect($details->line_item_details[0]['items'][0])->toBe('Workshop');
+        expect($details->amount_due)->toBe(170000)
+            ->and($details->payment_type->value)->toBe(NextPaymentTypeEnum::INITIAL_PAYMENT->value)
+            ->and($details->summary_description)->toContain(__('messages.order.initial_payment_mixed'))
+            ->and($details->line_item_details[0]['items'][0])->toBe('Full Course');
     });
     // Test for a final balance payment
     it('returns correct details for a final balance payment', function () {
         $order = Order::factory()->create(['grand_total' => 100000]);
         $prodcut = \App\Models\Product::factory()->create(['status' => \App\Enums\PublicationStatusEnum::PUBLISHED]);
         $prodcutDeliveryOption = \App\Models\ProductDeliveryOption::factory()->create([
-            'product_id' => $prodcut->id,
-            'price'      => 15000,
-            'status'     => \App\Enums\PublicationStatusEnum::PUBLISHED
+            'product_id'              => $prodcut->id,
+            'price'                   => 100000,
+            'status'                  => \App\Enums\PublicationStatusEnum::PUBLISHED,
+            'is_prepayment_available' => true,
+            'prepayment_amount'       => 20000
         ]);
-        $orderItem = \App\Models\OrderItem::factory()->create([
-            'order_id'                   => $order->id,
-            'product_delivery_option_id' => $prodcutDeliveryOption->id,
-            'qty_ordered'                => 1,
-            'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
-            'total'                      => 100000,
-            'name'                       => 'Workshop'
-        ]);
+        $items = [
+            [
+                'product_delivery_option_id' => $prodcutDeliveryOption->id,
+                'qty_ordered'                => 1,
+                'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                'total'                      => $prodcutDeliveryOption->prepayment_amount,
+                'price'                      => $prodcutDeliveryOption->price,
+                'name'                       => 'Full Course'
+            ]
+        ];
+        $order = Order::factory()
+            ->withCalculatedTotals($items)
+            ->create();
 
         $order->payments()->create([
             'customer_id' => $order->customer_id,
@@ -152,12 +174,13 @@ describe('GetNextPaymentDetailsAction', function () {
             'amount'      => 20000,
             'status'      => \App\Enums\Payment\PaymentStatusEnum::COMPLETED
         ]);
+        $order->refresh();
 
         $details = (new GetNextPaymentDetailsAction())->handle($order->fresh());
 
-        expect($details->amount_due)->toBe(80000); // 100k - 20k
-        expect($details->payment_type->value)->toBe(NextPaymentTypeEnum::FINAL_BALANCE->value);
-        expect($details->summary_description)->toContain(__('messages.order.final_balance_payment_required'));
-        expect($details->line_item_details[0]['items'][0])->toBe('Workshop');
+        expect($details->amount_due)->toBe(80000)
+            ->and($details->payment_type->value)->toBe(NextPaymentTypeEnum::FINAL_BALANCE->value)
+            ->and($details->summary_description)->toContain(__('messages.order.final_balance_payment_required'))
+            ->and($details->line_item_details[0]['items'][0])->toBe('Full Course'); // 100k - 20k
     });
 });

@@ -22,11 +22,11 @@ final class PaymentFactory extends Factory
         return [
             'order_id'    => Order::factory(),
             'customer_id' => User::factory(),
-            'staff_id'    => Staff::factory(),
             'amount'      => $this->faker->numberBetween(1000, 100000), // Amount in cents
             'method'      => $this->faker->randomElement(PaymentMethodEnum::getAllValues()),
             'status'      => $this->faker->randomElement(PaymentStatusEnum::getAllValues()),
             'admin_notes' => $this->faker->optional()->text(200),
+            'created_by'  => Staff::factory(),
             'created_at'  => Carbon::now(),
             'updated_at'  => Carbon::now(),
         ];

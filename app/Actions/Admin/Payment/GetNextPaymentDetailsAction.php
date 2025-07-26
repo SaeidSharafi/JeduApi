@@ -79,7 +79,7 @@ class GetNextPaymentDetailsAction
 
         // Process pre-payment items
         if ($prePaymentItems->isNotEmpty()) {
-            $amount += $prePaymentItems->sum(fn($item) => ($item->prepayment_amount ?? 0) * $item->qty_ordered);
+            $amount += $prePaymentItems->sum('total');
             $lineDetails[] = [
                 'type'  => [
                     'value' => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,

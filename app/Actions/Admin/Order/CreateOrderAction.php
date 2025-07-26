@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Order;
 
 use App\Data\Admin\Order\OrderCreateData;
+use App\Data\Admin\Order\OrderItemCreateData;
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
 use App\Enums\EnrolmentStatusEnum;
+use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Events\OrderCreatedEvent;
@@ -43,6 +45,7 @@ final readonly class CreateOrderAction
 
             $orderItemsData = new Collection();
             $grandTotal = 0;
+            $fullValueGrandTotal = 0;
             $subtotal = 0;
             $totalDiscountAmount = 0;
             $taxAmount = 0;
@@ -62,9 +65,10 @@ final readonly class CreateOrderAction
 
                 $this->validateItem($key, $itemData, $deliveryOption);
 
-                $lineItemNetTotal = ($deliveryOption->price - $itemData->discount_amount + $itemData->tax_amount)
-                    * $itemData->qty_ordered;
-                $lineItemNetTotal = max(0, $lineItemNetTotal);
+                $lineItemNetTotal = $this->calculateLineItemTotal($itemData, $deliveryOption);
+                $lineItemFullValue = max(0, ($deliveryOption->price - $itemData->discount_amount + $itemData->tax_amount) * $itemData->qty_ordered);
+                $fullValueGrandTotal += $lineItemFullValue;
+
                 $grandTotal += $lineItemNetTotal;
 
                 // Aggregate values for storing on the Order model for display/reporting.
@@ -104,6 +108,7 @@ final readonly class CreateOrderAction
                 'discount_amount'        => $totalDiscountAmount,
                 'tax_amount'             => $taxAmount,
                 'grand_total'            => $grandTotal,
+                'full_value_grand_total' => $fullValueGrandTotal,
                 'applied_coupon_code'    => $data->applied_coupon_code,
                 'admin_notes'            => $data->admin_notes,
             ]);
@@ -188,6 +193,12 @@ final readonly class CreateOrderAction
                     ['product' => $deliveryOption->name]),
             ]);
         }
+
+        if ($itemData->payment_type === OrderItemPaymentTypeEnum::PRE_PAYMENT->value && $itemData->discount_amount > 0) {
+            throw ValidationException::withMessages([
+                "items.{$key}" => 'Discounts cannot be applied to pre-payment items.',
+            ]);
+        }
     }
 
     /**
@@ -222,5 +233,15 @@ final readonly class CreateOrderAction
                     ['products' => $purchasedProductNames]),
             ]);
         }
+    }
+
+    private function calculateLineItemTotal(OrderItemCreateData $orderItem, ProductDeliveryOption $deliveryOption): int
+    {
+        if ($orderItem->payment_type === OrderItemPaymentTypeEnum::FULL_PAYMENT->value){
+            return max(0, ($deliveryOption->price - $orderItem->discount_amount + $orderItem->tax_amount) * $orderItem->qty_ordered);
+        }
+
+        return ($deliveryOption->prepayment_amount) * $orderItem->qty_ordered;
+
     }
 }

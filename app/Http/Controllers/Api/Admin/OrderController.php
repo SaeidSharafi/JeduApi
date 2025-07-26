@@ -12,8 +12,10 @@ use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderData;
 use App\Data\Admin\Order\OrderListItemData;
 use App\Data\Admin\Order\OrderUpdateData;
+use App\Enums\Payment\PaymentStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -65,6 +67,11 @@ final class OrderController extends Controller
             ->allowedSorts(['created_at', 'payments.status'])
             ->defaultSort('-created_at')
             ->with(['items.vendor', 'payments'])
+            ->withSum([
+                'payments as completed_payments_sum_amount' => function (Builder $query) {
+                    $query->where('status', PaymentStatusEnum::COMPLETED);
+                }
+            ], 'amount')
             ->paginate(request()->integer('per_page', 15));
 
         return response()->success(OrderListItemData::collect($orders));
@@ -81,7 +88,7 @@ final class OrderController extends Controller
     {
         Gate::authorize('create', Order::class);
         $order = $action->handle($data);
-        $order->load('items.vendor');
+        $order->load('items.vendor', 'payments');
 
         return response()->created(OrderData::from($order));
     }
@@ -96,7 +103,7 @@ final class OrderController extends Controller
     public function show(Order $order): ApiResponseInterface
     {
         Gate::authorize('view', $order);
-        $order->load('items.vendor');
+        $order->load('items.vendor', 'payments');
 
         return response()->success(OrderData::from($order));
     }
@@ -113,7 +120,7 @@ final class OrderController extends Controller
     {
         Gate::authorize('update', $order);
         $order = $action->handle($data, $order);
-        $order->load('items.vendor');
+        $order->load('items.vendor', 'payments');
 
         return response()->success(OrderData::from($order));
     }

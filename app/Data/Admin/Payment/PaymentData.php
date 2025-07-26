@@ -18,7 +18,7 @@ final class PaymentData extends Data
         public int $id,
         public int $order_id,
         public int $customer_id,
-        public ?int $staff_id,
+        public ?int $created_by = null,
         public int $amount,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public PaymentMethodEnum $method,

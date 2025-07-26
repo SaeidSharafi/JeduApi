@@ -20,7 +20,8 @@ describe('CreatePaymentAction', function () {
     beforeEach(function () {
         Event::fake([PaymentCompletedEvent::class]);
         $this->adminUser = \App\Models\Staff::factory()->create();
-        $this->prodcut = \App\Models\Product::factory()->create(['status' => \App\Enums\PublicationStatusEnum::PUBLISHED]);
+        $this->prodcut = \App\Models\Product::factory()
+            ->create(['status' => \App\Enums\PublicationStatusEnum::PUBLISHED]);
         $this->prodcutDeliveryOption = \App\Models\ProductDeliveryOption::factory()->create([
             'product_id' => $this->prodcut->id,
             'price'      => 50000,
@@ -31,16 +32,19 @@ describe('CreatePaymentAction', function () {
 
     // Test creating the first (initial) payment
     it('creates the initial payment for an order', function () {
-        $order = Order::factory()->create(['grand_total' => 50000]);
-
-        OrderItem::factory()->create([
-            'order_id'                   => $order->id,
-            'product_delivery_option_id' => $this->prodcutDeliveryOption->id,
-            'qty_ordered'                => 1,
-            'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
-            'total'                      => 50000,
-            'name'                       => 'Workshop'
-        ]);
+        $items = [
+            [
+                'product_delivery_option_id' => \App\Models\ProductDeliveryOption::factory()->create(),
+                'qty_ordered'                => 1,
+                'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                'price'                      => 50000,
+                'total'                      => 50000,
+                'name'                       => 'Workshop'
+            ]
+        ];
+        $order = Order::factory()
+            ->withCalculatedTotals($items)
+            ->create();
 
         $paymentData = new PaymentCreateData(
             method: 'bank_transfer',
@@ -48,7 +52,7 @@ describe('CreatePaymentAction', function () {
             data: new BankTransferPaymentData(
                 transaction_id: '123',
                 transaction_date: now()->format('Y-m-d'),
-                sender_name: 'Test',notes: null),
+                sender_name: 'Test', notes: null),
             admin_notes: 'Initial payment'
         );
 
@@ -61,21 +65,25 @@ describe('CreatePaymentAction', function () {
 
     // Test creating the final balance payment
     it('creates the final balance payment correctly', function () {
-        $order = Order::factory()->create(['grand_total' => 100000]);
-        OrderItem::factory()->create([
-            'order_id'                   => $order->id,
-            'product_delivery_option_id' => $this->prodcutDeliveryOption->id,
-            'qty_ordered'                => 1,
-            'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
-            'prepayment_amount'          => 20000,
-            'total'                      => 100000,
-            'name'                       => 'Workshop'
-        ]);
+        $items = [
+            [
+                'product_delivery_option_id' => $this->prodcutDeliveryOption->id,
+                'qty_ordered'                => 1,
+                'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                'price'                      => 100000,
+                'total'                      => 20000,
+                'name'                       => 'Workshop'
+            ]
+        ];
+        $order = Order::factory()
+            ->withCalculatedTotals($items)
+            ->create();
+
         $order->payments()->create([
             'customer_id' => $order->customer_id,
-            'method' => PaymentMethodEnum::BANK_TRANSFER->value,
-            'amount' => 20000,
-            'status' => 'completed'
+            'method'      => PaymentMethodEnum::BANK_TRANSFER->value,
+            'amount'      => 20000,
+            'status'      => 'completed'
         ]);
 
         $paymentData = new PaymentCreateData(
@@ -84,7 +92,7 @@ describe('CreatePaymentAction', function () {
             data: new BankTransferPaymentData(
                 transaction_id: '456',
                 transaction_date: today()->format('Y-m-d'),
-                sender_name: 'Test',notes: null
+                sender_name: 'Test', notes: null
             ),
             admin_notes: 'Final payment'
         );
@@ -114,9 +122,9 @@ describe('CreatePaymentAction', function () {
         $order = Order::factory()->create(['grand_total' => 10000]);
         $order->payments()->create([
             'customer_id' => $order->customer_id,
-            'method' => PaymentMethodEnum::BANK_TRANSFER,
-            'amount' => 10000,
-            'status' => 'completed'
+            'method'      => PaymentMethodEnum::BANK_TRANSFER,
+            'amount'      => 10000,
+            'status'      => 'completed'
         ]);
         $data = new BankTransferPaymentData(
             transaction_id: '789',
@@ -124,7 +132,7 @@ describe('CreatePaymentAction', function () {
             sender_name: 'Test', notes: null
         );
         $paymentData = new PaymentCreateData(
-            method:  PaymentMethodEnum::BANK_TRANSFER->value,
+            method: PaymentMethodEnum::BANK_TRANSFER->value,
             status: PaymentStatusEnum::COMPLETED->value,
             data: $data,
             admin_notes: 'Overpayment attempt'
@@ -139,16 +147,17 @@ describe('CreatePaymentAction', function () {
         $order = Order::factory()->create(['grand_total' => 10000]);
 
         OrderItem::factory()->create([
-            'order_id'                   => $order->id,
-            'qty_ordered'                => 1,
-            'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
-            'total'                      => 10000,
-            'name'                       => 'Workshop'
+            'order_id'     => $order->id,
+            'qty_ordered'  => 1,
+            'payment_type' => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'total'        => 10000,
+            'name'         => 'Workshop'
         ]);
 
         // BankTransferPaymentData is missing required fields
         $paymentData = new PaymentCreateData(method: 'bank_transfer', status: 'completed',
-            data: new BankTransferPaymentData(transaction_id: null, transaction_date: null, sender_name: null, notes: null),
+            data: new BankTransferPaymentData(transaction_id: null, transaction_date: null, sender_name: null,
+                notes: null),
             admin_notes: null);
 
         expect(fn() => (new CreatePaymentAction())->handle($order, $paymentData, $this->adminUser))
@@ -157,15 +166,27 @@ describe('CreatePaymentAction', function () {
 
     it('returns null for a free order that already has a completion payment', function () {
         // Arrange: A free order that already has a zero-dollar completed payment
-        $order = Order::factory()->create(['grand_total' => 0]);
+        $items = [
+            [
+                'product_delivery_option_id' => \App\Models\ProductDeliveryOption::factory()->create(),
+                'qty_ordered'                => 1,
+                'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                'total'                      => 0,
+                'name'                       => 'Free Workshop'
+            ]
+        ];
+        $order = Order::factory()
+            ->withCalculatedTotals($items)
+            ->create();
         $order->payments()->create([
-            'amount' => 0,
-            'status' => 'completed',
-            'method' => PaymentMethodEnum::BANK_TRANSFER,
+            'amount'      => 0,
+            'status'      => 'completed',
+            'method'      => PaymentMethodEnum::BANK_TRANSFER,
             'customer_id' => $order->customer_id
         ]);
 
-        $paymentData = new PaymentCreateData(method: 'bank_transfer', status: 'completed', data: null, admin_notes: null);
+        $paymentData = new PaymentCreateData(method: 'bank_transfer', status: 'completed', data: null,
+            admin_notes: null);
 
         // Act
         $result = (new CreatePaymentAction())->handle($order, $paymentData, $this->adminUser);
@@ -176,29 +197,35 @@ describe('CreatePaymentAction', function () {
     });
 
     it('throws validation exception if there is a pending payment', function () {
-        $order = Order::factory()->create(['grand_total' => 10000]);
-
-        OrderItem::factory()->create([
-            'order_id'                   => $order->id,
-            'qty_ordered'                => 1,
-            'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
-            'total'                      => 10000,
-            'name'                       => 'Workshop'
-        ]);
+        $items = [
+            [
+                'product_delivery_option_id' => $this->prodcutDeliveryOption->id,
+                'qty_ordered'                => 1,
+                'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                'total'                      => 10000,
+                'price'                      => 10000,
+                'name'                       => 'Workshop'
+            ]
+        ];
+        $order = Order::factory()
+            ->withCalculatedTotals($items)
+            ->create();
         \App\Models\Payment::factory()->create([
-            'order_id' => $order->id,
-            'status' => PaymentStatusEnum::PENDING->value,
-            'amount' => 10000,
-            'method' => PaymentMethodEnum::BANK_TRANSFER->value,
+            'order_id'    => $order->id,
+            'status'      => PaymentStatusEnum::PENDING->value,
+            'amount'      => 10000,
+            'method'      => PaymentMethodEnum::BANK_TRANSFER->value,
             'customer_id' => $order->customer_id
         ]);
 
         // BankTransferPaymentData is missing required fields
         $paymentData = new PaymentCreateData(method: 'bank_transfer', status: 'completed',
-            data: new BankTransferPaymentData(transaction_id: null, transaction_date: null, sender_name: null, notes: null),
+            data: new BankTransferPaymentData(transaction_id: null, transaction_date: null, sender_name: null,
+                notes: null),
             admin_notes: null);
 
         expect(fn() => (new CreatePaymentAction())->handle($order, $paymentData, $this->adminUser))
-            ->toThrow(ValidationException::class,__('messages.order.payment_already_pending', ['order_id' => $order->increment_id]));
+            ->toThrow(ValidationException::class,
+                __('messages.order.payment_already_pending', ['order_id' => $order->increment_id]));
     });
 });

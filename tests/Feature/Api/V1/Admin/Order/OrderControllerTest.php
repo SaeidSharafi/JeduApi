@@ -53,7 +53,7 @@ describe('OrderController', function () {
             'method'      => 'online_gateway',
             'status'      => PaymentStatusEnum::FAILED->value,
             'admin_notes' => 'payment failed',
-            'staff_id'    => null,
+            'created_by'  => null,
             'customer_id' => $customer->id,
         ]);
         // Filter by status
@@ -81,7 +81,7 @@ describe('OrderController', function () {
 
     // 2. CRUD and permissions
     describe('CRUD operations with permissions', function () {
-        beforeEach(function (){
+        beforeEach(function () {
             $this->product = \App\Models\Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         }
         );
@@ -91,8 +91,8 @@ describe('OrderController', function () {
 
             $product = ProductDeliveryOption::factory()->create([
                 'product_id' => $this->product->id,
-                'status' => PublicationStatusEnum::PUBLISHED,
-                'price' => 50000
+                'status'     => PublicationStatusEnum::PUBLISHED,
+                'price'      => 50000
             ]);
 
             $orderData = [
@@ -152,8 +152,8 @@ describe('OrderController', function () {
             $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
             $user = User::factory()->create();
             $product = ProductDeliveryOption::factory()->create([
-                'product_id' => $this->product->id,
-                'status' => PublicationStatusEnum::PUBLISHED,
+                'product_id'              => $this->product->id,
+                'status'                  => PublicationStatusEnum::PUBLISHED,
                 'price'                   => 100000,
                 'prepayment_amount'       => 20000,
                 'is_prepayment_available' => true,
@@ -166,7 +166,8 @@ describe('OrderController', function () {
                     [
                         'product_delivery_option_id' => $product->id,
                         'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value, // Pay deposit
-                        'discount_amount'            => 0, 'qty_ordered' => 1, 'tax_amount' => 0,
+                        'discount_amount'            => 0, 'qty_ordered' => 1,
+                        'tax_amount'                 => 0,
                     ],
                 ],
             ];
@@ -174,7 +175,7 @@ describe('OrderController', function () {
             $response = $this->postJson(route('api.v1.admin.order.store'), $orderData);
 
             $response->assertStatus(201)
-                ->assertJsonPath('data.grand_total', 100000)
+                ->assertJsonPath('data.grand_total', 20000)
                 ->assertJsonPath('data.balance_due', 100000);
         });
 
@@ -199,11 +200,12 @@ describe('OrderController', function () {
             ]);
             $user = User::factory()->create();
             $order = Order::factory()->create([
-                'customer_id'         => $user->id,
-                'status'              => OrderStatusEnum::PENDING->value,
-                'applied_coupon_code' => 'OLD_COUPON',
-                'admin_notes'         => 'Old notes',
-                'grand_total'         => 1000,
+                'customer_id'            => $user->id,
+                'status'                 => OrderStatusEnum::PENDING->value,
+                'applied_coupon_code'    => 'OLD_COUPON',
+                'admin_notes'            => 'Old notes',
+                'grand_total'            => 1000,
+                'full_value_grand_total' => 1000,
             ]);
             $prdouct_delivery_option = ProductDeliveryOption::factory()->create([
                 'price' => 1000,

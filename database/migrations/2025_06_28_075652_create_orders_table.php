@@ -34,11 +34,13 @@ return new class extends Migration
             $table->unsignedBigInteger('discount_amount')->default(0)->comment('Cart-level discount.');
             $table->unsignedBigInteger('tax_amount')->default(0)->comment('Cart-level tax.');
             $table->unsignedBigInteger('grand_total')->comment('The final, total value of the order.');
+            $table->unsignedBigInteger('full_value_grand_total')->default(0)->comment('calculated as if all items were full-payment.');
 
             // --- Metadata ---
             $table->string('currency_code')->default('IRR');
             $table->string('applied_coupon_code')->nullable();
             $table->text('admin_notes')->nullable();
+            $table->foreignId('created_by')->nullable()->constrained('staff','id')->nullOnDelete();
 
             $table->timestamps();
         });
