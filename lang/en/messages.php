@@ -57,6 +57,7 @@ return [
         'insufficient_capacity'             => 'Not enough capacity for :product. Only :available left.',
         'quantity_not_allowed'              => 'Only one item of :product can be purchased at a time.',
         'discount_exceeds_price'            => 'The discount amount for :product exceeds the item price.',
+        'discount_not_allowed_for_prepayment' => 'Discounts cannot be applied to pre-payment items.',
         'items_already_purchased_or_active' => 'User have already purchased or have an active enrollment for the following items: :products.',
         'item_not_available'                => 'The item :product is not available for purchase.',
         'already_fully_paid'                => 'Order :order_id is already fully paid.',

@@ -181,7 +181,33 @@ describe('CreateOrderAction', function () {
             ->toThrow(ValidationException::class,
                 __('messages.order.discount_exceeds_price', ['product' => $deliveryOption->name]));
     });
+    it('throws validation exception if discount is used for prepayment type', function () {
+        $user = User::factory()->create();
+        $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'product_id'              => $product,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'is_prepayment_available' => true,
+            'prepayment_amount'       => 1000,
+            'price'                   => 10000,
+            'capacity'                => 10
+        ]);
 
+        $items = [
+            new OrderItemCreateData(
+                product_delivery_option_id: $deliveryOption->id,
+                payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                discount_amount: 500,
+                qty_ordered: 1
+            )
+        ];
+        $data = new OrderCreateData(status: 'pending', customer_id: $user->id, items: $items, applied_coupon_code: null,
+            admin_notes: null);
+
+        expect(fn() => (new CreateOrderAction())->handle($data))
+            ->toThrow(ValidationException::class,
+                __('messages.order.discount_not_allowed_for_prepayment'));
+    });
     it('throws validation exception if product or delivery option is not published', function () {
         $user = User::factory()->create();
         $product = Product::factory()->create(['status' => PublicationStatusEnum::DRAFT]);

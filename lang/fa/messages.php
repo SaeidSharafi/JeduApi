@@ -58,6 +58,7 @@ return [
         'insufficient_capacity'             => 'ظرفیت کافی برای :product وجود ندارد. فقط :available ظرفیت باقی مانده است.',
         'quantity_not_allowed'              => 'فقط یک مورد از :product می‌تواند خریداری شود.',
         'discount_exceeds_price'            => 'مبلغ تخفیف برای :product بیشتر از قیمت مورد است.',
+        'discount_not_allowed_for_prepayment' => 'تخفیف‌ها نمی‌توانند برای موارد پیش‌پرداخت اعمال شوند.',
         'items_already_purchased_or_active' => 'کاربر قبلاً موارد زیر را خریداری کرده یا دارای ثبت‌نام فعال است: :products.',
         'item_not_available'                => 'مورد :product در دسترس نیست.',
         'already_fully_paid'                => 'سفارش :order_id قبلاً به طور کامل پرداخت شده است.',

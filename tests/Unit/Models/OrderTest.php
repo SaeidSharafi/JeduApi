@@ -6,6 +6,7 @@ use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderPaymentStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Order;
+use Illuminate\Database\Eloquent\Builder;
 
 test('to array', function () {
     $order = App\Models\Order::factory()->create()->fresh();
@@ -164,3 +165,69 @@ test('generate increment ID', function () {
         ->toEqual((int) $order->increment_id + 1);
 });
 
+test('totalPaid', function (){
+    $order = App\Models\Order::factory()->create();
+    $payment1 = App\Models\Payment::factory()->create([
+        'order_id' => $order->id,
+        'amount'   => 5000,
+        'status'   => PaymentStatusEnum::COMPLETED,
+    ]);
+    $payment2 = App\Models\Payment::factory()->create([
+        'order_id' => $order->id,
+        'amount'   => 3000,
+        'status'   => PaymentStatusEnum::COMPLETED,
+    ]);
+
+    expect($order->total_paid)
+        ->toEqual(8000);
+
+    // Add a payment with a different status
+    $payment3 = App\Models\Payment::factory()->create([
+        'order_id' => $order->id,
+        'amount'   => 2000,
+        'status'   => PaymentStatusEnum::PENDING,
+    ]);
+
+    expect($order->total_paid)
+        ->toEqual(8000); // Should not include the pending payment
+
+    //using withSum
+
+    $orderWithSum = App\Models\Order::withSum([
+        'payments as completed_payments_sum_amount' => function (Builder $query) {
+            $query->where('status', PaymentStatusEnum::COMPLETED);
+        }
+    ], 'amount')
+        ->find($order->id);
+    expect($orderWithSum->total_paid)
+        ->toEqual(8000); // Should match the total paid from the payments relationship
+});
+
+test('paymentStatus edgecase',function (){
+    $items = [
+        [
+            'qty_ordered'  => 1,
+            'payment_type' => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'total'        => 10000,
+            'price'        => 10000,
+            'name'         => 'Workshop'
+        ]
+    ];
+    $order = Order::factory()
+        ->withCalculatedTotals($items)
+        ->create()
+        ->fresh();
+    expect($order->payment_status)
+        ->toEqual(OrderPaymentStatusEnum::PENDING->value);
+
+    $payment = App\Models\Payment::factory()->create([
+        'order_id' => $order->id,
+        'amount'   => $order->grand_total  -100,
+        'status'   => PaymentStatusEnum::COMPLETED,
+    ]);
+    $order->refresh();
+
+
+    expect($order->payment_status)
+        ->toEqual(OrderPaymentStatusEnum::PARTIALLY_PAID->value); // Should still be PAID as the first payment is completed
+});

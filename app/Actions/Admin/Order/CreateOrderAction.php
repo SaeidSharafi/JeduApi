@@ -196,7 +196,7 @@ final readonly class CreateOrderAction
 
         if ($itemData->payment_type === OrderItemPaymentTypeEnum::PRE_PAYMENT->value && $itemData->discount_amount > 0) {
             throw ValidationException::withMessages([
-                "items.{$key}" => 'Discounts cannot be applied to pre-payment items.',
+                "items.{$key}" => __('messages.order.discount_not_allowed_for_prepayment'),
             ]);
         }
     }
