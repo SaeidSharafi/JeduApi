@@ -66,6 +66,7 @@ return [
         'initial_payment_partial'           => 'This is a payment covering the pre-payment fees. you can add another payment later to make the full payment.',
         'initial_payment_mixed'             => 'This is an initial mixed payment. It covers the full cost of some items and only the pre-payment fee for others. A final balance payment will be required later.',
         'final_balance_payment_required'    => 'This action will record the final balance payment, settling the remaining amount for items that were pre-paid.',
+        'cannot_delete_order_with_payments' => 'Cannot delete order :order_id with payments that have a positive amount.',
         'final_balance_payment'             => 'Final Balance Payment',
         'payment_already_pending'           => 'Order :order_id already has a pending payment.',
         'payment_method_not_supported'      => 'The selected payment method is not supported.',

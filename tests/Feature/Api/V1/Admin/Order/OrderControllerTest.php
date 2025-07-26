@@ -292,6 +292,12 @@ describe('OrderController', function () {
                     'status'                     => \App\Enums\Order\OrderItemStatusEnum::COMPLETED,
                 ]
             );
+            $item->enrolment()->create([
+                'customer_id'                => $user->id,
+                'order_id'                   => $item->order_id,
+                'product_delivery_option_id' => $item->product_delivery_option_id,
+                'enrollment_status'          => \App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING,
+            ]);
             $response = $this->deleteJson(route('api.v1.admin.order.destroy', ['order' => $order->id]));
             $response->assertStatus(204);
             $this->assertDatabaseMissing('orders', [
@@ -302,7 +308,59 @@ describe('OrderController', function () {
             ]);
 
             $this->assertDatabaseMissing('enrolments', ['order_id' => $order->id]);
-            $this->assertDatabaseMissing('payments', ['order_id' => $order->id]);
+
+        });
+        it('can not delete an order with payments', function () {
+            $this->authorized_user([
+                PermissionEnum::ORDER_DELETE->value,
+            ]);
+            $user = User::factory()->create();
+            $order = Order::factory()->create(['customer_id' => $user->id])->fresh();
+            $product = ProductDeliveryOption::factory()->create()->fresh();
+            $item = App\Models\OrderItem::factory()->create(
+                [
+                    'order_id'                   => $order->id,
+                    'product_delivery_option_id' => $product->id,
+                    'qty_ordered'                => 1,
+                    'name'                       => 'Delete Product',
+                    'sku'                        => 'SKU_DELETE',
+                    'vendor_id'                  => App\Models\Vendor::factory()->create()->id,
+                    'product_data_snapshot_json' => [],
+                    'price'                      => 1000,
+                    'discount_amount'            => 0,
+                    'tax_amount'                 => 0,
+                    'total'                      => 1000,
+                    'status'                     => \App\Enums\Order\OrderItemStatusEnum::COMPLETED,
+                ]
+            );
+            $order->payments()->create([
+                'amount'      => 1000,
+                'method'      => 'online_gateway',
+                'status'      => PaymentStatusEnum::COMPLETED->value,
+                'admin_notes' => 'Test payment',
+                'created_by'  => null,
+                'customer_id' => $user->id,
+            ]);
+            $item->enrolment()->create([
+                'customer_id'                => $user->id,
+                'order_id'                   => $item->order_id,
+                'product_delivery_option_id' => $item->product_delivery_option_id,
+                'enrollment_status'          => \App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING,
+            ]);
+            $response = $this->deleteJson(route('api.v1.admin.order.destroy', ['order' => $order->id]));
+            $response->assertStatus(422);
+            $response->assertJsonValidationErrors(
+                ['order' => __('messages.order.cannot_delete_order_with_payments', ['order_id' => $order->increment_id])]
+            );
+            $this->assertDatabaseHas('orders', [
+                'id' => $order->id,
+            ]);
+            $this->assertDatabaseHas('order_items', [
+                'order_id' => $order->id,
+            ]);
+
+            $this->assertDatabaseHas('enrolments', ['order_id' => $order->id]);
+            $this->assertDatabaseHas('payments', ['order_id' => $order->id]);
 
         });
     });
