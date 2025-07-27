@@ -45,6 +45,16 @@ return Application::configure(basePath: dirname(__DIR__))
                 || str_starts_with($request->path(), 'api/');
         };
 
+        $exceptions->renderable(function (\App\Exceptions\InvalidJalaliDateException $e, $request) use ($isApiRequest)  {
+            // Check if the request expects a JSON response (typical for APIs)
+            if ($isApiRequest($request)) {
+                // Throw a standard Laravel ValidationException
+                // This will automatically generate a 422 response
+                throw ValidationException::withMessages([
+                    $e->property => [$e->getMessage()], // Use the property name from the exception
+                ]);
+            }
+        });
         // 1. ValidationException (422 Unprocessable Entity)
         $exceptions->renderable(function (ValidationException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
