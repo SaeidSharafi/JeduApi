@@ -34,6 +34,7 @@ final class AppServiceProvider extends ServiceProvider
 
         Model::preventLazyLoading(! app()->isProduction());
         Relation::enforceMorphMap(MorphTypeEnum::forMorphMap());
+        // @codeCoverageIgnoreStart
         ImageManipulator::defineVariant(
             'thumb',
             ImageManipulation::make(function (
@@ -48,5 +49,6 @@ final class AppServiceProvider extends ServiceProvider
                 ->toDestination(config('mediable.default_disk', 'public'), 'thumb')
                 ->optimize()->outputWebpFormat(),
         );
+        // @codeCoverageIgnoreEnd
     }
 }
