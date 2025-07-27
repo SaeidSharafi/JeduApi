@@ -25,7 +25,7 @@ final class OrderItemFactory extends Factory
         return [
             'order_id'                   => Order::factory(),
             'product_delivery_option_id' => $productDeliveryOptionFactory,
-            'qty_ordered'                => $this->faker->numberBetween(1, 10),
+            'qty_ordered'                => 1,
             'payment_type'               => $this->faker->randomElement(OrderItemPaymentTypeEnum::getAllValues()),
             'name'                       =>
                 fn(array $attributes

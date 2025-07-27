@@ -58,10 +58,10 @@ final class OrderItem extends Model
         return $this->belongsTo(ProductDeliveryOption::class);
     }
 
-    //public function refunds(): HasMany
-    //{
-    //    return $this->hasMany(Refund::class, 'order_item_id');
-    //}
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class, 'order_item_id');
+    }
     protected function casts(): array
     {
         return [

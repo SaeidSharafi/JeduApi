@@ -59,3 +59,20 @@ test('relation enrolment', function () {
         ->and($orderItem->enrolment->order_item_id)
         ->toEqual($orderItem->id);
 });
+
+test('refunds relationship', function () {
+    $order = App\Models\Order::factory()->create();
+    $item = App\Models\OrderItem::factory()->create([
+        'order_id' => $order->id,
+    ]);
+    $refund = App\Models\Refund::factory()->create([
+        'order_id'      => $order->id,
+        'order_item_id' => $item->id,
+    ]);
+    expect($item->refunds)
+        ->toHaveCount(1)
+        ->and($item->refunds->first())
+        ->toBeInstanceOf(App\Models\Refund::class)
+        ->and($item->refunds->first()->id)
+        ->toEqual($refund->id);
+});

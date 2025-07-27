@@ -10,6 +10,7 @@ use App\Models\DigitalAsset;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
+use App\Models\Refund;
 use App\Models\Seminar;
 use App\Models\Staff;
 use App\Models\Teacher;
@@ -22,6 +23,7 @@ use App\Policies\Admin\DigitalAssetPolicy;
 use App\Policies\Admin\OrderPolicy;
 use App\Policies\Admin\ProductDeliveryOptionPolicy;
 use App\Policies\Admin\ProductPolicy;
+use App\Policies\Admin\RefundPolicy;
 use App\Policies\Admin\RolePolicy;
 use App\Policies\Admin\SeminarPolicy;
 use App\Policies\Admin\StaffPolicy;
@@ -61,5 +63,6 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(ProductDeliveryOption::class, ProductDeliveryOptionPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Order::class, OrderPolicy::class);
+        Gate::policy(Refund::class, RefundPolicy::class);
     }
 }

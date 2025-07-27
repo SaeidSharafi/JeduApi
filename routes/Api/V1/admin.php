@@ -49,7 +49,13 @@ Route::middleware('auth:staff')->group(function (): void {
             ->only(['index', 'store', 'show', 'update', 'destroy']);
 
         Route::get('order/{order}/next-payment-details', NextPaymentDetailsController::class)
-        ->name('next-payment-details');
+            ->name('next-payment-details');
+
+        Route::resource('/order-item/{orderItem}/refund', App\Http\Controllers\Api\Admin\RefundController::class)
+            ->only(['index', 'store', 'show', 'update', 'destroy']);
+
+        Route::put('refund/{refund}/status', App\Http\Controllers\Api\Admin\RefundUpdateStatusController::class)
+            ->name('refund.status');
 
     });
 });

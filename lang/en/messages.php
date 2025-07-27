@@ -85,7 +85,20 @@ return [
         'payment'                           => [
             'delete_completed_payment_error'        => 'Cannot delete a completed payment.',
             'update_completed_payment_status_error' => 'Cannot update a completed payment status.',
-        ]
+        ],
+        'refund'                            => [
+            'not_allowed' => 'Refunds are not allowed for this order.',
+            'already_refunded' => 'This order has already been refunded.',
+            'refund_already_processed' => 'This refund has already been processed.',
+            'refund_request_exists' => 'A refund request for this item already exists.',
+            'no_completed_payments' => 'Cannot refund an item from an order with no completed payments.',
+            'cannot_update_refund_status' => 'Cannot update the data of a refund that is not pending.',
+            'only_pending_refunds_can_be_cancelled' => 'Only pending refunds can be cancelled.',
+            'only_pending_refunds_can_be_deleted' => 'Only pending refunds can be deleted.',
+            'only_pending_refunds_can_be_edited' => 'Only pending refunds can be edited. This refund is already being processed or is complete.',
+            'deduction_conflict' => 'The deduction amount and percentage conflict. Please provide either a fixed amount or a percentage, not both.',
+            'invalid_status_transition' => 'Cannot transition refund from :from to :to.',
+        ],
     ],
     'auth'        => [
         'otp'   => [

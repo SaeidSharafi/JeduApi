@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Enums;
 
 /**
@@ -12,85 +10,100 @@ namespace App\Enums;
  */
 enum PermissionEnum: string
 {
-    case CATEGORY_CREATE                  = 'category.create';
-    case CATEGORY_DELETE                  = 'category.delete';
-    case CATEGORY_DELETE_OWN              = 'category.delete_own';
-    case CATEGORY_UPDATE                  = 'category.update';
-    case CATEGORY_UPDATE_OWN              = 'category.update_own';
-    case CATEGORY_VIEW                    = 'category.view';
-    case CATEGORY_VIEW_ANY                = 'category.view_any';
-    case COURSE_CREATE                    = 'course.create';
-    case COURSE_DELETE                    = 'course.delete';
-    case COURSE_DELETE_OWN                = 'course.delete_own';
-    case COURSE_UPDATE                    = 'course.update';
-    case COURSE_UPDATE_OWN                = 'course.update_own';
-    case COURSE_VIEW                      = 'course.view';
-    case COURSE_VIEW_ANY                  = 'course.view_any';
-    case FILE_CREATE                      = 'file.create';
-    case FILE_DELETE                      = 'file.delete';
-    case FILE_DELETE_OWN                  = 'file.delete_own';
-    case FILE_UPDATE                      = 'file.update';
-    case FILE_UPDATE_OWN                  = 'file.update_own';
-    case FILE_VIEW                        = 'file.view';
-    case FILE_VIEW_ANY                    = 'file.view_any';
-    case ORDER_CREATE                     = 'order.create';
-    case ORDER_DELETE                     = 'order.delete';
-    case ORDER_UPDATE                     = 'order.update';
-    case ORDER_VIEW                       = 'order.view';
-    case ORDER_VIEW_ANY                   = 'order.view_any';
-    case PRODUCT_CREATE                   = 'product.create';
-    case PRODUCT_DELETE                   = 'product.delete';
-    case PRODUCT_DELIVERY_OPTION_CREATE   = 'product_delivery_option.create';
-    case PRODUCT_DELIVERY_OPTION_DELETE   = 'product_delivery_option.delete';
-    case PRODUCT_DELIVERY_OPTION_UPDATE   = 'product_delivery_option.update';
-    case PRODUCT_DELIVERY_OPTION_VIEW     = 'product_delivery_option.view';
+    case CATEGORY_CREATE = 'category.create';
+    case CATEGORY_DELETE = 'category.delete';
+    case CATEGORY_DELETE_OWN = 'category.delete_own';
+    case CATEGORY_UPDATE = 'category.update';
+    case CATEGORY_UPDATE_OWN = 'category.update_own';
+    case CATEGORY_VIEW = 'category.view';
+    case CATEGORY_VIEW_ANY = 'category.view_any';
+    case COURSE_CREATE = 'course.create';
+    case COURSE_DELETE = 'course.delete';
+    case COURSE_DELETE_OWN = 'course.delete_own';
+    case COURSE_UPDATE = 'course.update';
+    case COURSE_UPDATE_OWN = 'course.update_own';
+    case COURSE_VIEW = 'course.view';
+    case COURSE_VIEW_ANY = 'course.view_any';
+    case ENROLMENT_CREATE = 'enrolment.create';
+    case ENROLMENT_DELETE = 'enrolment.delete';
+    case ENROLMENT_UPDATE = 'enrolment.update';
+    case ENROLMENT_VIEW = 'enrolment.view';
+    case ENROLMENT_VIEW_ANY = 'enrolment.view_any';
+    case FILE_CREATE = 'file.create';
+    case FILE_DELETE = 'file.delete';
+    case FILE_DELETE_OWN = 'file.delete_own';
+    case FILE_UPDATE = 'file.update';
+    case FILE_UPDATE_OWN = 'file.update_own';
+    case FILE_VIEW = 'file.view';
+    case FILE_VIEW_ANY = 'file.view_any';
+    case ORDER_CREATE = 'order.create';
+    case ORDER_DELETE = 'order.delete';
+    case ORDER_UPDATE = 'order.update';
+    case ORDER_VIEW = 'order.view';
+    case ORDER_VIEW_ANY = 'order.view_any';
+    case PAYMENT_CREATE = 'payment.create';
+    case PAYMENT_DELETE = 'payment.delete';
+    case PAYMENT_UPDATE = 'payment.update';
+    case PAYMENT_VIEW = 'payment.view';
+    case PAYMENT_VIEW_ANY = 'payment.view_any';
+    case PRODUCT_CREATE = 'product.create';
+    case PRODUCT_DELETE = 'product.delete';
+    case PRODUCT_DELIVERY_OPTION_CREATE = 'product_delivery_option.create';
+    case PRODUCT_DELIVERY_OPTION_DELETE = 'product_delivery_option.delete';
+    case PRODUCT_DELIVERY_OPTION_UPDATE = 'product_delivery_option.update';
+    case PRODUCT_DELIVERY_OPTION_VIEW = 'product_delivery_option.view';
     case PRODUCT_DELIVERY_OPTION_VIEW_ANY = 'product_delivery_option.view_any';
-    case PRODUCT_UPDATE                   = 'product.update';
-    case PRODUCT_VIEW                     = 'product.view';
-    case PRODUCT_VIEW_ANY                 = 'product.view_any';
-    case ROLE_CREATE                      = 'role.create';
-    case ROLE_DELETE                      = 'role.delete';
-    case ROLE_UPDATE                      = 'role.update';
-    case ROLE_VIEW                        = 'role.view';
-    case ROLE_VIEW_ANY                    = 'role.view_any';
-    case SEMINAR_CREATE                   = 'seminar.create';
-    case SEMINAR_DELETE                   = 'seminar.delete';
-    case SEMINAR_DELETE_OWN               = 'seminar.delete_own';
-    case SEMINAR_UPDATE                   = 'seminar.update';
-    case SEMINAR_UPDATE_OWN               = 'seminar.update_own';
-    case SEMINAR_VIEW                     = 'seminar.view';
-    case SEMINAR_VIEW_ANY                 = 'seminar.view_any';
-    case STAFF_CREATE                     = 'staff.create';
-    case STAFF_DELETE                     = 'staff.delete';
-    case STAFF_IMPERSONATE                = 'staff.impersonate';
-    case STAFF_MANAGE_ROLES               = 'staff.manage_roles';
-    case STAFF_UPDATE                     = 'staff.update';
-    case STAFF_VIEW                       = 'staff.view';
-    case STAFF_VIEW_ANY                   = 'staff.view_any';
-    case TEACHER_CREATE                   = 'teacher.create';
-    case TEACHER_DELETE                   = 'teacher.delete';
-    case TEACHER_UPDATE                   = 'teacher.update';
-    case TEACHER_VIEW                     = 'teacher.view';
-    case TEACHER_VIEW_ANY                 = 'teacher.view_any';
-    case TERM_CREATE                      = 'term.create';
-    case TERM_DELETE                      = 'term.delete';
-    case TERM_UPDATE                      = 'term.update';
-    case TERM_VIEW                        = 'term.view';
-    case TERM_VIEW_ANY                    = 'term.view_any';
-    case USER_CREATE                      = 'user.create';
-    case USER_DELETE                      = 'user.delete';
-    case USER_UPDATE                      = 'user.update';
-    case USER_VIEW                        = 'user.view';
-    case USER_VIEW_ANY                    = 'user.view_any';
-    case VENDOR_CREATE                    = 'vendor.create';
-    case VENDOR_DELETE                    = 'vendor.delete';
-    case VENDOR_UPDATE                    = 'vendor.update';
-    case VENDOR_VIEW                      = 'vendor.view';
-    case VENDOR_VIEW_ANY                  = 'vendor.view_any';
+    case PRODUCT_UPDATE = 'product.update';
+    case PRODUCT_VIEW = 'product.view';
+    case PRODUCT_VIEW_ANY = 'product.view_any';
+    case REFUND_CREATE = 'refund.create';
+    case REFUND_DELETE = 'refund.delete';
+    case REFUND_UPDATE = 'refund.update';
+    case REFUND_UPDATE_STATUS = 'refund.update_status';
+    case REFUND_VIEW = 'refund.view';
+    case REFUND_VIEW_ANY = 'refund.view_any';
+    case ROLE_CREATE = 'role.create';
+    case ROLE_DELETE = 'role.delete';
+    case ROLE_UPDATE = 'role.update';
+    case ROLE_VIEW = 'role.view';
+    case ROLE_VIEW_ANY = 'role.view_any';
+    case SEMINAR_CREATE = 'seminar.create';
+    case SEMINAR_DELETE = 'seminar.delete';
+    case SEMINAR_DELETE_OWN = 'seminar.delete_own';
+    case SEMINAR_UPDATE = 'seminar.update';
+    case SEMINAR_UPDATE_OWN = 'seminar.update_own';
+    case SEMINAR_VIEW = 'seminar.view';
+    case SEMINAR_VIEW_ANY = 'seminar.view_any';
+    case STAFF_CREATE = 'staff.create';
+    case STAFF_DELETE = 'staff.delete';
+    case STAFF_IMPERSONATE = 'staff.impersonate';
+    case STAFF_MANAGE_ROLES = 'staff.manage_roles';
+    case STAFF_UPDATE = 'staff.update';
+    case STAFF_VIEW = 'staff.view';
+    case STAFF_VIEW_ANY = 'staff.view_any';
+    case TEACHER_CREATE = 'teacher.create';
+    case TEACHER_DELETE = 'teacher.delete';
+    case TEACHER_UPDATE = 'teacher.update';
+    case TEACHER_VIEW = 'teacher.view';
+    case TEACHER_VIEW_ANY = 'teacher.view_any';
+    case TERM_CREATE = 'term.create';
+    case TERM_DELETE = 'term.delete';
+    case TERM_UPDATE = 'term.update';
+    case TERM_VIEW = 'term.view';
+    case TERM_VIEW_ANY = 'term.view_any';
+    case USER_CREATE = 'user.create';
+    case USER_DELETE = 'user.delete';
+    case USER_UPDATE = 'user.update';
+    case USER_VIEW = 'user.view';
+    case USER_VIEW_ANY = 'user.view_any';
+    case VENDOR_CREATE = 'vendor.create';
+    case VENDOR_DELETE = 'vendor.delete';
+    case VENDOR_UPDATE = 'vendor.update';
+    case VENDOR_VIEW = 'vendor.view';
+    case VENDOR_VIEW_ANY = 'vendor.view_any';
 
     /**
      * Get all permission values as an array.
-     *
      * @return array<string>
      */
     public static function getAllValues(): array
@@ -100,7 +113,6 @@ enum PermissionEnum: string
 
     /**
      * Get all permission names (enum case names) as an array.
-     *
      * @return array<string>
      */
     public static function getAllNames(): array
