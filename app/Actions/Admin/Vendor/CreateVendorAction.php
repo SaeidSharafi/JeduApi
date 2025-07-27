@@ -22,10 +22,10 @@ final readonly class CreateVendorAction
             foreach ($media as $tag => $mediaId) {
                 $vendor->attachMedia($mediaId, $tag);
                 if ($tag === 'logo') {
-                    $vendor->logo_url = $vendor->getMedia('logo')->first()->getUrl();
+                    $vendor->logo_url = $vendor->getMedia('logo')->first()?->getUrl();
                 }
                 if ($tag === 'favicon') {
-                    $vendor->favicon_url = $vendor->getMedia('favicon')->first()->getUrl();
+                    $vendor->favicon_url = $vendor->getMedia('favicon')->first()?->getUrl();
                 }
             }
             $vendor->save();
