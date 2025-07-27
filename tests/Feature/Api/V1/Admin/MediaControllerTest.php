@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 use Illuminate\Http\UploadedFile;
 use Plank\Mediable\Media;
-
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Bus;
 uses(Tests\AuthTestTrait::class);
 beforeEach(function () {
     Storage::fake('public');
+    Bus::fake();
 });
 describe('Staff MediaController', function (): void {
     it('can upload a media file and returns correct structure', function (): void {
         $this->authorized_user([]);
-        $file     = UploadedFile::fake()->image('test-image.jpg');
+        $file = UploadedFile::fake()->image('test-image.jpg');
         $response = $this->postJson(route('api.v1.admin.media.upload'), [
             'file' => $file,
             'alt'  => 'Test Alt Text',
@@ -51,5 +53,34 @@ describe('Staff MediaController', function (): void {
                     ->has('data.tag')
                     ->etc();
             });
+        Bus::assertDispatched(\Plank\Mediable\Jobs\CreateImageVariants::class);
+    });
+
+    it('does not dispatch CreateImageVariants job for non-image files', function (): void {
+        $this->authorized_user([]);
+        $file = UploadedFile::fake()->create('test-document.pdf', 5000, 'application/pdf');
+        $response = $this->postJson(route('api.v1.admin.media.upload'), [
+            'file' => $file,
+            'alt'  => 'Test Document Alt Text',
+        ]);
+        $response->assertStatus(201)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'url',
+                    'size',
+                    'file_name',
+                    'alt',
+                    'mime_type',
+                    'extension',
+                    'tag',
+                ],
+            ]);
+        $mediaId = $response->json('data.id');
+        expect($mediaId)->not()->toBeNull();
+        $media = Media::find($mediaId);
+        expect($media)->not()->toBeNull()
+            ->and($media->getAttribute('alt'))->toBe('Test Document Alt Text');
+        Bus::assertNotDispatched(\Plank\Mediable\Jobs\CreateImageVariants::class);
     });
 });
