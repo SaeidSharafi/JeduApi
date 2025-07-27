@@ -83,6 +83,44 @@ final class OrderFactory extends Factory
         });
     }
 
+    public function withCalculatedTotalsAutomated(): self
+    {
+        return $this->afterCreating(function (Order $order) {
+            // Refresh the 'items' relationship to ensure all data is loaded.
+            $order->load('items');
+
+            // After the order and its items are created, we recalculate all totals.
+            $order->subtotal = $order->items->sum(fn(OrderItem $item) => $item->price * $item->qty_ordered);
+            $order->discount_amount = $order->items->sum(fn(OrderItem $item) => $item->discount_amount
+                * $item->qty_ordered);
+            $order->tax_amount = $order->items->sum(fn(OrderItem $item) => $item->tax_amount * $item->qty_ordered);
+
+            // Calculate totals based on our established business logic
+            $grandTotal = 0;
+            $fullValueGrandTotal = 0;
+
+            foreach ($order->items as $item) {
+                $lineItemFullValue = ($item->price - $item->discount_amount + $item->tax_amount) * $item->qty_ordered;
+                $fullValueGrandTotal += $lineItemFullValue;
+
+                if ($item->payment_type === OrderItemPaymentTypeEnum::FULL_PAYMENT->value) {
+                    $grandTotal += $lineItemFullValue;
+                } else { // PRE_PAYMENT
+                    // Note: The logic in your original OrderItemFactory seems to set 'total' incorrectly.
+                    // Assuming 'total' should be the pre-payment amount for a pre-payment item.
+                    // If an item is set to pre-payment, its 'total' should reflect the amount to be paid now.
+                    $grandTotal += $item->total;
+                }
+            }
+            $order->grand_total = $grandTotal;
+            $order->full_value_grand_total
+                = $fullValueGrandTotal; // You might want to define this field in your model/migration
+            $order->total_item_count = $order->items->count();
+            $order->total_qty_ordered = $order->items->sum('qty_ordered');
+            $order->save();
+        });
+    }
+
     /**
      * STATE: Use an existing User instead of creating a new one.
      */

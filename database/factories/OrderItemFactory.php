@@ -6,6 +6,7 @@ namespace Database\Factories;
 
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
+use App\Enums\PublicationStatusEnum;
 use App\Models\Enrolment;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -53,7 +54,9 @@ final class OrderItemFactory extends Factory
     public function useExistingRelations(): static
     {
         return $this->state(function (array $attributes) {
-            $productDeliveryOption = ProductDeliveryOption::inRandomOrder()->first() ??
+            $productDeliveryOption = ProductDeliveryOption::query()
+                ->where('status', PublicationStatusEnum::PUBLISHED)
+                ->inRandomOrder()->first() ??
                 ProductDeliveryOption::factory()->create();
             $vendor = Vendor::inRandomOrder()->first() ?? Vendor::factory()->create();
 
@@ -63,6 +66,14 @@ final class OrderItemFactory extends Factory
                 'name'                       => $productDeliveryOption->name,
                 'sku'                        => $productDeliveryOption->sku,
                 'product_data_snapshot_json' => $productDeliveryOption->product->toArray(),
+                'price'                      => $productDeliveryOption->price,
+                'status'                     => OrderItemStatusEnum::PENDING,
+                'payment_type'               => $productDeliveryOption->is_prepayment_available
+                    ? OrderItemPaymentTypeEnum::PRE_PAYMENT
+                    : OrderItemPaymentTypeEnum::FULL_PAYMENT,
+                'total'                      => $productDeliveryOption->is_prepayment_available
+                    ? $productDeliveryOption->prepayment_amount
+                    : $productDeliveryOption->price,
             ];
         });
     }

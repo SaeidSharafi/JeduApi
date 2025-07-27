@@ -25,6 +25,21 @@ final class ProductDeliveryOptionFactory extends Factory
             FulfillmentTypeEnum::OFFILNE_SERVICE,
         ]);
         $pdoType = $this->faker->randomElement($ftype->getDelivieryMethods());
+        $prices = [
+            100000,
+            200000,
+            300000,
+            400000,
+            500000,
+            600000,
+            700000,
+            800000,
+            900000,
+            1000000,
+        ];
+        $price = $this->faker->randomElement($prices);
+        $prepaymentAmount = (int) floor($this->faker->randomElement($prices) * (random_int(10, 30) / 100));
+        $prepaymentAvailable = $this->faker->boolean();
 
         return [
             'product_id'                => Product::factory(),
@@ -32,11 +47,11 @@ final class ProductDeliveryOptionFactory extends Factory
             'sku'                       => $ftype->value.$this->faker->unique()->randomNumber(),
             'fulfillment_type'          => $ftype,
             'delivery_method'           => $pdoType,
-            'price'                     => $this->faker->randomNumber(),
-            'capacity'                  => random_int(1,100),
+            'price'                     => $price,
+            'capacity'                  => random_int(1, 100),
             'status'                    => $this->faker->randomElement(PublicationStatusEnum::getAllValues()),
-            'is_prepayment_available'   => $this->faker->boolean(),
-            'prepayment_amount'         => $this->faker->randomNumber(),
+            'is_prepayment_available'   => $prepaymentAvailable,
+            'prepayment_amount'         => $prepaymentAvailable ? $prepaymentAmount : 0,
             'details_json'              => [],
             'is_featured'               => $this->faker->boolean(),
             'featured_price'            => $this->faker->randomNumber(),

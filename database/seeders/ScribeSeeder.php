@@ -43,6 +43,7 @@ final class ScribeSeeder extends Seeder
         if (app()->environment() === 'local') {
             $this->disableForeignKeyChecks();
             DB::table('mediables')->truncate();
+            Order::query()->truncate();
             Media::query()->truncate();
             Course::query()->truncate();
             Seminar::query()->truncate();
@@ -180,16 +181,19 @@ final class ScribeSeeder extends Seeder
             ->useExistingRelations()
             ->withCategory(3)
             ->create();
-        Order::factory(100)
-            ->useExistingCustomer()
-            ->has(
-                OrderItem::factory()
-                    ->count(rand(1, 3))
-                    ->useExistingRelations()
-                    ->withEnrolment(),
-                'items'
-            )
-            ->create();
+        for ($i = 0; $i < 100; $i++) {
+            Order::factory()
+                ->useExistingCustomer()
+                ->has(
+                    OrderItem::factory()
+                        ->count(rand(1, 3))
+                        ->useExistingRelations()
+                        ->withEnrolment(),
+                    'items'
+                )
+                ->withCalculatedTotalsAutomated()
+                ->create();
+        }
 
     }
 
