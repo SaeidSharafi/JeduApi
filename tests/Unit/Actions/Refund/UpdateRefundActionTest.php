@@ -19,7 +19,7 @@ describe('UpdateRefundAction', function () {
                 'customer_id' => User::factory()->create()->id,
             ])
             ->create();
-        $orderItem = $order->first();
+        $orderItem = $order->items()->first();
         $refund = \App\Models\Refund::factory()->create([
             'order_item_id'    => $orderItem->id,
             'status'           => RefundStatusEnum::PENDING,
