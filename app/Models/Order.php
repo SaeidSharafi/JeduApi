@@ -52,6 +52,7 @@ final class Order extends Model
     {
         return [
             'customer_snapshot_json' => 'array',
+            'applied_cart_discounts_json' => 'array',
             'subtotal'               => 'integer',
             'discount_amount'        => 'integer',
             'tax_amount'             => 'integer',

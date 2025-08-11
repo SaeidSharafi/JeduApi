@@ -66,6 +66,7 @@ final class OrderItem extends Model
     {
         return [
             'product_data_snapshot_json' => 'array',
+            'applied_discount_details_json' => 'array',
             'status'                     => OrderItemStatusEnum::class,
             'payment_type'               => OrderItemPaymentTypeEnum::class,
             'created_at'                 => 'datetime:Y-m-d H:i:s',
