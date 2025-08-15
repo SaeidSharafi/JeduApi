@@ -89,24 +89,29 @@ class OrderStatusService
 
     private function determineOrderStatus(Collection $items): OrderStatusEnum
     {
-        $totalItems = $items->count();
-        if ($totalItems === 0) {
-            return OrderStatusEnum::PENDING; // Or whatever default for an empty order
+        if ($items->isEmpty()) {
+            return OrderStatusEnum::PENDING;
         }
+        $statusMap = [
+            'all_refunded' => OrderStatusEnum::REFUNDED,
+            'all_cancelled' => OrderStatusEnum::CANCELLED,
+            'any_refunded' => OrderStatusEnum::PARTIALLY_REFUNDED,
+            'all_completed' => OrderStatusEnum::COMPLETED,
+            'default' => OrderStatusEnum::PROCESSING,
+        ];
+        $statuses = $items->pluck('status');
 
-        $statusCounts = $items->countBy('status.value');
-
-        if (($statusCounts[OrderItemStatusEnum::REFUNDED->value] ?? 0) === $totalItems) {
-            return OrderStatusEnum::REFUNDED;
+        if ($statuses->every(fn($s) => $s === OrderItemStatusEnum::REFUNDED)) {
+            return $statusMap['all_refunded'];
         }
-        if (($statusCounts[OrderItemStatusEnum::CANCELLED->value] ?? 0) === $totalItems) {
-            return OrderStatusEnum::CANCELLED;
+        if ($statuses->every(fn($s) => $s === OrderItemStatusEnum::CANCELLED)) {
+            return $statusMap['all_cancelled'];
         }
-        if (($statusCounts[OrderItemStatusEnum::REFUNDED->value] ?? 0) > 0) {
-            return OrderStatusEnum::PARTIALLY_REFUNDED;
+        if ($statuses->contains(OrderItemStatusEnum::REFUNDED)) {
+            return $statusMap['any_refunded'];
         }
-        if (($statusCounts[OrderItemStatusEnum::COMPLETED->value] ?? 0) === $totalItems) {
-            return OrderStatusEnum::COMPLETED;
+        if ($statuses->every(fn($s) => $s === OrderItemStatusEnum::COMPLETED)) {
+            return $statusMap['all_completed'];
         }
 
         return OrderStatusEnum::PROCESSING;

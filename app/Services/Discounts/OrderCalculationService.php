@@ -100,10 +100,9 @@ final class OrderCalculationService
             ->whereIn('product_delivery_option_id', $pdoIds)
             ->pluck('discounted_price', 'product_delivery_option_id');
 
-        $calculatedItems             = [];
         $subtotal_all_items          = 0;
         $subtotal_full_payment_items = 0;
-
+        $calculatedItems = collect();
         foreach ($data->items as $itemData) {
             $option = $deliveryOptions->get($itemData->product_delivery_option_id);
 
@@ -117,13 +116,14 @@ final class OrderCalculationService
                 $initialLineItemTotal = $option->prepayment_amount * $itemData->qty_ordered;
             }
 
-            $calculatedItems[] = $calculatedItem = new CalculatedOrderItemData(
+            $calculatedItem = new CalculatedOrderItemData(
                 product_delivery_option: $option,
                 qty: $itemData->qty_ordered,
                 payment_type: OrderItemPaymentTypeEnum::tryFrom($itemData->payment_type),
                 price: $startingPriceForCalc,
                 total: $initialLineItemTotal,
             );
+            $calculatedItems->push($calculatedItem);
 
             $subtotal_all_items += $originalFullPrice * $calculatedItem->qty;
 
@@ -134,7 +134,7 @@ final class OrderCalculationService
 
         return new OrderContextData(
             customer: $customer,
-            items: collect(CalculatedOrderItemData::collect($calculatedItems)), // Corrected DTO collection
+            items: $calculatedItems,
             subtotal_full_payment_items: $subtotal_full_payment_items,
             subtotal_all_items: $subtotal_all_items,
         );
