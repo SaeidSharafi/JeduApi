@@ -18,8 +18,9 @@ final class OrderCreateData extends Data
         public int $customer_id,
         #[DataCollectionOf(OrderItemCreateData::class)]
         public array $items,
-        public ?string $applied_coupon_code,
-        public ?string $admin_notes,
+        public ?string $applied_coupon_code = null,
+        public ?string $admin_notes = null,
+        public ?int $promotion_id = null,
     ) {}
 
     public static function rules(ValidationContext $context): array

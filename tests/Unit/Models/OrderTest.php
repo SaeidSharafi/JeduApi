@@ -9,39 +9,41 @@ use App\Models\Order;
 use Illuminate\Database\Eloquent\Builder;
 
 test('to array', function () {
-    $order = App\Models\Order::factory()->create()->fresh();
+    $order = Order::factory()->create()->fresh();
 
     expect($order->toArray())
         ->toEqual([
-            'id'                     => $order->id,
-            'increment_id'           => $order->increment_id,
-            'status'                 => $order->status->value,
-            'customer_id'            => $order->customer_id,
-            'customer_email'         => $order->customer_email,
-            'customer_phone'         => $order->customer_phone,
-            'customer_first_name'    => $order->customer_first_name,
-            'customer_last_name'     => $order->customer_last_name,
-            'customer_snapshot_json' => $order->customer_snapshot_json,
-            'total_item_count'       => $order->total_item_count,
-            'total_qty_ordered'      => $order->total_qty_ordered,
-            'subtotal'               => $order->subtotal,
-            'discount_amount'        => $order->discount_amount,
-            'tax_amount'             => $order->tax_amount,
-            'grand_total'            => $order->grand_total,
-            'full_value_grand_total' => $order->full_value_grand_total,
-            'currency_code'          => $order->currency_code,
-            'applied_coupon_code'    => $order->applied_coupon_code,
-            'admin_notes'            => $order->admin_notes,
-            'created_at'             => $order->created_at->format('Y-m-d H:i:s'),
-            'updated_at'             => $order->updated_at->format('Y-m-d H:i:s'),
-            'created_by'             => $order->created_by,
-            'payments'               => $order->payments->toArray(),
+            'id'                          => $order->id,
+            'increment_id'                => $order->increment_id,
+            'status'                      => $order->status->value,
+            'customer_id'                 => $order->customer_id,
+            'customer_email'              => $order->customer_email,
+            'customer_phone'              => $order->customer_phone,
+            'customer_first_name'         => $order->customer_first_name,
+            'customer_last_name'          => $order->customer_last_name,
+            'customer_snapshot_json'      => $order->customer_snapshot_json,
+            'total_item_count'            => $order->total_item_count,
+            'total_qty_ordered'           => $order->total_qty_ordered,
+            'subtotal'                    => $order->subtotal,
+            'discount_amount'             => $order->discount_amount,
+            'tax_amount'                  => $order->tax_amount,
+            'grand_total'                 => $order->grand_total,
+            'full_value_grand_total'      => $order->full_value_grand_total,
+            'currency_code'               => $order->currency_code,
+            'applied_cart_discounts_json' => $order->applied_cart_discounts_json,
+            'applied_coupon_code'         => $order->applied_coupon_code,
+            'admin_notes'                 => $order->admin_notes,
+            'created_at'                  => $order->created_at->format('Y-m-d H:i:s'),
+            'updated_at'                  => $order->updated_at->format('Y-m-d H:i:s'),
+            'created_by'                  => $order->created_by,
+            'payments'                    => $order->payments->toArray(),
+
         ]);
 });
 
 test('items relationship', function () {
-    $order = App\Models\Order::factory()->create();
-    $item = App\Models\OrderItem::factory()->create([
+    $order = Order::factory()->create();
+    $item  = App\Models\OrderItem::factory()->create([
         'order_id' => $order->id,
     ]);
 
@@ -61,7 +63,7 @@ test('items relationship', function () {
 });
 
 test('payments relationship', function () {
-    $order = App\Models\Order::factory()->create();
+    $order   = Order::factory()->create();
     $payment = App\Models\Payment::factory()->create([
         'order_id' => $order->id,
     ]);
@@ -88,8 +90,8 @@ test('payment status', function () {
             'payment_type' => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'total'        => 10000,
             'price'        => 10000,
-            'name'         => 'Workshop'
-        ]
+            'name'         => 'Workshop',
+        ],
     ];
     $order = Order::factory()
         ->withCalculatedTotals($items)
@@ -113,8 +115,8 @@ test('payment status', function () {
             'payment_type' => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
             'total'        => 5000,
             'price'        => 10000,
-            'name'         => 'Workshop'
-        ]
+            'name'         => 'Workshop',
+        ],
     ];
     $order = Order::factory()
         ->withCalculatedTotals($items)
@@ -130,12 +132,12 @@ test('payment status', function () {
     expect($order->payment_status)
         ->toEqual(OrderPaymentStatusEnum::PAID->value)
         ->and($order->overall_payment_status)
-        ->toEqual(\App\Enums\Order\OrderPaymentStatusEnum::PARTIALLY_PAID->value);
+        ->toEqual(OrderPaymentStatusEnum::PARTIALLY_PAID->value);
 
 });
 
 test('enrolments relationship', function () {
-    $order = App\Models\Order::factory()->create();
+    $order     = Order::factory()->create();
     $enrolment = App\Models\Enrolment::factory()->create([
         'order_id' => $order->id,
     ]);
@@ -156,8 +158,8 @@ test('enrolments relationship', function () {
 });
 
 test('generate increment ID', function () {
-    $order = App\Models\Order::factory()->create();
-    $newIncrementId = App\Models\Order::generateIncrementId();
+    $order          = Order::factory()->create();
+    $newIncrementId = Order::generateIncrementId();
 
     expect($newIncrementId)
         ->toBeString()
@@ -165,8 +167,8 @@ test('generate increment ID', function () {
         ->toEqual((int) $order->increment_id + 1);
 });
 
-test('totalPaid', function (){
-    $order = App\Models\Order::factory()->create();
+test('totalPaid', function () {
+    $order    = Order::factory()->create();
     $payment1 = App\Models\Payment::factory()->create([
         'order_id' => $order->id,
         'amount'   => 5000,
@@ -191,27 +193,27 @@ test('totalPaid', function (){
     expect($order->total_paid)
         ->toEqual(8000); // Should not include the pending payment
 
-    //using withSum
+    // using withSum
 
-    $orderWithSum = App\Models\Order::withSum([
+    $orderWithSum = Order::withSum([
         'payments as completed_payments_sum_amount' => function (Builder $query) {
             $query->where('status', PaymentStatusEnum::COMPLETED);
-        }
+        },
     ], 'amount')
         ->find($order->id);
     expect($orderWithSum->total_paid)
         ->toEqual(8000); // Should match the total paid from the payments relationship
 });
 
-test('paymentStatus edgecase',function (){
+test('paymentStatus edgecase', function () {
     $items = [
         [
             'qty_ordered'  => 1,
             'payment_type' => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'total'        => 10000,
             'price'        => 10000,
-            'name'         => 'Workshop'
-        ]
+            'name'         => 'Workshop',
+        ],
     ];
     $order = Order::factory()
         ->withCalculatedTotals($items)
@@ -222,11 +224,10 @@ test('paymentStatus edgecase',function (){
 
     $payment = App\Models\Payment::factory()->create([
         'order_id' => $order->id,
-        'amount'   => $order->grand_total  -100,
+        'amount'   => $order->grand_total - 100,
         'status'   => PaymentStatusEnum::COMPLETED,
     ]);
     $order->refresh();
-
 
     expect($order->payment_status)
         ->toEqual(OrderPaymentStatusEnum::PARTIALLY_PAID->value); // Should still be PAID as the first payment is completed

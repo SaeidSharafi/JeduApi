@@ -25,7 +25,7 @@ final class ProductDeliveryOptionFactory extends Factory
             FulfillmentTypeEnum::OFFILNE_SERVICE,
         ]);
         $pdoType = $this->faker->randomElement($ftype->getDelivieryMethods());
-        $prices = [
+        $prices  = [
             100000,
             200000,
             300000,
@@ -37,8 +37,8 @@ final class ProductDeliveryOptionFactory extends Factory
             900000,
             1000000,
         ];
-        $price = $this->faker->randomElement($prices);
-        $prepaymentAmount = (int) floor($this->faker->randomElement($prices) * (random_int(10, 30) / 100));
+        $price               = $this->faker->randomElement($prices);
+        $prepaymentAmount    = (int) floor($this->faker->randomElement($prices) * (random_int(10, 30) / 100));
         $prepaymentAvailable = $this->faker->boolean();
 
         return [
@@ -49,14 +49,14 @@ final class ProductDeliveryOptionFactory extends Factory
             'delivery_method'           => $pdoType,
             'price'                     => $price,
             'capacity'                  => random_int(1, 100),
-            'status'                    => $this->faker->randomElement(PublicationStatusEnum::getAllValues()),
+            'status'                    => PublicationStatusEnum::PUBLISHED->value,
             'is_prepayment_available'   => $prepaymentAvailable,
             'prepayment_amount'         => $prepaymentAvailable ? $prepaymentAmount : 0,
             'details_json'              => [],
-            'is_featured'               => $this->faker->boolean(),
-            'featured_price'            => $this->faker->randomNumber(),
-            'featured_price_start_date' => Carbon::now(),
-            'featured_price_end_date'   => Carbon::now()->addDay(),
+            'is_featured'               => false,
+            'featured_price'            => 0,
+            'featured_price_start_date' => null,
+            'featured_price_end_date'   => null,
             'created_at'                => Carbon::now(),
             'updated_at'                => Carbon::now(),
         ];

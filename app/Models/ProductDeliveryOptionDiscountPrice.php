@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProductDeliveryOptionDiscountPrice extends Model
 {
-    use HasFactory;
-
     /**
      * This model's primary key is not 'id'.
      */
@@ -25,6 +23,13 @@ class ProductDeliveryOptionDiscountPrice extends Model
      */
     protected $guarded = [];
 
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime:Y-m-d H:i:s',
+            'updated_at' => 'datetime:Y-m-d H:i:s',
+        ];
+    }
 
     /**
      * The cached price belongs to a parent promotion.

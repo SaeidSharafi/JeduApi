@@ -27,25 +27,25 @@ final class ProductFactory extends Factory
         switch ($type) {
             case ProductableEnum::COURSE:
                 $productableType = ProductableEnum::COURSE->value;
-                $productableId = Course::factory();
+                $productableId   = Course::factory();
                 break;
             case ProductableEnum::SEMINAR:
                 $productableType = ProductableEnum::SEMINAR->value;
-                $productableId = Seminar::factory();
+                $productableId   = Seminar::factory();
                 break;
             case ProductableEnum::DIGITAL_ASSET:
                 $productableType = ProductableEnum::DIGITAL_ASSET->value;
-                $productableId = DigitalAsset::factory();
+                $productableId   = DigitalAsset::factory();
                 break;
             default:
                 $productableType = ProductableEnum::COURSE->value;
-                $productableId = Course::factory();
+                $productableId   = Course::factory();
         }
 
         return [
             'vendor_id'         => Vendor::factory(),
             'term_id'           => Term::factory(),
-            'status'            => $this->faker->randomElement(PublicationStatusEnum::getAllValues()),
+            'status'            => PublicationStatusEnum::PUBLISHED->value,
             'is_visible'        => $this->faker->boolean(),
             'short_description' => $this->faker->text(),
             'short_name'        => $this->faker->name(),
@@ -98,23 +98,24 @@ final class ProductFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $vendor = Vendor::inRandomOrder()->first() ?? Vendor::factory()->create();
-            $term = Term::inRandomOrder()->first() ?? Term::factory()->create();
-            $type = $this->faker->randomElement(ProductableEnum::cases());
+            $term   = Term::inRandomOrder()->first()   ?? Term::factory()->create();
+            $type   = $this->faker->randomElement(ProductableEnum::cases());
 
             switch ($type) {
                 case ProductableEnum::SEMINAR:
                     $productableType = ProductableEnum::SEMINAR->value;
-                    $productableId = Seminar::inRandomOrder()->first()->id;
+                    $productableId   = Seminar::inRandomOrder()->first()->id;
                     break;
                 case ProductableEnum::DIGITAL_ASSET:
                     $productableType = ProductableEnum::DIGITAL_ASSET->value;
-                    $productableId = DigitalAsset::inRandomOrder()->first()->id;
+                    $productableId   = DigitalAsset::inRandomOrder()->first()->id;
                     break;
                 case ProductableEnum::COURSE:
                 default:
                     $productableType = ProductableEnum::COURSE->value;
-                    $productableId = Course::inRandomOrder()->first()->id;
+                    $productableId   = Course::inRandomOrder()->first()->id;
             }
+
             return [
                 'vendor_id'        => $vendor->id,
                 'term_id'          => $term->id,

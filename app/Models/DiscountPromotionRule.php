@@ -1,19 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DiscountPromotionRule extends Model
+final class DiscountPromotionRule extends Model
 {
     use HasFactory;
-
-    /**
-     * This model does not use the default created_at and updated_at timestamps.
-     */
-    public $timestamps = false;
 
     /**
      * The attributes that are not mass assignable.
@@ -26,9 +23,9 @@ class DiscountPromotionRule extends Model
      */
     protected $casts = [
         'configuration' => 'array',
+        'created_at'   => 'datetime:Y-m-d H:i:s',
+        'updated_at'   => 'datetime:Y-m-d H:i:s',
     ];
-
-    // --- RELATIONSHIPS ---
 
     /**
      * Each rule belongs to exactly one promotion.

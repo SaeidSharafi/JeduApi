@@ -7,25 +7,26 @@ test('to array', function () {
 
     expect($orderItem->toArray())
         ->toEqual([
-            'id'                         => $orderItem->id,
-            'order_id'                   => $orderItem->order_id,
-            'product_delivery_option_id' => $orderItem->product_delivery_option_id,
-            'qty_ordered'                => $orderItem->qty_ordered,
-            'payment_type'               => $orderItem->payment_type->value,
-            'name'                       => $orderItem->name,
-            'sku'                        => $orderItem->sku,
-            'vendor_id'                  => $orderItem->vendor_id,
-            'product_data_snapshot_json' => $orderItem->product_data_snapshot_json,
-            'price'                      => $orderItem->price,
-            'discount_amount'            => $orderItem->discount_amount,
-            'tax_amount'                 => $orderItem->tax_amount,
-            'total'                      => $orderItem->total,
-            'prepayment_amount'          => $orderItem->prepayment_amount,
-            'total_refunded'             => $orderItem->total_refunded,
-            'qty_refunded'               => $orderItem->qty_refunded,
-            'status'                     => $orderItem->status->value,
-            'created_at'                 => $orderItem->created_at->format('Y-m-d H:i:s'),
-            'updated_at'                 => $orderItem->updated_at->format('Y-m-d H:i:s'),
+            'id'                            => $orderItem->id,
+            'order_id'                      => $orderItem->order_id,
+            'product_delivery_option_id'    => $orderItem->product_delivery_option_id,
+            'qty_ordered'                   => $orderItem->qty_ordered,
+            'payment_type'                  => $orderItem->payment_type->value,
+            'name'                          => $orderItem->name,
+            'sku'                           => $orderItem->sku,
+            'vendor_id'                     => $orderItem->vendor_id,
+            'product_data_snapshot_json'    => $orderItem->product_data_snapshot_json,
+            'price'                         => $orderItem->price,
+            'discount_amount'               => $orderItem->discount_amount,
+            'tax_amount'                    => $orderItem->tax_amount,
+            'total'                         => $orderItem->total,
+            'prepayment_amount'             => $orderItem->prepayment_amount,
+            'total_refunded'                => $orderItem->total_refunded,
+            'qty_refunded'                  => $orderItem->qty_refunded,
+            'status'                        => $orderItem->status->value,
+            'created_at'                    => $orderItem->created_at->format('Y-m-d H:i:s'),
+            'updated_at'                    => $orderItem->updated_at->format('Y-m-d H:i:s'),
+            'applied_discount_details_json' => $orderItem->applied_discount_details_json,
         ]);
 });
 
@@ -49,10 +50,10 @@ test('relation vendor', function () {
 
 test('relation enrolment', function () {
     $orderItem = App\Models\OrderItem::factory()->create();
-    $enrolmet = App\Models\Enrolment::factory()->create([
+    $enrolmet  = App\Models\Enrolment::factory()->create([
         'order_id'      => $orderItem->order_id,
         'order_item_id' => $orderItem->id,
-        'customer_id' => $orderItem->order->customer_id,
+        'customer_id'   => $orderItem->order->customer_id,
     ]);
     expect($orderItem->enrolment)
         ->toBeInstanceOf(App\Models\Enrolment::class)
@@ -62,7 +63,7 @@ test('relation enrolment', function () {
 
 test('refunds relationship', function () {
     $order = App\Models\Order::factory()->create();
-    $item = App\Models\OrderItem::factory()->create([
+    $item  = App\Models\OrderItem::factory()->create([
         'order_id' => $order->id,
     ]);
     $refund = App\Models\Refund::factory()->create([

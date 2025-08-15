@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderPaymentStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
-use App\Enums\Payment\PaymentStatusEnum;
 use App\Traits\HasAuditor;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -15,13 +13,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\DB;
 
 final class Order extends Model
 {
+    use HasAuditor;
+
     /** @use HasFactory<OrderFactory> */
     use HasFactory;
-    use HasAuditor;
 
     protected $fillable
         = [
@@ -42,29 +40,12 @@ final class Order extends Model
             'full_value_grand_total',
             'currency_code',
             'applied_coupon_code',
+            'applied_cart_discounts_json',
             'admin_notes',
             'created_by',
         ];
 
     protected $with = ['payments'];
-
-    protected function casts(): array
-    {
-        return [
-            'customer_snapshot_json' => 'array',
-            'applied_cart_discounts_json' => 'array',
-            'subtotal'               => 'integer',
-            'discount_amount'        => 'integer',
-            'tax_amount'             => 'integer',
-            'grand_total'            => 'integer',
-            'full_value_grand_total' => 'integer',
-            'status'                 => OrderStatusEnum::class,
-            'payment_status'         => OrderPaymentStatusEnum::class,
-            'created_at'             => 'datetime:Y-m-d H:i:s',
-            'updated_at'             => 'datetime:Y-m-d H:i:s',
-            'total_paid'             => 'integer',
-        ];
-    }
 
     /**
      * Generate a unique, sequential increment ID for a new order.
@@ -74,7 +55,7 @@ final class Order extends Model
         // Lock the table for writing to prevent race conditions.
         $lastOrder = self::query()->latest('id')->lockForUpdate()->first();
 
-        if (!$lastOrder) {
+        if (! $lastOrder) {
             // Starting number for the first order
             return '100000001';
         }
@@ -100,33 +81,6 @@ final class Order extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'customer_id');
-    }
-    protected function totalPaid(): Attribute
-    {
-        return Attribute::make(
-            get: function () {
-                // Check if the attribute from our 'withSum' query exists.
-                // The name laravel creates is {relation}_{function}_{column}
-                if (isset($this->completed_payments_sum_amount)) {
-                    // If it exists, just return the pre-calculated value. No new query is run.
-                    return (int) $this->completed_payments_sum_amount;
-                }
-
-                // Fallback for when the sum wasn't eager-loaded (e.g., on a 'show' page).
-                // This assumes the 'payments' relationship has already been loaded.
-                return $this->payments->where('status', 'completed')->sum('amount');
-            }
-        );
-    }
-
-    /**
-     * Accessor to get the current outstanding balance.
-     */
-    protected function balanceDue(): Attribute
-    {
-        return Attribute::make(
-            get: fn() => $this->full_value_grand_total - $this->total_paid,
-        );
     }
 
     /**
@@ -177,6 +131,52 @@ final class Order extends Model
 
                 return OrderPaymentStatusEnum::PENDING->value;
             }
+        );
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'customer_snapshot_json'      => 'array',
+            'applied_cart_discounts_json' => 'array',
+            'subtotal'                    => 'integer',
+            'discount_amount'             => 'integer',
+            'tax_amount'                  => 'integer',
+            'grand_total'                 => 'integer',
+            'full_value_grand_total'      => 'integer',
+            'status'                      => OrderStatusEnum::class,
+            'payment_status'              => OrderPaymentStatusEnum::class,
+            'created_at'                  => 'datetime:Y-m-d H:i:s',
+            'updated_at'                  => 'datetime:Y-m-d H:i:s',
+            'total_paid'                  => 'integer',
+        ];
+    }
+
+    protected function totalPaid(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                // Check if the attribute from our 'withSum' query exists.
+                // The name laravel creates is {relation}_{function}_{column}
+                if (isset($this->completed_payments_sum_amount)) {
+                    // If it exists, just return the pre-calculated value. No new query is run.
+                    return (int) $this->completed_payments_sum_amount;
+                }
+
+                // Fallback for when the sum wasn't eager-loaded (e.g., on a 'show' page).
+                // This assumes the 'payments' relationship has already been loaded.
+                return $this->payments->where('status', 'completed')->sum('amount');
+            }
+        );
+    }
+
+    /**
+     * Accessor to get the current outstanding balance.
+     */
+    protected function balanceDue(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->full_value_grand_total - $this->total_paid,
         );
     }
 }

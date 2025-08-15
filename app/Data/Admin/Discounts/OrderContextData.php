@@ -1,0 +1,49 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Data\Admin\Discounts;
+
+use App\Models\DiscountPromotion;
+use App\Models\User;
+use Illuminate\Support\Collection;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\DataCollection;
+
+final class OrderContextData extends Data
+{
+    public function __construct(
+        public User $customer,
+
+        /** @var DataCollection<CalculatedOrderItemData> */
+        #[DataCollectionOf(CalculatedOrderItemData::class)]
+        public Collection $items,
+
+        /**
+         * The subtotal of ONLY full_payment items.
+         * Used by conditions that must exclude prepayments.
+         */
+        public int $subtotal_full_payment_items,
+
+        /**
+         * The true total value of all items in the cart (full + prepayment).
+         * Used by conditions that need to evaluate the entire commitment.
+         */
+        public int $subtotal_all_items,
+
+        /**
+         * A running log of cart-wide discounts applied (e.g., from a coupon).
+         * This will be serialized into the orders.applied_cart_discounts_json column.
+         *
+         * @var array
+         */
+        public array $applied_cart_discounts = [],
+
+        /**
+         * This holds a reference to the promotion being evaluated.
+         * It allows action handlers to access details like the promotion's name for the audit trail.
+         */
+        public ?DiscountPromotion $evaluating_promotion = null,
+        public ?string $triggered_by_coupon_code = null,
+    ) {}
+}

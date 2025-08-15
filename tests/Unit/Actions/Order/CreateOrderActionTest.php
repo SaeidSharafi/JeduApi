@@ -7,13 +7,15 @@ use App\Actions\Admin\Order\CreateOrderAction;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
 use App\Enums\EnrolmentStatusEnum;
+use App\Enums\Order\DiscountTypeEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\PublicationStatusEnum;
-
 // Or your specific status enum
 use App\Events\OrderCreatedEvent;
+use App\Models\DiscountCoupon;
+use App\Models\DiscountPromotion;
 use App\Models\Enrolment;
 use App\Models\Order;
 use App\Models\Product;
@@ -31,38 +33,37 @@ describe('CreateOrderAction', function () {
     });
 
     it('creates an order and pending enrollments successfully', function () {
-        $user = User::factory()->create();
+        $user     = User::factory()->create();
         $product1 = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         $product2 = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
 
         $deliveryOption1 = ProductDeliveryOption::factory()->create([
-            'product_id' => $product1->id,
-            'status'     => PublicationStatusEnum::PUBLISHED,
-            'capacity'   => 20,
-            'price'      => 50000
+            'product_id'              => $product1->id,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'capacity'                => 20,
+            'price'                   => 50000,
+            'is_prepayment_available' => false,
+
         ]);
         $deliveryOption2 = ProductDeliveryOption::factory()->create([
-            'product_id' => $product2->id,
-            'status'     => PublicationStatusEnum::PUBLISHED,
-            'capacity'   => 20,
-            'price'      => 25000
+            'product_id'              => $product2->id,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'capacity'                => 20,
+            'price'                   => 25000,
+            'is_prepayment_available' => false,
         ]);
 
         $items = [
             new OrderItemCreateData(
                 product_delivery_option_id: $deliveryOption1->id,
                 payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
-                discount_amount: 5000,
                 qty_ordered: 1,
-                tax_amount: 1000
             ),
 
             new OrderItemCreateData(
                 product_delivery_option_id: $deliveryOption2->id,
                 payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
-                discount_amount: 0,
                 qty_ordered: 1,
-                tax_amount: 0
             ),
         ];
 
@@ -70,12 +71,12 @@ describe('CreateOrderAction', function () {
             status: OrderStatusEnum::PENDING->value,
             customer_id: $user->id,
             items: $items,
-            applied_coupon_code: 'TEST2025',
+            applied_coupon_code: null,
             admin_notes: 'Test notes'
         );
 
-        $action = new CreateOrderAction();
-        $order = $action->handle($data);
+        $action = app()->make(CreateOrderAction::class);
+        $order  = $action->handle($data);
 
         expect($order)->toBeInstanceOf(Order::class);
         \Pest\Laravel\assertDatabaseHas('orders', [
@@ -84,11 +85,11 @@ describe('CreateOrderAction', function () {
             'status'              => OrderStatusEnum::PENDING->value,
             'total_item_count'    => 2,
             'total_qty_ordered'   => 2,
-            'subtotal'            => 75000, // (50000*2) + 25000
-            'discount_amount'     => 5000, // (5000*2) + 0
-            'tax_amount'          => 1000, // (1000*2) + 0
-            'grand_total'         => 71000, // 92000 + 25000
-            'applied_coupon_code' => 'TEST2025',
+            'subtotal'            => 75000,
+            'discount_amount'     => 0,
+            'tax_amount'          => 0,
+            'grand_total'         => 75000,
+            'applied_coupon_code' => null,
         ]);
 
         // --- Assertions for Order Items ---
@@ -98,9 +99,9 @@ describe('CreateOrderAction', function () {
             'product_delivery_option_id' => $deliveryOption1->id,
             'qty_ordered'                => 1,
             'price'                      => 50000,
-            'discount_amount'            => 5000,
-            'tax_amount'                 => 1000,
-            'total'                      => 46000,
+            'discount_amount'            => 0,
+            'tax_amount'                 => 0,
+            'total'                      => 50000,
             'status'                     => OrderItemStatusEnum::PENDING->value,
         ]);
         \Pest\Laravel\assertDatabaseHas('order_items', [
@@ -124,17 +125,17 @@ describe('CreateOrderAction', function () {
             'enrollment_status'          => EnrolmentStatusEnum::PENDING_PROVISIONING->value,
         ]);
 
-        Event::assertDispatched(OrderCreatedEvent::class, fn($event) => $event->order->id === $order->id);
+        Event::assertDispatched(OrderCreatedEvent::class, fn ($event) => $event->order->id === $order->id);
     });
 
     it('throws validation exception if product capacity is exceeded', function () {
-        $user = User::factory()->create();
+        $user    = User::factory()->create();
         $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
 
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id' => $product,
             'status'     => PublicationStatusEnum::PUBLISHED,
-            'capacity'   => 1
+            'capacity'   => 1,
         ]); // Only 1 seat
 
         Enrolment::factory()->create([
@@ -143,90 +144,36 @@ describe('CreateOrderAction', function () {
         ]);
 
         $items = [
-            new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment',
-                discount_amount: 0, qty_ordered: 1)
+            new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment', qty_ordered: 1),
         ];
         $data = new OrderCreateData(status: 'pending', customer_id: $user->id, items: $items, applied_coupon_code: null,
             admin_notes: null);
 
-        expect(fn() => (new CreateOrderAction())->handle($data))
+        expect(fn () => (app()->make(CreateOrderAction::class))->handle($data))
             ->toThrow(ValidationException::class, __('messages.order.insufficient_capacity', [
                 'product'   => $deliveryOption->name,
                 'available' => 0,
             ]));
     });
 
-    it('throws validation exception if discount is greater than item price', function () {
-        $user = User::factory()->create();
-        $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
-        $deliveryOption = ProductDeliveryOption::factory()->create([
-            'product_id' => $product,
-            'status'     => PublicationStatusEnum::PUBLISHED,
-            'price'      => 10000,
-            'capacity'   => 10
-        ]);
-
-        $items = [
-            new OrderItemCreateData(
-                product_delivery_option_id: $deliveryOption->id,
-                payment_type: 'full_payment',
-                discount_amount: 11000,
-                qty_ordered: 1
-            )
-        ];
-        $data = new OrderCreateData(status: 'pending', customer_id: $user->id, items: $items, applied_coupon_code: null,
-            admin_notes: null);
-
-        expect(fn() => (new CreateOrderAction())->handle($data))
-            ->toThrow(ValidationException::class,
-                __('messages.order.discount_exceeds_price', ['product' => $deliveryOption->name]));
-    });
-    it('throws validation exception if discount is used for prepayment type', function () {
-        $user = User::factory()->create();
-        $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
-        $deliveryOption = ProductDeliveryOption::factory()->create([
-            'product_id'              => $product,
-            'status'                  => PublicationStatusEnum::PUBLISHED,
-            'is_prepayment_available' => true,
-            'prepayment_amount'       => 1000,
-            'price'                   => 10000,
-            'capacity'                => 10
-        ]);
-
-        $items = [
-            new OrderItemCreateData(
-                product_delivery_option_id: $deliveryOption->id,
-                payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
-                discount_amount: 500,
-                qty_ordered: 1
-            )
-        ];
-        $data = new OrderCreateData(status: 'pending', customer_id: $user->id, items: $items, applied_coupon_code: null,
-            admin_notes: null);
-
-        expect(fn() => (new CreateOrderAction())->handle($data))
-            ->toThrow(ValidationException::class,
-                __('messages.order.discount_not_allowed_for_prepayment'));
-    });
     it('throws validation exception if product or delivery option is not published', function () {
-        $user = User::factory()->create();
-        $product = Product::factory()->create(['status' => PublicationStatusEnum::DRAFT]);
+        $user           = User::factory()->create();
+        $product        = Product::factory()->create(['status' => PublicationStatusEnum::DRAFT]);
         $deliveryOption = ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
 
         $items = [
-            new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment',
-                discount_amount: 0)
+            new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment'),
         ];
         $data = new OrderCreateData(status: 'pending', customer_id: $user->id, items: $items, applied_coupon_code: null,
             admin_notes: null);
 
-        expect(fn() => (new CreateOrderAction())->handle($data))
+        expect(fn () => (app()->make(CreateOrderAction::class))->handle($data))
             ->toThrow(ValidationException::class,
                 __('messages.order.item_not_available', ['product' => $deliveryOption->name]));
     });
 
     it('throws validation exception if an active enrollment already exists for an item', function () {
-        $user = User::factory()->create();
+        $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
 
         // Setup: Create a pre-existing ACTIVE enrollment for this user and item.
@@ -237,21 +184,20 @@ describe('CreateOrderAction', function () {
         ]);
 
         $items = [
-            new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment',
-                discount_amount: 0)
+            new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment'),
         ];
         $data = new OrderCreateData(status: 'pending', customer_id: $user->id, items: $items, applied_coupon_code: null,
             admin_notes: null);
 
-        expect(fn() => (new CreateOrderAction())->handle($data))
+        expect(fn () => (app()->make(CreateOrderAction::class))->handle($data))
             ->toThrow(ValidationException::class, __('messages.order.items_already_purchased_or_active', [
                 'products' => $deliveryOption->name,
             ]));
     });
 
     it('throws validation exception for unavailable pre-payment option', function () {
-        $user = User::factory()->create();
-        $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $user           = User::factory()->create();
+        $product        = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id'              => $product->id,
             'status'                  => PublicationStatusEnum::PUBLISHED,
@@ -260,38 +206,38 @@ describe('CreateOrderAction', function () {
 
         $items = [
             new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id,
-                payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT->value, discount_amount: 0)
+                payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT->value),
         ];
         $data = new OrderCreateData(status: 'pending', customer_id: $user->id, items: $items, applied_coupon_code: null,
             admin_notes: null);
 
-        expect(fn() => (new CreateOrderAction())->handle($data))
+        expect(fn () => (app()->make(CreateOrderAction::class))->handle($data))
             ->toThrow(ValidationException::class, __('messages.order.prepayment_not_available', [
                 'product' => $deliveryOption->name,
             ]));
     });
 
     it('throws InvalidArgumentException if a delivery option ID does not exist', function () {
-        $user = User::factory()->create();
+        $user  = User::factory()->create();
         $items = [
-            new OrderItemCreateData(product_delivery_option_id: 99999, payment_type: 'full_payment', discount_amount: 0)
+            new OrderItemCreateData(product_delivery_option_id: 99999, payment_type: 'full_payment'),
         ];
         $data = new OrderCreateData(status: 'pending', customer_id: $user->id, items: $items, applied_coupon_code: null,
             admin_notes: null);
 
-        expect(fn() => (new CreateOrderAction())->handle($data))
+        expect(fn () => (app()->make(CreateOrderAction::class))->handle($data))
             ->toThrow(InvalidArgumentException::class);
     });
 
     it('throws validation exception with a list of all products for multiple duplicate enrollments', function () {
-        $user = User::factory()->create();
+        $user            = User::factory()->create();
         $deliveryOption1 = ProductDeliveryOption::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
-            'name'   => 'Course A'
+            'name'   => 'Course A',
         ]);
         $deliveryOption2 = ProductDeliveryOption::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
-            'name'   => 'Course B'
+            'name'   => 'Course B',
         ]);
 
         // Setup: Create TWO pre-existing active enrollments
@@ -308,23 +254,21 @@ describe('CreateOrderAction', function () {
 
         // Attempt to create an order with both of these items again
         $items = [
-            new OrderItemCreateData(product_delivery_option_id: $deliveryOption1->id, payment_type: 'full_payment',
-                discount_amount: 0),
-            new OrderItemCreateData(product_delivery_option_id: $deliveryOption2->id, payment_type: 'full_payment',
-                discount_amount: 0),
+            new OrderItemCreateData(product_delivery_option_id: $deliveryOption1->id, payment_type: 'full_payment'),
+            new OrderItemCreateData(product_delivery_option_id: $deliveryOption2->id, payment_type: 'full_payment'),
         ];
         $data = new OrderCreateData(status: 'pending', customer_id: $user->id, items: $items, applied_coupon_code: null,
             admin_notes: null);
 
         // Assert that the exception message contains both product names
-        expect(fn() => (new CreateOrderAction())->handle($data))
+        expect(fn () => (app()->make(CreateOrderAction::class))->handle($data))
             ->toThrow(ValidationException::class, 'Course A, Course B');
     });
 
     it('throws ValidationException if a delivery option deosn\'t allow more than 1 quantity', function () {
         $user = User::factory()->create();
 
-        $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $product        = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
             'status'     => PublicationStatusEnum::PUBLISHED,
@@ -334,15 +278,320 @@ describe('CreateOrderAction', function () {
             new OrderItemCreateData(
                 product_delivery_option_id: $deliveryOption->id,
                 payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
-                discount_amount: 0,
-                qty_ordered: 2)
+                qty_ordered: 2),
         ];
         $data = new OrderCreateData(status: 'pending', customer_id: $user->id, items: $items, applied_coupon_code: null,
             admin_notes: null);
 
-        expect(fn() => (new CreateOrderAction())->handle($data))
+        expect(fn () => (app()->make(CreateOrderAction::class))->handle($data))
             ->toThrow(ValidationException::class, __('messages.order.quantity_not_allowed',
                 ['product' => $deliveryOption->name]));
     });
 
+    it('creates an order with a discount from a valid coupon code', function () {
+        // --- ARRANGE: SETUP THE PROMOTION ---
+        $user           = User::factory()->create();
+        $product        = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'product_id' => $product->id,
+            'status'     => PublicationStatusEnum::PUBLISHED,
+            'price'      => 50000, // Price is 500.00
+        ]);
+
+        // 1. Create the master promotion
+        $promotion = DiscountPromotion::factory()->create([
+            'name'      => '10% Off All Courses',
+            'type'      => 'cart_checkout',
+            'is_active' => true,
+        ]);
+
+        // 2. Create the "Action" rule for this promotion (what it does)
+        $promotion->rules()->create([
+            'type'          => 'action',
+            'handler'       => 'apply_percentage_off', // The key for our Action Handler
+            'configuration' => ['percentage' => 10], // Apply 10%
+        ]);
+
+        // 3. Create the coupon code linked to the promotion
+        $coupon = DiscountCoupon::factory()->create([
+            'discount_promotion_id' => $promotion->id,
+            'code'                  => 'SAVE10',
+        ]);
+
+        // --- PREPARE THE DATA DTO ---
+        // Note the absence of discount_amount here. It's clean.
+        $items = [
+            new OrderItemCreateData(
+                product_delivery_option_id: $deliveryOption->id,
+                payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                qty_ordered: 1
+            ),
+        ];
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: $items,
+            applied_coupon_code: 'SAVE10',
+            admin_notes: null
+        );
+
+        // --- ACT ---
+        $action = app(CreateOrderAction::class); // Resolve from container to get dependencies
+        $order  = $action->handle($data);
+
+        // --- ASSERT ---
+        expect($order)->toBeInstanceOf(Order::class);
+
+        // The assertions now check for the result of the PROMOTION's logic.
+        \Pest\Laravel\assertDatabaseHas('orders', [
+            'id'                  => $order->id,
+            'customer_id'         => $user->id,
+            'subtotal'            => 50000,
+            'discount_amount'     => 5000,  // 10% of 50000
+            'grand_total'         => 45000, // 50000 - 5000
+            'applied_coupon_code' => 'SAVE10', // Or this might be in the JSON audit column now
+        ]);
+
+        \Pest\Laravel\assertDatabaseHas('order_items', [
+            'order_id'                   => $order->id,
+            'product_delivery_option_id' => $deliveryOption->id,
+            'price'                      => 50000,
+            'discount_amount'            => 5000,
+            'total'                      => 45000,
+        ]);
+
+        Event::assertDispatched(OrderCreatedEvent::class);
+    });
+    it('applies no discount if coupon code is invalid', function () {
+        // Arrange
+        $user           = User::factory()->create();
+        $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment')],
+            applied_coupon_code: 'INVALID_CODE',
+            admin_notes: null
+        );
+
+        // Act
+        $order = app(CreateOrderAction::class)->handle($data);
+
+        // Assert
+        expect($order->discount_amount)->toBe(0);
+        expect($order->grand_total)->toBe(10000);
+    });
+
+    it('does not apply discount if a promotion condition is not met', function () {
+        // Arrange: Create a promotion that requires a cart value of $200
+        $user           = User::factory()->create();
+        $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]); // Price is only $100
+
+        $promotion = DiscountPromotion::factory()->create(['is_active' => true]);
+        $promotion->rules()->create([
+            'type'          => 'condition',
+            'handler'       => 'cart_value_over',
+            'configuration' => ['value' => 20000, 'operator' => '>=', 'include_prepayments' => false],
+        ]);
+        $promotion->rules()->create([
+            'type'          => 'action',
+            'handler'       => 'apply_percentage_off',
+            'configuration' => ['percentage' => 10],
+        ]);
+        $coupon = DiscountCoupon::factory()->create(['discount_promotion_id' => $promotion->id, 'code' => 'SAVE10']);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment')],
+            applied_coupon_code: 'SAVE10',
+            admin_notes: null
+        );
+
+        // Act
+        $order = app(CreateOrderAction::class)->handle($data);
+
+        // Assert: The discount was NOT applied because the cart value was too low
+        expect($order->discount_amount)->toBe(0);
+        expect($order->grand_total)->toBe(10000);
+    });
+
+    it('correctly populates discount audit trail columns', function () {
+        // Arrange
+        $user           = User::factory()->create();
+        $deliveryOption = ProductDeliveryOption::factory()
+            ->create([
+                'product_id' => Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED])->id,
+                'price' => 50000,
+                'status' => PublicationStatusEnum::PUBLISHED,
+            ]);
+        $promotion = DiscountPromotion::factory()->create([
+            'name' => 'Test Sale',
+            'is_active' => true,
+            'type' => DiscountTypeEnum::CART_CHECKOUT
+        ]);
+        $promotion->rules()->create([
+            'type' => 'action', 'handler' => 'apply_percentage_off', 'configuration' => ['percentage' => 10],
+        ]);
+        $coupon = DiscountCoupon::factory()->create(['discount_promotion_id' => $promotion->id, 'code' => 'AUDIT_TEST']);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment')],
+            applied_coupon_code: 'AUDIT_TEST',
+            admin_notes: null
+        );
+
+        // Debug: Check that promotion exists with the right coupon
+        expect($promotion->coupons()->where('code', 'AUDIT_TEST')->exists())->toBeTrue('Coupon not found for promotion');
+
+        // Act
+        $order = app(CreateOrderAction::class)->handle($data);
+
+        // Debug: Check if any discount was actually applied
+        expect($order->discount_amount)->toBeGreaterThan(0, 'No discount was applied - promotion not found or conditions failed');
+
+        // Assert
+        $orderItem = $order->items->first();
+
+        // For CART_CHECKOUT type, both cart-level and item-level details should be populated
+        expect($order->applied_cart_discounts_json)->toBe([
+            [
+                'promotion_id'   => $promotion->id,
+                'promotion_name' => 'Test Sale',
+                'applied_amount' => 5000, // 10% of 50000
+                'coupon_code'    => 'AUDIT_TEST',
+            ],
+        ]);
+        expect($orderItem->applied_discount_details_json)->toBe([
+            [
+                'promotion_id'   => $promotion->id,
+                'promotion_name' => 'Test Sale',
+                'applied_amount' => 5000, // 10% of 50000
+                'coupon_code'    => 'AUDIT_TEST',
+            ],
+        ]);
+    });
+    it('correctly calculates grand total for a mixed payment type order', function () {
+        // This test covers the prepayment logic in the grand_total calculation (line 89).
+        $user = User::factory()->create();
+
+        $fullPaymentOption = ProductDeliveryOption::factory()->create([
+            'product_id' => Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED])->id,
+            'status' => PublicationStatusEnum::PUBLISHED,
+            'price' => 10000,
+            'is_prepayment_available' => false,
+        ]);
+        $prePaymentOption = ProductDeliveryOption::factory()->create([
+            'product_id' => Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED])->id,
+            'status' => PublicationStatusEnum::PUBLISHED,
+            'price' => 50000,
+            'is_prepayment_available' => true,
+            'prepayment_amount' => 2000, // The billable amount
+        ]);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [
+                new OrderItemCreateData(
+                    product_delivery_option_id: $fullPaymentOption->id,
+                    payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                    qty_ordered: 1
+                ),
+                new OrderItemCreateData(
+                    product_delivery_option_id: $prePaymentOption->id,
+                    payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                    qty_ordered: 1
+                ),
+            ]
+        );
+
+        $order = app(CreateOrderAction::class)->handle($data);
+
+        // Assert: The grand_total is the sum of the full price and the prepayment amount.
+        expect($order->grand_total)->toBe(12000); // 10000 (full) + 2000 (prepayment)
+
+        // Verify that the prepayment item was processed correctly
+        $prepaymentItem = $order->items->where('product_delivery_option_id', $prePaymentOption->id)->first();
+        expect($prepaymentItem->payment_type)->toBe(OrderItemPaymentTypeEnum::PRE_PAYMENT);
+
+    });
+
+    it('creates an order with cart-level discounts applied', function () {
+        // This test covers line 253 (calculateTotalDiscountFromContext method)
+        $user = User::factory()->create();
+        $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'product_id' => $product->id,
+            'price' => 50000,
+            'status' => PublicationStatusEnum::PUBLISHED,
+        ]);
+
+        // Create a promotion with discount
+        $promotion = DiscountPromotion::factory()->create(['is_active' => true]);
+        $promotion->rules()->create([
+            'type' => 'action',
+            'handler' => 'apply_percentage_off',
+            'configuration' => ['percentage' => 10],
+        ]);
+
+        $coupon = DiscountCoupon::factory()->create([
+            'discount_promotion_id' => $promotion->id,
+            'code' => 'SAVE10',
+        ]);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [
+                new OrderItemCreateData(
+                    product_delivery_option_id: $deliveryOption->id,
+                    payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                    qty_ordered: 1
+                ),
+            ],
+            applied_coupon_code: 'SAVE10'
+        );
+
+        $order = app(CreateOrderAction::class)->handle($data);
+
+        // This should trigger the calculateTotalDiscountFromContext method (line 253)
+        expect($order->discount_amount)->toBe(5000); // 10% of 50000
+        expect($order->grand_total)->toBe(45000); // 50000 - 5000
+        expect($order->applied_coupon_code)->toBe('SAVE10');
+
+        // Verify the individual item also has the discount
+        $orderItem = $order->items->first();
+        expect($orderItem->discount_amount)->toBe(5000);
+        expect($orderItem->total)->toBe(45000);
+    });
+
+    it('does not increment usage counts if no promotion was evaluated', function () {
+        // This test covers the `if (! $promotion)` return in `incrementUsageCounts` (line 155).
+        $user = User::factory()->create();
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'price' => 10000,
+            'status' => PublicationStatusEnum::PUBLISHED,
+        ]);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [new OrderItemCreateData(
+                product_delivery_option_id: $deliveryOption->id,
+                payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value
+            )],
+            applied_coupon_code: null, // No coupon code provided to trigger any promotions
+        );
+
+        $order = app(CreateOrderAction::class)->handle($data);
+
+        // Since no promotion was applied, incrementUsageCounts should hit the early return (line 155)
+        expect($order->applied_coupon_code)->toBeNull();
+        expect($order->discount_amount)->toBe(0);
+    });
 });

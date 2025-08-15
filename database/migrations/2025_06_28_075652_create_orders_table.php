@@ -43,6 +43,8 @@ return new class extends Migration
             $table->foreignId('created_by')->nullable()->constrained('staff','id')->nullOnDelete();
 
             $table->timestamps();
+
+            $table->index(['customer_id', 'status'], 'idx_orders_customer_status');
         });
     }
 

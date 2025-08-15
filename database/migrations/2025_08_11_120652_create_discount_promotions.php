@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Enums\Order\DiscountTypeEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('discount_promotions', function (Blueprint $table) {
@@ -14,7 +18,7 @@ return new class extends Migration {
             $table->text('description')->nullable(); // Internal notes for admins
 
             // Behavior & Type
-            $table->string('type'); // 'product_specific' or 'cart_checkout'
+            $table->enum('type', DiscountTypeEnum::getAllValues());
             $table->boolean('is_active')->default(false)->index(); // Master switch for the promotion
 
             // Scheduling
@@ -29,7 +33,6 @@ return new class extends Migration {
             $table->unsignedInteger('usage_limit_total')->nullable(); // Max uses across all customers (null = unlimited)
             $table->unsignedInteger('usage_limit_per_customer')->nullable(); // Max uses for a single customer (null = unlimited)
             $table->unsignedInteger('total_usage_count')->default(0); // **KEY ADDITION**: Tracks total uses for promotions without coupons.
-
 
             $table->timestamps();
         });

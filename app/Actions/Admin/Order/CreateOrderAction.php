@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Order;
 
+use App\Data\Admin\Discounts\CalculatedOrderItemData;
+use App\Data\Admin\Discounts\OrderContextData;
 use App\Data\Admin\Order\OrderCreateData;
-use App\Data\Admin\Order\OrderItemCreateData;
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
 use App\Enums\EnrolmentStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
@@ -15,16 +16,19 @@ use App\Events\OrderCreatedEvent;
 use App\Models\Enrolment;
 use App\Models\Order;
 use App\Models\ProductDeliveryOption;
-use App\Models\User;
+use App\Services\Discounts\OrderCalculationService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use InvalidArgumentException;
 
 // Make sure this is imported
 
 final readonly class CreateOrderAction
 {
+    public function __construct(
+        protected OrderCalculationService $orderCalculationService
+    ) {}
+
     /**
      * Creates an Order (a bill).
      * This action's only responsibility is to record what a customer is buying.
@@ -32,112 +36,122 @@ final readonly class CreateOrderAction
      */
     public function handle(OrderCreateData $data): Order
     {
+        $context                  = $this->orderCalculationService->calculate($data);
+        $initialDeliveryOptionIds = $context->items->pluck('product_delivery_option.id');
+        $this->validateNoDuplicatePurchases($context->customer->id, $initialDeliveryOptionIds);
 
-        $order = DB::transaction(function () use ($data): Order {
-            $customer = User::findOrFail($data->customer_id);
-            $initialDeliveryOptions = ProductDeliveryOption::with([
-                'product.vendor', 'product.productable', 'product.term'
-            ])
-                ->whereIn('id', collect($data->items)->pluck('product_delivery_option_id'))
-                ->get()
-                ->keyBy('id');
-            $this->validateNoDuplicatePurchases($data->customer_id, $initialDeliveryOptions->pluck('id'));
+        $order = DB::transaction(function () use ($data, $context): Order {
+            $originalInputItems = collect($data->items)->keyBy('product_delivery_option_id');
+            $orderItemsData     = new Collection();
 
-            $orderItemsData = new Collection();
-            $grandTotal = 0;
-            $fullValueGrandTotal = 0;
-            $subtotal = 0;
-            $totalDiscountAmount = 0;
-            $taxAmount = 0;
-
-            foreach ($data->items as $key => $itemData) {
-                // --- Pessimistic Lock and Re-fetch for Validation ---
-                // This is the single most important step for preventing race conditions.
-                $deliveryOption = ProductDeliveryOption::with('product')
-                    ->with('product',fn($q) => $q->with(['vendor', 'productable', 'term']))
-                    ->where('id', $itemData->product_delivery_option_id)
+            foreach ($context->items as $key => $calculatedItem) {
+                // --- PESSIMISTIC LOCK AND RE-FETCH (PRESERVED) ---
+                // This critical concurrency check remains unchanged.
+                $deliveryOption = ProductDeliveryOption::query()
+                    ->with([
+                        'product.vendor', 'product.productable', 'product.term',
+                    ])
+                    ->where('id', $calculatedItem->product_delivery_option->id)
                     ->lockForUpdate()
-                    ->first();
+                    ->firstOrFail();
 
-                if (!$deliveryOption) {
-                    throw new InvalidArgumentException("Delivery option with ID {$itemData->product_delivery_option_id} not found.");
-                }
+                // --- VALIDATION LOGIC (PRESERVED) ---
+                // We find the original input data for this item to validate against the user's intent.
+                $originalItemData = $originalInputItems->get($deliveryOption->id);
+                $this->validateItem($key, $originalItemData, $deliveryOption);
 
-                $this->validateItem($key, $itemData, $deliveryOption);
-
-                $lineItemNetTotal = $this->calculateLineItemTotal($itemData, $deliveryOption);
-                $lineItemFullValue = max(0, ($deliveryOption->price - $itemData->discount_amount + $itemData->tax_amount) * $itemData->qty_ordered);
-                $fullValueGrandTotal += $lineItemFullValue;
-
-                $grandTotal += $lineItemNetTotal;
-
-                // Aggregate values for storing on the Order model for display/reporting.
-                $subtotal += $deliveryOption->price * $itemData->qty_ordered;
-                $totalDiscountAmount += $itemData->discount_amount * $itemData->qty_ordered;
-                $taxAmount += $itemData->tax_amount * $itemData->qty_ordered;
-
+                // =================================================================
+                // STEP 3: BUILD THE ORDER ITEM DATA FROM THE CONTEXT
+                // All manual calculation is removed. We just map the results.
+                // =================================================================
                 $orderItemsData->push([
-                    'product_delivery_option_id' => $itemData->product_delivery_option_id,
-                    'vendor_id'                  => $deliveryOption->product->vendor_id,
-                    'qty_ordered'                => $itemData->qty_ordered,
-                    'name'                       => $deliveryOption->product->name,
-                    'sku'                        => $deliveryOption->sku,
-                    'product_data_snapshot_json' => ProductDeliveryOptionShowData::from($deliveryOption)->toArray(),
-                    'price'                      => $deliveryOption->price,
-                    'discount_amount'            => $itemData->discount_amount,
-                    'tax_amount'                 => $itemData->tax_amount,
-                    'total'                      => $lineItemNetTotal,
-                    'prepayment_amount'          => $deliveryOption->prepayment_amount,
-                    'payment_type'               => $itemData->payment_type,
-                    'status'                     => OrderItemStatusEnum::PENDING->value,
+                    'product_delivery_option_id'    => $calculatedItem->product_delivery_option->id,
+                    'vendor_id'                     => $deliveryOption->product->vendor_id,
+                    'qty_ordered'                   => $calculatedItem->qty,
+                    'name'                          => $deliveryOption->product->name,
+                    'sku'                           => $deliveryOption->sku,
+                    'product_data_snapshot_json'    => ProductDeliveryOptionShowData::from($deliveryOption)->toArray(),
+                    'payment_type'                  => $calculatedItem->payment_type,
+                    'status'                        => OrderItemStatusEnum::PENDING->value,
+                    'price'                         => $calculatedItem->product_delivery_option->price,
+                    'discount_amount'               => $calculatedItem->discount_amount,
+                    'total'                         => $calculatedItem->total, // This is the final value AFTER discount
+                    'applied_discount_details_json' => ! empty($calculatedItem->applied_discount_details)
+                        ? $calculatedItem->applied_discount_details
+                        : null,
+                    'prepayment_amount' => $deliveryOption->prepayment_amount,
+                    'tax_amount'        => 0, // Placeholder
                 ]);
             }
-
+            $grandTotal = $orderItemsData->sum('total');
             $order = Order::create([
                 'increment_id'           => Order::generateIncrementId(),
-                'status'                 => $data->status,
-                'customer_id'            => $data->customer_id,
-                'customer_email'         => $customer->email,
-                'customer_phone'         => $customer->phone,
-                'customer_first_name'    => $customer->first_name,
-                'customer_last_name'     => $customer->last_name,
-                'customer_snapshot_json' => $customer->toArray(),
-                'total_item_count'       => $orderItemsData->count(),
-                'total_qty_ordered'      => $orderItemsData->sum('qty_ordered'),
-                'subtotal'               => $subtotal,
-                'discount_amount'        => $totalDiscountAmount,
-                'tax_amount'             => $taxAmount,
-                'grand_total'            => $grandTotal,
-                'full_value_grand_total' => $fullValueGrandTotal,
-                'applied_coupon_code'    => $data->applied_coupon_code,
-                'admin_notes'            => $data->admin_notes,
+                'status'                 => $data->status, // This can be an initial status from the form
+                'customer_id'            => $context->customer->id,
+                'customer_email'         => $context->customer->email,
+                'customer_phone'         => $context->customer->phone,
+                'customer_first_name'    => $context->customer->first_name,
+                'customer_last_name'     => $context->customer->last_name,
+                'customer_snapshot_json' => $context->customer->toArray(),
+                'total_item_count'       => $context->items->count(),
+                'total_qty_ordered'      => $context->items->sum('qty'),
+
+                // --- TOTALS CALCULATED FROM CONTEXT ---
+                'grand_total'            => $grandTotal, // The final, authoritative bill amount.
+                'full_value_grand_total' => $context->subtotal_all_items,
+                'subtotal'               => $this->calculateSubtotalFromContext($context),
+                'discount_amount'        => $this->calculateTotalDiscountFromContext($context),
+                'tax_amount'             => 0, // Placeholder
+
+                // --- AUDIT TRAIL FOR CART DISCOUNTS ---
+                'applied_cart_discounts_json' => ! empty($context->applied_cart_discounts)
+                    ? $context->applied_cart_discounts
+                    : null,
+
+                'applied_coupon_code' => $context->triggered_by_coupon_code, // Get code from context
+                'admin_notes'         => $data->admin_notes,
             ]);
 
             $order->items()->createMany($orderItemsData->all());
             $order->refresh();
 
+            // --- ENROLMENT CREATION LOGIC (PRESERVED) ---
+            // This logic is unchanged as it depends only on the created order items.
             $order->load('items');
-            $order->items->each(function ($item) use ($data) {
+            $order->items->each(function ($item) use ($context) {
                 Enrolment::create([
                     'order_id'                   => $item->order_id,
                     'order_item_id'              => $item->id,
-                    'customer_id'                => $data->customer_id,
-                    'product_delivery_option_id' => $item['product_delivery_option_id'],
+                    'customer_id'                => $context->customer->id,
+                    'product_delivery_option_id' => $item->product_delivery_option_id,
                     'enrollment_status'          => EnrolmentStatusEnum::PENDING_PROVISIONING,
-                    'access_start_date'          => null,
-                    'access_end_date'            => null,
-                    'external_enrollment_id'     => null,
-                    'provisioning_data'          => [],
-                    'notes'                      => null,
                 ]);
             });
 
             return $order->fresh();
+
         });
 
+        if ($context->evaluating_promotion) {
+            $this->incrementUsageCounts($context);
+        }
         OrderCreatedEvent::dispatch($order);
 
         return $order->load('items', 'payments', 'enrolments');
+    }
+
+    private function incrementUsageCounts(OrderContextData $context): void
+    {
+        $promotion = $context->evaluating_promotion;
+
+        $promotion->increment('total_usage_count');
+
+        // Assuming coupon code is passed into the context by the calculation service
+        if ($context->triggered_by_coupon_code) {
+            $promotion->coupons()
+                ->where('code', $context->triggered_by_coupon_code)
+                ->increment('usage_count');
+        }
     }
 
     /**
@@ -147,7 +161,7 @@ final readonly class CreateOrderAction
      */
     private function validateItem(int $key, object $itemData, ProductDeliveryOption $deliveryOption): void
     {
-        if ($deliveryOption->status !== PublicationStatusEnum::PUBLISHED
+        if ($deliveryOption->status             !== PublicationStatusEnum::PUBLISHED
             || $deliveryOption->product->status !== PublicationStatusEnum::PUBLISHED
         ) {
             throw ValidationException::withMessages([
@@ -169,7 +183,7 @@ final readonly class CreateOrderAction
             }
         }
 
-        if (!$deliveryOption->allow_multiple_quantity && $itemData->qty_ordered > 1) {
+        if (! $deliveryOption->allow_multiple_quantity && $itemData->qty_ordered > 1) {
             throw ValidationException::withMessages([
                 "items.{$key}" => __('messages.order.quantity_not_allowed',
                     ['product' => $deliveryOption->name]),
@@ -179,24 +193,12 @@ final readonly class CreateOrderAction
         // --- Validate Payment Intent ---
         // If admin chose 'pre_payment', make sure the product allows it.
         if ($itemData->payment_type === 'pre_payment'
-            && !$deliveryOption->is_prepayment_available
+            && ! $deliveryOption->is_prepayment_available
         ) {
             throw ValidationException::withMessages([
                 "items.{$key}" => __('messages.order.prepayment_not_available', [
                     'product' => $deliveryOption->name,
                 ]),
-            ]);
-        }
-        if ($itemData->discount_amount > $deliveryOption->price) {
-            throw ValidationException::withMessages([
-                "items.{$key}" => __('messages.order.discount_exceeds_price',
-                    ['product' => $deliveryOption->name]),
-            ]);
-        }
-
-        if ($itemData->payment_type === OrderItemPaymentTypeEnum::PRE_PAYMENT->value && $itemData->discount_amount > 0) {
-            throw ValidationException::withMessages([
-                "items.{$key}" => __('messages.order.discount_not_allowed_for_prepayment'),
             ]);
         }
     }
@@ -224,7 +226,7 @@ final readonly class CreateOrderAction
 
         if ($existingEnrollments->isNotEmpty()) {
             $purchasedProductNames = $existingEnrollments
-                ->map(fn(Enrolment $e) => $e->productDeliveryOption->name)
+                ->map(fn (Enrolment $e) => $e->productDeliveryOption->name)
                 ->unique()
                 ->implode(', ');
 
@@ -234,14 +236,13 @@ final readonly class CreateOrderAction
             ]);
         }
     }
-
-    private function calculateLineItemTotal(OrderItemCreateData $orderItem, ProductDeliveryOption $deliveryOption): int
+    private function calculateTotalDiscountFromContext(OrderContextData $context): int
     {
-        if ($orderItem->payment_type === OrderItemPaymentTypeEnum::FULL_PAYMENT->value){
-            return max(0, ($deliveryOption->price - $orderItem->discount_amount + $orderItem->tax_amount) * $orderItem->qty_ordered);
-        }
+        return $context->items->sum('discount_amount');
+    }
 
-        return ($deliveryOption->prepayment_amount) * $orderItem->qty_ordered;
-
+    private function calculateSubtotalFromContext(OrderContextData $context): int
+    {
+        return $context->items->sum(fn (CalculatedOrderItemData $i) => $i->price * $i->qty);
     }
 }

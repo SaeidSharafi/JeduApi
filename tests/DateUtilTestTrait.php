@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 
 trait DateUtilTestTrait
 {
-    public function toJalalitString(string|CarbonInterface $value, ?string $format = null): ?string
+    public function toJalalitString(null|string|CarbonInterface $value, ?string $format = null): ?string
     {
         if (! $value) {
             return null;
@@ -20,7 +20,7 @@ trait DateUtilTestTrait
         return verta($value)->format($format ?: config('data.date_format'));
     }
 
-    public function parseJalaliDate(string $value, ?string $format = null): ?string
+    public function parseJalaliDate(?string $value, ?string $format = null): ?string
     {
         if (! $value) {
             return null;
@@ -34,7 +34,7 @@ trait DateUtilTestTrait
         return Carbon::parse($value)->format($format ?: config('data.date_format'));
     }
 
-    public function jalaliToGregorian(Verta|string $value, ?string $format = null): ?string
+    public function jalaliToGregorian(null|Verta|string $value, ?string $format = null): ?string
     {
         if (! $value) {
             return null;
@@ -47,7 +47,7 @@ trait DateUtilTestTrait
         return Verta::parse($value)->toCarbon()->format($format ?: config('data.date_format'));
     }
 
-    public function formatDate(DateTimeInterface $value, ?string $format = null): ?string
+    public function formatDate(?DateTimeInterface $value, ?string $format = null): ?string
     {
         if (! $value) {
             return null;

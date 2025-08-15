@@ -1,12 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use App\Enums\Order\DiscountTypeEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class DiscountPromotion extends Model
+final class DiscountPromotion extends Model
 {
     use HasFactory;
 
@@ -23,13 +26,14 @@ class DiscountPromotion extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'is_active' => 'boolean',
-        'starts_at' => 'datetime',
-        'ends_at' => 'datetime',
+        'is_active'                        => 'boolean',
+        'starts_at'                        => 'datetime:Y-m-d H:i:s',
+        'ends_at'                          => 'datetime:Y-m-d H:i:s',
         'stop_processing_subsequent_rules' => 'boolean',
+        'type'                             => DiscountTypeEnum::class,
+        'created_at' => 'datetime:Y-m-d H:i:s',
+        'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
-
-    // --- RELATIONSHIPS ---
 
     /**
      * A promotion consists of multiple rules (conditions and actions).
@@ -52,6 +56,6 @@ class DiscountPromotion extends Model
      */
     public function discountedPrices(): HasMany
     {
-        return $this->hasMany(ProductDeliveryOptionDiscountPrice::class);
+        return $this->hasMany(ProductDeliveryOptionDiscountPrice::class, 'discount_promotion_id');
     }
 }

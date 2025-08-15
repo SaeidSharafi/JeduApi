@@ -35,6 +35,7 @@ final class OrderItem extends Model
             'tax_amount',
             'total_refunded',
             'qty_refunded',
+            'applied_discount_details_json',
             'status',
         ];
 
@@ -62,15 +63,16 @@ final class OrderItem extends Model
     {
         return $this->hasMany(Refund::class, 'order_item_id');
     }
+
     protected function casts(): array
     {
         return [
-            'product_data_snapshot_json' => 'array',
+            'product_data_snapshot_json'    => 'array',
             'applied_discount_details_json' => 'array',
-            'status'                     => OrderItemStatusEnum::class,
-            'payment_type'               => OrderItemPaymentTypeEnum::class,
-            'created_at'                 => 'datetime:Y-m-d H:i:s',
-            'updated_at'                 => 'datetime:Y-m-d H:i:s',
+            'status'                        => OrderItemStatusEnum::class,
+            'payment_type'                  => OrderItemPaymentTypeEnum::class,
+            'created_at'                    => 'datetime:Y-m-d H:i:s',
+            'updated_at'                    => 'datetime:Y-m-d H:i:s',
         ];
     }
 }
