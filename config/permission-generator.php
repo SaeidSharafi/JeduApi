@@ -161,6 +161,12 @@ return [
             PermissionAction::DELETE,
             'update_status', // Custom String:   refunds.update_status
         ],
+        'discount'                => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::DELETE,
+        ],
         /*
 
 

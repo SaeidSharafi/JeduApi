@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
+use App\Models\DiscountPromotion;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
@@ -20,6 +21,7 @@ use App\Models\Vendor;
 use App\Policies\Admin\CategoryPolicy;
 use App\Policies\Admin\CoursePolicy;
 use App\Policies\Admin\DigitalAssetPolicy;
+use App\Policies\Admin\DiscountPromotionPolicy;
 use App\Policies\Admin\OrderPolicy;
 use App\Policies\Admin\ProductDeliveryOptionPolicy;
 use App\Policies\Admin\ProductPolicy;
@@ -64,5 +66,6 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(Refund::class, RefundPolicy::class);
+        Gate::policy(DiscountPromotion::class, DiscountPromotionPolicy::class);
     }
 }

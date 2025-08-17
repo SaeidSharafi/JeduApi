@@ -24,6 +24,11 @@ enum PermissionEnum: string
     case COURSE_UPDATE_OWN = 'course.update_own';
     case COURSE_VIEW = 'course.view';
     case COURSE_VIEW_ANY = 'course.view_any';
+    case DISCOUNT_CREATE = 'discount.create';
+    case DISCOUNT_DELETE = 'discount.delete';
+    case DISCOUNT_UPDATE = 'discount.update';
+    case DISCOUNT_VIEW = 'discount.view';
+    case DISCOUNT_VIEW_ANY = 'discount.view_any';
     case ENROLMENT_CREATE = 'enrolment.create';
     case ENROLMENT_DELETE = 'enrolment.delete';
     case ENROLMENT_UPDATE = 'enrolment.update';
