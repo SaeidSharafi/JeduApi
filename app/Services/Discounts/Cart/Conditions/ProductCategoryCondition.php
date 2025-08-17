@@ -2,15 +2,23 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Discounts\Conditions;
+namespace App\Services\Discounts\Cart\Conditions;
 
+use App\Attributes\DiscountHandler;
 use App\Contracts\Discounts\DiscountConditionContract;
 use App\Data\Admin\Discounts\OrderContextData;
+use App\Services\Discounts\Configs\ProductCategoryConditionConfigData;
 use Illuminate\Support\Facades\DB;
 use Spatie\LaravelData\Data;
 
+#[DiscountHandler('product_in_category', 'condition')]
 final class ProductCategoryCondition implements DiscountConditionContract
 {
+    public static function getConfigClass(): string
+    {
+        return ProductCategoryConditionConfigData::class;
+    }
+
     public function passes(OrderContextData $context, Data $configuration): bool
     {
         if (! $configuration instanceof ProductCategoryConditionConfigData) {

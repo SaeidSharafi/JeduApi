@@ -7,9 +7,7 @@ use App\Services\Discounts\OrderCalculationService;
 
 describe('DiscountMetadataService', function (): void {
     beforeEach(function (): void {
-        $this->service = new DiscountMetadataService(
-            app(OrderCalculationService::class)
-        );
+        $this->service = app(DiscountMetadataService::class);
     });
 
     test('getConditions returns available discount conditions with metadata', function (): void {

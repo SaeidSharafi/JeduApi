@@ -9,7 +9,7 @@ use ReflectionClass;
 final class DiscountMetadataService
 {
     public function __construct(
-        private readonly OrderCalculationService $orderCalculationService
+        private readonly DiscountHandlerRegistry $handlerRegistry
     ) {}
 
     /**
@@ -18,8 +18,8 @@ final class DiscountMetadataService
     public function getConditions(): array
     {
         $conditions = [];
-        $conditionHandlers = $this->getConditionHandlers();
-        $handlerConfigMap = $this->getHandlerConfigMap();
+        $conditionHandlers = $this->handlerRegistry->getCartConditionHandlers();
+        $handlerConfigMap = $this->handlerRegistry->getHandlerConfigMap();
 
         foreach ($conditionHandlers as $key => $handlerClass) {
             $configClass = $handlerConfigMap[$handlerClass] ?? null;
@@ -42,8 +42,8 @@ final class DiscountMetadataService
     public function getActions(): array
     {
         $actions = [];
-        $actionHandlers = $this->getActionHandlers();
-        $handlerConfigMap = $this->getHandlerConfigMap();
+        $actionHandlers = $this->handlerRegistry->getCartActionHandlers();
+        $handlerConfigMap = $this->handlerRegistry->getHandlerConfigMap();
 
         foreach ($actionHandlers as $key => $handlerClass) {
             $configClass = $handlerConfigMap[$handlerClass] ?? null;
@@ -287,39 +287,4 @@ final class DiscountMetadataService
         return $description;
     }
 
-    /**
-     * Use reflection to access private conditionHandlers property.
-     */
-    private function getConditionHandlers(): array
-    {
-        $reflection = new ReflectionClass($this->orderCalculationService);
-        $property = $reflection->getProperty('conditionHandlers');
-        $property->setAccessible(true);
-
-        return $property->getValue($this->orderCalculationService);
-    }
-
-    /**
-     * Use reflection to access private actionHandlers property.
-     */
-    private function getActionHandlers(): array
-    {
-        $reflection = new ReflectionClass($this->orderCalculationService);
-        $property = $reflection->getProperty('actionHandlers');
-        $property->setAccessible(true);
-
-        return $property->getValue($this->orderCalculationService);
-    }
-
-    /**
-     * Use reflection to access private handlerConfigMap property.
-     */
-    private function getHandlerConfigMap(): array
-    {
-        $reflection = new ReflectionClass($this->orderCalculationService);
-        $property = $reflection->getProperty('handlerConfigMap');
-        $property->setAccessible(true);
-
-        return $property->getValue($this->orderCalculationService);
-    }
 }

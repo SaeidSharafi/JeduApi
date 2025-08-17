@@ -6,13 +6,21 @@ namespace App\Actions\Admin\Discounts;
 
 use App\Data\Admin\Discounts\DiscountPromotionCreateData;
 use App\Models\DiscountPromotion;
+use App\Services\Discounts\ProductDeliveryOptionDiscountPriceRegenerator;
 use Illuminate\Support\Facades\DB;
 
 final class CreateDiscountPromotionAction
 {
+    protected ProductDeliveryOptionDiscountPriceRegenerator $regenerator;
+
+    public function __construct(ProductDeliveryOptionDiscountPriceRegenerator $regenerator)
+    {
+        $this->regenerator = $regenerator;
+    }
+
     public function execute(DiscountPromotionCreateData $data): DiscountPromotion
     {
-        return DB::transaction(function () use ($data) {
+        $promotion = DB::transaction(function () use ($data) {
             // Create the main promotion
             $promotion = DiscountPromotion::create([
                 'name' => $data->name,
@@ -49,5 +57,10 @@ final class CreateDiscountPromotionAction
 
             return $promotion->load(['rules', 'coupons']);
         });
+
+        // Regenerate discount prices after promotion creation
+        $this->regenerator->regenerate();
+
+        return $promotion;
     }
 }

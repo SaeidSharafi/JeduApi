@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\Contracts\OtpGeneratorInterface;
 use App\Enums\MorphTypeEnum;
 use App\Services\DefaultOtpGenerator;
+use App\Services\Discounts\DiscountHandlerRegistry;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
@@ -23,6 +24,7 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(OtpGeneratorInterface::class, DefaultOtpGenerator::class);
+        $this->app->singleton(DiscountHandlerRegistry::class);
     }
 
     /**

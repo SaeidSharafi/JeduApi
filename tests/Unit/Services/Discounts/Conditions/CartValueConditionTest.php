@@ -3,8 +3,8 @@
 use App\Data\Admin\Discounts\OrderContextData;
 use App\Enums\OperatorEnum;
 use App\Models\User;
-use App\Services\Discounts\Conditions\CartValueCondition;
-use App\Services\Discounts\Conditions\CartValueConditionConfigData;
+use App\Services\Discounts\Cart\Conditions\CartValueCondition;
+use App\Services\Discounts\Configs\CartValueConditionConfigData;
 use Spatie\LaravelData\Data;
 
 it('passes when value is greater or equal', function () {

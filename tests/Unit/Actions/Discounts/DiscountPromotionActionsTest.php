@@ -46,7 +46,7 @@ describe('Discount Promotion Actions', function (): void {
             ],
         ]);
 
-        $action = new CreateDiscountPromotionAction();
+        $action = app(CreateDiscountPromotionAction::class);
 
         // Act
         $promotion = $action->execute($data);
@@ -103,7 +103,7 @@ describe('Discount Promotion Actions', function (): void {
             'coupons' => [],
         ]);
 
-        $action = new CreateDiscountPromotionAction();
+        $action = app(CreateDiscountPromotionAction::class);
 
         // Act
         $promotion = $action->execute($data);
@@ -146,7 +146,7 @@ describe('Discount Promotion Actions', function (): void {
             'coupons' => [],
         ]);
 
-        $action = new UpdateDiscountPromotionAction();
+        $action = app(UpdateDiscountPromotionAction::class);
 
         // Act
         $updatedPromotion = $action->execute($promotion, $updateData);
@@ -195,7 +195,7 @@ describe('Discount Promotion Actions', function (): void {
             ],
         ]);
 
-        $action = new UpdateDiscountPromotionAction();
+        $action = app(UpdateDiscountPromotionAction::class);
 
         // Act
         $updatedPromotion = $action->execute($promotion, $updateData);
@@ -227,7 +227,7 @@ describe('Discount Promotion Actions', function (): void {
         ]);
 
         $promotionId = $promotion->id;
-        $action = new DeleteDiscountPromotionAction();
+        $action = app(DeleteDiscountPromotionAction::class);
 
         // Act
         $action->execute($promotion);
@@ -279,7 +279,7 @@ describe('Discount Promotion Actions', function (): void {
             ],
         ]);
 
-        $action = new CreateDiscountPromotionAction();
+        $action = app(CreateDiscountPromotionAction::class);
 
         // Act & Assert
         expect(fn() => $action->execute($data))->toThrow(Exception::class);

@@ -9,5 +9,10 @@ use Spatie\LaravelData\Data;
 
 interface DiscountConditionContract
 {
+    /**
+     * Get the configuration data class for this condition.
+     */
+    public static function getConfigClass(): string;
+
     public function passes(OrderContextData $context, Data $configuration): bool;
 }

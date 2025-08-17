@@ -532,7 +532,10 @@ describe('CreateOrderAction', function () {
         ]);
 
         // Create a promotion with discount
-        $promotion = DiscountPromotion::factory()->create(['is_active' => true]);
+        $promotion = DiscountPromotion::factory()->create([
+            'type' => DiscountTypeEnum::CART_CHECKOUT,
+            'is_active' => true
+        ]);
         $promotion->rules()->create([
             'type' => 'action',
             'handler' => 'apply_percentage_off',

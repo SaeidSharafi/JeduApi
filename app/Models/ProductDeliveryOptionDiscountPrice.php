@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -44,6 +43,6 @@ class ProductDeliveryOptionDiscountPrice extends Model
      */
     public function productDeliveryOption(): BelongsTo
     {
-        return $this->belongsTo(ProductDeliveryOption::class);
+        return $this->belongsTo(ProductDeliveryOption::class, 'product_delivery_option_id');
     }
 }

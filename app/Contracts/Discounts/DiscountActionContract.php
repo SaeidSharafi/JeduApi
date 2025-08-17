@@ -9,5 +9,10 @@ use Spatie\LaravelData\Data;
 
 interface DiscountActionContract
 {
+    /**
+     * Get the configuration data class for this action.
+     */
+    public static function getConfigClass(): string;
+
     public function apply(OrderContextData $context, Data $configuration): void;
 }

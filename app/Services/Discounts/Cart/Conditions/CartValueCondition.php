@@ -2,15 +2,23 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Discounts\Conditions;
+namespace App\Services\Discounts\Cart\Conditions;
 
+use App\Attributes\DiscountHandler;
 use App\Contracts\Discounts\DiscountConditionContract;
 use App\Data\Admin\Discounts\OrderContextData;
 use App\Enums\OperatorEnum;
+use App\Services\Discounts\Configs\CartValueConditionConfigData;
 use Spatie\LaravelData\Data;
 
+#[DiscountHandler('cart_value_over', 'condition')]
 final class CartValueCondition implements DiscountConditionContract
 {
+    public static function getConfigClass(): string
+    {
+        return CartValueConditionConfigData::class;
+    }
+
     public function passes(OrderContextData $context, Data $configuration): bool
     {
         if (! $configuration instanceof CartValueConditionConfigData) {

@@ -5,12 +5,13 @@ declare(strict_types=1);
 use App\Data\Admin\Discounts\OrderContextData;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
+use App\Enums\Order\DiscountTypeEnum;
 use App\Models\DiscountPromotion;
 use App\Models\DiscountPromotionRule;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
-use App\Services\Discounts\Actions\ApplyPercentageDiscountToItemsAction;
-use App\Services\Discounts\Conditions\CartValueCondition;
+use App\Services\Discounts\Cart\Actions\ApplyPercentageDiscountToItemsAction;
+use App\Services\Discounts\Cart\Conditions\CartValueCondition;
 use App\Services\Discounts\OrderCalculationService;
 use App\Services\Discounts\PromotionFinder;
 use Mockery\MockInterface;
@@ -20,7 +21,10 @@ it('calculates a percentage discount correctly when a promotion is found', funct
     $user = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
 
-    $promotion = DiscountPromotion::factory()->make(['id' => 50]);
+    $promotion = DiscountPromotion::factory()->make([
+        'id' => 50,
+        'type' => DiscountTypeEnum::CART_CHECKOUT
+    ]);
     $promotion->setRelation('rules', collect([
         ['type' => 'action', 'handler' => 'apply_percentage_off', 'configuration' => ['percentage' => 20]],
     ]));
@@ -82,7 +86,9 @@ it('correctly uses featured price as the base for calculation', function () {
         'featured_price_end_date'   => now()->addDay(),
     ]);
 
-    $promotion = DiscountPromotion::factory()->make();
+    $promotion = DiscountPromotion::factory()->make([
+        'type' => DiscountTypeEnum::CART_CHECKOUT
+    ]);
     $promotion->setRelation('rules', collect([
         ['type' => 'action', 'handler' => 'apply_percentage_off', 'configuration' => ['percentage' => 10]],
     ]));
@@ -198,9 +204,11 @@ test('it throws a runtime exception if a handler config dto is not mapped', func
         subtotal_full_payment_items: 0,
         subtotal_all_items: 0,
     );
-    // 1. ARRANGE: Set up the data that would normally be correct.
-    // We create a promotion with a rule that IS registered in the first map ($conditionHandlers)...
-    $promotion = DiscountPromotion::factory()->create();
+
+    // Create a promotion with a rule that IS registered in the handler registry
+    $promotion = DiscountPromotion::factory()->create([
+        'type' => DiscountTypeEnum::CART_CHECKOUT
+    ]);
     $rule = DiscountPromotionRule::create([
         'discount_promotion_id' => $promotion->id,
         'type' => 'condition',
@@ -211,30 +219,27 @@ test('it throws a runtime exception if a handler config dto is not mapped', func
     // Refresh the promotion to get the loaded relationship
     $promotion->load('rules');
 
-    // 2. SETUP THE FAULTY SERVICE: This is the key part.
-    // We get a real instance of the service from the container.
+    // Mock the registry to return a handler class but no config class
+    $mockRegistry = $this->mock(App\Services\Discounts\DiscountHandlerRegistry::class);
+    $mockRegistry->shouldReceive('getCartConditionHandler')
+        ->with('cart_value_over')
+        ->andReturn(CartValueCondition::class);
+    $mockRegistry->shouldReceive('getConfigClass')
+        ->with(CartValueCondition::class)
+        ->andReturn(null); // No config DTO mapped
+
+    // Replace the registry in the service container
+    $this->app->instance(App\Services\Discounts\DiscountHandlerRegistry::class, $mockRegistry);
+
     $service = app(OrderCalculationService::class);
 
-    // Use Reflection to access the private property `$handlerConfigMap`.
-    $reflectionClass = new ReflectionClass(OrderCalculationService::class);
-    $property = $reflectionClass->getProperty('handlerConfigMap');
-    $property->setAccessible(true); // Make the private property writable
-
-    // Intentionally break the service's configuration by setting the map to an empty array.
-    // Now, the service knows about the 'cart_value_over' handler, but has no DTO mapped for it.
-    $property->setValue($service, []);
-
-    // 3. ACT & ASSERT: Expect the specific exception to be thrown.
-    // We wrap the call to the private method `allConditionsPass` in a closure.
-    // Pest will execute this closure and check if it throws the expected exception.
-    $closure = function () use ($service, $promotion,$orderContext) {
-        // We need to use Reflection again to call the private method for our unit test
+    // ACT & ASSERT: Expect the specific exception to be thrown
+    $closure = function () use ($service, $promotion, $orderContext) {
         $method = new ReflectionMethod(OrderCalculationService::class, 'allConditionsPass');
         $method->setAccessible(true);
         $method->invoke($service, $promotion, $orderContext);
     };
 
-    // The assertion:
     expect($closure)
         ->toThrow(
             \RuntimeException::class,
@@ -249,12 +254,14 @@ test('it throws a runtime exception if an action handler config dto is not mappe
         subtotal_full_payment_items: 0,
         subtotal_all_items: 0,
     );
-    // 1. ARRANGE: Set up the data.
-    // We create a promotion with an 'action' rule. The handler name must exist in the service's $actionHandlers map.
-    $promotion = DiscountPromotion::factory()->create();
+
+    // Create a promotion with an 'action' rule
+    $promotion = DiscountPromotion::factory()->create([
+        'type' => DiscountTypeEnum::CART_CHECKOUT
+    ]);
     $rule = DiscountPromotionRule::create([
         'discount_promotion_id' => $promotion->id,
-        'type' => 'action', // <-- This is the key difference
+        'type' => 'action',
         'handler' => 'apply_percentage_off', // A valid action handler name
         'configuration' => json_encode(['percentage' => 15]),
     ]);
@@ -262,27 +269,27 @@ test('it throws a runtime exception if an action handler config dto is not mappe
     // Refresh the promotion to get the loaded relationship
     $promotion->load('rules');
 
-    // 2. SETUP THE FAULTY SERVICE: Intentionally break the service's internal configuration.
-    // We get a real instance of the service.
+    // Mock the registry to return a handler class but no config class
+    $mockRegistry = $this->mock(App\Services\Discounts\DiscountHandlerRegistry::class);
+    $mockRegistry->shouldReceive('getCartActionHandler')
+        ->with('apply_percentage_off')
+        ->andReturn(ApplyPercentageDiscountToItemsAction::class);
+    $mockRegistry->shouldReceive('getConfigClass')
+        ->with(ApplyPercentageDiscountToItemsAction::class)
+        ->andReturn(null); // No config DTO mapped
+
+    // Replace the registry in the service container
+    $this->app->instance(App\Services\Discounts\DiscountHandlerRegistry::class, $mockRegistry);
+
     $service = app(OrderCalculationService::class);
 
-    // Use Reflection to access the private property `$handlerConfigMap`.
-    $reflectionClass = new ReflectionClass(OrderCalculationService::class);
-    $property = $reflectionClass->getProperty('handlerConfigMap');
-    $property->setAccessible(true); // Allow us to modify the private property
-
-    // Overwrite the map with an empty array, simulating the developer's mistake.
-    $property->setValue($service, []);
-
-    // 3. ACT & ASSERT: Expect the specific exception to be thrown when calling the private method.
-    $closure = function () use ($service, $promotion,$orderContext) {
-        // Use Reflection to call the private `applyActions` method.
+    // ACT & ASSERT: Expect the specific exception to be thrown when calling the private method
+    $closure = function () use ($service, $promotion, $orderContext) {
         $method = new ReflectionMethod(OrderCalculationService::class, 'applyActions');
         $method->setAccessible(true);
         $method->invoke($service, $promotion, $orderContext);
     };
 
-    // The assertion: We expect the specific RuntimeException with the correct message.
     expect($closure)
         ->toThrow(
             \RuntimeException::class,
@@ -290,14 +297,14 @@ test('it throws a runtime exception if an action handler config dto is not mappe
         );
 });
 test('it throws a runtime exception for an unregistered condition config', function () {
-    // This test covers: if (! $handlerClass) in allConditionsPass
-
     // Arrange
     $user = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create();
 
-    // Create a promotion with a handler that does NOT exist in the service's registry
-    $promotion = DiscountPromotion::factory()->make();
+    // Create a promotion with a handler that does NOT exist in the registry
+    $promotion = DiscountPromotion::factory()->make([
+        'type' => DiscountTypeEnum::CART_CHECKOUT
+    ]);
     $promotion->setRelation('rules', collect([
         ['type' => 'condition', 'handler' => 'this_handler_does_not_exist', 'configuration' => []]
     ]));
@@ -315,19 +322,18 @@ test('it throws a runtime exception for an unregistered condition config', funct
     $service = app(OrderCalculationService::class);
 
     // Act & Assert
-    // We expect this specific exception to be thrown.
     expect(fn() => $service->calculate($data))
         ->toThrow(RuntimeException::class,
             "No discount condition handler registered for 'this_handler_does_not_exist'");
 });
 
 test('it throws a runtime exception for an unregistered action handler', function () {
-    // This test covers: if (! $handlerClass) in applyActions
-
     $user = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create();
 
-    $promotion = DiscountPromotion::factory()->make();
+    $promotion = DiscountPromotion::factory()->make([
+        'type' => DiscountTypeEnum::CART_CHECKOUT
+    ]);
     $promotion->setRelation('rules', collect([
         ['type' => 'action', 'handler' => 'this_action_is_fake', 'configuration' => []]
     ]));
@@ -373,4 +379,39 @@ test('it skips an item in calculation if its delivery option ID does not exist',
     // Act & Assert
     expect(fn() => $service->calculate($data))
         ->toThrow(InvalidArgumentException::class, 'One or more ProductDeliveryOption IDs do not exist: 99999');
+});
+
+test('it does not apply discount when promotion conditions fail', function () {
+    // Arrange
+    $user = User::factory()->create();
+    $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
+
+    // Create a promotion with a condition that will fail
+    $promotion = DiscountPromotion::factory()->make([
+        'type' => DiscountTypeEnum::CART_CHECKOUT
+    ]);
+    $promotion->setRelation('rules', collect([
+        ['type' => 'condition', 'handler' => 'cart_value_over', 'configuration' => ['value' => 20000, 'operator' => '>=', 'include_prepayments' => true]], // Cart needs to be >= 200.00, but it's only 100.00
+        ['type' => 'action', 'handler' => 'apply_percentage_off', 'configuration' => ['percentage' => 20]],
+    ]));
+
+    $this->mock(PromotionFinder::class,
+        fn(MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn($promotion));
+
+    $data = new OrderCreateData(
+        status: App\Enums\Order\OrderStatusEnum::PENDING->value,
+        customer_id: $user->id,
+        items: [new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment')],
+        applied_coupon_code: null
+    );
+
+    $service = app(OrderCalculationService::class);
+
+    // Act
+    $context = $service->calculate($data);
+
+    // Assert - No discount should be applied because condition failed
+    expect($context->items[0]->discount_amount)->toBe(0);
+    expect($context->items[0]->total)->toBe(10000); // Original price
+    expect($context->evaluating_promotion)->toBeNull(); // No promotion was applied
 });

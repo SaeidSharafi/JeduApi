@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Discounts\Conditions;
+namespace App\Services\Discounts\Configs;
 
 use Spatie\LaravelData\Data;
 

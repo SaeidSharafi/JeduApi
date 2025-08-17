@@ -4,8 +4,8 @@ use App\Data\Admin\Discounts\CalculatedOrderItemData;
 use App\Data\Admin\Discounts\OrderContextData;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Models\ProductDeliveryOption;
-use App\Services\Discounts\Actions\ApplyPercentageDiscountToItemsAction;
-use App\Services\Discounts\Actions\ApplyPercentageDiscountConfigData;
+use App\Services\Discounts\Configs\ApplyPercentageDiscountConfigData;
+use App\Services\Discounts\Cart\Actions\ApplyPercentageDiscountToItemsAction;
 
 it('does not apply discount if discount is greater than the item price', function () {
     // This test covers: if ($discountPerUnit > $item->price)

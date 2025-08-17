@@ -2,15 +2,23 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Discounts\Actions;
+namespace App\Services\Discounts\Cart\Actions;
 
+use App\Attributes\DiscountHandler;
 use App\Contracts\Discounts\DiscountActionContract;
 use App\Data\Admin\Discounts\OrderContextData;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
+use App\Services\Discounts\Configs\ApplyPercentageDiscountConfigData;
 use Spatie\LaravelData\Data;
 
+#[DiscountHandler('apply_percentage_off', 'action')]
 final class ApplyPercentageDiscountToItemsAction implements DiscountActionContract
 {
+    public static function getConfigClass(): string
+    {
+        return ApplyPercentageDiscountConfigData::class;
+    }
+
     public function apply(OrderContextData $context, Data $configuration): void
     {
         if (!$configuration instanceof ApplyPercentageDiscountConfigData) {

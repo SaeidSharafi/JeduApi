@@ -7,8 +7,8 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
-use App\Services\Discounts\Conditions\ProductCategoryCondition;
-use App\Services\Discounts\Conditions\ProductCategoryConditionConfigData;
+use App\Services\Discounts\Cart\Conditions\ProductCategoryCondition;
+use App\Services\Discounts\Configs\ProductCategoryConditionConfigData;
 
 it('passes if match policy is "any" and at least one item is in a category', function () {
     // Covers: 'any' => $matchingProductCount > 0

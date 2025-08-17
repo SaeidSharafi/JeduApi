@@ -4,52 +4,27 @@ declare(strict_types=1);
 
 namespace App\Services\Discounts;
 
+use App\Attributes\DiscountHandler;
 use App\Contracts\Discounts\DiscountActionContract;
 use App\Contracts\Discounts\DiscountConditionContract;
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
 use App\Data\Admin\Discounts\OrderContextData;
 use App\Data\Admin\Order\OrderCreateData;
+use App\Enums\Order\DiscountTypeEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
-use App\Services\Discounts\Actions\ApplyPercentageDiscountConfigData;
-use App\Services\Discounts\Actions\ApplyPercentageDiscountToItemsAction;
-use App\Services\Discounts\Conditions\CartValueCondition;
-use App\Services\Discounts\Conditions\CartValueConditionConfigData;
-use App\Services\Discounts\Conditions\ProductCategoryCondition;
-use App\Services\Discounts\Conditions\ProductCategoryConditionConfigData;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 final class OrderCalculationService
 {
-    /**
-     * The registry mapping a handler key from the database to its implementation class.
-     * This is the key to the system's extensibility.
-     */
-    private array $conditionHandlers = [
-        'cart_value_over'     => CartValueCondition::class,
-        'product_in_category' => ProductCategoryCondition::class,
-    ];
-
-    private array $actionHandlers = [
-        'apply_percentage_off' => ApplyPercentageDiscountToItemsAction::class,
-    ];
-
-    /**
-     * A map to connect a handler to its specific configuration DTO.
-     * This ensures type-safe hydration of the JSON configuration.
-     */
-    private array $handlerConfigMap = [
-        CartValueCondition::class                   => CartValueConditionConfigData::class,
-        ProductCategoryCondition::class             => ProductCategoryConditionConfigData::class,
-        ApplyPercentageDiscountToItemsAction::class => ApplyPercentageDiscountConfigData::class,
-    ];
-
     public function __construct(
-        protected PromotionFinder $promotionFinder
+        protected PromotionFinder $promotionFinder,
+        protected DiscountHandlerRegistry $handlerRegistry
     ) {}
 
     /**
@@ -63,7 +38,7 @@ final class OrderCalculationService
         // 2. Find the promotion that should be applied (if any).
         $promotion = $this->promotionFinder->findApplicablePromotion($data);
 
-        if ($promotion && $this->allConditionsPass($promotion, $context)) {
+        if ($promotion && $promotion->type === DiscountTypeEnum::CART_CHECKOUT && $this->allConditionsPass($promotion, $context)) {
             $context->evaluating_promotion = $promotion;
             if ($data->applied_coupon_code) {
                 $context->triggered_by_coupon_code = $data->applied_coupon_code;
@@ -173,14 +148,14 @@ final class OrderCalculationService
 
         foreach ($conditionRules as $rule) {
             $handlerName = data_get($rule,'handler');
-            $handlerClass = $this->conditionHandlers[$handlerName] ?? null;
+            $handlerClass = $this->handlerRegistry->getCartConditionHandler($handlerName);
             if (! $handlerClass) {
                 throw new \RuntimeException("No discount condition handler registered for '{$handlerName}'");
             }
 
             /** @var DiscountConditionContract $handler */
             $handler        = app($handlerClass);
-            $configDtoClass = $this->handlerConfigMap[$handlerClass] ?? null;
+            $configDtoClass = $this->handlerRegistry->getConfigClass($handlerClass);
 
             if (! $configDtoClass) {
                 throw new \RuntimeException("No config DTO mapped for handler '{$handlerClass}'");
@@ -208,21 +183,20 @@ final class OrderCalculationService
 
         foreach ($actionRules as $rule) {
             $handlerName = data_get($rule,'handler');
-            $handlerClass = $this->actionHandlers[$handlerName] ?? null;
+            $handlerClass = $this->handlerRegistry->getCartActionHandler($handlerName);
             if (! $handlerClass) {
                 throw new \RuntimeException("No discount action handler registered for '{$handlerName}'");
             }
 
             /** @var DiscountActionContract $handler */
             $handler        = app($handlerClass);
-            $configDtoClass = $this->handlerConfigMap[$handlerClass] ?? null;
+            $configDtoClass = $this->handlerRegistry->getConfigClass($handlerClass);
 
             if (! $configDtoClass) {
                 throw new \RuntimeException("No config DTO mapped for handler '{$handlerClass}'");
             }
 
             $config = $configDtoClass::from(data_get($rule,'configuration'));
-
             // The action handler mutates the $context object directly.
             $handler->apply($context, $config);
         }
