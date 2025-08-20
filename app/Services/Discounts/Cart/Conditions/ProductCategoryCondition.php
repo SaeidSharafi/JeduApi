@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\Discounts\Cart\Conditions;
 
-use App\Attributes\DiscountHandler;
+use App\Attributes\DiscountHandlerKey;
 use App\Contracts\Discounts\DiscountConditionContract;
 use App\Data\Admin\Discounts\OrderContextData;
+use App\Enums\Operators\MatchPolicyEnum;
 use App\Services\Discounts\Configs\ProductCategoryConditionConfigData;
 use Illuminate\Support\Facades\DB;
 use Spatie\LaravelData\Data;
 
-#[DiscountHandler('product_in_category', 'condition')]
+#[DiscountHandlerKey('product_in_category')]
 final class ProductCategoryCondition implements DiscountConditionContract
 {
     public static function getConfigClass(): string
@@ -32,7 +33,6 @@ final class ProductCategoryCondition implements DiscountConditionContract
             ->pluck('product_delivery_option.product.id')
             ->unique()
             ->all();
-
         if (empty($itemProductIds)) {
             return false;
         }
@@ -46,8 +46,8 @@ final class ProductCategoryCondition implements DiscountConditionContract
             ->count();
 
         return match ($configuration->match_policy) {
-            'any'   => $matchingProductCount > 0,
-            'all'   => $matchingProductCount === count($itemProductIds),
+            MatchPolicyEnum::ANY   => $matchingProductCount > 0,
+            MatchPolicyEnum::ALL   => $matchingProductCount === count($itemProductIds),
             default => false,
         };
     }

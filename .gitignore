@@ -27,3 +27,4 @@ yarn-error.log
 /public/docs
 scribe_testing.sqlite
 /storage/framework/testing
+laradumps.yaml

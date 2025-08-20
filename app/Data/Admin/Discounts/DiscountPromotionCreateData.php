@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\Discounts;
 
 use App\Enums\Order\DiscountTypeEnum;
+use App\Rules\CheckDiscountConfigurationRule;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -17,8 +18,8 @@ final class DiscountPromotionCreateData extends Data
         public string $type,
         #[DataCollectionOf(DiscountPromotionRuleCreateData::class)]
         public array $rules,
+        public bool $is_active,
         public ?string $description = null,
-        public bool $is_active = false,
         public ?string $starts_at = null,
         public ?string $ends_at = null,
         public int $priority = 0,
@@ -36,18 +37,18 @@ final class DiscountPromotionCreateData extends Data
             'name'                             => ['required', 'string', 'max:255'],
             'type'                             => ['required', 'string', Rule::enum(DiscountTypeEnum::class)],
             'description'                      => ['nullable', 'string', 'max:1000'],
-            'is_active'                        => ['boolean'],
+            'is_active'                        => ['required', 'boolean'],
             'starts_at'                        => ['nullable', 'date', 'after_or_equal:today'],
             'ends_at'                          => ['nullable', 'date', 'after:starts_at'],
             'priority'                         => ['integer', 'min:0', 'max:1000'],
             'stop_processing_subsequent_rules' => ['boolean'],
             'usage_limit_total'                => ['nullable', 'integer', 'min:1'],
             'usage_limit_per_customer'         => ['nullable', 'integer', 'min:1'],
-            'rules'                            => ['required', 'array', 'min:1'],
+            'rules'                            => ['required', 'array', 'min:1', app(CheckDiscountConfigurationRule::class)],
             'rules.*.type'                     => ['required', 'string', 'in:condition,action'],
             'rules.*.handler'                  => ['required', 'string'],
             'rules.*.configuration'            => ['required', 'array'],
-            'coupons'                          => ['array'],
+            'coupons'                          => ['array', 'prohibited_if:type,'.DiscountTypeEnum::PRODUCT_SPECIFIC->value],
             'coupons.*.code'                   => ['required_with:coupons', 'string', 'max:50', 'alpha_num'],
             'coupons.*.usage_limit'            => ['nullable', 'integer', 'min:1'],
             'coupons.*.is_active'              => ['boolean'],

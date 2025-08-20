@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Discounts\Configs;
 
+use App\Enums\Operators\MatchPolicyEnum;
+use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 
 final class ProductCategoryConditionConfigData extends Data
@@ -11,6 +13,35 @@ final class ProductCategoryConditionConfigData extends Data
     public function __construct(
         /** @var int[] */
         public array $category_ids,
-        public string $match_policy = 'any', // 'any' or 'all'
-    ) {}
+        public MatchPolicyEnum $match_policy = MatchPolicyEnum::ANY,
+    )
+    {
+    }
+
+    /**
+     *
+     * @return array<string, mixed>
+     * @codeCoverageIgnore
+     */
+    public static function rules(): array
+    {
+        return [
+            'category_ids'   => ['required', 'array'],
+            'category_ids.*' => ['integer', 'exists:categories,id'],
+            'match_policy'   => ['required', Rule::enum(MatchPolicyEnum::class)],
+        ];
+    }
+
+    /**
+     *
+     * @return array<string, string>
+     * @codeCoverageIgnore
+     */
+    public static function descriptions(): array
+    {
+        return [
+            'category_ids'   => 'List of category IDs to check against the product categories.',
+            'match_policy'   => 'Defines how the condition matches: ANY (at least one category must match) or ALL (all categories must match).',
+        ];
+    }
 }

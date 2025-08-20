@@ -3,14 +3,14 @@ declare(strict_types=1);
 
 namespace App\Services\Discounts\Product\Conditions;
 
-use App\Attributes\DiscountHandler;
+use App\Attributes\DiscountHandlerKey;
 use App\Contracts\Discounts\ProductDiscountConditionContract;
 use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\Configs\ProductCategoryConditionConfigData;
 use Illuminate\Support\Facades\DB;
 use Spatie\LaravelData\Data;
 
-#[DiscountHandler('product_in_category', 'condition')]
+#[DiscountHandlerKey('product_in_category')]
 final class ProductCategoryCondition implements ProductDiscountConditionContract
 {
     public static function getConfigClass(): string

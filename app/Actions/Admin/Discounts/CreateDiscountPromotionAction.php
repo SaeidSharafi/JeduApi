@@ -6,18 +6,10 @@ namespace App\Actions\Admin\Discounts;
 
 use App\Data\Admin\Discounts\DiscountPromotionCreateData;
 use App\Models\DiscountPromotion;
-use App\Services\Discounts\ProductDeliveryOptionDiscountPriceRegenerator;
 use Illuminate\Support\Facades\DB;
 
 final class CreateDiscountPromotionAction
 {
-    protected ProductDeliveryOptionDiscountPriceRegenerator $regenerator;
-
-    public function __construct(ProductDeliveryOptionDiscountPriceRegenerator $regenerator)
-    {
-        $this->regenerator = $regenerator;
-    }
-
     public function execute(DiscountPromotionCreateData $data): DiscountPromotion
     {
         $promotion = DB::transaction(function () use ($data) {
@@ -58,8 +50,10 @@ final class CreateDiscountPromotionAction
             return $promotion->load(['rules', 'coupons']);
         });
 
-        // Regenerate discount prices after promotion creation
-        $this->regenerator->regenerate();
+        // Dispatch job to regenerate discount prices for this new promotion
+        if ($promotion->type === \App\Enums\Order\DiscountTypeEnum::PRODUCT_SPECIFIC) {
+            \App\Jobs\Discounts\RegeneratePromotionDiscountPricesJob::dispatch($promotion);
+        }
 
         return $promotion;
     }

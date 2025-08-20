@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\DiscountPromotion;
-use DiscountPromotionRule;
+use App\Models\DiscountPromotionRule;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @mixin Factory<DiscountPromotionRule> */

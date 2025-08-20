@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Enums;
+namespace App\Enums\Operators;
 
-enum OperatorEnum: string
+use App\Traits\AdvanceEnum;
+
+enum MathOperatorEnum: string
 {
+    use AdvanceEnum;
     case EQUAL                 = '==';
     case LESS_THAN             = '<';
     case GREATER_THAN          = '>';

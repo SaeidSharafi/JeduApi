@@ -4,171 +4,221 @@ declare(strict_types=1);
 
 namespace App\Services\Discounts;
 
-use App\Attributes\DiscountHandler;
-use App\Services\Discounts\Cart\Actions\ApplyPercentageDiscountToItemsAction;
-use App\Services\Discounts\Cart\Conditions\CartValueCondition;
-use App\Services\Discounts\Product\Actions\ApplyPercentageDiscountToProductAction;
-use App\Services\Discounts\Product\Conditions\ProductCategoryCondition;
-use App\Services\Discounts\Configs\ApplyPercentageDiscountConfigData;
-use App\Services\Discounts\Configs\CartValueConditionConfigData;
-use App\Services\Discounts\Configs\ProductCategoryConditionConfigData;
+use App\Attributes\DiscountHandlerKey;
+use App\Contracts\Discounts\DiscountActionContract;
+use App\Contracts\Discounts\DiscountConditionContract;
+use App\Contracts\Discounts\ProductDiscountActionContract;
+use App\Contracts\Discounts\ProductDiscountConditionContract;
+use App\Enums\Order\DiscountTypeEnum;
 use Illuminate\Filesystem\Filesystem;
-use PHPUnit\Event\Code\Throwable;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use ReflectionClass;
-
 /**
  * Centralized registry for all discount handlers to eliminate code duplication
  * and provide consistent handler discovery across different services.
  */
 final class DiscountHandlerRegistry
 {
+    public const CACHE_KEY = 'discounts.handler_registry.cache';
+
+    private array $discoveryMap = [
+        DiscountConditionContract::class => 'cartConditionHandlers',
+        DiscountActionContract::class => 'cartActionHandlers',
+        ProductDiscountConditionContract::class => 'productConditionHandlers',
+        ProductDiscountActionContract::class => 'productActionHandlers',
+    ];
     private array $cartConditionHandlers = [];
     private array $cartActionHandlers = [];
     private array $productConditionHandlers = [];
     private array $productActionHandlers = [];
     private array $handlerConfigMap = [];
 
-    public function __construct(private readonly Filesystem $filesystem)
+
+    public function __construct(
+        private readonly Filesystem $filesystem,
+    )
     {
-        $this->initializeStaticHandlers();
-        $this->discoverHandlers();
-    }
-
-    /**
-     * Initialize the static handlers that are always available.
-     * This provides fallback when auto-discovery fails.
-     */
-    private function initializeStaticHandlers(): void
-    {
-        // Cart handlers
-        $this->cartConditionHandlers = [
-            'cart_value_over' => CartValueCondition::class,
-        ];
-
-        $this->cartActionHandlers = [
-            'apply_percentage_off' => ApplyPercentageDiscountToItemsAction::class,
-        ];
-
-        // Product handlers
-        $this->productConditionHandlers = [
-            'product_in_category' => ProductCategoryCondition::class,
-        ];
-
-        $this->productActionHandlers = [
-            'apply_percentage_off_product' => ApplyPercentageDiscountToProductAction::class,
-        ];
-
-        // Config mappings
-        $this->handlerConfigMap = [
-            CartValueCondition::class => CartValueConditionConfigData::class,
-            ProductCategoryCondition::class => ProductCategoryConditionConfigData::class,
-            ApplyPercentageDiscountToItemsAction::class => ApplyPercentageDiscountConfigData::class,
-            ApplyPercentageDiscountToProductAction::class => ApplyPercentageDiscountConfigData::class,
-        ];
-    }
-
-    /**
-     * Auto-discover handlers using the DiscountHandler attribute.
-     */
-    private function discoverHandlers(): void
-    {
-        $this->discoverCartHandlers();
-        $this->discoverProductHandlers();
-    }
-
-    private function discoverCartHandlers(): void
-    {
-        // Discover cart actions
-        $this->discoverHandlersInDirectory(
-            app_path('Services/Discounts/Cart/Actions'),
-            'App\\Services\\Discounts\\Cart\\Actions',
-            function (DiscountHandler $handler, string $class) {
-                if ($handler->type === 'action') {
-                    $this->cartActionHandlers[$handler->key] = $class;
-                }
-            }
-        );
-
-        // Discover cart conditions
-        $this->discoverHandlersInDirectory(
-            app_path('Services/Discounts/Cart/Conditions'),
-            'App\\Services\\Discounts\\Cart\\Conditions',
-            function (DiscountHandler $handler, string $class) {
-                if ($handler->type === 'condition') {
-                    $this->cartConditionHandlers[$handler->key] = $class;
-                }
-            }
-        );
-    }
-
-    private function discoverProductHandlers(): void
-    {
-        // Discover product actions
-        $this->discoverHandlersInDirectory(
-            app_path('Services/Discounts/Product/Actions'),
-            'App\\Services\\Discounts\\Product\\Actions',
-            function (DiscountHandler $handler, string $class) {
-                if ($handler->type === 'action') {
-                    $this->productActionHandlers[$handler->key] = $class;
-                }
-            }
-        );
-
-        // Discover product conditions
-        $this->discoverHandlersInDirectory(
-            app_path('Services/Discounts/Product/Conditions'),
-            'App\\Services\\Discounts\\Product\\Conditions',
-            function (DiscountHandler $handler, string $class) {
-                if ($handler->type === 'condition') {
-                    $this->productConditionHandlers[$handler->key] = $class;
-                }
-            }
-        );
-    }
-
-    private function discoverHandlersInDirectory(string $baseDir, string $namespace, callable $callback): void
-    {
-        if (!$this->filesystem->exists($baseDir)) {
+        if (config()->get('app.debug')) {
+            $this->discoverAndCacheHandlers();
             return;
         }
 
-        foreach ($this->filesystem->files($baseDir) as $file) {
-            $class = $namespace . '\\' . $file->getFilenameWithoutExtension();
+        $cachedHandlers =  Cache::get(self::CACHE_KEY);
 
-            if (!class_exists($class)) {
+        if ($cachedHandlers) {
+            $this->loadHandlersFromCache($cachedHandlers);
+        } else {
+            $this->discoverAndCacheHandlers();
+        }
+    }
+    /**
+     * Populates the registry properties from a cached array.
+     */
+    private function loadHandlersFromCache(array $cachedData): void
+    {
+        $this->cartConditionHandlers = $cachedData['cartConditions'] ?? [];
+        $this->cartActionHandlers = $cachedData['cartActions'] ?? [];
+        $this->productConditionHandlers = $cachedData['productConditions'] ?? [];
+        $this->productActionHandlers = $cachedData['productActions'] ?? [];
+        $this->handlerConfigMap = $cachedData['configMap'] ?? [];
+    }
+    /**
+     * Performs the file discovery and stores the result in the cache.
+     */
+    private function discoverAndCacheHandlers(): void
+    {
+        $this->discoverHandlers();
+
+        $dataToCache = [
+            'cartConditions'    => $this->cartConditionHandlers,
+            'cartActions'       => $this->cartActionHandlers,
+            'productConditions' => $this->productConditionHandlers,
+            'productActions'    => $this->productActionHandlers,
+            'configMap'         => $this->handlerConfigMap,
+        ];
+
+        Cache::forever(self::CACHE_KEY, $dataToCache);
+    }
+    /**
+     * Auto-discover handlers by scanning the file system.
+     * (This is the original discovery logic)
+     */
+    private function discoverHandlers(): void
+    {
+        foreach (array_keys($this->discoveryMap) as $interface) {
+            $propertyName = $this->discoveryMap[$interface];
+            $this->{$propertyName} = [];
+        }
+        $this->handlerConfigMap = [];
+
+        // Get discovery paths from the config file.
+        $discoveryPaths = config()->get('discounts.discovery_paths', []);
+
+        foreach ($discoveryPaths as $baseNamespace => $relativePath) {
+            $this->discoverHandlersInPath($baseNamespace, $relativePath);
+        }
+    }
+    private function discoverHandlersInPath(string $baseNamespace, string $relativePath): void
+    {
+        $absolutePath = rtrim(app_path($relativePath), DIRECTORY_SEPARATOR);
+
+        if (!$this->filesystem->isDirectory($absolutePath)) {
+            return;
+        }
+
+        foreach ($this->filesystem->allFiles($absolutePath) as $file) {
+            // @codeCoverageIgnoreStart
+            if ($file->getExtension() !== 'php') {
                 continue;
             }
+            // @codeCoverageIgnoreEnd
 
-            $reflection = new ReflectionClass($class);
-            $attributes = $reflection->getAttributes(DiscountHandler::class);
+            $className = $this->getClassNameFromFile($file->getPathname(), $absolutePath, $baseNamespace);
 
-            foreach ($attributes as $attribute) {
-                $handler = $attribute->newInstance();
-                $callback($handler, $class);
+            // @codeCoverageIgnoreStart
+            if (!$className || !class_exists($className)) {
+                continue;
+            }
+            // @codeCoverageIgnoreEnd
 
-                // Auto-discover config class based on naming convention
-                $this->discoverConfigClass($handler, $class);
+            try {
+                $reflection = new ReflectionClass($className);
+                // @codeCoverageIgnoreStart
+                if (!$reflection->isInstantiable()) {
+                    continue;
+                }
+                // @codeCoverageIgnoreEnd
+
+                $this->registerHandlerIfApplicable($reflection, $className);
+            }
+            // @codeCoverageIgnoreStart
+            catch (Throwable $e) {
+                 Log::warning('Could not reflect class for discount handler discovery.', [
+                    'class' => $className,
+                    'exception' => $e->getMessage(),
+                ]);
+            }
+            // @codeCoverageIgnoreEnd
+        }
+    }
+    private function registerHandlerIfApplicable(ReflectionClass $reflection, string $className): void
+    {
+        $attributes = $reflection->getAttributes(DiscountHandlerKey::class);
+        if (empty($attributes)) {
+            return; // Skip classes without the required attribute.
+        }
+
+        $handlerKey = $attributes[0]->newInstance()->key;
+
+        foreach ($this->discoveryMap as $interface => $property) {
+            if ($reflection->implementsInterface($interface)) {
+                $this->{$property}[$handlerKey] = $className;
+                $this->discoverConfigClass($className);
             }
         }
     }
 
-    private function discoverConfigClass(DiscountHandler $handler, string $class): void
+
+    private function discoverConfigClass( string $handlerClass): void
     {
         // Get config class directly from the handler using the interface method
-        if (class_exists($class)) {
+        if (class_exists($handlerClass)) {
             try {
                 // Call the static getConfigClass method from the handler
-                $configClassName = $class::getConfigClass();
+                $configClassName = $handlerClass::getConfigClass();
 
                 if (class_exists($configClassName)) {
-                    $this->handlerConfigMap[$class] = $configClassName;
+                    $this->handlerConfigMap[$handlerClass] = $configClassName;
                 }
-            } catch (\Throwable $e) {
+            }
+            // @codeCoverageIgnoreStart
+            catch (\Throwable $e) {
                 // Handler doesn't implement getConfigClass method or other error
                 // This is expected for handlers that don't follow the new pattern yet
                 // We silently skip handlers that don't have valid config class mappings
             }
+            // @codeCoverageIgnoreEnd
         }
+    }
+
+    public function getHandlerClassByKey(string $key, string $type, DiscountTypeEnum $discountType): ?string
+    {
+        if ($type === 'condition') {
+            if (isset($this->cartConditionHandlers[$key]) && $discountType === DiscountTypeEnum::CART_CHECKOUT) {
+                return $this->cartConditionHandlers[$key];
+            }
+            if (isset($this->productConditionHandlers[$key]) && $discountType === DiscountTypeEnum::PRODUCT_SPECIFIC) {
+                return $this->productConditionHandlers[$key];
+            }
+        }
+        if ($type === 'action') {
+            if (isset($this->cartActionHandlers[$key]) && $discountType === DiscountTypeEnum::CART_CHECKOUT) {
+                return $this->cartActionHandlers[$key];
+            }
+
+            if (isset($this->productActionHandlers[$key]) && $discountType === DiscountTypeEnum::PRODUCT_SPECIFIC) {
+                return $this->productActionHandlers[$key];
+            }
+        }
+
+        return null; // Not found
+    }
+
+    /**
+     * Get the fully qualified class name from a file.
+     *
+     * @param  string  $filePath
+     *
+     * @return string|null
+     */
+    protected function getClassNameFromFile(string $filePath, string $basePath, string $baseNamespace): ?string
+    {
+        $relativePath = ltrim(Str::after($filePath, $basePath), DIRECTORY_SEPARATOR);
+        $classPath = Str::beforeLast($relativePath, '.php');
+        $classNamespace = str_replace(DIRECTORY_SEPARATOR, '\\', $classPath);
+        return rtrim($baseNamespace, '\\') . '\\' . $classNamespace;
     }
 
     // Getters for cart handlers

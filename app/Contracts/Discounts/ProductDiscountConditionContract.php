@@ -3,6 +3,7 @@
 namespace App\Contracts\Discounts;
 
 use App\Models\ProductDeliveryOption;
+use Illuminate\Database\Eloquent\Builder;
 use Spatie\LaravelData\Data;
 
 interface ProductDiscountConditionContract

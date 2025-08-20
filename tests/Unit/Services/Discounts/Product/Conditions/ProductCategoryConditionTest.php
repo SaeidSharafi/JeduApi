@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Operators\MatchPolicyEnum;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\Configs\ProductCategoryConditionConfigData;
@@ -13,7 +14,7 @@ describe('ProductCategoryCondition', function () {
         $condition = new ProductCategoryCondition();
         $config = new ProductCategoryConditionConfigData(
             category_ids: [1, 2, 3],
-            match_policy: 'any'
+            match_policy: MatchPolicyEnum::ANY
         );
 
         $product = Product::factory()->create();
@@ -48,7 +49,7 @@ describe('ProductCategoryCondition', function () {
         $condition = new ProductCategoryCondition();
         $config = new ProductCategoryConditionConfigData(
             category_ids: [1, 2, 3],
-            match_policy: 'any'
+            match_policy: MatchPolicyEnum::ANY
         );
 
         $product = Product::factory()->create();
@@ -83,7 +84,7 @@ describe('ProductCategoryCondition', function () {
         $condition = new ProductCategoryCondition();
         $config = new ProductCategoryConditionConfigData(
             category_ids: [], // Empty array
-            match_policy: 'any'
+            match_policy: MatchPolicyEnum::ANY
         );
 
         $product = Product::factory()->create();
@@ -102,7 +103,7 @@ describe('ProductCategoryCondition', function () {
         $condition = new ProductCategoryCondition();
         $config = new ProductCategoryConditionConfigData(
             category_ids: [1, 2, 3],
-            match_policy: 'any'
+            match_policy: MatchPolicyEnum::ANY
         );
 
         $product = new Product(); // Product without ID

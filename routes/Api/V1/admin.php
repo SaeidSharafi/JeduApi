@@ -69,6 +69,8 @@ Route::middleware('auth:staff')->group(function (): void {
             ->name('discount-promotion.statistics');
 
         // Discount Info routes (for frontend to get available rules, actions, etc.)
+        Route::get('discount-info', [\App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'index'])
+            ->name('discount-info');
         Route::get('discount-info/conditions', [\App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'conditions'])
             ->name('discount-info.conditions');
         Route::get('discount-info/actions', [\App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'actions'])
@@ -77,8 +79,6 @@ Route::middleware('auth:staff')->group(function (): void {
             ->name('discount-info.operators');
         Route::get('discount-info/types', [\App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'types'])
             ->name('discount-info.types');
-        Route::get('discount-info/validation-rules', [\App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'validationRules'])
-            ->name('discount-info.validation-rules');
 
     });
 });

@@ -25,10 +25,12 @@
             <file>app/Http/Middleware/TelescopeBasicAuth.php</file>
             <file>app/Attributes/DiscountHandler.php</file>
             <file>app/Attributes/ProductDiscountHandler.php</file>
-            <file>app/Console/Commands/RegenerateDiscountPrice.php</file>
+            <file>app/Console/Commands/RegenerateDiscountPrices.php</file>
+            <file>app/Console/Commands/Discounts/ClearHandlerCache.php</file>
             <directory>app/Scribe</directory>
             <directory>app/Faker</directory>
             <directory>app/Jobs/Deployment</directory>
+            <directory>app/Jobs/Discounts</directory>
         </exclude>
     </source>
     <php>

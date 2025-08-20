@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Discounts;
 
-use App\Attributes\DiscountHandler;
+use App\Attributes\DiscountHandlerKey;
 use App\Contracts\Discounts\DiscountActionContract;
 use App\Contracts\Discounts\DiscountConditionContract;
 use App\Data\Admin\Discounts\CalculatedOrderItemData;

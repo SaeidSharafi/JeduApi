@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Discounts\ProductDiscountIndexer;
 use Illuminate\Console\Command;
-use App\Services\Discounts\ProductDeliveryOptionDiscountPriceRegenerator;
 
 class RegenerateDiscountPrices extends Command
 {
@@ -21,10 +21,10 @@ class RegenerateDiscountPrices extends Command
      */
     protected $description = 'Regenerate the product_delivery_option_discount_prices table for all active promotions.';
 
-    public function handle(ProductDeliveryOptionDiscountPriceRegenerator $regenerator): int
+    public function handle(ProductDiscountIndexer $indexer): int
     {
         $this->info('Regenerating discount prices...');
-        $regenerator->regenerate();
+        $indexer->reIndexComplete();
         $this->info('Discount prices regenerated successfully.');
         return 0;
     }

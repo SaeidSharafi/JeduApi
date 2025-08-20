@@ -9,6 +9,56 @@ describe('DiscountInfoController', function (): void {
         $this->authorized_user([\App\Enums\PermissionEnum::DISCOUNT_VIEW_ANY]);
         $this->staff = $this->user;
     });
+    test('index returns discount metadata', function (): void {
+        // Act
+        $response = $this->get('/api/v1/admin/discount-info');
+
+        // Assert
+        $response->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                   'cart' => [
+                        'conditions' => [
+                            '*' => [
+                                'key',
+                                'name',
+                                'description',
+                                'handler_class',
+                                'configuration_schema',
+                            ]
+                        ],
+                        'actions' => [
+                            '*' => [
+                                'key',
+                                'name',
+                                'description',
+                                'configuration_schema',
+                            ]
+                        ]
+                    ],
+                    'product' => [
+                        'conditions' => [
+                            '*' => [
+                                'key',
+                                'name',
+                                'description',
+                                'handler_class',
+                                'configuration_schema',
+                            ]
+                        ],
+                        'actions' => [
+                            '*' => [
+                                'key',
+                                'name',
+                                'description',
+                                'configuration_schema',
+                            ]
+                        ]
+                    ],
+                ]
+            ]);
+
+    });
 
     test('conditions returns available discount conditions dynamically', function (): void {
         // Act
@@ -18,13 +68,24 @@ describe('DiscountInfoController', function (): void {
         $response->assertOk()
             ->assertJsonStructure([
                 'data' => [
-                    '*' => [
-                        'key',
-                        'name',
-                        'description',
-                        'handler_class',
-                        'configuration_schema',
-                    ]
+                    'cart'    => [
+                        '*' => [
+                            'key',
+                            'name',
+                            'description',
+                            'handler_class',
+                            'configuration_schema',
+                        ]
+                    ],
+                    'product' => [
+                        '*' => [
+                            'key',
+                            'name',
+                            'description',
+                            'handler_class',
+                            'configuration_schema',
+                        ]
+                    ],
                 ]
             ]);
 
@@ -33,9 +94,11 @@ describe('DiscountInfoController', function (): void {
         // Should have the two existing conditions
         expect($conditions)->toHaveCount(2);
 
-        $conditionKeys = collect($conditions)->pluck('key')->toArray();
+        $conditionKeys = collect($conditions['cart'])->pluck('key')->toArray();
         expect($conditionKeys)->toContain('cart_value_over')
             ->and($conditionKeys)->toContain('product_in_category');
+        $conditionKeys = collect($conditions['product'])->pluck('key')->toArray();
+        expect($conditionKeys)->toContain('product_in_category');
     });
 
     test('conditions generates proper names from keys', function (): void {
@@ -43,25 +106,36 @@ describe('DiscountInfoController', function (): void {
         $response = $this->get('/api/v1/admin/discount-info/conditions');
 
         // Assert
-        $conditions = collect($response->json('data'));
+        $data = $response->json('data');
+        $cartConditions = collect($data['cart']);
+        $poroductConditions = collect($data['product']);
+        $cartValueCondition = $cartConditions->firstWhere('key', 'cart_value_over');
+        expect($cartValueCondition['name'])->toBe(__('discount.name.cart_value_over'));
 
-        $cartValueCondition = $conditions->firstWhere('key', 'cart_value_over');
-        expect($cartValueCondition['name'])->toBe('Cart Value Over');
+        $categoryCondition = $cartConditions->firstWhere('key', 'product_in_category');
+        expect($categoryCondition['name'])->toBe(__('discount.name.product_in_category'));
 
-        $categoryCondition = $conditions->firstWhere('key', 'product_in_category');
-        expect($categoryCondition['name'])->toBe('Product In Category');
+        $productCategoryCondition = $poroductConditions->firstWhere('key', 'product_in_category');
+        expect($productCategoryCondition['name'])->toBe(__('discount.name.product_in_category'));
     });
 
     test('conditions includes configuration schema from config classes', function (): void {
         // Act
         $response = $this->get('/api/v1/admin/discount-info/conditions');
 
-        // Assert
-        $conditions = collect($response->json('data'));
+        $data = $response->json('data');
+        $cartConditions = collect($data['cart']);
+        $poroductConditions = collect($data['product']);
 
-        $cartValueCondition = $conditions->firstWhere('key', 'cart_value_over');
+        $cartValueCondition = $cartConditions->firstWhere('key', 'cart_value_over');
         expect($cartValueCondition['configuration_schema'])->toBeArray()
-            ->and($cartValueCondition['configuration_schema'])->toHaveKeys(['value', 'operator', 'include_prepayments']);
+            ->and($cartValueCondition['configuration_schema'])->toHaveKeys([
+                'value', 'operator', 'include_prepayments'
+            ]);
+
+        $productValueCondition = $poroductConditions->firstWhere('key', 'product_in_category');
+        expect($productValueCondition['configuration_schema'])->toBeArray()
+            ->and($productValueCondition['configuration_schema'])->toHaveKeys(['category_ids', 'match_policy']);
     });
 
     test('actions returns available discount actions dynamically', function (): void {
@@ -72,12 +146,21 @@ describe('DiscountInfoController', function (): void {
         $response->assertOk()
             ->assertJsonStructure([
                 'data' => [
-                    '*' => [
-                        'key',
-                        'name',
-                        'description',
-                        'handler_class',
-                        'configuration_schema',
+                    'cart'    => [
+                        '*' => [
+                            'key',
+                            'name',
+                            'description',
+                            'configuration_schema',
+                        ]
+                    ],
+                    'product' => [
+                        '*' => [
+                            'key',
+                            'name',
+                            'description',
+                            'configuration_schema',
+                        ]
                     ]
                 ]
             ]);
@@ -85,10 +168,12 @@ describe('DiscountInfoController', function (): void {
         $actions = $response->json('data');
 
         // Should have the existing action
-        expect($actions)->toHaveCount(1);
+        expect($actions)->toHaveCount(2);
 
-        $actionKeys = collect($actions)->pluck('key')->toArray();
+        $actionKeys = collect($actions['cart'])->pluck('key')->toArray();
         expect($actionKeys)->toContain('apply_percentage_off');
+        $actionKeys = collect($actions['product'])->pluck('key')->toArray();
+        expect($actionKeys)->toContain('apply_percentage_off_product');
     });
 
     test('actions generates proper configuration schema', function (): void {
@@ -96,15 +181,23 @@ describe('DiscountInfoController', function (): void {
         $response = $this->get('/api/v1/admin/discount-info/actions');
 
         // Assert
-        $actions = collect($response->json('data'));
-
-        $percentageAction = $actions->firstWhere('key', 'apply_percentage_off');
+        $data = $response->json('data');
+        $cartActions = collect($data['cart']);
+        $productActions = collect($data['product']);
+        $percentageAction = $cartActions->firstWhere('key', 'apply_percentage_off');
         expect($percentageAction['configuration_schema'])->toBeArray()
             ->and($percentageAction['configuration_schema'])->toHaveKey('percentage');
 
         $percentageConfig = $percentageAction['configuration_schema']['percentage'];
         expect($percentageConfig['type'])->toBe('integer')
             ->and($percentageConfig['required'])->toBeTrue();
+
+        $productPercentageAction = $productActions->firstWhere('key', 'apply_percentage_off_product');
+        expect($productPercentageAction['configuration_schema'])->toBeArray()
+            ->and($productPercentageAction['configuration_schema'])->toHaveKey('percentage');
+        $productPercentageConfig = $productPercentageAction['configuration_schema']['percentage'];
+        expect($productPercentageConfig['type'])->toBe('integer')
+            ->and($productPercentageConfig['required'])->toBeTrue();
     });
 
     test('operators returns predefined operators list', function (): void {
@@ -155,34 +248,6 @@ describe('DiscountInfoController', function (): void {
             ->and($typeValues)->toContain('cart_checkout');
     });
 
-    test('validationRules returns form validation rules', function (): void {
-        // Act
-        $response = $this->get('/api/v1/admin/discount-info/validation-rules');
-
-        // Assert
-        $response->assertOk()
-            ->assertJsonStructure([
-                'data' => [
-                    'name' => [
-                        'required',
-                        'type',
-                        'max_length',
-                        'description',
-                    ],
-                    'description',
-                    'type',
-                    'rules',
-                    'coupons',
-                ]
-            ]);
-
-        $rules = $response->json('data');
-        expect($rules['name']['required'])->toBeTrue()
-            ->and($rules['name']['type'])->toBe('string')
-            ->and($rules['rules']['required'])->toBeTrue()
-            ->and($rules['coupons']['required'])->toBeFalse();
-    });
-
     test('dynamic generation adapts to new handlers', function (): void {
         // This test demonstrates that when new handlers are added to OrderCalculationService,
         // they automatically appear in the API without manual updates
@@ -193,7 +258,7 @@ describe('DiscountInfoController', function (): void {
 
         // Assert that it works with the current handlers
         $response->assertOk();
-        $conditions = $response->json('data');
+        $conditions = $response->json('data')['cart'];
 
         // Verify we get results based on actual registry
         expect($conditions)->toBeArray()
@@ -214,7 +279,6 @@ describe('DiscountInfoController with unauthorized user', function (): void {
             '/api/v1/admin/discount-info/actions',
             '/api/v1/admin/discount-info/operators',
             '/api/v1/admin/discount-info/types',
-            '/api/v1/admin/discount-info/validation-rules',
         ];
 
         foreach ($endpoints as $endpoint) {

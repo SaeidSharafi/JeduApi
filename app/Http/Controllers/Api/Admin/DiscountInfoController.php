@@ -17,6 +17,12 @@ final class DiscountInfoController extends Controller
         private readonly DiscountMetadataService $discountMetadataService
     ) {}
 
+    public function index()
+    {
+        Gate::authorize('viewAny', DiscountPromotion::class);
+
+        return response()->success($this->discountMetadataService->getMetadata());
+    }
     /**
      * Get available discount conditions and their configurations dynamically.
      */
@@ -55,15 +61,5 @@ final class DiscountInfoController extends Controller
         Gate::authorize('viewAny', DiscountPromotion::class);
 
         return response()->success($this->discountMetadataService->getTypes());
-    }
-
-    /**
-     * Get validation rules for creating discount promotions.
-     */
-    public function validationRules(): ApiResponseInterface
-    {
-        Gate::authorize('viewAny', DiscountPromotion::class);
-
-        return response()->success($this->discountMetadataService->getValidationRules());
     }
 }

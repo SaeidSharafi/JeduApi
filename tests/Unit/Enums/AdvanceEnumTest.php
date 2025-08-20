@@ -22,7 +22,7 @@ describe('AdvanceEnum', function (): void {
 
     it('getKeyValuePairs returns value=>translation array', function (): void {
         $enum  = TestEnum::FOO;
-        $pairs = $enum->getKeyValuePairs();
+        $pairs = TestEnum::getKeyValuePairs();
         expect($pairs)->toBe([
             'foo' => 'enums.TestEnum.foo',
             'bar' => 'enums.TestEnum.bar',
@@ -31,7 +31,7 @@ describe('AdvanceEnum', function (): void {
 
     it('getValueLabel returns value-label array', function (): void {
         $enum   = TestEnum::FOO;
-        $labels = $enum->getValueLabel();
+        $labels = TestEnum::getValueLabel();
         expect($labels)->toBe([
             ['value' => 'foo', 'label' => 'enums.TestEnum.foo'],
             ['value' => 'bar', 'label' => 'enums.TestEnum.bar'],

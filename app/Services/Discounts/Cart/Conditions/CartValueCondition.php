@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services\Discounts\Cart\Conditions;
 
-use App\Attributes\DiscountHandler;
+use App\Attributes\DiscountHandlerKey;
 use App\Contracts\Discounts\DiscountConditionContract;
 use App\Data\Admin\Discounts\OrderContextData;
-use App\Enums\OperatorEnum;
+use App\Enums\Operators\MathOperatorEnum;
 use App\Services\Discounts\Configs\CartValueConditionConfigData;
 use Spatie\LaravelData\Data;
 
-#[DiscountHandler('cart_value_over', 'condition')]
+#[DiscountHandlerKey('cart_value_over')]
 final class CartValueCondition implements DiscountConditionContract
 {
     public static function getConfigClass(): string
@@ -32,11 +32,11 @@ final class CartValueCondition implements DiscountConditionContract
 
         // Use a match statement for a clean and safe comparison
         return match ($configuration->operator) {
-            OperatorEnum::GREATER_THAN_OR_EQUAL => $comparisonValue >= $configuration->value,
-            OperatorEnum::GREATER_THAN          => $comparisonValue > $configuration->value,
-            OperatorEnum::LESS_THAN_OR_EQUAL    => $comparisonValue <= $configuration->value,
-            OperatorEnum::LESS_THAN             => $comparisonValue < $configuration->value,
-            OperatorEnum::EQUAL                 => $comparisonValue === $configuration->value,
+            MathOperatorEnum::GREATER_THAN_OR_EQUAL => $comparisonValue >= $configuration->value,
+            MathOperatorEnum::GREATER_THAN          => $comparisonValue > $configuration->value,
+            MathOperatorEnum::LESS_THAN_OR_EQUAL    => $comparisonValue <= $configuration->value,
+            MathOperatorEnum::LESS_THAN             => $comparisonValue < $configuration->value,
+            MathOperatorEnum::EQUAL                 => $comparisonValue === $configuration->value,
         };
     }
 }

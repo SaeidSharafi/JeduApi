@@ -2,6 +2,7 @@
 
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
 use App\Data\Admin\Discounts\OrderContextData;
+use App\Enums\Operators\MatchPolicyEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Models\Category;
 use App\Models\Product;
@@ -24,7 +25,7 @@ it('passes if match policy is "any" and at least one item is in a category', fun
 
     $handler = new ProductCategoryCondition();
     $config = new ProductCategoryConditionConfigData(category_ids: [$categoryA->id, $categoryB->id],
-        match_policy: 'any');
+        match_policy: MatchPolicyEnum::ANY);
     $context = OrderContextData::from([
         'customer'                    => User::factory()->create(),
         'items'                       => [
@@ -65,7 +66,7 @@ it('passes if match policy is "all" and all items are in categories', function (
 
     $handler = new ProductCategoryCondition();
     $config = new ProductCategoryConditionConfigData(category_ids: [$categoryA->id, $categoryB->id],
-        match_policy: 'all');
+        match_policy: MatchPolicyEnum::ALL);
     $context = OrderContextData::from([
         'customer'                    => User::factory()->create(),
         'items'                       => [
@@ -101,7 +102,7 @@ it('fails if match policy is "all" and one item is not in a category', function 
     $pdoB = ProductDeliveryOption::factory()->create(['product_id' => $productB->id]);
 
     $handler = new ProductCategoryCondition();
-    $config = new ProductCategoryConditionConfigData(category_ids: [$categoryA->id], match_policy: 'all');
+    $config = new ProductCategoryConditionConfigData(category_ids: [$categoryA->id], match_policy: MatchPolicyEnum::ALL);
     $item1 = new CalculatedOrderItemData(
         product_delivery_option: $pdoA,
         qty: 1,

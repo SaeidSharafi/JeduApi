@@ -66,7 +66,6 @@ final class StaffInitiateAuthController extends Controller
                 $request->identifier,
                 'staff'
             );
-
             return response()->success([
                 'tracking_code' => $otpSent->trackingCode,
                 'otp_type'      => $otpSent->otpType->identifier(),

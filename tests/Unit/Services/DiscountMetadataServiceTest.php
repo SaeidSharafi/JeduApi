@@ -2,253 +2,329 @@
 
 declare(strict_types=1);
 
+use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\DiscountMetadataService;
-use App\Services\Discounts\OrderCalculationService;
+use App\Enums\Order\DiscountTypeEnum;
+use Illuminate\Support\Facades\Lang;
 
-describe('DiscountMetadataService', function (): void {
-    beforeEach(function (): void {
-        $this->service = app(DiscountMetadataService::class);
+describe('DiscountMetadataService', function () {
+    beforeEach(function () {
+        $this->mockRegistry = $this->mock(DiscountHandlerRegistry::class);
+        $this->service = new DiscountMetadataService($this->mockRegistry);
     });
 
-    test('getConditions returns available discount conditions with metadata', function (): void {
-        // Act
-        $result = $this->service->getConditions();
+    it('returns correct metadata structure for empty handlers', function () {
+        // Instead of relying on the service's getConditions/getActions, mock them directly for this test
+        $this->service = \Mockery::mock(DiscountMetadataService::class.'[getConditions,getActions]',
+            [$this->mockRegistry]);
+        $this->service->shouldAllowMockingProtectedMethods();
+        $this->service->shouldReceive('getConditions')->andReturn(['cart' => [], 'product' => []]);
+        $this->service->shouldReceive('getActions')->andReturn(['cart' => [], 'product' => []]);
+        $result = $this->service->getMetadata();
+        expect($result)->toHaveKeys(['cart', 'product']);
+        expect($result['cart'])->toHaveKeys(['conditions', 'actions']);
+        expect($result['product'])->toHaveKeys(['conditions', 'actions']);
+        expect($result['cart']['conditions'])->toBeArray();
+        expect($result['cart']['actions'])->toBeArray();
+        expect($result['product']['conditions'])->toBeArray();
+        expect($result['product']['actions'])->toBeArray();
+    });
 
-        // Assert
-        expect($result)->toBeArray()
-            ->and($result)->toHaveCount(2);
+    it('returns correct metadata for handlers with config', function () {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn(['cart_key' => 'CartCondClass']);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn(['prod_key' => 'ProdCondClass']);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn(['cart_act' => 'CartActClass']);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn(['prod_act' => 'ProdActClass']);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([
+            'CartCondClass' => 'CartCondConfig',
+            'ProdCondClass' => 'ProdCondConfig',
+            'CartActClass'  => 'CartActConfig',
+            'ProdActClass'  => 'ProdActConfig',
+        ]);
 
-        $conditionKeys = collect($result)->pluck('key')->toArray();
-        expect($conditionKeys)->toContain('cart_value_over')
-            ->and($conditionKeys)->toContain('product_in_category');
-
-        // Check structure of each condition
-        foreach ($result as $condition) {
-            expect($condition)->toHaveKeys(['key', 'name', 'description', 'handler_class', 'configuration_schema']);
+        // Mock config classes
+        if (!class_exists('CartCondConfig')) {
+            eval('class CartCondConfig { public function __construct(int $foo, float $float, array $array,bool $bool,  string $bar = "baz") {} }');
         }
-    });
-
-    test('getActions returns available discount actions with metadata', function (): void {
-        // Act
-        $result = $this->service->getActions();
-
-        // Assert
-        expect($result)->toBeArray()
-            ->and($result)->toHaveCount(1);
-
-        $actionKeys = collect($result)->pluck('key')->toArray();
-        expect($actionKeys)->toContain('apply_percentage_off');
-
-        // Check structure of each action
-        foreach ($result as $action) {
-            expect($action)->toHaveKeys(['key', 'name', 'description', 'handler_class', 'configuration_schema']);
+        if (!class_exists('ProdCondConfig')) {
+            eval('class ProdCondConfig { public function __construct() {} }');
         }
+        if (!class_exists('CartActConfig')) {
+            eval('class CartActConfig { public function __construct() {} }');
+        }
+        if (!class_exists('ProdActConfig')) {
+            eval('class ProdActConfig { public function __construct() {} }');
+        }
+
+        $result = $this->service->getMetadata();
+        expect($result['cart']['conditions'][0]['key'])->toBe('cart_key');
+        expect($result['cart']['conditions'][0]['configuration_schema'])->toHaveKey('foo');
+        expect($result['cart']['conditions'][0]['configuration_schema']['foo']['type'])->toBe('integer');
+        expect($result['cart']['conditions'][0]['configuration_schema']['bar']['default'])->toBe('baz');
+        expect($result['product']['conditions'][0]['key'])->toBe('prod_key');
+        expect($result['cart']['actions'][0]['key'])->toBe('cart_act');
+        expect($result['product']['actions'][0]['key'])->toBe('prod_act');
     });
 
-    test('getOperators returns predefined operators list', function (): void {
-        // Act
+    it('getOperators returns all operators', function () {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
         $result = $this->service->getOperators();
-
-        // Assert
-        expect($result)->toBeArray()
-            ->and($result)->toHaveCount(5);
-
-        $operatorValues = collect($result)->pluck('value')->toArray();
-        expect($operatorValues)->toContain('greater_than_or_equal')
-            ->and($operatorValues)->toContain('equal');
-
-        // Check structure of each operator
-        foreach ($result as $operator) {
-            expect($operator)->toHaveKeys(['value', 'label', 'symbol']);
-        }
+        expect($result)->toBeArray();
+        expect($result)->toContain(['value' => 'greater_than', 'label' => 'Greater than (>)', 'symbol' => '>']);
     });
 
-    test('getTypes returns promotion types', function (): void {
-        // Act
+    it('getTypes returns all types', function () {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
         $result = $this->service->getTypes();
-
-        // Assert
-        expect($result)->toBeArray()
-            ->and($result)->toHaveCount(2);
-
-        $typeValues = collect($result)->pluck('value')->toArray();
-        expect($typeValues)->toContain('product_specific')
-            ->and($typeValues)->toContain('cart_checkout');
-
-        // Check structure of each type
-        foreach ($result as $type) {
-            expect($type)->toHaveKeys(['value', 'label', 'description']);
-        }
+        expect($result)->toBeArray();
+        expect($result[0]['value'])->toBe('product_specific');
+        expect($result[1]['value'])->toBe('cart_checkout');
     });
 
-    test('getValidationRules returns form validation rules', function (): void {
-        // Act
-        $result = $this->service->getValidationRules();
-
-        // Assert
-        expect($result)->toBeArray()
-            ->and($result)->toHaveKeys(['name', 'description', 'type', 'rules', 'coupons']);
-
-        expect($result['name']['required'])->toBeTrue()
-            ->and($result['name']['type'])->toBe('string')
-            ->and($result['rules']['required'])->toBeTrue()
-            ->and($result['coupons']['required'])->toBeFalse();
-    });
-
-    test('extractConfigSchema handles non-existent class', function (): void {
-        // Act
+    it('extractConfigSchema returns empty for non-existent class', function () {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
         $result = $this->service->extractConfigSchema('NonExistentClass');
-
-        // Assert
         expect($result)->toBe([]);
     });
 
-    test('extractConfigSchema handles class without constructor', function (): void {
-        // Arrange - Create a test class without constructor
-        eval('class TestServiceClassWithoutConstructor {}');
-
-        // Act
-        $result = $this->service->extractConfigSchema('TestServiceClassWithoutConstructor');
-
-        // Assert
+    it('extractConfigSchema returns empty for class with no constructor', function () {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
+        if (!class_exists('NoCtorClass')) {
+            eval('class NoCtorClass {}');
+        }
+        $result = $this->service->extractConfigSchema('NoCtorClass');
         expect($result)->toBe([]);
     });
 
-    test('extractConfigSchema with parameters having default values', function (): void {
-        // Arrange - Create a test class with default values
-        eval('
-        class TestServiceClassWithDefaults {
-            public function __construct(
-                string $required,
-                bool $optionalBool = true,
-                int $optionalInt = 42,
-                ?string $nullable = null
-            ) {}
+    it('extractConfigSchema uses custom descriptions', function () {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
+        if (!class_exists('CustomDescConfig')) {
+            eval('class CustomDescConfig { public static function descriptions() { return ["foo" => "Custom Foo Desc"]; } public function __construct(int $foo) {} }');
         }
-        ');
-
-        // Act
-        $result = $this->service->extractConfigSchema('TestServiceClassWithDefaults');
-
-        // Assert
-        expect($result)->toBeArray()
-            ->and($result)->toHaveKey('required')
-            ->and($result['required']['required'])->toBeTrue()
-            ->and($result)->toHaveKey('optionalBool')
-            ->and($result['optionalBool']['required'])->toBeFalse()
-            ->and($result['optionalBool']['default'])->toBeTrue()
-            ->and($result)->toHaveKey('optionalInt')
-            ->and($result['optionalInt']['default'])->toBe(42)
-            ->and($result)->toHaveKey('nullable')
-            ->and($result['nullable']['default'])->toBeNull();
+        $result = $this->service->extractConfigSchema('CustomDescConfig');
+        expect($result['foo']['description'])->toBe('Custom Foo Desc');
     });
 
-    test('getParameterType handles null type', function (): void {
-        // Act
-        $result = $this->service->getParameterType(null);
-
-        // Assert
-        expect($result)->toBe('mixed');
-    });
-
-    test('getParameterType handles float type', function (): void {
-        // Arrange - Create a test class with float parameter
-        eval('
-        class TestServiceClassWithFloatParam {
-            public function __construct(float $floatParam) {}
+    it('extractConfigSchema handles enums and default values', function () {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
+        if (!enum_exists('TestEnum')) {
+            eval('enum TestEnum: string { case A = "a"; case B = "b"; }');
         }
-        ');
-
-        $reflectionClass = new ReflectionClass('TestServiceClassWithFloatParam');
-        $constructor = $reflectionClass->getConstructor();
-        $parameter = $constructor->getParameters()[0];
-        $type = $parameter->getType();
-
-        // Act
-        $result = $this->service->getParameterType($type);
-
-        // Assert
-        expect($result)->toBe('number');
-    });
-
-    test('getParameterType handles custom class type (default case)', function (): void {
-        // Arrange - Create a test class with custom object parameter
-        eval('
-        class CustomServiceTypeClass {}
-        class TestServiceClassWithCustomParam {
-            public function __construct(CustomServiceTypeClass $customParam) {}
+        if (!class_exists('EnumConfig')) {
+            eval('class EnumConfig { public function __construct(TestEnum $type = TestEnum::A) {} }');
         }
-        ');
-
-        $reflectionClass = new ReflectionClass('TestServiceClassWithCustomParam');
-        $constructor = $reflectionClass->getConstructor();
-        $parameter = $constructor->getParameters()[0];
-        $type = $parameter->getType();
-
-        // Act
-        $result = $this->service->getParameterType($type);
-
-        // Assert
-        expect($result)->toBe('CustomServiceTypeClass');
+        $result = $this->service->extractConfigSchema('EnumConfig');
+        expect($result['type']['type'])->toBe('enum');
+        expect($result['type']['default']->value ?? null)->toBe('a');
+        expect($result['type']['cases'])->toBe([
+            [
+                'value' => 'a',
+                'label' => 'A'
+            ],
+            [
+                'value' => 'b',
+                'label' => 'B'
+            ]
+        ]);
     });
 
-    test('generateParameterDescription creates proper descriptions', function (): void {
-        // Create a mock type
-        $mockType = new class {
-            public function getName() { return 'string'; }
+    it('getConfigurationClass returns config class if handler exists and method present', function () {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
+        $mockHandler = new class {
+            public static function getConfigClass()
+            {
+                return 'SomeConfigClass';
+            }
         };
-
-        // Act
-        $result = $this->service->generateParameterDescription('test_parameter_name', $mockType);
-
-        // Assert
-        expect($result)->toBe('Test Parameter Name (string)');
+        $this->mockRegistry->shouldReceive('getHandlerClassByKey')->andReturn(get_class($mockHandler));
+        $result = $this->service->getConfigurationClass('key', 'type', DiscountTypeEnum::CART_CHECKOUT);
+        expect($result)->toBe('SomeConfigClass');
     });
 
-    test('generateNameFromKey converts underscores to spaces and capitalizes', function (): void {
-        // Act & Assert
-        expect($this->service->generateNameFromKey('cart_value_over'))->toBe('Cart Value Over')
-            ->and($this->service->generateNameFromKey('product_in_category'))->toBe('Product In Category')
-            ->and($this->service->generateNameFromKey('simple_key'))->toBe('Simple Key');
+    it('getConfigurationClass returns null if handler not found', function () {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerClassByKey')->andReturn(null);
+        $result = $this->service->getConfigurationClass('key', 'type', DiscountTypeEnum::CART_CHECKOUT);
+        expect($result)->toBeNull();
     });
 
-    test('generateDescriptionFromClass handles class names correctly', function (): void {
-        // Act & Assert for different class names
-        $result1 = $this->service->generateDescriptionFromClass('App\\Services\\SomeCondition');
-        expect($result1)->toBe('Some');
-
-        $result2 = $this->service->generateDescriptionFromClass('App\\Services\\SomeAction');
-        expect($result2)->toBe('Some');
-
-        $result3 = $this->service->generateDescriptionFromClass('App\\Services\\MultiWordClassAction');
-        expect($result3)->toBe('Multi Word Class');
-
-        $result4 = $this->service->generateDescriptionFromClass('SimpleClass');
-        expect($result4)->toBe('Simple Class');
+    it('getConfigurationClass returns null if getConfigClass throws', function () {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
+        $mockHandler = new class {
+            public static function getConfigClass()
+            {
+                throw new Exception('fail');
+            }
+        };
+        $this->mockRegistry->shouldReceive('getHandlerClassByKey')->andReturn(get_class($mockHandler));
+        $result = $this->service->getConfigurationClass('key', 'type', DiscountTypeEnum::CART_CHECKOUT);
+        expect($result)->toBeNull();
     });
 
-    test('service adapts to new handlers dynamically', function (): void {
-        // This test demonstrates that the service works with the actual registry
-        // and will automatically adapt when new handlers are added
+    it('getConfigurationClass returns null if getConfigClass not present', function () {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
+        $mockHandler = new class {
+        };
+        $this->mockRegistry->shouldReceive('getHandlerClassByKey')->andReturn(get_class($mockHandler));
+        $result = $this->service->getConfigurationClass('key', 'type', DiscountTypeEnum::CART_CHECKOUT);
+        expect($result)->toBeNull();
+    });
 
-        // Get current conditions and actions
-        $conditions = $this->service->getConditions();
-        $actions = $this->service->getActions();
+    it('getParameterType returns correct types', function () {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
+        $ref = new ReflectionClass('CartCondConfig');
+        $params = $ref->getConstructor()->getParameters();
+        $typeInt = $this->service->getParameterType($params[0]->getType());
+        $typeFloat = $this->service->getParameterType($params[1]->getType());
+        $typeArray = $this->service->getParameterType($params[2]->getType());
+        $typeBoolean = $this->service->getParameterType($params[3]->getType());
+        $typeString = $this->service->getParameterType($params[4]->getType());
+        expect($typeFloat)->toBe('number');
+        expect($typeArray)->toBe('array');
+        expect($typeInt)->toBe('integer');
+        expect($typeBoolean)->toBe('boolean');
+        expect($typeString)->toBe('string');
+        expect($this->service->getParameterType(null))->toBe('mixed');
+    });
 
-        // Verify we get results based on actual registry
-        expect($conditions)->toBeArray()
-            ->and(count($conditions))->toBeGreaterThan(0)
-            ->and($actions)->toBeArray()
-            ->and(count($actions))->toBeGreaterThan(0);
+    it('generateParameterDescription returns correct string', function () {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
+        $ref = new ReflectionClass('CartCondConfig');
+        $params = $ref->getConstructor()->getParameters();
+        $desc = $this->service->generateParameterDescription($params[0]->getName(), $params[0]->getType());
+        expect($desc)->toBe('Foo (integer)');
+    });
 
-        // Each should have the required structure
-        foreach ($conditions as $condition) {
-            expect($condition)->toHaveKeys(['key', 'name', 'description', 'handler_class', 'configuration_schema']);
+    it('generateNameFromKey uses Lang if available, else fallback', function () {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
+        Lang::shouldReceive('has')->with('discount.name.special_key')->andReturn(true);
+        Lang::shouldReceive('get')->with('discount.name.special_key', [], null)->andReturn('Localized Name');
+        if (!function_exists('__')) {
+            function __($key)
+            {
+                return 'Localized Name';
+            }
         }
-
-        foreach ($actions as $action) {
-            expect($action)->toHaveKeys(['key', 'name', 'description', 'handler_class', 'configuration_schema']);
-        }
+        $result = $this->service->generateNameFromKey('special_key');
+        expect($result)->toBe('Localized Name');
+        Lang::shouldReceive('has')->with('discount.name.fallback_key')->andReturn(false);
+        $result2 = $this->service->generateNameFromKey('fallback_key');
+        expect($result2)->toBe('Fallback Key');
     });
 
-})->group('unit', 'services', 'discounts');
+    it('generateDescription uses Lang if available, else fallback', function () {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
+        Lang::shouldReceive('has')->with('discount.description.special_key')->andReturn(true);
+        Lang::shouldReceive('get')->with('discount.description.special_key', [], null)->andReturn('Localized Desc');
+        if (!function_exists('__')) {
+            function __($key)
+            {
+                return 'Localized Desc';
+            }
+        }
+        $result = $this->service->generateDescription('SomeHandlerClass', 'special_key');
+        expect($result)->toBe('Localized Desc');
+        Lang::shouldReceive('has')->with('discount.description.fallback_key')->andReturn(false);
+        $result2 = $this->service->generateDescription('SomeHandlerCondition', 'fallback_key');
+        expect($result2)->toBe('Some Handler');
+    });
+    it('extractConfigSchema handles enums with AdvanceEnum trait', function () {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
+        if (!enum_exists('AdvEnum')) {
+            eval('enum AdvEnum: string { use \App\Traits\AdvanceEnum; case A = "case1"; case B = "case2"; }');
+        }
+        if (!class_exists('AdvEnumConfig')) {
+            eval('class AdvEnumConfig { public function __construct(AdvEnum $type) {} }');
+        }
+        $result = $this->service->extractConfigSchema('AdvEnumConfig');
+        expect($result['type']['cases'])->toBe(
+            [
+                ['value' => "case1", 'label' => 'enums.AdvEnum.case1'],
+                ['value' => "case2", 'label' => 'enums.AdvEnum.case2']
+            ]
+        );
+    });
+
+    it('getParameterType handles non-ReflectionNamedType (e.g., ReflectionUnionType)', function () {
+        $mockType = Mockery::mock(ReflectionType::class);
+        $mockType->shouldReceive('__toString')->andReturn('int|string');
+        $result = $this->service->getParameterType($mockType);
+        expect($result)->toBe('int|string');
+    });
+
+
+    it('getParameterType returns type name for custom class (default branch)', function () {
+        if (!class_exists('CustomType')) {
+            eval('class CustomType {}');
+        }
+        if (!class_exists('DummyCustomType')) {
+            eval('class DummyCustomType { public function __construct(CustomType $foo) {} }');
+        }
+        $ref = new ReflectionClass('DummyCustomType');
+        $params = $ref->getConstructor()->getParameters();
+        $type = $params[0]->getType();
+        $result = $this->service->getParameterType($type);
+        expect($result)->toBe('CustomType');
+    });
+});
+
