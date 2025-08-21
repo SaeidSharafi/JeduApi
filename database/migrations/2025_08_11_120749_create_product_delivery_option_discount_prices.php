@@ -9,9 +9,16 @@ return new class extends Migration {
     {
         Schema::create('product_delivery_option_discount_prices', function (Blueprint $table) {
             $table->primary('product_delivery_option_id');
-            $table->foreignId('product_delivery_option_id')->constrained()->onDelete('cascade');
+            //use custom fk name sicne mysql has limit of 64 chars
+            $table->foreignId('product_delivery_option_id')
+                ->index('pdo_discount_prices_pdo_id_foreign')
+                ->constrained()
+                ->onDelete('cascade');
 
-            $table->foreignId('discount_promotion_id')->constrained()->onDelete('cascade');
+            $table->foreignId('discount_promotion_id')
+                ->index('pdo_discount_prices_discount_promotion_id_foreign')
+                ->constrained()
+                ->onDelete('cascade');
 
             // The final calculated price after the 'product_specific' discount has been applied.
             $table->unsignedBigInteger('discounted_price');
