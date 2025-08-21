@@ -455,7 +455,6 @@ describe('OrderController', function () {
             ->assertJsonValidationErrors([
                 'items.0.product_delivery_option_id',
                 'items.0.payment_type',
-                'items.0.discount_amount',
             ]);
     });
 });

@@ -32,9 +32,9 @@ describe('list filters', function () {
         User::factory(10)->create();
         $filteringUser = User::factory()
             ->create([
-                'email' => 'john@example.com',
+                'email' => 'TESTjohn@example.com',
             ])->fresh();
-        $response = $this->getJson(route('api.v1.admin.user.index', ['filter' => ['email' => 'john@example.com']]));
+        $response = $this->getJson(route('api.v1.admin.user.index', ['filter' => ['email' => 'TESTjohn@example.com']]));
 
         $response->assertSuccessful();
         $response->assertJsonCount(1, 'data.data');

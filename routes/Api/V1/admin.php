@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\FileManagement\UploadPrivateController;
 use App\Http\Controllers\Api\Admin\FileManagement\ViewMediaController;
 use App\Http\Controllers\Api\Admin\FileManagement\ViewPrivateFileController;
 use App\Http\Controllers\Api\Admin\NextPaymentDetailsController;
+use App\Http\Controllers\Api\Admin\OrderCalculationController;
 use App\Http\Controllers\Api\Admin\OrderController;
 use App\Http\Controllers\Api\Admin\PrivateFileDownloadController;
 
@@ -44,6 +45,9 @@ Route::middleware('auth:staff')->group(function (): void {
 
         Route::resource('order', OrderController::class)
             ->only(['index', 'store', 'show', 'update', 'destroy']);
+
+        Route::post('order/preview', OrderCalculationController::class)
+        ->name('order.preview');
 
         Route::resource('order/{order}/order-item', App\Http\Controllers\Api\Admin\OrderItemController::class)
             ->only(['index', 'show']);

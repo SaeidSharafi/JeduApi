@@ -1,0 +1,9 @@
+[
+  {
+    "key": "cart_total",
+    "name": "Cart Total",
+    "description": "Minimum cart total",
+    "handler_class": "App\\Handlers\\CartTotalConditionHandler",
+    "configuration_schema": {"min": "number"}
+  }
+]

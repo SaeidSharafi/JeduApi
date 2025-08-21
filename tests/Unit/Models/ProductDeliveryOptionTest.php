@@ -7,35 +7,36 @@ test('to array', function (): void {
 
     expect($productDeliveryOption->toArray())
         ->toEqual([
-            'id'                        => $productDeliveryOption->id,
-            'product_id'                => $productDeliveryOption->product_id,
-            'name'                      => $productDeliveryOption->name,
-            'sku'                       => $productDeliveryOption->sku,
-            'fulfillment_type'          => $productDeliveryOption->fulfillment_type->value,
-            'delivery_method'           => $productDeliveryOption->delivery_method->value,
-            'price'                     => $productDeliveryOption->price,
-            'capacity'                  => $productDeliveryOption->capacity,
-            'status'                    => $productDeliveryOption->status->value,
-            'is_prepayment_available'   => $productDeliveryOption->is_prepayment_available,
-            'prepayment_amount'         => $productDeliveryOption->prepayment_amount,
-            'details_json'              => $productDeliveryOption->details_json,
-            'is_featured'               => $productDeliveryOption->is_featured,
-            'featured_price'            => $productDeliveryOption->featured_price,
-            'featured_price_start_date' => $productDeliveryOption->featured_price_start_date?->format('Y-m-d H:i:s'),
-            'featured_price_end_date'   => $productDeliveryOption->featured_price_end_date?->format('Y-m-d H:i:s'),
-            'registration_start_date'   => $productDeliveryOption->registration_start_date?->format('Y-m-d'),
-            'registration_end_date'     => $productDeliveryOption->registration_end_date?->format('Y-m-d'),
-            'available_from'            => $productDeliveryOption->available_from?->format('Y-m-d'),
-            'available_to'              => $productDeliveryOption->available_to?->format('Y-m-d'),
-            'created_at'                => $productDeliveryOption->created_at?->format('Y-m-d H:i:s'),
-            'updated_at'                => $productDeliveryOption->updated_at?->format('Y-m-d H:i:s'),
-            'allow_multiple_quantity'   => $productDeliveryOption->allow_multiple_quantity,
+            'id'                                     => $productDeliveryOption->id,
+            'product_id'                             => $productDeliveryOption->product_id,
+            'name'                                   => $productDeliveryOption->name,
+            'sku'                                    => $productDeliveryOption->sku,
+            'fulfillment_type'                       => $productDeliveryOption->fulfillment_type->value,
+            'delivery_method'                        => $productDeliveryOption->delivery_method->value,
+            'price'                                  => $productDeliveryOption->price,
+            'capacity'                               => $productDeliveryOption->capacity,
+            'status'                                 => $productDeliveryOption->status->value,
+            'is_prepayment_available'                => $productDeliveryOption->is_prepayment_available,
+            'prepayment_amount'                      => $productDeliveryOption->prepayment_amount,
+            'details_json'                           => $productDeliveryOption->details_json,
+            'is_featured'                            => $productDeliveryOption->is_featured,
+            'featured_price'                         => $productDeliveryOption->featured_price,
+            'featured_price_start_date'              => $productDeliveryOption->featured_price_start_date?->format('Y-m-d H:i:s'),
+            'featured_price_end_date'                => $productDeliveryOption->featured_price_end_date?->format('Y-m-d H:i:s'),
+            'registration_start_date'                => $productDeliveryOption->registration_start_date?->format('Y-m-d'),
+            'registration_end_date'                  => $productDeliveryOption->registration_end_date?->format('Y-m-d'),
+            'available_from'                         => $productDeliveryOption->available_from?->format('Y-m-d'),
+            'available_to'                           => $productDeliveryOption->available_to?->format('Y-m-d'),
+            'created_at'                             => $productDeliveryOption->created_at?->format('Y-m-d H:i:s'),
+            'updated_at'                             => $productDeliveryOption->updated_at?->format('Y-m-d H:i:s'),
+            'allow_multiple_quantity'                => $productDeliveryOption->allow_multiple_quantity,
+            'product_delivery_option_discount_price' => $productDeliveryOption->productDeliveryOptionDiscountPrice,
         ]);
 
 });
 
 test('relation products', function (): void {
-    $product        = App\Models\Product::factory()->create();
+    $product = App\Models\Product::factory()->create();
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
     expect($deliveryOption->product)
         ->toBeInstanceOf(App\Models\Product::class)
@@ -45,7 +46,7 @@ test('relation products', function (): void {
 
 test('relation teachers', function (): void {
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create();
-    $teachers       = App\Models\Teacher::factory()->count(3)->create();
+    $teachers = App\Models\Teacher::factory()->count(3)->create();
     $deliveryOption->teachers()->attach($teachers->pluck('id'));
     $deliveryOption->load('teachers');
     expect($deliveryOption->teachers)
@@ -54,6 +55,20 @@ test('relation teachers', function (): void {
         ->toBeInstanceOf(App\Models\Teacher::class);
 });
 
+test('relation discount prices', function (): void {
+
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create();
+    $discountPrice = App\Models\ProductDeliveryOptionDiscountPrice::create([
+        'product_delivery_option_id' => $deliveryOption->id,
+        'discount_promotion_id'      => \App\Models\DiscountPromotion::factory()->create()->id,
+        'discounted_price'           => 5000,
+    ]);
+    $deliveryOption->load('productDeliveryOptionDiscountPrice');
+    expect($deliveryOption->productDeliveryOptionDiscountPrice)
+        ->toBeInstanceOf(App\Models\ProductDeliveryOptionDiscountPrice::class)
+        ->and($deliveryOption->productDeliveryOptionDiscountPrice->discounted_price)
+        ->toEqual(5000);
+});
 test('scope available', function (): void {
     $availableOption = App\Models\ProductDeliveryOption::factory()->create([
         'status'         => App\Enums\PublicationStatusEnum::PUBLISHED,

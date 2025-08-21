@@ -1,0 +1,7 @@
+{
+  "message": "The given data was invalid.",
+  "errors": {
+    "name": ["The name field is required."],
+    "type": ["The type field is required."]
+  }
+}

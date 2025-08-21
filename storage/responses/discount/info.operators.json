@@ -1,0 +1,4 @@
+[
+  {"value": "greater_than_or_equal", "label": ">=", "symbol": ">="},
+  {"value": "less_than", "label": "<", "symbol": "<"}
+]

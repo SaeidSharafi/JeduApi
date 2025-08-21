@@ -1,0 +1,18 @@
+{
+  "cart": {
+    "conditions": [
+      {"key": "cart_total", "name": "Cart Total", "description": "Minimum cart total", "handler_class": "App\\Handlers\\CartTotalConditionHandler", "configuration_schema": {"min": "number"}}
+    ],
+    "actions": [
+      {"key": "cart_discount", "name": "Cart Discount", "description": "Discount on cart", "configuration_schema": {"amount": "number"}}
+    ]
+  },
+  "product": {
+    "conditions": [
+      {"key": "product_category", "name": "Product Category", "description": "Category match", "handler_class": "App\\Handlers\\ProductCategoryConditionHandler", "configuration_schema": {"category_id": "integer"}}
+    ],
+    "actions": [
+      {"key": "product_discount", "name": "Product Discount", "description": "Discount on product", "configuration_schema": {"amount": "number"}}
+    ]
+  }
+}

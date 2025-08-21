@@ -33,9 +33,7 @@ final class OrderCreateData extends Data
             'items'                              => ['required', 'array', 'min:1'],
             'items.*.product_delivery_option_id' => ['required', 'integer', 'exists:product_delivery_options,id'],
             'items.*.payment_type'               => ['required', 'string', Rule::enum(OrderItemPaymentTypeEnum::class)],
-            'items.*.discount_amount'            => ['required', 'integer', 'min:0'],
             'items.*.qty_ordered'                => ['nullable', 'integer', 'min:1'],
-            'items.*.tax_amount'                 => ['nullable', 'integer', 'min:0'],
         ];
     }
 
@@ -74,17 +72,9 @@ final class OrderCreateData extends Data
                 'description' => 'Payment type for the item',
                 'example'     => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             ],
-            'items.*.discount_amount' => [
-                'description' => 'Discount amount applied to the item',
-                'example'     => 0,
-            ],
             'items.*.qty_ordered' => [
                 'description' => 'Quantity of the item ordered',
                 'example'     => 1,
-            ],
-            'items.*.tax_amount' => [
-                'description' => 'Tax amount applied to the item',
-                'example'     => 0,
             ],
         ];
     }

@@ -1,0 +1,8 @@
+[
+  {
+    "key": "cart_discount",
+    "name": "Cart Discount",
+    "description": "Discount on cart",
+    "configuration_schema": {"amount": "number"}
+  }
+]

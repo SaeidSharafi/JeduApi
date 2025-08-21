@@ -7,8 +7,21 @@ use App\Http\Controllers\Controller;
 use App\Models\DiscountPromotion;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @group Admin - Discount Promotion Statistics
+ *
+ * Get statistics about discount promotions.
+ *
+ * @authenticated Staff
+ */
 class DiscountPromotionStatisticsController extends Controller
 {
+    /**
+     * Get discount promotion statistics.
+     *
+     * @responseFile 200 responses/discount/promotion.statistics.json
+     * @responseFile 403 responses/403.json
+     */
     public function __invoke(): ApiResponseInterface
     {
         Gate::authorize('viewAny', DiscountPromotion::class);
@@ -22,6 +35,5 @@ class DiscountPromotionStatisticsController extends Controller
             'promotions_without_coupons' => DiscountPromotion::whereDoesntHave('coupons')->count(),
         ];
         return response()->success($stats);
-
     }
 }

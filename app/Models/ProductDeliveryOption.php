@@ -7,11 +7,13 @@ namespace App\Models;
 use App\Enums\DeliveryMethodEnum;
 use App\Enums\FulfillmentTypeEnum;
 use App\Enums\PublicationStatusEnum;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 final class ProductDeliveryOption extends Model
 {
@@ -40,6 +42,9 @@ final class ProductDeliveryOption extends Model
             'available_to',
         ];
 
+    protected $with = [
+        'productDeliveryOptionDiscountPrice',
+    ];
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
@@ -53,6 +58,23 @@ final class ProductDeliveryOption extends Model
     public function enrolments(): HasMany
     {
         return $this->hasMany(Enrolment::class, 'product_delivery_option_id');
+    }
+
+    public function productDeliveryOptionDiscountPrice(): HasOne
+    {
+        return $this->hasOne(ProductDeliveryOptionDiscountPrice::class, 'product_delivery_option_id');
+    }
+
+    protected function discountPrice(): Attribute
+    {
+        if ($this->relationLoaded('productDeliveryOptionDiscountPrice')) {
+            return Attribute::make(
+                get: fn($value, array $attributes) => $this->productDeliveryOptionDiscountPrice?->discounted_price ?? $this->price,
+            );
+        }
+        return Attribute::make(
+            get: fn($value, array $attributes) => $this->price,
+        );
     }
     public function scopeAvailable($query)
     {

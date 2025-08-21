@@ -1,0 +1,4 @@
+[
+  {"value": "product_specific", "label": "Product Specific", "description": "Discount applied to specific products"},
+  {"value": "cart_checkout", "label": "Cart Checkout", "description": "Discount applied to entire cart during checkout"}
+]

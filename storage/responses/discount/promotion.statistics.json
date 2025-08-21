@@ -1,0 +1,9 @@
+{
+  "total_promotions": 10,
+  "active_promotions": 7,
+  "inactive_promotions": 3,
+  "product_specific_promotions": 6,
+  "cart_checkout_promotions": 4,
+  "promotions_with_coupons": 5,
+  "promotions_without_coupons": 5
+}

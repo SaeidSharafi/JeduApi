@@ -1,0 +1,59 @@
+{
+  "data": {
+    "id": 1,
+    "name": "Back to School Sale",
+    "description": "Discount for school season",
+    "type": {
+      "value": "product_specific",
+      "label": "Product Specific"
+    },
+    "is_active": true,
+    "starts_at": "2025-08-01 00:00:00",
+    "ends_at": "2025-09-01 23:59:59",
+    "priority": 1,
+    "stop_processing_subsequent_rules": false,
+    "usage_limit_total": 100,
+    "usage_limit_per_customer": 1,
+    "total_usage_count": 10,
+    "created_at": "2025-07-01 12:00:00",
+    "updated_at": "2025-08-01 12:00:00",
+    "rules": [
+      {
+        "id": 1,
+        "discount_promotion_id": 1,
+        "type": "condition",
+        "handler": "cart_value_over",
+        "configuration": {
+          "operator": "greater_than_or_equal",
+          "value": 50000,
+          "include_prepayments": false
+        },
+        "created_at": "1403-04-10 12:00:00",
+        "updated_at": "1404-05-10 12:00:00"
+      },
+      {
+        "id": 2,
+        "discount_promotion_id": 1,
+        "type": "action",
+        "handler": "apply_percentage_off",
+        "configuration": {
+          "percentage": 15
+        },
+        "created_at": "1403-04-10 12:00:00",
+        "updated_at": "1404-05-10 12:00:00"
+      }
+    ],
+    "coupons": [
+      {
+        "id": 1,
+        "discount_promotion_id": 1,
+        "code": "BACK2SCHOOL",
+        "is_active": true,
+        "usage_limit": 50,
+        "usage_count": 5,
+      "created_at": "1403-04-10 12:00:00",
+      "updated_at": "1404-05-10 12:00:00"
+      }
+    ]
+  }
+}

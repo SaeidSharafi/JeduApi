@@ -1,0 +1,10 @@
+{
+  "data": {
+    "id": 1,
+    "name": "Back to School Sale",
+    "type": "product_specific",
+    "is_active": false,
+    "rules": [],
+    "coupons": []
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "items": [
+      {
+        "product_delivery_option": {
+          "id": 285,
+          "name": "Mrs. Odie Fadel III",
+          "price": 600000,
+          "discount_price": 540000,
+          "is_prepayment": false,
+          "prepayment_amount": 0
+        },
+        "qty": 1,
+        "payment_type": "full_payment",
+        "price": 540000,
+        "total": 486000,
+        "discount_amount": 54000,
+        "applied_discount_details": [
+          {
+            "promotion_id": 19,
+            "promotion_name": "Summer Sale 2025",
+            "applied_amount": 54000,
+            "coupon_code": "b"
+          }
+        ]
+      },
+      {
+        "product_delivery_option": {
+          "id": 2,
+          "name": "Mozell Runolfsson V",
+          "price": 600000,
+          "discount_price": 600000,
+          "is_prepayment": true,
+          "prepayment_amount": 280000
+        },
+        "qty": 1,
+        "payment_type": "full_payment",
+        "price": 600000,
+        "total": 540000,
+        "discount_amount": 60000,
+        "applied_discount_details": [
+          {
+            "promotion_id": 19,
+            "promotion_name": "Summer Sale 2025",
+            "applied_amount": 60000,
+            "coupon_code": "b"
+          }
+        ]
+      }
+    ],
+    "subtotal_full_payment_items": 1140000,
+    "subtotal_all_items": 1200000,
+    "applied_cart_discounts": [
+      {
+        "promotion_id": 19,
+        "promotion_name": "Summer Sale 2025",
+        "applied_amount": 114000,
+        "coupon_code": "b"
+      }
+    ],
+    "triggered_by_coupon_code": "b"
+  },
+  "metadata": []
+}
