@@ -83,6 +83,11 @@ Route::middleware('auth:staff')->group(function (): void {
             ->name('discount-info.operators');
         Route::get('discount-info/types', [\App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'types'])
             ->name('discount-info.types');
+        Route::prefix('wallet')->name('wallet.')->group(function (): void {
+            Route::resource('/', App\Http\Controllers\Api\Admin\AdminWalletController::class)
+                ->only(['index', 'show']);
 
+            Route::post('create', \App\Http\Controllers\Api\Admin\CreateWalletController::class)->name('create');
+        });
     });
 });

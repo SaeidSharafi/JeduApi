@@ -100,6 +100,12 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
+            'wallet'                  => [
+                PermissionAction::VIEW_SCOPED,
+                PermissionAction::CREATE,
+                PermissionAction::UPDATE,
+                PermissionAction::DELETE,
+            ],
         'teacher'                 => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,

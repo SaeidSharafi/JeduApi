@@ -7,7 +7,9 @@ namespace App\Enums;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
+use App\Models\Order;
 use App\Models\Product;
+use App\Models\Refund;
 use App\Models\Seminar;
 use App\Models\Staff;
 use App\Models\Teacher;
@@ -29,7 +31,8 @@ enum MorphTypeEnum: string
     case TEACHER = 'teacher';
     case VENDOR  = 'vendor';
     case PRODUCT = 'product';
-
+    case ORDER     = 'order';
+    case REFUND    = 'refund';
     public static function forMorphMap(): array
     {
         $map = [];
@@ -63,6 +66,8 @@ enum MorphTypeEnum: string
             self::TEACHER       => Teacher::class,
             self::VENDOR        => Vendor::class,
             self::PRODUCT       => Product::class,
+            self::ORDER         => Order::class,
+            self::REFUND        => Refund::class,
         };
     }
 }

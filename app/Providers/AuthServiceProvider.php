@@ -66,6 +66,7 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(Refund::class, RefundPolicy::class);
-        Gate::policy(DiscountPromotion::class, DiscountPromotionPolicy::class);
+    Gate::policy(DiscountPromotion::class, DiscountPromotionPolicy::class);
+    Gate::policy(\App\Models\Wallet::class, \App\Policies\Admin\WalletPolicy::class);
     }
 }

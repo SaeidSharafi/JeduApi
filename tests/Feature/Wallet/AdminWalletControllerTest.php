@@ -1,0 +1,29 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Models\User;
+use App\Models\Wallet;
+use App\Enums\Wallet\WalletStatusEnum;
+use App\Enums\PermissionEnum;
+use function Pest\Laravel\getJson;
+use function Pest\Laravel\putJson;
+use function Pest\Laravel\deleteJson;
+use Tests\AuthTestTrait;
+
+uses(AuthTestTrait::class);
+
+test('admin with permission can list wallets', function () {
+    $admin = $this->authorized_user([PermissionEnum::WALLET_VIEW_ANY]);
+
+    User::factory()->count(3)->create();
+    $response = getJson(route('api.v1.admin.wallet.index'));
+    $response->assertOk();
+    $response->assertJsonCount(3, 'data');
+});
+
+test('admin without permission cannot list wallets', function () {
+    $admin = $this->authorized_user([]);
+    $response = getJson(route('api.v1.admin.wallet.index'));
+    $response->assertForbidden();
+});

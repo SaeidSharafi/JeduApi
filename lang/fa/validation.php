@@ -170,6 +170,10 @@ return [
     */
 
     'custom'     => [
+        // Wallet system custom errors
+        'user_not_found' => 'کاربر مورد نظر یافت نشد.',
+        'wallet_already_exists' => 'کیف پول برای این کاربر قبلاً ایجاد شده است.',
+        'wallet_not_found' => 'کیف پول برای این کاربر یافت نشد.',
         'attribute-name'                     => [
             'rule-name' => 'custom-message',
         ],

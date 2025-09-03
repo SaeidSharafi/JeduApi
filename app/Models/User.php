@@ -69,6 +69,11 @@ final class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Enrolment::class, 'customer_id');
     }
 
+    public function wallet(): HasOne
+    {
+        return $this->hasOne(Wallet::class);
+    }
+
     public function profileCompleted(): bool
     {
         return $this->first_name !== null
@@ -85,6 +90,15 @@ final class User extends Authenticatable implements MustVerifyEmail
         parent::boot();
         self::creating(function ($model) {
             $model->uuid = (string) Str::uuid7();
+        });
+
+        self::created(function ($model) {
+            // Automatically create a wallet for new users
+            $model->wallet()->create([
+                'balance' => 0,
+                'gift_balance' => 0,
+                'status' => \App\Enums\Wallet\WalletStatusEnum::ACTIVE,
+            ]);
         });
     }
 
