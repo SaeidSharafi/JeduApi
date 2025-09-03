@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\WalletTransactionSourceableContract;
 use Database\Factories\StaffFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,7 +13,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-final class Staff extends Authenticatable implements MustVerifyEmail
+final class Staff extends Authenticatable implements MustVerifyEmail, WalletTransactionSourceableContract
 {
     use HasApiTokens;
 

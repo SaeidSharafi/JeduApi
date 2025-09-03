@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\WalletTransactionSourceableContract;
 use App\Enums\Order\RefundStatusEnum;
 use App\Traits\HasAuditor;
 use Database\Factories\RefundFactory;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class Refund extends Model
+final class Refund extends Model implements  WalletTransactionSourceableContract
 {
     use HasAuditor;
 

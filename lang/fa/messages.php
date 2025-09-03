@@ -43,6 +43,8 @@ return [
         'course'        => 'دوره',
         'teacher'       => 'مدرس',
         'term'          => 'ترم',
+        'wallet'        => 'کیف پول',
+        'wallet_transaction' => 'تراکنش کیف پول',
     ],
 
     'errors'      => [
@@ -120,6 +122,15 @@ return [
     ],
     'enrollments' => [
         'not_found' => 'دوره مورد نظر یافت نشد.',
+    ],
+    'wallet' => [
+        'deposit_description' => 'واریز به کیف پول توسط ادمین',
+        'withdrawal_description' => 'برداشت از کیف پول توسط ادمین',
+        'adjustment_description' => 'تعدیل کیف پول - دلیل: :reason',
+        'deposit_success' => 'واریز به کیف پول با موفقیت انجام شد.',
+        'withdrawal_success' => 'برداشت از کیف پول با موفقیت انجام شد.',
+        'adjustment_success' => 'تعدیل کیف پول با موفقیت انجام شد.',
+        'balance_retrieved' => 'موجودی کیف پول با موفقیت دریافت شد.',
     ],
     'http_status' => [
         200 => 'موفق',

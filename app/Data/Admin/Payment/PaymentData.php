@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Payment;
 
+use App\Contracts\WalletTransactionSourceableDataContract;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
@@ -12,7 +13,7 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-final class PaymentData extends Data
+final class PaymentData extends Data  implements WalletTransactionSourceableDataContract
 {
     public function __construct(
         public int $id,

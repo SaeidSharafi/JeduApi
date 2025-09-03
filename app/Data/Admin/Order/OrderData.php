@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Order;
 
+use App\Contracts\WalletTransactionSourceableDataContract;
 use App\Data\Admin\User\ShowUserData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Order\OrderPaymentStatusEnum;
@@ -18,7 +19,7 @@ use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer;
 
-final class OrderData extends Data
+final class OrderData extends Data implements WalletTransactionSourceableDataContract
 {
     public function __construct(
         public int $id,

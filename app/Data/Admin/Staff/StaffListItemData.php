@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Staff;
 
+use App\Contracts\WalletTransactionSourceableDataContract;
 use App\Data\Admin\Role\RoleListItemData;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\DataCollection;
 
-final class StaffListItemData extends Data
+final class StaffListItemData extends Data implements WalletTransactionSourceableDataContract
 {
     public function __construct(
         public int $id,

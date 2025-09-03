@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Admin\NextPaymentDetailsController;
 use App\Http\Controllers\Api\Admin\OrderCalculationController;
 use App\Http\Controllers\Api\Admin\OrderController;
 use App\Http\Controllers\Api\Admin\PrivateFileDownloadController;
+use App\Http\Controllers\Api\Admin\Wallet\AdminWalletController;
 
 Route::middleware('auth:staff')->group(function (): void {
     Route::prefix('admin')->name('admin.')->group(function (): void {
@@ -84,10 +85,15 @@ Route::middleware('auth:staff')->group(function (): void {
         Route::get('discount-info/types', [\App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'types'])
             ->name('discount-info.types');
         Route::prefix('wallet')->name('wallet.')->group(function (): void {
-            Route::resource('/', App\Http\Controllers\Api\Admin\AdminWalletController::class)
-                ->only(['index', 'show']);
+            Route::resource('/', AdminWalletController::class)
+                ->only(['index', 'show', 'update'])
+                ->parameters(['' => 'wallet']);
 
             Route::post('create', \App\Http\Controllers\Api\Admin\CreateWalletController::class)->name('create');
+            Route::post('deposit', \App\Http\Controllers\Api\Admin\Wallet\DepositToWalletController::class)->name('deposit');
+            Route::post('withdrawal', \App\Http\Controllers\Api\Admin\Wallet\WithdrawFromWalletController::class)->name('withdrawal');
+            Route::post('adjustment', \App\Http\Controllers\Api\Admin\AdjustWalletController::class)->name('adjustment');
+            Route::get('balance/{userId}', [AdminWalletController::class, 'balance'])->name('balance');
         });
     });
 });

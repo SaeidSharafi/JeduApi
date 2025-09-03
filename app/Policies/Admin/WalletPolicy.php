@@ -33,4 +33,19 @@ class WalletPolicy
     {
         return $user->can(PermissionEnum::WALLET_DELETE->value);
     }
+
+    public function deposit(Staff $user): bool
+    {
+        return $user->can(PermissionEnum::WALLET_DEPOSIT->value);
+    }
+
+    public function withdrawal(Staff $user): bool
+    {
+        return $user->can(PermissionEnum::WALLET_WITHDRAWAL->value);
+    }
+
+    public function adjustment(Staff $user): bool
+    {
+        return $user->can(PermissionEnum::WALLET_ADJUSTMENT->value);
+    }
 }

@@ -105,6 +105,9 @@ return [
                 PermissionAction::CREATE,
                 PermissionAction::UPDATE,
                 PermissionAction::DELETE,
+                'deposit',
+                'withdrawal',
+                'adjustment',
             ],
         'teacher'                 => [
             PermissionAction::VIEW_SCOPED,

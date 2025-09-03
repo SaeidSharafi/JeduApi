@@ -106,11 +106,14 @@ enum PermissionEnum: string
     case VENDOR_UPDATE = 'vendor.update';
     case VENDOR_VIEW = 'vendor.view';
     case VENDOR_VIEW_ANY = 'vendor.view_any';
+    case WALLET_ADJUSTMENT = 'wallet.adjustment';
     case WALLET_CREATE = 'wallet.create';
     case WALLET_DELETE = 'wallet.delete';
+    case WALLET_DEPOSIT = 'wallet.deposit';
     case WALLET_UPDATE = 'wallet.update';
     case WALLET_VIEW = 'wallet.view';
     case WALLET_VIEW_ANY = 'wallet.view_any';
+    case WALLET_WITHDRAWAL = 'wallet.withdrawal';
 
     /**
      * Get all permission values as an array.

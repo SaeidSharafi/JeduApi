@@ -7,6 +7,7 @@ namespace App\Data\Admin\Refund;
 use App\Actions\Admin\Refund\Max;
 use App\Actions\Admin\Refund\Rule;
 use App\Actions\Admin\Refund\ValidationContext;
+use App\Contracts\WalletTransactionSourceableDataContract;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Order\RefundStatusEnum;
 use App\Rules\IbanNumberRule;
@@ -17,7 +18,7 @@ use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer;
 
-final class RefundData extends Data
+final class RefundData extends Data  implements WalletTransactionSourceableDataContract
 {
     public function __construct(
         public readonly int $id,

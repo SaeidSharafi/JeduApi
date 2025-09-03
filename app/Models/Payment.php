@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\WalletTransactionSourceableContract;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Traits\HasAuditor;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class Payment extends Model
+final class Payment extends Model implements  WalletTransactionSourceableContract
 {
     /** @use HasFactory<\Database\Factories\PaymentFactory> */
     use HasFactory;
