@@ -18,6 +18,8 @@ use App\Models\Teacher;
 use App\Models\Term;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Models\Wallet;
+use App\Models\WalletCampaign;
 use App\Policies\Admin\CategoryPolicy;
 use App\Policies\Admin\CoursePolicy;
 use App\Policies\Admin\DigitalAssetPolicy;
@@ -33,13 +35,17 @@ use App\Policies\Admin\TeacherPolicy;
 use App\Policies\Admin\TermPolicy;
 use App\Policies\Admin\UserPolicy;
 use App\Policies\Admin\VendorPolicy;
+use App\Policies\Admin\WalletCampaignPolicy;
+use App\Policies\Admin\WalletPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Permission\Models\Role;
 
 final class AuthServiceProvider extends ServiceProvider
 {
-    public function register(): void {}
+    public function register(): void
+    {
+    }
 
     public function boot(): void
     {
@@ -66,7 +72,8 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(Refund::class, RefundPolicy::class);
-    Gate::policy(DiscountPromotion::class, DiscountPromotionPolicy::class);
-    Gate::policy(\App\Models\Wallet::class, \App\Policies\Admin\WalletPolicy::class);
+        Gate::policy(DiscountPromotion::class, DiscountPromotionPolicy::class);
+        Gate::policy(Wallet::class, WalletPolicy::class);
+        Gate::policy(WalletCampaign::class, WalletCampaignPolicy::class);
     }
 }

@@ -107,6 +107,13 @@ enum PermissionEnum: string
     case VENDOR_VIEW = 'vendor.view';
     case VENDOR_VIEW_ANY = 'vendor.view_any';
     case WALLET_ADJUSTMENT = 'wallet.adjustment';
+    case WALLET_CAMPAIGN_ALLOCATE = 'wallet_campaign.allocate';
+    case WALLET_CAMPAIGN_CREATE = 'wallet_campaign.create';
+    case WALLET_CAMPAIGN_DELETE = 'wallet_campaign.delete';
+    case WALLET_CAMPAIGN_PROCESS_BONUS = 'wallet_campaign.process_bonus';
+    case WALLET_CAMPAIGN_UPDATE = 'wallet_campaign.update';
+    case WALLET_CAMPAIGN_VIEW = 'wallet_campaign.view';
+    case WALLET_CAMPAIGN_VIEW_ANY = 'wallet_campaign.view_any';
     case WALLET_CREATE = 'wallet.create';
     case WALLET_DELETE = 'wallet.delete';
     case WALLET_DEPOSIT = 'wallet.deposit';

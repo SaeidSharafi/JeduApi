@@ -11,10 +11,12 @@ use App\Data\Admin\Payment\PaymentData;
 use App\Data\Admin\Refund\RefundData;
 use App\Data\Admin\Staff\ShowStaffData;
 use App\Data\Admin\Staff\StaffListItemData;
+use App\Data\Admin\Wallet\WalletCampaignData;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\Staff;
+use App\Models\WalletCampaign;
 use InvalidArgumentException;
 use Spatie\LaravelData\Casts\Cast;
 use Spatie\LaravelData\Support\Creation\CreationContext;
@@ -41,6 +43,7 @@ final readonly class TrasnactionSourceCast implements Cast
             $value instanceof Order      => $this->getOrderData($value),
             $value instanceof Refund     => $this->getRefundData($value),
             $value instanceof Payment  => $this->getPaymentData($value),
+            $value instanceof WalletCampaign => WalletCampaignData::from($value),
             default                        => null,
         };
 

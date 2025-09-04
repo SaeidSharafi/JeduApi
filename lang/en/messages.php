@@ -120,6 +120,17 @@ return [
     'enrollments' => [
         'not_found' => 'Enrollment not found.',
     ],
+
+    // Wallet Campaign Messages
+    'campaigns_retrieved_successfully' => 'Wallet campaigns retrieved successfully.',
+    'campaign_created_successfully' => 'Wallet campaign created successfully.',
+    'campaign_retrieved_successfully' => 'Wallet campaign retrieved successfully.',
+    'campaign_updated_successfully' => 'Wallet campaign updated successfully.',
+    'campaign_deleted_successfully' => 'Wallet campaign deleted successfully.',
+    'campaign_has_transactions_cannot_delete' => 'Cannot delete campaign with existing transactions.',
+    'gift_credit_allocated_successfully' => 'Gift credit allocated successfully.',
+    'campaign_bonus_processed_successfully' => 'Campaign bonus processed successfully.',
+
     'http_status' => [
         200 => 'OK',
         201 => 'Created',

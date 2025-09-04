@@ -132,6 +132,17 @@ return [
         'adjustment_success' => 'تعدیل کیف پول با موفقیت انجام شد.',
         'balance_retrieved' => 'موجودی کیف پول با موفقیت دریافت شد.',
     ],
+
+    // Wallet Campaign Messages
+    'campaigns_retrieved_successfully' => 'کمپین‌های کیف پول با موفقیت دریافت شد.',
+    'campaign_created_successfully' => 'کمپین کیف پول با موفقیت ایجاد شد.',
+    'campaign_retrieved_successfully' => 'کمپین کیف پول با موفقیت دریافت شد.',
+    'campaign_updated_successfully' => 'کمپین کیف پول با موفقیت به‌روزرسانی شد.',
+    'campaign_deleted_successfully' => 'کمپین کیف پول با موفقیت حذف شد.',
+    'campaign_has_transactions_cannot_delete' => 'کمپین دارای تراکنش‌های موجود است و قابل حذف نیست.',
+    'gift_credit_allocated_successfully' => 'اعتبار هدیه با موفقیت تخصیص یافت.',
+    'campaign_bonus_processed_successfully' => 'پاداش کمپین با موفقیت پردازش شد.',
+
     'http_status' => [
         200 => 'موفق',
         201 => 'ایجاد شد',

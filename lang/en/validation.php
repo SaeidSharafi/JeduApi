@@ -23,5 +23,15 @@ return [
         'user_not_found' => 'User not found.',
         'wallet_already_exists' => 'Wallet already exists for this user.',
         'insufficient_balance' => 'Insufficient wallet balance for this transaction.',
+
+        // Wallet Campaign validation messages
+        'campaign_not_found' => 'Wallet campaign not found.',
+        'campaign_not_active' => 'Campaign is not currently active.',
+        'user_not_eligible' => 'User is not eligible for this campaign.',
+        'duplicate_allocation' => 'Gift credit already allocated for this campaign and user.',
+        'campaign_expired' => 'This campaign has expired.',
+        'usage_limit_reached' => 'Campaign usage limit has been reached.',
+        'already_claimed' => 'You have already claimed this campaign bonus.',
+        'wallet_not_active' => 'User wallet is not active.',
     ],
 ];

@@ -176,6 +176,14 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
+        'wallet_campaign' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::DELETE,
+            'allocate',
+            'process_bonus', // Custom String:   wallet_campaigns.process_bonus
+        ],
         /*
 
 

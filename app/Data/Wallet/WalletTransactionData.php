@@ -21,6 +21,7 @@ use Spatie\LaravelData\Data;
 class WalletTransactionData extends Data
 {
     public function __construct(
+        public int $id,
         public WalletData $wallet,
         public User $user,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]

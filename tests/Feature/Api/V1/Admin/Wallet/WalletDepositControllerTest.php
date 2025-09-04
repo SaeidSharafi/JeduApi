@@ -28,6 +28,7 @@ test('admin can deposit to wallet via API', function () {
     $response->assertJsonStructure([
         'message',
         'data' => [
+            'id',
             'wallet'      => [
                 'balance',
                 'gift_balance',

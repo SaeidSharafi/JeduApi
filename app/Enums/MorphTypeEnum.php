@@ -15,6 +15,7 @@ use App\Models\Staff;
 use App\Models\Teacher;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Models\WalletCampaign;
 use App\Traits\AdvanceEnum;
 
 enum MorphTypeEnum: string
@@ -33,6 +34,7 @@ enum MorphTypeEnum: string
     case PRODUCT = 'product';
     case ORDER     = 'order';
     case REFUND    = 'refund';
+    case CAMPAIGN = 'campaign';
     public static function forMorphMap(): array
     {
         $map = [];
@@ -68,6 +70,7 @@ enum MorphTypeEnum: string
             self::PRODUCT       => Product::class,
             self::ORDER         => Order::class,
             self::REFUND        => Refund::class,
+            self::CAMPAIGN      => WalletCampaign::class,
         };
     }
 }

@@ -177,6 +177,15 @@ return [
         'wallet_not_active' => 'کیف پول کاربر فعال نیست.',
         'insufficient_balance' => 'موجودی کافی برای برداشت وجود ندارد.',
         'insufficient_balance_with_info' => 'موجودی کیف پول شما (:available تومان) برای این تراکنش کافی نیست. مبلغ مورد نیاز: :required تومان.',
+
+        // Wallet Campaign validation messages
+        'campaign_not_found' => 'کمپین کیف پول یافت نشد.',
+        'campaign_not_active' => 'کمپین در حال حاضر غیرفعال است.',
+        'user_not_eligible' => 'کاربر برای این کمپین واجد شرایط نیست.',
+        'duplicate_allocation' => 'اعتبار هدیه برای این کمپین و کاربر قبلاً تخصیص یافته است.',
+        'campaign_expired' => 'این کمپین منقضی شده است.',
+        'usage_limit_reached' => 'حد مجاز استفاده از کمپین به پایان رسیده است.',
+        'already_claimed' => 'شما قبلاً پاداش این کمپین را دریافت کرده‌اید.',
         'attribute-name'                     => [
             'rule-name' => 'custom-message',
         ],

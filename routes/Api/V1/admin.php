@@ -14,6 +14,9 @@ use App\Http\Controllers\Api\Admin\OrderCalculationController;
 use App\Http\Controllers\Api\Admin\OrderController;
 use App\Http\Controllers\Api\Admin\PrivateFileDownloadController;
 use App\Http\Controllers\Api\Admin\Wallet\AdminWalletController;
+use App\Http\Controllers\Api\Admin\AdminWalletCampaignController;
+use App\Http\Controllers\Api\Admin\AllocateGiftCreditController;
+use App\Http\Controllers\Api\Admin\ProcessCampaignBonusController;
 
 Route::middleware('auth:staff')->group(function (): void {
     Route::prefix('admin')->name('admin.')->group(function (): void {
@@ -94,5 +97,12 @@ Route::middleware('auth:staff')->group(function (): void {
             Route::post('withdrawal/{wallet}', \App\Http\Controllers\Api\Admin\Wallet\WithdrawFromWalletController::class)->name('withdrawal');
             Route::post('adjustment/{wallet}', \App\Http\Controllers\Api\Admin\Wallet\AdjustWalletController::class)->name('adjustment');
         });
+
+        // Wallet Campaign routes
+        Route::resource('wallet-campaigns', AdminWalletCampaignController::class);
+        Route::post('wallet-campaigns/{wallet_campaign}/allocate-gift-credit', AllocateGiftCreditController::class)
+            ->name('wallet-campaigns.allocate-gift-credit');
+        Route::post('wallet-campaigns/{wallet_campaign}/process-bonus', ProcessCampaignBonusController::class)
+            ->name('wallet-campaigns.process-bonus');
     });
 });
