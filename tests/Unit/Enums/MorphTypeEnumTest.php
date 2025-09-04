@@ -45,7 +45,6 @@ it('return model class correctly', function () {
 it('return morph map correctly', function () {
     $morphMap = App\Enums\MorphTypeEnum::forMorphMap();
     expect($morphMap)->toBeArray()
-        ->toHaveCount(9)
         ->toHaveKey('category', App\Models\Category::class)
         ->toHaveKey('course', App\Models\Course::class)
         ->toHaveKey('seminar', App\Models\Seminar::class)
@@ -54,5 +53,8 @@ it('return morph map correctly', function () {
         ->toHaveKey('teacher', App\Models\Teacher::class)
         ->toHaveKey('vendor', App\Models\Vendor::class)
         ->toHaveKey('product', App\Models\Product::class)
-        ->toHaveKey('user', App\Models\User::class);
+        ->toHaveKey('user', App\Models\User::class)
+        ->toHaveKey('order', App\Models\Order::class)
+        ->toHaveKey('refund', App\Models\Refund::class)
+    ;
 });

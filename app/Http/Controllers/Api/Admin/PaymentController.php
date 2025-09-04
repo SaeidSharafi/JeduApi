@@ -57,7 +57,7 @@ final class PaymentController extends Controller
     public function store(PaymentCreateData $data, Order $order, CreatePaymentAction $action): ApiResponseInterface
     {
         Gate::authorize('create', Order::class);
-        $payment = $action->handle($order, $data, auth()->user());
+        $payment = $action->handle($order, $data, auth('staff')->user());
 
         return response()->created(PaymentData::from($payment));
     }

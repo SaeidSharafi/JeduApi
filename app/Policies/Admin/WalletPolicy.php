@@ -24,27 +24,17 @@ class WalletPolicy
         return $user->can(PermissionEnum::WALLET_VIEW->value);
     }
 
-    public function update(Staff $user, Wallet $wallet): bool
-    {
-        return $user->can(PermissionEnum::WALLET_UPDATE->value);
-    }
-
-    public function delete(Staff $user, Wallet $wallet): bool
-    {
-        return $user->can(PermissionEnum::WALLET_DELETE->value);
-    }
-
-    public function deposit(Staff $user): bool
+    public function deposit(Staff $user, Wallet $wallet): bool
     {
         return $user->can(PermissionEnum::WALLET_DEPOSIT->value);
     }
 
-    public function withdrawal(Staff $user): bool
+    public function withdrawal(Staff $user, Wallet $wallet): bool
     {
         return $user->can(PermissionEnum::WALLET_WITHDRAWAL->value);
     }
 
-    public function adjustment(Staff $user): bool
+    public function adjustment(Staff $user, Wallet $wallet): bool
     {
         return $user->can(PermissionEnum::WALLET_ADJUSTMENT->value);
     }

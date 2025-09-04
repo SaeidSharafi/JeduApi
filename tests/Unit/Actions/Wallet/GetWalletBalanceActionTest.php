@@ -34,7 +34,7 @@ test('cannot get balance for invalid user', function () {
     ]);
 
     expect(fn() => (new GetWalletBalanceAction())->execute(999999))
-        ->toThrow(Exception::class, __('validation.user_not_found'));
+        ->toThrow(Exception::class, __('validation.custom.user_not_found'));
 });
 
 test('cannot get balance for user without wallet', function () {
@@ -46,5 +46,5 @@ test('cannot get balance for user without wallet', function () {
     ]);
 
     expect(fn() => (new GetWalletBalanceAction())->execute($user->id))
-        ->toThrow(Exception::class, __('validation.wallet_not_found'));
+        ->toThrow(Exception::class, __('validation.custom.wallet_not_found'));
 });

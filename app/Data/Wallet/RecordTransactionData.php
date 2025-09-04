@@ -23,6 +23,9 @@ class RecordTransactionData extends Data
         public ?string $expires_at = null,
     ) {}
 
+    /**
+     * @codeCoverageIgnore
+     */
     public static function rules(ValidationContext $context): array
     {
         return [

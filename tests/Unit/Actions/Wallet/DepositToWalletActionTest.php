@@ -17,45 +17,17 @@ test('deposit to wallet increases balance', function () {
     $admin = \App\Models\Staff::factory()->create()->fresh();
 
     $data = DepositToWalletData::from([
-        'user_id' => $user->id,
+
         'amount' => 1000,
         'description' => 'Test deposit',
     ]);
     $action = app(DepositToWalletAction::class);
-    $transaction = $action->execute($data,$admin);
+    $transaction = $action->handle($data,$admin,$user->wallet);
 
     expect($transaction)->not->toBeNull()
         ->and($transaction->amount)->toBe(1000)
         ->and($transaction->balance_after)->toBe($initialBalance + 1000)
         ->and($user->fresh()->wallet->balance)->toBe($initialBalance + 1000);
-});
-
-test('cannot deposit to invalid user', function () {
-    $admin = \App\Models\Staff::factory()->create()->fresh();
-
-    $data = DepositToWalletData::from([
-        'user_id' => 999999,
-        'amount' => 1000,
-    ]);
-
-    expect(fn() => (app(DepositToWalletAction::class))->execute($data,$admin))
-        ->toThrow(Exception::class, __('validation.user_not_found'));
-});
-
-test('cannot deposit to user without wallet', function () {
-    $user = User::factory()->create();
-    $user->wallet()->delete(); // Remove wallet
-
-    $admin = \App\Models\Staff::factory()->create()->fresh();
-
-
-    $data = DepositToWalletData::from([
-        'user_id' => $user->id,
-        'amount' => 1000,
-    ]);
-
-    expect(fn() => (app(DepositToWalletAction::class))->execute($data,$admin))
-        ->toThrow(Exception::class, __('validation.wallet_not_found'));
 });
 
 test('cannot deposit to suspended wallet', function () {
@@ -66,10 +38,10 @@ test('cannot deposit to suspended wallet', function () {
 
 
     $data = DepositToWalletData::from([
-        'user_id' => $user->id,
+
         'amount' => 1000,
     ]);
 
-    expect(fn() => (app(DepositToWalletAction::class))->execute($data,$admin))
-        ->toThrow(Exception::class, __('validation.wallet_not_active'));
+    expect(fn() => (app(DepositToWalletAction::class))->handle($data,$admin,$user->wallet))
+        ->toThrow(Exception::class, __('validation.custom.wallet_not_active'));
 });

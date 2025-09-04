@@ -176,6 +176,7 @@ return [
         'wallet_not_found' => 'کیف پول برای این کاربر یافت نشد.',
         'wallet_not_active' => 'کیف پول کاربر فعال نیست.',
         'insufficient_balance' => 'موجودی کافی برای برداشت وجود ندارد.',
+        'insufficient_balance_with_info' => 'موجودی کیف پول شما (:available تومان) برای این تراکنش کافی نیست. مبلغ مورد نیاز: :required تومان.',
         'attribute-name'                     => [
             'rule-name' => 'custom-message',
         ],

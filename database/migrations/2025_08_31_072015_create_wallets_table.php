@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('user_id')
                 ->unique()
                 ->constrained('users')
-                ->restrictOnDelete()
+                ->cascadeOnDelete()
                 ->comment('One wallet per user');
             $table->unsignedBigInteger('balance')
                 ->default(0)

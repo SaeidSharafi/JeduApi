@@ -56,7 +56,7 @@ describe('CreatePaymentAction', function () {
             admin_notes: 'Initial payment'
         );
 
-        $payment = (new CreatePaymentAction())->handle($order, $paymentData, $this->adminUser);
+        $payment = (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->adminUser);
 
         expect($payment->amount)->toBe(50000);
         $this->assertDatabaseHas('payments', ['id' => $payment->id, 'order_id' => $order->id, 'amount' => 50000]);
@@ -97,7 +97,7 @@ describe('CreatePaymentAction', function () {
             admin_notes: 'Final payment'
         );
 
-        $payment = (new CreatePaymentAction())->handle($order->fresh(), $paymentData, $this->adminUser);
+        $payment = (app(CreatePaymentAction::class))->handle($order->fresh(), $paymentData, $this->adminUser);
 
         expect($payment->amount)->toBe(80000);
         expect($payment->data['transaction_date'])->toBe(today()->format('Y-m-d'));
@@ -110,7 +110,7 @@ describe('CreatePaymentAction', function () {
 
         $paymentData = new PaymentCreateData(method: 'bank_transfer', status: 'completed', data: null,
             admin_notes: 'Free');
-        $payment = (new CreatePaymentAction())->handle($order, $paymentData, $this->adminUser);
+        $payment = (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->adminUser);
 
         expect($payment->amount)->toBe(0);
         expect($payment->method)->toBe(PaymentMethodEnum::NO_PAYMENT->value);
@@ -138,7 +138,7 @@ describe('CreatePaymentAction', function () {
             admin_notes: 'Overpayment attempt'
         );
 
-        expect(fn() => (new CreatePaymentAction())->handle($order->fresh(), $paymentData, $this->adminUser))
+        expect(fn() => (app(CreatePaymentAction::class))->handle($order->fresh(), $paymentData, $this->adminUser))
             ->toThrow(ValidationException::class, 'already fully paid');
     });
 
@@ -160,7 +160,7 @@ describe('CreatePaymentAction', function () {
                 notes: null),
             admin_notes: null);
 
-        expect(fn() => (new CreatePaymentAction())->handle($order, $paymentData, $this->adminUser))
+        expect(fn() => (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->adminUser))
             ->toThrow(ValidationException::class);
     });
 
@@ -189,7 +189,7 @@ describe('CreatePaymentAction', function () {
             admin_notes: null);
 
         // Act
-        $result = (new CreatePaymentAction())->handle($order, $paymentData, $this->adminUser);
+        $result = (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->adminUser);
 
         // Assert
         expect($result)->toBeNull();
@@ -224,7 +224,7 @@ describe('CreatePaymentAction', function () {
                 notes: null),
             admin_notes: null);
 
-        expect(fn() => (new CreatePaymentAction())->handle($order, $paymentData, $this->adminUser))
+        expect(fn() => (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->adminUser))
             ->toThrow(ValidationException::class,
                 __('messages.order.payment_already_pending', ['order_id' => $order->increment_id]));
     });

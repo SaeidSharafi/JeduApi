@@ -46,5 +46,5 @@ test('cannot create wallet for invalid user', function () {
         'status' => WalletStatusEnum::ACTIVE->value,
     ]);
     expect(fn() => (new CreateWalletAction())->execute($data))
-        ->toThrow(Exception::class, __('validation.user_not_found'));
+        ->toThrow(Exception::class, __('validation.custom.user_not_found'));
 });

@@ -22,26 +22,26 @@ test('concurrent transactions maintain balance integrity', function () {
 
     // Multiple deposits and withdrawals in parallel
     $operations = [
-        fn() => app(DepositToWalletAction::class)->execute(DepositToWalletData::from([
-            'user_id' => $user->id,
+        fn() => app(DepositToWalletAction::class)->handle(DepositToWalletData::from([
+
             'amount' => 100,
             'description' => 'Concurrent deposit 1'
-        ]),$admin),
-        fn() => app(WithdrawFromWalletAction::class)->execute(WithdrawFromWalletData::from([
-            'user_id' => $user->id,
+        ]),$admin,$user->wallet),
+        fn() => app(WithdrawFromWalletAction::class)->handle(WithdrawFromWalletData::from([
+
             'amount' => 50,
             'description' => 'Concurrent withdrawal 1'
-        ]),$admin),
-        fn() => app(DepositToWalletAction::class)->execute(DepositToWalletData::from([
-            'user_id' => $user->id,
+        ]),$admin,$user->wallet),
+        fn() => app(DepositToWalletAction::class)->handle(DepositToWalletData::from([
+
             'amount' => 200,
             'description' => 'Concurrent deposit 2'
-        ]),$admin),
-        fn() => app(WithdrawFromWalletAction::class)->execute(WithdrawFromWalletData::from([
-            'user_id' => $user->id,
+        ]),$admin,$user->wallet),
+        fn() => app(WithdrawFromWalletAction::class)->handle(WithdrawFromWalletData::from([
+
             'amount' => 75,
             'description' => 'Concurrent withdrawal 2'
-        ]),$admin),
+        ]),$admin,$user->wallet),
     ];
 
     // Execute operations
@@ -67,14 +67,14 @@ test('insufficient balance prevents race condition exploitation', function () {
     // Try to withdraw more than available in multiple concurrent operations
     $exceptions = 0;
     $operations = [
-        fn() => app(WithdrawFromWalletAction::class)->execute(WithdrawFromWalletData::from([
-            'user_id' => $user->id,
+        fn() => app(WithdrawFromWalletAction::class)->handle(WithdrawFromWalletData::from([
+
             'amount' => 80,
-        ]),$admin),
-        fn() => app(WithdrawFromWalletAction::class)->execute(WithdrawFromWalletData::from([
-            'user_id' => $user->id,
+        ]),$admin,$user->wallet),
+        fn() => app(WithdrawFromWalletAction::class)->handle(WithdrawFromWalletData::from([
+
             'amount' => 80,
-        ]),$admin),
+        ]),$admin,$user->wallet),
     ];
 
     foreach ($operations as $operation) {
@@ -103,10 +103,10 @@ test('database locking prevents balance inconsistency', function () {
     $depositAction = app(DepositToWalletAction::class);
 
     // Execute a transaction
-    $transaction = $depositAction->execute(DepositToWalletData::from([
-        'user_id' => $user->id,
+    $transaction = $depositAction->handle(DepositToWalletData::from([
+
         'amount' => 500,
-    ]),$admin);
+    ]),$admin,$user->wallet);
 
     // Verify the transaction has the correct balance_after
     expect($transaction->balance_after)->toBe(1500);

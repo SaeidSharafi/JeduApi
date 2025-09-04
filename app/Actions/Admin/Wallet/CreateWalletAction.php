@@ -22,10 +22,10 @@ class CreateWalletAction
     {
         $user = User::find($data->user_id);
         if (! $user) {
-            throw new \Exception(Lang::get('validation.user_not_found'));
+            throw new \Exception(__('validation.custom.user_not_found'));
         }
         if ($user->wallet) {
-            throw new \Exception(Lang::get('validation.wallet_already_exists'));
+            throw new \Exception(__('validation.wallet_already_exists'));
         }
         return DB::transaction(function () use ($data, $user) {
             return Wallet::create([

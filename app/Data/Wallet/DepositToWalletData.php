@@ -11,7 +11,6 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 class DepositToWalletData extends Data
 {
     public function __construct(
-        public int $user_id,
         public int $amount,
         public ?string $description = null,
         public ?array $metadata = null,
@@ -21,7 +20,6 @@ class DepositToWalletData extends Data
     public static function rules(ValidationContext $context): array
     {
         return [
-            'user_id'     => ['required', 'exists:users,id'],
             'amount'      => ['required', 'integer', 'min:1'],
             'description' => ['nullable', 'string', 'max:255'],
             'metadata'    => ['nullable', 'array'],

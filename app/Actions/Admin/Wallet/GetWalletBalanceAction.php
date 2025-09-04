@@ -18,12 +18,12 @@ class GetWalletBalanceAction
     {
         $user = User::find($userId);
         if (!$user) {
-            throw new \Exception(Lang::get('validation.user_not_found'));
+            throw new \Exception(__('validation.custom.user_not_found'));
         }
 
         $wallet = $user->wallet;
         if (!$wallet) {
-            throw new \Exception(Lang::get('validation.wallet_not_found'));
+            throw new \Exception(__('validation.custom.wallet_not_found'));
         }
 
         return [

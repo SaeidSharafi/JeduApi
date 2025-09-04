@@ -31,7 +31,7 @@ class WalletTransactionData extends Data
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public TransactionSourceEnum $source_type,
         #[WithCast(TrasnactionSourceCast::class, short: false)]
-        public WalletTransactionSourceableDataContract $source,
+        public ?WalletTransactionSourceableDataContract $source,
         public ?string $description = null,
         public ?array $metadata = null,
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]

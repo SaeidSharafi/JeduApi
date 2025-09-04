@@ -11,6 +11,7 @@ use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\Staff;
 use App\Models\User;
+use App\Models\Wallet;
 use Illuminate\Support\Facades\Lang;
 
 readonly class DepositToWalletAction
@@ -25,29 +26,19 @@ readonly class DepositToWalletAction
      *
      * @throws \Exception
      */
-    public function execute(DepositToWalletData $data, Staff $staff): \App\Models\WalletTransaction
+    public function handle(DepositToWalletData $data, Staff $staff, Wallet $wallet): \App\Models\WalletTransaction
     {
-        $user = User::find($data->user_id);
-        if (!$user) {
-            throw new \Exception(Lang::get('validation.user_not_found'));
-        }
-
-        $wallet = $user->wallet;
-        if (!$wallet) {
-            throw new \Exception(Lang::get('validation.wallet_not_found'));
-        }
-
         if (!$wallet->isActive()) {
-            throw new \Exception(Lang::get('validation.wallet_not_active'));
+            throw new \Exception(__('validation.custom.wallet_not_active'));
         }
 
         return $this->recordTransactionAction->execute(new RecordTransactionData(
-            user_id: $user->id,
+            user_id: $wallet->user_id,
             type: TransactionTypeEnum::DEPOSIT,
             amount: $data->amount,
             source_type: TransactionSourceEnum::STAFF,
             source_id: $staff->id,
-            description: $data->description ?? __('wallet.deposit_description'),
+            description: $data->description,
             metadata: $data->metadata ?? [],
         ));
     }

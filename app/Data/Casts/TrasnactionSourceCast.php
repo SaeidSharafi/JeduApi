@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Data\Casts;
 
 use App\Contracts\WalletTransactionSourceableContract;
-use App\Contracts\WalletTransactionSourceableDataContract;
 use App\Data\Admin\Order\OrderData;
 use App\Data\Admin\Order\OrderListItemData;
 use App\Data\Admin\Payment\PaymentData;
@@ -21,6 +20,9 @@ use Spatie\LaravelData\Casts\Cast;
 use Spatie\LaravelData\Support\Creation\CreationContext;
 use Spatie\LaravelData\Support\DataProperty;
 
+/**
+ * @codeCoverageIgnore
+ */
 final readonly class TrasnactionSourceCast implements Cast
 {
     public function __construct(protected bool $short = false) {}

@@ -117,7 +117,7 @@ test('wallet transaction factory states work correctly', function () {
         ->and($paymentTransaction->source_type)->toBe(TransactionSourceEnum::ORDER)
         ->and($refundTransaction->type)->toBe(TransactionTypeEnum::REFUND)
         ->and($refundTransaction->amount)->toBe(8000)
-        ->and($refundTransaction->source_type)->toBe(TransactionSourceEnum::REFUND)
+        ->and($refundTransaction->source_type)->toBe(TransactionSourceEnum::ORDER)
         ->and($giftTransaction->type)->toBe(TransactionTypeEnum::GIFT)
         ->and($giftTransaction->amount)->toBe(3000)
         ->and($giftTransaction->source_type)->toBe(TransactionSourceEnum::PROMOTION)

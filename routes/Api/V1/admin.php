@@ -86,14 +86,13 @@ Route::middleware('auth:staff')->group(function (): void {
             ->name('discount-info.types');
         Route::prefix('wallet')->name('wallet.')->group(function (): void {
             Route::resource('/', AdminWalletController::class)
-                ->only(['index', 'show', 'update'])
+                ->only(['index', 'show'])
                 ->parameters(['' => 'wallet']);
 
             Route::post('create', \App\Http\Controllers\Api\Admin\CreateWalletController::class)->name('create');
-            Route::post('deposit', \App\Http\Controllers\Api\Admin\Wallet\DepositToWalletController::class)->name('deposit');
-            Route::post('withdrawal', \App\Http\Controllers\Api\Admin\Wallet\WithdrawFromWalletController::class)->name('withdrawal');
-            Route::post('adjustment', \App\Http\Controllers\Api\Admin\AdjustWalletController::class)->name('adjustment');
-            Route::get('balance/{userId}', [AdminWalletController::class, 'balance'])->name('balance');
+            Route::post('deposit/{wallet}', \App\Http\Controllers\Api\Admin\Wallet\DepositToWalletController::class)->name('deposit');
+            Route::post('withdrawal/{wallet}', \App\Http\Controllers\Api\Admin\Wallet\WithdrawFromWalletController::class)->name('withdrawal');
+            Route::post('adjustment/{wallet}', \App\Http\Controllers\Api\Admin\Wallet\AdjustWalletController::class)->name('adjustment');
         });
     });
 });

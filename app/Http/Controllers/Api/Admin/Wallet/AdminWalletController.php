@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Api\Admin\Wallet;
 
 use App\Actions\Admin\Wallet\GetWalletBalanceAction;
 use App\Contracts\ApiResponseInterface;
-use App\Data\Wallet\UpdateWalletData;
 use App\Data\Wallet\WalletData;
 use App\Http\Controllers\Controller;
 use App\Models\Wallet;
@@ -31,26 +30,5 @@ class AdminWalletController extends Controller
     {
         Gate::authorize('view', $wallet);
         return response()->success(WalletData::from($wallet));
-    }
-
-    public function update(UpdateWalletData $data, Wallet $wallet): ApiResponseInterface
-    {
-        Gate::authorize('update', $wallet);
-
-        $wallet->update([
-            'balance' => $data->balance,
-            'gift_balance' => $data->gift_balance,
-            'status' => $data->status,
-        ]);
-
-        return response()->created(WalletData::from($wallet));
-    }
-    public function balance(int $userId): JsonResource
-    {
-        Gate::authorize('viewAny', Wallet::class);
-
-        $balance = (new GetWalletBalanceAction())->execute($userId);
-
-        return JsonResource::make($balance);
     }
 }

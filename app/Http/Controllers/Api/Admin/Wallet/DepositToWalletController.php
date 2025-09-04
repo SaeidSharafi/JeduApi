@@ -14,11 +14,11 @@ use Illuminate\Support\Facades\Gate;
 
 class DepositToWalletController extends Controller
 {
-    public function __invoke(DepositToWalletData $data): ApiResponseInterface
+    public function __invoke(DepositToWalletData $data, Wallet $wallet, DepositToWalletAction $action): ApiResponseInterface
     {
-        Gate::authorize('deposit', Wallet::class);
+        Gate::authorize('deposit', $wallet);
 
-        $transaction = app(DepositToWalletAction::class)->execute($data, auth('staff')->user());
+        $transaction = $action->handle($data, auth('staff')->user(),$wallet);
         $transaction->load('wallet', 'user','source');
 
         return response()->created(WalletTransactionData::from($transaction));

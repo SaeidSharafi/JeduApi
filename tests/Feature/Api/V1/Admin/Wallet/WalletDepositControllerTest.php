@@ -17,7 +17,7 @@ test('admin can deposit to wallet via API', function () {
     $initialBalance = $user->wallet->balance;
 
     $response = $this
-        ->postJson('/api/v1/admin/wallet/deposit', [
+        ->postJson(route('api.v1.admin.wallet.deposit',$user->wallet->id), [
             'user_id'     => $user->id,
             'amount'      => 1000,
             'description' => 'API deposit test',
@@ -94,7 +94,7 @@ test('admin cannot deposit to wallet without permission', function () {
     $user = User::factory()->create();
 
     $response = $this
-        ->postJson('/api/v1/admin/wallet/deposit', [
+        ->postJson(route('api.v1.admin.wallet.deposit',$user->wallet->id), [
             'user_id' => $user->id,
             'amount'  => 1000,
         ]);
@@ -102,96 +102,15 @@ test('admin cannot deposit to wallet without permission', function () {
     $response->assertStatus(403);
 });
 
-test('admin can withdraw from wallet via API', function () {
-    $admin = $this->authorized_user([
-        \App\Enums\PermissionEnum::WALLET_WITHDRAWAL
-    ]);
-
-    $user = User::factory()->create();
-    $user->wallet->update(['balance' => 2000]);
-
-    $response = $this
-        ->postJson('/api/v1/admin/wallet/withdrawal', [
-            'user_id'     => $user->id,
-            'amount'      => 500,
-            'description' => 'API withdrawal test',
-        ]);
-
-    $response->assertStatus(201);
-
-    $user->refresh();
-    expect($user->wallet->balance)->toBe(1500);
-});
-
-test('admin cannot withdraw more than available balance via API', function () {
-    $admin = $this->authorized_user([
-        \App\Enums\PermissionEnum::WALLET_WITHDRAWAL
-    ]);
-
-    $user = User::factory()->create();
-    $user->wallet->update(['balance' => 100]);
-
-    $response = $this
-        ->postJson('/api/v1/admin/wallet/withdrawal', [
-            'user_id' => $user->id,
-            'amount'  => 500,
-        ]);
-
-    $response->assertStatus(500); // Should return validation error
-});
-
 test('validation errors are returned for invalid data', function () {
     $admin = $this->authorized_user([
         \App\Enums\PermissionEnum::WALLET_DEPOSIT
     ]);
-
+    $user = User::factory()->create();
     $response = $this
-        ->postJson('/api/v1/admin/wallet/deposit', [
-            'user_id' => 999999, // Invalid user
-            'amount'  => -100, // Negative amount
+        ->postJson(route('api.v1.admin.wallet.deposit',$user->wallet->id), [
+            'amount'  => "A100", // Negative amount
         ]);
 
     $response->assertStatus(422);
-});
-
-test('admin can adjust wallet via API', function () {
-    $this->authorized_user([\App\Enums\PermissionEnum::WALLET_ADJUSTMENT]);
-
-    $user = User::factory()->create();
-    $user->wallet->update(['balance' => 1000]);
-    $initialBalance = $user->wallet->balance;
-
-    $response = $this
-        ->postJson('/api/v1/admin/wallet/adjustment', [
-            'user_id'     => $user->id,
-            'amount'      => 300,
-            'reason'      => 'Dispute resolution',
-            'description' => 'API adjustment test',
-        ]);
-
-    $response->assertStatus(201);
-
-    $user->refresh();
-    expect($user->wallet->balance)->toBe($initialBalance + 300);
-});
-
-test('admin can make negative adjustment via API', function () {
-    $this->authorized_user([\App\Enums\PermissionEnum::WALLET_ADJUSTMENT]);
-
-    $user = User::factory()->create();
-    $user->wallet->update(['balance' => 1000]);
-    $initialBalance = $user->wallet->balance;
-
-    $response = $this
-        ->postJson('/api/v1/admin/wallet/adjustment', [
-            'user_id'     => $user->id,
-            'amount'      => -200,
-            'reason'      => 'Error correction',
-            'description' => 'API negative adjustment test',
-        ]);
-
-    $response->assertStatus(201);
-
-    $user->refresh();
-    expect($user->wallet->balance)->toBe($initialBalance - 200);
 });

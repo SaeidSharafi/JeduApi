@@ -61,6 +61,8 @@ return [
         'items_already_purchased_or_active' => 'User have already purchased or have an active enrollment for the following items: :products.',
         'item_not_available'                => 'The item :product is not available for purchase.',
         'already_fully_paid'                => 'Order :order_id is already fully paid.',
+        'payment_processed'                 => 'Payment for order :order_id processed successfully.',
+        'wallet_payment_completed'          => 'Wallet payment for order :order_id completed successfully.',
         'amount_to_pay_is_zero'             => 'The amount to pay for order :order_id is zero.',
         'no_payment_required'               => 'No payment is required for order :order_id.',
         'initial_payment_full'              => 'This is a full and final payment that will settle the order completely.',

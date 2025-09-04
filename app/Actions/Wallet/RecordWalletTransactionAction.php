@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Actions\Wallet;
 
 use App\Data\Wallet\RecordTransactionData;
-use App\Models\Wallet;
+use App\Enums\Wallet\TransactionTypeEnum;
+use Facades\App\Models\Wallet;
 use App\Models\WalletTransaction;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -23,20 +24,31 @@ class RecordWalletTransactionAction
     {
         $user = User::find($data->user_id);
         if (!$user) {
-            throw new \Exception(Lang::get('validation.user_not_found'));
+            throw new \Exception(__('validation.custom.user_not_found'));
         }
 
         $wallet = $user->wallet;
         if (!$wallet) {
-            throw new \Exception(Lang::get('validation.wallet_not_found'));
+            throw new \Exception(__('validation.custom.wallet_not_found'));
         }
 
         return DB::transaction(function () use ($wallet, $user, $data) {
             // Lock the wallet row to prevent race conditions
             $wallet = Wallet::where('id', $wallet->id)->lockForUpdate()->first();
 
+            //@codeCoverageIgnoreStart
             if (!$wallet) {
-                throw new \Exception(Lang::get('validation.wallet_not_found'));
+                throw new \Exception(__('validation.custom.wallet_not_found'));
+            }
+            //@codeCoverageIgnoreEnd
+
+
+            if ($data->type->isDebit()){
+                $data->amount = -abs($data->amount);
+            }
+
+            if ($data->type->isCredit()){
+                $data->amount = abs($data->amount);
             }
 
             // Calculate new balances
@@ -44,14 +56,14 @@ class RecordWalletTransactionAction
             $newGiftBalance = $wallet->gift_balance;
 
             // For gift transactions, update gift balance instead
-            if (in_array($data->type, [\App\Enums\Wallet\TransactionTypeEnum::GIFT, \App\Enums\Wallet\TransactionTypeEnum::BONUS])) {
-                $newGiftBalance = $wallet->gift_balance + abs($data->amount);
+            if ($data->type->isGift()) {
+                $newGiftBalance = $wallet->gift_balance + $data->amount;
                 $newBalance = $wallet->balance; // Don't change regular balance for gifts
             }
 
             // Validate balance constraints
             if ($newBalance < 0) {
-                throw new \Exception(Lang::get('validation.insufficient_balance'));
+                throw new \Exception(__('validation.custom.insufficient_balance'));
             }
 
             // Update wallet balance atomically
