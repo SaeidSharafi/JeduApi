@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Data\Admin\Wallet;
+namespace App\Data\Admin\WalletCampaign;
 
 use App\Contracts\WalletTransactionSourceableDataContract;
 use App\Data\Admin\Staff\ShowStaffData;
-use App\Enums\Wallet\CampaignTypeEnum;
-use App\Models\Staff;
+use App\Enums\WalletCampaign\CampaignTypeEnum;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\WithCast;

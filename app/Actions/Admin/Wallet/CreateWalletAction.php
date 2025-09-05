@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Wallet;
 
-use App\Data\Wallet\CreateWalletData;
+use App\Data\Admin\Wallet\CreateWalletData;
 use App\Enums\Wallet\WalletStatusEnum;
 use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Lang;
 
 class CreateWalletAction
 {

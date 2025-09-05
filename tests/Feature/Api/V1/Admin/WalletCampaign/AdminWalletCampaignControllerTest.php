@@ -1,8 +1,8 @@
 <?php
 
 use App\Enums\PermissionEnum;
-use App\Enums\Wallet\CampaignTypeEnum;
 use App\Enums\Wallet\TransactionSourceEnum;
+use App\Enums\WalletCampaign\CampaignTypeEnum;
 use App\Models\Staff;
 use App\Models\WalletCampaign;
 use App\Models\WalletTransaction;

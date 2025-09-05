@@ -3,16 +3,11 @@
 declare(strict_types=1);
 
 use App\Actions\Wallet\RecordWalletTransactionAction;
-use App\Data\Wallet\RecordTransactionData;
-use App\Models\User;
-use App\Models\Wallet;
-use App\Models\WalletTransaction;
-use App\Enums\Wallet\TransactionTypeEnum;
+use App\Data\Admin\Wallet\RecordTransactionData;
 use App\Enums\Wallet\TransactionSourceEnum;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Str;
-use Mockery\MockInterface;
-use function Pest\Laravel\actingAs;
+use App\Enums\Wallet\TransactionTypeEnum;
+use App\Models\User;
+use App\Models\WalletTransaction;
 use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);

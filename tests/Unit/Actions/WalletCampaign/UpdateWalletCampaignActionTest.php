@@ -1,8 +1,8 @@
 <?php
 
 use App\Actions\Admin\WalletCampaign\UpdateWalletCampaignAction;
-use App\Data\Admin\Wallet\WalletCampaignCreateData;
-use App\Enums\Wallet\CampaignTypeEnum;
+use App\Data\Admin\WalletCampaign\WalletCampaignCreateData;
+use App\Enums\WalletCampaign\CampaignTypeEnum;
 use App\Models\Staff;
 use App\Models\WalletCampaign;
 use Carbon\Carbon;

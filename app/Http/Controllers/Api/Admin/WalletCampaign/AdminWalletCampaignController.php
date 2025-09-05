@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api\Admin;
+namespace App\Http\Controllers\Api\Admin\WalletCampaign;
 
 use App\Actions\Admin\WalletCampaign\CreateWalletCampaignAction;
 use App\Actions\Admin\WalletCampaign\DeleteWalletCampaignAction;
 use App\Actions\Admin\WalletCampaign\UpdateWalletCampaignAction;
 use App\Contracts\ApiResponseInterface;
-use App\Data\Admin\Wallet\WalletCampaignCreateData;
-use App\Data\Admin\Wallet\WalletCampaignData;
+use App\Data\Admin\WalletCampaign\WalletCampaignCreateData;
+use App\Data\Admin\WalletCampaign\WalletCampaignData;
 use App\Exceptions\ModelHasRelationshipDataException;
 use App\Http\Controllers\Controller;
 use App\Models\WalletCampaign;

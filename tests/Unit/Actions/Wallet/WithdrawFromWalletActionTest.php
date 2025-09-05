@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Actions\Admin\Wallet\WithdrawFromWalletAction;
-use App\Data\Wallet\WithdrawFromWalletData;
+use App\Data\Admin\Wallet\WithdrawFromWalletData;
 use App\Enums\Wallet\WalletStatusEnum;
 use App\Models\User;
 use Tests\AuthTestTrait;

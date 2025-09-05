@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Api\Admin\Wallet;
 
 use App\Actions\Admin\Wallet\DepositToWalletAction;
 use App\Contracts\ApiResponseInterface;
-use App\Data\Wallet\DepositToWalletData;
-use App\Data\Wallet\WalletTransactionData;
+use App\Data\Admin\Wallet\DepositToWalletData;
+use App\Data\Admin\Wallet\WalletTransactionData;
 use App\Http\Controllers\Controller;
 use App\Models\Wallet;
 use Illuminate\Support\Facades\Gate;

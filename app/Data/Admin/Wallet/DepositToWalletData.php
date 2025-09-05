@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Data\Wallet;
+namespace App\Data\Admin\Wallet;
 
-use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class WithdrawFromWalletData extends Data
+class DepositToWalletData extends Data
 {
     public function __construct(
         public int $amount,

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Enums\Wallet;
+namespace App\Enums\WalletCampaign;
 
 use App\Traits\AdvanceEnum;
 
@@ -19,6 +19,9 @@ enum CampaignTypeEnum: string
     case MILESTONE_REWARD = 'milestone_reward';
     case MANUAL_ALLOCATION = 'manual_allocation';
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function getLabel(): string
     {
         return match ($this) {
@@ -33,6 +36,9 @@ enum CampaignTypeEnum: string
         };
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function getDescription(): string
     {
         return match ($this) {

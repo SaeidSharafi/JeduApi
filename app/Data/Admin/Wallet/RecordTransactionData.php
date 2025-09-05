@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Data\Wallet;
+namespace App\Data\Admin\Wallet;
 
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
+use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
-use Illuminate\Validation\Rule;
 
 class RecordTransactionData extends Data
 {

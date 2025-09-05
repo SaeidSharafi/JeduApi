@@ -1,17 +1,14 @@
 <?php
 
-namespace App\Data\Wallet;
+namespace App\Data\Admin\Wallet;
 
-use App\Contracts\ProductableDataContract;
 use App\Contracts\WalletTransactionSourceableDataContract;
 use App\Data\Casts\TrasnactionSourceCast;
 use App\Data\Transformer\TranslatableEnumData;
-use App\Enums\MorphTypeEnum;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\User;
 use Hekmatinasser\Verta\Verta;
-use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;

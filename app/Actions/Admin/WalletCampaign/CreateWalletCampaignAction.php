@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\WalletCampaign;
 
-use App\Data\Admin\Wallet\WalletCampaignCreateData;
+use App\Data\Admin\WalletCampaign\WalletCampaignCreateData;
 use App\Models\Staff;
 use App\Models\WalletCampaign;
 use Illuminate\Support\Facades\DB;

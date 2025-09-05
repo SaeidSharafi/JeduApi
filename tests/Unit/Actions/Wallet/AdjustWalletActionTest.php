@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Actions\Admin\Wallet\AdjustWalletAction;
-use App\Data\Wallet\AdjustWalletData;
+use App\Data\Admin\Wallet\AdjustWalletData;
 use App\Enums\Wallet\WalletStatusEnum;
 use App\Models\Staff;
 use App\Models\User;

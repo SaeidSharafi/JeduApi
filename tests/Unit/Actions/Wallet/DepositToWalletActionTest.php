@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Actions\Admin\Wallet\DepositToWalletAction;
-use App\Data\Wallet\DepositToWalletData;
+use App\Data\Admin\Wallet\DepositToWalletData;
 use App\Enums\Wallet\WalletStatusEnum;
 use App\Models\User;
 use Tests\AuthTestTrait;

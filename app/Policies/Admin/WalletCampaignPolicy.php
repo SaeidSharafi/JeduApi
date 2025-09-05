@@ -57,12 +57,4 @@ class WalletCampaignPolicy
     {
         return $user->can(PermissionEnum::WALLET_CAMPAIGN_ALLOCATE->value);
     }
-
-    /**
-     * Determine whether the user can process campaign bonuses.
-     */
-    public function processBonus(Staff $user, WalletCampaign $walletCampaign): bool
-    {
-        return $user->can(PermissionEnum::WALLET_CAMPAIGN_PROCESS_BONUS->value);
-    }
 }

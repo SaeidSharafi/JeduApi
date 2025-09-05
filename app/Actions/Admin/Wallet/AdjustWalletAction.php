@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Wallet;
 
 use App\Actions\Wallet\RecordWalletTransactionAction;
-use App\Data\Wallet\AdjustWalletData;
-use App\Data\Wallet\RecordTransactionData;
+use App\Data\Admin\Wallet\AdjustWalletData;
+use App\Data\Admin\Wallet\RecordTransactionData;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\Staff;

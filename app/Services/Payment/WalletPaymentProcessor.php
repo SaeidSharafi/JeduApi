@@ -7,7 +7,7 @@ namespace App\Services\Payment;
 use App\Actions\Wallet\RecordWalletTransactionAction;
 use App\Contracts\Payment\PaymentProcessorContract;
 use App\Data\Admin\Payment\PaymentCreateData;
-use App\Data\Wallet\RecordTransactionData;
+use App\Data\Admin\Wallet\RecordTransactionData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Wallet\TransactionSourceEnum;
@@ -17,7 +17,6 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Staff;
 use App\Models\User;
-use App\Models\Wallet;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Validation\ValidationException;
 

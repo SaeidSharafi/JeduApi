@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Wallet;
 
 use App\Actions\Wallet\RecordWalletTransactionAction;
-use App\Data\Wallet\DepositToWalletData;
-use App\Data\Wallet\RecordTransactionData;
+use App\Data\Admin\Wallet\DepositToWalletData;
+use App\Data\Admin\Wallet\RecordTransactionData;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\Staff;
-use App\Models\User;
 use App\Models\Wallet;
-use Illuminate\Support\Facades\Lang;
 
 readonly class DepositToWalletAction
 {

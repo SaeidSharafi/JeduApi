@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\WalletTransactionSourceableContract;
-use App\Enums\Wallet\CampaignTypeEnum;
+use App\Enums\WalletCampaign\AllocationStatusEnum;
+use App\Enums\WalletCampaign\CampaignTypeEnum;
 use App\Traits\HasAuditor;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class WalletCampaign extends Model implements WalletTransactionSourceableContract
 {
@@ -46,6 +46,8 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
             'starts_at'            => 'datetime:Y-m-d H:i:s',
             'ends_at'              => 'datetime:Y-m-d H:i:s',
             'metadata'             => 'array',
+            'created_at'           => 'datetime:Y-m-d H:i:s',
+            'updated_at'           => 'datetime:Y-m-d H:i:s',
         ];
     }
 
@@ -61,25 +63,26 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
     /**
      * Check if a user can receive allocation from this campaign
      */
-    public function canAllocate(User $user): bool
+    public function allocationStatus(User $user): AllocationStatusEnum
     {
         if (!$this->isActive()) {
-            return false;
+            return AllocationStatusEnum::ERROR_INACTIVE;
         }
 
         if (!$this->isWithinDateRange) {
-            return false;
+            return AllocationStatusEnum::ERROR_EXPIRED;
         }
 
         if ($this->hasReachedTotalLimit()) {
-            return false;
+            return AllocationStatusEnum::ERROR_TOTAL_LIMIT_REACHED;
         }
 
+        // The query only happens once here.
         if ($this->hasReachedUserLimit($user)) {
-            return false;
+            return AllocationStatusEnum::ERROR_USER_LIMIT_REACHED;
         }
 
-        return true;
+        return AllocationStatusEnum::ELIGIBLE;
     }
 
     /**
@@ -144,18 +147,6 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
     public function incrementUsageCount(): void
     {
         $this->increment('total_usage_count');
-    }
-
-    /**
-     * Get remaining usage count
-     */
-    public function getRemainingUsageCount(): ?int
-    {
-        if ($this->usage_limit_total === null) {
-            return null;
-        }
-
-        return max(0, $this->usage_limit_total - $this->total_usage_count);
     }
 
     protected function remainingUsageCount(): Attribute

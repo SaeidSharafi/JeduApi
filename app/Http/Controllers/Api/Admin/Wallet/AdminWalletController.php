@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin\Wallet;
 
-use App\Actions\Admin\Wallet\GetWalletBalanceAction;
 use App\Contracts\ApiResponseInterface;
-use App\Data\Wallet\WalletData;
+use App\Data\Admin\Wallet\WalletData;
 use App\Http\Controllers\Controller;
 use App\Models\Wallet;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
 use Spatie\QueryBuilder\QueryBuilder;
 

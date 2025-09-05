@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Data\Wallet;
+namespace App\Data\Admin\Wallet;
 
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Wallet\WalletStatusEnum;

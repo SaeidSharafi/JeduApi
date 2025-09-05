@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Data\Admin\Wallet;
+namespace App\Data\Admin\WalletCampaign;
 
-use Carbon\CarbonInterface;
+use App\Enums\WalletCampaign\CampaignTypeEnum;
+use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
-use Illuminate\Validation\Rule;
-use App\Enums\Wallet\CampaignTypeEnum;
 
 final class WalletCampaignCreateData extends Data
 {

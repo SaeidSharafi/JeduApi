@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use App\Actions\Admin\Wallet\DepositToWalletAction;
 use App\Actions\Admin\Wallet\WithdrawFromWalletAction;
-use App\Data\Wallet\DepositToWalletData;
-use App\Data\Wallet\WithdrawFromWalletData;
+use App\Data\Admin\Wallet\DepositToWalletData;
+use App\Data\Admin\Wallet\WithdrawFromWalletData;
 use App\Models\User;
 use Tests\AuthTestTrait;
 

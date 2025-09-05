@@ -1,7 +1,7 @@
 <?php
 
 use App\Actions\Admin\Wallet\CreateWalletAction;
-use App\Data\Wallet\CreateWalletData;
+use App\Data\Admin\Wallet\CreateWalletData;
 use App\Enums\Wallet\WalletStatusEnum;
 use App\Models\User;
 use App\Models\Wallet;

@@ -11,7 +11,7 @@ use App\Data\Admin\Payment\PaymentData;
 use App\Data\Admin\Refund\RefundData;
 use App\Data\Admin\Staff\ShowStaffData;
 use App\Data\Admin\Staff\StaffListItemData;
-use App\Data\Admin\Wallet\WalletCampaignData;
+use App\Data\Admin\WalletCampaign\WalletCampaignData;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Refund;

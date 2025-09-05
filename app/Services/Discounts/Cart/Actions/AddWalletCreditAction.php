@@ -8,7 +8,7 @@ use App\Actions\Wallet\RecordWalletTransactionAction;
 use App\Attributes\DiscountHandlerKey;
 use App\Contracts\Discounts\DiscountActionContract;
 use App\Data\Admin\Discounts\OrderContextData;
-use App\Data\Wallet\RecordTransactionData;
+use App\Data\Admin\Wallet\RecordTransactionData;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;

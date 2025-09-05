@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api\Admin;
+namespace App\Http\Controllers\Api\Admin\Wallet;
 
 use App\Actions\Admin\Wallet\CreateWalletAction;
-use App\Data\Wallet\CreateWalletData;
+use App\Data\Admin\Wallet\CreateWalletData;
 use App\Http\Controllers\Controller;
 use App\Models\Wallet;
 use Illuminate\Http\Resources\Json\JsonResource;

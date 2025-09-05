@@ -130,6 +130,9 @@ return [
     'campaign_has_transactions_cannot_delete' => 'Cannot delete campaign with existing transactions.',
     'gift_credit_allocated_successfully' => 'Gift credit allocated successfully.',
     'campaign_bonus_processed_successfully' => 'Campaign bonus processed successfully.',
+    'bulk_allocation_completed_successfully' => 'Bulk allocation completed successfully. :count users processed.',
+    'bulk_allocation_failed_completely' => 'Bulk allocation failed for all users.',
+    'bulk_allocation_completed_partially' => 'Bulk allocation completed partially. :success successful, :failed failed.',
 
     'http_status' => [
         200 => 'OK',
