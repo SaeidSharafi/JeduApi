@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\AdminActionLog;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
@@ -20,6 +21,7 @@ use App\Models\User;
 use App\Models\Vendor;
 use App\Models\Wallet;
 use App\Models\WalletCampaign;
+use App\Policies\Admin\AdminActionLogPolicy;
 use App\Policies\Admin\CategoryPolicy;
 use App\Policies\Admin\CoursePolicy;
 use App\Policies\Admin\DigitalAssetPolicy;
@@ -75,5 +77,7 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(DiscountPromotion::class, DiscountPromotionPolicy::class);
         Gate::policy(Wallet::class, WalletPolicy::class);
         Gate::policy(WalletCampaign::class, WalletCampaignPolicy::class);
+        Gate::policy(AdminActionLog::class, AdminActionLogPolicy::class);
+
     }
 }

@@ -70,7 +70,26 @@ class RecordWalletTransactionAction
                 'gift_balance' => $newGiftBalance,
             ]);
 
-            // Create transaction record
+            // Create transaction record with enhanced audit metadata
+            $auditMetadata = array_merge($data->metadata ?? [], [
+                'audit' => [
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'session_id' => session()->getId(),
+                    'admin_id' => auth('staff')->id(),
+                    'admin_name' => auth('staff')->user()?->name,
+                    'timestamp' => now()->toISOString(),
+                    'request_id' => request()->header('X-Request-ID') ?? uniqid(),
+                    'risk_level' => $this->assessTransactionRisk($data->amount, $data->type->value),
+                    'is_admin_initiated' => auth('staff')->check(),
+                    'source_details' => [
+                        'source_type' => $data->source_type->value,
+                        'source_id' => $data->source_id,
+                        'description' => $data->description,
+                    ],
+                ]
+            ]);
+
             $transaction = WalletTransaction::create([
                 'wallet_id' => $wallet->id,
                 'user_id' => $user->id,
@@ -81,11 +100,48 @@ class RecordWalletTransactionAction
                 'source_type' => $data->source_type,
                 'source_id' => $data->source_id,
                 'description' => $data->description,
-                'metadata' => $data->metadata ?? [],
+                'metadata' => $auditMetadata,
                 'expires_at' => $data->expires_at ? now()->parse($data->expires_at) : null,
             ]);
 
             return $transaction;
         });
+    }
+
+    /**
+     * Assess the risk level of a transaction based on amount and type
+     */
+    private function assessTransactionRisk(int $amount, string $transactionType): string
+    {
+        $absoluteAmount = abs($amount);
+
+        // High-risk thresholds (in rials)
+        $highRiskAmount = 50000000; // 50M IRR (approx $1000)
+        $mediumRiskAmount = 5000000; // 5M IRR (approx $100)
+
+        // High-risk transaction types
+        $highRiskTypes = ['withdrawal', 'adjustment'];
+
+        // Check amount-based risk
+        if ($absoluteAmount >= $highRiskAmount) {
+            return 'high';
+        }
+
+        if ($absoluteAmount >= $mediumRiskAmount) {
+            return 'medium';
+        }
+
+        // Check type-based risk
+        if (in_array($transactionType, $highRiskTypes) && $absoluteAmount >= 1000000) {
+            return 'medium';
+        }
+
+        // Check time-based risk (transactions outside business hours)
+        $hour = now()->hour;
+        if (($hour < 6 || $hour > 22) && $absoluteAmount >= $mediumRiskAmount) {
+            return 'medium';
+        }
+
+        return 'low';
     }
 }

@@ -156,4 +156,60 @@ return [
         422 => 'خطای اعتبارسنجی',
         500 => 'خطای داخلی سرور',
     ],
+
+    'audit' => [
+        'admin_actions_loaded_successfully' => 'گزارش‌های حسابرسی مدیریت با موفقیت بارگیری شد',
+        'admin_action_logged' => 'عملیات مدیر با موفقیت ثبت شد',
+        'compliance_report_generated_successfully' => 'گزارش انطباق با موفقیت تولید شد',
+        'suspicious_activity_detected_successfully' => 'تجزیه و تحلیل فعالیت‌های مشکوک با موفقیت تکمیل شد',
+        'system' => 'سیستم',
+        'unknown_admin' => 'مدیر نامشخص',
+
+        'action_types' => [
+            'create' => 'ایجاد',
+            'update' => 'به‌روزرسانی',
+            'delete' => 'حذف',
+            'view' => 'مشاهده',
+            'deposit' => 'واریز',
+            'withdrawal' => 'برداشت',
+            'adjustment' => 'تعدیل',
+            'allocation' => 'تخصیص',
+            'bulk_create' => 'ایجاد گروهی',
+        ],
+
+        'risk_levels' => [
+            'low' => 'ریسک کم',
+            'medium' => 'ریسک متوسط',
+            'high' => 'ریسک بالا',
+        ],
+
+        'suspicious_flags' => [
+            'large_amount' => 'مبلغ تراکنش بزرگ',
+            'off_hours' => 'تراکنش خارج از ساعات کاری',
+            'high_frequency' => 'تراکنش‌های پرتعداد',
+            'round_numbers' => 'الگوی مشکوک اعداد گرد',
+            'rapid_succession' => 'چندین تراکنش در توالی سریع',
+            'unusual_admin_activity' => 'فعالیت غیرمعمول مدیریتی',
+        ],
+
+        'compliance' => [
+            'daily_report' => 'گزارش روزانه انطباق',
+            'monthly_report' => 'گزارش ماهانه انطباق',
+            'custom_report' => 'گزارش سفارشی انطباق',
+            'transaction_volume' => 'حجم تراکنش‌ها',
+            'unique_users' => 'کاربران منحصربه‌فرد',
+            'admin_initiated' => 'تراکنش‌های آغاز شده توسط مدیر',
+            'high_risk_transactions' => 'تراکنش‌های پرخطر',
+        ],
+
+        'recommendations' => [
+            'critical_risk_level' => 'سطح ریسک بحرانی شناسایی شد - بررسی و اقدام فوری مورد نیاز است',
+            'elevated_risk_level' => 'سطح ریسک بالا شناسایی شد - نظارت تقویت شده توصیه می‌شود',
+            'high_volume_transactions' => 'الگوهای تراکنش حجم بالا شناسایی شد - تراکنش‌های بزرگ را بررسی کنید',
+            'off_hours_activity' => 'فعالیت غیرمعمول خارج از ساعات کاری شناسایی شد - الگوهای زمانی را بررسی کنید',
+            'suspicious_patterns' => 'الگوهای مشکوک تراکنش شناسایی شد - برای ناهنجاری‌ها تجزیه و تحلیل کنید',
+            'admin_activity_concerns' => 'نگرانی‌های فعالیت مدیریتی شناسایی شد - مجوزها و اقدامات را بررسی کنید',
+            'maintain_monitoring' => 'سطوح ریسک در پارامترهای عادی است - نظارت منظم را ادامه دهید',
+        ],
+    ],
 ];

@@ -148,4 +148,60 @@ return [
         422 => 'Unprocessable Entity',
         500 => 'Internal Server Error',
     ],
+
+    'audit' => [
+        'admin_actions_loaded_successfully' => 'Admin audit logs loaded successfully',
+        'admin_action_logged' => 'Admin action logged successfully',
+        'compliance_report_generated_successfully' => 'Compliance report generated successfully',
+        'suspicious_activity_detected_successfully' => 'Suspicious activity analysis completed successfully',
+        'system' => 'System',
+        'unknown_admin' => 'Unknown Admin',
+
+        'action_types' => [
+            'create' => 'Create',
+            'update' => 'Update',
+            'delete' => 'Delete',
+            'view' => 'View',
+            'deposit' => 'Deposit',
+            'withdrawal' => 'Withdrawal',
+            'adjustment' => 'Adjustment',
+            'allocation' => 'Allocation',
+            'bulk_create' => 'Bulk Create',
+        ],
+
+        'risk_levels' => [
+            'low' => 'Low Risk',
+            'medium' => 'Medium Risk',
+            'high' => 'High Risk',
+        ],
+
+        'suspicious_flags' => [
+            'large_amount' => 'Large Transaction Amount',
+            'off_hours' => 'Transaction Outside Business Hours',
+            'high_frequency' => 'High Frequency Transactions',
+            'round_numbers' => 'Suspicious Round Number Pattern',
+            'rapid_succession' => 'Multiple Transactions in Quick Succession',
+            'unusual_admin_activity' => 'Unusual Administrative Activity',
+        ],
+
+        'compliance' => [
+            'daily_report' => 'Daily Compliance Report',
+            'monthly_report' => 'Monthly Compliance Report',
+            'custom_report' => 'Custom Compliance Report',
+            'transaction_volume' => 'Transaction Volume',
+            'unique_users' => 'Unique Users',
+            'admin_initiated' => 'Admin Initiated Transactions',
+            'high_risk_transactions' => 'High Risk Transactions',
+        ],
+
+        'recommendations' => [
+            'critical_risk_level' => 'Critical risk level detected - immediate review and action required',
+            'elevated_risk_level' => 'Elevated risk level detected - enhanced monitoring recommended',
+            'high_volume_transactions' => 'High volume transaction patterns detected - review large transactions',
+            'off_hours_activity' => 'Unusual off-hours activity detected - investigate timing patterns',
+            'suspicious_patterns' => 'Suspicious transaction patterns identified - analyze for anomalies',
+            'admin_activity_concerns' => 'Admin activity concerns identified - review permissions and actions',
+            'maintain_monitoring' => 'Risk levels are within normal parameters - maintain regular monitoring',
+        ],
+    ],
 ];

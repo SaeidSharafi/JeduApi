@@ -43,6 +43,11 @@ return Application::configure(basePath: dirname(__DIR__))
             return null;
         });
 
+        // Register custom middleware aliases
+        $middleware->alias([
+            'admin.audit' => \App\Http\Middleware\AdminAuditMiddleware::class,
+        ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $isApiRequest = function (Request $request) {

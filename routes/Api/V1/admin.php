@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\Admin\AllocateGiftCreditController;
+use App\Http\Controllers\Api\Admin\Audit\AdminAuditLogController;
 use App\Http\Controllers\Api\Admin\DiscountPromotionController;
 use App\Http\Controllers\Api\Admin\DiscountPromotionStatisticsController;
 use App\Http\Controllers\Api\Admin\DiscountPromotionStatusUpdateController;
@@ -20,7 +21,7 @@ use App\Http\Controllers\Api\Admin\WalletCampaign\AdminWalletCampaignController;
 use App\Http\Controllers\Api\Admin\WalletCampaign\BulkCampaignAllocationController;
 use App\Http\Controllers\Api\Admin\WalletCampaign\TriggerCampaignAllocationController;
 
-Route::middleware('auth:staff')->group(function (): void {
+Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
     Route::prefix('admin')->name('admin.')->group(function (): void {
         Route::resource('staff', App\Http\Controllers\Api\Admin\StaffController::class)
             ->only(['index', 'store', 'show', 'update', 'destroy']);
@@ -110,5 +111,22 @@ Route::middleware('auth:staff')->group(function (): void {
         // Campaign-centric bulk allocation (secondary route)
         Route::post('wallet-campaigns/{wallet_campaign}/bulk-trigger-allocation', BulkCampaignAllocationController::class)
             ->name('wallet-campaigns.bulk-trigger-allocation');
+
+        // Audit and Compliance routes
+        Route::prefix('audit')->name('audit.')->group(function () {
+            // Admin action logs
+            Route::get('admin-actions', [AdminAuditLogController::class, 'index'])
+                ->name('admin-actions.index');
+            Route::get('admin-actions/{adminActionLog}', [AdminAuditLogController::class, 'show'])
+                ->name('admin-actions.show');
+
+            // Compliance reporting
+            Route::post('compliance-report', \App\Http\Controllers\Api\Admin\Audit\ComplianceReportController::class)
+                ->name('compliance-report');
+
+            // Suspicious activity detection
+            Route::post('suspicious-activity', \App\Http\Controllers\Api\Admin\Audit\SuspiciousActivityController::class)
+                ->name('suspicious-activity');
+        });
     });
 });

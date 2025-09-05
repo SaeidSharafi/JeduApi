@@ -10,6 +10,9 @@ namespace App\Enums;
  */
 enum PermissionEnum: string
 {
+    case AUDIT_ADMIN_ACTIONS_VIEW = 'audit.admin_actions_view';
+    case AUDIT_COMPLIANCE_REPORTS_VIEW = 'audit.compliance_reports_view';
+    case AUDIT_SUSPICIOUS_ACTIVITY_VIEW = 'audit.suspicious_activity_view';
     case CATEGORY_CREATE = 'category.create';
     case CATEGORY_DELETE = 'category.delete';
     case CATEGORY_DELETE_OWN = 'category.delete_own';

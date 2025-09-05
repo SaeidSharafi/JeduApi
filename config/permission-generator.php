@@ -184,6 +184,11 @@ return [
             'allocate',
             'process_bonus', // Custom String:   wallet_campaigns.process_bonus
         ],
+        'audit' => [
+            'admin_actions_view',
+            'compliance_reports_view',
+            'suspicious_activity_view',
+        ]
         /*
 
 

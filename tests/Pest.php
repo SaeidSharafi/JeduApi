@@ -35,6 +35,10 @@ expect()->extend('toBeInCollection',
     function (Collection $collection, string $column) {
         return $collection->contains($column, $this->value);
     });
+expect()->extend('toBeEmptyCollection',
+    function () {
+        return $this->isEmpty();
+    });
 /*
 |--------------------------------------------------------------------------
 | Functions
