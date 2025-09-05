@@ -15,7 +15,7 @@ return [
      * convert the date to the correct timezone. If set to null no timezone will
      * be passed.
      */
-    'date_timezone' => env('TIMEZONE'),
+    'date_timezone' => env('TIMEZONE', 'Asia/Tehran'),
 
     /*
      * It is possible to enable certain features of the package, these would otherwise
