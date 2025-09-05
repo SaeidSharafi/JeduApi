@@ -139,7 +139,7 @@ describe('CreatePaymentAction', function () {
         );
 
         expect(fn() => (app(CreatePaymentAction::class))->handle($order->fresh(), $paymentData, $this->adminUser))
-            ->toThrow(ValidationException::class, 'already fully paid');
+            ->toThrow(ValidationException::class, __('messages.order.already_fully_paid', ['order_id' => $order->increment_id]));
     });
 
     // Test conditional validation
