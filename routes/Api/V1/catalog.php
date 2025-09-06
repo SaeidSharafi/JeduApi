@@ -9,7 +9,7 @@ use App\Http\Controllers\Api\Admin\ProductController;
 use App\Http\Controllers\Api\Admin\ProductDeliveryOptionController;
 use App\Http\Controllers\Api\Admin\SeminarController;
 
-Route::middleware('auth:staff')->group(function (): void {
+Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
     Route::prefix('admin')->name('admin.')->group(function (): void {
 
         Route::resource('course', CourseController::class)

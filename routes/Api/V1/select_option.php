@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\Admin\SelectOptions\TeacherSelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\TermSelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\VendorSelectOptionController;
 
-Route::middleware('auth:staff')
+Route::middleware(['auth:staff', 'admin.audit'])
     ->prefix('admin')->name('admin.')
     ->group(function (): void {
         Route::get('select-option/category', CategorySelectOptionController::class)
