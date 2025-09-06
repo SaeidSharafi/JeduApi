@@ -187,9 +187,9 @@ class DetectSuspiciousActivityAction
 
     private function detectRapidSuccessionTransactions(SuspiciousActivityRequestData $data): Collection
     {
-        // Detect multiple large transactions within 5 minutes
-        $rapidTransactions = WalletTransaction::query()
-            ->select('user_id', 'created_at', 'amount', 'id')
+        // Detect multiple large transactions within 5 minutes using Laravel collections
+        return WalletTransaction::query()
+            ->select('user_id', 'created_at', 'amount', 'id', 'type', 'metadata')
             ->with(['user'])
             ->whereBetween('created_at', [$data->date_from, $data->date_to])
             ->where(DB::raw('ABS(amount)'), '>=', 10000000) // 10M IRR threshold
@@ -197,34 +197,41 @@ class DetectSuspiciousActivityAction
             ->orderBy('created_at')
             ->get()
             ->groupBy('user_id')
-            ->filter(function ($userTransactions) {
-                // Check if user has multiple transactions within 5 minutes
-                for ($i = 0; $i < count($userTransactions) - 1; $i++) {
-                    $timeDiff = $userTransactions[$i + 1]->created_at->diffInMinutes($userTransactions[$i]->created_at);
-                    if ($timeDiff <= 5) {
-                        return true;
-                    }
-                }
-                return false;
-            })
-            ->flatten()
-            ->unique('id');
+            ->flatMap(function ($userTransactions) {
+                // Split transactions into rapid succession sequences using Laravel collection methods
+                return $userTransactions->values() // Reset keys for proper indexing
+                    ->reduce(function ($sequences, $transaction) {
+                        $lastSequence = $sequences->last();
 
-        return $rapidTransactions->map(function ($transaction) {
-            return new SuspiciousActivityData(
-                transaction_id: $transaction->id,
-                user_id: $transaction->user_id,
-                user_name: $transaction->user->first_name . ' ' . $transaction->user->last_name,
-                amount: $transaction->amount,
-                type: $transaction->type->value,
-                created_at: $transaction->created_at->format('Y-m-d H:i:s'),
-                hour: (string)$transaction->created_at->hour,
-                flags: json_encode(['rapid_succession']),
-                admin_initiated: $transaction->metadata['audit']['is_admin_initiated'] ?? false ? 'true' : 'false',
-                ip_address: $transaction->metadata['audit']['ip_address'] ?? null,
-                pattern: 'Multiple large transactions within 5 minutes',
-            );
-        });
+                        // If no sequences exist or the time gap is > 5 minutes, start a new sequence
+                        if ($sequences->isEmpty() ||
+                            $lastSequence->last()->created_at->diffInMinutes($transaction->created_at) > 5) {
+                            $sequences->push(collect([$transaction]));
+                        } else {
+                            // Add to current sequence if within 5 minutes
+                            $lastSequence->push($transaction);
+                        }
+
+                        return $sequences;
+                    }, collect())
+                    ->filter(fn($sequence) => $sequence->count() >= 2) // Only sequences with 2+ transactions
+                    ->flatten(); // Flatten all sequences into individual transactions
+            })
+            ->map(function ($transaction) {
+                return new SuspiciousActivityData(
+                    transaction_id: $transaction->id,
+                    user_id: $transaction->user_id,
+                    user_name: $transaction->user->first_name . ' ' . $transaction->user->last_name,
+                    amount: $transaction->amount,
+                    type: $transaction->type->value,
+                    created_at: $transaction->created_at->format('Y-m-d H:i:s'),
+                    hour: (string)$transaction->created_at->hour,
+                    flags: json_encode(['rapid_succession']),
+                    admin_initiated: $transaction->metadata['audit']['is_admin_initiated'] ?? false ? 'true' : 'false',
+                    ip_address: $transaction->metadata['audit']['ip_address'] ?? null,
+                    pattern: 'Multiple large transactions within 5 minutes',
+                );
+            });
     }
 
     private function detectUnusualAdminActivity(SuspiciousActivityRequestData $data): Collection
@@ -255,28 +262,21 @@ class DetectSuspiciousActivityAction
 
     private function generateSuspiciousActivitySummary(SuspiciousActivityCollectionData $activities): array
     {
-        $summary = [
-            'total_suspicious_activities' => 0,
-            'by_type' => [],
-            'high_risk_count' => 0,
-            'unique_users_involved' => 0,
+        // Use collection methods to make the summary generation more concise
+        $activitiesCollection = collect($activities->toArray());
+
+        $typeCountsAndUsers = $activitiesCollection->mapWithKeys(function ($items, $type) {
+            $count = is_countable($items) ? count($items) : 0;
+            $userIds = collect($items)->pluck('user_id')->filter();
+
+            return [$type => ['count' => $count, 'user_ids' => $userIds]];
+        });
+
+        return [
+            'total_suspicious_activities' => $typeCountsAndUsers->sum('count'),
+            'by_type' => $typeCountsAndUsers->mapWithKeys(fn($data, $type) => [$type => $data['count']])->toArray(),
+            'high_risk_count' => 0, // Can be calculated based on specific criteria if needed
+            'unique_users_involved' => $typeCountsAndUsers->pluck('user_ids')->flatten()->unique()->count(),
         ];
-
-        $allUserIds = collect();
-
-        foreach ($activities as $type => $items) {
-            $count = $items ? count($items) : 0;
-            $summary['by_type'][$type] = $count;
-            $summary['total_suspicious_activities'] += $count;
-
-            // Collect user IDs
-            if ($items instanceof Collection) {
-                $allUserIds = $allUserIds->merge($items->pluck('user_id'));
-            }
-        }
-
-        $summary['unique_users_involved'] = $allUserIds->unique()->count();
-
-        return $summary;
     }
 }

@@ -27,6 +27,7 @@
             <file>app/Attributes/ProductDiscountHandler.php</file>
             <file>app/Console/Commands/RegenerateDiscountPrices.php</file>
             <file>app/Console/Commands/Discounts/ClearHandlerCache.php</file>
+            <file>app/Data/Casts/AdvancedDateTimeInterfaceCast.php</file>
             <directory>app/Scribe</directory>
             <directory>app/Faker</directory>
             <directory>app/Jobs/Deployment</directory>

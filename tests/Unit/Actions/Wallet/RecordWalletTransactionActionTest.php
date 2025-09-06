@@ -8,6 +8,7 @@ use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\User;
 use App\Models\WalletTransaction;
+use Illuminate\Support\Facades\Date;
 use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
@@ -152,4 +153,75 @@ it('will it automatically reduce balance if it\'s withdrawal', function () {
         ->and($transaction->user_id)->toBe($user->id);
     $user->wallet->refresh();
     expect($user->wallet->balance)->toBe(100);
+});
+
+it('will correctly set risk level', function () {
+    $user = User::factory()->create();
+    $user->wallet->update([
+        'balance' => 100000000,
+    ]);
+    $data = RecordTransactionData::from([
+        'user_id'     => $user->id,
+        'type'        => TransactionTypeEnum::WITHDRAWAL,
+        'amount'      => 60000000,
+        'source_type' => TransactionSourceEnum::STAFF,
+        'source_id'   => null,
+        'description' => 'Admin deposit',
+        'metadata'    => [],
+    ]);
+    $transaction = (new RecordWalletTransactionAction())->execute($data);
+    expect($transaction)->toBeInstanceOf(WalletTransaction::class)
+        ->and($transaction->metadata['audit']['risk_level'])->toBe('high');
+
+    $user->wallet->update([
+        'balance' => 100000000,
+    ]);
+
+    $data = RecordTransactionData::from([
+        'user_id'     => $user->id,
+        'type'        => TransactionTypeEnum::DEPOSIT,
+        'amount'      => 6000000,
+        'source_type' => TransactionSourceEnum::STAFF,
+        'source_id'   => null,
+        'description' => 'Admin deposit',
+        'metadata'    => [],
+    ]);
+
+    $transaction = (new RecordWalletTransactionAction())->execute($data);
+    expect($transaction)->toBeInstanceOf(WalletTransaction::class)
+        ->and($transaction->metadata['audit']['risk_level'])->toBe('medium');
+
+    $user->wallet->update([
+        'balance' => 100000000,
+    ]);
+
+    $data = RecordTransactionData::from([
+        'user_id'     => $user->id,
+        'type'        => TransactionTypeEnum::WITHDRAWAL,
+        'amount'      => 1000000,
+        'source_type' => TransactionSourceEnum::STAFF,
+        'source_id'   => null,
+        'description' => 'Admin deposit',
+        'metadata'    => [],
+    ]);
+
+    $transaction = (new RecordWalletTransactionAction())->execute($data);
+    expect($transaction)->toBeInstanceOf(WalletTransaction::class)
+        ->and($transaction->metadata['audit']['risk_level'])->toBe('medium');
+
+    $testTime = now()->setTime(2, 0, 0);
+    Date::setTestNow($testTime);
+
+    $data = RecordTransactionData::from([
+        'user_id'     => $user->id,
+        'type'        => TransactionTypeEnum::WITHDRAWAL,
+        'amount'      => 1000,
+        'source_type' => TransactionSourceEnum::STAFF,
+        'source_id'   => null,
+        'description' => 'Admin deposit',
+        'metadata'    => [],
+    ]);
+    $transaction = (new RecordWalletTransactionAction())->execute($data);
+    expect($transaction)->toBeInstanceOf(WalletTransaction::class)
+        ->and($transaction->metadata['audit']['risk_level'])->toBe('medium');
 });

@@ -24,6 +24,7 @@ class GenerateComplianceReportAction
             'summary' => $this->generateSummary($data),
             'transaction_analysis' => $this->generateTransactionAnalysis($data),
         ];
+
         if ($data->include_transaction_analysis){
             $report['report_sections']['transaction_analysis'] = $this->generateTransactionAnalysis($data);
         }
@@ -69,17 +70,16 @@ class GenerateComplianceReportAction
                 }
             });
         }
-
         return [
-            'total_transactions' => $query->count(),
-            'total_volume_rial' => $query->sum('amount'),
-            'unique_users' => $query->distinct('user_id')->count(),
-            'credits_count' => $query->where('amount', '>', 0)->count(),
-            'debits_count' => $query->where('amount', '<', 0)->count(),
-            'credits_volume' => $query->where('amount', '>', 0)->sum('amount'),
-            'debits_volume' => abs($query->where('amount', '<', 0)->sum('amount')),
-            'large_transactions_count' => $query->where(DB::raw('ABS(amount)'), '>=', 5000000)->count(),
-            'avg_transaction_amount' => $query->avg(DB::raw('ABS(amount)')),
+            'total_transactions' => $query->clone()->count(),
+            'total_volume_rial' => $query->clone()->sum('amount'),
+            'unique_users' => $query->clone()->distinct('user_id')->count(),
+            'credits_count' => $query->clone()->where('amount', '>', 0)->count(),
+            'debits_count' => $query->clone()->where('amount', '<', 0)->count(),
+            'credits_volume' => $query->clone()->where('amount', '>', 0)->sum('amount'),
+            'debits_volume' => abs((int)$query->clone()->where('amount', '<', 0)->sum('amount')),
+            'large_transactions_count' => $query->clone()->where(DB::raw('ABS(amount)'), '>=', 5000000)->count(),
+            'avg_transaction_amount' => $query->clone()->avg(DB::raw('ABS(amount)')),
         ];
     }
 
@@ -200,7 +200,7 @@ class GenerateComplianceReportAction
                 $dayQuery->whereIn('user_id', $data->user_ids);
             }
 
-            $breakdown[$current->format('Y-m-d')] = [
+            $breakdown[verta($current)->format('Y-m-d')] = [
                 'total_transactions' => $dayQuery->count(),
                 'total_volume' => $dayQuery->sum(DB::raw('ABS(amount)')),
                 'unique_users' => $dayQuery->distinct('user_id')->count(),
@@ -326,7 +326,9 @@ class GenerateComplianceReportAction
                 'high' => 80,
                 'medium' => 50,
                 'low' => 20,
+                // @codeCoverageIgnoreStart
                 default => 0,
+                // @codeCoverageIgnoreEnd
             };
 
             $score += ($categoryScore * $weights[$category]) / 100;

@@ -138,7 +138,7 @@ class RecordWalletTransactionAction
 
         // Check time-based risk (transactions outside business hours)
         $hour = now()->hour;
-        if (($hour < 6 || $hour > 22) && $absoluteAmount >= $mediumRiskAmount) {
+        if (($hour < 6 || $hour > 22)) {
             return 'medium';
         }
 

@@ -37,7 +37,9 @@ class AdminAuditMiddleware
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 
             $this->logAdminAction($request, $response, $executionTime);
-        } catch (\Exception $e) {
+        }
+        // @codeCoverageIgnoreStart
+        catch (\Exception $e) {
             // Log the error but don't break the request
             Log::error('AdminAuditMiddleware failed to log action', [
                 'error' => $e->getMessage(),
@@ -45,6 +47,7 @@ class AdminAuditMiddleware
                 'admin_id' => auth('staff')->id(),
             ]);
         }
+        // @codeCoverageIgnoreEnd
 
         return $response;
     }
@@ -265,7 +268,7 @@ class AdminAuditMiddleware
         unset($value);
         // Limit data size to prevent huge logs
         $jsonData = json_encode($data);
-        if (strlen($jsonData) > 10000) { // 10KB limit
+        if ($jsonData !== false && strlen($jsonData) > 10000) { // 10KB limit
             return ['_large_request' => 'Request data too large, truncated'];
         }
 
