@@ -1,0 +1,69 @@
+{
+  "message": "messages.audit.audit_log_loaded_successfully",
+  "data": {
+    "id": 1,
+    "admin": {
+      "id": 1,
+      "name": "Admin",
+      "email": "staff@example.com",
+      "phone": "9300000000",
+      "is_admin": true,
+      "roles": null
+    },
+    "action_type": "create",
+    "resource_type": null,
+    "resource_id": null,
+    "route_name": "api.v1.admin.digital-asset.store",
+    "http_method": "POST",
+    "request_data": {
+      "name": "Digital Asset Name 2",
+      "slug": "digital-asset-name2",
+      "media": {
+        "cover": [
+          1
+        ],
+        "video": [
+          1
+        ],
+        "gallery": [
+          1
+        ]
+      },
+      "status": "published",
+      "version": "1.0.0",
+      "keywords": "keyword1, keyword2",
+      "categories": [
+        1
+      ],
+      "created_by": 1,
+      "meta_title": "Digital Asset Meta Title",
+      "page_count": 100,
+      "attachments": {
+        "main": 1,
+        "preview": 2
+      },
+      "description": "This is a description of the digital asset.",
+      "published_at": "1403-10-01 12:00:00",
+      "meta_keywords": "meta keyword1, meta keyword2",
+      "duration_seconds": 3600,
+      "meta_description": "This is a meta description for the digital asset.This is a meta description for the digital asset.",
+      "is_attachable_to_course": false
+    },
+    "response_status": 422,
+    "ip_address": "172.18.0.1",
+    "user_agent": "bruno-runtime/2.10.1",
+    "session_id": "ctUywu4wAHNdwi0YH7opd7J8Cxpc5FnSWcMoqQhc",
+    "risk_level": "low",
+    "metadata": {
+      "timestamp": "2025-09-06T11:09:14.597428Z",
+      "memory_usage": 4194304,
+      "request_size": 774,
+      "response_size": 312,
+      "execution_time_ms": 59.8
+    },
+    "created_at": "1404-06-15 14:39:14",
+    "resource": null,
+    "action_summery": "Create "
+  },
+  "metadata": []
+}

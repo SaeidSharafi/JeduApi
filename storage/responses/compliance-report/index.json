@@ -1,0 +1,139 @@
+{
+  "message": "گزارش انطباق با موفقیت تولید شد",
+  "data": {
+    "report_period": {
+      "from": "1404-06-01",
+      "to": "1404-06-15",
+      "type": "daily"
+    },
+    "summary": {
+      "total_transactions": 0,
+      "total_volume_rial": 0,
+      "unique_users": 0,
+      "credits_count": 0,
+      "debits_count": 0,
+      "credits_volume": 0,
+      "debits_volume": 0,
+      "large_transactions_count": 0,
+      "avg_transaction_amount": null
+    },
+    "transaction_analysis": {
+      "by_type": [],
+      "by_source": [],
+      "high_risk_transactions": 0
+    },
+    "report_sections": {
+      "transaction_analysis": {
+        "by_type": [],
+        "by_source": [],
+        "high_risk_transactions": 0
+      },
+      "admin_activity": {
+        "total_admin_actions": 0,
+        "unique_admins": 0,
+        "by_action_type": [],
+        "by_risk_level": [],
+        "failed_actions": 0
+      },
+      "suspicious_activity": {
+        "large_transactions": 0,
+        "off_hours_transactions": 0,
+        "high_frequency_users": 0,
+        "round_number_transactions": 0
+      },
+      "daily_breakdown": {
+        "1404-06-01": {
+          "total_transactions": 0,
+          "total_volume": 0,
+          "unique_users": 0,
+          "admin_initiated": 0
+        },
+        "1404-06-02": {
+          "total_transactions": 0,
+          "total_volume": 0,
+          "unique_users": 0,
+          "admin_initiated": 0
+        },
+        "1404-06-03": {
+          "total_transactions": 0,
+          "total_volume": 0,
+          "unique_users": 0,
+          "admin_initiated": 0
+        },
+        "1404-06-04": {
+          "total_transactions": 0,
+          "total_volume": 0,
+          "unique_users": 0,
+          "admin_initiated": 0
+        },
+        "1404-06-05": {
+          "total_transactions": 0,
+          "total_volume": 0,
+          "unique_users": 0,
+          "admin_initiated": 0
+        },
+        "1404-06-06": {
+          "total_transactions": 0,
+          "total_volume": 0,
+          "unique_users": 0,
+          "admin_initiated": 0
+        },
+        "1404-06-07": {
+          "total_transactions": 0,
+          "total_volume": 0,
+          "unique_users": 0,
+          "admin_initiated": 0
+        },
+        "1404-06-08": {
+          "total_transactions": 0,
+          "total_volume": 0,
+          "unique_users": 0,
+          "admin_initiated": 0
+        },
+        "1404-06-09": {
+          "total_transactions": 0,
+          "total_volume": 0,
+          "unique_users": 0,
+          "admin_initiated": 0
+        },
+        "1404-06-10": {
+          "total_transactions": 0,
+          "total_volume": 0,
+          "unique_users": 0,
+          "admin_initiated": 0
+        },
+        "1404-06-11": {
+          "total_transactions": 0,
+          "total_volume": 0,
+          "unique_users": 0,
+          "admin_initiated": 0
+        },
+        "1404-06-12": {
+          "total_transactions": 0,
+          "total_volume": 0,
+          "unique_users": 0,
+          "admin_initiated": 0
+        },
+        "1404-06-13": {
+          "total_transactions": 0,
+          "total_volume": 0,
+          "unique_users": 0,
+          "admin_initiated": 0
+        },
+        "1404-06-14": {
+          "total_transactions": 0,
+          "total_volume": 0,
+          "unique_users": 0,
+          "admin_initiated": 0
+        },
+        "1404-06-15": {
+          "total_transactions": 0,
+          "total_volume": 0,
+          "unique_users": 0,
+          "admin_initiated": 0
+        }
+      }
+    }
+  },
+  "metadata": []
+}

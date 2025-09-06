@@ -1,0 +1,72 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "data": [
+      {
+        "id": 1,
+        "name": "Back to School Bonus",
+        "description": "Special campaign for students.",
+        "type": "bonus",
+        "is_active": true,
+        "amount": 50000,
+        "usage_limit_total": 1000,
+        "usage_limit_per_wallet-campaign": 2,
+        "total_usage_count": 120,
+        "starts_at": "2025-09-01 00:00:00",
+        "ends_at": "2025-09-30 23:59:59",
+        "metadata": {
+          "target_group": "students"
+        },
+        "created_at": "2025-08-25 10:00:00",
+        "updated_at": "2025-09-01 09:00:00",
+        "remaining_usage_count": 880,
+        "is_within_date_range": true,
+        "auditor": {
+          "id": 10,
+          "name": "Ali Admin",
+          "email": "ali.admin@example.com"
+        },
+        "transactions_count": 120
+      }
+    ],
+    "first_page_url": "http://jedu.test/api/v1/admin/wallet-campaign?page=1",
+    "from": 1,
+    "last_page": 3,
+    "last_page_url": "http://jedu.test/api/v1/admin/wallet-campaign?page=3",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; قبلی",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/wallet-campaign?page=1",
+        "label": "1",
+        "active": true
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/wallet-campaign?page=2",
+        "label": "2",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/wallet-campaign?page=3",
+        "label": "3",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/wallet-campaign?page=2",
+        "label": "بعدی &raquo;",
+        "active": false
+      }
+    ],
+    "next_page_url": "http://jedu.test/api/v1/admin/wallet-campaign?page=2",
+    "path": "http://jedu.test/api/v1/admin/wallet-campaign",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 15,
+    "total": 35
+  },
+  "metadata": []
+}
+

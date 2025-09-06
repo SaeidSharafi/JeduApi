@@ -1,0 +1,35 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 3001,
+    "wallet": {
+      "balance": 250000,
+      "gift_balance": 50000,
+      "status": "active",
+      "user": {
+        "id": 103,
+        "first_name": "Reza",
+        "last_name": "Karimi",
+        "email": "reza.karimi@example.com"
+      }
+    },
+    "user": {
+      "id": 103,
+      "first_name": "Reza",
+      "last_name": "Karimi",
+      "email": "reza.karimi@example.com"
+    },
+    "type": "deposit",
+    "amount": 100000,
+    "balance_after": 250000,
+    "gift_balance_after": 50000,
+    "source_type": "manual",
+    "source": null,
+    "description": "Admin deposit.",
+    "metadata": {"reason": "bonus"},
+    "expires_at": null,
+    "created_at": "2025-09-06 13:00:00"
+  },
+  "metadata": []
+}
+

@@ -1,0 +1,35 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 4001,
+    "wallet": {
+      "balance": 100000,
+      "gift_balance": 0,
+      "status": "active",
+      "user": {
+        "id": 104,
+        "first_name": "Mina",
+        "last_name": "Jafari",
+        "email": "mina.jafari@example.com"
+      }
+    },
+    "user": {
+      "id": 104,
+      "first_name": "Mina",
+      "last_name": "Jafari",
+      "email": "mina.jafari@example.com"
+    },
+    "type": "withdrawal",
+    "amount": 50000,
+    "balance_after": 100000,
+    "gift_balance_after": 0,
+    "source_type": "manual",
+    "source": null,
+    "description": "Admin withdrawal.",
+    "metadata": {"reason": "refund"},
+    "expires_at": null,
+    "created_at": "2025-09-06 14:00:00"
+  },
+  "metadata": []
+}
+

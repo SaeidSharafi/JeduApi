@@ -1,0 +1,133 @@
+{
+  "message": "تجزیه و تحلیل فعالیت‌های مشکوک با موفقیت تکمیل شد",
+  "data": {
+    "detection_period": {
+      "from": "2025-09-01",
+      "to": "2025-09-06"
+    },
+    "detection_criteria": {
+      "large_amount_threshold": 10000000,
+      "high_frequency_threshold": 5
+    },
+    "suspicious_activities": {
+      "rapid_succession": [
+        {
+          "transaction_id": 101,
+          "user_id": 42,
+          "user_name": "John Doe",
+          "amount": 12000000,
+          "type": "withdrawal",
+          "created_at": "2025-09-05 10:01:00",
+          "hour": "10",
+          "flags": "[\"rapid_succession\"]",
+          "admin_initiated": "false",
+          "ip_address": "192.168.1.10",
+          "pattern": "Multiple large transactions within 5 minutes"
+        },
+        {
+          "transaction_id": 102,
+          "user_id": 42,
+          "user_name": "John Doe",
+          "amount": 15000000,
+          "type": "withdrawal",
+          "created_at": "2025-09-05 10:04:00",
+          "hour": "10",
+          "flags": "[\"rapid_succession\"]",
+          "admin_initiated": "false",
+          "ip_address": "192.168.1.10",
+          "pattern": "Multiple large transactions within 5 minutes"
+        }
+      ],
+      "unusual_admin_activity": [
+        {
+          "transaction_id": 201,
+          "user_id": 99,
+          "user_name": "Admin User",
+          "amount": 25000000,
+          "type": "deposit",
+          "created_at": "2025-09-03 15:30:00",
+          "hour": "15",
+          "flags": "[\"unusual_admin_activity\"]",
+          "admin_initiated": "true",
+          "ip_address": "10.0.0.1",
+          "pattern": "High-value admin-initiated transaction"
+        }
+      ],
+      "large_transactions": [
+        {
+          "transaction_id": 301,
+          "user_id": 42,
+          "user_name": "John Doe",
+          "amount": 20000000,
+          "type": "deposit",
+          "created_at": "2025-09-02 09:00:00",
+          "hour": "9",
+          "flags": "[\"large_amount\"]",
+          "admin_initiated": "false",
+          "ip_address": "192.168.1.10"
+        }
+      ],
+      "off_hours_transactions": [
+        {
+          "transaction_id": 401,
+          "user_id": 55,
+          "user_name": "Jane Smith",
+          "amount": 7000000,
+          "type": "withdrawal",
+          "created_at": "2025-09-04 23:30:00",
+          "hour": "23",
+          "flags": "[\"off_hours\"]",
+          "admin_initiated": "false",
+          "ip_address": "172.16.0.2"
+        }
+      ],
+      "high_frequency_users": [
+        {
+          "transaction_id": 0,
+          "user_id": 42,
+          "user_name": "John Doe",
+          "amount": 0,
+          "type": "",
+          "created_at": "",
+          "hour": "",
+          "flags": "[\"high_frequency\"]",
+          "admin_initiated": "false",
+          "ip_address": null,
+          "transaction_count": 12,
+          "total_volume": 120000000,
+          "first_transaction": "2025-09-01 08:00:00",
+          "last_transaction": "2025-09-06 18:00:00",
+          "avg_transaction_amount": "10000000"
+        }
+      ],
+      "round_number_patterns": [
+        {
+          "transaction_id": 501,
+          "user_id": 77,
+          "user_name": "Ali Reza",
+          "amount": 5000000,
+          "type": "deposit",
+          "created_at": "2025-09-06 12:00:00",
+          "hour": "12",
+          "flags": "[\"round_numbers\"]",
+          "admin_initiated": "false",
+          "ip_address": "192.168.2.5"
+        }
+      ]
+    },
+    "summary": {
+      "total_suspicious_activities": 7,
+      "by_type": {
+        "rapid_succession": 2,
+        "unusual_admin_activity": 1,
+        "large_transactions": 1,
+        "off_hours_transactions": 1,
+        "high_frequency_users": 1,
+        "round_number_patterns": 1
+      },
+      "high_risk_count": 0,
+      "unique_users_involved": 4
+    }
+  },
+  "metadata": []
+}

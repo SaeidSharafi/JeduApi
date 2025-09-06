@@ -1,0 +1,41 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 1001,
+    "wallet": {
+      "id": 501,
+      "user_id": 101,
+      "balance": 150000,
+      "gift_balance": 50000,
+      "status": "active",
+      "created_at": "2025-01-01 10:00:00",
+      "updated_at": "2025-09-06 10:00:00"
+    },
+    "user": {
+      "id": 101,
+      "first_name": "Ali",
+      "last_name": "Rezaei",
+      "email": "ali.rezaei@example.com"
+    },
+    "type": "bonus",
+    "amount": 50000,
+    "balance_after": 150000,
+    "gift_balance_after": 50000,
+    "source_type": "campaign",
+    "source": {
+      "id": 1,
+      "name": "Back to School Bonus",
+      "type": "bonus"
+    },
+    "description": "Allocated campaign bonus to user.",
+    "metadata": {
+      "allocation_reason": "manual",
+      "campaign_id": 1
+    },
+    "expires_at": null,
+    "created_at": "2025-09-06 10:30:00"
+  },
+  "metadata": []
+}
+
+

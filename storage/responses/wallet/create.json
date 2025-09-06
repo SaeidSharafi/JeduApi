@@ -1,0 +1,17 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 5001,
+    "balance": 0,
+    "gift_balance": 0,
+    "status": "active",
+    "user": {
+      "id": 105,
+      "first_name": "Nima",
+      "last_name": "Rahimi",
+      "email": "nima.rahimi@example.com"
+    }
+  },
+  "metadata": []
+}
+

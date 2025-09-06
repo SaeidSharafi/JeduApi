@@ -1,0 +1,29 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data" : {
+    "id": 1,
+    "name": "Back to School Bonus",
+    "description": "Special campaign for students.",
+    "type": "bonus",
+    "is_active": true,
+    "amount": 50000,
+    "usage_limit_total": 1000,
+    "usage_limit_per_user": 2,
+    "total_usage_count": 120,
+    "starts_at": "2025-09-01 00:00:00",
+    "ends_at": "2025-09-30 23:59:59",
+    "metadata": {"target_group": "students"},
+    "created_at": "2025-08-25 10:00:00",
+    "updated_at": "2025-09-01 09:00:00",
+    "remaining_usage_count": 880,
+    "is_within_date_range": true,
+    "auditor": {
+      "id": 10,
+      "name": "Ali Admin",
+      "email": "ali.admin@example.com"
+    },
+    "transactions_count": 120
+  },
+  "metadata": []
+}
+

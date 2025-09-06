@@ -1,0 +1,28 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "success_count": 2,
+    "failure_count": 1,
+    "results": [
+      {
+        "user_id": 101,
+        "status": "success",
+        "transaction_id": 1001,
+        "amount": 50000
+      },
+      {
+        "user_id": 102,
+        "status": "success",
+        "transaction_id": 1002,
+        "amount": 50000
+      },
+      {
+        "user_id": 103,
+        "status": "failed",
+        "error": "User not found."
+      }
+    ]
+  },
+  "metadata": []
+}
+

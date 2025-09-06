@@ -12,8 +12,19 @@ use App\Http\Controllers\Controller;
 use App\Models\Wallet;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @group Admin - Wallet Management
+ *
+ * @authenticated
+ */
 class AdjustWalletController extends Controller
 {
+    /**
+     * Adjust a wallet balance (manual correction by admin).
+     *
+     * @responseFile 201 responses/wallet/adjust.json
+     * @responseFile 422 responses/422.json
+     */
     public function __invoke(AdjustWalletData $data, Wallet $wallet, AdjustWalletAction $action): ApiResponseInterface
     {
         Gate::authorize('adjustment', $wallet);

@@ -11,10 +11,22 @@ use App\Enums\PermissionEnum;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @group Admin - Audit Logs
+ *
+ * @authenticated
+ *
+ * APIs for generating compliance reports for financial transactions.
+ */
 final class ComplianceReportController extends Controller
 {
     /**
-     * Generate compliance report for financial transactions
+     * Generate compliance report for financial transactions.
+     *
+     * @responseFile 200 responses/compliance-report/index.json
+     * @authenticated
+     *
+     * @return ApiResponseInterface
      */
     public function __invoke(
         ComplianceReportRequestData $data,

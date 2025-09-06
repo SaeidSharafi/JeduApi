@@ -1,0 +1,35 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 2001,
+    "wallet": {
+      "balance": 200000,
+      "gift_balance": 0,
+      "status": "active",
+      "user": {
+        "id": 102,
+        "first_name": "Sara",
+        "last_name": "Ahmadi",
+        "email": "sara.ahmadi@example.com"
+      }
+    },
+    "user": {
+      "id": 102,
+      "first_name": "Sara",
+      "last_name": "Ahmadi",
+      "email": "sara.ahmadi@example.com"
+    },
+    "type": "adjustment",
+    "amount": 50000,
+    "balance_after": 200000,
+    "gift_balance_after": 0,
+    "source_type": "manual",
+    "source": null,
+    "description": "Manual adjustment by admin.",
+    "metadata": {"reason": "correction"},
+    "expires_at": null,
+    "created_at": "2025-09-06 12:00:00"
+  },
+  "metadata": []
+}
+

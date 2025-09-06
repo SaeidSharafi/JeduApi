@@ -12,10 +12,21 @@ use App\Http\Responses\ApiSuccessResponse;
 use App\Models\WalletCampaign;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @group Admin - Wallet Campaign Management
+ *
+ * @authenticated
+ */
 final class BulkCampaignAllocationController extends Controller
 {
     /**
-     * Trigger campaign allocation for multiple users at once
+     * Trigger campaign allocation for multiple users at once.
+     *
+     * Allocates the selected campaign to a list of users. Returns the number of successful and failed allocations, with details for each user.
+     *
+     * @responseFile 200 responses/wallet-campaign/bulk-allocation.json
+     * @responseFile 207 responses/wallet-campaign/bulk-allocation.json
+     * @responseFile 422 responses/422.json
      */
     public function __invoke(
         BulkCampaignAllocationData $data,

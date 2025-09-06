@@ -14,6 +14,13 @@ use Illuminate\Support\Facades\Gate;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
+/**
+ * @group Admin - Audit Logs
+ *
+ * @authenticated
+ *
+ * APIs for managing and viewing administrative audit logs.
+ */
 final class AdminAuditLogController extends Controller
 {
     /**
@@ -87,8 +94,11 @@ final class AdminAuditLogController extends Controller
      * Display detailed audit log entry.
      *
      * Shows complete details of a specific administrative action including
-     * request data, metadata, and full context.
-     */
+     * Shows complete details of a specific administrative action including request data, metadata, and resource snapshot.
+     *
+     * @responseFile 200 responses/admin-audit-log/show.json
+     *
+     **/
     public function show(AdminActionLog $adminActionLog): ApiResponseInterface
     {
         Gate::authorize('view', $adminActionLog);

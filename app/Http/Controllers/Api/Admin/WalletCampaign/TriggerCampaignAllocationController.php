@@ -14,10 +14,20 @@ use App\Models\User;
 use App\Models\WalletCampaign;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @group Admin - Wallet Campaign Management
+ *
+ * @authenticated
+ */
 final class TriggerCampaignAllocationController extends Controller
 {
     /**
      * Trigger a campaign allocation for a specific user (manual or event-based)
+     *
+     * Allocates a campaign bonus to a user and returns the resulting wallet transaction.
+     *
+     * @responseFile 200 responses/wallet-campaign/trigger-allocation.json
+     * @responseFile 422 responses/422.json
      */
     public function __invoke(
         TriggerCampaignAllocationData $data,
