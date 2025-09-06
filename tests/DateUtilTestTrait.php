@@ -17,7 +17,7 @@ trait DateUtilTestTrait
             return null;
         }
 
-        return verta($value)->format($format ?: config('data.date_format'));
+        return verta($value)->format($format ?: config('data.date_output_format'));
     }
 
     public function parseJalaliDate(?string $value, ?string $format = null): ?string
@@ -26,12 +26,12 @@ trait DateUtilTestTrait
             return null;
         }
 
-        return Verta::parse($value)->format($format ?: config('data.date_format'));
+        return Verta::parse($value)->format($format ?: config('data.date_output_format'));
     }
 
     public function parseGregorianDate(string $value, ?string $format = null): ?string
     {
-        return Carbon::parse($value)->format($format ?: config('data.date_format'));
+        return Carbon::parse($value)->format($format ?: config('data.date_output_format'));
     }
 
     public function jalaliToGregorian(null|Verta|string $value, ?string $format = null): ?string
@@ -41,10 +41,10 @@ trait DateUtilTestTrait
         }
 
         if ($value instanceof Verta) {
-            return $value->toCarbon()->format($format ?: config('data.date_format'));
+            return $value->toCarbon()->format($format ?: config('data.date_output_format'));
         }
 
-        return Verta::parse($value)->toCarbon()->format($format ?: config('data.date_format'));
+        return Verta::parse($value)->toCarbon()->format($format ?: config('data.date_output_format'));
     }
 
     public function formatDate(?DateTimeInterface $value, ?string $format = null): ?string
@@ -53,6 +53,6 @@ trait DateUtilTestTrait
             return null;
         }
 
-        return $value->format($format ?: config('data.date_format'));
+        return $value->format($format ?: config('data.date_output_format'));
     }
 }
