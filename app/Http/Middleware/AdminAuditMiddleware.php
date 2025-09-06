@@ -7,6 +7,7 @@ namespace App\Http\Middleware;
 use App\Models\AdminActionLog;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -250,12 +251,18 @@ class AdminAuditMiddleware
             'secret',
         ];
 
-        foreach ($sensitiveFields as $field) {
-            if (isset($data[$field])) {
-                $data[$field] = '[REDACTED]';
+        foreach ($data as $key => &$value) {
+            if (in_array($key, $sensitiveFields, true)) {
+                $value = '[REDACTED]';
+                continue;
+            }
+
+            if ($value instanceof UploadedFile) {
+                $value = sprintf('[FILE: %s]', $value->getClientOriginalName());
             }
         }
-
+        // Unset the reference to avoid potential side effects
+        unset($value);
         // Limit data size to prevent huge logs
         $jsonData = json_encode($data);
         if (strlen($jsonData) > 10000) { // 10KB limit
