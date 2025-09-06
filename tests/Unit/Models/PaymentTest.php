@@ -15,8 +15,8 @@ test('to array', function () {
             'status'      => $payment->status->value,
             'data'        => $payment->data,
             'admin_notes' => $payment->admin_notes,
-            'created_at'  => $payment->created_at->format('Y-m-d H:i:s'),
-            'updated_at'  => $payment->updated_at->format('Y-m-d H:i:s'),
+            'created_at'  => $payment->created_at?->utc()->toJSON(),
+            'updated_at'  => $payment->updated_at?->utc()->toJSON(),
             'created_by'  => $payment->created_by,
         ]);
 });

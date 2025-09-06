@@ -29,7 +29,6 @@ class AdminAuditLogData extends Data
         public ?string $session_id,
         public string $risk_level,
         public ?array $metadata,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Verta $created_at = null,
         public mixed $resource = null,
         public string $action_summery,

@@ -71,8 +71,8 @@ final class OrderItem extends Model
             'applied_discount_details_json' => 'array',
             'status'                        => OrderItemStatusEnum::class,
             'payment_type'                  => OrderItemPaymentTypeEnum::class,
-            'created_at'                    => 'datetime:Y-m-d H:i:s',
-            'updated_at'                    => 'datetime:Y-m-d H:i:s',
+            'created_at'                    => 'datetime',
+            'updated_at'                    => 'datetime',
         ];
     }
 }

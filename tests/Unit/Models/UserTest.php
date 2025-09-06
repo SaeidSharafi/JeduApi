@@ -23,10 +23,10 @@ test('to array', function (): void {
             'education_level'   => $user->education_level->value,
             'field_of_study'    => $user->field_of_study,
             'education_status'  => $user->education_status->value,
-            'email_verified_at' => $user->email_verified_at?->format('Y-m-d H:i:s'),
-            'phone_verified_at' => $user->phone_verified_at?->format('Y-m-d H:i:s'),
-            'created_at'        => $user->created_at?->format('Y-m-d H:i:s'),
-            'updated_at'        => $user->updated_at?->format('Y-m-d H:i:s'),
+            'email_verified_at' => $user->email_verified_at?->utc()->toJSON(),
+            'phone_verified_at' => $user->phone_verified_at?->utc()->toJSON(),
+            'created_at'        => $user->created_at?->utc()?->toJSON(),
+            'updated_at'        => $user->updated_at?->utc()?->toJSON(),
         ]);
 });
 

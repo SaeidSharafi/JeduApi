@@ -26,8 +26,8 @@ test('to Array', function (): void {
             'additional_info'  => $category->additional_info,
             'status'           => $category->status->value,
             'created_by'       => $category->created_by,
-            'created_at'       => $category->created_at->toISOString(),
-            'updated_at'       => $category->updated_at->toISOString(),
+            'created_at'       => $category->created_at?->utc()->toISOString(),
+            'updated_at'       => $category->updated_at?->utc()->toISOString(),
         ]);
 });
 

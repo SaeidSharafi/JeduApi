@@ -24,8 +24,8 @@ test('to array', function () {
             'total_refunded'                => $orderItem->total_refunded,
             'qty_refunded'                  => $orderItem->qty_refunded,
             'status'                        => $orderItem->status->value,
-            'created_at'                    => $orderItem->created_at->format('Y-m-d H:i:s'),
-            'updated_at'                    => $orderItem->updated_at->format('Y-m-d H:i:s'),
+            'created_at'                    => $orderItem->created_at?->utc()->toJSON(),
+            'updated_at'                    => $orderItem->updated_at?->utc()->toJSON(),
             'applied_discount_details_json' => $orderItem->applied_discount_details_json,
         ]);
 });

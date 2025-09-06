@@ -72,8 +72,8 @@ final class Product extends Model
             'is_featured'  => 'boolean',
             'details_json' => 'array',
             'status'       => \App\Enums\PublicationStatusEnum::class,
-            'created_at'   => 'datetime:Y-m-d H:i:s',
-            'updated_at'   => 'datetime:Y-m-d H:i:s',
+            'created_at'   => 'datetime',
+            'updated_at'   => 'datetime',
         ];
     }
 }

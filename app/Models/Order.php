@@ -147,8 +147,8 @@ final class Order extends Model implements  WalletTransactionSourceableContract
             'full_value_grand_total'      => 'integer',
             'status'                      => OrderStatusEnum::class,
             'payment_status'              => OrderPaymentStatusEnum::class,
-            'created_at'                  => 'datetime:Y-m-d H:i:s',
-            'updated_at'                  => 'datetime:Y-m-d H:i:s',
+            'created_at'                  => 'datetime',
+            'updated_at'                  => 'datetime',
             'total_paid'                  => 'integer',
         ];
     }

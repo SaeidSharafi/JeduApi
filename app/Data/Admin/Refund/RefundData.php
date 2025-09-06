@@ -10,13 +10,11 @@ use App\Actions\Admin\Refund\ValidationContext;
 use App\Contracts\WalletTransactionSourceableDataContract;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Order\RefundStatusEnum;
-use App\Rules\IbanNumberRule;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
-use Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer;
 
 final class RefundData extends Data  implements WalletTransactionSourceableDataContract
 {
@@ -27,9 +25,7 @@ final class RefundData extends Data  implements WalletTransactionSourceableDataC
         #[WithCast(EnumCast::class),WithTransformer(TranslatableEnumData::class)]
         public readonly RefundStatusEnum $status,
         public readonly ?string $admin_notes,
-        #[WithTransformer(DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Verta $created_at,
-        #[WithTransformer(DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Verta $updated_at,
     ) {}
 

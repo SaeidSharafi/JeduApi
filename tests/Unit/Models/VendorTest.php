@@ -17,7 +17,7 @@ it('to Array', function () {
         'favicon_url'   => $vendor->favicon_url,
         'social_links'  => $vendor->social_links,
         'theme_options' => $vendor->theme_options,
-        'created_at'    => $vendor->created_at->format('Y-m-d H:i:s'),
-        'updated_at'    => $vendor->updated_at->format('Y-m-d H:i:s'),
+        'created_at'    => $vendor->created_at?->utc()->toJSON(),
+        'updated_at'    => $vendor->updated_at?->utc()->toJSON(),
     ]);
 })->group('vendor');

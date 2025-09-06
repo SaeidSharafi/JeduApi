@@ -23,9 +23,7 @@ final class ShowVendorData extends Data
         public ?array $social_links,
         public ?array $theme_options,
         public ?array $media,
-        #[WithCast(DateTimeInterfaceCast::class)]
         public Verta $created_at,
-        #[WithCast(DateTimeInterfaceCast::class)]
         public Verta $updated_at
     ) {}
 }

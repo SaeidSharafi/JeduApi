@@ -56,8 +56,8 @@ final class Seminar extends Model implements ProductableContract
             'provides_certificate' => 'boolean',
             'status'               => PublicationStatusEnum::class,
             'level'                => CourseDifficultyLevelEnum::class,
-            'created_at'           => 'datetime:Y-m-d H:i:s',
-            'updated_at'           => 'datetime:Y-m-d H:i:s',
+            'created_at'           => 'datetime',
+            'updated_at'           => 'datetime',
         ];
     }
 }

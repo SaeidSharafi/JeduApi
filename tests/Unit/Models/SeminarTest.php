@@ -27,8 +27,8 @@ test('to array', function (): void {
             'meta_keywords'            => $seminar->meta_keywords,
             'status'                   => $seminar->status->value,
             'created_by'               => $seminar->created_by,
-            'created_at'               => $seminar->created_at->format('Y-m-d H:i:s'),
-            'updated_at'               => $seminar->updated_at->format('Y-m-d H:i:s'),
+            'created_at'               => $seminar->created_at?->utc()->toJSON(),
+            'updated_at'               => $seminar->updated_at?->utc()->toJSON(),
         ]);
 
 });

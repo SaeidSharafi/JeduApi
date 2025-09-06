@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Discounts;
 
+use App\Data\Casts\AdvancedDateTimeInterfaceCast;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
-use Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer;
 
 final class DiscountPromotionRuleData extends Data
 {
@@ -17,9 +17,7 @@ final class DiscountPromotionRuleData extends Data
         public string $type,
         public string $handler,
         public array $configuration,
-        #[WithTransformer(DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Verta $created_at,
-        #[WithTransformer(DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Verta $updated_at,
     ) {}
 }

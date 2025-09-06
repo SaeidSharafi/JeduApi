@@ -52,7 +52,7 @@ describe('AdminActionLog Model', function () {
         expect($log->request_data)->toBeArray();
         expect($log->metadata)->toBeArray();
         expect($log->response_status)->toBeInt();
-        expect($log->created_at)->toBeInstanceOf(Carbon\CarbonImmutable::class);
+        expect($log->created_at?->utc())->toBeInstanceOf(Carbon\CarbonImmutable::class);
     });
 
     it('belongs to admin (staff)', function () {

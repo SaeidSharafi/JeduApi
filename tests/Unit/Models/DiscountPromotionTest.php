@@ -14,15 +14,15 @@ test('to array', function () {
             'description'                   => $discount->description,
             'type'                          => $discount->type->value,
             'is_active'                     => $discount->is_active,
-            'starts_at'                     => $discount->starts_at?->format('Y-m-d H:i:s'),
-            'ends_at'                       => $discount->ends_at?->format('Y-m-d H:i:s'),
+            'starts_at'                     => $discount->starts_at?->utc()->toJSON(),
+            'ends_at'                       => $discount->ends_at?->utc()->toJSON(),
             'priority'                      => $discount->priority,
             'stop_processing_subsequent_rules' => $discount->stop_processing_subsequent_rules,
             'usage_limit_total'             => $discount->usage_limit_total,
             'usage_limit_per_customer'      => $discount->usage_limit_per_customer,
             'total_usage_count'             => $discount->total_usage_count,
-            'created_at'                    => $discount->created_at->format('Y-m-d H:i:s'),
-            'updated_at'                    => $discount->updated_at->format('Y-m-d H:i:s'),
+            'created_at'                    => $discount->created_at?->utc()->toJSON(),
+            'updated_at'                    => $discount->updated_at?->utc()->toJSON(),
         ]);
 });
 

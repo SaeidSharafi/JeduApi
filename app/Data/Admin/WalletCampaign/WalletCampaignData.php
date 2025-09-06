@@ -27,18 +27,10 @@ final class WalletCampaignData extends Data implements WalletTransactionSourceab
         public ?int $usage_limit_total,
         public ?int $usage_limit_per_user,
         public int $total_usage_count,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
-        #[WithTransformer(DateTimeInterfaceTransformer::class, format: 'Y-m-d H:i:s')]
         public ?Verta $starts_at,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
-        #[WithTransformer(DateTimeInterfaceTransformer::class, format: 'Y-m-d H:i:s')]
         public ?Verta $ends_at,
         public ?array $metadata,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
-        #[WithTransformer(DateTimeInterfaceTransformer::class, format: 'Y-m-d H:i:s')]
         public Verta $created_at,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
-        #[WithTransformer(DateTimeInterfaceTransformer::class, format: 'Y-m-d H:i:s')]
         public ?Verta $updated_at,
         // Computed fields
         public ?int $remaining_usage_count,

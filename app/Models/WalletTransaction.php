@@ -43,9 +43,9 @@ final class WalletTransaction extends Model
             'type' => TransactionTypeEnum::class,
             'source_type' => TransactionSourceEnum::class,
             'metadata' => 'array',
-            'expires_at' => 'datetime:Y-m-d H:i:s',
-            'created_at' => 'datetime:Y-m-d H:i:s',
-            'updated_at' => 'datetime:Y-m-d H:i:s',
+            'expires_at' => 'datetime',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
         ];
     }
 

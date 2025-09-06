@@ -26,8 +26,8 @@ test('to array', function (): void {
             'properties'                   => $course->properties,
             'status'                       => $course->status->value,
             'created_by'                   => $course->created_by,
-            'created_at'                   => $course->created_at->format('Y-m-d H:i:s'),
-            'updated_at'                   => $course->updated_at->format('Y-m-d H:i:s'),
+            'created_at'                   => $course->created_at?->utc()->toJSON(),
+            'updated_at'                   => $course->updated_at?->utc()->toJSON(),
 
         ]);
 

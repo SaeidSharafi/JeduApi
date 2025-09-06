@@ -67,7 +67,7 @@ return [
     |
     */
 
-    'timezone' => env('TIMEZONE', 'ASIA/TEHRAN'),
+    'timezone' => env('TIMEZONE', 'Asia/Tehran'),
 
     /*
     |--------------------------------------------------------------------------

@@ -17,7 +17,6 @@ use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
-use Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer;
 
 final class OrderData extends Data implements WalletTransactionSourceableDataContract
 {
@@ -45,9 +44,7 @@ final class OrderData extends Data implements WalletTransactionSourceableDataCon
         public ?OrderPaymentStatusEnum $payment_status,
         public ?string $applied_coupon_code,
         public ?string $admin_notes,
-        #[WithTransformer(DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Verta $created_at,
-        #[WithTransformer(DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Verta $updated_at,
         #[MapInputName('customer_snapshot_json')]
         public array $customer_snapshot,

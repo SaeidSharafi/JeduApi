@@ -52,8 +52,8 @@ final class Teacher extends Model
             'rate'         => 'float',
             'gender'       => GenderEnum::class,
             'birth_date'   => 'date:Y-m-d',
-            'created_at'   => 'date:Y-m-d H:i:s',
-            'updated_at'   => 'date:Y-m-d H:i:s',
+            'created_at'   => 'date',
+            'updated_at'   => 'date',
         ];
     }
 }

@@ -19,8 +19,8 @@ test('to array', function (): void {
             'name'              => $product->name,
             'is_featured'       => $product->is_featured,
             'details_json'      => $product->details_json,
-            'created_at'        => $product->created_at?->format('Y-m-d H:i:s'),
-            'updated_at'        => $product->updated_at?->format('Y-m-d H:i:s'),
+            'created_at'        => $product->created_at?->utc()?->toJSON(),
+            'updated_at'        => $product->updated_at?->utc()?->toJSON(),
         ]);
 
 });

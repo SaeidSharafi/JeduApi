@@ -22,8 +22,8 @@ it('to array', function () {
             'type'       => $smsLog->type,
             'to'         => $smsLog->to,
             'from'       => $smsLog->from,
-            'sent_at'    => $smsLog->sent_at->format('Y-m-d H:i:s'),
-            'created_at' => $smsLog->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $smsLog->updated_at->format('Y-m-d H:i:s'),
+            'sent_at'    => $smsLog->sent_at?->utc()->toJSON(),
+            'created_at' => $smsLog->created_at?->utc()->toJSON(),
+            'updated_at' => $smsLog->updated_at?->utc()->toJSON(),
         ]);
 });

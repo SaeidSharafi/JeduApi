@@ -22,15 +22,9 @@ final class TermListItemData extends Data
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public ?TermStatusEnum $status,
         public ?string $academic_year,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
-        #[WithTransformer(DateTimeInterfaceTransformer::class, format: 'Y-m-d')]
         public ?Verta $start_date,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
-        #[WithTransformer(DateTimeInterfaceTransformer::class, format: 'Y-m-d')]
         public ?Verta $end_date,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Verta $created_at,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Verta $updated_at,
     ) {}
 }

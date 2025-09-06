@@ -23,12 +23,9 @@ final class DigitalAssetListItemData extends Data implements ProductableDataCont
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public PublicationStatusEnum $status,
         public ?string $version,
-        #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public ?Verta $published_at,
         public ?int $created_by,
-        #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public ?Verta $created_at,
-        #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public ?Verta $updated_at,
     ) {}
 }

@@ -105,12 +105,12 @@ final class User extends Authenticatable implements MustVerifyEmail
     protected function casts(): array
     {
         return [
-            'phone_verified_at' => 'datetime:Y-m-d H:i:s',
-            'email_verified_at' => 'datetime:Y-m-d H:i:s',
+            'phone_verified_at' => 'datetime',
+            'email_verified_at' => 'datetime',
             'password'          => 'hashed',
             'date_of_birth'     => 'date:Y-m-d',
-            'created_at'        => 'datetime:Y-m-d H:i:s',
-            'updated_at'        => 'datetime:Y-m-d H:i:s',
+            'created_at'        => 'datetime',
+            'updated_at'        => 'datetime',
             'education_level'   => EducationLevelEnum::class,
             'education_status'  => EducationStatusEnum::class,
             'gender'            => GenderEnum::class,

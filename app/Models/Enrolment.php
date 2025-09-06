@@ -34,8 +34,8 @@ class Enrolment extends Model
             'access_start_date' => 'date:Y-m-d',
             'access_end_date'   => 'date:Y-m-d',
             'provisioning_data' => 'array',
-            'created_at'        => 'datetime:Y-m-d H:i:s',
-            'updated_at'        => 'datetime:Y-m-d H:i:s',
+            'created_at'        => 'datetime',
+            'updated_at'        => 'datetime',
         ];
     }
     protected static function boot(): void

@@ -16,7 +16,6 @@ use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
-use Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer;
 
 final class OrderListItemData extends Data implements WalletTransactionSourceableDataContract
 {
@@ -38,9 +37,7 @@ final class OrderListItemData extends Data implements WalletTransactionSourceabl
         public OrderStatusEnum $status,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public OrderPaymentStatusEnum $payment_status,
-        #[WithTransformer(DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Verta $created_at,
-        #[WithTransformer(DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Verta $updated_at,
         #[DataCollectionOf(PaymentData::class)]
         public Collection $payments,

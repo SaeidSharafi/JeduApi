@@ -43,16 +43,12 @@ final class ProductDeliveryOptionShowData extends Data
         public DeliveryOptionDetialDataContract $details_json,
         public bool $is_featured,
         public ?int $featured_price,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Verta $featured_price_start_date,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Verta $featured_price_end_date,
         #[DataCollectionOf(TeacherListItemData::class)]
         public ?DataCollection $teachers,
         public ?ProductData $product,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Verta $created_at = null,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Verta $updated_at = null,
     ) {}
 }

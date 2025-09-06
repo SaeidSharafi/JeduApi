@@ -36,13 +36,10 @@ final class ShowDigitalAssetData extends Data implements ProductableDataContract
         public ?string $meta_title,
         public ?string $meta_description,
         public ?string $meta_keywords,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Verta $published_at,
         public ?int $page_count,
         public ?int $duration_seconds,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Verta $created_at,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Verta $updated_at,
         #[DataCollectionOf(CategoryListItemData::class)]
         public ?DataCollection $categories,

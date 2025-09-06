@@ -67,8 +67,8 @@ final class Course extends Model implements ProductableContract
             'additional_info'              => 'array',
             'properties'                   => 'array',
             'total_video_duration_minutes' => 'integer',
-            'created_at'                   => 'datetime:Y-m-d H:i:s',
-            'updated_at'                   => 'datetime:Y-m-d H:i:s',
+            'created_at'                   => 'datetime',
+            'updated_at'                   => 'datetime',
         ];
     }
 }

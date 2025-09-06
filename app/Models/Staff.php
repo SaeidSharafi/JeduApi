@@ -47,6 +47,8 @@ final class Staff extends Authenticatable implements MustVerifyEmail, WalletTran
         return [
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
+            'created_at'        => 'datetime',
+            'updated_at'        => 'datetime',
         ];
     }
 

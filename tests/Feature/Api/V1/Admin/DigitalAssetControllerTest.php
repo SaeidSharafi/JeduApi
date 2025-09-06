@@ -303,7 +303,7 @@ it('can update digital asset', function () {
     ];
     $categories                  = App\Models\Category::factory()->count(2)->create();
     $updatedData['categories']   = $categories->pluck('id')->toArray();
-    $updatedData['published_at'] = $this->toJalalitString($updatedData['published_at']);
+    $updatedData['published_at'] = $this->toJalalitString($digitalAssetUpdate->published_at->format('Y-m-d H:i:s'));
     $response                    = $this->putJson(route('api.v1.admin.digital-asset.update', $digitalAsset), $updatedData);
     $response->assertStatus(200)
         ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($updatedData) {

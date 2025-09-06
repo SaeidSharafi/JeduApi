@@ -110,10 +110,10 @@ final class ProductDeliveryOption extends Model
             'status'                    => PublicationStatusEnum::class,
             'fulfillment_type'          => FulfillmentTypeEnum::class,
             'delivery_method'           => DeliveryMethodEnum::class,
-            'featured_price_start_date' => 'datetime:Y-m-d H:i:s',
-            'featured_price_end_date'   => 'datetime:Y-m-d H:i:s',
-            'created_at'                => 'datetime:Y-m-d H:i:s',
-            'updated_at'                => 'datetime:Y-m-d H:i:s',
+            'featured_price_start_date' => 'datetime',
+            'featured_price_end_date'   => 'datetime',
+            'created_at'                => 'datetime',
+            'updated_at'                => 'datetime',
         ];
     }
 }

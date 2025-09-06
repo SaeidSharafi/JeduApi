@@ -11,8 +11,8 @@ it('to array', function () {
             'is_active'             => $coupon->is_active,
             'usage_limit'           => $coupon->usage_limit,
             'usage_count'           => $coupon->usage_count,
-            'created_at'            => $coupon->created_at->format('Y-m-d H:i:s'),
-            'updated_at'            => $coupon->updated_at->format('Y-m-d H:i:s'),
+            'created_at'            => $coupon->created_at?->utc()->toJSON(),
+            'updated_at'            => $coupon->updated_at?->utc()->toJSON(),
         ]);
 });
 

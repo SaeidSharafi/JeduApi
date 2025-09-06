@@ -20,10 +20,10 @@ test('to array', function (): void {
             'meta_keywords'           => $digitalAsset->meta_keywords,
             'is_attachable_to_course' => $digitalAsset->is_attachable_to_course,
             'status'                  => $digitalAsset->status->value,
-            'published_at'            => $digitalAsset->published_at?->format('Y-m-d H:i:s'),
+            'published_at'            => $digitalAsset->published_at?->utc()->toJSON(),
             'created_by'              => $digitalAsset->created_by,
-            'created_at'              => $digitalAsset->created_at?->format('Y-m-d H:i:s'),
-            'updated_at'              => $digitalAsset->updated_at?->format('Y-m-d H:i:s'),
+            'created_at'              => $digitalAsset->created_at?->utc()?->toJSON(),
+            'updated_at'              => $digitalAsset->updated_at?->utc()?->toJSON(),
         ])->toBeArray();
 
 });

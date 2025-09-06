@@ -16,8 +16,8 @@ it('to array', function () {
             'product_delivery_option_id' => $dsc->product_delivery_option_id,
             'discount_promotion_id'      => $dsc->discount_promotion_id,
             'discounted_price'           => $dsc->discounted_price,
-            'created_at'                 => $dsc->created_at->format('Y-m-d H:i:s'),
-            'updated_at'                 => $dsc->updated_at->format('Y-m-d H:i:s'),
+            'created_at'                 => $dsc->created_at?->utc()->toJSON(),
+            'updated_at'                 => $dsc->updated_at?->utc()->toJSON(),
         ]);
 });
 

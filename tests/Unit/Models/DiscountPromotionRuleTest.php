@@ -19,8 +19,8 @@ it('to array', function () {
             'type'                  => $rule->type,
             'handler'               => $rule->handler,
             'configuration'         => $rule->configuration,
-            'created_at'            => $rule->created_at->format('Y-m-d H:i:s'),
-            'updated_at'            => $rule->updated_at->format('Y-m-d H:i:s'),
+            'created_at'            => $rule->created_at?->utc()->toJSON(),
+            'updated_at'            => $rule->updated_at?->utc()->toJSON(),
         ]);
 
 });

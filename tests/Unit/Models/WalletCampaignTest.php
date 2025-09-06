@@ -16,11 +16,11 @@ it('to array', function () {
         'usage_limit_total'  => $walletCampaign->usage_limit_total,
         'usage_limit_per_user' => $walletCampaign->usage_limit_per_user,
         'total_usage_count'  => $walletCampaign->total_usage_count,
-        'starts_at'          => $walletCampaign->starts_at?->format('Y-m-d H:i:s'),
-        'ends_at'            => $walletCampaign->ends_at?->format('Y-m-d H:i:s'),
+        'starts_at'          => $walletCampaign->starts_at?->utc()->toJSON(),
+        'ends_at'            => $walletCampaign->ends_at?->utc()->toJSON(),
         'metadata'           => $walletCampaign->metadata,
-        'created_at'         => $walletCampaign->created_at?->format('Y-m-d H:i:s'),
-        'updated_at'         => $walletCampaign->updated_at?->format('Y-m-d H:i:s'),
+        'created_at'         => $walletCampaign->created_at?->utc()?->toJSON(),
+        'updated_at'         => $walletCampaign->updated_at?->utc()?->toJSON(),
         'created_by'         => $walletCampaign->created_by,
     ]);
 

@@ -33,8 +33,8 @@ test('to array', function () {
             'applied_cart_discounts_json' => $order->applied_cart_discounts_json,
             'applied_coupon_code'         => $order->applied_coupon_code,
             'admin_notes'                 => $order->admin_notes,
-            'created_at'                  => $order->created_at->format('Y-m-d H:i:s'),
-            'updated_at'                  => $order->updated_at->format('Y-m-d H:i:s'),
+            'created_at'                  => $order->created_at?->utc()->toJSON(),
+            'updated_at'                  => $order->updated_at?->utc()->toJSON(),
             'created_by'                  => $order->created_by,
             'payments'                    => $order->payments->toArray(),
 

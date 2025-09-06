@@ -43,11 +43,11 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
             'usage_limit_total'    => 'integer',
             'usage_limit_per_user' => 'integer',
             'total_usage_count'    => 'integer',
-            'starts_at'            => 'datetime:Y-m-d H:i:s',
-            'ends_at'              => 'datetime:Y-m-d H:i:s',
+            'starts_at'            => 'datetime',
+            'ends_at'              => 'datetime',
             'metadata'             => 'array',
-            'created_at'           => 'datetime:Y-m-d H:i:s',
-            'updated_at'           => 'datetime:Y-m-d H:i:s',
+            'created_at'           => 'datetime',
+            'updated_at'           => 'datetime',
         ];
     }
 

@@ -27,12 +27,12 @@ final class DiscountPromotion extends Model
      */
     protected $casts = [
         'is_active'                        => 'boolean',
-        'starts_at'                        => 'datetime:Y-m-d H:i:s',
-        'ends_at'                          => 'datetime:Y-m-d H:i:s',
+        'starts_at'                        => 'datetime',
+        'ends_at'                          => 'datetime',
         'stop_processing_subsequent_rules' => 'boolean',
         'type'                             => DiscountTypeEnum::class,
-        'created_at' => 'datetime:Y-m-d H:i:s',
-        'updated_at' => 'datetime:Y-m-d H:i:s',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**

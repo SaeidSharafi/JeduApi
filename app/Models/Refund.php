@@ -24,7 +24,7 @@ final class Refund extends Model implements  WalletTransactionSourceableContract
     protected $casts
         = [
             'transaction_details' => 'array',
-            'refunded_at'         => 'datetime:Y-m-d H:i:s',
+            'refunded_at'         => 'datetime',
             'status'              => RefundStatusEnum::class,
         ];
 

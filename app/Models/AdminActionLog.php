@@ -40,8 +40,8 @@ final class AdminActionLog extends Model
             'metadata'        => 'array',
             'risk_level'      => 'string',
             'response_status' => 'integer',
-            'created_at'      => 'datetime:Y-m-d H:i:s',
-            'updated_at'      => 'datetime:Y-m-d H:i:s',
+            'created_at'      => 'datetime',
+            'updated_at'      => 'datetime',
         ];
     }
 

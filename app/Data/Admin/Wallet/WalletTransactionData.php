@@ -32,9 +32,7 @@ class WalletTransactionData extends Data
         public ?WalletTransactionSourceableDataContract $source,
         public ?string $description = null,
         public ?array $metadata = null,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Verta $expires_at = null,
-        #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d H:i:s')]
         public ?Verta $created_at = null,
     )
     {

@@ -23,8 +23,8 @@ final class DiscountPromotionRule extends Model
      */
     protected $casts = [
         'configuration' => 'array',
-        'created_at'   => 'datetime:Y-m-d H:i:s',
-        'updated_at'   => 'datetime:Y-m-d H:i:s',
+        'created_at'   => 'datetime',
+        'updated_at'   => 'datetime',
     ];
 
     /**

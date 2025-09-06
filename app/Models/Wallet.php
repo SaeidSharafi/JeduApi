@@ -32,8 +32,8 @@ final class Wallet extends Model
             'balance' => 'integer',
             'gift_balance' => 'integer',
             'status' => WalletStatusEnum::class,
-            'created_at' => 'datetime:Y-m-d H:i:s',
-            'updated_at' => 'datetime:Y-m-d H:i:s',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
         ];
     }
 
