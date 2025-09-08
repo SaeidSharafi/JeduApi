@@ -306,7 +306,7 @@ describe('AdminAuditLogIndexController', function () {
     });
 
     it('can search across multiple fields', function () {
-        $targetAdmin = Staff::factory()->create(['name' => 'John Doe']);
+        $targetAdmin = Staff::factory()->create(['name' => 'Admin Test']);
         AdminActionLog::factory()->create([
             'admin_id'   => $targetAdmin->id,
             'route_name' => 'admin.users.store'
@@ -316,11 +316,12 @@ describe('AdminAuditLogIndexController', function () {
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
-            ->getJson($this->baseUrl.'?filter[search]=John');
+            ->getJson($this->baseUrl.'?filter[search]=Admin');
+
         $response->assertSuccessful();
         $data = $response->json('data.data');
         expect($data)->toHaveCount(1);
-        expect($data[0]['admin']['name'])->toBe('John Doe');
+        expect($data[0]['admin']['name'])->toBe('Admin Test');
     });
 
     it('can search by route name', function () {
