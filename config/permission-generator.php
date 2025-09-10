@@ -188,7 +188,11 @@ return [
             'admin_actions_view',
             'compliance_reports_view',
             'suspicious_activity_view',
-        ]
+        ],
+        'setting'                 => [
+            PermissionAction::VIEW_ANY,
+            PermissionAction::UPDATE,
+        ],
         /*
 
 

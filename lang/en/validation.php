@@ -34,4 +34,48 @@ return [
         'already_claimed' => 'You have already claimed this campaign bonus.',
         'wallet_not_active' => 'User wallet is not active.',
     ],
+
+    'attributes' => [
+        'contact_info' => [
+            'addresses'          => 'Addresses',
+            'working_hours'      => 'Working Hours',
+            'support_email'      => 'Support Email',
+            'social_media_links' => 'Social Media Links',
+        ],
+        'address_info' => [
+            'name'      => 'Name',
+            'address'   => 'Address',
+            'latitude'  => 'Latitude',
+            'longitude' => 'Longitude',
+            'phone'     => 'Phone',
+        ],
+        'social_media' => [
+            'platform' => 'Platform',
+            'link'     => 'Link',
+        ],
+        'about_us' => [
+            'title'                        => 'Title',
+            'main_block_title'             => 'Main Block Title',
+            'main_block_content'           => 'Main Block Content',
+            'main_block_image'             => 'Main Block Image',
+            'images'                       => 'Images',
+            'active_course_groups_title'   => 'Active Course Groups Title',
+            'active_course_groups_content' => 'Active Course Groups Content',
+            'active_course_groups_image'   => 'Active Course Groups Image',
+            'capabilities_title'           => 'Capabilities Title',
+            'capabilities_content'         => 'Capabilities Content',
+            'capabilities_image'           => 'Capabilities Image',
+            'online_course_1_title'        => 'Online Course Block 1 Title',
+            'online_course_1_content'      => 'Online Course Block 1 Content',
+            'online_course_1_image'        => 'Online Course Block 1 Image',
+            'online_course_2_title'        => 'Online Course Block 2 Title',
+            'online_course_2_content'      => 'Online Course Block 2 Content',
+            'online_course_2_image'        => 'Online Course Block 2 Image',
+        ],
+        'about_us_block' => [
+            'title'   => 'Title',
+            'content' => 'Content',
+            'image'   => 'Image',
+        ],
+    ],
 ];

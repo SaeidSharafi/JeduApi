@@ -14,6 +14,7 @@ use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\Refund;
 use App\Models\Seminar;
+use App\Models\Setting;
 use App\Models\Staff;
 use App\Models\Teacher;
 use App\Models\Term;
@@ -32,6 +33,7 @@ use App\Policies\Admin\ProductPolicy;
 use App\Policies\Admin\RefundPolicy;
 use App\Policies\Admin\RolePolicy;
 use App\Policies\Admin\SeminarPolicy;
+use App\Policies\Admin\SettingPolicy;
 use App\Policies\Admin\StaffPolicy;
 use App\Policies\Admin\TeacherPolicy;
 use App\Policies\Admin\TermPolicy;
@@ -78,6 +80,7 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(Wallet::class, WalletPolicy::class);
         Gate::policy(WalletCampaign::class, WalletCampaignPolicy::class);
         Gate::policy(AdminActionLog::class, AdminActionLogPolicy::class);
+        Gate::policy(Setting::class, SettingPolicy::class);
 
     }
 }

@@ -1,0 +1,53 @@
+{
+    "message": "Operation successful.",
+    "data": {
+        "contact": [
+            {
+                "id": 1,
+                "key": "contact_info",
+                "value": {
+                    "addresses": [
+                        {
+                            "name": "دفتر مرکزی",
+                            "address": "تهران، خیابان آزادی، پلاک ۱۲۳",
+                            "map_coordinates": {
+                                "lat": 35.7219,
+                                "lng": 51.3347
+                            },
+                            "phone": "۰۲۱-۱۲۳۴۵۶۷۸"
+                        }
+                    ],
+                    "working_hours": "شنبه تا چهارشنبه، ۹ صبح تا ۵ بعدازظهر",
+                    "support_email": "info@jedu.ir",
+                    "social_media_links": [
+                        {
+                            "platform": "instagram",
+                            "link": "https://instagram.com/jedushop"
+                        }
+                    ]
+                },
+                "type": "json",
+                "group": "contact",
+                "created_at": "2025-09-10T13:49:40.000000Z",
+                "updated_at": "2025-09-10T13:49:40.000000Z"
+            }
+        ],
+        "footer": [
+            {
+                "id": 2,
+                "key": "footer",
+                "value": {
+                    "logo": null,
+                    "caption": "شریک شما در آموزش مدرن",
+                    "support_link": "/contact-us",
+                    "categories": ["دوره‌ها", "معماری", "آموزش صنعتی"]
+                },
+                "type": "json",
+                "group": "footer",
+                "created_at": "2025-09-10T13:49:40.000000Z",
+                "updated_at": "2025-09-10T13:49:40.000000Z"
+            }
+        ]
+    },
+    "metadata": {}
+}

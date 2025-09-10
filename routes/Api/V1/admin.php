@@ -16,6 +16,9 @@ use App\Http\Controllers\Api\Admin\OrderCalculationController;
 use App\Http\Controllers\Api\Admin\OrderController;
 use App\Http\Controllers\Api\Admin\PrivateFileDownloadController;
 use App\Http\Controllers\Api\Admin\ProcessCampaignBonusController;
+use App\Http\Controllers\Api\Admin\Settings\AboutUsInfoController;
+use App\Http\Controllers\Api\Admin\Settings\ContactInfoController;
+use App\Http\Controllers\Api\Admin\Settings\SettingController;
 use App\Http\Controllers\Api\Admin\Wallet\AdminWalletController;
 use App\Http\Controllers\Api\Admin\WalletCampaign\AdminWalletCampaignController;
 use App\Http\Controllers\Api\Admin\WalletCampaign\BulkCampaignAllocationController;
@@ -127,6 +130,20 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
             // Suspicious activity detection
             Route::post('suspicious-activity', \App\Http\Controllers\Api\Admin\Audit\SuspiciousActivityController::class)
                 ->name('suspicious-activity');
+        });
+
+        // Settings Management
+        Route::prefix('settings')->name('settings.')->group(function (): void {
+            Route::get('/', [SettingController::class, 'index'])
+                ->name('index');
+            Route::get('contact-info', [ContactInfoController::class, 'show'])
+                ->name('contact-info.show');
+            Route::put('contact-info', [ContactInfoController::class, 'update'])
+                ->name('contact-info.update');
+            Route::get('about-us', [AboutUsInfoController::class, 'show'])
+                ->name('about-us.show');
+            Route::put('about-us', [AboutUsInfoController::class, 'update'])
+                ->name('about-us.update');
         });
     });
 });

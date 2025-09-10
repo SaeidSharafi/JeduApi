@@ -45,6 +45,8 @@ return [
         'term'          => 'ترم',
         'wallet'        => 'کیف پول',
         'wallet_transaction' => 'تراکنش کیف پول',
+        'contact_info'  => 'اطلاعات تماس',
+        'about_us'      => 'درباره ما',
     ],
 
     'errors'      => [

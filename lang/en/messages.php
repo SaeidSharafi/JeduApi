@@ -43,6 +43,8 @@ return [
         'course'        => 'Course',
         'teacher'       => 'Teacher',
         'term'          => 'Term',
+        'contact_info'  => 'Contact Info',
+        'about_us'      => 'About Us',
     ],
 
     'errors'      => [
