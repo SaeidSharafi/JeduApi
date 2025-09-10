@@ -144,6 +144,10 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
                 ->name('about-us.show');
             Route::put('about-us', [AboutUsInfoController::class, 'update'])
                 ->name('about-us.update');
+            Route::get('footer', [\App\Http\Controllers\Api\Admin\Settings\FooterController::class, 'show'])
+                ->name('footer.show');
+            Route::put('footer', [\App\Http\Controllers\Api\Admin\Settings\FooterController::class, 'update'])
+                ->name('footer.update');
         });
     });
 });
