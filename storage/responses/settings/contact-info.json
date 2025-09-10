@@ -1,0 +1,29 @@
+{
+    "message": "Operation successful.",
+    "data": {
+        "addresses": [
+            {
+                "name": "دفتر مرکزی",
+                "address": "تهران، خیابان آزادی، پلاک ۱۲۳",
+                "map_coordinates": {
+                    "lat": 35.7219,
+                    "lng": 51.3347
+                },
+                "phone": "۰۲۱-۱۲۳۴۵۶۷۸"
+            }
+        ],
+        "working_hours": "شنبه تا چهارشنبه، ۹ صبح تا ۵ بعدازظهر",
+        "support_email": "info@jedu.ir",
+        "social_media_links": [
+            {
+                "platform": "instagram",
+                "link": "https://instagram.com/jedushop"
+            },
+            {
+                "platform": "linkedin",
+                "link": "https://linkedin.com/company/jedushop"
+            }
+        ]
+    },
+    "metadata": {}
+}
