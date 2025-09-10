@@ -68,71 +68,77 @@ class Setting extends Model
      */
     public static function witImages(array $settingData): array
     {
-        // Define the keywords that identify a key as being media-related.
-        // You can easily add more keywords here (e.g., 'logo', 'banner', 'gallery').
-        $mediaKeywords = ['image', 'icon', 'media', 'file'];
+        // 1. Exact key names for a single media ID.
+        $singularMediaKeys = ['image', 'icon', 'logo', 'file', 'media'];
 
-        // 1. Collect all media IDs in a single pass.
+        // 2. Suffixes for a single media ID. Matches 'image_id', 'background_id', etc.
+        $singularMediaSuffixes = ['_id', '_icon', '_image'];
+
+        // 3. Exact key names for an array of media IDs.
+        $pluralMediaKeys = ['images', 'icons', 'gallery', 'files'];
+
+        // 4. Suffixes for an array of media IDs. Matches 'image_ids', 'gallery_images', etc.
+        $pluralMediaSuffixes = ['_ids', '_images'];
+
         $imageIds = [];
-        array_walk_recursive($settingData, function ($value, $key) use (&$imageIds, $mediaKeywords) {
-            // Check if the KEY contains a media keyword and the VALUE is a valid ID.
-            if (is_string($key) && Str::contains($key, $mediaKeywords) && is_numeric($value)) {
-                $imageIds[] = (int) $value;
+
+        // This closure checks if a key matches our defined conventions.
+        $isSingularMediaKey = fn($key) => in_array($key, $singularMediaKeys) || Str::endsWith($key, $singularMediaSuffixes);
+        $isPluralMediaKey = fn($key) => in_array($key, $pluralMediaKeys) || Str::endsWith($key, $pluralMediaSuffixes);
+
+        array_walk_recursive($settingData, function ($value, $key) use (&$imageIds, $isSingularMediaKey) {
+            // Find single IDs (e.g., "icon": 3 or "image_id": 3)
+            if (is_string($key) && $isSingularMediaKey($key) && is_numeric($value)) {
+                $imageIds[] = (int)$value;
             }
         });
 
-        // This handles cases where the key itself is an array of IDs (e.g., "images" => [1, 2]).
-        // The recursive walker above only gets the numeric values, not the parent key.
-        // So we need a separate, non-recursive check on the top-level keys.
+        // The walker above doesn't check parent array keys, so we do a separate non-recursive
+        // loop to find arrays of IDs (e.g., "images": [1, 2]).
         foreach ($settingData as $key => $value) {
-            if (is_string($key) && Str::contains($key, $mediaKeywords) && is_array($value)) {
+            if (is_string($key) && $isPluralMediaKey($key) && is_array($value)) {
                 foreach ($value as $id) {
                     if (is_numeric($id)) {
-                        $imageIds[] = (int) $id;
+                        $imageIds[] = (int)$id;
                     }
                 }
             }
         }
 
         if (empty($imageIds)) {
-            return $settingData; // No IDs found, nothing to do.
+            return $settingData;
         }
 
-        // 2. Fetch all unique media models in one efficient query.
+        // STEP 2: Fetch all unique media models in one efficient query.
         $images = Media::find(array_unique($imageIds))->keyBy('id');
 
-        // 3. Define a recursive function to replace IDs with DTOs.
-        // It modifies the array by reference (&) for efficiency.
-        $replacer = function (&$array) use ($images, $mediaKeywords, &$replacer) {
-            foreach ($array as $key => &$value) { // Note the '&' on $value
+
+        // STEP 3: Define a recursive function to replace IDs with DTOs.
+        $replacer = function (&$array) use ($images, $isSingularMediaKey, $isPluralMediaKey, &$replacer) {
+            foreach ($array as $key => &$value) {
                 if (!is_string($key)) {
-                    continue; // Skip numeric keys in indexed arrays
+                    continue; // Skip numeric keys
                 }
 
-                $isMediaKey = Str::contains($key, $mediaKeywords);
-
-                if ($isMediaKey && is_array($value)) {
-                    // It's an array of IDs (e.g., "images": [1, 2])
-                    // Replace the entire array with DTOs.
+                if ($isPluralMediaKey($key) && is_array($value)) {
+                    // It's an array of IDs. Replace it with DTOs.
                     $value = collect($value)
-                        ->map(fn($id) => isset($images[$id]) ? MediaData::fromModel($images[$id]) : null)
-                        ->filter() // Remove nulls for non-existent media
+                        ->map(fn($id) => $images->get($id) ? MediaData::fromModel($images->get($id)) : null)
+                        ->filter()
                         ->values()
                         ->all();
-                } elseif ($isMediaKey && is_numeric($value)) {
-                    // It's a single ID (e.g., "icon": 3)
-                    // Replace the ID with a DTO or null.
-                    $value = isset($images[$value]) ? MediaData::fromModel($images[$value]) : null;
+                } elseif ($isSingularMediaKey($key) && is_numeric($value)) {
+                    // It's a single ID. Replace it with a DTO or null.
+                    $value = $images->get($value) ? MediaData::fromModel($images->get($value)) : null;
                 } elseif (is_array($value)) {
-                    // It's a regular block, so we go deeper.
+                    // It's another block, so we go deeper.
                     $replacer($value);
                 }
             }
         };
 
-        // 4. Run the replacer and return the modified array.
+        // STEP 4: Run the replacer and return the modified array.
         $replacer($settingData);
-
         return $settingData;
     }
 
