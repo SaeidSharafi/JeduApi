@@ -272,6 +272,7 @@ describe('CreateOrderAction', function () {
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
             'status'     => PublicationStatusEnum::PUBLISHED,
+            'capacity'   => 20,
         ]);
 
         $items = [
