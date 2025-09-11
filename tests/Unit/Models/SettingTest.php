@@ -53,7 +53,7 @@ it('get setting with images', function () {
     $image1 = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('image1.jpg'))
         ->toDisk('public')
         ->upload();
-    $image2 = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('image1.jpg'))
+    $image2 = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('image2.jpg'))
         ->toDisk('public')
         ->upload();
 
@@ -66,10 +66,10 @@ it('get setting with images', function () {
         ->and($value['images'])->toBeArray()
         ->and(count($value['images']))->toBe(2)
         ->and($value['images'][0])->toBeInstanceOf(MediaData::class)
-        ->and($value['images'][0]->id)->toBe(1)
+        ->and($value['images'][0]->id)->toBe($image1->id)
         ->and($value['images'][0]->url)->toBe($image1->url)
         ->and($value['images'][1])->toBeInstanceOf(MediaData::class)
-        ->and($value['images'][1]->id)->toBe(2)
+        ->and($value['images'][1]->id)->toBe($image2->id)
         ->and($value['images'][1]->url)->toBe($image2->url);
 });
 
