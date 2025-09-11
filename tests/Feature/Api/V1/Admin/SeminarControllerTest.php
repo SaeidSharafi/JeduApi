@@ -248,7 +248,7 @@ describe('SeminarController', function (): void {
         $categories    = Category::factory(3)->create();
         $seminar->digitalAssets()->attach($digitalAssets);
         $seminar->categories()->attach($categories);
-
+        $sortedCategories = $categories->sortBy('id')->values();
         $this->authorized_user([
             App\Enums\PermissionEnum::SEMINAR_VIEW->value,
         ]);
@@ -259,9 +259,9 @@ describe('SeminarController', function (): void {
             ->assertJsonFragment(['full_name' => $seminar->full_name])
             ->assertJsonFragment(['short_name' => $seminar->short_name])
             ->assertJsonFragment(['slug' => $seminar->slug])
-            ->assertJson(function (AssertableJson $json) use ($digitalAssets, $categories) {
+            ->assertJson(function (AssertableJson $json) use ($digitalAssets, $categories,$sortedCategories) {
                 $json
-                    ->where('data.categories', $categories->map(fn ($category): array => [
+                    ->where('data.categories', $sortedCategories->map(fn ($category): array => [
                         'id'     => $category->id,
                         'name'   => $category->name,
                         'slug'   => $category->slug,
