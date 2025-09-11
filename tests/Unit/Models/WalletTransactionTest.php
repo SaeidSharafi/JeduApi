@@ -60,7 +60,8 @@ test('wallet transaction casts work correctly', function () {
         ->toBe(TransactionSourceEnum::ORDER)
         ->and($transaction->source->fresh())
         ->toBeInstanceOf(Order::class)
-        ->toEqual($order->fresh())
+        ->and($transaction->source->fresh()->is($order->fresh()))
+        ->toBeTrue()
         ->and($transaction->metadata)
         ->toBeArray()
         ->toBe(['test' => 'data']);

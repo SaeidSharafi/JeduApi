@@ -85,8 +85,8 @@ test('scope available', function (): void {
 
     expect($result)
         ->toHaveCount(1)
-        ->and($result->first())
-        ->toEqual($availableOption);
+        ->and($result->first()->is($availableOption))
+        ->toBeTrue();
 });
 test('scope featured', function (): void {
     $featuredOption = App\Models\ProductDeliveryOption::factory()->create([
@@ -104,8 +104,8 @@ test('scope featured', function (): void {
 
     expect($result)
         ->toHaveCount(1)
-        ->and($result->first())
-        ->toEqual($featuredOption);
+        ->and($result->first()->is($featuredOption))
+        ->toBeTrue();
 });
 test('scope prepayment available', function (): void {
     $prepaymentOption = App\Models\ProductDeliveryOption::factory()->create([
@@ -121,8 +121,8 @@ test('scope prepayment available', function (): void {
 
     expect($result)
         ->toHaveCount(1)
-        ->and($result->first())
-        ->toEqual($prepaymentOption);
+        ->and($result->first()->is($prepaymentOption))
+        ->toBeTrue();
 });
 test('scope registration open', function (): void {
     $openRegistrationOption = App\Models\ProductDeliveryOption::factory()->create([
@@ -138,6 +138,6 @@ test('scope registration open', function (): void {
 
     expect($result)
         ->toHaveCount(1)
-        ->and($result->first())
-        ->toEqual($openRegistrationOption);
+        ->and($result->first()->is($openRegistrationOption))
+        ->toBeTrue();
 });
