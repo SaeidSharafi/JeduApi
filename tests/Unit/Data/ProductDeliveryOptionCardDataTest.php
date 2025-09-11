@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Data\Shop\Product\ProductDeliveryOptionCardData;
 use App\Enums\DeliveryMethodEnum;
 use App\Enums\ProductableMediaTypeEnum;
 use App\Models\ProductDeliveryOption;
 
 it('return data correctly', function () {
-    $course = \App\Models\Course::factory()
+    $course = App\Models\Course::factory()
         ->create()
         ->fresh();
 
@@ -15,20 +17,20 @@ it('return data correctly', function () {
         ->toDisk('public')
         ->upload();
 
-    $course->attachMedia($cover, \App\Enums\ProductableMediaTypeEnum::COVER->value);
+    $course->attachMedia($cover, ProductableMediaTypeEnum::COVER->value);
 
     $course->loadMediaWithVariantsMatchAll();
 
-    $product = \App\Models\Product::factory()->create([
+    $product = App\Models\Product::factory()->create([
         'name'             => 'Test Product',
-        'productable_type' => \App\Enums\ProductableEnum::COURSE->value,
+        'productable_type' => App\Enums\ProductableEnum::COURSE->value,
         'productable_id'   => $course->id,
     ]);
     $deliveryOption = ProductDeliveryOption::factory()
         ->create([
             'name'            => 'Test Product',
             'delivery_method' => DeliveryMethodEnum::LMS_MOODLE->value,
-            'product_id'      => $product->id
+            'product_id'      => $product->id,
         ])->fresh();
     $deliveryOption->loadMissing('product.productableWithAllRelations');
 
@@ -64,23 +66,22 @@ it('return data correctly', function () {
 
 });
 it('cover will be null if course has no image', function () {
-    $course = \App\Models\Course::factory()
+    $course = App\Models\Course::factory()
         ->create()
         ->fresh();
 
-
     $course->loadMediaWithVariantsMatchAll();
 
-    $product = \App\Models\Product::factory()->create([
+    $product = App\Models\Product::factory()->create([
         'name'             => 'Test Product',
-        'productable_type' => \App\Enums\ProductableEnum::COURSE->value,
+        'productable_type' => App\Enums\ProductableEnum::COURSE->value,
         'productable_id'   => $course->id,
     ]);
     $deliveryOption = ProductDeliveryOption::factory()
         ->create([
             'name'            => 'Test Product',
             'delivery_method' => DeliveryMethodEnum::LMS_MOODLE->value,
-            'product_id'      => $product->id
+            'product_id'      => $product->id,
         ])->fresh();
     $deliveryOption->loadMissing('product');
 

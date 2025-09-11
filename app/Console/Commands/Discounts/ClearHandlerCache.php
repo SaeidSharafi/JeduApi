@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands\Discounts;
 
 use Illuminate\Console\Command;
 
-class ClearHandlerCache extends Command
+final class ClearHandlerCache extends Command
 {
     /**
      * The name and signature of the console command.

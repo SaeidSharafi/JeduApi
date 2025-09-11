@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Data\Admin\Settings;
 
 use Spatie\LaravelData\Data;
-use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 final class AddressData extends Data
 {
@@ -14,8 +13,7 @@ final class AddressData extends Data
         public string $address,
         public string $location_url,
         public string $phone,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, string>

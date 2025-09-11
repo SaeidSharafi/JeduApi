@@ -18,26 +18,26 @@ use Mockery\MockInterface;
 
 it('calculates a percentage discount correctly when a promotion is found', function () {
     // Arrange
-    $user = User::factory()->create();
+    $user           = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
 
     $promotion = DiscountPromotion::factory()->make([
-        'id' => 50,
-        'type' => DiscountTypeEnum::CART_CHECKOUT
+        'id'   => 50,
+        'type' => DiscountTypeEnum::CART_CHECKOUT,
     ]);
     $promotion->setRelation('rules', collect([
         ['type' => 'action', 'handler' => 'apply_percentage_off', 'configuration' => ['percentage' => 20]],
     ]));
 
     $this->mock(PromotionFinder::class,
-        fn(MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn($promotion));
+        fn (MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn($promotion));
 
     $data = new OrderCreateData(
         status: App\Enums\Order\OrderStatusEnum::PENDING->value,
         customer_id: $user->id,
         items: [
             new OrderItemCreateData(
-                product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment')
+                product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment'),
         ],
         applied_coupon_code: 'SAVE20'
     );
@@ -54,11 +54,11 @@ it('calculates a percentage discount correctly when a promotion is found', funct
 
 it('returns a context with zero discounts if promotion finder returns null', function () {
     // Arrange
-    $user = User::factory()->create();
+    $user           = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
 
     $this->mock(PromotionFinder::class,
-        fn(MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn(null));
+        fn (MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn(null));
 
     $data = new OrderCreateData(
         status: App\Enums\Order\OrderStatusEnum::PENDING->value,
@@ -77,7 +77,7 @@ it('returns a context with zero discounts if promotion finder returns null', fun
 });
 
 it('correctly uses featured price as the base for calculation', function () {
-    $user = User::factory()->create();
+    $user           = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create([
         'price'                     => 10000,
         'is_featured'               => true,
@@ -87,14 +87,14 @@ it('correctly uses featured price as the base for calculation', function () {
     ]);
 
     $promotion = DiscountPromotion::factory()->make([
-        'type' => DiscountTypeEnum::CART_CHECKOUT
+        'type' => DiscountTypeEnum::CART_CHECKOUT,
     ]);
     $promotion->setRelation('rules', collect([
         ['type' => 'action', 'handler' => 'apply_percentage_off', 'configuration' => ['percentage' => 10]],
     ]));
 
     $this->mock(PromotionFinder::class,
-        fn(MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn($promotion));
+        fn (MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn($promotion));
 
     $data = new OrderCreateData(
         status: App\Enums\Order\OrderStatusEnum::PENDING->value,
@@ -102,7 +102,7 @@ it('correctly uses featured price as the base for calculation', function () {
         items: [
             new OrderItemCreateData(
                 product_delivery_option_id: $deliveryOption->id,
-                payment_type: 'full_payment')
+                payment_type: 'full_payment'),
         ],
         applied_coupon_code: null
     );
@@ -122,7 +122,7 @@ test('it correctly uses a pre-calculated product-specific discount as the highes
     // This test covers: if ($precalculatedPrices->has($option->id))
 
     // Arrange
-    $user = User::factory()->create();
+    $user           = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create([
         'price'          => 10000,
         'is_featured'    => true,
@@ -130,12 +130,12 @@ test('it correctly uses a pre-calculated product-specific discount as the highes
     ]);
 
     // Mock the DB facade to return a pre-calculated price for this item.
-    \Illuminate\Support\Facades\DB::shouldReceive('table->whereIn->pluck')
+    Illuminate\Support\Facades\DB::shouldReceive('table->whereIn->pluck')
         ->andReturn(collect([$deliveryOption->id => 5000])); // A special 50.00 price!
 
     // No promotion is needed, as we are testing the base price calculation.
     $this->mock(PromotionFinder::class,
-        fn(MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn(null));
+        fn (MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn(null));
 
     $data = new OrderCreateData(
         status: App\Enums\Order\OrderStatusEnum::PENDING->value,
@@ -158,11 +158,11 @@ test('it calculates subtotals correctly for mixed payment types', function () {
     // This test covers: if ($calculatedItem->payment_type === OrderItemPaymentTypeEnum::FULL_PAYMENT->value)
 
     // Arrange
-    $user = User::factory()->create();
+    $user              = User::factory()->create();
     $fullPaymentOption = ProductDeliveryOption::factory()->create([
-        'price' => 10000,
+        'price'                   => 10000,
         'is_prepayment_available' => false,
-        'prepayment_amount' => 0,
+        'prepayment_amount'       => 0,
     ]);
     $prePaymentOption = ProductDeliveryOption::factory()->create([
         'price'                   => 50000,
@@ -171,7 +171,7 @@ test('it calculates subtotals correctly for mixed payment types', function () {
     ]);
 
     $this->mock(PromotionFinder::class,
-        fn(MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn(null));
+        fn (MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn(null));
 
     $data = new OrderCreateData(
         status: App\Enums\Order\OrderStatusEnum::PENDING->value,
@@ -197,7 +197,7 @@ test('it calculates subtotals correctly for mixed payment types', function () {
 });
 
 test('it throws a runtime exception if a handler config dto is not mapped', function () {
-    $customer = User::factory()->create();
+    $customer     = User::factory()->create();
     $orderContext = new OrderContextData(
         customer: $customer,
         items: collect(),
@@ -207,13 +207,13 @@ test('it throws a runtime exception if a handler config dto is not mapped', func
 
     // Create a promotion with a rule that IS registered in the handler registry
     $promotion = DiscountPromotion::factory()->create([
-        'type' => DiscountTypeEnum::CART_CHECKOUT
+        'type' => DiscountTypeEnum::CART_CHECKOUT,
     ]);
     $rule = DiscountPromotionRule::create([
         'discount_promotion_id' => $promotion->id,
-        'type' => 'condition',
-        'handler' => 'cart_value_over', // This handler exists
-        'configuration' => json_encode(['value' => 10000, 'operator' => '>=', 'include_prepayments' => true]),
+        'type'                  => 'condition',
+        'handler'               => 'cart_value_over', // This handler exists
+        'configuration'         => json_encode(['value' => 10000, 'operator' => '>=', 'include_prepayments' => true]),
     ]);
 
     // Refresh the promotion to get the loaded relationship
@@ -242,12 +242,12 @@ test('it throws a runtime exception if a handler config dto is not mapped', func
 
     expect($closure)
         ->toThrow(
-            \RuntimeException::class,
-            "No config DTO mapped for handler '" . CartValueCondition::class . "'"
+            RuntimeException::class,
+            "No config DTO mapped for handler '".CartValueCondition::class."'"
         );
 });
 test('it throws a runtime exception if an action handler config dto is not mapped', function () {
-    $customer = User::factory()->create();
+    $customer     = User::factory()->create();
     $orderContext = new OrderContextData(
         customer: $customer,
         items: collect(),
@@ -257,13 +257,13 @@ test('it throws a runtime exception if an action handler config dto is not mappe
 
     // Create a promotion with an 'action' rule
     $promotion = DiscountPromotion::factory()->create([
-        'type' => DiscountTypeEnum::CART_CHECKOUT
+        'type' => DiscountTypeEnum::CART_CHECKOUT,
     ]);
     $rule = DiscountPromotionRule::create([
         'discount_promotion_id' => $promotion->id,
-        'type' => 'action',
-        'handler' => 'apply_percentage_off', // A valid action handler name
-        'configuration' => json_encode(['percentage' => 15]),
+        'type'                  => 'action',
+        'handler'               => 'apply_percentage_off', // A valid action handler name
+        'configuration'         => json_encode(['percentage' => 15]),
     ]);
 
     // Refresh the promotion to get the loaded relationship
@@ -292,25 +292,25 @@ test('it throws a runtime exception if an action handler config dto is not mappe
 
     expect($closure)
         ->toThrow(
-            \RuntimeException::class,
-            "No config DTO mapped for handler '" . ApplyPercentageDiscountToItemsAction::class . "'"
+            RuntimeException::class,
+            "No config DTO mapped for handler '".ApplyPercentageDiscountToItemsAction::class."'"
         );
 });
 test('it throws a runtime exception for an unregistered condition config', function () {
     // Arrange
-    $user = User::factory()->create();
+    $user           = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create();
 
     // Create a promotion with a handler that does NOT exist in the registry
     $promotion = DiscountPromotion::factory()->make([
-        'type' => DiscountTypeEnum::CART_CHECKOUT
+        'type' => DiscountTypeEnum::CART_CHECKOUT,
     ]);
     $promotion->setRelation('rules', collect([
-        ['type' => 'condition', 'handler' => 'this_handler_does_not_exist', 'configuration' => []]
+        ['type' => 'condition', 'handler' => 'this_handler_does_not_exist', 'configuration' => []],
     ]));
 
     $this->mock(PromotionFinder::class,
-        fn(MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn($promotion));
+        fn (MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn($promotion));
 
     $data = new OrderCreateData(
         status: App\Enums\Order\OrderStatusEnum::PENDING->value,
@@ -322,24 +322,24 @@ test('it throws a runtime exception for an unregistered condition config', funct
     $service = app(OrderCalculationService::class);
 
     // Act & Assert
-    expect(fn() => $service->calculate($data))
+    expect(fn () => $service->calculate($data))
         ->toThrow(RuntimeException::class,
             "No discount condition handler registered for 'this_handler_does_not_exist'");
 });
 
 test('it throws a runtime exception for an unregistered action handler', function () {
-    $user = User::factory()->create();
+    $user           = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create();
 
     $promotion = DiscountPromotion::factory()->make([
-        'type' => DiscountTypeEnum::CART_CHECKOUT
+        'type' => DiscountTypeEnum::CART_CHECKOUT,
     ]);
     $promotion->setRelation('rules', collect([
-        ['type' => 'action', 'handler' => 'this_action_is_fake', 'configuration' => []]
+        ['type' => 'action', 'handler' => 'this_action_is_fake', 'configuration' => []],
     ]));
 
     $this->mock(PromotionFinder::class,
-        fn(MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn($promotion));
+        fn (MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn($promotion));
 
     $data = new OrderCreateData(
         status: App\Enums\Order\OrderStatusEnum::PENDING->value,
@@ -351,8 +351,8 @@ test('it throws a runtime exception for an unregistered action handler', functio
     $service = app(OrderCalculationService::class);
 
     // Act & Assert
-    expect(fn() => $service->calculate($data))
-        ->toThrow(\RuntimeException::class, "No discount action handler registered for 'this_action_is_fake'");
+    expect(fn () => $service->calculate($data))
+        ->toThrow(RuntimeException::class, "No discount action handler registered for 'this_action_is_fake'");
 });
 
 test('it skips an item in calculation if its delivery option ID does not exist', function () {
@@ -366,7 +366,7 @@ test('it skips an item in calculation if its delivery option ID does not exist',
         customer_id: $user->id,
         items: [
             new OrderItemCreateData(product_delivery_option_id: $validOption->id, payment_type: 'full_payment'),
-            new OrderItemCreateData(product_delivery_option_id: 99999, payment_type: 'full_payment') // Invalid ID
+            new OrderItemCreateData(product_delivery_option_id: 99999, payment_type: 'full_payment'), // Invalid ID
         ],
         applied_coupon_code: null
     );
@@ -377,18 +377,18 @@ test('it skips an item in calculation if its delivery option ID does not exist',
     $service = app(OrderCalculationService::class);
 
     // Act & Assert
-    expect(fn() => $service->calculate($data))
+    expect(fn () => $service->calculate($data))
         ->toThrow(InvalidArgumentException::class, 'One or more ProductDeliveryOption IDs do not exist: 99999');
 });
 
 test('it does not apply discount when promotion conditions fail', function () {
     // Arrange
-    $user = User::factory()->create();
+    $user           = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
 
     // Create a promotion with a condition that will fail
     $promotion = DiscountPromotion::factory()->make([
-        'type' => DiscountTypeEnum::CART_CHECKOUT
+        'type' => DiscountTypeEnum::CART_CHECKOUT,
     ]);
     $promotion->setRelation('rules', collect([
         ['type' => 'condition', 'handler' => 'cart_value_over', 'configuration' => ['value' => 20000, 'operator' => '>=', 'include_prepayments' => true]], // Cart needs to be >= 200.00, but it's only 100.00
@@ -396,7 +396,7 @@ test('it does not apply discount when promotion conditions fail', function () {
     ]));
 
     $this->mock(PromotionFinder::class,
-        fn(MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn($promotion));
+        fn (MockInterface $mock) => $mock->shouldReceive('findApplicablePromotion')->andReturn($promotion));
 
     $data = new OrderCreateData(
         status: App\Enums\Order\OrderStatusEnum::PENDING->value,

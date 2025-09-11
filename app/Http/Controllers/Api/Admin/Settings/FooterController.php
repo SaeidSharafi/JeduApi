@@ -28,6 +28,7 @@ final class FooterController extends Controller
         Gate::authorize('viewAny', Setting::class);
 
         $footer = Setting::get('footer', FooterData::getDefaults());
+
         return response()->success(FooterData::from($footer));
     }
 
@@ -43,6 +44,7 @@ final class FooterController extends Controller
 
         Setting::set('footer', $data->toArray(), 'json', 'footer');
         $footer = Setting::get('footer');
+
         return response()->success(
             FooterData::from($footer),
             __('messages.updated', ['model' => __('messages.models.footer')])

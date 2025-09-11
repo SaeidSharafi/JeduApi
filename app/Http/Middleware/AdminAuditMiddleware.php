@@ -6,12 +6,13 @@ namespace App\Http\Middleware;
 
 use App\Models\AdminActionLog;
 use Closure;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
-class AdminAuditMiddleware
+final class AdminAuditMiddleware
 {
     /**
      * Handle an incoming request and log admin actions.
@@ -24,7 +25,7 @@ class AdminAuditMiddleware
         $response = $next($request);
 
         // Only log if authenticated staff member
-        if (!auth('staff')->check()) {
+        if (! auth('staff')->check()) {
             return $response;
         }
 
@@ -39,11 +40,11 @@ class AdminAuditMiddleware
             $this->logAdminAction($request, $response, $executionTime);
         }
         // @codeCoverageIgnoreStart
-        catch (\Exception $e) {
+        catch (Exception $e) {
             // Log the error but don't break the request
             Log::error('AdminAuditMiddleware failed to log action', [
-                'error' => $e->getMessage(),
-                'route' => $request->route()?->getName(),
+                'error'    => $e->getMessage(),
+                'route'    => $request->route()?->getName(),
                 'admin_id' => auth('staff')->id(),
             ]);
         }
@@ -69,7 +70,7 @@ class AdminAuditMiddleware
 
         $routeName = $request->route()?->getName();
 
-        if (!$routeName) {
+        if (! $routeName) {
             return true;
         }
 
@@ -82,7 +83,7 @@ class AdminAuditMiddleware
         // Only log state-changing operations by default (POST, PUT, DELETE)
         $loggedMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
-        return !in_array($request->method(), $loggedMethods);
+        return ! in_array($request->method(), $loggedMethods);
     }
 
     /**
@@ -90,30 +91,30 @@ class AdminAuditMiddleware
      */
     private function logAdminAction(Request $request, Response $response, float $executionTime): void
     {
-        $routeName = $request->route()?->getName() ?? 'unknown';
+        $routeName    = $request->route()?->getName() ?? 'unknown';
         $resourceInfo = $this->extractResourceInfo($request);
-        $riskLevel = $this->assessRiskLevel($request, $response, $resourceInfo);
+        $riskLevel    = $this->assessRiskLevel($request, $response, $resourceInfo);
 
         AdminActionLog::create([
-            'admin_id' => auth('staff')->id(),
-            'action_type' => $this->determineActionType($request->method(), $routeName),
-            'resource_type' => $resourceInfo['type'],
-            'resource_id' => $resourceInfo['id'],
-            'route_name' => $routeName,
-            'http_method' => $request->method(),
-            'request_data' => $this->sanitizeRequestData($request->all()),
+            'admin_id'        => auth('staff')->id(),
+            'action_type'     => $this->determineActionType($request->method(), $routeName),
+            'resource_type'   => $resourceInfo['type'],
+            'resource_id'     => $resourceInfo['id'],
+            'route_name'      => $routeName,
+            'http_method'     => $request->method(),
+            'request_data'    => $this->sanitizeRequestData($request->all()),
             'response_status' => $response->getStatusCode(),
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'session_id' => session()->getId(),
-            'risk_level' => $riskLevel,
-            'metadata' => [
+            'ip_address'      => $request->ip(),
+            'user_agent'      => $request->userAgent(),
+            'session_id'      => session()->getId(),
+            'risk_level'      => $riskLevel,
+            'metadata'        => [
                 'execution_time_ms' => $executionTime,
-                'memory_usage' => memory_get_usage(true),
-                'timestamp' => now()->toISOString(),
-                'request_size' => strlen($request->getContent()),
-                'response_size' => $response instanceof \Illuminate\Http\JsonResponse
-                    ? strlen($response->getContent())
+                'memory_usage'      => memory_get_usage(true),
+                'timestamp'         => now()->toISOString(),
+                'request_size'      => mb_strlen($request->getContent()),
+                'response_size'     => $response instanceof \Illuminate\Http\JsonResponse
+                    ? mb_strlen($response->getContent())
                     : 0,
             ],
         ]);
@@ -124,29 +125,30 @@ class AdminAuditMiddleware
      */
     private function extractResourceInfo(Request $request): array
     {
-        $route = $request->route();
+        $route      = $request->route();
         $parameters = $route ? $route->parameters() : [];
 
         // Common resource patterns
         $resourceMappings = [
-            'user' => 'App\\Models\\User',
-            'wallet' => 'App\\Models\\Wallet',
-            'walletCampaign' => 'App\\Models\\WalletCampaign',
-            'staff' => 'App\\Models\\Staff',
-            'category' => 'App\\Models\\Category',
-            'course' => 'App\\Models\\Course',
-            'teacher' => 'App\\Models\\Teacher',
-            'term' => 'App\\Models\\Term',
-            'seminar' => 'App\\Models\\Seminar',
+            'user'              => 'App\\Models\\User',
+            'wallet'            => 'App\\Models\\Wallet',
+            'walletCampaign'    => 'App\\Models\\WalletCampaign',
+            'staff'             => 'App\\Models\\Staff',
+            'category'          => 'App\\Models\\Category',
+            'course'            => 'App\\Models\\Course',
+            'teacher'           => 'App\\Models\\Teacher',
+            'term'              => 'App\\Models\\Term',
+            'seminar'           => 'App\\Models\\Seminar',
             'discountPromotion' => 'App\\Models\\DiscountPromotion',
         ];
 
         foreach ($resourceMappings as $paramName => $modelClass) {
             if (isset($parameters[$paramName])) {
                 $resource = $parameters[$paramName];
+
                 return [
                     'type' => $modelClass,
-                    'id' => is_object($resource) ? $resource->id : $resource,
+                    'id'   => is_object($resource) ? $resource->id : $resource,
                 ];
             }
         }
@@ -160,18 +162,26 @@ class AdminAuditMiddleware
     private function determineActionType(string $method, string $routeName): string
     {
         // Special wallet actions
-        if (str_contains($routeName, 'deposit')) return 'deposit';
-        if (str_contains($routeName, 'withdraw')) return 'withdrawal';
-        if (str_contains($routeName, 'adjust')) return 'adjustment';
-        if (str_contains($routeName, 'allocate') || str_contains($routeName, 'trigger')) return 'allocation';
+        if (str_contains($routeName, 'deposit')) {
+            return 'deposit';
+        }
+        if (str_contains($routeName, 'withdraw')) {
+            return 'withdrawal';
+        }
+        if (str_contains($routeName, 'adjust')) {
+            return 'adjustment';
+        }
+        if (str_contains($routeName, 'allocate') || str_contains($routeName, 'trigger')) {
+            return 'allocation';
+        }
 
         // Standard CRUD operations
         return match ($method) {
             'POST' => str_contains($routeName, 'bulk') ? 'bulk_create' : 'create',
             'PUT', 'PATCH' => 'update',
             'DELETE' => 'delete',
-            'GET' => 'view',
-            default => strtolower($method),
+            'GET'    => 'view',
+            default  => mb_strtolower($method),
         };
     }
 
@@ -216,10 +226,7 @@ class AdminAuditMiddleware
      */
     private function isWalletAction(string $routeName): bool
     {
-        return str_contains($routeName, 'wallet') ||
-               str_contains($routeName, 'deposit') ||
-               str_contains($routeName, 'withdraw') ||
-               str_contains($routeName, 'adjust');
+        return str_contains($routeName, 'wallet') || str_contains($routeName, 'deposit') || str_contains($routeName, 'withdraw') || str_contains($routeName, 'adjust');
     }
 
     /**
@@ -236,6 +243,7 @@ class AdminAuditMiddleware
     private function isOutsideBusinessHours(): bool
     {
         $hour = now()->hour;
+
         return $hour < 7 || $hour > 22; // Outside 7 AM - 10 PM
     }
 
@@ -257,6 +265,7 @@ class AdminAuditMiddleware
         foreach ($data as $key => &$value) {
             if (in_array($key, $sensitiveFields, true)) {
                 $value = '[REDACTED]';
+
                 continue;
             }
 
@@ -268,7 +277,7 @@ class AdminAuditMiddleware
         unset($value);
         // Limit data size to prevent huge logs
         $jsonData = json_encode($data);
-        if ($jsonData !== false && strlen($jsonData) > 10000) { // 10KB limit
+        if ($jsonData !== false && mb_strlen($jsonData) > 10000) { // 10KB limit
             return ['_large_request' => 'Request data too large, truncated'];
         }
 

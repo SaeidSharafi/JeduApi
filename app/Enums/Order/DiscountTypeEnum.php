@@ -11,7 +11,7 @@ enum DiscountTypeEnum: string
     use AdvanceEnum;
 
     case PRODUCT_SPECIFIC = 'product_specific';
-    case CART_CHECKOUT = 'cart_checkout';
+    case CART_CHECKOUT    = 'cart_checkout';
 
     public static function getListInfo()
     {
@@ -23,6 +23,7 @@ enum DiscountTypeEnum: string
                 'description' => __("enums.DiscountTypeEnum.{$case->value}.description"),
             ];
         }
+
         return $list;
     }
 }

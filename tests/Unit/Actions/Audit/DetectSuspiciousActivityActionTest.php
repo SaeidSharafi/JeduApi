@@ -5,42 +5,42 @@ declare(strict_types=1);
 use App\Actions\Admin\Audit\DetectSuspiciousActivityAction;
 use App\Data\Admin\Audit\SuspiciousActivityCollectionData;
 use App\Data\Admin\Audit\SuspiciousActivityRequestData;
-use App\Models\WalletTransaction;
-use App\Models\User;
-use App\Models\Staff;
 use App\Models\AdminActionLog;
+use App\Models\Staff;
+use App\Models\User;
+use App\Models\WalletTransaction;
 use Carbon\Carbon;
 
 describe('DetectSuspiciousActivityAction', function () {
 
     beforeEach(function () {
-        $this->action = new DetectSuspiciousActivityAction();
+        $this->action   = new DetectSuspiciousActivityAction();
         $this->dateFrom = verta()->subWeek()->format('Y-m-d');
-        $this->dateTo = verta()->format('Y-m-d');
+        $this->dateTo   = verta()->format('Y-m-d');
     });
 
     it('detects large transactions', function () {
         // Create large transaction
         WalletTransaction::factory()->create([
-            'amount' => 60000000, // 60M IRR
-            'created_at' => now()->subDays(3)
+            'amount'     => 60000000, // 60M IRR
+            'created_at' => now()->subDays(3),
         ]);
 
         // Create normal transaction
         WalletTransaction::factory()->create([
-            'amount' => 1000000, // 1M IRR
-            'created_at' => now()->subDays(2)
+            'amount'     => 1000000, // 1M IRR
+            'created_at' => now()->subDays(2),
         ]);
 
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => $this->dateFrom,
-            'date_to' => $this->dateTo,
-            'large_amount_threshold' => 50000000,
+            'date_from'                => $this->dateFrom,
+            'date_to'                  => $this->dateTo,
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => true,
-            'include_off_hours' => false,
-            'include_high_frequency' => false,
-            'include_round_numbers' => false,
+            'include_large_amounts'    => true,
+            'include_off_hours'        => false,
+            'include_high_frequency'   => false,
+            'include_round_numbers'    => false,
         ]);
 
         $result = $this->action->handle($data);
@@ -55,28 +55,28 @@ describe('DetectSuspiciousActivityAction', function () {
         // Create off-hours transaction (2 AM)
         Carbon::setTestNow(Carbon::create(2025, 1, 15, 2, 0, 0));
         $offHoursTransaction = WalletTransaction::factory()->create([
-            'amount' => 5000000,
-            'created_at' => Carbon::create(2025, 1, 15, 2, 0, 0)
+            'amount'     => 5000000,
+            'created_at' => Carbon::create(2025, 1, 15, 2, 0, 0),
         ]);
 
         // Create normal hours transaction (10 AM)
         $normalTransaction = WalletTransaction::factory()->create([
-            'amount' => 5000000,
-            'created_at' => Carbon::create(2025, 1, 15, 10, 0, 0)
+            'amount'     => 5000000,
+            'created_at' => Carbon::create(2025, 1, 15, 10, 0, 0),
         ]);
 
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => Carbon::create(2025, 1, 14),
-            'date_to' => Carbon::create(2025, 1, 16),
-            'large_amount_threshold' => 50000000,
+            'date_from'                => Carbon::create(2025, 1, 14),
+            'date_to'                  => Carbon::create(2025, 1, 16),
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => false,
-            'include_off_hours' => true,
-            'include_high_frequency' => false,
-            'include_round_numbers' => false,
+            'include_large_amounts'    => false,
+            'include_off_hours'        => true,
+            'include_high_frequency'   => false,
+            'include_round_numbers'    => false,
         ]);
 
-        $result = $this->action->handle($data);
+        $result                 = $this->action->handle($data);
         $off_hours_transactions = $result->suspicious_activities->off_hours_transactions;
         expect($result->suspicious_activities)->toHaveKey('off_hours_transactions');
         expect($off_hours_transactions)->toHaveCount(1);
@@ -90,26 +90,26 @@ describe('DetectSuspiciousActivityAction', function () {
 
         // Create 12 transactions for the same user
         WalletTransaction::factory()->count(12)->create([
-            'user_id' => $user->id,
-            'amount' => 1000000,
-            'created_at' => now()->subDays(2)
+            'user_id'    => $user->id,
+            'amount'     => 1000000,
+            'created_at' => now()->subDays(2),
         ]);
 
         // Create 2 transactions for different user
         WalletTransaction::factory()->count(2)->create([
-            'amount' => 1000000,
-            'created_at' => now()->subDays(2)
+            'amount'     => 1000000,
+            'created_at' => now()->subDays(2),
         ]);
 
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => $this->dateFrom,
-            'date_to' => $this->dateTo,
-            'large_amount_threshold' => 50000000,
+            'date_from'                => $this->dateFrom,
+            'date_to'                  => $this->dateTo,
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => false,
-            'include_off_hours' => false,
-            'include_high_frequency' => true,
-            'include_round_numbers' => false,
+            'include_large_amounts'    => false,
+            'include_off_hours'        => false,
+            'include_high_frequency'   => true,
+            'include_round_numbers'    => false,
         ]);
 
         $result = $this->action->handle($data);
@@ -123,30 +123,30 @@ describe('DetectSuspiciousActivityAction', function () {
     it('detects round number patterns', function () {
         // Create round number transactions
         WalletTransaction::factory()->create([
-            'amount' => 10000000, // 10M IRR - round number
-            'created_at' => now()->subDays(3)
+            'amount'     => 10000000, // 10M IRR - round number
+            'created_at' => now()->subDays(3),
         ]);
 
         WalletTransaction::factory()->create([
-            'amount' => 5000000, // 5M IRR - round number
-            'created_at' => now()->subDays(2)
+            'amount'     => 5000000, // 5M IRR - round number
+            'created_at' => now()->subDays(2),
         ]);
 
         // Create non-round number transaction
         WalletTransaction::factory()->create([
-            'amount' => 1234567, // Not round
-            'created_at' => now()->subDays(1)
+            'amount'     => 1234567, // Not round
+            'created_at' => now()->subDays(1),
         ]);
 
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => $this->dateFrom,
-            'date_to' => $this->dateTo,
-            'large_amount_threshold' => 50000000,
+            'date_from'                => $this->dateFrom,
+            'date_to'                  => $this->dateTo,
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => false,
-            'include_off_hours' => false,
-            'include_high_frequency' => false,
-            'include_round_numbers' => true,
+            'include_large_amounts'    => false,
+            'include_off_hours'        => false,
+            'include_high_frequency'   => false,
+            'include_round_numbers'    => true,
         ]);
 
         $result = $this->action->handle($data);
@@ -156,37 +156,37 @@ describe('DetectSuspiciousActivityAction', function () {
     });
 
     it('detects rapid succession transactions', function () {
-        $user = User::factory()->create();
+        $user     = User::factory()->create();
         $baseTime = now()->subHours(2);
 
         // Create 3 transactions within 5 minutes
         WalletTransaction::factory()->create([
-            'user_id' => $user->id,
-            'amount' => 2000000,
-            'created_at' => $baseTime
+            'user_id'    => $user->id,
+            'amount'     => 2000000,
+            'created_at' => $baseTime,
         ]);
 
         WalletTransaction::factory()->create([
-            'user_id' => $user->id,
-            'amount' => 2000000,
-            'created_at' => $baseTime->addMinutes(2)
+            'user_id'    => $user->id,
+            'amount'     => 2000000,
+            'created_at' => $baseTime->addMinutes(2),
         ]);
 
         WalletTransaction::factory()->create([
-            'user_id' => $user->id,
-            'amount' => 2000000,
-            'created_at' => $baseTime->addMinutes(3)
+            'user_id'    => $user->id,
+            'amount'     => 2000000,
+            'created_at' => $baseTime->addMinutes(3),
         ]);
 
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => $this->dateFrom,
-            'date_to' => $this->dateTo,
-            'large_amount_threshold' => 50000000,
+            'date_from'                => $this->dateFrom,
+            'date_to'                  => $this->dateTo,
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => false,
-            'include_off_hours' => false,
-            'include_high_frequency' => false,
-            'include_round_numbers' => false,
+            'include_large_amounts'    => false,
+            'include_off_hours'        => false,
+            'include_high_frequency'   => false,
+            'include_round_numbers'    => false,
         ]);
 
         $result = $this->action->handle($data);
@@ -200,20 +200,20 @@ describe('DetectSuspiciousActivityAction', function () {
 
         // Create multiple high-risk admin actions
         AdminActionLog::factory()->count(5)->create([
-            'admin_id' => $admin->id,
+            'admin_id'   => $admin->id,
             'risk_level' => 'high',
-            'created_at' => now()->subDays(1)
+            'created_at' => now()->subDays(1),
         ]);
 
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => $this->dateFrom,
-            'date_to' => $this->dateTo,
-            'large_amount_threshold' => 50000000,
+            'date_from'                => $this->dateFrom,
+            'date_to'                  => $this->dateTo,
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => false,
-            'include_off_hours' => false,
-            'include_high_frequency' => false,
-            'include_round_numbers' => false,
+            'include_large_amounts'    => false,
+            'include_off_hours'        => false,
+            'include_high_frequency'   => false,
+            'include_round_numbers'    => false,
         ]);
 
         $result = $this->action->handle($data);
@@ -223,14 +223,14 @@ describe('DetectSuspiciousActivityAction', function () {
 
     it('includes detection period and criteria in result', function () {
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => $this->dateFrom,
-            'date_to' => $this->dateTo,
-            'large_amount_threshold' => 50000000,
+            'date_from'                => $this->dateFrom,
+            'date_to'                  => $this->dateTo,
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => true,
-            'include_off_hours' => true,
-            'include_high_frequency' => true,
-            'include_round_numbers' => true,
+            'include_large_amounts'    => true,
+            'include_off_hours'        => true,
+            'include_high_frequency'   => true,
+            'include_round_numbers'    => true,
         ]);
 
         $result = $this->action->handle($data);
@@ -248,19 +248,19 @@ describe('DetectSuspiciousActivityAction', function () {
     it('includes summary of suspicious activities', function () {
         // Create some suspicious data
         WalletTransaction::factory()->create([
-            'amount' => 60000000, // Large amount
-            'created_at' => now()->subDays(3)
+            'amount'     => 60000000, // Large amount
+            'created_at' => now()->subDays(3),
         ]);
 
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => $this->dateFrom,
-            'date_to' => $this->dateTo,
-            'large_amount_threshold' => 50000000,
+            'date_from'                => $this->dateFrom,
+            'date_to'                  => $this->dateTo,
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => true,
-            'include_off_hours' => true,
-            'include_high_frequency' => true,
-            'include_round_numbers' => true,
+            'include_large_amounts'    => true,
+            'include_off_hours'        => true,
+            'include_high_frequency'   => true,
+            'include_round_numbers'    => true,
         ]);
 
         $result = $this->action->handle($data);
@@ -273,14 +273,14 @@ describe('DetectSuspiciousActivityAction', function () {
         // Don't create any suspicious transactions
 
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => $this->dateFrom,
-            'date_to' => $this->dateTo,
-            'large_amount_threshold' => 50000000,
+            'date_from'                => $this->dateFrom,
+            'date_to'                  => $this->dateTo,
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => true,
-            'include_off_hours' => true,
-            'include_high_frequency' => true,
-            'include_round_numbers' => true,
+            'include_large_amounts'    => true,
+            'include_off_hours'        => true,
+            'include_high_frequency'   => true,
+            'include_round_numbers'    => true,
         ]);
 
         $result = $this->action->handle($data);
@@ -292,25 +292,25 @@ describe('DetectSuspiciousActivityAction', function () {
     it('respects date range filtering', function () {
         // Create transaction outside date range
         WalletTransaction::factory()->create([
-            'amount' => 60000000,
-            'created_at' => now()->subWeeks(2) // Before date_from
+            'amount'     => 60000000,
+            'created_at' => now()->subWeeks(2), // Before date_from
         ]);
 
         // Create transaction within date range
         WalletTransaction::factory()->create([
-            'amount' => 60000000,
-            'created_at' => now()->subDays(3) // Within range
+            'amount'     => 60000000,
+            'created_at' => now()->subDays(3), // Within range
         ]);
 
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => $this->dateFrom,
-            'date_to' => $this->dateTo,
-            'large_amount_threshold' => 50000000,
+            'date_from'                => $this->dateFrom,
+            'date_to'                  => $this->dateTo,
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => true,
-            'include_off_hours' => false,
-            'include_high_frequency' => false,
-            'include_round_numbers' => false,
+            'include_large_amounts'    => true,
+            'include_off_hours'        => false,
+            'include_high_frequency'   => false,
+            'include_round_numbers'    => false,
         ]);
 
         $result = $this->action->handle($data);
@@ -325,33 +325,33 @@ describe('DetectSuspiciousActivityAction', function () {
 
         // Create large transactions for different users
         WalletTransaction::factory()->create([
-            'user_id' => $user1->id,
-            'amount' => 60000000,
-            'created_at' => now()->subDays(3)
+            'user_id'    => $user1->id,
+            'amount'     => 60000000,
+            'created_at' => now()->subDays(3),
         ]);
 
         WalletTransaction::factory()->create([
-            'user_id' => $user2->id,
-            'amount' => 70000000,
-            'created_at' => now()->subDays(2)
+            'user_id'    => $user2->id,
+            'amount'     => 70000000,
+            'created_at' => now()->subDays(2),
         ]);
 
         WalletTransaction::factory()->create([
-            'user_id' => $user3->id,
-            'amount' => 80000000,
-            'created_at' => now()->subDays(1)
+            'user_id'    => $user3->id,
+            'amount'     => 80000000,
+            'created_at' => now()->subDays(1),
         ]);
 
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => $this->dateFrom,
-            'date_to' => $this->dateTo,
-            'large_amount_threshold' => 50000000,
+            'date_from'                => $this->dateFrom,
+            'date_to'                  => $this->dateTo,
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => true,
-            'include_off_hours' => false,
-            'include_high_frequency' => false,
-            'include_round_numbers' => false,
-            'user_ids' => [$user1->id, $user2->id] // Only filter for user1 and user2
+            'include_large_amounts'    => true,
+            'include_off_hours'        => false,
+            'include_high_frequency'   => false,
+            'include_round_numbers'    => false,
+            'user_ids'                 => [$user1->id, $user2->id], // Only filter for user1 and user2
         ]);
 
         $result = $this->action->handle($data);
@@ -370,33 +370,33 @@ describe('DetectSuspiciousActivityAction', function () {
 
         // Create off-hours transactions for different users
         WalletTransaction::factory()->create([
-            'user_id' => $user1->id,
-            'amount' => 6000000,
-            'created_at' => Carbon::create(2025, 1, 15, 2, 0, 0)
+            'user_id'    => $user1->id,
+            'amount'     => 6000000,
+            'created_at' => Carbon::create(2025, 1, 15, 2, 0, 0),
         ]);
 
         WalletTransaction::factory()->create([
-            'user_id' => $user2->id,
-            'amount' => 7000000,
-            'created_at' => Carbon::create(2025, 1, 15, 23, 0, 0)
+            'user_id'    => $user2->id,
+            'amount'     => 7000000,
+            'created_at' => Carbon::create(2025, 1, 15, 23, 0, 0),
         ]);
 
         WalletTransaction::factory()->create([
-            'user_id' => $user3->id,
-            'amount' => 8000000,
-            'created_at' => Carbon::create(2025, 1, 15, 1, 0, 0)
+            'user_id'    => $user3->id,
+            'amount'     => 8000000,
+            'created_at' => Carbon::create(2025, 1, 15, 1, 0, 0),
         ]);
 
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => Carbon::create(2025, 1, 14),
-            'date_to' => Carbon::create(2025, 1, 16),
-            'large_amount_threshold' => 50000000,
+            'date_from'                => Carbon::create(2025, 1, 14),
+            'date_to'                  => Carbon::create(2025, 1, 16),
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => false,
-            'include_off_hours' => true,
-            'include_high_frequency' => false,
-            'include_round_numbers' => false,
-            'user_ids' => [$user1->id, $user3->id] // Only filter for user1 and user3
+            'include_large_amounts'    => false,
+            'include_off_hours'        => true,
+            'include_high_frequency'   => false,
+            'include_round_numbers'    => false,
+            'user_ids'                 => [$user1->id, $user3->id], // Only filter for user1 and user3
         ]);
 
         $result = $this->action->handle($data);
@@ -415,35 +415,35 @@ describe('DetectSuspiciousActivityAction', function () {
 
         // Create many transactions for user1 (above threshold)
         WalletTransaction::factory()->count(12)->create([
-            'user_id' => $user1->id,
-            'amount' => 1000000,
-            'created_at' => now()->subDays(2)
+            'user_id'    => $user1->id,
+            'amount'     => 1000000,
+            'created_at' => now()->subDays(2),
         ]);
 
         // Create many transactions for user2 (above threshold)
         WalletTransaction::factory()->count(15)->create([
-            'user_id' => $user2->id,
-            'amount' => 1000000,
-            'created_at' => now()->subDays(2)
+            'user_id'    => $user2->id,
+            'amount'     => 1000000,
+            'created_at' => now()->subDays(2),
         ]);
 
         // Create many transactions for user3 (above threshold)
         WalletTransaction::factory()->count(11)->create([
-            'user_id' => $user3->id,
-            'amount' => 1000000,
-            'created_at' => now()->subDays(2)
+            'user_id'    => $user3->id,
+            'amount'     => 1000000,
+            'created_at' => now()->subDays(2),
         ]);
 
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => $this->dateFrom,
-            'date_to' => $this->dateTo,
-            'large_amount_threshold' => 50000000,
+            'date_from'                => $this->dateFrom,
+            'date_to'                  => $this->dateTo,
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => false,
-            'include_off_hours' => false,
-            'include_high_frequency' => true,
-            'include_round_numbers' => false,
-            'user_ids' => [$user2->id] // Only filter for user2
+            'include_large_amounts'    => false,
+            'include_off_hours'        => false,
+            'include_high_frequency'   => true,
+            'include_round_numbers'    => false,
+            'user_ids'                 => [$user2->id], // Only filter for user2
         ]);
 
         $result = $this->action->handle($data);
@@ -460,33 +460,33 @@ describe('DetectSuspiciousActivityAction', function () {
 
         // Create round number transactions for different users
         WalletTransaction::factory()->create([
-            'user_id' => $user1->id,
-            'amount' => 10000000, // 10M IRR - round number
-            'created_at' => now()->subDays(3)
+            'user_id'    => $user1->id,
+            'amount'     => 10000000, // 10M IRR - round number
+            'created_at' => now()->subDays(3),
         ]);
 
         WalletTransaction::factory()->create([
-            'user_id' => $user2->id,
-            'amount' => 5000000, // 5M IRR - round number
-            'created_at' => now()->subDays(2)
+            'user_id'    => $user2->id,
+            'amount'     => 5000000, // 5M IRR - round number
+            'created_at' => now()->subDays(2),
         ]);
 
         WalletTransaction::factory()->create([
-            'user_id' => $user3->id,
-            'amount' => 15000000, // 15M IRR - round number
-            'created_at' => now()->subDays(1)
+            'user_id'    => $user3->id,
+            'amount'     => 15000000, // 15M IRR - round number
+            'created_at' => now()->subDays(1),
         ]);
 
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => $this->dateFrom,
-            'date_to' => $this->dateTo,
-            'large_amount_threshold' => 50000000,
+            'date_from'                => $this->dateFrom,
+            'date_to'                  => $this->dateTo,
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => false,
-            'include_off_hours' => false,
-            'include_high_frequency' => false,
-            'include_round_numbers' => true,
-            'user_ids' => [$user1->id, $user3->id] // Only filter for user1 and user3
+            'include_large_amounts'    => false,
+            'include_off_hours'        => false,
+            'include_high_frequency'   => false,
+            'include_round_numbers'    => true,
+            'user_ids'                 => [$user1->id, $user3->id], // Only filter for user1 and user3
         ]);
 
         $result = $this->action->handle($data);
@@ -506,66 +506,66 @@ describe('DetectSuspiciousActivityAction', function () {
 
         // Create 3 large transactions within 5 minutes (rapid succession)
         $transaction1 = WalletTransaction::factory()->create([
-            'user_id' => $user->id,
-            'amount' => 12000000, // Above 10M threshold
-            'type' => \App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
+            'user_id'    => $user->id,
+            'amount'     => 12000000, // Above 10M threshold
+            'type'       => App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
             'created_at' => $baseTime,
-            'metadata' => [
+            'metadata'   => [
                 'audit' => [
                     'is_admin_initiated' => false,
-                    'ip_address' => '192.168.1.100'
-                ]
-            ]
+                    'ip_address'         => '192.168.1.100',
+                ],
+            ],
         ]);
 
         $transaction2 = WalletTransaction::factory()->create([
-            'user_id' => $user->id,
-            'amount' => 15000000, // Above 10M threshold
-            'type' => \App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
+            'user_id'    => $user->id,
+            'amount'     => 15000000, // Above 10M threshold
+            'type'       => App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
             'created_at' => $baseTime->copy()->addMinutes(2), // 2 minutes later
-            'metadata' => [
+            'metadata'   => [
                 'audit' => [
                     'is_admin_initiated' => false,
-                    'ip_address' => '192.168.1.100'
-                ]
-            ]
+                    'ip_address'         => '192.168.1.100',
+                ],
+            ],
         ]);
 
         $transaction3 = WalletTransaction::factory()->create([
-            'user_id' => $user->id,
-            'amount' => 11000000, // Above 10M threshold
-            'type' => \App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
+            'user_id'    => $user->id,
+            'amount'     => 11000000, // Above 10M threshold
+            'type'       => App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
             'created_at' => $baseTime->copy()->addMinutes(4), // 4 minutes from first
-            'metadata' => [
+            'metadata'   => [
                 'audit' => [
                     'is_admin_initiated' => false,
-                    'ip_address' => '192.168.1.100'
-                ]
-            ]
+                    'ip_address'         => '192.168.1.100',
+                ],
+            ],
         ]);
 
         // Create another transaction after 10 minutes (not rapid - should not be included)
         WalletTransaction::factory()->create([
-            'user_id' => $user->id,
-            'amount' => 13000000,
-            'type' => \App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
+            'user_id'    => $user->id,
+            'amount'     => 13000000,
+            'type'       => App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
             'created_at' => $baseTime->copy()->addMinutes(10), // 10 minutes later - should NOT be rapid
-            'metadata' => [
+            'metadata'   => [
                 'audit' => [
-                    'is_admin_initiated' => false
-                ]
-            ]
+                    'is_admin_initiated' => false,
+                ],
+            ],
         ]);
 
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => $this->dateFrom,
-            'date_to' => $this->dateTo,
-            'large_amount_threshold' => 50000000,
+            'date_from'                => $this->dateFrom,
+            'date_to'                  => $this->dateTo,
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => false,
-            'include_off_hours' => false,
-            'include_high_frequency' => false,
-            'include_round_numbers' => false,
+            'include_large_amounts'    => false,
+            'include_off_hours'        => false,
+            'include_high_frequency'   => false,
+            'include_round_numbers'    => false,
         ]);
 
         $result = $this->action->handle($data);
@@ -582,40 +582,40 @@ describe('DetectSuspiciousActivityAction', function () {
 
         // Create admin-initiated transaction with proper metadata
         $adminTransaction = WalletTransaction::factory()->create([
-            'user_id' => $user->id,
-            'amount' => 25000000, // Above 20M threshold for admin actions
-            'type' => \App\Enums\Wallet\TransactionTypeEnum::ADJUSTMENT,
+            'user_id'    => $user->id,
+            'amount'     => 25000000, // Above 20M threshold for admin actions
+            'type'       => App\Enums\Wallet\TransactionTypeEnum::ADJUSTMENT,
             'created_at' => now()->subDays(1),
-            'metadata' => [
+            'metadata'   => [
                 'audit' => [
                     'is_admin_initiated' => true,
-                    'ip_address' => '192.168.1.1'
-                ]
-            ]
+                    'ip_address'         => '192.168.1.1',
+                ],
+            ],
         ]);
 
         // Create normal user transaction
         WalletTransaction::factory()->create([
-            'user_id' => $user->id,
-            'amount' => 25000000,
-            'type' => \App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
+            'user_id'    => $user->id,
+            'amount'     => 25000000,
+            'type'       => App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
             'created_at' => now()->subDays(1),
-            'metadata' => [
+            'metadata'   => [
                 'audit' => [
-                    'is_admin_initiated' => false
-                ]
-            ]
+                    'is_admin_initiated' => false,
+                ],
+            ],
         ]);
 
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => $this->dateFrom,
-            'date_to' => $this->dateTo,
-            'large_amount_threshold' => 50000000,
+            'date_from'                => $this->dateFrom,
+            'date_to'                  => $this->dateTo,
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => false,
-            'include_off_hours' => false,
-            'include_high_frequency' => false,
-            'include_round_numbers' => false,
+            'include_large_amounts'    => false,
+            'include_off_hours'        => false,
+            'include_high_frequency'   => false,
+            'include_round_numbers'    => false,
         ]);
 
         $result = $this->action->handle($data);
@@ -628,14 +628,14 @@ describe('DetectSuspiciousActivityAction', function () {
 
     it('includes detection period from field in result', function () {
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => $this->dateFrom,
-            'date_to' => $this->dateTo,
-            'large_amount_threshold' => 50000000,
+            'date_from'                => $this->dateFrom,
+            'date_to'                  => $this->dateTo,
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => true,
-            'include_off_hours' => true,
-            'include_high_frequency' => true,
-            'include_round_numbers' => true,
+            'include_large_amounts'    => true,
+            'include_off_hours'        => true,
+            'include_high_frequency'   => true,
+            'include_round_numbers'    => true,
         ]);
 
         $result = $this->action->handle($data);
@@ -646,14 +646,14 @@ describe('DetectSuspiciousActivityAction', function () {
 
     it('includes complete detection criteria in result', function () {
         $data = SuspiciousActivityRequestData::from([
-            'date_from' => $this->dateFrom,
-            'date_to' => $this->dateTo,
-            'large_amount_threshold' => 75000000,
+            'date_from'                => $this->dateFrom,
+            'date_to'                  => $this->dateTo,
+            'large_amount_threshold'   => 75000000,
             'high_frequency_threshold' => 15,
-            'include_large_amounts' => true,
-            'include_off_hours' => true,
-            'include_high_frequency' => true,
-            'include_round_numbers' => true,
+            'include_large_amounts'    => true,
+            'include_off_hours'        => true,
+            'include_high_frequency'   => true,
+            'include_round_numbers'    => true,
         ]);
 
         $result = $this->action->handle($data);
@@ -669,89 +669,89 @@ describe('DetectSuspiciousActivityAction', function () {
         $user2 = User::factory()->create();
 
         // Use timezone-aware Carbon with Asia/Tehran
-        $baseTime = Carbon::now('Asia/Tehran')->subDays(2)->startOfDay()->addHours(10);
-        $offHoursTime =$baseTime->copy()->setTime(2,0);
+        $baseTime     = Carbon::now('Asia/Tehran')->subDays(2)->startOfDay()->addHours(10);
+        $offHoursTime = $baseTime->copy()->setTime(2, 0);
 
         // Create data for all activity types
 
         // Large transaction
         WalletTransaction::factory()->create([
-            'user_id' => $user1->id,
-            'amount' => 60000000,
-            'type' => \App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
-            'created_at' => $baseTime
+            'user_id'    => $user1->id,
+            'amount'     => 60000000,
+            'type'       => App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
+            'created_at' => $baseTime,
         ]);
 
         // Off-hours transaction
         WalletTransaction::factory()->create([
-            'user_id' => $user2->id, // Use user2 so we have 2 unique users
-            'amount' => 6000000,
-            'type' => \App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
-            'created_at' => $offHoursTime
+            'user_id'    => $user2->id, // Use user2 so we have 2 unique users
+            'amount'     => 6000000,
+            'type'       => App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
+            'created_at' => $offHoursTime,
         ]);
 
         // High frequency user transactions
         WalletTransaction::factory()->count(12)->create([
-            'user_id' => $user2->id,
-            'amount' => 1000000,
-            'type' => \App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
-            'created_at' => $baseTime->copy()->addHour()
+            'user_id'    => $user2->id,
+            'amount'     => 1000000,
+            'type'       => App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
+            'created_at' => $baseTime->copy()->addHour(),
         ]);
 
         // Round number transaction
         WalletTransaction::factory()->create([
-            'user_id' => $user1->id,
-            'amount' => 10000000,
-            'type' => \App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
-            'created_at' => $baseTime->copy()->addHours(2)
+            'user_id'    => $user1->id,
+            'amount'     => 10000000,
+            'type'       => App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
+            'created_at' => $baseTime->copy()->addHours(2),
         ]);
 
         // Rapid succession transactions
         WalletTransaction::factory()->create([
-            'user_id' => $user2->id,
-            'amount' => 12000000,
-            'type' => \App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
+            'user_id'    => $user2->id,
+            'amount'     => 12000000,
+            'type'       => App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
             'created_at' => $baseTime->copy()->addHours(3),
-            'metadata' => [
+            'metadata'   => [
                 'audit' => [
-                    'is_admin_initiated' => false
-                ]
-            ]
+                    'is_admin_initiated' => false,
+                ],
+            ],
         ]);
         WalletTransaction::factory()->create([
-            'user_id' => $user2->id,
-            'amount' => 13000000,
-            'type' => \App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
+            'user_id'    => $user2->id,
+            'amount'     => 13000000,
+            'type'       => App\Enums\Wallet\TransactionTypeEnum::DEPOSIT,
             'created_at' => $baseTime->copy()->addHours(3)->addMinutes(3),
-            'metadata' => [
+            'metadata'   => [
                 'audit' => [
-                    'is_admin_initiated' => false
-                ]
-            ]
+                    'is_admin_initiated' => false,
+                ],
+            ],
         ]);
 
         // Admin activity
         WalletTransaction::factory()->create([
-            'user_id' => $user1->id,
-            'amount' => 25000000,
-            'type' => \App\Enums\Wallet\TransactionTypeEnum::ADJUSTMENT,
+            'user_id'    => $user1->id,
+            'amount'     => 25000000,
+            'type'       => App\Enums\Wallet\TransactionTypeEnum::ADJUSTMENT,
             'created_at' => $baseTime->copy()->addHours(4),
-            'metadata' => [
+            'metadata'   => [
                 'audit' => [
-                    'is_admin_initiated' => true
-                ]
-            ]
+                    'is_admin_initiated' => true,
+                ],
+            ],
         ]);
 
         $data = SuspiciousActivityRequestData::from([
-            'date_from' =>$baseTime->copy()->subDay(),
-            'date_to' => $baseTime->copy()->addDay(),
-            'large_amount_threshold' => 50000000,
+            'date_from'                => $baseTime->copy()->subDay(),
+            'date_to'                  => $baseTime->copy()->addDay(),
+            'large_amount_threshold'   => 50000000,
             'high_frequency_threshold' => 10,
-            'include_large_amounts' => true,
-            'include_off_hours' => true,
-            'include_high_frequency' => true,
-            'include_round_numbers' => true,
+            'include_large_amounts'    => true,
+            'include_off_hours'        => true,
+            'include_high_frequency'   => true,
+            'include_round_numbers'    => true,
         ]);
 
         $result = $this->action->handle($data);
@@ -771,12 +771,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($result->summary['unique_users_involved'])->toBe(2);
 
         // Total should be sum of all activities
-        $expectedTotal = $result->summary['by_type']['large_transactions'] +
-                        $result->summary['by_type']['off_hours_transactions'] +
-                        $result->summary['by_type']['high_frequency_users'] +
-                        $result->summary['by_type']['round_number_patterns'] +
-                        $result->summary['by_type']['rapid_succession'] +
-                        $result->summary['by_type']['unusual_admin_activity'];
+        $expectedTotal = $result->summary['by_type']['large_transactions'] + $result->summary['by_type']['off_hours_transactions'] + $result->summary['by_type']['high_frequency_users'] + $result->summary['by_type']['round_number_patterns'] + $result->summary['by_type']['rapid_succession'] + $result->summary['by_type']['unusual_admin_activity'];
 
         expect($result->summary['total_suspicious_activities'])->toBe($expectedTotal);
     });

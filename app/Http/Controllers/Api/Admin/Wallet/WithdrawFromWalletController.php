@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Gate;
  *
  * @authenticated
  */
-class WithdrawFromWalletController extends Controller
+final class WithdrawFromWalletController extends Controller
 {
     /**
      * Withdraw funds from a wallet (admin action).
@@ -29,9 +29,9 @@ class WithdrawFromWalletController extends Controller
     {
         Gate::authorize('withdrawal', $wallet);
 
-        $transaction = $action->handle($data, auth('staff')->user(),$wallet);
+        $transaction = $action->handle($data, auth('staff')->user(), $wallet);
 
-        $transaction->load('wallet', 'user','source');
+        $transaction->load('wallet', 'user', 'source');
 
         return response()->created(WalletTransactionData::from($transaction));
     }

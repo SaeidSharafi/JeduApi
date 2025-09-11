@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 it('to array', function () {
-    $refund = \App\Models\Refund::factory()->create();
+    $refund = App\Models\Refund::factory()->create();
 
     expect($refund->toArray())->toBeArray()
         ->and($refund->toArray())->toHaveKeys([
@@ -19,17 +21,17 @@ it('to array', function () {
 });
 
 it('casts', function () {
-    $refund = \App\Models\Refund::factory()->create();
+    $refund = App\Models\Refund::factory()->create();
 
     expect($refund->transaction_details)->toBeArray()
-        ->and($refund->status)->toBeInstanceOf(\App\Enums\Order\RefundStatusEnum::class)
-        ->and($refund->refunded_at)->toBeInstanceOf(\Carbon\CarbonImmutable::class);
+        ->and($refund->status)->toBeInstanceOf(App\Enums\Order\RefundStatusEnum::class)
+        ->and($refund->refunded_at)->toBeInstanceOf(Carbon\CarbonImmutable::class);
 });
 
 it('relationships', function () {
-    $refund = \App\Models\Refund::factory()->create();
+    $refund = App\Models\Refund::factory()->create();
 
-    expect($refund->order)->toBeInstanceOf(\App\Models\Order::class)
-        ->and($refund->orderItem)->toBeInstanceOf(\App\Models\OrderItem::class)
-        ->and($refund->customer)->toBeInstanceOf(\App\Models\User::class);
+    expect($refund->order)->toBeInstanceOf(App\Models\Order::class)
+        ->and($refund->orderItem)->toBeInstanceOf(App\Models\OrderItem::class)
+        ->and($refund->customer)->toBeInstanceOf(App\Models\User::class);
 });

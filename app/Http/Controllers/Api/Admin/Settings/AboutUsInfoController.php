@@ -27,7 +27,7 @@ final class AboutUsInfoController extends Controller
     {
         Gate::authorize('viewAny', Setting::class);
 
-        $aboutUs = Setting::get('about_us', AboutUsData::getDefaults());
+        $aboutUs           = Setting::get('about_us', AboutUsData::getDefaults());
         $aboutUs['images'] = Setting::witImages($aboutUs);
 
         return response()->success(AboutUsData::from($aboutUs));
@@ -45,6 +45,7 @@ final class AboutUsInfoController extends Controller
 
         Setting::set('about_us', $data->toArray(), 'json', 'about');
         $aboutUs = Setting::get('about_us');
+
         return response()->success(
             AboutUsData::from($aboutUs),
             __('messages.updated', ['model' => __('messages.models.about_us')])

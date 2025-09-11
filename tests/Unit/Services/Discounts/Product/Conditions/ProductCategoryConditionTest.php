@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\Operators\MatchPolicyEnum;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
@@ -12,13 +14,13 @@ describe('ProductCategoryCondition', function () {
     test('it passes when product is in specified category', function () {
         // Arrange
         $condition = new ProductCategoryCondition();
-        $config = new ProductCategoryConditionConfigData(
+        $config    = new ProductCategoryConditionConfigData(
             category_ids: [1, 2, 3],
             match_policy: MatchPolicyEnum::ANY
         );
 
         $product = Product::factory()->create();
-        $option = ProductDeliveryOption::factory()->make(['id' => 999]);
+        $option  = ProductDeliveryOption::factory()->make(['id' => 999]);
         $option->setRelation('product', $product);
 
         // Mock the database query for categorizables
@@ -47,13 +49,13 @@ describe('ProductCategoryCondition', function () {
     test('it fails when product is not in any specified category', function () {
         // Arrange
         $condition = new ProductCategoryCondition();
-        $config = new ProductCategoryConditionConfigData(
+        $config    = new ProductCategoryConditionConfigData(
             category_ids: [1, 2, 3],
             match_policy: MatchPolicyEnum::ANY
         );
 
         $product = Product::factory()->create();
-        $option = ProductDeliveryOption::factory()->make(['id' => 999]);
+        $option  = ProductDeliveryOption::factory()->make(['id' => 999]);
         $option->setRelation('product', $product);
 
         // Mock the database query for categorizables
@@ -82,13 +84,13 @@ describe('ProductCategoryCondition', function () {
     test('it passes when no categories are specified', function () {
         // Arrange
         $condition = new ProductCategoryCondition();
-        $config = new ProductCategoryConditionConfigData(
+        $config    = new ProductCategoryConditionConfigData(
             category_ids: [], // Empty array
             match_policy: MatchPolicyEnum::ANY
         );
 
         $product = Product::factory()->create();
-        $option = ProductDeliveryOption::factory()->make(['id' => 999]);
+        $option  = ProductDeliveryOption::factory()->make(['id' => 999]);
         $option->setRelation('product', $product);
 
         // Act
@@ -101,13 +103,13 @@ describe('ProductCategoryCondition', function () {
     test('it fails when product has no ID', function () {
         // Arrange
         $condition = new ProductCategoryCondition();
-        $config = new ProductCategoryConditionConfigData(
+        $config    = new ProductCategoryConditionConfigData(
             category_ids: [1, 2, 3],
             match_policy: MatchPolicyEnum::ANY
         );
 
         $product = new Product(); // Product without ID
-        $option = ProductDeliveryOption::factory()->make(['id' => 999]);
+        $option  = ProductDeliveryOption::factory()->make(['id' => 999]);
         $option->setRelation('product', $product);
 
         // Act
@@ -119,13 +121,14 @@ describe('ProductCategoryCondition', function () {
 
     test('it returns false for invalid configuration type', function () {
         // Arrange
-        $condition = new ProductCategoryCondition();
-        $invalidConfig = new class extends \Spatie\LaravelData\Data {
+        $condition     = new ProductCategoryCondition();
+        $invalidConfig = new class extends Spatie\LaravelData\Data
+        {
             public function __construct(public string $invalid = 'config') {}
         };
 
         $product = Product::factory()->create();
-        $option = ProductDeliveryOption::factory()->make(['id' => 999]);
+        $option  = ProductDeliveryOption::factory()->make(['id' => 999]);
         $option->setRelation('product', $product);
 
         // Act

@@ -45,7 +45,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Register custom middleware aliases
         $middleware->alias([
-            'admin.audit' => \App\Http\Middleware\AdminAuditMiddleware::class,
+            'admin.audit' => App\Http\Middleware\AdminAuditMiddleware::class,
         ]);
 
     })
@@ -56,7 +56,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 || str_starts_with($request->path(), 'api/');
         };
 
-        $exceptions->renderable(function (\App\Exceptions\InvalidJalaliDateException $e, $request) use ($isApiRequest)  {
+        $exceptions->renderable(function (App\Exceptions\InvalidJalaliDateException $e, $request) use ($isApiRequest) {
             // Check if the request expects a JSON response (typical for APIs)
             if ($isApiRequest($request)) {
                 // Throw a standard Laravel ValidationException

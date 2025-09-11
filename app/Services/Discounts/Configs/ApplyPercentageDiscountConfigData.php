@@ -12,9 +12,9 @@ final class ApplyPercentageDiscountConfigData extends Data
         public int $percentage, // e.g., 15 for 15%
     ) {}
 
-     /**
-     *
+    /**
      * @return array<string, mixed>
+     *
      * @codeCoverageIgnore
      */
     public static function rules(): array
@@ -24,9 +24,9 @@ final class ApplyPercentageDiscountConfigData extends Data
         ];
     }
 
-     /**
-     *
+    /**
      * @return array<string, string>
+     *
      * @codeCoverageIgnore
      */
     public static function descriptions(): array

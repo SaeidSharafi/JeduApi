@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services\Discounts\Product\Actions;
@@ -19,11 +20,12 @@ final class ApplyPercentageDiscountToProductAction implements ProductDiscountAct
 
     public function apply(ProductDeliveryOption $option, Data $configuration): int
     {
-        if (!$configuration instanceof ApplyPercentageDiscountConfigData) {
+        if (! $configuration instanceof ApplyPercentageDiscountConfigData) {
             return $option->price;
         }
         $discountRate = $configuration->percentage / 100;
-        $discounted = (int) round($option->price * (1 - $discountRate));
+        $discounted   = (int) round($option->price * (1 - $discountRate));
+
         return max($discounted, 0);
     }
 }

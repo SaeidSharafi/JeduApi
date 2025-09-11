@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Enums\Order\DiscountTypeEnum;
 use App\Rules\CheckDiscountConfigurationRule;
 use App\Services\Discounts\DiscountMetadataService;
-use App\Enums\Order\DiscountTypeEnum;
 
 beforeEach(function () {
     // Create mock config classes that will be used in the tests
-    if (!class_exists('MockConditionConfig')) {
+    if (! class_exists('MockConditionConfig')) {
         eval('
             class MockConditionConfig {
                 public function __construct(
@@ -26,7 +26,7 @@ beforeEach(function () {
         ');
     }
 
-    if (!class_exists('MockActionConfig')) {
+    if (! class_exists('MockActionConfig')) {
         eval('
             class MockActionConfig {
                 public function __construct(
@@ -46,7 +46,7 @@ beforeEach(function () {
 
     // Mock the service to return our mock config classes
     $this->mockService = $this->mock(DiscountMetadataService::class);
-    $this->rule = new CheckDiscountConfigurationRule($this->mockService);
+    $this->rule        = new CheckDiscountConfigurationRule($this->mockService);
 });
 
 describe('CheckDiscountConfigurationRule', function () {
@@ -59,7 +59,7 @@ describe('CheckDiscountConfigurationRule', function () {
         };
 
         // Should not throw any exception
-        expect(fn() => $this->rule->validate('rules', [], $fail))->not->toThrow(Exception::class);
+        expect(fn () => $this->rule->validate('rules', [], $fail))->not->toThrow(Exception::class);
     });
 
     it('passes validation when type is not set', function () {
@@ -71,31 +71,31 @@ describe('CheckDiscountConfigurationRule', function () {
 
         $rules = [
             [
-                'type' => 'condition',
-                'handler' => 'mock_condition',
-                'configuration' => ['value' => 100]
-            ]
+                'type'          => 'condition',
+                'handler'       => 'mock_condition',
+                'configuration' => ['value' => 100],
+            ],
         ];
 
         // Should not throw any exception when type is not set
-        expect(fn() => $this->rule->validate('rules', $rules, $fail))->not->toThrow(Exception::class);
+        expect(fn () => $this->rule->validate('rules', $rules, $fail))->not->toThrow(Exception::class);
     });
 
     it('fails validation when rule structure is invalid', function () {
         $this->rule->setData(['type' => 'cart_checkout']);
 
         $failed = false;
-        $fail = function ($message) use (&$failed) {
+        $fail   = function ($message) use (&$failed) {
             $failed = true;
             expect($message)->toBe(__('discount.validation.missing_required_keys', ['attribute' => 'rules']));
         };
 
         $rules = [
             [
-                'type' => 'condition',
-                'handler' => 'mock_condition'
+                'type'    => 'condition',
+                'handler' => 'mock_condition',
                 // Missing 'configuration' key
-            ]
+            ],
         ];
 
         $this->rule->validate('rules', $rules, $fail);
@@ -110,17 +110,17 @@ describe('CheckDiscountConfigurationRule', function () {
             ->andReturn(null);
 
         $failed = false;
-        $fail = function ($message) use (&$failed) {
+        $fail   = function ($message) use (&$failed) {
             $failed = true;
             expect($message)->toBe(__('discount.validation.handler_not_recognized', ['handler' => 'unknown_handler']));
         };
 
         $rules = [
             [
-                'type' => 'condition',
-                'handler' => 'unknown_handler',
-                'configuration' => ['value' => 100]
-            ]
+                'type'          => 'condition',
+                'handler'       => 'unknown_handler',
+                'configuration' => ['value' => 100],
+            ],
         ];
 
         $this->rule->validate('rules', $rules, $fail);
@@ -135,20 +135,20 @@ describe('CheckDiscountConfigurationRule', function () {
             ->andReturn('MockConditionConfig');
 
         $failed = false;
-        $fail = function ($message) use (&$failed) {
+        $fail   = function ($message) use (&$failed) {
             $failed = true;
             expect($message)->toContain(__('discount.validation.configuration_invalid', [
                 'handler' => 'mock_condition',
-                'errors' => ''
+                'errors'  => '',
             ]));
         };
 
         $rules = [
             [
-                'type' => 'condition',
-                'handler' => 'mock_condition',
-                'configuration' => ['value' => 'invalid_integer'] // Should be integer
-            ]
+                'type'          => 'condition',
+                'handler'       => 'mock_condition',
+                'configuration' => ['value' => 'invalid_integer'], // Should be integer
+            ],
         ];
 
         $this->rule->validate('rules', $rules, $fail);
@@ -163,17 +163,17 @@ describe('CheckDiscountConfigurationRule', function () {
             ->andReturn('MockActionConfig');
 
         $failed = false;
-        $fail = function ($message) use (&$failed) {
+        $fail   = function ($message) use (&$failed) {
             $failed = true;
             expect($message)->toBe(__('discount.validation.condition_required', ['attribute' => 'rules']));
         };
 
         $rules = [
             [
-                'type' => 'action',
-                'handler' => 'mock_action',
-                'configuration' => ['percentage' => 10.0]
-            ]
+                'type'          => 'action',
+                'handler'       => 'mock_action',
+                'configuration' => ['percentage' => 10.0],
+            ],
         ];
 
         $this->rule->validate('rules', $rules, $fail);
@@ -182,8 +182,8 @@ describe('CheckDiscountConfigurationRule', function () {
 
     it('passes validation when no condition but has coupons for cart_checkout', function () {
         $this->rule->setData([
-            'type' => 'cart_checkout',
-            'coupons' => ['COUPON1', 'COUPON2']
+            'type'    => 'cart_checkout',
+            'coupons' => ['COUPON1', 'COUPON2'],
         ]);
 
         $this->mockService->shouldReceive('getConfigurationClass')
@@ -196,14 +196,14 @@ describe('CheckDiscountConfigurationRule', function () {
 
         $rules = [
             [
-                'type' => 'action',
-                'handler' => 'mock_action',
-                'configuration' => ['percentage' => 10.0]
-            ]
+                'type'          => 'action',
+                'handler'       => 'mock_action',
+                'configuration' => ['percentage' => 10.0],
+            ],
         ];
 
         // Should not throw any exception
-        expect(fn() => $this->rule->validate('rules', $rules, $fail))->not->toThrow(Exception::class);
+        expect(fn () => $this->rule->validate('rules', $rules, $fail))->not->toThrow(Exception::class);
     });
 
     it('fails validation when no action is present', function () {
@@ -214,17 +214,17 @@ describe('CheckDiscountConfigurationRule', function () {
             ->andReturn('MockConditionConfig');
 
         $failed = false;
-        $fail = function ($message) use (&$failed) {
+        $fail   = function ($message) use (&$failed) {
             $failed = true;
             expect($message)->toBe(__('discount.validation.action_required', ['attribute' => 'rules']));
         };
 
         $rules = [
             [
-                'type' => 'condition',
-                'handler' => 'mock_condition',
-                'configuration' => ['value' => 100, 'operator' => 'greater_than'] // Valid config
-            ]
+                'type'          => 'condition',
+                'handler'       => 'mock_condition',
+                'configuration' => ['value' => 100, 'operator' => 'greater_than'], // Valid config
+            ],
         ];
 
         $this->rule->validate('rules', $rules, $fail);
@@ -248,19 +248,19 @@ describe('CheckDiscountConfigurationRule', function () {
 
         $rules = [
             [
-                'type' => 'condition',
-                'handler' => 'mock_condition',
-                'configuration' => ['value' => 100, 'operator' => 'greater_than']
+                'type'          => 'condition',
+                'handler'       => 'mock_condition',
+                'configuration' => ['value' => 100, 'operator' => 'greater_than'],
             ],
             [
-                'type' => 'action',
-                'handler' => 'mock_action',
-                'configuration' => ['percentage' => 15.5, 'apply_to_all' => true]
-            ]
+                'type'          => 'action',
+                'handler'       => 'mock_action',
+                'configuration' => ['percentage' => 15.5, 'apply_to_all' => true],
+            ],
         ];
 
         // Should not throw any exception
-        expect(fn() => $this->rule->validate('rules', $rules, $fail))->not->toThrow(Exception::class);
+        expect(fn () => $this->rule->validate('rules', $rules, $fail))->not->toThrow(Exception::class);
     });
 
     it('works with product_specific discount type', function () {
@@ -280,19 +280,19 @@ describe('CheckDiscountConfigurationRule', function () {
 
         $rules = [
             [
-                'type' => 'condition',
-                'handler' => 'mock_condition',
-                'configuration' => ['value' => 50, 'operator' => 'greater_than'] // Valid config
+                'type'          => 'condition',
+                'handler'       => 'mock_condition',
+                'configuration' => ['value' => 50, 'operator' => 'greater_than'], // Valid config
             ],
             [
-                'type' => 'action',
-                'handler' => 'mock_action',
-                'configuration' => ['percentage' => 20.0, 'apply_to_all' => false] // Valid config
-            ]
+                'type'          => 'action',
+                'handler'       => 'mock_action',
+                'configuration' => ['percentage' => 20.0, 'apply_to_all' => false], // Valid config
+            ],
         ];
 
         // Should not throw any exception
-        expect(fn() => $this->rule->validate('rules', $rules, $fail))->not->toThrow(Exception::class);
+        expect(fn () => $this->rule->validate('rules', $rules, $fail))->not->toThrow(Exception::class);
     });
 
     it('handles multiple validation errors in configuration', function () {
@@ -303,11 +303,11 @@ describe('CheckDiscountConfigurationRule', function () {
             ->andReturn('MockConditionConfig');
 
         $failed = false;
-        $fail = function ($message) use (&$failed) {
+        $fail   = function ($message) use (&$failed) {
             $failed = true;
             expect($message)->toContain(__('discount.validation.configuration_invalid', [
                 'handler' => 'mock_condition',
-                'errors' => ''
+                'errors'  => '',
             ]));
             // Should contain multiple validation errors
             expect($message)->toContain('value');
@@ -315,13 +315,13 @@ describe('CheckDiscountConfigurationRule', function () {
 
         $rules = [
             [
-                'type' => 'condition',
-                'handler' => 'mock_condition',
+                'type'          => 'condition',
+                'handler'       => 'mock_condition',
                 'configuration' => [
-                    'value' => -10, // Invalid: should be min:1
-                    'operator' => 'invalid_operator' // Invalid: not in allowed list
-                ]
-            ]
+                    'value'    => -10, // Invalid: should be min:1
+                    'operator' => 'invalid_operator', // Invalid: not in allowed list
+                ],
+            ],
         ];
 
         $this->rule->validate('rules', $rules, $fail);
@@ -337,14 +337,14 @@ describe('CheckDiscountConfigurationRule', function () {
 
         $rules = [
             [
-                'type' => 'condition',
-                'handler' => 'mock_condition',
-                'configuration' => ['value' => 100]
-            ]
+                'type'          => 'condition',
+                'handler'       => 'mock_condition',
+                'configuration' => ['value' => 100],
+            ],
         ];
 
         // Should not throw any exception when type is invalid
-        expect(fn() => $this->rule->validate('rules', $rules, $fail))->not->toThrow(Exception::class);
+        expect(fn () => $this->rule->validate('rules', $rules, $fail))->not->toThrow(Exception::class);
     });
 
     it('handles non-array rules input', function () {
@@ -355,14 +355,14 @@ describe('CheckDiscountConfigurationRule', function () {
         };
 
         // Should not throw any exception when rules is not an array
-        expect(fn() => $this->rule->validate('rules', 'not_an_array', $fail))->not->toThrow(Exception::class);
-        expect(fn() => $this->rule->validate('rules', null, $fail))->not->toThrow(Exception::class);
+        expect(fn () => $this->rule->validate('rules', 'not_an_array', $fail))->not->toThrow(Exception::class);
+        expect(fn () => $this->rule->validate('rules', null, $fail))->not->toThrow(Exception::class);
     });
 
     it('handles empty coupons array for cart_checkout', function () {
         $this->rule->setData([
-            'type' => 'cart_checkout',
-            'coupons' => [] // Empty array
+            'type'    => 'cart_checkout',
+            'coupons' => [], // Empty array
         ]);
 
         $this->mockService->shouldReceive('getConfigurationClass')
@@ -370,17 +370,17 @@ describe('CheckDiscountConfigurationRule', function () {
             ->andReturn('MockActionConfig');
 
         $failed = false;
-        $fail = function ($message) use (&$failed) {
+        $fail   = function ($message) use (&$failed) {
             $failed = true;
             expect($message)->toBe(__('discount.validation.condition_required', ['attribute' => 'rules']));
         };
 
         $rules = [
             [
-                'type' => 'action',
-                'handler' => 'mock_action',
-                'configuration' => ['percentage' => 10.0, 'apply_to_all' => true]
-            ]
+                'type'          => 'action',
+                'handler'       => 'mock_action',
+                'configuration' => ['percentage' => 10.0, 'apply_to_all' => true],
+            ],
         ];
 
         $this->rule->validate('rules', $rules, $fail);
@@ -391,17 +391,17 @@ describe('CheckDiscountConfigurationRule', function () {
         $this->rule->setData(['type' => 'cart_checkout']);
 
         $failed = false;
-        $fail = function ($message) use (&$failed) {
+        $fail   = function ($message) use (&$failed) {
             $failed = true;
             expect($message)->toBe(__('discount.validation.missing_required_keys', ['attribute' => 'rules']));
         };
 
         $rules = [
             [
-                'handler' => 'mock_condition',
-                'configuration' => ['value' => 100]
+                'handler'       => 'mock_condition',
+                'configuration' => ['value' => 100],
                 // Missing 'type' key
-            ]
+            ],
         ];
 
         $this->rule->validate('rules', $rules, $fail);

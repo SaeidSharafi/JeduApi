@@ -14,13 +14,11 @@ final class CartValueConditionConfigData extends Data
         public MathOperatorEnum $operator,
         public int $value,      // The value to compare against
         public bool $include_prepayments, // If true, check against the cart's full value
-    )
-    {
-    }
+    ) {}
 
-     /**
-     *
+    /**
      * @return array<string, mixed>
+     *
      * @codeCoverageIgnore
      */
     public static function rules(): array
@@ -32,9 +30,9 @@ final class CartValueConditionConfigData extends Data
         ];
     }
 
-     /**
-     *
+    /**
      * @return array<string, string>
+     *
      * @codeCoverageIgnore
      */
     public static function descriptions(): array

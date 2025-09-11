@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Discounts;
 
-use App\Data\Casts\AdvancedDateTimeInterfaceCast;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Order\DiscountTypeEnum;
 use Hekmatinasser\Verta\Verta;

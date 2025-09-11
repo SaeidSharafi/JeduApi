@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
 use App\Data\Admin\Discounts\OrderContextData;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Models\ProductDeliveryOption;
-use App\Services\Discounts\Configs\ApplyPercentageDiscountConfigData;
 use App\Services\Discounts\Cart\Actions\ApplyPercentageDiscountToItemsAction;
+use App\Services\Discounts\Configs\ApplyPercentageDiscountConfigData;
 
 it('does not apply discount if discount is greater than the item price', function () {
     // This test covers: if ($discountPerUnit > $item->price)
@@ -18,10 +20,10 @@ it('does not apply discount if discount is greater than the item price', functio
         qty: 1, payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT, price: 1000, total: 1000
     );
     $context = OrderContextData::from([
-        'customer'                    => \App\Models\User::factory()->create(),
+        'customer'                    => App\Models\User::factory()->create(),
         'items'                       => [$item],
         'subtotal_full_payment_items' => 20000,
-        'subtotal_all_items'          => 20000
+        'subtotal_all_items'          => 20000,
     ]);
 
     $handler->apply($context, $config);
@@ -33,11 +35,10 @@ it('does not apply discount if discount is greater than the item price', functio
 
 it('returns early if configuration is not the correct type', function () {
     // This test covers: if (!$configuration instanceof ...)
-    $handler = new ApplyPercentageDiscountToItemsAction();
-    $wrongConfig = new class extends \Spatie\LaravelData\Data {
-        public function __construct()
-        {
-        }
+    $handler     = new ApplyPercentageDiscountToItemsAction();
+    $wrongConfig = new class extends Spatie\LaravelData\Data
+    {
+        public function __construct() {}
     };
 
     $item = new CalculatedOrderItemData(
@@ -46,10 +47,10 @@ it('returns early if configuration is not the correct type', function () {
     );
     $context = OrderContextData::from(
         [
-            'customer'                    => \App\Models\User::factory()->create(),
+            'customer'                    => App\Models\User::factory()->create(),
             'items'                       => [$item],
             'subtotal_full_payment_items' => 20000,
-            'subtotal_all_items'          => 20000
+            'subtotal_all_items'          => 20000,
         ]
     );
 
@@ -62,13 +63,13 @@ it('returns early if configuration is not the correct type', function () {
 it('applies a percentage discount to a full payment item', function () {
     // Arrange
     $handler = new ApplyPercentageDiscountToItemsAction();
-    $config = new ApplyPercentageDiscountConfigData(percentage: 25); // 25% off
+    $config  = new ApplyPercentageDiscountConfigData(percentage: 25); // 25% off
 
     $item = new CalculatedOrderItemData(
         product_delivery_option: ProductDeliveryOption::factory()->make([
             'price'             => 20000,
             'prepayment_amount' => 0,
-            'is_prepayment'     => false
+            'is_prepayment'     => false,
         ]),
         qty: 1,
         payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT,
@@ -77,10 +78,10 @@ it('applies a percentage discount to a full payment item', function () {
     );
     $context = OrderContextData::from(
         [
-            'customer'                    => \App\Models\User::factory()->create(),
+            'customer'                    => App\Models\User::factory()->create(),
             'items'                       => [$item],
             'subtotal_full_payment_items' => 20000,
-            'subtotal_all_items'          => 20000
+            'subtotal_all_items'          => 20000,
         ]);
 
     // Act
@@ -88,20 +89,20 @@ it('applies a percentage discount to a full payment item', function () {
 
     // Assert
     expect($context->items[0]->discount_amount)->toBe(5000) // 25% of 20000
-    ->and($context->items[0]->total)->toBe(15000);
+        ->and($context->items[0]->total)->toBe(15000);
 });
 
 it('does not apply discount to a prepayment item', function () {
     // Arrange
     $handler = new ApplyPercentageDiscountToItemsAction();
-    $config = new ApplyPercentageDiscountConfigData(percentage: 25);
+    $config  = new ApplyPercentageDiscountConfigData(percentage: 25);
 
     $item = new CalculatedOrderItemData(
         product_delivery_option: ProductDeliveryOption::factory()->make(
             [
                 'price'             => 20000,
                 'prepayment_amount' => 2000,
-                'is_prepayment'     => true
+                'is_prepayment'     => true,
             ]),
         qty: 1, payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT,
         price: 20000,
@@ -110,10 +111,10 @@ it('does not apply discount to a prepayment item', function () {
     );
     $context = OrderContextData::from(
         [
-            'customer'                    => \App\Models\User::factory()->create(),
+            'customer'                    => App\Models\User::factory()->create(),
             'items'                       => [$item],
             'subtotal_full_payment_items' => 20000,
-            'subtotal_all_items'          => 2000
+            'subtotal_all_items'          => 2000,
         ]
     );
 

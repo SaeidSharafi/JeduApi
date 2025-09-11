@@ -11,7 +11,7 @@ use App\Services\Payment\PaymentProcessorFactory;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 // Simple mock processor for testing
-class MockWalletProcessor implements PaymentProcessorContract
+final class MockWalletProcessor implements PaymentProcessorContract
 {
     public function canHandle(PaymentMethodEnum $paymentMethod): bool
     {
@@ -24,7 +24,7 @@ class MockWalletProcessor implements PaymentProcessorContract
     }
 }
 
-class MockBankTransferProcessor implements PaymentProcessorContract
+final class MockBankTransferProcessor implements PaymentProcessorContract
 {
     public function canHandle(PaymentMethodEnum $paymentMethod): bool
     {
@@ -37,7 +37,7 @@ class MockBankTransferProcessor implements PaymentProcessorContract
     }
 }
 
-class MockUnsupportedProcessor implements PaymentProcessorContract
+final class MockUnsupportedProcessor implements PaymentProcessorContract
 {
     public function canHandle(PaymentMethodEnum $paymentMethod): bool
     {
@@ -54,7 +54,7 @@ describe('PaymentProcessorFactory', function () {
 
     beforeEach(function () {
         // Create simple mock processors for testing
-        $this->walletProcessor = new MockWalletProcessor();
+        $this->walletProcessor       = new MockWalletProcessor();
         $this->bankTransferProcessor = new MockBankTransferProcessor();
 
         $this->processors = [
@@ -72,7 +72,7 @@ describe('PaymentProcessorFactory', function () {
 
     it('constructs with iterator of processors', function () {
         $iterator = new ArrayIterator($this->processors);
-        $factory = new PaymentProcessorFactory($iterator);
+        $factory  = new PaymentProcessorFactory($iterator);
         expect($factory)->toBeInstanceOf(PaymentProcessorFactory::class);
     });
 
@@ -82,7 +82,7 @@ describe('PaymentProcessorFactory', function () {
             'invalid_processor', // This should cause a type error
         ];
 
-        expect(fn() => new PaymentProcessorFactory($invalidProcessors))
+        expect(fn () => new PaymentProcessorFactory($invalidProcessors))
             ->toThrow(TypeError::class);
     });
 
@@ -101,7 +101,7 @@ describe('PaymentProcessorFactory', function () {
     });
 
     it('throws exception when no processor can handle the method', function () {
-        expect(fn() => $this->factory->make(PaymentMethodEnum::ONLINE_GATEWAY))
+        expect(fn () => $this->factory->make(PaymentMethodEnum::ONLINE_GATEWAY))
             ->toThrow(InvalidArgumentException::class, 'No payment processor found for method: online_gateway');
     });
 
@@ -115,7 +115,7 @@ describe('PaymentProcessorFactory', function () {
             $this->bankTransferProcessor,
         ];
 
-        $factory = new PaymentProcessorFactory($processorsWithDuplicate);
+        $factory   = new PaymentProcessorFactory($processorsWithDuplicate);
         $processor = $factory->make(PaymentMethodEnum::WALLET);
 
         // Should return the first matching processor
@@ -125,15 +125,15 @@ describe('PaymentProcessorFactory', function () {
     it('handles empty processor list gracefully', function () {
         $factory = new PaymentProcessorFactory([]);
 
-        expect(fn() => $factory->make(PaymentMethodEnum::WALLET))
+        expect(fn () => $factory->make(PaymentMethodEnum::WALLET))
             ->toThrow(InvalidArgumentException::class, 'No payment processor found for method: wallet');
     });
 
     it('maintains processor order during iteration', function () {
         // Create processors in specific order where all can handle the same method
-        $firstWalletProcessor = new MockWalletProcessor();
+        $firstWalletProcessor  = new MockWalletProcessor();
         $secondWalletProcessor = new MockWalletProcessor();
-        $thirdWalletProcessor = new MockWalletProcessor();
+        $thirdWalletProcessor  = new MockWalletProcessor();
 
         $factory = new PaymentProcessorFactory([
             $firstWalletProcessor,
@@ -168,14 +168,13 @@ describe('PaymentProcessorFactory', function () {
         $processor = $singleProcessorFactory->make(PaymentMethodEnum::WALLET);
         expect($processor)->toBe($this->walletProcessor);
 
-        expect(fn() => $singleProcessorFactory->make(PaymentMethodEnum::BANK_TRANSFER))
+        expect(fn () => $singleProcessorFactory->make(PaymentMethodEnum::BANK_TRANSFER))
             ->toThrow(InvalidArgumentException::class);
     });
 
-
     it('works with processor that always returns false', function () {
         $unsupportedProcessor = new MockUnsupportedProcessor();
-        $factory = new PaymentProcessorFactory([
+        $factory              = new PaymentProcessorFactory([
             $unsupportedProcessor,
             $this->walletProcessor,
         ]);
@@ -207,7 +206,7 @@ describe('PaymentProcessorFactory', function () {
     });
 
     it('returns different processors for different methods', function () {
-        $walletProcessor = $this->factory->make(PaymentMethodEnum::WALLET);
+        $walletProcessor       = $this->factory->make(PaymentMethodEnum::WALLET);
         $bankTransferProcessor = $this->factory->make(PaymentMethodEnum::BANK_TRANSFER);
 
         expect($walletProcessor)->not()->toBe($bankTransferProcessor)

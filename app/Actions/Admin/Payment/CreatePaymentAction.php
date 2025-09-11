@@ -11,19 +11,15 @@ use App\Events\PaymentCompletedEvent;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Staff;
-use App\Services\Payment\BankTransferPaymentProcessor;
 use App\Services\Payment\PaymentProcessorFactory;
-use App\Services\Payment\WalletPaymentProcessor;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use InvalidArgumentException;
 
 final readonly class CreatePaymentAction
 {
     public function __construct(
         private PaymentProcessorFactory $processorFactory,
-    ) {
-    }
+    ) {}
 
     public function handle(Order $order, PaymentCreateData $data, Staff $admin): ?Payment
     {
@@ -35,16 +31,17 @@ final readonly class CreatePaymentAction
                 if ($order->payments()->where('status', 'completed')->exists()) {
                     return null;
                 }
+
                 return $this->createFreeOrderPayment($order, $data, $admin);
             }
 
             // Validate order state
             $this->validateOrderState($order);
 
-
             $amount = $this->calculateRequiredPayment($order);
 
             $processor = $this->processorFactory->make(PaymentMethodEnum::from($data->method));
+
             return $processor->process($order, $data, $admin, $amount);
         });
     }
@@ -62,6 +59,7 @@ final readonly class CreatePaymentAction
         ]);
 
         PaymentCompletedEvent::dispatch($payment);
+
         return $payment;
     }
 
@@ -84,7 +82,7 @@ final readonly class CreatePaymentAction
     {
         $hasCompletedPayments = $order->payments()->where('status', 'completed')->exists();
 
-        if (!$hasCompletedPayments) {
+        if (! $hasCompletedPayments) {
             // First payment: sum of all order items
             return $order->items->sum('total');
         }

@@ -11,23 +11,23 @@ use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\Staff;
 use App\Models\Wallet;
+use Exception;
 
-readonly class DepositToWalletAction
+final readonly class DepositToWalletAction
 {
     public function __construct(
         private RecordWalletTransactionAction $recordTransactionAction
-    ) {
-    }
+    ) {}
 
     /**
      * Deposit amount to user's wallet.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function handle(DepositToWalletData $data, Staff $staff, Wallet $wallet): \App\Models\WalletTransaction
     {
-        if (!$wallet->isActive()) {
-            throw new \Exception(__('validation.custom.wallet_not_active'));
+        if (! $wallet->isActive()) {
+            throw new Exception(__('validation.custom.wallet_not_active'));
         }
 
         return $this->recordTransactionAction->execute(new RecordTransactionData(

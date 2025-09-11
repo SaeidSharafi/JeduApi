@@ -31,8 +31,8 @@ final class DiscountPromotion extends Model
         'ends_at'                          => 'datetime',
         'stop_processing_subsequent_rules' => 'boolean',
         'type'                             => DiscountTypeEnum::class,
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'created_at'                       => 'datetime',
+        'updated_at'                       => 'datetime',
     ];
 
     /**

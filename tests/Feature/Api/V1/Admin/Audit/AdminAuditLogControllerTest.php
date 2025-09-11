@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Enums\PermissionEnum;
 use App\Models\AdminActionLog;
 use App\Models\Staff;
 use App\Models\User;
-use App\Enums\PermissionEnum;
-
 use Tests\AuthTestTrait;
+
 use function Pest\Laravel\getJson;
 
 uses(AuthTestTrait::class);
@@ -15,7 +15,7 @@ uses(AuthTestTrait::class);
 describe('AdminAuditLogIndexController', function () {
 
     beforeEach(function () {
-        $this->admin = Staff::factory()->create();
+        $this->admin   = Staff::factory()->create();
         $this->baseUrl = '/api/v1/admin/audit/admin-actions';
     });
 
@@ -23,7 +23,7 @@ describe('AdminAuditLogIndexController', function () {
         AdminActionLog::factory()->count(3)->create();
         $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW]);
         $response = getJson($this->baseUrl);
-        //"message" => "گزارش\u{200C}های حسابرسی مدیریت با موفقیت بارگیری شد"
+        // "message" => "گزارش\u{200C}های حسابرسی مدیریت با موفقیت بارگیری شد"
         //  "data" => array:13 [
         //    "current_page" => 1
         //    "data" => array:3 [
@@ -150,9 +150,9 @@ describe('AdminAuditLogIndexController', function () {
                             'risk_level',
                             'created_at',
                             'action_summery',
-                        ]
-                    ]
-                ]
+                        ],
+                    ],
+                ],
             ]);
     });
 
@@ -276,7 +276,7 @@ describe('AdminAuditLogIndexController', function () {
     });
 
     it('can filter by date_from', function () {
-        $oldLog = AdminActionLog::factory()->create(['created_at' => now()->subWeek()]);
+        $oldLog    = AdminActionLog::factory()->create(['created_at' => now()->subWeek()]);
         $recentLog = AdminActionLog::factory()->create(['created_at' => now()->subDay()]);
 
         $filterDate = now()->subDays(3)->format('Y-m-d');
@@ -291,7 +291,7 @@ describe('AdminAuditLogIndexController', function () {
     });
 
     it('can filter by date_to', function () {
-        $oldLog = AdminActionLog::factory()->create(['created_at' => now()->subWeek()]);
+        $oldLog    = AdminActionLog::factory()->create(['created_at' => now()->subWeek()]);
         $recentLog = AdminActionLog::factory()->create(['created_at' => now()->subDay()]);
 
         $filterDate = now()->subDays(3)->format('Y-m-d');
@@ -309,10 +309,10 @@ describe('AdminAuditLogIndexController', function () {
         $targetAdmin = Staff::factory()->create(['name' => 'Admin Test']);
         AdminActionLog::factory()->create([
             'admin_id'   => $targetAdmin->id,
-            'route_name' => 'admin.users.store'
+            'route_name' => 'admin.users.store',
         ]);
         AdminActionLog::factory()->create([
-            'route_name' => 'admin.wallet.transaction.create'
+            'route_name' => 'admin.wallet.transaction.create',
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
@@ -403,16 +403,16 @@ describe('AdminAuditLogIndexController', function () {
         AdminActionLog::factory()->create([
             'admin_id'    => $targetAdmin->id,
             'action_type' => 'create',
-            'risk_level'  => 'high'
+            'risk_level'  => 'high',
         ]);
         AdminActionLog::factory()->create([
             'admin_id'    => $targetAdmin->id,
             'action_type' => 'update',
-            'risk_level'  => 'low'
+            'risk_level'  => 'low',
         ]);
         AdminActionLog::factory()->create([
             'action_type' => 'create',
-            'risk_level'  => 'high'
+            'risk_level'  => 'high',
         ]); // Different admin
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])

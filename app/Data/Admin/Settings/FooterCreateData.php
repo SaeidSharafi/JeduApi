@@ -27,19 +27,19 @@ final class FooterCreateData extends Data
     public static function rules(ValidationContext $context): array
     {
         return [
-            'logo' => ['nullable', 'integer', 'exists:media,id'],
-            'caption' => ['required', 'string', 'max:255'],
-            'support_link' => ['required', 'string', 'max:255'],
+            'logo'                  => ['nullable', 'integer', 'exists:media,id'],
+            'caption'               => ['required', 'string', 'max:255'],
+            'support_link'          => ['required', 'string', 'max:255'],
             'support_email_address' => ['required', 'string', 'email', 'max:255'],
-            'addresses' => ['required', 'array'],
-            'categories' => ['required', 'array'],
-            'categories.*' => ['integer', 'exists:categories,id'],
-            'main_links' => ['required', 'array'],
-            'main_links.*.title' => ['required', 'string', 'max:255'],
-            'main_links.*.link' => ['required', 'string', 'max:255'],
-            'social_media_links' => ['required', 'array'],
-            'certifications' => ['required', 'array'],
-            'certifications.*' => ['required', 'string'],
+            'addresses'             => ['required', 'array'],
+            'categories'            => ['required', 'array'],
+            'categories.*'          => ['integer', 'exists:categories,id'],
+            'main_links'            => ['required', 'array'],
+            'main_links.*.title'    => ['required', 'string', 'max:255'],
+            'main_links.*.link'     => ['required', 'string', 'max:255'],
+            'social_media_links'    => ['required', 'array'],
+            'certifications'        => ['required', 'array'],
+            'certifications.*'      => ['required', 'string'],
         ];
     }
 }

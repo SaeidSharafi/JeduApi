@@ -10,8 +10,8 @@ enum OrderItemStatusEnum: string
 {
     use AdvanceEnum;
 
-    case PENDING    = 'pending';
-    case COMPLETED    = 'completed';
+    case PENDING   = 'pending';
+    case COMPLETED = 'completed';
     case CANCELLED = 'cancelled';
     case REFUNDED  = 'refunded';
 }

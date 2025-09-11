@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Discounts;
 
-use App\Data\Casts\AdvancedDateTimeInterfaceCast;
 use Hekmatinasser\Verta\Verta;
-use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
 
 final class DiscountPromotionRuleData extends Data

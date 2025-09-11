@@ -9,20 +9,20 @@ test('to array', function () {
 
     expect($discount->toArray())
         ->toEqual([
-            'id'                            => $discount->id,
-            'name'                          => $discount->name,
-            'description'                   => $discount->description,
-            'type'                          => $discount->type->value,
-            'is_active'                     => $discount->is_active,
-            'starts_at'                     => $discount->starts_at?->utc()->toJSON(),
-            'ends_at'                       => $discount->ends_at?->utc()->toJSON(),
-            'priority'                      => $discount->priority,
+            'id'                               => $discount->id,
+            'name'                             => $discount->name,
+            'description'                      => $discount->description,
+            'type'                             => $discount->type->value,
+            'is_active'                        => $discount->is_active,
+            'starts_at'                        => $discount->starts_at?->utc()->toJSON(),
+            'ends_at'                          => $discount->ends_at?->utc()->toJSON(),
+            'priority'                         => $discount->priority,
             'stop_processing_subsequent_rules' => $discount->stop_processing_subsequent_rules,
-            'usage_limit_total'             => $discount->usage_limit_total,
-            'usage_limit_per_customer'      => $discount->usage_limit_per_customer,
-            'total_usage_count'             => $discount->total_usage_count,
-            'created_at'                    => $discount->created_at?->utc()->toJSON(),
-            'updated_at'                    => $discount->updated_at?->utc()->toJSON(),
+            'usage_limit_total'                => $discount->usage_limit_total,
+            'usage_limit_per_customer'         => $discount->usage_limit_per_customer,
+            'total_usage_count'                => $discount->total_usage_count,
+            'created_at'                       => $discount->created_at?->utc()->toJSON(),
+            'updated_at'                       => $discount->updated_at?->utc()->toJSON(),
         ]);
 });
 
@@ -31,9 +31,9 @@ test('rule relation', function () {
     $rule     = App\Models\DiscountPromotionRule::create(
         [
             'discount_promotion_id' => $discount->id,
-            'type'          => 'action',
-            'handler'       => 'apply_percentage_off',
-            'configuration' => ['percentage' => 10],
+            'type'                  => 'action',
+            'handler'               => 'apply_percentage_off',
+            'configuration'         => ['percentage' => 10],
         ]
     );
     expect($discount->rules)
@@ -57,10 +57,10 @@ test('coupon relation', function () {
 });
 test('discounted prices relation', function () {
     $discount = DiscountPromotion::factory()->create();
-    $price    = \App\Models\ProductDeliveryOptionDiscountPrice::create([
-        'discount_promotion_id' => $discount->id,
-        'product_delivery_option_id' => \App\Models\ProductDeliveryOption::factory()->create()->id,
-        'discounted_price' => 2000,
+    $price    = App\Models\ProductDeliveryOptionDiscountPrice::create([
+        'discount_promotion_id'      => $discount->id,
+        'product_delivery_option_id' => App\Models\ProductDeliveryOption::factory()->create()->id,
+        'discounted_price'           => 2000,
     ])->fresh();
 
     expect($discount->discountedPrices)

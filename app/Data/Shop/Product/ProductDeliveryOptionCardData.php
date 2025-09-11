@@ -1,19 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Shop\Product;
 
 use App\Enums\ProductableMediaTypeEnum;
 use App\Models\ProductDeliveryOption;
 use Spatie\LaravelData\Data;
 
-class ProductDeliveryOptionCardData extends Data
+final class ProductDeliveryOptionCardData extends Data
 {
     public function __construct(
         public int $id,
         public int $productable_id,
-        public ?string $name = null,
-        public ?string $short_name = null,
-        public ?string $short_description = null,
+        public ?string $name,
+        public ?string $short_name,
+        public ?string $short_description,
         public array $vendor,
         public array $term,
         public int $price,
@@ -23,14 +25,13 @@ class ProductDeliveryOptionCardData extends Data
         public ?string $productable_type = null,
         public ?array $cover = [],
 
-    ) {
-    }
+    ) {}
 
     public static function fromModel(ProductDeliveryOption $deliveryOption): self
     {
         $product = $deliveryOption->product;
-        $media = $product->productable->getProductableMedia();
-        $cover = self::getCoverMedia($media);
+        $media   = $product->productable->getProductableMedia();
+        $cover   = self::getCoverMedia($media);
 
         return new self(
             id: $product->id,
@@ -65,6 +66,7 @@ class ProductDeliveryOptionCardData extends Data
     {
         if (isset($media[ProductableMediaTypeEnum::COVER->value])) {
             $cover = $media[ProductableMediaTypeEnum::COVER->value][0] ?? null;
+
             return $cover
                 ? [
                     'url'       => $cover['url'],
@@ -73,7 +75,7 @@ class ProductDeliveryOptionCardData extends Data
                 ]
                 : null;
         }
+
         return null;
     }
-
 }

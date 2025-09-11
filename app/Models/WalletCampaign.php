@@ -15,8 +15,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class WalletCampaign extends Model implements WalletTransactionSourceableContract
 {
-    use HasFactory;
     use HasAuditor;
+    use HasFactory;
 
     protected $fillable
         = [
@@ -31,25 +31,8 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
             'starts_at',
             'ends_at',
             'metadata',
-            'created_by'
+            'created_by',
         ];
-
-    protected function casts(): array
-    {
-        return [
-            'type'                 => CampaignTypeEnum::class,
-            'is_active'            => 'boolean',
-            'amount'               => 'integer',
-            'usage_limit_total'    => 'integer',
-            'usage_limit_per_user' => 'integer',
-            'total_usage_count'    => 'integer',
-            'starts_at'            => 'datetime',
-            'ends_at'              => 'datetime',
-            'metadata'             => 'array',
-            'created_at'           => 'datetime',
-            'updated_at'           => 'datetime',
-        ];
-    }
 
     /**
      * All wallet transactions related to this campaign
@@ -65,11 +48,11 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
      */
     public function allocationStatus(User $user): AllocationStatusEnum
     {
-        if (!$this->isActive()) {
+        if (! $this->isActive()) {
             return AllocationStatusEnum::ERROR_INACTIVE;
         }
 
-        if (!$this->isWithinDateRange) {
+        if (! $this->isWithinDateRange) {
             return AllocationStatusEnum::ERROR_EXPIRED;
         }
 
@@ -121,11 +104,51 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
         return $this->is_active;
     }
 
+    /**
+     * Increment the total usage count
+     */
+    public function incrementUsageCount(): void
+    {
+        $this->increment('total_usage_count');
+    }
+
+    /**
+     * Get user remaining usage count
+     */
+    public function getUserRemainingUsageCount(User $user): ?int
+    {
+        if ($this->usage_limit_per_user === null) {
+            return null;
+        }
+
+        $userUsageCount = $this->transactions()
+            ->where('user_id', $user->id)
+            ->count();
+
+        return max(0, $this->usage_limit_per_user - $userUsageCount);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'type'                 => CampaignTypeEnum::class,
+            'is_active'            => 'boolean',
+            'amount'               => 'integer',
+            'usage_limit_total'    => 'integer',
+            'usage_limit_per_user' => 'integer',
+            'total_usage_count'    => 'integer',
+            'starts_at'            => 'datetime',
+            'ends_at'              => 'datetime',
+            'metadata'             => 'array',
+            'created_at'           => 'datetime',
+            'updated_at'           => 'datetime',
+        ];
+    }
 
     protected function isWithinDateRange(): Attribute
     {
         return Attribute::make(
-            get: function (){
+            get: function () {
                 $now = now();
 
                 if ($this->starts_at && $now->isBefore($this->starts_at)) {
@@ -141,18 +164,10 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
         );
     }
 
-    /**
-     * Increment the total usage count
-     */
-    public function incrementUsageCount(): void
-    {
-        $this->increment('total_usage_count');
-    }
-
     protected function remainingUsageCount(): Attribute
     {
         return Attribute::make(
-            get: function (){
+            get: function () {
                 if ($this->usage_limit_total === null) {
                     return null;
                 }
@@ -160,20 +175,5 @@ final class WalletCampaign extends Model implements WalletTransactionSourceableC
                 return max(0, $this->usage_limit_total - $this->total_usage_count);
             },
         );
-    }
-    /**
-     * Get user remaining usage count
-     */
-    public function getUserRemainingUsageCount(User $user): ?int
-    {
-        if ($this->usage_limit_per_user === null) {
-            return null;
-        }
-
-        $userUsageCount = $this->transactions()
-            ->where('user_id', $user->id)
-            ->count();
-
-        return max(0, $this->usage_limit_per_user - $userUsageCount);
     }
 }

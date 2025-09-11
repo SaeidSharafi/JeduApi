@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Casts;
 
 use Carbon\Carbon;
+use DateTimeInterface;
+use DateTimeZone;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Casts\Cast;
 use Spatie\LaravelData\Casts\IterableItemCast;
@@ -10,17 +14,17 @@ use Spatie\LaravelData\Casts\Uncastable;
 use Spatie\LaravelData\Exceptions\CannotCastDate;
 use Spatie\LaravelData\Support\Creation\CreationContext;
 use Spatie\LaravelData\Support\DataProperty;
-use DateTimeInterface;
 
-class AdvancedDateTimeInterfaceCast implements Cast, IterableItemCast
+use function verta;
+
+final class AdvancedDateTimeInterfaceCast implements Cast, IterableItemCast
 {
     public function __construct(
-        protected null|string|array $format = null,
-        protected ?string $type = null,
-        protected ?string $setTimeZone = null,
-        protected ?string $timeZone = null
-    ) {
-    }
+        private null|string|array $format = null,
+        private ?string $type = null,
+        private ?string $setTimeZone = null,
+        private ?string $timeZone = null
+    ) {}
 
     public function cast(
         DataProperty $property,
@@ -28,8 +32,7 @@ class AdvancedDateTimeInterfaceCast implements Cast, IterableItemCast
         array $properties,
         CreationContext $context
     ): DateTimeInterface|Uncastable {
-        return $this->castValue($this->type ??
-            $property->type->type->findAcceptedTypeForBaseType(DateTimeInterface::class), $value);
+        return $this->castValue($this->type ?? $property->type->type->findAcceptedTypeForBaseType(DateTimeInterface::class), $value);
     }
 
     public function castIterableItem(
@@ -37,11 +40,11 @@ class AdvancedDateTimeInterfaceCast implements Cast, IterableItemCast
         mixed $value,
         array $properties,
         CreationContext $context
-    ): \DateTimeInterface|Uncastable {
+    ): DateTimeInterface|Uncastable {
         return $this->castValue($property->type->iterableItemType, $value);
     }
 
-    protected function castValue(
+    private function castValue(
         ?string $type,
         mixed $value,
     ): Uncastable|null|DateTimeInterface {
@@ -58,32 +61,33 @@ class AdvancedDateTimeInterfaceCast implements Cast, IterableItemCast
         $this->setTimeZone ??= config('data.date_timezone');
 
         if ($type === Verta::class) {
-            $value = rescue(fn() => Carbon::parse($value), report: false);
-            $verta = \verta($value, isset($this->timeZone) ? new \DateTimeZone($this->timeZone) : null);
+            $value = rescue(fn () => Carbon::parse($value), report: false);
+            $verta = verta($value, isset($this->timeZone) ? new DateTimeZone($this->timeZone) : null);
 
             if ($this->setTimeZone) {
-                return $verta->setTimezone(new \DateTimeZone($this->setTimeZone));
+                return $verta->setTimezone(new DateTimeZone($this->setTimeZone));
             }
         }
 
         /** @var DateTimeInterface|null $datetime */
         $datetime = $formats
-            ->map(fn(string $format) => rescue(fn() => $type::createFromFormat(
+            ->map(fn (string $format) => rescue(fn () => $type::createFromFormat(
                 $format,
                 $value instanceof DateTimeInterface ? $value->format($format) : (string) $value,
-                isset($this->timeZone) ? new \DateTimeZone($this->timeZone) : null
+                isset($this->timeZone) ? new DateTimeZone($this->timeZone) : null
             ), report: false))
-            ->first(fn($value) => (bool) $value);
+            ->first(fn ($value) => (bool) $value);
 
-        if (!$datetime) {
+        if (! $datetime) {
             throw CannotCastDate::create($formats->toArray(), $type, $value);
         }
 
         $this->setTimeZone ??= config('data.date_timezone');
 
         if ($this->setTimeZone) {
-            return $datetime->setTimezone(new \DateTimeZone($this->setTimeZone));
+            return $datetime->setTimezone(new DateTimeZone($this->setTimeZone));
         }
+
         return $datetime;
     }
 }

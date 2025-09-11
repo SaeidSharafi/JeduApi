@@ -9,11 +9,7 @@ use App\Data\Admin\Staff\ShowStaffData;
 use App\Enums\WalletCampaign\CampaignTypeEnum;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\MapOutputName;
-use Spatie\LaravelData\Attributes\WithCast;
-use Spatie\LaravelData\Attributes\WithTransformer;
-use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Data;
-use Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer;
 
 final class WalletCampaignData extends Data implements WalletTransactionSourceableDataContract
 {
@@ -36,8 +32,7 @@ final class WalletCampaignData extends Data implements WalletTransactionSourceab
         public ?int $remaining_usage_count,
         public bool $is_within_date_range,
         #[MapOutputName('created_by')]
-        public ?ShowStaffData $auditor= null,
+        public ?ShowStaffData $auditor = null,
         public ?int $transactions_count = null,
-    ) {
-    }
+    ) {}
 }

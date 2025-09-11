@@ -9,7 +9,6 @@ use App\Data\Admin\Discounts\OrderContextData;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
 use App\Enums\EnrolmentStatusEnum;
-use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Events\OrderCreatedEvent;
@@ -26,7 +25,7 @@ use Illuminate\Validation\ValidationException;
 final readonly class CreateOrderAction
 {
     public function __construct(
-        protected OrderCalculationService $orderCalculationService
+        private OrderCalculationService $orderCalculationService
     ) {}
 
     /**
@@ -84,7 +83,7 @@ final readonly class CreateOrderAction
                 ]);
             }
             $grandTotal = $orderItemsData->sum('total');
-            $order = Order::create([
+            $order      = Order::create([
                 'increment_id'           => Order::generateIncrementId(),
                 'status'                 => $data->status, // This can be an initial status from the form
                 'customer_id'            => $context->customer->id,
@@ -236,6 +235,7 @@ final readonly class CreateOrderAction
             ]);
         }
     }
+
     private function calculateTotalDiscountFromContext(OrderContextData $context): int
     {
         return $context->items->sum('discount_amount');

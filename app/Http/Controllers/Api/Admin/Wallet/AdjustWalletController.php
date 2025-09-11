@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Gate;
  *
  * @authenticated
  */
-class AdjustWalletController extends Controller
+final class AdjustWalletController extends Controller
 {
     /**
      * Adjust a wallet balance (manual correction by admin).

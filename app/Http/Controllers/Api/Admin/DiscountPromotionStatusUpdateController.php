@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Contracts\ApiResponseInterface;
@@ -15,7 +17,7 @@ use Illuminate\Support\Facades\Gate;
  *
  * @authenticated Staff
  */
-class DiscountPromotionStatusUpdateController extends Controller
+final class DiscountPromotionStatusUpdateController extends Controller
 {
     /**
      * Toggle the active status of a discount promotion.
@@ -28,9 +30,10 @@ class DiscountPromotionStatusUpdateController extends Controller
     {
         Gate::authorize('update', $discountPromotion);
         $discountPromotion->update([
-            'is_active' => !$discountPromotion->is_active,
+            'is_active' => ! $discountPromotion->is_active,
         ]);
-        $discountPromotion->load('rules','coupons');
+        $discountPromotion->load('rules', 'coupons');
+
         return response()->success(DiscountPromotionData::from($discountPromotion->fresh()));
     }
 }

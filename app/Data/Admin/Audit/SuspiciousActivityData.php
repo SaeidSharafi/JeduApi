@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Audit;
 
-use Carbon\Carbon;
-use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
-use Spatie\LaravelData\Mappers\SnakeCaseMapper;
-use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class SuspiciousActivityData extends Data
+final class SuspiciousActivityData extends Data
 {
     public function __construct(
         public int $transaction_id,
@@ -29,6 +25,5 @@ class SuspiciousActivityData extends Data
         public ?string $last_transaction = null,
         public ?string $avg_transaction_amount = null,
         public ?string $pattern = null,
-    ) {
-    }
+    ) {}
 }

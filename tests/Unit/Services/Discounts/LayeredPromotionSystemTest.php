@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\Order\DiscountTypeEnum;
 use App\Models\DiscountPromotion;
 use App\Models\DiscountPromotionRule;
@@ -20,42 +22,42 @@ describe('LayeredPromotionSystem', function () {
     test('it applies multiple promotions sequentially by priority', function () {
         // Arrange - Create a product priced at $100
         $product = Product::factory()->create();
-        $option = ProductDeliveryOption::factory()->create([
+        $option  = ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
-            'price' => 10000, // $100.00
-            'status' => 'published'
+            'price'      => 10000, // $100.00
+            'status'     => 'published',
         ]);
 
         // Create Promotion A: VIP 15% Off (priority: 1)
         $promotionA = DiscountPromotion::factory()->create([
-            'name' => 'VIP 15% Off',
-            'type' => DiscountTypeEnum::PRODUCT_SPECIFIC,
-            'is_active' => true,
-            'priority' => 1,
+            'name'                             => 'VIP 15% Off',
+            'type'                             => DiscountTypeEnum::PRODUCT_SPECIFIC,
+            'is_active'                        => true,
+            'priority'                         => 1,
             'stop_processing_subsequent_rules' => false,
         ]);
 
         DiscountPromotionRule::create([
             'discount_promotion_id' => $promotionA->id,
-            'type' => 'action',
-            'handler' => 'apply_percentage_off_product',
-            'configuration' => ['percentage' => 15],
+            'type'                  => 'action',
+            'handler'               => 'apply_percentage_off_product',
+            'configuration'         => ['percentage' => 15],
         ]);
 
         // Create Promotion B: Clearance Sale $10 Off (priority: 2)
         $promotionB = DiscountPromotion::factory()->create([
-            'name' => 'Clearance Sale $10 Off',
-            'type' => DiscountTypeEnum::PRODUCT_SPECIFIC,
-            'is_active' => true,
-            'priority' => 2,
+            'name'                             => 'Clearance Sale $10 Off',
+            'type'                             => DiscountTypeEnum::PRODUCT_SPECIFIC,
+            'is_active'                        => true,
+            'priority'                         => 2,
             'stop_processing_subsequent_rules' => false,
         ]);
 
         DiscountPromotionRule::create([
             'discount_promotion_id' => $promotionB->id,
-            'type' => 'action',
-            'handler' => 'apply_fixed_discount_product',
-            'configuration' => ['amount' => 1000], // $10.00
+            'type'                  => 'action',
+            'handler'               => 'apply_fixed_discount_product',
+            'configuration'         => ['amount' => 1000], // $10.00
         ]);
 
         // Act - Calculate the layered discount
@@ -73,42 +75,42 @@ describe('LayeredPromotionSystem', function () {
     test('it stops processing when end_other_rules is true', function () {
         // Arrange - Create a product priced at $100
         $product = Product::factory()->create();
-        $option = ProductDeliveryOption::factory()->create([
+        $option  = ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
-            'price' => 10000, // $100.00
-            'status' => 'published'
+            'price'      => 10000, // $100.00
+            'status'     => 'published',
         ]);
 
         // Create Promotion A: VIP 20% Off (priority: 1, stops processing)
         $promotionA = DiscountPromotion::factory()->create([
-            'name' => 'VIP 20% Off',
-            'type' => DiscountTypeEnum::PRODUCT_SPECIFIC,
-            'is_active' => true,
-            'priority' => 1,
+            'name'                             => 'VIP 20% Off',
+            'type'                             => DiscountTypeEnum::PRODUCT_SPECIFIC,
+            'is_active'                        => true,
+            'priority'                         => 1,
             'stop_processing_subsequent_rules' => true, // This should stop further processing
         ]);
 
         DiscountPromotionRule::create([
             'discount_promotion_id' => $promotionA->id,
-            'type' => 'action',
-            'handler' => 'apply_percentage_off_product',
-            'configuration' => ['percentage' => 20],
+            'type'                  => 'action',
+            'handler'               => 'apply_percentage_off_product',
+            'configuration'         => ['percentage' => 20],
         ]);
 
         // Create Promotion B: Flash Sale 10% Off (priority: 2, should NOT apply)
         $promotionB = DiscountPromotion::factory()->create([
-            'name' => 'Flash Sale 10% Off',
-            'type' => DiscountTypeEnum::PRODUCT_SPECIFIC,
-            'is_active' => true,
-            'priority' => 2,
+            'name'                             => 'Flash Sale 10% Off',
+            'type'                             => DiscountTypeEnum::PRODUCT_SPECIFIC,
+            'is_active'                        => true,
+            'priority'                         => 2,
             'stop_processing_subsequent_rules' => false,
         ]);
 
         DiscountPromotionRule::create([
             'discount_promotion_id' => $promotionB->id,
-            'type' => 'action',
-            'handler' => 'apply_percentage_off_product',
-            'configuration' => ['percentage' => 10],
+            'type'                  => 'action',
+            'handler'               => 'apply_percentage_off_product',
+            'configuration'         => ['percentage' => 10],
         ]);
 
         // Act - Calculate the layered discount
@@ -126,60 +128,60 @@ describe('LayeredPromotionSystem', function () {
     test('it applies promotions in priority order regardless of creation order', function () {
         // Arrange - Create a product priced at $100
         $product = Product::factory()->create();
-        $option = ProductDeliveryOption::factory()->create([
+        $option  = ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
-            'price' => 10000, // $100.00
-            'status' => 'published'
+            'price'      => 10000, // $100.00
+            'status'     => 'published',
         ]);
 
         // Create promotions in reverse priority order to test sorting
 
         // Create Promotion with priority 10 (lower priority)
         $promotionLow = DiscountPromotion::factory()->create([
-            'name' => 'New Customer 5% Off',
-            'type' => DiscountTypeEnum::PRODUCT_SPECIFIC,
-            'is_active' => true,
-            'priority' => 10,
+            'name'                             => 'New Customer 5% Off',
+            'type'                             => DiscountTypeEnum::PRODUCT_SPECIFIC,
+            'is_active'                        => true,
+            'priority'                         => 10,
             'stop_processing_subsequent_rules' => false,
         ]);
 
         DiscountPromotionRule::create([
             'discount_promotion_id' => $promotionLow->id,
-            'type' => 'action',
-            'handler' => 'apply_percentage_off_product',
-            'configuration' => ['percentage' => 5],
+            'type'                  => 'action',
+            'handler'               => 'apply_percentage_off_product',
+            'configuration'         => ['percentage' => 5],
         ]);
 
         // Create Promotion with priority 5 (medium priority)
         $promotionMid = DiscountPromotion::factory()->create([
-            'name' => 'Category Sale 15% Off',
-            'type' => DiscountTypeEnum::PRODUCT_SPECIFIC,
-            'is_active' => true,
-            'priority' => 5,
+            'name'                             => 'Category Sale 15% Off',
+            'type'                             => DiscountTypeEnum::PRODUCT_SPECIFIC,
+            'is_active'                        => true,
+            'priority'                         => 5,
             'stop_processing_subsequent_rules' => false,
         ]);
 
         DiscountPromotionRule::create([
             'discount_promotion_id' => $promotionMid->id,
-            'type' => 'action',
-            'handler' => 'apply_percentage_off_product',
-            'configuration' => ['percentage' => 15],
+            'type'                  => 'action',
+            'handler'               => 'apply_percentage_off_product',
+            'configuration'         => ['percentage' => 15],
         ]);
 
         // Create Promotion with priority 1 (highest priority)
         $promotionHigh = DiscountPromotion::factory()->create([
-            'name' => 'VIP Member $20 Off',
-            'type' => DiscountTypeEnum::PRODUCT_SPECIFIC,
-            'is_active' => true,
-            'priority' => 1,
+            'name'                             => 'VIP Member $20 Off',
+            'type'                             => DiscountTypeEnum::PRODUCT_SPECIFIC,
+            'is_active'                        => true,
+            'priority'                         => 1,
             'stop_processing_subsequent_rules' => false,
         ]);
 
         DiscountPromotionRule::create([
             'discount_promotion_id' => $promotionHigh->id,
-            'type' => 'action',
-            'handler' => 'apply_fixed_discount_product',
-            'configuration' => ['amount' => 2000], // $20.00
+            'type'                  => 'action',
+            'handler'               => 'apply_fixed_discount_product',
+            'configuration'         => ['amount' => 2000], // $20.00
         ]);
 
         // Act - Calculate with promotions in random order
@@ -198,25 +200,25 @@ describe('LayeredPromotionSystem', function () {
     test('it indexes discount prices using the new job-based system', function () {
         // Arrange - Create a product priced at $100
         $product = Product::factory()->create();
-        $option = ProductDeliveryOption::factory()->create([
+        $option  = ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
-            'price' => 10000, // $100.00
-            'status' => 'published'
+            'price'      => 10000, // $100.00
+            'status'     => 'published',
         ]);
 
         // Create a simple promotion
         $promotion = DiscountPromotion::factory()->create([
-            'name' => 'Test Promotion',
-            'type' => DiscountTypeEnum::PRODUCT_SPECIFIC,
+            'name'      => 'Test Promotion',
+            'type'      => DiscountTypeEnum::PRODUCT_SPECIFIC,
             'is_active' => true,
-            'priority' => 1,
+            'priority'  => 1,
         ]);
 
         DiscountPromotionRule::create([
             'discount_promotion_id' => $promotion->id,
-            'type' => 'action',
-            'handler' => 'apply_percentage_off_product',
-            'configuration' => ['percentage' => 10],
+            'type'                  => 'action',
+            'handler'               => 'apply_percentage_off_product',
+            'configuration'         => ['percentage' => 10],
         ]);
 
         // Act - Use the indexer to calculate and store discount prices
@@ -234,42 +236,42 @@ describe('LayeredPromotionSystem', function () {
     test('it demonstrates the complete example from the documentation', function () {
         // Arrange - Create a course priced at $100
         $product = Product::factory()->create(['name' => 'Advanced Laravel Course']);
-        $option = ProductDeliveryOption::factory()->create([
+        $option  = ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
-            'price' => 10000, // $100.00
-            'status' => 'published'
+            'price'      => 10000, // $100.00
+            'status'     => 'published',
         ]);
 
         // Create Promotion A: "VIP 15% Off" (priority: 1, ends_other_rules: false)
         $promotionA = DiscountPromotion::factory()->create([
-            'name' => 'VIP 15% Off',
-            'type' => DiscountTypeEnum::PRODUCT_SPECIFIC,
-            'is_active' => true,
-            'priority' => 1,
+            'name'                             => 'VIP 15% Off',
+            'type'                             => DiscountTypeEnum::PRODUCT_SPECIFIC,
+            'is_active'                        => true,
+            'priority'                         => 1,
             'stop_processing_subsequent_rules' => false,
         ]);
 
         DiscountPromotionRule::create([
             'discount_promotion_id' => $promotionA->id,
-            'type' => 'action',
-            'handler' => 'apply_percentage_off_product',
-            'configuration' => ['percentage' => 15],
+            'type'                  => 'action',
+            'handler'               => 'apply_percentage_off_product',
+            'configuration'         => ['percentage' => 15],
         ]);
 
         // Create Promotion B: "Clearance Sale $10 Off" (priority: 2)
         $promotionB = DiscountPromotion::factory()->create([
-            'name' => 'Clearance Sale $10 Off',
-            'type' => DiscountTypeEnum::PRODUCT_SPECIFIC,
-            'is_active' => true,
-            'priority' => 2,
+            'name'                             => 'Clearance Sale $10 Off',
+            'type'                             => DiscountTypeEnum::PRODUCT_SPECIFIC,
+            'is_active'                        => true,
+            'priority'                         => 2,
             'stop_processing_subsequent_rules' => false,
         ]);
 
         DiscountPromotionRule::create([
             'discount_promotion_id' => $promotionB->id,
-            'type' => 'action',
-            'handler' => 'apply_fixed_discount_product',
-            'configuration' => ['amount' => 1000], // $10.00
+            'type'                  => 'action',
+            'handler'               => 'apply_fixed_discount_product',
+            'configuration'         => ['amount' => 1000], // $10.00
         ]);
 
         // Act - Process through the complete indexing system
@@ -283,8 +285,8 @@ describe('LayeredPromotionSystem', function () {
             ->and($discountPrice->discounted_price)->toBe(7500); // $75.00 (final price after both promotions)
 
         // Additional verification: manually calculate to ensure consistency
-        $calculator = app(ProductDiscountPriceCalculator::class);
-        $promotions = collect([$promotionA, $promotionB]);
+        $calculator      = app(ProductDiscountPriceCalculator::class);
+        $promotions      = collect([$promotionA, $promotionB]);
         $calculatedPrice = $calculator->calculateFinalDiscountedPrice($option, $promotions);
 
         expect($calculatedPrice)->toBe($discountPrice->discounted_price);

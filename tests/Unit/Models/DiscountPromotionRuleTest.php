@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\DiscountPromotion;
 use App\Models\DiscountPromotionRule;
 
 it('to array', function () {
     $discount = DiscountPromotion::factory()->create();
-    $rule = DiscountPromotionRule::create([
+    $rule     = DiscountPromotionRule::create([
         'discount_promotion_id' => $discount->id,
         'type'                  => 'action',
         'handler'               => 'apply_percentage_off',
@@ -27,7 +29,7 @@ it('to array', function () {
 
 it('promotion relation', function () {
     $discount = DiscountPromotion::factory()->create();
-    $rule = DiscountPromotionRule::create([
+    $rule     = DiscountPromotionRule::create([
         'discount_promotion_id' => $discount->id,
         'type'                  => 'action',
         'handler'               => 'apply_percentage_off',

@@ -53,6 +53,7 @@ final class DiscountPromotionController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate($request->integer('per_page', 15))
             ->withQueryString();
+
         return response()->success(DiscountPromotionData::collect($promotions));
     }
 
@@ -68,6 +69,7 @@ final class DiscountPromotionController extends Controller
     {
         Gate::authorize('create', DiscountPromotion::class);
         $promotion = $action->execute($data);
+
         return response()->created(DiscountPromotionData::from($promotion), model: DiscountPromotion::class);
     }
 
@@ -82,6 +84,7 @@ final class DiscountPromotionController extends Controller
     {
         Gate::authorize('view', $discountPromotion);
         $discountPromotion->load(['rules', 'coupons']);
+
         return response()->success(DiscountPromotionData::from($discountPromotion));
     }
 
@@ -100,6 +103,7 @@ final class DiscountPromotionController extends Controller
     ): ApiResponseInterface {
         Gate::authorize('update', $discountPromotion);
         $updatedPromotion = $action->execute($discountPromotion, $data);
+
         return response()->success(DiscountPromotionData::from($updatedPromotion));
     }
 
@@ -109,6 +113,7 @@ final class DiscountPromotionController extends Controller
      * @urlParam discountPromotion integer required The ID of the promotion. Example: 1
      *
      * @response 204
+     *
      * @responseFile 403 responses/403.json
      * @responseFile 404 responses/404.json
      */
@@ -116,6 +121,7 @@ final class DiscountPromotionController extends Controller
     {
         Gate::authorize('delete', $discountPromotion);
         $action->execute($discountPromotion);
+
         return response()->noContentJson();
     }
 }

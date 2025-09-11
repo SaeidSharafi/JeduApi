@@ -12,7 +12,7 @@ it('can get footer settings', function (): void {
         ->assertJsonStructure([
             'message',
             'data' => [],
-            'metadata'
+            'metadata',
         ]);
 });
 
@@ -30,24 +30,24 @@ it('can update footer settings', function (): void {
     $cat2 = App\Models\Category::factory()->create(['name' => 'Cat2']);
 
     $footerData = [
-        'logo' => $logo->id,
-        'caption' => 'Your partner in modern education.',
-        'support_link' => '/contact-us',
+        'logo'                  => $logo->id,
+        'caption'               => 'Your partner in modern education.',
+        'support_link'          => '/contact-us',
         'support_email_address' => 'support@jedu.ir',
-        'addresses' => ['Address 1', 'Address 2'],
-        'categories' => [$cat1->id, $cat2->id],
-        'main_links' => [
+        'addresses'             => ['Address 1', 'Address 2'],
+        'categories'            => [$cat1->id, $cat2->id],
+        'main_links'            => [
             ['title' => 'About Us', 'link' => '/about-us'],
             ['title' => 'Blog', 'link' => '/blog'],
         ],
         'social_media_links' => [
             [
                 'platform' => 'instagram',
-                'link' => 'https://instagram.com/jedushop',
+                'link'     => 'https://instagram.com/jedushop',
             ],
             [
                 'platform' => 'linkedin',
-                'link' => 'https://linkedin.com/company/jedushop',
+                'link'     => 'https://linkedin.com/company/jedushop',
             ],
         ],
         'certifications' => [
@@ -60,7 +60,7 @@ it('can update footer settings', function (): void {
         ->assertJsonStructure([
             'message',
             'data' => [],
-            'metadata'
+            'metadata',
         ]);
 
     $setting = App\Models\Setting::where('key', 'footer')->first();
@@ -74,14 +74,14 @@ it('validates footer data - missing required fields', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::SETTING_UPDATE->value]);
 
     $invalidData = [
-        'caption' => '',
-        'support_link' => '',
+        'caption'               => '',
+        'support_link'          => '',
         'support_email_address' => '',
-        'addresses' => [],
-        'categories' => [],
-        'main_links' => [],
-        'social_media_links' => [],
-        'certifications' => [],
+        'addresses'             => [],
+        'categories'            => [],
+        'main_links'            => [],
+        'social_media_links'    => [],
+        'certifications'        => [],
     ];
 
     $response = $this->putJson(route('api.v1.admin.settings.footer.update'), $invalidData);
@@ -97,15 +97,15 @@ it('validates footer data - missing required fields', function (): void {
 it('validates footer data - invalid data types', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::SETTING_UPDATE->value]);
     $invalidData = [
-        'logo' => 'not-an-integer',
-        'caption' => str_repeat('A', 300),
-        'support_link' => 123,
+        'logo'                  => 'not-an-integer',
+        'caption'               => str_repeat('A', 300),
+        'support_link'          => 123,
         'support_email_address' => 'not-an-email',
-        'addresses' => 'not-an-array',
-        'categories' => ['not-an-id'],
-        'main_links' => ['not-an-array'],
-        'social_media_links' => 'not-an-array',
-        'certifications' => 'not-an-array',
+        'addresses'             => 'not-an-array',
+        'categories'            => ['not-an-id'],
+        'main_links'            => ['not-an-array'],
+        'social_media_links'    => 'not-an-array',
+        'certifications'        => 'not-an-array',
     ];
     $response = $this->putJson(route('api.v1.admin.settings.footer.update'), $invalidData);
     $response->assertStatus(422)
@@ -123,25 +123,25 @@ it('cannot access footer settings without auth', function (): void {
     $response->assertStatus(403);
 
     // Create valid category for required field
-    $cat = App\Models\Category::factory()->create(['name' => 'Cat']);
+    $cat        = App\Models\Category::factory()->create(['name' => 'Cat']);
     $footerData = [
-        'logo' => null,
-        'caption' => 'Test Caption',
-        'support_link' => '/contact-us',
+        'logo'                  => null,
+        'caption'               => 'Test Caption',
+        'support_link'          => '/contact-us',
         'support_email_address' => 'support@jedu.ir',
-        'addresses' => ['Address 1'],
-        'categories' => [$cat->id],
-        'main_links' => [
+        'addresses'             => ['Address 1'],
+        'categories'            => [$cat->id],
+        'main_links'            => [
             ['title' => 'About Us', 'link' => '/about-us'],
         ],
         'social_media_links' => [
             [
                 'platform' => 'instagram',
-                'link' => 'https://instagram.com/jedushop',
+                'link'     => 'https://instagram.com/jedushop',
             ],
             [
                 'platform' => 'linkedin',
-                'link' => 'https://linkedin.com/company/jedushop',
+                'link'     => 'https://linkedin.com/company/jedushop',
             ],
         ],
         'certifications' => ["<img src='cert.jpg' alt='Enamad' />"],

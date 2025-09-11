@@ -7,8 +7,8 @@ namespace App\Data\Transformer;
 use App\Exceptions\InvalidJalaliDateException;
 use Carbon\Carbon;
 use DateTimeInterface;
+use Exception;
 use Hekmatinasser\Verta\Verta;
-use InvalidArgumentException;
 use Spatie\LaravelData\Casts\Cast;
 use Spatie\LaravelData\Support\Creation\CreationContext;
 use Spatie\LaravelData\Support\DataProperty;
@@ -17,8 +17,7 @@ final readonly class CarbonFromJalaliString implements Cast
 {
     public function __construct(
         private ?string $format = null
-    ) {
-    }
+    ) {}
 
     public function cast(DataProperty $property, mixed $value, array $properties, CreationContext $context): mixed
     {
@@ -43,8 +42,9 @@ final readonly class CarbonFromJalaliString implements Cast
                 if ($this->format) {
                     return Verta::parseFormat($this->format, $value)->toCarbon();
                 }
+
                 return Verta::parse($value)->toCarbon();
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 throw new InvalidJalaliDateException($property->name, $value);
             }
         }

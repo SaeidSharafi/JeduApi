@@ -59,7 +59,7 @@ final class UploadMediaController extends Controller
             ->onDuplicateIncrement()
             ->upload();
 
-        if ($media->aggregate_type === Media::TYPE_IMAGE){
+        if ($media->aggregate_type === Media::TYPE_IMAGE) {
             CreateImageVariants::dispatch($media, 'thumb');
         }
 

@@ -33,7 +33,7 @@ describe('UpdateRefundStatusAction', function () {
                 'customer_id' => User::factory()->create()->id,
             ])
             ->create();
-        $orderItem = $order->items()->first();
+        $orderItem  = $order->items()->first();
         $enrollment = $orderItem->enrolment()->create([
             'enrollment_status'          => EnrolmentStatusEnum::ACTIVE,
             'order_id'                   => $order->id,
@@ -51,7 +51,7 @@ describe('UpdateRefundStatusAction', function () {
             tracking_code: 'TRACK123',
             admin_notes: 'Completed refund',
         );
-        $action = new UpdateRefundStatusAction(new OrderStatusService());
+        $action  = new UpdateRefundStatusAction(new OrderStatusService());
         $updated = $action->handle($refund, $data);
         expect($updated->status)->toBe(RefundStatusEnum::COMPLETED)
             ->and($updated->admin_notes)->toBe('Completed refund')
@@ -61,7 +61,7 @@ describe('UpdateRefundStatusAction', function () {
         expect($orderItem->status)->toBe(OrderItemStatusEnum::REFUNDED);
         \Pest\Laravel\assertDatabaseHas('orders', [
             'id'     => $order->id,
-            'status' => \App\Enums\Order\OrderStatusEnum::REFUNDED,
+            'status' => App\Enums\Order\OrderStatusEnum::REFUNDED,
         ]);
         \Pest\Laravel\assertDatabaseHas('enrolments', [
             'id'                => $enrollment->id,
@@ -70,7 +70,7 @@ describe('UpdateRefundStatusAction', function () {
     });
 
     it('transitions from pending to processing', function () {
-        $order = Order::factory()->create();
+        $order     = Order::factory()->create();
         $orderItem = OrderItem::factory()->create([
             'order_id' => $order->id,
         ]);
@@ -83,14 +83,14 @@ describe('UpdateRefundStatusAction', function () {
             tracking_code: null,
             admin_notes: 'Processing refund',
         );
-        $action = new UpdateRefundStatusAction(new OrderStatusService());
+        $action  = new UpdateRefundStatusAction(new OrderStatusService());
         $updated = $action->handle($refund, $data);
         expect($updated->status)->toBe(RefundStatusEnum::PROCESSING)
             ->and($updated->admin_notes)->toBe('Processing refund');
     });
 
     it('transitions from processing to completed', function () {
-        $order = Order::factory()->create();
+        $order     = Order::factory()->create();
         $orderItem = OrderItem::factory()->create([
             'order_id' => $order->id,
         ]);
@@ -104,7 +104,7 @@ describe('UpdateRefundStatusAction', function () {
             tracking_code: 'TRACK456',
             admin_notes: null,
         );
-        $action = new UpdateRefundStatusAction(new OrderStatusService());
+        $action  = new UpdateRefundStatusAction(new OrderStatusService());
         $updated = $action->handle($refund, $data);
         expect($updated->status)->toBe(RefundStatusEnum::COMPLETED)
             ->and($updated->transaction_details['tracking_code'])->toBe('TRACK456');
@@ -112,7 +112,7 @@ describe('UpdateRefundStatusAction', function () {
     });
 
     it('throws if transition is not allowed', function () {
-        $order = Order::factory()->create();
+        $order     = Order::factory()->create();
         $orderItem = OrderItem::factory()->create([
             'order_id' => $order->id,
         ]);
@@ -126,12 +126,12 @@ describe('UpdateRefundStatusAction', function () {
             admin_notes: null,
         );
         $action = new UpdateRefundStatusAction(new OrderStatusService());
-        expect(fn() => $action->handle($refund, $data))
+        expect(fn () => $action->handle($refund, $data))
             ->toThrow(ValidationException::class);
     });
 
     it('does not allow transition to pending', function () {
-        $order = Order::factory()->create();
+        $order     = Order::factory()->create();
         $orderItem = OrderItem::factory()->create([
             'order_id' => $order->id,
         ]);
@@ -145,12 +145,12 @@ describe('UpdateRefundStatusAction', function () {
             admin_notes: null,
         );
         $action = new UpdateRefundStatusAction(new OrderStatusService());
-        expect(fn() => $action->handle($refund, $data))
+        expect(fn () => $action->handle($refund, $data))
             ->toThrow(ValidationException::class);
     });
 
     it('transitions from processing to failed', function () {
-        $order = Order::factory()->create();
+        $order     = Order::factory()->create();
         $orderItem = OrderItem::factory()->create([
             'order_id' => $order->id,
         ]);
@@ -163,14 +163,14 @@ describe('UpdateRefundStatusAction', function () {
             tracking_code: null,
             admin_notes: 'Failed refund',
         );
-        $action = new UpdateRefundStatusAction(new OrderStatusService());
+        $action  = new UpdateRefundStatusAction(new OrderStatusService());
         $updated = $action->handle($refund, $data);
         expect($updated->status)->toBe(RefundStatusEnum::FAILED)
             ->and($updated->admin_notes)->toBe('Failed refund');
     });
 
     it('transitions from pending to cancelled', function () {
-        $order = Order::factory()->create();
+        $order     = Order::factory()->create();
         $orderItem = OrderItem::factory()->create([
             'order_id' => $order->id,
         ]);
@@ -183,14 +183,14 @@ describe('UpdateRefundStatusAction', function () {
             tracking_code: null,
             admin_notes: 'Cancelled refund',
         );
-        $action = new UpdateRefundStatusAction(new OrderStatusService());
+        $action  = new UpdateRefundStatusAction(new OrderStatusService());
         $updated = $action->handle($refund, $data);
         expect($updated->status)->toBe(RefundStatusEnum::CANCELLED)
             ->and($updated->admin_notes)->toBe('Cancelled refund');
     });
 
     it('does not change admin_notes if not provided', function () {
-        $order = Order::factory()->create();
+        $order     = Order::factory()->create();
         $orderItem = OrderItem::factory()->create([
             'order_id' => $order->id,
         ]);
@@ -204,7 +204,7 @@ describe('UpdateRefundStatusAction', function () {
             tracking_code: null,
             admin_notes: null,
         );
-        $action = new UpdateRefundStatusAction(new OrderStatusService());
+        $action  = new UpdateRefundStatusAction(new OrderStatusService());
         $updated = $action->handle($refund, $data);
         expect($updated->admin_notes)->toBe('Original note');
     });

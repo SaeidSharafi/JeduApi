@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Policies\Admin;
 
+use App\Enums\PermissionEnum;
 use App\Models\Staff;
 use App\Models\WalletCampaign;
-use App\Enums\PermissionEnum;
 
-class WalletCampaignPolicy
+final class WalletCampaignPolicy
 {
     /**
      * Determine whether the user can view any wallet campaigns.

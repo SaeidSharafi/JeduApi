@@ -3,14 +3,11 @@
 declare(strict_types=1);
 
 use App\Actions\Admin\Discounts\CreateDiscountPromotionAction;
-use App\Actions\Admin\Discounts\UpdateDiscountPromotionAction;
 use App\Actions\Admin\Discounts\DeleteDiscountPromotionAction;
+use App\Actions\Admin\Discounts\UpdateDiscountPromotionAction;
 use App\Data\Admin\Discounts\DiscountPromotionCreateData;
-use App\Data\Admin\Discounts\DiscountPromotionRuleCreateData;
-use App\Data\Admin\Discounts\DiscountCouponCreateData;
 use App\Enums\Order\DiscountTypeEnum;
 use App\Models\DiscountPromotion;
-use Spatie\LaravelData\DataCollection;
 
 describe('Discount Promotion Actions', function (): void {
     uses()->group('unit', 'actions', 'discounts');
@@ -37,12 +34,12 @@ describe('Discount Promotion Actions', function (): void {
                     'configuration' => ['percentage' => 20],
                 ],
             ],
-            'coupons'                          => [
+            'coupons' => [
                 [
                     'code'        => 'SUMMER2024',
                     'is_active'   => true,
                     'usage_limit' => 100,
-                ]
+                ],
             ],
         ]);
 
@@ -100,7 +97,7 @@ describe('Discount Promotion Actions', function (): void {
                     'configuration' => ['percentage' => 10],
                 ],
             ],
-            'coupons'                          => [],
+            'coupons' => [],
         ]);
 
         $action = app(CreateDiscountPromotionAction::class);
@@ -143,7 +140,7 @@ describe('Discount Promotion Actions', function (): void {
                     'configuration' => ['percentage' => 25],
                 ],
             ],
-            'coupons'                          => [],
+            'coupons' => [],
         ]);
 
         $action = app(UpdateDiscountPromotionAction::class);
@@ -173,14 +170,14 @@ describe('Discount Promotion Actions', function (): void {
         $promotion->coupons()->create(['code' => 'OLDCODE', 'is_active' => true]);
 
         $updateData = DiscountPromotionCreateData::from([
-            'name'                             => $promotion->name,
-            'description'                      => $promotion->description,
-            'type'                             => $promotion->type->value,
-            'is_active'                        => $promotion->is_active,
-            'starts_at'                        => $promotion->starts_at
+            'name'        => $promotion->name,
+            'description' => $promotion->description,
+            'type'        => $promotion->type->value,
+            'is_active'   => $promotion->is_active,
+            'starts_at'   => $promotion->starts_at
                 ? $promotion->starts_at
                 : now(),
-            'ends_at'                          => $promotion->ends_at
+            'ends_at' => $promotion->ends_at
                 ? $promotion->ends_at
                 : now()->addDays(30),
             'priority'                         => $promotion->priority,
@@ -194,7 +191,7 @@ describe('Discount Promotion Actions', function (): void {
                     'configuration' => ['new' => 'config'],
                 ],
             ],
-            'coupons'                          => [
+            'coupons' => [
                 ['code' => 'NEWCODE', 'is_active' => true, 'usage_limit' => 100],
             ],
         ]);
@@ -231,7 +228,7 @@ describe('Discount Promotion Actions', function (): void {
         ]);
 
         $promotionId = $promotion->id;
-        $action = app(DeleteDiscountPromotionAction::class);
+        $action      = app(DeleteDiscountPromotionAction::class);
 
         // Act
         $action->execute($promotion);
@@ -269,7 +266,7 @@ describe('Discount Promotion Actions', function (): void {
                     'configuration' => ['percentage' => 15],
                 ],
             ],
-            'coupons'                          => [
+            'coupons' => [
                 [
                     'code'        => 'DUPLICATE',
                     'is_active'   => true,
@@ -286,7 +283,7 @@ describe('Discount Promotion Actions', function (): void {
         $action = app(CreateDiscountPromotionAction::class);
 
         // Act & Assert
-        expect(fn() => $action->execute($data))->toThrow(Exception::class);
+        expect(fn () => $action->execute($data))->toThrow(Exception::class);
 
         // Verify no partial data was saved
         $this->assertDatabaseMissing('discount_promotions', [

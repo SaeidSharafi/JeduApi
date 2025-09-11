@@ -15,7 +15,7 @@ use Illuminate\Queue\SerializesModels;
  * Job to fully regenerate all product discount prices.
  * This should be run during maintenance or when major changes are made to the discount system.
  */
-class RegenerateAllDiscountPricesJob implements ShouldQueue
+final class RegenerateAllDiscountPricesJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -35,7 +35,7 @@ class RegenerateAllDiscountPricesJob implements ShouldQueue
     {
         return [
             'discount-promotion',
-            'full-reindex'
+            'full-reindex',
         ];
     }
 }

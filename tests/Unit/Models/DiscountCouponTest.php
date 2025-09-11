@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 it('to array', function () {
-    $coupon = \App\Models\DiscountCoupon::factory()->create()->fresh();
+    $coupon = App\Models\DiscountCoupon::factory()->create()->fresh();
 
     expect($coupon->toArray())
         ->toEqual([
@@ -17,14 +19,11 @@ it('to array', function () {
 });
 
 it('promotion relation', function () {
-    $coupon = \App\Models\DiscountCoupon::factory()->create();
+    $coupon    = App\Models\DiscountCoupon::factory()->create();
     $promotion = $coupon->promotion;
 
     expect($promotion)
-        ->toBeInstanceOf(\App\Models\DiscountPromotion::class)
+        ->toBeInstanceOf(App\Models\DiscountPromotion::class)
         ->and($promotion->id)
         ->toEqual($coupon->discount_promotion_id);
 });
-
-
-

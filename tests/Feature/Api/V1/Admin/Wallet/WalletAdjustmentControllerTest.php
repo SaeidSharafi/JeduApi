@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Enums\Wallet\WalletStatusEnum;
 use App\Models\User;
 use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
 test('admin can adjust wallet via API', function () {
-    $this->authorized_user([\App\Enums\PermissionEnum::WALLET_ADJUSTMENT]);
+    $this->authorized_user([App\Enums\PermissionEnum::WALLET_ADJUSTMENT]);
 
     $user = User::factory()->create();
     $user->wallet->update(['balance' => 1000]);
@@ -30,7 +29,7 @@ test('admin can adjust wallet via API', function () {
 });
 
 test('admin can make negative adjustment via API', function () {
-    $this->authorized_user([\App\Enums\PermissionEnum::WALLET_ADJUSTMENT]);
+    $this->authorized_user([App\Enums\PermissionEnum::WALLET_ADJUSTMENT]);
 
     $user = User::factory()->create();
     $user->wallet->update(['balance' => 1000]);

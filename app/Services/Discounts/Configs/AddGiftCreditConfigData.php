@@ -18,29 +18,31 @@ final class AddGiftCreditConfigData extends Data
 
     /**
      * @return array<string, mixed>
+     *
      * @codeCoverageIgnore
      */
     public static function rules(ValidationContext $context): array
     {
         return [
-            'amount' => ['required', 'integer', 'min:1'],
-            'per_item' => ['sometimes', 'boolean'],
+            'amount'       => ['required', 'integer', 'min:1'],
+            'per_item'     => ['sometimes', 'boolean'],
             'expires_days' => ['nullable', 'integer', 'min:1'],
-            'description' => ['nullable', 'string', 'max:255'],
+            'description'  => ['nullable', 'string', 'max:255'],
         ];
     }
 
     /**
      * @return array<string, string>
+     *
      * @codeCoverageIgnore
      */
     public static function descriptions(): array
     {
         return [
-            'amount' => 'The gift credit amount in rials to be awarded.',
-            'per_item' => 'Whether to award the amount per item (true) or as fixed amount (false).',
+            'amount'       => 'The gift credit amount in rials to be awarded.',
+            'per_item'     => 'Whether to award the amount per item (true) or as fixed amount (false).',
             'expires_days' => 'Number of days after which the gift credit expires (optional).',
-            'description' => 'Optional description for the gift credit transaction.',
+            'description'  => 'Optional description for the gift credit transaction.',
         ];
     }
 }

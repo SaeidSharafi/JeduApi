@@ -8,7 +8,6 @@ use App\Enums\PermissionEnum;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
-use App\Models\Enrolment;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;

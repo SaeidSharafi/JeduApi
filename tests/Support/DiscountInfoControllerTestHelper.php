@@ -7,10 +7,12 @@ namespace Tests\Support;
 use App\Http\Controllers\Api\Admin\DiscountInfoController;
 use App\Services\Discounts\OrderCalculationService;
 use ReflectionClass;
+use ReflectionType;
 
 final class DiscountInfoControllerTestHelper
 {
     private DiscountInfoController $controller;
+
     private ReflectionClass $reflection;
 
     public function __construct()
@@ -19,6 +21,56 @@ final class DiscountInfoControllerTestHelper
             app(OrderCalculationService::class)
         );
         $this->reflection = new ReflectionClass($this->controller);
+    }
+
+    /**
+     * Create a test class dynamically for testing purposes.
+     */
+    public static function createTestClass(string $className, string $constructor = ''): void
+    {
+        if (class_exists($className)) {
+            return;
+        }
+
+        $classDefinition = "class {$className} { {$constructor} }";
+        eval($classDefinition);
+    }
+
+    /**
+     * Create a mock type object for testing parameter types.
+     */
+    public static function createMockType(string $typeName): object
+    {
+        return new class($typeName)
+        {
+            public function __construct(private string $typeName) {}
+
+            public function getName(): string
+            {
+                return $this->typeName;
+            }
+        };
+    }
+
+    /**
+     * Get reflection parameter type from a test class.
+     */
+    public static function getParameterTypeFromTestClass(string $className, int $parameterIndex = 0): ?ReflectionType
+    {
+        $reflectionClass = new ReflectionClass($className);
+        $constructor     = $reflectionClass->getConstructor();
+
+        if (! $constructor) {
+            return null;
+        }
+
+        $parameters = $constructor->getParameters();
+
+        if (! isset($parameters[$parameterIndex])) {
+            return null;
+        }
+
+        return $parameters[$parameterIndex]->getType();
     }
 
     public function extractConfigSchema(string $configClass): array
@@ -59,54 +111,5 @@ final class DiscountInfoControllerTestHelper
         $method->setAccessible(true);
 
         return $method->invoke($this->controller, $key);
-    }
-
-    /**
-     * Create a test class dynamically for testing purposes.
-     */
-    public static function createTestClass(string $className, string $constructor = ''): void
-    {
-        if (class_exists($className)) {
-            return;
-        }
-
-        $classDefinition = "class {$className} { {$constructor} }";
-        eval($classDefinition);
-    }
-
-    /**
-     * Create a mock type object for testing parameter types.
-     */
-    public static function createMockType(string $typeName): object
-    {
-        return new class($typeName) {
-            public function __construct(private string $typeName) {}
-
-            public function getName(): string
-            {
-                return $this->typeName;
-            }
-        };
-    }
-
-    /**
-     * Get reflection parameter type from a test class.
-     */
-    public static function getParameterTypeFromTestClass(string $className, int $parameterIndex = 0): ?\ReflectionType
-    {
-        $reflectionClass = new ReflectionClass($className);
-        $constructor = $reflectionClass->getConstructor();
-
-        if (!$constructor) {
-            return null;
-        }
-
-        $parameters = $constructor->getParameters();
-
-        if (!isset($parameters[$parameterIndex])) {
-            return null;
-        }
-
-        return $parameters[$parameterIndex]->getType();
     }
 }

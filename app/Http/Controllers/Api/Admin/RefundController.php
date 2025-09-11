@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\Admin\Refund\CreateRefundAction;
@@ -19,7 +21,7 @@ use Illuminate\Support\Facades\Gate;
  *
  * APIs for managing refunds in the admin panel.
  */
-class RefundController extends Controller
+final class RefundController extends Controller
 {
     /**
      * Display a listing of the refunds.
@@ -27,7 +29,6 @@ class RefundController extends Controller
      * @responseFile 200 responses/refund/index.json
      * @responseFile 404 responses/404.json
      * @responseFile 403 responses/403.json
-     *
      */
     public function index(OrderItem $orderItem): ApiResponseInterface
     {
@@ -51,6 +52,7 @@ class RefundController extends Controller
     {
         Gate::authorize('create', Refund::class);
         $refund = $action->handle($data, $orderItem);
+
         return response()->created(RefundData::from($refund));
     }
 
@@ -64,6 +66,7 @@ class RefundController extends Controller
     public function show(OrderItem $orderItem, Refund $refund)
     {
         Gate::authorize('view', $refund);
+
         return response()->success(RefundData::from($refund));
     }
 
@@ -78,6 +81,7 @@ class RefundController extends Controller
     {
         Gate::authorize('update', $refund);
         $updatedRefund = $action->handle($refund, $data);
+
         return response()->success(RefundData::from($updatedRefund));
     }
 
@@ -85,6 +89,7 @@ class RefundController extends Controller
      * Remove the specified refund.
      *
      * @response 204
+     *
      * @responseFile 403 responses/403.json
      * @responseFile 404 responses/404.json
      * @responseFile 422 responses/refund/delete-422.json
@@ -93,6 +98,7 @@ class RefundController extends Controller
     {
         Gate::authorize('delete', $refund);
         $action->handle($refund);
+
         return response()->noContentJson();
     }
 }

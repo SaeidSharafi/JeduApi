@@ -18,8 +18,7 @@ final class ContactInfoData extends Data
         public string $support_email,
         #[DataCollectionOf(SocialMediaLinkData::class)]
         public DataCollection $social_media_links,
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {
@@ -58,7 +57,7 @@ final class ContactInfoData extends Data
     public static function getDefaults(): array
     {
         return [
-            'addresses'          => [
+            'addresses' => [
                 [
                     'name'         => 'دفتر مرکزی',
                     'address'      => 'تهران، خیابان آزادی، پلاک ۱۲۳',

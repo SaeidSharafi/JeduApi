@@ -11,18 +11,18 @@ use Tests\AuthTestTrait;
 uses(AuthTestTrait::class);
 
 test('deposit to wallet increases balance', function () {
-    $user = User::factory()->create();
+    $user           = User::factory()->create();
     $initialBalance = $user->wallet->balance;
 
-    $admin = \App\Models\Staff::factory()->create()->fresh();
+    $admin = App\Models\Staff::factory()->create()->fresh();
 
     $data = DepositToWalletData::from([
 
-        'amount' => 1000,
+        'amount'      => 1000,
         'description' => 'Test deposit',
     ]);
-    $action = app(DepositToWalletAction::class);
-    $transaction = $action->handle($data,$admin,$user->wallet);
+    $action      = app(DepositToWalletAction::class);
+    $transaction = $action->handle($data, $admin, $user->wallet);
 
     expect($transaction)->not->toBeNull()
         ->and($transaction->amount)->toBe(1000)
@@ -34,14 +34,13 @@ test('cannot deposit to suspended wallet', function () {
     $user = User::factory()->create();
     $user->wallet->update(['status' => WalletStatusEnum::SUSPENDED]);
 
-    $admin = \App\Models\Staff::factory()->create()->fresh();
-
+    $admin = App\Models\Staff::factory()->create()->fresh();
 
     $data = DepositToWalletData::from([
 
         'amount' => 1000,
     ]);
 
-    expect(fn() => (app(DepositToWalletAction::class))->handle($data,$admin,$user->wallet))
+    expect(fn () => (app(DepositToWalletAction::class))->handle($data, $admin, $user->wallet))
         ->toThrow(Exception::class, __('validation.custom.wallet_not_active'));
 });

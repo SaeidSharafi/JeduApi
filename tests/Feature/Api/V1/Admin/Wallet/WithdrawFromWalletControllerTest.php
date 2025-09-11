@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\Wallet\WalletStatusEnum;
 use App\Models\User;
 use Tests\AuthTestTrait;
 
@@ -10,7 +9,7 @@ uses(AuthTestTrait::class);
 
 test('admin can withdraw from wallet via API', function () {
     $admin = $this->authorized_user([
-        \App\Enums\PermissionEnum::WALLET_WITHDRAWAL
+        App\Enums\PermissionEnum::WALLET_WITHDRAWAL,
     ]);
 
     $user = User::factory()->create();
@@ -31,7 +30,7 @@ test('admin can withdraw from wallet via API', function () {
 
 test('admin cannot withdraw more than available balance via API', function () {
     $admin = $this->authorized_user([
-        \App\Enums\PermissionEnum::WALLET_WITHDRAWAL
+        App\Enums\PermissionEnum::WALLET_WITHDRAWAL,
     ]);
 
     $user = User::factory()->create();
@@ -45,4 +44,3 @@ test('admin cannot withdraw more than available balance via API', function () {
 
     $response->assertStatus(500); // Should return validation error
 });
-

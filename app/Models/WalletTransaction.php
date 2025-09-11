@@ -34,21 +34,6 @@ final class WalletTransaction extends Model
         'expires_at',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'amount' => 'integer',
-            'balance_after' => 'integer',
-            'gift_balance_after' => 'integer',
-            'type' => TransactionTypeEnum::class,
-            'source_type' => TransactionSourceEnum::class,
-            'metadata' => 'array',
-            'expires_at' => 'datetime',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-        ];
-    }
-
     // Relationships
     public function wallet(): BelongsTo
     {
@@ -59,6 +44,7 @@ final class WalletTransaction extends Model
     {
         return $this->belongsTo(User::class);
     }
+
     // Polymorphic relationship for the source
     public function source(): MorphTo
     {
@@ -84,5 +70,20 @@ final class WalletTransaction extends Model
     public function isPromotional(): bool
     {
         return in_array($this->type, [TransactionTypeEnum::GIFT, TransactionTypeEnum::BONUS]);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'amount'             => 'integer',
+            'balance_after'      => 'integer',
+            'gift_balance_after' => 'integer',
+            'type'               => TransactionTypeEnum::class,
+            'source_type'        => TransactionSourceEnum::class,
+            'metadata'           => 'array',
+            'expires_at'         => 'datetime',
+            'created_at'         => 'datetime',
+            'updated_at'         => 'datetime',
+        ];
     }
 }

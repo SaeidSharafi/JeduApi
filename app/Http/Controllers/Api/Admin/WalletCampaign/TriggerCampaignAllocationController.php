@@ -46,7 +46,7 @@ final class TriggerCampaignAllocationController extends Controller
         );
 
         try {
-            $transaction = $action->handle($data,$user, $walletCampaign);
+            $transaction = $action->handle($data, $user, $walletCampaign);
             $transaction->refresh();
             $transaction->load(['wallet', 'user', 'source']);
 

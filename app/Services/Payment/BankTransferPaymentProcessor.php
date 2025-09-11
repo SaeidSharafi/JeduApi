@@ -42,7 +42,7 @@ final class BankTransferPaymentProcessor implements PaymentProcessorContract
             'method'      => $paymentData->method,
             'status'      => $paymentData->status,
             'admin_notes' => $paymentData->admin_notes,
-            'data'        => $paymentData->data?->toArray()
+            'data'        => $paymentData->data?->toArray(),
         ]);
 
         // Dispatch completion event if payment is completed
@@ -67,10 +67,10 @@ final class BankTransferPaymentProcessor implements PaymentProcessorContract
         $rules = [
             'data.transaction_id'   => ['required', 'string', 'max:255'],
             'data.transaction_date' => [
-                'required', 'date:Y-m-d', Rule::date()->beforeOrEqual(today())
+                'required', 'date:Y-m-d', Rule::date()->beforeOrEqual(today()),
             ],
-            'data.sender_name'      => ['required', 'string', 'max:255'],
-            'data.notes'            => ['nullable', 'string', 'max:1000'],
+            'data.sender_name' => ['required', 'string', 'max:255'],
+            'data.notes'       => ['nullable', 'string', 'max:1000'],
         ];
 
         Validator::make($dataToValidate, $rules)->validate();

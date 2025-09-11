@@ -17,21 +17,20 @@ final class PaymentCreateData extends Data
         public ?BankTransferPaymentData $data,
         public ?string $admin_notes,
 
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {
         $now = verta()->format('Y-m-d');
 
         return [
-            'method'                => ['required', Rule::enum(PaymentMethodEnum::class)],
-            'status'                => ['required', 'string'],
-            'admin_notes'           => ['nullable', 'string', 'max:1000'],
-            'data'                  => ['nullable', 'array'],
+            'method'      => ['required', Rule::enum(PaymentMethodEnum::class)],
+            'status'      => ['required', 'string'],
+            'admin_notes' => ['nullable', 'string', 'max:1000'],
+            'data'        => ['nullable', 'array'],
             // Bank transfer validation
             'data.transaction_id'   => ['nullable', 'string', 'max:255'],
-            'data.transaction_date' => ['nullable', 'jdate:Y-m-d','jdate_before_equal:'.$now.',Y-m-d'],
+            'data.transaction_date' => ['nullable', 'jdate:Y-m-d', 'jdate_before_equal:'.$now.',Y-m-d'],
             'data.sender_name'      => ['nullable', 'string', 'max:255'],
             'data.notes'            => ['nullable', 'string', 'max:1000'],
         ];
@@ -45,15 +44,15 @@ final class PaymentCreateData extends Data
     public function bodyParameters(): array
     {
         return [
-            'method'      => [
+            'method' => [
                 'description' => 'Payment method used for the transaction',
                 'example'     => 'credit_card',
             ],
-            'status'      => [
+            'status' => [
                 'description' => 'Current status of the payment',
                 'example'     => 'pending',
             ],
-            'data'        => [
+            'data' => [
                 'description' => 'Additional data related to the payment, such as transaction ID or gateway response',
                 'example'     => ['transaction_id' => '123456789'],
             ],

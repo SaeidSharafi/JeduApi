@@ -13,18 +13,19 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\OrderStatusService;
 use Illuminate\Database\Eloquent\Collection;
+use Mockery;
 
 describe('OrderStatusService', function () {
 
     // Helper function to create a mock OrderItem with a specific status
     $createMockItem = function ($status, $enrollmentStatus = null) {
-        $item = \Mockery::mock(OrderItem::class)->makePartial();
+        $item         = Mockery::mock(OrderItem::class)->makePartial();
         $item->status = $status;
 
         if ($enrollmentStatus) {
-            $enrolment = \Mockery::mock(Enrolment::class)->makePartial();
+            $enrolment                    = Mockery::mock(Enrolment::class)->makePartial();
             $enrolment->enrollment_status = $enrollmentStatus;
-            $item->enrolment = $enrolment;
+            $item->enrolment              = $enrolment;
         } else {
             $item->enrolment = null;
         }
@@ -39,9 +40,9 @@ describe('OrderStatusService', function () {
     };
 
     // --- Testing updateParentOrderStatus ---
-    it('sets order status to PEDNING when there is no item', function () use ($createMockItem) {
-        $order = \Mockery::mock(Order::class)->makePartial();
-        $items = new Collection([]);
+    it('sets order status to PEDNING when there is no item', function () {
+        $order        = Mockery::mock(Order::class)->makePartial();
+        $items        = new Collection([]);
         $order->items = $items;
 
         $order->shouldReceive('saveQuietly')->once();
@@ -51,7 +52,7 @@ describe('OrderStatusService', function () {
         expect($order->status)->toBe(OrderStatusEnum::PENDING);
     });
     it('sets order status to REFUNDED when all items are refunded', function () use ($createMockItem) {
-        $order = \Mockery::mock(Order::class)->makePartial();
+        $order = Mockery::mock(Order::class)->makePartial();
         $items = new Collection([
             $createMockItem(OrderItemStatusEnum::REFUNDED),
             $createMockItem(OrderItemStatusEnum::REFUNDED),
@@ -66,7 +67,7 @@ describe('OrderStatusService', function () {
     });
 
     it('sets order status to PARTIALLY_REFUNDED when some items are refunded', function () use ($createMockItem) {
-        $order = \Mockery::mock(Order::class)->makePartial();
+        $order = Mockery::mock(Order::class)->makePartial();
         $items = new Collection([
             $createMockItem(OrderItemStatusEnum::REFUNDED),
             $createMockItem(OrderItemStatusEnum::COMPLETED),
@@ -80,7 +81,7 @@ describe('OrderStatusService', function () {
     });
 
     it('sets order status to COMPLETED when all items are completed', function () use ($createMockItem) {
-        $order = \Mockery::mock(Order::class)->makePartial();
+        $order = Mockery::mock(Order::class)->makePartial();
         $items = new Collection([
             $createMockItem(OrderItemStatusEnum::COMPLETED),
             $createMockItem(OrderItemStatusEnum::COMPLETED),
@@ -94,7 +95,7 @@ describe('OrderStatusService', function () {
     });
 
     it('sets order status to PROCESSING when items are in a mixed state', function () use ($createMockItem) {
-        $order = \Mockery::mock(Order::class)->makePartial();
+        $order = Mockery::mock(Order::class)->makePartial();
         $items = new Collection([
             $createMockItem(OrderItemStatusEnum::PENDING),
             $createMockItem(OrderItemStatusEnum::COMPLETED),
@@ -107,7 +108,7 @@ describe('OrderStatusService', function () {
         expect($order->status)->toBe(OrderStatusEnum::PROCESSING);
     });
     it('sets order status to CACNELED when items are CACNELED', function () use ($createMockItem) {
-        $order = \Mockery::mock(Order::class)->makePartial();
+        $order = Mockery::mock(Order::class)->makePartial();
         $items = new Collection([
             $createMockItem(OrderItemStatusEnum::CANCELLED),
             $createMockItem(OrderItemStatusEnum::CANCELLED),
@@ -158,15 +159,15 @@ describe('OrderStatusService', function () {
 
         // Item 1: Pre-payment, should become COMPLETED, enrollment ACTIVE
         $item1 = OrderItem::factory()->for($order)->create([
-            'status' => OrderItemStatusEnum::PENDING,
-            'payment_type' => OrderItemPaymentTypeEnum::PRE_PAYMENT
+            'status'       => OrderItemStatusEnum::PENDING,
+            'payment_type' => OrderItemPaymentTypeEnum::PRE_PAYMENT,
         ]);
         Enrolment::factory()->for($item1)->create(['enrollment_status' => EnrolmentStatusEnum::PENDING_PROVISIONING]);
 
         // Item 2: Full payment, should become COMPLETED, enrollment ACTIVE
         $item2 = OrderItem::factory()->for($order)->create([
-            'status' => OrderItemStatusEnum::PENDING,
-            'payment_type' => OrderItemPaymentTypeEnum::FULL_PAYMENT
+            'status'       => OrderItemStatusEnum::PENDING,
+            'payment_type' => OrderItemPaymentTypeEnum::FULL_PAYMENT,
         ]);
         Enrolment::factory()->for($item2)->create(['enrollment_status' => EnrolmentStatusEnum::PENDING_PROVISIONING]);
 

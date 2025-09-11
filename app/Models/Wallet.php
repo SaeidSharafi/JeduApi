@@ -26,17 +26,6 @@ final class Wallet extends Model
         'status',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'balance' => 'integer',
-            'gift_balance' => 'integer',
-            'status' => WalletStatusEnum::class,
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-        ];
-    }
-
     // Relationships
     public function user(): BelongsTo
     {
@@ -77,5 +66,16 @@ final class Wallet extends Model
     public function isClosed(): bool
     {
         return $this->status === WalletStatusEnum::CLOSED;
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'balance'      => 'integer',
+            'gift_balance' => 'integer',
+            'status'       => WalletStatusEnum::class,
+            'created_at'   => 'datetime',
+            'updated_at'   => 'datetime',
+        ];
     }
 }

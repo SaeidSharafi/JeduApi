@@ -17,18 +17,19 @@ final class DiscountCoupon extends Model
      */
     protected $guarded = [];
 
-    protected function casts(): array
-    {
-        return [
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-        ];
-    }
     /**
      * Each coupon belongs to a parent promotion.
      */
     public function promotion(): BelongsTo
     {
         return $this->belongsTo(DiscountPromotion::class, 'discount_promotion_id');
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
     }
 }

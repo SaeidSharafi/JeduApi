@@ -15,24 +15,24 @@ final class CreateDiscountPromotionAction
         $promotion = DB::transaction(function () use ($data) {
             // Create the main promotion
             $promotion = DiscountPromotion::create([
-                'name' => $data->name,
-                'description' => $data->description,
-                'type' => $data->type,
-                'is_active' => $data->is_active,
-                'starts_at' => $data->starts_at,
-                'ends_at' => $data->ends_at,
-                'priority' => $data->priority,
+                'name'                             => $data->name,
+                'description'                      => $data->description,
+                'type'                             => $data->type,
+                'is_active'                        => $data->is_active,
+                'starts_at'                        => $data->starts_at,
+                'ends_at'                          => $data->ends_at,
+                'priority'                         => $data->priority,
                 'stop_processing_subsequent_rules' => $data->stop_processing_subsequent_rules,
-                'usage_limit_total' => $data->usage_limit_total,
-                'usage_limit_per_customer' => $data->usage_limit_per_customer,
-                'total_usage_count' => 0,
+                'usage_limit_total'                => $data->usage_limit_total,
+                'usage_limit_per_customer'         => $data->usage_limit_per_customer,
+                'total_usage_count'                => 0,
             ]);
 
             // Create rules
             foreach ($data->rules as $ruleData) {
                 $promotion->rules()->create([
-                    'type' => $ruleData->type,
-                    'handler' => $ruleData->handler,
+                    'type'          => $ruleData->type,
+                    'handler'       => $ruleData->handler,
                     'configuration' => $ruleData->configuration,
                 ]);
             }
@@ -40,8 +40,8 @@ final class CreateDiscountPromotionAction
             // Create coupons
             foreach ($data->coupons as $couponData) {
                 $promotion->coupons()->create([
-                    'code' => $couponData->code,
-                    'is_active' => $couponData->is_active,
+                    'code'        => $couponData->code,
+                    'is_active'   => $couponData->is_active,
                     'usage_limit' => $couponData->usage_limit,
                     'usage_count' => 0,
                 ]);

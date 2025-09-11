@@ -40,7 +40,7 @@ return new class extends Migration
             $table->string('currency_code')->default('IRR');
             $table->string('applied_coupon_code')->nullable();
             $table->text('admin_notes')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('staff','id')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('staff', 'id')->nullOnDelete();
 
             $table->timestamps();
 

@@ -10,7 +10,7 @@ use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class SuspiciousActivityRequestData extends Data
+final class SuspiciousActivityRequestData extends Data
 {
     public function __construct(
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
@@ -29,17 +29,18 @@ class SuspiciousActivityRequestData extends Data
     public static function rules(ValidationContext $context): array
     {
         $now = verta()->format('Y-m-d');
+
         return [
-            'date_from'                   => ['required', 'jdate:Y-m-d', 'jdate_before_equal:'.request('date_to').',Y-m-d'],
-            'date_to'                     => ['required', 'jdate:Y-m-d','jdate_before_equal:'.$now.',Y-m-d'],
-            'large_amount_threshold' => ['nullable', 'integer', 'min:1000000'], // Min 1M IRR
+            'date_from'                => ['required', 'jdate:Y-m-d', 'jdate_before_equal:'.request('date_to').',Y-m-d'],
+            'date_to'                  => ['required', 'jdate:Y-m-d', 'jdate_before_equal:'.$now.',Y-m-d'],
+            'large_amount_threshold'   => ['nullable', 'integer', 'min:1000000'], // Min 1M IRR
             'high_frequency_threshold' => ['nullable', 'integer', 'min:5', 'max:100'],
-            'include_off_hours' => ['boolean'],
-            'include_large_amounts' => ['boolean'],
-            'include_high_frequency' => ['boolean'],
-            'include_round_numbers' => ['boolean'],
-            'user_ids' => ['nullable', 'array'],
-            'user_ids.*' => ['integer', 'exists:users,id'],
+            'include_off_hours'        => ['boolean'],
+            'include_large_amounts'    => ['boolean'],
+            'include_high_frequency'   => ['boolean'],
+            'include_round_numbers'    => ['boolean'],
+            'user_ids'                 => ['nullable', 'array'],
+            'user_ids.*'               => ['integer', 'exists:users,id'],
         ];
     }
 }

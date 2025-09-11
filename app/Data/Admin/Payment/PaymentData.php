@@ -13,13 +13,13 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-final class PaymentData extends Data  implements WalletTransactionSourceableDataContract
+final class PaymentData extends Data implements WalletTransactionSourceableDataContract
 {
     public function __construct(
         public int $id,
         public int $order_id,
         public int $customer_id,
-        public ?int $created_by = null,
+        public ?int $created_by,
         public int $amount,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public PaymentMethodEnum $method,

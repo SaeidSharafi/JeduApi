@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Data\Admin\Vendor;
 
 use Hekmatinasser\Verta\Verta;
-use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Data;
 
 final class ShowVendorData extends Data

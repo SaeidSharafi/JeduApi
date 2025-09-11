@@ -29,12 +29,13 @@ enum MorphTypeEnum: string
     case STAFF         = 'staff';
     case USER          = 'user';
 
-    case TEACHER = 'teacher';
-    case VENDOR  = 'vendor';
-    case PRODUCT = 'product';
-    case ORDER     = 'order';
-    case REFUND    = 'refund';
+    case TEACHER  = 'teacher';
+    case VENDOR   = 'vendor';
+    case PRODUCT  = 'product';
+    case ORDER    = 'order';
+    case REFUND   = 'refund';
     case CAMPAIGN = 'campaign';
+
     public static function forMorphMap(): array
     {
         $map = [];

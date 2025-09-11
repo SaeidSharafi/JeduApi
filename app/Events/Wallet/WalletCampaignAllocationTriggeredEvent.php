@@ -10,7 +10,7 @@ use App\Models\WalletTransaction;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class WalletCampaignAllocationTriggeredEvent
+final class WalletCampaignAllocationTriggeredEvent
 {
     use Dispatchable, SerializesModels;
 

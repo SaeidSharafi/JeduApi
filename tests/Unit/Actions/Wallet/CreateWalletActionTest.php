@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Actions\Admin\Wallet\CreateWalletAction;
 use App\Data\Admin\Wallet\CreateWalletData;
 use App\Enums\Wallet\WalletStatusEnum;
@@ -22,30 +24,30 @@ test('wallet is auto-created for new user', function () {
 });
 test('cannot create duplicate wallet for user', function () {
     $admin = $this->authorized_user([
-        \App\Enums\PermissionEnum::WALLET_CREATE
+        App\Enums\PermissionEnum::WALLET_CREATE,
     ]);
     $user = User::factory()->create();
     $data = CreateWalletData::from([
-        'user_id' => $user->id,
-        'balance' => 500,
+        'user_id'      => $user->id,
+        'balance'      => 500,
         'gift_balance' => 0,
-        'status' => WalletStatusEnum::ACTIVE->value,
+        'status'       => WalletStatusEnum::ACTIVE->value,
     ]);
-    expect(fn() => $this->action->execute($data))
+    expect(fn () => $this->action->execute($data))
         ->toThrow(Exception::class, __('validation.wallet_already_exists'));
 });
 
 test('cannot create wallet for invalid user', function () {
     $admin = $this->authorized_user([
-        \App\Enums\PermissionEnum::WALLET_CREATE
+        App\Enums\PermissionEnum::WALLET_CREATE,
     ]);
     $data = CreateWalletData::from([
-        'user_id' => 999999,
-        'balance' => 100,
+        'user_id'      => 999999,
+        'balance'      => 100,
         'gift_balance' => 0,
-        'status' => WalletStatusEnum::ACTIVE->value,
+        'status'       => WalletStatusEnum::ACTIVE->value,
     ]);
-    expect(fn() => $this->action->execute($data))
+    expect(fn () => $this->action->execute($data))
         ->toThrow(Exception::class, __('validation.custom.user_not_found'));
 });
 
@@ -71,10 +73,10 @@ it('successfully creates a wallet for user', function () {
 
     // Verify wallet is persisted in database
     $this->assertDatabaseHas('wallets', [
-        'user_id' => $user->id,
-        'balance' => 50000,
+        'user_id'      => $user->id,
+        'balance'      => 50000,
         'gift_balance' => 25000,
-        'status' => WalletStatusEnum::ACTIVE->value,
+        'status'       => WalletStatusEnum::ACTIVE->value,
     ]);
 });
 
@@ -119,8 +121,8 @@ it('throws exception when user does not exist', function () {
         status: WalletStatusEnum::ACTIVE->value
     );
 
-    expect(fn() => $this->action->execute($data))
-        ->toThrow(\Exception::class, __('validation.custom.user_not_found'));
+    expect(fn () => $this->action->execute($data))
+        ->toThrow(Exception::class, __('validation.custom.user_not_found'));
 });
 
 it('throws exception when user already has a wallet', function () {
@@ -133,15 +135,15 @@ it('throws exception when user already has a wallet', function () {
         status: WalletStatusEnum::ACTIVE->value
     );
 
-    expect(fn() => $this->action->execute($data))
-        ->toThrow(\Exception::class, __('validation.wallet_already_exists'));
+    expect(fn () => $this->action->execute($data))
+        ->toThrow(Exception::class, __('validation.wallet_already_exists'));
 });
 
 it('handles large balance amounts correctly', function () {
     $user = User::factory()->create();
     $user->wallet->delete();
 
-    $largeBalance = 999999999; // Large amount
+    $largeBalance     = 999999999; // Large amount
     $largeGiftBalance = 888888888;
 
     $data = new CreateWalletData(

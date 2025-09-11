@@ -18,8 +18,7 @@ final class AboutUsCreateData extends Data
         public ArticleSectionCreateData $capabilities_block,
         public ArticleSectionCreateData $about_online_course_block_1,
         public ArticleSectionCreateData $about_online_course_block_2,
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {
@@ -75,5 +74,4 @@ final class AboutUsCreateData extends Data
             'about_online_course_block_2.icon'    => __('validation.attributes.about_us.online_course_2_image'),
         ];
     }
-
 }

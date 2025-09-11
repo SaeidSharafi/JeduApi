@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\Settings;
 
 use App\Contracts\ApiResponseInterface;
@@ -13,7 +15,7 @@ use Illuminate\Support\Facades\Gate;
  *
  * @authenticated
  */
-class ContactInfoController extends Controller
+final class ContactInfoController extends Controller
 {
     /**
      * Get contact info settings.

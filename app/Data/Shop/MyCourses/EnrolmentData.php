@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Shop\MyCourses;
 
 use App\Data\Shop\Product\ProductDeliveryOptionCardData;
@@ -14,11 +16,10 @@ use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-class EnrolmentData extends Data
+final class EnrolmentData extends Data
 {
-
-    //#[Computed]
-    //public ProductData $product;
+    // #[Computed]
+    // public ProductData $product;
 
     public function __construct(
         public string $uuid,
@@ -36,7 +37,7 @@ class EnrolmentData extends Data
         public bool $is_virtual = false,
         public ?ProductDeliveryOptionCardData $product = null,
     ) {
-        $this->product = ProductDeliveryOptionCardData::fromModel($productDeliveryOption);
+        $this->product    = ProductDeliveryOptionCardData::fromModel($productDeliveryOption);
         $this->is_virtual = $productDeliveryOption->delivery_method->isVirtual();
     }
 

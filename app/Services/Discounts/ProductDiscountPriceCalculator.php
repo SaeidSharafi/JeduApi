@@ -6,18 +6,19 @@ namespace App\Services\Discounts;
 
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
+use Exception;
 use Illuminate\Support\Collection;
+use Log;
 
 /**
  * Product Discount Price Calculator - handles the core logic for layered promotion calculations.
  * Inspired by Bagisto's price calculation system but adapted for our layered promotion approach.
  */
-class ProductDiscountPriceCalculator
+final class ProductDiscountPriceCalculator
 {
     public function __construct(
         private readonly DiscountHandlerRegistry $handlerRegistry
-    ) {
-    }
+    ) {}
 
     /**
      * Calculate the final discounted price for a product by applying all matching promotions sequentially.
@@ -63,33 +64,35 @@ class ProductDiscountPriceCalculator
         int $basePrice
     ): int {
         $currentPrice = $basePrice;
-        $actionRules = $promotion->rules->where('type', 'action');
+        $actionRules  = $promotion->rules->where('type', 'action');
 
         foreach ($actionRules as $rule) {
-            $handlerName = data_get($rule, 'handler');
+            $handlerName  = data_get($rule, 'handler');
             $handlerClass = $this->handlerRegistry->getProductActionHandler($handlerName);
 
-            //@codeCoverageIgnoreStart
-            if (!$handlerClass) {
-                \Log::warning("Product action handler not found: {$handlerName}");
+            // @codeCoverageIgnoreStart
+            if (! $handlerClass) {
+                Log::warning("Product action handler not found: {$handlerName}");
+
                 continue;
             }
-            //@codeCoverageIgnoreEnd
+            // @codeCoverageIgnoreEnd
 
             $configDtoClass = $this->handlerRegistry->getConfigClass($handlerClass);
 
-            //@codeCoverageIgnoreStart
-            if (!$configDtoClass) {
-                \Log::warning("Config DTO not found for handler: {$handlerClass}");
+            // @codeCoverageIgnoreStart
+            if (! $configDtoClass) {
+                Log::warning("Config DTO not found for handler: {$handlerClass}");
+
                 continue;
             }
-            //@codeCoverageIgnoreEnd
+            // @codeCoverageIgnoreEnd
             try {
                 $handler = app($handlerClass);
-                $config = $configDtoClass::from(data_get($rule, 'configuration'));
+                $config  = $configDtoClass::from(data_get($rule, 'configuration'));
 
                 // Create a temporary option with the current price for the calculation
-                $tempOption = clone $option;
+                $tempOption        = clone $option;
                 $tempOption->price = $currentPrice;
 
                 $currentPrice = $handler->apply($tempOption, $config);
@@ -97,11 +100,11 @@ class ProductDiscountPriceCalculator
                 // Ensure price doesn't go below 0
                 $currentPrice = max($currentPrice, 0);
             }
-            //@codeCoverageIgnoreStart
-            catch (\Exception $e) {
-                \Log::error("Error applying product action: {$e->getMessage()}");
+            // @codeCoverageIgnoreStart
+            catch (Exception $e) {
+                Log::error("Error applying product action: {$e->getMessage()}");
             }
-            //@codeCoverageIgnoreEnd
+            // @codeCoverageIgnoreEnd
         }
 
         return $currentPrice;
@@ -119,7 +122,7 @@ class ProductDiscountPriceCalculator
         int $targetPrice
     ): Collection {
         $appliedPromotions = collect();
-        $currentPrice = $option->price;
+        $currentPrice      = $option->price;
 
         $matchingPromotions = $promotions->filter(function (DiscountPromotion $promotion) use ($option) {
             return $this->allConditionsPass($promotion, $option);
@@ -154,39 +157,42 @@ class ProductDiscountPriceCalculator
         $conditionRules = $promotion->rules->where('type', 'condition');
 
         foreach ($conditionRules as $rule) {
-            $handlerName = data_get($rule, 'handler');
+            $handlerName  = data_get($rule, 'handler');
             $handlerClass = $this->handlerRegistry->getProductConditionHandler($handlerName);
 
-            //@codeCoverageIgnoreStart
-            if (!$handlerClass) {
-                \Log::warning("Product condition handler not found: {$handlerName}");
+            // @codeCoverageIgnoreStart
+            if (! $handlerClass) {
+                Log::warning("Product condition handler not found: {$handlerName}");
+
                 return false;
             }
-            //@codeCoverageIgnoreEnd
+            // @codeCoverageIgnoreEnd
 
             $configDtoClass = $this->handlerRegistry->getConfigClass($handlerClass);
 
-            //@codeCoverageIgnoreStart
-            if (!$configDtoClass) {
-                \Log::warning("Config DTO not found for handler: {$handlerClass}");
+            // @codeCoverageIgnoreStart
+            if (! $configDtoClass) {
+                Log::warning("Config DTO not found for handler: {$handlerClass}");
+
                 return false;
             }
-            //@codeCoverageIgnoreEnd
+            // @codeCoverageIgnoreEnd
 
             try {
                 $handler = app($handlerClass);
-                $config = $configDtoClass::from(data_get($rule, 'configuration'));
+                $config  = $configDtoClass::from(data_get($rule, 'configuration'));
 
-                if (!$handler->passes($option, $config)) {
+                if (! $handler->passes($option, $config)) {
                     return false;
                 }
             }
-            //@codeCoverageIgnoreStart
-            catch (\Exception $e) {
-                \Log::error("Error evaluating product condition: {$e->getMessage()}");
+            // @codeCoverageIgnoreStart
+            catch (Exception $e) {
+                Log::error("Error evaluating product condition: {$e->getMessage()}");
+
                 return false;
             }
-            //@codeCoverageIgnoreEnd
+            // @codeCoverageIgnoreEnd
         }
 
         return true;

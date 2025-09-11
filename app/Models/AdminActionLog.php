@@ -33,18 +33,6 @@ final class AdminActionLog extends Model
             'metadata',
         ];
 
-    protected function casts(): array
-    {
-        return [
-            'request_data'    => 'array',
-            'metadata'        => 'array',
-            'risk_level'      => 'string',
-            'response_status' => 'integer',
-            'created_at'      => 'datetime',
-            'updated_at'      => 'datetime',
-        ];
-    }
-
     // Relationships
     public function admin(): BelongsTo
     {
@@ -85,18 +73,12 @@ final class AdminActionLog extends Model
 
     public function getActionSummary(): string
     {
-        $action = ucfirst($this->action_type);
+        $action   = ucfirst($this->action_type);
         $resource = class_basename($this->resource_type) ?? 'Resource';
 
         return "{$action} {$resource}".($this->resource_id ? " #{$this->resource_id}" : '');
     }
 
-    protected function actionSummery(): Attribute
-    {
-        return Attribute::make(
-            get: fn($value, array $attributes) => $this->getActionSummary(),
-        );
-    }
     // Scopes
     public function scopeHighRisk($query)
     {
@@ -124,5 +106,24 @@ final class AdminActionLog extends Model
     public function scopeByRiskLevel($query, string $riskLevel)
     {
         return $query->where('risk_level', $riskLevel);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'request_data'    => 'array',
+            'metadata'        => 'array',
+            'risk_level'      => 'string',
+            'response_status' => 'integer',
+            'created_at'      => 'datetime',
+            'updated_at'      => 'datetime',
+        ];
+    }
+
+    protected function actionSummery(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value, array $attributes) => $this->getActionSummary(),
+        );
     }
 }

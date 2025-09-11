@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Enums\EnrolmentStatusEnum;
@@ -9,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Support\Str;
 
-class Enrolment extends Model
+final class Enrolment extends Model
 {
     use HasFactory;
 
@@ -27,24 +29,6 @@ class Enrolment extends Model
             'notes',
         ];
 
-    protected function casts(): array
-    {
-        return [
-            'enrollment_status' => EnrolmentStatusEnum::class,
-            'access_start_date' => 'date:Y-m-d',
-            'access_end_date'   => 'date:Y-m-d',
-            'provisioning_data' => 'array',
-            'created_at'        => 'datetime',
-            'updated_at'        => 'datetime',
-        ];
-    }
-    protected static function boot(): void
-    {
-        parent::boot();
-        self::creating(function ($model) {
-            $model->uuid = (string) Str::uuid7();
-        });
-    }
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
@@ -77,4 +61,23 @@ class Enrolment extends Model
         );
     }
 
+    protected static function boot(): void
+    {
+        parent::boot();
+        self::creating(function ($model) {
+            $model->uuid = (string) Str::uuid7();
+        });
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'enrollment_status' => EnrolmentStatusEnum::class,
+            'access_start_date' => 'date:Y-m-d',
+            'access_end_date'   => 'date:Y-m-d',
+            'provisioning_data' => 'array',
+            'created_at'        => 'datetime',
+            'updated_at'        => 'datetime',
+        ];
+    }
 }

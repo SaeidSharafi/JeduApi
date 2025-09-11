@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Api\Admin\AllocateGiftCreditController;
 use App\Http\Controllers\Api\Admin\Audit\AdminAuditLogController;
 use App\Http\Controllers\Api\Admin\DiscountPromotionController;
 use App\Http\Controllers\Api\Admin\DiscountPromotionStatisticsController;
@@ -15,7 +14,6 @@ use App\Http\Controllers\Api\Admin\NextPaymentDetailsController;
 use App\Http\Controllers\Api\Admin\OrderCalculationController;
 use App\Http\Controllers\Api\Admin\OrderController;
 use App\Http\Controllers\Api\Admin\PrivateFileDownloadController;
-use App\Http\Controllers\Api\Admin\ProcessCampaignBonusController;
 use App\Http\Controllers\Api\Admin\Settings\AboutUsInfoController;
 use App\Http\Controllers\Api\Admin\Settings\ContactInfoController;
 use App\Http\Controllers\Api\Admin\Settings\SettingController;
@@ -57,7 +55,7 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
             ->only(['index', 'store', 'show', 'update', 'destroy']);
 
         Route::post('order/preview', OrderCalculationController::class)
-        ->name('order.preview');
+            ->name('order.preview');
 
         Route::resource('order/{order}/order-item', App\Http\Controllers\Api\Admin\OrderItemController::class)
             ->only(['index', 'show']);
@@ -83,25 +81,25 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
             ->name('discount-promotion.statistics');
 
         // Discount Info routes (for frontend to get available rules, actions, etc.)
-        Route::get('discount-info', [\App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'index'])
+        Route::get('discount-info', [App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'index'])
             ->name('discount-info');
-        Route::get('discount-info/conditions', [\App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'conditions'])
+        Route::get('discount-info/conditions', [App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'conditions'])
             ->name('discount-info.conditions');
-        Route::get('discount-info/actions', [\App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'actions'])
+        Route::get('discount-info/actions', [App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'actions'])
             ->name('discount-info.actions');
-        Route::get('discount-info/operators', [\App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'operators'])
+        Route::get('discount-info/operators', [App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'operators'])
             ->name('discount-info.operators');
-        Route::get('discount-info/types', [\App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'types'])
+        Route::get('discount-info/types', [App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'types'])
             ->name('discount-info.types');
         Route::prefix('wallet')->name('wallet.')->group(function (): void {
             Route::resource('/', AdminWalletController::class)
                 ->only(['index', 'show'])
                 ->parameters(['' => 'wallet']);
 
-            Route::post('create', \App\Http\Controllers\Api\Admin\Wallet\CreateWalletController::class)->name('create');
-            Route::post('deposit/{wallet}', \App\Http\Controllers\Api\Admin\Wallet\DepositToWalletController::class)->name('deposit');
-            Route::post('withdrawal/{wallet}', \App\Http\Controllers\Api\Admin\Wallet\WithdrawFromWalletController::class)->name('withdrawal');
-            Route::post('adjustment/{wallet}', \App\Http\Controllers\Api\Admin\Wallet\AdjustWalletController::class)->name('adjustment');
+            Route::post('create', App\Http\Controllers\Api\Admin\Wallet\CreateWalletController::class)->name('create');
+            Route::post('deposit/{wallet}', App\Http\Controllers\Api\Admin\Wallet\DepositToWalletController::class)->name('deposit');
+            Route::post('withdrawal/{wallet}', App\Http\Controllers\Api\Admin\Wallet\WithdrawFromWalletController::class)->name('withdrawal');
+            Route::post('adjustment/{wallet}', App\Http\Controllers\Api\Admin\Wallet\AdjustWalletController::class)->name('adjustment');
         });
 
         // Wallet Campaign routes
@@ -124,11 +122,11 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
                 ->name('admin-actions.show');
 
             // Compliance reporting
-            Route::post('compliance-report', \App\Http\Controllers\Api\Admin\Audit\ComplianceReportController::class)
+            Route::post('compliance-report', App\Http\Controllers\Api\Admin\Audit\ComplianceReportController::class)
                 ->name('compliance-report');
 
             // Suspicious activity detection
-            Route::post('suspicious-activity', \App\Http\Controllers\Api\Admin\Audit\SuspiciousActivityController::class)
+            Route::post('suspicious-activity', App\Http\Controllers\Api\Admin\Audit\SuspiciousActivityController::class)
                 ->name('suspicious-activity');
         });
 
@@ -144,9 +142,9 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
                 ->name('about-us.show');
             Route::put('about-us', [AboutUsInfoController::class, 'update'])
                 ->name('about-us.update');
-            Route::get('footer', [\App\Http\Controllers\Api\Admin\Settings\FooterController::class, 'show'])
+            Route::get('footer', [App\Http\Controllers\Api\Admin\Settings\FooterController::class, 'show'])
                 ->name('footer.show');
-            Route::put('footer', [\App\Http\Controllers\Api\Admin\Settings\FooterController::class, 'update'])
+            Route::put('footer', [App\Http\Controllers\Api\Admin\Settings\FooterController::class, 'update'])
                 ->name('footer.update');
         });
     });

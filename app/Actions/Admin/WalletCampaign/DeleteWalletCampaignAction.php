@@ -1,21 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Admin\WalletCampaign;
 
 use App\Exceptions\ModelHasRelationshipDataException;
 use App\Models\WalletCampaign;
 use App\Models\WalletTransaction;
 
-class DeleteWalletCampaignAction
+final class DeleteWalletCampaignAction
 {
-
     public function handle(WalletCampaign $campaign): void
     {
         // Check if campaign has transactions
         if ($campaign->transactions()->exists()) {
-           throw new ModelHasRelationshipDataException(WalletTransaction::class);
+            throw new ModelHasRelationshipDataException(WalletTransaction::class);
         }
         $campaign->delete();
     }
-
 }

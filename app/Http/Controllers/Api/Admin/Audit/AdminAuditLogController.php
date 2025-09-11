@@ -68,9 +68,9 @@ final class AdminAuditLogController extends Controller
                 AllowedFilter::callback('search', function ($query, $value) {
                     $query->where(function ($q) use ($value) {
                         $q->where('route_name', 'like', "%{$value}%")
-                          ->orWhereHas('admin', function ($adminQuery) use ($value) {
-                              $adminQuery->where('name', 'like', "%{$value}%");
-                          });
+                            ->orWhereHas('admin', function ($adminQuery) use ($value) {
+                                $adminQuery->where('name', 'like', "%{$value}%");
+                            });
                     });
                 }),
             ])
@@ -79,7 +79,7 @@ final class AdminAuditLogController extends Controller
                 'admin_id',
                 'action_type',
                 'risk_level',
-                'response_status'
+                'response_status',
             ])
             ->defaultSort('-created_at')
             ->paginate($request->integer('per_page', 15));

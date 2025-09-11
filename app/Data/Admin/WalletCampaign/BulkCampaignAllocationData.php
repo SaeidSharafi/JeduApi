@@ -15,8 +15,7 @@ final class BulkCampaignAllocationData extends Data
         public ?string $trigger_event, // specific event name for event-based triggers
         public ?string $reason = null, // reason for manual triggers
         public ?array $metadata = null
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {

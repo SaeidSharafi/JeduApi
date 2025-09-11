@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Admin\Refund;
 
 use App\Enums\Order\RefundStatusEnum;
 use App\Models\Refund;
 use Illuminate\Validation\ValidationException;
 
-class DeletePendingRefundAction
+final class DeletePendingRefundAction
 {
     public function handle(Refund $refund): void
     {

@@ -26,13 +26,6 @@ trait AdvanceEnum
         return array_column(self::cases(), 'name');
     }
 
-    public function translate(): string
-    {
-        $key = class_basename($this);
-
-        return __("enums.{$key}.{$this->value}");
-    }
-
     /**
      * Get Key-Value Pairs for Enum
      *
@@ -62,5 +55,12 @@ trait AdvanceEnum
             ],
             self::cases()
         );
+    }
+
+    public function translate(): string
+    {
+        $key = class_basename($this);
+
+        return __("enums.{$key}.{$this->value}");
     }
 }

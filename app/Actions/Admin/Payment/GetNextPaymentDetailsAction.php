@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Admin\Payment;
 
 use App\Data\Admin\Payment\NextPaymentDetailsData;
@@ -10,7 +12,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Support\Collection;
 
-class GetNextPaymentDetailsAction
+final class GetNextPaymentDetailsAction
 {
     /**
      * Calculates and describes the next logical payment for an order.
@@ -41,18 +43,19 @@ class GetNextPaymentDetailsAction
         // --- GATHER AND PARTITION ITEMS ---
         // This is the key to building detailed descriptions.
         $fullPaymentItems = $order->items->where('payment_type', OrderItemPaymentTypeEnum::FULL_PAYMENT);
-        $prePaymentItems = $order->items->where('payment_type', OrderItemPaymentTypeEnum::PRE_PAYMENT);
+        $prePaymentItems  = $order->items->where('payment_type', OrderItemPaymentTypeEnum::PRE_PAYMENT);
 
         // --- DETERMINE PAYMENT STAGE ---
         $hasCompletedPayments = $order->payments->where('status', PaymentStatusEnum::COMPLETED)->isNotEmpty();
 
-        if (!$hasCompletedPayments) {
+        if (! $hasCompletedPayments) {
             // --- STAGE 1: INITIAL PAYMENT ---
             return $this->buildInitialPaymentDetails($fullPaymentItems, $prePaymentItems);
-        } else {
-            // --- STAGE 2: FINAL BALANCE PAYMENT ---
-            return $this->buildFinalBalancePaymentDetails($order, $prePaymentItems);
         }
+
+        // --- STAGE 2: FINAL BALANCE PAYMENT ---
+        return $this->buildFinalBalancePaymentDetails($order, $prePaymentItems);
+
     }
 
     /**
@@ -62,16 +65,16 @@ class GetNextPaymentDetailsAction
         Collection $fullPaymentItems,
         Collection $prePaymentItems
     ): NextPaymentDetailsData {
-        $amount = 0.0;
+        $amount      = 0.0;
         $lineDetails = [];
 
         // Process full payment items
         if ($fullPaymentItems->isNotEmpty()) {
             $amount += $fullPaymentItems->sum('total');
             $lineDetails[] = [
-                'type'  => [
+                'type' => [
                     'value' => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
-                    'label' => OrderItemPaymentTypeEnum::FULL_PAYMENT->translate()
+                    'label' => OrderItemPaymentTypeEnum::FULL_PAYMENT->translate(),
                 ],
                 'items' => $this->formatItemList($fullPaymentItems),
             ];
@@ -81,9 +84,9 @@ class GetNextPaymentDetailsAction
         if ($prePaymentItems->isNotEmpty()) {
             $amount += $prePaymentItems->sum('total');
             $lineDetails[] = [
-                'type'  => [
+                'type' => [
                     'value' => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
-                    'label' => OrderItemPaymentTypeEnum::PRE_PAYMENT->translate()
+                    'label' => OrderItemPaymentTypeEnum::PRE_PAYMENT->translate(),
                 ],
                 'items' => $this->formatItemList($prePaymentItems),
             ];
@@ -110,9 +113,9 @@ class GetNextPaymentDetailsAction
             summary_description: __('messages.order.final_balance_payment_required'),
             line_item_details: [
                 [
-                    'type'  => [ // Add this block for consistency
-                                 'value' => 'final_balance',
-                                 'label' => __('messages.order.final_balance_payment')
+                    'type' => [ // Add this block for consistency
+                        'value' => 'final_balance',
+                        'label' => __('messages.order.final_balance_payment'),
                     ],
                     'items' => $this->formatItemList($prePaymentItems),
                 ],
@@ -126,17 +129,18 @@ class GetNextPaymentDetailsAction
     private function generateInitialSummary(Collection $fullPaymentItems, Collection $prePaymentItems): string
     {
         $hasFull = $fullPaymentItems->isNotEmpty();
-        $hasPre = $prePaymentItems->isNotEmpty();
+        $hasPre  = $prePaymentItems->isNotEmpty();
 
-        if ($hasFull && !$hasPre) {
+        if ($hasFull && ! $hasPre) {
             // 'This is a full and final payment that will settle the order completely.';
             return __('messages.order.initial_payment_full');
         }
-        if (!$hasFull && $hasPre) {
-            //'This is a partial payment covering only the pre-payment fees. A final balance payment will be required later.';
+        if (! $hasFull && $hasPre) {
+            // 'This is a partial payment covering only the pre-payment fees. A final balance payment will be required later.';
             return __('messages.order.initial_payment_partial');
         }
-        //'This is an initial mixed payment. It covers the full cost of some items and only the pre-payment fee for others. A final balance payment will be required later.';
+
+        // 'This is an initial mixed payment. It covers the full cost of some items and only the pre-payment fee for others. A final balance payment will be required later.';
         return __('messages.order.initial_payment_mixed');
 
     }
@@ -146,6 +150,6 @@ class GetNextPaymentDetailsAction
      */
     private function formatItemList(Collection $items): array
     {
-        return $items->map(fn(OrderItem $item) => $item->name)->values()->all();
+        return $items->map(fn (OrderItem $item) => $item->name)->values()->all();
     }
 }

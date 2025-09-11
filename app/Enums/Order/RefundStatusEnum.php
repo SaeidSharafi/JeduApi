@@ -14,5 +14,5 @@ enum RefundStatusEnum: string
     case PROCESSING = 'processing';
     case COMPLETED  = 'completed';
     case FAILED     = 'failed';
-    case CANCELLED     = 'cancelled';
+    case CANCELLED  = 'cancelled';
 }

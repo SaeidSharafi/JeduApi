@@ -20,15 +20,16 @@ final class OrderFactory extends Factory
     public function definition(): array
     {
         $customerFactory = User::factory();
+
         return [
             'increment_id'           => $this->faker->unique()->randomNumber(6),
             'status'                 => $this->faker->randomElement(OrderStatusEnum::getAllValues()),
             'customer_id'            => $customerFactory,
-            'customer_email'         => fn(array $attributes) => User::find($attributes['customer_id'])->email,
-            'customer_phone'         => fn(array $attributes) => User::find($attributes['customer_id'])->phone,
-            'customer_first_name'    => fn(array $attributes) => User::find($attributes['customer_id'])->first_name,
-            'customer_last_name'     => fn(array $attributes) => User::find($attributes['customer_id'])->last_name,
-            'customer_snapshot_json' => fn(array $attributes) => User::find($attributes['customer_id'])->toArray(),
+            'customer_email'         => fn (array $attributes) => User::find($attributes['customer_id'])->email,
+            'customer_phone'         => fn (array $attributes) => User::find($attributes['customer_id'])->phone,
+            'customer_first_name'    => fn (array $attributes) => User::find($attributes['customer_id'])->first_name,
+            'customer_last_name'     => fn (array $attributes) => User::find($attributes['customer_id'])->last_name,
+            'customer_snapshot_json' => fn (array $attributes) => User::find($attributes['customer_id'])->toArray(),
             'total_item_count'       => 0,
             'total_qty_ordered'      => 0,
             'subtotal'               => 0,
@@ -56,12 +57,12 @@ final class OrderFactory extends Factory
         )->afterCreating(function (Order $order) {
             // After the order and its items are created, we recalculate all totals
             // to ensure they are perfectly in sync, just like our action does.
-            $order->subtotal = $order->items->sum(fn($item) => $item->price * $item->qty_ordered);
-            $order->discount_amount = $order->items->sum(fn($item) => $item->discount_amount * $item->qty_ordered);
-            $order->tax_amount = $order->items->sum(fn($item) => $item->tax_amount * $item->qty_ordered);
+            $order->subtotal        = $order->items->sum(fn ($item) => $item->price * $item->qty_ordered);
+            $order->discount_amount = $order->items->sum(fn ($item) => $item->discount_amount * $item->qty_ordered);
+            $order->tax_amount      = $order->items->sum(fn ($item) => $item->tax_amount * $item->qty_ordered);
 
             // Calculate totals based on our established business logic
-            $grandTotal = 0;
+            $grandTotal          = 0;
             $fullValueGrandTotal = 0;
 
             foreach ($order->items as $item) {
@@ -75,10 +76,10 @@ final class OrderFactory extends Factory
                 }
             }
 
-            $order->grand_total = $grandTotal;
+            $order->grand_total            = $grandTotal;
             $order->full_value_grand_total = $fullValueGrandTotal;
-            $order->total_item_count = $order->items->count();
-            $order->total_qty_ordered = $order->items->sum('qty_ordered');
+            $order->total_item_count       = $order->items->count();
+            $order->total_qty_ordered      = $order->items->sum('qty_ordered');
             $order->save();
         });
     }
@@ -90,13 +91,13 @@ final class OrderFactory extends Factory
             $order->load('items');
 
             // After the order and its items are created, we recalculate all totals.
-            $order->subtotal = $order->items->sum(fn(OrderItem $item) => $item->price * $item->qty_ordered);
-            $order->discount_amount = $order->items->sum(fn(OrderItem $item) => $item->discount_amount
+            $order->subtotal        = $order->items->sum(fn (OrderItem $item) => $item->price * $item->qty_ordered);
+            $order->discount_amount = $order->items->sum(fn (OrderItem $item) => $item->discount_amount
                 * $item->qty_ordered);
-            $order->tax_amount = $order->items->sum(fn(OrderItem $item) => $item->tax_amount * $item->qty_ordered);
+            $order->tax_amount = $order->items->sum(fn (OrderItem $item) => $item->tax_amount * $item->qty_ordered);
 
             // Calculate totals based on our established business logic
-            $grandTotal = 0;
+            $grandTotal          = 0;
             $fullValueGrandTotal = 0;
 
             foreach ($order->items as $item) {
@@ -114,8 +115,8 @@ final class OrderFactory extends Factory
             }
             $order->grand_total = $grandTotal;
             $order->full_value_grand_total
-                = $fullValueGrandTotal; // You might want to define this field in your model/migration
-            $order->total_item_count = $order->items->count();
+                                      = $fullValueGrandTotal; // You might want to define this field in your model/migration
+            $order->total_item_count  = $order->items->count();
             $order->total_qty_ordered = $order->items->sum('qty_ordered');
             $order->save();
         });

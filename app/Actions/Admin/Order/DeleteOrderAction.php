@@ -17,18 +17,17 @@ final readonly class DeleteOrderAction
     public function handle(Order $order): void
     {
         DB::transaction(function () use ($order): void {
-            if ($order->status !== OrderStatusEnum::PENDING){
+            if ($order->status !== OrderStatusEnum::PENDING) {
                 throw ValidationException::withMessages([
-                    'order' => __('messages.order.cannot_delete_non_pending_order')
+                    'order' => __('messages.order.cannot_delete_non_pending_order'),
                 ]);
             }
             $order->load('payments');
             if ($order->payments->isNotEmpty() && $order->payments->sum('amount') > 0) {
                 throw ValidationException::withMessages([
-                   'order' => __('messages.order.cannot_delete_order_with_payments', ['order_id' => $order->increment_id])
+                    'order' => __('messages.order.cannot_delete_order_with_payments', ['order_id' => $order->increment_id]),
                 ]);
             }
-
 
             $order->delete();
         });

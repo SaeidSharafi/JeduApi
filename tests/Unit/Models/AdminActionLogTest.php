@@ -44,8 +44,8 @@ describe('AdminActionLog Model', function () {
 
     it('casts attributes correctly', function () {
         $log = AdminActionLog::factory()->create([
-            'request_data' => ['key' => 'value'],
-            'metadata' => ['test' => 'data'],
+            'request_data'    => ['key' => 'value'],
+            'metadata'        => ['test' => 'data'],
             'response_status' => 200,
         ]);
 
@@ -57,7 +57,7 @@ describe('AdminActionLog Model', function () {
 
     it('belongs to admin (staff)', function () {
         $staff = Staff::factory()->create();
-        $log = AdminActionLog::factory()->create(['admin_id' => $staff->id]);
+        $log   = AdminActionLog::factory()->create(['admin_id' => $staff->id]);
 
         expect($log->admin)->toBeInstanceOf(Staff::class);
         expect($log->admin->id)->toBe($staff->id);
@@ -65,9 +65,9 @@ describe('AdminActionLog Model', function () {
 
     it('has polymorphic resource relationship', function () {
         $user = User::factory()->create();
-        $log = AdminActionLog::factory()->create([
+        $log  = AdminActionLog::factory()->create([
             'resource_type' => User::class,
-            'resource_id' => $user->id,
+            'resource_id'   => $user->id,
         ]);
 
         expect($log->resource)->toBeInstanceOf(User::class);
@@ -77,7 +77,7 @@ describe('AdminActionLog Model', function () {
     // Business Logic Tests
     it('identifies high risk correctly', function () {
         $highRiskLog = AdminActionLog::factory()->create(['risk_level' => 'high']);
-        $lowRiskLog = AdminActionLog::factory()->create(['risk_level' => 'low']);
+        $lowRiskLog  = AdminActionLog::factory()->create(['risk_level' => 'low']);
 
         expect($highRiskLog->isHighRisk())->toBeTrue();
         expect($lowRiskLog->isHighRisk())->toBeFalse();
@@ -85,14 +85,14 @@ describe('AdminActionLog Model', function () {
 
     it('identifies medium risk correctly', function () {
         $mediumRiskLog = AdminActionLog::factory()->create(['risk_level' => 'medium']);
-        $lowRiskLog = AdminActionLog::factory()->create(['risk_level' => 'low']);
+        $lowRiskLog    = AdminActionLog::factory()->create(['risk_level' => 'low']);
 
         expect($mediumRiskLog->isMediumRisk())->toBeTrue();
         expect($lowRiskLog->isMediumRisk())->toBeFalse();
     });
 
     it('identifies low risk correctly', function () {
-        $lowRiskLog = AdminActionLog::factory()->create(['risk_level' => 'low']);
+        $lowRiskLog  = AdminActionLog::factory()->create(['risk_level' => 'low']);
         $highRiskLog = AdminActionLog::factory()->create(['risk_level' => 'high']);
 
         expect($lowRiskLog->isLowRisk())->toBeTrue();
@@ -100,8 +100,8 @@ describe('AdminActionLog Model', function () {
     });
 
     it('identifies successful responses correctly', function () {
-        $successLog = AdminActionLog::factory()->create(['response_status' => 200]);
-        $errorLog = AdminActionLog::factory()->create(['response_status' => 404]);
+        $successLog     = AdminActionLog::factory()->create(['response_status' => 200]);
+        $errorLog       = AdminActionLog::factory()->create(['response_status' => 404]);
         $serverErrorLog = AdminActionLog::factory()->create(['response_status' => 500]);
 
         expect($successLog->isSuccessful())->toBeTrue();
@@ -110,11 +110,11 @@ describe('AdminActionLog Model', function () {
     });
 
     it('identifies wallet related actions correctly', function () {
-        $walletRouteLog = AdminActionLog::factory()->create(['route_name' => 'admin.wallet.transaction.create']);
+        $walletRouteLog    = AdminActionLog::factory()->create(['route_name' => 'admin.wallet.transaction.create']);
         $walletResourceLog = AdminActionLog::factory()->create(['resource_type' => 'App\Models\WalletTransaction']);
-        $nonWalletLog = AdminActionLog::factory()->create([
-            'route_name' => 'admin.users.index',
-            'resource_type' => 'App\Models\User'
+        $nonWalletLog      = AdminActionLog::factory()->create([
+            'route_name'    => 'admin.users.index',
+            'resource_type' => 'App\Models\User',
         ]);
 
         expect($walletRouteLog->isWalletRelated())->toBeTrue();
@@ -124,9 +124,9 @@ describe('AdminActionLog Model', function () {
 
     it('generates action summary correctly', function () {
         $log = AdminActionLog::factory()->create([
-            'action_type' => 'create',
+            'action_type'   => 'create',
             'resource_type' => 'App\Models\User',
-            'resource_id' => 123,
+            'resource_id'   => 123,
         ]);
 
         expect($log->getActionSummary())->toBe('Create User #123');
@@ -134,9 +134,9 @@ describe('AdminActionLog Model', function () {
 
     it('generates action summary without resource ID', function () {
         $log = AdminActionLog::factory()->create([
-            'action_type' => 'view',
+            'action_type'   => 'view',
             'resource_type' => 'App\Models\User',
-            'resource_id' => null,
+            'resource_id'   => null,
         ]);
 
         expect($log->getActionSummary())->toBe('View User');
@@ -158,7 +158,7 @@ describe('AdminActionLog Model', function () {
         AdminActionLog::factory()->create(['route_name' => 'admin.wallet.transactions']);
         AdminActionLog::factory()->create(['resource_type' => 'App\Models\WalletTransaction']);
         AdminActionLog::factory()->create(['route_name' => 'admin.users.index',
-                                           'resource_type' => 'App\Models\User']);
+            'resource_type'                             => 'App\Models\User']);
 
         $walletLogs = AdminActionLog::walletActions()->get();
 
@@ -174,12 +174,12 @@ describe('AdminActionLog Model', function () {
         $adminLogs = AdminActionLog::byAdmin($admin->id)->get();
 
         expect($adminLogs)->toHaveCount(2);
-        expect($adminLogs->every(fn($log) => $log->admin_id === $admin->id))->toBeTrue();
+        expect($adminLogs->every(fn ($log) => $log->admin_id === $admin->id))->toBeTrue();
     });
 
     it('filters by date range with scope', function () {
         $startDate = now()->subDays(5);
-        $endDate = now()->subDays(2);
+        $endDate   = now()->subDays(2);
 
         AdminActionLog::factory()->create(['created_at' => now()->subDays(3)]); // Within range
         AdminActionLog::factory()->create(['created_at' => now()->subDays(4)]); // Within range
@@ -199,25 +199,25 @@ describe('AdminActionLog Model', function () {
         $highRiskLogs = AdminActionLog::byRiskLevel('high')->get();
 
         expect($highRiskLogs)->toHaveCount(2);
-        expect($highRiskLogs->every(fn($log) => $log->risk_level === 'high'))->toBeTrue();
+        expect($highRiskLogs->every(fn ($log) => $log->risk_level === 'high'))->toBeTrue();
     });
 
     it('serializes to array correctly', function () {
         $staff = Staff::factory()->create();
-        $log = AdminActionLog::factory()->create([
-            'admin_id' => $staff->id,
-            'action_type' => 'create',
-            'resource_type' => 'App\Models\User',
-            'resource_id' => 123,
-            'route_name' => 'admin.users.store',
-            'http_method' => 'POST',
-            'request_data' => ['name' => 'Test User'],
+        $log   = AdminActionLog::factory()->create([
+            'admin_id'        => $staff->id,
+            'action_type'     => 'create',
+            'resource_type'   => 'App\Models\User',
+            'resource_id'     => 123,
+            'route_name'      => 'admin.users.store',
+            'http_method'     => 'POST',
+            'request_data'    => ['name' => 'Test User'],
             'response_status' => 201,
-            'ip_address' => '127.0.0.1',
-            'user_agent' => 'Test Agent',
-            'session_id' => 'test-session',
-            'risk_level' => 'low',
-            'metadata' => ['test' => 'data'],
+            'ip_address'      => '127.0.0.1',
+            'user_agent'      => 'Test Agent',
+            'session_id'      => 'test-session',
+            'risk_level'      => 'low',
+            'metadata'        => ['test' => 'data'],
         ])->fresh();
 
         $array = $log->toArray();
@@ -226,7 +226,7 @@ describe('AdminActionLog Model', function () {
             'id', 'admin_id', 'action_type', 'resource_type', 'resource_id',
             'route_name', 'http_method', 'request_data', 'response_status',
             'ip_address', 'user_agent', 'session_id', 'risk_level', 'metadata',
-            'created_at', 'updated_at'
+            'created_at', 'updated_at',
         ]);
 
         expect($array['admin_id'])->toBe($staff->id);

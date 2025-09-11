@@ -13,6 +13,8 @@ use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Services\Discounts\Configs\AddGiftCreditConfigData;
+use Exception;
+use Log;
 use Spatie\LaravelData\Data;
 
 #[DiscountHandlerKey('add_gift_credit')]
@@ -29,13 +31,13 @@ final class AddGiftCreditAction implements DiscountActionContract
 
     public function apply(OrderContextData $context, Data $configuration): void
     {
-        if (!$configuration instanceof AddGiftCreditConfigData) {
+        if (! $configuration instanceof AddGiftCreditConfigData) {
             return;
         }
 
         // Get the customer from the context
         $customer = $context->customer;
-        if (!$customer || !$customer->wallet) {
+        if (! $customer || ! $customer->wallet) {
             return;
         }
 
@@ -54,7 +56,7 @@ final class AddGiftCreditAction implements DiscountActionContract
 
         // Prepare description
         $description = $configuration->description ?? __('wallet.promotion.gift_from_order', [
-            'promotion' => $context->evaluating_promotion?->name ?? __('wallet.promotion.discount')
+            'promotion' => $context->evaluating_promotion?->name ?? __('wallet.promotion.discount'),
         ]);
 
         // Record gift transaction
@@ -67,23 +69,23 @@ final class AddGiftCreditAction implements DiscountActionContract
                 source_id: $context->evaluating_promotion?->id,
                 description: $description,
                 metadata: [
-                    'order_id' => $context->order_id ?? null,
+                    'order_id'       => $context->order_id ?? null,
                     'promotion_name' => $context->evaluating_promotion?->name,
-                    'credit_type' => 'gift',
-                    'expires_days' => $configuration->expires_days,
-                    'configuration' => $configuration->toArray()
+                    'credit_type'    => 'gift',
+                    'expires_days'   => $configuration->expires_days,
+                    'configuration'  => $configuration->toArray(),
                 ],
                 expires_at: $expiresAt
             );
 
             $this->recordWalletTransactionAction->execute($transactionData);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Log the error but don't break the order process
-            \Log::error('Failed to record gift credit from promotion', [
-                'error' => $e->getMessage(),
-                'customer_id' => $customer->id,
+            Log::error('Failed to record gift credit from promotion', [
+                'error'        => $e->getMessage(),
+                'customer_id'  => $customer->id,
                 'promotion_id' => $context->evaluating_promotion?->id,
-                'amount' => $giftAmount
+                'amount'       => $giftAmount,
             ]);
         }
     }
@@ -98,10 +100,12 @@ final class AddGiftCreditAction implements DiscountActionContract
                     $eligibleItemsCount += $item->qty;
                 }
             }
+
             return $configuration->amount * $eligibleItemsCount;
-        } else {
-            // Fixed amount gift credit
-            return $configuration->amount;
         }
+
+        // Fixed amount gift credit
+        return $configuration->amount;
+
     }
 }

@@ -12,28 +12,26 @@ use Spatie\LaravelData\Support\DataProperty;
 /**
  * Helper function to simplify invoking the cast within tests.
  *
- * @param mixed $value The value to be casted.
- * @param string|null $format The date format passed to the cast's constructor.
- * @return Carbon|null
+ * @param  mixed  $value  The value to be casted.
+ * @param  string|null  $format  The date format passed to the cast's constructor.
  */
 function castValue(mixed $value, ?string $format = null): ?Carbon
 {
-    $property = (new ReflectionClass(DataProperty::class))->newInstanceWithoutConstructor();
-    $reflectionProperty = new \ReflectionProperty(DataProperty::class, 'name');
+    $property           = (new ReflectionClass(DataProperty::class))->newInstanceWithoutConstructor();
+    $reflectionProperty = new ReflectionProperty(DataProperty::class, 'name');
     $reflectionProperty->setValue($property, 'published_at');
-    $caster = new CarbonFromJalaliString($format);
-    $mockContext  = Mockery::mock(CreationContext::class);
+    $caster      = new CarbonFromJalaliString($format);
+    $mockContext = Mockery::mock(CreationContext::class);
 
     return $caster->cast($property, $value, [], $mockContext);
 }
-
 
 // --- Test Suite for CarbonFromJalaliString Cast ---
 
 describe('Successful Casting Scenarios', function () {
     it('successfully casts a valid jalali datetime string with a specified format', function () {
         $jalaliString = '1403-05-06 15:30:00';
-        $carbon = castValue($jalaliString, 'Y-m-d H:i:s');
+        $carbon       = castValue($jalaliString, 'Y-m-d H:i:s');
 
         expect($carbon)->toBeInstanceOf(Carbon::class)
             ->and($carbon->year)->toBe(2024)
@@ -45,7 +43,7 @@ describe('Successful Casting Scenarios', function () {
 
     it('successfully casts a valid jalali date string without a time component', function () {
         $jalaliString = '1403-05-06';
-        $carbon = castValue($jalaliString, 'Y-m-d');
+        $carbon       = castValue($jalaliString, 'Y-m-d');
 
         expect($carbon)->toBeInstanceOf(Carbon::class)
             ->and($carbon->year)->toBe(2024)
@@ -56,7 +54,7 @@ describe('Successful Casting Scenarios', function () {
 
     it('successfully casts a valid jalali string without a specified format', function () {
         $jalaliString = '1403/05/06'; // Uses Verta::parse() auto-detection
-        $carbon = castValue($jalaliString);
+        $carbon       = castValue($jalaliString);
 
         expect($carbon)->toBeInstanceOf(Carbon::class)
             ->and($carbon->year)->toBe(2024)
@@ -66,13 +64,13 @@ describe('Successful Casting Scenarios', function () {
 
     it('returns the same instance when casting an existing carbon instance', function () {
         $originalCarbon = Carbon::create(2025, 1, 1, 12, 0, 0);
-        $castedCarbon = castValue($originalCarbon);
+        $castedCarbon   = castValue($originalCarbon);
 
         expect($castedCarbon)->toBe($originalCarbon);
     });
 
     it('successfully casts an existing verta instance', function () {
-        $verta = new Verta("2024-7-27"); // Gregorian date to initialize Verta
+        $verta  = new Verta('2024-7-27'); // Gregorian date to initialize Verta
         $carbon = castValue($verta);
 
         expect($carbon)->toBeInstanceOf(Carbon::class)
@@ -82,8 +80,8 @@ describe('Successful Casting Scenarios', function () {
     });
 
     it('successfully casts a generic datetimeinterface instance', function () {
-        $dateTime = new DateTime('2025-02-15 10:00:00');
-        $carbon = castValue($dateTime);
+        $dateTime = new DateTimeImmutable('2025-02-15 10:00:00');
+        $carbon   = castValue($dateTime);
 
         expect($carbon)->toBeInstanceOf(Carbon::class)
             ->and($carbon->year)->toBe(2025)
@@ -97,13 +95,12 @@ describe('Successful Casting Scenarios', function () {
     });
 });
 
-
 describe('Failure and Exception Scenarios', function () {
     it('throws invalidjalalidateexception for a completely invalid date string', function () {
         castValue('not-a-date-at-all');
     })->throws(
         InvalidJalaliDateException::class,
-        "The value for the [published_at] field is not a valid Jalali date format."
+        'The value for the [published_at] field is not a valid Jalali date format.'
     );
 
     it('throws invalidjalalidateexception for a logically invalid jalali date', function () {
@@ -125,12 +122,11 @@ describe('Failure and Exception Scenarios', function () {
     })->throws(InvalidJalaliDateException::class);
 });
 
-
 describe('Edge Case Scenarios', function () {
     it('handles jalali leap years correctly', function () {
         // 1399 was a Jalali leap year. Esfand (month 12) had 30 days.
         $jalaliLeapDayString = '1399-12-30'; // Corresponds to 2021-03-20
-        $carbon = castValue($jalaliLeapDayString, 'Y-m-d');
+        $carbon              = castValue($jalaliLeapDayString, 'Y-m-d');
 
         expect($carbon)->toBeInstanceOf(Carbon::class)
             ->and($carbon->year)->toBe(2021)

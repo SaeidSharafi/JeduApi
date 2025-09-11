@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Discounts;
 
-use App\Attributes\DiscountHandlerKey;
 use App\Contracts\Discounts\DiscountActionContract;
 use App\Contracts\Discounts\DiscountConditionContract;
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
@@ -15,16 +14,16 @@ use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use RuntimeException;
 
 final class OrderCalculationService
 {
     public function __construct(
-        protected PromotionFinder $promotionFinder,
-        protected DiscountHandlerRegistry $handlerRegistry
+        private PromotionFinder $promotionFinder,
+        private DiscountHandlerRegistry $handlerRegistry
     ) {}
 
     /**
@@ -77,7 +76,7 @@ final class OrderCalculationService
 
         $subtotal_all_items          = 0;
         $subtotal_full_payment_items = 0;
-        $calculatedItems = collect();
+        $calculatedItems             = collect();
         foreach ($data->items as $itemData) {
             $option = $deliveryOptions->get($itemData->product_delivery_option_id);
 
@@ -147,10 +146,10 @@ final class OrderCalculationService
         $conditionRules = $promotion->rules->where('type', 'condition');
 
         foreach ($conditionRules as $rule) {
-            $handlerName = data_get($rule,'handler');
+            $handlerName  = data_get($rule, 'handler');
             $handlerClass = $this->handlerRegistry->getCartConditionHandler($handlerName);
             if (! $handlerClass) {
-                throw new \RuntimeException("No discount condition handler registered for '{$handlerName}'");
+                throw new RuntimeException("No discount condition handler registered for '{$handlerName}'");
             }
 
             /** @var DiscountConditionContract $handler */
@@ -158,10 +157,10 @@ final class OrderCalculationService
             $configDtoClass = $this->handlerRegistry->getConfigClass($handlerClass);
 
             if (! $configDtoClass) {
-                throw new \RuntimeException("No config DTO mapped for handler '{$handlerClass}'");
+                throw new RuntimeException("No config DTO mapped for handler '{$handlerClass}'");
             }
 
-            $config = $configDtoClass::from(data_get($rule,'configuration'));
+            $config = $configDtoClass::from(data_get($rule, 'configuration'));
 
             if (! $handler->passes($context, $config)) {
                 return false; // If any condition fails, the entire promotion is invalid.
@@ -182,10 +181,10 @@ final class OrderCalculationService
         $actionRules = $promotion->rules->where('type', 'action');
 
         foreach ($actionRules as $rule) {
-            $handlerName = data_get($rule,'handler');
+            $handlerName  = data_get($rule, 'handler');
             $handlerClass = $this->handlerRegistry->getCartActionHandler($handlerName);
             if (! $handlerClass) {
-                throw new \RuntimeException("No discount action handler registered for '{$handlerName}'");
+                throw new RuntimeException("No discount action handler registered for '{$handlerName}'");
             }
 
             /** @var DiscountActionContract $handler */
@@ -193,18 +192,18 @@ final class OrderCalculationService
             $configDtoClass = $this->handlerRegistry->getConfigClass($handlerClass);
 
             if (! $configDtoClass) {
-                throw new \RuntimeException("No config DTO mapped for handler '{$handlerClass}'");
+                throw new RuntimeException("No config DTO mapped for handler '{$handlerClass}'");
             }
 
-            $config = $configDtoClass::from(data_get($rule,'configuration'));
+            $config = $configDtoClass::from(data_get($rule, 'configuration'));
             // The action handler mutates the $context object directly.
             $handler->apply($context, $config);
         }
 
         // For CART_CHECKOUT type promotions, add cart-level discount information to audit trail
-        if ($promotion->type === \App\Enums\Order\DiscountTypeEnum::CART_CHECKOUT) {
+        if ($promotion->type === DiscountTypeEnum::CART_CHECKOUT) {
             // Calculate the discount amount applied by this specific promotion
-            $discountAmountAfter = $context->items->sum('discount_amount');
+            $discountAmountAfter   = $context->items->sum('discount_amount');
             $appliedDiscountAmount = $discountAmountAfter - $discountAmountBefore;
 
             if ($appliedDiscountAmount > 0) {

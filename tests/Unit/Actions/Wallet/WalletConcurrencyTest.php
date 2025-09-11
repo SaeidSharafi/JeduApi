@@ -15,33 +15,33 @@ test('concurrent transactions maintain balance integrity', function () {
     $user = User::factory()->create();
     $user->wallet->update(['balance' => 1000]);
 
-    $admin = \App\Models\Staff::factory()->create()->fresh();
+    $admin = App\Models\Staff::factory()->create()->fresh();
 
     // Simulate concurrent operations
     $results = [];
 
     // Multiple deposits and withdrawals in parallel
     $operations = [
-        fn() => app(DepositToWalletAction::class)->handle(DepositToWalletData::from([
+        fn () => app(DepositToWalletAction::class)->handle(DepositToWalletData::from([
 
-            'amount' => 100,
-            'description' => 'Concurrent deposit 1'
-        ]),$admin,$user->wallet),
-        fn() => app(WithdrawFromWalletAction::class)->handle(WithdrawFromWalletData::from([
+            'amount'      => 100,
+            'description' => 'Concurrent deposit 1',
+        ]), $admin, $user->wallet),
+        fn () => app(WithdrawFromWalletAction::class)->handle(WithdrawFromWalletData::from([
 
-            'amount' => 50,
-            'description' => 'Concurrent withdrawal 1'
-        ]),$admin,$user->wallet),
-        fn() => app(DepositToWalletAction::class)->handle(DepositToWalletData::from([
+            'amount'      => 50,
+            'description' => 'Concurrent withdrawal 1',
+        ]), $admin, $user->wallet),
+        fn () => app(DepositToWalletAction::class)->handle(DepositToWalletData::from([
 
-            'amount' => 200,
-            'description' => 'Concurrent deposit 2'
-        ]),$admin,$user->wallet),
-        fn() => app(WithdrawFromWalletAction::class)->handle(WithdrawFromWalletData::from([
+            'amount'      => 200,
+            'description' => 'Concurrent deposit 2',
+        ]), $admin, $user->wallet),
+        fn () => app(WithdrawFromWalletAction::class)->handle(WithdrawFromWalletData::from([
 
-            'amount' => 75,
-            'description' => 'Concurrent withdrawal 2'
-        ]),$admin,$user->wallet),
+            'amount'      => 75,
+            'description' => 'Concurrent withdrawal 2',
+        ]), $admin, $user->wallet),
     ];
 
     // Execute operations
@@ -62,19 +62,19 @@ test('insufficient balance prevents race condition exploitation', function () {
     $user = User::factory()->create();
     $user->wallet->update(['balance' => 100]);
 
-    $admin = \App\Models\Staff::factory()->create()->fresh();
+    $admin = App\Models\Staff::factory()->create()->fresh();
 
     // Try to withdraw more than available in multiple concurrent operations
     $exceptions = 0;
     $operations = [
-        fn() => app(WithdrawFromWalletAction::class)->handle(WithdrawFromWalletData::from([
+        fn () => app(WithdrawFromWalletAction::class)->handle(WithdrawFromWalletData::from([
 
             'amount' => 80,
-        ]),$admin,$user->wallet),
-        fn() => app(WithdrawFromWalletAction::class)->handle(WithdrawFromWalletData::from([
+        ]), $admin, $user->wallet),
+        fn () => app(WithdrawFromWalletAction::class)->handle(WithdrawFromWalletData::from([
 
             'amount' => 80,
-        ]),$admin,$user->wallet),
+        ]), $admin, $user->wallet),
     ];
 
     foreach ($operations as $operation) {
@@ -96,7 +96,7 @@ test('insufficient balance prevents race condition exploitation', function () {
 test('database locking prevents balance inconsistency', function () {
     $user = User::factory()->create();
     $user->wallet->update(['balance' => 1000]);
-    $admin = \App\Models\Staff::factory()->create()->fresh();
+    $admin = App\Models\Staff::factory()->create()->fresh();
     // This test verifies that our lockForUpdate() call works
     // In a real race condition without locking, this could cause inconsistencies
 
@@ -106,7 +106,7 @@ test('database locking prevents balance inconsistency', function () {
     $transaction = $depositAction->handle(DepositToWalletData::from([
 
         'amount' => 500,
-    ]),$admin,$user->wallet);
+    ]), $admin, $user->wallet);
 
     // Verify the transaction has the correct balance_after
     expect($transaction->balance_after)->toBe(1500);

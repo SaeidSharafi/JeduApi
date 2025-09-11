@@ -7,8 +7,8 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
 use App\Models\Vendor;
+
 use function Pest\Laravel\getJson;
-use function Pest\Laravel\postJson;
 
 uses(Tests\AuthTestTrait::class);
 

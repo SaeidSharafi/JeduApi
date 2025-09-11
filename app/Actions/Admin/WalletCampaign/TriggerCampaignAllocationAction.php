@@ -14,9 +14,10 @@ use App\Exceptions\CustomValidationException;
 use App\Models\User;
 use App\Models\WalletCampaign;
 use App\Models\WalletTransaction;
+use Exception;
 use Illuminate\Support\Facades\DB;
 
-readonly class TriggerCampaignAllocationAction
+final readonly class TriggerCampaignAllocationAction
 {
     public function __construct(
         private RecordWalletTransactionAction $recordWalletTransactionAction
@@ -25,13 +26,13 @@ readonly class TriggerCampaignAllocationAction
     /**
      * Trigger a campaign allocation for a user (manual or event-based)
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function handle(TriggerCampaignAllocationData $data,User $user, WalletCampaign $campaign): WalletTransaction
+    public function handle(TriggerCampaignAllocationData $data, User $user, WalletCampaign $campaign): WalletTransaction
     {
         return DB::transaction(function () use ($data, $campaign, $user) {
             // Ensure user has a wallet
-            if (!$user->wallet) {
+            if (! $user->wallet) {
                 throw new CustomValidationException(__('validation.custom.wallet_not_found'));
             }
 
@@ -79,10 +80,10 @@ readonly class TriggerCampaignAllocationAction
     private function checkForDuplicateAllocation(User $user, WalletCampaign $campaign, TriggerCampaignAllocationData $data): ?WalletTransaction
     {
         $query = WalletTransaction::where([
-            'user_id' => $user->id,
+            'user_id'     => $user->id,
             'source_type' => TransactionSourceEnum::CAMPAIGN,
-            'source_id' => $campaign->id,
-            'type' => TransactionTypeEnum::GIFT,
+            'source_id'   => $campaign->id,
+            'type'        => TransactionTypeEnum::GIFT,
         ]);
 
         // For event-based triggers, check for specific trigger event
@@ -105,13 +106,13 @@ readonly class TriggerCampaignAllocationAction
     {
         if ($data->trigger_type === 'manual') {
             return $data->reason ?? __('wallet.campaign.gift_allocated', [
-                'campaign' => $campaign->name
+                'campaign' => $campaign->name,
             ]);
         }
 
         return __('wallet.campaign.bonus_processed', [
             'campaign' => $campaign->name,
-            'event' => $data->trigger_event ?? 'system event'
+            'event'    => $data->trigger_event ?? 'system event',
         ]);
     }
 
@@ -121,10 +122,10 @@ readonly class TriggerCampaignAllocationAction
     private function buildTransactionMetadata(WalletCampaign $campaign, TriggerCampaignAllocationData $data): array
     {
         return array_merge($data->metadata ?? [], [
-            'campaign_name' => $campaign->name,
-            'campaign_type' => $campaign->type,
-            'trigger_type' => $data->trigger_type,
-            'trigger_event' => $data->trigger_event,
+            'campaign_name'     => $campaign->name,
+            'campaign_type'     => $campaign->type,
+            'trigger_type'      => $data->trigger_type,
+            'trigger_event'     => $data->trigger_event,
             'allocation_reason' => $data->reason,
         ]);
     }

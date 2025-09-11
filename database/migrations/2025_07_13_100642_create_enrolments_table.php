@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('enrolments', function (Blueprint $table) {
@@ -19,8 +22,8 @@ return new class extends Migration {
             $table->unsignedBigInteger('product_delivery_option_id');
             $table->foreign('product_delivery_option_id', 'pdo_id_foreign')->references('id')->on('product_delivery_options')
                 ->onDelete('cascade');
-            $table->enum('enrollment_status', \App\Enums\EnrolmentStatusEnum::getAllValues())
-                ->default(\App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING->value);
+            $table->enum('enrollment_status', App\Enums\EnrolmentStatusEnum::getAllValues())
+                ->default(App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING->value);
             $table->date('access_start_date')->nullable();
             $table->date('access_end_date')->nullable();
             $table->unsignedBigInteger('external_enrollment_id')->nullable();

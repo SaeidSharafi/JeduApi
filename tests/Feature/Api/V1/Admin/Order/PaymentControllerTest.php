@@ -12,7 +12,7 @@ beforeEach(function () {
 });
 it('returns order payments list', function () {
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_VIEW->value]);
-    $order = App\Models\Order::factory()->create();
+    $order   = App\Models\Order::factory()->create();
     $payment = App\Models\Payment::factory()
         ->create([
             'order_id'    => $order->id,
@@ -49,7 +49,7 @@ it('returns order payments list', function () {
             'label' => PaymentMethodEnum::ONLINE_GATEWAY->translate(),
             'value' => PaymentMethodEnum::ONLINE_GATEWAY->value,
         ],
-        'status'      => [
+        'status' => [
             'label' => PaymentStatusEnum::COMPLETED->translate(),
             'value' => PaymentStatusEnum::COMPLETED->value,
         ],
@@ -58,7 +58,7 @@ it('returns order payments list', function () {
 });
 it('returns order payment detail', function () {
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_VIEW->value]);
-    $order = App\Models\Order::factory()->create();
+    $order   = App\Models\Order::factory()->create();
     $payment = App\Models\Payment::factory()->create([
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
@@ -89,7 +89,7 @@ it('returns order payment detail', function () {
                 'label' => PaymentMethodEnum::ONLINE_GATEWAY->translate(),
                 'value' => PaymentMethodEnum::ONLINE_GATEWAY->value,
             ],
-            'status'      => [
+            'status' => [
                 'label' => PaymentStatusEnum::COMPLETED->translate(),
                 'value' => PaymentStatusEnum::COMPLETED->value,
             ],
@@ -116,7 +116,7 @@ it('create payment successfully', function () {
             'total'                      => $product1->price,
             'price'                      => $product1->price,
             'discount_amount'            => 0,
-            'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'payment_type'               => App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'tax_amount'                 => 0,
         ],
         [
@@ -125,11 +125,11 @@ it('create payment successfully', function () {
             'total'                      => $product2->price,
             'price'                      => $product2->price,
             'discount_amount'            => 0,
-            'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'payment_type'               => App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'tax_amount'                 => 0,
-        ]
+        ],
     ];
-    $order = \App\Models\Order::factory()
+    $order = App\Models\Order::factory()
         ->withCalculatedTotals($items)
         ->create(
             [
@@ -176,8 +176,8 @@ it('create payment successfully', function () {
 
     $this->assertEquals($order->total_paid, 3000);
     $this->assertEquals($order->balance_due, 0);
-    $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
-    $this->assertEquals($order->overall_payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->payment_status, App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->overall_payment_status, App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
 });
 
 it('create partiall payment successfully', function () {
@@ -200,7 +200,7 @@ it('create partiall payment successfully', function () {
             'total'                      => $product1->prepayment_amount,
             'price'                      => $product1->price,
             'discount_amount'            => 0,
-            'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+            'payment_type'               => App\Enums\Order\OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
             'tax_amount'                 => 0,
         ],
         [
@@ -209,11 +209,11 @@ it('create partiall payment successfully', function () {
             'total'                      => $product2->prepayment_amount,
             'price'                      => $product2->price,
             'discount_amount'            => 0,
-            'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+            'payment_type'               => App\Enums\Order\OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
             'tax_amount'                 => 0,
-        ]
+        ],
     ];
-    $order = \App\Models\Order::factory()
+    $order = App\Models\Order::factory()
         ->withCalculatedTotals($items)
         ->create(
             [
@@ -221,9 +221,9 @@ it('create partiall payment successfully', function () {
             ]
         );
     $data = [
-        'method'      => PaymentMethodEnum::BANK_TRANSFER,
-        'status'      => PaymentStatusEnum::COMPLETED,
-        'data'        => [
+        'method' => PaymentMethodEnum::BANK_TRANSFER,
+        'status' => PaymentStatusEnum::COMPLETED,
+        'data'   => [
             'transaction_id'   => '123456789',
             'transaction_date' => verta()->format('Y-m-d'),
             'sender_name'      => 'Test Sender',
@@ -261,8 +261,8 @@ it('create partiall payment successfully', function () {
 
     $this->assertEquals($order->total_paid, 500);
     $this->assertEquals($order->balance_due, 2500);
-    $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
-    $this->assertEquals($order->overall_payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PARTIALLY_PAID->value);
+    $this->assertEquals($order->payment_status, App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->overall_payment_status, App\Enums\Order\OrderPaymentStatusEnum::PARTIALLY_PAID->value);
 });
 it('prevent creating payment if amount to pay is 0', function () {
     $product = App\Models\ProductDeliveryOption::factory()
@@ -286,7 +286,7 @@ it('prevent creating payment if amount to pay is 0', function () {
             'price'                      => $product->price,
             'discount_amount'            => 1000,
             'order_id'                   => $order->id,
-            'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'payment_type'               => App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'tax_amount'                 => 0,
         ]);
     $data = [
@@ -310,8 +310,8 @@ it('prevent creating payment if amount to pay is 0', function () {
 
     $this->assertEquals($order->total_paid, 0);
     $this->assertEquals($order->balance_due, 0);
-    $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
-    $this->assertEquals($order->overall_payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->payment_status, App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->overall_payment_status, App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
 });
 it('can update payment data', function () {
     $payment = App\Models\Payment::factory()->create([
@@ -408,7 +408,7 @@ it('can delete payment', function () {
             'total'                      => $product1->price,
             'price'                      => $product1->price,
             'discount_amount'            => 0,
-            'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'payment_type'               => App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'tax_amount'                 => 0,
         ],
         [
@@ -417,12 +417,12 @@ it('can delete payment', function () {
             'total'                      => $product2->price,
             'price'                      => $product2->price,
             'discount_amount'            => 0,
-            'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'payment_type'               => App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'tax_amount'                 => 0,
-        ]
+        ],
     ];
 
-    $order = \App\Models\Order::factory()
+    $order = App\Models\Order::factory()
         ->withCalculatedTotals($items)
         ->create(
             [
@@ -442,8 +442,8 @@ it('can delete payment', function () {
 
     $this->assertEquals($order->total_paid, 0);
     $this->assertEquals($order->balance_due, 3000);
-    $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
-    $this->assertEquals($order->overall_payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
+    $this->assertEquals($order->payment_status, App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
+    $this->assertEquals($order->overall_payment_status, App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
 
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_DELETE]);
     $response = $this->deleteJson(route('api.v1.admin.payment.destroy',
@@ -461,8 +461,8 @@ it('can delete payment', function () {
     $order->refresh();
     $this->assertEquals($order->total_paid, 0);
     $this->assertEquals($order->balance_due, 3000);
-    $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
-    $this->assertEquals($order->overall_payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
+    $this->assertEquals($order->payment_status, App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
+    $this->assertEquals($order->overall_payment_status, App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
 });
 
 it('can not delete completed payment', function () {
@@ -483,7 +483,7 @@ it('can not delete completed payment', function () {
             'total'                      => $product1->price,
             'price'                      => $product1->price,
             'discount_amount'            => 0,
-            'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'payment_type'               => App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'tax_amount'                 => 0,
         ],
         [
@@ -492,12 +492,12 @@ it('can not delete completed payment', function () {
             'total'                      => $product2->price,
             'price'                      => $product2->price,
             'discount_amount'            => 0,
-            'payment_type'               => \App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            'payment_type'               => App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'tax_amount'                 => 0,
-        ]
+        ],
     ];
 
-    $order = \App\Models\Order::factory()
+    $order = App\Models\Order::factory()
         ->withCalculatedTotals($items)
         ->create(
             [
@@ -517,8 +517,8 @@ it('can not delete completed payment', function () {
 
     $this->assertEquals($order->total_paid, 3000);
     $this->assertEquals($order->balance_due, 0);
-    $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
-    $this->assertEquals($order->overall_payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->payment_status, App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->overall_payment_status, App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
 
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_DELETE]);
     $response = $this->deleteJson(route('api.v1.admin.payment.destroy',
@@ -539,6 +539,6 @@ it('can not delete completed payment', function () {
     $order->refresh();
     $this->assertEquals($order->total_paid, 3000);
     $this->assertEquals($order->balance_due, 0);
-    $this->assertEquals($order->payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
-    $this->assertEquals($order->overall_payment_status, \App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->payment_status, App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
+    $this->assertEquals($order->overall_payment_status, App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
 });

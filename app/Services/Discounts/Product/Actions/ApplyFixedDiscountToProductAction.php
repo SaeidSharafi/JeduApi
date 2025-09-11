@@ -21,7 +21,7 @@ final class ApplyFixedDiscountToProductAction implements ProductDiscountActionCo
     public function apply(ProductDeliveryOption $option, Data $configuration): int
     {
         // @codeCoverageIgnoreStart
-        if (!$configuration instanceof ApplyFixedDiscountConfigData) {
+        if (! $configuration instanceof ApplyFixedDiscountConfigData) {
             return $option->price;
         }
         // @codeCoverageIgnoreEnd

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Actions\Admin\WalletCampaign\TriggerCampaignAllocationAction;
 use App\Actions\Wallet\RecordWalletTransactionAction;
 use App\Data\Admin\WalletCampaign\TriggerCampaignAllocationData;
@@ -20,26 +22,26 @@ uses(AuthTestTrait::class);
 
 beforeEach(function () {
     $this->customer = User::factory()->create();
-    $this->user = Staff::factory()->create();
+    $this->user     = Staff::factory()->create();
 
     $this->campaign = WalletCampaign::factory()->create([
-        'name' => 'Test Campaign',
-        'type' => CampaignTypeEnum::WELCOME_GIFT,
-        'amount' => 50000,
-        'is_active' => true,
-        'usage_limit_total' => 1000,
+        'name'                 => 'Test Campaign',
+        'type'                 => CampaignTypeEnum::WELCOME_GIFT,
+        'amount'               => 50000,
+        'is_active'            => true,
+        'usage_limit_total'    => 1000,
         'usage_limit_per_user' => 2, // Allow multiple allocations for different trigger types
-        'total_usage_count' => 0,
-        'starts_at' => Carbon::now()->subDay(),
-        'ends_at' => Carbon::now()->addMonth(),
-        'created_by' => $this->user->id,
+        'total_usage_count'    => 0,
+        'starts_at'            => Carbon::now()->subDay(),
+        'ends_at'              => Carbon::now()->addMonth(),
+        'created_by'           => $this->user->id,
     ]);
 
     $this->mockRecordAction = $this->mock(RecordWalletTransactionAction::class);
-    $this->action = new TriggerCampaignAllocationAction($this->mockRecordAction);
+    $this->action           = new TriggerCampaignAllocationAction($this->mockRecordAction);
 
     Event::fake([
-        WalletCampaignAllocationTriggeredEvent::class
+        WalletCampaignAllocationTriggeredEvent::class,
     ]);
 });
 
@@ -53,12 +55,12 @@ describe('TriggerCampaignAllocationAction', function () {
         );
 
         $mockTransaction = WalletTransaction::factory()->make([
-            'id' => 1,
-            'user_id' => $this->customer->id,
-            'type' => TransactionTypeEnum::GIFT,
-            'amount' => $this->campaign->amount,
+            'id'          => 1,
+            'user_id'     => $this->customer->id,
+            'type'        => TransactionTypeEnum::GIFT,
+            'amount'      => $this->campaign->amount,
             'source_type' => TransactionSourceEnum::CAMPAIGN,
-            'source_id' => $this->campaign->id,
+            'source_id'   => $this->campaign->id,
         ]);
 
         $this->mockRecordAction
@@ -84,12 +86,12 @@ describe('TriggerCampaignAllocationAction', function () {
         );
 
         $mockTransaction = WalletTransaction::factory()->make([
-            'id' => 1,
-            'user_id' => $this->customer->id,
-            'type' => TransactionTypeEnum::GIFT,
-            'amount' => $this->campaign->amount,
+            'id'          => 1,
+            'user_id'     => $this->customer->id,
+            'type'        => TransactionTypeEnum::GIFT,
+            'amount'      => $this->campaign->amount,
             'source_type' => TransactionSourceEnum::CAMPAIGN,
-            'source_id' => $this->campaign->id,
+            'source_id'   => $this->campaign->id,
         ]);
 
         $this->mockRecordAction
@@ -110,11 +112,11 @@ describe('TriggerCampaignAllocationAction', function () {
     it('prevents duplicate manual allocations for same campaign', function () {
         // Create existing manual allocation
         $existingTransaction = WalletTransaction::factory()->create([
-            'user_id' => $this->customer->id,
-            'type' => TransactionTypeEnum::GIFT,
+            'user_id'     => $this->customer->id,
+            'type'        => TransactionTypeEnum::GIFT,
             'source_type' => TransactionSourceEnum::CAMPAIGN,
-            'source_id' => $this->campaign->id,
-            'metadata' => ['trigger_type' => 'manual']
+            'source_id'   => $this->campaign->id,
+            'metadata'    => ['trigger_type' => 'manual'],
         ]);
 
         $data = new TriggerCampaignAllocationData(
@@ -134,11 +136,11 @@ describe('TriggerCampaignAllocationAction', function () {
     it('prevents duplicate event-based allocations for same trigger event', function () {
         // Create existing event allocation
         $existingTransaction = WalletTransaction::factory()->create([
-            'user_id' => $this->customer->id,
-            'type' => TransactionTypeEnum::GIFT,
+            'user_id'     => $this->customer->id,
+            'type'        => TransactionTypeEnum::GIFT,
             'source_type' => TransactionSourceEnum::CAMPAIGN,
-            'source_id' => $this->campaign->id,
-            'metadata' => ['trigger_event' => 'user_registration']
+            'source_id'   => $this->campaign->id,
+            'metadata'    => ['trigger_event' => 'user_registration'],
         ]);
 
         $data = new TriggerCampaignAllocationData(
@@ -157,11 +159,11 @@ describe('TriggerCampaignAllocationAction', function () {
     it('allows different event-based allocations for different trigger events', function () {
         // Create existing event allocation for registration
         WalletTransaction::factory()->create([
-            'user_id' => $this->customer->id,
-            'type' => TransactionTypeEnum::GIFT,
+            'user_id'     => $this->customer->id,
+            'type'        => TransactionTypeEnum::GIFT,
             'source_type' => TransactionSourceEnum::CAMPAIGN,
-            'source_id' => $this->campaign->id,
-            'metadata' => ['trigger_event' => 'user_registration']
+            'source_id'   => $this->campaign->id,
+            'metadata'    => ['trigger_event' => 'user_registration'],
         ]);
 
         // Try to allocate for different event
@@ -171,12 +173,12 @@ describe('TriggerCampaignAllocationAction', function () {
         );
 
         $mockTransaction = WalletTransaction::factory()->make([
-            'id' => 2,
-            'user_id' => $this->customer->id,
-            'type' => TransactionTypeEnum::GIFT,
-            'amount' => $this->campaign->amount,
+            'id'          => 2,
+            'user_id'     => $this->customer->id,
+            'type'        => TransactionTypeEnum::GIFT,
+            'amount'      => $this->campaign->amount,
             'source_type' => TransactionSourceEnum::CAMPAIGN,
-            'source_id' => $this->campaign->id,
+            'source_id'   => $this->campaign->id,
         ]);
 
         $this->mockRecordAction
@@ -199,7 +201,7 @@ describe('TriggerCampaignAllocationAction', function () {
             trigger_event: null,
         );
 
-        expect(fn() => $this->action->handle($data, $userWithoutWallet, $this->campaign))
+        expect(fn () => $this->action->handle($data, $userWithoutWallet, $this->campaign))
             ->toThrow(CustomValidationException::class);
     });
 
@@ -211,14 +213,14 @@ describe('TriggerCampaignAllocationAction', function () {
             trigger_event: null,
         );
 
-        expect(fn() => $this->action->handle($data, $this->customer, $this->campaign))
+        expect(fn () => $this->action->handle($data, $this->customer, $this->campaign))
             ->toThrow(CustomValidationException::class);
     });
 
     it('throws exception when campaign has expired', function () {
         $this->campaign->update([
             'starts_at' => Carbon::now()->subMonth(),
-            'ends_at' => Carbon::now()->subDay()
+            'ends_at'   => Carbon::now()->subDay(),
         ]);
 
         $data = new TriggerCampaignAllocationData(
@@ -226,14 +228,14 @@ describe('TriggerCampaignAllocationAction', function () {
             trigger_event: null,
         );
 
-        expect(fn() => $this->action->handle($data, $this->customer, $this->campaign))
+        expect(fn () => $this->action->handle($data, $this->customer, $this->campaign))
             ->toThrow(CustomValidationException::class);
     });
 
     it('throws exception when campaign has reached total usage limit', function () {
         $this->campaign->update([
             'usage_limit_total' => 5,
-            'total_usage_count' => 5
+            'total_usage_count' => 5,
         ]);
 
         $data = new TriggerCampaignAllocationData(
@@ -241,7 +243,7 @@ describe('TriggerCampaignAllocationAction', function () {
             trigger_event: null,
         );
 
-        expect(fn() => $this->action->handle($data, $this->customer, $this->campaign))
+        expect(fn () => $this->action->handle($data, $this->customer, $this->campaign))
             ->toThrow(CustomValidationException::class);
     });
 
@@ -250,9 +252,9 @@ describe('TriggerCampaignAllocationAction', function () {
 
         // Create existing transaction for user
         WalletTransaction::factory()->create([
-            'user_id' => $this->customer->id,
+            'user_id'     => $this->customer->id,
             'source_type' => TransactionSourceEnum::CAMPAIGN,
-            'source_id' => $this->campaign->id,
+            'source_id'   => $this->campaign->id,
         ]);
 
         $data = new TriggerCampaignAllocationData(
@@ -260,7 +262,7 @@ describe('TriggerCampaignAllocationAction', function () {
             trigger_event: null,
         );
 
-        expect(fn() => $this->action->handle($data, $this->customer, $this->campaign))
+        expect(fn () => $this->action->handle($data, $this->customer, $this->campaign))
             ->toThrow(CustomValidationException::class);
     });
 });

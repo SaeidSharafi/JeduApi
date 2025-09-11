@@ -5,20 +5,17 @@ declare(strict_types=1);
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\Order;
-use App\Models\Payment;
-use App\Models\Refund;
-use App\Models\Staff;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
 
 test('wallet transaction has proper relationships', function () {
-    $user = User::factory()->create();
+    $user   = User::factory()->create();
     $wallet = $user->wallet;
 
     $transaction = WalletTransaction::factory()->create([
         'wallet_id' => $wallet->id,
-        'user_id' => $user->id,
+        'user_id'   => $user->id,
     ]);
 
     expect($transaction->wallet)
@@ -28,19 +25,19 @@ test('wallet transaction has proper relationships', function () {
 });
 
 test('wallet transaction casts work correctly', function () {
-    $user = User::factory()->create();
-    $wallet = $user->wallet;
-    $order = Order::factory()->create(['customer_id' => $user->id]);
+    $user        = User::factory()->create();
+    $wallet      = $user->wallet;
+    $order       = Order::factory()->create(['customer_id' => $user->id]);
     $transaction = WalletTransaction::factory()->create([
-        'wallet_id' => $wallet->id,
-        'user_id' => $user->id,
-        'amount' => -50000,
-        'balance_after' => 25000,
+        'wallet_id'          => $wallet->id,
+        'user_id'            => $user->id,
+        'amount'             => -50000,
+        'balance_after'      => 25000,
         'gift_balance_after' => 10000,
-        'type' => 'payment',
-        'source_type' => TransactionSourceEnum::ORDER,
-        'source_id' => $order->id,
-        'metadata' => ['test' => 'data'],
+        'type'               => 'payment',
+        'source_type'        => TransactionSourceEnum::ORDER,
+        'source_id'          => $order->id,
+        'metadata'           => ['test' => 'data'],
     ]);
 
     expect($transaction->amount)
@@ -68,17 +65,17 @@ test('wallet transaction casts work correctly', function () {
 });
 
 test('wallet transaction helper methods work correctly', function () {
-    $user = User::factory()->create();
+    $user   = User::factory()->create();
     $wallet = $user->wallet;
 
     $creditTransaction = WalletTransaction::factory()->forWallet($wallet)->create(['amount' => 50000]);
-    $debitTransaction = WalletTransaction::factory()->forWallet($wallet)->create(['amount' => -30000]);
-    $giftTransaction = WalletTransaction::factory()->forWallet($wallet)->create([
-        'type' => TransactionTypeEnum::GIFT,
+    $debitTransaction  = WalletTransaction::factory()->forWallet($wallet)->create(['amount' => -30000]);
+    $giftTransaction   = WalletTransaction::factory()->forWallet($wallet)->create([
+        'type'       => TransactionTypeEnum::GIFT,
         'expires_at' => now()->addDays(30),
     ]);
     $expiredTransaction = WalletTransaction::factory()->forWallet($wallet)->create([
-        'type' => TransactionTypeEnum::BONUS,
+        'type'       => TransactionTypeEnum::BONUS,
         'expires_at' => now()->subDays(1),
     ]);
 
@@ -99,14 +96,14 @@ test('wallet transaction helper methods work correctly', function () {
 });
 
 test('wallet transaction factory states work correctly', function () {
-    $user = User::factory()->create();
+    $user   = User::factory()->create();
     $wallet = $user->wallet;
 
-    $depositTransaction = WalletTransaction::factory()->forWallet($wallet)->deposit(10000)->create();
+    $depositTransaction    = WalletTransaction::factory()->forWallet($wallet)->deposit(10000)->create();
     $withdrawalTransaction = WalletTransaction::factory()->forWallet($wallet)->withdrawal(5000)->create();
-    $paymentTransaction = WalletTransaction::factory()->forWallet($wallet)->payment(15000)->create();
-    $refundTransaction = WalletTransaction::factory()->forWallet($wallet)->refund(8000)->create();
-    $giftTransaction = WalletTransaction::factory()->forWallet($wallet)->gift(3000)->create();
+    $paymentTransaction    = WalletTransaction::factory()->forWallet($wallet)->payment(15000)->create();
+    $refundTransaction     = WalletTransaction::factory()->forWallet($wallet)->refund(8000)->create();
+    $giftTransaction       = WalletTransaction::factory()->forWallet($wallet)->gift(3000)->create();
 
     expect($depositTransaction->type)->toBe(TransactionTypeEnum::DEPOSIT)
         ->and($depositTransaction->amount)->toBe(10000)

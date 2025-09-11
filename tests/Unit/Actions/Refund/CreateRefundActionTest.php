@@ -8,8 +8,8 @@ use App\Actions\Admin\Refund\CreateRefundAction;
 use App\Data\Admin\Refund\RefundCreateData;
 use App\Data\Admin\Refund\RefundTransactionData;
 use App\Enums\Order\OrderItemStatusEnum;
-use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Order\RefundStatusEnum;
+use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Events\RefundCompletedEvent;
@@ -301,7 +301,7 @@ describe('CreateRefundAction', function () {
         Event::assertDispatched(RefundCompletedEvent::class);
     });
     it('throws validation exception when refunding an item from an unpaid order', function () {
-        $order = Order::factory()->withCalculatedTotals([['total' => 50000]])->create(); // No payment
+        $order     = Order::factory()->withCalculatedTotals([['total' => 50000]])->create(); // No payment
         $orderItem = $order->items->first();
 
         $refundData = new RefundCreateData(
@@ -316,12 +316,12 @@ describe('CreateRefundAction', function () {
             status: RefundStatusEnum::COMPLETED->value,
             admin_notes: 'Test refund');
 
-        expect(fn() => (resolve(CreateRefundAction::class))->handle($refundData, $orderItem))
+        expect(fn () => (resolve(CreateRefundAction::class))->handle($refundData, $orderItem))
             ->toThrow(ValidationException::class, __('messages.order.refund.no_completed_payments'));
     });
 
     it('throws validation exception when refunding an already refunded item', function () {
-        $order = Order::factory()->create();
+        $order     = Order::factory()->create();
         $orderItem = OrderItem::factory()->for($order)->create(['status' => OrderItemStatusEnum::REFUNDED]);
         Payment::factory()
             ->for($order)
@@ -343,7 +343,7 @@ describe('CreateRefundAction', function () {
             status: RefundStatusEnum::COMPLETED->value,
             admin_notes: 'Test refund');
 
-        expect(fn() => (resolve(CreateRefundAction::class))->handle($refundData, $orderItem))
+        expect(fn () => (resolve(CreateRefundAction::class))->handle($refundData, $orderItem))
             ->toThrow(ValidationException::class, __('messages.order.refund.already_refunded'));
     });
 
@@ -353,7 +353,7 @@ describe('CreateRefundAction', function () {
                 [
                     'total'  => 50000,
                     'status' => OrderItemStatusEnum::COMPLETED->value,
-                ]
+                ],
             ]
         )->create();
         $order->payments()->create([
@@ -380,7 +380,7 @@ describe('CreateRefundAction', function () {
             status: RefundStatusEnum::COMPLETED->value,
             admin_notes: 'Test refund');
 
-        expect(fn() => (resolve(CreateRefundAction::class))->handle($refundData, $orderItem))
+        expect(fn () => (resolve(CreateRefundAction::class))->handle($refundData, $orderItem))
             ->toThrow(ValidationException::class, __('messages.order.refund.refund_request_exists'));
     });
 });

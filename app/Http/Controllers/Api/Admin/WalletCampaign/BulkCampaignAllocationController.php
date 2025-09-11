@@ -39,16 +39,17 @@ final class BulkCampaignAllocationController extends Controller
 
         $message = match (true) {
             $result['failure_count'] === 0 => __('messages.bulk_allocation_completed_successfully', [
-                'count' => $result['success_count']
+                'count' => $result['success_count'],
             ]),
             $result['success_count'] === 0 => __('messages.bulk_allocation_failed_completely'),
-            default => __('messages.bulk_allocation_completed_partially', [
+            default                        => __('messages.bulk_allocation_completed_partially', [
                 'success' => $result['success_count'],
-                'failed'  => $result['failure_count']
+                'failed'  => $result['failure_count'],
             ]),
         };
 
         $status = $result['failure_count'] === 0 ? 200 : 207; // 207 Multi-Status for partial success
+
         return new ApiSuccessResponse($message, $result, $status);
     }
 }

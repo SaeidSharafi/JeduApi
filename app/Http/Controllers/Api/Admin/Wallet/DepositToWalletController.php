@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Gate;
  *
  * @authenticated
  */
-class DepositToWalletController extends Controller
+final class DepositToWalletController extends Controller
 {
     /**
      * Deposit funds to a wallet (admin action).
@@ -29,8 +29,8 @@ class DepositToWalletController extends Controller
     {
         Gate::authorize('deposit', $wallet);
 
-        $transaction = $action->handle($data, auth('staff')->user(),$wallet);
-        $transaction->load('wallet', 'user','source');
+        $transaction = $action->handle($data, auth('staff')->user(), $wallet);
+        $transaction->load('wallet', 'user', 'source');
 
         return response()->created(WalletTransactionData::from($transaction));
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature\Middleware;
 
 use App\Http\Middleware\AdminAuditMiddleware;
@@ -7,8 +9,9 @@ use App\Models\AdminActionLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Date;
-use \Illuminate\Routing\Route;
+use ReflectionClass;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\AuthTestTrait;
 
@@ -16,7 +19,7 @@ uses(AuthTestTrait::class);
 
 beforeEach(function () {
     $this->middleware = new AdminAuditMiddleware();
-    $this->next = fn($request) => new Response('Success', 200);
+    $this->next       = fn ($request) => new Response('Success', 200);
 });
 
 describe('AdminAuditMiddleware', function () {
@@ -26,9 +29,9 @@ describe('AdminAuditMiddleware', function () {
 
     test('it logs a valid request for an authenticated staff member', function () {
         $request = Request::create('/users', 'POST', ['name' => 'John Doe']);
-        $route = new Route('POST', '/users', ['as' => 'admin.users.store']);
+        $route   = new Route('POST', '/users', ['as' => 'admin.users.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $response = $this->middleware->handle($request, $this->next);
 
@@ -45,14 +48,14 @@ describe('AdminAuditMiddleware', function () {
     });
 
     test('it correctly extracts resource type and id from a bound route', function () {
-        $user = User::factory()->create();
+        $user    = User::factory()->create();
         $request = Request::create("/users/{$user->id}", 'PUT', ['name' => 'Jane Doe']);
 
         $route = new Route('PUT', '/users/{user}', ['as' => 'admin.users.update']);
 
         $route->bind($request);
 
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -68,9 +71,9 @@ describe('AdminAuditMiddleware', function () {
     test('it skips logging for GET requests by default', function () {
 
         $request = Request::create('/users/1', 'GET');
-        $route = new Route('GET', '/users/1', ['as' => 'admin.users.show']);
+        $route   = new Route('GET', '/users/1', ['as' => 'admin.users.show']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -80,9 +83,9 @@ describe('AdminAuditMiddleware', function () {
     test('it skips logging for routes matching the fnmatch skip patterns', function (string $routeName) {
 
         $request = Request::create('/some-url', 'POST'); // Method would normally be logged
-        $route = new Route('POST', '/some-url', ['as' => $routeName]);
+        $route   = new Route('POST', '/some-url', ['as' => $routeName]);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -107,9 +110,9 @@ describe('AdminAuditMiddleware', function () {
     test('it correctly determines wallet action types', function (string $routeName, string $expectedActionType) {
 
         $request = Request::create('/wallet', 'POST', ['amount' => 100000]);
-        $route = new Route('POST', '/wallet', ['as' => $routeName]);
+        $route   = new Route('POST', '/wallet', ['as' => $routeName]);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -128,9 +131,9 @@ describe('AdminAuditMiddleware', function () {
         function (string $method, string $routeName, string $expectedActionType) {
 
             $request = Request::create('/test', $method);
-            $route = new Route($method, '/test', ['as' => $routeName]);
+            $route   = new Route($method, '/test', ['as' => $routeName]);
             $route->bind($request);
-            $request->setRouteResolver(fn() => $route);
+            $request->setRouteResolver(fn () => $route);
 
             $this->middleware->handle($request, $this->next);
 
@@ -138,19 +141,19 @@ describe('AdminAuditMiddleware', function () {
                 'action_type' => $expectedActionType,
             ]);
         })->with([
-        ['POST', 'admin.test.store', 'create'],
-        ['POST', 'admin.test.bulk.store', 'bulk_create'],
-        ['PUT', 'admin.test.update', 'update'],
-        ['PATCH', 'admin.test.update', 'update'],
-        ['DELETE', 'admin.test.destroy', 'delete'],
-    ]);
+            ['POST', 'admin.test.store', 'create'],
+            ['POST', 'admin.test.bulk.store', 'bulk_create'],
+            ['PUT', 'admin.test.update', 'update'],
+            ['PATCH', 'admin.test.update', 'update'],
+            ['DELETE', 'admin.test.destroy', 'delete'],
+        ]);
 
     test('it handles unknown HTTP methods correctly', function () {
 
         $request = Request::create('/test', 'OPTIONS');
-        $route = new Route('OPTIONS', '/test', ['as' => 'admin.test.options']);
+        $route   = new Route('OPTIONS', '/test', ['as' => 'admin.test.options']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -163,8 +166,8 @@ describe('AdminAuditMiddleware', function () {
         // even though GET requests are normally skipped
 
         // We can test this by using reflection to call the private method
-        $reflection = new \ReflectionClass(AdminAuditMiddleware::class);
-        $method = $reflection->getMethod('determineActionType');
+        $reflection = new ReflectionClass(AdminAuditMiddleware::class);
+        $method     = $reflection->getMethod('determineActionType');
         $method->setAccessible(true);
 
         $result = $method->invoke($this->middleware, 'GET', 'admin.test.show');
@@ -174,8 +177,8 @@ describe('AdminAuditMiddleware', function () {
 
     test('it handles default case for unknown HTTP methods in determineActionType', function () {
         // Test the default case in the match statement
-        $reflection = new \ReflectionClass(AdminAuditMiddleware::class);
-        $method = $reflection->getMethod('determineActionType');
+        $reflection = new ReflectionClass(AdminAuditMiddleware::class);
+        $method     = $reflection->getMethod('determineActionType');
         $method->setAccessible(true);
 
         $result = $method->invoke($this->middleware, 'OPTIONS', 'admin.test.options');
@@ -186,13 +189,13 @@ describe('AdminAuditMiddleware', function () {
     test('it extracts resource information for different model types',
         function (string $paramName, string $expectedModelClass) {
             $resourceId = fake()->numberBetween(1, 100);
-            $request = Request::create("/test/{$resourceId}", 'PUT');
-            $route = new Route('PUT', "/test/{{$paramName}}", ['as' => 'admin.test.update']);
+            $request    = Request::create("/test/{$resourceId}", 'PUT');
+            $route      = new Route('PUT', "/test/{{$paramName}}", ['as' => 'admin.test.update']);
 
             // Mock the route parameters
             $route->bind($request);
             $route->setParameter($paramName, $resourceId);
-            $request->setRouteResolver(fn() => $route);
+            $request->setRouteResolver(fn () => $route);
 
             $this->middleware->handle($request, $this->next);
 
@@ -201,26 +204,26 @@ describe('AdminAuditMiddleware', function () {
                 'resource_id'   => $resourceId,
             ]);
         })->with([
-        ['user', 'App\\Models\\User'],
-        ['wallet', 'App\\Models\\Wallet'],
-        ['walletCampaign', 'App\\Models\\WalletCampaign'],
-        ['staff', 'App\\Models\\Staff'],
-        ['category', 'App\\Models\\Category'],
-        ['course', 'App\\Models\\Course'],
-        ['teacher', 'App\\Models\\Teacher'],
-        ['term', 'App\\Models\\Term'],
-        ['seminar', 'App\\Models\\Seminar'],
-        ['discountPromotion', 'App\\Models\\DiscountPromotion'],
-    ]);
+            ['user', 'App\\Models\\User'],
+            ['wallet', 'App\\Models\\Wallet'],
+            ['walletCampaign', 'App\\Models\\WalletCampaign'],
+            ['staff', 'App\\Models\\Staff'],
+            ['category', 'App\\Models\\Category'],
+            ['course', 'App\\Models\\Course'],
+            ['teacher', 'App\\Models\\Teacher'],
+            ['term', 'App\\Models\\Term'],
+            ['seminar', 'App\\Models\\Seminar'],
+            ['discountPromotion', 'App\\Models\\DiscountPromotion'],
+        ]);
 
     test('it extracts resource id from object when parameter is a model instance', function () {
-        $user = User::factory()->create();
+        $user    = User::factory()->create();
         $request = Request::create("/users/{$user->id}", 'PUT');
-        $route = new Route('PUT', '/users/{user}', ['as' => 'admin.users.update']);
+        $route   = new Route('PUT', '/users/{user}', ['as' => 'admin.users.update']);
 
         $route->bind($request);
         $route->setParameter('user', $user); // Simulate model binding
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -233,9 +236,9 @@ describe('AdminAuditMiddleware', function () {
     test('it returns null resource info when no matching parameters', function () {
 
         $request = Request::create('/test', 'POST');
-        $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
+        $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -247,12 +250,12 @@ describe('AdminAuditMiddleware', function () {
     test('it assigns high risk for server error responses', function () {
 
         $request = Request::create('/test', 'POST');
-        $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
+        $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         // Mock next to return server error
-        $nextWithError = fn($request) => new Response('Server Error', 500);
+        $nextWithError = fn ($request) => new Response('Server Error', 500);
 
         $this->middleware->handle($request, $nextWithError);
 
@@ -264,9 +267,9 @@ describe('AdminAuditMiddleware', function () {
 
     test('it assigns high risk for DELETE requests', function () {
         $request = Request::create('/test', 'DELETE');
-        $route = new Route('DELETE', '/test', ['as' => 'admin.test.destroy']);
+        $route   = new Route('DELETE', '/test', ['as' => 'admin.test.destroy']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -278,9 +281,9 @@ describe('AdminAuditMiddleware', function () {
     test('it assigns risk levels based on wallet transaction amounts',
         function (int $amount, string $expectedRiskLevel) {
             $request = Request::create('/wallet/deposit', 'POST', ['amount' => $amount]);
-            $route = new Route('POST', '/wallet/deposit', ['as' => 'admin.wallet.deposit']);
+            $route   = new Route('POST', '/wallet/deposit', ['as' => 'admin.wallet.deposit']);
             $route->bind($request);
-            $request->setRouteResolver(fn() => $route);
+            $request->setRouteResolver(fn () => $route);
 
             $this->middleware->handle($request, $this->next);
 
@@ -289,16 +292,16 @@ describe('AdminAuditMiddleware', function () {
                 'request_data' => json_encode(['amount' => $amount]),
             ]);
         })->with([
-        [50000, 'low'], // Less than 100K Toman
-        [5000000, 'medium'], // Between 100K and 1M Toman
-        [15000000, 'high'], // More than 1M Toman
-    ]);
+            [50000, 'low'], // Less than 100K Toman
+            [5000000, 'medium'], // Between 100K and 1M Toman
+            [15000000, 'high'], // More than 1M Toman
+        ]);
 
     test('it assigns medium risk for bulk operations', function () {
         $request = Request::create('/bulk-create', 'POST');
-        $route = new Route('POST', '/bulk-create', ['as' => 'admin.users.bulk.store']);
+        $route   = new Route('POST', '/bulk-create', ['as' => 'admin.users.bulk.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -312,9 +315,9 @@ describe('AdminAuditMiddleware', function () {
         Date::setTestNow($outsideHours);
 
         $request = Request::create('/test', 'POST');
-        $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
+        $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -331,9 +334,9 @@ describe('AdminAuditMiddleware', function () {
         Date::setTestNow($businessHours);
 
         $request = Request::create('/test', 'POST');
-        $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
+        $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -346,9 +349,9 @@ describe('AdminAuditMiddleware', function () {
 
     test('it correctly identifies wallet actions', function (string $routeName, bool $shouldBeWalletAction) {
         $request = Request::create('/test', 'POST', ['amount' => 100000]);
-        $route = new Route('POST', '/test', ['as' => $routeName]);
+        $route   = new Route('POST', '/test', ['as' => $routeName]);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -382,13 +385,13 @@ describe('AdminAuditMiddleware', function () {
         ];
 
         $request = Request::create('/test', 'POST', $sensitiveData);
-        $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
+        $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
-        $log = AdminActionLog::first();
+        $log         = AdminActionLog::first();
         $requestData = $log->request_data;
 
         expect($requestData['password'])->toBe('[REDACTED]');
@@ -403,17 +406,17 @@ describe('AdminAuditMiddleware', function () {
 
     test('it handles file uploads in request data', function () {
 
-        $file = UploadedFile::fake()->image('test.jpg');
+        $file    = UploadedFile::fake()->image('test.jpg');
         $request = Request::create('/test', 'POST');
         $request->files->set('avatar', $file);
 
         $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
-        $log = AdminActionLog::first();
+        $log         = AdminActionLog::first();
         $requestData = $log->request_data;
 
         expect($requestData['avatar'])->toBe('[FILE: test.jpg]');
@@ -423,13 +426,13 @@ describe('AdminAuditMiddleware', function () {
         $largeData = ['large_field' => str_repeat('x', 12000)]; // > 10KB
 
         $request = Request::create('/test', 'POST', $largeData);
-        $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
+        $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
-        $log = AdminActionLog::first();
+        $log         = AdminActionLog::first();
         $requestData = $log->request_data;
 
         expect($requestData)->toHaveKey('_large_request');
@@ -439,9 +442,9 @@ describe('AdminAuditMiddleware', function () {
     test('it logs comprehensive metadata', function () {
 
         $request = Request::create('/test', 'POST', ['test' => 'data']);
-        $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
+        $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -463,12 +466,12 @@ describe('AdminAuditMiddleware', function () {
 
     test('it calculates response size for JSON responses', function () {
         $request = Request::create('/test', 'POST');
-        $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
+        $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $jsonResponse = response()->json(['message' => 'success', 'data' => ['id' => 1]]);
-        $nextWithJson = fn($request) => $jsonResponse;
+        $nextWithJson = fn ($request) => $jsonResponse;
 
         $this->middleware->handle($request, $nextWithJson);
 
@@ -479,9 +482,9 @@ describe('AdminAuditMiddleware', function () {
     test('it logs route name as unknown when route name is null', function () {
 
         $request = Request::create('/test', 'POST');
-        $route = new Route('POST', '/test', []); // No route name
+        $route   = new Route('POST', '/test', []); // No route name
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -491,9 +494,9 @@ describe('AdminAuditMiddleware', function () {
     test('it handles PATCH method correctly', function () {
 
         $request = Request::create('/test', 'PATCH', ['name' => 'Updated Name']);
-        $route = new Route('PATCH', '/test', ['as' => 'admin.test.update']);
+        $route   = new Route('PATCH', '/test', ['as' => 'admin.test.update']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -511,7 +514,7 @@ describe('AdminAuditMiddleware', function () {
 
         $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -525,9 +528,9 @@ describe('AdminAuditMiddleware', function () {
         Date::setTestNow($testTime);
 
         $request = Request::create('/test', 'POST');
-        $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
+        $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -546,8 +549,8 @@ describe('AdminAuditMiddleware', function () {
 
     test('it correctly determines business hours boundaries', function () {
         // Test the isOutsideBusinessHours method using reflection
-        $reflection = new \ReflectionClass(AdminAuditMiddleware::class);
-        $method = $reflection->getMethod('isOutsideBusinessHours');
+        $reflection = new ReflectionClass(AdminAuditMiddleware::class);
+        $method     = $reflection->getMethod('isOutsideBusinessHours');
         $method->setAccessible(true);
 
         // Mock different times
@@ -566,8 +569,8 @@ describe('AdminAuditMiddleware', function () {
         Date::setTestNow();
     });
     test('it correctly extracts wallet amounts', function () {
-        $reflection = new \ReflectionClass(AdminAuditMiddleware::class);
-        $method = $reflection->getMethod('extractWalletAmount');
+        $reflection = new ReflectionClass(AdminAuditMiddleware::class);
+        $method     = $reflection->getMethod('extractWalletAmount');
         $method->setAccessible(true);
 
         // Test with amount present
@@ -584,8 +587,8 @@ describe('AdminAuditMiddleware', function () {
     });
 
     test('it detects wallet actions correctly using isWalletAction', function () {
-        $reflection = new \ReflectionClass(AdminAuditMiddleware::class);
-        $method = $reflection->getMethod('isWalletAction');
+        $reflection = new ReflectionClass(AdminAuditMiddleware::class);
+        $method     = $reflection->getMethod('isWalletAction');
         $method->setAccessible(true);
 
         expect($method->invoke($this->middleware, 'admin.wallet.balance'))->toBeTrue();
@@ -598,8 +601,8 @@ describe('AdminAuditMiddleware', function () {
     });
 
     test('it handles route with null parameters in extractResourceInfo', function () {
-        $reflection = new \ReflectionClass(AdminAuditMiddleware::class);
-        $method = $reflection->getMethod('extractResourceInfo');
+        $reflection = new ReflectionClass(AdminAuditMiddleware::class);
+        $method     = $reflection->getMethod('extractResourceInfo');
         $method->setAccessible(true);
 
         $request = Request::create('/test', 'POST');
@@ -611,12 +614,12 @@ describe('AdminAuditMiddleware', function () {
 
     test('it prioritizes earlier resource mappings when multiple parameters exist', function () {
         $request = Request::create('/test', 'POST');
-        $route = new Route('POST', '/test/{user}/{wallet}', ['as' => 'admin.test.store']);
+        $route   = new Route('POST', '/test/{user}/{wallet}', ['as' => 'admin.test.store']);
         $route->bind($request);
 
         $route->setParameter('user', 1);
         $route->setParameter('wallet', 2);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -629,13 +632,13 @@ describe('AdminAuditMiddleware', function () {
     test('it calculates response size as 0 for non-JSON responses', function () {
 
         $request = Request::create('/test', 'POST');
-        $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
+        $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         // Mock next to return regular response (not JSON)
         $regularResponse = new Response('Plain text response');
-        $nextWithRegular = fn($request) => $regularResponse;
+        $nextWithRegular = fn ($request) => $regularResponse;
 
         $this->middleware->handle($request, $nextWithRegular);
 
@@ -646,9 +649,9 @@ describe('AdminAuditMiddleware', function () {
     test('it logs session id when available', function () {
 
         $request = Request::create('/test', 'POST');
-        $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
+        $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -660,9 +663,9 @@ describe('AdminAuditMiddleware', function () {
         Date::setTestNow(now()->setTime(3, 0, 0)); // Outside business hours
 
         $request = Request::create('/wallet/adjust', 'POST', ['amount' => 15000000]); // Large amount
-        $route = new Route('POST', '/wallet/adjust', ['as' => 'admin.wallet.adjust']);
+        $route   = new Route('POST', '/wallet/adjust', ['as' => 'admin.wallet.adjust']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -676,9 +679,9 @@ describe('AdminAuditMiddleware', function () {
     test('it handles edge case where wallet action has zero amount', function () {
 
         $request = Request::create('/wallet/deposit', 'POST', ['amount' => 0]);
-        $route = new Route('POST', '/wallet/deposit', ['as' => 'admin.wallet.deposit']);
+        $route   = new Route('POST', '/wallet/deposit', ['as' => 'admin.wallet.deposit']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -698,18 +701,18 @@ describe('AdminAuditMiddleware', function () {
                 'name'    => 'John Doe',
                 'profile' => [
                     'bio' => 'Developer',
-                ]
-            ]
+                ],
+            ],
         ];
 
         $request = Request::create('/test', 'POST', $requestData);
-        $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
+        $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
-        $log = AdminActionLog::first();
+        $log        = AdminActionLog::first();
         $loggedData = $log->request_data;
 
         expect($loggedData['password'])->toBe('[REDACTED]');
@@ -725,11 +728,11 @@ describe('AdminAuditMiddleware', function () {
 
         $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
-        $log = AdminActionLog::first();
+        $log         = AdminActionLog::first();
         $requestData = $log->request_data;
 
         expect($requestData['avatar'])->toBe('[FILE: avatar.jpg]');
@@ -738,23 +741,23 @@ describe('AdminAuditMiddleware', function () {
     test('it calculates request size in metadata', function () {
 
         $largeContent = str_repeat('test', 100);
-        $request = Request::create('/test', 'POST', [], [], [], [], $largeContent);
-        $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
+        $request      = Request::create('/test', 'POST', [], [], [], [], $largeContent);
+        $route        = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
         $log = AdminActionLog::first();
-        expect($log->metadata['request_size'])->toBe(strlen($largeContent));
+        expect($log->metadata['request_size'])->toBe(mb_strlen($largeContent));
     });
 
     test('it logs memory usage in metadata', function () {
 
         $request = Request::create('/test', 'POST');
-        $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
+        $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn() => $route);
+        $request->setRouteResolver(fn () => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -766,12 +769,11 @@ describe('AdminAuditMiddleware', function () {
 test('it does not log if staff member is not authenticated', function () {
 
     $request = Request::create('/users', 'POST');
-    $route = new Route('POST', '/users', ['as' => 'admin.users.store']);
+    $route   = new Route('POST', '/users', ['as' => 'admin.users.store']);
     $route->bind($request);
-    $request->setRouteResolver(fn() => $route);
+    $request->setRouteResolver(fn () => $route);
 
     $this->middleware->handle($request, $this->next);
 
     $this->assertDatabaseCount('admin_action_logs', 0);
 });
-

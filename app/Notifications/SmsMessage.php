@@ -1,12 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications;
 
-class SmsMessage
+final class SmsMessage
 {
     public ?string $content = null;
+
     public ?string $pattern = null;
+
     public array $parameters = [];
+
     public string $type = 'custom';
 
     /**
@@ -15,6 +20,7 @@ class SmsMessage
     public function content(string $content): self
     {
         $this->content = $content;
+
         return $this;
     }
 
@@ -23,9 +29,10 @@ class SmsMessage
      */
     public function pattern(string $pattern, array $parameters = []): self
     {
-        $this->pattern = $pattern;
+        $this->pattern    = $pattern;
         $this->parameters = $parameters;
-        $this->type = 'pattern';
+        $this->type       = 'pattern';
+
         return $this;
     }
 
@@ -36,6 +43,7 @@ class SmsMessage
     public function type(string $type): self
     {
         $this->type = $type;
+
         return $this;
     }
 }

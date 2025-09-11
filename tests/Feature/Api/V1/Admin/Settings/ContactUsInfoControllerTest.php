@@ -16,7 +16,7 @@ it('can get contact info settings', function (): void {
                 'support_email',
                 'social_media_links',
             ],
-            'metadata'
+            'metadata',
         ]);
 });
 
@@ -25,18 +25,18 @@ it('can update contact info settings', function (): void {
     $contactData = [
         'addresses' => [
             [
-                'name' => 'Updated Office',
-                'address' => 'Updated Address 123',
+                'name'         => 'Updated Office',
+                'address'      => 'Updated Address 123',
                 'location_url' => 'https://maps.example.com/?q=35.6892,51.3890',
-                'phone' => '021-12345678',
+                'phone'        => '021-12345678',
             ],
         ],
-        'working_hours' => 'Saturday to Wednesday, 9am to 5pm',
-        'support_email' => 'updated@jedu.ir',
+        'working_hours'      => 'Saturday to Wednesday, 9am to 5pm',
+        'support_email'      => 'updated@jedu.ir',
         'social_media_links' => [
             [
                 'platform' => 'instagram',
-                'link' => 'https://instagram.com/jedushop',
+                'link'     => 'https://instagram.com/jedushop',
             ],
         ],
     ];
@@ -46,7 +46,7 @@ it('can update contact info settings', function (): void {
         ->assertJsonStructure([
             'message',
             'data',
-            'metadata'
+            'metadata',
         ]);
 
     // Verify the setting was updated
@@ -58,9 +58,9 @@ it('can update contact info settings', function (): void {
 it('validates contact info data', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::SETTING_UPDATE->value]);
     $invalidData = [
-        'addresses' => [], // Empty addresses
-        'working_hours' => '',
-        'support_email' => 'invalid-email',
+        'addresses'          => [], // Empty addresses
+        'working_hours'      => '',
+        'support_email'      => 'invalid-email',
         'social_media_links' => [],
     ];
 
@@ -80,18 +80,18 @@ it('cannot access settings without auth', function (): void {
     $response = $this->putJson(route('api.v1.admin.settings.contact-info.update'), [
         'addresses' => [
             [
-                'name' => 'Test Office',
-                'address' => 'Test Address 123',
+                'name'         => 'Test Office',
+                'address'      => 'Test Address 123',
                 'location_url' => 'https://maps.example.com/?q=35.6892,51.3890',
-                'phone' => '021-12345678',
+                'phone'        => '021-12345678',
             ],
         ],
-        'working_hours' => 'Test working hours',
-        'support_email' => 'test@jedu.ir',
+        'working_hours'      => 'Test working hours',
+        'support_email'      => 'test@jedu.ir',
         'social_media_links' => [
             [
                 'platform' => 'instagram',
-                'link' => 'https://instagram.com/test',
+                'link'     => 'https://instagram.com/test',
             ],
         ],
     ]);

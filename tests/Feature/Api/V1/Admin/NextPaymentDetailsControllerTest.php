@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Admin;
 
 use App\Enums\Order\OrderItemPaymentTypeEnum;
-use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\PermissionEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Payment;
 use Tests\AuthTestTrait;
 
@@ -25,12 +23,12 @@ describe('NextPaymentDetailsController', function () {
         // Authorize a user with the correct permission to view orders.
         $this->authorized_user([PermissionEnum::ORDER_VIEW_ANY->value]);
 
-        $product = \App\Models\Product::factory()->create([ 'status' => PublicationStatusEnum::PUBLISHED]);
-        $pdo = \App\Models\ProductDeliveryOption::factory()->create([
-            'product_id' => $product->id,
-            'status' => PublicationStatusEnum::PUBLISHED,
+        $product = \App\Models\Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $pdo     = \App\Models\ProductDeliveryOption::factory()->create([
+            'product_id'      => $product->id,
+            'status'          => PublicationStatusEnum::PUBLISHED,
             'delivery_method' => 'direct_download',
-            'price' => 50000,
+            'price'           => 50000,
         ]);
         $items = [
             [
@@ -39,8 +37,8 @@ describe('NextPaymentDetailsController', function () {
                 'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
                 'total'                      => $pdo->price,
                 'price'                      => $pdo->price,
-                'name'                       => 'Workshop'
-            ]
+                'name'                       => 'Workshop',
+            ],
         ];
         $order = Order::factory()
             ->withCalculatedTotals($items)

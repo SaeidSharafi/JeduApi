@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Services\Discounts\ProductDiscountIndexer;
 use Illuminate\Console\Command;
 
-class RegenerateDiscountPrices extends Command
+final class RegenerateDiscountPrices extends Command
 {
     /**
      * The name and signature of the console command.
@@ -26,6 +28,7 @@ class RegenerateDiscountPrices extends Command
         $this->info('Regenerating discount prices...');
         $indexer->reIndexComplete();
         $this->info('Discount prices regenerated successfully.');
+
         return 0;
     }
 }

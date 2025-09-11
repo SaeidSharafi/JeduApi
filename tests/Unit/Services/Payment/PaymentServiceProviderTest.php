@@ -9,7 +9,6 @@ use App\Services\Payment\BankTransferPaymentProcessor;
 use App\Services\Payment\PaymentProcessorFactory;
 use App\Services\Payment\WalletPaymentProcessor;
 
-
 describe('PaymentServiceProvider', function () {
 
     beforeEach(function () {
@@ -37,11 +36,11 @@ describe('PaymentServiceProvider', function () {
 
     it('tags payment processors correctly', function () {
         $taggedProcessors = $this->app->tagged(PaymentServiceProvider::PAYMENT_PROCESSOR_TAG);
-        $processors = iterator_to_array($taggedProcessors);
+        $processors       = iterator_to_array($taggedProcessors);
 
         expect($processors)->toHaveCount(2);
 
-        $processorClasses = array_map(fn($processor) => get_class($processor), $processors);
+        $processorClasses = array_map(fn ($processor) => get_class($processor), $processors);
 
         expect($processorClasses)->toContain(WalletPaymentProcessor::class)
             ->and($processorClasses)->toContain(BankTransferPaymentProcessor::class);
@@ -59,7 +58,7 @@ describe('PaymentServiceProvider', function () {
         $factory = $this->app->make(PaymentProcessorFactory::class);
 
         // Test that factory can resolve all payment methods
-        $walletProcessor = $factory->make(PaymentMethodEnum::WALLET);
+        $walletProcessor       = $factory->make(PaymentMethodEnum::WALLET);
         $bankTransferProcessor = $factory->make(PaymentMethodEnum::BANK_TRANSFER);
 
         expect($walletProcessor)->toBeInstanceOf(WalletPaymentProcessor::class)
@@ -80,7 +79,7 @@ describe('PaymentServiceProvider', function () {
 
     it('can resolve processors through dependency injection', function () {
         // Test that dependency injection works for other classes that depend on these processors
-        $walletProcessor = $this->app->make(WalletPaymentProcessor::class);
+        $walletProcessor       = $this->app->make(WalletPaymentProcessor::class);
         $bankTransferProcessor = $this->app->make(BankTransferPaymentProcessor::class);
 
         expect($walletProcessor)->toBeInstanceOf(WalletPaymentProcessor::class)
@@ -116,17 +115,17 @@ describe('PaymentProcessorFactory Integration', function () {
     });
 
     it('throws exception for unsupported payment method', function () {
-        expect(fn() => $this->factory->make(PaymentMethodEnum::ONLINE_GATEWAY))
+        expect(fn () => $this->factory->make(PaymentMethodEnum::ONLINE_GATEWAY))
             ->toThrow(InvalidArgumentException::class, 'No payment processor found for method: online_gateway');
     });
 
     it('throws exception for cash on delivery method', function () {
-        expect(fn() => $this->factory->make(PaymentMethodEnum::CASH_ON_DELIVERY))
+        expect(fn () => $this->factory->make(PaymentMethodEnum::CASH_ON_DELIVERY))
             ->toThrow(InvalidArgumentException::class, 'No payment processor found for method: cash_on_delivery');
     });
 
     it('throws exception for no payment method', function () {
-        expect(fn() => $this->factory->make(PaymentMethodEnum::NO_PAYMENT))
+        expect(fn () => $this->factory->make(PaymentMethodEnum::NO_PAYMENT))
             ->toThrow(InvalidArgumentException::class, 'No payment processor found for method: no_payment');
     });
 
@@ -152,7 +151,7 @@ describe('PaymentProcessorFactory Integration', function () {
     });
 
     it('each processor handles only its designated method', function () {
-        $walletProcessor = $this->factory->make(PaymentMethodEnum::WALLET);
+        $walletProcessor       = $this->factory->make(PaymentMethodEnum::WALLET);
         $bankTransferProcessor = $this->factory->make(PaymentMethodEnum::BANK_TRANSFER);
 
         // Test wallet processor
@@ -173,7 +172,7 @@ describe('PaymentProcessorFactory Integration', function () {
     it('factory maintains processor selection consistency', function () {
         // Test that factory always returns the same processor type for the same method
         for ($i = 0; $i < 10; $i++) {
-            $walletProcessor = $this->factory->make(PaymentMethodEnum::WALLET);
+            $walletProcessor       = $this->factory->make(PaymentMethodEnum::WALLET);
             $bankTransferProcessor = $this->factory->make(PaymentMethodEnum::BANK_TRANSFER);
 
             expect($walletProcessor)->toBeInstanceOf(WalletPaymentProcessor::class)

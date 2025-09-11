@@ -10,8 +10,8 @@ use App\Notifications\Auth\OtpSmsNotification;
 use App\Notifications\SmsChannel;
 use App\Notifications\SmsMessage;
 use Illuminate\Http\Client\RequestException;
-use \Illuminate\Support\Facades\Http;
-use \Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 describe('SmsChannel Sending Logic', function () {
     beforeEach(function () {
@@ -28,8 +28,8 @@ describe('SmsChannel Sending Logic', function () {
         $this->notification = new OtpSmsNotification($this->otpEvent);
 
         config([
-            'services.ippanel.api_key' => 'test-api-key',
-            'services.ippanel.from'    => '1000',
+            'services.ippanel.api_key'  => 'test-api-key',
+            'services.ippanel.from'     => '1000',
             'services.ippanel.sand_box' => false,
         ]);
     });
@@ -73,7 +73,7 @@ describe('SmsChannel Sending Logic', function () {
         ]);
         Log::shouldReceive('error')->once()->with(
             'SMS sending failed',
-            \Mockery::on(function ($data) use ($errorResponse) {
+            Mockery::on(function ($data) use ($errorResponse) {
                 return $data['status'] === 422 && $data['message'] === $errorResponse;
             })
         );
@@ -123,7 +123,7 @@ describe('SmsChannel Sending Logic', function () {
         ]);
 
         expect(fn () => $this->user->notify($this->notification))
-            ->toThrow(\Exception::class, 'IPPanel API key or sender number is not configured.');
+            ->toThrow(Exception::class, 'IPPanel API key or sender number is not configured.');
     });
     it('does not send if notifiable does not have a route for sms', function () {
         $userWithoutPhone = User::factory()->create(['phone' => '']);
@@ -138,20 +138,28 @@ describe('SmsChannel Sending Logic', function () {
         ));
 
         Http::fake();
-        $initialLogCount = \App\Models\SmsLog::count();
+        $initialLogCount = SmsLog::count();
 
         $userWithoutPhone->notify($notification);
 
         Http::assertNothingSent();
 
-        expect(\App\Models\SmsLog::count())->toBe($initialLogCount);
+        expect(SmsLog::count())->toBe($initialLogCount);
     });
 
     it('logs an error if notification returns an invalid message type', function () {
 
-        $badNotification = new class extends \Illuminate\Notifications\Notification {
-            public function via($notifiable) { return SmsChannel::class; }
-            public function toSms($notifiable) { return 'this is not a valid message object'; }
+        $badNotification = new class extends Illuminate\Notifications\Notification
+        {
+            public function via($notifiable)
+            {
+                return SmsChannel::class;
+            }
+
+            public function toSms($notifiable)
+            {
+                return 'this is not a valid message object';
+            }
         };
 
         Log::shouldReceive('error')->once()->with(
@@ -167,9 +175,15 @@ describe('SmsChannel Sending Logic', function () {
 
     it('sends a standard content-based SMS correctly', function () {
 
-        $standardSmsNotification = new class extends \Illuminate\Notifications\Notification {
-            public function via($notifiable) { return SmsChannel::class; }
-            public function toSms($notifiable) {
+        $standardSmsNotification = new class extends Illuminate\Notifications\Notification
+        {
+            public function via($notifiable)
+            {
+                return SmsChannel::class;
+            }
+
+            public function toSms($notifiable)
+            {
                 return (new SmsMessage)
                     ->content('Hello world')
                     ->type('GREETING');
@@ -183,7 +197,7 @@ describe('SmsChannel Sending Logic', function () {
         $this->user->notify($standardSmsNotification);
 
         Http::assertSent(function ($request) {
-            return $request->url() == 'https://api2.ippanel.com/api/v1/sms/send/webservice/single'
+            return $request->url()     === 'https://api2.ippanel.com/api/v1/sms/send/webservice/single'
                 && $request['message'] === 'Hello world';
         });
 
@@ -192,7 +206,7 @@ describe('SmsChannel Sending Logic', function () {
     });
 
     it('sends a pattern SMS successfully to a Staff member and creates a log', function () {
-        $staff = \App\Models\Staff::factory()->create(['phone' => '09876543210']);
+        $staff = App\Models\Staff::factory()->create(['phone' => '09876543210']);
 
         Http::fake([
             'api2.ippanel.com/*' => Http::response(['data' => ['message_id' => 'staff-message-id']], 200),
@@ -204,7 +218,7 @@ describe('SmsChannel Sending Logic', function () {
             return $request['recipient'] === $staff->phone;
         });
 
-        $smsLog = \App\Models\SmsLog::latest()->first();
+        $smsLog = SmsLog::latest()->first();
         expect($smsLog)->not->toBeNull()
             ->and($smsLog->status)->toBe(200)
             ->and($smsLog->to)->toBe($staff->phone) // Check the Staff phone number

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Plank\Mediable\Media;
 
-class Setting extends Model
+final class Setting extends Model
 {
     use HasFactory;
 
@@ -32,12 +32,12 @@ class Setting extends Model
      */
     public static function get(string $key, mixed $default = null): mixed
     {
-        $setting = static::where('key', $key)->first();
+        $setting = self::where('key', $key)->first();
         // Make sure we have an array to work with before passing to witImages
         $value = $setting ? $setting->value : $default;
 
         // Only process if the value is a non-empty array
-        if (is_array($value) && !empty($value)) {
+        if (is_array($value) && ! empty($value)) {
             return self::witImages($value);
         }
 
@@ -49,7 +49,7 @@ class Setting extends Model
      */
     public static function set(string $key, mixed $value, string $type = 'json', ?string $group = null): static
     {
-        return static::updateOrCreate(
+        return self::updateOrCreate(
             ['key' => $key],
             [
                 'value' => $value,
@@ -63,7 +63,7 @@ class Setting extends Model
      * Recursively finds keys related to media, fetches the corresponding Media
      * models, and replaces the IDs with MediaData DTOs.
      *
-     * @param array $settingData The array to process.
+     * @param  array  $settingData  The array to process.
      * @return array The processed array with DTOs.
      */
     public static function witImages(array $settingData): array
@@ -83,13 +83,13 @@ class Setting extends Model
         $imageIds = [];
 
         // This closure checks if a key matches our defined conventions.
-        $isSingularMediaKey = fn($key) => in_array($key, $singularMediaKeys) || Str::endsWith($key, $singularMediaSuffixes);
-        $isPluralMediaKey = fn($key) => in_array($key, $pluralMediaKeys) || Str::endsWith($key, $pluralMediaSuffixes);
+        $isSingularMediaKey = fn ($key) => in_array($key, $singularMediaKeys) || Str::endsWith($key, $singularMediaSuffixes);
+        $isPluralMediaKey   = fn ($key) => in_array($key, $pluralMediaKeys) || Str::endsWith($key, $pluralMediaSuffixes);
 
         array_walk_recursive($settingData, function ($value, $key) use (&$imageIds, $isSingularMediaKey) {
             // Find single IDs (e.g., "icon": 3 or "image_id": 3)
             if (is_string($key) && $isSingularMediaKey($key) && is_numeric($value)) {
-                $imageIds[] = (int)$value;
+                $imageIds[] = (int) $value;
             }
         });
 
@@ -99,7 +99,7 @@ class Setting extends Model
             if (is_string($key) && $isPluralMediaKey($key) && is_array($value)) {
                 foreach ($value as $id) {
                     if (is_numeric($id)) {
-                        $imageIds[] = (int)$id;
+                        $imageIds[] = (int) $id;
                     }
                 }
             }
@@ -112,18 +112,17 @@ class Setting extends Model
         // STEP 2: Fetch all unique media models in one efficient query.
         $images = Media::find(array_unique($imageIds))->keyBy('id');
 
-
         // STEP 3: Define a recursive function to replace IDs with DTOs.
         $replacer = function (&$array) use ($images, $isSingularMediaKey, $isPluralMediaKey, &$replacer) {
             foreach ($array as $key => &$value) {
-                if (!is_string($key)) {
+                if (! is_string($key)) {
                     continue; // Skip numeric keys
                 }
 
                 if ($isPluralMediaKey($key) && is_array($value)) {
                     // It's an array of IDs. Replace it with DTOs.
                     $value = collect($value)
-                        ->map(fn($id) => $images->get($id) ? MediaData::fromModel($images->get($id)) : null)
+                        ->map(fn ($id) => $images->get($id) ? MediaData::fromModel($images->get($id)) : null)
                         ->filter()
                         ->values()
                         ->all();
@@ -139,7 +138,7 @@ class Setting extends Model
 
         // STEP 4: Run the replacer and return the modified array.
         $replacer($settingData);
+
         return $settingData;
     }
-
 }

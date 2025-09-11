@@ -9,13 +9,15 @@ use App\Traits\AdvanceEnum;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Str;
 use ReflectionClass;
+use ReflectionNamedType;
+use ReflectionType;
+use Throwable;
 
 final class DiscountMetadataService
 {
     public function __construct(
         private readonly DiscountHandlerRegistry $handlerRegistry
-    ) {
-    }
+    ) {}
 
     /**
      * Get metadata for all available discount promotions.
@@ -23,9 +25,10 @@ final class DiscountMetadataService
     public function getMetadata(): array
     {
         $conditions = $this->getConditions();
-        $actions = $this->getActions();
+        $actions    = $this->getActions();
+
         return [
-            'cart'    => [
+            'cart' => [
                 'conditions' => $conditions['cart'],
                 'actions'    => $actions['cart'],
             ],
@@ -41,10 +44,10 @@ final class DiscountMetadataService
      */
     public function getConditions(): array
     {
-        $conditions = [];
-        $cartConditionHandlers = $this->handlerRegistry->getCartConditionHandlers();
+        $conditions               = [];
+        $cartConditionHandlers    = $this->handlerRegistry->getCartConditionHandlers();
         $productConditionHandlers = $this->handlerRegistry->getProductConditionHandlers();
-        $handlerConfigMap = $this->handlerRegistry->getHandlerConfigMap();
+        $handlerConfigMap         = $this->handlerRegistry->getHandlerConfigMap();
 
         foreach ($cartConditionHandlers as $key => $handlerClass) {
             $configClass = $handlerConfigMap[$handlerClass] ?? null;
@@ -77,10 +80,10 @@ final class DiscountMetadataService
      */
     public function getActions(): array
     {
-        $actions = [];
-        $actionHandlers = $this->handlerRegistry->getCartActionHandlers();
+        $actions               = [];
+        $actionHandlers        = $this->handlerRegistry->getCartActionHandlers();
         $productActionHandlers = $this->handlerRegistry->getProductActionHandlers();
-        $handlerConfigMap = $this->handlerRegistry->getHandlerConfigMap();
+        $handlerConfigMap      = $this->handlerRegistry->getHandlerConfigMap();
 
         foreach ($actionHandlers as $key => $handlerClass) {
             $configClass = $handlerConfigMap[$handlerClass] ?? null;
@@ -164,14 +167,14 @@ final class DiscountMetadataService
      */
     public function extractConfigSchema(string $configClass): array
     {
-        if (!class_exists($configClass)) {
+        if (! class_exists($configClass)) {
             return [];
         }
 
-        $reflection = new ReflectionClass($configClass);
+        $reflection  = new ReflectionClass($configClass);
         $constructor = $reflection->getConstructor();
 
-        if (!$constructor) {
+        if (! $constructor) {
             return [];
         }
 
@@ -183,26 +186,26 @@ final class DiscountMetadataService
         $schema = [];
 
         foreach ($constructor->getParameters() as $parameter) {
-            $paramName = $parameter->getName();
-            $type = $parameter->getType();
-            $description = $customDescriptions[$paramName] ?? $this->generateParameterDescription($paramName, $type);
+            $paramName          = $parameter->getName();
+            $type               = $parameter->getType();
+            $description        = $customDescriptions[$paramName] ?? $this->generateParameterDescription($paramName, $type);
             $schema[$paramName] = [
                 'type'        => $this->getParameterType($type),
-                'required'    => !$parameter->isOptional(),
+                'required'    => ! $parameter->isOptional(),
                 'description' => $description,
             ];
             if ($this->getParameterType($type) === 'enum') {
                 $paramClassName = (string) $type;
 
                 $paramClassReflection = new ReflectionClass($paramClassName);
-                $cases = [];
+                $cases                = [];
 
                 if (in_array(AdvanceEnum::class, $paramClassReflection->getTraitNames())) {
                     $schema[$paramName]['cases'] = $paramClassName::getValueLabel();
                 } else {
                     foreach ($paramClassName::cases() as $case) {
                         // For backed enums (e.g., enum Color: string), use the value. Otherwise, use the name.
-                        $value = property_exists($case, 'value') ? $case->value : $case->name;
+                        $value   = property_exists($case, 'value') ? $case->value : $case->name;
                         $cases[] = ['value' => $value, 'label' => Str::title($value)];
                     }
                     $schema[$paramName]['cases'] = $cases;
@@ -223,7 +226,7 @@ final class DiscountMetadataService
         DiscountTypeEnum $discountType
     ): ?string {
         $handlerClass = $this->handlerRegistry->getHandlerClassByKey($handlerKey, $handlerType, $discountType);
-        if (!$handlerClass) {
+        if (! $handlerClass) {
             return null;
         }
 
@@ -231,11 +234,12 @@ final class DiscountMetadataService
         if (method_exists($handlerClass, 'getConfigClass')) {
             try {
                 return $handlerClass::getConfigClass();
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // If the method fails, we return null
                 return null;
             }
         }
+
         // If the handler class does not have a method to get the config class, we return null
         return null;
     }
@@ -243,29 +247,29 @@ final class DiscountMetadataService
     /**
      * Get parameter type as string.
      */
-    public function getParameterType(?\ReflectionType $type): string
+    public function getParameterType(?ReflectionType $type): string
     {
-        if (!$type) {
+        if (! $type) {
             return 'mixed';
         }
-        if (!$type instanceof \ReflectionNamedType) {
+        if (! $type instanceof ReflectionNamedType) {
             // Fallback for complex types like UnionType, etc.
             return (string) $type;
         }
 
         $typeName = $type->getName();
 
-        if (!$type->isBuiltin() && enum_exists($typeName)) {
+        if (! $type->isBuiltin() && enum_exists($typeName)) {
             return 'enum';
         }
 
         return match ($typeName) {
-            'int' => 'integer',
-            'float' => 'number',
-            'bool' => 'boolean',
+            'int'    => 'integer',
+            'float'  => 'number',
+            'bool'   => 'boolean',
             'string' => 'string',
-            'array' => 'array',
-            default => $typeName,
+            'array'  => 'array',
+            default  => $typeName,
         };
     }
 
@@ -275,7 +279,7 @@ final class DiscountMetadataService
     public function generateParameterDescription(string $paramName, $type): string
     {
         $humanName = ucwords(str_replace('_', ' ', $paramName));
-        $typeName = $this->getParameterType($type);
+        $typeName  = $this->getParameterType($type);
 
         return "{$humanName} ({$typeName})";
     }
@@ -288,6 +292,7 @@ final class DiscountMetadataService
         if (Lang::has("discount.name.{$key}")) {
             return __("discount.name.{$key}");
         }
+
         return ucwords(str_replace('_', ' ', $key));
     }
 
@@ -306,7 +311,7 @@ final class DiscountMetadataService
 
         // Convert CamelCase to space separated
         $description = preg_replace('/([A-Z])/', ' $1', $className);
-        return trim($description);
-    }
 
+        return mb_trim($description);
+    }
 }

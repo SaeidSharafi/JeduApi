@@ -5,10 +5,9 @@ declare(strict_types=1);
 use App\Enums\Wallet\WalletStatusEnum;
 use App\Models\User;
 use App\Models\Wallet;
-use App\Models\WalletTransaction;
 
 test('wallet has proper relationships', function () {
-    $user = User::factory()->create();
+    $user   = User::factory()->create();
     $wallet = $user->wallet; // Use the automatically created wallet
 
     expect($wallet->user)
@@ -16,18 +15,18 @@ test('wallet has proper relationships', function () {
         ->and($wallet->user->id)
         ->toBe($user->id)
         ->and($wallet->transactions)
-        ->toBeInstanceOf(\Illuminate\Database\Eloquent\Collection::class);
+        ->toBeInstanceOf(Illuminate\Database\Eloquent\Collection::class);
 });
 
 test('wallet casts work correctly', function () {
-    $user = User::factory()->create();
+    $user   = User::factory()->create();
     $wallet = $user->wallet;
 
     // Update the wallet with specific values
     $wallet->update([
-        'balance' => 50000,
+        'balance'      => 50000,
         'gift_balance' => 25000,
-        'status' => 'active',
+        'status'       => 'active',
     ]);
 
     expect($wallet->balance)
@@ -42,13 +41,13 @@ test('wallet casts work correctly', function () {
 });
 
 test('wallet business logic methods work correctly', function () {
-    $user = User::factory()->create();
+    $user   = User::factory()->create();
     $wallet = $user->wallet;
 
     $wallet->update([
-        'balance' => 50000,
+        'balance'      => 50000,
         'gift_balance' => 25000,
-        'status' => WalletStatusEnum::ACTIVE,
+        'status'       => WalletStatusEnum::ACTIVE,
     ]);
 
     expect($wallet->getAvailableBalance())
@@ -70,13 +69,13 @@ test('wallet business logic methods work correctly', function () {
 });
 
 test('suspended wallet cannot withdraw or spend', function () {
-    $user = User::factory()->create();
+    $user   = User::factory()->create();
     $wallet = $user->wallet;
 
     $wallet->update([
-        'balance' => 50000,
+        'balance'      => 50000,
         'gift_balance' => 25000,
-        'status' => WalletStatusEnum::SUSPENDED,
+        'status'       => WalletStatusEnum::SUSPENDED,
     ]);
 
     expect($wallet->canWithdraw(10000))
@@ -102,15 +101,15 @@ test('user automatically gets wallet when created', function () {
 
 test('wallet business logic with different statuses', function () {
     // Create users and update their wallets with different statuses
-    $activeUser = User::factory()->create();
+    $activeUser   = User::factory()->create();
     $activeWallet = $activeUser->wallet;
     $activeWallet->update(['status' => WalletStatusEnum::ACTIVE, 'balance' => 100000]);
 
-    $suspendedUser = User::factory()->create();
+    $suspendedUser   = User::factory()->create();
     $suspendedWallet = $suspendedUser->wallet;
     $suspendedWallet->update(['status' => WalletStatusEnum::SUSPENDED, 'balance' => 100000]);
 
-    $closedUser = User::factory()->create();
+    $closedUser   = User::factory()->create();
     $closedWallet = $closedUser->wallet;
     $closedWallet->update(['status' => WalletStatusEnum::CLOSED, 'balance' => 100000]);
 

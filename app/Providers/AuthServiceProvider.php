@@ -47,9 +47,7 @@ use Spatie\Permission\Models\Role;
 
 final class AuthServiceProvider extends ServiceProvider
 {
-    public function register(): void
-    {
-    }
+    public function register(): void {}
 
     public function boot(): void
     {

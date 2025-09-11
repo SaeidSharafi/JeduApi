@@ -39,7 +39,7 @@ it('can get about us settings', function (): void {
                     'icon',
                 ],
             ],
-            'metadata'
+            'metadata',
         ]);
 });
 
@@ -57,37 +57,37 @@ it('can update about us settings', function (): void {
         ->toDisk('public')
         ->upload();
     $aboutUsData = [
-        'title' => 'Updated About Us Title',
+        'title'      => 'Updated About Us Title',
         'main_block' => [
-            'title' => 'Updated Main Block Title',
+            'title'   => 'Updated Main Block Title',
             'content' => 'Updated main block content with detailed information about the company.',
-            'icon' => $icon1->id,
+            'icon'    => $icon1->id,
         ],
-        'images' => [$image1->id, $image2->id],
+        'images'                     => [$image1->id, $image2->id],
         'active_course_groups_block' => [
-            'title' => 'Updated Course Groups',
+            'title'   => 'Updated Course Groups',
             'content' => '<ol><li>Updated Course Group 1</li><li>Updated Course Group 2</li></ol>',
-            'icon' => null,
+            'icon'    => null,
         ],
         'capabilities_block' => [
-            'title' => 'Updated Capabilities',
+            'title'   => 'Updated Capabilities',
             'content' => '<ul><li>Updated Capability 1</li><li>Updated Capability 2</li></ul>',
-            'icon' => null,
+            'icon'    => null,
         ],
         'about_online_course_block_1' => [
-            'title' => 'Updated Online Course Block 1',
+            'title'   => 'Updated Online Course Block 1',
             'content' => 'Updated content about online courses and their benefits.',
-            'icon' => null,
+            'icon'    => null,
         ],
         'about_online_course_block_2' => [
-            'title' => 'Updated Online Course Block 2',
+            'title'   => 'Updated Online Course Block 2',
             'content' => '<ul><li>Updated online course feature 1</li><li>Updated online course feature 2</li></ul>',
-            'icon' => null,
+            'icon'    => null,
         ],
     ];
 
     $response = $this->putJson(route('api.v1.admin.settings.about-us.update'), $aboutUsData);
-    //array:3 [
+    // array:3 [
     //  "message" => "About Us updated successfully."
     //  "data" => array:7 [
     //    "title" => "Updated About Us Title"
@@ -157,7 +157,7 @@ it('can update about us settings', function (): void {
     //    ]
     //  ]
     //  "metadata" => []
-    //]
+    // ]
     $response->assertStatus(200)
         ->assertJsonStructure([
             'message',
@@ -217,7 +217,7 @@ it('can update about us settings', function (): void {
                     'subtitle',
                 ],
             ],
-            'metadata'
+            'metadata',
         ]);
 
     // Verify the setting was updated
@@ -231,32 +231,32 @@ it('can update about us settings', function (): void {
 it('validates about us data - missing required fields', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::SETTING_UPDATE->value]);
     $invalidData = [
-        'title' => '', // Empty title
+        'title'      => '', // Empty title
         'main_block' => [
-            'title' => '', // Empty title
+            'title'   => '', // Empty title
             'content' => '', // Empty content
-            'icon' => null,
+            'icon'    => null,
         ],
-        'images' => [],
+        'images'                     => [],
         'active_course_groups_block' => [
-            'title' => '',
+            'title'   => '',
             'content' => '',
-            'icon' => null,
+            'icon'    => null,
         ],
         'capabilities_block' => [
-            'title' => '',
+            'title'   => '',
             'content' => '',
-            'icon' => null,
+            'icon'    => null,
         ],
         'about_online_course_block_1' => [
-            'title' => '',
+            'title'   => '',
             'content' => '',
-            'icon' => null,
+            'icon'    => null,
         ],
         'about_online_course_block_2' => [
-            'title' => '',
+            'title'   => '',
             'content' => '',
-            'icon' => null,
+            'icon'    => null,
         ],
     ];
 
@@ -280,32 +280,32 @@ it('validates about us data - missing required fields', function (): void {
 it('validates about us data - invalid data types', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::SETTING_UPDATE->value]);
     $invalidData = [
-        'title' => str_repeat('A', 300), // Too long title
+        'title'      => str_repeat('A', 300), // Too long title
         'main_block' => [
-            'title' => str_repeat('A', 300), // Too long title
+            'title'   => str_repeat('A', 300), // Too long title
             'content' => 'Valid content',
-            'icon' => 999, // non exitance image
+            'icon'    => 999, // non exitance image
         ],
-        'images' => 'not-an-array', // Should be array
+        'images'                     => 'not-an-array', // Should be array
         'active_course_groups_block' => [
-            'title' => str_repeat('A', 300),
+            'title'   => str_repeat('A', 300),
             'content' => 'Valid content',
-            'icon' => null,
+            'icon'    => null,
         ],
         'capabilities_block' => [
-            'title' => str_repeat('A', 300),
+            'title'   => str_repeat('A', 300),
             'content' => 'Valid content',
-            'icon' => null,
+            'icon'    => null,
         ],
         'about_online_course_block_1' => [
-            'title' => str_repeat('A', 300),
+            'title'   => str_repeat('A', 300),
             'content' => 'Valid content',
-            'icon' => null,
+            'icon'    => null,
         ],
         'about_online_course_block_2' => [
-            'title' => str_repeat('A', 300),
+            'title'   => str_repeat('A', 300),
             'content' => 'Valid content',
-            'icon' => null,
+            'icon'    => null,
         ],
     ];
 
@@ -329,32 +329,32 @@ it('cannot access about us settings without auth', function (): void {
     $response->assertStatus(403);
 
     $aboutUsData = [
-        'title' => 'Test Title',
+        'title'      => 'Test Title',
         'main_block' => [
-            'title' => 'Test Main Block',
+            'title'   => 'Test Main Block',
             'content' => 'Test content',
-            'icon' => null,
+            'icon'    => null,
         ],
-        'images' => [],
+        'images'                     => [],
         'active_course_groups_block' => [
-            'title' => 'Test Groups',
+            'title'   => 'Test Groups',
             'content' => 'Test content',
-            'icon' => null,
+            'icon'    => null,
         ],
         'capabilities_block' => [
-            'title' => 'Test Capabilities',
+            'title'   => 'Test Capabilities',
             'content' => 'Test content',
-            'icon' => null,
+            'icon'    => null,
         ],
         'about_online_course_block_1' => [
-            'title' => 'Test Online 1',
+            'title'   => 'Test Online 1',
             'content' => 'Test content',
-            'icon' => null,
+            'icon'    => null,
         ],
         'about_online_course_block_2' => [
-            'title' => 'Test Online 2',
+            'title'   => 'Test Online 2',
             'content' => 'Test content',
-            'icon' => null,
+            'icon'    => null,
         ],
     ];
 

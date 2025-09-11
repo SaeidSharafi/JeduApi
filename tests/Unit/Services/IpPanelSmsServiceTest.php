@@ -22,7 +22,7 @@ beforeEach(function () {
 
 describe('Normal SMS Sending', function () {
     it('sends sms successfully and creates a log', function () {
-        $to = ['09123456789'];
+        $to      = ['09123456789'];
         $message = 'Test message';
         Http::fake([
             'api2.ippanel.com/*' => Http::response(['data' => ['message_id' => 'fake-id']], 200),
@@ -51,11 +51,11 @@ describe('Normal SMS Sending', function () {
             ->and($smsLog->data)->toBe($body);
 
     })->with([
-        '400 Bad Request' => [400, null],
-        '401 Unauthorized' => [401, null],
-        '403 Forbidden' => [403, ['errorMessage' => 'Forbidden']],
+        '400 Bad Request'   => [400, null],
+        '401 Unauthorized'  => [401, null],
+        '403 Forbidden'     => [403, ['errorMessage' => 'Forbidden']],
         '422 Unprocessable' => [422, ['errors' => ['field' => 'invalid']]],
-        '500 Server Error' => [500, null],
+        '500 Server Error'  => [500, null],
     ]);
 
     it('handles sandbox mode correctly', function () {
@@ -91,7 +91,7 @@ describe('Normal SMS Sending', function () {
 
         Http::fake(['api2.ippanel.com/*' => Http::response([], 200)]);
 
-        $service = app(App\Services\IpPanelSmsService::class);
+        $service = app(IpPanelSmsService::class);
 
         $service->setApiKey('runtime-key');
         $service->setFrom('9999');
@@ -105,7 +105,6 @@ describe('Normal SMS Sending', function () {
         });
     });
 });
-
 
 describe('Pattern SMS Sending', function () {
     it('sends pattern sms successfully and creates a log', function () {
@@ -134,8 +133,8 @@ describe('Pattern SMS Sending', function () {
         expect($smsLog->status)->toBe($statusCode);
 
     })->with([
-        '401 Unauthorized' => [401, null],
+        '401 Unauthorized'  => [401, null],
         '422 Unprocessable' => [422, ['errors' => ['field' => 'invalid']]],
-        '500 Server Error' => [500, null],
+        '500 Server Error'  => [500, null],
     ]);
 });

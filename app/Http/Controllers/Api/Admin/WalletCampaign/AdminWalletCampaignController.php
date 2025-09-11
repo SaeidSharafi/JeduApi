@@ -46,7 +46,7 @@ final class AdminWalletCampaignController extends Controller
                 'name',
                 'type',
                 'is_active',
-                'created_by'
+                'created_by',
             ])
             ->allowedSorts([
                 'name',
@@ -55,14 +55,13 @@ final class AdminWalletCampaignController extends Controller
                 'total_usage_count',
                 'created_at',
                 'starts_at',
-                'ends_at'
+                'ends_at',
             ])
             ->allowedIncludes(['creator', 'transactions'])
             ->with(['auditor'])
             ->withCount('transactions')
             ->defaultSort('-created_at')
             ->paginate($request->get('per_page', 15));
-
 
         return response()->success(WalletCampaignData::collect($campaigns));
     }
@@ -80,7 +79,7 @@ final class AdminWalletCampaignController extends Controller
         Gate::authorize('create', WalletCampaign::class);
 
         /** @var \App\Models\Staff $staff */
-        $staff = auth('staff')->user();
+        $staff    = auth('staff')->user();
         $campaign = $action->execute($data, $staff);
 
         return response()->created(
@@ -139,7 +138,7 @@ final class AdminWalletCampaignController extends Controller
         Gate::authorize('delete', $walletCampaign);
         try {
             $action->handle($walletCampaign);
-        }catch (ModelHasRelationshipDataException $exception){
+        } catch (ModelHasRelationshipDataException $exception) {
             return response()->error(
                 message: __('messages.campaign_has_transactions_cannot_delete'),
                 errors: ['campaign' => [__('messages.campaign_has_transactions_cannot_delete')]],

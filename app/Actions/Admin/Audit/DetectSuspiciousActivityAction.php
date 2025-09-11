@@ -12,7 +12,7 @@ use App\Models\WalletTransaction;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-class DetectSuspiciousActivityAction
+final class DetectSuspiciousActivityAction
 {
     public function handle(SuspiciousActivityRequestData $data): SuspiciousActivityAgregratedData
     {
@@ -33,23 +33,24 @@ class DetectSuspiciousActivityAction
         }
 
         // Additional pattern detection
-        $rapid_succession = $this->detectRapidSuccessionTransactions($data);
+        $rapid_succession       = $this->detectRapidSuccessionTransactions($data);
         $unusual_admin_activity = $this->detectUnusualAdminActivity($data);
-        $suspiciousActivities = new SuspiciousActivityCollectionData(
+        $suspiciousActivities   = new SuspiciousActivityCollectionData(
             rapid_succession: $rapid_succession,
             unusual_admin_activity: $unusual_admin_activity,
-            large_transactions: $large_transactions ?? null,
+            large_transactions: $large_transactions         ?? null,
             off_hours_transactions: $off_hours_transactions ?? null,
-            high_frequency_users: $high_frequency_users ?? null,
-            round_number_patterns: $round_number_patterns ?? null,
+            high_frequency_users: $high_frequency_users     ?? null,
+            round_number_patterns: $round_number_patterns   ?? null,
         );
+
         return new SuspiciousActivityAgregratedData(
             detection_period: [
                 'from' => verta($data->date_from)->format('Y-m-d'),
-                'to' => verta($data->date_to)->format('Y-m-d'),
+                'to'   => verta($data->date_to)->format('Y-m-d'),
             ],
             detection_criteria: [
-                'large_amount_threshold' => $data->large_amount_threshold,
+                'large_amount_threshold'   => $data->large_amount_threshold,
                 'high_frequency_threshold' => $data->high_frequency_threshold,
             ],
             suspicious_activities: $suspiciousActivities,
@@ -72,14 +73,14 @@ class DetectSuspiciousActivityAction
             return new SuspiciousActivityData(
                 transaction_id: $transaction->id,
                 user_id: $transaction->user_id,
-                user_name: $transaction->user->first_name . ' ' . $transaction->user->last_name,
+                user_name: $transaction->user->first_name.' '.$transaction->user->last_name,
                 amount: $transaction->amount,
                 type: $transaction->type->value,
                 created_at: $transaction->created_at->format('Y-m-d H:i:s'),
-                hour: (string)$transaction->created_at->hour,
+                hour: (string) $transaction->created_at->hour,
                 flags: json_encode(['large_amount']),
                 admin_initiated: $transaction->metadata['audit']['is_admin_initiated'] ?? false ? 'true' : 'false',
-                ip_address: $transaction->metadata['audit']['ip_address'] ?? null,
+                ip_address: $transaction->metadata['audit']['ip_address']              ?? null,
             );
         });
     }
@@ -91,7 +92,7 @@ class DetectSuspiciousActivityAction
             ->whereBetween('created_at', [$data->date_from, $data->date_to])
             ->where(function ($q) {
                 $q->whereTime('created_at', '<', '06:00:00')
-                  ->orWhereTime('created_at', '>', '22:00:00');
+                    ->orWhereTime('created_at', '>', '22:00:00');
             })
             ->where(DB::raw('ABS(amount)'), '>=', 5000000); // Only significant amounts off hours
 
@@ -103,14 +104,14 @@ class DetectSuspiciousActivityAction
             return new SuspiciousActivityData(
                 transaction_id: $transaction->id,
                 user_id: $transaction->user_id,
-                user_name: $transaction->user->first_name . ' ' . $transaction->user->last_name,
+                user_name: $transaction->user->first_name.' '.$transaction->user->last_name,
                 amount: $transaction->amount,
                 type: $transaction->type->value,
                 created_at: $transaction->created_at->format('Y-m-d H:i:s'),
-                hour: (string)$transaction->created_at->hour,
+                hour: (string) $transaction->created_at->hour,
                 flags: json_encode(['off_hours']),
                 admin_initiated: $transaction->metadata['audit']['is_admin_initiated'] ?? false ? 'true' : 'false',
-                ip_address: $transaction->metadata['audit']['ip_address'] ?? null,
+                ip_address: $transaction->metadata['audit']['ip_address']              ?? null,
             );
         });
     }
@@ -137,10 +138,11 @@ class DetectSuspiciousActivityAction
 
         return $query->get()->map(function ($result) {
             $user = $result->user;
+
             return new SuspiciousActivityData(
                 transaction_id: 0,
                 user_id: $result->user_id,
-                user_name: $user->first_name . ' ' . $user->last_name,
+                user_name: $user->first_name.' '.$user->last_name,
                 amount: 0,
                 type: '',
                 created_at: '',
@@ -148,11 +150,11 @@ class DetectSuspiciousActivityAction
                 flags: json_encode(['high_frequency']),
                 admin_initiated: 'false',
                 ip_address: null,
-                transaction_count:(int)  $result->transaction_count,
+                transaction_count: (int) $result->transaction_count,
                 total_volume: (int) $result->total_volume,
                 first_transaction: $result->first_transaction,
                 last_transaction: $result->last_transaction,
-                avg_transaction_amount: (string)round($result->total_volume / $result->transaction_count),
+                avg_transaction_amount: (string) round($result->total_volume / $result->transaction_count),
             );
         });
     }
@@ -173,14 +175,14 @@ class DetectSuspiciousActivityAction
             return new SuspiciousActivityData(
                 transaction_id: $transaction->id,
                 user_id: $transaction->user_id,
-                user_name: $transaction->user->first_name . ' ' . $transaction->user->last_name,
+                user_name: $transaction->user->first_name.' '.$transaction->user->last_name,
                 amount: $transaction->amount,
                 type: $transaction->type->value,
                 created_at: $transaction->created_at->format('Y-m-d H:i:s'),
-                hour: (string)$transaction->created_at->hour,
+                hour: (string) $transaction->created_at->hour,
                 flags: json_encode(['round_numbers']),
                 admin_initiated: $transaction->metadata['audit']['is_admin_initiated'] ?? false ? 'true' : 'false',
-                ip_address: $transaction->metadata['audit']['ip_address'] ?? null,
+                ip_address: $transaction->metadata['audit']['ip_address']              ?? null,
             );
         });
     }
@@ -204,8 +206,7 @@ class DetectSuspiciousActivityAction
                         $lastSequence = $sequences->last();
 
                         // If no sequences exist or the time gap is > 5 minutes, start a new sequence
-                        if ($sequences->isEmpty() ||
-                            $lastSequence->last()->created_at->diffInMinutes($transaction->created_at) > 5) {
+                        if ($sequences->isEmpty() || $lastSequence->last()->created_at->diffInMinutes($transaction->created_at) > 5) {
                             $sequences->push(collect([$transaction]));
                         } else {
                             // Add to current sequence if within 5 minutes
@@ -214,21 +215,21 @@ class DetectSuspiciousActivityAction
 
                         return $sequences;
                     }, collect())
-                    ->filter(fn($sequence) => $sequence->count() >= 2) // Only sequences with 2+ transactions
+                    ->filter(fn ($sequence) => $sequence->count() >= 2) // Only sequences with 2+ transactions
                     ->flatten(); // Flatten all sequences into individual transactions
             })
             ->map(function ($transaction) {
                 return new SuspiciousActivityData(
                     transaction_id: $transaction->id,
                     user_id: $transaction->user_id,
-                    user_name: $transaction->user->first_name . ' ' . $transaction->user->last_name,
+                    user_name: $transaction->user->first_name.' '.$transaction->user->last_name,
                     amount: $transaction->amount,
                     type: $transaction->type->value,
                     created_at: $transaction->created_at->format('Y-m-d H:i:s'),
-                    hour: (string)$transaction->created_at->hour,
+                    hour: (string) $transaction->created_at->hour,
                     flags: json_encode(['rapid_succession']),
                     admin_initiated: $transaction->metadata['audit']['is_admin_initiated'] ?? false ? 'true' : 'false',
-                    ip_address: $transaction->metadata['audit']['ip_address'] ?? null,
+                    ip_address: $transaction->metadata['audit']['ip_address']              ?? null,
                     pattern: 'Multiple large transactions within 5 minutes',
                 );
             });
@@ -266,7 +267,7 @@ class DetectSuspiciousActivityAction
         $activitiesCollection = collect($activities->toArray());
 
         $typeCountsAndUsers = $activitiesCollection->mapWithKeys(function ($items, $type) {
-            $count = is_countable($items) ? count($items) : 0;
+            $count   = is_countable($items) ? count($items) : 0;
             $userIds = collect($items)->pluck('user_id')->filter();
 
             return [$type => ['count' => $count, 'user_ids' => $userIds]];
@@ -274,9 +275,9 @@ class DetectSuspiciousActivityAction
 
         return [
             'total_suspicious_activities' => $typeCountsAndUsers->sum('count'),
-            'by_type' => $typeCountsAndUsers->mapWithKeys(fn($data, $type) => [$type => $data['count']])->toArray(),
-            'high_risk_count' => 0, // Can be calculated based on specific criteria if needed
-            'unique_users_involved' => $typeCountsAndUsers->pluck('user_ids')->flatten()->unique()->count(),
+            'by_type'                     => $typeCountsAndUsers->mapWithKeys(fn ($data, $type) => [$type => $data['count']])->toArray(),
+            'high_risk_count'             => 0, // Can be calculated based on specific criteria if needed
+            'unique_users_involved'       => $typeCountsAndUsers->pluck('user_ids')->flatten()->unique()->count(),
         ];
     }
 }

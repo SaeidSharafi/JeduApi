@@ -41,9 +41,9 @@ final class DigitalAsset extends Model implements ProductableContract
         'status'                  => \App\Enums\PublicationStatusEnum::class,
         'is_attachable_to_course' => 'boolean',
         'published_at'            => 'datetime',
-        //with time zone
-        'created_at'              => 'datetime',
-        'updated_at'              => 'datetime',
+        // with time zone
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**

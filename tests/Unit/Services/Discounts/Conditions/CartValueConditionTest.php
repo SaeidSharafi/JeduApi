@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Data\Admin\Discounts\OrderContextData;
 use App\Enums\Operators\MathOperatorEnum;
 use App\Models\User;
@@ -9,7 +11,7 @@ use Spatie\LaravelData\Data;
 
 it('passes when value is greater or equal', function () {
     $handler = new CartValueCondition();
-    $config = new CartValueConditionConfigData(operator: MathOperatorEnum::GREATER_THAN_OR_EQUAL, value: 10000, include_prepayments: false);
+    $config  = new CartValueConditionConfigData(operator: MathOperatorEnum::GREATER_THAN_OR_EQUAL, value: 10000, include_prepayments: false);
     $context = OrderContextData::from(['customer' => User::factory()->create(), 'items' => [], 'subtotal_full_payment_items' => 15000, 'subtotal_all_items' => 20000]);
 
     expect($handler->passes($context, $config))->toBeTrue();
@@ -17,7 +19,7 @@ it('passes when value is greater or equal', function () {
 
 it('fails when value is less than required', function () {
     $handler = new CartValueCondition();
-    $config = new CartValueConditionConfigData(operator: MathOperatorEnum::GREATER_THAN_OR_EQUAL, value: 10000, include_prepayments: false);
+    $config  = new CartValueConditionConfigData(operator: MathOperatorEnum::GREATER_THAN_OR_EQUAL, value: 10000, include_prepayments: false);
     $context = OrderContextData::from(['customer' => User::factory()->create(), 'items' => [], 'subtotal_full_payment_items' => 9000, 'subtotal_all_items' => 20000]);
 
     expect($handler->passes($context, $config))->toBeFalse();
@@ -25,7 +27,7 @@ it('fails when value is less than required', function () {
 
 it('correctly uses all items subtotal when include_prepayments is true', function () {
     $handler = new CartValueCondition();
-    $config = new CartValueConditionConfigData(operator: MathOperatorEnum::GREATER_THAN_OR_EQUAL, value: 18000, include_prepayments: true);
+    $config  = new CartValueConditionConfigData(operator: MathOperatorEnum::GREATER_THAN_OR_EQUAL, value: 18000, include_prepayments: true);
     $context = OrderContextData::from(['customer' => User::factory()->create(), 'items' => [], 'subtotal_full_payment_items' => 9000, 'subtotal_all_items' => 20000]);
 
     expect($handler->passes($context, $config))->toBeTrue();
@@ -48,7 +50,7 @@ dataset('operators', [
 it('correctly evaluates all operators', function (MathOperatorEnum $operator, int $valueToTest, bool $expectedResult) {
     // This test covers all operator lines in the match statement
     $handler = new CartValueCondition();
-    $config = new CartValueConditionConfigData(operator: $operator, value: $valueToTest, include_prepayments: false);
+    $config  = new CartValueConditionConfigData(operator: $operator, value: $valueToTest, include_prepayments: false);
 
     // The context's value is 10000
     $context = OrderContextData::from(['customer' => User::factory()->make(), 'items' => [], 'subtotal_full_payment_items' => 10000, 'subtotal_all_items' => 20000]);
@@ -59,14 +61,15 @@ it('returns false if configuration is not the correct type', function () {
     // This test covers: if (! $configuration instanceof CartValueConditionConfigData)
     $handler = new CartValueCondition();
     // Pass a generic Data object instead of the required config
-    $wrongConfig = new class extends Data {
+    $wrongConfig = new class extends Data
+    {
         public function __construct() {}
     };
     $context = OrderContextData::from([
-        'customer' => User::factory()->make(),
-        'items' => [],
+        'customer'                    => User::factory()->make(),
+        'items'                       => [],
         'subtotal_full_payment_items' => 15000,
-        'subtotal_all_items' => 20000]
+        'subtotal_all_items'          => 20000]
     );
 
     expect($handler->passes($context, $wrongConfig))->toBeFalse();

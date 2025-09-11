@@ -1,33 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\Order\RefundStatusEnum;
 use App\Models\Order;
 use App\Models\Refund;
 
-uses(\Tests\AuthTestTrait::class);
+uses(Tests\AuthTestTrait::class);
 describe('RefundUpdateStatusController', function () {
     it('should update the status of a refund', function () {
-        $this->authorized_user([\App\Enums\PermissionEnum::REFUND_UPDATE_STATUS]);
+        $this->authorized_user([App\Enums\PermissionEnum::REFUND_UPDATE_STATUS]);
         $order = Order::factory()
             ->withCalculatedTotals([
                 [
                     'price' => 10000,
                     'total' => 10000,
-                ]
+                ],
             ])->create()->fresh();
         $orderItem = $order->items()->first();
         $order->payments()->create([
             'customer_id' => $order->customer_id,
             'amount'      => 10000,
-            'status'      => \App\Enums\Payment\PaymentStatusEnum::COMPLETED,
-            'method'      => \App\Enums\Payment\PaymentMethodEnum::BANK_TRANSFER
+            'status'      => App\Enums\Payment\PaymentStatusEnum::COMPLETED,
+            'method'      => App\Enums\Payment\PaymentMethodEnum::BANK_TRANSFER,
         ]);
         $orderItem->enrolment()
             ->create([
                 'customer_id'                => $order->customer_id,
                 'order_id'                   => $order->id,
                 'product_delivery_option_id' => $orderItem->product_delivery_option_id,
-                'enrollment_status'          => \App\Enums\EnrolmentStatusEnum::ACTIVE
+                'enrollment_status'          => App\Enums\EnrolmentStatusEnum::ACTIVE,
             ]);
         $refund = Refund::factory()->create([
             'order_item_id' => $orderItem->id,
@@ -45,42 +47,42 @@ describe('RefundUpdateStatusController', function () {
         ]);
         $this->assertDatabaseHas('orders', [
             'id'     => $order->id,
-            'status' => \App\Enums\Order\OrderStatusEnum::REFUNDED,
+            'status' => App\Enums\Order\OrderStatusEnum::REFUNDED,
         ]);
         $this->assertDatabaseHas('order_items', [
             'id'     => $orderItem->id,
-            'status' => \App\Enums\Order\OrderItemStatusEnum::REFUNDED,
+            'status' => App\Enums\Order\OrderItemStatusEnum::REFUNDED,
         ]);
         $this->assertDatabaseHas('enrolments', [
-            'order_id' => $order->id,
-            'order_item_id' => $orderItem->id,
-            'enrollment_status' => \App\Enums\EnrolmentStatusEnum::CANCELLED,
+            'order_id'          => $order->id,
+            'order_item_id'     => $orderItem->id,
+            'enrollment_status' => App\Enums\EnrolmentStatusEnum::CANCELLED,
         ]);
 
     });
 
     it('should not update the status of a non-pending refund', function () {
-        $this->authorized_user([\App\Enums\PermissionEnum::REFUND_UPDATE_STATUS]);
+        $this->authorized_user([App\Enums\PermissionEnum::REFUND_UPDATE_STATUS]);
         $order = Order::factory()
             ->withCalculatedTotals([
                 [
                     'price' => 10000,
                     'total' => 10000,
-                ]
+                ],
             ])->create()->fresh();
         $orderItem = $order->items()->first();
         $order->payments()->create([
             'customer_id' => $order->customer_id,
             'amount'      => 10000,
-            'status'      => \App\Enums\Payment\PaymentStatusEnum::COMPLETED,
-            'method'      => \App\Enums\Payment\PaymentMethodEnum::BANK_TRANSFER
+            'status'      => App\Enums\Payment\PaymentStatusEnum::COMPLETED,
+            'method'      => App\Enums\Payment\PaymentMethodEnum::BANK_TRANSFER,
         ]);
         $orderItem->enrolment()
             ->create([
                 'customer_id'                => $order->customer_id,
                 'order_id'                   => $order->id,
                 'product_delivery_option_id' => $orderItem->product_delivery_option_id,
-                'enrollment_status'          => \App\Enums\EnrolmentStatusEnum::ACTIVE
+                'enrollment_status'          => App\Enums\EnrolmentStatusEnum::ACTIVE,
             ]);
         $refund = Refund::factory()->create([
             'order_item_id' => $orderItem->id,
@@ -102,21 +104,21 @@ describe('RefundUpdateStatusController', function () {
                 [
                     'price' => 10000,
                     'total' => 10000,
-                ]
+                ],
             ])->create()->fresh();
         $orderItem = $order->items()->first();
         $order->payments()->create([
             'customer_id' => $order->customer_id,
             'amount'      => 10000,
-            'status'      => \App\Enums\Payment\PaymentStatusEnum::COMPLETED,
-            'method'      => \App\Enums\Payment\PaymentMethodEnum::BANK_TRANSFER
+            'status'      => App\Enums\Payment\PaymentStatusEnum::COMPLETED,
+            'method'      => App\Enums\Payment\PaymentMethodEnum::BANK_TRANSFER,
         ]);
         $orderItem->enrolment()
             ->create([
                 'customer_id'                => $order->customer_id,
                 'order_id'                   => $order->id,
                 'product_delivery_option_id' => $orderItem->product_delivery_option_id,
-                'enrollment_status'          => \App\Enums\EnrolmentStatusEnum::ACTIVE
+                'enrollment_status'          => App\Enums\EnrolmentStatusEnum::ACTIVE,
             ]);
         $refund = Refund::factory()->create([
             'order_item_id' => $orderItem->id,

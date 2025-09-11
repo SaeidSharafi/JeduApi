@@ -1,30 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Listeners;
 
 use App\Enums\DeliveryMethodEnum;
-use App\Enums\EnrolmentStatusEnum;
 use App\Events\PaymentCompletedEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Queue\InteractsWithQueue;
 
-class ProvisionPaidResourcesListener implements ShouldQueue
+final class ProvisionPaidResourcesListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     public function handle(PaymentCompletedEvent $event): void
     {
         $order = $event->payment->order()->with([
             'customer',
-            'items' => fn($q) => $q->with('enrolment', 'productDeliveryOption')
+            'items' => fn ($q) => $q->with('enrolment', 'productDeliveryOption'),
         ])->first();
 
-        if (!$order) {
+        if (! $order) {
             return;
         }
 

@@ -17,22 +17,22 @@ final class WalletCampaignFactory extends Factory
     public function definition(): array
     {
         $startDate = $this->faker->dateTimeBetween('-1 month', '+1 week');
-        $endDate = $this->faker->dateTimeBetween($startDate, '+3 months');
+        $endDate   = $this->faker->dateTimeBetween($startDate, '+3 months');
 
         return [
-            'name' => $this->faker->sentence(3),
-            'description' => $this->faker->optional()->paragraph(),
-            'type' => $this->faker->randomElement(CampaignTypeEnum::cases())->value,
-            'amount' => $this->faker->numberBetween(10000, 500000), // 100 to 5000 IRR
-            'is_active' => $this->faker->boolean(80), // 80% chance of being active
-            'usage_limit_total' => $this->faker->optional(0.7)->numberBetween(10, 10000),
+            'name'                 => $this->faker->sentence(3),
+            'description'          => $this->faker->optional()->paragraph(),
+            'type'                 => $this->faker->randomElement(CampaignTypeEnum::cases())->value,
+            'amount'               => $this->faker->numberBetween(10000, 500000), // 100 to 5000 IRR
+            'is_active'            => $this->faker->boolean(80), // 80% chance of being active
+            'usage_limit_total'    => $this->faker->optional(0.7)->numberBetween(10, 10000),
             'usage_limit_per_user' => $this->faker->optional(0.8)->numberBetween(1, 10),
-            'total_usage_count' => 0,
-            'starts_at' => Carbon::instance($startDate),
-            'ends_at' => Carbon::instance($endDate),
-            'metadata' => $this->faker->optional(0.3)->passthrough([
+            'total_usage_count'    => 0,
+            'starts_at'            => Carbon::instance($startDate),
+            'ends_at'              => Carbon::instance($endDate),
+            'metadata'             => $this->faker->optional(0.3)->passthrough([
                 'terms_conditions' => $this->faker->paragraph(),
-                'target_audience' => $this->faker->words(3),
+                'target_audience'  => $this->faker->words(3),
                 'promotional_code' => $this->faker->optional()->regexify('[A-Z0-9]{8}'),
             ]),
             'created_by' => Staff::factory(),
@@ -47,7 +47,7 @@ final class WalletCampaignFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'is_active' => true,
             'starts_at' => Carbon::now()->subDays(7),
-            'ends_at' => Carbon::now()->addMonth(),
+            'ends_at'   => Carbon::now()->addMonth(),
         ]);
     }
 
@@ -68,7 +68,7 @@ final class WalletCampaignFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'starts_at' => Carbon::now()->subMonth(),
-            'ends_at' => Carbon::now()->subWeek(),
+            'ends_at'   => Carbon::now()->subWeek(),
         ]);
     }
 
@@ -79,7 +79,7 @@ final class WalletCampaignFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'starts_at' => Carbon::now()->addWeek(),
-            'ends_at' => Carbon::now()->addMonth(),
+            'ends_at'   => Carbon::now()->addMonth(),
         ]);
     }
 
@@ -89,7 +89,7 @@ final class WalletCampaignFactory extends Factory
     public function withLimits(int $totalLimit = 100, int $perUserLimit = 5): static
     {
         return $this->state(fn (array $attributes) => [
-            'usage_limit_total' => $totalLimit,
+            'usage_limit_total'    => $totalLimit,
             'usage_limit_per_user' => $perUserLimit,
         ]);
     }
@@ -101,6 +101,7 @@ final class WalletCampaignFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $limit = $attributes['usage_limit_total'] ?? 100;
+
             return [
                 'usage_limit_total' => $limit,
                 'total_usage_count' => $limit,
@@ -125,10 +126,10 @@ final class WalletCampaignFactory extends Factory
     {
         return $this->ofType(CampaignTypeEnum::REFERRAL_BONUS)
             ->state(fn (array $attributes) => [
-                'name' => 'Referral Bonus Campaign',
-                'amount' => 50000, // 500 IRR
+                'name'     => 'Referral Bonus Campaign',
+                'amount'   => 50000, // 500 IRR
                 'metadata' => [
-                    'bonus_type' => 'referral',
+                    'bonus_type'    => 'referral',
                     'trigger_event' => 'user_referred',
                 ],
             ]);
@@ -141,11 +142,11 @@ final class WalletCampaignFactory extends Factory
     {
         return $this->ofType(CampaignTypeEnum::BIRTHDAY_GIFT)
             ->state(fn (array $attributes) => [
-                'name' => 'Birthday Gift Campaign',
-                'amount' => 25000, // 250 IRR
+                'name'                 => 'Birthday Gift Campaign',
+                'amount'               => 25000, // 250 IRR
                 'usage_limit_per_user' => 1,
-                'metadata' => [
-                    'bonus_type' => 'birthday',
+                'metadata'             => [
+                    'bonus_type'   => 'birthday',
                     'annual_bonus' => true,
                 ],
             ]);
@@ -158,10 +159,10 @@ final class WalletCampaignFactory extends Factory
     {
         return $this->ofType(CampaignTypeEnum::WELCOME_GIFT)
             ->state(fn (array $attributes) => [
-                'name' => 'Welcome Gift Campaign',
-                'amount' => 100000, // 1000 IRR
+                'name'     => 'Welcome Gift Campaign',
+                'amount'   => 100000, // 1000 IRR
                 'metadata' => [
-                    'gift_type' => 'promotional',
+                    'gift_type'        => 'promotional',
                     'non_withdrawable' => true,
                 ],
             ]);

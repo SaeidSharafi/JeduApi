@@ -1,16 +1,18 @@
 <?php
 
-use App\Services\Discounts\Cart\Actions\AddGiftCreditAction;
-use App\Services\Discounts\Configs\AddGiftCreditConfigData;
+declare(strict_types=1);
+
 use App\Actions\Wallet\RecordWalletTransactionAction;
-use App\Data\Admin\Discounts\OrderContextData;
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
+use App\Data\Admin\Discounts\OrderContextData;
+use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
-use App\Enums\Order\OrderItemPaymentTypeEnum;
-use App\Models\User;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
+use App\Models\User;
+use App\Services\Discounts\Cart\Actions\AddGiftCreditAction;
+use App\Services\Discounts\Configs\AddGiftCreditConfigData;
 use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
@@ -27,7 +29,7 @@ beforeEach(function () {
     ]);
 
     $this->mockRecordAction = $this->mock(RecordWalletTransactionAction::class);
-    $this->action = new AddGiftCreditAction($this->mockRecordAction);
+    $this->action           = new AddGiftCreditAction($this->mockRecordAction);
 });
 
 it('returns correct config class', function () {
@@ -54,13 +56,13 @@ it('applies fixed amount gift credit without expiration', function () {
         ->shouldReceive('execute')
         ->once()
         ->withArgs(function ($transactionData) {
-            return $transactionData->user_id === $this->user->id
-                && $transactionData->type === TransactionTypeEnum::GIFT
-                && $transactionData->amount === 5000
-                && $transactionData->source_type === TransactionSourceEnum::PROMOTION
-                && $transactionData->description === 'Order completion gift'
-                && $transactionData->expires_at === null
-                && $transactionData->metadata['credit_type'] === 'gift'
+            return $transactionData->user_id                  === $this->user->id
+                && $transactionData->type                     === TransactionTypeEnum::GIFT
+                && $transactionData->amount                   === 5000
+                && $transactionData->source_type              === TransactionSourceEnum::PROMOTION
+                && $transactionData->description              === 'Order completion gift'
+                && $transactionData->expires_at               === null
+                && $transactionData->metadata['credit_type']  === 'gift'
                 && $transactionData->metadata['expires_days'] === null;
         });
 
@@ -87,13 +89,13 @@ it('applies fixed amount gift credit with expiration', function () {
         ->shouldReceive('execute')
         ->once()
         ->withArgs(function ($transactionData) {
-            return $transactionData->user_id === $this->user->id
-                && $transactionData->type === TransactionTypeEnum::GIFT
-                && $transactionData->amount === 7500
+            return $transactionData->user_id     === $this->user->id
+                && $transactionData->type        === TransactionTypeEnum::GIFT
+                && $transactionData->amount      === 7500
                 && $transactionData->source_type === TransactionSourceEnum::PROMOTION
                 && $transactionData->description === 'Limited time gift'
                 && $transactionData->expires_at !== null
-                && $transactionData->metadata['credit_type'] === 'gift'
+                && $transactionData->metadata['credit_type']  === 'gift'
                 && $transactionData->metadata['expires_days'] === 30;
         });
 
@@ -139,8 +141,8 @@ it('applies per-item gift credit', function () {
         ->shouldReceive('execute')
         ->once()
         ->withArgs(function ($transactionData) {
-            return $transactionData->amount === 5000 // (2 + 3) * 1000
-                && $transactionData->type === TransactionTypeEnum::GIFT
+            return $transactionData->amount                   === 5000 // (2 + 3) * 1000
+                && $transactionData->type                     === TransactionTypeEnum::GIFT
                 && $transactionData->metadata['expires_days'] === 15;
         });
 
@@ -283,14 +285,15 @@ it('handles record action exceptions gracefully', function () {
     $this->mockRecordAction
         ->shouldReceive('execute')
         ->once()
-        ->andThrow(new \Exception('Database error'));
+        ->andThrow(new Exception('Database error'));
 
     // Should not throw exception
-    expect(fn() => $this->action->apply($context, $config))->not->toThrow(\Exception::class);
+    expect(fn () => $this->action->apply($context, $config))->not->toThrow(Exception::class);
 });
 
 it('does not apply gift credit for invalid configuration type', function () {
-    $invalidConfig = new class extends \Spatie\LaravelData\Data {
+    $invalidConfig = new class extends Spatie\LaravelData\Data
+    {
         public function toArray(): array
         {
             return [];
@@ -331,11 +334,12 @@ it('includes correct metadata in gift transaction', function () {
         ->once()
         ->withArgs(function ($transactionData) {
             $metadata = $transactionData->metadata;
+
             return $metadata['promotion_name'] === 'Test Promotion'
-                && $metadata['credit_type'] === 'gift'
-                && $metadata['expires_days'] === 45
+                && $metadata['credit_type']    === 'gift'
+                && $metadata['expires_days']   === 45
                 && isset($metadata['configuration'])
-                && $metadata['configuration']['amount'] === 3000
+                && $metadata['configuration']['amount']   === 3000
                 && $metadata['configuration']['per_item'] === false;
         });
 

@@ -6,7 +6,6 @@ namespace Database\Factories;
 
 use App\Enums\Wallet\WalletStatusEnum;
 use App\Models\Staff;
-use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
@@ -20,13 +19,13 @@ final class WalletFactory extends Factory
         // Note: When creating a wallet through the factory, you should manually provide user_id
         // to avoid conflicts with automatic wallet creation
         return [
-            'user_id' => null, // Should be provided explicitly
-            'balance' => $this->faker->numberBetween(0, 1000000), // 0 to 10,000 IRR
+            'user_id'      => null, // Should be provided explicitly
+            'balance'      => $this->faker->numberBetween(0, 1000000), // 0 to 10,000 IRR
             'gift_balance' => $this->faker->numberBetween(0, 500000), // 0 to 5,000 IRR
-            'status' => $this->faker->randomElement(WalletStatusEnum::getAllValues()),
-            'created_by' => $this->faker->optional()->randomElement([null, Staff::factory()]),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
+            'status'       => $this->faker->randomElement(WalletStatusEnum::getAllValues()),
+            'created_by'   => $this->faker->optional()->randomElement([null, Staff::factory()]),
+            'created_at'   => Carbon::now(),
+            'updated_at'   => Carbon::now(),
         ];
     }
 
@@ -68,7 +67,7 @@ final class WalletFactory extends Factory
     public function empty(): static
     {
         return $this->state(fn (array $attributes) => [
-            'balance' => 0,
+            'balance'      => 0,
             'gift_balance' => 0,
         ]);
     }

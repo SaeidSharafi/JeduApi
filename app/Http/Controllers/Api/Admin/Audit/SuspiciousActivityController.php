@@ -9,7 +9,6 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Audit\SuspiciousActivityRequestData;
 use App\Enums\PermissionEnum;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Gate;
 
 /**
  * @group Admin - Audit Logs
@@ -24,9 +23,8 @@ final class SuspiciousActivityController extends Controller
      * Detect and list suspicious activities in wallet transactions.
      *
      * @responseFile 200 responses/suspicious-activity/index.json
-     * @authenticated
      *
-     * @return ApiResponseInterface
+     * @authenticated
      */
     public function __invoke(
         SuspiciousActivityRequestData $data,

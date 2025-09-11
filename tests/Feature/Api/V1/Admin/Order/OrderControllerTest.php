@@ -82,7 +82,7 @@ describe('OrderController', function () {
     // 2. CRUD and permissions
     describe('CRUD operations with permissions', function () {
         beforeEach(function () {
-            $this->product = \App\Models\Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+            $this->product = App\Models\Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         }
         );
         it('can create an order with permissions (full payment option)', function () {
@@ -92,7 +92,7 @@ describe('OrderController', function () {
             $product = ProductDeliveryOption::factory()->create([
                 'product_id' => $this->product->id,
                 'status'     => PublicationStatusEnum::PUBLISHED,
-                'price'      => 50000
+                'price'      => 50000,
             ]);
 
             $orderData = [
@@ -143,14 +143,14 @@ describe('OrderController', function () {
             $this->assertDatabaseHas('enrolments', [
                 'order_id'          => $response->json('data.id'),
                 'customer_id'       => $user->id,
-                'enrollment_status' => \App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING
+                'enrollment_status' => App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING,
             ]);
 
         });
 
         it('can create a partially paid order with permissions', function () {
             $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
-            $user = User::factory()->create();
+            $user    = User::factory()->create();
             $product = ProductDeliveryOption::factory()->create([
                 'product_id'              => $this->product->id,
                 'status'                  => PublicationStatusEnum::PUBLISHED,
@@ -198,7 +198,7 @@ describe('OrderController', function () {
             $this->authorized_user([
                 PermissionEnum::ORDER_UPDATE->value,
             ]);
-            $user = User::factory()->create();
+            $user  = User::factory()->create();
             $order = Order::factory()->create([
                 'customer_id'            => $user->id,
                 'status'                 => OrderStatusEnum::PENDING->value,
@@ -228,7 +228,7 @@ describe('OrderController', function () {
                     'customer_id'                => $user->id,
                     'order_id'                   => $item->order_id,
                     'product_delivery_option_id' => $item->product_delivery_option_id,
-                    'enrollment_status'          => \App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING,
+                    'enrollment_status'          => App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING,
                 ]);
             });
 
@@ -236,7 +236,7 @@ describe('OrderController', function () {
                 'status' => OrderStatusEnum::CANCELLED->value,
             ];
             Event::fake([
-                \App\Events\OrderStatusUpdatedEvent::class
+                App\Events\OrderStatusUpdatedEvent::class,
             ]);
             $response = $this->putJson(route('api.v1.admin.order.update', ['order' => $order->id]), $updateData);
             $response->assertStatus(200)
@@ -253,7 +253,7 @@ describe('OrderController', function () {
                 ->assertJsonPath('data.status.value', OrderStatusEnum::CANCELLED->value)
                 ->assertJsonPath('data.payment_status.value', PaymentStatusEnum::PENDING->value)
                 ->assertJsonPath('data.id', $order->id);
-            Event::assertDispatched(\App\Events\OrderStatusUpdatedEvent::class);
+            Event::assertDispatched(App\Events\OrderStatusUpdatedEvent::class);
             $this->assertDatabaseHas('orders', [
                 'id'     => $order->id,
                 'status' => OrderStatusEnum::CANCELLED->value,
@@ -263,7 +263,7 @@ describe('OrderController', function () {
                     'customer_id'                => $user->id,
                     'order_id'                   => $item->order_id,
                     'product_delivery_option_id' => $item->product_delivery_option_id,
-                    'enrollment_status'          => \App\Enums\EnrolmentStatusEnum::CANCELLED,
+                    'enrollment_status'          => App\Enums\EnrolmentStatusEnum::CANCELLED,
                 ]);
             });
 
@@ -273,10 +273,10 @@ describe('OrderController', function () {
             $this->authorized_user([
                 PermissionEnum::ORDER_DELETE->value,
             ]);
-            $user = User::factory()->create();
-            $order = Order::factory()->create(['customer_id' => $user->id, 'status' => OrderStatusEnum::PENDING]);
+            $user    = User::factory()->create();
+            $order   = Order::factory()->create(['customer_id' => $user->id, 'status' => OrderStatusEnum::PENDING]);
             $product = ProductDeliveryOption::factory()->create();
-            $item = App\Models\OrderItem::factory()->create(
+            $item    = App\Models\OrderItem::factory()->create(
                 [
                     'order_id'                   => $order->id,
                     'product_delivery_option_id' => $product->id,
@@ -289,14 +289,14 @@ describe('OrderController', function () {
                     'discount_amount'            => 0,
                     'tax_amount'                 => 0,
                     'total'                      => 1000,
-                    'status'                     => \App\Enums\Order\OrderItemStatusEnum::PENDING,
+                    'status'                     => App\Enums\Order\OrderItemStatusEnum::PENDING,
                 ]
             );
             $item->enrolment()->create([
                 'customer_id'                => $user->id,
                 'order_id'                   => $item->order_id,
                 'product_delivery_option_id' => $item->product_delivery_option_id,
-                'enrollment_status'          => \App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING,
+                'enrollment_status'          => App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING,
             ]);
             $response = $this->deleteJson(route('api.v1.admin.order.destroy', ['order' => $order->id]));
             $response->assertStatus(204);
@@ -314,11 +314,11 @@ describe('OrderController', function () {
             $this->authorized_user([
                 PermissionEnum::ORDER_DELETE->value,
             ]);
-            $user = User::factory()->create();
+            $user  = User::factory()->create();
             $order = Order::factory()->create(['customer_id' => $user->id, 'status' => OrderStatusEnum::PENDING])
                 ->fresh();
             $product = ProductDeliveryOption::factory()->create()->fresh();
-            $item = App\Models\OrderItem::factory()->create(
+            $item    = App\Models\OrderItem::factory()->create(
                 [
                     'order_id'                   => $order->id,
                     'product_delivery_option_id' => $product->id,
@@ -331,7 +331,7 @@ describe('OrderController', function () {
                     'discount_amount'            => 0,
                     'tax_amount'                 => 0,
                     'total'                      => 1000,
-                    'status'                     => \App\Enums\Order\OrderItemStatusEnum::COMPLETED,
+                    'status'                     => App\Enums\Order\OrderItemStatusEnum::COMPLETED,
                 ]
             );
             $order->payments()->create([
@@ -346,14 +346,14 @@ describe('OrderController', function () {
                 'customer_id'                => $user->id,
                 'order_id'                   => $item->order_id,
                 'product_delivery_option_id' => $item->product_delivery_option_id,
-                'enrollment_status'          => \App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING,
+                'enrollment_status'          => App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING,
             ]);
             $response = $this->deleteJson(route('api.v1.admin.order.destroy', ['order' => $order->id]));
             $response->assertStatus(422);
             $response->assertJsonValidationErrors(
                 [
                     'order' => __('messages.order.cannot_delete_order_with_payments',
-                        ['order_id' => $order->increment_id])
+                        ['order_id' => $order->increment_id]),
                 ]
             );
             $this->assertDatabaseHas('orders', [
@@ -371,11 +371,11 @@ describe('OrderController', function () {
             $this->authorized_user([
                 PermissionEnum::ORDER_DELETE->value,
             ]);
-            $user = User::factory()->create();
+            $user  = User::factory()->create();
             $order = Order::factory()->create(['customer_id' => $user->id, 'status' => OrderStatusEnum::COMPLETED])
                 ->fresh();
             $product = ProductDeliveryOption::factory()->create()->fresh();
-            $item = App\Models\OrderItem::factory()->create(
+            $item    = App\Models\OrderItem::factory()->create(
                 [
                     'order_id'                   => $order->id,
                     'product_delivery_option_id' => $product->id,
@@ -388,7 +388,7 @@ describe('OrderController', function () {
                     'discount_amount'            => 0,
                     'tax_amount'                 => 0,
                     'total'                      => 1000,
-                    'status'                     => \App\Enums\Order\OrderItemStatusEnum::COMPLETED,
+                    'status'                     => App\Enums\Order\OrderItemStatusEnum::COMPLETED,
                 ]
             );
             $response = $this->deleteJson(route('api.v1.admin.order.destroy', ['order' => $order->id]));

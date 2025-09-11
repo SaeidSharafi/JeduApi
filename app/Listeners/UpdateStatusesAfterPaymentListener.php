@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Listeners;
 
 use App\Events\PaymentCompletedEvent;
 use App\Services\OrderStatusService;
 
-readonly class UpdateStatusesAfterPaymentListener
+final readonly class UpdateStatusesAfterPaymentListener
 {
     public function __construct(private OrderStatusService $orderStatusService) {}
 

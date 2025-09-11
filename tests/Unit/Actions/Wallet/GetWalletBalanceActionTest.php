@@ -14,26 +14,26 @@ test('get wallet balance returns correct data', function () {
     $user->wallet->update(['balance' => 1500, 'gift_balance' => 500]);
 
     $admin = $this->authorized_user([
-        \App\Enums\PermissionEnum::WALLET_VIEW_ANY
+        App\Enums\PermissionEnum::WALLET_VIEW_ANY,
     ]);
 
     $balance = (new GetWalletBalanceAction())->execute($user->id);
 
     expect($balance)->toBe([
-        'user_id' => $user->id,
-        'balance' => 1500,
-        'gift_balance' => 500,
+        'user_id'           => $user->id,
+        'balance'           => 1500,
+        'gift_balance'      => 500,
         'available_balance' => 2000,
-        'status' => WalletStatusEnum::ACTIVE,
+        'status'            => WalletStatusEnum::ACTIVE,
     ]);
 });
 
 test('cannot get balance for invalid user', function () {
     $admin = $this->authorized_user([
-        \App\Enums\PermissionEnum::WALLET_VIEW_ANY
+        App\Enums\PermissionEnum::WALLET_VIEW_ANY,
     ]);
 
-    expect(fn() => (new GetWalletBalanceAction())->execute(999999))
+    expect(fn () => (new GetWalletBalanceAction())->execute(999999))
         ->toThrow(Exception::class, __('validation.custom.user_not_found'));
 });
 
@@ -42,9 +42,9 @@ test('cannot get balance for user without wallet', function () {
     $user->wallet()->delete();
 
     $admin = $this->authorized_user([
-        \App\Enums\PermissionEnum::WALLET_VIEW_ANY
+        App\Enums\PermissionEnum::WALLET_VIEW_ANY,
     ]);
 
-    expect(fn() => (new GetWalletBalanceAction())->execute($user->id))
+    expect(fn () => (new GetWalletBalanceAction())->execute($user->id))
         ->toThrow(Exception::class, __('validation.custom.wallet_not_found'));
 });

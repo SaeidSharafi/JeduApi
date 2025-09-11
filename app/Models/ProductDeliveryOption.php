@@ -45,6 +45,7 @@ final class ProductDeliveryOption extends Model
     protected $with = [
         'productDeliveryOptionDiscountPrice',
     ];
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
@@ -65,17 +66,6 @@ final class ProductDeliveryOption extends Model
         return $this->hasOne(ProductDeliveryOptionDiscountPrice::class, 'product_delivery_option_id');
     }
 
-    protected function discountPrice(): Attribute
-    {
-        if ($this->relationLoaded('productDeliveryOptionDiscountPrice')) {
-            return Attribute::make(
-                get: fn($value, array $attributes) => $this->productDeliveryOptionDiscountPrice?->discounted_price ?? $this->price,
-            );
-        }
-        return Attribute::make(
-            get: fn($value, array $attributes) => $this->price,
-        );
-    }
     public function scopeAvailable($query)
     {
         return $query->where('status', PublicationStatusEnum::PUBLISHED)
@@ -99,6 +89,19 @@ final class ProductDeliveryOption extends Model
     {
         return $query->where('registration_start_date', '<=', now())
             ->where('registration_end_date', '>=', now());
+    }
+
+    protected function discountPrice(): Attribute
+    {
+        if ($this->relationLoaded('productDeliveryOptionDiscountPrice')) {
+            return Attribute::make(
+                get: fn ($value, array $attributes) => $this->productDeliveryOptionDiscountPrice?->discounted_price ?? $this->price,
+            );
+        }
+
+        return Attribute::make(
+            get: fn ($value, array $attributes) => $this->price,
+        );
     }
 
     protected function casts(): array

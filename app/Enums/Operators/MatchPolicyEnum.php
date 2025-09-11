@@ -9,6 +9,6 @@ use App\Traits\AdvanceEnum;
 enum MatchPolicyEnum: string
 {
     use AdvanceEnum;
-    case ANY                 = 'any';
-    case ALL             = 'all';
+    case ANY = 'any';
+    case ALL = 'all';
 }

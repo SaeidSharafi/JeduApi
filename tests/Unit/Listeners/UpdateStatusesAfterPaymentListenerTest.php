@@ -16,9 +16,9 @@ describe('UpdateStatusesAfterPaymentListener', function () {
     it('correctly calls the OrderStatusService when a payment is completed', function () {
         // --- Arrange ---
         // 1. Create the real data that will be in the event
-        $order = Order::factory()->create();
+        $order   = Order::factory()->create();
         $payment = Payment::factory()->for($order)->create();
-        $event = new PaymentCompletedEvent($payment);
+        $event   = new PaymentCompletedEvent($payment);
 
         // 2. Mock the OrderStatusService. We don't want to test the service here,
         //    we just want to ensure our listener calls it correctly.
@@ -44,10 +44,10 @@ describe('UpdateStatusesAfterPaymentListener', function () {
         // the test will fail.
     });
 
-    it('does nothing if the payment has no associated order', function() {
+    it('does nothing if the payment has no associated order', function () {
         // --- Arrange ---
         $paymentWithoutOrder = new Payment();
-        $event = new PaymentCompletedEvent($paymentWithoutOrder);
+        $event               = new PaymentCompletedEvent($paymentWithoutOrder);
 
         // Mock the service but expect it to NEVER be called.
         $this->mock(OrderStatusService::class, function (MockInterface $mock) {

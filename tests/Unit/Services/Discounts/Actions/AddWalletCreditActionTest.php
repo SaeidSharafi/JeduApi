@@ -1,16 +1,18 @@
 <?php
 
-use App\Services\Discounts\Cart\Actions\AddWalletCreditAction;
-use App\Services\Discounts\Configs\AddWalletCreditConfigData;
+declare(strict_types=1);
+
 use App\Actions\Wallet\RecordWalletTransactionAction;
-use App\Data\Admin\Discounts\OrderContextData;
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
+use App\Data\Admin\Discounts\OrderContextData;
+use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
-use App\Enums\Order\OrderItemPaymentTypeEnum;
-use App\Models\User;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
+use App\Models\User;
+use App\Services\Discounts\Cart\Actions\AddWalletCreditAction;
+use App\Services\Discounts\Configs\AddWalletCreditConfigData;
 use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
@@ -27,7 +29,7 @@ beforeEach(function () {
     ]);
 
     $this->mockRecordAction = $this->mock(RecordWalletTransactionAction::class);
-    $this->action = new AddWalletCreditAction($this->mockRecordAction);
+    $this->action           = new AddWalletCreditAction($this->mockRecordAction);
 });
 
 it('returns correct config class', function () {
@@ -53,9 +55,9 @@ it('applies fixed amount wallet credit', function () {
         ->shouldReceive('execute')
         ->once()
         ->withArgs(function ($transactionData) {
-            return $transactionData->user_id === $this->user->id
-                && $transactionData->type === TransactionTypeEnum::BONUS
-                && $transactionData->amount === 5000
+            return $transactionData->user_id     === $this->user->id
+                && $transactionData->type        === TransactionTypeEnum::BONUS
+                && $transactionData->amount      === 5000
                 && $transactionData->source_type === TransactionSourceEnum::PROMOTION
                 && $transactionData->description === 'Order completion bonus';
         });
@@ -237,13 +239,14 @@ it('handles record action exceptions gracefully', function () {
     $this->mockRecordAction
         ->shouldReceive('execute')
         ->once()
-        ->andThrow(new \Exception('Database error'));
+        ->andThrow(new Exception('Database error'));
     // Should not throw exception
-    expect(fn() => $this->action->apply($context, $config))->not->toThrow(\Exception::class);
+    expect(fn () => $this->action->apply($context, $config))->not->toThrow(Exception::class);
 });
 
 it('does not apply credit for invalid configuration type', function () {
-    $invalidConfig = new class extends \Spatie\LaravelData\Data {
+    $invalidConfig = new class extends Spatie\LaravelData\Data
+    {
         public function toArray(): array
         {
             return [];

@@ -15,21 +15,21 @@ use Carbon\Carbon;
 describe('GenerateComplianceReportAction', function () {
 
     beforeEach(function () {
-        $this->action = new GenerateComplianceReportAction();
+        $this->action   = new GenerateComplianceReportAction();
         $this->dateFrom = verta()->subWeek()->format('Y-m-d');
-        $this->dateTo = verta()->format('Y-m-d');
+        $this->dateTo   = verta()->format('Y-m-d');
     });
 
     describe('execute method', function () {
         it('generates basic report structure', function () {
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
-                'report_type' => 'custom',
+                'date_from'                    => $this->dateFrom,
+                'date_to'                      => $this->dateTo,
+                'report_type'                  => 'custom',
                 'include_transaction_analysis' => false,
-                'include_admin_activity' => false,
-                'include_suspicious_activity' => false,
-                'include_risk_assessment' => false,
+                'include_admin_activity'       => false,
+                'include_suspicious_activity'  => false,
+                'include_risk_assessment'      => false,
             ]);
 
             $result = $this->action->execute($data);
@@ -46,8 +46,8 @@ describe('GenerateComplianceReportAction', function () {
 
         it('includes transaction analysis when requested', function () {
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'                    => $this->dateFrom,
+                'date_to'                      => $this->dateTo,
                 'include_transaction_analysis' => true,
             ]);
 
@@ -59,8 +59,8 @@ describe('GenerateComplianceReportAction', function () {
 
         it('includes admin activity when requested', function () {
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'              => $this->dateFrom,
+                'date_to'                => $this->dateTo,
                 'include_admin_activity' => true,
             ]);
 
@@ -71,8 +71,8 @@ describe('GenerateComplianceReportAction', function () {
 
         it('includes suspicious activity when requested', function () {
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'                   => $this->dateFrom,
+                'date_to'                     => $this->dateTo,
                 'include_suspicious_activity' => true,
             ]);
 
@@ -83,8 +83,8 @@ describe('GenerateComplianceReportAction', function () {
 
         it('includes risk assessment when requested', function () {
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'               => $this->dateFrom,
+                'date_to'                 => $this->dateTo,
                 'include_risk_assessment' => true,
             ]);
 
@@ -95,8 +95,8 @@ describe('GenerateComplianceReportAction', function () {
 
         it('includes daily breakdown for daily report type', function () {
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'   => $this->dateFrom,
+                'date_to'     => $this->dateTo,
                 'report_type' => 'daily',
             ]);
 
@@ -107,8 +107,8 @@ describe('GenerateComplianceReportAction', function () {
 
         it('does not include daily breakdown for non-daily report types', function () {
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'   => $this->dateFrom,
+                'date_to'     => $this->dateTo,
                 'report_type' => 'monthly',
             ]);
 
@@ -124,23 +124,23 @@ describe('GenerateComplianceReportAction', function () {
             $user2 = User::factory()->create();
 
             WalletTransaction::factory()->create([
-                'user_id' => $user1->id,
-                'wallet_id' => $user1->wallet->id,
-                'amount' => 100000,
+                'user_id'    => $user1->id,
+                'wallet_id'  => $user1->wallet->id,
+                'amount'     => 100000,
                 'created_at' => now()->subDays(2),
             ]);
 
             WalletTransaction::factory()->create([
-                'user_id' => $user2->id,
-                'wallet_id' => $user2->wallet->id,
-                'amount' => 200000,
+                'user_id'    => $user2->id,
+                'wallet_id'  => $user2->wallet->id,
+                'amount'     => 200000,
                 'created_at' => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
                 'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
-                'user_ids' => [$user1->id],
+                'date_to'   => $this->dateTo,
+                'user_ids'  => [$user1->id],
             ]);
 
             $result = $this->action->execute($data);
@@ -150,20 +150,20 @@ describe('GenerateComplianceReportAction', function () {
 
         it('generates summary with transaction type filter', function () {
             WalletTransaction::factory()->create([
-                'type' => TransactionTypeEnum::DEPOSIT,
-                'amount' => 100000,
+                'type'       => TransactionTypeEnum::DEPOSIT,
+                'amount'     => 100000,
                 'created_at' => now()->subDays(2),
             ]);
 
             WalletTransaction::factory()->create([
-                'type' => TransactionTypeEnum::PAYMENT,
-                'amount' => -50000,
+                'type'       => TransactionTypeEnum::PAYMENT,
+                'amount'     => -50000,
                 'created_at' => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'         => $this->dateFrom,
+                'date_to'           => $this->dateTo,
                 'transaction_types' => [TransactionTypeEnum::DEPOSIT],
             ]);
 
@@ -174,23 +174,23 @@ describe('GenerateComplianceReportAction', function () {
 
         it('generates summary with amount filters', function () {
             WalletTransaction::factory()->create([
-                'amount' => 50000, // Below min_amount
+                'amount'     => 50000, // Below min_amount
                 'created_at' => now()->subDays(2),
             ]);
 
             WalletTransaction::factory()->create([
-                'amount' => 150000, // Within range
+                'amount'     => 150000, // Within range
                 'created_at' => now()->subDays(2),
             ]);
 
             WalletTransaction::factory()->create([
-                'amount' => 300000, // Above max_amount
+                'amount'     => 300000, // Above max_amount
                 'created_at' => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'  => $this->dateFrom,
+                'date_to'    => $this->dateTo,
                 'min_amount' => 100000,
                 'max_amount' => 200000,
             ]);
@@ -202,18 +202,18 @@ describe('GenerateComplianceReportAction', function () {
 
         it('generates summary with only min_amount filter', function () {
             WalletTransaction::factory()->create([
-                'amount' => 50000, // Below min_amount
+                'amount'     => 50000, // Below min_amount
                 'created_at' => now()->subDays(2),
             ]);
 
             WalletTransaction::factory()->create([
-                'amount' => 150000, // Above min_amount
+                'amount'     => 150000, // Above min_amount
                 'created_at' => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'  => $this->dateFrom,
+                'date_to'    => $this->dateTo,
                 'min_amount' => 100000,
             ]);
 
@@ -224,18 +224,18 @@ describe('GenerateComplianceReportAction', function () {
 
         it('generates summary with only max_amount filter', function () {
             WalletTransaction::factory()->create([
-                'amount' => 150000, // Above max_amount
+                'amount'     => 150000, // Above max_amount
                 'created_at' => now()->subDays(2),
             ]);
 
             WalletTransaction::factory()->create([
-                'amount' => 50000, // Below max_amount
+                'amount'     => 50000, // Below max_amount
                 'created_at' => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'  => $this->dateFrom,
+                'date_to'    => $this->dateTo,
                 'max_amount' => 100000,
             ]);
 
@@ -246,26 +246,26 @@ describe('GenerateComplianceReportAction', function () {
 
         it('calculates summary statistics correctly', function () {
             WalletTransaction::factory()->create([
-                'amount' => 100000, // Credit
+                'amount'     => 100000, // Credit
                 'created_at' => now()->subDays(2),
             ]);
 
             WalletTransaction::factory()->create([
-                'amount' => -50000, // Debit
+                'amount'     => -50000, // Debit
                 'created_at' => now()->subDays(2),
             ]);
 
             WalletTransaction::factory()->create([
-                'amount' => 10000000, // Large transaction (>= 5M)
+                'amount'     => 10000000, // Large transaction (>= 5M)
                 'created_at' => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
                 'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_to'   => $this->dateTo,
             ]);
 
-            $result = $this->action->execute($data);
+            $result  = $this->action->execute($data);
             $summary = $result['summary'];
 
             // Basic counts
@@ -286,31 +286,31 @@ describe('GenerateComplianceReportAction', function () {
             $user2 = User::factory()->create();
 
             WalletTransaction::factory()->create([
-                'user_id' => $user1->id,
-                'wallet_id' => $user1->wallet->id,
-                'type' => TransactionTypeEnum::DEPOSIT,
+                'user_id'     => $user1->id,
+                'wallet_id'   => $user1->wallet->id,
+                'type'        => TransactionTypeEnum::DEPOSIT,
                 'source_type' => TransactionSourceEnum::STAFF,
-                'amount' => 100000,
-                'created_at' => now()->subDays(2),
+                'amount'      => 100000,
+                'created_at'  => now()->subDays(2),
             ]);
 
             WalletTransaction::factory()->create([
-                'user_id' => $user2->id,
-                'wallet_id' => $user2->wallet->id,
-                'type' => TransactionTypeEnum::PAYMENT,
+                'user_id'     => $user2->id,
+                'wallet_id'   => $user2->wallet->id,
+                'type'        => TransactionTypeEnum::PAYMENT,
                 'source_type' => TransactionSourceEnum::ORDER,
-                'amount' => -50000,
-                'created_at' => now()->subDays(2),
+                'amount'      => -50000,
+                'created_at'  => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
-                'user_ids' => [$user1->id],
+                'date_from'                    => $this->dateFrom,
+                'date_to'                      => $this->dateTo,
+                'user_ids'                     => [$user1->id],
                 'include_transaction_analysis' => true,
             ]);
 
-            $result = $this->action->execute($data);
+            $result   = $this->action->execute($data);
             $analysis = $result['report_sections']['transaction_analysis'];
 
             expect($analysis)->toHaveKeys(['by_type', 'by_source', 'high_risk_transactions']);
@@ -322,8 +322,8 @@ describe('GenerateComplianceReportAction', function () {
             WalletTransaction::factory()->create([
                 'metadata' => [
                     'audit' => [
-                        'risk_level' => 'high'
-                    ]
+                        'risk_level' => 'high',
+                    ],
                 ],
                 'created_at' => now()->subDays(2),
             ]);
@@ -331,19 +331,19 @@ describe('GenerateComplianceReportAction', function () {
             WalletTransaction::factory()->create([
                 'metadata' => [
                     'audit' => [
-                        'risk_level' => 'low'
-                    ]
+                        'risk_level' => 'low',
+                    ],
                 ],
                 'created_at' => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'                    => $this->dateFrom,
+                'date_to'                      => $this->dateTo,
                 'include_transaction_analysis' => true,
             ]);
 
-            $result = $this->action->execute($data);
+            $result   = $this->action->execute($data);
             $analysis = $result['report_sections']['transaction_analysis'];
 
             expect($analysis['high_risk_transactions'])->toBe(1);
@@ -356,36 +356,36 @@ describe('GenerateComplianceReportAction', function () {
             $admin2 = Staff::factory()->create();
 
             AdminActionLog::factory()->create([
-                'admin_id' => $admin1->id,
-                'action_type' => 'create',
-                'risk_level' => 'high',
+                'admin_id'        => $admin1->id,
+                'action_type'     => 'create',
+                'risk_level'      => 'high',
                 'response_status' => 200,
-                'created_at' => now()->subDays(2),
+                'created_at'      => now()->subDays(2),
             ]);
 
             AdminActionLog::factory()->create([
-                'admin_id' => $admin1->id,
-                'action_type' => 'update',
-                'risk_level' => 'medium',
+                'admin_id'        => $admin1->id,
+                'action_type'     => 'update',
+                'risk_level'      => 'medium',
                 'response_status' => 404,
-                'created_at' => now()->subDays(2),
+                'created_at'      => now()->subDays(2),
             ]);
 
             AdminActionLog::factory()->create([
-                'admin_id' => $admin2->id,
-                'action_type' => 'delete',
-                'risk_level' => 'high',
+                'admin_id'        => $admin2->id,
+                'action_type'     => 'delete',
+                'risk_level'      => 'high',
                 'response_status' => 500,
-                'created_at' => now()->subDays(2),
+                'created_at'      => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'              => $this->dateFrom,
+                'date_to'                => $this->dateTo,
                 'include_admin_activity' => true,
             ]);
 
-            $result = $this->action->execute($data);
+            $result        = $this->action->execute($data);
             $adminActivity = $result['report_sections']['admin_activity'];
 
             expect($adminActivity)->toHaveKeys([
@@ -393,7 +393,7 @@ describe('GenerateComplianceReportAction', function () {
                 'unique_admins',
                 'by_action_type',
                 'by_risk_level',
-                'failed_actions'
+                'failed_actions',
             ]);
 
             expect($adminActivity['total_admin_actions'])->toBe(3);
@@ -409,28 +409,28 @@ describe('GenerateComplianceReportAction', function () {
 
             // Large transaction for user1
             WalletTransaction::factory()->create([
-                'user_id' => $user1->id,
-                'wallet_id' => $user1->wallet->id,
-                'amount' => 60000000, // > 50M
+                'user_id'    => $user1->id,
+                'wallet_id'  => $user1->wallet->id,
+                'amount'     => 60000000, // > 50M
                 'created_at' => now()->subDays(2),
             ]);
 
             // Large transaction for user2
             WalletTransaction::factory()->create([
-                'user_id' => $user2->id,
-                'wallet_id' => $user2->wallet->id,
-                'amount' => 70000000, // > 50M
+                'user_id'    => $user2->id,
+                'wallet_id'  => $user2->wallet->id,
+                'amount'     => 70000000, // > 50M
                 'created_at' => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
-                'user_ids' => [$user1->id],
+                'date_from'                   => $this->dateFrom,
+                'date_to'                     => $this->dateTo,
+                'user_ids'                    => [$user1->id],
                 'include_suspicious_activity' => true,
             ]);
 
-            $result = $this->action->execute($data);
+            $result     = $this->action->execute($data);
             $suspicious = $result['report_sections']['suspicious_activity'];
 
             expect($suspicious['large_transactions'])->toBe(1);
@@ -439,44 +439,44 @@ describe('GenerateComplianceReportAction', function () {
         it('detects various suspicious patterns', function () {
             // Large transaction
             WalletTransaction::factory()->create([
-                'amount' => 60000000, // > 50M
+                'amount'     => 60000000, // > 50M
                 'created_at' => now()->subDays(2),
             ]);
 
             // Off-hours transaction (must be during night hours and >= 5M)
             WalletTransaction::factory()->create([
-                'amount' => 10000000, // >= 5M
+                'amount'     => 10000000, // >= 5M
                 'created_at' => now()->subDays(2)->setTime(2, 0, 0), // 2 AM
             ]);
 
             // Round number transaction (specifically exactly divisible by 1M and >= 1M)
             WalletTransaction::factory()->create([
-                'amount' => 5000000, // Exactly 5M (divisible by 1M)
+                'amount'     => 5000000, // Exactly 5M (divisible by 1M)
                 'created_at' => now()->subDays(2),
             ]);
 
             // Non-round number transactions to test pattern detection
             WalletTransaction::factory()->create([
-                'amount' => 1234567, // Not divisible by 1M
+                'amount'     => 1234567, // Not divisible by 1M
                 'created_at' => now()->subDays(2),
             ]);
 
             // High frequency user transactions
             $user = User::factory()->create();
             WalletTransaction::factory()->count(60)->create([
-                'user_id' => $user->id,
-                'wallet_id' => $user->wallet->id,
-                'amount' => 1234567, // Non-round amounts
+                'user_id'    => $user->id,
+                'wallet_id'  => $user->wallet->id,
+                'amount'     => 1234567, // Non-round amounts
                 'created_at' => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'                   => $this->dateFrom,
+                'date_to'                     => $this->dateTo,
                 'include_suspicious_activity' => true,
             ]);
 
-            $result = $this->action->execute($data);
+            $result     = $this->action->execute($data);
             $suspicious = $result['report_sections']['suspicious_activity'];
 
             expect($suspicious['large_transactions'])->toBe(1);
@@ -496,32 +496,32 @@ describe('GenerateComplianceReportAction', function () {
             $specificDate = Verta::parse($this->dateFrom)->addDays(1)->toCarbon();
 
             WalletTransaction::factory()->create([
-                'user_id' => $user1->id,
+                'user_id'   => $user1->id,
                 'wallet_id' => $user1->wallet->id,
-                'amount' => 100000,
-                'metadata' => [
+                'amount'    => 100000,
+                'metadata'  => [
                     'audit' => [
-                        'is_admin_initiated' => true
-                    ]
+                        'is_admin_initiated' => true,
+                    ],
                 ],
                 'created_at' => $specificDate,
             ]);
 
             WalletTransaction::factory()->create([
-                'user_id' => $user2->id,
-                'wallet_id' => $user2->wallet->id,
-                'amount' => 200000,
+                'user_id'    => $user2->id,
+                'wallet_id'  => $user2->wallet->id,
+                'amount'     => 200000,
                 'created_at' => $specificDate,
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
-                'user_ids' => [$user1->id],
+                'date_from'   => $this->dateFrom,
+                'date_to'     => $this->dateTo,
+                'user_ids'    => [$user1->id],
                 'report_type' => 'daily',
             ]);
 
-            $result = $this->action->execute($data);
+            $result         = $this->action->execute($data);
             $dailyBreakdown = $result['report_sections']['daily_breakdown'];
 
             expect($dailyBreakdown)->toBeArray();
@@ -535,15 +535,15 @@ describe('GenerateComplianceReportAction', function () {
 
         it('covers all days in range', function () {
             $fromDate = Carbon::parse($this->dateFrom);
-            $toDate = Carbon::parse($this->dateTo);
+            $toDate   = Carbon::parse($this->dateTo);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'   => $this->dateFrom,
+                'date_to'     => $this->dateTo,
                 'report_type' => 'daily',
             ]);
 
-            $result = $this->action->execute($data);
+            $result         = $this->action->execute($data);
             $dailyBreakdown = $result['report_sections']['daily_breakdown'];
 
             $expectedDays = $fromDate->diffInDays($toDate) + 1;
@@ -558,22 +558,22 @@ describe('GenerateComplianceReportAction', function () {
 
             // High-risk transaction for user1
             WalletTransaction::factory()->create([
-                'user_id' => $user1->id,
+                'user_id'   => $user1->id,
                 'wallet_id' => $user1->wallet->id,
-                'amount' => 60000000,
-                'metadata' => [
+                'amount'    => 60000000,
+                'metadata'  => [
                     'audit' => [
-                        'risk_level' => 'high'
-                    ]
+                        'risk_level' => 'high',
+                    ],
                 ],
                 'created_at' => now()->subDays(2),
             ]);
 
             // Normal transaction for user2
             WalletTransaction::factory()->create([
-                'user_id' => $user2->id,
-                'wallet_id' => $user2->wallet->id,
-                'amount' => 10000,
+                'user_id'    => $user2->id,
+                'wallet_id'  => $user2->wallet->id,
+                'amount'     => 10000,
                 'created_at' => now()->subDays(2),
             ]);
 
@@ -583,19 +583,19 @@ describe('GenerateComplianceReportAction', function () {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
-                'user_ids' => [$user1->id],
+                'date_from'               => $this->dateFrom,
+                'date_to'                 => $this->dateTo,
+                'user_ids'                => [$user1->id],
                 'include_risk_assessment' => true,
             ]);
 
-            $result = $this->action->execute($data);
+            $result         = $this->action->execute($data);
             $riskAssessment = $result['report_sections']['risk_assessment'];
 
             expect($riskAssessment)->toHaveKeys([
                 'overall_risk_score',
                 'risk_factors',
-                'recommendations'
+                'recommendations',
             ]);
 
             expect($riskAssessment['overall_risk_score'])->toBeInt();
@@ -608,75 +608,75 @@ describe('GenerateComplianceReportAction', function () {
         it('calculates risk factors for various transaction patterns', function () {
             // High amount transaction
             WalletTransaction::factory()->create([
-                'amount' => 60000000, // > 50M
+                'amount'     => 60000000, // > 50M
                 'created_at' => now()->subDays(2),
             ]);
 
             // Off-hours transaction
             WalletTransaction::factory()->create([
-                'amount' => 10000000, // >= 5M
+                'amount'     => 10000000, // >= 5M
                 'created_at' => now()->subDays(2)->setTime(1, 0, 0), // 1 AM (off-hours)
             ]);
 
             // High risk transaction from metadata
             WalletTransaction::factory()->create([
-                'amount' => 1000000,
+                'amount'   => 1000000,
                 'metadata' => [
                     'audit' => [
-                        'risk_level' => 'high'
-                    ]
+                        'risk_level' => 'high',
+                    ],
                 ],
                 'created_at' => now()->subDays(2),
             ]);
 
             // Round number transaction
             WalletTransaction::factory()->create([
-                'amount' => 3000000, // Exactly 3M
+                'amount'     => 3000000, // Exactly 3M
                 'created_at' => now()->subDays(2),
             ]);
 
             // High risk admin action
             AdminActionLog::factory()->create([
-                'risk_level' => 'high',
+                'risk_level'      => 'high',
                 'response_status' => 200,
-                'created_at' => now()->subDays(2),
+                'created_at'      => now()->subDays(2),
             ]);
 
             // Failed admin action
             AdminActionLog::factory()->create([
-                'risk_level' => 'medium',
+                'risk_level'      => 'medium',
                 'response_status' => 500,
-                'created_at' => now()->subDays(2),
+                'created_at'      => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'               => $this->dateFrom,
+                'date_to'                 => $this->dateTo,
                 'include_risk_assessment' => true,
             ]);
 
-            $result = $this->action->execute($data);
+            $result      = $this->action->execute($data);
             $riskFactors = $result['report_sections']['risk_assessment']['risk_factors'];
 
             expect($riskFactors)->toHaveKeys([
                 'transaction_volume_risk',
                 'temporal_risk',
                 'pattern_risk',
-                'admin_activity_risk'
+                'admin_activity_risk',
             ]);
 
             // Check transaction volume risk
             expect($riskFactors['transaction_volume_risk'])->toHaveKeys([
                 'high_amount_transactions',
                 'high_amount_percentage',
-                'risk_level'
+                'risk_level',
             ]);
 
             // Check temporal risk
             expect($riskFactors['temporal_risk'])->toHaveKeys([
                 'off_hours_transactions',
                 'off_hours_percentage',
-                'risk_level'
+                'risk_level',
             ]);
 
             // Check pattern risk
@@ -685,7 +685,7 @@ describe('GenerateComplianceReportAction', function () {
                 'round_number_percentage',
                 'high_risk_transactions',
                 'high_risk_percentage',
-                'risk_level'
+                'risk_level',
             ]);
 
             // Check admin activity risk
@@ -694,7 +694,7 @@ describe('GenerateComplianceReportAction', function () {
                 'high_risk_admin_percentage',
                 'failed_admin_actions',
                 'failed_admin_percentage',
-                'risk_level'
+                'risk_level',
             ]);
         });
     });
@@ -703,28 +703,28 @@ describe('GenerateComplianceReportAction', function () {
         it('calculates overall risk score correctly', function () {
             // Create data that will result in high-risk factors
             WalletTransaction::factory()->count(5)->create([
-                'amount' => 100000000, // All high amount (100M > 50M)
+                'amount'     => 100000000, // All high amount (100M > 50M)
                 'created_at' => now()->subDays(2)->setTime(2, 0, 0), // Off-hours
-                'metadata' => [
+                'metadata'   => [
                     'audit' => [
-                        'risk_level' => 'high'
-                    ]
+                        'risk_level' => 'high',
+                    ],
                 ],
             ]);
 
             AdminActionLog::factory()->count(5)->create([
-                'risk_level' => 'high',
+                'risk_level'      => 'high',
                 'response_status' => 500, // Failed
-                'created_at' => now()->subDays(2),
+                'created_at'      => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'               => $this->dateFrom,
+                'date_to'                 => $this->dateTo,
                 'include_risk_assessment' => true,
             ]);
 
-            $result = $this->action->execute($data);
+            $result           = $this->action->execute($data);
             $overallRiskScore = $result['report_sections']['risk_assessment']['overall_risk_score'];
 
             // With high-risk factors, score should be elevated
@@ -737,28 +737,28 @@ describe('GenerateComplianceReportAction', function () {
         it('generates critical recommendations for high overall risk', function () {
             // Create very high-risk scenario - more realistic approach
             WalletTransaction::factory()->count(5)->create([
-                'amount' => 100000000, // Very high amounts
+                'amount'     => 100000000, // Very high amounts
                 'created_at' => now()->subDays(2)->setTime(2, 0, 0), // Off-hours
-                'metadata' => [
+                'metadata'   => [
                     'audit' => [
-                        'risk_level' => 'high'
-                    ]
+                        'risk_level' => 'high',
+                    ],
                 ],
             ]);
 
             AdminActionLog::factory()->count(5)->create([
-                'risk_level' => 'high',
+                'risk_level'      => 'high',
                 'response_status' => 500,
-                'created_at' => now()->subDays(2),
+                'created_at'      => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'               => $this->dateFrom,
+                'date_to'                 => $this->dateTo,
                 'include_risk_assessment' => true,
             ]);
 
-            $result = $this->action->execute($data);
+            $result          = $this->action->execute($data);
             $recommendations = $result['report_sections']['risk_assessment']['recommendations'];
 
             expect($recommendations)->toBeArray();
@@ -772,22 +772,22 @@ describe('GenerateComplianceReportAction', function () {
         it('generates elevated risk recommendations for medium overall risk', function () {
             // Create medium risk scenario
             WalletTransaction::factory()->count(20)->create([
-                'amount' => 60000000, // Some high amounts
+                'amount'     => 60000000, // Some high amounts
                 'created_at' => now()->subDays(2),
             ]);
 
             WalletTransaction::factory()->count(80)->create([
-                'amount' => 10000, // Mostly small amounts
+                'amount'     => 10000, // Mostly small amounts
                 'created_at' => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'               => $this->dateFrom,
+                'date_to'                 => $this->dateTo,
                 'include_risk_assessment' => true,
             ]);
 
-            $result = $this->action->execute($data);
+            $result          = $this->action->execute($data);
             $recommendations = $result['report_sections']['risk_assessment']['recommendations'];
 
             expect($recommendations)->toBeArray();
@@ -796,19 +796,19 @@ describe('GenerateComplianceReportAction', function () {
         it('generates specific recommendations based on risk factor types', function () {
             // High transaction volume risk
             WalletTransaction::factory()->count(3)->create([
-                'amount' => 80000000,
+                'amount'     => 80000000,
                 'created_at' => now()->subDays(2),
             ]);
 
             // High temporal risk
             WalletTransaction::factory()->count(6)->create([
-                'amount' => 10000000,
+                'amount'     => 10000000,
                 'created_at' => now()->subDays(2)->setTime(3, 0, 0),
             ]);
 
             // High pattern risk
             WalletTransaction::factory()->count(5)->create([
-                'amount' => 5000000, // Round numbers
+                'amount'     => 5000000, // Round numbers
                 'created_at' => now()->subDays(2),
             ]);
 
@@ -819,12 +819,12 @@ describe('GenerateComplianceReportAction', function () {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'               => $this->dateFrom,
+                'date_to'                 => $this->dateTo,
                 'include_risk_assessment' => true,
             ]);
 
-            $result = $this->action->execute($data);
+            $result          = $this->action->execute($data);
             $recommendations = $result['report_sections']['risk_assessment']['recommendations'];
 
             expect($recommendations)->toBeArray();
@@ -839,23 +839,23 @@ describe('GenerateComplianceReportAction', function () {
         it('generates default recommendation when no specific risks are detected', function () {
             // Create only low-risk data
             WalletTransaction::factory()->count(10)->create([
-                'amount' => 10000, // Small amounts
+                'amount'     => 10000, // Small amounts
                 'created_at' => now()->subDays(2),
             ]);
 
             AdminActionLog::factory()->count(2)->create([
-                'risk_level' => 'low',
+                'risk_level'      => 'low',
                 'response_status' => 200,
-                'created_at' => now()->subDays(2),
+                'created_at'      => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'               => $this->dateFrom,
+                'date_to'                 => $this->dateTo,
                 'include_risk_assessment' => true,
             ]);
 
-            $result = $this->action->execute($data);
+            $result          = $this->action->execute($data);
             $recommendations = $result['report_sections']['risk_assessment']['recommendations'];
 
             expect($recommendations)->toBeArray();
@@ -873,17 +873,17 @@ describe('GenerateComplianceReportAction', function () {
 
             // Test high-risk scenario
             WalletTransaction::factory()->count(20)->create([
-                'amount' => 80000000, // High amounts that should trigger high risk
+                'amount'     => 80000000, // High amounts that should trigger high risk
                 'created_at' => now()->subDays(2),
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'               => $this->dateFrom,
+                'date_to'                 => $this->dateTo,
                 'include_risk_assessment' => true,
             ]);
 
-            $result = $this->action->execute($data);
+            $result    = $this->action->execute($data);
             $riskLevel = $result['report_sections']['risk_assessment']['risk_factors']['transaction_volume_risk']['risk_level'];
 
             // With 100% high-amount transactions, this should be high risk
@@ -894,11 +894,11 @@ describe('GenerateComplianceReportAction', function () {
 
             // Test low-risk scenario
             WalletTransaction::factory()->count(100)->create([
-                'amount' => 10000, // Small amounts
+                'amount'     => 10000, // Small amounts
                 'created_at' => now()->subDays(2),
             ]);
 
-            $result2 = $this->action->execute($data);
+            $result2    = $this->action->execute($data);
             $riskLevel2 = $result2['report_sections']['risk_assessment']['risk_factors']['transaction_volume_risk']['risk_level'];
 
             expect($riskLevel2)->toBe('low');
@@ -908,13 +908,13 @@ describe('GenerateComplianceReportAction', function () {
     describe('edge cases and boundary conditions', function () {
         it('handles empty data gracefully', function () {
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to' => $this->dateTo,
+                'date_from'                    => $this->dateFrom,
+                'date_to'                      => $this->dateTo,
                 'include_transaction_analysis' => true,
-                'include_admin_activity' => true,
-                'include_suspicious_activity' => true,
-                'include_risk_assessment' => true,
-                'report_type' => 'daily',
+                'include_admin_activity'       => true,
+                'include_suspicious_activity'  => true,
+                'include_risk_assessment'      => true,
+                'report_type'                  => 'daily',
             ]);
 
             $result = $this->action->execute($data);
@@ -927,15 +927,15 @@ describe('GenerateComplianceReportAction', function () {
 
         it('handles single day date range', function () {
             $singleDateJalali = verta()->format('Y-m-d'); // Use Jalali date for request data
-            $singleCarbon = now();
+            $singleCarbon     = now();
 
             WalletTransaction::factory()->create([
                 'created_at' => $singleCarbon,
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $singleDateJalali,
-                'date_to' => $singleDateJalali,
+                'date_from'   => $singleDateJalali,
+                'date_to'     => $singleDateJalali,
                 'report_type' => 'daily',
             ]);
 

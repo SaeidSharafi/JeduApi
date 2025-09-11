@@ -5,10 +5,8 @@ declare(strict_types=1);
 use App\Data\OtpManager\OtpDto;
 use App\Enums\OtpType;
 use App\Models\User;
-
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
-
 
 beforeEach(function (): void {
     $minOtpCode           = config('otp.code_min');

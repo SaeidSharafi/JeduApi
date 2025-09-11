@@ -23,9 +23,8 @@ use Illuminate\Validation\ValidationException;
 final class WalletPaymentProcessor implements PaymentProcessorContract
 {
     public function __construct(
-        protected RecordWalletTransactionAction $recordWalletTransactionAction
-    ) {
-    }
+        private RecordWalletTransactionAction $recordWalletTransactionAction
+    ) {}
 
     public function canHandle(PaymentMethodEnum $paymentMethod): bool
     {
@@ -58,8 +57,7 @@ final class WalletPaymentProcessor implements PaymentProcessorContract
             amount: $amountToPay * -1,
             source_type: TransactionSourceEnum::ORDER,
             source_id: $order->id,
-            description: $walletData->description ??
-            __('messages.wallet.payment_for_order', ['order_id' => $order->increment_id]),
+            description: $walletData->description ?? __('messages.wallet.payment_for_order', ['order_id' => $order->increment_id]),
             metadata: ['order_id' => $order->id]
         );
 
@@ -73,7 +71,7 @@ final class WalletPaymentProcessor implements PaymentProcessorContract
             'method'      => PaymentMethodEnum::WALLET->value,
             'status'      => PaymentStatusEnum::COMPLETED->value, // Wallet payments are instant
             'admin_notes' => $paymentData->admin_notes,
-            'data'        => []
+            'data'        => [],
         ]);
 
         // Dispatch completion event for wallet payments (they're always completed)

@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Actions\Admin\Payment\CreatePaymentAction;
 use App\Services\Payment\BankTransferPaymentProcessor;
 use App\Services\Payment\PaymentProcessorFactory;
 use App\Services\Payment\WalletPaymentProcessor;
 use Illuminate\Support\ServiceProvider;
 
-class PaymentServiceProvider extends ServiceProvider
+final class PaymentServiceProvider extends ServiceProvider
 {
-
     public const PAYMENT_PROCESSOR_TAG = 'payment.processors';
+
     /**
      * Register services.
      */

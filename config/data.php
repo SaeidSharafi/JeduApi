@@ -8,7 +8,7 @@ return [
      * is an array, it will try to convert from the first format that works,
      * and will serialize dates using the first format from the array.
      */
-    'date_format'        => ['c','Y-m-d H:i:s'],
+    'date_format'        => ['c', 'Y-m-d H:i:s'],
     'date_output_format' => 'Y-m-d H:i:s',
 
     /*
@@ -39,7 +39,7 @@ return [
      * types.
      */
     'transformers' => [
-        DateTimeInterface::class                      => \App\Data\Transformer\AdvancedDateTimeInterfaceTransformer::class,
+        DateTimeInterface::class                      => App\Data\Transformer\AdvancedDateTimeInterfaceTransformer::class,
         Illuminate\Contracts\Support\Arrayable::class => Spatie\LaravelData\Transformers\ArrayableTransformer::class,
         BackedEnum::class                             => Spatie\LaravelData\Transformers\EnumTransformer::class,
     ],
@@ -49,7 +49,7 @@ return [
      * object from simple types.
      */
     'casts' => [
-        DateTimeInterface::class => \App\Data\Casts\AdvancedDateTimeInterfaceCast::class,
+        DateTimeInterface::class => App\Data\Casts\AdvancedDateTimeInterfaceCast::class,
         BackedEnum::class        => Spatie\LaravelData\Casts\EnumCast::class,
         //        Enumerable::class => Spatie\LaravelData\Casts\EnumerableCast::class,
     ],

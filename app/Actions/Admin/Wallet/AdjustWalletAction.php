@@ -11,8 +11,9 @@ use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\Staff;
 use App\Models\Wallet;
+use Exception;
 
-readonly class AdjustWalletAction
+final readonly class AdjustWalletAction
 {
     public function __construct(
         private RecordWalletTransactionAction $recordTransactionAction
@@ -22,17 +23,17 @@ readonly class AdjustWalletAction
      * Adjust wallet balance for dispute resolution or error correction.
      * Can be positive (credit) or negative (debit).
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function handle(AdjustWalletData $data,Staff $staff, Wallet $wallet): \App\Models\WalletTransaction
+    public function handle(AdjustWalletData $data, Staff $staff, Wallet $wallet): \App\Models\WalletTransaction
     {
-        if (!$wallet->isActive()) {
-            throw new \Exception(__('validation.custom.wallet_not_active'));
+        if (! $wallet->isActive()) {
+            throw new Exception(__('validation.custom.wallet_not_active'));
         }
 
         // For negative adjustments, check if there's sufficient balance
-        if ($data->amount < 0 && !$wallet->canWithdraw(abs($data->amount))) {
-            throw new \Exception(__('validation.custom.insufficient_balance'));
+        if ($data->amount < 0 && ! $wallet->canWithdraw(abs($data->amount))) {
+            throw new Exception(__('validation.custom.insufficient_balance'));
         }
 
         $description = $data->description;
@@ -45,7 +46,7 @@ readonly class AdjustWalletAction
             source_id: $staff->id,
             description: $description,
             metadata: array_merge($data->metadata ?? [], [
-                'reason' => $data->reason,
+                'reason'          => $data->reason,
                 'adjustment_type' => $data->amount > 0 ? 'credit' : 'debit',
             ]),
         ));

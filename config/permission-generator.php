@@ -15,7 +15,7 @@ return [
      */
     'output_enum' => app_path('Enums/PermissionEnum.php'),
 
-    'enum_class'               => 'App\\Enums\\PermissionEnum', // Default Enum class
+    'enum_class' => 'App\\Enums\\PermissionEnum', // Default Enum class
 
     /**
      * Define Resources and Their Permissions.
@@ -53,8 +53,8 @@ return [
      *      `MyActionEnum::APPROVE_SCOPED = 'approve_scoped'`, the generator will only
      *      create the single permission `resource.approve_scoped`.
      */
-    'resources'                => [
-        'course'                  => [
+    'resources' => [
+        'course' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
@@ -62,7 +62,7 @@ return [
             PermissionAction::DELETE,
             PermissionAction::DELETE_OWN,
         ],
-        'category'                => [
+        'category' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
@@ -70,7 +70,7 @@ return [
             PermissionAction::DELETE,
             PermissionAction::DELETE_OWN,
         ],
-        'file'                    => [
+        'file' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
@@ -78,7 +78,7 @@ return [
             PermissionAction::DELETE,
             PermissionAction::DELETE_OWN,
         ],
-        'seminar'                 => [
+        'seminar' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
@@ -86,7 +86,7 @@ return [
             PermissionAction::DELETE,
             PermissionAction::DELETE_OWN,
         ],
-        'staff'                   => [
+        'staff' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
@@ -94,40 +94,40 @@ return [
             'manage_roles',
             'impersonate',
         ],
-        'role'                    => [
+        'role' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
-            'wallet'                  => [
-                PermissionAction::VIEW_SCOPED,
-                PermissionAction::CREATE,
-                PermissionAction::UPDATE,
-                PermissionAction::DELETE,
-                'deposit',
-                'withdrawal',
-                'adjustment',
-            ],
-        'teacher'                 => [
+        'wallet' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::DELETE,
+            'deposit',
+            'withdrawal',
+            'adjustment',
+        ],
+        'teacher' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
-        'vendor'                  => [
+        'vendor' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
-        'term'                    => [
+        'term' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
-        'product'                 => [
+        'product' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
@@ -139,38 +139,38 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
-        'user'                    => [
+        'user' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
-        'order'                   => [
+        'order' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
-        'payment'                 => [
+        'payment' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
-        'enrolment'               => [
+        'enrolment' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
-        'refund'                  => [
+        'refund' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
             'update_status', // Custom String:   refunds.update_status
         ],
-        'discount'                => [
+        'discount' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
@@ -189,7 +189,7 @@ return [
             'compliance_reports_view',
             'suspicious_activity_view',
         ],
-        'setting'                 => [
+        'setting' => [
             PermissionAction::VIEW_ANY,
             PermissionAction::UPDATE,
         ],
@@ -214,7 +214,7 @@ return [
      * Define Custom Permissions (Standalone).
      * (Same description and commented-out examples as before)
      */
-    'custom_permissions'       => [
+    'custom_permissions' => [
         /* Example:
         'ACCESS_ADMIN_DASHBOARD' => 'staff.dashboard.access',
         'VIEW_AUDIT_LOGS'        => 'system.audit.view',
@@ -226,7 +226,7 @@ return [
      * Super Admin Role Name.
      * (Same description as before)
      */
-    'super_admin_role'         => 'super-admin',
+    'super_admin_role' => 'super-admin',
 
     /**
      * Remove Stale Permissions.

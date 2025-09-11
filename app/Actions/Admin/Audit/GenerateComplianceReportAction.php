@@ -11,21 +11,21 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-class GenerateComplianceReportAction
+final class GenerateComplianceReportAction
 {
     public function execute(ComplianceReportRequestData $data): array
     {
         $report = [
             'report_period' => [
                 'from' => verta($data->date_from)->format('Y-m-d'),
-                'to' => verta($data->date_to)->format('Y-m-d'),
+                'to'   => verta($data->date_to)->format('Y-m-d'),
                 'type' => $data->report_type,
             ],
-            'summary' => $this->generateSummary($data),
+            'summary'              => $this->generateSummary($data),
             'transaction_analysis' => $this->generateTransactionAnalysis($data),
         ];
 
-        if ($data->include_transaction_analysis){
+        if ($data->include_transaction_analysis) {
             $report['report_sections']['transaction_analysis'] = $this->generateTransactionAnalysis($data);
         }
         if ($data->include_admin_activity) {
@@ -70,16 +70,17 @@ class GenerateComplianceReportAction
                 }
             });
         }
+
         return [
-            'total_transactions' => $query->clone()->count(),
-            'total_volume_rial' => $query->clone()->sum('amount'),
-            'unique_users' => $query->clone()->distinct('user_id')->count(),
-            'credits_count' => $query->clone()->where('amount', '>', 0)->count(),
-            'debits_count' => $query->clone()->where('amount', '<', 0)->count(),
-            'credits_volume' => $query->clone()->where('amount', '>', 0)->sum('amount'),
-            'debits_volume' => abs((int)$query->clone()->where('amount', '<', 0)->sum('amount')),
+            'total_transactions'       => $query->clone()->count(),
+            'total_volume_rial'        => $query->clone()->sum('amount'),
+            'unique_users'             => $query->clone()->distinct('user_id')->count(),
+            'credits_count'            => $query->clone()->where('amount', '>', 0)->count(),
+            'debits_count'             => $query->clone()->where('amount', '<', 0)->count(),
+            'credits_volume'           => $query->clone()->where('amount', '>', 0)->sum('amount'),
+            'debits_volume'            => abs((int) $query->clone()->where('amount', '<', 0)->sum('amount')),
             'large_transactions_count' => $query->clone()->where(DB::raw('ABS(amount)'), '>=', 5000000)->count(),
-            'avg_transaction_amount' => $query->clone()->avg(DB::raw('ABS(amount)')),
+            'avg_transaction_amount'   => $query->clone()->avg(DB::raw('ABS(amount)')),
         ];
     }
 
@@ -99,7 +100,7 @@ class GenerateComplianceReportAction
             ->get()
             ->mapWithKeys(function ($item) {
                 return [$item->type->value => [
-                    'count' => $item->count,
+                    'count'  => $item->count,
                     'volume' => $item->volume,
                 ]];
             });
@@ -111,7 +112,7 @@ class GenerateComplianceReportAction
             ->get()
             ->mapWithKeys(function ($item) {
                 return [$item->source_type->value => [
-                    'count' => $item->count,
+                    'count'  => $item->count,
                     'volume' => $item->volume,
                 ]];
             });
@@ -122,8 +123,8 @@ class GenerateComplianceReportAction
             ->count();
 
         return [
-            'by_type' => $typeBreakdown->toArray(),
-            'by_source' => $sourceBreakdown->toArray(),
+            'by_type'                => $typeBreakdown->toArray(),
+            'by_source'              => $sourceBreakdown->toArray(),
             'high_risk_transactions' => $highRiskCount,
         ];
     }
@@ -135,15 +136,15 @@ class GenerateComplianceReportAction
 
         return [
             'total_admin_actions' => $query->count(),
-            'unique_admins' => $query->distinct('admin_id')->count(),
-            'by_action_type' => $query->clone()
+            'unique_admins'       => $query->distinct('admin_id')->count(),
+            'by_action_type'      => $query->clone()
                 ->select('action_type', DB::raw('COUNT(*) as count'))
-                ->groupBy('action_type','admin_id')
+                ->groupBy('action_type', 'admin_id')
                 ->pluck('count', 'action_type')
                 ->toArray(),
             'by_risk_level' => $query->clone()
                 ->select('risk_level', DB::raw('COUNT(*) as count'))
-                ->groupBy('risk_level','admin_id')
+                ->groupBy('risk_level', 'admin_id')
                 ->pluck('count', 'risk_level')
                 ->toArray(),
             'failed_actions' => $query->clone()
@@ -168,7 +169,7 @@ class GenerateComplianceReportAction
             'off_hours_transactions' => $query->clone()
                 ->where(function ($q) {
                     $q->whereTime('created_at', '<', '06:00:00')
-                      ->orWhereTime('created_at', '>', '22:00:00');
+                        ->orWhereTime('created_at', '>', '22:00:00');
                 })
                 ->where(DB::raw('ABS(amount)'), '>=', 5000000)
                 ->count(),
@@ -187,11 +188,11 @@ class GenerateComplianceReportAction
     private function generateDailyBreakdown(ComplianceReportRequestData $data): array
     {
         $breakdown = [];
-        $current = $data->date_from->clone();
+        $current   = $data->date_from->clone();
 
         while ($current->lte($data->date_to)) {
             $dayStart = $current->clone()->startOfDay();
-            $dayEnd = $current->clone()->endOfDay();
+            $dayEnd   = $current->clone()->endOfDay();
 
             $dayQuery = WalletTransaction::query()
                 ->whereBetween('created_at', [$dayStart, $dayEnd]);
@@ -202,9 +203,9 @@ class GenerateComplianceReportAction
 
             $breakdown[verta($current)->format('Y-m-d')] = [
                 'total_transactions' => $dayQuery->count(),
-                'total_volume' => $dayQuery->sum(DB::raw('ABS(amount)')),
-                'unique_users' => $dayQuery->distinct('user_id')->count(),
-                'admin_initiated' => $dayQuery->whereJsonContains('metadata->audit->is_admin_initiated', true)->count(),
+                'total_volume'       => $dayQuery->sum(DB::raw('ABS(amount)')),
+                'unique_users'       => $dayQuery->distinct('user_id')->count(),
+                'admin_initiated'    => $dayQuery->whereJsonContains('metadata->audit->is_admin_initiated', true)->count(),
             ];
 
             $current->addDay();
@@ -236,8 +237,8 @@ class GenerateComplianceReportAction
 
         return [
             'overall_risk_score' => $overallRiskScore,
-            'risk_factors' => $riskFactors,
-            'recommendations' => $recommendations,
+            'risk_factors'       => $riskFactors,
+            'recommendations'    => $recommendations,
         ];
     }
 
@@ -253,12 +254,12 @@ class GenerateComplianceReportAction
 
         $offHoursTransactions = $transactions->filter(function ($tx) {
             $hour = Carbon::parse($tx->created_at)->hour;
+
             return ($hour < 6 || $hour > 22) && abs($tx->amount) >= 5000000;
         })->count();
 
         $highRiskTransactions = $transactions->filter(function ($tx) {
-            return isset($tx->metadata['audit']['risk_level']) &&
-                   $tx->metadata['audit']['risk_level'] === 'high';
+            return isset($tx->metadata['audit']['risk_level']) && $tx->metadata['audit']['risk_level'] === 'high';
         })->count();
 
         $roundNumberTransactions = $transactions->filter(function ($tx) {
@@ -275,57 +276,57 @@ class GenerateComplianceReportAction
         })->count();
 
         // Calculate risk percentages
-        $highAmountPercentage = $totalTransactions > 0 ? ($highAmountTransactions / $totalTransactions) * 100 : 0;
-        $offHoursPercentage = $totalTransactions > 0 ? ($offHoursTransactions / $totalTransactions) * 100 : 0;
-        $highRiskPercentage = $totalTransactions > 0 ? ($highRiskTransactions / $totalTransactions) * 100 : 0;
-        $roundNumberPercentage = $totalTransactions > 0 ? ($roundNumberTransactions / $totalTransactions) * 100 : 0;
-        $highRiskAdminPercentage = $totalAdminActions > 0 ? ($highRiskAdminActions / $totalAdminActions) * 100 : 0;
-        $failedAdminPercentage = $totalAdminActions > 0 ? ($failedAdminActions / $totalAdminActions) * 100 : 0;
+        $highAmountPercentage    = $totalTransactions > 0 ? ($highAmountTransactions / $totalTransactions)   * 100 : 0;
+        $offHoursPercentage      = $totalTransactions > 0 ? ($offHoursTransactions / $totalTransactions)       * 100 : 0;
+        $highRiskPercentage      = $totalTransactions > 0 ? ($highRiskTransactions / $totalTransactions)       * 100 : 0;
+        $roundNumberPercentage   = $totalTransactions > 0 ? ($roundNumberTransactions / $totalTransactions) * 100 : 0;
+        $highRiskAdminPercentage = $totalAdminActions > 0 ? ($highRiskAdminActions / $totalAdminActions)  * 100 : 0;
+        $failedAdminPercentage   = $totalAdminActions > 0 ? ($failedAdminActions / $totalAdminActions)      * 100 : 0;
 
         return [
             'transaction_volume_risk' => [
                 'high_amount_transactions' => $highAmountTransactions,
-                'high_amount_percentage' => round($highAmountPercentage, 2),
-                'risk_level' => $this->getRiskLevel($highAmountPercentage, [5, 15]),
+                'high_amount_percentage'   => round($highAmountPercentage, 2),
+                'risk_level'               => $this->getRiskLevel($highAmountPercentage, [5, 15]),
             ],
             'temporal_risk' => [
                 'off_hours_transactions' => $offHoursTransactions,
-                'off_hours_percentage' => round($offHoursPercentage, 2),
-                'risk_level' => $this->getRiskLevel($offHoursPercentage, [10, 25]),
+                'off_hours_percentage'   => round($offHoursPercentage, 2),
+                'risk_level'             => $this->getRiskLevel($offHoursPercentage, [10, 25]),
             ],
             'pattern_risk' => [
                 'round_number_transactions' => $roundNumberTransactions,
-                'round_number_percentage' => round($roundNumberPercentage, 2),
-                'high_risk_transactions' => $highRiskTransactions,
-                'high_risk_percentage' => round($highRiskPercentage, 2),
-                'risk_level' => $this->getRiskLevel(max($roundNumberPercentage, $highRiskPercentage), [8, 20]),
+                'round_number_percentage'   => round($roundNumberPercentage, 2),
+                'high_risk_transactions'    => $highRiskTransactions,
+                'high_risk_percentage'      => round($highRiskPercentage, 2),
+                'risk_level'                => $this->getRiskLevel(max($roundNumberPercentage, $highRiskPercentage), [8, 20]),
             ],
             'admin_activity_risk' => [
-                'high_risk_admin_actions' => $highRiskAdminActions,
+                'high_risk_admin_actions'    => $highRiskAdminActions,
                 'high_risk_admin_percentage' => round($highRiskAdminPercentage, 2),
-                'failed_admin_actions' => $failedAdminActions,
-                'failed_admin_percentage' => round($failedAdminPercentage, 2),
-                'risk_level' => $this->getRiskLevel(max($highRiskAdminPercentage, $failedAdminPercentage), [3, 10]),
+                'failed_admin_actions'       => $failedAdminActions,
+                'failed_admin_percentage'    => round($failedAdminPercentage, 2),
+                'risk_level'                 => $this->getRiskLevel(max($highRiskAdminPercentage, $failedAdminPercentage), [3, 10]),
             ],
         ];
     }
 
     private function calculateOverallRiskScore(array $riskFactors): int
     {
-        $score = 0;
+        $score   = 0;
         $weights = [
             'transaction_volume_risk' => 30,
-            'temporal_risk' => 20,
-            'pattern_risk' => 25,
-            'admin_activity_risk' => 25,
+            'temporal_risk'           => 20,
+            'pattern_risk'            => 25,
+            'admin_activity_risk'     => 25,
         ];
 
         foreach ($riskFactors as $category => $data) {
-            $riskLevel = $data['risk_level'];
+            $riskLevel     = $data['risk_level'];
             $categoryScore = match ($riskLevel) {
-                'high' => 80,
+                'high'   => 80,
                 'medium' => 50,
-                'low' => 20,
+                'low'    => 20,
                 // @codeCoverageIgnoreStart
                 default => 0,
                 // @codeCoverageIgnoreEnd
@@ -346,15 +347,15 @@ class GenerateComplianceReportAction
             $recommendations[] = [
                 'priority' => 'critical',
                 'category' => 'overall',
-                'message' => __('messages.audit.recommendations.critical_risk_level'),
-                'action' => 'immediate_review_required',
+                'message'  => __('messages.audit.recommendations.critical_risk_level'),
+                'action'   => 'immediate_review_required',
             ];
         } elseif ($overallRiskScore >= 50) {
             $recommendations[] = [
                 'priority' => 'high',
                 'category' => 'overall',
-                'message' => __('messages.audit.recommendations.elevated_risk_level'),
-                'action' => 'enhanced_monitoring_recommended',
+                'message'  => __('messages.audit.recommendations.elevated_risk_level'),
+                'action'   => 'enhanced_monitoring_recommended',
             ];
         }
 
@@ -363,8 +364,8 @@ class GenerateComplianceReportAction
             $recommendations[] = [
                 'priority' => 'high',
                 'category' => 'transaction_volume',
-                'message' => __('messages.audit.recommendations.high_volume_transactions'),
-                'action' => 'review_large_transactions',
+                'message'  => __('messages.audit.recommendations.high_volume_transactions'),
+                'action'   => 'review_large_transactions',
             ];
         }
 
@@ -372,8 +373,8 @@ class GenerateComplianceReportAction
             $recommendations[] = [
                 'priority' => 'medium',
                 'category' => 'temporal',
-                'message' => __('messages.audit.recommendations.off_hours_activity'),
-                'action' => 'investigate_off_hours_patterns',
+                'message'  => __('messages.audit.recommendations.off_hours_activity'),
+                'action'   => 'investigate_off_hours_patterns',
             ];
         }
 
@@ -381,8 +382,8 @@ class GenerateComplianceReportAction
             $recommendations[] = [
                 'priority' => 'high',
                 'category' => 'pattern',
-                'message' => __('messages.audit.recommendations.suspicious_patterns'),
-                'action' => 'analyze_transaction_patterns',
+                'message'  => __('messages.audit.recommendations.suspicious_patterns'),
+                'action'   => 'analyze_transaction_patterns',
             ];
         }
 
@@ -390,8 +391,8 @@ class GenerateComplianceReportAction
             $recommendations[] = [
                 'priority' => 'high',
                 'category' => 'admin_activity',
-                'message' => __('messages.audit.recommendations.admin_activity_concerns'),
-                'action' => 'review_admin_permissions',
+                'message'  => __('messages.audit.recommendations.admin_activity_concerns'),
+                'action'   => 'review_admin_permissions',
             ];
         }
 
@@ -400,8 +401,8 @@ class GenerateComplianceReportAction
             $recommendations[] = [
                 'priority' => 'low',
                 'category' => 'overall',
-                'message' => __('messages.audit.recommendations.maintain_monitoring'),
-                'action' => 'continue_regular_monitoring',
+                'message'  => __('messages.audit.recommendations.maintain_monitoring'),
+                'action'   => 'continue_regular_monitoring',
             ];
         }
 
@@ -414,7 +415,8 @@ class GenerateComplianceReportAction
 
         if ($percentage >= $highThreshold) {
             return 'high';
-        } elseif ($percentage >= $mediumThreshold) {
+        }
+        if ($percentage >= $mediumThreshold) {
             return 'medium';
         }
 

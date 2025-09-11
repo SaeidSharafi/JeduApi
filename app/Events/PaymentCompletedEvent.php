@@ -1,16 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Events;
 
 use App\Models\Payment;
 use Illuminate\Foundation\Events\Dispatchable;
 
-class PaymentCompletedEvent
+final class PaymentCompletedEvent
 {
     use Dispatchable;
 
-    public function __construct(public readonly Payment $payment)
-    {
-
-    }
+    public function __construct(public readonly Payment $payment) {}
 }

@@ -1,13 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Admin\Payment;
 
 use App\Data\Transformer\CarbonFromJalaliString;
-use Carbon\Carbon;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 
-class BankTransferPaymentData extends Data
+final class BankTransferPaymentData extends Data
 {
     public function __construct(
         public ?string $transaction_id,
@@ -15,7 +16,5 @@ class BankTransferPaymentData extends Data
         public ?string $transaction_date,
         public ?string $sender_name,
         public ?string $notes,
-    )
-    {
-    }
+    ) {}
 }

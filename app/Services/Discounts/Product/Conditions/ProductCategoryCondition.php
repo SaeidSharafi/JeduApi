@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services\Discounts\Product\Conditions;
@@ -28,7 +29,7 @@ final class ProductCategoryCondition implements ProductDiscountConditionContract
         }
 
         $productId = $option->product->id;
-        if (!$productId) {
+        if (! $productId) {
             return false;
         }
 

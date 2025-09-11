@@ -55,6 +55,5 @@ it('return morph map correctly', function () {
         ->toHaveKey('product', App\Models\Product::class)
         ->toHaveKey('user', App\Models\User::class)
         ->toHaveKey('order', App\Models\Order::class)
-        ->toHaveKey('refund', App\Models\Refund::class)
-    ;
+        ->toHaveKey('refund', App\Models\Refund::class);
 });

@@ -2,32 +2,31 @@
 
 declare(strict_types=1);
 
+use App\Enums\PermissionEnum;
 use App\Models\AdminActionLog;
 use App\Models\Staff;
 use App\Models\User;
 use App\Models\WalletTransaction;
-use App\Enums\PermissionEnum;
-use App\Enums\Wallet\TransactionTypeEnum;
-
-use Tests\AuthTestTrait;
 use Carbon\Carbon;
-use \Hekmatinasser\Verta\Facades\Verta;
+use Hekmatinasser\Verta\Facades\Verta;
+use Tests\AuthTestTrait;
+
 uses(AuthTestTrait::class);
 
 describe('SuspiciousActivityController', function () {
 
     beforeEach(function () {
-        $this->admin = Staff::factory()->create();
-        $this->baseUrl = '/api/v1/admin/audit/suspicious-activity';
+        $this->admin    = Staff::factory()->create();
+        $this->baseUrl  = '/api/v1/admin/audit/suspicious-activity';
         $this->dateFrom = verta()->subMonth()->format('Y-m-d');
-        $this->dateTo = verta()->format('Y-m-d');
+        $this->dateTo   = verta()->format('Y-m-d');
     });
 
     it('can detect suspicious activity with proper permissions', function () {
         // Create suspicious transaction (large amount)
         WalletTransaction::factory()->create([
             'amount'     => 60000000, // 60M IRR - above default threshold
-            'created_at' => now()->subDays(5)
+            'created_at' => now()->subDays(5),
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
@@ -49,8 +48,8 @@ describe('SuspiciousActivityController', function () {
                 'detection_period',
                 'detection_criteria',
                 'suspicious_activities',
-                'summary'
-            ]
+                'summary',
+            ],
         ]);
     });
 
@@ -122,12 +121,12 @@ describe('SuspiciousActivityController', function () {
     it('detects large amount transactions', function () {
         $largeTransaction = WalletTransaction::factory()->create([
             'amount'     => 60000000, // 60M IRR
-            'created_at' => now()->subDays(3)
+            'created_at' => now()->subDays(3),
         ]);
 
         $normalTransaction = WalletTransaction::factory()->create([
             'amount'     => 1000000, // 1M IRR
-            'created_at' => now()->subDays(2)
+            'created_at' => now()->subDays(2),
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
@@ -151,12 +150,12 @@ describe('SuspiciousActivityController', function () {
 
         $offHoursTransaction = WalletTransaction::factory()->create([
             'amount'     => 5000000,
-            'created_at' => Carbon::create(2025, 1, 15, 2, 0, 0) // 2 AM
+            'created_at' => Carbon::create(2025, 1, 15, 2, 0, 0), // 2 AM
         ]);
 
         $normalHoursTransaction = WalletTransaction::factory()->create([
             'amount'     => 5000000,
-            'created_at' => Carbon::create(2025, 1, 15, 10, 0, 0) // 10 AM
+            'created_at' => Carbon::create(2025, 1, 15, 10, 0, 0), // 10 AM
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
@@ -183,13 +182,13 @@ describe('SuspiciousActivityController', function () {
         WalletTransaction::factory()->count(15)->create([
             'user_id'    => $highFreqUser->id,
             'amount'     => 1000000,
-            'created_at' => now()->subDays(2)
+            'created_at' => now()->subDays(2),
         ]);
 
         // Create 5 transactions for normal user
         WalletTransaction::factory()->count(5)->create([
             'amount'     => 1000000,
-            'created_at' => now()->subDays(2)
+            'created_at' => now()->subDays(2),
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
@@ -212,17 +211,17 @@ describe('SuspiciousActivityController', function () {
     it('detects round number patterns', function () {
         $roundTransaction1 = WalletTransaction::factory()->create([
             'amount'     => 10000000, // 10M - round number
-            'created_at' => now()->subDays(3)
+            'created_at' => now()->subDays(3),
         ]);
 
         $roundTransaction2 = WalletTransaction::factory()->create([
             'amount'     => 5000000, // 5M - round number
-            'created_at' => now()->subDays(2)
+            'created_at' => now()->subDays(2),
         ]);
 
         $nonRoundTransaction = WalletTransaction::factory()->create([
             'amount'     => 1234567, // Not round
-            'created_at' => now()->subDays(1)
+            'created_at' => now()->subDays(1),
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
@@ -240,26 +239,26 @@ describe('SuspiciousActivityController', function () {
     });
 
     it('includes rapid succession detection automatically', function () {
-        $user = User::factory()->create();
+        $user     = User::factory()->create();
         $baseTime = now()->subHours(2);
 
         // Create rapid succession transactions
         WalletTransaction::factory()->create([
             'user_id'    => $user->id,
             'amount'     => 2000000,
-            'created_at' => $baseTime
+            'created_at' => $baseTime,
         ]);
 
         WalletTransaction::factory()->create([
             'user_id'    => $user->id,
             'amount'     => 2000000,
-            'created_at' => $baseTime->copy()->addMinutes(2)
+            'created_at' => $baseTime->copy()->addMinutes(2),
         ]);
 
         WalletTransaction::factory()->create([
             'user_id'    => $user->id,
             'amount'     => 2000000,
-            'created_at' => $baseTime->copy()->addMinutes(4)
+            'created_at' => $baseTime->copy()->addMinutes(4),
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
@@ -281,7 +280,7 @@ describe('SuspiciousActivityController', function () {
         AdminActionLog::factory()->count(5)->create([
             'admin_id'   => $admin->id,
             'risk_level' => 'high',
-            'created_at' => now()->subDays(1)
+            'created_at' => now()->subDays(1),
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
@@ -321,7 +320,7 @@ describe('SuspiciousActivityController', function () {
         // Create some suspicious data
         WalletTransaction::factory()->create([
             'amount'     => 60000000, // Large amount
-            'created_at' => now()->subDays(3)
+            'created_at' => now()->subDays(3),
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
@@ -363,13 +362,13 @@ describe('SuspiciousActivityController', function () {
         // Transaction outside range
         $outsideRange = WalletTransaction::factory()->create([
             'amount'     => 60000000,
-            'created_at' => Verta::parse($this->dateFrom)->subDay()->toCarbon()->format('Y-m-d')
+            'created_at' => Verta::parse($this->dateFrom)->subDay()->toCarbon()->format('Y-m-d'),
         ]);
 
         // Transaction within range
         $withinRange = WalletTransaction::factory()->create([
             'amount'     => 60000000,
-            'created_at' => Verta::parse($this->dateFrom)->addDay()->toCarbon()->format('Y-m-d')
+            'created_at' => Verta::parse($this->dateFrom)->addDay()->toCarbon()->format('Y-m-d'),
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
@@ -390,7 +389,7 @@ describe('SuspiciousActivityController', function () {
     it('uses default thresholds when not provided', function () {
         WalletTransaction::factory()->create([
             'amount'     => 60000000, // Should trigger default threshold
-            'created_at' => now()->subDays(3)
+            'created_at' => now()->subDays(3),
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
@@ -410,7 +409,7 @@ describe('SuspiciousActivityController', function () {
     it('allows customizing thresholds', function () {
         WalletTransaction::factory()->create([
             'amount'     => 30000000, // 30M IRR
-            'created_at' => now()->subDays(3)
+            'created_at' => now()->subDays(3),
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])

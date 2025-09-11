@@ -4,14 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Order;
 
-use App\Data\Admin\Discounts\CalculatedOrderItemData;
-use App\Data\Admin\Discounts\DataCollectionOf;
 use App\Data\Admin\Discounts\OrderContextData;
-use App\Models\DiscountPromotion;
-use App\Models\User;
-use Illuminate\Support\Collection;
 use Spatie\LaravelData\Data;
-use Spatie\LaravelData\DataCollection;
 
 final class OrderPreviewData extends Data
 {
@@ -25,21 +19,21 @@ final class OrderPreviewData extends Data
 
     public static function fromOrderContext(OrderContextData $data): self
     {
-        $items = $data->items->map(function ($item){
+        $items = $data->items->map(function ($item) {
             return [
                 'product_delivery_option' => [
-                    'id' => $item->product_delivery_option->id,
-                    'name' => $item->product_delivery_option->name,
-                    'price' => $item->product_delivery_option->price,
-                    'discount_price' => $item->product_delivery_option->discount_price,
-                    'is_prepayment' => $item->product_delivery_option->is_prepayment_available,
+                    'id'                => $item->product_delivery_option->id,
+                    'name'              => $item->product_delivery_option->name,
+                    'price'             => $item->product_delivery_option->price,
+                    'discount_price'    => $item->product_delivery_option->discount_price,
+                    'is_prepayment'     => $item->product_delivery_option->is_prepayment_available,
                     'prepayment_amount' => $item->product_delivery_option->prepayment_amount,
                 ],
-                'qty' => $item->qty,
-                'payment_type' => $item->payment_type->value,
-                'price' => $item->price,
-                'total' => $item->total,
-                'discount_amount' => $item->discount_amount,
+                'qty'                      => $item->qty,
+                'payment_type'             => $item->payment_type->value,
+                'price'                    => $item->price,
+                'total'                    => $item->total,
+                'discount_amount'          => $item->discount_amount,
                 'applied_discount_details' => $item->applied_discount_details,
 
             ];

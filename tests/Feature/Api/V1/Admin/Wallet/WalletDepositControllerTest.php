@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\Wallet\WalletStatusEnum;
 use App\Models\User;
 use Tests\AuthTestTrait;
 
@@ -10,14 +9,14 @@ uses(AuthTestTrait::class);
 
 test('admin can deposit to wallet via API', function () {
     $admin = $this->authorized_user([
-        \App\Enums\PermissionEnum::WALLET_DEPOSIT
+        App\Enums\PermissionEnum::WALLET_DEPOSIT,
     ]);
 
-    $user = User::factory()->create();
+    $user           = User::factory()->create();
     $initialBalance = $user->wallet->balance;
 
     $response = $this
-        ->postJson(route('api.v1.admin.wallet.deposit',$user->wallet->id), [
+        ->postJson(route('api.v1.admin.wallet.deposit', $user->wallet->id), [
             'user_id'     => $user->id,
             'amount'      => 1000,
             'description' => 'API deposit test',
@@ -29,7 +28,7 @@ test('admin can deposit to wallet via API', function () {
         'message',
         'data' => [
             'id',
-            'wallet'      => [
+            'wallet' => [
                 'balance',
                 'gift_balance',
                 'status' => [
@@ -38,7 +37,7 @@ test('admin can deposit to wallet via API', function () {
                 ],
                 'user',
             ],
-            'user'        => [
+            'user' => [
                 'id',
                 'uuid',
                 'first_name',
@@ -59,7 +58,7 @@ test('admin can deposit to wallet via API', function () {
                 'created_at',
                 'updated_at',
             ],
-            'type'        => [
+            'type' => [
                 'value',
                 'label',
             ],
@@ -70,7 +69,7 @@ test('admin can deposit to wallet via API', function () {
                 'value',
                 'label',
             ],
-            'source'      => [
+            'source' => [
                 'id',
                 'name',
                 'email',
@@ -92,10 +91,10 @@ test('admin can deposit to wallet via API', function () {
 
 test('admin cannot deposit to wallet without permission', function () {
     $admin = $this->authorized_user([]);
-    $user = User::factory()->create();
+    $user  = User::factory()->create();
 
     $response = $this
-        ->postJson(route('api.v1.admin.wallet.deposit',$user->wallet->id), [
+        ->postJson(route('api.v1.admin.wallet.deposit', $user->wallet->id), [
             'user_id' => $user->id,
             'amount'  => 1000,
         ]);
@@ -105,12 +104,12 @@ test('admin cannot deposit to wallet without permission', function () {
 
 test('validation errors are returned for invalid data', function () {
     $admin = $this->authorized_user([
-        \App\Enums\PermissionEnum::WALLET_DEPOSIT
+        App\Enums\PermissionEnum::WALLET_DEPOSIT,
     ]);
-    $user = User::factory()->create();
+    $user     = User::factory()->create();
     $response = $this
-        ->postJson(route('api.v1.admin.wallet.deposit',$user->wallet->id), [
-            'amount'  => "A100", // Negative amount
+        ->postJson(route('api.v1.admin.wallet.deposit', $user->wallet->id), [
+            'amount' => 'A100', // Negative amount
         ]);
 
     $response->assertStatus(422);

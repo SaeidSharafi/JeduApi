@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Actions\Admin\Role\OutputPermissionsAction;
-
 use Illuminate\Testing\Fluent\AssertableJson;
 use Spatie\Permission\Models\Permission;
 

@@ -12,9 +12,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\ProductDeliveryOption;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
-use Pest\Laravel\assertDatabaseHas;
 
 describe('ProvisionPaidResourcesListener', function () {
 
@@ -24,9 +22,8 @@ describe('ProvisionPaidResourcesListener', function () {
         Queue::fake();
     });
 
-
     it('executes all delivery method checks without error', function () {
-        $order = Order::factory()->create();
+        $order   = Order::factory()->create();
         $payment = Payment::factory()->for($order)->create(['status' => 'completed']);
 
         $inPersonItem = OrderItem::factory()->for($order)->create([
@@ -62,7 +59,7 @@ describe('ProvisionPaidResourcesListener', function () {
     });
 
     it('handles an order with no items gracefully', function () {
-        $order = Order::factory()->create(); // No items created for this order
+        $order   = Order::factory()->create(); // No items created for this order
         $payment = Payment::factory()->for($order)->create(['status' => 'completed']);
 
         $event = new PaymentCompletedEvent($payment);
@@ -71,11 +68,10 @@ describe('ProvisionPaidResourcesListener', function () {
         $this->assertTrue(true);
     });
 
-
     it('returns early if the order is missing from the payment', function () {
 
         $payment = new Payment(); // A fake payment object in memory without a real order
-        $event = new PaymentCompletedEvent($payment);
+        $event   = new PaymentCompletedEvent($payment);
 
         (new ProvisionPaidResourcesListener())->handle($event);
 

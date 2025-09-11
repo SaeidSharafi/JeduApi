@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Admin\Wallet;
 
 use App\Data\Transformer\TranslatableEnumData;
@@ -10,7 +12,7 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-class WalletData extends Data
+final class WalletData extends Data
 {
     public function __construct(
         public int $balance,
@@ -18,7 +20,5 @@ class WalletData extends Data
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public WalletStatusEnum $status,
         public ?User $user = null,
-    )
-    {
-    }
+    ) {}
 }

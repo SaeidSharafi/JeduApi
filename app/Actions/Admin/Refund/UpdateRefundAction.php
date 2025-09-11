@@ -5,13 +5,9 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Refund;
 
 use App\Data\Admin\Refund\RefundCreateData;
-use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\RefundStatusEnum;
-use App\Events\RefundCompletedEvent;
 use App\Models\OrderItem;
 use App\Models\Refund;
-use App\Services\OrderStatusService;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 final class UpdateRefundAction
@@ -33,15 +29,15 @@ final class UpdateRefundAction
 
         // Recalculate financial details based on potentially new deduction info.
         $amountPaidForItem = $this->calculateAmountPaidForItem($orderItem);
-        $deductionAmount = $this->calculateDeductionAmount($data, $orderItem->price);
-        $refundAmount = max(0, $amountPaidForItem - $deductionAmount);
+        $deductionAmount   = $this->calculateDeductionAmount($data, $orderItem->price);
+        $refundAmount      = max(0, $amountPaidForItem - $deductionAmount);
 
         // Update the record with the new, corrected data.
         $refund->update([
-            'amount' => $refundAmount,
-            'deduction_amount' => $deductionAmount,
+            'amount'              => $refundAmount,
+            'deduction_amount'    => $deductionAmount,
             'transaction_details' => $data->transaction_details->toArray(),
-            'admin_notes' => $data->admin_notes,
+            'admin_notes'         => $data->admin_notes,
             // We do NOT update the status here. That's a separate action.
         ]);
 
@@ -81,5 +77,4 @@ final class UpdateRefundAction
 
         return 0; // Should not be reached due to DTO validation, but as a fallback.
     }
-
 }

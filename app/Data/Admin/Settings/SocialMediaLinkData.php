@@ -18,7 +18,7 @@ final class SocialMediaLinkData extends Data
     {
         return [
             'platform' => ['required', 'string', 'max:50'],
-            'link' => ['required', 'url', 'max:255'],
+            'link'     => ['required', 'url', 'max:255'],
         ];
     }
 
@@ -29,7 +29,7 @@ final class SocialMediaLinkData extends Data
     {
         return [
             'platform' => __('validation.attributes.social_media.platform'),
-            'link' => __('validation.attributes.social_media.link'),
+            'link'     => __('validation.attributes.social_media.link'),
         ];
     }
 }

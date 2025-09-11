@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\WalletCampaign\CampaignTypeEnum;
 use App\Models\Staff;
@@ -13,29 +15,29 @@ uses(AuthTestTrait::class);
 
 beforeEach(function () {
     $this->customer = User::factory()->create();
-    $this->user = Staff::factory()->create();
+    $this->user     = Staff::factory()->create();
 
     $this->campaign = WalletCampaign::factory()->create([
-        'name' => 'Test Campaign',
-        'type' => CampaignTypeEnum::WELCOME_GIFT,
-        'amount' => 50000,
-        'is_active' => true,
-        'usage_limit_total' => 1000,
+        'name'                 => 'Test Campaign',
+        'type'                 => CampaignTypeEnum::WELCOME_GIFT,
+        'amount'               => 50000,
+        'is_active'            => true,
+        'usage_limit_total'    => 1000,
         'usage_limit_per_user' => 2,
-        'total_usage_count' => 0,
-        'starts_at' => Carbon::now()->subDay(),
-        'ends_at' => Carbon::now()->addMonth(),
-        'created_by' => $this->user->id,
+        'total_usage_count'    => 0,
+        'starts_at'            => Carbon::now()->subDay(),
+        'ends_at'              => Carbon::now()->addMonth(),
+        'created_by'           => $this->user->id,
     ]);
 });
 
 describe('TriggerCampaignAllocationController', function () {
     it('can trigger manual campaign allocation successfully', function () {
-        $response = $this->authorized_user([\App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
+        $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
             ->postJson(route('api.v1.admin.users.wallet-campaigns.trigger-allocation', [$this->customer, $this->campaign]), [
                 'trigger_type' => 'manual',
-                'reason' => 'Manual allocation by admin',
-                'metadata' => ['admin_notes' => 'Special allocation']
+                'reason'       => 'Manual allocation by admin',
+                'metadata'     => ['admin_notes' => 'Special allocation'],
             ]);
 
         $response->assertSuccessful();
@@ -47,16 +49,16 @@ describe('TriggerCampaignAllocationController', function () {
                 'amount',
                 'description',
                 'metadata',
-                'created_at'
-            ]
+                'created_at',
+            ],
         ]);
 
         $this->assertDatabaseHas('wallet_transactions', [
-            'user_id' => $this->customer->id,
-            'type' => 'gift',
-            'amount' => $this->campaign->amount,
+            'user_id'     => $this->customer->id,
+            'type'        => 'gift',
+            'amount'      => $this->campaign->amount,
             'source_type' => TransactionSourceEnum::CAMPAIGN->value,
-            'source_id' => $this->campaign->id,
+            'source_id'   => $this->campaign->id,
         ]);
 
         $this->campaign->refresh();
@@ -64,11 +66,11 @@ describe('TriggerCampaignAllocationController', function () {
     });
 
     it('can trigger event-based campaign allocation successfully', function () {
-        $response = $this->authorized_user([\App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
+        $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
             ->postJson(route('api.v1.admin.users.wallet-campaigns.trigger-allocation', [$this->customer, $this->campaign]), [
-                'trigger_type' => 'event',
+                'trigger_type'  => 'event',
                 'trigger_event' => 'user_registration',
-                'metadata' => ['event_data' => ['ip' => '127.0.0.1']]
+                'metadata'      => ['event_data' => ['ip' => '127.0.0.1']],
             ]);
 
         $response->assertSuccessful();
@@ -80,16 +82,16 @@ describe('TriggerCampaignAllocationController', function () {
                 'amount',
                 'description',
                 'metadata',
-                'created_at'
-            ]
+                'created_at',
+            ],
         ]);
 
         $this->assertDatabaseHas('wallet_transactions', [
-            'user_id' => $this->customer->id,
-            'type' => 'gift',
-            'amount' => $this->campaign->amount,
+            'user_id'     => $this->customer->id,
+            'type'        => 'gift',
+            'amount'      => $this->campaign->amount,
             'source_type' => TransactionSourceEnum::CAMPAIGN->value,
-            'source_id' => $this->campaign->id,
+            'source_id'   => $this->campaign->id,
         ]);
 
         $this->campaign->refresh();
@@ -97,7 +99,7 @@ describe('TriggerCampaignAllocationController', function () {
     });
 
     it('requires trigger_type field', function () {
-        $response = $this->authorized_user([\App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
+        $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
             ->postJson(route('api.v1.admin.users.wallet-campaigns.trigger-allocation', [$this->customer, $this->campaign]), [
                 'reason' => 'Manual allocation by admin',
             ]);
@@ -107,7 +109,7 @@ describe('TriggerCampaignAllocationController', function () {
     });
 
     it('requires trigger_event when trigger_type is event', function () {
-        $response = $this->authorized_user([\App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
+        $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
             ->postJson(route('api.v1.admin.users.wallet-campaigns.trigger-allocation', [$this->customer, $this->campaign]), [
                 'trigger_type' => 'event',
             ]);
@@ -117,7 +119,7 @@ describe('TriggerCampaignAllocationController', function () {
     });
 
     it('validates trigger_type values', function () {
-        $response = $this->authorized_user([\App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
+        $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
             ->postJson(route('api.v1.admin.users.wallet-campaigns.trigger-allocation', [$this->customer, $this->campaign]), [
                 'trigger_type' => 'invalid_type',
             ]);
@@ -130,10 +132,10 @@ describe('TriggerCampaignAllocationController', function () {
         $this->campaign->usage_limit_per_user = 1;
         $this->campaign->save();
         // First allocation
-        $this->authorized_user([\App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
+        $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
             ->postJson(route('api.v1.admin.users.wallet-campaigns.trigger-allocation', [$this->customer, $this->campaign]), [
                 'trigger_type' => 'manual',
-                'reason' => 'First allocation',
+                'reason'       => 'First allocation',
             ])
             ->assertSuccessful();
 
@@ -141,7 +143,7 @@ describe('TriggerCampaignAllocationController', function () {
         $response = $this
             ->postJson(route('api.v1.admin.users.wallet-campaigns.trigger-allocation', [$this->customer, $this->campaign]), [
                 'trigger_type' => 'manual',
-                'reason' => 'Second allocation',
+                'reason'       => 'Second allocation',
             ]);
 
         $response->assertStatus(422);
@@ -149,17 +151,17 @@ describe('TriggerCampaignAllocationController', function () {
 
     it('allows multiple allocations for different trigger events', function () {
         // First event-based allocation
-        $this->authorized_user([\App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
+        $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
             ->postJson(route('api.v1.admin.users.wallet-campaigns.trigger-allocation', [$this->customer, $this->campaign]), [
-                'trigger_type' => 'event',
+                'trigger_type'  => 'event',
                 'trigger_event' => 'user_registration',
             ])
             ->assertSuccessful();
 
         // Second event-based allocation with different trigger
-        $response = $this->authorized_user([\App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
+        $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
             ->postJson(route('api.v1.admin.users.wallet-campaigns.trigger-allocation', [$this->customer, $this->campaign]), [
-                'trigger_type' => 'event',
+                'trigger_type'  => 'event',
                 'trigger_event' => 'first_purchase',
             ]);
 
@@ -172,18 +174,18 @@ describe('TriggerCampaignAllocationController', function () {
 
         // Create another user and allocate to them first
         $otherUser = User::factory()->create();
-        $this->authorized_user([\App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
+        $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
             ->postJson(route('api.v1.admin.users.wallet-campaigns.trigger-allocation', [$otherUser, $this->campaign]), [
                 'trigger_type' => 'manual',
-                'reason' => 'First allocation',
+                'reason'       => 'First allocation',
             ])
             ->assertSuccessful();
 
         // Try to allocate to our test customer
-        $response = $this->authorized_user([\App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
+        $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
             ->postJson(route('api.v1.admin.users.wallet-campaigns.trigger-allocation', [$this->customer, $this->campaign]), [
                 'trigger_type' => 'manual',
-                'reason' => 'Second allocation',
+                'reason'       => 'Second allocation',
             ]);
 
         $response->assertStatus(422);
@@ -192,10 +194,10 @@ describe('TriggerCampaignAllocationController', function () {
     it('prevents allocation when campaign is inactive', function () {
         $this->campaign->update(['is_active' => false]);
 
-        $response = $this->authorized_user([\App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
+        $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
             ->postJson(route('api.v1.admin.users.wallet-campaigns.trigger-allocation', [$this->customer, $this->campaign]), [
                 'trigger_type' => 'manual',
-                'reason' => 'Test allocation',
+                'reason'       => 'Test allocation',
             ]);
 
         $response->assertStatus(422);
@@ -204,10 +206,10 @@ describe('TriggerCampaignAllocationController', function () {
     it('prevents allocation when campaign has ended', function () {
         $this->campaign->update(['ends_at' => Carbon::now()->subDay()]);
 
-        $response = $this->authorized_user([\App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
+        $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
             ->postJson(route('api.v1.admin.users.wallet-campaigns.trigger-allocation', [$this->customer, $this->campaign]), [
                 'trigger_type' => 'manual',
-                'reason' => 'Test allocation',
+                'reason'       => 'Test allocation',
             ]);
 
         $response->assertStatus(422);
@@ -216,10 +218,10 @@ describe('TriggerCampaignAllocationController', function () {
     it('prevents allocation when campaign has not started', function () {
         $this->campaign->update(['starts_at' => Carbon::now()->addDay()]);
 
-        $response = $this->authorized_user([\App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
+        $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
             ->postJson(route('api.v1.admin.users.wallet-campaigns.trigger-allocation', [$this->customer, $this->campaign]), [
                 'trigger_type' => 'manual',
-                'reason' => 'Test allocation',
+                'reason'       => 'Test allocation',
             ]);
 
         $response->assertStatus(422);
@@ -229,7 +231,7 @@ describe('TriggerCampaignAllocationController', function () {
         $response = $this->authorized_user([])
             ->postJson(route('api.v1.admin.users.wallet-campaigns.trigger-allocation', [$this->customer, $this->campaign]), [
                 'trigger_type' => 'manual',
-                'reason' => 'Test allocation',
+                'reason'       => 'Test allocation',
             ]);
 
         $response->assertForbidden();

@@ -26,12 +26,12 @@ beforeEach(function (): void {
 });
 describe('OTP SMS Notification', function () {
     it('creates the correct sms message payload for customer', function () {
-        $user = new \App\Models\User();
-        $otpEvent =  new OtpPrepared(
+        $user     = new App\Models\User();
+        $otpEvent = new OtpPrepared(
             identifier: '09321456987',
             guard: 'user',
             code: '123456',
-            type: \App\Enums\OtpType::SIGNIN,
+            type: App\Enums\OtpType::SIGNIN,
             trackingCode: 'test-tracking',
             params: []
         );
@@ -46,12 +46,12 @@ describe('OTP SMS Notification', function () {
     });
 
     it('creates the correct sms message payload for Staff', function () {
-        $user = new \App\Models\Staff();
-        $otpEvent =  new OtpPrepared(
+        $user     = new App\Models\Staff();
+        $otpEvent = new OtpPrepared(
             identifier: '09321456987',
             guard: 'user',
             code: '123456',
-            type: \App\Enums\OtpType::SIGNIN,
+            type: App\Enums\OtpType::SIGNIN,
             trackingCode: 'test-tracking',
             params: []
         );

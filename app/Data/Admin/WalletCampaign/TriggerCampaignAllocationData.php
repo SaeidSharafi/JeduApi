@@ -14,8 +14,7 @@ final class TriggerCampaignAllocationData extends Data
         public ?string $trigger_event,
         public ?string $reason = null, // reason for manual triggers
         public ?array $metadata = null
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {
@@ -29,6 +28,7 @@ final class TriggerCampaignAllocationData extends Data
 
     /**
      * @return array<string, string>
+     *
      * @codeCoverageIgnore
      */
     public static function descriptions(): array

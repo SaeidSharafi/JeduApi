@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Admin\Refund;
 
 use App\Data\Admin\Refund\RefundStatusUpdateData;
@@ -15,8 +17,7 @@ final readonly class UpdateRefundStatusAction
 {
     public function __construct(
         private OrderStatusService $orderStatusService
-    ) {
-    }
+    ) {}
 
     public function handle(Refund $refund, RefundStatusUpdateData $data): Refund
     {
@@ -45,7 +46,7 @@ final readonly class UpdateRefundStatusAction
     private function validateStatusTransition(RefundStatusEnum $from, string $to): void
     {
         $allowedTransitions = [
-            RefundStatusEnum::PENDING->value    => [
+            RefundStatusEnum::PENDING->value => [
                 RefundStatusEnum::PROCESSING->value,
                 RefundStatusEnum::COMPLETED->value,
                 RefundStatusEnum::CANCELLED->value,
@@ -55,15 +56,15 @@ final readonly class UpdateRefundStatusAction
                 RefundStatusEnum::FAILED->value,
             ],
             // Terminal states have no allowed transitions.
-            RefundStatusEnum::COMPLETED->value  => [],
-            RefundStatusEnum::FAILED->value     => [],
-            RefundStatusEnum::CANCELLED->value  => [],
+            RefundStatusEnum::COMPLETED->value => [],
+            RefundStatusEnum::FAILED->value    => [],
+            RefundStatusEnum::CANCELLED->value => [],
         ];
 
-        if (!in_array($to, $allowedTransitions[$from->value])) {
+        if (! in_array($to, $allowedTransitions[$from->value])) {
             $to = RefundStatusEnum::tryFrom($to);
             throw ValidationException::withMessages([
-                'status' => __('messages.order.refund.invalid_status_transition', ['from' =>$from->translate() , 'to' => $to?->translate()]),
+                'status' => __('messages.order.refund.invalid_status_transition', ['from' => $from->translate(), 'to' => $to?->translate()]),
             ]);
         }
     }
@@ -75,19 +76,19 @@ final readonly class UpdateRefundStatusAction
     {
         $orderItem = $refund->orderItem;
 
-        $refund->status = RefundStatusEnum::COMPLETED;
+        $refund->status      = RefundStatusEnum::COMPLETED;
         $refund->refunded_at = now();
         $refund->admin_notes = $data->admin_notes ?? $refund->admin_notes;
 
         if ($data->tracking_code) {
-            $details = $refund->transaction_details;
-            $details['tracking_code'] = $data->tracking_code;
+            $details                     = $refund->transaction_details;
+            $details['tracking_code']    = $data->tracking_code;
             $refund->transaction_details = $details;
         }
         $refund->save();
 
         $orderItem->total_refunded = $refund->amount;
-        $orderItem->status = OrderItemStatusEnum::REFUNDED;
+        $orderItem->status         = OrderItemStatusEnum::REFUNDED;
         $orderItem->saveQuietly();
 
         $this->orderStatusService->updateEnrollmentStatus($orderItem);

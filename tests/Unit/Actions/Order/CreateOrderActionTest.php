@@ -425,13 +425,13 @@ describe('CreateOrderAction', function () {
         $deliveryOption = ProductDeliveryOption::factory()
             ->create([
                 'product_id' => Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED])->id,
-                'price' => 50000,
-                'status' => PublicationStatusEnum::PUBLISHED,
+                'price'      => 50000,
+                'status'     => PublicationStatusEnum::PUBLISHED,
             ]);
         $promotion = DiscountPromotion::factory()->create([
-            'name' => 'Test Sale',
+            'name'      => 'Test Sale',
             'is_active' => true,
-            'type' => DiscountTypeEnum::CART_CHECKOUT
+            'type'      => DiscountTypeEnum::CART_CHECKOUT,
         ]);
         $promotion->rules()->create([
             'type' => 'action', 'handler' => 'apply_percentage_off', 'configuration' => ['percentage' => 10],
@@ -481,17 +481,17 @@ describe('CreateOrderAction', function () {
         $user = User::factory()->create();
 
         $fullPaymentOption = ProductDeliveryOption::factory()->create([
-            'product_id' => Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED])->id,
-            'status' => PublicationStatusEnum::PUBLISHED,
-            'price' => 10000,
+            'product_id'              => Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED])->id,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'price'                   => 10000,
             'is_prepayment_available' => false,
         ]);
         $prePaymentOption = ProductDeliveryOption::factory()->create([
-            'product_id' => Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED])->id,
-            'status' => PublicationStatusEnum::PUBLISHED,
-            'price' => 50000,
+            'product_id'              => Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED])->id,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'price'                   => 50000,
             'is_prepayment_available' => true,
-            'prepayment_amount' => 2000, // The billable amount
+            'prepayment_amount'       => 2000, // The billable amount
         ]);
 
         $data = new OrderCreateData(
@@ -524,28 +524,28 @@ describe('CreateOrderAction', function () {
 
     it('creates an order with cart-level discounts applied', function () {
         // This test covers line 253 (calculateTotalDiscountFromContext method)
-        $user = User::factory()->create();
-        $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $user           = User::factory()->create();
+        $product        = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
-            'price' => 50000,
-            'status' => PublicationStatusEnum::PUBLISHED,
+            'price'      => 50000,
+            'status'     => PublicationStatusEnum::PUBLISHED,
         ]);
 
         // Create a promotion with discount
         $promotion = DiscountPromotion::factory()->create([
-            'type' => DiscountTypeEnum::CART_CHECKOUT,
-            'is_active' => true
+            'type'      => DiscountTypeEnum::CART_CHECKOUT,
+            'is_active' => true,
         ]);
         $promotion->rules()->create([
-            'type' => 'action',
-            'handler' => 'apply_percentage_off',
+            'type'          => 'action',
+            'handler'       => 'apply_percentage_off',
             'configuration' => ['percentage' => 10],
         ]);
 
         $coupon = DiscountCoupon::factory()->create([
             'discount_promotion_id' => $promotion->id,
-            'code' => 'SAVE10',
+            'code'                  => 'SAVE10',
         ]);
 
         $data = new OrderCreateData(
@@ -576,9 +576,9 @@ describe('CreateOrderAction', function () {
 
     it('does not increment usage counts if no promotion was evaluated', function () {
         // This test covers the `if (! $promotion)` return in `incrementUsageCounts` (line 155).
-        $user = User::factory()->create();
+        $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
-            'price' => 10000,
+            'price'  => 10000,
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
 

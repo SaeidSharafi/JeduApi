@@ -27,7 +27,7 @@ use Spatie\LaravelData\Support\DataProperty;
  */
 final readonly class TrasnactionSourceCast implements Cast
 {
-    public function __construct(protected bool $short = false) {}
+    public function __construct(private bool $short = false) {}
 
     public function cast(DataProperty $property, mixed $value, array $properties, CreationContext $context): mixed
     {
@@ -39,12 +39,12 @@ final readonly class TrasnactionSourceCast implements Cast
         }
 
         return match (true) {
-            $value instanceof Staff       => $this->getStaffData($value),
-            $value instanceof Order      => $this->getOrderData($value),
-            $value instanceof Refund     => $this->getRefundData($value),
-            $value instanceof Payment  => $this->getPaymentData($value),
+            $value instanceof Staff          => $this->getStaffData($value),
+            $value instanceof Order          => $this->getOrderData($value),
+            $value instanceof Refund         => $this->getRefundData($value),
+            $value instanceof Payment        => $this->getPaymentData($value),
             $value instanceof WalletCampaign => WalletCampaignData::from($value),
-            default                        => null,
+            default                          => null,
         };
 
     }
@@ -66,15 +66,14 @@ final readonly class TrasnactionSourceCast implements Cast
 
         return OrderData::from($value);
     }
+
     private function getRefundData($value): RefundData
     {
         return RefundData::from($value->order);
     }
+
     private function getPaymentData($value): PaymentData
     {
         return PaymentData::from($value->order);
     }
-
-
-
 }

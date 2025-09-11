@@ -2,23 +2,24 @@
 
 declare(strict_types=1);
 
-use App\Models\User;
-use App\Enums\Wallet\WalletStatusEnum;
 use App\Enums\PermissionEnum;
-use function Pest\Laravel\postJson;
+use App\Enums\Wallet\WalletStatusEnum;
+use App\Models\User;
 use Tests\AuthTestTrait;
+
+use function Pest\Laravel\postJson;
 
 uses(AuthTestTrait::class);
 
 test('admin with permission can create wallet via controller', function () {
     $admin = $this->authorized_user([PermissionEnum::WALLET_CREATE]);
-    $user = User::factory()->create();
+    $user  = User::factory()->create();
     $user->wallet->delete(); // Ensure no existing wallet
     $payload = [
-        'user_id' => $user->id,
-        'balance' => 1000,
+        'user_id'      => $user->id,
+        'balance'      => 1000,
         'gift_balance' => 200,
-        'status' => WalletStatusEnum::ACTIVE->value,
+        'status'       => WalletStatusEnum::ACTIVE->value,
     ];
     $response = postJson(route('api.v1.admin.wallet.create'), $payload);
     $response->assertCreated();
@@ -27,23 +28,23 @@ test('admin with permission can create wallet via controller', function () {
 
 test('admin without permission cannot create wallet via controller', function () {
     $admin = $this->authorized_user([]); // No wallet.create permission
-    $user = User::factory()->create();
+    $user  = User::factory()->create();
     $user->wallet->delete(); // Ensure no existing wallet
     $payload = [
-        'user_id' => $user->id,
-        'balance' => 1000,
+        'user_id'      => $user->id,
+        'balance'      => 1000,
         'gift_balance' => 200,
-        'status' => WalletStatusEnum::ACTIVE->value,
+        'status'       => WalletStatusEnum::ACTIVE->value,
     ];
     $response = postJson(route('api.v1.admin.wallet.create'), $payload);
     $response->assertForbidden();
 });
 
 test('validation error on missing fields', function () {
-    $admin = $this->authorized_user([PermissionEnum::WALLET_CREATE]);
+    $admin   = $this->authorized_user([PermissionEnum::WALLET_CREATE]);
     $payload = [
         'balance' => 1000,
-        'status' => WalletStatusEnum::ACTIVE->value,
+        'status'  => WalletStatusEnum::ACTIVE->value,
     ];
     $response = postJson(route('api.v1.admin.wallet.create'), $payload);
     $response->assertUnprocessable();

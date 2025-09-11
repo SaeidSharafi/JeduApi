@@ -13,7 +13,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 #[MapInputName(SnakeCaseMapper::class)]
-class ComplianceReportRequestData extends Data
+final class ComplianceReportRequestData extends Data
 {
     public function __construct(
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
@@ -29,15 +29,15 @@ class ComplianceReportRequestData extends Data
         public bool $include_admin_activity = true,
         public bool $include_suspicious_activity = true,
         public bool $include_risk_assessment = false,
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {
         $now = verta()->format('Y-m-d');
+
         return [
             'date_from'                   => ['required', 'jdate:Y-m-d', 'jdate_before_equal:'.request('date_to').',Y-m-d'],
-            'date_to'                     => ['required', 'jdate:Y-m-d','jdate_before_equal:'.$now.',Y-m-d'],
+            'date_to'                     => ['required', 'jdate:Y-m-d', 'jdate_before_equal:'.$now.',Y-m-d'],
             'report_type'                 => ['string', 'in:daily,monthly,custom'],
             'user_ids'                    => ['nullable', 'array'],
             'user_ids.*'                  => ['integer', 'exists:users,id'],
@@ -45,7 +45,7 @@ class ComplianceReportRequestData extends Data
             'transaction_types.*'         => ['string'],
             'min_amount'                  => ['nullable', 'integer', 'min:0'],
             'max_amount'                  => ['nullable', 'integer', 'min:0', 'gt:min_amount'],
-            'include_admin_activity'       => ['boolean'],
+            'include_admin_activity'      => ['boolean'],
             'include_suspicious_activity' => ['boolean'],
             'include_risk_assessment'     => ['boolean'],
         ];

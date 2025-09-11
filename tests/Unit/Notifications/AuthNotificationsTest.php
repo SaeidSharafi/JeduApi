@@ -10,7 +10,6 @@ use App\Notifications\Auth\OtpEmailNotification;
 use App\Notifications\Auth\OtpSmsNotification;
 use Illuminate\Support\Facades\Notification;
 
-
 beforeEach(function (): void {
     Notification::fake();
     config()->set('services.ippanel.from', 1000);

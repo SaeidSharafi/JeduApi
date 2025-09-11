@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Contracts\ApiResponseInterface;
@@ -14,7 +16,7 @@ use Illuminate\Support\Facades\Gate;
  *
  * @authenticated Staff
  */
-class DiscountPromotionStatisticsController extends Controller
+final class DiscountPromotionStatisticsController extends Controller
 {
     /**
      * Get discount promotion statistics.
@@ -26,14 +28,15 @@ class DiscountPromotionStatisticsController extends Controller
     {
         Gate::authorize('viewAny', DiscountPromotion::class);
         $stats = [
-            'total_promotions' => DiscountPromotion::count(),
-            'active_promotions' => DiscountPromotion::where('is_active', true)->count(),
-            'inactive_promotions' => DiscountPromotion::where('is_active', false)->count(),
+            'total_promotions'            => DiscountPromotion::count(),
+            'active_promotions'           => DiscountPromotion::where('is_active', true)->count(),
+            'inactive_promotions'         => DiscountPromotion::where('is_active', false)->count(),
             'product_specific_promotions' => DiscountPromotion::where('type', 'product_specific')->count(),
-            'cart_checkout_promotions' => DiscountPromotion::where('type', 'cart_checkout')->count(),
-            'promotions_with_coupons' => DiscountPromotion::whereHas('coupons')->count(),
-            'promotions_without_coupons' => DiscountPromotion::whereDoesntHave('coupons')->count(),
+            'cart_checkout_promotions'    => DiscountPromotion::where('type', 'cart_checkout')->count(),
+            'promotions_with_coupons'     => DiscountPromotion::whereHas('coupons')->count(),
+            'promotions_without_coupons'  => DiscountPromotion::whereDoesntHave('coupons')->count(),
         ];
+
         return response()->success($stats);
     }
 }

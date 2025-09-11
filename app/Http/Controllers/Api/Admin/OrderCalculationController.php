@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Data\Admin\Order\OrderCreateData;
@@ -7,23 +9,17 @@ use App\Data\Admin\Order\OrderPreviewData;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiSuccessResponse;
 use App\Services\Discounts\OrderCalculationService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 /**
  * @group Admin - Orders
  *
  * @authenticated
  */
-class OrderCalculationController extends Controller
+final class OrderCalculationController extends Controller
 {
     /**
-     *
      * Preview the order calculation based on the provided data.
      *
-     * @param OrderCreateData $data
-     * @param OrderCalculationService $orderCalculationService
-     * @return ApiSuccessResponse
      *
      * @responseFile 200 responses/order/preview.json
      */

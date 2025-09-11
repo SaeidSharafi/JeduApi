@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\Admin;
 
 use App\Enums\PermissionEnum;
@@ -7,7 +9,7 @@ use App\Models\Refund;
 use App\Models\Staff;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class RefundPolicy
+final class RefundPolicy
 {
     use HandlesAuthorization;
 
@@ -35,6 +37,7 @@ class RefundPolicy
     {
         return $user->can(PermissionEnum::REFUND_DELETE);
     }
+
     public function updateStatus(Staff $user, Refund $refund): bool
     {
         return $user->can(PermissionEnum::REFUND_UPDATE_STATUS);

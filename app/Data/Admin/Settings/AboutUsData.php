@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Settings;
 
-use App\Data\ArticleSectionCreateData;
 use App\Data\ArticleSectionData;
 use Spatie\LaravelData\Data;
-use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 final class AboutUsData extends Data
 {
@@ -19,9 +17,7 @@ final class AboutUsData extends Data
         public ArticleSectionData $capabilities_block,
         public ArticleSectionData $about_online_course_block_1,
         public ArticleSectionData $about_online_course_block_2,
-    ) {
-    }
-
+    ) {}
 
     /**
      * Get default about us data for seeding.
@@ -29,14 +25,14 @@ final class AboutUsData extends Data
     public static function getDefaults(): array
     {
         return [
-            'title'                       => 'درباره جدویار',
-            'main_block'                  => [
+            'title'      => 'درباره جدویار',
+            'main_block' => [
                 'title'   => 'جدویار، مرکز آموزش‌های تخصصی و مهارتی',
                 'content' => 'جدویار با هدف ارتقاء سطح دانش و مهارت‌های افراد در زمینه‌های مختلف، از سال ۱۳۹۰ فعالیت خود را آغاز کرده است. این مرکز با بهره‌گیری از اساتید مجرب و امکانات پیشرفته، دوره‌های آموزشی متنوعی را در حوزه‌های فنی، مهندسی، علوم انسانی، زبان‌های خارجی و هنر ارائه می‌دهد. جدویار با تاکید بر آموزش‌های کاربردی و پروژه‌محور، تلاش می‌کند تا دانشجویان را برای ورود به بازار کار آماده سازد و نقش موثری در توسعه نیروی انسانی متخصص ایفا کند.',
                 'icon'    => null,
             ],
-            'images'                      => [],
-            'active_course_groups_block'  => [
+            'images'                     => [],
+            'active_course_groups_block' => [
                 'title'   => 'گروه‌های آموزشی فعال',
                 'content' => '<ol>
                                 <li>فنی و مهندسی</li>
@@ -52,9 +48,9 @@ final class AboutUsData extends Data
                                 <li>آموزش‌های عالی آزاد</li>
                                 <li>اشتغال و کارآفرینی</li>
                                </ol>',
-                'icon'    => null,
+                'icon' => null,
             ],
-            'capabilities_block'          => [
+            'capabilities_block' => [
                 'title'   => 'قابلیت‌های جدویار',
                 'content' => '<ul>
         <li>گسترده‌ترین شبکه آموزش در سطح استان</li>
@@ -70,7 +66,7 @@ final class AboutUsData extends Data
         <li>برخورداری از واحد اشتغال و کارآفرینی</li>
         <li>دارای اساتید متخصص، مجرب، توانمند، متعهد و متدین</li>
     </ul>',
-                'icon'    => null,
+                'icon' => null,
             ],
             'about_online_course_block_1' => [
                 'title'   => 'دوره‌های آنلاین جدویار',
@@ -87,7 +83,7 @@ final class AboutUsData extends Data
         <li>پشتیبانی فنی و آموزشی مستمر</li>
         <li>امکان دریافت گواهینامه معتبر پس از اتمام دوره</li>
     </ul>',
-                'icon'    => null,
+                'icon' => null,
             ],
         ];
     }

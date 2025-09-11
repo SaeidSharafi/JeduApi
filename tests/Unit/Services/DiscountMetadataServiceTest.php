@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
+use App\Enums\Order\DiscountTypeEnum;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\DiscountMetadataService;
-use App\Enums\Order\DiscountTypeEnum;
 use Illuminate\Support\Facades\Lang;
 
 describe('DiscountMetadataService', function () {
     beforeEach(function () {
         $this->mockRegistry = $this->mock(DiscountHandlerRegistry::class);
-        $this->service = new DiscountMetadataService($this->mockRegistry);
+        $this->service      = new DiscountMetadataService($this->mockRegistry);
     });
 
     it('returns correct metadata structure for empty handlers', function () {
         // Instead of relying on the service's getConditions/getActions, mock them directly for this test
-        $this->service = \Mockery::mock(DiscountMetadataService::class.'[getConditions,getActions]',
+        $this->service = Mockery::mock(DiscountMetadataService::class.'[getConditions,getActions]',
             [$this->mockRegistry]);
         $this->service->shouldAllowMockingProtectedMethods();
         $this->service->shouldReceive('getConditions')->andReturn(['cart' => [], 'product' => []]);
@@ -43,16 +43,16 @@ describe('DiscountMetadataService', function () {
         ]);
 
         // Mock config classes
-        if (!class_exists('CartCondConfig')) {
+        if (! class_exists('CartCondConfig')) {
             eval('class CartCondConfig { public function __construct(int $foo, float $float, array $array,bool $bool,  string $bar = "baz") {} }');
         }
-        if (!class_exists('ProdCondConfig')) {
+        if (! class_exists('ProdCondConfig')) {
             eval('class ProdCondConfig { public function __construct() {} }');
         }
-        if (!class_exists('CartActConfig')) {
+        if (! class_exists('CartActConfig')) {
             eval('class CartActConfig { public function __construct() {} }');
         }
-        if (!class_exists('ProdActConfig')) {
+        if (! class_exists('ProdActConfig')) {
             eval('class ProdActConfig { public function __construct() {} }');
         }
 
@@ -105,7 +105,7 @@ describe('DiscountMetadataService', function () {
         $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
-        if (!class_exists('NoCtorClass')) {
+        if (! class_exists('NoCtorClass')) {
             eval('class NoCtorClass {}');
         }
         $result = $this->service->extractConfigSchema('NoCtorClass');
@@ -118,7 +118,7 @@ describe('DiscountMetadataService', function () {
         $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
-        if (!class_exists('CustomDescConfig')) {
+        if (! class_exists('CustomDescConfig')) {
             eval('class CustomDescConfig { public static function descriptions() { return ["foo" => "Custom Foo Desc"]; } public function __construct(int $foo) {} }');
         }
         $result = $this->service->extractConfigSchema('CustomDescConfig');
@@ -131,10 +131,10 @@ describe('DiscountMetadataService', function () {
         $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
-        if (!enum_exists('TestEnum')) {
+        if (! enum_exists('TestEnum')) {
             eval('enum TestEnum: string { case A = "a"; case B = "b"; }');
         }
-        if (!class_exists('EnumConfig')) {
+        if (! class_exists('EnumConfig')) {
             eval('class EnumConfig { public function __construct(TestEnum $type = TestEnum::A) {} }');
         }
         $result = $this->service->extractConfigSchema('EnumConfig');
@@ -143,12 +143,12 @@ describe('DiscountMetadataService', function () {
         expect($result['type']['cases'])->toBe([
             [
                 'value' => 'a',
-                'label' => 'A'
+                'label' => 'A',
             ],
             [
                 'value' => 'b',
-                'label' => 'B'
-            ]
+                'label' => 'B',
+            ],
         ]);
     });
 
@@ -158,7 +158,8 @@ describe('DiscountMetadataService', function () {
         $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
-        $mockHandler = new class {
+        $mockHandler = new class
+        {
             public static function getConfigClass()
             {
                 return 'SomeConfigClass';
@@ -186,7 +187,8 @@ describe('DiscountMetadataService', function () {
         $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
-        $mockHandler = new class {
+        $mockHandler = new class
+        {
             public static function getConfigClass()
             {
                 throw new Exception('fail');
@@ -203,8 +205,7 @@ describe('DiscountMetadataService', function () {
         $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
-        $mockHandler = new class {
-        };
+        $mockHandler = new class {};
         $this->mockRegistry->shouldReceive('getHandlerClassByKey')->andReturn(get_class($mockHandler));
         $result = $this->service->getConfigurationClass('key', 'type', DiscountTypeEnum::CART_CHECKOUT);
         expect($result)->toBeNull();
@@ -216,13 +217,13 @@ describe('DiscountMetadataService', function () {
         $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
-        $ref = new ReflectionClass('CartCondConfig');
-        $params = $ref->getConstructor()->getParameters();
-        $typeInt = $this->service->getParameterType($params[0]->getType());
-        $typeFloat = $this->service->getParameterType($params[1]->getType());
-        $typeArray = $this->service->getParameterType($params[2]->getType());
+        $ref         = new ReflectionClass('CartCondConfig');
+        $params      = $ref->getConstructor()->getParameters();
+        $typeInt     = $this->service->getParameterType($params[0]->getType());
+        $typeFloat   = $this->service->getParameterType($params[1]->getType());
+        $typeArray   = $this->service->getParameterType($params[2]->getType());
         $typeBoolean = $this->service->getParameterType($params[3]->getType());
-        $typeString = $this->service->getParameterType($params[4]->getType());
+        $typeString  = $this->service->getParameterType($params[4]->getType());
         expect($typeFloat)->toBe('number');
         expect($typeArray)->toBe('array');
         expect($typeInt)->toBe('integer');
@@ -237,9 +238,9 @@ describe('DiscountMetadataService', function () {
         $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
-        $ref = new ReflectionClass('CartCondConfig');
+        $ref    = new ReflectionClass('CartCondConfig');
         $params = $ref->getConstructor()->getParameters();
-        $desc = $this->service->generateParameterDescription($params[0]->getName(), $params[0]->getType());
+        $desc   = $this->service->generateParameterDescription($params[0]->getName(), $params[0]->getType());
         expect($desc)->toBe('Foo (integer)');
     });
 
@@ -251,7 +252,7 @@ describe('DiscountMetadataService', function () {
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
         Lang::shouldReceive('has')->with('discount.name.special_key')->andReturn(true);
         Lang::shouldReceive('get')->with('discount.name.special_key', [], null)->andReturn('Localized Name');
-        if (!function_exists('__')) {
+        if (! function_exists('__')) {
             function __($key)
             {
                 return 'Localized Name';
@@ -272,7 +273,7 @@ describe('DiscountMetadataService', function () {
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
         Lang::shouldReceive('has')->with('discount.description.special_key')->andReturn(true);
         Lang::shouldReceive('get')->with('discount.description.special_key', [], null)->andReturn('Localized Desc');
-        if (!function_exists('__')) {
+        if (! function_exists('__')) {
             function __($key)
             {
                 return 'Localized Desc';
@@ -290,17 +291,17 @@ describe('DiscountMetadataService', function () {
         $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
-        if (!enum_exists('AdvEnum')) {
+        if (! enum_exists('AdvEnum')) {
             eval('enum AdvEnum: string { use \App\Traits\AdvanceEnum; case A = "case1"; case B = "case2"; }');
         }
-        if (!class_exists('AdvEnumConfig')) {
+        if (! class_exists('AdvEnumConfig')) {
             eval('class AdvEnumConfig { public function __construct(AdvEnum $type) {} }');
         }
         $result = $this->service->extractConfigSchema('AdvEnumConfig');
         expect($result['type']['cases'])->toBe(
             [
-                ['value' => "case1", 'label' => 'enums.AdvEnum.case1'],
-                ['value' => "case2", 'label' => 'enums.AdvEnum.case2']
+                ['value' => 'case1', 'label' => 'enums.AdvEnum.case1'],
+                ['value' => 'case2', 'label' => 'enums.AdvEnum.case2'],
             ]
         );
     });
@@ -312,19 +313,17 @@ describe('DiscountMetadataService', function () {
         expect($result)->toBe('int|string');
     });
 
-
     it('getParameterType returns type name for custom class (default branch)', function () {
-        if (!class_exists('CustomType')) {
+        if (! class_exists('CustomType')) {
             eval('class CustomType {}');
         }
-        if (!class_exists('DummyCustomType')) {
+        if (! class_exists('DummyCustomType')) {
             eval('class DummyCustomType { public function __construct(CustomType $foo) {} }');
         }
-        $ref = new ReflectionClass('DummyCustomType');
+        $ref    = new ReflectionClass('DummyCustomType');
         $params = $ref->getConstructor()->getParameters();
-        $type = $params[0]->getType();
+        $type   = $params[0]->getType();
         $result = $this->service->getParameterType($type);
         expect($result)->toBe('CustomType');
     });
 });
-

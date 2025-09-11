@@ -8,6 +8,7 @@ use App\Enums\Order\DiscountTypeEnum;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
 use App\Models\ProductDeliveryOptionDiscountPrice;
+use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -15,13 +16,12 @@ use Illuminate\Support\Facades\DB;
  * Product Discount Indexer - manages the indexing of product discount prices.
  * Inspired by Bagisto's CatalogRuleIndex but simplified for our product discount system.
  */
-class ProductDiscountIndexer
+final class ProductDiscountIndexer
 {
     public function __construct(
         private readonly DiscountHandlerRegistry $handlerRegistry,
         private readonly ProductDiscountPriceCalculator $priceCalculator
-    ) {
-    }
+    ) {}
 
     /**
      * Full re-index of all product discount prices.
@@ -153,7 +153,7 @@ class ProductDiscountIndexer
             }
         }
 
-        if (!empty($recordsToUpsert)) {
+        if (! empty($recordsToUpsert)) {
             // Use upsert to handle existing records
             ProductDeliveryOptionDiscountPrice::upsert(
                 $recordsToUpsert,
@@ -217,7 +217,7 @@ class ProductDiscountIndexer
         $now = now();
 
         return $promotion->is_active && ($promotion->starts_at === null || $promotion->starts_at <= $now)
-            && ($promotion->ends_at === null || $promotion->ends_at >= $now);
+                                     && ($promotion->ends_at === null || $promotion->ends_at >= $now);
     }
 
     /**
@@ -243,32 +243,32 @@ class ProductDiscountIndexer
         $conditionRules = $promotion->rules->where('type', 'condition');
 
         foreach ($conditionRules as $rule) {
-            $handlerName = data_get($rule, 'handler');
+            $handlerName  = data_get($rule, 'handler');
             $handlerClass = $this->handlerRegistry->getProductConditionHandler($handlerName);
 
             // @codeCoverageIgnoreStart
-            if (!$handlerClass) {
+            if (! $handlerClass) {
                 return false;
             }
             // @codeCoverageIgnoreEnd
 
             $configDtoClass = $this->handlerRegistry->getConfigClass($handlerClass);
             // @codeCoverageIgnoreStart
-            if (!$configDtoClass) {
+            if (! $configDtoClass) {
                 return false;
             }
             // @codeCoverageIgnoreEnd
 
             try {
                 $handler = app($handlerClass);
-                $config = $configDtoClass::from(data_get($rule, 'configuration'));
+                $config  = $configDtoClass::from(data_get($rule, 'configuration'));
 
-                if (!$handler->passes($option, $config)) {
+                if (! $handler->passes($option, $config)) {
                     return false;
                 }
             }
             // @codeCoverageIgnoreStart
-            catch (\Exception $e) {
+            catch (Exception $e) {
                 return false;
             }
             // @codeCoverageIgnoreEnd

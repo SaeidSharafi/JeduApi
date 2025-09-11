@@ -1,16 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Exceptions;
 
 use Exception;
 
-class InvalidJalaliDateException extends Exception
+final class InvalidJalaliDateException extends Exception
 {
     /**
      * Create a new exception instance.
      *
-     * @param string $property The name of the property that failed casting.
-     * @param mixed $value The value that failed to cast.
+     * @param  string  $property  The name of the property that failed casting.
+     * @param  mixed  $value  The value that failed to cast.
      */
     public function __construct(
         public string $property,

@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Gate;
  *
  * @authenticated
  */
-class CreateWalletController extends Controller
+final class CreateWalletController extends Controller
 {
     /**
      * Create a new wallet for a user.
@@ -28,6 +28,7 @@ class CreateWalletController extends Controller
     {
         Gate::authorize('create', Wallet::class);
         $wallet = (new CreateWalletAction())->execute($data);
+
         return JsonResource::make($wallet);
     }
 }

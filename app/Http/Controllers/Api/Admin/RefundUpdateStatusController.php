@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\Admin\Refund\UpdateRefundStatusAction;
@@ -14,7 +16,7 @@ use Illuminate\Support\Facades\Gate;
  *
  * APIs for managing refunds in the admin panel.
  */
-class RefundUpdateStatusController extends Controller
+final class RefundUpdateStatusController extends Controller
 {
     /**
      * Update the status of a refund.

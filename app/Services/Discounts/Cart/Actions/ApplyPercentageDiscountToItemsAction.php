@@ -21,11 +21,11 @@ final class ApplyPercentageDiscountToItemsAction implements DiscountActionContra
 
     public function apply(OrderContextData $context, Data $configuration): void
     {
-        if (!$configuration instanceof ApplyPercentageDiscountConfigData) {
+        if (! $configuration instanceof ApplyPercentageDiscountConfigData) {
             return;
         }
 
-        $discountRate = $configuration->percentage / 100;
+        $discountRate  = $configuration->percentage / 100;
         $promotionName = $context->evaluating_promotion?->name ?? 'Discount';
 
         foreach ($context->items as $item) {

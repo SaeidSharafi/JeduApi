@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 it('to array', function () {
-    $dsc = \App\Models\ProductDeliveryOptionDiscountPrice::create(
+    $dsc = App\Models\ProductDeliveryOptionDiscountPrice::create(
         [
-            'product_delivery_option_id' => \App\Models\ProductDeliveryOption::factory()->create()->id,
-            'discount_promotion_id'      => \App\Models\DiscountPromotion::factory()->create()->id,
+            'product_delivery_option_id' => App\Models\ProductDeliveryOption::factory()->create()->id,
+            'discount_promotion_id'      => App\Models\DiscountPromotion::factory()->create()->id,
             'discounted_price'           => 1000,
             'created_at'                 => now(),
             'updated_at'                 => now(),
@@ -22,9 +24,9 @@ it('to array', function () {
 });
 
 it('promotion relation', function () {
-    $product = \App\Models\ProductDeliveryOption::factory()->create();
-    $promotion = \App\Models\DiscountPromotion::factory()->create();
-    $dsc = \App\Models\ProductDeliveryOptionDiscountPrice::create([
+    $product   = App\Models\ProductDeliveryOption::factory()->create();
+    $promotion = App\Models\DiscountPromotion::factory()->create();
+    $dsc       = App\Models\ProductDeliveryOptionDiscountPrice::create([
         'product_delivery_option_id' => $product->id,
         'discount_promotion_id'      => $promotion->id,
         'discounted_price'           => 1000,
@@ -34,16 +36,16 @@ it('promotion relation', function () {
     $promotion = $dsc->promotion;
 
     expect($promotion)
-        ->toBeInstanceOf(\App\Models\DiscountPromotion::class)
+        ->toBeInstanceOf(App\Models\DiscountPromotion::class)
         ->and($promotion->id)
         ->toEqual($dsc->discount_promotion_id);
 
 });
 
 it('product delivery option relation', function () {
-    $product = \App\Models\ProductDeliveryOption::factory()->create();
-    $promotion = \App\Models\DiscountPromotion::factory()->create();
-    $dsc = \App\Models\ProductDeliveryOptionDiscountPrice::create([
+    $product   = App\Models\ProductDeliveryOption::factory()->create();
+    $promotion = App\Models\DiscountPromotion::factory()->create();
+    $dsc       = App\Models\ProductDeliveryOptionDiscountPrice::create([
         'product_delivery_option_id' => $product->id,
         'discount_promotion_id'      => $promotion->id,
         'discounted_price'           => 1000,
@@ -52,7 +54,7 @@ it('product delivery option relation', function () {
     ]);
 
     expect($dsc->productDeliveryOption)
-        ->toBeInstanceOf(\App\Models\ProductDeliveryOption::class)
+        ->toBeInstanceOf(App\Models\ProductDeliveryOption::class)
         ->and($product->id)
         ->toEqual($dsc->product_delivery_option_id);
 });

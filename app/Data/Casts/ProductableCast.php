@@ -21,7 +21,7 @@ use Spatie\LaravelData\Support\DataProperty;
 
 final readonly class ProductableCast implements Cast
 {
-    public function __construct(protected bool $short = false) {}
+    public function __construct(private bool $short = false) {}
 
     public function cast(DataProperty $property, mixed $value, array $properties, CreationContext $context): mixed
     {

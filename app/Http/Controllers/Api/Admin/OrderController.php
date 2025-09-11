@@ -70,7 +70,7 @@ final class OrderController extends Controller
             ->withSum([
                 'payments as completed_payments_sum_amount' => function (Builder $query) {
                     $query->where('status', PaymentStatusEnum::COMPLETED);
-                }
+                },
             ], 'amount')
             ->paginate(request()->integer('per_page', 15));
 

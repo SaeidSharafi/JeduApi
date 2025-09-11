@@ -13,14 +13,12 @@ use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Mockery\MockInterface;
 use Spatie\LaravelData\Data;
-use Symfony\Component\Finder\SplFileInfo;
 
 // Mock handler classes for testing
 #[DiscountHandlerKey('test_cart_condition')]
-class MockCartCondition implements DiscountConditionContract
+final class MockCartCondition implements DiscountConditionContract
 {
     public static function getConfigClass(): string
     {
@@ -34,7 +32,7 @@ class MockCartCondition implements DiscountConditionContract
 }
 
 #[DiscountHandlerKey('test_cart_action')]
-class MockCartAction implements DiscountActionContract
+final class MockCartAction implements DiscountActionContract
 {
     public static function getConfigClass(): string
     {
@@ -48,7 +46,7 @@ class MockCartAction implements DiscountActionContract
 }
 
 #[DiscountHandlerKey('test_product_condition')]
-class MockProductCondition implements ProductDiscountConditionContract
+final class MockProductCondition implements ProductDiscountConditionContract
 {
     public static function getConfigClass(): string
     {
@@ -62,7 +60,7 @@ class MockProductCondition implements ProductDiscountConditionContract
 }
 
 #[DiscountHandlerKey('test_product_action')]
-class MockProductAction implements ProductDiscountActionContract
+final class MockProductAction implements ProductDiscountActionContract
 {
     public static function getConfigClass(): string
     {
@@ -76,7 +74,7 @@ class MockProductAction implements ProductDiscountActionContract
 }
 
 // Mock handler without attribute
-class MockHandlerWithoutAttribute implements DiscountConditionContract
+final class MockHandlerWithoutAttribute implements DiscountConditionContract
 {
     public static function getConfigClass(): string
     {
@@ -93,7 +91,7 @@ class MockHandlerWithoutAttribute implements DiscountConditionContract
 #[DiscountHandlerKey('test_abstract')]
 abstract class MockAbstractHandler implements DiscountConditionContract
 {
-    public static function getConfigClass(): string
+    final public static function getConfigClass(): string
     {
         return 'MockConfig';
     }
@@ -101,7 +99,7 @@ abstract class MockAbstractHandler implements DiscountConditionContract
 
 // Mock handler that throws exception in getConfigClass
 #[DiscountHandlerKey('test_exception_config')]
-class MockHandlerWithExceptionConfig implements DiscountConditionContract
+final class MockHandlerWithExceptionConfig implements DiscountConditionContract
 {
     public static function getConfigClass(): string
     {
@@ -123,11 +121,11 @@ describe('DiscountHandlerRegistry', function () {
         config()->set('app.debug', false);
 
         $cachedData = [
-            'cartConditions' => ['key1' => 'Class1'],
-            'cartActions' => ['key2' => 'Class2'],
+            'cartConditions'    => ['key1' => 'Class1'],
+            'cartActions'       => ['key2' => 'Class2'],
             'productConditions' => ['key3' => 'Class3'],
-            'productActions' => ['key4' => 'Class4'],
-            'configMap' => ['Class1' => 'Config1'],
+            'productActions'    => ['key4' => 'Class4'],
+            'configMap'         => ['Class1' => 'Config1'],
         ];
 
         Cache::shouldReceive('get')
@@ -156,11 +154,11 @@ describe('DiscountHandlerRegistry', function () {
         Cache::shouldReceive('forever')
             ->once()
             ->with(DiscountHandlerRegistry::CACHE_KEY, [
-                'cartConditions' => [],
-                'cartActions' => [],
+                'cartConditions'    => [],
+                'cartActions'       => [],
                 'productConditions' => [],
-                'productActions' => [],
-                'configMap' => [],
+                'productActions'    => [],
+                'configMap'         => [],
             ]);
 
         $registry = new DiscountHandlerRegistry(app(Filesystem::class));
@@ -179,11 +177,11 @@ describe('DiscountHandlerRegistry', function () {
         Cache::shouldReceive('forever')
             ->once()
             ->with(DiscountHandlerRegistry::CACHE_KEY, [
-                'cartConditions' => [],
-                'cartActions' => [],
+                'cartConditions'    => [],
+                'cartActions'       => [],
                 'productConditions' => [],
-                'productActions' => [],
-                'configMap' => [],
+                'productActions'    => [],
+                'configMap'         => [],
             ]);
 
         $registry = new DiscountHandlerRegistry(app(Filesystem::class));
@@ -194,7 +192,7 @@ describe('DiscountHandlerRegistry', function () {
     it('skips non-existent directories during discovery', function () {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', [
-            'App\\NonExistent\\' => 'NonExistent/Path'
+            'App\\NonExistent\\' => 'NonExistent/Path',
         ]);
 
         $mockFilesystem = $this->mock(Filesystem::class, function (MockInterface $mock) {
@@ -408,13 +406,13 @@ describe('DiscountHandlerRegistry', function () {
 
     describe('getClassNameFromFile', function () {
         it('generates correct class name from file path', function () {
-            $registry = new DiscountHandlerRegistry(app(Filesystem::class));
+            $registry   = new DiscountHandlerRegistry(app(Filesystem::class));
             $reflection = new ReflectionClass($registry);
-            $method = $reflection->getMethod('getClassNameFromFile');
+            $method     = $reflection->getMethod('getClassNameFromFile');
             $method->setAccessible(true);
 
-            $basePath = app_path('Services/Discounts');
-            $filePath = app_path('Services/Discounts/Cart/Conditions/TestCondition.php');
+            $basePath      = app_path('Services/Discounts');
+            $filePath      = app_path('Services/Discounts/Cart/Conditions/TestCondition.php');
             $baseNamespace = 'App\\Services\\Discounts\\';
 
             $result = $method->invoke($registry, $filePath, $basePath, $baseNamespace);
@@ -423,15 +421,15 @@ describe('DiscountHandlerRegistry', function () {
         });
 
         it('handles Windows path separators correctly', function () {
-            $registry = new DiscountHandlerRegistry(app(Filesystem::class));
+            $registry   = new DiscountHandlerRegistry(app(Filesystem::class));
             $reflection = new ReflectionClass($registry);
-            $method = $reflection->getMethod('getClassNameFromFile');
+            $method     = $reflection->getMethod('getClassNameFromFile');
             $method->setAccessible(true);
 
             // Test with Unix-style paths (since that's what the system actually uses)
             // The method converts file separators to namespace separators properly
-            $basePath = '/app/Services/Discounts';
-            $filePath = '/app/Services/Discounts/Cart/Conditions/TestCondition.php';
+            $basePath      = '/app/Services/Discounts';
+            $filePath      = '/app/Services/Discounts/Cart/Conditions/TestCondition.php';
             $baseNamespace = 'App\\Services\\Discounts\\';
 
             $result = $method->invoke($registry, $filePath, $basePath, $baseNamespace);
@@ -451,11 +449,11 @@ describe('DiscountHandlerRegistry', function () {
                 ->andReturn(null);
 
             $expectedCacheData = [
-                'cartConditions' => [],
-                'cartActions' => [],
+                'cartConditions'    => [],
+                'cartActions'       => [],
                 'productConditions' => [],
-                'productActions' => [],
-                'configMap' => [],
+                'productActions'    => [],
+                'configMap'         => [],
             ];
 
             Cache::shouldReceive('forever')
@@ -507,7 +505,7 @@ describe('DiscountHandlerRegistry', function () {
             config()->set('app.debug', true);
             config()->set('discounts.discovery_paths', [
                 'App\\Services\\Discounts\\' => 'Services/Discounts',
-                'App\\CustomDiscounts\\' => 'CustomDiscounts',
+                'App\\CustomDiscounts\\'     => 'CustomDiscounts',
             ]);
 
             $mockFilesystem = $this->mock(Filesystem::class, function (MockInterface $mock) {
@@ -537,10 +535,10 @@ describe('DiscountHandlerRegistry', function () {
             $registry = new DiscountHandlerRegistry(app(Filesystem::class));
 
             // If real handlers are discovered, they should be in the registry
-            $cartConditions = $registry->getCartConditionHandlers();
-            $cartActions = $registry->getCartActionHandlers();
+            $cartConditions    = $registry->getCartConditionHandlers();
+            $cartActions       = $registry->getCartActionHandlers();
             $productConditions = $registry->getProductConditionHandlers();
-            $productActions = $registry->getProductActionHandlers();
+            $productActions    = $registry->getProductActionHandlers();
 
             // These should be arrays (might be empty or contain actual handlers)
             expect($cartConditions)->toBeArray();
@@ -567,7 +565,7 @@ describe('DiscountHandlerRegistry', function () {
 
             // Test that the getClassNameFromFile method generates proper class names
             $reflection = new ReflectionClass($registry);
-            $method = $reflection->getMethod('getClassNameFromFile');
+            $method     = $reflection->getMethod('getClassNameFromFile');
             $method->setAccessible(true);
 
             $result = $method->invoke(

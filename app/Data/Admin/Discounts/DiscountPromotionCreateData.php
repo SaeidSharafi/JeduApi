@@ -33,8 +33,7 @@ final class DiscountPromotionCreateData extends Data
         public ?int $usage_limit_per_customer = null,
         #[DataCollectionOf(DiscountCouponCreateData::class)]
         public array $coupons = [],
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {
@@ -68,11 +67,11 @@ final class DiscountPromotionCreateData extends Data
     public function bodyParameters(): array
     {
         return [
-            'name'        => [
+            'name' => [
                 'description' => 'Name of the promotion',
                 'example'     => 'Summer Sale 2025',
             ],
-            'type'        => [
+            'type' => [
                 'description' => 'Type of promotion',
                 'example'     => DiscountTypeEnum::CART_CHECKOUT->value,
             ],
@@ -80,23 +79,23 @@ final class DiscountPromotionCreateData extends Data
                 'description' => 'Internal description for admins',
                 'example'     => '10% off all courses during summer',
             ],
-            'is_active'   => [
+            'is_active' => [
                 'description' => 'Whether the promotion is active',
                 'example'     => true,
             ],
-            'starts_at'   => [
+            'starts_at' => [
                 'description' => 'When the promotion starts (ISO 8601 format)',
                 'example'     => '2025-06-01T00:00:00Z',
             ],
-            'ends_at'     => [
+            'ends_at' => [
                 'description' => 'When the promotion ends (ISO 8601 format)',
                 'example'     => '2025-08-31T23:59:59Z',
             ],
-            'priority'    => [
+            'priority' => [
                 'description' => 'Priority for conflict resolution (higher runs first)',
                 'example'     => 10,
             ],
-            'rules'       => [
+            'rules' => [
                 'description' => 'Array of promotion rules (conditions and actions)',
                 'example'     => [
                     [
@@ -105,27 +104,27 @@ final class DiscountPromotionCreateData extends Data
                         'configuration' => [
                             'operator'            => '>=',
                             'value'               => 50000,
-                            'include_prepayments' => false
-                        ]
+                            'include_prepayments' => false,
+                        ],
                     ],
                     [
                         'type'          => 'action',
                         'handler'       => 'apply_percentage_off',
                         'configuration' => [
-                            'percentage' => 10
-                        ]
-                    ]
-                ]
+                            'percentage' => 10,
+                        ],
+                    ],
+                ],
             ],
-            'coupons'     => [
+            'coupons' => [
                 'description' => 'Array of coupon codes for this promotion',
                 'example'     => [
                     [
                         'code'        => 'SUMMER10',
                         'usage_limit' => 100,
-                        'is_active'   => true
-                    ]
-                ]
+                        'is_active'   => true,
+                    ],
+                ],
             ],
         ];
     }

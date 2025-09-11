@@ -14,7 +14,7 @@ final class PublishedProductExistRule implements DataAwareRule, ValidationRule
 {
     private array $data = [];
 
-    public function __construct(protected readonly ?Product $product) {}
+    public function __construct(private readonly ?Product $product) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {

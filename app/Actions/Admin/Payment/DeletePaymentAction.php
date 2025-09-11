@@ -16,8 +16,8 @@ final class DeletePaymentAction
      */
     public function handle(Order $order, Payment $payment): void
     {
-        if ($payment->status === PaymentStatusEnum::COMPLETED ){
-            throw  ValidationException::withMessages(
+        if ($payment->status === PaymentStatusEnum::COMPLETED) {
+            throw ValidationException::withMessages(
                 ['payment' => __('messages.order.payment.delete_completed_payment_error')]
             );
         }

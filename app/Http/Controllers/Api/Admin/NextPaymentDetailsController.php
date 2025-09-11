@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\Admin\Payment\GetNextPaymentDetailsAction;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
+use Exception;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -13,7 +16,7 @@ use Illuminate\Support\Facades\Gate;
  *
  * Handles the retrieval of next payment details for an order.
  */
-class NextPaymentDetailsController extends Controller
+final class NextPaymentDetailsController extends Controller
 {
     /**
      * Display the next payment details for a given order.
@@ -28,7 +31,7 @@ class NextPaymentDetailsController extends Controller
         try {
             // The action will return the DTO or throw an exception.
             return response()->success($action->handle($order));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Return a 422 Unprocessable Entity status if payment is not possible.
             return response()->validationErrors([$e->getMessage()], 422);
         }

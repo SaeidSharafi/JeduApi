@@ -10,9 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 final class SmsChannel
 {
-    public function __construct(protected IpPanelSmsService $sms)
-    {
-    }
+    public function __construct(private IpPanelSmsService $sms) {}
 
     /**
      * Send the given notification.
@@ -26,9 +24,10 @@ final class SmsChannel
         // Get the SmsMessage object from the notification
         $message = $notification->toSms($notifiable);
 
-        if (!$message instanceof SmsMessage) {
+        if (! $message instanceof SmsMessage) {
             // Or throw an exception, depending on how strict you want to be
             Log::error('Notification did not return an SmsMessage object.', ['notification' => get_class($notification)]);
+
             return;
         }
 
@@ -40,6 +39,7 @@ final class SmsChannel
                 messeage: $message->content,
                 type: $message->type,
             );
+
             return;
         }
         if ($message->content) {

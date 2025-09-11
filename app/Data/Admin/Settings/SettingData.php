@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Admin\Settings;
 
-use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Data;
 
-class SettingData extends Data
+final class SettingData extends Data
 {
     public function __construct(
         public int $id,
@@ -13,7 +14,5 @@ class SettingData extends Data
         public mixed $value,
         public ?string $type = null,
         public ?string $group = null,
-    )
-    {
-    }
+    ) {}
 }

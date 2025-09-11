@@ -42,6 +42,11 @@ final class Staff extends Authenticatable implements MustVerifyEmail, WalletTran
         return ! is_null($this->password);
     }
 
+    public function routeNotificationForSms($notification): string
+    {
+        return $this->phone;
+    }
+
     protected function casts(): array
     {
         return [
@@ -50,10 +55,5 @@ final class Staff extends Authenticatable implements MustVerifyEmail, WalletTran
             'created_at'        => 'datetime',
             'updated_at'        => 'datetime',
         ];
-    }
-
-    public function routeNotificationForSms($notification): string
-    {
-        return $this->phone;
     }
 }

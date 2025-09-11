@@ -28,26 +28,23 @@ final class OrderItemFactory extends Factory
             'product_delivery_option_id' => $productDeliveryOptionFactory,
             'qty_ordered'                => 1,
             'payment_type'               => $this->faker->randomElement(OrderItemPaymentTypeEnum::getAllValues()),
-            'name'                       =>
-                fn(array $attributes
-                ) => ProductDeliveryOption::find($attributes['product_delivery_option_id'])->name,
-            'sku'                        =>
-                fn(array $attributes
-                ) => ProductDeliveryOption::find($attributes['product_delivery_option_id'])->sku,
-            'product_data_snapshot_json' =>
-                fn(array $attributes
-                ) => ProductDeliveryOption::find($attributes['product_delivery_option_id'])->product->toArray(),
-            'vendor_id'                  => Vendor::factory(),
-            'price'                      => 0,
-            'discount_amount'            => 0,
-            'tax_amount'                 => 0,
-            'total'                      => 0,
-            'prepayment_amount'          => 0,
-            'total_refunded'             => 0,
-            'qty_refunded'               => 0,
-            'status'                     => $this->faker->randomElement(OrderItemStatusEnum::getAllValues()),
-            'created_at'                 => Carbon::now(),
-            'updated_at'                 => Carbon::now(),
+            'name'                       => fn (array $attributes
+            ) => ProductDeliveryOption::find($attributes['product_delivery_option_id'])->name,
+            'sku' => fn (array $attributes
+            ) => ProductDeliveryOption::find($attributes['product_delivery_option_id'])->sku,
+            'product_data_snapshot_json' => fn (array $attributes
+            ) => ProductDeliveryOption::find($attributes['product_delivery_option_id'])->product->toArray(),
+            'vendor_id'         => Vendor::factory(),
+            'price'             => 0,
+            'discount_amount'   => 0,
+            'tax_amount'        => 0,
+            'total'             => 0,
+            'prepayment_amount' => 0,
+            'total_refunded'    => 0,
+            'qty_refunded'      => 0,
+            'status'            => $this->faker->randomElement(OrderItemStatusEnum::getAllValues()),
+            'created_at'        => Carbon::now(),
+            'updated_at'        => Carbon::now(),
         ];
     }
 
@@ -56,8 +53,7 @@ final class OrderItemFactory extends Factory
         return $this->state(function (array $attributes) {
             $productDeliveryOption = ProductDeliveryOption::query()
                 ->where('status', PublicationStatusEnum::PUBLISHED)
-                ->inRandomOrder()->first() ??
-                ProductDeliveryOption::factory()->create();
+                ->inRandomOrder()->first()             ?? ProductDeliveryOption::factory()->create();
             $vendor = Vendor::inRandomOrder()->first() ?? Vendor::factory()->create();
 
             return [
@@ -71,7 +67,7 @@ final class OrderItemFactory extends Factory
                 'payment_type'               => $productDeliveryOption->is_prepayment_available
                     ? OrderItemPaymentTypeEnum::PRE_PAYMENT
                     : OrderItemPaymentTypeEnum::FULL_PAYMENT,
-                'total'                      => $productDeliveryOption->is_prepayment_available
+                'total' => $productDeliveryOption->is_prepayment_available
                     ? $productDeliveryOption->prepayment_amount
                     : $productDeliveryOption->price,
             ];

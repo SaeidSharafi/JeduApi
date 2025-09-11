@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Order\RefundStatusEnum;
@@ -7,20 +9,20 @@ use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Order;
 use App\Models\Refund;
-use Illuminate\Support\Collection;
+
 use function Pest\Laravel\assertDatabaseHas;
 
-uses(\Tests\AuthTestTrait::class);
+uses(Tests\AuthTestTrait::class);
 describe('RefundController', function () {
 
     it('should return a list of refunds', function () {
-        $this->authorized_user([\App\Enums\PermissionEnum::REFUND_VIEW_ANY]);
+        $this->authorized_user([App\Enums\PermissionEnum::REFUND_VIEW_ANY]);
         $order = Order::factory()->withCalculatedTotals(
             [
                 [
                     'total'  => 50000,
                     'status' => OrderItemStatusEnum::COMPLETED->value,
-                ]
+                ],
             ]
         )->create();
         $order->payments()->create([
@@ -44,7 +46,7 @@ describe('RefundController', function () {
             'status'        => RefundStatusEnum::COMPLETED,
         ]);
         Refund::factory()->create([
-            'order_item_id' => \App\Models\OrderItem::factory()->create(),
+            'order_item_id' => App\Models\OrderItem::factory()->create(),
             'status'        => RefundStatusEnum::COMPLETED,
         ]);
         $response = $this->getJson(route('api.v1.admin.refund.index', ['orderItem' => $orderItem->id]));
@@ -60,27 +62,27 @@ describe('RefundController', function () {
                                 'receiver_name',
                                 'card_number',
                                 'iban_number',
-                                'tracking_code'
+                                'tracking_code',
                             ],
                             'status',
                             'admin_notes',
                             'created_at',
-                            'updated_at'
-                        ]
-                    ]
-                ]
+                            'updated_at',
+                        ],
+                    ],
+                ],
             ]);
     });
 
     it('should create a refund', function () {
-        $this->authorized_user([\App\Enums\PermissionEnum::REFUND_CREATE]);
+        $this->authorized_user([App\Enums\PermissionEnum::REFUND_CREATE]);
         $order = Order::factory()->withCalculatedTotals(
             [
                 [
                     'total'  => 50000,
                     'price'  => 50000,
                     'status' => OrderItemStatusEnum::COMPLETED->value,
-                ]
+                ],
             ]
         )->create();
         $order->payments()->create([
@@ -91,13 +93,13 @@ describe('RefundController', function () {
         ]);
 
         $orderItem = $order->items()->first();
-        \App\Models\Enrolment::factory()
+        App\Models\Enrolment::factory()
             ->create([
                 'order_id'                   => $order->id,
                 'order_item_id'              => $orderItem->id,
                 'customer_id'                => $order->customer_id,
                 'product_delivery_option_id' => $orderItem->product_delivery_option_id,
-                'enrollment_status'          => \App\Enums\EnrolmentStatusEnum::ACTIVE->value,
+                'enrollment_status'          => App\Enums\EnrolmentStatusEnum::ACTIVE->value,
             ]);
         $data = [
             'deduction_percent'   => 20,
@@ -106,24 +108,24 @@ describe('RefundController', function () {
                 'receiver_name' => 'John Doe',
                 'card_number'   => '1234567890123456',
                 'iban_number'   => 'IR123456789012345678901234',
-                'tracking_code' => 'TRK1234567890'
+                'tracking_code' => 'TRK1234567890',
             ],
         ];
 
         $response = $this->postJson(route('api.v1.admin.refund.store', ['orderItem' => $orderItem->id]), $data);
         $response->assertCreated()
-            ->assertJson(function (\Illuminate\Testing\Fluent\AssertableJson $json) {
+            ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) {
                 $json
                     ->where('data.deduction_amount', 10000) // 20% of 50000
                     ->where('data.status', [
                         'value' => RefundStatusEnum::COMPLETED->value,
-                        'label' => RefundStatusEnum::COMPLETED->translate()
+                        'label' => RefundStatusEnum::COMPLETED->translate(),
                     ])
                     ->where('data.transaction_details', [
                         'receiver_name' => 'John Doe',
                         'card_number'   => '1234567890123456',
                         'iban_number'   => 'IR123456789012345678901234',
-                        'tracking_code' => 'TRK1234567890'
+                        'tracking_code' => 'TRK1234567890',
                     ])
                     ->etc();
             });
@@ -148,20 +150,20 @@ describe('RefundController', function () {
         assertDatabaseHas('enrolments', [
             'order_id'          => $order->id,
             'order_item_id'     => $orderItem->id,
-            'enrollment_status' => \App\Enums\EnrolmentStatusEnum::CANCELLED->value,
+            'enrollment_status' => App\Enums\EnrolmentStatusEnum::CANCELLED->value,
         ]);
     });
 
     it('should not create a refund with invalid data',
         function (?int $deductionAmount, ?int $deductionPercent, string $field) {
-            $this->authorized_user([\App\Enums\PermissionEnum::REFUND_CREATE]);
+            $this->authorized_user([App\Enums\PermissionEnum::REFUND_CREATE]);
             $order = Order::factory()->withCalculatedTotals(
                 [
                     [
                         'total'  => 50000,
                         'price'  => 50000,
                         'status' => OrderItemStatusEnum::COMPLETED->value,
-                    ]
+                    ],
                 ]
             )->create();
             $order->payments()->create([
@@ -181,7 +183,7 @@ describe('RefundController', function () {
                     'receiver_name' => 'John Doe',
                     'card_number'   => '1234567890123456',
                     'iban_number'   => 'IR123456789012345678901234',
-                    'tracking_code' => 'TRK1234567890'
+                    'tracking_code' => 'TRK1234567890',
                 ],
             ];
 
@@ -189,20 +191,20 @@ describe('RefundController', function () {
             $response->assertUnprocessable()
                 ->assertJsonValidationErrors($field);
         })->with([
-        [null, 110, 'deduction_percent'], // Deduction percent exceeds maximum
-        [10000, 80, 'deduction_amount'], // Deduction percent is valid
-        [null, -10, 'deduction_percent'], // Negative deduction percent
-    ]);
+            [null, 110, 'deduction_percent'], // Deduction percent exceeds maximum
+            [10000, 80, 'deduction_amount'], // Deduction percent is valid
+            [null, -10, 'deduction_percent'], // Negative deduction percent
+        ]);
 
     it('should not create a refund for an order item that is not refundable', function () {
-        $this->authorized_user([\App\Enums\PermissionEnum::REFUND_CREATE]);
+        $this->authorized_user([App\Enums\PermissionEnum::REFUND_CREATE]);
         $order = Order::factory()->withCalculatedTotals(
             [
                 [
                     'total'  => 50000,
                     'price'  => 50000,
                     'status' => OrderItemStatusEnum::COMPLETED->value,
-                ]
+                ],
             ]
         )->create();
         $order->payments()->create([
@@ -212,7 +214,7 @@ describe('RefundController', function () {
             'status'      => PaymentStatusEnum::COMPLETED,
         ]);
 
-        $orderItem = $order->items()->first();
+        $orderItem         = $order->items()->first();
         $orderItem->status = OrderItemStatusEnum::CANCELLED;
         $orderItem->save();
 
@@ -223,7 +225,7 @@ describe('RefundController', function () {
                 'receiver_name' => 'John Doe',
                 'card_number'   => '1234567890123456',
                 'iban_number'   => 'IR123456789012345678901234',
-                'tracking_code' => 'TRK1234567890'
+                'tracking_code' => 'TRK1234567890',
             ],
         ];
 
@@ -244,7 +246,7 @@ describe('RefundController', function () {
     });
 
     it('should not create a refund for an order item that does not exist', function () {
-        $this->authorized_user([\App\Enums\PermissionEnum::REFUND_CREATE]);
+        $this->authorized_user([App\Enums\PermissionEnum::REFUND_CREATE]);
         $data = [
             'deduction_percent'   => 20,
             'status'              => RefundStatusEnum::PENDING->value,
@@ -252,7 +254,7 @@ describe('RefundController', function () {
                 'receiver_name' => 'John Doe',
                 'card_number'   => '1234567890123456',
                 'iban_number'   => 'IR123456789012345678901234',
-                'tracking_code' => 'TRK1234567890'
+                'tracking_code' => 'TRK1234567890',
             ],
         ];
 
@@ -261,14 +263,14 @@ describe('RefundController', function () {
     });
 
     it('should update only the data of a pending refund', function () {
-        $this->authorized_user([\App\Enums\PermissionEnum::REFUND_UPDATE]);
+        $this->authorized_user([App\Enums\PermissionEnum::REFUND_UPDATE]);
         $order = Order::factory()->withCalculatedTotals(
             [
                 [
                     'total'  => 50000,
                     'price'  => 50000,
                     'status' => OrderItemStatusEnum::COMPLETED->value,
-                ]
+                ],
             ]
         )->create();
         $order->payments()->create([
@@ -279,7 +281,7 @@ describe('RefundController', function () {
         ]);
 
         $orderItem = $order->items()->first();
-        $refund = Refund::factory()->create([
+        $refund    = Refund::factory()->create([
             'order_item_id' => $orderItem->id,
             'status'        => RefundStatusEnum::PENDING,
         ]);
@@ -291,15 +293,15 @@ describe('RefundController', function () {
                 'receiver_name' => 'Jane Doe',
                 'card_number'   => '6543210987654321',
                 'iban_number'   => 'IR098765432109876543210987',
-                'tracking_code' => 'TRK0987654321'
+                'tracking_code' => 'TRK0987654321',
             ],
-            'admin_notes'         => 'Updated refund details',
+            'admin_notes' => 'Updated refund details',
         ];
 
         $response = $this->putJson(route('api.v1.admin.refund.update',
             ['orderItem' => $orderItem, 'refund' => $refund->id]), $data);
         $response->assertOk()
-            ->assertJson(function (\Illuminate\Testing\Fluent\AssertableJson $json) {
+            ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) {
                 $json
                     ->where('data.deduction_amount', 5000)
                     ->where('data.transaction_details.receiver_name', 'Jane Doe')
@@ -323,14 +325,14 @@ describe('RefundController', function () {
     });
 
     it('should not update a refund that is not pending', function () {
-        $this->authorized_user([\App\Enums\PermissionEnum::REFUND_UPDATE]);
+        $this->authorized_user([App\Enums\PermissionEnum::REFUND_UPDATE]);
         $order = Order::factory()->withCalculatedTotals(
             [
                 [
                     'total'  => 50000,
                     'price'  => 50000,
                     'status' => OrderItemStatusEnum::COMPLETED->value,
-                ]
+                ],
             ]
         )->create();
         $order->payments()->create([
@@ -341,7 +343,7 @@ describe('RefundController', function () {
         ]);
 
         $orderItem = $order->items()->first();
-        $refund = Refund::factory()->create([
+        $refund    = Refund::factory()->create([
             'order_item_id' => $orderItem->id,
             'status'        => RefundStatusEnum::COMPLETED, // Not pending
         ]);
@@ -353,9 +355,9 @@ describe('RefundController', function () {
                 'receiver_name' => 'Jane Doe',
                 'card_number'   => '6543210987654321',
                 'iban_number'   => 'IR098765432109876543210987',
-                'tracking_code' => 'TRK0987654321'
+                'tracking_code' => 'TRK0987654321',
             ],
-            'admin_notes'         => 'Updated refund details',
+            'admin_notes' => 'Updated refund details',
         ];
 
         $response = $this->putJson(route('api.v1.admin.refund.update',
@@ -365,14 +367,14 @@ describe('RefundController', function () {
     });
 
     it('show detail of a refund', function () {
-        $this->authorized_user([\App\Enums\PermissionEnum::REFUND_VIEW]);
+        $this->authorized_user([App\Enums\PermissionEnum::REFUND_VIEW]);
         $order = Order::factory()->withCalculatedTotals(
             [
                 [
                     'total'  => 50000,
                     'price'  => 50000,
                     'status' => OrderItemStatusEnum::COMPLETED->value,
-                ]
+                ],
             ]
         )->create();
         $order->payments()->create([
@@ -383,27 +385,27 @@ describe('RefundController', function () {
         ]);
 
         $orderItem = $order->items()->first();
-        $refund = Refund::factory()->create([
+        $refund    = Refund::factory()->create([
             'order_item_id'       => $orderItem->id,
             'status'              => RefundStatusEnum::PENDING,
             'transaction_details' => [
                 'receiver_name' => 'John Doe',
                 'card_number'   => '1234567890123456',
                 'iban_number'   => 'IR123456789012345678901234',
-                'tracking_code' => 'TRK1234567890'
-            ]
+                'tracking_code' => 'TRK1234567890',
+            ],
         ]);
 
         $response = $this->getJson(route('api.v1.admin.refund.show',
             ['orderItem' => $orderItem, 'refund' => $refund->id]));
         $response->assertOk()
-            ->assertJson(function (\Illuminate\Testing\Fluent\AssertableJson $json) use ($refund) {
+            ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($refund) {
                 $json
                     ->where('data.id', $refund->id)
                     ->where('data.deduction_amount', $refund->deduction_amount)
                     ->where('data.status', [
                         'value' => RefundStatusEnum::PENDING->value,
-                        'label' => RefundStatusEnum::PENDING->translate()
+                        'label' => RefundStatusEnum::PENDING->translate(),
                     ])
                     ->where('data.transaction_details.receiver_name', $refund->transaction_details['receiver_name'])
                     ->where('data.transaction_details.card_number', $refund->transaction_details['card_number'])
@@ -413,14 +415,14 @@ describe('RefundController', function () {
     });
 
     it('should delete a pending refund', function () {
-        $this->authorized_user([\App\Enums\PermissionEnum::REFUND_DELETE]);
+        $this->authorized_user([App\Enums\PermissionEnum::REFUND_DELETE]);
         $order = Order::factory()->withCalculatedTotals(
             [
                 [
                     'total'  => 50000,
                     'price'  => 50000,
                     'status' => OrderItemStatusEnum::COMPLETED->value,
-                ]
+                ],
             ]
         )->create();
         $order->payments()->create([
@@ -431,7 +433,7 @@ describe('RefundController', function () {
         ]);
 
         $orderItem = $order->items()->first();
-        $refund = Refund::factory()->create([
+        $refund    = Refund::factory()->create([
             'order_item_id' => $orderItem->id,
             'status'        => RefundStatusEnum::PENDING,
         ]);
@@ -444,14 +446,14 @@ describe('RefundController', function () {
     });
 
     it('should not delete a refund that is not pending', function (RefundStatusEnum $status) {
-        $this->authorized_user([\App\Enums\PermissionEnum::REFUND_DELETE]);
+        $this->authorized_user([App\Enums\PermissionEnum::REFUND_DELETE]);
         $order = Order::factory()->withCalculatedTotals(
             [
                 [
                     'total'  => 50000,
                     'price'  => 50000,
                     'status' => OrderItemStatusEnum::COMPLETED->value,
-                ]
+                ],
             ]
         )->create();
         $order->payments()->create([
@@ -462,7 +464,7 @@ describe('RefundController', function () {
         ]);
 
         $orderItem = $order->items()->first();
-        $refund = Refund::factory()->create([
+        $refund    = Refund::factory()->create([
             'order_item_id' => $orderItem->id,
             'status'        => $status, // Not pending
         ]);
@@ -479,7 +481,7 @@ describe('RefundController', function () {
 
     it('should not view list of refunds without permission', function () {
         $this->unauthorized_user();
-        $orderItem = \App\Models\OrderItem::factory()->create();
+        $orderItem = App\Models\OrderItem::factory()->create();
         Refund::factory()->create([
             'order_item_id' => $orderItem->id,
             'status'        => RefundStatusEnum::PENDING,
@@ -491,7 +493,7 @@ describe('RefundController', function () {
 
     it('should not create a refund without permission', function () {
         $this->unauthorized_user();
-        $orderItem = \App\Models\OrderItem::factory()->create();
+        $orderItem = App\Models\OrderItem::factory()->create();
         Refund::factory()->create([
             'order_item_id' => $orderItem->id,
             'status'        => RefundStatusEnum::PENDING,
@@ -503,7 +505,7 @@ describe('RefundController', function () {
                 'receiver_name' => 'John Doe',
                 'card_number'   => '1234567890123456',
                 'iban_number'   => 'IR123456789012345678901234',
-                'tracking_code' => 'TRK1234567890'
+                'tracking_code' => 'TRK1234567890',
             ],
         ];
 
@@ -513,8 +515,8 @@ describe('RefundController', function () {
 
     it('should not update a refund without permission', function () {
         $this->unauthorized_user();
-        $orderItem = \App\Models\OrderItem::factory()->create();
-        $refund = Refund::factory()->create([
+        $orderItem = App\Models\OrderItem::factory()->create();
+        $refund    = Refund::factory()->create([
             'order_item_id' => $orderItem->id,
             'status'        => RefundStatusEnum::PENDING,
         ]);
@@ -526,9 +528,9 @@ describe('RefundController', function () {
                 'receiver_name' => 'Jane Doe',
                 'card_number'   => '6543210987654321',
                 'iban_number'   => 'IR098765432109876543210987',
-                'tracking_code' => 'TRK0987654321'
+                'tracking_code' => 'TRK0987654321',
             ],
-            'admin_notes'         => 'Updated refund details',
+            'admin_notes' => 'Updated refund details',
         ];
 
         $response = $this->putJson(route('api.v1.admin.refund.update',
@@ -539,7 +541,7 @@ describe('RefundController', function () {
     it('should not delete a refund without permission', function () {
         $this->unauthorized_user();
         $refund = Refund::factory()->create([
-            'status'        => RefundStatusEnum::PENDING,
+            'status' => RefundStatusEnum::PENDING,
         ]);
 
         $response = $this->deleteJson(route('api.v1.admin.refund.destroy',

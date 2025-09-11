@@ -20,13 +20,12 @@ final class RefundCreateData extends Data
         public readonly RefundTransactionData $transaction_details,
         public readonly string $status,
         public readonly ?string $admin_notes,
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {
         return [
-            'deduction_amount'  => [
+            'deduction_amount' => [
                 'nullable', 'required_without:deduction_percent', 'integer',
                 'min:0',
             ],

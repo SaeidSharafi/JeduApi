@@ -21,7 +21,7 @@ it('ignore checks if civil_id_type is invalid', function (): void {
     $validator = Validator::make(
         [
             'civil_id_type' => 'invalid_type',
-            'civil_id'      => "1",
+            'civil_id'      => '1',
         ],
         [
             'civil_id' => [$rule],

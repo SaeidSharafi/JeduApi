@@ -69,10 +69,10 @@ describe('TermController Test', function () {
 
     it('should create a term', function () {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_CREATE]);
-        $data     = Term::factory()->make();
+        $data               = Term::factory()->make();
         $data['start_date'] = $this->toJalalitString($data['start_date'], 'Y-m-d');
-        $data['end_date'] = $this->toJalalitString($data['end_date'], 'Y-m-d');
-        $response = $this->postJson(route('api.v1.admin.term.store'), $data->toArray());
+        $data['end_date']   = $this->toJalalitString($data['end_date'], 'Y-m-d');
+        $response           = $this->postJson(route('api.v1.admin.term.store'), $data->toArray());
         $response->assertCreated();
         $this->assertDatabaseHas('terms', ['name' => $data->name]);
     });
@@ -87,11 +87,11 @@ describe('TermController Test', function () {
 
     it('should update a term', function () {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_UPDATE]);
-        $term     = Term::factory()->create();
-        $data     = Term::factory()->make();
+        $term               = Term::factory()->create();
+        $data               = Term::factory()->make();
         $data['start_date'] = $this->toJalalitString($data['start_date'], 'Y-m-d');
-        $data['end_date'] = $this->toJalalitString($data['end_date'], 'Y-m-d');
-        $response = $this->putJson(route('api.v1.admin.term.update', ['term' => $term]), $data->toArray());
+        $data['end_date']   = $this->toJalalitString($data['end_date'], 'Y-m-d');
+        $response           = $this->putJson(route('api.v1.admin.term.update', ['term' => $term]), $data->toArray());
         $response->assertOk();
         $this->assertDatabaseHas('terms', ['id' => $term->id, 'name' => $data->name]);
     });
@@ -134,12 +134,12 @@ describe('TermController Test', function () {
 
     it('should not update a term with invalid status', function () {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_UPDATE]);
-        $term           = Term::factory()->create();
-        $data           = Term::factory()->make()->toArray();
-        $data['status'] = 'invalid-status';
+        $term               = Term::factory()->create();
+        $data               = Term::factory()->make()->toArray();
+        $data['status']     = 'invalid-status';
         $data['start_date'] = $this->toJalalitString($data['start_date'], 'Y-m-d');
-        $data['end_date'] = $this->toJalalitString($data['end_date'], 'Y-m-d');
-        $response       = $this->putJson(route('api.v1.admin.term.update', ['term' => $term]), $data);
+        $data['end_date']   = $this->toJalalitString($data['end_date'], 'Y-m-d');
+        $response           = $this->putJson(route('api.v1.admin.term.update', ['term' => $term]), $data);
         $response->assertUnprocessable();
         $response->assertJsonValidationErrors(['status']);
     });
@@ -152,19 +152,19 @@ describe('TermController Test', function () {
 
     it('should not allow unauthorized user to create term', function () {
         $this->unauthorized_user();
-        $data     = Term::factory()->make()->toArray();
+        $data               = Term::factory()->make()->toArray();
         $data['start_date'] = $this->toJalalitString($data['start_date'], 'Y-m-d');
-        $data['end_date'] = $this->toJalalitString($data['end_date'], 'Y-m-d');
-        $response = $this->postJson(route('api.v1.admin.term.store'), $data);
+        $data['end_date']   = $this->toJalalitString($data['end_date'], 'Y-m-d');
+        $response           = $this->postJson(route('api.v1.admin.term.store'), $data);
         $response->assertForbidden();
     });
 
     it('should not allow unauthorized user to update term', function () {
         $this->unauthorized_user();
-        $term     = Term::factory()->create();
-        $data     = Term::factory()->make()->toArray();
+        $term               = Term::factory()->create();
+        $data               = Term::factory()->make()->toArray();
         $data['start_date'] = $this->toJalalitString($data['start_date'], 'Y-m-d');
-        $data['end_date'] = $this->toJalalitString($data['end_date'], 'Y-m-d');
+        $data['end_date']   = $this->toJalalitString($data['end_date'], 'Y-m-d');
 
         $response = $this->putJson(route('api.v1.admin.term.update', ['term' => $term]), $data);
         $response->assertForbidden();

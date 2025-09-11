@@ -10,7 +10,7 @@ use App\Models\User;
 use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
-beforeEach(function (){
+beforeEach(function () {
     $this->staff = Staff::factory()->create();
 });
 test('positive adjustment increases wallet balance', function () {
@@ -20,13 +20,13 @@ test('positive adjustment increases wallet balance', function () {
 
     $data = AdjustWalletData::from([
 
-        'amount' => 500,
-        'reason' => 'Dispute resolution - customer favor',
+        'amount'      => 500,
+        'reason'      => 'Dispute resolution - customer favor',
         'description' => 'Adjustment for service issue compensation',
     ]);
 
-    $action = app(AdjustWalletAction::class);
-    $transaction = $action->handle($data,$this->staff,$user->wallet);
+    $action      = app(AdjustWalletAction::class);
+    $transaction = $action->handle($data, $this->staff, $user->wallet);
 
     expect($transaction)->not->toBeNull()
         ->and($transaction->amount)->toBe(500)
@@ -45,13 +45,13 @@ test('negative adjustment decreases wallet balance', function () {
 
     $data = AdjustWalletData::from([
 
-        'amount' => -300,
-        'reason' => 'Error correction - overpayment',
+        'amount'      => -300,
+        'reason'      => 'Error correction - overpayment',
         'description' => 'Adjustment for duplicate credit reversal',
     ]);
 
-    $action = app(AdjustWalletAction::class);
-    $transaction = $action->handle($data,$this->staff,$user->wallet);
+    $action      = app(AdjustWalletAction::class);
+    $transaction = $action->handle($data, $this->staff, $user->wallet);
 
     expect($transaction)->not->toBeNull()
         ->and($transaction->amount)->toBe(-300)
@@ -75,7 +75,7 @@ test('cannot make negative adjustment exceeding available balance', function () 
         'reason' => 'Test insufficient funds',
     ]);
 
-    expect(fn() => app(AdjustWalletAction::class)->handle($data,$this->staff,$user->wallet))
+    expect(fn () => app(AdjustWalletAction::class)->handle($data, $this->staff, $user->wallet))
         ->toThrow(Exception::class, __('validation.custom.insufficient_balance'));
 });
 
@@ -89,6 +89,6 @@ test('cannot adjust suspended wallet', function () {
         'reason' => 'Test suspended wallet',
     ]);
 
-    expect(fn() => app(AdjustWalletAction::class)->handle($data,$this->staff,$user->wallet))
+    expect(fn () => app(AdjustWalletAction::class)->handle($data, $this->staff, $user->wallet))
         ->toThrow(Exception::class, __('validation.custom.wallet_not_active'));
 });

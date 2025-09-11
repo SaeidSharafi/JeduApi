@@ -27,8 +27,7 @@ final class WalletCampaignCreateData extends Data
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
         public ?Carbon $ends_at,
         public ?array $metadata
-    ) {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {
@@ -50,6 +49,7 @@ final class WalletCampaignCreateData extends Data
 
     /**
      * @return array<string, string>
+     *
      * @codeCoverageIgnore
      */
     public static function descriptions(): array

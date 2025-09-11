@@ -14,17 +14,16 @@ use App\Events\PaymentCompletedEvent;
 use App\Models\Order;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
-use Tests\AuthTestTrait;
-
 use Illuminate\Support\Facades\Event;
+use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
 beforeEach(function () {
-    $this->customer = User::factory()->create();
+    $this->customer              = User::factory()->create();
     $this->productDeliveryOption = ProductDeliveryOption::factory()->create(['price' => 50000]);
     $this->authorized_user([
-        PermissionEnum::WALLET_CREATE, PermissionEnum::WALLET_WITHDRAWAL, PermissionEnum::PAYMENT_CREATE
+        PermissionEnum::WALLET_CREATE, PermissionEnum::WALLET_WITHDRAWAL, PermissionEnum::PAYMENT_CREATE,
     ]);
 });
 
@@ -32,7 +31,7 @@ it('can create a wallet payment successfully', function () {
     // Create a wallet with sufficient balance
     $this->customer->wallet->update([
         'user_id' => $this->customer->id,
-        'balance' => 100000
+        'balance' => 100000,
     ]);
 
     // Create an order
@@ -43,8 +42,8 @@ it('can create a wallet payment successfully', function () {
             'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'price'                      => 50000,
             'total'                      => 50000,
-            'name'                       => 'Test Course'
-        ]
+            'name'                       => 'Test Course',
+        ],
     ];
     $order = Order::factory()
         ->withCalculatedTotals($items)
@@ -70,7 +69,7 @@ it('can create a wallet payment successfully', function () {
         'id'       => $payment->id,
         'order_id' => $order->id,
         'amount'   => 50000,
-        'method'   => PaymentMethodEnum::WALLET->value
+        'method'   => PaymentMethodEnum::WALLET->value,
     ]);
 
     // Check wallet balance was deducted
@@ -83,7 +82,7 @@ it('can create a wallet payment successfully', function () {
         'amount'      => -50000,
         'type'        => TransactionTypeEnum::PAYMENT->value,
         'source_type' => TransactionSourceEnum::ORDER->value,
-        'source_id'   => $order->id
+        'source_id'   => $order->id,
     ]);
 
     Event::assertDispatched(PaymentCompletedEvent::class);
@@ -93,7 +92,7 @@ it('fails when wallet has insufficient balance', function () {
     // Create a wallet with insufficient balance
     $this->customer->wallet->update([
         'user_id' => $this->customer->id,
-        'balance' => 30000 // Less than order amount
+        'balance' => 30000, // Less than order amount
     ]);
 
     // Create an order
@@ -104,8 +103,8 @@ it('fails when wallet has insufficient balance', function () {
             'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'price'                      => 50000,
             'total'                      => 50000,
-            'name'                       => 'Test Course'
-        ]
+            'name'                       => 'Test Course',
+        ],
     ];
     $order = Order::factory()
         ->withCalculatedTotals($items)
@@ -118,8 +117,8 @@ it('fails when wallet has insufficient balance', function () {
         admin_notes: 'Wallet payment test'
     );
 
-    expect(fn() => (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->user))
-        ->toThrow(\Illuminate\Validation\ValidationException::class);
+    expect(fn () => (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->user))
+        ->toThrow(Illuminate\Validation\ValidationException::class);
 
     // Verify wallet balance unchanged
     $this->customer->wallet->refresh();
@@ -142,8 +141,8 @@ it('can process pre-payment wallet payment', function () {
             'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
             'price'                      => 50000,
             'total'                      => 20000, // Pre-payment amount
-            'name'                       => 'Test Course'
-        ]
+            'name'                       => 'Test Course',
+        ],
     ];
     $order = Order::factory()
         ->withCalculatedTotals($items)
@@ -170,12 +169,11 @@ it('can process pre-payment wallet payment', function () {
     expect($order->balance_due)->toBe(30000); // 50000 - 20000
 });
 
-
 it('processes wallet payment with localized messages', function () {
     // Create a wallet with insufficient balance to test error message
     $this->customer->wallet->update([
         'user_id' => $this->customer->id,
-        'balance' => 30000
+        'balance' => 30000,
     ]);
 
     $items = [
@@ -185,8 +183,8 @@ it('processes wallet payment with localized messages', function () {
             'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             'price'                      => 50000,
             'total'                      => 50000,
-            'name'                       => 'Test Course'
-        ]
+            'name'                       => 'Test Course',
+        ],
     ];
     $order = Order::factory()
         ->withCalculatedTotals($items)
@@ -201,7 +199,7 @@ it('processes wallet payment with localized messages', function () {
 
     try {
         (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->user);
-    } catch (\Illuminate\Validation\ValidationException $e) {
+    } catch (Illuminate\Validation\ValidationException $e) {
         $errors = $e->errors();
 
         expect($errors)->toHaveKey('wallet_data.amount')

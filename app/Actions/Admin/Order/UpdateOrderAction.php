@@ -23,7 +23,7 @@ final readonly class UpdateOrderAction
             $order->update($data->toArray());
             $order->refresh();
             $order->load('enrolments');
-            if ($order->status === OrderStatusEnum::CANCELLED
+            if ($order->status    === OrderStatusEnum::CANCELLED
                 || $order->status === OrderStatusEnum::REFUNDED
             ) {
                 $order->enrolments->each(function ($enrolment) {

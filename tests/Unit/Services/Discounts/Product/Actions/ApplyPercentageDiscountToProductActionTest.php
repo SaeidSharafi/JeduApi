@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\Configs\ApplyPercentageDiscountConfigData;
 use App\Services\Discounts\Product\Actions\ApplyPercentageDiscountToProductAction;
@@ -71,8 +73,9 @@ describe('ApplyPercentageDiscountToProductAction', function () {
 
     test('it returns original price when configuration is not the expected type', function () {
         // Arrange
-        $action = new ApplyPercentageDiscountToProductAction();
-        $wrongConfig = new class extends \Spatie\LaravelData\Data {
+        $action      = new ApplyPercentageDiscountToProductAction();
+        $wrongConfig = new class extends Spatie\LaravelData\Data
+        {
             public function __construct(public int $wrongProperty = 100) {}
         };
         $option = ProductDeliveryOption::factory()->make(['price' => 10000]);

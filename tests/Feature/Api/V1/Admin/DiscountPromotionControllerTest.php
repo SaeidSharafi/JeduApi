@@ -5,17 +5,17 @@ declare(strict_types=1);
 use App\Jobs\Discounts\RegeneratePromotionDiscountPricesJob;
 use App\Models\DiscountPromotion;
 
-uses(\Tests\AuthTestTrait::class);
+uses(Tests\AuthTestTrait::class);
 
 describe('DiscountPromotionController', function (): void {
     beforeEach(function (): void {
-        \Illuminate\Support\Facades\Bus::fake();
+        Illuminate\Support\Facades\Bus::fake();
         $this->authorized_user([
-            \App\Enums\PermissionEnum::DISCOUNT_VIEW_ANY,
-            \App\Enums\PermissionEnum::DISCOUNT_VIEW,
-            \App\Enums\PermissionEnum::DISCOUNT_CREATE,
-            \App\Enums\PermissionEnum::DISCOUNT_UPDATE,
-            \App\Enums\PermissionEnum::DISCOUNT_DELETE,
+            App\Enums\PermissionEnum::DISCOUNT_VIEW_ANY,
+            App\Enums\PermissionEnum::DISCOUNT_VIEW,
+            App\Enums\PermissionEnum::DISCOUNT_CREATE,
+            App\Enums\PermissionEnum::DISCOUNT_UPDATE,
+            App\Enums\PermissionEnum::DISCOUNT_DELETE,
         ]);
     });
 
@@ -39,7 +39,7 @@ describe('DiscountPromotionController', function (): void {
                             'is_active',
                             'created_at',
                             'updated_at',
-                        ]
+                        ],
                     ],
                 ],
             ]);
@@ -104,7 +104,7 @@ describe('DiscountPromotionController', function (): void {
                     'configuration' => ['percentage' => 20],
                 ],
             ],
-            'coupons'     => [
+            'coupons' => [
                 [
                     'code'      => 'TEST2024',
                     'is_active' => true,
@@ -127,24 +127,24 @@ describe('DiscountPromotionController', function (): void {
                     'rules',
                     'coupons',
                 ],
-                'message'
+                'message',
             ]);
 
         $this->assertDatabaseHas('discount_promotions', [
             'name'        => 'Test Promotion',
             'description' => 'Test Description',
         ]);
-        \Illuminate\Support\Facades\Bus::assertNotDispatched(RegeneratePromotionDiscountPricesJob::class);
+        Illuminate\Support\Facades\Bus::assertNotDispatched(RegeneratePromotionDiscountPricesJob::class);
     });
     test('store creates new product spefic promotion', function (): void {
-        $category = \App\Models\Category::factory()->create(['name' => 'Test Category']);
-        $productDelivery = \App\Models\ProductDeliveryOption::factory()
+        $category        = App\Models\Category::factory()->create(['name' => 'Test Category']);
+        $productDelivery = App\Models\ProductDeliveryOption::factory()
             ->create(['name' => 'Test Delivery Option'])->fresh();
         $productDelivery->product->categories()->attach($category->id);
         $data = [
             'name'        => 'Test Promotion',
             'description' => 'Test Description',
-            'type'        => \App\Enums\Order\DiscountTypeEnum::PRODUCT_SPECIFIC->value,
+            'type'        => App\Enums\Order\DiscountTypeEnum::PRODUCT_SPECIFIC->value,
             'is_active'   => true,
             'priority'    => 100,
             'rules'       => [
@@ -158,7 +158,7 @@ describe('DiscountPromotionController', function (): void {
                     'handler'       => 'product_in_category',
                     'configuration' => [
                         'category_ids' => [$category->id],
-                        'match_policy'   => \App\Enums\Operators\MatchPolicyEnum::ANY->value,
+                        'match_policy' => App\Enums\Operators\MatchPolicyEnum::ANY->value,
                     ],
                 ],
             ],
@@ -180,14 +180,14 @@ describe('DiscountPromotionController', function (): void {
                     'rules',
                     'coupons',
                 ],
-                'message'
+                'message',
             ]);
 
         $this->assertDatabaseHas('discount_promotions', [
             'name'        => 'Test Promotion',
             'description' => 'Test Description',
         ]);
-        \Illuminate\Support\Facades\Bus::assertDispatched(RegeneratePromotionDiscountPricesJob::class);
+        Illuminate\Support\Facades\Bus::assertDispatched(RegeneratePromotionDiscountPricesJob::class);
     });
     test('store validates required fields', function (): void {
         // Act
@@ -223,10 +223,10 @@ describe('DiscountPromotionController', function (): void {
                             'type',
                             'handler',
                             'configuration',
-                        ]
+                        ],
                     ],
                     'coupons',
-                ]
+                ],
             ]);
     });
 
@@ -237,7 +237,7 @@ describe('DiscountPromotionController', function (): void {
         $updateData = [
             'name'        => 'Updated Name',
             'description' => 'Updated Description',
-            'type'        => \App\Enums\Order\DiscountTypeEnum::CART_CHECKOUT->value,
+            'type'        => App\Enums\Order\DiscountTypeEnum::CART_CHECKOUT->value,
             'is_active'   => true,
             'rules'       => [
                 [
@@ -249,13 +249,13 @@ describe('DiscountPromotionController', function (): void {
                     'type'          => 'condition',
                     'handler'       => 'cart_value_over',
                     'configuration' => [
-                        'operator'            => \App\Enums\Operators\MathOperatorEnum::GREATER_THAN->value,
+                        'operator'            => App\Enums\Operators\MathOperatorEnum::GREATER_THAN->value,
                         'value'               => 1000,
                         'include_prepayments' => true,
                     ],
                 ],
             ],
-            'coupons'     => [],
+            'coupons' => [],
         ];
 
         // Act
@@ -265,7 +265,7 @@ describe('DiscountPromotionController', function (): void {
         $response->assertOk()
             ->assertJsonStructure([
                 'data' => ['id', 'name', 'description'],
-                'message'
+                'message',
             ]);
 
         expect($response->json('data.name'))->toBe('Updated Name');
@@ -274,23 +274,23 @@ describe('DiscountPromotionController', function (): void {
             'id'   => $promotion->id,
             'name' => 'Updated Name',
         ]);
-        \Illuminate\Support\Facades\Bus::assertNotDispatched(RegeneratePromotionDiscountPricesJob::class);
+        Illuminate\Support\Facades\Bus::assertNotDispatched(RegeneratePromotionDiscountPricesJob::class);
 
     });
     test('update modifies existing product promotion', function (): void {
         // Arrange
         $promotion = DiscountPromotion::factory()->create([
-            'type' => \App\Enums\Order\DiscountTypeEnum::PRODUCT_SPECIFIC->value,
-            'name' => 'Old Name'
+            'type' => App\Enums\Order\DiscountTypeEnum::PRODUCT_SPECIFIC->value,
+            'name' => 'Old Name',
         ]);
-        $category = \App\Models\Category::factory()->create(['name' => 'Test Category']);
-        $productDelivery = \App\Models\ProductDeliveryOption::factory()
+        $category        = App\Models\Category::factory()->create(['name' => 'Test Category']);
+        $productDelivery = App\Models\ProductDeliveryOption::factory()
             ->create(['name' => 'Test Delivery Option'])->fresh();
         $productDelivery->product->categories()->attach($category->id);
         $updateData = [
             'name'        => 'Updated Name',
             'description' => 'Updated Description',
-            'type'        => \App\Enums\Order\DiscountTypeEnum::PRODUCT_SPECIFIC->value,
+            'type'        => App\Enums\Order\DiscountTypeEnum::PRODUCT_SPECIFIC->value,
             'is_active'   => true,
             'rules'       => [
                 [
@@ -303,11 +303,11 @@ describe('DiscountPromotionController', function (): void {
                     'handler'       => 'product_in_category',
                     'configuration' => [
                         'category_ids' => [$category->id],
-                        'match_policy'   => \App\Enums\Operators\MatchPolicyEnum::ANY->value,
+                        'match_policy' => App\Enums\Operators\MatchPolicyEnum::ANY->value,
                     ],
                 ],
             ],
-            'coupons'     => [],
+            'coupons' => [],
         ];
 
         // Act
@@ -317,7 +317,7 @@ describe('DiscountPromotionController', function (): void {
         $response->assertOk()
             ->assertJsonStructure([
                 'data' => ['id', 'name', 'description'],
-                'message'
+                'message',
             ]);
 
         expect($response->json('data.name'))->toBe('Updated Name');
@@ -326,7 +326,7 @@ describe('DiscountPromotionController', function (): void {
             'id'   => $promotion->id,
             'name' => 'Updated Name',
         ]);
-        \Illuminate\Support\Facades\Bus::assertDispatched(RegeneratePromotionDiscountPricesJob::class);
+        Illuminate\Support\Facades\Bus::assertDispatched(RegeneratePromotionDiscountPricesJob::class);
 
     });
     test('destroy removes promotion', function (): void {
@@ -354,7 +354,7 @@ describe('DiscountPromotionController', function (): void {
         $response->assertOk()
             ->assertJsonStructure([
                 'data' => ['is_active'],
-                'message'
+                'message',
             ]);
 
         expect($response->json('data.is_active'))->toBeFalse();
@@ -384,7 +384,7 @@ describe('DiscountPromotionController', function (): void {
                     'cart_checkout_promotions',
                     'promotions_with_coupons',
                     'promotions_without_coupons',
-                ]
+                ],
             ]);
 
         expect($response->json('data.total_promotions'))->toBe(2)

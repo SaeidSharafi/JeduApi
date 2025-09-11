@@ -22,6 +22,6 @@ it('can get list of settings', function (): void {
                     ],
                 ],
             ],
-            'metadata'
+            'metadata',
         ]);
 });

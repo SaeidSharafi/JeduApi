@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-uses(\Tests\AuthTestTrait::class);
+uses(Tests\AuthTestTrait::class);
 
 describe('DiscountInfoController', function (): void {
     beforeEach(function (): void {
-        $this->authorized_user([\App\Enums\PermissionEnum::DISCOUNT_VIEW_ANY]);
+        $this->authorized_user([App\Enums\PermissionEnum::DISCOUNT_VIEW_ANY]);
         $this->staff = $this->user;
     });
     test('index returns discount metadata', function (): void {
@@ -17,7 +17,7 @@ describe('DiscountInfoController', function (): void {
         $response->assertOk()
             ->assertJsonStructure([
                 'data' => [
-                   'cart' => [
+                    'cart' => [
                         'conditions' => [
                             '*' => [
                                 'key',
@@ -25,7 +25,7 @@ describe('DiscountInfoController', function (): void {
                                 'description',
                                 'handler_class',
                                 'configuration_schema',
-                            ]
+                            ],
                         ],
                         'actions' => [
                             '*' => [
@@ -33,8 +33,8 @@ describe('DiscountInfoController', function (): void {
                                 'name',
                                 'description',
                                 'configuration_schema',
-                            ]
-                        ]
+                            ],
+                        ],
                     ],
                     'product' => [
                         'conditions' => [
@@ -44,7 +44,7 @@ describe('DiscountInfoController', function (): void {
                                 'description',
                                 'handler_class',
                                 'configuration_schema',
-                            ]
+                            ],
                         ],
                         'actions' => [
                             '*' => [
@@ -52,10 +52,10 @@ describe('DiscountInfoController', function (): void {
                                 'name',
                                 'description',
                                 'configuration_schema',
-                            ]
-                        ]
+                            ],
+                        ],
                     ],
-                ]
+                ],
             ]);
 
     });
@@ -68,14 +68,14 @@ describe('DiscountInfoController', function (): void {
         $response->assertOk()
             ->assertJsonStructure([
                 'data' => [
-                    'cart'    => [
+                    'cart' => [
                         '*' => [
                             'key',
                             'name',
                             'description',
                             'handler_class',
                             'configuration_schema',
-                        ]
+                        ],
                     ],
                     'product' => [
                         '*' => [
@@ -84,9 +84,9 @@ describe('DiscountInfoController', function (): void {
                             'description',
                             'handler_class',
                             'configuration_schema',
-                        ]
+                        ],
                     ],
-                ]
+                ],
             ]);
 
         $conditions = $response->json('data');
@@ -106,8 +106,8 @@ describe('DiscountInfoController', function (): void {
         $response = $this->get('/api/v1/admin/discount-info/conditions');
 
         // Assert
-        $data = $response->json('data');
-        $cartConditions = collect($data['cart']);
+        $data               = $response->json('data');
+        $cartConditions     = collect($data['cart']);
         $poroductConditions = collect($data['product']);
         $cartValueCondition = $cartConditions->firstWhere('key', 'cart_value_over');
         expect($cartValueCondition['name'])->toBe(__('discount.name.cart_value_over'));
@@ -123,14 +123,14 @@ describe('DiscountInfoController', function (): void {
         // Act
         $response = $this->get('/api/v1/admin/discount-info/conditions');
 
-        $data = $response->json('data');
-        $cartConditions = collect($data['cart']);
+        $data               = $response->json('data');
+        $cartConditions     = collect($data['cart']);
         $poroductConditions = collect($data['product']);
 
         $cartValueCondition = $cartConditions->firstWhere('key', 'cart_value_over');
         expect($cartValueCondition['configuration_schema'])->toBeArray()
             ->and($cartValueCondition['configuration_schema'])->toHaveKeys([
-                'value', 'operator', 'include_prepayments'
+                'value', 'operator', 'include_prepayments',
             ]);
 
         $productValueCondition = $poroductConditions->firstWhere('key', 'product_in_category');
@@ -146,13 +146,13 @@ describe('DiscountInfoController', function (): void {
         $response->assertOk()
             ->assertJsonStructure([
                 'data' => [
-                    'cart'    => [
+                    'cart' => [
                         '*' => [
                             'key',
                             'name',
                             'description',
                             'configuration_schema',
-                        ]
+                        ],
                     ],
                     'product' => [
                         '*' => [
@@ -160,9 +160,9 @@ describe('DiscountInfoController', function (): void {
                             'name',
                             'description',
                             'configuration_schema',
-                        ]
-                    ]
-                ]
+                        ],
+                    ],
+                ],
             ]);
 
         $actions = $response->json('data');
@@ -181,9 +181,9 @@ describe('DiscountInfoController', function (): void {
         $response = $this->get('/api/v1/admin/discount-info/actions');
 
         // Assert
-        $data = $response->json('data');
-        $cartActions = collect($data['cart']);
-        $productActions = collect($data['product']);
+        $data             = $response->json('data');
+        $cartActions      = collect($data['cart']);
+        $productActions   = collect($data['product']);
         $percentageAction = $cartActions->firstWhere('key', 'apply_percentage_off');
         expect($percentageAction['configuration_schema'])->toBeArray()
             ->and($percentageAction['configuration_schema'])->toHaveKey('percentage');
@@ -212,8 +212,8 @@ describe('DiscountInfoController', function (): void {
                         'value',
                         'label',
                         'symbol',
-                    ]
-                ]
+                    ],
+                ],
             ]);
 
         $operators = $response->json('data');
@@ -236,8 +236,8 @@ describe('DiscountInfoController', function (): void {
                         'value',
                         'label',
                         'description',
-                    ]
-                ]
+                    ],
+                ],
             ]);
 
         $types = $response->json('data');

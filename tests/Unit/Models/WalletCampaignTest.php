@@ -1,27 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\WalletCampaign\AllocationStatusEnum;
 use App\Models\WalletCampaign;
 
 it('to array', function () {
-    $walletCampaign = App\Models\WalletCampaign::factory()->create()->fresh();
+    $walletCampaign = WalletCampaign::factory()->create()->fresh();
     expect($walletCampaign->toArray())->toEqual([
-        'id'                 => $walletCampaign->id,
-        'name'               => $walletCampaign->name,
-        'description'        => $walletCampaign->description,
-        'type'               => $walletCampaign->type->value,
-        'is_active'          => $walletCampaign->is_active,
-        'amount'             => $walletCampaign->amount,
-        'usage_limit_total'  => $walletCampaign->usage_limit_total,
+        'id'                   => $walletCampaign->id,
+        'name'                 => $walletCampaign->name,
+        'description'          => $walletCampaign->description,
+        'type'                 => $walletCampaign->type->value,
+        'is_active'            => $walletCampaign->is_active,
+        'amount'               => $walletCampaign->amount,
+        'usage_limit_total'    => $walletCampaign->usage_limit_total,
         'usage_limit_per_user' => $walletCampaign->usage_limit_per_user,
-        'total_usage_count'  => $walletCampaign->total_usage_count,
-        'starts_at'          => $walletCampaign->starts_at?->utc()->toJSON(),
-        'ends_at'            => $walletCampaign->ends_at?->utc()->toJSON(),
-        'metadata'           => $walletCampaign->metadata,
-        'created_at'         => $walletCampaign->created_at?->utc()?->toJSON(),
-        'updated_at'         => $walletCampaign->updated_at?->utc()?->toJSON(),
-        'created_by'         => $walletCampaign->created_by,
+        'total_usage_count'    => $walletCampaign->total_usage_count,
+        'starts_at'            => $walletCampaign->starts_at?->utc()->toJSON(),
+        'ends_at'              => $walletCampaign->ends_at?->utc()->toJSON(),
+        'metadata'             => $walletCampaign->metadata,
+        'created_at'           => $walletCampaign->created_at?->utc()?->toJSON(),
+        'updated_at'           => $walletCampaign->updated_at?->utc()?->toJSON(),
+        'created_by'           => $walletCampaign->created_by,
     ]);
 
 });
@@ -38,7 +40,7 @@ it('increment usage count', function () {
 
 it('return transactions relationship', function () {
     $walletCampaign = WalletCampaign::factory()->create();
-    $transaction = App\Models\WalletTransaction::factory()->create([
+    $transaction    = App\Models\WalletTransaction::factory()->create([
         'source_type' => TransactionSourceEnum::CAMPAIGN,
         'source_id'   => $walletCampaign->id,
     ])->fresh();
@@ -84,7 +86,7 @@ it('check isWithinDateRange', function () {
     expect($walletCampaign->is_within_date_range)->toBeFalse();
 });
 it('check can allocate attribute', function () {
-    $user = App\Models\User::factory()->create()->fresh();
+    $user           = App\Models\User::factory()->create()->fresh();
     $walletCampaign = WalletCampaign::factory()->create([
         'is_active'         => true,
         'starts_at'         => now()->subDay(),
@@ -118,9 +120,9 @@ it('check can allocate attribute', function () {
     ])->fresh();
     expect($walletCampaign->allocationStatus($user))->toBe(AllocationStatusEnum::ERROR_TOTAL_LIMIT_REACHED);
     $walletCampaign = WalletCampaign::factory()->create([
-        'is_active'         => true,
-        'starts_at'         => now()->subDay(),
-        'ends_at'           => now()->addDay(),
+        'is_active'            => true,
+        'starts_at'            => now()->subDay(),
+        'ends_at'              => now()->addDay(),
         'usage_limit_per_user' => 1,
     ])->fresh();
     // Simulate that the user has already used the campaign once
@@ -130,7 +132,6 @@ it('check can allocate attribute', function () {
         'source_id'   => $walletCampaign->id,
     ])->fresh();
     expect($walletCampaign->allocationStatus($user))->toBe(AllocationStatusEnum::ERROR_USER_LIMIT_REACHED);
-
 
 });
 
@@ -175,7 +176,7 @@ it('check hasReachedTotalLimit method', function () {
 });
 
 it('check hasReachedUserLimit method', function () {
-    $user = App\Models\User::factory()->create()->fresh();
+    $user           = App\Models\User::factory()->create()->fresh();
     $walletCampaign = WalletCampaign::factory()->create([
         'usage_limit_per_user' => 3,
     ])->fresh();
@@ -224,7 +225,7 @@ it('get remaining usage count', function () {
 });
 
 it('get user remaining usage count', function () {
-    $user = App\Models\User::factory()->create()->fresh();
+    $user           = App\Models\User::factory()->create()->fresh();
     $walletCampaign = WalletCampaign::factory()->create([
         'usage_limit_per_user' => 5,
     ])->fresh();

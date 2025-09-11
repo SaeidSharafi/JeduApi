@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Actions\Admin\WalletCampaign\UpdateWalletCampaignAction;
 use App\Data\Admin\WalletCampaign\WalletCampaignCreateData;
 use App\Enums\WalletCampaign\CampaignTypeEnum;
@@ -11,7 +13,7 @@ use Tests\AuthTestTrait;
 uses(AuthTestTrait::class);
 
 beforeEach(function () {
-    $this->user = Staff::factory()->create();
+    $this->user     = Staff::factory()->create();
     $this->campaign = WalletCampaign::factory()->create([
         'name'                 => 'Original Campaign',
         'description'          => 'Original description',
@@ -31,7 +33,7 @@ beforeEach(function () {
 
 it('successfully updates all campaign fields', function () {
     $newStartDate = Carbon::now()->addDay();
-    $newEndDate = Carbon::now()->addMonth();
+    $newEndDate   = Carbon::now()->addMonth();
 
     $updateData = new WalletCampaignCreateData(
         name: 'Updated Campaign Name',
@@ -107,7 +109,7 @@ it('updates only specific fields while preserving others', function () {
             'usage_limit_per_user' => $this->campaign->usage_limit_per_user, // Keep original
             'starts_at'            => $this->campaign->starts_at->clone(), // Keep original
             'ends_at'              => $this->campaign->ends_at->clone(), // Keep original
-            'metadata'             => $this->campaign->metadata // Keep original
+            'metadata'             => $this->campaign->metadata, // Keep original
         ]
     );
 
@@ -148,20 +150,20 @@ it('handles different campaign types correctly', function () {
 
 it('handles complex metadata updates', function () {
     $complexMetadata = [
-        'rules'         => [
+        'rules' => [
             'min_order_amount'    => 50000,
             'eligible_categories' => ['electronics', 'books'],
-            'excluded_users'      => [1, 2, 3]
+            'excluded_users'      => [1, 2, 3],
         ],
         'notifications' => [
             'email' => true,
             'sms'   => false,
-            'push'  => true
+            'push'  => true,
         ],
-        'analytics'     => [
+        'analytics' => [
             'track_source'     => true,
-            'conversion_goals' => ['registration', 'purchase']
-        ]
+            'conversion_goals' => ['registration', 'purchase'],
+        ],
     ];
 
     $updateData = WalletCampaignCreateData::from(
@@ -175,7 +177,7 @@ it('handles complex metadata updates', function () {
             'usage_limit_per_user' => $this->campaign->usage_limit_per_user,
             'starts_at'            => $this->campaign->starts_at->clone(),
             'ends_at'              => $this->campaign->ends_at->clone(),
-            'metadata'             => $complexMetadata
+            'metadata'             => $complexMetadata,
         ]
     );
 
@@ -188,7 +190,7 @@ it('handles complex metadata updates', function () {
 
 it('updates timestamps correctly', function () {
     $futureStart = Carbon::now()->addDays(5);
-    $futureEnd = Carbon::now()->addDays(30);
+    $futureEnd   = Carbon::now()->addDays(30);
 
     $updateData = new WalletCampaignCreateData(
         name: 'Future Campaign',
@@ -211,17 +213,17 @@ it('updates timestamps correctly', function () {
 
 it('returns the same campaign instance', function () {
     $updateData = WalletCampaignCreateData::from([
-            "name"                 => 'Same Instance Test',
-            "description"          => 'Testing instance consistency',
-            "type"                 => $this->campaign->type->value,
-            "is_active"            => $this->campaign->is_active,
-            "amount"               => $this->campaign->amount,
-            "usage_limit_total"    => $this->campaign->usage_limit_total,
-            "usage_limit_per_user" => $this->campaign->usage_limit_per_user,
-            "starts_at"            => $this->campaign->starts_at,
-            "ends_at"              => $this->campaign->ends_at,
-            "metadata"             => $this->campaign->metadata
-        ]
+        'name'                 => 'Same Instance Test',
+        'description'          => 'Testing instance consistency',
+        'type'                 => $this->campaign->type->value,
+        'is_active'            => $this->campaign->is_active,
+        'amount'               => $this->campaign->amount,
+        'usage_limit_total'    => $this->campaign->usage_limit_total,
+        'usage_limit_per_user' => $this->campaign->usage_limit_per_user,
+        'starts_at'            => $this->campaign->starts_at,
+        'ends_at'              => $this->campaign->ends_at,
+        'metadata'             => $this->campaign->metadata,
+    ]
     );
 
     $updatedCampaign = $this->action->execute($this->campaign, $updateData);

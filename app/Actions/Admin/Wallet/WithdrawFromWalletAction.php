@@ -11,27 +11,27 @@ use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\Staff;
 use App\Models\Wallet;
+use Exception;
 
-readonly class WithdrawFromWalletAction
+final readonly class WithdrawFromWalletAction
 {
     public function __construct(
         private RecordWalletTransactionAction $recordTransactionAction
-    ) {
-    }
+    ) {}
 
     /**
      * Withdraw amount from user's wallet.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function handle(WithdrawFromWalletData $data, Staff $staff, Wallet $wallet): \App\Models\WalletTransaction
     {
-        if (!$wallet->isActive()) {
-            throw new \Exception(__('validation.custom.wallet_not_active'));
+        if (! $wallet->isActive()) {
+            throw new Exception(__('validation.custom.wallet_not_active'));
         }
 
-        if (!$wallet->canWithdraw($data->amount)) {
-            throw new \Exception(__('validation.custom.insufficient_balance'));
+        if (! $wallet->canWithdraw($data->amount)) {
+            throw new Exception(__('validation.custom.insufficient_balance'));
         }
 
         return $this->recordTransactionAction->execute(new RecordTransactionData(

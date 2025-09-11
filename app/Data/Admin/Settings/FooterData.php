@@ -27,20 +27,20 @@ final class FooterData extends Data
     public static function getDefaults(): array
     {
         return [
-            'logo' => null,
-            'caption' => 'Your partner in modern education.',
-            'support_link' => '/contact-us',
+            'logo'                  => null,
+            'caption'               => 'Your partner in modern education.',
+            'support_link'          => '/contact-us',
             'support_email_address' => 'support@jedu.ir',
-            'addresses' => [],
-            'categories' => [],
-            'main_links' => [
+            'addresses'             => [],
+            'categories'            => [],
+            'main_links'            => [
                 ['title' => 'About Us', 'link' => '/about-us'],
                 ['title' => 'Blog', 'link' => '/blog'],
                 ['title' => 'Contact Us', 'link' => '/contact-us'],
                 ['title' => 'Rules', 'link' => '/rules'],
             ],
             'social_media_links' => [],
-            'certifications' => [],
+            'certifications'     => [],
         ];
     }
 }

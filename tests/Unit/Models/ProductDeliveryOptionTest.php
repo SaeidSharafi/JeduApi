@@ -36,7 +36,7 @@ test('to array', function (): void {
 });
 
 test('relation products', function (): void {
-    $product = App\Models\Product::factory()->create();
+    $product        = App\Models\Product::factory()->create();
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
     expect($deliveryOption->product)
         ->toBeInstanceOf(App\Models\Product::class)
@@ -46,7 +46,7 @@ test('relation products', function (): void {
 
 test('relation teachers', function (): void {
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create();
-    $teachers = App\Models\Teacher::factory()->count(3)->create();
+    $teachers       = App\Models\Teacher::factory()->count(3)->create();
     $deliveryOption->teachers()->attach($teachers->pluck('id'));
     $deliveryOption->load('teachers');
     expect($deliveryOption->teachers)
@@ -58,9 +58,9 @@ test('relation teachers', function (): void {
 test('relation discount prices', function (): void {
 
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create();
-    $discountPrice = App\Models\ProductDeliveryOptionDiscountPrice::create([
+    $discountPrice  = App\Models\ProductDeliveryOptionDiscountPrice::create([
         'product_delivery_option_id' => $deliveryOption->id,
-        'discount_promotion_id'      => \App\Models\DiscountPromotion::factory()->create()->id,
+        'discount_promotion_id'      => App\Models\DiscountPromotion::factory()->create()->id,
         'discounted_price'           => 5000,
     ]);
     $deliveryOption->load('productDeliveryOptionDiscountPrice');
@@ -148,7 +148,7 @@ test('discountPrice', function (): void {
 
     $discountPrice = App\Models\ProductDeliveryOptionDiscountPrice::create([
         'product_delivery_option_id' => $deliveryOption->id,
-        'discount_promotion_id'      => \App\Models\DiscountPromotion::factory()->create()->id,
+        'discount_promotion_id'      => App\Models\DiscountPromotion::factory()->create()->id,
         'discounted_price'           => 8000,
     ]);
     $deliveryOption->load('productDeliveryOptionDiscountPrice');

@@ -10,7 +10,7 @@ use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class RecordTransactionData extends Data
+final class RecordTransactionData extends Data
 {
     public function __construct(
         public int $user_id,
@@ -29,14 +29,14 @@ class RecordTransactionData extends Data
     public static function rules(ValidationContext $context): array
     {
         return [
-            'user_id' => ['required', 'exists:users,id'],
-            'type' => ['required', Rule::enum(TransactionTypeEnum::class)],
-            'amount' => ['required', 'integer'],
+            'user_id'     => ['required', 'exists:users,id'],
+            'type'        => ['required', Rule::enum(TransactionTypeEnum::class)],
+            'amount'      => ['required', 'integer'],
             'source_type' => ['required', Rule::enum(TransactionSourceEnum::class)],
-            'source_id' => ['nullable', 'integer'],
+            'source_id'   => ['nullable', 'integer'],
             'description' => ['nullable', 'string', 'max:255'],
-            'metadata' => ['nullable', 'array'],
-            'expires_at' => ['nullable', 'date'],
+            'metadata'    => ['nullable', 'array'],
+            'expires_at'  => ['nullable', 'date'],
         ];
     }
 }

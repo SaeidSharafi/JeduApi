@@ -17,7 +17,7 @@ use Spatie\QueryBuilder\QueryBuilder;
  *
  * @authenticated
  */
-class AdminWalletController extends Controller
+final class AdminWalletController extends Controller
 {
     /**
      * Display a paginated listing of wallets.
@@ -36,6 +36,7 @@ class AdminWalletController extends Controller
             ->allowedFilters(['user_id', 'status'])
             ->allowedSorts(['id', 'balance', 'created_at'])
             ->paginate($request->integer('per_page', 15));
+
         return response()->success(WalletData::collect($wallets));
     }
 
@@ -48,6 +49,7 @@ class AdminWalletController extends Controller
     public function show(Wallet $wallet): ApiResponseInterface
     {
         Gate::authorize('view', $wallet);
+
         return response()->success(WalletData::from($wallet));
     }
 }

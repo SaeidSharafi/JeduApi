@@ -15,7 +15,7 @@ uses(AuthTestTrait::class);
 
 test('admin with permission can record deposit transaction', function () {
     $admin = $this->authorized_user([
-        \App\Enums\PermissionEnum::WALLET_UPDATE
+        App\Enums\PermissionEnum::WALLET_UPDATE,
     ]);
     $user = User::factory()->create();
     $data = RecordTransactionData::from([
@@ -39,7 +39,7 @@ test('admin with permission can record deposit transaction', function () {
 
 test('admin with permission can record gift transaction', function () {
     $admin = $this->authorized_user([
-        \App\Enums\PermissionEnum::WALLET_UPDATE
+        App\Enums\PermissionEnum::WALLET_UPDATE,
     ]);
     $user = User::factory()->create();
     $data = RecordTransactionData::from([
@@ -62,7 +62,7 @@ test('admin with permission can record gift transaction', function () {
 });
 test('admin with permission can record bonus transaction', function () {
     $admin = $this->authorized_user([
-        \App\Enums\PermissionEnum::WALLET_UPDATE
+        App\Enums\PermissionEnum::WALLET_UPDATE,
     ]);
     $user = User::factory()->create();
     $data = RecordTransactionData::from([
@@ -85,7 +85,7 @@ test('admin with permission can record bonus transaction', function () {
 });
 test('cannot record transaction for invalid user', function () {
     $admin = $this->authorized_user([
-        \App\Enums\PermissionEnum::WALLET_UPDATE
+        App\Enums\PermissionEnum::WALLET_UPDATE,
     ]);
     $data = RecordTransactionData::from([
         'user_id'     => 999999,
@@ -96,7 +96,7 @@ test('cannot record transaction for invalid user', function () {
         'description' => 'Invalid user',
         'metadata'    => [],
     ]);
-    expect(fn() => (new RecordWalletTransactionAction())->execute($data))
+    expect(fn () => (new RecordWalletTransactionAction())->execute($data))
         ->toThrow(Exception::class, __('validation.custom.user_not_found'));
 });
 
@@ -112,7 +112,7 @@ test('cannot record transaction for user without wallet', function () {
         'description' => 'No wallet',
         'metadata'    => [],
     ]);
-    expect(fn() => (new RecordWalletTransactionAction())->execute($data))
+    expect(fn () => (new RecordWalletTransactionAction())->execute($data))
         ->toThrow(Exception::class, __('validation.custom.wallet_not_found'));
 });
 
@@ -128,7 +128,7 @@ it('throws an error if tranaction amount is more than balance', function () {
         'description' => 'No wallet',
         'metadata'    => [],
     ]);
-    expect(fn() => (new RecordWalletTransactionAction())->execute($data))
+    expect(fn () => (new RecordWalletTransactionAction())->execute($data))
         ->toThrow(Exception::class, __('validation.custom.insufficient_balance'));
 });
 it('will it automatically reduce balance if it\'s withdrawal', function () {

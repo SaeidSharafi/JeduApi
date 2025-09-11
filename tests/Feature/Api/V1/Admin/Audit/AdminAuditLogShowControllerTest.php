@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Enums\PermissionEnum;
 use App\Models\AdminActionLog;
 use App\Models\Staff;
 use App\Models\User;
-use App\Enums\PermissionEnum;
-
 use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
@@ -14,28 +13,28 @@ uses(AuthTestTrait::class);
 describe('AdminAuditLogShowController', function () {
 
     beforeEach(function () {
-        $this->admin = Staff::factory()->create();
+        $this->admin   = Staff::factory()->create();
         $this->baseUrl = '/api/v1/admin/audit/admin-actions';
     });
 
     it('can show specific admin audit log with proper permissions', function () {
         $log = AdminActionLog::factory()->create([
-            'action_type' => 'create',
-            'resource_type' => 'App\\Models\\User',
-            'resource_id' => 123,
-            'route_name' => 'admin.users.store',
-            'http_method' => 'POST',
-            'request_data' => ['name' => 'Test User'],
+            'action_type'     => 'create',
+            'resource_type'   => 'App\\Models\\User',
+            'resource_id'     => 123,
+            'route_name'      => 'admin.users.store',
+            'http_method'     => 'POST',
+            'request_data'    => ['name' => 'Test User'],
             'response_status' => 201,
-            'ip_address' => '127.0.0.1',
-            'user_agent' => 'Test Agent',
-            'session_id' => 'test-session',
-            'risk_level' => 'low',
-            'metadata' => ['test' => 'data'],
+            'ip_address'      => '127.0.0.1',
+            'user_agent'      => 'Test Agent',
+            'session_id'      => 'test-session',
+            'risk_level'      => 'low',
+            'metadata'        => ['test' => 'data'],
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
-            ->getJson($this->baseUrl . '/' . $log->id);
+            ->getJson($this->baseUrl.'/'.$log->id);
 
         $response->assertJsonStructure([
             'data' => [
@@ -56,8 +55,8 @@ describe('AdminAuditLogShowController', function () {
                 'admin' => [
                     'id',
                     'name',
-                ]
-            ]
+                ],
+            ],
         ]);
 
         $data = $response->json('data');
@@ -80,17 +79,17 @@ describe('AdminAuditLogShowController', function () {
         $log = AdminActionLog::factory()->create();
 
         $response = $this->authorized_user([])
-            ->getJson($this->baseUrl . '/' . $log->id);
+            ->getJson($this->baseUrl.'/'.$log->id);
 
         $response->assertForbidden();
     });
 
     it('includes admin relationship in response', function () {
         $admin = Staff::factory()->create(['name' => 'John Doe']);
-        $log = AdminActionLog::factory()->create(['admin_id' => $admin->id]);
+        $log   = AdminActionLog::factory()->create(['admin_id' => $admin->id]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
-            ->getJson($this->baseUrl . '/' . $log->id);
+            ->getJson($this->baseUrl.'/'.$log->id);
 
         $response->assertSuccessful();
         $data = $response->json('data');
@@ -100,14 +99,14 @@ describe('AdminAuditLogShowController', function () {
     });
 
     it('includes resource relationship when resource exists', function () {
-        $user = User::factory()->create(['first_name' => 'Test' , 'last_name' => 'User']);
-        $log = AdminActionLog::factory()->create([
+        $user = User::factory()->create(['first_name' => 'Test', 'last_name' => 'User']);
+        $log  = AdminActionLog::factory()->create([
             'resource_type' => User::class,
-            'resource_id' => $user->id,
+            'resource_id'   => $user->id,
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
-            ->getJson($this->baseUrl . '/' . $log->id);
+            ->getJson($this->baseUrl.'/'.$log->id);
 
         $response->assertSuccessful();
         $data = $response->json('data');
@@ -120,11 +119,11 @@ describe('AdminAuditLogShowController', function () {
     it('handles missing resource gracefully', function () {
         $log = AdminActionLog::factory()->create([
             'resource_type' => User::class,
-            'resource_id' => 99999, // Non-existent user
+            'resource_id'   => 99999, // Non-existent user
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
-            ->getJson($this->baseUrl . '/' . $log->id);
+            ->getJson($this->baseUrl.'/'.$log->id);
 
         $response->assertSuccessful();
         $data = $response->json('data');
@@ -135,11 +134,11 @@ describe('AdminAuditLogShowController', function () {
     it('handles log with no resource relationship', function () {
         $log = AdminActionLog::factory()->create([
             'resource_type' => null,
-            'resource_id' => null,
+            'resource_id'   => null,
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
-            ->getJson($this->baseUrl . '/' . $log->id);
+            ->getJson($this->baseUrl.'/'.$log->id);
 
         $response->assertSuccessful();
         $data = $response->json('data');
@@ -149,20 +148,20 @@ describe('AdminAuditLogShowController', function () {
 
     it('returns 404 for non-existent audit log', function () {
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
-            ->getJson($this->baseUrl . '/99999');
+            ->getJson($this->baseUrl.'/99999');
 
         $response->assertNotFound();
     });
 
     it('shows correct data types for all fields', function () {
         $log = AdminActionLog::factory()->create([
-            'request_data' => ['key' => 'value'],
-            'metadata' => ['test' => 'data'],
+            'request_data'    => ['key' => 'value'],
+            'metadata'        => ['test' => 'data'],
             'response_status' => 200,
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
-            ->getJson($this->baseUrl . '/' . $log->id);
+            ->getJson($this->baseUrl.'/'.$log->id);
 
         $response->assertSuccessful();
         $data = $response->json('data');
@@ -186,7 +185,7 @@ describe('AdminAuditLogShowController', function () {
         $log = AdminActionLog::factory()->create(['risk_level' => 'high']);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
-            ->getJson($this->baseUrl . '/' . $log->id);
+            ->getJson($this->baseUrl.'/'.$log->id);
 
         $response->assertSuccessful();
         $data = $response->json('data');
@@ -195,12 +194,12 @@ describe('AdminAuditLogShowController', function () {
 
     it('shows wallet-related log with correct data', function () {
         $log = AdminActionLog::factory()->create([
-            'route_name' => 'admin.wallet.transaction.create',
+            'route_name'    => 'admin.wallet.transaction.create',
             'resource_type' => 'App\\Models\\WalletTransaction',
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
-            ->getJson($this->baseUrl . '/' . $log->id);
+            ->getJson($this->baseUrl.'/'.$log->id);
 
         $response->assertSuccessful();
         $data = $response->json('data');
@@ -212,7 +211,7 @@ describe('AdminAuditLogShowController', function () {
         $log = AdminActionLog::factory()->create(['response_status' => 500]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
-            ->getJson($this->baseUrl . '/' . $log->id);
+            ->getJson($this->baseUrl.'/'.$log->id);
 
         $response->assertSuccessful();
         $data = $response->json('data');
@@ -226,7 +225,7 @@ describe('AdminAuditLogShowController', function () {
             $log = AdminActionLog::factory()->create(['http_method' => $method]);
 
             $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
-                ->getJson($this->baseUrl . '/' . $log->id);
+                ->getJson($this->baseUrl.'/'.$log->id);
 
             $response->assertSuccessful();
             $data = $response->json('data');
@@ -237,25 +236,25 @@ describe('AdminAuditLogShowController', function () {
     it('shows complex request data correctly', function () {
         $complexRequestData = [
             'user' => [
-                'name' => 'John Doe',
-                'email' => 'john@example.com',
+                'name'        => 'John Doe',
+                'email'       => 'john@example.com',
                 'preferences' => [
                     'notifications' => true,
-                    'theme' => 'dark'
-                ]
+                    'theme'         => 'dark',
+                ],
             ],
             'metadata' => [
-                'source' => 'admin_panel',
-                'batch_id' => 'batch_123'
-            ]
+                'source'   => 'admin_panel',
+                'batch_id' => 'batch_123',
+            ],
         ];
 
         $log = AdminActionLog::factory()->create([
-            'request_data' => $complexRequestData
+            'request_data' => $complexRequestData,
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
-            ->getJson($this->baseUrl . '/' . $log->id);
+            ->getJson($this->baseUrl.'/'.$log->id);
 
         $response->assertSuccessful();
         $data = $response->json('data');

@@ -18,8 +18,7 @@ final readonly class CreateRefundAction
 {
     public function __construct(
         private OrderStatusService $orderStatusService
-    ) {
-    }
+    ) {}
 
     public function handle(RefundCreateData $data, OrderItem $orderItem): Refund
     {
@@ -49,7 +48,7 @@ final readonly class CreateRefundAction
             // 2. Update the OrderItem's status and refunded total.
             if ($data->status === RefundStatusEnum::COMPLETED->value) {
                 $orderItem->total_refunded = $refundAmount;
-                $orderItem->status = OrderItemStatusEnum::REFUNDED;
+                $orderItem->status         = OrderItemStatusEnum::REFUNDED;
                 $orderItem->saveQuietly();
                 $this->orderStatusService->updateEnrollmentStatus($orderItem);
                 $this->orderStatusService->updateParentOrderStatus($orderItem->order);
@@ -91,6 +90,7 @@ final readonly class CreateRefundAction
                     'deduction_amount' => __('messages.order.refund.deduction_conflict'),
                 ]);
             }
+
             return $data->deduction_amount;
         }
         if ($data->deduction_amount !== null) {
@@ -119,7 +119,7 @@ final readonly class CreateRefundAction
         }
         // Rule 2: Can't refund an item that has already been refunded.
         // This is the key change. We check the status directly.
-        if ($orderItem->status === OrderItemStatusEnum::REFUNDED ) {
+        if ($orderItem->status === OrderItemStatusEnum::REFUNDED) {
             throw ValidationException::withMessages([
                 'order_item_id' => __('messages.order.refund.already_refunded'),
             ]);

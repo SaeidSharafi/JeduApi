@@ -22,7 +22,7 @@ test('to array', function () {
 });
 
 test('order relationship', function () {
-    $order = App\Models\Order::factory()->create();
+    $order   = App\Models\Order::factory()->create();
     $payment = App\Models\Payment::factory()->create([
         'order_id' => $order->id,
     ]);
@@ -35,7 +35,7 @@ test('order relationship', function () {
 
 test('customer relationship', function () {
     $customer = App\Models\User::factory()->create();
-    $payment = App\Models\Payment::factory()->create([
+    $payment  = App\Models\Payment::factory()->create([
         'customer_id' => $customer->id,
     ]);
 

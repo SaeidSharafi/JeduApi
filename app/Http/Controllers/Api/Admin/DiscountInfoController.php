@@ -8,7 +8,6 @@ use App\Contracts\ApiResponseInterface;
 use App\Http\Controllers\Controller;
 use App\Models\DiscountPromotion;
 use App\Services\Discounts\DiscountMetadataService;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -33,6 +32,7 @@ final class DiscountInfoController extends Controller
     public function index(): ApiResponseInterface
     {
         Gate::authorize('viewAny', DiscountPromotion::class);
+
         return response()->success($this->discountMetadataService->getMetadata());
     }
 
@@ -45,6 +45,7 @@ final class DiscountInfoController extends Controller
     public function conditions(): ApiResponseInterface
     {
         Gate::authorize('viewAny', DiscountPromotion::class);
+
         return response()->success($this->discountMetadataService->getConditions());
     }
 
@@ -57,6 +58,7 @@ final class DiscountInfoController extends Controller
     public function actions(): ApiResponseInterface
     {
         Gate::authorize('viewAny', DiscountPromotion::class);
+
         return response()->success($this->discountMetadataService->getActions());
     }
 
@@ -69,6 +71,7 @@ final class DiscountInfoController extends Controller
     public function operators(): ApiResponseInterface
     {
         Gate::authorize('viewAny', DiscountPromotion::class);
+
         return response()->success($this->discountMetadataService->getOperators());
     }
 
@@ -81,6 +84,7 @@ final class DiscountInfoController extends Controller
     public function types(): ApiResponseInterface
     {
         Gate::authorize('viewAny', DiscountPromotion::class);
+
         return response()->success($this->discountMetadataService->getTypes());
     }
 }

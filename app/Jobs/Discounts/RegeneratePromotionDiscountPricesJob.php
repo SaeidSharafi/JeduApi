@@ -16,7 +16,7 @@ use Illuminate\Queue\SerializesModels;
  * Job to regenerate product discount prices when a promotion is created or updated.
  * Inspired by Bagisto's UpdateCreateCatalogRuleIndex job.
  */
-class RegeneratePromotionDiscountPricesJob implements ShouldQueue
+final class RegeneratePromotionDiscountPricesJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -63,8 +63,8 @@ class RegeneratePromotionDiscountPricesJob implements ShouldQueue
     {
         return [
             'discount-promotion',
-            'promotion:' . $this->promotion->id,
-            'type:' . $this->promotion->type->value
+            'promotion:'.$this->promotion->id,
+            'type:'.$this->promotion->type->value,
         ];
     }
 }

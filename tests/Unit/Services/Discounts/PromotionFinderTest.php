@@ -10,8 +10,8 @@ use App\Services\Discounts\PromotionFinder;
 it('finds an active promotion by coupon code', function () {
     // Arrange
     $promotion = DiscountPromotion::factory()->create(['is_active' => true]);
-    $coupon = DiscountCoupon::factory()->create(['discount_promotion_id' => $promotion->id, 'code' => 'VALID']);
-    $data = new OrderCreateData(
+    $coupon    = DiscountCoupon::factory()->create(['discount_promotion_id' => $promotion->id, 'code' => 'VALID']);
+    $data      = new OrderCreateData(
         status: App\Enums\Order\OrderStatusEnum::PENDING->value,
         customer_id: App\Models\User::factory()->create()->id,
         items: [],
@@ -28,8 +28,8 @@ it('finds an active promotion by coupon code', function () {
 
 it('does not find an inactive promotion', function () {
     $promotion = DiscountPromotion::factory()->create(['is_active' => false]);
-    $coupon = DiscountCoupon::factory()->create(['discount_promotion_id' => $promotion->id, 'code' => 'INACTIVE']);
-    $data = new OrderCreateData(
+    $coupon    = DiscountCoupon::factory()->create(['discount_promotion_id' => $promotion->id, 'code' => 'INACTIVE']);
+    $data      = new OrderCreateData(
         status: App\Enums\Order\OrderStatusEnum::PENDING->value,
         customer_id: App\Models\User::factory()->create()->id,
         items: [],
@@ -42,8 +42,8 @@ it('does not find an inactive promotion', function () {
 
 it('does not find an expired promotion', function () {
     $promotion = DiscountPromotion::factory()->create(['ends_at' => now()->subDay()]);
-    $coupon = DiscountCoupon::factory()->create(['discount_promotion_id' => $promotion->id, 'code' => 'EXPIRED']);
-    $data = new OrderCreateData(status: App\Enums\Order\OrderStatusEnum::PENDING->value,
+    $coupon    = DiscountCoupon::factory()->create(['discount_promotion_id' => $promotion->id, 'code' => 'EXPIRED']);
+    $data      = new OrderCreateData(status: App\Enums\Order\OrderStatusEnum::PENDING->value,
         customer_id: App\Models\User::factory()->create()->id,
         items: [], applied_coupon_code: 'EXPIRED');
 
@@ -54,7 +54,7 @@ it('does not find an expired promotion', function () {
 
 it('finds an active promotion by ID', function () {
     $promotion = DiscountPromotion::factory()->create(['is_active' => true]);
-    $data = new OrderCreateData(
+    $data      = new OrderCreateData(
         status: App\Enums\Order\OrderStatusEnum::PENDING->value,
         customer_id: App\Models\User::factory()->create()->id,
         items: [], applied_coupon_code: null, promotion_id: $promotion->id

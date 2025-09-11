@@ -1,20 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Transformer;
 
+use DateTimeInterface;
+use DateTimeZone;
 use Illuminate\Support\Arr;
 use Spatie\LaravelData\Support\DataProperty;
 use Spatie\LaravelData\Support\Transformation\TransformationContext;
 use Spatie\LaravelData\Transformers\Transformer;
-use DateTimeInterface;
-use DateTimeZone;
-class AdvancedDateTimeInterfaceTransformer implements Transformer
+
+final class AdvancedDateTimeInterfaceTransformer implements Transformer
 {
-    protected string $format;
+    private string $format;
 
     public function __construct(
         ?string $format = null,
-        protected ?string $setTimeZone = null
+        private ?string $setTimeZone = null
     ) {
         [$this->format] = Arr::wrap($format ?? config('data.date_output_format'));
     }
@@ -27,6 +30,6 @@ class AdvancedDateTimeInterfaceTransformer implements Transformer
             $value = (clone $value)->setTimezone(new DateTimeZone($this->setTimeZone));
         }
 
-        return $value->format(ltrim($this->format, '!'));
+        return $value->format(mb_ltrim($this->format, '!'));
     }
 }

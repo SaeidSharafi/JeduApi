@@ -14,13 +14,11 @@ final class ProductCategoryConditionConfigData extends Data
         /** @var int[] */
         public array $category_ids,
         public MatchPolicyEnum $match_policy = MatchPolicyEnum::ANY,
-    )
-    {
-    }
+    ) {}
 
     /**
-     *
      * @return array<string, mixed>
+     *
      * @codeCoverageIgnore
      */
     public static function rules(): array
@@ -33,15 +31,15 @@ final class ProductCategoryConditionConfigData extends Data
     }
 
     /**
-     *
      * @return array<string, string>
+     *
      * @codeCoverageIgnore
      */
     public static function descriptions(): array
     {
         return [
-            'category_ids'   => 'List of category IDs to check against the product categories.',
-            'match_policy'   => 'Defines how the condition matches: ANY (at least one category must match) or ALL (all categories must match).',
+            'category_ids' => 'List of category IDs to check against the product categories.',
+            'match_policy' => 'Defines how the condition matches: ANY (at least one category must match) or ALL (all categories must match).',
         ];
     }
 }

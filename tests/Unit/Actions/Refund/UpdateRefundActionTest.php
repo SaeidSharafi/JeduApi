@@ -20,7 +20,7 @@ describe('UpdateRefundAction', function () {
             ])
             ->create();
         $orderItem = $order->items()->first();
-        $refund = \App\Models\Refund::factory()->create([
+        $refund    = App\Models\Refund::factory()->create([
             'order_item_id'    => $orderItem->id,
             'status'           => RefundStatusEnum::PENDING,
             'amount'           => 0,
@@ -38,7 +38,7 @@ describe('UpdateRefundAction', function () {
             status: RefundStatusEnum::PENDING->value,
             admin_notes: 'Test note',
         );
-        $action = new UpdateRefundAction();
+        $action  = new UpdateRefundAction();
         $updated = $action->handle($refund, $data);
         expect($updated->amount)->toBe(1500)
             ->and($updated->deduction_amount)->toBe(500)
@@ -47,7 +47,6 @@ describe('UpdateRefundAction', function () {
     });
 
     it('updates a pending refund with deduction_percent', function () {
-
 
         $order = Order::factory()
             ->withCalculatedTotals([
@@ -59,7 +58,7 @@ describe('UpdateRefundAction', function () {
             ->fresh();
         $orderItem = $order->items()->first();
 
-        $refund = \App\Models\Refund::factory()->create([
+        $refund = App\Models\Refund::factory()->create([
             'order_item_id'    => $orderItem->id,
             'status'           => RefundStatusEnum::PENDING,
             'amount'           => 0,
@@ -78,7 +77,7 @@ describe('UpdateRefundAction', function () {
             status: RefundStatusEnum::PENDING->value,
             admin_notes: 'Percent note',
         );
-        $action = new UpdateRefundAction();
+        $action  = new UpdateRefundAction();
         $updated = $action->handle($refund, $data);
         expect($updated->amount)->toBe(1500)
             ->and($updated->deduction_amount)->toBe(500)
@@ -88,7 +87,7 @@ describe('UpdateRefundAction', function () {
 
     it('throws if refund is not pending', function () {
         $orderItem = OrderItem::factory()->create();
-        $refund = \App\Models\Refund::factory()->create([
+        $refund    = App\Models\Refund::factory()->create([
             'order_item_id' => $orderItem->id,
             'status'        => RefundStatusEnum::COMPLETED,
         ]);
@@ -105,8 +104,8 @@ describe('UpdateRefundAction', function () {
             admin_notes: 'Should fail',
         );
         $action = new UpdateRefundAction();
-        expect(fn() => $action->handle($refund, $data))
-            ->toThrow(\Illuminate\Validation\ValidationException::class);
+        expect(fn () => $action->handle($refund, $data))
+            ->toThrow(Illuminate\Validation\ValidationException::class);
     });
 
     it('refund amount never goes below zero', function () {
@@ -125,7 +124,7 @@ describe('UpdateRefundAction', function () {
             'qty_ordered'     => 1,
             'total'           => 1000,
         ]);
-        $refund = \App\Models\Refund::factory()->create([
+        $refund = App\Models\Refund::factory()->create([
             'order_item_id'    => $orderItem->id,
             'status'           => RefundStatusEnum::PENDING,
             'amount'           => 0,
@@ -143,7 +142,7 @@ describe('UpdateRefundAction', function () {
             status: RefundStatusEnum::PENDING->value,
             admin_notes: 'Zero test',
         );
-        $action = new UpdateRefundAction();
+        $action  = new UpdateRefundAction();
         $updated = $action->handle($refund, $data);
         expect($updated->amount)->toBe(0);
     });
@@ -164,7 +163,7 @@ describe('UpdateRefundAction', function () {
             'qty_ordered'     => 1,
             'total'           => 1000,
         ]);
-        $refund = \App\Models\Refund::factory()->create([
+        $refund = App\Models\Refund::factory()->create([
             'order_item_id'    => $orderItem->id,
             'status'           => RefundStatusEnum::PENDING,
             'amount'           => 0,
@@ -182,7 +181,7 @@ describe('UpdateRefundAction', function () {
             status: RefundStatusEnum::PENDING->value,
             admin_notes: 'Fallback test',
         );
-        $action = new UpdateRefundAction();
+        $action  = new UpdateRefundAction();
         $updated = $action->handle($refund, $data);
         expect($updated->deduction_amount)->toBe(0)
             ->and($updated->amount)->toBe(1000);

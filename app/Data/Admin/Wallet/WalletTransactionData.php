@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Admin\Wallet;
 
 use App\Contracts\WalletTransactionSourceableDataContract;
@@ -11,11 +13,10 @@ use App\Models\User;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
-use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-class WalletTransactionData extends Data
+final class WalletTransactionData extends Data
 {
     public function __construct(
         public int $id,
@@ -34,7 +35,5 @@ class WalletTransactionData extends Data
         public ?array $metadata = null,
         public ?Verta $expires_at = null,
         public ?Verta $created_at = null,
-    )
-    {
-    }
+    ) {}
 }

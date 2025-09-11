@@ -8,7 +8,7 @@ use App\Data\Admin\Settings\ContactInfoData;
 use App\Models\Setting;
 use Illuminate\Database\Seeder;
 
-class SettingsSeeder extends Seeder
+final class SettingsSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -32,8 +32,8 @@ class SettingsSeeder extends Seeder
                 ['title' => 'تماس با ما', 'link' => '/contact-us'],
                 ['title' => 'قوانین', 'link' => '/rules'],
             ],
-            'social_media_links'    => ContactInfoData::getDefaults()['social_media_links'],
-            'certifications'        => [
+            'social_media_links' => ContactInfoData::getDefaults()['social_media_links'],
+            'certifications'     => [
                 ['name' => 'اینماد', 'image' => null],
                 ['name' => 'ساماندهی', 'image' => null],
             ],
@@ -41,14 +41,14 @@ class SettingsSeeder extends Seeder
 
         // About Us Settings (placeholder)
         Setting::set('about_us', [
-            'title'                       => 'درباره جدویار',
-            'main_block'                 => [
+            'title'      => 'درباره جدویار',
+            'main_block' => [
                 'title'   => 'جدویار، مرکز آموزش‌های تخصصی و مهارتی',
                 'content' => 'جدویار با هدف ارتقاء سطح دانش و مهارت‌های افراد در زمینه‌های مختلف، از سال ۱۳۹۰ فعالیت خود را آغاز کرده است. این مرکز با بهره‌گیری از اساتید مجرب و امکانات پیشرفته، دوره‌های آموزشی متنوعی را در حوزه‌های فنی، مهندسی، علوم انسانی، زبان‌های خارجی و هنر ارائه می‌دهد. جدویار با تاکید بر آموزش‌های کاربردی و پروژه‌محور، تلاش می‌کند تا دانشجویان را برای ورود به بازار کار آماده سازد و نقش موثری در توسعه نیروی انسانی متخصص ایفا کند.',
                 'image'   => null,
             ],
-            'images'                      => [],
-            'active_course_groups_block'  => [
+            'images'                     => [],
+            'active_course_groups_block' => [
                 'title'   => 'گروه‌های آموزشی فعال',
                 'content' => '<ol>
                                 <li>فنی و مهندسی</li>
@@ -64,9 +64,9 @@ class SettingsSeeder extends Seeder
                                 <li>آموزش‌های عالی آزاد</li>
                                 <li>اشتغال و کارآفرینی</li>
                                </ol>',
-                'image'   => null,
+                'image' => null,
             ],
-            'capabilities_block'          => [
+            'capabilities_block' => [
                 'title'   => 'قابلیت‌های جدویار',
                 'content' => '<ul>
         <li>گسترده‌ترین شبکه آموزش در سطح استان</li>
@@ -82,7 +82,7 @@ class SettingsSeeder extends Seeder
         <li>برخورداری از واحد اشتغال و کارآفرینی</li>
         <li>دارای اساتید متخصص، مجرب، توانمند، متعهد و متدین</li>
     </ul>',
-                'image'   => null,
+                'image' => null,
             ],
             'about_online_course_block_1' => [
                 'title'   => 'دوره‌های آنلاین جدویار',
@@ -99,7 +99,7 @@ class SettingsSeeder extends Seeder
         <li>پشتیبانی فنی و آموزشی مستمر</li>
         <li>امکان دریافت گواهینامه معتبر پس از اتمام دوره</li>
     </ul>',
-                'image'   => null,
+                'image' => null,
             ],
         ], 'json', 'about');
 

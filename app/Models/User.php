@@ -56,7 +56,7 @@ final class User extends Authenticatable implements MustVerifyEmail
 
     public function hasSetPassword(): bool
     {
-        return !is_null($this->password);
+        return ! is_null($this->password);
     }
 
     public function teacherData(): HasOne
@@ -76,13 +76,18 @@ final class User extends Authenticatable implements MustVerifyEmail
 
     public function profileCompleted(): bool
     {
-        return $this->first_name !== null
-            && $this->last_name !== null
-            && $this->email !== null
-            && $this->phone !== null
-            && $this->civil_id !== null
+        return $this->first_name    !== null
+            && $this->last_name     !== null
+            && $this->email         !== null
+            && $this->phone         !== null
+            && $this->civil_id      !== null
             && $this->date_of_birth !== null
-            && $this->father_name !== null;
+            && $this->father_name   !== null;
+    }
+
+    public function routeNotificationForSms($notification): string
+    {
+        return $this->phone;
     }
 
     protected static function boot(): void
@@ -95,9 +100,9 @@ final class User extends Authenticatable implements MustVerifyEmail
         self::created(function ($model) {
             // Automatically create a wallet for new users
             $model->wallet()->create([
-                'balance' => 0,
+                'balance'      => 0,
                 'gift_balance' => 0,
-                'status' => \App\Enums\Wallet\WalletStatusEnum::ACTIVE,
+                'status'       => \App\Enums\Wallet\WalletStatusEnum::ACTIVE,
             ]);
         });
     }
@@ -121,12 +126,7 @@ final class User extends Authenticatable implements MustVerifyEmail
     protected function isProfileCompleted(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->profileCompleted(),
+            get: fn () => $this->profileCompleted(),
         );
-    }
-
-    public function routeNotificationForSms($notification): string
-    {
-        return $this->phone;
     }
 }

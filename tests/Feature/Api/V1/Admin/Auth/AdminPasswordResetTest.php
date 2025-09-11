@@ -5,11 +5,8 @@ declare(strict_types=1);
 use App\Models\Staff;
 use App\Models\User;
 use App\Notifications\Auth\OtpEmailNotification;
-
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
-
-
 
 beforeEach(function (): void {
     Notification::fake();

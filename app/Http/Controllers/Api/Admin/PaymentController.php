@@ -73,6 +73,7 @@ final class PaymentController extends Controller
     public function show(Order $order, Payment $payment): ApiResponseInterface
     {
         Gate::authorize('view', $order);
+
         return response()->success(PaymentData::from($payment));
     }
 
