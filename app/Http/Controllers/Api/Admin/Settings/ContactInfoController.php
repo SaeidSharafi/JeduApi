@@ -8,6 +8,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * @group Admin - Settings Management
+ *
+ * @authenticated
+ */
 class ContactInfoController extends Controller
 {
     /**
