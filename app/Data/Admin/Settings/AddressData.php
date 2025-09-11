@@ -17,16 +17,6 @@ final class AddressData extends Data
     ) {
     }
 
-    public static function rules(ValidationContext $context): array
-    {
-        return [
-            'name'         => ['required', 'string', 'max:255'],
-            'address'      => ['required', 'string', 'max:500'],
-            'location_url' => ['required', 'url'],
-            'phone'        => ['required', 'string', 'max:20'],
-        ];
-    }
-
     /**
      * @return array<string, string>
      */
