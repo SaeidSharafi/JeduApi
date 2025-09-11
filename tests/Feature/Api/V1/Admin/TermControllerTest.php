@@ -133,6 +133,8 @@ describe('TermController Test', function () {
         $term           = Term::factory()->create();
         $data           = Term::factory()->make()->toArray();
         $data['status'] = 'invalid-status';
+        $data['start_date'] = $this->toJalalitString($data['start_date'], 'Y-m-d');
+        $data['end_date'] = $this->toJalalitString($data['end_date'], 'Y-m-d');
         $response       = $this->putJson(route('api.v1.admin.term.update', ['term' => $term]), $data);
         $response->assertUnprocessable();
         $response->assertJsonValidationErrors(['status']);
@@ -147,6 +149,8 @@ describe('TermController Test', function () {
     it('should not allow unauthorized user to create term', function () {
         $this->unauthorized_user();
         $data     = Term::factory()->make()->toArray();
+        $data['start_date'] = $this->toJalalitString($data['start_date'], 'Y-m-d');
+        $data['end_date'] = $this->toJalalitString($data['end_date'], 'Y-m-d');
         $response = $this->postJson(route('api.v1.admin.term.store'), $data);
         $response->assertForbidden();
     });
@@ -155,6 +159,9 @@ describe('TermController Test', function () {
         $this->unauthorized_user();
         $term     = Term::factory()->create();
         $data     = Term::factory()->make()->toArray();
+        $data['start_date'] = $this->toJalalitString($data['start_date'], 'Y-m-d');
+        $data['end_date'] = $this->toJalalitString($data['end_date'], 'Y-m-d');
+
         $response = $this->putJson(route('api.v1.admin.term.update', ['term' => $term]), $data);
         $response->assertForbidden();
     });

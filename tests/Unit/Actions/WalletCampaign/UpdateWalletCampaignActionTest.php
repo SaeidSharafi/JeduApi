@@ -13,17 +13,17 @@ uses(AuthTestTrait::class);
 beforeEach(function () {
     $this->user = Staff::factory()->create();
     $this->campaign = WalletCampaign::factory()->create([
-        'name' => 'Original Campaign',
-        'description' => 'Original description',
-        'type' => CampaignTypeEnum::REGISTRATION_BONUS,
-        'is_active' => true,
-        'amount' => 10000,
-        'usage_limit_total' => 100,
+        'name'                 => 'Original Campaign',
+        'description'          => 'Original description',
+        'type'                 => CampaignTypeEnum::REGISTRATION_BONUS,
+        'is_active'            => true,
+        'amount'               => 10000,
+        'usage_limit_total'    => 100,
         'usage_limit_per_user' => 1,
-        'starts_at' => Carbon::now(),
-        'ends_at' => Carbon::now()->addWeek(),
-        'metadata' => ['original' => true],
-        'created_by' => $this->user->id,
+        'starts_at'            => Carbon::now(),
+        'ends_at'              => Carbon::now()->addWeek(),
+        'metadata'             => ['original' => true],
+        'created_by'           => $this->user->id,
     ]);
 
     $this->action = new UpdateWalletCampaignAction();
@@ -41,8 +41,8 @@ it('successfully updates all campaign fields', function () {
         amount: 25000,
         usage_limit_total: 500,
         usage_limit_per_user: 3,
-        starts_at: $newStartDate->toISOString(),
-        ends_at: $newEndDate->toISOString(),
+        starts_at: $newStartDate,
+        ends_at: $newEndDate,
         metadata: ['updated' => true, 'version' => 2]
     );
 
@@ -62,10 +62,10 @@ it('successfully updates all campaign fields', function () {
 
     // Verify persistence in database
     $this->assertDatabaseHas('wallet_campaigns', [
-        'id' => $this->campaign->id,
-        'name' => 'Updated Campaign Name',
-        'type' => CampaignTypeEnum::WELCOME_GIFT->value,
-        'amount' => 25000,
+        'id'        => $this->campaign->id,
+        'name'      => 'Updated Campaign Name',
+        'type'      => CampaignTypeEnum::WELCOME_GIFT->value,
+        'amount'    => 25000,
         'is_active' => false,
     ]);
 });
@@ -96,17 +96,19 @@ it('updates campaign with null dates', function () {
 it('updates only specific fields while preserving others', function () {
     $originalUsageCount = $this->campaign->total_usage_count;
 
-    $updateData = new WalletCampaignCreateData(
-        name: 'Partially Updated Campaign',
-        description: $this->campaign->description, // Keep original
-        type: $this->campaign->type->value, // Keep original
-        is_active: false, // Change this
-        amount: 35000, // Change this
-        usage_limit_total: $this->campaign->usage_limit_total, // Keep original
-        usage_limit_per_user: $this->campaign->usage_limit_per_user, // Keep original
-        starts_at: $this->campaign->starts_at?->toISOString(), // Keep original
-        ends_at: $this->campaign->ends_at?->toISOString(), // Keep original
-        metadata: $this->campaign->metadata // Keep original
+    $updateData = WalletCampaignCreateData::from(
+        [
+            'name'                 => 'Partially Updated Campaign',
+            'description'          => $this->campaign->description, // Keep original
+            'type'                 => $this->campaign->type->value, // Keep original
+            'is_active'            => false, // Change this
+            'amount'               => 35000, // Change this
+            'usage_limit_total'    => $this->campaign->usage_limit_total, // Keep original
+            'usage_limit_per_user' => $this->campaign->usage_limit_per_user, // Keep original
+            'starts_at'            => $this->campaign->starts_at->clone(), // Keep original
+            'ends_at'              => $this->campaign->ends_at->clone(), // Keep original
+            'metadata'             => $this->campaign->metadata // Keep original
+        ]
     );
 
     $updatedCampaign = $this->action->execute($this->campaign, $updateData);
@@ -146,33 +148,35 @@ it('handles different campaign types correctly', function () {
 
 it('handles complex metadata updates', function () {
     $complexMetadata = [
-        'rules' => [
-            'min_order_amount' => 50000,
+        'rules'         => [
+            'min_order_amount'    => 50000,
             'eligible_categories' => ['electronics', 'books'],
-            'excluded_users' => [1, 2, 3]
+            'excluded_users'      => [1, 2, 3]
         ],
         'notifications' => [
             'email' => true,
-            'sms' => false,
-            'push' => true
+            'sms'   => false,
+            'push'  => true
         ],
-        'analytics' => [
-            'track_source' => true,
+        'analytics'     => [
+            'track_source'     => true,
             'conversion_goals' => ['registration', 'purchase']
         ]
     ];
 
-    $updateData = new WalletCampaignCreateData(
-        name: $this->campaign->name,
-        description: $this->campaign->description,
-        type: $this->campaign->type->value,
-        is_active: $this->campaign->is_active,
-        amount: $this->campaign->amount,
-        usage_limit_total: $this->campaign->usage_limit_total,
-        usage_limit_per_user: $this->campaign->usage_limit_per_user,
-        starts_at: $this->campaign->starts_at?->toISOString(),
-        ends_at: $this->campaign->ends_at?->toISOString(),
-        metadata: $complexMetadata
+    $updateData = WalletCampaignCreateData::from(
+        [
+            'name'                 => $this->campaign->name,
+            'description'          => $this->campaign->description,
+            'type'                 => $this->campaign->type->value,
+            'is_active'            => $this->campaign->is_active,
+            'amount'               => $this->campaign->amount,
+            'usage_limit_total'    => $this->campaign->usage_limit_total,
+            'usage_limit_per_user' => $this->campaign->usage_limit_per_user,
+            'starts_at'            => $this->campaign->starts_at->clone(),
+            'ends_at'              => $this->campaign->ends_at->clone(),
+            'metadata'             => $complexMetadata
+        ]
     );
 
     $updatedCampaign = $this->action->execute($this->campaign, $updateData);
@@ -194,8 +198,8 @@ it('updates timestamps correctly', function () {
         amount: 40000,
         usage_limit_total: 1000,
         usage_limit_per_user: 2,
-        starts_at: $futureStart->toISOString(),
-        ends_at: $futureEnd->toISOString(),
+        starts_at: $futureStart,
+        ends_at: $futureEnd,
         metadata: null
     );
 
@@ -206,17 +210,18 @@ it('updates timestamps correctly', function () {
 });
 
 it('returns the same campaign instance', function () {
-    $updateData = new WalletCampaignCreateData(
-        name: 'Same Instance Test',
-        description: 'Testing instance consistency',
-        type: $this->campaign->type->value,
-        is_active: $this->campaign->is_active,
-        amount: $this->campaign->amount,
-        usage_limit_total: $this->campaign->usage_limit_total,
-        usage_limit_per_user: $this->campaign->usage_limit_per_user,
-        starts_at: $this->campaign->starts_at?->toISOString(),
-        ends_at: $this->campaign->ends_at?->toISOString(),
-        metadata: $this->campaign->metadata
+    $updateData = WalletCampaignCreateData::from([
+            "name"                 => 'Same Instance Test',
+            "description"          => 'Testing instance consistency',
+            "type"                 => $this->campaign->type->value,
+            "is_active"            => $this->campaign->is_active,
+            "amount"               => $this->campaign->amount,
+            "usage_limit_total"    => $this->campaign->usage_limit_total,
+            "usage_limit_per_user" => $this->campaign->usage_limit_per_user,
+            "starts_at"            => $this->campaign->starts_at,
+            "ends_at"              => $this->campaign->ends_at,
+            "metadata"             => $this->campaign->metadata
+        ]
     );
 
     $updatedCampaign = $this->action->execute($this->campaign, $updateData);

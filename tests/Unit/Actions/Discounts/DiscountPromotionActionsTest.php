@@ -18,29 +18,29 @@ describe('Discount Promotion Actions', function (): void {
     test('CreateDiscountPromotionAction creates promotion with rules and coupons', function (): void {
         // Arrange
         $data = DiscountPromotionCreateData::from([
-            'name' => 'Summer Sale',
-            'description' => 'Great summer discounts',
-            'type' => DiscountTypeEnum::CART_CHECKOUT->value,
-            'is_active' => true,
-            'priority' => 100,
-            'usage_limit_total' => 1000,
+            'name'                             => 'Summer Sale',
+            'description'                      => 'Great summer discounts',
+            'type'                             => DiscountTypeEnum::CART_CHECKOUT->value,
+            'is_active'                        => true,
+            'priority'                         => 100,
+            'usage_limit_total'                => 1000,
             'stop_processing_subsequent_rules' => false,
-            'rules' => [
+            'rules'                            => [
                 [
-                    'type' => 'condition',
-                    'handler' => 'cart_value_over',
+                    'type'          => 'condition',
+                    'handler'       => 'cart_value_over',
                     'configuration' => ['value' => 10000, 'operator' => 'greater_than_or_equal'],
                 ],
                 [
-                    'type' => 'action',
-                    'handler' => 'apply_percentage_off',
+                    'type'          => 'action',
+                    'handler'       => 'apply_percentage_off',
                     'configuration' => ['percentage' => 20],
                 ],
             ],
-            'coupons' => [
+            'coupons'                          => [
                 [
-                    'code' => 'SUMMER2024',
-                    'is_active' => true,
+                    'code'        => 'SUMMER2024',
+                    'is_active'   => true,
                     'usage_limit' => 100,
                 ]
             ],
@@ -83,24 +83,24 @@ describe('Discount Promotion Actions', function (): void {
     test('CreateDiscountPromotionAction creates promotion without coupons', function (): void {
         // Arrange
         $data = DiscountPromotionCreateData::from([
-            'name' => 'Auto Discount',
-            'description' => 'Automatic cart discount',
-            'type' => DiscountTypeEnum::CART_CHECKOUT->value,
-            'is_active' => true,
-            'starts_at' => now()->format('Y-m-d H:i:s'),
-            'ends_at' => now()->addDays(30)->format('Y-m-d H:i:s'),
-            'priority' => 1,
+            'name'                             => 'Auto Discount',
+            'description'                      => 'Automatic cart discount',
+            'type'                             => DiscountTypeEnum::CART_CHECKOUT->value,
+            'is_active'                        => true,
+            'starts_at'                        => now(),
+            'ends_at'                          => now()->addDays(30),
+            'priority'                         => 1,
             'stop_processing_subsequent_rules' => false,
-            'usage_limit_total' => null,
-            'usage_limit_per_customer' => null,
-            'rules' => [
+            'usage_limit_total'                => null,
+            'usage_limit_per_customer'         => null,
+            'rules'                            => [
                 [
-                    'type' => 'action',
-                    'handler' => 'apply_percentage_off',
+                    'type'          => 'action',
+                    'handler'       => 'apply_percentage_off',
                     'configuration' => ['percentage' => 10],
                 ],
             ],
-            'coupons' => [],
+            'coupons'                          => [],
         ]);
 
         $action = app(CreateDiscountPromotionAction::class);
@@ -115,35 +115,35 @@ describe('Discount Promotion Actions', function (): void {
     test('UpdateDiscountPromotionAction updates existing promotion', function (): void {
         // Arrange
         $promotion = DiscountPromotion::factory()->create([
-            'name' => 'Old Name',
+            'name'        => 'Old Name',
             'description' => 'Old Description',
         ]);
 
         $promotion->rules()->create([
-            'type' => 'action',
-            'handler' => 'old_handler',
+            'type'          => 'action',
+            'handler'       => 'old_handler',
             'configuration' => ['old' => 'config'],
         ]);
 
         $updateData = DiscountPromotionCreateData::from([
-            'name' => 'Updated Name',
-            'description' => 'Updated Description',
-            'type' => DiscountTypeEnum::CART_CHECKOUT->value,
-            'is_active' => true,
-            'starts_at' => now()->format('Y-m-d H:i:s'),
-            'ends_at' => now()->addDays(30)->format('Y-m-d H:i:s'),
-            'priority' => 1,
+            'name'                             => 'Updated Name',
+            'description'                      => 'Updated Description',
+            'type'                             => DiscountTypeEnum::CART_CHECKOUT->value,
+            'is_active'                        => true,
+            'starts_at'                        => now(),
+            'ends_at'                          => now()->addDays(30),
+            'priority'                         => 1,
             'stop_processing_subsequent_rules' => false,
-            'usage_limit_total' => null,
-            'usage_limit_per_customer' => null,
-            'rules' => [
+            'usage_limit_total'                => null,
+            'usage_limit_per_customer'         => null,
+            'rules'                            => [
                 [
-                    'type' => 'action',
-                    'handler' => 'apply_percentage_off',
+                    'type'          => 'action',
+                    'handler'       => 'apply_percentage_off',
                     'configuration' => ['percentage' => 25],
                 ],
             ],
-            'coupons' => [],
+            'coupons'                          => [],
         ]);
 
         $action = app(UpdateDiscountPromotionAction::class);
@@ -173,24 +173,28 @@ describe('Discount Promotion Actions', function (): void {
         $promotion->coupons()->create(['code' => 'OLDCODE', 'is_active' => true]);
 
         $updateData = DiscountPromotionCreateData::from([
-            'name' => $promotion->name,
-            'description' => $promotion->description,
-            'type' => $promotion->type->value,
-            'is_active' => $promotion->is_active,
-            'starts_at' => $promotion->starts_at ? $promotion->starts_at->format('Y-m-d H:i:s') : now()->format('Y-m-d H:i:s'),
-            'ends_at' => $promotion->ends_at ? $promotion->ends_at->format('Y-m-d H:i:s') : now()->addDays(30)->format('Y-m-d H:i:s'),
-            'priority' => $promotion->priority,
+            'name'                             => $promotion->name,
+            'description'                      => $promotion->description,
+            'type'                             => $promotion->type->value,
+            'is_active'                        => $promotion->is_active,
+            'starts_at'                        => $promotion->starts_at
+                ? $promotion->starts_at
+                : now(),
+            'ends_at'                          => $promotion->ends_at
+                ? $promotion->ends_at
+                : now()->addDays(30),
+            'priority'                         => $promotion->priority,
             'stop_processing_subsequent_rules' => false,
-            'usage_limit_total' => $promotion->usage_limit_total,
-            'usage_limit_per_customer' => $promotion->usage_limit_per_customer,
-            'rules' => [
+            'usage_limit_total'                => $promotion->usage_limit_total,
+            'usage_limit_per_customer'         => $promotion->usage_limit_per_customer,
+            'rules'                            => [
                 [
-                    'type' => 'condition',
-                    'handler' => 'new_condition',
+                    'type'          => 'condition',
+                    'handler'       => 'new_condition',
                     'configuration' => ['new' => 'config'],
                 ],
             ],
-            'coupons' => [
+            'coupons'                          => [
                 ['code' => 'NEWCODE', 'is_active' => true, 'usage_limit' => 100],
             ],
         ]);
@@ -216,13 +220,13 @@ describe('Discount Promotion Actions', function (): void {
         $promotion = DiscountPromotion::factory()->create();
 
         $promotion->rules()->create([
-            'type' => 'action',
-            'handler' => 'test_handler',
+            'type'          => 'action',
+            'handler'       => 'test_handler',
             'configuration' => [],
         ]);
 
         $promotion->coupons()->create([
-            'code' => 'TESTCODE',
+            'code'      => 'TESTCODE',
             'is_active' => true,
         ]);
 
@@ -248,32 +252,32 @@ describe('Discount Promotion Actions', function (): void {
     test('CreateDiscountPromotionAction handles transaction rollback on failure', function (): void {
         // Arrange
         $data = DiscountPromotionCreateData::from([
-            'name' => 'Test Promotion',
-            'description' => 'Test Description',
-            'type' => DiscountTypeEnum::CART_CHECKOUT->value,
-            'is_active' => true,
-            'starts_at' => now()->format('Y-m-d H:i:s'),
-            'ends_at' => now()->addDays(30)->format('Y-m-d H:i:s'),
-            'priority' => 1,
+            'name'                             => 'Test Promotion',
+            'description'                      => 'Test Description',
+            'type'                             => DiscountTypeEnum::CART_CHECKOUT->value,
+            'is_active'                        => true,
+            'starts_at'                        => now(),
+            'ends_at'                          => now()->addDays(30),
+            'priority'                         => 1,
             'stop_processing_subsequent_rules' => false,
-            'usage_limit_total' => null,
-            'usage_limit_per_customer' => null,
-            'rules' => [
+            'usage_limit_total'                => null,
+            'usage_limit_per_customer'         => null,
+            'rules'                            => [
                 [
-                    'type' => 'action',
-                    'handler' => 'apply_percentage_off',
+                    'type'          => 'action',
+                    'handler'       => 'apply_percentage_off',
                     'configuration' => ['percentage' => 15],
                 ],
             ],
-            'coupons' => [
+            'coupons'                          => [
                 [
-                    'code' => 'DUPLICATE',
-                    'is_active' => true,
+                    'code'        => 'DUPLICATE',
+                    'is_active'   => true,
                     'usage_limit' => 100,
                 ],
                 [
-                    'code' => 'DUPLICATE', // This will cause a constraint violation
-                    'is_active' => true,
+                    'code'        => 'DUPLICATE', // This will cause a constraint violation
+                    'is_active'   => true,
                     'usage_limit' => 100,
                 ],
             ],

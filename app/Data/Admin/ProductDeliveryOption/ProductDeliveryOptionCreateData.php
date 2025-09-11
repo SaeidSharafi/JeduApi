@@ -55,6 +55,7 @@ final class ProductDeliveryOptionCreateData extends Data
      */
     public static function rules(ValidationContext $context): array
     {
+        $now = verta()->format('Y-m-d');
         $baseRules = [
             'name'             => ['required', 'string', 'max:255'],
             'sku'              => ['required', 'alpha_dash', 'max:255', 'unique:product_delivery_options,sku'],
@@ -69,12 +70,12 @@ final class ProductDeliveryOptionCreateData extends Data
             'details'                   => ['present', 'array'],
             'is_featured'               => ['required', 'boolean'],
             'featured_price'            => ['nullable', 'integer', 'min:0'],
-            'featured_price_start_date' => ['nullable', 'date_format:Y-m-d H:i:s'],
-            'featured_price_end_date'   => ['nullable', 'date_format:Y-m-d H:i:s', 'after:featured_price_start_date'],
-            'registration_start_date'   => ['nullable', 'date_format:Y-m-d'],
-            'registration_end_date'     => ['nullable', 'date_format:Y-m-d', 'after:registration_start_date'],
-            'available_from'            => ['nullable', 'date_format:Y-m-d'],
-            'available_to'              => ['nullable', 'date_format:Y-m-d', 'after:available_from'],
+            'featured_price_start_date' => ['nullable', 'jdate:Y-m-d H:i:s'],
+            'featured_price_end_date'   => ['nullable', 'jdate:Y-m-d H:i:s','jdate_after:'.request('featured_price_start_date').',Y-m-d H:i:s'],
+            'registration_start_date'   => ['nullable', 'jdate:Y-m-d'],
+            'registration_end_date'     => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('registration_start_date').',Y-m-d'],
+            'available_from'            => ['nullable', 'jdate:Y-m-d'],
+            'available_to'              => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('available_from').',Y-m-d'],
             'teachers'                  => ['required', 'array'],
             'teachers.*'                => ['required', 'integer', 'exists:teachers,id'],
         ];

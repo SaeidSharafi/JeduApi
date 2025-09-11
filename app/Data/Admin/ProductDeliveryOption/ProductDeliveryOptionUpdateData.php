@@ -63,8 +63,8 @@ final class ProductDeliveryOptionUpdateData extends Data
             'details'                   => ['present', 'array'],
             'is_featured'               => ['required', 'boolean'],
             'featured_price'            => ['nullable', 'integer', 'min:0'],
-            'featured_price_start_date' => ['nullable', 'date_format:Y-m-d H:i:s'],
-            'featured_price_end_date'   => ['nullable', 'date_format:Y-m-d H:i:s', 'after:featured_price_start_date'],
+            'featured_price_start_date' => ['nullable', 'jdate:Y-m-d H:i:s'],
+            'featured_price_end_date'   => ['nullable', 'jdate:Y-m-d H:i:s', 'jdate_after:'.request('featured_price_start_date').',Y-m-d H:i:s'],
             'teachers'                  => ['required', 'array'],
             'teachers.*'                => ['required', 'integer', 'exists:teachers,id'],
         ];

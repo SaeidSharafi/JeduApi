@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Discounts;
 
+use App\Data\Transformer\CarbonFromJalaliString;
 use App\Enums\Order\DiscountTypeEnum;
 use App\Rules\CheckDiscountConfigurationRule;
+use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -20,8 +23,10 @@ final class DiscountPromotionCreateData extends Data
         public array $rules,
         public bool $is_active,
         public ?string $description = null,
-        public ?string $starts_at = null,
-        public ?string $ends_at = null,
+        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
+        public ?Carbon $starts_at = null,
+        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
+        public ?Carbon $ends_at = null,
         public int $priority = 0,
         public bool $stop_processing_subsequent_rules = false,
         public ?int $usage_limit_total = null,
@@ -33,13 +38,15 @@ final class DiscountPromotionCreateData extends Data
 
     public static function rules(ValidationContext $context): array
     {
+        $now = verta()->format('Y-m-d');
+
         return [
             'name'                             => ['required', 'string', 'max:255'],
             'type'                             => ['required', 'string', Rule::enum(DiscountTypeEnum::class)],
             'description'                      => ['nullable', 'string', 'max:1000'],
             'is_active'                        => ['required', 'boolean'],
-            'starts_at'                        => ['nullable', 'date', 'after_or_equal:today'],
-            'ends_at'                          => ['nullable', 'date', 'after:starts_at'],
+            'starts_at'                        => ['nullable', 'jdate:Y-m-d', 'jdate_after_equal:'.$now.',Y-m-d'],
+            'ends_at'                          => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('starts_at').',Y-m-d'],
             'priority'                         => ['integer', 'min:0', 'max:1000'],
             'stop_processing_subsequent_rules' => ['boolean'],
             'usage_limit_total'                => ['nullable', 'integer', 'min:1'],

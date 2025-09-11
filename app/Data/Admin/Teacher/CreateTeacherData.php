@@ -56,7 +56,7 @@ final class CreateTeacherData extends Data
                 }),
             ],
             'gender'         => ['required', Rule::enum(GenderEnum::class)],
-            'birth_date'     => ['nullable', 'date_format:Y-m-d'],
+            'birth_date'     => ['nullable', 'jdate:Y-m-d'],
             'social_links'   => ['nullable', 'array'],
             'social_links.*' => ['nullable', 'url'],
             'user_id'        => ['required', 'exists:users,id', 'integer'],

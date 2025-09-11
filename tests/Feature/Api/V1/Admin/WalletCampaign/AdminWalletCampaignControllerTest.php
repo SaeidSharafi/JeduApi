@@ -109,8 +109,8 @@ describe('store', function () {
             'amount' => 50000,
             'usage_limit_total' => 1000,
             'usage_limit_per_user' => 1,
-            'starts_at' => Carbon::now()->toISOString(),
-            'ends_at' => Carbon::now()->addMonth()->toISOString(),
+            'starts_at' => $this->toJalalitString(now(),'Y-m-d'),
+            'ends_at' =>  $this->toJalalitString(now()->addMonth(),'Y-m-d'),
             'metadata' => ['source' => 'admin_panel']
         ];
 
