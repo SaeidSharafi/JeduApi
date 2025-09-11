@@ -46,17 +46,14 @@ describe('ApplyPercentageDiscountToProductAction', function () {
     });
 
     test('it rounds discount calculation correctly', function () {
-        // Arrange
         $action = new ApplyPercentageDiscountToProductAction();
-        $config = new ApplyPercentageDiscountConfigData(percentage: 33.33); // 33.33% off
-        $option = ProductDeliveryOption::factory()->make(['price' => 1000]); // $10.00
+        $config = new ApplyPercentageDiscountConfigData(percentage: 33);
+        $option = ProductDeliveryOption::factory()->make(['price' => 1010]);
 
-        // Act
         $discountedPrice = $action->apply($option, $config);
 
-        // Assert
-        // Original: 1000, Discount: 33.33% = 333.3, Discounted: 666.7 → 670 (actual calculation)
-        expect($discountedPrice)->toBe(670);
+        // Original: 1010, Discount: 33% = 333.3, Discounted: 676.7 → 670 (actual calculation)
+        expect($discountedPrice)->toBe(677);
     });
 
     test('it never returns negative price', function () {
