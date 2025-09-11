@@ -70,6 +70,8 @@ describe('TermController Test', function () {
     it('should create a term', function () {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_CREATE]);
         $data     = Term::factory()->make();
+        $data['start_date'] = $this->toJalalitString($data['start_date'], 'Y-m-d');
+        $data['end_date'] = $this->toJalalitString($data['end_date'], 'Y-m-d');
         $response = $this->postJson(route('api.v1.admin.term.store'), $data->toArray());
         $response->assertCreated();
         $this->assertDatabaseHas('terms', ['name' => $data->name]);
@@ -87,6 +89,8 @@ describe('TermController Test', function () {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_UPDATE]);
         $term     = Term::factory()->create();
         $data     = Term::factory()->make();
+        $data['start_date'] = $this->toJalalitString($data['start_date'], 'Y-m-d');
+        $data['end_date'] = $this->toJalalitString($data['end_date'], 'Y-m-d');
         $response = $this->putJson(route('api.v1.admin.term.update', ['term' => $term]), $data->toArray());
         $response->assertOk();
         $this->assertDatabaseHas('terms', ['id' => $term->id, 'name' => $data->name]);

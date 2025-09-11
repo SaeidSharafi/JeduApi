@@ -78,6 +78,7 @@ describe('TeacherController Test', function () {
         $data['media'] = [
             'profile' => $this->profile->id,
         ];
+        $data['birth_date'] = verta($data->birth_date)->format('Y-m-d');
         $response = $this->postJson(route('api.v1.admin.teacher.store'), $data->toArray());
         $response->assertCreated();
         $this->assertDatabaseHas('teachers', ['email' => $data->email]);
@@ -105,6 +106,7 @@ describe('TeacherController Test', function () {
         $data['media'] = [
             'profile' => $this->profile->id,
         ];
+        $data['birth_date'] = verta($data->birth_date)->format('Y-m-d');
         $response = $this->putJson(route('api.v1.admin.teacher.update', ['teacher' => $teacher]), $data->toArray());
         $response->assertOk();
         $this->assertDatabaseHas('teachers', ['id' => $teacher->id, 'email' => $data->email]);
