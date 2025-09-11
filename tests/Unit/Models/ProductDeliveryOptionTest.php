@@ -141,3 +141,21 @@ test('scope registration open', function (): void {
         ->and($result->first()->is($openRegistrationOption))
         ->toBeTrue();
 });
+
+test('discountPrice', function (): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create(['price' => 10000]);
+    expect($deliveryOption->discountPrice)->toEqual(10000);
+
+    $discountPrice = App\Models\ProductDeliveryOptionDiscountPrice::create([
+        'product_delivery_option_id' => $deliveryOption->id,
+        'discount_promotion_id'      => \App\Models\DiscountPromotion::factory()->create()->id,
+        'discounted_price'           => 8000,
+    ]);
+    $deliveryOption->load('productDeliveryOptionDiscountPrice');
+    expect($deliveryOption->discountPrice)->toEqual(8000);
+
+    $discountPrice->delete();
+
+    $deliveryOption->load('productDeliveryOptionDiscountPrice');
+    expect($deliveryOption->discountPrice)->toEqual(10000);
+});
