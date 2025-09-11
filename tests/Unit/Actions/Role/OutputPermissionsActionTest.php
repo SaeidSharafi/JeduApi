@@ -3,10 +3,8 @@
 declare(strict_types=1);
 
 use App\Actions\Admin\Role\OutputPermissionsAction;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
 
-uses(RefreshDatabase::class);
 beforeEach(function () {
     Permission::query()->truncate();
 });

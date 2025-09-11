@@ -3,10 +3,8 @@
 declare(strict_types=1);
 
 use App\Rules\PublishedProductExistRule;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
 
-uses(RefreshDatabase::class);
 describe('PublishedProductExistRule', function (): void {
     it('pass the check if there is no published product beside the current one', function (): void {
         $course  = App\Models\Course::factory()->create()->fresh();

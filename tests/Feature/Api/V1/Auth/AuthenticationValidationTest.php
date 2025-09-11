@@ -5,11 +5,11 @@ declare(strict_types=1);
 use App\Data\OtpManager\OtpDto;
 use App\Enums\OtpType;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 
-uses(RefreshDatabase::class);
+
 beforeEach(function (): void {
     $minOtpCode           = config('otp.code_min');
     $maxOtpCode           = config('otp.code_max');

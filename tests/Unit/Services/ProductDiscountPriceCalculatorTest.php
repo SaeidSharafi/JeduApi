@@ -9,14 +9,6 @@ use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\ProductDiscountPriceCalculator;
-use App\Services\Discounts\Product\Actions\ApplyFixedDiscountToProductAction;
-use App\Services\Discounts\Product\Conditions\ProductCategoryCondition;
-use App\Services\Discounts\Configs\ApplyFixedDiscountConfigData;
-use App\Services\Discounts\Configs\ProductCategoryConditionConfigData;
-use Illuminate\Support\Collection;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('ProductDiscountPriceCalculator', function () {
     beforeEach(function () {

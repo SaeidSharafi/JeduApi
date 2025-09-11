@@ -11,9 +11,6 @@ use App\Models\Staff;
 use App\Models\User;
 use App\Models\WalletTransaction;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('GenerateComplianceReportAction', function () {
 

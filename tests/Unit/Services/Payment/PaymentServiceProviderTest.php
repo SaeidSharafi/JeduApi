@@ -8,9 +8,7 @@ use App\Providers\PaymentServiceProvider;
 use App\Services\Payment\BankTransferPaymentProcessor;
 use App\Services\Payment\PaymentProcessorFactory;
 use App\Services\Payment\WalletPaymentProcessor;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
 
 describe('PaymentServiceProvider', function () {
 

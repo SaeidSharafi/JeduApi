@@ -6,7 +6,7 @@ use App\Models\AdminActionLog;
 use App\Models\Staff;
 use App\Models\User;
 use App\Enums\PermissionEnum;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Tests\AuthTestTrait;
 use function Pest\Laravel\getJson;
 

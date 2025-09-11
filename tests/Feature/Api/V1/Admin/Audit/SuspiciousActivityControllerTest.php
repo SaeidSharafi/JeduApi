@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\WalletTransaction;
 use App\Enums\PermissionEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Tests\AuthTestTrait;
 use Carbon\Carbon;
 use \Hekmatinasser\Verta\Facades\Verta;

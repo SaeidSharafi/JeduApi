@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
 
-uses(RefreshDatabase::class);
 describe('DigitalAssetIsAttachableRule', function (): void {
     it('validates an array of attachable digital asset IDs', function (): void {
         $digitalAssetIds = App\Models\DigitalAsset::factory()->count(3)->create([

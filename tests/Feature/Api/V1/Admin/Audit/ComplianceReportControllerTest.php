@@ -9,7 +9,7 @@ use App\Models\WalletTransaction;
 use App\Enums\PermissionEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Enums\Wallet\TransactionSourceEnum;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Tests\AuthTestTrait;
 use Carbon\Carbon;
 

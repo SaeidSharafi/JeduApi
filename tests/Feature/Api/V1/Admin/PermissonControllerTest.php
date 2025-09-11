@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use App\Actions\Admin\Role\OutputPermissionsAction;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Illuminate\Testing\Fluent\AssertableJson;
 use Spatie\Permission\Models\Permission;
 
-uses(RefreshDatabase::class, Tests\AuthTestTrait::class);
+uses(Tests\AuthTestTrait::class);
 
 describe('permissions listing', function (): void {
     it('should return permissions list for authenticated staff', function () {

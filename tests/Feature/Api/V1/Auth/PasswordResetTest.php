@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use App\Models\User;
 use App\Notifications\Auth\OtpEmailNotification;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 
-uses(RefreshDatabase::class);
+
 
 beforeEach(function (): void {
     Notification::fake();

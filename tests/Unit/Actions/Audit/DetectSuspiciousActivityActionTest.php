@@ -10,9 +10,6 @@ use App\Models\User;
 use App\Models\Staff;
 use App\Models\AdminActionLog;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('DetectSuspiciousActivityAction', function () {
 

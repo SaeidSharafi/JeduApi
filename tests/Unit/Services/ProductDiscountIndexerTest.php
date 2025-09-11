@@ -10,9 +10,6 @@ use App\Models\ProductDeliveryOptionDiscountPrice;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\ProductDiscountIndexer;
 use App\Services\Discounts\ProductDiscountPriceCalculator;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 describe('ProductDiscountIndexer', function () {
     beforeEach(function () {

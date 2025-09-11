@@ -4,6 +4,7 @@ namespace Tests;
 
 use App\Contracts\OtpGeneratorInterface;
 use App\Http\Middleware\AdminAuditMiddleware;
+use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
@@ -13,6 +14,8 @@ abstract class TestCase extends BaseTestCase
     use RefreshDatabase;
     use DateUtilTestTrait;
 
+    protected $seed = true;
+    protected $seeder = PermissionsSeeder::class;
     protected function setUp(): void
     {
         parent::setUp();
@@ -20,7 +23,6 @@ abstract class TestCase extends BaseTestCase
         $this->app->singleton(function ($app): OtpGeneratorInterface {
             return new \Tests\Fakes\FakeOtpGenerator();
         });
-        $this->artisan('permissions:sync --guard=staff');
 
     }
 

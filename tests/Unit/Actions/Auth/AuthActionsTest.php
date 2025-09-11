@@ -10,13 +10,10 @@ use App\Data\OtpManager\SentOtpDto;
 use App\Enums\OtpType;
 use App\Exceptions\UserHasPasswordException;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\NewAccessToken;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     Notification::fake();

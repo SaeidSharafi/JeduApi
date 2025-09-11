@@ -15,10 +15,10 @@ use App\Models\Order;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
 use Tests\AuthTestTrait;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
 use Illuminate\Support\Facades\Event;
 
-uses(RefreshDatabase::class, AuthTestTrait::class);
+uses(AuthTestTrait::class);
 
 beforeEach(function () {
     $this->customer = User::factory()->create();

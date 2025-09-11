@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-uses(Illuminate\Foundation\Testing\RefreshDatabase::class);
 beforeEach(function () {
     $this->mockProperty = Mockery::mock(Spatie\LaravelData\Support\DataProperty::class);
     $this->mockContext  = Mockery::mock(Spatie\LaravelData\Support\Creation\CreationContext::class);

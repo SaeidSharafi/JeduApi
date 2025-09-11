@@ -9,9 +9,6 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Payment\PaymentProcessorFactory;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 // Simple mock processor for testing
 class MockWalletProcessor implements PaymentProcessorContract

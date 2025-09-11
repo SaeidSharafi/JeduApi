@@ -6,7 +6,6 @@ use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData;
 
-uses(Illuminate\Foundation\Testing\RefreshDatabase::class);
 beforeEach(function () {
     $this->mockProperty = Mockery::mock(Spatie\LaravelData\Support\DataProperty::class);
     $this->mockContext  = Mockery::mock(Spatie\LaravelData\Support\Creation\CreationContext::class);

@@ -3,10 +3,8 @@
 declare(strict_types=1);
 
 use App\Rules\ProductableExistRule;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
 
-uses(RefreshDatabase::class);
 describe('ProductableExistRule', function (): void {
     it('ignore checks if productable_type is empty or invalid', function (): void {
         $rule      = new ProductableExistRule();

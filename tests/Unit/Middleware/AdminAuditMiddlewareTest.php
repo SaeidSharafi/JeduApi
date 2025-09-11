@@ -5,7 +5,6 @@ namespace Tests\Feature\Middleware;
 use App\Http\Middleware\AdminAuditMiddleware;
 use App\Models\AdminActionLog;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Date;
@@ -13,7 +12,6 @@ use \Illuminate\Routing\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\AuthTestTrait;
 
-uses(RefreshDatabase::class);
 uses(AuthTestTrait::class);
 
 beforeEach(function () {
