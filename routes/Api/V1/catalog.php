@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\Admin\CategoryController;
-use App\Http\Controllers\Api\Admin\CourseController;
-use App\Http\Controllers\Api\Admin\DigitalAssetController;
-use App\Http\Controllers\Api\Admin\ProductController;
-use App\Http\Controllers\Api\Admin\ProductDeliveryOptionController;
-use App\Http\Controllers\Api\Admin\SeminarController;
+use App\Http\Controllers\Api\Admin\Product\CourseController;
+use App\Http\Controllers\Api\Admin\Product\DigitalAssetController;
+use App\Http\Controllers\Api\Admin\Product\ProductController;
+use App\Http\Controllers\Api\Admin\Product\ProductDeliveryOptionController;
+use App\Http\Controllers\Api\Admin\Product\SeminarController;
 
 Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
     Route::prefix('admin')->name('admin.')->group(function (): void {

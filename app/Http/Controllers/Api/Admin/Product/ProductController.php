@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api\Admin;
+namespace App\Http\Controllers\Api\Admin\Product;
 
 use App\Actions\Admin\Product\CreateProductAction;
 use App\Actions\Admin\Product\DeleteProductAction;
