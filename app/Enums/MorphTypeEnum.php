@@ -7,6 +7,7 @@ namespace App\Enums;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
+use App\Models\HomePageBlock;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Refund;
@@ -37,6 +38,7 @@ enum MorphTypeEnum: string
     case REFUND   = 'refund';
     case CAMPAIGN = 'campaign';
     case SLIDER   = 'slider';
+    case HOME_PAGE_BLOCK   = 'home_page_block';
 
     public static function forMorphMap(): array
     {
@@ -75,6 +77,7 @@ enum MorphTypeEnum: string
             self::REFUND        => Refund::class,
             self::CAMPAIGN      => WalletCampaign::class,
             self::SLIDER       => Slider::class,
+            self::HOME_PAGE_BLOCK => HomePageBlock::class,
         };
     }
 }

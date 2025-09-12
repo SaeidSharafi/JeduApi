@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\FileManagement\UploadMediaController;
 use App\Http\Controllers\Api\Admin\FileManagement\UploadPrivateController;
 use App\Http\Controllers\Api\Admin\FileManagement\ViewMediaController;
 use App\Http\Controllers\Api\Admin\FileManagement\ViewPrivateFileController;
+use App\Http\Controllers\Api\Admin\HomePageBlockController;
 use App\Http\Controllers\Api\Admin\NextPaymentDetailsController;
 use App\Http\Controllers\Api\Admin\OrderCalculationController;
 use App\Http\Controllers\Api\Admin\OrderController;
@@ -152,6 +153,7 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
                 ->name('footer.update');
             Route::resource('slider', SliderController::class)
                 ->only(['index', 'show', 'store', 'update', 'destroy']);
+            Route::apiResource('home-page-block', HomePageBlockController::class);
 
         });
 
