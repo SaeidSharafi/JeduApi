@@ -193,6 +193,12 @@ return [
             PermissionAction::VIEW_ANY,
             PermissionAction::UPDATE,
         ],
+        'review' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::UPDATE,
+            PermissionAction::DELETE,
+            'update_featured_status',
+        ],
         /*
 
 

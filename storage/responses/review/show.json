@@ -1,0 +1,94 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 1,
+    "user_id": 1,
+    "reviewable_type": {
+      "value": "course",
+      "label": "Course"
+    },
+    "reviewable_id": 1,
+    "rating": 3,
+    "title": "فیلم",
+    "status": {
+      "value": "rejected",
+      "label": "enums.ReviewStatusEnum.rejected"
+    },
+    "is_featured": false,
+    "reviewable": {
+      "id": 1,
+      "slug": "amet-laudantium-eos-enim-suscipit-quo",
+      "full_name": "طبیعت گوشی جایزه",
+      "short_name": "کامپیوتر",
+      "description": "اسکله دانه قرص شهر بانک ابزار موسیقی صندوق. لیوان کامپیوتر هتل ابزار پارو. پرنده صندلی مربع اپلیکیشن.",
+      "duration": 19,
+      "difficulty_level": {
+        "value": "beginner",
+        "label": "Beginner"
+      },
+      "career_prospects_text": "تصویر کامپیوتر کلمه ساز چای. شن پل بالش قهوه سایت پایه سریال نان. میوه دانه پل پارو ملت.",
+      "curriculum_summary_text": "دارو ساز خودرو دوربین قهوه",
+      "outcomes_json": {
+        "outcome1": [
+          "گردو شیر اسکله عدالت ژاکت ثروت.",
+          "تصویر اسکله سلول قلم گوشی موسیقی دفتر.",
+          "شن فیلم ملت کامپیوتر دارو کنترل نور برف.",
+          "سلول پول گوشی صندوق اپلیکیشن خط.",
+          "میوه باغ صندلی دفتر خیابان."
+        ],
+        "outcome2": [
+          "دارو مدرسه کشاورز نور.",
+          "بدل قفل ابزار مشک شهر علم.",
+          "میوه عدد آلاچیق عدالت.",
+          "کنترل خودرو نوازش موج مهد.",
+          "برنامه سایت جنگل گلیم مربع درخت صف الماس هتل."
+        ]
+      },
+      "default_teacher_info": "گوشی رنگ آسمان دریا خط",
+      "additional_info": [],
+      "meta_title": "ساحل برف موسیقی نور",
+      "meta_description": "کاغذ میز رنگ ماکت پوستر محل. دیجیتال ساختار دیجیتال هتل قهوه دامنه دفتر ساختار. پل صوت محل غذا الکتر",
+      "meta_keywords": "پوشاک,آتش,نقاشی",
+      "properties": [],
+      "status": {
+        "value": "draft",
+        "label": "Draft"
+      },
+      "categories": [],
+      "digital_assets": null,
+      "media": []
+    },
+    "user": {
+      "uuid": "01993d35-bb5a-739b-8278-0dcf77609378",
+      "phone": "09337981566",
+      "is_profile_completed": true,
+      "first_name": "Shanel",
+      "last_name": "Abbott",
+      "email": "zbailey@example.org",
+      "phone2": "09132044612",
+      "civil_id": "74931162114798",
+      "civil_id_type": {
+        "value": "immigrant_code",
+        "label": "Immigrant Code"
+      },
+      "date_of_birth": "1356-08-01",
+      "father_name": "Mr. Isaiah Kuhlman",
+      "gender": {
+        "value": "male",
+        "label": "Male"
+      },
+      "education_level": {
+        "value": "doctorate",
+        "label": "Doctorate"
+      },
+      "field_of_study": "کامپیوتر",
+      "education_status": {
+        "value": "employed",
+        "label": "Employed"
+      }
+    },
+    "created_at": "1404-06-21 12:45:55",
+    "updated_at": "1404-06-21 12:45:55"
+  },
+  "metadata": []
+}

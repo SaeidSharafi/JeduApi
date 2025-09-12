@@ -14,6 +14,9 @@ use App\Http\Controllers\Api\Admin\NextPaymentDetailsController;
 use App\Http\Controllers\Api\Admin\OrderCalculationController;
 use App\Http\Controllers\Api\Admin\OrderController;
 use App\Http\Controllers\Api\Admin\PrivateFileDownloadController;
+use App\Http\Controllers\Api\Admin\Review\ApproveReviewController;
+use App\Http\Controllers\Api\Admin\Review\RejectReviewController;
+use App\Http\Controllers\Api\Admin\Review\UpdateReviewFeaturedStatusController;
 use App\Http\Controllers\Api\Admin\Settings\AboutUsInfoController;
 use App\Http\Controllers\Api\Admin\Settings\ContactInfoController;
 use App\Http\Controllers\Api\Admin\Settings\SettingController;
@@ -147,5 +150,14 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
             Route::put('footer', [App\Http\Controllers\Api\Admin\Settings\FooterController::class, 'update'])
                 ->name('footer.update');
         });
+
+        Route::resource('review', \App\Http\Controllers\Api\Admin\Review\ReviewController::class)
+            ->only(['index', 'show', 'destroy']);
+        Route::post('review/{review}/approve', ApproveReviewController::class)
+            ->name('review.approve');
+        Route::post('review/{review}/reject', RejectReviewController::class)
+            ->name('review.reject');
+        Route::patch('review/{review}/featured', UpdateReviewFeaturedStatusController::class)
+            ->name('review.update-featured-status');
     });
 });

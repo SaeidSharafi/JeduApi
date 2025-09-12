@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\Course;
 
 use App\Contracts\ProductableDataContract;
+use App\Contracts\ReviewableDataContract;
 use App\Data\Admin\Category\CategoryListItemData;
 use App\Data\Admin\DigitalAsset\DigitalAssetListItemData;
 use App\Data\Transformer\TranslatableEnumData;
@@ -18,7 +19,7 @@ use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\DataCollection;
 
-final class ShowCourseData extends Data implements ProductableDataContract
+final class ShowCourseData extends Data implements ProductableDataContract, ReviewableDataContract
 {
     public function __construct(
         public int $id,

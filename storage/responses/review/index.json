@@ -1,0 +1,234 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "id": 1,
+        "user_id": 1,
+        "reviewable_type": {
+          "value": "digital_asset",
+          "label": "Digital Asset"
+        },
+        "reviewable_id": 1,
+        "rating": 3,
+        "title": "مهد",
+        "comment": "عدد کامپیوتر بدل کشاورز ملل آخر. ژاکت چای پول خیابان الماس هنر دارو برنامه. پرنده ملت بدل تصویر برنامه تاکسی. دریاچه خط آشیانه گلیم ساعت کلید گوشی.",
+        "status": {
+          "value": "rejected",
+          "label": "enums.ReviewStatusEnum.rejected"
+        },
+        "is_featured": false,
+        "reviewable": {
+          "id": 1,
+          "name": "گوشی",
+          "slug": "nulla-et-magnam-tenetur-ipsum",
+          "is_attachable_to_course": true,
+          "status": {
+            "value": "draft",
+            "label": "Draft"
+          },
+          "version": "qui",
+          "published_at": "1386-09-15 04:27:31",
+          "created_by": 2,
+          "created_at": "1404-06-21 12:44:11",
+          "updated_at": "1404-06-21 12:44:11"
+        },
+        "user": {
+          "uuid": "01993d34-24d6-7080-894d-6a72bff73ac8",
+          "phone": "09123825920",
+          "is_profile_completed": true,
+          "first_name": "Bradley",
+          "last_name": "Schuppe",
+          "email": "camren32@example.net",
+          "phone2": "09126524762",
+          "civil_id": "8598763027",
+          "civil_id_type": {
+            "value": "national_code",
+            "label": "National Code"
+          },
+          "date_of_birth": "1352-04-19",
+          "father_name": "Mrs. Leonie Crooks PhD",
+          "gender": {
+            "value": "female",
+            "label": "Female"
+          },
+          "education_level": {
+            "value": "master",
+            "label": "Master"
+          },
+          "field_of_study": "موج",
+          "education_status": {
+            "value": "employed",
+            "label": "Employed"
+          }
+        },
+        "created_at": "2025-09-12 12:44:11",
+        "updated_at": "2025-09-12 12:44:11"
+      },
+      {
+        "id": 2,
+        "user_id": 2,
+        "reviewable_type": {
+          "value": "course",
+          "label": "Course"
+        },
+        "reviewable_id": 1,
+        "rating": 4,
+        "title": "میز",
+        "comment": "اتوبوس ملک شهر ساحل قلم گلیم ماکت. آشیانه پایه سلول گردو پایه اسکله دفتر درخت هنر. درخت مربع دارو نمک لباس قلم تاکسی کاغذ. خودرو بدل آب درخت صندوق.",
+        "status": {
+          "value": "pending",
+          "label": "enums.ReviewStatusEnum.pending"
+        },
+        "is_featured": true,
+        "reviewable": {
+          "id": 1,
+          "slug": "autem-alias-totam-accusamus-voluptatem-quo-ex",
+          "full_name": "مجله ساختار آسمان",
+          "short_name": "کشاورز",
+          "difficulty_level": {
+            "value": "intermediate",
+            "label": "Intermediate"
+          },
+          "additional_info": [],
+          "properties": [],
+          "status": {
+            "value": "archived",
+            "label": "Archived"
+          },
+          "categories": [],
+          "digital_assets": null,
+          "created_by": 3,
+          "created_at": "1404-06-21 12:44:11",
+          "updated_at": "1404-06-21 12:44:11"
+        },
+        "user": {
+          "uuid": "01993d34-24fe-733f-b8c3-d56416b737f7",
+          "phone": "09334349330",
+          "is_profile_completed": true,
+          "first_name": "Edgar",
+          "last_name": "Funk",
+          "email": "kub.hazle@example.net",
+          "phone2": "09385725460",
+          "civil_id": "25837712843123",
+          "civil_id_type": {
+            "value": "immigrant_code",
+            "label": "Immigrant Code"
+          },
+          "date_of_birth": "1365-07-30",
+          "father_name": "Prof. Dolly Cormier II",
+          "gender": {
+            "value": "female",
+            "label": "Female"
+          },
+          "education_level": {
+            "value": "student",
+            "label": "Student"
+          },
+          "field_of_study": "سایت",
+          "education_status": {
+            "value": "employed",
+            "label": "Employed"
+          }
+        },
+        "created_at": "2025-09-12 12:44:11",
+        "updated_at": "2025-09-12 12:44:11"
+      },
+      {
+        "id": 3,
+        "user_id": 3,
+        "reviewable_type": {
+          "value": "digital_asset",
+          "label": "Digital Asset"
+        },
+        "reviewable_id": 2,
+        "rating": 2,
+        "title": "صندوق",
+        "comment": "قفل قلم جایزه نان آب. آخر ملل پرنده روزنامه. پایه مشک الماس هنر رنگ. هتل اتوبوس ملل کشاورز گلیم پوشاک مهد ساحل. دانه خودرو فیلم عدالت قلم اسکله پول شیر ژاکت. محل ساحل لوازم گلیم آخر تصویر ساعت عدالت.",
+        "status": {
+          "value": "approved",
+          "label": "enums.ReviewStatusEnum.approved"
+        },
+        "is_featured": false,
+        "reviewable": {
+          "id": 2,
+          "name": "علم",
+          "slug": "nostrum-quo-sit-aut-qui-error-saepe-explicabo",
+          "is_attachable_to_course": true,
+          "status": {
+            "value": "draft",
+            "label": "Draft"
+          },
+          "version": "placeat",
+          "published_at": "1389-05-08 00:07:43",
+          "created_by": 4,
+          "created_at": "1404-06-21 12:44:11",
+          "updated_at": "1404-06-21 12:44:11"
+        },
+        "user": {
+          "uuid": "01993d34-2504-706f-b552-b86425f23278",
+          "phone": "09174838049",
+          "is_profile_completed": true,
+          "first_name": "Lexi",
+          "last_name": "Kreiger",
+          "email": "consuelo.wuckert@example.org",
+          "phone2": "09118098542",
+          "civil_id": "884133459",
+          "civil_id_type": {
+            "value": "passport",
+            "label": "Passport"
+          },
+          "date_of_birth": "1362-09-04",
+          "father_name": "Cory Dickens",
+          "gender": {
+            "value": "female",
+            "label": "Female"
+          },
+          "education_level": {
+            "value": "bachelor",
+            "label": "Bachelor"
+          },
+          "field_of_study": "آرایش",
+          "education_status": {
+            "value": "college",
+            "label": "College"
+          }
+        },
+        "created_at": "2025-09-12 12:44:11",
+        "updated_at": "2025-09-12 12:44:11"
+      }
+    ],
+    "first_page_url": "https:\/\/jedu.test\/api\/v1\/admin\/reviews?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "https:\/\/jedu.test\/api\/v1\/admin\/reviews?page=1",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; Previous",
+        "page": null,
+        "active": false
+      },
+      {
+        "url": "https:\/\/jedu.test\/api\/v1\/admin\/reviews?page=1",
+        "label": "1",
+        "page": 1,
+        "active": true
+      },
+      {
+        "url": null,
+        "label": "Next &raquo;",
+        "page": null,
+        "active": false
+      }
+    ],
+    "next_page_url": null,
+    "path": "https:\/\/jedu.test\/api\/v1\/admin\/reviews",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 3,
+    "total": 3
+  },
+  "metadata": []
+}

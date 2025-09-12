@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\ProductableContract;
+use App\Contracts\ReviewableContract;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Traits\HasAssets;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Plank\Mediable\Mediable;
 
-final class Seminar extends Model implements ProductableContract
+final class Seminar extends Model implements ProductableContract, ReviewableContract
 {
     use HasAssets;
     use HasAuditor;

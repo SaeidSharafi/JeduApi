@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\Seminar;
 
 use App\Contracts\ProductableDataContract;
+use App\Contracts\ReviewableDataContract;
 use App\Data\Admin\Category\CategoryListItemData;
 use App\Data\Admin\DigitalAsset\DigitalAssetListItemData;
 use App\Data\Transformer\TranslatableEnumData;
@@ -20,7 +21,7 @@ use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\DataCollection;
 
-final class SeminarListItemData extends Data implements ProductableDataContract
+final class SeminarListItemData extends Data implements ProductableDataContract, ReviewableDataContract
 {
     use ValidatesMetaTags;
 

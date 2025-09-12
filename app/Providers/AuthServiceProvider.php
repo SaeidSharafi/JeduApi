@@ -13,6 +13,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\Refund;
+use App\Models\Review;
 use App\Models\Seminar;
 use App\Models\Setting;
 use App\Models\Staff;
@@ -31,6 +32,7 @@ use App\Policies\Admin\OrderPolicy;
 use App\Policies\Admin\ProductDeliveryOptionPolicy;
 use App\Policies\Admin\ProductPolicy;
 use App\Policies\Admin\RefundPolicy;
+use App\Policies\Admin\ReviewPolicy;
 use App\Policies\Admin\RolePolicy;
 use App\Policies\Admin\SeminarPolicy;
 use App\Policies\Admin\SettingPolicy;
@@ -47,7 +49,9 @@ use Spatie\Permission\Models\Role;
 
 final class AuthServiceProvider extends ServiceProvider
 {
-    public function register(): void {}
+    public function register(): void
+    {
+    }
 
     public function boot(): void
     {
@@ -79,6 +83,7 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(WalletCampaign::class, WalletCampaignPolicy::class);
         Gate::policy(AdminActionLog::class, AdminActionLogPolicy::class);
         Gate::policy(Setting::class, SettingPolicy::class);
+        Gate::policy(Review::class, ReviewPolicy::class);
 
     }
 }

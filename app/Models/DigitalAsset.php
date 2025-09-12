@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\ProductableContract;
+use App\Contracts\ReviewableContract;
 use App\Traits\IsProductable;
 use Database\Factories\DigitalAssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Plank\Mediable\Mediable;
 
-final class DigitalAsset extends Model implements ProductableContract
+final class DigitalAsset extends Model implements ProductableContract, ReviewableContract
 {
     /** @use  HasFactory<DigitalAssetFactory>*/
     use HasFactory;

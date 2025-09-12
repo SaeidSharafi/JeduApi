@@ -51,6 +51,7 @@ return [
         'role'               => 'نقش',
         'permission'         => 'مجوز',
         'vendor'             => 'فروشنده',
+        'review'             => 'نظر',
         'order'              => 'سفارش',
         'discount_promotion'=> 'تخفیف/پروموشن',
         'audit_log'         => 'گزارش حسابرسی',
@@ -60,14 +61,14 @@ return [
         'campaign'          => 'کمپین',
     ],
 
-    'errors' => [
+    'errors'                                  => [
         'model_has_relationship_data'                       => 'رکورد مورد نظر دارای داده‌های مرتبط (:related_model) است و نمی‌توان آن را حذف کرد.',
         'model_has_relationship_data_without_related_model' => 'رکورد مورد نظر دارای داده‌های مرتبط است و نمی‌توان آن را حذف کرد.',
     ],
-    'product' => [
+    'product'                                 => [
         'acrhived' => 'محصول با موفقیت بایگانی شد.',
     ],
-    'order' => [
+    'order'                                   => [
         'items_already_purchased'             => 'کاربر قبلاً موارد زیر را خریداری کرده‌ است: :products.',
         'item_already_purchased'              => 'کاربر قبلاً این مورد را خریداری کرده است.',
         'prepayment_not_available'            => 'پرداخت پیش‌پرداخت برای محصول :product در دسترس نیست.',
@@ -103,7 +104,7 @@ return [
             'delete_completed_payment_error'        => 'نمی‌توان پرداخت تکمیل شده را حذف کرد.',
             'update_completed_payment_status_error' => 'نمی‌توان وضعیت پرداخت تکمیل شده را به‌روزرسانی کرد.',
         ],
-        'refund' => [
+        'refund'                              => [
             'not_allowed'                           => 'بازپرداخت برای این سفارش مجاز نیست.',
             'already_refunded'                      => 'این سفارش قبلاً بازپرداخت شده است.',
             'refund_already_processed'              => 'این بازپرداخت قبلاً پردازش شده است.',
@@ -118,7 +119,7 @@ return [
 
         ],
     ],
-    'auth' => [
+    'auth'                                    => [
         'doesnot_have_password' => 'کاربر رمز عبور ندارد.',
         'password_reset'        => 'رمز عبور شما با موفقیت تغییر یافت!',
         'otp'                   => [
@@ -130,16 +131,16 @@ return [
             'type_mismatch'  => 'نوع کد تأیید با نوع مورد انتظار مطابقت ندارد.',
             'throttle'       => 'لطفاً قبل از تلاش مجدد برای ارسال کد تأیید، :seconds ثانیه صبر کنید.',
         ],
-        'login' => [
+        'login'                 => [
             'success'             => 'کاربر با موفقیت وارد سیستم شد.',
             'not_found'           => 'کاربری با این شماره تلفن یا ایمیل یافت نشد.',
             'invalid_credentials' => 'اطلاعات کاربری وارد شده نادرست است.',
         ],
     ],
-    'enrollments' => [
+    'enrollments'                             => [
         'not_found' => 'دوره مورد نظر یافت نشد.',
     ],
-    'wallet' => [
+    'wallet'                                  => [
         'deposit_description'    => 'واریز به کیف پول توسط ادمین',
         'withdrawal_description' => 'برداشت از کیف پول توسط ادمین',
         'adjustment_description' => 'تعدیل کیف پول - دلیل: :reason',
@@ -173,7 +174,7 @@ return [
         500 => 'خطای داخلی سرور',
     ],
 
-    'audit' => [
+    'audit'  => [
         'admin_actions_loaded_successfully'         => 'گزارش‌های حسابرسی مدیریت با موفقیت بارگیری شد',
         'admin_action_logged'                       => 'عملیات مدیر با موفقیت ثبت شد',
         'compliance_report_generated_successfully'  => 'گزارش انطباق با موفقیت تولید شد',
@@ -228,4 +229,8 @@ return [
             'maintain_monitoring'      => 'سطوح ریسک در پارامترهای عادی است - نظارت منظم را ادامه دهید',
         ],
     ],
+    'review' => [
+        'approved' => 'نظر با موفقیت تأیید شد.',
+        'rejected' => 'نظر با موفقیت رد شد.',
+    ]
 ];
