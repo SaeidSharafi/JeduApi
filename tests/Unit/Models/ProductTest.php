@@ -55,3 +55,16 @@ test('relation product_delivery_options', function () {
         ->and($product->productDeliveryOptions->first()->id)
         ->toEqual($deliveryOption->id);
 });
+
+test('relation orderItems through product_delivery_options', function () {
+    $product        = App\Models\Product::factory()->create();
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
+    $orderItem      = App\Models\OrderItem::factory()->create(['product_delivery_option_id' => $deliveryOption->id]);
+
+    expect($product->orderItems)
+        ->toHaveCount(1)
+        ->and($product->orderItems->first())
+        ->toBeInstanceOf(App\Models\OrderItem::class)
+        ->and($product->orderItems->first()->id)
+        ->toEqual($orderItem->id);
+});

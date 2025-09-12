@@ -142,7 +142,7 @@ describe('Controller Tests', function () {
         $data = Product::factory()->make();
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_CREATE]);
         $product = Product::factory()->make();
-        $data    = [
+        $data = [
             ...$product->toArray(),
             'name'         => 'New Product',
             'force_create' => true,
@@ -155,7 +155,7 @@ describe('Controller Tests', function () {
 
     it('should show a product', function () {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW]);
-        $product  = Product::factory()->create()->fresh();
+        $product = Product::factory()->create()->fresh();
         $response = $this->getJson(route('api.v1.admin.product.show', ['product' => $product->id]));
         $response->assertOk()
             ->assertJsonFragment(['name' => $product->name]);
@@ -186,9 +186,23 @@ describe('Controller Tests', function () {
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
         $this->assertDatabaseCount('products', 0);
     });
+    it('should not delete a product with associated order items', function () {
+        $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_DELETE]);
+        $product = Product::factory()->create()->fresh();
+        $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+            'product_id' => $product->id,
+        ]);
+        App\Models\OrderItem::factory()->create([
+            'product_delivery_option_id' => $deliveryOption->id,
+        ]);
+        $response = $this->deleteJson(route('api.v1.admin.product.destroy', ['product' => $product->id]));
+        $response->assertUnprocessable()
+            ->assertJsonFragment(['product' => [__('validation.custom.product.cannot_delete_product_with_orders')]]);
+        $this->assertDatabaseHas('products', ['id' => $product->id]);
+    });
     it('should not delete a product if unauthorized', function () {
         $this->unauthorized_user();
-        $product  = Product::factory()->create();
+        $product = Product::factory()->create();
         $response = $this->deleteJson(route('api.v1.admin.product.destroy', ['product' => $product->id]));
         $response->assertForbidden();
         $this->assertDatabaseHas('products', ['id' => $product->id]);
@@ -196,7 +210,7 @@ describe('Controller Tests', function () {
     it('should not create a product if unauthorized', function () {
         $this->unauthorized_user();
         $product = Product::factory()->make();
-        $data    = [
+        $data = [
             ...$product->toArray(),
             'force_create' => true,
             'categories'   => [$this->category->id],
@@ -207,7 +221,7 @@ describe('Controller Tests', function () {
     it('should not update a product if unauthorized', function () {
         $this->unauthorized_user();
         $product = Product::factory()->create()->fresh();
-        $data    = [
+        $data = [
             ...$product->toArray(),
             'name'        => 'Unauthorized Update',
             'short_name'  => 'Unauthorized Short Name',
@@ -221,7 +235,7 @@ describe('Controller Tests', function () {
     });
     it('should not show a product if unauthorized', function () {
         $this->unauthorized_user();
-        $product  = Product::factory()->create()->fresh();
+        $product = Product::factory()->create()->fresh();
         $response = $this->getJson(route('api.v1.admin.product.show', ['product' => $product->id]));
         $response->assertForbidden();
     });
@@ -237,14 +251,14 @@ describe('Controller Tests', function () {
     });
     it('should not update a product if it does not exist', function () {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_UPDATE]);
-        $data     = Product::factory()->make();
+        $data = Product::factory()->make();
         $response = $this->putJson(route('api.v1.admin.product.update', ['product' => 999]), $data->toArray());
         $response->assertNotFound();
     });
     it('should not create a product with invalid data', function () {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_CREATE]);
         $product = Product::factory()->make();
-        $data    = [
+        $data = [
             ...$product->toArray(),
             'force_create' => true,
             'name'         => '', // Invalid name
@@ -261,7 +275,7 @@ describe('Controller Tests', function () {
     it('should not update a product with invalid data', function () {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_UPDATE]);
         $product = Product::factory()->create();
-        $data    = [
+        $data = [
             ...($product->toArray()),
             'name'        => '', // Invalid name
             'short_name'  => 'Invalid Short Name',
@@ -283,7 +297,7 @@ describe('Product Creation tests', function () {
     it('should not create a published  product when another published product with same productable exist',
         function () {
             $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_CREATE]);
-            $course          = App\Models\Course::factory()->create()->fresh();
+            $course = App\Models\Course::factory()->create()->fresh();
             $existingProduct = Product::factory()->create([
                 'status'           => App\Enums\PublicationStatusEnum::PUBLISHED,
                 'productable_type' => App\Enums\ProductableEnum::COURSE->value,
@@ -293,10 +307,10 @@ describe('Product Creation tests', function () {
                 'productable_type' => $existingProduct->productable_type,
                 'productable_id'   => $existingProduct->productable_id,
             ])->toArray();
-            $data['status']       = App\Enums\PublicationStatusEnum::PUBLISHED->value;
+            $data['status'] = App\Enums\PublicationStatusEnum::PUBLISHED->value;
             $data['force_create'] = false;
-            $data['categories']   = [$this->category->id];
-            $response             = $this->postJson(route('api.v1.admin.product.store'), $data);
+            $data['categories'] = [$this->category->id];
+            $response = $this->postJson(route('api.v1.admin.product.store'), $data);
             $response->assertUnprocessable()
                 ->assertJsonValidationErrors(['productable_id']);
 
@@ -304,7 +318,7 @@ describe('Product Creation tests', function () {
     it('should create a product with force_create when another published product with same productable exist',
         function () {
             $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_CREATE]);
-            $course          = App\Models\Course::factory()->create()->fresh();
+            $course = App\Models\Course::factory()->create()->fresh();
             $existingProduct = Product::factory()->create([
                 'status'           => App\Enums\PublicationStatusEnum::PUBLISHED,
                 'productable_type' => App\Enums\ProductableEnum::COURSE->value,
@@ -314,10 +328,10 @@ describe('Product Creation tests', function () {
                 'productable_type' => $existingProduct->productable_type,
                 'productable_id'   => $existingProduct->productable_id,
             ])->toArray();
-            $data['status']       = App\Enums\PublicationStatusEnum::PUBLISHED->value;
+            $data['status'] = App\Enums\PublicationStatusEnum::PUBLISHED->value;
             $data['force_create'] = true;
-            $data['categories']   = [$this->category->id];
-            $response             = $this->postJson(route('api.v1.admin.product.store'), $data);
+            $data['categories'] = [$this->category->id];
+            $response = $this->postJson(route('api.v1.admin.product.store'), $data);
             $response->assertCreated()
                 ->assertJsonFragment(['name' => $data['name']]);
             \Pest\Laravel\assertDatabaseHas('products', [

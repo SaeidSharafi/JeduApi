@@ -189,6 +189,9 @@ return [
         'attribute-name'       => [
             'rule-name' => 'custom-message',
         ],
+        'product' => [
+            'cannot_delete_product_with_orders' => 'محصولی که سفارش دارد را نمی توان حذف کرد.',
+        ],
         'product_delivery_option_check_rule' => [
             'invalid_delivery_method' => 'نحوه ارائه :delivery_method برای نوع محصول :fulfillment_type معتبر نیست.',
         ],
