@@ -1,0 +1,22 @@
+{
+  "message": "Operation successful.",
+  "data": {
+    "id": 1,
+    "title": "Test Slider",
+    "caption": "Test Caption",
+    "image": {
+      "id": 1,
+      "url": "\/storage\/image1.jpg",
+      "size": 695,
+      "file_name": "image1",
+      "alt": "",
+      "mime_type": "image\/jpeg",
+      "extension": "jpg",
+      "tag": "image",
+      "thumbnail": null
+    },
+    "link": "\/test",
+    "order": 1
+  },
+  "metadata": []
+}

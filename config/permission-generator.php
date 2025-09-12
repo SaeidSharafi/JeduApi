@@ -199,6 +199,12 @@ return [
             PermissionAction::DELETE,
             'update_featured_status',
         ],
+        'slider' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::DELETE,
+        ],
         /*
 
 

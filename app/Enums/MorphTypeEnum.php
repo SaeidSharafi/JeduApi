@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Refund;
 use App\Models\Seminar;
+use App\Models\Slider;
 use App\Models\Staff;
 use App\Models\Teacher;
 use App\Models\User;
@@ -35,6 +36,7 @@ enum MorphTypeEnum: string
     case ORDER    = 'order';
     case REFUND   = 'refund';
     case CAMPAIGN = 'campaign';
+    case SLIDER   = 'slider';
 
     public static function forMorphMap(): array
     {
@@ -72,6 +74,7 @@ enum MorphTypeEnum: string
             self::ORDER         => Order::class,
             self::REFUND        => Refund::class,
             self::CAMPAIGN      => WalletCampaign::class,
+            self::SLIDER       => Slider::class,
         };
     }
 }

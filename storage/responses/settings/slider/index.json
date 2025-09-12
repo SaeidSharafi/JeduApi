@@ -1,0 +1,47 @@
+{
+  "message": "Operation successful.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "id": 1,
+        "title": "Test Slider",
+        "caption": "Test Caption",
+        "image_url": "https:\/\/via.placeholder.com\/800x600.png\/0000cc?text=nature+ad",
+        "link": "\/test",
+        "order": 1
+      }
+    ],
+    "first_page_url": "https:\/\/jedu.test\/api\/v1\/admin\/settings\/slider?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "https:\/\/jedu.test\/api\/v1\/admin\/settings\/slider?page=1",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; Previous",
+        "page": null,
+        "active": false
+      },
+      {
+        "url": "https:\/\/jedu.test\/api\/v1\/admin\/settings\/slider?page=1",
+        "label": "1",
+        "page": 1,
+        "active": true
+      },
+      {
+        "url": null,
+        "label": "Next &raquo;",
+        "page": null,
+        "active": false
+      }
+    ],
+    "next_page_url": null,
+    "path": "https:\/\/jedu.test\/api\/v1\/admin\/settings\/slider",
+    "per_page": 10,
+    "prev_page_url": null,
+    "to": 1,
+    "total": 1
+  },
+  "metadata": []
+}

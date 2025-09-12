@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\Admin\Review\UpdateReviewFeaturedStatusController;
 use App\Http\Controllers\Api\Admin\Settings\AboutUsInfoController;
 use App\Http\Controllers\Api\Admin\Settings\ContactInfoController;
 use App\Http\Controllers\Api\Admin\Settings\SettingController;
+use App\Http\Controllers\Api\Admin\Settings\SliderController;
 use App\Http\Controllers\Api\Admin\Wallet\AdminWalletController;
 use App\Http\Controllers\Api\Admin\WalletCampaign\AdminWalletCampaignController;
 use App\Http\Controllers\Api\Admin\WalletCampaign\BulkCampaignAllocationController;
@@ -149,6 +150,9 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
                 ->name('footer.show');
             Route::put('footer', [App\Http\Controllers\Api\Admin\Settings\FooterController::class, 'update'])
                 ->name('footer.update');
+            Route::resource('slider', SliderController::class)
+                ->only(['index', 'show', 'store', 'update', 'destroy']);
+
         });
 
         Route::resource('review', \App\Http\Controllers\Api\Admin\Review\ReviewController::class)

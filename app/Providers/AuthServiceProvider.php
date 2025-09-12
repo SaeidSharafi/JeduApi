@@ -16,6 +16,7 @@ use App\Models\Refund;
 use App\Models\Review;
 use App\Models\Seminar;
 use App\Models\Setting;
+use App\Models\Slider;
 use App\Models\Staff;
 use App\Models\Teacher;
 use App\Models\Term;
@@ -36,6 +37,7 @@ use App\Policies\Admin\ReviewPolicy;
 use App\Policies\Admin\RolePolicy;
 use App\Policies\Admin\SeminarPolicy;
 use App\Policies\Admin\SettingPolicy;
+use App\Policies\Admin\SliderPolicy;
 use App\Policies\Admin\StaffPolicy;
 use App\Policies\Admin\TeacherPolicy;
 use App\Policies\Admin\TermPolicy;
@@ -84,6 +86,7 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(AdminActionLog::class, AdminActionLogPolicy::class);
         Gate::policy(Setting::class, SettingPolicy::class);
         Gate::policy(Review::class, ReviewPolicy::class);
+        Gate::policy(Slider::class, SliderPolicy::class);
 
     }
 }
