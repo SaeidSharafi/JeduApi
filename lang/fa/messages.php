@@ -53,6 +53,9 @@ return [
         'model_has_relationship_data'                       => 'رکورد مورد نظر دارای داده‌های مرتبط (:related_model) است و نمی‌توان آن را حذف کرد.',
         'model_has_relationship_data_without_related_model' => 'رکورد مورد نظر دارای داده‌های مرتبط است و نمی‌توان آن را حذف کرد.',
     ],
+    'product' => [
+        'acrhived' => 'محصول با موفقیت بایگانی شد.',
+    ],
     'order' => [
         'items_already_purchased'             => 'کاربر قبلاً موارد زیر را خریداری کرده‌ است: :products.',
         'item_already_purchased'              => 'کاربر قبلاً این مورد را خریداری کرده است.',

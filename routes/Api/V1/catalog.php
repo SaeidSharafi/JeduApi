@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\Admin\CategoryController;
+use App\Http\Controllers\Api\Admin\Product\ArchiveProductController;
 use App\Http\Controllers\Api\Admin\Product\CourseController;
 use App\Http\Controllers\Api\Admin\Product\DigitalAssetController;
 use App\Http\Controllers\Api\Admin\Product\ProductController;
@@ -26,6 +27,8 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
 
         Route::resource('product', ProductController::class)
             ->except(['edit', 'create']);
+        Route::post('product/{product}/archive', ArchiveProductController::class)
+            ->name('product.archive');
 
         Route::resource('product/{product}/delivery-option', ProductDeliveryOptionController::class)
             ->except(['edit', 'create']);
