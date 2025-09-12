@@ -47,6 +47,17 @@ return [
         'wallet_transaction' => 'تراکنش کیف پول',
         'contact_info'       => 'اطلاعات تماس',
         'about_us'           => 'درباره ما',
+        'setting'            => 'تنظیمات',
+        'role'               => 'نقش',
+        'permission'         => 'مجوز',
+        'vendor'             => 'فروشنده',
+        'order'              => 'سفارش',
+        'discount_promotion'=> 'تخفیف/پروموشن',
+        'audit_log'         => 'گزارش حسابرسی',
+        'refund'            => 'بازپرداخت',
+        'payment'           => 'پرداخت',
+        'enrollment'        => 'ثبت‌نام',
+        'campaign'          => 'کمپین',
     ],
 
     'errors' => [
