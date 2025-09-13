@@ -211,6 +211,14 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
+        'collaboration_carousel' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::DELETE,
+        ],
+
+
         /*
 
 

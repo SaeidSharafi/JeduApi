@@ -20,6 +20,11 @@ enum PermissionEnum: string
     case CATEGORY_UPDATE_OWN = 'category.update_own';
     case CATEGORY_VIEW = 'category.view';
     case CATEGORY_VIEW_ANY = 'category.view_any';
+    case COLLABORATION_CAROUSEL_CREATE = 'collaboration_carousel.create';
+    case COLLABORATION_CAROUSEL_DELETE = 'collaboration_carousel.delete';
+    case COLLABORATION_CAROUSEL_UPDATE = 'collaboration_carousel.update';
+    case COLLABORATION_CAROUSEL_VIEW = 'collaboration_carousel.view';
+    case COLLABORATION_CAROUSEL_VIEW_ANY = 'collaboration_carousel.view_any';
     case COURSE_CREATE = 'course.create';
     case COURSE_DELETE = 'course.delete';
     case COURSE_DELETE_OWN = 'course.delete_own';

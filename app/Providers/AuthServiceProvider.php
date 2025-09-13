@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Models\AdminActionLog;
 use App\Models\Category;
+use App\Models\CollaborationCarousel;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\DiscountPromotion;
@@ -27,6 +28,7 @@ use App\Models\Wallet;
 use App\Models\WalletCampaign;
 use App\Policies\Admin\AdminActionLogPolicy;
 use App\Policies\Admin\CategoryPolicy;
+use App\Policies\Admin\CollaborationCarouselPolicy;
 use App\Policies\Admin\CoursePolicy;
 use App\Policies\Admin\DigitalAssetPolicy;
 use App\Policies\Admin\DiscountPromotionPolicy;
@@ -90,6 +92,7 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(Review::class, ReviewPolicy::class);
         Gate::policy(Slider::class, SliderPolicy::class);
         Gate::policy(HomePageBlock::class, HomePageBlockPolicy::class);
+        Gate::policy(CollaborationCarousel::class,CollaborationCarouselPolicy::class);
 
     }
 }
