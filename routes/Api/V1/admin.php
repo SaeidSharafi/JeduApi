@@ -151,6 +151,10 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
                 ->name('footer.show');
             Route::put('footer', [App\Http\Controllers\Api\Admin\Settings\FooterController::class, 'update'])
                 ->name('footer.update');
+            Route::get('header', [App\Http\Controllers\Api\Admin\Settings\HeaderController::class, 'show'])
+                ->name('header.show');
+            Route::put('header', [App\Http\Controllers\Api\Admin\Settings\HeaderController::class, 'update'])
+                ->name('header.update');
             Route::resource('slider', SliderController::class)
                 ->only(['index', 'show', 'store', 'update', 'destroy']);
             Route::apiResource('home-page-block', HomePageBlockController::class);
