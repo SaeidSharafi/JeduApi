@@ -1,0 +1,101 @@
+{
+  "message": "Operation successful.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "id": 2,
+        "type": "WEBINAR_BANNER",
+        "title": "sint",
+        "location": "dolorum",
+        "order": 21013,
+        "is_active": true,
+        "content": {
+          "product_id": 1,
+          "text": "عطر صندلی بالش کلید چرخ قهوه.",
+          "image_id": 1,
+          "image_url": "\/storage\/banner.jpg"
+        }
+      },
+      {
+        "id": 3,
+        "type": "CURATED_LIST",
+        "title": "iusto",
+        "location": "exercitationem",
+        "order": 512260,
+        "is_active": false,
+        "content": {
+          "items": [
+            1,
+            2,
+            3
+          ],
+          "preset": "default"
+        }
+      },
+      {
+        "id": 1,
+        "type": "BANNER",
+        "title": "rerum",
+        "location": "et",
+        "order": 202872393,
+        "is_active": true,
+        "content": {
+          "image_id": 1,
+          "image_url": "\/storage\/banner.jpg",
+          "action": "https:\/\/example.com",
+          "action_title": "Click Here",
+          "content": "This is a banner",
+          "preset": "default"
+        }
+      },
+      {
+        "id": 4,
+        "type": "MAIN_CATEGORIES",
+        "title": "atque",
+        "location": "dolorum",
+        "order": 819938594,
+        "is_active": true,
+        "content": {
+          "items": [
+            1,
+            2,
+            3
+          ],
+          "preset": "default"
+        }
+      }
+    ],
+    "first_page_url": "https:\/\/jedu.test\/api\/v1\/admin\/settings\/home-page-block?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "https:\/\/jedu.test\/api\/v1\/admin\/settings\/home-page-block?page=1",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; Previous",
+        "page": null,
+        "active": false
+      },
+      {
+        "url": "https:\/\/jedu.test\/api\/v1\/admin\/settings\/home-page-block?page=1",
+        "label": "1",
+        "page": 1,
+        "active": true
+      },
+      {
+        "url": null,
+        "label": "Next &raquo;",
+        "page": null,
+        "active": false
+      }
+    ],
+    "next_page_url": null,
+    "path": "https:\/\/jedu.test\/api\/v1\/admin\/settings\/home-page-block",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 4,
+    "total": 4
+  },
+  "metadata": []
+}

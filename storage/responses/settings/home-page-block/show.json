@@ -1,0 +1,18 @@
+{
+  "message": "Operation successful.",
+  "data": {
+    "id": 2,
+    "type": "WEBINAR_BANNER",
+    "title": "sint",
+    "location": "dolorum",
+    "order": 21013,
+    "is_active": true,
+    "content": {
+      "product_id": 1,
+      "text": "عطر صندلی بالش کلید چرخ قهوه.",
+      "image_id": 1,
+      "image_url": "\/storage\/banner.jpg"
+    }
+  },
+  "metadata": []
+}

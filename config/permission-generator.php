@@ -205,6 +205,12 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
+        'home_page_block' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::DELETE,
+        ],
         /*
 
 

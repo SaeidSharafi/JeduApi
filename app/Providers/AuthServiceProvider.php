@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\DiscountPromotion;
+use App\Models\HomePageBlock;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
@@ -29,6 +30,7 @@ use App\Policies\Admin\CategoryPolicy;
 use App\Policies\Admin\CoursePolicy;
 use App\Policies\Admin\DigitalAssetPolicy;
 use App\Policies\Admin\DiscountPromotionPolicy;
+use App\Policies\Admin\HomePageBlockPolicy;
 use App\Policies\Admin\OrderPolicy;
 use App\Policies\Admin\ProductDeliveryOptionPolicy;
 use App\Policies\Admin\ProductPolicy;
@@ -87,6 +89,7 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(Setting::class, SettingPolicy::class);
         Gate::policy(Review::class, ReviewPolicy::class);
         Gate::policy(Slider::class, SliderPolicy::class);
+        Gate::policy(HomePageBlock::class, HomePageBlockPolicy::class);
 
     }
 }

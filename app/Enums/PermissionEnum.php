@@ -44,6 +44,11 @@ enum PermissionEnum: string
     case FILE_UPDATE_OWN = 'file.update_own';
     case FILE_VIEW = 'file.view';
     case FILE_VIEW_ANY = 'file.view_any';
+    case HOME_PAGE_BLOCK_CREATE = 'home_page_block.create';
+    case HOME_PAGE_BLOCK_DELETE = 'home_page_block.delete';
+    case HOME_PAGE_BLOCK_UPDATE = 'home_page_block.update';
+    case HOME_PAGE_BLOCK_VIEW = 'home_page_block.view';
+    case HOME_PAGE_BLOCK_VIEW_ANY = 'home_page_block.view_any';
     case ORDER_CREATE = 'order.create';
     case ORDER_DELETE = 'order.delete';
     case ORDER_UPDATE = 'order.update';
