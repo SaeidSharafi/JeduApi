@@ -1,0 +1,59 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "id": 1,
+        "title": "UAC",
+        "caption": "UAC Logo",
+        "image_url": "http://jedu.test/storage/fake-media/placeholder1.mp4",
+        "url": "http://bailey.com/",
+        "show_in": "course",
+        "order": 1,
+        "is_active": false
+      },
+      {
+        "id": 2,
+        "title": "UAC",
+        "caption": "UAC Logo",
+        "image_url": "http://jedu.test/storage/fake-media/fake-gallery.svg",
+        "url": "http://bailey.com/",
+        "show_in": "course",
+        "order": 1,
+        "is_active": false
+      }
+    ],
+    "first_page_url": "http://jedu.test/api/v1/admin/settings/collaboration-carousel?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "http://jedu.test/api/v1/admin/settings/collaboration-carousel?page=1",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; قبلی",
+        "page": null,
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/admin/settings/collaboration-carousel?page=1",
+        "label": "1",
+        "page": 1,
+        "active": true
+      },
+      {
+        "url": null,
+        "label": "بعدی &raquo;",
+        "page": null,
+        "active": false
+      }
+    ],
+    "next_page_url": null,
+    "path": "http://jedu.test/api/v1/admin/settings/collaboration-carousel",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 2,
+    "total": 2
+  },
+  "metadata": []
+}

@@ -17,8 +17,22 @@ use Illuminate\Support\Facades\Gate;
     use App\Http\Controllers\Controller;
 use Spatie\QueryBuilder\QueryBuilder;
 
+/**
+ * @group Admin - Settings - Collaboration Carousel
+ */
 final class CollaborationCarouselController extends Controller
 {
+    /**
+     * Display list of collaboration carousel items.
+     *
+     * @queryParam filter[title] string Filter by title. Example: Partner
+     * @queryParam filter[show_in] string Filter by show_in. can be 'home' or 'course'. Example: home
+     * @queryParam filter[is_active] boolean Filter by active status. Example: 1
+     *
+     * @queryParam sort string Sort by a field. Allowed values: order, title, created_at. Prefix with '-' for descending order (e.g., -title for descending by title). Example: order
+     *
+     * @responseFile 200 responses/settings/collaboration-carousel/index.json
+     */
     public function index(): ApiResponseInterface
     {
         Gate::authorize('viewAny', CollaborationCarousel::class);
@@ -31,6 +45,13 @@ final class CollaborationCarouselController extends Controller
         return response()->success(CollaborationCarouselListItemData::collect($collaborationCarousels));
     }
 
+    /**
+     * Display the specified collaboration carousel item.
+     *
+     * @urlParam collaboration_carousel required The ID of the collaboration carousel item. Example: 1
+     *
+     * @responseFile 200 responses/settings/collaboration-carousel/show.json
+     */
     public function show(CollaborationCarousel $collaborationCarousel): ApiResponseInterface
     {
         Gate::authorize('view', $collaborationCarousel);
@@ -41,6 +62,11 @@ final class CollaborationCarouselController extends Controller
         ]));
     }
 
+    /**
+     * Store a newly created collaboration carousel item.
+     *
+     * @responseFile 201 responses/settings/collaboration-carousel/show.json
+     */
     public function store(CollaborationCarouselCreateData $data, CreateCollaborationCarouselAction $action): ApiResponseInterface
     {
         Gate::authorize('create', CollaborationCarousel::class);
@@ -52,6 +78,11 @@ final class CollaborationCarouselController extends Controller
         ]));
     }
 
+    /**
+     * Update the specified collaboration carousel item.
+     *
+     * @responseFile 200 responses/settings/collaboration-carousel/show.json
+     */
     public function update(CollaborationCarouselCreateData $data, CollaborationCarousel $collaborationCarousel, UpdateCollaborationCarouselAction $action): ApiResponseInterface
     {
         Gate::authorize('update', $collaborationCarousel);
@@ -63,6 +94,11 @@ final class CollaborationCarouselController extends Controller
         ]), model: CollaborationCarousel::class);
     }
 
+    /**
+     * Remove the specified collaboration carousel item.
+     *
+     * @response 204
+     */
     public function destroy(CollaborationCarousel $collaborationCarousel, DeleteCollaborationCarouselAction $action): JsonResponse
     {
         Gate::authorize('delete', $collaborationCarousel);

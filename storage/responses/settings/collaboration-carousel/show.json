@@ -1,0 +1,24 @@
+{
+  "message": " با موفقیت ایجاد شد.",
+  "data": {
+    "id": 2,
+    "title": "UAC",
+    "caption": "UAC Logo",
+    "image": {
+      "id": 5,
+      "url": "http://jedu.test/storage/fake-media/fake-gallery.svg",
+      "size": 896,
+      "file_name": "fake-gallery",
+      "alt": "",
+      "mime_type": "image/svg+xml",
+      "extension": "svg",
+      "tag": "image",
+      "thumbnail": null
+    },
+    "url": "http://bailey.com/",
+    "show_in": "course",
+    "order": 1,
+    "is_active": false
+  },
+  "metadata": []
+}
