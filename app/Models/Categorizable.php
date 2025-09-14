@@ -9,7 +9,15 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 final class Categorizable extends Model
 {
+    public $timestamps = false;
     protected $table = 'categorizables';
+
+    protected $fillable = [
+        'category_id',
+        'categorizable_id',
+        'categorizable_type',
+        'good_for_start',
+    ];
 
     public function categorizable(): MorphTo
     {

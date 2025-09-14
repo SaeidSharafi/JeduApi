@@ -53,12 +53,12 @@ return [
         'vendor'             => 'فروشنده',
         'review'             => 'نظر',
         'order'              => 'سفارش',
-        'discount_promotion'=> 'تخفیف/پروموشن',
-        'audit_log'         => 'گزارش حسابرسی',
-        'refund'            => 'بازپرداخت',
-        'payment'           => 'پرداخت',
-        'enrollment'        => 'ثبت‌نام',
-        'campaign'          => 'کمپین',
+        'discount_promotion' => 'تخفیف/پروموشن',
+        'audit_log'          => 'گزارش حسابرسی',
+        'refund'             => 'بازپرداخت',
+        'payment'            => 'پرداخت',
+        'enrollment'         => 'ثبت‌نام',
+        'campaign'           => 'کمپین',
     ],
 
     'errors'                                  => [
@@ -174,7 +174,7 @@ return [
         500 => 'خطای داخلی سرور',
     ],
 
-    'audit'  => [
+    'audit'    => [
         'admin_actions_loaded_successfully'         => 'گزارش‌های حسابرسی مدیریت با موفقیت بارگیری شد',
         'admin_action_logged'                       => 'عملیات مدیر با موفقیت ثبت شد',
         'compliance_report_generated_successfully'  => 'گزارش انطباق با موفقیت تولید شد',
@@ -229,8 +229,13 @@ return [
             'maintain_monitoring'      => 'سطوح ریسک در پارامترهای عادی است - نظارت منظم را ادامه دهید',
         ],
     ],
-    'review' => [
+    'review'   => [
         'approved' => 'نظر با موفقیت تأیید شد.',
         'rejected' => 'نظر با موفقیت رد شد.',
-    ]
+    ],
+    'category' => [
+        'good_for_start' => [
+            'updated' => ':count مورد با موفقیت به‌روزرسانی شد.'
+        ],
+    ],
 ];

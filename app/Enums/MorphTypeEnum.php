@@ -83,4 +83,31 @@ enum MorphTypeEnum: string
             self::COLLABORATION_CAROUSEL => CollaborationCarousel::class,
         };
     }
+
+    /**
+     * Get categorizable types.
+     *
+     * @param bool $onlyWithGoodStartAllowed If true, only return types that support 'good_for_start' flag.
+     *
+     * @return array List of categorizable type aliases.
+     *
+     * @codeCoverageIgnore
+     */
+    public static function getCategorizables(bool $onlyWithGoodStartAllowed): array
+    {
+        $categorizables = [
+            self::COURSE,
+            self::SEMINAR,
+            self::DIGITAL_ASSET,
+            self::PRODUCT,
+        ];
+
+        if ($onlyWithGoodStartAllowed) {
+            $categorizables = [
+                self::COURSE,
+            ];
+        }
+
+        return $categorizables;
+    }
 }

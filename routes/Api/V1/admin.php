@@ -72,6 +72,8 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
         // GoodForStart endpoints for category items
         Route::prefix('category/{category}')->name('category.')->group(function () {
             Route::get('items', CategoryItemsController::class)->name('items.index');
+            Route::post('good-for-start', [\App\Http\Controllers\Api\Admin\Category\GoodForStartController::class, 'set'])
+                ->name('good-for-start.set');
         });
 
         Route::resource('course', CourseController::class)

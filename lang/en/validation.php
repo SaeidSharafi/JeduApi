@@ -19,6 +19,9 @@ return [
         'civil_id' => [
             'wrong' => 'the :type is invalid, please enter a valid :type',
         ],
+        'category' => [
+            'only_courses_can_be_good_for_start' => 'Only courses can be marked as good for start.',
+        ],
         'wallet_not_found'      => 'Wallet not found for the specified user.',
         'user_not_found'        => 'User not found.',
         'wallet_already_exists' => 'Wallet already exists for this user.',
