@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api\Admin;
+namespace App\Http\Controllers\Api\Admin\Category;
 
 use App\Actions\Admin\Category\CreateCategoryAction;
 use App\Actions\Admin\Category\DeleteCategoryAction;

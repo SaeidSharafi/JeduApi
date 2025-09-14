@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\Admin\Audit\AdminAuditLogController;
-use App\Http\Controllers\Api\Admin\CategoryController;
+use App\Http\Controllers\Api\Admin\Category\CategoryController;
+use App\Http\Controllers\Api\Admin\Category\CategoryItemsController;
 use App\Http\Controllers\Api\Admin\DiscountPromotionController;
 use App\Http\Controllers\Api\Admin\DiscountPromotionStatisticsController;
 use App\Http\Controllers\Api\Admin\DiscountPromotionStatusUpdateController;
@@ -67,6 +68,11 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
         // Product Management and Categories
         Route::resource('category', CategoryController::class)
             ->except(['edit', 'create']);
+
+        // GoodForStart endpoints for category items
+        Route::prefix('category/{category}')->name('category.')->group(function () {
+            Route::get('items', CategoryItemsController::class)->name('items.index');
+        });
 
         Route::resource('course', CourseController::class)
             ->except(['edit', 'create']);
