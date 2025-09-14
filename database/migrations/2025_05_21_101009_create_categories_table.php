@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->string('image_url')->nullable();
             $table->string('icon_url')->nullable();
+            $table->string('educational_calendar_url')->default(false);
             $table->string('color_scheme')->nullable();
             $this->addMetaTagColumns($table);
             $table->json('properties')->nullable();

@@ -26,6 +26,10 @@ final readonly class UpdateCategoryAction
                 $category->syncMedia(data_get($media, 'icon'), 'icon');
                 $category->icon_url = $category->getMedia('icon')->first()->getUrl();
             }
+            if ($media['educational_calendar'] ?? null) {
+                $category->syncMedia(data_get($media, 'educational_calendar'), 'educational_calendar');
+                $category->educational_calendar_url = $category->getMedia('educational_calendar')->first()->getUrl();
+            }
             $category->save();
         });
     }

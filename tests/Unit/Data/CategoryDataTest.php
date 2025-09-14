@@ -18,10 +18,11 @@ it('create CategoryListItemData from Category', function (): void {
                 'value' => $category->status->value,
                 'label' => $category->status->translate(),
             ],
-            'image_url'  => $category->image_url,
-            'icon_url'   => $category->icon_url,
-            'created_by' => $category->created_by,
-            'created_at' => $this->toJalalitString($category->created_at),
-            'updated_at' => $this->toJalalitString($category->updated_at),
+            'image_url'                => $category->image_url,
+            'icon_url'                 => $category->icon_url,
+            'educational_calendar_url' => $category->educational_calendar_url,
+            'created_by'               => $category->created_by,
+            'created_at'               => $this->toJalalitString($category->created_at),
+            'updated_at'               => $this->toJalalitString($category->updated_at),
         ]);
 });

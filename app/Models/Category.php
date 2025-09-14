@@ -26,6 +26,7 @@ final class Category extends Model
         'description',
         'image_url',
         'icon_url',
+        'educational_calendar_url',
         'color_scheme',
         'meta_title',
         'meta_description',

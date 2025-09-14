@@ -51,16 +51,17 @@ final class CreateCategoryData extends Data
                         return $query;
                     }),
                 ],
-                'name'            => ['required', 'string', 'max:191'],
-                'status'          => ['required', Rule::enum(PublicationStatusEnum::class)],
-                'description'     => ['nullable', 'string', 'max:65535'],
-                'parent_id'       => ['nullable', 'integer', 'exists:categories,id'],
-                'color_scheme'    => ['nullable', 'string'],
-                'properties'      => ['nullable', 'array'],
-                'additional_info' => ['nullable', 'array'],
-                'media'           => ['required', 'array'],
-                'media.icon'      => ['nullable', 'integer', 'exists:media,id'],
-                'media.image'     => ['nullable', 'integer', 'exists:media,id'],
+                'name'                       => ['required', 'string', 'max:191'],
+                'status'                     => ['required', Rule::enum(PublicationStatusEnum::class)],
+                'description'                => ['nullable', 'string', 'max:65535'],
+                'parent_id'                  => ['nullable', 'integer', 'exists:categories,id'],
+                'color_scheme'               => ['nullable', 'string'],
+                'properties'                 => ['nullable', 'array'],
+                'additional_info'            => ['nullable', 'array'],
+                'media'                      => ['required', 'array'],
+                'media.icon'                 => ['nullable', 'integer', 'exists:media,id'],
+                'media.image'                => ['nullable', 'integer', 'exists:media,id'],
+                'media.educational_calendar' => ['nullable', 'integer', 'exists:media,id'],
             ],
             self::metaTagValidationRules()
         );
@@ -146,17 +147,22 @@ final class CreateCategoryData extends Data
             'media' => [
                 'description' => 'Media associated with the category.',
                 'example'     => [
-                    'icon'  => 1, // Media ID for the icon
-                    'image' => 2, // Media ID for the image
+                    'icon'                 => 1, // Media ID for the icon
+                    'image'                => 2, // Media ID for the image
+                    'educational_calendar' => 3, // Media ID for the educational calendar file
                 ],
             ],
             'media.icon' => [
-                'description' => 'The media ID for the category icon. (as an array)',
+                'description' => 'The media ID for the category icon.',
                 'example'     => 1,
             ],
             'media.image' => [
-                'description' => 'The media ID for the category image. (as an array)',
+                'description' => 'The media ID for the category image.',
                 'example'     => 2,
+            ],
+            'media.educational_calendar' => [
+                'description' => 'The media ID for the educational calendar.',
+                'example'     => 3,
             ],
         ];
     }

@@ -18,6 +18,7 @@ it('can get list of categories', function (): void {
                         'description',
                         'image_url',
                         'icon_url',
+                        'educational_calendar_url',
                         'color_scheme',
                         'status',
                         'created_by',
@@ -57,6 +58,10 @@ it('can create category', function (): void {
     $image = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('image.jpg'))
         ->toDisk('public')
         ->upload();
+    $educationalCalendar = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()
+        ->create('calendar.pdf', 100, 'application/pdf'))
+        ->toDisk('public')
+        ->upload();
     $category = App\Models\Category::factory()->make();
     $response = $this->postJson(route('api.v1.admin.category.store'), [
         'name'             => $category->name,
@@ -71,22 +76,26 @@ it('can create category', function (): void {
         'properties'       => $category->properties,
         'additional_info'  => $category->additional_info,
         'media'            => [
-            'icon'  => $icon->id,
-            'image' => $image->id,
+            'icon'                 => $icon->id,
+            'image'                => $image->id,
+            'educational_calendar' => $educationalCalendar->id,
         ],
     ]);
     $response->assertStatus(201);
 
     $this->assertDatabaseHas('categories', [
-        'name'             => $category->name,
-        'slug'             => $category->slug,
-        'status'           => $category->status->value,
-        'parent_id'        => $category->parent_id,
-        'description'      => $category->description,
-        'color_scheme'     => $category->color_scheme,
-        'meta_title'       => $category->meta_title,
-        'meta_description' => $category->meta_description,
-        'meta_keywords'    => $category->meta_keywords,
+        'name'                     => $category->name,
+        'slug'                     => $category->slug,
+        'status'                   => $category->status->value,
+        'image_url'                => $image->getUrl(),
+        'icon_url'                 => $icon->getUrl(),
+        'educational_calendar_url' => $educationalCalendar->getUrl(),
+        'parent_id'                => $category->parent_id,
+        'description'              => $category->description,
+        'color_scheme'             => $category->color_scheme,
+        'meta_title'               => $category->meta_title,
+        'meta_description'         => $category->meta_description,
+        'meta_keywords'            => $category->meta_keywords,
     ]);
 });
 
@@ -97,6 +106,10 @@ it('can update category', function (): void {
         ->toDisk('public')
         ->upload();
     $image = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('image.jpg'))
+        ->toDisk('public')
+        ->upload();
+    $educationalCalendar = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()
+        ->create('calendar.pdf', 100, 'application/pdf'))
         ->toDisk('public')
         ->upload();
     $category = App\Models\Category::factory()->create();
@@ -113,32 +126,60 @@ it('can update category', function (): void {
         'properties'       => ['key1' => 'value1'],
         'additional_info'  => ['info1' => 'value1'],
         'media'            => [
-            'icon'  => $icon->id,
-            'image' => $image->id,
+            'icon'                 => $icon->id,
+            'image'                => $image->id,
+            'educational_calendar' => $educationalCalendar->id,
         ],
     ]);
     $response->assertStatus(200);
 
     $this->assertDatabaseHas('categories', [
-        'name'             => 'Updated Category',
-        'slug'             => 'updated-category',
-        'status'           => App\Enums\PublicationStatusEnum::DRAFT->value,
-        'parent_id'        => null,
-        'description'      => 'Updated description',
-        'color_scheme'     => '#000000',
-        'meta_title'       => 'Updated meta title',
-        'meta_description' => 'Updated meta description lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        'meta_keywords'    => 'updated,meta,keywords',
+        'name'                     => 'Updated Category',
+        'slug'                     => 'updated-category',
+        'status'                   => App\Enums\PublicationStatusEnum::DRAFT->value,
+        'image_url'                => $image->getUrl(),
+        'icon_url'                 => $icon->getUrl(),
+        'educational_calendar_url' => $educationalCalendar->getUrl(),
+        'parent_id'                => null,
+        'description'              => 'Updated description',
+        'color_scheme'             => '#000000',
+        'meta_title'               => 'Updated meta title',
+        'meta_description'         => 'Updated meta description lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+        'meta_keywords'            => 'updated,meta,keywords',
     ]);
 });
 
 it('can delete category', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::CATEGORY_DELETE->value]);
+    $icon = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('icon.jpg'))
+        ->toDisk('public')
+        ->upload();
+    $image = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('image.jpg'))
+        ->toDisk('public')
+        ->upload();
+    $educationalCalendar = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()
+        ->create('calendar.pdf', 100, 'application/pdf'))
+        ->toDisk('public')
+        ->upload();
     $category = App\Models\Category::factory()->create();
+    $category->syncMedia($icon, 'icon');
+    $category->syncMedia($image, 'image');
+    $category->syncMedia($educationalCalendar, 'educational_calendar');
+
     $response = $this->deleteJson(route('api.v1.admin.category.destroy', ['category' => $category->id]));
     $response->assertStatus(204);
     $this->assertDatabaseMissing('categories', [
         'id' => $category->id,
+    ]);
+
+    $this->assertDatabaseMissing('media', [
+        'id' => $icon->id,
+    ]);
+    $this->assertDatabaseMissing('media', [
+        'id' => $image->id,
+    ]);
+    $this->assertDatabaseMissing('media', [
+        'id' => $educationalCalendar->id,
     ]);
 });
 it('can not delete category if there is related data', function (): void {

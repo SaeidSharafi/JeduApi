@@ -216,27 +216,29 @@ describe('SeminarController', function (): void {
                             'value' => $category->status->value,
                             'label' => $category->status->translate(),
                         ],
-                        'image_url'  => $category->image_url,
-                        'icon_url'   => $category->icon_url,
-                        'created_by' => $category->created_by,
-                        'created_at' => $this->toJalalitString($category->created_at),
-                        'updated_at' => $this->toJalalitString($category->updated_at),
+                        'image_url'                => $category->image_url,
+                        'icon_url'                 => $category->icon_url,
+                        'educational_calendar_url' => $category->educational_calendar_url,
+                        'created_by'               => $category->created_by,
+                        'created_at'               => $this->toJalalitString($category->created_at),
+                        'updated_at'               => $this->toJalalitString($category->updated_at),
                     ]))
-                    ->where('digital_assets', $expectedSeminar->digitalAssets?->map(fn (App\Models\DigitalAsset $asset): array => [
-                        'id'                      => $asset->id,
-                        'name'                    => $asset->name,
-                        'slug'                    => $asset->slug,
-                        'is_attachable_to_course' => $asset->is_attachable_to_course,
-                        'status'                  => [
-                            'value' => $asset->status->value,
-                            'label' => $asset->status->translate(),
-                        ],
-                        'version'      => $asset->version,
-                        'published_at' => $this->toJalalitString($asset->published_at),
-                        'created_by'   => $asset->created_by,
-                        'created_at'   => $this->toJalalitString($asset->created_at),
-                        'updated_at'   => $this->toJalalitString($asset->updated_at),
-                    ]))
+                    ->where('digital_assets',
+                        $expectedSeminar->digitalAssets?->map(fn (App\Models\DigitalAsset $asset): array => [
+                            'id'                      => $asset->id,
+                            'name'                    => $asset->name,
+                            'slug'                    => $asset->slug,
+                            'is_attachable_to_course' => $asset->is_attachable_to_course,
+                            'status'                  => [
+                                'value' => $asset->status->value,
+                                'label' => $asset->status->translate(),
+                            ],
+                            'version'      => $asset->version,
+                            'published_at' => $this->toJalalitString($asset->published_at),
+                            'created_by'   => $asset->created_by,
+                            'created_at'   => $this->toJalalitString($asset->created_at),
+                            'updated_at'   => $this->toJalalitString($asset->updated_at),
+                        ]))
                     ->etc();
             }
         }
@@ -259,7 +261,7 @@ describe('SeminarController', function (): void {
             ->assertJsonFragment(['full_name' => $seminar->full_name])
             ->assertJsonFragment(['short_name' => $seminar->short_name])
             ->assertJsonFragment(['slug' => $seminar->slug])
-            ->assertJson(function (AssertableJson $json) use ($digitalAssets, $categories,$sortedCategories) {
+            ->assertJson(function (AssertableJson $json) use ($digitalAssets, $sortedCategories) {
                 $json
                     ->where('data.categories', $sortedCategories->map(fn ($category): array => [
                         'id'     => $category->id,
@@ -269,11 +271,12 @@ describe('SeminarController', function (): void {
                             'value' => $category->status->value,
                             'label' => $category->status->translate(),
                         ],
-                        'image_url'  => $category->image_url,
-                        'icon_url'   => $category->icon_url,
-                        'created_by' => $category->created_by,
-                        'created_at' => $this->toJalalitString($category->created_at),
-                        'updated_at' => $this->toJalalitString($category->updated_at),
+                        'image_url'                => $category->image_url,
+                        'icon_url'                 => $category->icon_url,
+                        'educational_calendar_url' => $category->educational_calendar_url,
+                        'created_by'               => $category->created_by,
+                        'created_at'               => $this->toJalalitString($category->created_at),
+                        'updated_at'               => $this->toJalalitString($category->updated_at),
                     ]))
                     ->where('data.digital_assets', $digitalAssets->map(fn (App\Models\DigitalAsset $asset): array => [
                         'id'                      => $asset->id,

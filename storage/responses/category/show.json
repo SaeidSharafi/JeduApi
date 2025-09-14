@@ -36,6 +36,16 @@
         "mime_type": "image/svg+xml",
         "extension": "svg",
         "tag": "image"
+      },
+      "educational_calendar": {
+        "id": 3,
+        "url": "http://jedu.test/storage/fake-media/calendar.pdf",
+        "size": 102400,
+        "file_name": "calendar",
+        "alt": "",
+        "mime_type": "application/pdf",
+        "extension": "pdf",
+        "tag": "educational_calendar"
       }
     }
   },

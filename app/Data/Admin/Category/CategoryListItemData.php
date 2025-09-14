@@ -22,6 +22,7 @@ final class CategoryListItemData extends Data
         public PublicationStatusEnum $status,
         public ?string $image_url,
         public ?string $icon_url,
+        public ?string $educational_calendar_url,
         public ?int $created_by,
         #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Verta $created_at,

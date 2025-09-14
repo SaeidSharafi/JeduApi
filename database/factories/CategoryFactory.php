@@ -19,19 +19,20 @@ final class CategoryFactory extends Factory
     {
 
         return [
-            'name'             => $this->faker->unique()->persianWord(),
-            'slug'             => $this->faker->unique()->slug,
-            'status'           => \App\Enums\PublicationStatusEnum::PUBLISHED,
-            'description'      => $this->faker->text,
-            'image_url'        => $this->faker->imageUrl(),
-            'icon_url'         => $this->faker->imageUrl(),
-            'color_scheme'     => $this->faker->hexColor,
-            'meta_title'       => mb_trim(Str::take($this->faker->persianWords(4, true), 70)),
-            'meta_description' => mb_trim(Str::take($this->faker->persianParagraph(20, false), 100)),
-            'meta_keywords'    => mb_trim(Str::take(implode(',', $this->faker->persianWords(3)), 255)),
-            'properties'       => [],
-            'additional_info'  => [],
-            'created_by'       => \App\Models\Staff::factory(),
+            'name'                     => $this->faker->unique()->persianWord(),
+            'slug'                     => $this->faker->unique()->slug,
+            'status'                   => \App\Enums\PublicationStatusEnum::PUBLISHED,
+            'description'              => $this->faker->text,
+            'image_url'                => $this->faker->imageUrl(),
+            'icon_url'                 => $this->faker->imageUrl(),
+            'educational_calendar_url' => $this->faker->imageUrl(),
+            'color_scheme'             => $this->faker->hexColor,
+            'meta_title'               => mb_trim(Str::take($this->faker->persianWords(4, true), 70)),
+            'meta_description'         => mb_trim(Str::take($this->faker->persianParagraph(20, false), 100)),
+            'meta_keywords'            => mb_trim(Str::take(implode(',', $this->faker->persianWords(3)), 255)),
+            'properties'               => [],
+            'additional_info'          => [],
+            'created_by'               => \App\Models\Staff::factory(),
         ];
     }
 

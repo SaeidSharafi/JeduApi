@@ -34,14 +34,18 @@ final class ShowCategoryData extends Data
 
     public static function fromModel(Category $category): self
     {
-        $icon  = null;
-        $image = null;
+        $icon                = null;
+        $image               = null;
+        $educationalCalendar = null;
         if ($category->relationLoaded('media')) {
             $icon = $category->firstMedia('icon')
                 ? MediaData::fromModel($category->firstMedia('icon'), 'icon')
                 : null;
             $image = $category->firstMedia('image')
                 ? MediaData::fromModel($category->firstMedia('image'), 'image')
+                : null;
+            $educationalCalendar = $category->firstMedia('educational_calendar')
+                ? MediaData::fromModel($category->firstMedia('educational_calendar'), 'educational_calendar')
                 : null;
         }
 
@@ -59,8 +63,9 @@ final class ShowCategoryData extends Data
             properties: $category->properties,
             additional_info: $category->additional_info,
             media: [
-                'icon'  => $icon?->toArray(),
-                'image' => $image?->toArray(),
+                'icon'                 => $icon?->toArray(),
+                'image'                => $image?->toArray(),
+                'educational_calendar' => $educationalCalendar?->toArray(),
             ],
         );
     }
