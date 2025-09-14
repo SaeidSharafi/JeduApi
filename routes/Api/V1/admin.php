@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\Admin\Audit\AdminAuditLogController;
+use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\Admin\DiscountPromotionController;
 use App\Http\Controllers\Api\Admin\DiscountPromotionStatisticsController;
 use App\Http\Controllers\Api\Admin\DiscountPromotionStatusUpdateController;
@@ -14,6 +15,12 @@ use App\Http\Controllers\Api\Admin\NextPaymentDetailsController;
 use App\Http\Controllers\Api\Admin\OrderCalculationController;
 use App\Http\Controllers\Api\Admin\OrderController;
 use App\Http\Controllers\Api\Admin\PrivateFileDownloadController;
+use App\Http\Controllers\Api\Admin\Product\ArchiveProductController;
+use App\Http\Controllers\Api\Admin\Product\CourseController;
+use App\Http\Controllers\Api\Admin\Product\DigitalAssetController;
+use App\Http\Controllers\Api\Admin\Product\ProductController;
+use App\Http\Controllers\Api\Admin\Product\ProductDeliveryOptionController;
+use App\Http\Controllers\Api\Admin\Product\SeminarController;
 use App\Http\Controllers\Api\Admin\Review\ApproveReviewController;
 use App\Http\Controllers\Api\Admin\Review\RejectReviewController;
 use App\Http\Controllers\Api\Admin\Review\UpdateReviewFeaturedStatusController;
@@ -56,24 +63,42 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
         Route::resource('user', App\Http\Controllers\Api\Admin\UserController::class)
             ->only(['index', 'store', 'show', 'update', 'destroy']);
 
+
+        // Product Management and Categories
+        Route::resource('category', CategoryController::class)
+            ->except(['edit', 'create']);
+
+        Route::resource('course', CourseController::class)
+            ->except(['edit', 'create']);
+        Route::resource('digital-asset', DigitalAssetController::class)
+            ->except(['edit', 'create']);
+        Route::resource('seminar', SeminarController::class)
+            ->except(['edit', 'create']);
+
+
+        Route::resource('product', ProductController::class)
+            ->except(['edit', 'create']);
+        Route::post('product/{product}/archive', ArchiveProductController::class)
+            ->name('product.archive');
+        Route::resource('product/{product}/delivery-option', ProductDeliveryOptionController::class)
+            ->except(['edit', 'create']);
+
+
+        // Order and Payment Management
         Route::resource('order', OrderController::class)
             ->only(['index', 'store', 'show', 'update', 'destroy']);
-
         Route::post('order/preview', OrderCalculationController::class)
             ->name('order.preview');
-
         Route::resource('order/{order}/order-item', App\Http\Controllers\Api\Admin\OrderItemController::class)
             ->only(['index', 'show']);
 
         Route::resource('order/{order}/payment', App\Http\Controllers\Api\Admin\PaymentController::class)
             ->only(['index', 'store', 'show', 'update', 'destroy']);
-
         Route::get('order/{order}/next-payment-details', NextPaymentDetailsController::class)
             ->name('next-payment-details');
 
         Route::resource('/order-item/{orderItem}/refund', App\Http\Controllers\Api\Admin\RefundController::class)
             ->only(['index', 'store', 'show', 'update', 'destroy']);
-
         Route::put('refund/{refund}/status', App\Http\Controllers\Api\Admin\RefundUpdateStatusController::class)
             ->name('refund.status');
 
