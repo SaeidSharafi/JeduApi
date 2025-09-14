@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('categorizable_id');
             $table->string('categorizable_type');
             $table->boolean('good_for_start')->default(false);
-            $table->primary(['category_id', 'categorizable_id', 'categorizable_type'], 'categorizables_primary');
+            $table->unique(['category_id', 'categorizable_id', 'categorizable_type'], 'categorizables_unique_composite');
             $table->index(['categorizable_id', 'categorizable_type'], 'categorizable_index');
         });
     }
