@@ -266,6 +266,10 @@ it('can view list of courses', function (): void {
                 ]))
                 ->where('digital_assets',
                     $expectedCourse->digitalAssets?->map(fn (App\Models\DigitalAsset $asset): array => [
+                        'type' => [
+                            'value' => App\Enums\ProductableEnum::DIGITAL_ASSET->value,
+                            'label' => App\Enums\ProductableEnum::DIGITAL_ASSET->translate(),
+                        ],
                         'id'                      => $asset->id,
                         'name'                    => $asset->name,
                         'slug'                    => $asset->slug,
@@ -479,6 +483,10 @@ it('can view a course', function (): void {
                     'updated_at'               => $this->toJalalitString($category->updated_at),
                 ]))
                 ->where('data.digital_assets', $digitalAssets->map(fn (App\Models\DigitalAsset $asset): array => [
+                    'type' => [
+                        'value' => App\Enums\ProductableEnum::DIGITAL_ASSET->value,
+                        'label' => App\Enums\ProductableEnum::DIGITAL_ASSET->translate(),
+                    ],
                     'id'                      => $asset->id,
                     'name'                    => $asset->name,
                     'slug'                    => $asset->slug,

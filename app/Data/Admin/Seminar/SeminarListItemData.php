@@ -10,8 +10,8 @@ use App\Data\Admin\Category\CategoryListItemData;
 use App\Data\Admin\DigitalAsset\DigitalAssetListItemData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\CourseDifficultyLevelEnum;
+use App\Enums\ProductableEnum;
 use App\Enums\PublicationStatusEnum;
-use App\Traits\ValidatesMetaTags;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapInputName;
@@ -23,7 +23,8 @@ use Spatie\LaravelData\DataCollection;
 
 final class SeminarListItemData extends Data implements ProductableDataContract, ReviewableDataContract
 {
-    use ValidatesMetaTags;
+    #[WithTransformer(TranslatableEnumData::class)]
+    public ProductableEnum $type = ProductableEnum::SEMINAR;
 
     public function __construct(
         public int $id,
@@ -36,22 +37,12 @@ final class SeminarListItemData extends Data implements ProductableDataContract,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public CourseDifficultyLevelEnum $level,
         public bool $provides_certificate,
-        public ?string $description,
-        public ?string $learning_objectives,
-        public ?string $target_audience,
-        public ?string $prerequisites,
-        public ?string $promo_video_external_url,
-        public ?string $estimated_duration_desc,
-        public ?string $keywords,
         public int $created_by,
         #[DataCollectionOf(CategoryListItemData::class)]
         public ?DataCollection $categories,
         #[DataCollectionOf(DigitalAssetListItemData::class)]
         #[MapInputName('digital_assets')]
         public ?DataCollection $digital_assets,
-        public ?string $meta_title,
-        public ?string $meta_description,
-        public ?string $meta_keywords,
         #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Verta $created_at,
         #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]

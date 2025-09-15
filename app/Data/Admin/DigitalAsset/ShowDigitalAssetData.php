@@ -8,8 +8,8 @@ use App\Contracts\ProductableDataContract;
 use App\Contracts\ReviewableDataContract;
 use App\Data\Admin\Category\CategoryListItemData;
 use App\Data\Transformer\TranslatableEnumData;
+use App\Enums\ProductableEnum;
 use App\Enums\PublicationStatusEnum;
-use App\Traits\ValidatesMetaTags;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\WithCast;
@@ -20,8 +20,8 @@ use Spatie\LaravelData\DataCollection;
 
 final class ShowDigitalAssetData extends Data implements ProductableDataContract, ReviewableDataContract
 {
-    use ValidatesMetaTags;
-
+    #[WithTransformer(TranslatableEnumData::class)]
+    public ProductableEnum $type = ProductableEnum::DIGITAL_ASSET;
     public function __construct(
         public int $id,
         public string $name,

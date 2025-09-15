@@ -10,8 +10,8 @@ use App\Data\Admin\Category\CategoryListItemData;
 use App\Data\Admin\DigitalAsset\DigitalAssetListItemData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\CourseDifficultyLevelEnum;
+use App\Enums\ProductableEnum;
 use App\Enums\PublicationStatusEnum;
-use App\Traits\ValidatesMetaTags;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapInputName;
@@ -23,7 +23,8 @@ use Spatie\LaravelData\DataCollection;
 
 final class ShowSeminarData extends Data implements ProductableDataContract, ReviewableDataContract
 {
-    use ValidatesMetaTags;
+    #[WithTransformer(TranslatableEnumData::class)]
+    public ProductableEnum $type = ProductableEnum::SEMINAR;
 
     public function __construct(
         public int $id,
