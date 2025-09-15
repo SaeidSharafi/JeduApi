@@ -13,8 +13,8 @@
 - Controllers **MUST** be thin and delegate to Actions. No business logic in controllers.
 
 ### **Authentication Guards**
-- Admin endpoints (`/api/v1/admin/*`) **MUST** use `auth:staff` guard with `admin.audit` middleware.
-- Customer endpoints (`/api/v1/shop/*`) **MUST** use `auth:user` guard.
+- Admin endpoints (`/api/v1/admin/*`) **MUST** be put inside `routes/Api/V1/admin/admin.php` file. unless explicitly stated otherwise. **DO NOT**  use any middleware unless specified.
+- Customer endpoints (`/api/v1/shop/*`) **MUST** be put inside `routes/Api/V1/shop/shop.php` file. unless explicitly stated otherwise. **DO NOT**  use any middleware unless specified.
 - **NEVER** mix guards or use wrong authentication for endpoints.
 
 ### **Database Schema**
@@ -42,7 +42,7 @@
 
 **Example: `POST /api/v1/admin/products`**
 
-1. **Route Definition** in `routes/Api/V1/admin.php`:
+1. **Route Definition** in `routes/Api/V1/admin/admin.php`:
 ```php
 Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
     Route::prefix('admin')->name('admin.')->group(function (): void {
@@ -167,7 +167,7 @@ final class ProductController extends Controller
 
 **Example: `GET /api/v1/shop/my-orders`**
 
-1. **Route Definition** in `routes/Api/V1/customer.php`:
+1. **Route Definition** in `routes/Api/V1/shop/customer.php`:
 ```php
 Route::middleware('auth:user')->name('shop.')->group(function () {
     Route::get('my-orders', [MyOrderController::class, 'index'])->name('my-orders.index');
@@ -435,12 +435,18 @@ app/Http/Controllers/Api/
 ### **Routes**
 ```
 routes/Api/V1/
-├── api.php          # Main API route file (includes others)
-├── admin.php        # Admin endpoints with auth:staff
-├── customer.php     # Protected customer endpoints with auth:user
-├── shop.php         # Public shop endpoints
-├── auth.php         # Authentication endpoints
-└── select_option.php # Select option endpoints
+├── api.php               # Main API route file (includes others)
+├── admin/                # Admin routes group with auth:staff and admin.audit middleware (setup in bootstrap/app.php)
+    ├── admin.php         # general Admin endpoints
+    ├── catalog.php       # Catalog management endpoints
+    ├── sale.php          # Order and Discount management endpoints
+    ├── select_option.php # Select option endpoints
+    ├── setting.php       # Settings management endpoints
+    └── wallet.php        # Wallet management endpoints
+├── shop/                 # Public shop routes group
+    └── shop.php          # general Shop endpoints
+├── customer.php          # Protected customer endpoints with auth:user
+└── auth.php              # Authentication endpoints
 ```
 
 ## 4. Key Code Locations & Reference Points
