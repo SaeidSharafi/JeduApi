@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Models\AdminActionLog;
+use App\Models\AdviceRequest;
 use App\Models\Category;
 use App\Models\Partner;
 use App\Models\Course;
@@ -51,6 +52,7 @@ use App\Policies\Admin\UserPolicy;
 use App\Policies\Admin\VendorPolicy;
 use App\Policies\Admin\WalletCampaignPolicy;
 use App\Policies\Admin\WalletPolicy;
+use App\Policies\AdviceRequestPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Permission\Models\Role;
@@ -94,6 +96,7 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(HomePageBlock::class, HomePageBlockPolicy::class);
         Gate::policy(Partner::class, PartnerPolicy::class);
         Gate::policy(StudentStory::class, StudentStoryPolicy::class);
+        Gate::policy(AdviceRequest::class, AdviceRequestPolicy::class);
 
     }
 }

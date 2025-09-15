@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\Admin\AdviceRequest\AdviceRequestController;
+use App\Http\Controllers\Api\Admin\AdviceRequest\AdviceRequestUpdateStatusController;
 use App\Http\Controllers\Api\Admin\Audit\AdminAuditLogController;
 use App\Http\Controllers\Api\Admin\Category\CategoryController;
 use App\Http\Controllers\Api\Admin\Category\CategoryItemsController;
@@ -73,7 +75,8 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
         // GoodForStart endpoints for category items
         Route::prefix('category/{category}')->name('category.')->group(function () {
             Route::get('items', CategoryItemsController::class)->name('items.index');
-            Route::post('good-for-start', [App\Http\Controllers\Api\Admin\Category\GoodForStartController::class, 'set'])
+            Route::post('good-for-start',
+                [App\Http\Controllers\Api\Admin\Category\GoodForStartController::class, 'set'])
                 ->name('good-for-start.set');
         });
 
@@ -120,11 +123,13 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
         // Discount Info routes (for frontend to get available rules, actions, etc.)
         Route::get('discount-info', [App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'index'])
             ->name('discount-info');
-        Route::get('discount-info/conditions', [App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'conditions'])
+        Route::get('discount-info/conditions',
+            [App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'conditions'])
             ->name('discount-info.conditions');
         Route::get('discount-info/actions', [App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'actions'])
             ->name('discount-info.actions');
-        Route::get('discount-info/operators', [App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'operators'])
+        Route::get('discount-info/operators',
+            [App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'operators'])
             ->name('discount-info.operators');
         Route::get('discount-info/types', [App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'types'])
             ->name('discount-info.types');
@@ -134,20 +139,25 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
                 ->parameters(['' => 'wallet']);
 
             Route::post('create', App\Http\Controllers\Api\Admin\Wallet\CreateWalletController::class)->name('create');
-            Route::post('deposit/{wallet}', App\Http\Controllers\Api\Admin\Wallet\DepositToWalletController::class)->name('deposit');
-            Route::post('withdrawal/{wallet}', App\Http\Controllers\Api\Admin\Wallet\WithdrawFromWalletController::class)->name('withdrawal');
-            Route::post('adjustment/{wallet}', App\Http\Controllers\Api\Admin\Wallet\AdjustWalletController::class)->name('adjustment');
+            Route::post('deposit/{wallet}', App\Http\Controllers\Api\Admin\Wallet\DepositToWalletController::class)
+                ->name('deposit');
+            Route::post('withdrawal/{wallet}',
+                App\Http\Controllers\Api\Admin\Wallet\WithdrawFromWalletController::class)->name('withdrawal');
+            Route::post('adjustment/{wallet}', App\Http\Controllers\Api\Admin\Wallet\AdjustWalletController::class)
+                ->name('adjustment');
         });
 
         // Wallet Campaign routes
         Route::resource('wallet-campaigns', AdminWalletCampaignController::class);
 
         // User-centric campaign allocation (primary route)
-        Route::post('users/{user}/wallet-campaigns/{wallet_campaign}/trigger-allocation', TriggerCampaignAllocationController::class)
+        Route::post('users/{user}/wallet-campaigns/{wallet_campaign}/trigger-allocation',
+            TriggerCampaignAllocationController::class)
             ->name('users.wallet-campaigns.trigger-allocation');
 
         // Campaign-centric bulk allocation (secondary route)
-        Route::post('wallet-campaigns/{wallet_campaign}/bulk-trigger-allocation', BulkCampaignAllocationController::class)
+        Route::post('wallet-campaigns/{wallet_campaign}/bulk-trigger-allocation',
+            BulkCampaignAllocationController::class)
             ->name('wallet-campaigns.bulk-trigger-allocation');
 
         // Audit and Compliance routes
@@ -203,5 +213,11 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
             ->name('review.reject');
         Route::patch('review/{review}/featured', UpdateReviewFeaturedStatusController::class)
             ->name('review.update-featured-status');
+
+        // Advice Request Management
+        Route::apiResource('advice-request', AdviceRequestController::class)
+            ->only(['index', 'show', 'update', 'destroy']);
+        Route::patch('advice-request/{adviceRequest}/status', AdviceRequestUpdateStatusController::class)
+            ->name('advice-request.update-status');
     });
 });

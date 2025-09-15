@@ -10,6 +10,11 @@ namespace App\Enums;
  */
 enum PermissionEnum: string
 {
+    case ADVICE_REQUEST_CREATE = 'advice_request.create';
+    case ADVICE_REQUEST_DELETE = 'advice_request.delete';
+    case ADVICE_REQUEST_UPDATE = 'advice_request.update';
+    case ADVICE_REQUEST_VIEW = 'advice_request.view';
+    case ADVICE_REQUEST_VIEW_ANY = 'advice_request.view_any';
     case AUDIT_ADMIN_ACTIONS_VIEW = 'audit.admin_actions_view';
     case AUDIT_COMPLIANCE_REPORTS_VIEW = 'audit.compliance_reports_view';
     case AUDIT_SUSPICIOUS_ACTIVITY_VIEW = 'audit.suspicious_activity_view';
