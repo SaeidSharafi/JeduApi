@@ -40,8 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
                             }
                         });
 
-                    Route::middleware(['auth:user'])
-                        ->prefix('shop')
+                    Route::prefix('shop')
                         ->name('shop.')
                         ->group(function () {
                             foreach (File::glob(base_path('routes/Api/V1/shop/*.php')) as $file) {
