@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\Admin\Settings\ContactInfoController;
 use App\Http\Controllers\Api\Admin\Settings\HomePageBlockController;
 use App\Http\Controllers\Api\Admin\Settings\SettingController;
 use App\Http\Controllers\Api\Admin\Settings\SliderController;
+use App\Http\Controllers\Api\Admin\Settings\StudentStoryController;
 use App\Http\Controllers\Api\Admin\Wallet\AdminWalletController;
 use App\Http\Controllers\Api\Admin\WalletCampaign\AdminWalletCampaignController;
 use App\Http\Controllers\Api\Admin\WalletCampaign\BulkCampaignAllocationController;
@@ -64,7 +65,6 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
         Route::resource('user', App\Http\Controllers\Api\Admin\UserController::class)
             ->only(['index', 'store', 'show', 'update', 'destroy']);
 
-
         // Product Management and Categories
         Route::resource('category', CategoryController::class)
             ->except(['edit', 'create']);
@@ -72,7 +72,7 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
         // GoodForStart endpoints for category items
         Route::prefix('category/{category}')->name('category.')->group(function () {
             Route::get('items', CategoryItemsController::class)->name('items.index');
-            Route::post('good-for-start', [\App\Http\Controllers\Api\Admin\Category\GoodForStartController::class, 'set'])
+            Route::post('good-for-start', [App\Http\Controllers\Api\Admin\Category\GoodForStartController::class, 'set'])
                 ->name('good-for-start.set');
         });
 
@@ -83,14 +83,12 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
         Route::resource('seminar', SeminarController::class)
             ->except(['edit', 'create']);
 
-
         Route::resource('product', ProductController::class)
             ->except(['edit', 'create']);
         Route::post('product/{product}/archive', ArchiveProductController::class)
             ->name('product.archive');
         Route::resource('product/{product}/delivery-option', ProductDeliveryOptionController::class)
             ->except(['edit', 'create']);
-
 
         // Order and Payment Management
         Route::resource('order', OrderController::class)
@@ -194,9 +192,10 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
                 ->only(['index', 'show', 'store', 'update', 'destroy']);
             Route::apiResource('home-page-block', HomePageBlockController::class);
 
+            Route::apiResource('student-stories', StudentStoryController::class);
         });
 
-        Route::resource('review', \App\Http\Controllers\Api\Admin\Review\ReviewController::class)
+        Route::resource('review', App\Http\Controllers\Api\Admin\Review\ReviewController::class)
             ->only(['index', 'show', 'destroy']);
         Route::post('review/{review}/approve', ApproveReviewController::class)
             ->name('review.approve');

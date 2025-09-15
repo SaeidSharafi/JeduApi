@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Plank\Mediable\Mediable;
+
+final class StudentStory extends Model
+{
+    use HasFactory, Mediable;
+
+    protected $fillable = [
+        'student_name',
+        'course_name',
+        'course_url',
+        'story_text',
+        'is_visible',
+        'display_order',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'created_at'  => 'datetime',
+            'updated_at'  => 'datetime',
+        ];
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->firstMedia('avatar')?->getUrl();
+    }
+}

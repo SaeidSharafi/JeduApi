@@ -20,6 +20,7 @@ use App\Models\Seminar;
 use App\Models\Setting;
 use App\Models\Slider;
 use App\Models\Staff;
+use App\Models\StudentStory;
 use App\Models\Teacher;
 use App\Models\Term;
 use App\Models\User;
@@ -43,6 +44,7 @@ use App\Policies\Admin\SeminarPolicy;
 use App\Policies\Admin\SettingPolicy;
 use App\Policies\Admin\SliderPolicy;
 use App\Policies\Admin\StaffPolicy;
+use App\Policies\Admin\StudentStoryPolicy;
 use App\Policies\Admin\TeacherPolicy;
 use App\Policies\Admin\TermPolicy;
 use App\Policies\Admin\UserPolicy;
@@ -55,9 +57,7 @@ use Spatie\Permission\Models\Role;
 
 final class AuthServiceProvider extends ServiceProvider
 {
-    public function register(): void
-    {
-    }
+    public function register(): void {}
 
     public function boot(): void
     {
@@ -92,7 +92,8 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(Review::class, ReviewPolicy::class);
         Gate::policy(Slider::class, SliderPolicy::class);
         Gate::policy(HomePageBlock::class, HomePageBlockPolicy::class);
-        Gate::policy(CollaborationCarousel::class,CollaborationCarouselPolicy::class);
+        Gate::policy(CollaborationCarousel::class, CollaborationCarouselPolicy::class);
+        Gate::policy(StudentStory::class, StudentStoryPolicy::class);
 
     }
 }

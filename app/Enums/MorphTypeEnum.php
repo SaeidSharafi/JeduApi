@@ -15,6 +15,7 @@ use App\Models\Refund;
 use App\Models\Seminar;
 use App\Models\Slider;
 use App\Models\Staff;
+use App\Models\StudentStory;
 use App\Models\Teacher;
 use App\Models\User;
 use App\Models\Vendor;
@@ -32,16 +33,18 @@ enum MorphTypeEnum: string
     case STAFF         = 'staff';
     case USER          = 'user';
 
-    case TEACHER  = 'teacher';
-    case VENDOR   = 'vendor';
-    case PRODUCT  = 'product';
-    case ORDER    = 'order';
-    case REFUND   = 'refund';
-    case CAMPAIGN = 'campaign';
-    case SLIDER   = 'slider';
-    case HOME_PAGE_BLOCK   = 'home_page_block';
+    case TEACHER         = 'teacher';
+    case VENDOR          = 'vendor';
+    case PRODUCT         = 'product';
+    case ORDER           = 'order';
+    case REFUND          = 'refund';
+    case CAMPAIGN        = 'campaign';
+    case SLIDER          = 'slider';
+    case HOME_PAGE_BLOCK = 'home_page_block';
 
     case COLLABORATION_CAROUSEL = 'collaboration_carousel';
+    case STUDENT_STORY          = 'student_story';
+
     public static function forMorphMap(): array
     {
         $map = [];
@@ -63,32 +66,10 @@ enum MorphTypeEnum: string
         return null;
     }
 
-    public function getModelClass(): string
-    {
-        return match ($this) {
-            self::CATEGORY      => Category::class,
-            self::COURSE        => Course::class,
-            self::SEMINAR       => Seminar::class,
-            self::DIGITAL_ASSET => DigitalAsset::class,
-            self::STAFF         => Staff::class,
-            self::USER          => User::class,
-            self::TEACHER       => Teacher::class,
-            self::VENDOR        => Vendor::class,
-            self::PRODUCT       => Product::class,
-            self::ORDER         => Order::class,
-            self::REFUND        => Refund::class,
-            self::CAMPAIGN      => WalletCampaign::class,
-            self::SLIDER       => Slider::class,
-            self::HOME_PAGE_BLOCK => HomePageBlock::class,
-            self::COLLABORATION_CAROUSEL => CollaborationCarousel::class,
-        };
-    }
-
     /**
      * Get categorizable types.
      *
-     * @param bool $onlyWithGoodStartAllowed If true, only return types that support 'good_for_start' flag.
-     *
+     * @param  bool  $onlyWithGoodStartAllowed  If true, only return types that support 'good_for_start' flag.
      * @return array List of categorizable type aliases.
      *
      * @codeCoverageIgnore
@@ -109,5 +90,27 @@ enum MorphTypeEnum: string
         }
 
         return $categorizables;
+    }
+
+    public function getModelClass(): string
+    {
+        return match ($this) {
+            self::CATEGORY               => Category::class,
+            self::COURSE                 => Course::class,
+            self::SEMINAR                => Seminar::class,
+            self::DIGITAL_ASSET          => DigitalAsset::class,
+            self::STAFF                  => Staff::class,
+            self::USER                   => User::class,
+            self::TEACHER                => Teacher::class,
+            self::VENDOR                 => Vendor::class,
+            self::PRODUCT                => Product::class,
+            self::ORDER                  => Order::class,
+            self::REFUND                 => Refund::class,
+            self::CAMPAIGN               => WalletCampaign::class,
+            self::SLIDER                 => Slider::class,
+            self::HOME_PAGE_BLOCK        => HomePageBlock::class,
+            self::COLLABORATION_CAROUSEL => CollaborationCarousel::class,
+            self::STUDENT_STORY          => StudentStory::class,
+        };
     }
 }

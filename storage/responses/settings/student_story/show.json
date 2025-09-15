@@ -1,0 +1,24 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 1,
+    "student_name": "فراگیر آزمایشی",
+    "course_name": "دوره حسابداری",
+    "course_url": "http://rempel.com/sunt-nihil-accusantium-harum-mollitia",
+    "story_text": "داستان فراگیر",
+    "is_visible": false,
+    "avatar": {
+      "id": 5,
+      "url": "http://jedu.test/storage/fake-media/fake-gallery.svg",
+      "size": 896,
+      "file_name": "fake-gallery",
+      "alt": "",
+      "mime_type": "image/svg+xml",
+      "extension": "svg",
+      "tag": null,
+      "thumbnail": null
+    },
+    "display_order": 0
+  },
+  "metadata": []
+}

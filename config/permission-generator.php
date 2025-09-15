@@ -217,7 +217,12 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
-
+        'student_story' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::DELETE,
+        ],
 
         /*
 
