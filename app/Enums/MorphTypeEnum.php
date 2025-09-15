@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use App\Models\Blog\BlogCategory;
+use App\Models\Blog\BlogPost;
 use App\Models\Category;
 use App\Models\Partner;
 use App\Models\Course;
@@ -44,6 +46,8 @@ enum MorphTypeEnum: string
 
     case PARTNER = 'partner';
     case STUDENT_STORY          = 'student_story';
+    case BLOG_POST    = 'blog_post';
+    case BLOG_CATEGORY = 'blog_category';
 
     public static function forMorphMap(): array
     {
@@ -111,6 +115,8 @@ enum MorphTypeEnum: string
             self::HOME_PAGE_BLOCK        => HomePageBlock::class,
             self::PARTNER => Partner::class,
             self::STUDENT_STORY          => StudentStory::class,
+            self::BLOG_POST              => BlogPost::class,
+            self::BLOG_CATEGORY          => BlogCategory::class,
         };
     }
 }

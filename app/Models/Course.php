@@ -8,6 +8,7 @@ use App\Contracts\ProductableContract;
 use App\Contracts\ReviewableContract;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
+use App\Models\Blog\BlogPost;
 use App\Traits\IsProductable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -57,6 +58,11 @@ final class Course extends Model implements ProductableContract, ReviewableContr
     public function digitalAssets(): MorphToMany
     {
         return $this->morphToMany(DigitalAsset::class, 'assetable');
+    }
+
+    public function blogPosts(): MorphToMany
+    {
+        return $this->morphToMany(BlogPost::class, 'productable', 'blog_post_productables');
     }
 
     protected function casts(): array

@@ -35,4 +35,14 @@ enum ProductableEnum: string
             self::DIGITAL_ASSET => DigitalAsset::class,
         };
     }
+
+    public static function getTableFromType(?string $type): string
+    {
+        return match ($type) {
+            self::COURSE->value => 'courses',
+            self::SEMINAR->value => 'seminars',
+            self::DIGITAL_ASSET->value => 'digital_assets',
+            default => 'courses',
+        };
+    }
 }

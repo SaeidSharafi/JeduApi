@@ -8,12 +8,14 @@ use App\Contracts\ProductableContract;
 use App\Contracts\ReviewableContract;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
+use App\Models\Blog\BlogPost;
 use App\Traits\HasAssets;
 use App\Traits\HasAuditor;
 use App\Traits\HasCategories;
 use App\Traits\IsProductable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Plank\Mediable\Mediable;
 
 final class Seminar extends Model implements ProductableContract, ReviewableContract
@@ -49,6 +51,11 @@ final class Seminar extends Model implements ProductableContract, ReviewableCont
         'meta_description',
         'meta_keywords',
     ];
+
+    public function blogPosts(): MorphToMany
+    {
+        return $this->morphToMany(BlogPost::class, 'productable', 'blog_post_productables');
+    }
 
     protected function casts(): array
     {
