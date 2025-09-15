@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('collaboration_carousels', function (Blueprint $table) {
+        Schema::create('partners', function (Blueprint $table) {
             $table->id();
             $table->string('title');
             $table->string('caption')->nullable();
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-    Schema::dropIfExists('collaboration_carousels');
+    Schema::dropIfExists('partners');
     }
 };

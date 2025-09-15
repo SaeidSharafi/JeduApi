@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Data\Admin\MediaData;
-use App\Enums\CollaborationCarouselShowInEnum;
+use App\Enums\PartnerShowInEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Plank\Mediable\Media;
 use Plank\Mediable\Mediable;
 
-final class CollaborationCarousel extends Model
+final class Partner extends Model
 {
     use HasFactory, Mediable;
 
@@ -30,7 +30,7 @@ final class CollaborationCarousel extends Model
     protected function casts(): array
     {
         return [
-            'show_in' => CollaborationCarouselShowInEnum::class,
+            'show_in' => PartnerShowInEnum::class,
         ];
     }
     public function getImage(): ?MediaData

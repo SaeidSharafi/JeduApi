@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 use App\Models\Category;
-use App\Models\CollaborationCarousel;
+use App\Models\Partner;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\HomePageBlock;
@@ -42,7 +42,7 @@ enum MorphTypeEnum: string
     case SLIDER          = 'slider';
     case HOME_PAGE_BLOCK = 'home_page_block';
 
-    case COLLABORATION_CAROUSEL = 'collaboration_carousel';
+    case PARTNER = 'partner';
     case STUDENT_STORY          = 'student_story';
 
     public static function forMorphMap(): array
@@ -109,7 +109,7 @@ enum MorphTypeEnum: string
             self::CAMPAIGN               => WalletCampaign::class,
             self::SLIDER                 => Slider::class,
             self::HOME_PAGE_BLOCK        => HomePageBlock::class,
-            self::COLLABORATION_CAROUSEL => CollaborationCarousel::class,
+            self::PARTNER => Partner::class,
             self::STUDENT_STORY          => StudentStory::class,
         };
     }

@@ -211,7 +211,7 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
-        'collaboration_carousel' => [
+        'partner' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,

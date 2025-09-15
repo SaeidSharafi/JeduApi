@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\Admin\Review\UpdateReviewFeaturedStatusController;
 use App\Http\Controllers\Api\Admin\Settings\AboutUsInfoController;
 use App\Http\Controllers\Api\Admin\Settings\ContactInfoController;
 use App\Http\Controllers\Api\Admin\Settings\HomePageBlockController;
+use App\Http\Controllers\Api\Admin\Settings\PartnerController;
 use App\Http\Controllers\Api\Admin\Settings\SettingController;
 use App\Http\Controllers\Api\Admin\Settings\SliderController;
 use App\Http\Controllers\Api\Admin\Settings\StudentStoryController;
@@ -188,8 +189,7 @@ Route::middleware(['auth:staff', 'admin.audit'])->group(function (): void {
                 ->name('header.update');
             Route::resource('slider', SliderController::class)
                 ->only(['index', 'show', 'store', 'update', 'destroy']);
-            Route::resource('collaboration-carousel', App\Http\Controllers\Api\Admin\Settings\CollaborationCarouselController::class)
-                ->only(['index', 'show', 'store', 'update', 'destroy']);
+            Route::apiResource('partner', PartnerController::class);
             Route::apiResource('home-page-block', HomePageBlockController::class);
 
             Route::apiResource('student-stories', StudentStoryController::class);

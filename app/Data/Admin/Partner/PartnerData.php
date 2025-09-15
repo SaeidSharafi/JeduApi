@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Data\Admin\CollaborationCarousel;
+namespace App\Data\Admin\Partner;
 
 use App\Data\Admin\MediaData;
 use Spatie\LaravelData\Data;
-use App\Enums\CollaborationCarouselShowInEnum;
+use App\Enums\PartnerShowInEnum;
 
-final class CollaborationCarouselData extends Data
+final class PartnerData extends Data
 {
     public function __construct(
         public int $id,
@@ -16,7 +16,7 @@ final class CollaborationCarouselData extends Data
         public ?string $caption,
         public ?MediaData $image,
         public ?string $url,
-        public CollaborationCarouselShowInEnum $show_in,
+        public PartnerShowInEnum $show_in,
         public int $order,
         public bool $is_active,
     ) {}
