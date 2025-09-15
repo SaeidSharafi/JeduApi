@@ -28,7 +28,27 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('api')
                 ->prefix('api/v1')
                 ->name('api.v1.')
-                ->group(base_path('routes/Api/V1/api.php'));
+                ->group(function () {
+                    require base_path('routes/Api/V1/api.php');
+
+                    Route::middleware(['auth:staff', 'admin.audit'])
+                        ->prefix('admin')
+                        ->name('admin.')
+                        ->group(function () {
+                            foreach (File::glob(base_path('routes/Api/V1/admin/*.php')) as $file) {
+                                require $file;
+                            }
+                        });
+
+                    Route::middleware(['auth:user'])
+                        ->prefix('shop')
+                        ->name('shop.')
+                        ->group(function () {
+                            foreach (File::glob(base_path('routes/Api/V1/shop/*.php')) as $file) {
+                                require $file;
+                            }
+                        });
+                });
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
