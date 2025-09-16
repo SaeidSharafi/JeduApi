@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Data\Admin\Category;
+namespace App\Data\Admin\SelectOptions;
 
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;

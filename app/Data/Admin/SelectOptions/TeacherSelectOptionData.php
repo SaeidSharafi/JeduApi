@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Data\Admin\Teacher;
+namespace App\Data\Admin\SelectOptions;
 
 use App\Data\Admin\MediaData;
 use Illuminate\Support\Collection;
