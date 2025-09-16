@@ -1,0 +1,66 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "id": 1,
+      "title": "Admin",
+      "subtitle": "staff@example.com",
+      "image_url": null
+    },
+    {
+      "id": 36,
+      "title": "Alexys Franecki",
+      "subtitle": "asha72@example.net",
+      "image_url": null
+    },
+    {
+      "id": 76,
+      "title": "Alf Abbott",
+      "subtitle": "linnie93@example.org",
+      "image_url": null
+    },
+    {
+      "id": 142,
+      "title": "Alf Nikolaus",
+      "subtitle": "nmckenzie@example.com",
+      "image_url": null
+    },
+    {
+      "id": 147,
+      "title": "Alvis Waelchi",
+      "subtitle": "cbashirian@example.com",
+      "image_url": null
+    },
+    {
+      "id": 93,
+      "title": "Amani Heaney",
+      "subtitle": "sophie.satterfield@example.org",
+      "image_url": null
+    },
+    {
+      "id": 8,
+      "title": "Amelie Rau III",
+      "subtitle": "ransom.roberts@example.com",
+      "image_url": null
+    },
+    {
+      "id": 146,
+      "title": "Ana White",
+      "subtitle": "corkery.jerrold@example.net",
+      "image_url": null
+    },
+    {
+      "id": 92,
+      "title": "Anibal Hermiston II",
+      "subtitle": "cmaggio@example.org",
+      "image_url": null
+    },
+    {
+      "id": 86,
+      "title": "Arden Murray",
+      "subtitle": "ogoyette@example.com",
+      "image_url": null
+    }
+  ],
+  "metadata": []
+}
