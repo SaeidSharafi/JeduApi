@@ -48,7 +48,8 @@ class ProductableSelectOptionController extends Controller
                     DB::raw("'" . ProductableEnum::COURSE->value . "' as type") // Add a literal 'type' column
                 ])
                 ->when($query, function ($q, $search) {
-                    $q->where('full_name', 'like', "%{$search}%"); // Apply search query
+                    $q->whereLike('full_name', "%{$search}%")
+                    ->orWhereLike('short_name', "%{$search}%");
                 });
             $queries[] = $coursesQuery;
         }
@@ -63,7 +64,8 @@ class ProductableSelectOptionController extends Controller
                     DB::raw("'" . ProductableEnum::SEMINAR->value . "' as type")
                 ])
                 ->when($query, function ($q, $search) {
-                    $q->where('full_name', 'like', "%{$search}%");
+                    $q->whereLike('full_name', "%{$search}%")
+                    ->orWhereLike('short_name', "%{$search}%");
                 });
             $queries[] = $seminarsQuery;
         }
@@ -78,7 +80,7 @@ class ProductableSelectOptionController extends Controller
                     DB::raw("'" . ProductableEnum::DIGITAL_ASSET->value . "' as type")
                 ])
                 ->when($query, function ($q, $search) {
-                    $q->where('name', 'like', "%{$search}%");
+                    $q->whereLike('name', "%{$search}%");
                 });
             $queries[] = $digitalAssetsQuery;
         }
