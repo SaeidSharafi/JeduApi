@@ -17,6 +17,15 @@ use App\Http\Controllers\Api\Admin\TermController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\VendorController;
 
+
+require __DIR__.'/blog.php';
+require __DIR__.'/catalog.php';
+require __DIR__.'/select_option.php';
+require __DIR__.'/file.php';
+require __DIR__.'/sale.php';
+require __DIR__.'/setting.php';
+require __DIR__.'/wallet.php';
+
 Route::apiResource('staff', StaffController::class);
 Route::apiResource('role', RoleController::class);
 Route::get('permission', PermissonController::class)->name('permission.index');

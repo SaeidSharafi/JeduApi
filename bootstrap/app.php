@@ -35,17 +35,13 @@ return Application::configure(basePath: dirname(__DIR__))
                         ->prefix('admin')
                         ->name('admin.')
                         ->group(function () {
-                            foreach (File::glob(base_path('routes/Api/V1/admin/*.php')) as $file) {
-                                require $file;
-                            }
+                            require base_path('routes/Api/V1/admin/admin.php');
                         });
 
                     Route::prefix('shop')
                         ->name('shop.')
                         ->group(function () {
-                            foreach (File::glob(base_path('routes/Api/V1/shop/*.php')) as $file) {
-                                require $file;
-                            }
+                            require base_path('routes/Api/V1/shop/shop.php');
                         });
                 });
         }
