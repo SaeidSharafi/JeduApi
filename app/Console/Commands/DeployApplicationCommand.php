@@ -88,7 +88,7 @@ final class DeployApplicationCommand extends Command
             $artisanCommands[] = "{$artisanScript} permissions:sync --guard=user";
             if (! app()->isProduction()) {
                 $artisanCommands[] = "{$artisanScript} scribe:setup --fresh --seed";
-                $artisanCommands[] = "{$artisanScript} db:seed --class=ScribeSeeder";
+                $artisanCommands[] = "{$artisanScript} db:seed --class=DemoSeeder";
             }
             $artisanCommands[] = "{$artisanScript} optimize";
 

@@ -47,7 +47,7 @@ final class UpdateProfileData extends Data
             ],
             'phone2'   => ['nullable', 'string', 'max:15'],
             'civil_id' => [
-                'required', 'string', 'max:20', new CivilIdRule(), new UniqueCivilIdRule(auth()->user()->id),
+                'required', 'string', 'max:20', new CivilIdRule(), new UniqueCivilIdRule(auth()->user()?->id),
             ],
             'civil_id_type'    => ['required', 'string', 'max:20', Rule::enum(CivilIdTypeEnum::class)],
             'date_of_birth'    => ['required', 'jdate:Y-m-d'],

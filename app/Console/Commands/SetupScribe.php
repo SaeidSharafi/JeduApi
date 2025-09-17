@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use Database\Seeders\ScribeSeeder;
 use Database\Seeders\ScribeSimpleSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;

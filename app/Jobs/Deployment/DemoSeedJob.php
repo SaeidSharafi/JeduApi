@@ -21,7 +21,7 @@ final class DemoSeedJob extends BaseDeploymentJob
 
             return;
         }
-        $command = "{$artisanScript} db:seed --class=ScribeSeeder";
+        $command = "{$artisanScript} db:seed --class=DemoSeeder";
         Log::channel('deployment')->info("Artisan: Running '{$command}'...");
         $this->runProcess($command, $this->projectPath, 180);
 

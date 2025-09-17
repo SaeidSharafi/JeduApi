@@ -28,7 +28,7 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Storage;
 
-final class ScribeSeeder extends Seeder
+final class DemoSeeder extends Seeder
 {
     public function run(): void
     {
