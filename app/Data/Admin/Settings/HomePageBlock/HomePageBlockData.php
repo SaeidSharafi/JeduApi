@@ -17,7 +17,7 @@ final class HomePageBlockData extends Data
         public string $location,
         public int $order,
         public bool $is_active,
-        public BannerBlockContentData|CuratedListBlockContentData|WebinarBannerBlockContentData|null $content,
+        public BannerBlockContentData|CuratedListBlockContentData|WebinarBannerBlockContentData|DynamicListBlockContentData|null $content,
     ) {
     }
 
@@ -41,6 +41,13 @@ final class HomePageBlockData extends Data
                 text: $block->content['text'] ?? '',
                 image_id: $block->content['image_id'] ?? null,
                 image_url: $block->content['image_url'] ?? null,
+            ),
+            HomePageBlockTypeEnum::DYNAMIC_LIST => new DynamicListBlockContentData(
+                entity_type: \App\Enums\DynamicListEntityTypeEnum::from($block->content['entity_type'] ?? 'product'),
+                sort_by: \App\Enums\DynamicListSortByEnum::from($block->content['sort_by'] ?? 'created_at:desc'),
+                limit: $block->content['limit'] ?? 10,
+                preset: $block->content['preset'] ?? 'default',
+                category_ids: $block->content['category_ids'] ?? null,
             ),
             //@codeCoverageIgnoreStart
             default => null,

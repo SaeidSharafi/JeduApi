@@ -14,4 +14,5 @@ enum HomePageBlockTypeEnum: string
     case BANNER = 'BANNER';
     case CURATED_LIST = 'CURATED_LIST';
     case WEBINAR_BANNER = 'WEBINAR_BANNER';
+    case DYNAMIC_LIST = 'DYNAMIC_LIST';
 }

@@ -44,6 +44,10 @@ final class HomePageBlockCreateData extends Data
             case HomePageBlockTypeEnum::WEBINAR_BANNER->value:
                 $content = WebinarBannerBlockContentData::rules();
                 break;
+
+            case HomePageBlockTypeEnum::DYNAMIC_LIST->value:
+                $content = DynamicListBlockContentData::rules();
+                break;
         }
         foreach ($content as $key => $value) {
             $rules["content.$key"] = $value;
@@ -81,7 +85,12 @@ final class HomePageBlockCreateData extends Data
             'content.preset' => ['description' => 'Optional preset style for the banner.'],
             // if type is Webinar Banner
             'content.product_id' => ['description' => 'The ID of the product associated with the webinar banner. Required for Webinar Banner type.'],
-            'content.text' => ['description' => 'The text to be displayed on the webinar banner. Required for Webinar Banner type.']
+            'content.text' => ['description' => 'The text to be displayed on the webinar banner. Required for Webinar Banner type.'],
+            // if type is Dynamic List
+            'content.entity_type' => ['description' => 'The type of entities to list dynamically. Options: course_products, seminar_products, digital_asset_products, blog_post, all_products. Required for Dynamic List type.'],
+            'content.sort_by' => ['description' => 'How to sort the entities. Options: created_at:desc, created_at:asc, updated_at:desc, updated_at:asc, name:asc, name:desc, popular, featured. Required for Dynamic List type.'],
+            'content.limit' => ['description' => 'Maximum number of items to display (1-20). Required for Dynamic List type.'],
+            'content.category_ids' => ['description' => 'Optional array of category IDs to filter the entities by specific categories.'],
         ];
     }
 }

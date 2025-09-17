@@ -69,5 +69,19 @@ class HomePageBlockFactory extends Factory
         ]);
     }
 
+    public function dynamicList(string $entityType = 'all_products', string $sortBy = 'created_at:desc', int $limit = 10, ?array $categoryIds = null): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'type'    => HomePageBlockTypeEnum::DYNAMIC_LIST,
+            'content' => [
+                'entity_type'  => $entityType,
+                'sort_by'      => $sortBy,
+                'limit'        => $limit,
+                'preset'       => 'default',
+                'category_ids' => $categoryIds,
+            ],
+        ]);
+    }
+
 
 }

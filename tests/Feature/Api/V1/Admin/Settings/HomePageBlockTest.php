@@ -333,6 +333,63 @@ describe('HomePageBlockController validation', function () {
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['content.image_id']);
     });
+    it('validation fails for dynamic list with invalid entity_type', function () {
+        $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
+        $payload = [
+            'type'      => HomePageBlockTypeEnum::DYNAMIC_LIST->value,
+            'title'     => 'Dynamic List Block',
+            'location'  => 'homepage_middle',
+            'order'     => 4,
+            'is_active' => true,
+            'content'   => [
+                'entity_type' => 'invalid_entity',
+                'sort_by'     => 'created_at:desc',
+                'limit'       => 5,
+                'preset'      => 'grid',
+            ],
+        ];
+        $response = $this->postJson(route('api.v1.admin.settings.home-page-block.store'), $payload);
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['content.entity_type']);
+    });
+    it('validation fails for dynamic list with invalid sort_by', function () {
+        $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
+        $payload = [
+            'type'      => HomePageBlockTypeEnum::DYNAMIC_LIST->value,
+            'title'     => 'Dynamic List Block',
+            'location'  => 'homepage_middle',
+            'order'     => 4,
+            'is_active' => true,
+            'content'   => [
+                'entity_type' => 'seminar_products',
+                'sort_by'     => 'invalid_sort',
+                'limit'       => 5,
+                'preset'      => 'grid',
+            ],
+        ];
+        $response = $this->postJson(route('api.v1.admin.settings.home-page-block.store'), $payload);
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['content.sort_by']);
+    });
+    it('validation fails for dynamic list with limit out of range', function () {
+        $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
+        $payload = [
+            'type'      => HomePageBlockTypeEnum::DYNAMIC_LIST->value,
+            'title'     => 'Dynamic List Block',
+            'location'  => 'homepage_middle',
+            'order'     => 4,
+            'is_active' => true,
+            'content'   => [
+                'entity_type' => 'digital_asset_products',
+                'sort_by'     => 'created_at:desc',
+                'limit'       => 25, // exceeds max of 20
+                'preset'      => 'grid',
+            ],
+        ];
+        $response = $this->postJson(route('api.v1.admin.settings.home-page-block.store'), $payload);
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['content.limit']);
+    });
 });
 
 describe('HomePageBlockController additional scenarios', function () {
@@ -426,6 +483,40 @@ describe('HomePageBlockController additional scenarios', function () {
             ->and($responseData['content']['text'])->toBe('Join our upcoming webinar!')
             ->and($responseData['content']['image_url'])->toBe($this->image->getUrl());
     });
+    it('can create a block with DYNAMIC_LIST type', function () {
+        $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
+        $categories = \App\Models\Category::factory()->count(2)->create();
+        $payload = [
+            'type'      => HomePageBlockTypeEnum::DYNAMIC_LIST->value,
+            'title'     => 'Dynamic Product List',
+            'location'  => 'homepage_middle',
+            'order'     => 4,
+            'is_active' => true,
+            'content'   => [
+                'entity_type' => 'course_products',
+                'sort_by'     => 'created_at:desc',
+                'limit'       => 5,
+                'preset'      => 'grid',
+                'category_ids' => $categories->pluck('id')->toArray(),
+            ],
+        ];
+        $response = $this->postJson(route('api.v1.admin.settings.home-page-block.store'), $payload);
+        $response->assertStatus(201)
+            ->assertJsonStructure([
+                'data' => [
+                    'id', 'type', 'title', 'location', 'order', 'is_active', 'content' => [
+                        'entity_type', 'sort_by', 'limit', 'preset', 'category_ids',
+                    ]
+                ]
+            ]);
+
+        $responseData = $response->json('data');
+        expect($responseData['content']['entity_type'])->toBe('course_products')
+            ->and($responseData['content']['sort_by'])->toBe('created_at:desc')
+            ->and($responseData['content']['limit'])->toBe(5)
+            ->and($responseData['content']['preset'])->toBe('grid')
+            ->and($responseData['content']['category_ids'])->toEqual($categories->pluck('id')->toArray());
+    });
     it('response always includes all expected keys even if some values are null', function () {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $payload = [
@@ -483,5 +574,79 @@ describe('HomePageBlockController additional scenarios', function () {
         $block->load('media');
         expect($block->media->count())->toBeGreaterThan(0);
         expect($block->media->first()->id)->toBe($this->image->id);
+    });
+
+    it('can create dynamic list block using factory', function () {
+        $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_VIEW_ANY]);
+        $categories = \App\Models\Category::factory()->count(3)->create();
+
+        $block = HomePageBlock::factory()->dynamicList('all_products', 'created_at:desc', 8, $categories->pluck('id')->toArray())->create();
+
+        expect($block->type)->toBe(HomePageBlockTypeEnum::DYNAMIC_LIST)
+            ->and($block->content['entity_type'])->toBe('all_products')
+            ->and($block->content['sort_by'])->toBe('created_at:desc')
+            ->and($block->content['limit'])->toBe(8)
+            ->and($block->content['category_ids'])->toEqual($categories->pluck('id')->toArray());
+    });
+
+    it('can create different types of dynamic lists for different product types', function () {
+        $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
+
+        // Test course products
+        $coursePayload = [
+            'type'      => HomePageBlockTypeEnum::DYNAMIC_LIST->value,
+            'title'     => 'Latest Courses',
+            'location'  => 'homepage_top',
+            'order'     => 1,
+            'is_active' => true,
+            'content'   => [
+                'entity_type' => 'course_products',
+                'sort_by'     => 'created_at:desc',
+                'limit'       => 3,
+                'preset'      => 'course_grid',
+            ],
+        ];
+
+        $response = $this->postJson(route('api.v1.admin.settings.home-page-block.store'), $coursePayload);
+        $response->assertStatus(201);
+        expect($response->json('data.content.entity_type'))->toBe('course_products');
+
+        // Test seminar products
+        $seminarPayload = [
+            'type'      => HomePageBlockTypeEnum::DYNAMIC_LIST->value,
+            'title'     => 'Popular Seminars',
+            'location'  => 'homepage_middle',
+            'order'     => 2,
+            'is_active' => true,
+            'content'   => [
+                'entity_type' => 'seminar_products',
+                'sort_by'     => 'popular',
+                'limit'       => 4,
+                'preset'      => 'seminar_cards',
+            ],
+        ];
+
+        $response = $this->postJson(route('api.v1.admin.settings.home-page-block.store'), $seminarPayload);
+        $response->assertStatus(201);
+        expect($response->json('data.content.entity_type'))->toBe('seminar_products');
+
+        // Test blog posts
+        $blogPayload = [
+            'type'      => HomePageBlockTypeEnum::DYNAMIC_LIST->value,
+            'title'     => 'Recent Articles',
+            'location'  => 'homepage_bottom',
+            'order'     => 3,
+            'is_active' => true,
+            'content'   => [
+                'entity_type' => 'blog_post',
+                'sort_by'     => 'created_at:desc',
+                'limit'       => 6,
+                'preset'      => 'blog_list',
+            ],
+        ];
+
+        $response = $this->postJson(route('api.v1.admin.settings.home-page-block.store'), $blogPayload);
+        $response->assertStatus(201);
+        expect($response->json('data.content.entity_type'))->toBe('blog_post');
     });
 });
