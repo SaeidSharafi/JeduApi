@@ -107,4 +107,26 @@ describe('Admin Producatable Select Option API', function () {
             $this->assertTrue(in_array($item['type']['value'], [ProductableEnum::COURSE->value, ProductableEnum::SEMINAR->value]));
         }
     });
+
+    it('returns empty data when no productable items match the criteria', function () {
+        Course::factory()->count(3)->create();
+        Seminar::factory()->count(2)->create();
+        DigitalAsset::factory()->count(4)->create();
+
+        $response = $this->getJson('/api/v1/admin/select-option/productable?q=nonexistentitem');
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(0, 'data');
+    });
+
+    it('returns empty data when no productable types are specified', function () {
+        Course::factory()->count(3)->create();
+        Seminar::factory()->count(2)->create();
+        DigitalAsset::factory()->count(4)->create();
+
+        $response = $this->getJson('/api/v1/admin/select-option/productable?types[]=');
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(0, 'data');
+    });
 });
