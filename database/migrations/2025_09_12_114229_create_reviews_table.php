@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->tinyInteger('rating')->nullable();;
             $table->string('title');
             $table->text('comment');
-            $table->string('status')->default(ReviewStatusEnum::PENDING->value);
+            $table->string('status')->index()->default(ReviewStatusEnum::PENDING->value);
             $table->boolean('is_featured');
             $table->timestamps();
 

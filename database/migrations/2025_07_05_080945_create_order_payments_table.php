@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('customer_id')->constrained('users')->restrictOnDelete();
             $table->unsignedBigInteger('amount');
             $table->string('method')->comment('e.g., online_gateway, bank_transfer, admin_credit');
-            $table->enum('status', App\Enums\Payment\PaymentStatusEnum::getAllValues())
-                ->default('pending')
+            $table->string('status')->index()
+                ->default(App\Enums\Payment\PaymentStatusEnum::PENDING->value)
                 ->comment('pending, completed, failed');
             $table->jsonb('data')->nullable()
                 ->comment('Additional data related to the payment, e.g., transaction ID, gateway response, etc.');

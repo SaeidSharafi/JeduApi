@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::create('advice_requests', function (Blueprint $table) {
             $table->id();
             $table->string('phone');
-            $table->string('status')->default('pending');
+            $table->string('status')->index()->default(\App\Enums\AdviceRequestStatusEnum::PENDING->value);
             $table->text('note')->nullable();
             $table->unsignedBigInteger('handled_by_id')->nullable();
             $table->foreign('handled_by_id')->references('id')->on('staff')->nullOnDelete();

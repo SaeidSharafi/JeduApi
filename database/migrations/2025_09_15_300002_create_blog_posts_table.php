@@ -14,12 +14,16 @@ return new class extends Migration {
             $table->longText('body');
             $table->text('excerpt');
             $table->foreignId('author_id')->constrained('staff')->nullOnDelete();
-            $table->string('status')->default(\App\Enums\PublicationStatusEnum::DRAFT->value);
+            $table->string('status')->index()->default(\App\Enums\PublicationStatusEnum::DRAFT->value);
             $table->timestamp('published_at')->nullable();
             $table->integer('read_time_minutes');
             $table->boolean('is_featured')->default(false);
             $table->nullableMorphs('main_productable');
             $table->timestamps();
+
+            $table->index('is_featured');
+            $table->index('published_at');
+            $table->index(['status', 'published_at']);
         });
     }
 

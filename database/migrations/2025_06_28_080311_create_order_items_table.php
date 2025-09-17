@@ -35,7 +35,7 @@ return new class extends Migration
             $table->unsignedBigInteger('total_refunded')->default(0);
             $table->integer('qty_refunded')->default(0);
 
-            $table->enum('status', OrderItemStatusEnum::getAllValues())->default(OrderItemStatusEnum::COMPLETED);
+            $table->string('status')->index()->default(OrderItemStatusEnum::COMPLETED->value);
             $table->timestamps();
         });
     }

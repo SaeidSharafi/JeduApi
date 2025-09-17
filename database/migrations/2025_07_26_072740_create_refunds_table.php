@@ -23,7 +23,7 @@ return new class extends Migration
 
             $table->unsignedBigInteger('amount');
             $table->unsignedBigInteger('deduction_amount');
-            $table->enum('status', RefundStatusEnum::getAllValues())->default(RefundStatusEnum::PENDING->value);
+            $table->string('status')->index()->default(RefundStatusEnum::PENDING->value);
 
             $table->json('transaction_details');
 

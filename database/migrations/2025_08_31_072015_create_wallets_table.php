@@ -27,8 +27,8 @@ return new class extends Migration
             $table->unsignedBigInteger('gift_balance')
                 ->default(0)
                 ->comment('Non-withdrawable gift amounts in rials');
-            $table->enum('status', WalletStatusEnum::getAllValues())
-                ->default('active')
+            $table->string('status')
+                ->default(WalletStatusEnum::ACTIVE->value)
                 ->comment('Wallet status: active, suspended, closed');
             $table->foreignId('created_by')
                 ->nullable()

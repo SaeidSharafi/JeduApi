@@ -13,7 +13,7 @@ return new class extends Migration
         Schema::create('terms', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
-            $table->enum('status', App\Enums\TermStatusEnum::getAllValues())->nullable();
+            $table->string('status')->index()->default(App\Enums\TermStatusEnum::INACTIVE->value);
             $table->string('academic_year')->nullable();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();

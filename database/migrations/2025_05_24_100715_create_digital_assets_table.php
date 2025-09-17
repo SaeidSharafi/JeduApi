@@ -24,8 +24,7 @@ return new class extends Migration
             $table->unsignedInteger('page_count')->nullable()->comment('For documents like PDFs');
             $table->unsignedInteger('duration_seconds')->nullable()->comment('For audio/video file types');
             $table->boolean('is_attachable_to_course')->default(false);
-            $table->enum('status', App\Enums\PublicationStatusEnum::getAllValues())
-                ->default(App\Enums\PublicationStatusEnum::DRAFT->value);
+            $table->string('status')->index()->default(App\Enums\PublicationStatusEnum::DRAFT->value);
             $table->text('keywords')->nullable()->comment('Comma-separated keywords');
             $this->addMetaTagColumns($table);
             $table->timestamp('published_at')->nullable();
