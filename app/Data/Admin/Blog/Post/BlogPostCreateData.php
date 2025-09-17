@@ -17,15 +17,15 @@ final class BlogPostCreateData extends Data
         public ?string $slug = null,
         public string $body,
         public string $excerpt,
-        public int $author_id,
         public string $status,
+        public ?int $author_id = null,
         public ?string $published_at = null,
         public bool $is_featured = false,
         /** @var array{id: int, type: string}|null */
         public ?array $main_productable = null,
         public ?array $category_ids = [],
         /** @var array<int, array{id: int, type: string}> */
-        public array $related_productables,
+        public ?array $related_productables = null,
         public ?int $main_media = null,
     ) {
     }
@@ -40,10 +40,10 @@ final class BlogPostCreateData extends Data
             'slug'                        => ['nullable', 'string', 'max:255', Rule::unique('blog_posts', 'slug')],
             'body'                        => ['required', 'string'],
             'excerpt'                     => ['required', 'string', 'max:500'],
-            'author_id'                   => ['required', 'integer', 'exists:staff,id'],
             'status'                      => ['required', 'string', Rule::enum(PublicationStatusEnum::class)],
+            'author_id'                   => ['nullable', 'integer', 'exists:staff,id'],
             'published_at'                => ['nullable', 'date'],
-            'is_featured'                 => ['boolean'],
+            'is_featured'                 => ['required', 'boolean'],
             'main_productable'            => ['nullable', 'array'],
             'main_productable.id'         => [
                 'required_with:main_productable', 'integer', Rule::exists($mainProductableTable, 'id')

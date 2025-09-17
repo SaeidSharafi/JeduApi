@@ -6,6 +6,8 @@ namespace App\Providers;
 
 use App\Models\AdminActionLog;
 use App\Models\AdviceRequest;
+use App\Models\Blog\BlogCategory;
+use App\Models\Blog\BlogPost;
 use App\Models\Category;
 use App\Models\Partner;
 use App\Models\Course;
@@ -29,6 +31,8 @@ use App\Models\Vendor;
 use App\Models\Wallet;
 use App\Models\WalletCampaign;
 use App\Policies\Admin\AdminActionLogPolicy;
+use App\Policies\Admin\Blog\BlogCategoryPolicy;
+use App\Policies\Admin\Blog\BlogPostPolicy;
 use App\Policies\Admin\CategoryPolicy;
 use App\Policies\Admin\PartnerPolicy;
 use App\Policies\Admin\CoursePolicy;
@@ -97,6 +101,10 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(Partner::class, PartnerPolicy::class);
         Gate::policy(StudentStory::class, StudentStoryPolicy::class);
         Gate::policy(AdviceRequest::class, AdviceRequestPolicy::class);
+        Gate::policy(BlogCategory::class, BlogCategoryPolicy::class);
+        Gate::policy(BlogPost::class, BlogPostPolicy::class);
+
+
 
     }
 }

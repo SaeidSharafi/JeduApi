@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Blog;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,6 +14,7 @@ use Plank\Mediable\Mediable;
 class BlogCategory extends Model
 {
     use Mediable;
+    use HasFactory;
 
     protected $table = 'blog_categories';
 

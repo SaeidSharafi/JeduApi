@@ -20,7 +20,7 @@ final readonly class UpdateBlogPostAction
             'slug'                  => $slug,
             'body'                  => $data->body,
             'excerpt'               => $data->excerpt,
-            'author_id'             => $data->author_id,
+            'author_id'             => $data->author_id ?? $post->author_id,
             'status'                => $data->status,
             'published_at'          => $data->published_at,
             'read_time_minutes'     => $readTime,
@@ -35,15 +35,9 @@ final readonly class UpdateBlogPostAction
         }
         $post->update($postData);
 
-        // Attach main media image if provided
-        if ($data->main_media) {
-            $post->syncMedia($data->main_media, 'main');
-        }
+        $post->syncMedia($data->main_media, 'main');
 
-        // Sync categories
-        if (!empty($data->category_ids)) {
-            $post->categories()->sync($data->category_ids);
-        }
+        $post->categories()->sync($data->category_ids);
 
         $post->syncRelatedProductables($data->related_productables);
         $post->refresh();

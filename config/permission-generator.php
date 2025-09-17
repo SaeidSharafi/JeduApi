@@ -229,6 +229,20 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
+        'blog_category' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::DELETE,
+        ],
+        'blog_post' => [
+            PermissionAction::VIEW_SCOPED,
+            PermissionAction::CREATE,
+            PermissionAction::UPDATE,
+            PermissionAction::DELETE,
+            'publish',
+            'feature',
+        ],
 
         /*
 

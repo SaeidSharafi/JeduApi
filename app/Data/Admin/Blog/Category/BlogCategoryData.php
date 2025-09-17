@@ -6,6 +6,7 @@ namespace App\Data\Admin\Blog\Category;
 
 use App\Data\Admin\MediaData;
 use App\Models\Blog\BlogCategory;
+use Hekmatinasser\Verta\Verta;
 use Plank\Mediable\Mediable;
 use Spatie\LaravelData\Data;
 
@@ -19,6 +20,8 @@ final class BlogCategoryData extends Data
         public ?int $parent_id,
         public ?MediaData $icon = null,
         public ?int $posts_count = null,
+        public ?Verta $created_at = null,
+        public ?Verta $updated_at = null
     ) {
     }
 
@@ -33,7 +36,7 @@ final class BlogCategoryData extends Data
                 'description' => $category->description,
                 'parent_id'   => $category->parent_id,
                 'icon'        => $media,
-                'posts_count' => $category->posts_count,
+                'posts_count' => $category->posts_count ?? null,
             ]
         );
     }

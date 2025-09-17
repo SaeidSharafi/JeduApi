@@ -65,3 +65,42 @@ test('relation products', function (): void {
         ->and($course->products->first()->id)
         ->toEqual($product->id);
 });
+
+test('relation digitalAssets', function (): void {
+    $course       = App\Models\Course::factory()->create();
+    $digitalAsset = App\Models\DigitalAsset::factory()->create();
+    $course->digitalAssets()->attach($digitalAsset->id);
+
+    expect($course->digitalAssets)
+        ->toHaveCount(1)
+        ->and($course->digitalAssets->first())
+        ->toBeInstanceOf(App\Models\DigitalAsset::class)
+        ->and($course->digitalAssets->first()->id)
+        ->toEqual($digitalAsset->id);
+
+    $digitalAssets = App\Models\DigitalAsset::factory()->count(3)->create();
+    $course->digitalAssets()->sync($digitalAssets);
+    $course->refresh();
+    expect($course->digitalAssets)
+        ->toHaveCount(3);
+});
+
+
+test('blogPosts relation', function (): void {
+    $course   = App\Models\Course::factory()->create();
+    $blogPost = App\Models\Blog\BlogPost::factory()->create();
+    $course->blogPosts()->attach($blogPost->id);
+
+    expect($course->blogPosts)
+        ->toHaveCount(1)
+        ->and($course->blogPosts->first())
+        ->toBeInstanceOf(App\Models\Blog\BlogPost::class)
+        ->and($course->blogPosts->first()->id)
+        ->toEqual($blogPost->id);
+
+    $blogPosts = App\Models\Blog\BlogPost::factory()->count(3)->create();
+    $course->blogPosts()->sync($blogPosts);
+    $course->refresh();
+    expect($course->blogPosts)
+        ->toHaveCount(3);
+});

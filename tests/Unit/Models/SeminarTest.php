@@ -84,3 +84,30 @@ test('relation auditor', function (): void {
         ->not()->toBe($anotherAuditor->id);
 
 });
+
+test('relation products', function (): void {
+    $seminar = App\Models\Seminar::factory()->create();
+    $product = App\Models\Product::factory()->create([
+        'productable_id'   => $seminar->id,
+        'productable_type' => App\Enums\ProductableEnum::SEMINAR->value,
+    ]);
+
+    expect($seminar->products)
+        ->toHaveCount(1)
+        ->and($seminar->products->first())
+        ->toBeInstanceOf(App\Models\Product::class)
+        ->and($seminar->products->first()->id)
+        ->toEqual($product->id);
+});
+
+test('relation blog posts', function (): void {
+    $seminar  = App\Models\Seminar::factory()->create();
+    $blogPost = App\Models\Blog\BlogPost::factory()->create();
+    $seminar->blogPosts()->attach($blogPost->id);
+    expect($seminar->blogPosts)
+        ->toHaveCount(1)
+        ->and($seminar->blogPosts->first())
+        ->toBeInstanceOf(App\Models\Blog\BlogPost::class)
+        ->and($seminar->blogPosts->first()->id)
+        ->toEqual($blogPost->id);
+});

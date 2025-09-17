@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models\Blog;
 
+use App\Enums\PublicationStatusEnum;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\Seminar;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -23,6 +25,7 @@ use App\Models\Staff;
 class BlogPost extends Model
 {
     use Mediable;
+    use HasFactory;
 
     protected $table = 'blog_posts';
 
@@ -45,6 +48,7 @@ class BlogPost extends Model
         = [
             'published_at' => 'datetime',
             'is_featured'  => 'boolean',
+            'status' => PublicationStatusEnum::class
         ];
 
     public function author(): BelongsTo
@@ -81,7 +85,7 @@ class BlogPost extends Model
         return $this->morphedByMany(DigitalAsset::class, 'productable', 'blog_post_productables');
     }
 
-    public function loadRelatedproducts(): self
+    public function loadRelatedproductables(): self
     {
         $this->loadMissing(['courses', 'seminars', 'digitalAssets']);
         return $this;
@@ -106,7 +110,7 @@ class BlogPost extends Model
         );
     }
 
-    public function syncRelatedProductables(array $productables): void
+    public function syncRelatedProductables(?array $productables): void
     {
         // If the array is empty, detach everything and stop.
         if (empty($productables)) {
@@ -128,6 +132,7 @@ class BlogPost extends Model
         $this->digitalAssets()->sync($digitalAssetIds);
     }
 
+    // Reviews relation
     public function reviews(): MorphMany
     {
         return $this->morphMany(Review::class, 'reviewable');

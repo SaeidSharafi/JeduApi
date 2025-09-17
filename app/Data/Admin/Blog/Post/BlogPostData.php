@@ -44,6 +44,8 @@ final class BlogPostData extends Data
         public ?Collection $related_productables = null,
         public ?StaffData $author = null,
         public ?MediaData $main_media = null,
+        public ?Verta $created_at = null,
+        public ?Verta $updated_at = null,
     ) {
     }
 

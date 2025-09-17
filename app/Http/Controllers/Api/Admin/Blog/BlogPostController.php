@@ -11,6 +11,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Blog\Post\BlogPostCreateData;
 use App\Data\Admin\Blog\Post\BlogPostUpdateData;
 use App\Data\Admin\Blog\Post\BlogPostData;
+use App\Enums\PermissionEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Blog\BlogPost;
 use Illuminate\Http\JsonResponse;
@@ -70,7 +71,7 @@ final class BlogPostController extends Controller
     {
         Gate::authorize('view', $post);
         $post
-            ->loadRelatedproducts()
+            ->loadRelatedproductables()
             ->load('author', 'media', 'mainProductable');
         return response()->success(BlogPostData::from($post));
     }
@@ -83,8 +84,8 @@ final class BlogPostController extends Controller
     public function store(BlogPostCreateData $data, CreateBlogPostAction $action): ApiResponseInterface
     {
         Gate::authorize('create', BlogPost::class);
-        $post = $action->handle($data);
-        $post->loadRelatedproducts()
+        $post = $action->handle($data, staff: auth('staff')->user());
+        $post->loadRelatedproductables()
             ->load('author', 'media', 'mainProductable');
         return response()->created(BlogPostData::from($post), model: BlogPost::class);
     }
@@ -98,7 +99,7 @@ final class BlogPostController extends Controller
     {
         Gate::authorize('update', $post);
         $post = $action->handle($post, $data);
-        $post->loadRelatedproducts()
+        $post->loadRelatedproductables()
             ->load('author', 'media', 'mainProductable');
         return response()->updated(BlogPostData::from($post), model: $post);
     }

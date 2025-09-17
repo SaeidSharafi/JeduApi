@@ -22,5 +22,15 @@ it('return model class correctly', function () {
     expect($modelClass)->toBe(App\Models\Seminar::class);
     $modelClass = ProductableEnum::DIGITAL_ASSET->getModelClass();
     expect($modelClass)->toBe(App\Models\DigitalAsset::class);
+});
 
+it('return table from type correctly', function () {
+    $table = ProductableEnum::getTableFromType('course');
+    expect($table)->toBe('courses');
+    $table = ProductableEnum::getTableFromType('seminar');
+    expect($table)->toBe('seminars');
+    $table = ProductableEnum::getTableFromType('digital_asset');
+    expect($table)->toBe('digital_assets');
+    $table = ProductableEnum::getTableFromType('non_existent_type');
+    expect($table)->toBe('courses'); // default case
 });

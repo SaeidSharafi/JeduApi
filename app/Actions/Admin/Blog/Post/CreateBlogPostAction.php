@@ -8,32 +8,34 @@ use App\Data\Admin\Blog\Post\BlogPostCreateData;
 use App\Enums\ProductableEnum;
 use App\Models\Blog\BlogPost;
 use App\Models\Product;
+use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 final readonly class CreateBlogPostAction
 {
-    public function handle(BlogPostCreateData $data): BlogPost
+    public function handle(BlogPostCreateData $data, ?Staff $staff = null): BlogPost
     {
-        return DB::transaction(function () use ($data): BlogPost {
+        return DB::transaction(function () use ($data, $staff): BlogPost {
             $slug = $data->slug ?? Str::slug($data->title);
             $readTime = $this->calculateReadTime($data->body);
 
-            $postData =[
+            $postData = [
                 'title'             => $data->title,
                 'slug'              => $slug,
                 'body'              => $data->body,
                 'excerpt'           => $data->excerpt,
-                'author_id'         => $data->author_id,
+                'author_id'         => $data->author_id ?? $staff?->id,
                 'status'            => $data->status,
                 'published_at'      => $data->published_at,
                 'read_time_minutes' => $readTime,
-                'is_featured'       => $data->is_featured,
+                'is_featured'       => $data->is_featured ?? false,
             ];
 
             if ($data->main_productable) {
                 $postData['main_productable_id'] = $data->main_productable['id'];
-                $postData['main_productable_type'] = ProductableEnum::from($data->main_productable['type'])->getModelClass();
+                $postData['main_productable_type'] = ProductableEnum::from($data->main_productable['type'])
+                    ->getModelClass();
             }
 
             $post = BlogPost::create($postData);

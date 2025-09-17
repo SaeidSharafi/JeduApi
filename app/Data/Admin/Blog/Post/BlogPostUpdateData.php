@@ -17,17 +17,18 @@ final class BlogPostUpdateData extends Data
         public ?string $slug = null,
         public string $body,
         public string $excerpt,
-        public int $author_id,
         public string $status,
+        public ?int $author_id = null,
         public ?string $published_at = null,
-        public bool $is_featured = false,
+        public ?bool $is_featured = false,
         /** @var array{id: int, type: string}|null */
         public ?array $main_productable = null,
         public ?array $category_ids = [],
         /** @var array<int, array{id: int, type: string}> */
-        public array $related_productables,
+        public ?array $related_productables = null,
         public ?int $main_media = null,
-    ) {}
+    ) {
+    }
 
     public static function rules(?ValidationContext $context = null): array
     {
@@ -35,17 +36,17 @@ final class BlogPostUpdateData extends Data
         $mainProductableType = $context?->payload['main_productable']['type'] ?? null;
         $mainProductableTable = ProductableEnum::getTableFromType($mainProductableType);
         return [
-            'title' => ['required', 'string', 'max:255'],
-            'slug' => [
+            'title'                       => ['required', 'string', 'max:255'],
+            'slug'                        => [
                 'nullable', 'string', 'max:255',
                 Rule::unique('blog_posts', 'slug')->ignore($postId)
             ],
-            'body' => ['required', 'string'],
-            'excerpt' => ['required', 'string', 'max:500'],
-            'author_id' => ['required', 'integer', 'exists:staff,id'],
-            'status' => ['required', 'string', Rule::enum(PublicationStatusEnum::class)],
-            'published_at' => ['nullable', 'date'],
-            'is_featured' => ['boolean'],
+            'body'                        => ['required', 'string'],
+            'excerpt'                     => ['required', 'string', 'max:500'],
+            'status'                      => ['required', 'string', Rule::enum(PublicationStatusEnum::class)],
+            'author_id'                   => ['nullable', 'integer', 'exists:staff,id'],
+            'published_at'                => ['nullable', 'date'],
+            'is_featured'                 => ['nullable', 'boolean'],
             'main_productable'            => ['nullable', 'array'],
             'main_productable.id'         => [
                 'required_with:main_productable', 'integer', Rule::exists($mainProductableTable, 'id')
