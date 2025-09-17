@@ -20,6 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('discounts:regenerate-discount-prices')
             ->hourly()
             ->withoutOverlapping();
+        $schedule->command('post:publish')
+            ->everyTenMinutes()
+            ->withoutOverlapping();
     })
     ->withRouting(
         commands: __DIR__.'/../routes/console.php',
