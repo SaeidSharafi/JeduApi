@@ -23,8 +23,7 @@ Route::post('order/preview', OrderCalculationController::class)
 Route::apiResource('order/{order}/order-item', OrderItemController::class)
     ->only(['index', 'show']);
 
-Route::resource('order/{order}/payment', PaymentController::class)
-    ->only(['index', 'store', 'show', 'update', 'destroy']);
+Route::apiResource('order/{order}/payment', PaymentController::class);
 Route::get('order/{order}/next-payment-details', NextPaymentDetailsController::class)
     ->name('next-payment-details');
 

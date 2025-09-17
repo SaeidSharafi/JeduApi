@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\Admin\WalletCampaign\BulkCampaignAllocationControll
 use App\Http\Controllers\Api\Admin\WalletCampaign\TriggerCampaignAllocationController;
 
 // Wallet Campaign routes
-Route::resource('wallet-campaigns', AdminWalletCampaignController::class);
+Route::apiResource('wallet-campaigns', AdminWalletCampaignController::class);
 
 // User-centric campaign allocation (primary route)
 Route::post('users/{user}/wallet-campaigns/{wallet_campaign}/trigger-allocation',
