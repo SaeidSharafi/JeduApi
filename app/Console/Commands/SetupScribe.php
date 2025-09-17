@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use Database\Seeders\ScribeSeeder;
+use Database\Seeders\ScribeSimpleSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
@@ -103,7 +104,7 @@ final class SetupScribe extends Command
         }
 
         if ($this->option('seed') || $this->option('seeder')) {
-            $seederClass = $this->option('seeder') ?: ScribeSeeder::class;
+            $seederClass = $this->option('seeder') ?: ScribeSimpleSeeder::class;
             $seedOptions = [
                 '--database' => $connectionName,
                 '--force'    => true,
