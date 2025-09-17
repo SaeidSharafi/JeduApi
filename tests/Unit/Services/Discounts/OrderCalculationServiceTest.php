@@ -9,6 +9,7 @@ use App\Enums\Order\DiscountTypeEnum;
 use App\Models\DiscountPromotion;
 use App\Models\DiscountPromotionRule;
 use App\Models\ProductDeliveryOption;
+use App\Models\ProductDeliveryOptionDiscountPrice;
 use App\Models\User;
 use App\Services\Discounts\Cart\Actions\ApplyPercentageDiscountToItemsAction;
 use App\Services\Discounts\Cart\Conditions\CartValueCondition;
@@ -129,9 +130,12 @@ test('it correctly uses a pre-calculated product-specific discount as the highes
         'featured_price' => 8000, // A featured price also exists but should be ignored
     ]);
 
-    // Mock the DB facade to return a pre-calculated price for this item.
-    Illuminate\Support\Facades\DB::shouldReceive('table->whereIn->pluck')
-        ->andReturn(collect([$deliveryOption->id => 5000])); // A special 50.00 price!
+    // Create actual discount price record instead of mocking
+    ProductDeliveryOptionDiscountPrice::factory()
+        ->forProductDeliveryOption($deliveryOption)
+        ->create([
+            'discounted_price' => 5000, // This is the price that should be used
+        ]);
 
     // No promotion is needed, as we are testing the base price calculation.
     $this->mock(PromotionFinder::class,

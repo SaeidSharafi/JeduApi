@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Actions\Shop\ProductPriceAction;
+use App\Services\ProductPriceService;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\ProductDeliveryOptionDiscountPrice;
@@ -10,10 +10,10 @@ use App\Models\Course;
 use Carbon\Carbon;
 
 beforeEach(function () {
-    $this->priceAction = app(ProductPriceAction::class);
+    $this->priceService = app(ProductPriceService::class);
 });
 
-describe('ProductPriceAction', function () {
+describe('ProductPriceService', function () {
     it('returns standard price when no featured or discount price exists', function () {
         $product = Product::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
@@ -23,7 +23,7 @@ describe('ProductPriceAction', function () {
             'is_featured' => false,
         ]);
 
-        $currentPrice = $this->priceAction->getCurrentPrice($product);
+        $currentPrice = $this->priceService->getCurrentPrice($product);
 
         expect($currentPrice)->toBe(10000);
     });
@@ -39,7 +39,7 @@ describe('ProductPriceAction', function () {
             'featured_price_end_date' => Carbon::tomorrow(),
         ]);
 
-        $currentPrice = $this->priceAction->getCurrentPrice($product);
+        $currentPrice = $this->priceService->getCurrentPrice($product);
 
         expect($currentPrice)->toBe(8000);
     });
@@ -55,7 +55,7 @@ describe('ProductPriceAction', function () {
             'featured_price_end_date' => Carbon::yesterday(),
         ]);
 
-        $currentPrice = $this->priceAction->getCurrentPrice($product);
+        $currentPrice = $this->priceService->getCurrentPrice($product);
 
         expect($currentPrice)->toBe(10000);
     });
@@ -71,7 +71,7 @@ describe('ProductPriceAction', function () {
             'featured_price_end_date' => Carbon::parse('+1 week'),
         ]);
 
-        $currentPrice = $this->priceAction->getCurrentPrice($product);
+        $currentPrice = $this->priceService->getCurrentPrice($product);
 
         expect($currentPrice)->toBe(10000);
     });
@@ -92,7 +92,7 @@ describe('ProductPriceAction', function () {
             ->withPrice(6000)
             ->create();
 
-        $currentPrice = $this->priceAction->getCurrentPrice($product);
+        $currentPrice = $this->priceService->getCurrentPrice($product);
 
         expect($currentPrice)->toBe(6000);
     });
@@ -109,7 +109,7 @@ describe('ProductPriceAction', function () {
             ->withPrice(6000)
             ->create();
 
-        expect($this->priceAction->hasActiveDiscount($product))->toBeTrue();
+        expect($this->priceService->hasActiveDiscount($product))->toBeTrue();
     });
 
     it('correctly identifies when product has active featured price', function () {
@@ -123,7 +123,7 @@ describe('ProductPriceAction', function () {
             'featured_price_end_date' => Carbon::tomorrow(),
         ]);
 
-        expect($this->priceAction->hasActiveDiscount($product))->toBeTrue();
+        expect($this->priceService->hasActiveDiscount($product))->toBeTrue();
     });
 
     it('correctly identifies when product has no active discount', function () {
@@ -135,7 +135,7 @@ describe('ProductPriceAction', function () {
             'is_featured' => false,
         ]);
 
-        expect($this->priceAction->hasActiveDiscount($product))->toBeFalse();
+        expect($this->priceService->hasActiveDiscount($product))->toBeFalse();
     });
 
     it('returns original price correctly', function () {
@@ -152,7 +152,7 @@ describe('ProductPriceAction', function () {
             ->withPrice(6000)
             ->create();
 
-        $originalPrice = $this->priceAction->getOriginalPrice($product);
+        $originalPrice = $this->priceService->getOriginalPrice($product);
 
         expect($originalPrice)->toBe(10000);
     });
@@ -160,9 +160,9 @@ describe('ProductPriceAction', function () {
     it('handles products without delivery options gracefully', function () {
         $product = Product::factory()->create();
 
-        $currentPrice = $this->priceAction->getCurrentPrice($product);
-        $originalPrice = $this->priceAction->getOriginalPrice($product);
-        $hasDiscount = $this->priceAction->hasActiveDiscount($product);
+        $currentPrice = $this->priceService->getCurrentPrice($product);
+        $originalPrice = $this->priceService->getOriginalPrice($product);
+        $hasDiscount = $this->priceService->hasActiveDiscount($product);
 
         expect($currentPrice)->toBe(0)
             ->and($originalPrice)->toBe(0)
@@ -181,7 +181,7 @@ describe('ProductPriceAction', function () {
             ->withPrice(7000)
             ->create();
 
-        $discountPercentage = $this->priceAction->getDiscountPercentage($product);
+        $discountPercentage = $this->priceService->getDiscountPercentage($product);
 
         expect($discountPercentage)->toBe(30.0); // 30% off
     });
@@ -197,7 +197,7 @@ describe('ProductPriceAction', function () {
             'featured_price_end_date' => Carbon::tomorrow(),
         ]);
 
-        $discountPercentage = $this->priceAction->getDiscountPercentage($product);
+        $discountPercentage = $this->priceService->getDiscountPercentage($product);
 
         expect($discountPercentage)->toBe(20.0); // 20% off
     });
@@ -209,7 +209,7 @@ describe('ProductPriceAction', function () {
             'price' => 10000,
         ]);
 
-        $discountPercentage = $this->priceAction->getDiscountPercentage($product);
+        $discountPercentage = $this->priceService->getDiscountPercentage($product);
 
         expect($discountPercentage)->toBe(0.0);
     });

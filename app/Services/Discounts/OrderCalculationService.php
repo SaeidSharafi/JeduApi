@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Discounts;
 
+use App\Services\ProductPriceService;
 use App\Contracts\Discounts\DiscountActionContract;
 use App\Contracts\Discounts\DiscountConditionContract;
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
@@ -14,8 +15,6 @@ use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -23,7 +22,8 @@ final class OrderCalculationService
 {
     public function __construct(
         private PromotionFinder $promotionFinder,
-        private DiscountHandlerRegistry $handlerRegistry
+        private DiscountHandlerRegistry $handlerRegistry,
+        private ProductPriceService $priceService
     ) {}
 
     /**
@@ -57,7 +57,10 @@ final class OrderCalculationService
         $pdoIds   = collect($data->items)->pluck('product_delivery_option_id')->all();
 
         $deliveryOptions = ProductDeliveryOption::query()
-            ->with('product')
+            ->with([
+                'product',
+                'productDeliveryOptionDiscountPrice'  // Load discount prices for ProductPriceService
+            ])
             ->findMany($pdoIds)
             ->keyBy('id');
 
@@ -70,10 +73,6 @@ final class OrderCalculationService
 
         }
 
-        $precalculatedPrices = DB::table('product_delivery_option_discount_prices')
-            ->whereIn('product_delivery_option_id', $pdoIds)
-            ->pluck('discounted_price', 'product_delivery_option_id');
-
         $subtotal_all_items          = 0;
         $subtotal_full_payment_items = 0;
         $calculatedItems             = collect();
@@ -81,7 +80,8 @@ final class OrderCalculationService
             $option = $deliveryOptions->get($itemData->product_delivery_option_id);
 
             $originalFullPrice    = $option->price;
-            $startingPriceForCalc = $this->getBasePrice($option, $precalculatedPrices);
+            // Use ProductPriceService for consistent pricing logic
+            $startingPriceForCalc = $this->priceService->getCurrentPriceForOption($option);
 
             $initialLineItemTotal = $startingPriceForCalc * $itemData->qty_ordered;
 
@@ -112,30 +112,6 @@ final class OrderCalculationService
             subtotal_full_payment_items: $subtotal_full_payment_items,
             subtotal_all_items: $subtotal_all_items,
         );
-    }
-
-    /**
-     * Determines the correct starting price for an item based on the pricing hierarchy.
-     *
-     * Hierarchy:
-     * 1. Pre-calculated 'product_specific' discount price.
-     * 2. Active 'featured_price'.
-     * 3. Standard 'price'.
-     */
-    private function getBasePrice(ProductDeliveryOption $option, \Illuminate\Support\Collection $precalculatedPrices): int
-    {
-        // 1. Highest priority: A pre-calculated discount from a product-specific sale.
-        if ($precalculatedPrices->has($option->id)) {
-            return $precalculatedPrices->get($option->id);
-        }
-
-        // 2. Second priority: An active featured price (sale price).
-        if ($this->isFeaturedPriceActive($option)) {
-            return $option->featured_price;
-        }
-
-        // 3. Fallback: The standard price.
-        return $option->price;
     }
 
     /**
@@ -215,24 +191,5 @@ final class OrderCalculationService
                 ];
             }
         }
-    }
-
-    private function isFeaturedPriceActive(ProductDeliveryOption $option): bool
-    {
-        // 1. The Initial Check (Guard Clause)
-        if (! $option->is_featured || is_null($option->featured_price)) {
-            return false;
-        }
-
-        // 2. The Date Comparison Logic
-        $now    = Carbon::now();
-        $starts = $option->featured_price_start_date;
-        $ends   = $option->featured_price_end_date;
-
-        $isAfterStart = is_null($starts) || $now->greaterThanOrEqualTo($starts);
-        $isBeforeEnd  = is_null($ends)   || $now->lessThanOrEqualTo($ends);
-
-        // 3. The Final Decision
-        return $isAfterStart && $isBeforeEnd;
     }
 }

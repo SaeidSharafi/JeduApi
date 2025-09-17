@@ -57,6 +57,17 @@ trait IsProductable
 
         return [];
     }
+    public function getProductableCover(): array
+    {
+        if ($this->relationLoaded('media')) {
+            return $this->getMedia('cover')
+                ->map(fn (Media $m): MediaData => MediaData::fromModel($m, 'cover'))
+                ->toArray();
+        }
+
+        return [];
+    }
+
 
     public function getProductableAttachment(): array
     {

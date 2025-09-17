@@ -14,7 +14,7 @@ beforeEach(function () {
 
 describe('GetHomePageContentAction', function () {
     it('can handle empty blocks', function () {
-        $action = new GetHomePageContentAction();
+        $action = app(GetHomePageContentAction::class);
         $result = $action->handle();
 
         expect($result)->toBeInstanceOf(\App\Data\Shop\HomePageContentData::class)
@@ -50,7 +50,7 @@ describe('GetHomePageContentAction', function () {
             'is_active' => true,
         ]);
 
-        $action = new GetHomePageContentAction();
+        $action = app()->make(GetHomePageContentAction::Class);
         $result = $action->handle();
 
         expect($result)->toBeInstanceOf(\App\Data\Shop\HomePageContentData::class)
@@ -79,7 +79,7 @@ describe('GetHomePageContentAction', function () {
             'is_active' => true,
         ]);
 
-        $action = new GetHomePageContentAction();
+        $action = app()->Make(GetHomePageContentAction::Class);
         $result = $action->handle();
 
         expect($result)->toBeInstanceOf(\App\Data\Shop\HomePageContentData::class)
@@ -103,7 +103,7 @@ describe('GetHomePageContentAction', function () {
             'is_active' => false,
         ]);
 
-        $action = new GetHomePageContentAction();
+        $action = app()->Make(GetHomePageContentAction::Class);
         $result = $action->handle();
 
         expect(count($result->main_content))->toBe(1)
@@ -132,7 +132,7 @@ describe('GetHomePageContentAction', function () {
             'is_active' => true,
         ]);
 
-        $action = new GetHomePageContentAction();
+        $action = app()->Make(GetHomePageContentAction::Class);
         $result = $action->handle();
 
         expect(count($result->hero))->toBe(1)

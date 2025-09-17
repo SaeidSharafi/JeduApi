@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Shop;
+namespace App\Services;
 
 use App\Data\Shop\ProductPriceData;
 use App\Models\Product;
@@ -11,7 +11,7 @@ use App\Models\ProductDeliveryOptionDiscountPrice;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
-final readonly class ProductPriceAction
+final readonly class ProductPriceService
 {
     /**
      * Get pricing information for a product with all pricing logic centralized.
@@ -70,6 +70,27 @@ final readonly class ProductPriceAction
     }
 
     /**
+     * Get the current effective price for a ProductDeliveryOption directly.
+     * This is useful when you already have the ProductDeliveryOption object.
+     */
+    public function getCurrentPriceForOption(ProductDeliveryOption $option): int
+    {
+        // Get all pricing components
+        $standardPrice = $option->price;
+        $featuredPrice = $this->getFeaturedPrice($option);
+        $discountPrice = $this->getDiscountPrice($option);
+
+        // Apply pricing hierarchy: discount → featured → standard
+        if ($discountPrice !== null) {
+            return $discountPrice;
+        } elseif ($featuredPrice !== null) {
+            return $featuredPrice;
+        }
+
+        return $standardPrice;
+    }
+
+    /**
      * Get pricing data for multiple products efficiently.
      */
     public function getPriceDataForProducts(Collection $products): Collection
@@ -83,62 +104,6 @@ final readonly class ProductPriceAction
         return $products->mapWithKeys(function (Product $product) {
             return [$product->id => $this->getPriceData($product)];
         });
-    }
-
-    /**
-     * Get the appropriate delivery option for pricing.
-     */
-    private function getDeliveryOption(Product $product, ?int $selectedDeliveryOptionId = null): ?ProductDeliveryOption
-    {
-        if ($selectedDeliveryOptionId) {
-            return $product->productDeliveryOptions()
-                ->where('id', $selectedDeliveryOptionId)
-                ->first();
-        }
-
-        // Default to first available delivery option
-        return $product->productDeliveryOptions()
-            ->where('status', 'published')
-            ->first();
-    }
-
-    /**
-     * Get featured price if active.
-     * Mirrors the logic from OrderCalculationService::isFeaturedPriceActive().
-     */
-    private function getFeaturedPrice(ProductDeliveryOption $option): ?int
-    {
-        // Guard clause - check if featured pricing is enabled
-        if (!$option->is_featured || is_null($option->featured_price)) {
-            return null;
-        }
-
-        // Check date ranges
-        $now = Carbon::now();
-        $starts = $option->featured_price_start_date;
-        $ends = $option->featured_price_end_date;
-
-        $isAfterStart = is_null($starts) || $now->greaterThanOrEqualTo($starts);
-        $isBeforeEnd = is_null($ends) || $now->lessThanOrEqualTo($ends);
-
-        return ($isAfterStart && $isBeforeEnd) ? $option->featured_price : null;
-    }
-
-    /**
-     * Get cached product-specific discount price.
-     */
-    private function getDiscountPrice(ProductDeliveryOption $option): ?int
-    {
-        // Check if discount price relationship is loaded
-        if ($option->relationLoaded('productDeliveryOptionDiscountPrice')) {
-            return $option->productDeliveryOptionDiscountPrice?->discounted_price;
-        }
-
-        // Fallback to direct query if not loaded
-        $discountPrice = ProductDeliveryOptionDiscountPrice::where('product_delivery_option_id', $option->id)
-            ->first();
-
-        return $discountPrice?->discounted_price;
     }
 
     /**
@@ -195,5 +160,61 @@ final readonly class ProductPriceAction
         $discountAmount = $priceData->original_price - $priceData->current_price;
 
         return round(($discountAmount / $priceData->original_price) * 100, 1);
+    }
+
+    /**
+     * Get the appropriate delivery option for pricing.
+     */
+    private function getDeliveryOption(Product $product, ?int $selectedDeliveryOptionId = null): ?ProductDeliveryOption
+    {
+        if ($selectedDeliveryOptionId) {
+            return $product->productDeliveryOptions()
+                ->where('id', $selectedDeliveryOptionId)
+                ->first();
+        }
+
+        // Default to first available delivery option
+        return $product->productDeliveryOptions()
+            ->where('status', 'published')
+            ->first();
+    }
+
+    /**
+     * Get featured price if active.
+     * Mirrors the logic from OrderCalculationService::isFeaturedPriceActive().
+     */
+    private function getFeaturedPrice(ProductDeliveryOption $option): ?int
+    {
+        // Guard clause - check if featured pricing is enabled
+        if (!$option->is_featured || is_null($option->featured_price)) {
+            return null;
+        }
+
+        // Check date ranges
+        $now = Carbon::now();
+        $starts = $option->featured_price_start_date;
+        $ends = $option->featured_price_end_date;
+
+        $isAfterStart = is_null($starts) || $now->greaterThanOrEqualTo($starts);
+        $isBeforeEnd = is_null($ends) || $now->lessThanOrEqualTo($ends);
+
+        return ($isAfterStart && $isBeforeEnd) ? $option->featured_price : null;
+    }
+
+    /**
+     * Get cached product-specific discount price.
+     */
+    private function getDiscountPrice(ProductDeliveryOption $option): ?int
+    {
+        // Check if discount price relationship is loaded
+        if ($option->relationLoaded('productDeliveryOptionDiscountPrice')) {
+            return $option->productDeliveryOptionDiscountPrice?->discounted_price;
+        }
+
+        // Fallback to direct query if not loaded
+        $discountPrice = ProductDeliveryOptionDiscountPrice::where('product_delivery_option_id', $option->id)
+            ->first();
+
+        return $discountPrice?->discounted_price;
     }
 }
