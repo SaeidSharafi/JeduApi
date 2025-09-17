@@ -37,6 +37,7 @@
 - **Staff Management:** Role-based admin users with comprehensive permission system using Spatie Permission
 - **Audit System:** Complete action logging with risk assessment, compliance reporting, and suspicious activity detection
 - **Content Management:** Categories with hierarchy, media management, and "good for start" recommendations
+- **Blog System:** Complete blog management with hierarchical categories, publication workflow, content relationships to educational materials, and automated scheduling
 - **Settings Management:** Application configuration including contact info, about us, headers, footers, sliders, and homepage blocks
 - **Review System:** Customer review management with approval workflow and featured selection
 - **Wallet System:** User credit management with campaigns, bulk allocations, and transaction tracking
@@ -55,6 +56,7 @@
 - **SMS Integration:** OTP delivery via IP Panel SMS service
 - **API Documentation:** Comprehensive endpoint coverage with DTOs
 - **Select Options:** Dropdown data provision for admin interface
+- **Content Automation:** Scheduled blog post publication with automated workflow management
 
 ## 5. Security & Compliance
 - **Audit Trail:** All admin actions logged with risk assessment
@@ -65,11 +67,11 @@
 - **Compliance Reporting:** Automated compliance report generation
 
 ## 6. Data Model Completeness
-**34 Models Total:** User, Staff, AdminActionLog, Order, OrderItem, Product (polymorphic to Course/Seminar/DigitalAsset), ProductDeliveryOption, ProductDeliveryOptionDiscountPrice, Enrolment, Payment, Refund, Review, Category, Categorizable, Teacher, Vendor, Term, DiscountPromotion, DiscountPromotionRule, DiscountCoupon, Wallet, WalletTransaction, WalletCampaign, Setting, HomePageBlock, Slider, StudentStory, CollaborationCarousel, CollaborationRequest, ContactUsRequest, SmsLog
+**36 Models Total:** User, Staff, AdminActionLog, Order, OrderItem, Product (polymorphic to Course/Seminar/DigitalAsset), ProductDeliveryOption, ProductDeliveryOptionDiscountPrice, Enrolment, Payment, Refund, Review, Category, Categorizable, Teacher, Vendor, Term, DiscountPromotion, DiscountPromotionRule, DiscountCoupon, Wallet, WalletTransaction, WalletCampaign, Setting, HomePageBlock, Slider, StudentStory, CollaborationCarousel, CollaborationRequest, ContactUsRequest, SmsLog, BlogCategory, BlogPost
 
 ## 7. Business Logic Coverage
-**90+ Action Classes** organized by domain (after removing duplicates and completing missing ones):
-- **Admin Actions:** Complete CRUD operations for all entities with business logic
+**96+ Action Classes** organized by domain (after adding blog management actions):
+- **Admin Actions:** Complete CRUD operations for all entities with business logic including new blog management
 - **Shop Actions:** Customer-facing operations and profile management
 - **Auth Actions:** Comprehensive authentication system with OTP and password support
 - **Wallet Actions:** Credit management and transaction processing
@@ -80,16 +82,20 @@
 - **Payment Processing:** Multi-gateway support with factory pattern
 - **OTP Management:** Secure verification code handling
 - **SMS Service:** Integration with external SMS provider
+- **Console Commands:** Automated blog post publication and system maintenance
+- **OTP Management:** Secure verification code handling
+- **SMS Service:** Integration with external SMS provider
 
 ## 8. API Interface Completeness
-**200+ Endpoints** across all domains:
-- **Admin API:** Complete platform management with 150+ endpoints
+**210+ Endpoints** across all domains:
+- **Admin API:** Complete platform management with 160+ endpoints including blog management
 - **Customer API:** Profile and course access management
 - **Authentication:** Dual system for both admin and customer interfaces
 - **File Management:** Secure media and private file handling
 - **Select Options:** Dropdown data for admin interface
+- **Blog Management:** Full CRUD operations for blog categories and posts with publication workflow
 
 ## 9. Digest Index
-- **[Data Models & Relationships](./DIGEST_DATA_MODELS.md)** - Complete coverage of all 34 models with relationships
-- **[Core Business Logic (Actions/Services)](./DIGEST_CORE_LOGIC.md)** - Complete coverage of 90+ Action classes and comprehensive services
-- **[API Interfaces & Endpoints](./DIGEST_API_INTERFACES.md)** - Complete coverage of 200+ API endpoints organized by domain
+- **[Data Models & Relationships](./DIGEST_DATA_MODELS.md)** - Complete coverage of all 36 models with relationships including new blog system
+- **[Core Business Logic (Actions/Services)](./DIGEST_CORE_LOGIC.md)** - Complete coverage of 96+ Action classes, comprehensive services, and console commands
+- **[API Interfaces & Endpoints](./DIGEST_API_INTERFACES.md)** - Complete coverage of 210+ API endpoints organized by domain including blog management

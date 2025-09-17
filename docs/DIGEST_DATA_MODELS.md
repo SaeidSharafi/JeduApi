@@ -53,6 +53,8 @@
 - **Relationships:** 
   - Polymorphic relationship as `productable` to Product
   - `hasMany(Review::class, 'reviewable_id')` - reviews (polymorphic)
+  - `morphToMany(DigitalAsset::class, 'assetable')` - digitalAssets
+  - `morphToMany(BlogPost::class, 'productable', 'blog_post_productables')` - blogPosts
 
 ### Seminar (`app/Models/Seminar.php`)
 - **Purpose:** One-off educational events
@@ -60,6 +62,7 @@
 - **Relationships:** 
   - Polymorphic relationship as `productable` to Product
   - `hasMany(Review::class, 'reviewable_id')` - reviews (polymorphic)
+  - `morphToMany(BlogPost::class, 'productable', 'blog_post_productables')` - blogPosts
 
 ### DigitalAsset (`app/Models/DigitalAsset.php`)
 - **Purpose:** Standalone digital products (PDFs, videos, etc.)
@@ -228,3 +231,25 @@
 - **Purpose:** SMS delivery tracking and logging
 - **Key Fields:** Phone numbers, message content, delivery status, provider details
 - **Relationships:** SMS service audit trail
+
+### BlogCategory (`app/Models/Blog/BlogCategory.php`)
+- **Purpose:** Hierarchical blog content organization
+- **Key Fields:** `name`, `slug`, `description`, `parent_id`, `icon`
+- **Relationships:**
+  - `belongsTo(self::class, 'parent_id')` - parent (self-referencing hierarchy)
+  - `hasMany(self::class, 'parent_id')` - children (self-referencing hierarchy)
+  - `belongsToMany(BlogPost::class, 'blog_post_category')` - posts
+- **Special Features:** Media attachments for icons, hierarchical structure similar to Category model
+
+### BlogPost (`app/Models/Blog/BlogPost.php`)
+- **Purpose:** Blog content management with publication workflow and content relationships
+- **Key Fields:** `title`, `slug`, `body`, `excerpt`, `author_id`, `status`, `published_at`, `read_time_minutes`, `is_featured`, `main_productable_id`, `main_productable_type`
+- **Relationships:**
+  - `belongsTo(Staff::class, 'author_id')` - author
+  - `belongsToMany(BlogCategory::class, 'blog_post_category')` - categories
+  - `morphToMany(Course::class, 'productable', 'blog_post_productables')` - courses
+  - `morphToMany(Seminar::class, 'productable', 'blog_post_productables')` - seminars
+  - `morphToMany(DigitalAsset::class, 'productable', 'blog_post_productables')` - digitalAssets
+  - `morphTo()` - mainProductable (single featured productable)
+  - `morphMany(Review::class, 'reviewable')` - reviews
+- **Special Features:** Publication workflow with DRAFT/PUBLISHED/SCHEDULED/ARCHIVED statuses, automated read time calculation, featured content system, polymorphic relationships to educational content

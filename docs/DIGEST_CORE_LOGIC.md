@@ -113,6 +113,22 @@
 - **DeleteRoleAction**: Removes unused roles
 - **OutputPermissionsAction**: Generates permission reports
 
+#### Blog Category Actions (`app/Actions/Admin/Blog/Category/`)
+- **CreateBlogCategoryAction** (`app/Actions/Admin/Blog/Category/CreateBlogCategoryAction.php`)
+  - `handle(BlogCategoryCreateData $data): BlogCategory`: Creates new blog categories with hierarchical structure and media attachments
+- **UpdateBlogCategoryAction** (`app/Actions/Admin/Blog/Category/UpdateBlogCategoryAction.php`)
+  - `handle(BlogCategory $category, BlogCategoryUpdateData $data): BlogCategory`: Updates blog category details and icon management
+- **DeleteBlogCategoryAction** (`app/Actions/Admin/Blog/Category/DeleteBlogCategoryAction.php`)
+  - `handle(BlogCategory $category): void`: Removes blog categories and associated media
+
+#### Blog Post Actions (`app/Actions/Admin/Blog/Post/`)
+- **CreateBlogPostAction** (`app/Actions/Admin/Blog/Post/CreateBlogPostAction.php`)
+  - `handle(BlogPostCreateData $data, ?Staff $staff = null): BlogPost`: Creates new blog posts with publication workflow, read time calculation, and content relationships
+- **UpdateBlogPostAction** (`app/Actions/Admin/Blog/Post/UpdateBlogPostAction.php`)
+  - `handle(BlogPost $post, BlogPostUpdateData $data): BlogPost`: Updates blog post content, status, and relationships
+- **DeleteBlogPostAction** (`app/Actions/Admin/Blog/Post/DeleteBlogPostAction.php`)
+  - `handle(BlogPost $post): void`: Removes blog posts and cleans up media attachments
+
 #### Setting Actions (`app/Actions/Admin/Setting/`)
 - **StoreHomePageBlockAction** (`app/Actions/Admin/Setting/StoreHomePageBlockAction.php`)
   - `handle(HomePageBlockCreateData $data): HomePageBlock`: Creates new homepage content blocks
@@ -282,3 +298,11 @@
 - **Public Methods:**
   - `sendSms(string $phone, string $message): bool`: Sends SMS messages via IP Panel service
   - `sendOtpSms(string $phone, string $otp): bool`: Specialized OTP SMS delivery
+
+## Console Commands (`app/Console/Commands/`)
+
+### PublishPostCommand (`app/Console/Commands/PublishPostCommand.php`)
+- **Purpose:** Automated blog post publication for scheduled content
+- **Signature:** `post:publish`
+- **Functionality:** Publishes blog posts with SCHEDULED status where `published_at` date has passed, updating status to PUBLISHED
+- **Usage:** Intended for cron job scheduling to automate content publication workflow

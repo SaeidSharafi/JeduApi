@@ -100,6 +100,20 @@
 - `update(ProductDeliveryOptionUpdateData $request, Product $product, ProductDeliveryOption $deliveryOption)`: **Route:** `PUT /api/v1/admin/product/{product}/delivery-option/{delivery_option}` - **Response DTO:** ProductDeliveryOptionData
 - `destroy(Product $product, ProductDeliveryOption $deliveryOption)`: **Route:** `DELETE /api/v1/admin/product/{product}/delivery-option/{delivery_option}` - **Delegates to:** Delivery option deletion
 
+### BlogCategoryController (`app/Http/Controllers/Api/Admin/Blog/BlogCategoryController.php`)
+- `index()`: **Route:** `GET /api/v1/admin/blog/category` - **Delegates to:** Blog category listing with hierarchy - **Response DTO:** BlogCategoryData collection
+- `store(BlogCategoryCreateData $data)`: **Route:** `POST /api/v1/admin/blog/category` - **Request DTO:** BlogCategoryCreateData - **Delegates to:** CreateBlogCategoryAction - **Response DTO:** BlogCategoryData
+- `show(BlogCategory $category)`: **Route:** `GET /api/v1/admin/blog/category/{category}` - **Response DTO:** BlogCategoryData
+- `update(BlogCategory $category, BlogCategoryUpdateData $data)`: **Route:** `PUT /api/v1/admin/blog/category/{category}` - **Request DTO:** BlogCategoryUpdateData - **Response DTO:** BlogCategoryData
+- `destroy(BlogCategory $category)`: **Route:** `DELETE /api/v1/admin/blog/category/{category}` - **Delegates to:** DeleteBlogCategoryAction
+
+### BlogPostController (`app/Http/Controllers/Api/Admin/Blog/BlogPostController.php`)
+- `index()`: **Route:** `GET /api/v1/admin/blog/post` - **Delegates to:** Blog post listing with filtering - **Response DTO:** BlogPostData collection
+- `store(BlogPostCreateData $data)`: **Route:** `POST /api/v1/admin/blog/post` - **Request DTO:** BlogPostCreateData - **Delegates to:** CreateBlogPostAction - **Response DTO:** BlogPostData
+- `show(BlogPost $post)`: **Route:** `GET /api/v1/admin/blog/post/{post}` - **Response DTO:** BlogPostData
+- `update(BlogPost $post, BlogPostUpdateData $data)`: **Route:** `PUT /api/v1/admin/blog/post/{post}` - **Request DTO:** BlogPostUpdateData - **Response DTO:** BlogPostData
+- `destroy(BlogPost $post)`: **Route:** `DELETE /api/v1/admin/blog/post/{post}` - **Delegates to:** DeleteBlogPostAction
+
 ### OrderController (`app/Http/Controllers/Api/Admin/OrderController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/order` - **Delegates to:** Order listing with filtering - **Response DTO:** OrderData collection
 - `store(OrderCreateData $request)`: **Route:** `POST /api/v1/admin/order` - **Request DTO:** OrderCreateData - **Delegates to:** CreateOrderAction::handle() - **Response DTO:** OrderData
