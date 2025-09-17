@@ -1,0 +1,54 @@
+{
+  "data": {
+    "hero": [
+      {
+        "type": "BANNER",
+        "title": "Hero Banner",
+        "content": {
+          "image_url": "...",
+          "action": "https://...",
+          "action_title": "Learn More",
+          "content": "Banner text",
+          "preset": "default"
+        }
+      }
+    ],
+    "main_content": [
+      {
+        "type": "MAIN_CATEGORIES",
+        "title": "Main Categories",
+        "content": {
+          "items": [
+            {
+              "id": 1,
+              "name": "Mathematics",
+              "slug": "mathematics",
+              "icon_url": "...",
+              "image_url": "...",
+              "link": "/categories/mathematics"
+            }
+          ],
+          "preset": "default"
+        }
+      },
+      {
+        "type": "DYNAMIC_LIST",
+        "title": "Latest Courses",
+        "content": {
+          "items": [
+            {
+              "id": 1,
+              "name": "Advanced Calculus",
+              "price": 299.99,
+              "original_price": 399.99,
+              "cover_image_url": "...",
+              "teacher_name": "Dr. Smith",
+              "link": "/products/1"
+            }
+          ],
+          "preset": "default"
+        }
+      }
+    ]
+  }
+}
