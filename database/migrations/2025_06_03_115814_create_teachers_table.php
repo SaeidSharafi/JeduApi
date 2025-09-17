@@ -21,7 +21,7 @@ return new class extends Migration
             $table->float('rate')->nullable();
             $table->string('email')->unique();
             $table->string('phone')->nullable();
-            $table->enum('gender', ['male', 'female'])->nullable();
+            $table->string('gender')->nullable();
             $table->date('birth_date')->nullable();
             $table->json('social_links')->nullable();
             $table->foreignId('user_id')->references('id')->on('users')->restrictOnDelete();

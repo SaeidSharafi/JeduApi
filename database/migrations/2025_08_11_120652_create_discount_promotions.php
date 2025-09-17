@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\Order\DiscountTypeEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +17,7 @@ return new class extends Migration
             $table->text('description')->nullable(); // Internal notes for admins
 
             // Behavior & Type
-            $table->enum('type', DiscountTypeEnum::getAllValues());
+            $table->string('type');
             $table->boolean('is_active')->default(false)->index(); // Master switch for the promotion
 
             // Scheduling

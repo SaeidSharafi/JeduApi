@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\CivilIdTypeEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -26,15 +25,21 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
             $table->string('civil_id')->nullable();
-            $table->enum('civil_id_type', CivilIdTypeEnum::getAllValues())
+            $table->string('civil_id_type')
                 ->nullable()->comment('e.g., national_code, passport');
             $table->date('date_of_birth')->nullable();
             $table->string('father_name', 100)->nullable();
-            $table->enum('gender', ['male', 'female'])->nullable();
+            $table->string('gender')->nullable();
             $table->string('education_level', 20)->nullable();
             $table->string('field_of_study')->nullable();
             $table->string('education_status', 20)->nullable();
             $table->timestamps();
+
+            //Index
+            $table->index(['last_name', 'first_name']);
+            $table->index('civil_id');
+            $table->unique(['civil_id_type', 'civil_id']);
+            $table->index('date_of_birth');
         });
     }
 

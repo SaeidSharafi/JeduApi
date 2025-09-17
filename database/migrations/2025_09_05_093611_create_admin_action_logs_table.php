@@ -44,9 +44,9 @@ return new class extends Migration
             $table->string('session_id', 255)
                 ->nullable()
                 ->comment('Session identifier');
-            $table->enum('risk_level', ['low', 'medium', 'high'])
+            $table->string('risk_level')
                 ->default('low')
-                ->comment('Assessed risk level of the action');
+                ->comment('Assessed risk level of the action (low, medium, high)');
             $table->jsonb('metadata')
                 ->nullable()
                 ->comment('Additional contextual information');

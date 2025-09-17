@@ -22,7 +22,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('sample_certificate_image_url')->nullable();
             $table->integer('duration')->nullable();
-            $table->enum('difficulty_level', App\Enums\CourseDifficultyLevelEnum::getAllValues());
+            $table->string('difficulty_level');
             $table->text('career_prospects_text')->nullable();
             $table->text('curriculum_summary_text')->nullable(); // e.g., "1 فصل، 20 درس، 4 تمرین"
             $table->json('outcomes_json')->nullable(); // What students will learn

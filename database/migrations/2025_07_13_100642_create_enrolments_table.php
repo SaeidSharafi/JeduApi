@@ -22,7 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger('product_delivery_option_id');
             $table->foreign('product_delivery_option_id', 'pdo_id_foreign')->references('id')->on('product_delivery_options')
                 ->onDelete('cascade');
-            $table->enum('enrollment_status', App\Enums\EnrolmentStatusEnum::getAllValues())
+            $table->string('enrollment_status')
                 ->default(App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING->value);
             $table->date('access_start_date')->nullable();
             $table->date('access_end_date')->nullable();

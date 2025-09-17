@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Enums\Wallet\TransactionSourceEnum;
-use App\Enums\Wallet\TransactionTypeEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -25,7 +23,7 @@ return new class extends Migration
                 ->constrained('users')
                 ->restrictOnDelete()
                 ->comment('Reference to the user (for quick queries)');
-            $table->enum('type', TransactionTypeEnum::getAllValues())
+            $table->string('type')
                 ->comment('Transaction type: deposit, withdrawal, payment, refund, gift, bonus, adjustment');
             $table->bigInteger('amount')
                 ->comment('Positive for credits, negative for debits (in rials)');
@@ -33,7 +31,7 @@ return new class extends Migration
                 ->comment('Snapshot of total balance after transaction');
             $table->unsignedBigInteger('gift_balance_after')
                 ->comment('Snapshot of gift balance after transaction');
-            $table->enum('source_type', TransactionSourceEnum::getAllValues())
+            $table->string('source_type',)
                 ->comment('Source type: order, admin, promotion, refund, manual, system');
             $table->unsignedBigInteger('source_id')
                 ->nullable()
