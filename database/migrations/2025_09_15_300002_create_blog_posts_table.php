@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->string('slug')->unique();
             $table->longText('body');
             $table->text('excerpt');
-            $table->foreignId('author_id')->constrained('staff')->nullOnDelete();
+            $table->foreignId('author_id')->nullable()->constrained('staff', 'id')->nullOnDelete();
             $table->string('status')->index()->default(\App\Enums\PublicationStatusEnum::DRAFT->value);
             $table->timestamp('published_at')->nullable();
             $table->integer('read_time_minutes');
