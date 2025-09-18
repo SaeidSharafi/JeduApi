@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\DynamicListEntityTypeEnum;
+use App\Enums\DynamicListSortByEnum;
 use App\Enums\HomePageBlockTypeEnum;
 use App\Models\HomePageBlock;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -69,13 +71,16 @@ class HomePageBlockFactory extends Factory
         ]);
     }
 
-    public function dynamicList(string $entityType = 'all_products', string $sortBy = 'created_at:desc', int $limit = 10, ?array $categoryIds = null): static
+    public function dynamicList(DynamicListEntityTypeEnum $entityType = DynamicListEntityTypeEnum::ALL_PRODUCTS,
+        DynamicListSortByEnum $sortBy = DynamicListSortByEnum::CREATED_AT_DESC,
+        int $limit = 10,
+        ?array $categoryIds = null): static
     {
         return $this->state(fn(array $attributes) => [
             'type'    => HomePageBlockTypeEnum::DYNAMIC_LIST,
             'content' => [
-                'entity_type'  => $entityType,
-                'sort_by'      => $sortBy,
+                'entity_type'  => $entityType->value,
+                'sort_by'      => $sortBy->value,
                 'limit'        => $limit,
                 'preset'       => 'default',
                 'category_ids' => $categoryIds,
