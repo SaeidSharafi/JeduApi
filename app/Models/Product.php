@@ -72,6 +72,53 @@ final class Product extends Model
         return $this->hasManyThrough(OrderItem::class, ProductDeliveryOption::class);
     }
 
+    public function scopeActive($query)
+    {
+        return $query->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+            ->where('is_visible', true)
+            ->whereHas('productable', function ($q) {
+                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED);
+            })
+            ->whereHas('productDeliveryOptions', function ($q) {
+                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED);
+            });
+    }
+
+    public function scopeActiveWithRelations($query)
+    {
+        return $query
+            ->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+            ->where('is_visible', true)
+            ->withWhereHas('productDeliveryOptions', function ($q) {
+                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+                    ->with('productDeliveryOptionDiscountPrice');
+            })
+            ->withWhereHas('productable', function ($q) {
+                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+                    ->withProductableMedia()
+                    ->withProductableCategories()
+                    ->withProductableAssets();
+            })
+            ->with('vendor');
+    }
+
+    public function scopeActiveWithPriceAndMedia($query)
+    {
+        return $query
+            ->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+            ->where('is_visible', true)
+            ->withWhereHas(
+                'productDeliveryOptions', function ($q) {
+                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+                    ->with('productDeliveryOptionDiscountPrice');
+            })
+            ->withWhereHas('productable', function ($q) {
+                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+                    ->withProductableMedia();
+            })
+            ->with('vendor');
+    }
+
     protected function casts(): array
     {
         return [
