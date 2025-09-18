@@ -1,31 +1,72 @@
 {
+  "message": "عملیات با موفقیت انجام شد.",
   "data": {
     "hero": [
       {
         "type": "BANNER",
-        "title": "Hero Banner",
+        "title": "Welcome to Our Store",
         "content": {
-          "image_url": "...",
-          "action": "https://...",
-          "action_title": "Learn More",
-          "content": "Banner text",
+          "image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+          "action": "https://example.com",
+          "action_title": "Click Here",
+          "content": "This is a banner",
           "preset": "default"
         }
       }
     ],
     "main_content": [
       {
+        "type": "CURATED_LIST",
+        "title": "Random Products",
+        "content": {
+          "items": [],
+          "preset": "default"
+        }
+      },
+      {
         "type": "MAIN_CATEGORIES",
         "title": "Main Categories",
         "content": {
           "items": [
             {
-              "id": 1,
-              "name": "Mathematics",
-              "slug": "mathematics",
-              "icon_url": "...",
-              "image_url": "...",
-              "link": "/categories/mathematics"
+              "id": 38,
+              "name": "قفل",
+              "slug": "labore-nihil-officia-velit-atque-voluptatem-molestiae-quis",
+              "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+              "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+              "link": "/categories/labore-nihil-officia-velit-atque-voluptatem-molestiae-quis"
+            },
+            {
+              "id": 74,
+              "name": "کلید",
+              "slug": "et-placeat-reiciendis-eveniet-dolore-molestiae-quia",
+              "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+              "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+              "link": "/categories/et-placeat-reiciendis-eveniet-dolore-molestiae-quia"
+            },
+            {
+              "id": 64,
+              "name": "کاغذ",
+              "slug": "libero-sint-sunt-voluptatem-aliquid-et-ea-tempore-et",
+              "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+              "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+              "link": "/categories/libero-sint-sunt-voluptatem-aliquid-et-ea-tempore-et"
+            },
+            {
+              "id": 27,
+              "name": "باغ",
+              "slug": "praesentium-pariatur-veniam-est-maiores-molestiae",
+              "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+              "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+              "link": "/categories/praesentium-pariatur-veniam-est-maiores-molestiae"
+            },
+            {
+              "id": 98,
+              "name": "قهوه",
+              "slug": "quasi-omnis-fuga-sapiente",
+              "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+              "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+              "link": "/categories/quasi-omnis-fuga-sapiente"
             }
           ],
           "preset": "default"
@@ -33,22 +74,1532 @@
       },
       {
         "type": "DYNAMIC_LIST",
-        "title": "Latest Courses",
+        "title": "Latest Course",
         "content": {
+          "preset": "default",
           "items": [
             {
-              "id": 1,
-              "name": "Advanced Calculus",
-              "price": 299.99,
-              "original_price": 399.99,
-              "cover_image_url": "...",
-              "teacher_name": "Dr. Smith",
-              "link": "/products/1"
+              "id": 76,
+              "slug": "aut-neque-nobis-possimus-sed-veniam-aut-enim",
+              "name": "Zoey Hartmann",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": 28000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": 19000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": false,
+              "product_type": "course",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "روزنامه درخت قلم درخت عدالت",
+              "link": "/products/76"
+            },
+            {
+              "id": 80,
+              "slug": "earum-numquam-dolore-minima-blanditiis-eligendi-quo-eum",
+              "name": "Minnie Dach",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": 162000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": 70000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": 135000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": false,
+              "product_type": "seminar",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "Hamill-Gerhold",
+              "link": "/products/80"
+            },
+            {
+              "id": 85,
+              "slug": "accusantium-eum-fuga-dolorum",
+              "name": "Wava McKenzie V",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": 200000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": 110000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": false,
+              "product_type": "seminar",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "Bogisich, Jacobson and Spencer",
+              "link": "/products/85"
+            },
+            {
+              "id": 33,
+              "slug": "inventore-sapiente-temporibus-dignissimos-qui-voluptas-optio",
+              "name": "Price O'Connell",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": 200000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": true,
+              "product_type": "seminar",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "Fadel-Ankunding",
+              "link": "/products/33"
+            },
+            {
+              "id": 36,
+              "slug": "sit-illo-ab-ab-laboriosam-in-ea-voluptate",
+              "name": "Antonia King",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": 11000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": 42000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": true,
+              "product_type": "course",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "عطر ماکت آشیانه کاغذ لباس",
+              "link": "/products/36"
+            },
+            {
+              "id": 2,
+              "slug": "inventore-aliquid-dolores-et-non-qui-assumenda-non-dolore",
+              "name": "Clovis Lueilwitz",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": 72000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": true,
+              "product_type": "course",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "نمک برق دامنه ثروت پایه",
+              "link": "/products/2"
+            },
+            {
+              "id": 46,
+              "slug": "accusantium-eum-fuga-dolorum",
+              "name": "Mr. Bennett Gaylord MD",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": 200000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": true,
+              "product_type": "seminar",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "Kiehn-Jast",
+              "link": "/products/46"
+            },
+            {
+              "id": 54,
+              "slug": "in-quaerat-dolore-minus-consequatur",
+              "name": "Prof. Maci Prosacco V",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": 126000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": 231999,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": 170000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": false,
+              "product_type": "seminar",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "Hamill-Gerhold",
+              "link": "/products/54"
+            },
+            {
+              "id": 38,
+              "slug": "aliquid-enim-magnam-officia-consequatur-rerum",
+              "name": "Chasity Carter I",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": 55000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": 96000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": 30000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": false,
+              "product_type": "course",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "ابزار ملل پوستر پرنده اتوبوس",
+              "link": "/products/38"
+            },
+            {
+              "id": 9,
+              "slug": "accusantium-eum-fuga-dolorum",
+              "name": "Cristian Hermann",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": 60000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": 190000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": true,
+              "product_type": "seminar",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "Bogisich, Jacobson and Spencer",
+              "link": "/products/9"
             }
-          ],
-          "preset": "default"
+          ]
+        }
+      },
+      {
+        "type": "DYNAMIC_LIST",
+        "title": "Popular Products",
+        "content": {
+          "preset": "default",
+          "items": [
+            {
+              "id": 33,
+              "slug": "inventore-sapiente-temporibus-dignissimos-qui-voluptas-optio",
+              "name": "Price O'Connell",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": 200000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": true,
+              "product_type": "seminar",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "Fadel-Ankunding",
+              "link": "/products/33"
+            },
+            {
+              "id": 54,
+              "slug": "in-quaerat-dolore-minus-consequatur",
+              "name": "Prof. Maci Prosacco V",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": 126000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": 231999,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": 170000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": false,
+              "product_type": "seminar",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "Hamill-Gerhold",
+              "link": "/products/54"
+            },
+            {
+              "id": 85,
+              "slug": "accusantium-eum-fuga-dolorum",
+              "name": "Wava McKenzie V",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": 200000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": 110000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": false,
+              "product_type": "seminar",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "Bogisich, Jacobson and Spencer",
+              "link": "/products/85"
+            },
+            {
+              "id": 36,
+              "slug": "sit-illo-ab-ab-laboriosam-in-ea-voluptate",
+              "name": "Antonia King",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": 11000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": 42000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": true,
+              "product_type": "course",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "عطر ماکت آشیانه کاغذ لباس",
+              "link": "/products/36"
+            },
+            {
+              "id": 80,
+              "slug": "earum-numquam-dolore-minima-blanditiis-eligendi-quo-eum",
+              "name": "Minnie Dach",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": 162000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": 70000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": 135000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": false,
+              "product_type": "seminar",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "Hamill-Gerhold",
+              "link": "/products/80"
+            },
+            {
+              "id": 38,
+              "slug": "aliquid-enim-magnam-officia-consequatur-rerum",
+              "name": "Chasity Carter I",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": 55000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": 96000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": 30000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": false,
+              "product_type": "course",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "ابزار ملل پوستر پرنده اتوبوس",
+              "link": "/products/38"
+            },
+            {
+              "id": 17,
+              "slug": "aliquid-enim-magnam-officia-consequatur-rerum",
+              "name": "Shea Farrell",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": true,
+              "product_type": "course",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "ابزار ملل پوستر پرنده اتوبوس",
+              "link": "/products/17"
+            },
+            {
+              "id": 2,
+              "slug": "inventore-aliquid-dolores-et-non-qui-assumenda-non-dolore",
+              "name": "Clovis Lueilwitz",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": 72000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": true,
+              "product_type": "course",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "نمک برق دامنه ثروت پایه",
+              "link": "/products/2"
+            },
+            {
+              "id": 46,
+              "slug": "accusantium-eum-fuga-dolorum",
+              "name": "Mr. Bennett Gaylord MD",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": 200000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": true,
+              "product_type": "seminar",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "Kiehn-Jast",
+              "link": "/products/46"
+            },
+            {
+              "id": 76,
+              "slug": "aut-neque-nobis-possimus-sed-veniam-aut-enim",
+              "name": "Zoey Hartmann",
+              "price": 500000,
+              "original_price": 500000,
+              "price_data": {
+                "min_price": 500000,
+                "min_original_price": 500000,
+                "has_featured_price": false,
+                "has_discount": false,
+                "has_pre_payment": true,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": {
+                  "min": 500000,
+                  "max": 3000000
+                },
+                "prices": [
+                  {
+                    "current_price": 1000000,
+                    "original_price": 1000000,
+                    "pre_payment_price": null,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": false,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 3000000,
+                    "original_price": 3000000,
+                    "pre_payment_price": 28000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  },
+                  {
+                    "current_price": 500000,
+                    "original_price": 500000,
+                    "pre_payment_price": 19000,
+                    "featured_price": null,
+                    "discount_amount": null,
+                    "has_pre_payment_price": true,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "range": null
+                  }
+                ]
+              },
+              "price_range": {
+                "min": 500000,
+                "max": 3000000
+              },
+              "has_discount": false,
+              "discount_percent": null,
+              "is_free": true,
+              "is_featured": false,
+              "product_type": "course",
+              "cover_image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+              "teacher_name": "روزنامه درخت قلم درخت عدالت",
+              "link": "/products/76"
+            }
+          ]
+        }
+      },
+      {
+        "type": "DYNAMIC_LIST",
+        "title": "Latest Blog Posts",
+        "content": {
+          "preset": "default",
+          "items": [
+            {
+              "id": 3,
+              "title": "alias",
+              "slug": "architecto-deleniti-ratione-aliquam-ut-ut-voluptatibus-nam",
+              "excerpt": "voluptatem",
+              "author_name": "Admin",
+              "published_at": "2025-09-18T13:04:54.000000Z",
+              "cover_image_url": null,
+              "link": "/blog/architecto-deleniti-ratione-aliquam-ut-ut-voluptatibus-nam"
+            },
+            {
+              "id": 9,
+              "title": "cumque",
+              "slug": "aut-quisquam-est-porro-vel-et",
+              "excerpt": "dolores",
+              "author_name": "Admin",
+              "published_at": "2025-09-18T13:04:54.000000Z",
+              "cover_image_url": null,
+              "link": "/blog/aut-quisquam-est-porro-vel-et"
+            },
+            {
+              "id": 15,
+              "title": "nihil",
+              "slug": "vitae-dignissimos-id-autem-dolorem",
+              "excerpt": "corrupti",
+              "author_name": "Admin",
+              "published_at": "2025-09-18T13:04:54.000000Z",
+              "cover_image_url": null,
+              "link": "/blog/vitae-dignissimos-id-autem-dolorem"
+            },
+            {
+              "id": 20,
+              "title": "sunt",
+              "slug": "iusto-enim-occaecati-reiciendis-dolores-neque",
+              "excerpt": "aliquid",
+              "author_name": "Admin",
+              "published_at": "2025-09-18T13:04:54.000000Z",
+              "cover_image_url": null,
+              "link": "/blog/iusto-enim-occaecati-reiciendis-dolores-neque"
+            }
+          ]
         }
       }
     ]
-  }
+  },
+  "metadata": []
 }
