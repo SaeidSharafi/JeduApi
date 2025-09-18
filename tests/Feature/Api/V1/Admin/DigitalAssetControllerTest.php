@@ -44,7 +44,7 @@ describe('list filters', function (): void {
     it('can filter by status', function () {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(10)->create();
-        $digitalAsset = DigitalAsset::factory()->create(['status' => 'published']);
+        $digitalAsset = DigitalAsset::factory()->create(['status' => \App\Enums\PublicationStatusEnum::DRAFT]);
         $response     = $this->getJson(route('api.v1.admin.digital-asset.index', ['filter[status]' => $digitalAsset->status->value]));
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data.data')
