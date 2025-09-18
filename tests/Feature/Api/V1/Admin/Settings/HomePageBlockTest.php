@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Enums\DynamicListEntityTypeEnum;
+use App\Enums\DynamicListSortByEnum;
 use App\Enums\PermissionEnum;
 use App\Models\HomePageBlock;
 use Plank\Mediable\Media;
@@ -23,7 +25,7 @@ describe('HomePageBlockController CRUD', function () {
             ->banner($this->image)
             ->create();
         HomePageBlock::factory()
-            ->webinarBanner($this->image,1)
+            ->webinarBanner($this->image, 1)
             ->create();
         HomePageBlock::factory()
             ->curatedList()
@@ -155,7 +157,6 @@ describe('HomePageBlockController CRUD', function () {
         $responseDelete->assertStatus(403);
     });
 });
-
 
 describe('HomePageBlockController validation', function () {
     it('validation fails if required fields are missing', function () {
@@ -493,10 +494,10 @@ describe('HomePageBlockController additional scenarios', function () {
             'order'     => 4,
             'is_active' => true,
             'content'   => [
-                'entity_type' => 'course_products',
-                'sort_by'     => 'created_at:desc',
-                'limit'       => 5,
-                'preset'      => 'grid',
+                'entity_type'  => 'course_products',
+                'sort_by'      => 'created_at:desc',
+                'limit'        => 5,
+                'preset'       => 'grid',
                 'category_ids' => $categories->pluck('id')->toArray(),
             ],
         ];
@@ -580,7 +581,10 @@ describe('HomePageBlockController additional scenarios', function () {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_VIEW_ANY]);
         $categories = \App\Models\Category::factory()->count(3)->create();
 
-        $block = HomePageBlock::factory()->dynamicList('all_products', 'created_at:desc', 8, $categories->pluck('id')->toArray())->create();
+        $block = HomePageBlock::factory()->dynamicList(
+            DynamicListEntityTypeEnum::ALL_PRODUCTS,
+            DynamicListSortByEnum::CREATED_AT_DESC,
+            8, $categories->pluck('id')->toArray())->create();
 
         expect($block->type)->toBe(HomePageBlockTypeEnum::DYNAMIC_LIST)
             ->and($block->content['entity_type'])->toBe('all_products')

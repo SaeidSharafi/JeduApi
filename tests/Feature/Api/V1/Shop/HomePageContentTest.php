@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Enums\DynamicListEntityTypeEnum;
+use App\Enums\DynamicListSortByEnum;
 use App\Enums\HomePageBlockTypeEnum;
 use App\Models\Blog\BlogPost;
 use App\Models\Category;
@@ -41,7 +43,8 @@ describe('HomePageContentController', function () {
     it('can retrieve home page content with curated list blocks', function () {
         // Create some test categories and products
         $categories = Category::factory()->count(3)->create();
-        $products = Product::factory()->count(3)->create();
+        $products = Product::factory()->withDeliveryOptions()
+            ->count(3)->create();
 
         // Create a MAIN_CATEGORIES block
         $categoryBlock = HomePageBlock::factory()->curatedList(
@@ -81,12 +84,14 @@ describe('HomePageContentController', function () {
 
     it('can retrieve home page content with dynamic list blocks', function () {
         // Create some test products
-        Product::factory()->count(5)->create();
+        Product::factory()
+            ->withDeliveryOptions()
+            ->count(5)->create();
 
         // Create a DYNAMIC_LIST block
         $dynamicBlock = HomePageBlock::factory()->dynamicList(
-            'all_products',
-            'created_at:desc',
+            DynamicListEntityTypeEnum::ALL_PRODUCTS,
+            DynamicListSortByEnum::CREATED_AT_DESC,
             3
         )->create([
             'title' => 'Latest Products',
@@ -99,7 +104,6 @@ describe('HomePageContentController', function () {
 
         $response->assertStatus(200);
         $responseData = $response->json('data');
-
         expect(count($responseData['main_content']))->toBe(1)
             ->and($responseData['main_content'][0]['title'])->toBe('Latest Products')
             ->and($responseData['main_content'][0]['type'])->toBe('DYNAMIC_LIST')

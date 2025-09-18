@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Data\Shop\ProductDeliveryOptionPriceData;
 use App\Data\Shop\ProductPriceData;
+use App\Enums\PublicationStatusEnum;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
-use App\Models\ProductDeliveryOptionDiscountPrice;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 final readonly class ProductPriceService
 {
+    public function __construct(
+        private RequestDataCacheService $requestCache
+    ) {
+    }
+
     /**
      * Get pricing information for a product with all pricing logic centralized.
      * This follows the same hierarchy as OrderCalculationService::getBasePrice():
@@ -20,20 +26,56 @@ final readonly class ProductPriceService
      * 2. Featured price (manual sale price)
      * 3. Standard price (default product price)
      */
-    public function getPriceData(Product $product, ?int $selectedDeliveryOptionId = null): ProductPriceData
+    public function getPriceDataForProduct(Product $product, ?int $selectedDeliveryOptionId = null): ProductPriceData
     {
-        // Get the delivery option to work with
-        $deliveryOption = $this->getDeliveryOption($product, $selectedDeliveryOptionId);
-
-        if (!$deliveryOption) {
-            return ProductPriceData::make(0, 0);
+        if ($selectedDeliveryOptionId === null && $this->requestCache->hasPriceData($product->id)) {
+            return $this->requestCache->getPriceDataForProduct($product->id);
         }
 
-        // Get all pricing components
-        $standardPrice = $deliveryOption->price;
-        $featuredPrice = $this->getFeaturedPrice($deliveryOption);
-        $discountPrice = $this->getDiscountPrice($deliveryOption);
+        // Get the delivery option to work with
+        $deliveryOptions = $this->findDeliveryOptionsForProduct($product, $selectedDeliveryOptionId);
+        if ($deliveryOptions->isEmpty()) {
+            $optionPirces = [ProductDeliveryOptionPriceData::make(0, 0)];
+            return ProductPriceData::make(
+                $optionPirces
+            );
+        }
+        $prices = [];
+        $deliveryOptions->each(function ($deliveryOption) use (&$prices){
+            $priceData = $this->getPriceDataForOption($deliveryOption);
+            $prices[] = $priceData;
+        });
 
+        $productPriceData = ProductPriceData::make(
+            prices: $prices,
+            range: $this->getPriceRangeForProduct($product),
+        );
+        if ($selectedDeliveryOptionId === null) {
+            $this->requestCache->storeProductPriceData($product->id, $productPriceData);
+        }
+
+        return $productPriceData;
+    }
+
+    /**
+     * Get just the current effective price for a product (most common use case).
+     */
+    public function getMinCurrentPrice(Product $product, ?int $selectedDeliveryOptionId = null): int
+    {
+        return $this->getPriceDataForProduct($product, $selectedDeliveryOptionId)->min_price;
+    }
+
+    /**
+     * Get the current effective price for a ProductDeliveryOption directly.
+     * This is useful when you already have the ProductDeliveryOption object.
+     */
+    public function getPriceDataForOption(ProductDeliveryOption $option): ProductDeliveryOptionPriceData
+    {
+        // Get all pricing components
+        $standardPrice = $option->price;
+        $featuredPrice = $this->getActiveFeaturedPrice($option);
+        $discountPrice = $this->getDiscountPrice($option);
+        $prePaymentPrice = $option->is_prepayment_available ? $option->prepayment_amount : null;
         // Determine current price following hierarchy
         $currentPrice = $standardPrice;
         $discountAmount = null;
@@ -52,57 +94,30 @@ final readonly class ProductPriceService
             $discountType = 'featured';
         }
 
-        return ProductPriceData::make(
+        return ProductDeliveryOptionPriceData::make(
             currentPrice: $currentPrice,
             originalPrice: $standardPrice,
+            prePaymentPrice: $prePaymentPrice,
             featuredPrice: $featuredPrice,
             discountAmount: $discountAmount,
             discountType: $discountType
         );
-    }
 
-    /**
-     * Get just the current effective price for a product (most common use case).
-     */
-    public function getCurrentPrice(Product $product, ?int $selectedDeliveryOptionId = null): int
-    {
-        return $this->getPriceData($product, $selectedDeliveryOptionId)->current_price;
-    }
-
-    /**
-     * Get the current effective price for a ProductDeliveryOption directly.
-     * This is useful when you already have the ProductDeliveryOption object.
-     */
-    public function getCurrentPriceForOption(ProductDeliveryOption $option): int
-    {
-        // Get all pricing components
-        $standardPrice = $option->price;
-        $featuredPrice = $this->getFeaturedPrice($option);
-        $discountPrice = $this->getDiscountPrice($option);
-
-        // Apply pricing hierarchy: discount → featured → standard
-        if ($discountPrice !== null) {
-            return $discountPrice;
-        } elseif ($featuredPrice !== null) {
-            return $featuredPrice;
-        }
-
-        return $standardPrice;
     }
 
     /**
      * Get pricing data for multiple products efficiently.
      */
-    public function getPriceDataForProducts(Collection $products): Collection
+    public function getPriceDataForProducts(\Illuminate\Database\Eloquent\Collection $products): Collection
     {
         // Preload all necessary relationships
-        $products->load([
-            'productDeliveryOptions:id,product_id,price,featured_price,is_featured,featured_price_start_date,featured_price_end_date',
+        $products->loadMissing([
+            'productDeliveryOptions',
             'productDeliveryOptions.productDeliveryOptionDiscountPrice:product_delivery_option_id,discounted_price'
         ]);
 
         return $products->mapWithKeys(function (Product $product) {
-            return [$product->id => $this->getPriceData($product)];
+            return [$product->id => $this->getPriceDataForProduct($product)];
         });
     }
 
@@ -111,26 +126,25 @@ final readonly class ProductPriceService
      */
     public function hasActiveDiscount(Product $product, ?int $selectedDeliveryOptionId = null): bool
     {
-        $priceData = $this->getPriceData($product, $selectedDeliveryOptionId);
+        $priceData = $this->getPriceDataForProduct($product, $selectedDeliveryOptionId);
         return $priceData->has_discount || $priceData->has_featured_price;
     }
 
     /**
      * Get the price range for a product (if it has multiple delivery options).
      */
-    public function getPriceRange(Product $product): array
+    public function getPriceRangeForProduct(Product $product): array
     {
-        $options = $product->productDeliveryOptions()
-            ->where('status', 'published')
-            ->get();
+        $options = $product->productDeliveryOptions
+            ->where('status', PublicationStatusEnum::PUBLISHED);
 
         if ($options->isEmpty()) {
             return ['min' => 0, 'max' => 0];
         }
 
-        $prices = $options->map(function (ProductDeliveryOption $option) use ($product) {
-            return $this->getCurrentPrice($product, $option->id);
-        });
+        $prices = $options->map(
+            fn(ProductDeliveryOption $option) => $this->getPriceDataForOption($option)->current_price
+        );
 
         return [
             'min' => $prices->min(),
@@ -141,49 +155,44 @@ final readonly class ProductPriceService
     /**
      * Get the original price for a product.
      */
-    public function getOriginalPrice(Product $product, ?int $selectedDeliveryOptionId = null): int
+    public function getMinimumOriginalPrice(Product $product, ?int $selectedDeliveryOptionId = null): int
     {
-        return $this->getPriceData($product, $selectedDeliveryOptionId)->original_price;
+        return $this->getPriceDataForProduct($product, $selectedDeliveryOptionId)->min_original_price;
     }
 
     /**
      * Calculate the discount percentage.
+     * we get the highest discount
      */
-    public function getDiscountPercentage(Product $product, ?int $selectedDeliveryOptionId = null): float
+    public function getHighestDiscountPercentage(Product $product, ?int $selectedDeliveryOptionId = null): float
     {
-        $priceData = $this->getPriceData($product, $selectedDeliveryOptionId);
+        $priceData = $this->getPriceDataForProduct($product, $selectedDeliveryOptionId);
 
-        if ($priceData->original_price <= 0 || !$priceData->has_discount) {
-            return 0.0;
-        }
-
-        $discountAmount = $priceData->original_price - $priceData->current_price;
-
-        return round(($discountAmount / $priceData->original_price) * 100, 1);
+        return $priceData->discount_percentage ?? 0.0;
     }
 
     /**
      * Get the appropriate delivery option for pricing.
      */
-    private function getDeliveryOption(Product $product, ?int $selectedDeliveryOptionId = null): ?ProductDeliveryOption
-    {
-        if ($selectedDeliveryOptionId) {
-            return $product->productDeliveryOptions()
-                ->where('id', $selectedDeliveryOptionId)
-                ->first();
-        }
+    private function findDeliveryOptionsForProduct(
+        Product $product,
+        ?int $id = null
+    ): Collection {
+        $options = $product->productDeliveryOptions;
 
+        if ($id) {
+            return $options->where('id', $id);
+        }
         // Default to first available delivery option
-        return $product->productDeliveryOptions()
-            ->where('status', 'published')
-            ->first();
+        return $options
+            ->where('status', PublicationStatusEnum::PUBLISHED);
     }
 
     /**
      * Get featured price if active.
      * Mirrors the logic from OrderCalculationService::isFeaturedPriceActive().
      */
-    private function getFeaturedPrice(ProductDeliveryOption $option): ?int
+    private function getActiveFeaturedPrice(ProductDeliveryOption $option): ?int
     {
         // Guard clause - check if featured pricing is enabled
         if (!$option->is_featured || is_null($option->featured_price)) {
@@ -206,15 +215,12 @@ final readonly class ProductPriceService
      */
     private function getDiscountPrice(ProductDeliveryOption $option): ?int
     {
-        // Check if discount price relationship is loaded
-        if ($option->relationLoaded('productDeliveryOptionDiscountPrice')) {
-            return $option->productDeliveryOptionDiscountPrice?->discounted_price;
-        }
+        // the productDeliveryOptionDiscountPrice should be loaded via eager loading
+        return $option->productDeliveryOptionDiscountPrice?->discounted_price;
+    }
 
-        // Fallback to direct query if not loaded
-        $discountPrice = ProductDeliveryOptionDiscountPrice::where('product_delivery_option_id', $option->id)
-            ->first();
-
-        return $discountPrice?->discounted_price;
+    public function getCurrentPriceForOption(ProductDeliveryOption $option): int
+    {
+        return $this->getPriceDataForOption($option)->current_price;
     }
 }

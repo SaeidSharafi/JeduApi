@@ -77,11 +77,13 @@ final class OrderCalculationService
         $subtotal_full_payment_items = 0;
         $calculatedItems             = collect();
         foreach ($data->items as $itemData) {
+            /** @var ProductDeliveryOption $option */
             $option = $deliveryOptions->get($itemData->product_delivery_option_id);
 
             $originalFullPrice    = $option->price;
             // Use ProductPriceService for consistent pricing logic
-            $startingPriceForCalc = $this->priceService->getCurrentPriceForOption($option);
+            $priceData = $this->priceService->getPriceDataForOption($option);
+            $startingPriceForCalc = $priceData->current_price;
 
             $initialLineItemTotal = $startingPriceForCalc * $itemData->qty_ordered;
 
