@@ -7,6 +7,7 @@ use App\Models\Blog\BlogPost;
 use App\Models\Staff;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
+use Plank\Mediable\Media;
 
 /** @mixin Factory<BlogPost> */
 class BlogPostFactory extends Factory
@@ -31,5 +32,22 @@ class BlogPostFactory extends Factory
 
             'author_id' => Staff::factory(),
         ];
+    }
+
+    /**
+     * Attach fake SVG media with tag text to the course (state method)
+     */
+    public function withMedia(): self
+    {
+        return $this->afterCreating(function (BlogPost $blogPost) {
+                $media = Media::query()
+                    ->where('directory', 'fake-media')
+                    ->whereLike('filename', '%placeholder%')
+                    ->where('extension', 'svg')
+                    ->inRandomOrder()
+                    ->first();
+            $blogPost->attachMedia($media, "mian");
+
+        });
     }
 }
