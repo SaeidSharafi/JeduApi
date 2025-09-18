@@ -83,3 +83,20 @@ it('loades category relationship with loadProductableCategories fucntion', funct
     expect(data_get($courseData, 'categories'))
         ->toHaveCount(3);
 });
+
+it('get Productable cover', function () {
+    Illuminate\Http\UploadedFile::fake();
+    Storage::fake('public');
+    $this->cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
+        ->toDisk('public')
+        ->upload();
+    $course = App\Models\Course::factory()->create();
+    $course->attachMedia($this->cover, 'cover');
+    expect($course->getProductableCover())
+        ->toBeArray()
+        ->toHaveCount(0);
+    $course->refresh()->loadProductableMedia();
+    expect($course->getProductableCover())
+        ->toBeArray()
+        ->toHaveCount(1);
+});
