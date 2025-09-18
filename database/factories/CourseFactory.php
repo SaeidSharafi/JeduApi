@@ -45,7 +45,7 @@ final class CourseFactory extends Factory
             'meta_description'     => mb_trim(Str::take($this->faker->persianParagraph(20, false), 100)),
             'meta_keywords'        => mb_trim(Str::take(implode(',', $this->faker->persianWords(3)), 255)),
             'properties'           => [],
-            'status'               => $this->faker->randomElement(PublicationStatusEnum::getAllValues()),
+            'status'               => PublicationStatusEnum::PUBLISHED,
             'created_by'           => Staff::factory(),
         ];
     }

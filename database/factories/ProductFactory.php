@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\DeliveryMethodEnum;
+use App\Enums\FulfillmentTypeEnum;
 use App\Enums\ProductableEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Models\Category;
@@ -27,26 +29,28 @@ final class ProductFactory extends Factory
         switch ($type) {
             case ProductableEnum::COURSE:
                 $productableType = ProductableEnum::COURSE->value;
-                $productableId   = Course::factory();
+                $productableId = Course::factory();
                 break;
             case ProductableEnum::SEMINAR:
                 $productableType = ProductableEnum::SEMINAR->value;
-                $productableId   = Seminar::factory();
+                $productableId = Seminar::factory();
                 break;
             case ProductableEnum::DIGITAL_ASSET:
                 $productableType = ProductableEnum::DIGITAL_ASSET->value;
-                $productableId   = DigitalAsset::factory();
+                $productableId = DigitalAsset::factory();
                 break;
             default:
                 $productableType = ProductableEnum::COURSE->value;
-                $productableId   = Course::factory();
+                $productableId = Course::factory();
         }
 
         return [
+            'productable_type'  => $productableType,
+            'productable_id'    => $productableId,
             'vendor_id'         => Vendor::factory(),
             'term_id'           => Term::factory(),
             'status'            => PublicationStatusEnum::PUBLISHED->value,
-            'is_visible'        => $this->faker->boolean(),
+            'is_visible'        => true,
             'short_description' => $this->faker->text(),
             'short_name'        => $this->faker->name(),
             'name'              => $this->faker->name(),
@@ -55,8 +59,7 @@ final class ProductFactory extends Factory
             'details_json'      => [],
             'created_at'        => Carbon::now(),
             'updated_at'        => Carbon::now(),
-            'productable_type'  => $productableType,
-            'productable_id'    => $productableId,
+
         ];
     }
 
@@ -83,12 +86,29 @@ final class ProductFactory extends Factory
         });
     }
 
-    public function withDeliveryOptions(int $count = 3): static
+    public function withDeliveryOptions(int $count = 3, $realData = false): static
     {
-        return $this->afterCreating(function (Product $product) use ($count) {
+        return $this->afterCreating(function (Product $product) use ($count, $realData) {
             \App\Models\ProductDeliveryOption::factory()
                 ->withTeachers()
                 ->count($count)
+                ->when($realData, fn($q) => $q->sequence(
+                    [
+                        'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE,
+                        'delivery_method'             => DeliveryMethodEnum::LMS_MOODLE,
+                        'price'            => 1000000,
+                    ],
+                    [
+                        'fulfillment_type' => FulfillmentTypeEnum::IN_PERSON_SERVICE,
+                        'delivery_method'             => DeliveryMethodEnum::IN_PERSON,
+                        'price' => 3000000,
+                    ],
+                    [
+                        'fulfillment_type' => FulfillmentTypeEnum::OFFILNE_SERVICE,
+                        'delivery_method'             => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
+                        'price'            => 500000,
+                    ],
+                ))
                 ->create([
                     'product_id' => $product->id,
                 ]);
@@ -99,29 +119,30 @@ final class ProductFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $vendor = Vendor::inRandomOrder()->first() ?? Vendor::factory()->create();
-            $term   = Term::inRandomOrder()->first()   ?? Term::factory()->create();
-            $type   = $this->faker->randomElement(ProductableEnum::cases());
+            $term = Term::inRandomOrder()->first() ?? Term::factory()->create();
+            $type = $this->faker->randomElement(ProductableEnum::cases());
 
             switch ($type) {
                 case ProductableEnum::SEMINAR:
                     $productableType = ProductableEnum::SEMINAR->value;
-                    $productableId   = Seminar::inRandomOrder()->first()->id;
+                    $productable = Seminar::inRandomOrder()->first();
                     break;
                 case ProductableEnum::DIGITAL_ASSET:
                     $productableType = ProductableEnum::DIGITAL_ASSET->value;
-                    $productableId   = DigitalAsset::inRandomOrder()->first()->id;
+                    $productable = DigitalAsset::inRandomOrder()->first();
                     break;
                 case ProductableEnum::COURSE:
                 default:
                     $productableType = ProductableEnum::COURSE->value;
-                    $productableId   = Course::inRandomOrder()->first()->id;
+                    $productable = Course::inRandomOrder()->first();
             }
 
             return [
                 'vendor_id'        => $vendor->id,
                 'term_id'          => $term->id,
                 'productable_type' => $productableType,
-                'productable_id'   => $productableId,
+                'productable_id'   => $productable->id,
+                'slug'             => $productable->slug,
             ];
         });
     }
