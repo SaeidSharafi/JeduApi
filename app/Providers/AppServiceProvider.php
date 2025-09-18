@@ -9,6 +9,7 @@ use App\Enums\MorphTypeEnum;
 use App\Services\DefaultOtpGenerator;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\DiscountMetadataService;
+use App\Services\RequestDataCacheService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
@@ -27,6 +28,9 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->singleton(OtpGeneratorInterface::class, DefaultOtpGenerator::class);
         $this->app->singleton(DiscountHandlerRegistry::class);
         $this->app->singleton(DiscountMetadataService::class);
+        $this->app->singleton(RequestDataCacheService::class, function ($app) {
+            return new RequestDataCacheService();
+        });
     }
 
     /**
