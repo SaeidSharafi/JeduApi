@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\DynamicListEntityTypeEnum;
+use App\Enums\DynamicListSortByEnum;
+use App\Enums\HomePageBlockTypeEnum;
 use App\Enums\PermissionEnum;
+use App\Models\Blog\BlogCategory;
+use App\Models\Blog\BlogPost;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
+use App\Models\HomePageBlock;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -42,6 +48,9 @@ final class DemoSeeder extends Seeder
         if (app()->environment() === 'local') {
             $this->disableForeignKeyChecks();
             DB::table('mediables')->truncate();
+            BlogPost::query()->truncate();
+            BlogCategory::query()->truncate();
+            HomePageBlock::query()->truncate();
             Order::query()->truncate();
             Media::query()->truncate();
             Course::query()->truncate();
@@ -60,11 +69,11 @@ final class DemoSeeder extends Seeder
         }
 
         Storage::disk('public')->deleteDirectory('fake-media');
-        $videoPath       = base_path().'/resources/seed-media/placeholder.mp4';
-        $coverPath       = base_path().'/resources/seed-media/fake-cover.svg';
-        $galleryPath     = base_path().'/resources/seed-media/fake-gallery.svg';
+        $videoPath = base_path().'/resources/seed-media/placeholder.mp4';
+        $coverPath = base_path().'/resources/seed-media/fake-cover.svg';
+        $galleryPath = base_path().'/resources/seed-media/fake-gallery.svg';
         $palceHolderPath = base_path().'/resources/seed-media/placeholder.svg';
-        $iconPath        = base_path().'/resources/seed-media/icon.svg';
+        $iconPath = base_path().'/resources/seed-media/icon.svg';
         Storage::disk('public')->putFileAs('fake-media', new File($videoPath), 'placeholder1.mp4');
         Storage::disk('public')->putFileAs('fake-media', new File($videoPath), 'placeholder2.mp4');
         Storage::disk('public')->putFileAs('fake-media', new File($videoPath), 'placeholder3.mp4');
@@ -77,12 +86,12 @@ final class DemoSeeder extends Seeder
         MediaUploader::importPath('public', 'fake-media/placeholder1.mp4');
         MediaUploader::importPath('public', 'fake-media/placeholder2.mp4');
         MediaUploader::importPath('public', 'fake-media/placeholder3.mp4');
-        MediaUploader::importPath('public', 'fake-media/fake-cover.svg');
         MediaUploader::importPath('public', 'fake-media/fake-gallery.svg');
         MediaUploader::importPath('public', 'fake-media/placeholder.svg');
         MediaUploader::importPath('public', 'fake-media/icon.svg');
         MediaUploader::importPath('public', 'fake-media/main.svg');
         MediaUploader::importPath('public', 'fake-media/preview.svg');
+        $cover = MediaUploader::importPath('public', 'fake-media/fake-cover.svg');
 
         $user = Staff::forceCreate([
             'name'     => 'Admin',
@@ -176,7 +185,7 @@ final class DemoSeeder extends Seeder
             ->create();
 
         Product::factory(100)
-            ->withDeliveryOptions()
+            ->withDeliveryOptions(realData: true)
             ->useExistingRelations()
             ->withCategory(3)
             ->create();
@@ -193,6 +202,57 @@ final class DemoSeeder extends Seeder
                 ->withCalculatedTotalsAutomated()
                 ->create();
         }
+
+        BlogPost::factory()
+            ->count(20)
+            ->withMedia()
+            ->create([
+                'author_id' => $staff->id,
+            ]);
+        HomePageBlock::factory()
+            ->banner($cover)
+            ->create([
+                'title'    => 'Welcome to Our Store',
+                'location' => 'hero',
+                'order'    => 1,
+            ]);
+        HomePageBlock::factory()
+            ->curatedList(Product::query()->inRandomOrder()->take(5)->pluck('id')->values()->toArray())
+            ->create([
+                'title'    => 'Random Products',
+                'location' => 'middle',
+                'order'    => 2,
+            ]);
+
+        HomePageBlock::factory()
+            ->curatedList(Category::query()->inRandomOrder()->take(5)->pluck('id')->values()->toArray(), HomePageBlockTypeEnum::MAIN_CATEGORIES)
+            ->create([
+                'title'    => 'Main Categories',
+                'location' => 'middle',
+                'order'    => 3,
+            ]);
+
+        HomePageBlock::factory()
+            ->dynamicList()
+            ->create([
+                'title'    => 'Latest Course',
+                'location' => 'middle',
+                'order'    => 4,
+            ]);
+        HomePageBlock::factory()
+            ->dynamicList(DynamicListEntityTypeEnum::ALL_PRODUCTS, DynamicListSortByEnum::POPULAR)
+            ->create([
+                'title'    => 'Popular Products',
+                'location' => 'middle',
+                'order'    => 5,
+            ]);
+        HomePageBlock::factory()
+            ->dynamicList(DynamicListEntityTypeEnum::BLOG_POST)
+            ->create([
+                'title'    => 'Latest Blog Posts',
+                'location' => 'middle',
+                'order'    => 6,
+            ]);
 
     }
 
