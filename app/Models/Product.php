@@ -28,6 +28,7 @@ final class Product extends Model
             'short_description',
             'short_name',
             'name',
+            'slug',
             'is_featured',
             'details_json',
         ];

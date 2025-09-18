@@ -17,7 +17,7 @@ final readonly class UpdateCourseAction
     {
         DB::transaction(function () use ($data, $course): void {
             $course->update($data->except('media', 'categories', 'digital_assets')->all());
-
+            $course->products()->update(['slug' => $data->slug]);
             $mediaInput    = $data->media          ?? [];
             $categories    = $data->categories     ?? [];
             $digitalAssets = $data->digital_assets ?? [];

@@ -23,6 +23,9 @@ return new class extends Migration
             $table->string('short_description');
             $table->string('short_name');
             $table->string('name');
+            // this is just for redundancy and quick access, actual slug is in productable entity
+            // so this is not a unique field
+            $table->string('slug');
             $table->boolean('is_featured')->default(false);
             $table->jsonb('details_json');
             $table->timestamps();

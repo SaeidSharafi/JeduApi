@@ -50,6 +50,7 @@ final class ProductFactory extends Factory
             'short_description' => $this->faker->text(),
             'short_name'        => $this->faker->name(),
             'name'              => $this->faker->name(),
+            'slug'              => $this->faker->slug(),
             'is_featured'       => $this->faker->boolean(),
             'details_json'      => [],
             'created_at'        => Carbon::now(),

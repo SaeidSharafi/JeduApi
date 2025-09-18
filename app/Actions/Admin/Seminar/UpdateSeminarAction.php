@@ -12,6 +12,7 @@ final class UpdateSeminarAction
     public function handle(CreateSeminarData $data, Seminar $seminar): void
     {
         $seminar->update($data->except('media', 'categories', 'digital_assets')->all());
+        $seminar->products()->update(['slug' => $data->slug]);
         $mediaToAttach       = $data->media          ?? [];
         $categoriesToAttach  = $data->categories     ?? [];
         $digitalAssetsAttach = $data->digital_assets ?? [];

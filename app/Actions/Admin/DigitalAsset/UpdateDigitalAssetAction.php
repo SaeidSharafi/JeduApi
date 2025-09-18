@@ -20,6 +20,7 @@ final readonly class UpdateDigitalAssetAction
             $attachments        = $data->attachments ?: [];
             $categoriesToAttach = $data->categories ?? [];
             $digitalAsset->update($data->except('media', 'attachments', 'categories')->toArray());
+            $digitalAsset->products()->update(['slug' => $data->slug]);
             $digitalAsset->categories()->sync($categoriesToAttach);
             $digitalAsset->syncMedia(data_get($attachments, 'preview'), 'preview');
             $digitalAsset->syncMedia(data_get($attachments, 'main'), 'main');
