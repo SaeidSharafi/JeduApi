@@ -28,3 +28,4 @@ yarn-error.log
 scribe_testing.sqlite
 /storage/framework/testing
 laradumps.yaml
+/storage/tests
