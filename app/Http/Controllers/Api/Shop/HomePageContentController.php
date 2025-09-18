@@ -23,7 +23,7 @@ final class HomePageContentController extends Controller
      * Retrieves the entire layout and content for the home page. The frontend will render
      * components based on the `type` of each block returned in the response.
      *
-     * @responseFile 200 responses/shop/home-page-content.json
+     * @responseFile 200 responses/shop/home/index.json
      */
     public function __invoke(GetHomePageContentAction $action): ApiResponseInterface
     {
