@@ -36,7 +36,7 @@ final readonly class CreateBlogPostAction
                 'published_at'      => $data->published_at,
                 'read_time_minutes' => $readTime,
                 'is_featured'       => $data->is_featured ?? false,
-                'cover_image_url'   => $coverImageUrl,
+                'thumbnail_url'   => $coverImageUrl,
             ];
 
             if ($data->main_productable) {

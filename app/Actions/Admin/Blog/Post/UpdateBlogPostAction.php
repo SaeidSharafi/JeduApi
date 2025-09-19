@@ -34,7 +34,7 @@ final readonly class UpdateBlogPostAction
             'is_featured'           => $data->is_featured,
             'main_productable_id'   => null,
             'main_productable_type' => null,
-            'cover_image_url'       => $coverImageUrl,
+            'thumbnail_url'       => $coverImageUrl,
         ];
         if ($data->main_productable) {
             $postData['main_productable_id'] = $data->main_productable['id'];

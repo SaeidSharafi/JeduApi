@@ -26,7 +26,7 @@ class BlogPostFactory extends Factory
             'published_at'          => Carbon::now(),
             'read_time_minutes'     => $this->faker->randomNumber(),
             'is_featured'           => $this->faker->boolean(),
-            'cover_image_url'       => $this->faker->imageUrl(),
+            'thumbnail_url'       => $this->faker->imageUrl(),
             'main_productable_id'   => null,
             'main_productable_type' => null,
             'created_at'            => Carbon::now(),
@@ -65,7 +65,7 @@ class BlogPostFactory extends Factory
                 ->inRandomOrder()
                 ->first();
             $blogPost->attachMedia($cover, MediaTagEnum::COVER->value);
-            $blogPost->cover_image_url = $cover->getUrl();
+            $blogPost->thumbnail_url = $cover->getUrl();
             $blogPost->save();
         });
     }

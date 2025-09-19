@@ -16,7 +16,7 @@ it('to array', function (): void {
             'is_featured'           => $blogPost->is_featured,
             'main_productable_id'   => $blogPost->main_productable_id,
             'main_productable_type' => $blogPost->main_productable_type,
-            'cover_image_url'       => $blogPost->cover_image_url,
+            'thumbnail_url'       => $blogPost->thumbnail_url,
             'created_at'            => $blogPost->created_at?->utc()->toJSON(),
             'updated_at'            => $blogPost->updated_at?->utc()->toJSON(),
         ]);

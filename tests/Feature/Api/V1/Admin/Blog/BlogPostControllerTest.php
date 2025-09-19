@@ -39,7 +39,7 @@ describe('BlogPostController List & Filter', function () {
                             'email',
                             'phone',
                         ],
-                        'cover_image_url',
+                        'thumbnail_url',
                         'published_at',
                         'created_at',
                         'updated_at',

@@ -44,7 +44,7 @@ class BlogPost extends Model
             'is_featured',
             'main_productable_id',
             'main_productable_type',
-            'cover_image_url',
+            'thumbnail_url',
         ];
 
     protected $casts

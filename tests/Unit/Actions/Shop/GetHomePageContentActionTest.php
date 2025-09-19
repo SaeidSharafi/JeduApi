@@ -525,6 +525,6 @@ describe('GetHomePageContentAction', function () {
             ->and($result->main_content[0]['type'])->toBe('CURATED_LIST')
             ->and(count($result->main_content[0]['content']['items']))->toBe(1)
             ->and($result->main_content[0]['content']['items'][0]['id'])->toBe($product->id)
-            ->and($result->main_content[0]['content']['items'][0]['cover_image_url'])->toBe($this->image->getUrl());
+            ->and($result->main_content[0]['content']['items'][0]['thumbnail_url'])->toBe($this->image->getUrl());
     });
 });

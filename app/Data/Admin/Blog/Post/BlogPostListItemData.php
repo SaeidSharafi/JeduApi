@@ -36,7 +36,7 @@ final class BlogPostListItemData extends Data
         public bool $is_featured,
         public ?Collection $categories = null,
         public ?StaffData $author = null,
-        public ?string $cover_image_url = null,
+        public ?string $thumbnail_url = null,
         public ?Verta $created_at = null,
         public ?Verta $updated_at = null,
     ) {
