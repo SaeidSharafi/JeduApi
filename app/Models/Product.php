@@ -116,7 +116,7 @@ final class Product extends Model
             })
             ->with('vendor');
     }
-    public function scopeActiveWithMedia($query)
+    public function scopeActiveWithData($query)
     {
         return $query
             ->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
@@ -126,8 +126,7 @@ final class Product extends Model
                 $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED);
             })
             ->withWhereHas('productable', function ($q) {
-                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
-                    ->withCoverMedia();
+                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED);
             })
             ->with('vendor');
     }

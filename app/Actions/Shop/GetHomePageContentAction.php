@@ -69,7 +69,7 @@ final readonly class GetHomePageContentAction
         // Pre-load all products with relationships to avoid N+1
         if ($idsToFetch->isNotEmpty()) {
             $fetchedProducts = Product::whereIn('id', $productIds->unique()->values())
-                ->activeWithMedia()
+                ->activeWithData()
                 ->get()
                 ->keyBy('id');
             $this->requestCache->storeProducts($fetchedProducts);
@@ -178,7 +178,7 @@ final readonly class GetHomePageContentAction
         ?array $categoryIds
     ): Builder {
         $baseProductQuery = Product::query()
-            ->activeWithMedia();
+            ->activeWithData();
         $query = match ($entityType) {
             DynamicListEntityTypeEnum::COURSE_PRODUCTS => $baseProductQuery
                 ->where('productable_type', ProductableEnum::COURSE),
@@ -336,17 +336,18 @@ final readonly class GetHomePageContentAction
 
     private function getProductCoverImage($product): ?string
     {
-        // Try to get cover image from productable media
-        if ($product->productable && $product->productable->relationLoaded('media')) {
-            // Check if the productable has the getProductableCover method (IsProductable trait)
-            if (method_exists($product->productable, 'getCoverMedia')) {
-                $coverImage = $product->productable->getCoverMedia();
-                if ($coverImage && count($coverImage) > 0) {
-                    return data_get($coverImage, '0.url', null);
-                }
-            }
-        }
-
-        return null;
+        //dd($product->productable);
+        return  $product->productable->thumbnail_url;
+        //if ($product->productable) {
+        //    // Check if the productable has the getProductableCover method (IsProductable trait)
+        //    if (method_exists($product->productable, 'getCoverMedia')) {
+        //        $coverImage = $product->productable->getCoverMedia();
+        //        if ($coverImage && count($coverImage) > 0) {
+        //            return data_get($coverImage, '0.url', null);
+        //        }
+        //    }
+        //}
+        //
+        //return null;
     }
 }
