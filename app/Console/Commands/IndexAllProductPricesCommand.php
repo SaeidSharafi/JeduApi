@@ -35,7 +35,6 @@ class IndexAllProductPricesCommand extends Command
             foreach ($products as $product) {
                 if ($this->option('sync')) {
                     // Run the job synchronously
-                    dump("Code is here");
                     UpdateProductPriceCacheJob::dispatchSync($product->id);
                     continue;
                 }
