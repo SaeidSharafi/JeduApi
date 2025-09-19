@@ -51,13 +51,14 @@ final class BlogPostData extends Data
 
     public static function fromModel(BlogPost $blogPost): self
     {
+
         return self::from([
             ...$blogPost->toArray(),
             'author'               => $blogPost->author ? StaffData::from($blogPost->author) : null,
             'categories'           => $blogPost->categories,
             'related_productables' => $blogPost->related_productables ?: null,
             'main_productable'     => $blogPost->mainProductable,
-            'main_media'           => $blogPost->firstMedia('main')
+            'main_media'           => $blogPost->getCoverMedia(true),
         ]);
     }
 }

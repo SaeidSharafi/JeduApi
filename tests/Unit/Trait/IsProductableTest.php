@@ -2,35 +2,6 @@
 
 declare(strict_types=1);
 
-it('get getProductableMedia', function () {
-    Illuminate\Http\UploadedFile::fake();
-    Storage::fake('public');
-    $this->cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
-        ->toDisk('public')
-        ->upload();
-    $categories    = App\Models\Category::factory(3)->create();
-    $digitalAssets = App\Models\DigitalAsset::factory(2)->create();
-    $course        = App\Models\Course::factory()->create();
-    $course->categories()->sync($categories);
-    $course->digitalAssets()->sync($digitalAssets);
-    $course->attachMedia($this->cover, 'cover');
-    expect($course->getProductableMedia())
-        ->toBeArray()
-        ->toHaveCount(0);
-    $course->refresh()->loadProductableMedia();
-    expect($course->getProductableMedia())
-        ->toBeArray()
-        ->and($course->getProductableMedia())
-        ->toHaveCount(4)
-        ->and($course->getProductableMedia()['gallery'])
-        ->toHaveCount(0)
-        ->and($course->getProductableMedia()['video'])
-        ->toHaveCount(0)
-        ->and($course->getProductableMedia()['cover'])
-        ->toHaveCount(1)
-        ->and($course->getProductableMedia()['certificate'])
-        ->toHaveCount(0);
-});
 
 it('get getProductableAttachment', function () {
     Illuminate\Http\UploadedFile::fake();
@@ -82,21 +53,4 @@ it('loades category relationship with loadProductableCategories fucntion', funct
     $courseData = $course->toArray();
     expect(data_get($courseData, 'categories'))
         ->toHaveCount(3);
-});
-
-it('get Productable cover', function () {
-    Illuminate\Http\UploadedFile::fake();
-    Storage::fake('public');
-    $this->cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
-        ->toDisk('public')
-        ->upload();
-    $course = App\Models\Course::factory()->create();
-    $course->attachMedia($this->cover, 'cover');
-    expect($course->getProductableCover())
-        ->toBeArray()
-        ->toHaveCount(0);
-    $course->refresh()->loadProductableMedia();
-    expect($course->getProductableCover())
-        ->toBeArray()
-        ->toHaveCount(1);
 });

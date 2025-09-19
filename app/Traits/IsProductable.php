@@ -18,12 +18,6 @@ trait IsProductable
         return $this->morphMany(Product::class, 'productable');
     }
 
-    public function scopeWithProductableMedia(Builder $query, array $tags = []): Builder
-    {
-        $query->withMediaAndVariantsMatchAll($tags);
-
-        return $query;
-    }
 
     public function scopeWithProductableCategories(Builder $query): Builder
     {
@@ -40,34 +34,6 @@ trait IsProductable
 
         return $query;
     }
-
-    public function getProductableMedia(): array
-    {
-
-        if ($this->relationLoaded('media')) {
-            $media = [];
-            foreach (['gallery', 'video', 'cover', 'certificate'] as $tag) {
-                $media[$tag] = $this->getMedia($tag)
-                    ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag))
-                    ->toArray();
-            }
-
-            return $media;
-        }
-
-        return [];
-    }
-    public function getProductableCover(): array
-    {
-        if ($this->relationLoaded('media')) {
-            return $this->getMedia('cover')
-                ->map(fn (Media $m): MediaData => MediaData::fromModel($m, 'cover'))
-                ->toArray();
-        }
-
-        return [];
-    }
-
 
     public function getProductableAttachment(): array
     {
@@ -92,12 +58,6 @@ trait IsProductable
     //    return $query;
     // }
 
-    public function loadProductableMedia(array $tags = []): void
-    {
-        if (method_exists($this, 'loadMediaWithVariantsMatchAll')) {
-            $this->loadMediaWithVariantsMatchAll($tags);
-        }
-    }
 
     public function loadProductableCategories(): void
     {

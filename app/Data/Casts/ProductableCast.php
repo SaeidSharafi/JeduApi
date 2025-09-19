@@ -53,7 +53,7 @@ final readonly class ProductableCast implements Cast
 
         return ShowCourseData::from([
             ...$value->toArray(),
-            'media'      => $value->getProductableMedia(),
+            'media'      => $value->getAllMedia(),
             'categories' => $value->categories,
         ]);
     }
@@ -70,7 +70,7 @@ final readonly class ProductableCast implements Cast
 
         return ShowSeminarData::from([
             ...$value->toArray(),
-            'media'      => $value->getProductableMedia(),
+            'media'      => $value->getAllMedia(),
             'categories' => $value->categories,
         ]);
     }
@@ -88,7 +88,7 @@ final readonly class ProductableCast implements Cast
 
         return ShowDigitalAssetData::from([
             ...$value->toArray(),
-            'media'       => $value->getProductableMedia(),
+            'media'       => $value->getAllMedia(),
             'attachments' => $value->getProductableAttachment(),
             'categories'  => $value->categories,
         ]);

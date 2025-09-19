@@ -55,7 +55,7 @@ class ProductableTransformer implements Transformer
 
         return ShowCourseData::from([
             ...$value->toArray(),
-            'media'      => $value->getProductableMedia(),
+            'media'      => $value->getAllMedia(),
             'categories' => $value->categories,
         ]);
     }
@@ -72,7 +72,7 @@ class ProductableTransformer implements Transformer
 
         return ShowSeminarData::from([
             ...$value->toArray(),
-            'media'      => $value->getProductableMedia(),
+            'media'      => $value->getAllMedia(),
             'categories' => $value->categories,
         ]);
     }
@@ -90,7 +90,7 @@ class ProductableTransformer implements Transformer
 
         return ShowDigitalAssetData::from([
             ...$value->toArray(),
-            'media'       => $value->getProductableMedia(),
+            'media'       => $value->getAllMedia(),
             'attachments' => $value->getProductableAttachment(),
             'categories'  => $value->categories,
         ]);

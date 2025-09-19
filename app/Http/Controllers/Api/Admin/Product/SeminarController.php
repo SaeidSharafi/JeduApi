@@ -81,7 +81,7 @@ final class SeminarController extends Controller
         $seminar
             ->load('categories', 'digitalAssets')
             ->loadMediaWithVariantsMatchAll();
-        $media = $seminar->getProductableMedia();
+        $media = $seminar->getAllMedia();
 
         return response()->success(
             ShowSeminarData::from(
@@ -108,7 +108,7 @@ final class SeminarController extends Controller
         $seminar
             ->load('categories', 'digitalAssets')
             ->loadMediaWithVariantsMatchAll();
-        $media = $seminar->getProductableMedia();
+        $media = $seminar->getAllMedia();
 
         return response()->success(ShowSeminarData::from(
             [

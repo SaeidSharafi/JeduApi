@@ -11,7 +11,7 @@ interface ReviewableContract
 {
     public function products(): MorphMany;
 
-    public function getProductableMedia(): ?array;
+    public function getAllMedia(): ?array;
 
     public function scopeWithProductableMedia(Builder $query): Builder;
 
@@ -20,7 +20,7 @@ interface ReviewableContract
     public function scopeWithProductableAssets(Builder $query): Builder;
     // public function scopeWithProductableAuditor(Builder $query): Builder;
 
-    public function loadProductableMedia(): void;
+    public function loadMediaWitVariant(): void;
 
     public function loadProductableCategories(): void;
 }

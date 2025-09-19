@@ -367,8 +367,8 @@ final readonly class GetHomePageContentAction
         // Try to get cover image from productable media
         if ($product->productable && $product->productable->relationLoaded('media')) {
             // Check if the productable has the getProductableCover method (IsProductable trait)
-            if (method_exists($product->productable, 'getProductableCover')) {
-                $coverImage = $product->productable->getProductableCover();
+            if (method_exists($product->productable, 'getCoverMedia')) {
+                $coverImage = $product->productable->getCoverMedia();
                 if ($coverImage && count($coverImage) > 0) {
                     return data_get($coverImage, '0.url', null);
                 }

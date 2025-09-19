@@ -82,7 +82,7 @@ final class CourseController extends Controller
         $course->load('categories', 'digitalAssets')
             ->loadMediaWithVariantsMatchAll();
 
-        $media = $course->getProductableMedia();
+        $media = $course->getAllMedia();
 
         return response()->success(ShowCourseData::from([
             ...$course->toArray(),
@@ -105,7 +105,7 @@ final class CourseController extends Controller
         $course
             ->load('categories', 'digitalAssets')
             ->loadMediaWithVariantsMatchAll();
-        $media = $course->getProductableMedia();
+        $media = $course->getAllMedia();
 
         return response()->success(ShowCourseData::from([
             ...$course->toArray(),

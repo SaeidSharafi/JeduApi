@@ -30,7 +30,7 @@ final class ProductDeliveryOptionCardData extends Data
     public static function fromModel(ProductDeliveryOption $deliveryOption): self
     {
         $product = $deliveryOption->product;
-        $media   = $product->productable->getProductableMedia();
+        $media   = $product->productable->getAllMedia();
         $cover   = self::getCoverMedia($media);
 
         return new self(
