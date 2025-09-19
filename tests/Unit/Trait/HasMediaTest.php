@@ -47,5 +47,8 @@ it('get cover media', function () {
     $course->refresh()->loadMediaWitVariant();
     expect($course->getCoverMedia())
         ->toBeArray()
-        ->toHaveCount(1);
+        ->toHaveCount(1)
+        ->and($course->getCoverMedia(true))
+        ->toBeInstanceOf(App\Data\Admin\MediaData::class)
+        ->and($course->getCoverMedia(true)->id)->toBe($this->cover->id);
 });
