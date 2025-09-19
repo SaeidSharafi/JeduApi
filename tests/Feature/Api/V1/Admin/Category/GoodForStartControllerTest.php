@@ -60,8 +60,12 @@ describe('GoodForStartController', function () {
         $category = Category::factory()->create();
 
         // Create course items and non-course items
-        $course = Course::factory()->create();
-        $nonCourse = Product::factory()->create();
+        $course = Course::factory()->create([
+            'id' => 8888, // Ensure unique ID
+        ]);
+        $nonCourse = Product::factory()->create([
+            'id' => 9999, // Ensure unique ID
+        ]);
 
         // Attach items to category via categorizables pivot table
         $category->courses()->attach($course);
