@@ -48,6 +48,7 @@
 - **Profile Management:** Customer account management and profile updates
 - **Course Access:** Enrolment-based access to purchased content
 - **Review System:** Customer review submission for products and courses
+- **Home Page Content:** Dynamic home page assembly with curated and dynamic content blocks, integrated pricing data
 
 ### System Features
 - **Multi-tenancy Support:** Vendor-based product organization
@@ -80,16 +81,18 @@
 - **Order Management:** Status tracking and lifecycle management
 - **Discount Engine:** Advanced promotion calculation with multiple rule types, conditions, and cart/product-level actions
 - **Payment Processing:** Multi-gateway support with factory pattern
+- **Product Pricing:** Centralized pricing service with hierarchy support (product discounts > featured prices > standard prices) and request-scoped caching
+- **Content Management:** Dynamic home page content assembly with performance optimization
 - **OTP Management:** Secure verification code handling
 - **SMS Service:** Integration with external SMS provider
 - **Console Commands:** Automated blog post publication and system maintenance
-- **OTP Management:** Secure verification code handling
-- **SMS Service:** Integration with external SMS provider
+- **Performance Optimization:** Request-scoped caching service to prevent N+1 queries and duplicate calculations
 
 ## 8. API Interface Completeness
 **210+ Endpoints** across all domains:
 - **Admin API:** Complete platform management with 160+ endpoints including blog management
 - **Customer API:** Profile and course access management
+- **Shop Public API:** Home page content delivery with dynamic block assembly and integrated pricing
 - **Authentication:** Dual system for both admin and customer interfaces
 - **File Management:** Secure media and private file handling
 - **Select Options:** Dropdown data for admin interface

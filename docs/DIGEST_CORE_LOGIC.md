@@ -172,6 +172,8 @@
 ### Shop Actions (`app/Actions/Shop/`)
 - **EnrolmentAccessAction**: Manages customer access to purchased content
 - **ProfileUpdateAction**: Handles customer profile updates
+- **GetHomePageContentAction** (`app/Actions/Shop/GetHomePageContentAction.php`)
+  - `handle(): HomePageContentData`: Retrieves and formats complete home page content including hero sections and main content blocks. Handles both curated and dynamic lists, pre-loads all required data to prevent N+1 queries, integrates with ProductPriceService for consistent pricing
 
 ### Auth Actions (`app/Actions/Auth/`)
 - **GenerateOtpAction** (`app/Actions/Auth/GenerateOtpAction.php`)
@@ -209,11 +211,12 @@
 ### Discount Services (`app/Services/Discounts/`)
 
 #### OrderCalculationService (`app/Services/Discounts/OrderCalculationService.php`)
-- **Purpose:** Comprehensive discount and pricing calculation engine
+- **Purpose:** Comprehensive discount and pricing calculation engine integrated with ProductPriceService
 - **Public Methods:**
-  - `calculate(OrderCreateData $data): OrderContextData`: Applies all discount rules, promotions, and coupons to order data
+  - `calculate(OrderCreateData $data): OrderContextData`: Applies all discount rules, promotions, and coupons to order data, uses ProductPriceService for consistent pricing hierarchy
   - `validateDiscountEligibility(): bool`: Checks discount rule conditions
   - `applyDiscountActions(): array`: Executes discount actions (percentage, fixed amount, etc.)
+- **Dependencies:** `ProductPriceService` for standardized pricing calculations
 
 #### DiscountHandlerRegistry (`app/Services/Discounts/DiscountHandlerRegistry.php`)
 - **Purpose:** Registry pattern for discount rule handlers
@@ -259,6 +262,29 @@
 
 ### Discount Configuration Services (`app/Services/Discounts/Configs/`)
 - Contains discount system configuration and rule definitions
+
+### ProductPriceService (`app/Services/ProductPriceService.php`)
+- **Purpose:** Centralized product pricing logic with hierarchy support and caching
+- **Public Methods:**
+  - `getPriceDataForProduct(Product $product, ?int $selectedDeliveryOptionId = null): ProductPriceData`: Returns comprehensive pricing data following pricing hierarchy (product-specific discounts > featured prices > standard prices)
+  - `getMinCurrentPrice(Product $product, ?int $selectedDeliveryOptionId = null): int`: Gets minimum effective price for product
+  - `getPriceDataForOption(ProductDeliveryOption $option): ProductDeliveryOptionPriceData`: Gets pricing data for specific delivery option
+  - `getPriceDataForProducts(Collection $products): Collection`: Efficiently processes multiple products
+  - `hasActiveDiscount(Product $product, ?int $selectedDeliveryOptionId = null): bool`: Checks if product has active discounts
+  - `getPriceRangeForProduct(Product $product): array`: Returns min/max price range
+  - `getHighestDiscountPercentage(Product $product, ?int $selectedDeliveryOptionId = null): float`: Calculates maximum discount percentage
+- **Dependencies:** `RequestDataCacheService` for performance optimization
+
+### RequestDataCacheService (`app/Services/RequestDataCacheService.php`)
+- **Purpose:** Request-scoped caching service to prevent duplicate database queries and calculations
+- **Public Methods:**
+  - `hasProduct(int $id): bool`: Checks if product is cached
+  - `getProduct(int $id): ?Product`: Retrieves cached product
+  - `storeProducts(Collection $products): void`: Stores multiple products in cache
+  - `hasPriceData(int $productId): bool`: Checks if price data is cached
+  - `getPriceDataForProduct(int $productId): ?ProductPriceData`: Retrieves cached price data
+  - `storeProductPriceData(int $productId, ProductPriceData $priceData): void`: Caches price calculations
+- **Pattern:** Singleton service registered in AppServiceProvider for request lifecycle management
 
 ### Payment Services (`app/Services/Payment/`)
 

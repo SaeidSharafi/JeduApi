@@ -108,11 +108,12 @@
 - `destroy(BlogCategory $category)`: **Route:** `DELETE /api/v1/admin/blog/category/{category}` - **Delegates to:** DeleteBlogCategoryAction
 
 ### BlogPostController (`app/Http/Controllers/Api/Admin/Blog/BlogPostController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/blog/post` - **Delegates to:** Blog post listing with filtering - **Response DTO:** BlogPostData collection
-- `store(BlogPostCreateData $data)`: **Route:** `POST /api/v1/admin/blog/post` - **Request DTO:** BlogPostCreateData - **Delegates to:** CreateBlogPostAction - **Response DTO:** BlogPostData
-- `show(BlogPost $post)`: **Route:** `GET /api/v1/admin/blog/post/{post}` - **Response DTO:** BlogPostData
-- `update(BlogPost $post, BlogPostUpdateData $data)`: **Route:** `PUT /api/v1/admin/blog/post/{post}` - **Request DTO:** BlogPostUpdateData - **Response DTO:** BlogPostData
-- `destroy(BlogPost $post)`: **Route:** `DELETE /api/v1/admin/blog/post/{post}` - **Delegates to:** DeleteBlogPostAction
+- `index()`: **Route:** `GET /api/v1/admin/blog-post` - **Delegates to:** Blog post listing with filtering - **Response DTO:** BlogPostListItemData collection
+- `store(BlogPostCreateData $request)`: **Route:** `POST /api/v1/admin/blog-post` - **Request DTO:** BlogPostCreateData - **Delegates to:** CreateBlogPostAction - **Response DTO:** BlogPostData
+- `show(BlogPost $blogPost)`: **Route:** `GET /api/v1/admin/blog-post/{blog_post}` - **Response DTO:** BlogPostData
+- `update(BlogPostUpdateData $request, BlogPost $blogPost)`: **Route:** `PUT /api/v1/admin/blog-post/{blog_post}` - **Request DTO:** BlogPostUpdateData - **Response DTO:** BlogPostData
+- `destroy(BlogPost $blogPost)`: **Route:** `DELETE /api/v1/admin/blog-post/{blog_post}` - **Delegates to:** Blog post deletion
+- **Special Features:** Enhanced filtering with main_productable_type/id support, uses BlogPostListItemData for listing efficiency
 
 ### OrderController (`app/Http/Controllers/Api/Admin/OrderController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/order` - **Delegates to:** Order listing with filtering - **Response DTO:** OrderData collection
@@ -340,6 +341,13 @@
 #### EnrolmentController (`app/Http/Controllers/Api/Shop/MyCourses/EnrolmentController.php`)
 - `index()`: **Route:** `GET /api/v1/shop/my-courses` - **Delegates to:** User enrolment listing - **Response DTO:** EnrolmentData collection
 - `show(Enrolment $enrolment)`: **Route:** `GET /api/v1/shop/my-courses/{enrolment:uuid}` - **Delegates to:** Enrolment details with access validation - **Response DTO:** EnrolmentData
+
+### Shop Public Endpoints (`/api/v1/shop/*`)
+**Authentication:** Unauthenticated public access
+
+#### HomePageContentController (`app/Http/Controllers/Api/Shop/HomePageContentController.php`)
+- `__invoke()`: **Route:** `GET /api/v1/shop/home-page-content` - **Delegates to:** GetHomePageContentAction - **Response DTO:** HomePageContentData
+- **Special Features:** Comprehensive home page content assembly with hero and main content blocks, supports curated lists, dynamic lists, banners, and webinar banners with integrated pricing data
 
 ### Admin Auth Endpoints (`/api/v1/admin/auth/*`)
 

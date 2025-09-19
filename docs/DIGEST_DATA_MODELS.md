@@ -38,7 +38,7 @@
 
 ### Product (`app/Models/Product.php`)
 - **Purpose:** Sellable instances of educational content with polymorphic relationships
-- **Key Fields:** `vendor_id`, `productable_id`, `productable_type`, `term_id`, `status`, `name`, `short_description`, `is_featured`, `details_json`
+- **Key Fields:** `vendor_id`, `productable_id`, `productable_type`, `term_id`, `status`, `name`, `short_description`, `slug`, `is_featured`, `details_json`
 - **Relationships:**
   - `morphTo()` - productable (Course, Seminar, DigitalAsset)
   - `belongsTo(Vendor::class)` - vendor
@@ -46,6 +46,7 @@
   - `hasMany(ProductDeliveryOption::class)` - productDeliveryOptions
   - `hasMany(Review::class, 'reviewable_id')` - reviews (polymorphic)
   - Uses `HasCategories` trait for categorization
+- **Special Features:** Active product scopes with relationship filtering, automatic slug management from productable entities
 
 ### Course (`app/Models/Course.php`)
 - **Purpose:** Educational course definitions and blueprints
@@ -55,6 +56,7 @@
   - `hasMany(Review::class, 'reviewable_id')` - reviews (polymorphic)
   - `morphToMany(DigitalAsset::class, 'assetable')` - digitalAssets
   - `morphToMany(BlogPost::class, 'productable', 'blog_post_productables')` - blogPosts
+- **Traits:** Uses `HasMedia` trait for standardized media management with tagged media support
 
 ### Seminar (`app/Models/Seminar.php`)
 - **Purpose:** One-off educational events
@@ -63,6 +65,7 @@
   - Polymorphic relationship as `productable` to Product
   - `hasMany(Review::class, 'reviewable_id')` - reviews (polymorphic)
   - `morphToMany(BlogPost::class, 'productable', 'blog_post_productables')` - blogPosts
+- **Traits:** Uses `HasMedia` trait for standardized media management with tagged media support
 
 ### DigitalAsset (`app/Models/DigitalAsset.php`)
 - **Purpose:** Standalone digital products (PDFs, videos, etc.)
@@ -70,6 +73,7 @@
 - **Relationships:** 
   - Polymorphic relationship as `productable` to Product
   - `hasMany(Review::class, 'reviewable_id')` - reviews (polymorphic)
+- **Traits:** Uses `HasMedia` trait for standardized media management with tagged media support
 
 ### ProductDeliveryOption (`app/Models/ProductDeliveryOption.php`)
 - **Purpose:** Specific purchase/delivery methods per product with pricing
@@ -85,6 +89,7 @@
 - **Relationships:**
   - `belongsTo(ProductDeliveryOption::class)` - productDeliveryOption
   - `belongsTo(DiscountPromotion::class)` - discountPromotion
+- **Traits:** Uses `HasFactory` trait for test data generation
 
 ### OrderItem (`app/Models/OrderItem.php`)
 - **Purpose:** Individual line items within orders
@@ -243,7 +248,7 @@
 
 ### BlogPost (`app/Models/Blog/BlogPost.php`)
 - **Purpose:** Blog content management with publication workflow and content relationships
-- **Key Fields:** `title`, `slug`, `body`, `excerpt`, `author_id`, `status`, `published_at`, `read_time_minutes`, `is_featured`, `main_productable_id`, `main_productable_type`
+- **Key Fields:** `title`, `slug`, `body`, `excerpt`, `author_id`, `status`, `published_at`, `read_time_minutes`, `is_featured`, `main_productable_id`, `main_productable_type`, `cover_image_url`
 - **Relationships:**
   - `belongsTo(Staff::class, 'author_id')` - author
   - `belongsToMany(BlogCategory::class, 'blog_post_category')` - categories
@@ -252,4 +257,5 @@
   - `morphToMany(DigitalAsset::class, 'productable', 'blog_post_productables')` - digitalAssets
   - `morphTo()` - mainProductable (single featured productable)
   - `morphMany(Review::class, 'reviewable')` - reviews
-- **Special Features:** Publication workflow with DRAFT/PUBLISHED/SCHEDULED/ARCHIVED statuses, automated read time calculation, featured content system, polymorphic relationships to educational content
+- **Traits:** Uses `HasMedia` trait for standardized media management with tagged media support
+- **Special Features:** Publication workflow with DRAFT/PUBLISHED/SCHEDULED/ARCHIVED statuses, automated read time calculation, featured content system, polymorphic relationships to educational content, automatic cover image URL generation from media
