@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\DigitalAsset;
 
+use App\Actions\Admin\GetThumnailUrlAction;
 use App\Data\Admin\DigitalAsset\CreateDigitalAssetData;
 use App\Models\DigitalAsset;
 use Illuminate\Support\Facades\DB;
 
 final readonly class CreateDigitalAssetAction
 {
+    public function __construct(
+        protected GetThumnailUrlAction $thumnailUrlAction
+    )
+    {
+    }
     /**
      * Execute the action.
      */
@@ -19,8 +25,10 @@ final readonly class CreateDigitalAssetAction
             $attachments        = $data->attachments ?: [];
             $categoriesToAttach = $data->categories ?? [];
             $mediaToAttach      = $data->media      ?? [];
+            $valdiatedData = $data->except('media', 'attachments', 'categories')->toArray();
+            $valdiatedData['thumbnail_url'] = $this->thumnailUrlAction->handle($data->media);
             $digitalAsset       = DigitalAsset::query()
-                ->create($data->except('media', 'attachments', 'categories')->toArray())
+                ->create($valdiatedData)
                 ->fresh();
             $digitalAsset->categories()->attach($categoriesToAttach);
             if ($preview = data_get($attachments, 'preview')) {

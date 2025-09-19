@@ -12,6 +12,7 @@ test('to array', function (): void {
             'full_name'                    => $course->full_name,
             'short_name'                   => $course->short_name,
             'description'                  => $course->description,
+            'thumbnail_url'                => $course->thumbnail_url,
             'sample_certificate_image_url' => $course->sample_certificate_image_url,
             'duration'                     => $course->duration,
             'difficulty_level'             => $course->difficulty_level->value,

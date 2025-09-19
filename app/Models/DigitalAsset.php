@@ -26,6 +26,7 @@ final class DigitalAsset extends Model implements ProductableContract, Reviewabl
     protected $fillable = [
         'name',
         'slug',
+        'thumbnail_url',
         'description',
         'version',
         'page_count',

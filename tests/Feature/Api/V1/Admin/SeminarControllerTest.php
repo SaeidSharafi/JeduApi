@@ -156,6 +156,7 @@ describe('SeminarController', function (): void {
                             'full_name',
                             'short_name',
                             'slug',
+                            'thumbnail_url',
                             'status',
                             'created_by',
                             'created_at',
@@ -232,6 +233,7 @@ describe('SeminarController', function (): void {
                             'id'                      => $asset->id,
                             'name'                    => $asset->name,
                             'slug'                    => $asset->slug,
+                            'thumbnail_url'           => $asset->thumbnail_url,
                             'is_attachable_to_course' => $asset->is_attachable_to_course,
                             'status'                  => [
                                 'value' => $asset->status->value,
@@ -290,6 +292,7 @@ describe('SeminarController', function (): void {
                         'id'                      => $asset->id,
                         'name'                    => $asset->name,
                         'slug'                    => $asset->slug,
+                        'thumbnail_url'           => $asset->thumbnail_url,
                         'is_attachable_to_course' => $asset->is_attachable_to_course,
                         'status'                  => [
                             'value' => $asset->status->value,
@@ -331,6 +334,7 @@ describe('SeminarController', function (): void {
             'full_name'  => $seminarData['full_name'],
             'short_name' => $seminarData['short_name'],
             'slug'       => $seminarData['slug'],
+            'thumbnail_url' => $this->cover->getUrl(),
         ]);
         $this->assertDatabaseHas('categorizables',
             [
@@ -445,6 +449,13 @@ describe('SeminarController', function (): void {
         $response->assertOk()
             ->assertJsonFragment(['full_name' => 'Updated Seminar Name'])
             ->assertJsonFragment(['short_name' => 'Updated Short Name']);
+
+        $this->assertDatabaseHas('seminars', [
+            'id'         => $seminar->id,
+            'full_name'  => 'Updated Seminar Name',
+            'short_name' => 'Updated Short Name',
+            'thumbnail_url' => $this->cover->getUrl(),
+        ]);
     });
 
     it('should delete a seminar with required permissions', function (): void {

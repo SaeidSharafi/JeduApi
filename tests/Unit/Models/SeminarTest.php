@@ -11,6 +11,7 @@ test('to array', function (): void {
             'slug'                     => $seminar->slug,
             'full_name'                => $seminar->full_name,
             'short_name'               => $seminar->short_name,
+            'thumbnail_url'            => $seminar->thumbnail_url,
             'subtitle'                 => $seminar->subtitle,
             'learning_objectives'      => $seminar->learning_objectives,
             'target_audience'          => $seminar->target_audience,

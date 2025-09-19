@@ -48,7 +48,7 @@ describe('CourseActionTest', function (): void {
             ],
         ]);
 
-        $action = new CreateCourseAction();
+        $action = $this->app->make(CreateCourseAction::class);
         $action->handle($data);
 
         $course = Course::where('slug', 'test-course')
@@ -60,6 +60,7 @@ describe('CourseActionTest', function (): void {
             ->and($course)->not()->toBeNull()
             ->and($course->full_name)->toBe('Test Course')
             ->and($course->short_name)->toBe('TC')
+            ->and($course->thumbnail_url)->toBe($this->media->getUrl())
             ->and($course->status)->toBe(App\Enums\PublicationStatusEnum::DRAFT)
             ->and($course->categories)->toHaveCount(1)
             ->and($course->categories->first()->name)->toBe('Test Category')
@@ -98,7 +99,7 @@ describe('CourseActionTest', function (): void {
             ],
         ]);
 
-        $action = new UpdateCourseAction();
+        $action = $this->app->make(UpdateCourseAction::class);
         $action->handle($data, $course);
 
         $course->load('media')->refresh();
@@ -106,6 +107,7 @@ describe('CourseActionTest', function (): void {
         expect($course)->not()->toBeNull()
             ->and($course->full_name)->toBe('Updated Course Name')
             ->and($course->short_name)->toBe('UC')
+            ->and($course->thumbnail_url)->toBe($this->media2->getUrl())
             ->and($course->status)->toBe(App\Enums\PublicationStatusEnum::PUBLISHED)
             ->and($course->media)->toHaveCount(3)
             ->and($course->media?->first()?->id)->toBe($this->media2->id);

@@ -32,6 +32,7 @@ final class SeminarListItemData extends Data implements ProductableDataContract,
         public string $short_name,
         public ?string $subtitle,
         public ?string $slug,
+        public ?string $thumbnail_url,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public PublicationStatusEnum $status,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]

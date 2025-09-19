@@ -26,7 +26,7 @@ describe('list filters', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(10)->create();
         $digitalAsset = DigitalAsset::factory()->create(['name' => 'Test Asset']);
-        $response     = $this->getJson(route('api.v1.admin.digital-asset.index', ['filter[name]' => $digitalAsset->name]));
+        $response = $this->getJson(route('api.v1.admin.digital-asset.index', ['filter[name]' => $digitalAsset->name]));
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data.data')
             ->assertJsonFragment(['name' => $digitalAsset->name]);
@@ -36,7 +36,7 @@ describe('list filters', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(10)->create();
         $digitalAsset = DigitalAsset::factory()->create(['slug' => 'test-asset']);
-        $response     = $this->getJson(route('api.v1.admin.digital-asset.index', ['filter[slug]' => $digitalAsset->slug]));
+        $response = $this->getJson(route('api.v1.admin.digital-asset.index', ['filter[slug]' => $digitalAsset->slug]));
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data.data')
             ->assertJsonFragment(['slug' => $digitalAsset->slug]);
@@ -45,7 +45,8 @@ describe('list filters', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(10)->create();
         $digitalAsset = DigitalAsset::factory()->create(['status' => \App\Enums\PublicationStatusEnum::DRAFT]);
-        $response     = $this->getJson(route('api.v1.admin.digital-asset.index', ['filter[status]' => $digitalAsset->status->value]));
+        $response = $this->getJson(route('api.v1.admin.digital-asset.index',
+            ['filter[status]' => $digitalAsset->status->value]));
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data.data')
             ->assertJsonFragment(['slug' => $digitalAsset->slug]);
@@ -56,7 +57,8 @@ describe('list filters', function (): void {
             ->nonAttachable()
             ->create();
         $digitalAsset = DigitalAsset::factory()->create(['is_attachable_to_course' => true]);
-        $response     = $this->getJson(route('api.v1.admin.digital-asset.index', ['filter[is_attachable_to_course]' => 'true']));
+        $response = $this->getJson(route('api.v1.admin.digital-asset.index',
+            ['filter[is_attachable_to_course]' => 'true']));
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data.data')
             ->assertJsonFragment(['slug' => $digitalAsset->slug]);
@@ -65,7 +67,7 @@ describe('list filters', function (): void {
     it('can sort by name', function () {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(5)->create();
-        $response      = $this->getJson(route('api.v1.admin.digital-asset.index', ['sort' => 'name']));
+        $response = $this->getJson(route('api.v1.admin.digital-asset.index', ['sort' => 'name']));
         $digitalAssets = DigitalAsset::orderBy('name')->get();
         $response->assertStatus(200)
             ->assertJsonCount(5, 'data.data')
@@ -94,7 +96,7 @@ describe('list filters', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(5)
             ->create();
-        $response      = $this->getJson(route('api.v1.admin.digital-asset.index', ['sort' => 'status']));
+        $response = $this->getJson(route('api.v1.admin.digital-asset.index', ['sort' => 'status']));
         $digitalAssets = DigitalAsset::orderBy('status')->get();
         $response->assertStatus(200)
             ->assertJsonCount(5, 'data.data')
@@ -119,6 +121,7 @@ it('can get list of digital assets', function () {
                         'name',
                         'slug',
                         'status',
+                        'thumbnail_url',
                         'is_attachable_to_course',
                         'version',
                         'published_at',
@@ -134,7 +137,7 @@ it('can get list of digital assets', function () {
 it('can get single digital asset', function () {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW->value]);
     $digitalAsset = DigitalAsset::factory()->create();
-    $preview      = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
+    $preview = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
         ->toDisk('local')
         ->upload();
     $main = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('file.pdf'))
@@ -191,7 +194,7 @@ it('can create digital asset', function () {
         ->upload();
 
     $categories = App\Models\Category::factory()->count(2)->create();
-    $response   = $this->postJson(route('api.v1.admin.digital-asset.store'), [
+    $response = $this->postJson(route('api.v1.admin.digital-asset.store'), [
         'name'                    => $digitalAsset->name,
         'slug'                    => $digitalAsset->slug,
         'description'             => $digitalAsset->description,
@@ -210,7 +213,7 @@ it('can create digital asset', function () {
             'preview' => $preview->id,
             'main'    => $main->id,
         ],
-        'media' => [
+        'media'                   => [
             'gallery' => [$this->gallery->id],
             'cover'   => [$this->cover->id],
             'video'   => [$this->video->id],
@@ -222,6 +225,7 @@ it('can create digital asset', function () {
         'name'                    => $digitalAsset->name,
         'slug'                    => $digitalAsset->slug,
         'description'             => $digitalAsset->description,
+        'thumbnail_url'           => $this->cover->getUrl(),
         'version'                 => $digitalAsset->version,
         'page_count'              => $digitalAsset->page_count,
         'duration_seconds'        => $digitalAsset->duration_seconds,
@@ -275,7 +279,7 @@ it('can create digital asset', function () {
 it('can update digital asset', function () {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_UPDATE->value]);
     $digitalAsset = DigitalAsset::factory()->create()->fresh();
-    $preview      = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
+    $preview = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
         ->toDisk('local')
         ->upload();
     $main = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('file.pdf'))
@@ -285,7 +289,7 @@ it('can update digital asset', function () {
     $digitalAsset->attachMedia($main, 'main');
     $digitalAssetUpdate = DigitalAsset::factory()
         ->make();
-    $updatedData   = $digitalAssetUpdate->toArray();
+    $updatedData = $digitalAssetUpdate->toArray();
     $previewUpdate = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview_updated.pdf'))
         ->toDisk('local')
         ->upload();
@@ -301,10 +305,10 @@ it('can update digital asset', function () {
         'cover'   => [$this->cover->id],
         'video'   => [$this->video->id],
     ];
-    $categories                  = App\Models\Category::factory()->count(2)->create();
-    $updatedData['categories']   = $categories->pluck('id')->toArray();
+    $categories = App\Models\Category::factory()->count(2)->create();
+    $updatedData['categories'] = $categories->pluck('id')->toArray();
     $updatedData['published_at'] = $this->toJalalitString($digitalAssetUpdate->published_at->format('Y-m-d H:i:s'));
-    $response                    = $this->putJson(route('api.v1.admin.digital-asset.update', $digitalAsset), $updatedData);
+    $response = $this->putJson(route('api.v1.admin.digital-asset.update', $digitalAsset), $updatedData);
     $response->assertStatus(200)
         ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($updatedData) {
             $json->where('data.name', $updatedData['name'])
@@ -337,6 +341,7 @@ it('can update digital asset', function () {
         'name'                    => $updatedData['name'],
         'slug'                    => $updatedData['slug'],
         'description'             => $updatedData['description'],
+        'thumbnail_url'           => $this->cover->getUrl(),
         'version'                 => $updatedData['version'],
         'page_count'              => $updatedData['page_count'],
         'duration_seconds'        => $updatedData['duration_seconds'],
@@ -400,17 +405,17 @@ it('can update digital asset', function () {
 });
 it('can not update a digital asset with duplicate slug', function () {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_UPDATE->value]);
-    $digitalAsset      = DigitalAsset::factory()->create()->fresh();
+    $digitalAsset = DigitalAsset::factory()->create()->fresh();
     $digitalAssetExist = DigitalAsset::factory()->create(
         ['slug' => 'existing-slug']
     )->fresh();
     $main = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('file.pdf'))
         ->toDisk('local')
         ->upload();
-    $updatedData                = DigitalAsset::factory()->make()->toArray();
-    $categories                 = App\Models\Category::factory()->count(2)->create();
-    $updatedData['slug']        = 'existing-slug';
-    $updatedData['categories']  = $categories->pluck('id')->toArray();
+    $updatedData = DigitalAsset::factory()->make()->toArray();
+    $categories = App\Models\Category::factory()->count(2)->create();
+    $updatedData['slug'] = 'existing-slug';
+    $updatedData['categories'] = $categories->pluck('id')->toArray();
     $updatedData['attachments'] = [
         'main' => $main->id,
     ];
@@ -442,7 +447,7 @@ it('can delete digital asset', function () {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_DELETE->value]);
 
     $digitalAsset = DigitalAsset::factory()->create()->fresh();
-    $preview      = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
+    $preview = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
         ->toDisk('local')
         ->upload();
     $main = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('file.pdf'))

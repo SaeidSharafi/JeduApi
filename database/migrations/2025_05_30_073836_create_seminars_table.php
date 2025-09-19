@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('subtitle')->nullable();
             $table->string('slug')->unique();
             $table->text('description');
+            $table->string('thumbnail_url')->nullable();
             $table->text('learning_objectives')->nullable();
             $table->text('target_audience')->nullable();
             $table->text('prerequisites')->nullable();

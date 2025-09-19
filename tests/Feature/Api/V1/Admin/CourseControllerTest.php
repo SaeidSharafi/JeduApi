@@ -217,6 +217,7 @@ it('can view list of courses', function (): void {
                         'slug',
                         'full_name',
                         'short_name',
+                        'thumbnail_url',
                         'difficulty_level',
                         'additional_info',
                         'properties',
@@ -273,6 +274,7 @@ it('can view list of courses', function (): void {
                         'id'                      => $asset->id,
                         'name'                    => $asset->name,
                         'slug'                    => $asset->slug,
+                        'thumbnail_url'           => $asset->thumbnail_url,
                         'is_attachable_to_course' => $asset->is_attachable_to_course,
                         'status'                  => [
                             'value' => $asset->status->value,
@@ -490,6 +492,7 @@ it('can view a course', function (): void {
                     'id'                      => $asset->id,
                     'name'                    => $asset->name,
                     'slug'                    => $asset->slug,
+                    'thumbnail_url'           => $asset->thumbnail_url,
                     'is_attachable_to_course' => $asset->is_attachable_to_course,
                     'status'                  => [
                         'value' => $asset->status->value,

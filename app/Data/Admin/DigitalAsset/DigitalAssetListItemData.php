@@ -23,6 +23,7 @@ final class DigitalAssetListItemData extends Data implements ProductableDataCont
         public int $id,
         public string $name,
         public string $slug,
+        public ?string $thumbnail_url,
         public bool $is_attachable_to_course,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public PublicationStatusEnum $status,

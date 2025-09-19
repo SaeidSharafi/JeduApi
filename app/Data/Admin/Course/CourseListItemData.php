@@ -30,6 +30,7 @@ final class CourseListItemData extends Data implements ProductableDataContract, 
         public string $slug,
         public string $full_name,
         public string $short_name,
+        public ?string $thumbnail_url,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public CourseDifficultyLevelEnum $difficulty_level,
         public ?array $additional_info,

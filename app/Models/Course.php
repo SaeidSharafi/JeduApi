@@ -28,6 +28,7 @@ final class Course extends Model implements ProductableContract, ReviewableContr
     protected $fillable
         = [
             'slug',
+            'thumbnail_url',
             'full_name',
             'short_name',
             'description',

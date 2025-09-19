@@ -4,31 +4,40 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Course;
 
+use App\Actions\Admin\GetThumnailUrlAction;
 use App\Data\Admin\Course\CreateCourseData;
+use App\Enums\MediaTagEnum;
 use App\Models\Course;
 use Illuminate\Support\Facades\DB;
 
 final readonly class CreateCourseAction
 {
+    public function __construct(
+        protected GetThumnailUrlAction $thumnailUrlAction
+    )
+    {
+    }
+
     /**
      * Execute the action.
      */
     public function handle(CreateCourseData $data): void
     {
         DB::transaction(function () use ($data): void {
-            $mediaToAttach       = $data->media          ?? [];
-            $categoriesToAttach  = $data->categories     ?? [];
+            $mediaToAttach = $data->media ?? [];
+            $categoriesToAttach = $data->categories ?? [];
             $digitalAssetsAttach = $data->digital_assets ?? [];
-            $course              = Course::query()->create($data->except('media', 'categories', 'digital_assets')->all());
+
+            $valdiatedData = $data->except('media', 'categories', 'digital_assets')->all();
+            $valdiatedData['thumbnail_url'] = $this->thumnailUrlAction->handle($mediaToAttach);
+
+            $course = Course::query()->create($valdiatedData);
             $course->categories()->attach($categoriesToAttach);
             $course->digitalAssets()->attach($digitalAssetsAttach);
             foreach ($mediaToAttach as $tag => $mediaIds) {
                 if (is_array($mediaIds)) {
                     foreach ($mediaIds as $mediaId) {
-                        $media = \Plank\Mediable\Media::find($mediaId);
-                        if ($media) {
-                            $course->attachMedia($media, $tag);
-                        }
+                        $course->attachMedia($mediaId, $tag);
                     }
                 }
             }

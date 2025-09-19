@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('full_name');
             $table->string('short_name')->nullable();
             $table->text('description')->nullable();
+            $table->string('thumbnail_url')->nullable();
             $table->string('sample_certificate_image_url')->nullable();
             $table->integer('duration')->nullable();
             $table->string('difficulty_level');

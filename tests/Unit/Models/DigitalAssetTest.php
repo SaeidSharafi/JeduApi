@@ -11,6 +11,7 @@ test('to array', function (): void {
             'name'                    => $digitalAsset->name,
             'slug'                    => $digitalAsset->slug,
             'description'             => $digitalAsset->description,
+            'thumbnail_url'           => $digitalAsset->thumbnail_url,
             'version'                 => $digitalAsset->version,
             'page_count'              => $digitalAsset->page_count,
             'duration_seconds'        => $digitalAsset->duration_seconds,

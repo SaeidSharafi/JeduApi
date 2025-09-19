@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
+            $table->string('thumbnail_url')->nullable();
             $table->string('version', 50)->nullable();
             $table->unsignedInteger('page_count')->nullable()->comment('For documents like PDFs');
             $table->unsignedInteger('duration_seconds')->nullable()->comment('For audio/video file types');
