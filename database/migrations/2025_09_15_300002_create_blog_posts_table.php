@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->integer('read_time_minutes');
             $table->boolean('is_featured')->default(false);
             $table->nullableMorphs('main_productable');
+            $table->string('cover_image_url')->nullable();
             $table->timestamps();
 
             $table->index('is_featured');

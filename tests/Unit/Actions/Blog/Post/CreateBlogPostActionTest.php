@@ -41,8 +41,8 @@ describe('CreateBlogPostAction', function () {
             slug: 'new-blog-post',
             body: '<p>This is the body of the blog post. It has some content to read.</p>',
             excerpt: 'This is a short excerpt.',
-            author_id: $this->staff->id,
             status: 'published',
+            author_id: $this->staff->id,
             published_at: now(),
             is_featured: true,
             main_productable: ['type' => 'course', 'id' => $this->productable1->id],
@@ -50,7 +50,9 @@ describe('CreateBlogPostAction', function () {
             related_productables: [
                 ['type' => 'seminar', 'id' => $this->productable2->id],
             ],
-            main_media: $this->media->id,
+            media: [
+                'cover' => [$this->media->id],
+            ],
         );
 
         $action = new CreateBlogPostAction();
@@ -65,7 +67,7 @@ describe('CreateBlogPostAction', function () {
             ->and($post->status)->toBe(\App\Enums\PublicationStatusEnum::PUBLISHED)
             ->and($post->is_featured)->toBeTrue()
             ->and($post->read_time_minutes)->toBe(1) // Assuming ~200 words per minute
-            ->and($post->firstMedia('main')->getUrl())->toBe($this->media->getUrl())
+            ->and($post->firstMedia('cover')->getUrl())->toBe($this->media->getUrl())
             ->and($post->categories->pluck('id')->toArray())->toEqualCanonicalizing([
                 $this->category1->id, $this->category2->id
             ])
@@ -80,14 +82,16 @@ describe('CreateBlogPostAction', function () {
             slug: null,
             body: '<p>Short body.</p>',
             excerpt: 'Excerpt',
-            author_id: $this->staff->id,
             status: 'draft',
+            author_id: $this->staff->id,
             published_at: null,
             is_featured: false,
             main_productable: null,
             category_ids: [],
             related_productables: [],
-            main_media: null,
+            media: [
+                'cover' => [$this->media->id],
+            ],
         );
 
         $action = new CreateBlogPostAction();
@@ -116,14 +120,16 @@ describe('CreateBlogPostAction', function () {
             slug: null,
             body: $longBody,
             excerpt: 'Long read excerpt',
-            author_id: $this->staff->id,
             status: 'published',
+            author_id: $this->staff->id,
             published_at: now(),
             is_featured: false,
             main_productable: null,
             category_ids: [],
             related_productables: [],
-            main_media: null,
+            media: [
+                'cover' => [$this->media->id],
+            ],
         );
 
         $action = new CreateBlogPostAction();

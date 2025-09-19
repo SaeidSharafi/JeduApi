@@ -26,7 +26,7 @@ final class BlogPostUpdateData extends Data
         public ?array $category_ids = [],
         /** @var array<int, array{id: int, type: string}> */
         public ?array $related_productables = null,
-        public ?int $main_media = null,
+        public ?array $media = [],
     ) {
     }
 
@@ -59,7 +59,13 @@ final class BlogPostUpdateData extends Data
             'related_productables'        => ['nullable', 'array'],
             'related_productables.*.id'   => ['required', 'integer'], // You need to validate each object in the array
             'related_productables.*.type' => ['required', 'string', Rule::enum(ProductableEnum::class)],
-            'main_media'                  => ['nullable', 'integer', 'exists:media,id'],
+            'media'                       => ['required', 'array'],
+            'media.cover'                 => ['nullable', 'array'],
+            'media.gallery'               => ['nullable', 'array'],
+            'media.video'                 => ['nullable', 'array'],
+            'media.cover.*'               => ['required', 'integer', 'exists:media,id'],
+            'media.gallery.*'             => ['nullable', 'integer', 'exists:media,id'],
+            'media.video.*'               => ['nullable', 'integer', 'exists:media,id'],
         ];
     }
 }

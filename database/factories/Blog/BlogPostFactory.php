@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Blog;
 
+use App\Enums\MediaTagEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Models\Blog\BlogPost;
 use App\Models\Staff;
@@ -25,6 +26,7 @@ class BlogPostFactory extends Factory
             'published_at'          => Carbon::now(),
             'read_time_minutes'     => $this->faker->randomNumber(),
             'is_featured'           => $this->faker->boolean(),
+            'cover_image_url'       => $this->faker->imageUrl(),
             'main_productable_id'   => null,
             'main_productable_type' => null,
             'created_at'            => Carbon::now(),
@@ -40,14 +42,31 @@ class BlogPostFactory extends Factory
     public function withMedia(): self
     {
         return $this->afterCreating(function (BlogPost $blogPost) {
-                $media = Media::query()
-                    ->where('directory', 'fake-media')
-                    ->whereLike('filename', '%placeholder%')
-                    ->where('extension', 'svg')
-                    ->inRandomOrder()
-                    ->first();
-            $blogPost->attachMedia($media, "mian");
+            $media = Media::query()
+                ->where('directory', 'fake-media')
+                ->whereLike('filename', '%placeholder%')
+                ->where('extension', 'svg')
+                ->inRandomOrder()
+                ->first();
+            $blogPost->attachMedia($media, MediaTagEnum::GALLERY->value);
 
+            $video = Media::query()
+                ->where('directory', 'fake-media')
+                ->whereLike('filename', '%placeholder%')
+                ->where('extension', 'mp4')
+                ->inRandomOrder()
+                ->first();
+            $blogPost->attachMedia($video, MediaTagEnum::VIDEO->value);
+
+            $cover = Media::query()
+                ->where('directory', 'fake-media')
+                ->whereLike('filename', '%placeholder%')
+                ->where('extension', 'svg')
+                ->inRandomOrder()
+                ->first();
+            $blogPost->attachMedia($cover, MediaTagEnum::COVER->value);
+            $blogPost->cover_image_url = $cover->getUrl();
+            $blogPost->save();
         });
     }
 }

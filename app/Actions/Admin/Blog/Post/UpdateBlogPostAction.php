@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Blog\Post;
 
 use App\Data\Admin\Blog\Post\BlogPostUpdateData;
+use App\Enums\MediaTagEnum;
 use App\Enums\ProductableEnum;
 use App\Models\Blog\BlogPost;
 use Illuminate\Support\Str;
+use Plank\Mediable\Media;
 
 final readonly class UpdateBlogPostAction
 {
@@ -15,6 +17,11 @@ final readonly class UpdateBlogPostAction
     {
         $slug = $data->slug ?? Str::slug($data->title);
         $readTime = $this->calculateReadTime($data->body);
+        $media = $data->media;
+        $coverImageUrl = null;
+        if ($cover = data_get($media, MediaTagEnum::COVER->value . '.0')) {
+            $coverImageUrl = Media::find($cover)?->getUrl();
+        }
         $postData = [
             'title'                 => $data->title,
             'slug'                  => $slug,
@@ -27,6 +34,7 @@ final readonly class UpdateBlogPostAction
             'is_featured'           => $data->is_featured,
             'main_productable_id'   => null,
             'main_productable_type' => null,
+            'cover_image_url'       => $coverImageUrl,
         ];
         if ($data->main_productable) {
             $postData['main_productable_id'] = $data->main_productable['id'];
@@ -34,9 +42,9 @@ final readonly class UpdateBlogPostAction
                 ->getModelClass();
         }
         $post->update($postData);
-
-        $post->syncMedia($data->main_media, 'main');
-
+        foreach ($media as $key => $mediaId) {
+            $post->syncMedia($mediaId, $key);
+        }
         $post->categories()->sync($data->category_ids);
 
         $post->syncRelatedProductables($data->related_productables);

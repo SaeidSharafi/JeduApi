@@ -9,6 +9,7 @@ use App\Actions\Admin\Blog\Post\UpdateBlogPostAction;
 use App\Actions\Admin\Blog\Post\DeleteBlogPostAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Blog\Post\BlogPostCreateData;
+use App\Data\Admin\Blog\Post\BlogPostListItemData;
 use App\Data\Admin\Blog\Post\BlogPostUpdateData;
 use App\Data\Admin\Blog\Post\BlogPostData;
 use App\Enums\PermissionEnum;
@@ -35,8 +36,8 @@ final class BlogPostController extends Controller
      * @queryParam filter[slug] string Filter by slug. Example: filter[slug]=laravel-introduction
      * @queryParam filter[is_published] boolean Filter by published status. Example: filter[is_published]=1
      * @queryParam filter[author_id] integer Filter by author ID. Example: filter[author_id]=3
-     * @queryParam filter[mainProductable_type] string Filter by main productable type. Example: filter[mainProductable_type]=course
-     * @queryParam filter[mainProductable_id] integer Filter by main productable ID. Example: filter[mainProductable_id]=5
+     * @queryParam filter[main_productable_type] string Filter by main productable type. Example: filter[main_productable_type]=course
+     * @queryParam filter[main_productable_id] integer Filter by main productable ID. Example: filter[main_productable_id]=5
      *             note: this filter is connected to mainProductable_type filter, without it, this filter will not work
      *
      *
@@ -48,10 +49,10 @@ final class BlogPostController extends Controller
             ->allowedFilters([
                 'title',
                 'slug',
-                AllowedFilter::exact('is_published'),
+                AllowedFilter::exact('status'),
                 AllowedFilter::exact('author_id'),
-                AllowedFilter::exact('mainProductable_type'),
-                AllowedFilter::exact('mainProductable_id'),
+                AllowedFilter::exact('main_productable_type'),
+                AllowedFilter::exact('main_productable_id'),
             ])
             ->allowedSorts(['title', 'published_at', 'created_at', 'updated_at'])
             ->defaultSort('-created_at')
@@ -59,7 +60,7 @@ final class BlogPostController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString()
         ;
-        return response()->success(BlogPostData::collect($posts));
+        return response()->success(BlogPostListItemData::collect($posts));
     }
 
     /**

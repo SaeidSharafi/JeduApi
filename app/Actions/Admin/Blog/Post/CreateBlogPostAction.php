@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Blog\Post;
 
 use App\Data\Admin\Blog\Post\BlogPostCreateData;
+use App\Enums\MediaTagEnum;
 use App\Enums\ProductableEnum;
 use App\Models\Blog\BlogPost;
 use App\Models\Product;
 use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Plank\Mediable\Media;
 
 final readonly class CreateBlogPostAction
 {
@@ -19,7 +21,11 @@ final readonly class CreateBlogPostAction
         return DB::transaction(function () use ($data, $staff): BlogPost {
             $slug = $data->slug ?? Str::slug($data->title);
             $readTime = $this->calculateReadTime($data->body);
-
+            $media = $data->media;
+            $coverImageUrl = null;
+            if ($cover = data_get($media, MediaTagEnum::COVER->value  . '.0')) {
+                $coverImageUrl = Media::find($cover)?->getUrl();
+            }
             $postData = [
                 'title'             => $data->title,
                 'slug'              => $slug,
@@ -30,6 +36,7 @@ final readonly class CreateBlogPostAction
                 'published_at'      => $data->published_at,
                 'read_time_minutes' => $readTime,
                 'is_featured'       => $data->is_featured ?? false,
+                'cover_image_url'   => $coverImageUrl,
             ];
 
             if ($data->main_productable) {
@@ -40,8 +47,8 @@ final readonly class CreateBlogPostAction
 
             $post = BlogPost::create($postData);
 
-            if ($data->main_media) {
-                $post->attachMedia($data->main_media, 'main');
+            foreach ($media as $key => $mediaId) {
+                $post->attachMedia($mediaId, $key);
             }
 
             if (!empty($data->category_ids)) {

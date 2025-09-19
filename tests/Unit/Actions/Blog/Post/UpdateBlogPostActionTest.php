@@ -39,14 +39,16 @@ describe('UpdateBlogPostAction', function () {
              slug: 'updated-title',
              body: str_repeat('This is the updated body content. ', 50), // 50 repetitions to increase word count
              excerpt: 'Updated excerpt.',
-             author_id: $this->staff->id,
              status: 'published',
+             author_id: $this->staff->id,
              published_at: now(),
              is_featured: true,
              main_productable: ['id' => $relatedProductable->id, 'type' => 'course'],
              category_ids: [$this->category2->id],
              related_productables: [['id' => $relatedProductable->id, 'type' => 'course']],
-             main_media: $this->media2->id,
+             media: [
+                 'cover' => [$this->media2->id],
+             ],
          );
 
          $action = new UpdateBlogPostAction();
@@ -60,7 +62,7 @@ describe('UpdateBlogPostAction', function () {
              ->and($updatedPost->author_id)->toBe($this->staff->id)
              ->and($updatedPost->status)->toBe(\App\Enums\PublicationStatusEnum::PUBLISHED)
              ->and($updatedPost->is_featured)->toBeTrue()
-             ->and($updatedPost->firstMedia('main')->getUrl())->toBe($this->media2->getUrl())
+             ->and($updatedPost->firstMedia('cover')->getUrl())->toBe($this->media2->getUrl())
              ->and($updatedPost->categories->pluck('id')->toArray())->toBe([$this->category2->id])
              ->and($updatedPost->main_productable_id)->toBe($relatedProductable->id)
              ->and($updatedPost->main_productable_type)->toBe(Course::class)
@@ -74,14 +76,16 @@ describe('UpdateBlogPostAction', function () {
              slug: null,
              body: 'Updated body content without slug change.',
              excerpt: 'Updated excerpt without slug change.',
-             author_id: $this->staff->id,
              status: 'published',
+             author_id: $this->staff->id,
              published_at: now(),
              is_featured: true,
              main_productable: null,
              category_ids: [$this->category2->id],
              related_productables: [],
-             main_media: null,
+             media: [
+                 'cover' => [$this->media->id],
+             ],
          );
 
          $action = new UpdateBlogPostAction();
@@ -95,7 +99,8 @@ describe('UpdateBlogPostAction', function () {
              ->and($updatedPost->author_id)->toBe($this->staff->id)
              ->and($updatedPost->status)->toBe(\App\Enums\PublicationStatusEnum::PUBLISHED)
              ->and($updatedPost->is_featured)->toBeTrue()
-             ->and($updatedPost->firstMedia('main'))->toBeNull()
+             ->and($updatedPost->firstMedia('cover')->getUrl())->toBe($this->media->getUrl())
+             ->and($updatedPost->firstMedia('video'))->toBeNull()
              ->and($updatedPost->categories->pluck('id')->toArray())->toBe([$this->category2->id])
              ->and($updatedPost->main_productable_id)->toBeNull()
              ->and($updatedPost->main_productable_type)->toBeNull()
