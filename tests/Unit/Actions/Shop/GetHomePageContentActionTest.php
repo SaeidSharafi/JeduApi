@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use App\Actions\Shop\GetHomePageContentAction;
 use App\Data\Shop\HomePageContentData;
+use App\Enums\DeliveryMethodEnum;
 use App\Enums\DynamicListEntityTypeEnum;
 use App\Enums\DynamicListSortByEnum;
+use App\Enums\FulfillmentTypeEnum;
 use App\Enums\HomePageBlockTypeEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Models\Blog\BlogPost;
@@ -15,7 +17,10 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
+use App\Services\ProductPriceService;
+use App\Services\RequestDataCacheService;
 
+uses(\Tests\Traits\CreatesModelsWithCachedData::class);
 beforeEach(function () {
     \Illuminate\Support\Facades\Storage::fake('public');
     $this->image = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('image.jpg'))
@@ -75,7 +80,101 @@ describe('GetHomePageContentAction', function () {
             ->and(count($result->main_content[0]['content']['items']))->toBe(3)
             ->and(count($result->main_content[1]['content']['items']))->toBe(3);
     });
+    it('can handle dynamic list blocks (Product) wiht generated price', function () {
+        // Create test data
+        $product = Product::factory()
+            ->withDeliveryOptions(realData: [
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+                    'price'            => 20000,
+                ],
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::IN_PERSON_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
+                    'price'            => 20000,
+                ],
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::OFFILNE_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
+                    'price'            => 20000,
+                ],
+            ]);
 
+        $mockedPriceService = Mockery::mock(ProductPriceService::class);
+        $mockedPriceService->shouldNotReceive('getPriceDataForProduct');
+
+        $product = $this->createWithPriceCache($product);
+        // Create dynamic list block
+        HomePageBlock::factory()->dynamicList(
+            DynamicListEntityTypeEnum::ALL_PRODUCTS,
+            DynamicListSortByEnum::CREATED_AT_DESC,
+            3
+        )->create([
+            'title'     => 'Latest Products',
+            'location'  => 'main_content',
+            'order'     => 1,
+            'is_active' => true,
+        ]);
+        $action = new GetHomePageContentAction($mockedPriceService, app(RequestDataCacheService::class));
+
+        $result = $action->handle();
+
+        expect($result)->toBeInstanceOf(HomePageContentData::class)
+            ->and(count($result->main_content))->toBe(1)
+            ->and($result->main_content[0]['title'])->toBe('Latest Products')
+            ->and($result->main_content[0]['type'])->toBe('DYNAMIC_LIST')
+            ->and(count($result->main_content[0]['content']['items']))->toBe(1)
+            ->and($result->main_content[0]['content']['items'][0]['id'])->toBe($product->id)
+            ->and($result->main_content[0]['content']['items'][0]['price'])->toBe(20000)
+            ->and($result->main_content[0]['content']['items'][0]['original_price'])->toBe(20000);
+    });
+    it('can handle dynamic list blocks (Product) wihtout generated price', function () {
+        $product = Product::factory()
+            ->withDeliveryOptions(realData: [
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+                    'price'            => 20000,
+                ],
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::IN_PERSON_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
+                    'price'            => 20000,
+                ],
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::OFFILNE_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
+                    'price'            => 20000,
+                ],
+            ])
+            ->create();
+
+        // Create dynamic list block
+        HomePageBlock::factory()->dynamicList(
+            DynamicListEntityTypeEnum::ALL_PRODUCTS,
+            DynamicListSortByEnum::CREATED_AT_DESC,
+            3
+        )->create([
+            'title'     => 'Latest Products',
+            'location'  => 'main_content',
+            'order'     => 1,
+            'is_active' => true,
+        ]);
+        $action = app()->Make(GetHomePageContentAction::Class);
+        $result = $action->handle();
+        $product->refresh();
+        expect($product->price_data_cache)->toBeNull()
+            ->and($result)->toBeInstanceOf(HomePageContentData::class)
+            ->and(count($result->main_content))->toBe(1)
+            ->and($result->main_content[0]['title'])->toBe('Latest Products')
+            ->and($result->main_content[0]['type'])->toBe('DYNAMIC_LIST')
+            ->and(count($result->main_content[0]['content']['items']))->toBe(1)
+            ->and($result->main_content[0]['content']['items'][0]['id'])->toBe($product->id)
+            ->and($result->main_content[0]['content']['items'][0]['price'])->toBe(20000)
+            ->and($result->main_content[0]['content']['items'][0]['original_price'])->toBe(20000);
+
+    });
     it('can handle dynamic list blocks (Product)', function () {
         // Create test data
         Product::factory()

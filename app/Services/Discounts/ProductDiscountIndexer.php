@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Discounts;
 
 use App\Enums\Order\DiscountTypeEnum;
+use App\Events\ProductCacheInvalidated;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
 use App\Models\ProductDeliveryOptionDiscountPrice;
@@ -89,6 +90,7 @@ final class ProductDiscountIndexer
 
         if ($deliveryOptions->isNotEmpty()) {
             $this->processProductChunk($deliveryOptions, $promotions);
+            $this->dispatchCacheUpdatesForOptions($deliveryOptions);
         }
 
     }
@@ -161,6 +163,8 @@ final class ProductDiscountIndexer
                 ['discount_promotion_id', 'discounted_price', 'updated_at'] // columns to update
             );
         }
+
+        $this->dispatchCacheUpdatesForOptions($productDeliveryOptions);
     }
 
     /**
@@ -275,5 +279,14 @@ final class ProductDiscountIndexer
         }
 
         return true;
+    }
+
+    private function dispatchCacheUpdatesForOptions(Collection $deliveryOptions): void
+    {
+        $productIdsToUpdate = $deliveryOptions->pluck('product_id')->unique();
+
+        foreach ($productIdsToUpdate as $productId) {
+            ProductCacheInvalidated::dispatch($productId);
+        }
     }
 }

@@ -7,6 +7,7 @@ namespace App\Actions\Admin\Product;
 use App\Data\Admin\Product\ProductCreateData;
 use App\Enums\ProductableEnum;
 use App\Enums\PublicationStatusEnum;
+use App\Events\ProductCacheInvalidated;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 
@@ -14,7 +15,7 @@ final readonly class CreateProductAction
 {
     public function handle(ProductCreateData $data): Product
     {
-        return DB::transaction(function () use ($data): Product {
+        $product =  DB::transaction(function () use ($data): Product {
             $forceCreate = $data->force_create ?? false;
             $productableClass = ProductableEnum::from($data->productable_type)->getModelClass();
             $productable = $productableClass::find($data->productable_id);
@@ -32,8 +33,9 @@ final readonly class CreateProductAction
                 'slug' => $productable->slug,
             ])->fresh();
             $product->categories()->sync($data->categories);
-
             return $product;
         });
+        ProductCacheInvalidated::dispatch($product->id);
+        return $product;
     }
 }

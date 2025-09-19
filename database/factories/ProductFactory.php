@@ -86,28 +86,14 @@ final class ProductFactory extends Factory
         });
     }
 
-    public function withDeliveryOptions(int $count = 3, $realData = false): static
+    public function withDeliveryOptions(int $count = 3,array $realData = []): static
     {
         return $this->afterCreating(function (Product $product) use ($count, $realData) {
             \App\Models\ProductDeliveryOption::factory()
                 ->withTeachers()
-                ->count($count)
+                ->count(count($realData) > 0  ? count($realData) : $count)
                 ->when($realData, fn($q) => $q->sequence(
-                    [
-                        'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE,
-                        'delivery_method'             => DeliveryMethodEnum::LMS_MOODLE,
-                        'price'            => 1000000,
-                    ],
-                    [
-                        'fulfillment_type' => FulfillmentTypeEnum::IN_PERSON_SERVICE,
-                        'delivery_method'             => DeliveryMethodEnum::IN_PERSON,
-                        'price' => 3000000,
-                    ],
-                    [
-                        'fulfillment_type' => FulfillmentTypeEnum::OFFILNE_SERVICE,
-                        'delivery_method'             => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
-                        'price'            => 500000,
-                    ],
+                    ...$realData
                 ))
                 ->create([
                     'product_id' => $product->id,

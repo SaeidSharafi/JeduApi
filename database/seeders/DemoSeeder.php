@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\DeliveryMethodEnum;
 use App\Enums\DynamicListEntityTypeEnum;
 use App\Enums\DynamicListSortByEnum;
+use App\Enums\FulfillmentTypeEnum;
 use App\Enums\HomePageBlockTypeEnum;
 use App\Enums\PermissionEnum;
 use App\Models\Blog\BlogCategory;
@@ -67,6 +69,8 @@ final class DemoSeeder extends Seeder
             User::query()->truncate();
             $this->enableForeignKeyChecks();
         }
+        $this->command->info('Cleared existing data.');
+        $this->command->info('Preparing media files...');
 
         Storage::disk('public')->deleteDirectory('fake-media');
         $videoPath = base_path().'/resources/seed-media/placeholder.mp4';
@@ -93,14 +97,7 @@ final class DemoSeeder extends Seeder
         MediaUploader::importPath('public', 'fake-media/preview.svg');
         $cover = MediaUploader::importPath('public', 'fake-media/fake-cover.svg');
 
-        $user = Staff::forceCreate([
-            'name'     => 'Admin',
-            'email'    => 'staff@example.com',
-            'phone'    => '9300000000',
-            'password' => bcrypt('password'),
-            'is_admin' => true,
-        ]);
-        User::factory(10)->create();
+        $this->command->info('Setting up roles and permissions...');
         $role = Role::firstOrCreate(
             [
                 'name'       => 'admin',
@@ -145,6 +142,17 @@ final class DemoSeeder extends Seeder
             PermissionEnum::COURSE_UPDATE->value,
             PermissionEnum::SEMINAR_UPDATE->value,
         ]);
+        $this->command->info('Seeding foundational data (Users, Vendors, Categories, Courses, etc.)...');
+
+        $user = Staff::forceCreate([
+            'name'     => 'Admin',
+            'email'    => 'staff@example.com',
+            'phone'    => '9300000000',
+            'password' => bcrypt('password'),
+            'is_admin' => true,
+        ]);
+        User::factory(10)->create();
+
         $user->assignRole('admin');
         $staff = Staff::query()->first();
         Staff::factory(50)->create();
@@ -184,11 +192,30 @@ final class DemoSeeder extends Seeder
             ->withMedia()
             ->create();
 
+        $this->command->info('Creating Products from existing blueprints...');
         Product::factory(100)
-            ->withDeliveryOptions(realData: true)
+            ->withDeliveryOptions(realData: [
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+                    'price'            => 1000000,
+                ],
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::IN_PERSON_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
+                    'price'            => 3000000,
+                ],
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::OFFILNE_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
+                    'price'            => 500000,
+                ],
+            ])
             ->useExistingRelations()
             ->withCategory(3)
             ->create();
+
+        $this->command->info('Seeding historical Orders...');
         for ($i = 0; $i < 100; $i++) {
             Order::factory()
                 ->useExistingCustomer()
@@ -202,13 +229,15 @@ final class DemoSeeder extends Seeder
                 ->withCalculatedTotalsAutomated()
                 ->create();
         }
-
+        $this->command->info('Seeding Blog Categories and Posts...');
         BlogPost::factory()
             ->count(20)
             ->withMedia()
             ->create([
                 'author_id' => $staff->id,
             ]);
+
+        $this->command->info('Seeding Home Page Blocks...');
         HomePageBlock::factory()
             ->banner($cover)
             ->create([
@@ -225,7 +254,8 @@ final class DemoSeeder extends Seeder
             ]);
 
         HomePageBlock::factory()
-            ->curatedList(Category::query()->inRandomOrder()->take(5)->pluck('id')->values()->toArray(), HomePageBlockTypeEnum::MAIN_CATEGORIES)
+            ->curatedList(Category::query()->inRandomOrder()->take(5)->pluck('id')->values()->toArray(),
+                HomePageBlockTypeEnum::MAIN_CATEGORIES)
             ->create([
                 'title'    => 'Main Categories',
                 'location' => 'middle',
@@ -254,6 +284,14 @@ final class DemoSeeder extends Seeder
                 'order'    => 6,
             ]);
 
+        $this->command->info('Running post-seeding indexing and caching commands...');
+        Artisan::call('discounts:reindex-all');
+        $this->command->info('Discount price index generated.');
+
+        Artisan::call('prices:index-all --sync');
+        $this->command->info('Product price cache generated.');
+
+        $this->command->info('Seeding complete! The application is now in a consistent state.');
     }
 
     protected function disableForeignKeyChecks(): void

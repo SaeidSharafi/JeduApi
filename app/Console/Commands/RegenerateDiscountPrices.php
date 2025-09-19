@@ -14,7 +14,7 @@ final class RegenerateDiscountPrices extends Command
      *
      * @var string
      */
-    protected $signature = 'discounts:regenerate-discount-prices';
+    protected $signature = 'discounts:reindex-all';
 
     /**
      * The console command description.

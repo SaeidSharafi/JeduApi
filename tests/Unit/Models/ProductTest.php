@@ -19,6 +19,7 @@ test('to array', function (): void {
             'name'              => $product->name,
             'slug'              => $product->slug,
             'is_featured'       => $product->is_featured,
+            'price_data_cache'  => $product->price_data_cache,
             'details_json'      => $product->details_json,
             'created_at'        => $product->created_at?->utc()?->toJSON(),
             'updated_at'        => $product->updated_at?->utc()?->toJSON(),
@@ -27,7 +28,7 @@ test('to array', function (): void {
 });
 
 test('relation categories', function (): void {
-    $product  = App\Models\Product::factory()->create();
+    $product = App\Models\Product::factory()->create();
     $category = App\Models\Category::factory()->create();
     $product->categories()->attach($category->id);
 
@@ -46,7 +47,7 @@ test('relation categories', function (): void {
 });
 
 test('relation product_delivery_options', function () {
-    $product        = App\Models\Product::factory()->create();
+    $product = App\Models\Product::factory()->create();
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
 
     expect($product->productDeliveryOptions)
@@ -58,9 +59,9 @@ test('relation product_delivery_options', function () {
 });
 
 test('relation orderItems through product_delivery_options', function () {
-    $product        = App\Models\Product::factory()->create();
+    $product = App\Models\Product::factory()->create();
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
-    $orderItem      = App\Models\OrderItem::factory()->create(['product_delivery_option_id' => $deliveryOption->id]);
+    $orderItem = App\Models\OrderItem::factory()->create(['product_delivery_option_id' => $deliveryOption->id]);
 
     expect($product->orderItems)
         ->toHaveCount(1)

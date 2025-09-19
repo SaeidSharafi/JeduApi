@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Jobs\UpdateProductPriceCacheJob;
 use App\Traits\HasCategories;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -30,8 +31,22 @@ final class Product extends Model
             'name',
             'slug',
             'is_featured',
+            'price_data_cache',
             'details_json',
         ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_visible'       => 'boolean',
+            'is_featured'      => 'boolean',
+            'price_data_cache' => 'array',
+            'details_json'     => 'array',
+            'status'           => \App\Enums\PublicationStatusEnum::class,
+            'created_at'       => 'datetime',
+            'updated_at'       => 'datetime',
+        ];
+    }
 
     public function term(): BelongsTo
     {
@@ -101,7 +116,21 @@ final class Product extends Model
             })
             ->with('vendor');
     }
-
+    public function scopeActiveWithMedia($query)
+    {
+        return $query
+            ->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+            ->where('is_visible', true)
+            ->whereHas(
+                'productDeliveryOptions', function ($q) {
+                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED);
+            })
+            ->withWhereHas('productable', function ($q) {
+                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+                    ->withCoverMedia();
+            })
+            ->with('vendor');
+    }
     public function scopeActiveWithPriceAndMedia($query)
     {
         return $query
@@ -117,17 +146,5 @@ final class Product extends Model
                     ->withProductableMedia();
             })
             ->with('vendor');
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'is_visible'   => 'boolean',
-            'is_featured'  => 'boolean',
-            'details_json' => 'array',
-            'status'       => \App\Enums\PublicationStatusEnum::class,
-            'created_at'   => 'datetime',
-            'updated_at'   => 'datetime',
-        ];
     }
 }

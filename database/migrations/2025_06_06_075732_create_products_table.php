@@ -27,6 +27,7 @@ return new class extends Migration
             // so this is not a unique field
             $table->string('slug');
             $table->boolean('is_featured')->default(false);
+            $table->jsonb('price_data_cache')->nullable();
             $table->jsonb('details_json');
             $table->timestamps();
 

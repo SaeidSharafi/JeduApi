@@ -17,7 +17,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule): void {
-        $schedule->command('discounts:regenerate-discount-prices')
+        $schedule->command('discounts:reindex-all')
             ->hourly()
             ->withoutOverlapping();
         $schedule->command('post:publish')

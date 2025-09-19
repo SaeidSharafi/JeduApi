@@ -23,6 +23,12 @@ trait HasMedia
         return $query;
     }
 
+    public function scopeWithCoverMedia(Builder $query): Builder
+    {
+        $this->scopeWithMediaAndVariants($query, [MediaTagEnum::COVER->value]);
+        return $query;
+    }
+
     public function getAllMedia(): array
     {
         $tags = array_diff(MediaTagEnum::cases(), $this->exceptTags);
