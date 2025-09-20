@@ -5,12 +5,12 @@ declare(strict_types=1);
 use App\Actions\Admin\Role\OutputPermissionsAction;
 use Spatie\Permission\Models\Permission;
 
-beforeEach(function () {
+beforeEach(function (): void {
     Permission::query()->truncate();
 });
 describe('OutputPermissionsAction', function (): void {
 
-    it('should group permissions by resource correctly', function () {
+    it('should group permissions by resource correctly', function (): void {
 
         $categoryCreate = Permission::create(['name' => 'category.create', 'guard_name' => 'staff']);
         $categoryView   = Permission::create(['name' => 'category.view', 'guard_name' => 'staff']);
@@ -29,7 +29,7 @@ describe('OutputPermissionsAction', function (): void {
             ->and($result['course']['permissions'])->toHaveCount(1);
     });
 
-    it('should filter permissions by guard correctly', function () {
+    it('should filter permissions by guard correctly', function (): void {
         // Create permissions for different guards
         Permission::create(['name' => 'staff.view', 'guard_name' => 'staff']);
         Permission::create(['name' => 'user.profile', 'guard_name' => 'user']);
@@ -49,7 +49,7 @@ describe('OutputPermissionsAction', function (): void {
             ->and($userResult)->not->toHaveKey('admin');
     });
 
-    it('should handle custom permissions', function () {
+    it('should handle custom permissions', function (): void {
         // Create a permission with a custom action that doesn't exist in standard actions
         $customPermission = Permission::create(['name' => 'staff.impersonate', 'guard_name' => 'staff']);
 
@@ -63,7 +63,7 @@ describe('OutputPermissionsAction', function (): void {
             ->and($result['staff']['permissions'][0]['resourceKey'])->toBe('staff');
     });
 
-    it('should handle multiple custom permissions for same resource', function () {
+    it('should handle multiple custom permissions for same resource', function (): void {
         // Create multiple custom permissions
         Permission::create(['name' => 'staff.impersonate', 'guard_name' => 'staff']);
         Permission::create(['name' => 'staff.manage_roles', 'guard_name' => 'staff']);
@@ -87,7 +87,7 @@ describe('OutputPermissionsAction', function (): void {
             ->and($viewPermission['label'])->toBe(__('auth.permission.action.view'));
     });
 
-    it('should return empty array when no permissions exist for guard', function () {
+    it('should return empty array when no permissions exist for guard', function (): void {
         // Don't create any permissions
         $action = new OutputPermissionsAction();
         $result = $action->handle('nonexistent_guard');
@@ -95,7 +95,7 @@ describe('OutputPermissionsAction', function (): void {
         expect($result)->toBe([]);
     });
 
-    it('should handle permissions with malformed names gracefully', function () {
+    it('should handle permissions with malformed names gracefully', function (): void {
         // Create a permission with malformed name (no dot separator)
         Permission::create(['name' => 'malformed_permission_name', 'guard_name' => 'staff']);
 
@@ -109,7 +109,7 @@ describe('OutputPermissionsAction', function (): void {
             ->and($result['custom_permission']['permissions'][0]['resourceKey'])->toBe('custom_permission');
     });
 
-    it('should use default staff guard when no guard specified', function () {
+    it('should use default staff guard when no guard specified', function (): void {
         Permission::create(['name' => 'staff.view', 'guard_name' => 'staff']);
         Permission::create(['name' => 'user.view', 'guard_name' => 'user']);
 
@@ -122,7 +122,7 @@ describe('OutputPermissionsAction', function (): void {
             ->and($result)->not->toHaveKey('user');
     });
 
-    it('should properly format PermissionData structure', function () {
+    it('should properly format PermissionData structure', function (): void {
         Permission::create(['name' => 'course.create', 'guard_name' => 'staff']);
 
         $action = new OutputPermissionsAction();

@@ -13,16 +13,16 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-describe('ComplianceReportController', function () {
+describe('ComplianceReportController', function (): void {
 
-    beforeEach(function () {
+    beforeEach(function (): void {
         $this->admin    = Staff::factory()->create();
         $this->baseUrl  = '/api/v1/admin/audit/compliance-report';
         $this->dateFrom = verta()->subMonth()->format('Y-m-d');
         $this->dateTo   = verta()->format('Y-m-d');
     });
 
-    it('can generate compliance report with proper permissions', function () {
+    it('can generate compliance report with proper permissions', function (): void {
         // Create test data
         $user = User::factory()->create();
         WalletTransaction::factory()->create([
@@ -63,7 +63,7 @@ describe('ComplianceReportController', function () {
         ]);
     });
 
-    it('requires permission to generate compliance report', function () {
+    it('requires permission to generate compliance report', function (): void {
         $response = $this->unauthorized_user()
             ->postJson($this->baseUrl, [
                 'date_from' => $this->dateFrom,
@@ -73,7 +73,7 @@ describe('ComplianceReportController', function () {
         $response->assertForbidden();
     });
 
-    it('validates required date_from field', function () {
+    it('validates required date_from field', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_COMPLIANCE_REPORTS_VIEW])
             ->postJson($this->baseUrl, [
                 'date_to' => $this->dateTo,
@@ -83,7 +83,7 @@ describe('ComplianceReportController', function () {
         $response->assertJsonValidationErrors(['date_from']);
     });
 
-    it('validates required date_to field', function () {
+    it('validates required date_to field', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_COMPLIANCE_REPORTS_VIEW])
             ->postJson($this->baseUrl, [
                 'date_from' => $this->dateFrom,
@@ -93,7 +93,7 @@ describe('ComplianceReportController', function () {
         $response->assertJsonValidationErrors(['date_to']);
     });
 
-    it('validates date_from format', function () {
+    it('validates date_from format', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_COMPLIANCE_REPORTS_VIEW])
             ->postJson($this->baseUrl, [
                 'date_from' => 'invalid-date',
@@ -104,7 +104,7 @@ describe('ComplianceReportController', function () {
         $response->assertJsonValidationErrors(['date_from']);
     });
 
-    it('validates date_to format', function () {
+    it('validates date_to format', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_COMPLIANCE_REPORTS_VIEW])
             ->postJson($this->baseUrl, [
                 'date_from' => $this->dateFrom,
@@ -115,7 +115,7 @@ describe('ComplianceReportController', function () {
         $response->assertJsonValidationErrors(['date_to']);
     });
 
-    it('validates that date_from is not after date_to', function () {
+    it('validates that date_from is not after date_to', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_COMPLIANCE_REPORTS_VIEW])
             ->postJson($this->baseUrl, [
                 'date_from' => now()->format('Y-m-d'),
@@ -126,7 +126,7 @@ describe('ComplianceReportController', function () {
         $response->assertJsonValidationErrors(['date_from']);
     });
 
-    it('includes transaction analysis when requested', function () {
+    it('includes transaction analysis when requested', function (): void {
         WalletTransaction::factory()->create([
             'type'       => TransactionTypeEnum::DEPOSIT,
             'amount'     => 5000000,
@@ -151,7 +151,7 @@ describe('ComplianceReportController', function () {
         expect($data['report_sections'])->toHaveKey('transaction_analysis');
     });
 
-    it('includes admin activity when requested', function () {
+    it('includes admin activity when requested', function (): void {
         AdminActionLog::factory()->count(3)->create([
             'action_type' => 'wallet_transaction_create',
             'created_at'  => now()->subDays(2),
@@ -169,7 +169,7 @@ describe('ComplianceReportController', function () {
         expect($data['report_sections'])->toHaveKey('admin_activity');
     });
 
-    it('includes risk assessment when requested', function () {
+    it('includes risk assessment when requested', function (): void {
         AdminActionLog::factory()->create([
             'risk_level' => 'high',
             'created_at' => now()->subDays(2),
@@ -193,7 +193,7 @@ describe('ComplianceReportController', function () {
         expect($data['report_sections'])->toHaveKey('risk_assessment');
     });
 
-    it('includes all sections when all flags are true', function () {
+    it('includes all sections when all flags are true', function (): void {
         // Create diverse test data
         WalletTransaction::factory()->create([
             'type'       => TransactionTypeEnum::DEPOSIT,
@@ -225,7 +225,7 @@ describe('ComplianceReportController', function () {
         ]);
     });
 
-    it('excludes sections when flags are false', function () {
+    it('excludes sections when flags are false', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_COMPLIANCE_REPORTS_VIEW])
             ->postJson($this->baseUrl, [
                 'date_from'                   => $this->dateFrom,
@@ -242,7 +242,7 @@ describe('ComplianceReportController', function () {
         expect($data['report_sections'])->not->toHaveKey('risk_assessment');
     });
 
-    it('includes report metadata', function () {
+    it('includes report metadata', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_COMPLIANCE_REPORTS_VIEW])
             ->postJson($this->baseUrl, [
                 'date_from' => $this->dateFrom,
@@ -258,7 +258,7 @@ describe('ComplianceReportController', function () {
         expect($data['report_period']['to'])->toBe($this->dateTo);
     });
 
-    it('handles empty data gracefully', function () {
+    it('handles empty data gracefully', function (): void {
         // Don't create any test data
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_COMPLIANCE_REPORTS_VIEW])
@@ -275,7 +275,7 @@ describe('ComplianceReportController', function () {
         expect($data['report_sections'])->toBeArray();
     });
 
-    it('filters data by date range correctly', function () {
+    it('filters data by date range correctly', function (): void {
         $withinRange = WalletTransaction::factory()->create([
             'amount'     => 5000000,
             'created_at' => Carbon::parse($this->dateFrom)->addDays(5),
@@ -306,7 +306,7 @@ describe('ComplianceReportController', function () {
 
     });
 
-    it('includes transaction statistics in summary', function () {
+    it('includes transaction statistics in summary', function (): void {
         // Create various transaction types
         WalletTransaction::factory()->create([
             'type'       => TransactionTypeEnum::DEPOSIT,
@@ -341,7 +341,7 @@ describe('ComplianceReportController', function () {
         expect($transactionSummary)->toHaveKey('by_type');
     });
 
-    it('includes admin activity statistics', function () {
+    it('includes admin activity statistics', function (): void {
         AdminActionLog::factory()->create([
             'action_type' => 'create',
             'risk_level'  => 'high',
@@ -369,7 +369,7 @@ describe('ComplianceReportController', function () {
         expect($adminActivity)->toHaveKey('by_risk_level');
     });
 
-    it('includes risk assessment analysis', function () {
+    it('includes risk assessment analysis', function (): void {
         // Create high-risk transactions and admin actions
         WalletTransaction::factory()->create([
             'amount'     => 60000000, // High amount
@@ -398,7 +398,7 @@ describe('ComplianceReportController', function () {
         expect($riskAssessment)->toHaveKey('recommendations');
     });
 
-    it('generates comprehensive risk assessment with correct structure', function () {
+    it('generates comprehensive risk assessment with correct structure', function (): void {
         // Create diverse test data for comprehensive risk assessment
         WalletTransaction::factory()->create([
             'amount'     => 55000000, // High amount transaction
@@ -517,7 +517,7 @@ describe('ComplianceReportController', function () {
         }
     });
 
-    it('calculates risk factors correctly based on transaction patterns', function () {
+    it('calculates risk factors correctly based on transaction patterns', function (): void {
         // Use specific Jalali date range to isolate our test data
         $testDateFromJalali = verta()->subDays(10)->format('Y-m-d');
         $testDateToJalali   = verta()->subDays(5)->format('Y-m-d');
@@ -617,7 +617,7 @@ describe('ComplianceReportController', function () {
         expect($riskFactors['admin_activity_risk']['risk_level'])->toBe('high'); // max(50%, 50%) = 50% >= 10%
     });
 
-    it('calculates overall risk score correctly based on weighted factors', function () {
+    it('calculates overall risk score correctly based on weighted factors', function (): void {
         // Create minimal high-risk data
         WalletTransaction::factory()->create([
             'amount'     => 60000000, // High amount - should make transaction_volume_risk = 'high'
@@ -645,7 +645,7 @@ describe('ComplianceReportController', function () {
         expect($riskAssessment['overall_risk_score'])->toBeLessThanOrEqual(80);
     });
 
-    it('generates appropriate recommendations based on risk levels', function () {
+    it('generates appropriate recommendations based on risk levels', function (): void {
         // Create high-risk scenario
         WalletTransaction::factory()->create([
             'amount'     => 70000000, // Very high amount
@@ -695,7 +695,7 @@ describe('ComplianceReportController', function () {
         }
     });
 
-    it('handles empty data with appropriate low-risk assessment', function () {
+    it('handles empty data with appropriate low-risk assessment', function (): void {
         // No transactions or admin actions created
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_COMPLIANCE_REPORTS_VIEW])

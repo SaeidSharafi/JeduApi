@@ -117,7 +117,7 @@ final readonly class CreateOrderAction
             // --- ENROLLMENT CREATION LOGIC (PRESERVED) ---
             // This logic is unchanged as it depends only on the created order items.
             $order->load('items');
-            $order->items->each(function ($item) use ($context) {
+            $order->items->each(function ($item) use ($context): void {
                 Enrollment::create([
                     'order_id'                   => $item->order_id,
                     'order_item_id'              => $item->id,
@@ -243,6 +243,6 @@ final readonly class CreateOrderAction
 
     private function calculateSubtotalFromContext(OrderContextData $context): int
     {
-        return $context->items->sum(fn (CalculatedOrderItemData $i) => $i->price * $i->qty);
+        return $context->items->sum(fn (CalculatedOrderItemData $i): int => $i->price * $i->qty);
     }
 }

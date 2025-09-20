@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-it('to array', function () {
+it('to array', function (): void {
     $smsLog = App\Models\SmsLog::create([
         'status'  => 200,
         'data'    => ['message_id' => '1234567890'],

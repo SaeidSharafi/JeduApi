@@ -17,7 +17,7 @@ use App\Services\Discounts\OrderCalculationService;
 use App\Services\Discounts\PromotionFinder;
 use Mockery\MockInterface;
 
-it('calculates a percentage discount correctly when a promotion is found', function () {
+it('calculates a percentage discount correctly when a promotion is found', function (): void {
     // Arrange
     $user           = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
@@ -53,7 +53,7 @@ it('calculates a percentage discount correctly when a promotion is found', funct
     expect($context->items[0]->total)->toBe(8000);
 });
 
-it('returns a context with zero discounts if promotion finder returns null', function () {
+it('returns a context with zero discounts if promotion finder returns null', function (): void {
     // Arrange
     $user           = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
@@ -77,7 +77,7 @@ it('returns a context with zero discounts if promotion finder returns null', fun
     expect($context->items[0]->discount_amount)->toBe(0);
 });
 
-it('correctly uses featured price as the base for calculation', function () {
+it('correctly uses featured price as the base for calculation', function (): void {
     $user           = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create([
         'price'                     => 10000,
@@ -119,7 +119,7 @@ it('correctly uses featured price as the base for calculation', function () {
     expect($context->items[0]->total)->toBe(7200); // 8000 - 800
 });
 
-test('it correctly uses a pre-calculated product-specific discount as the highest priority base price', function () {
+test('it correctly uses a pre-calculated product-specific discount as the highest priority base price', function (): void {
     // This test covers: if ($precalculatedPrices->has($option->id))
 
     // Arrange
@@ -158,7 +158,7 @@ test('it correctly uses a pre-calculated product-specific discount as the highes
     expect($context->items[0]->total)->toBe(5000);
 });
 
-test('it calculates subtotals correctly for mixed payment types', function () {
+test('it calculates subtotals correctly for mixed payment types', function (): void {
     // This test covers: if ($calculatedItem->payment_type === OrderItemPaymentTypeEnum::FULL_PAYMENT->value)
 
     // Arrange
@@ -200,7 +200,7 @@ test('it calculates subtotals correctly for mixed payment types', function () {
     expect($context->subtotal_full_payment_items)->toBe(10000);
 });
 
-test('it throws a runtime exception if a handler config dto is not mapped', function () {
+test('it throws a runtime exception if a handler config dto is not mapped', function (): void {
     $customer     = User::factory()->create();
     $orderContext = new OrderContextData(
         customer: $customer,
@@ -238,7 +238,7 @@ test('it throws a runtime exception if a handler config dto is not mapped', func
     $service = app(OrderCalculationService::class);
 
     // ACT & ASSERT: Expect the specific exception to be thrown
-    $closure = function () use ($service, $promotion, $orderContext) {
+    $closure = function () use ($service, $promotion, $orderContext): void {
         $method = new ReflectionMethod(OrderCalculationService::class, 'allConditionsPass');
         $method->setAccessible(true);
         $method->invoke($service, $promotion, $orderContext);
@@ -250,7 +250,7 @@ test('it throws a runtime exception if a handler config dto is not mapped', func
             "No config DTO mapped for handler '".CartValueCondition::class."'"
         );
 });
-test('it throws a runtime exception if an action handler config dto is not mapped', function () {
+test('it throws a runtime exception if an action handler config dto is not mapped', function (): void {
     $customer     = User::factory()->create();
     $orderContext = new OrderContextData(
         customer: $customer,
@@ -288,7 +288,7 @@ test('it throws a runtime exception if an action handler config dto is not mappe
     $service = app(OrderCalculationService::class);
 
     // ACT & ASSERT: Expect the specific exception to be thrown when calling the private method
-    $closure = function () use ($service, $promotion, $orderContext) {
+    $closure = function () use ($service, $promotion, $orderContext): void {
         $method = new ReflectionMethod(OrderCalculationService::class, 'applyActions');
         $method->setAccessible(true);
         $method->invoke($service, $promotion, $orderContext);
@@ -300,7 +300,7 @@ test('it throws a runtime exception if an action handler config dto is not mappe
             "No config DTO mapped for handler '".ApplyPercentageDiscountToItemsAction::class."'"
         );
 });
-test('it throws a runtime exception for an unregistered condition config', function () {
+test('it throws a runtime exception for an unregistered condition config', function (): void {
     // Arrange
     $user           = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create();
@@ -331,7 +331,7 @@ test('it throws a runtime exception for an unregistered condition config', funct
             "No discount condition handler registered for 'this_handler_does_not_exist'");
 });
 
-test('it throws a runtime exception for an unregistered action handler', function () {
+test('it throws a runtime exception for an unregistered action handler', function (): void {
     $user           = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create();
 
@@ -359,7 +359,7 @@ test('it throws a runtime exception for an unregistered action handler', functio
         ->toThrow(RuntimeException::class, "No discount action handler registered for 'this_action_is_fake'");
 });
 
-test('it skips an item in calculation if its delivery option ID does not exist', function () {
+test('it skips an item in calculation if its delivery option ID does not exist', function (): void {
 
     $user = User::factory()->create();
 
@@ -385,7 +385,7 @@ test('it skips an item in calculation if its delivery option ID does not exist',
         ->toThrow(InvalidArgumentException::class, 'One or more ProductDeliveryOption IDs do not exist: 99999');
 });
 
-test('it does not apply discount when promotion conditions fail', function () {
+test('it does not apply discount when promotion conditions fail', function (): void {
     // Arrange
     $user           = User::factory()->create();
     $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);

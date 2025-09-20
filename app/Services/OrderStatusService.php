@@ -102,16 +102,16 @@ final class OrderStatusService
         ];
         $statuses = $items->pluck('status');
 
-        if ($statuses->every(fn ($s) => $s === OrderItemStatusEnum::REFUNDED)) {
+        if ($statuses->every(fn ($s): bool => $s === OrderItemStatusEnum::REFUNDED)) {
             return $statusMap['all_refunded'];
         }
-        if ($statuses->every(fn ($s) => $s === OrderItemStatusEnum::CANCELLED)) {
+        if ($statuses->every(fn ($s): bool => $s === OrderItemStatusEnum::CANCELLED)) {
             return $statusMap['all_cancelled'];
         }
         if ($statuses->contains(OrderItemStatusEnum::REFUNDED)) {
             return $statusMap['any_refunded'];
         }
-        if ($statuses->every(fn ($s) => $s === OrderItemStatusEnum::COMPLETED)) {
+        if ($statuses->every(fn ($s): bool => $s === OrderItemStatusEnum::COMPLETED)) {
             return $statusMap['all_completed'];
         }
 

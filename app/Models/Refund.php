@@ -21,13 +21,6 @@ final class Refund extends Model implements WalletTransactionSourceableContract
 
     protected $guarded = [];
 
-    protected $casts
-        = [
-            'transaction_details' => 'array',
-            'refunded_at'         => 'datetime',
-            'status'              => RefundStatusEnum::class,
-        ];
-
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
@@ -41,5 +34,13 @@ final class Refund extends Model implements WalletTransactionSourceableContract
     public function customer(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+    protected function casts(): array
+    {
+        return [
+            'transaction_details' => 'array',
+            'refunded_at'         => 'datetime',
+            'status'              => RefundStatusEnum::class,
+        ];
     }
 }

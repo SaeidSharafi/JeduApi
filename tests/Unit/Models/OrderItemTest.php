@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-test('to array', function () {
+test('to array', function (): void {
     $orderItem = App\Models\OrderItem::factory()->create()->fresh();
 
     expect($orderItem->toArray())
@@ -30,7 +30,7 @@ test('to array', function () {
         ]);
 });
 
-test('relation order', function () {
+test('relation order', function (): void {
     $orderItem = App\Models\OrderItem::factory()->create();
 
     expect($orderItem->order)
@@ -39,7 +39,7 @@ test('relation order', function () {
         ->toEqual($orderItem->order_id);
 });
 
-test('relation vendor', function () {
+test('relation vendor', function (): void {
     $orderItem = App\Models\OrderItem::factory()->create();
 
     expect($orderItem->vendor)
@@ -48,7 +48,7 @@ test('relation vendor', function () {
         ->toEqual($orderItem->vendor_id);
 });
 
-test('relation enrollment', function () {
+test('relation enrollment', function (): void {
     $orderItem = App\Models\OrderItem::factory()->create();
     $enrolmet  = App\Models\Enrollment::factory()->create([
         'order_id'      => $orderItem->order_id,
@@ -61,7 +61,7 @@ test('relation enrollment', function () {
         ->toEqual($orderItem->id);
 });
 
-test('refunds relationship', function () {
+test('refunds relationship', function (): void {
     $order = App\Models\Order::factory()->create();
     $item  = App\Models\OrderItem::factory()->create([
         'order_id' => $order->id,

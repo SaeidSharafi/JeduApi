@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Data\Admin\MediaData;
 
-it('to array', function () {
+it('to array', function (): void {
     $setting = new App\Models\Setting([
         'key'   => 'site_name',
         'value' => ['en' => 'My Site', 'fa' => 'سایت من'],
@@ -28,7 +28,7 @@ it('to array', function () {
         ->and($array['group'])->toBe('general');
 });
 
-it('get and set setting', function () {
+it('get and set setting', function (): void {
     // Set a setting
     $setting = App\Models\Setting::set('site_name', ['en' => 'My Site', 'fa' => 'سایت من'], 'json', 'general');
 
@@ -47,7 +47,7 @@ it('get and set setting', function () {
     expect($defaultValue)->toBe('default_value');
 });
 
-it('get setting with images', function () {
+it('get setting with images', function (): void {
     // Create a media item
 
     Illuminate\Http\UploadedFile::fake();
@@ -75,7 +75,7 @@ it('get setting with images', function () {
         ->and($value['images'][1]->url)->toBe($image2->url);
 });
 
-it('get setting with non-array value', function () {
+it('get setting with non-array value', function (): void {
     // Set a setting with a non-array value
     $setting = App\Models\Setting::set('site_name', 'My Site', 'text', 'general');
 
@@ -90,7 +90,7 @@ it('get setting with non-array value', function () {
     expect($value)->toBe('My Site');
 });
 
-it('get setting with empty array value', function () {
+it('get setting with empty array value', function (): void {
     // Set a setting with an empty array value
     $setting = App\Models\Setting::set('empty_setting', [], 'json', 'general');
 

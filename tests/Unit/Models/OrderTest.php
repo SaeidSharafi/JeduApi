@@ -8,7 +8,7 @@ use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Order;
 use Illuminate\Database\Eloquent\Builder;
 
-test('to array', function () {
+test('to array', function (): void {
     $order = Order::factory()->create()->fresh();
 
     expect($order->toArray())
@@ -41,7 +41,7 @@ test('to array', function () {
         ]);
 });
 
-test('items relationship', function () {
+test('items relationship', function (): void {
     $order = Order::factory()->create();
     $item  = App\Models\OrderItem::factory()->create([
         'order_id' => $order->id,
@@ -62,7 +62,7 @@ test('items relationship', function () {
         ->toHaveCount(4);
 });
 
-test('payments relationship', function () {
+test('payments relationship', function (): void {
     $order   = Order::factory()->create();
     $payment = App\Models\Payment::factory()->create([
         'order_id' => $order->id,
@@ -83,7 +83,7 @@ test('payments relationship', function () {
         ->toHaveCount(4);
 });
 
-test('payment status', function () {
+test('payment status', function (): void {
     $items = [
         [
             'qty_ordered'  => 1,
@@ -136,7 +136,7 @@ test('payment status', function () {
 
 });
 
-test('enrollments relationship', function () {
+test('enrollments relationship', function (): void {
     $order     = Order::factory()->create();
     $enrollment = App\Models\Enrollment::factory()->create([
         'order_id' => $order->id,
@@ -157,7 +157,7 @@ test('enrollments relationship', function () {
         ->toHaveCount(4);
 });
 
-test('generate increment ID', function () {
+test('generate increment ID', function (): void {
     $order          = Order::factory()->create();
     $newIncrementId = Order::generateIncrementId();
 
@@ -167,7 +167,7 @@ test('generate increment ID', function () {
         ->toEqual((int) $order->increment_id + 1);
 });
 
-test('totalPaid', function () {
+test('totalPaid', function (): void {
     $order    = Order::factory()->create();
     $payment1 = App\Models\Payment::factory()->create([
         'order_id' => $order->id,
@@ -196,7 +196,7 @@ test('totalPaid', function () {
     // using withSum
 
     $orderWithSum = Order::withSum([
-        'payments as completed_payments_sum_amount' => function (Builder $query) {
+        'payments as completed_payments_sum_amount' => function (Builder $query): void {
             $query->where('status', PaymentStatusEnum::COMPLETED);
         },
     ], 'amount')
@@ -205,7 +205,7 @@ test('totalPaid', function () {
         ->toEqual(8000); // Should match the total paid from the payments relationship
 });
 
-test('paymentStatus edgecase', function () {
+test('paymentStatus edgecase', function (): void {
     $items = [
         [
             'qty_ordered'  => 1,

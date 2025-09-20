@@ -2,12 +2,12 @@
 
 use App\Enums\PublicationStatusEnum;
 
-describe("PublishPostCommand", function () {
-    beforeEach(function () {
+describe("PublishPostCommand", function (): void {
+    beforeEach(function (): void {
         $this->command = new App\Console\Commands\PublishPostCommand();
     });
 
-    it("should publish scheduled posts with past publish_at dates", function () {
+    it("should publish scheduled posts with past publish_at dates", function (): void {
         // Create a scheduled post with a past publish_at date
         $post = App\Models\Blog\BlogPost::factory()->create([
             'status'       => PublicationStatusEnum::SCHEDULED,
@@ -27,7 +27,7 @@ describe("PublishPostCommand", function () {
         expect($post->status)->toBe(PublicationStatusEnum::PUBLISHED);
     });
 
-    it("should not publish posts with future publish_at dates", function () {
+    it("should not publish posts with future publish_at dates", function (): void {
         // Create a scheduled post with a future publish_at date
         $post = App\Models\Blog\BlogPost::factory()->create([
             'status'       => PublicationStatusEnum::SCHEDULED,
@@ -47,7 +47,7 @@ describe("PublishPostCommand", function () {
         expect($post->status)->toBe(PublicationStatusEnum::SCHEDULED);
     });
 
-    it("should not publish posts that are not scheduled", function () {
+    it("should not publish posts that are not scheduled", function (): void {
         // Create a draft post
         $draftPost = App\Models\Blog\BlogPost::factory()->create([
             'status'       => PublicationStatusEnum::DRAFT,

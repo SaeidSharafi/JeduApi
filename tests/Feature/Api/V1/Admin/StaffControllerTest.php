@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Illuminate\Testing\Fluent\AssertableJson;
 
 uses(Tests\AuthTestTrait::class);
-beforeEach(function () {
+beforeEach(function (): void {
     $this->adminRole = Spatie\Permission\Models\Role::create([
         'name'       => 'admin',
         'label'      => 'Admin',
@@ -18,7 +18,7 @@ beforeEach(function () {
     $this->data['roles']                 = ['admin'];
 });
 describe('list filters', function (): void {
-    it('should filter by name', function () {
+    it('should filter by name', function (): void {
         App\Models\Staff::factory(20)->create();
         $staff = App\Models\Staff::factory()->create(['name' => 'John Doe']);
         $this->authorized_user([
@@ -30,7 +30,7 @@ describe('list filters', function (): void {
             ->assertJsonFragment(['name' => 'John Doe']);
     });
 
-    it('should filter by email', function () {
+    it('should filter by email', function (): void {
         App\Models\Staff::factory(20)->create();
         $staff = App\Models\Staff::factory()->create(['email' => 'admin@example.com']);
         $this->authorized_user([
@@ -42,7 +42,7 @@ describe('list filters', function (): void {
             ->assertJsonFragment(['email' => 'admin@example.com']);
     });
 
-    it('should filter by phone', function () {
+    it('should filter by phone', function (): void {
         App\Models\Staff::factory(20)->create();
         $staff = App\Models\Staff::factory()->create(['phone' => '09301234567']);
         $this->authorized_user([
@@ -54,7 +54,7 @@ describe('list filters', function (): void {
             ->assertJsonFragment(['phone' => '09301234567']);
     });
 
-    it('should filter by role', function () {
+    it('should filter by role', function (): void {
         $staff = App\Models\Staff::factory()->create();
         $staff->assignRole('admin');
         App\Models\Staff::factory(20)->create();
@@ -104,7 +104,7 @@ describe('list filters', function (): void {
 });
 
 describe('admin list', function (): void {
-    it('should return a list of staff', function () {
+    it('should return a list of staff', function (): void {
         App\Models\Staff::factory(20)->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_VIEW_ANY->value,
@@ -135,7 +135,7 @@ describe('admin list', function (): void {
             ]);
     });
 
-    it('should return an empty list when no staff exist', function () {
+    it('should return an empty list when no staff exist', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_VIEW_ANY->value,
         ]);
@@ -144,14 +144,14 @@ describe('admin list', function (): void {
             ->assertJsonCount(1, 'data.data');
     });
 
-    it('should not return staff list without required permissions', function () {
+    it('should not return staff list without required permissions', function (): void {
         $this->unauthorized_user();
         $response = $this->getJson(route('api.v1.admin.staff.index'));
         $response->assertForbidden();
     });
 });
 describe('admin store', function (): void {
-    it('should create a new admin', function () {
+    it('should create a new admin', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_CREATE->value,
         ]);
@@ -170,12 +170,12 @@ describe('admin store', function (): void {
         ]);
     });
 
-    it('should not create a new staff without required permissions', function () {
+    it('should not create a new staff without required permissions', function (): void {
         $this->unauthorized_user();
         $response = $this->postJson(route('api.v1.admin.staff.store'), $this->data);
         $response->assertForbidden();
     });
-    it('should not create a new staff with invalid data', function () {
+    it('should not create a new staff with invalid data', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_CREATE->value,
         ]);
@@ -185,7 +185,7 @@ describe('admin store', function (): void {
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['email']);
     });
-    it('should not create a new staff with duplicate email', function () {
+    it('should not create a new staff with duplicate email', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_CREATE->value,
         ]);
@@ -195,7 +195,7 @@ describe('admin store', function (): void {
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['email']);
     });
-    it('should not create a new staff with duplicate phone', function () {
+    it('should not create a new staff with duplicate phone', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_CREATE->value,
         ]);
@@ -206,7 +206,7 @@ describe('admin store', function (): void {
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['phone']);
     });
-    it('should not create a new staff with invalid phone', function () {
+    it('should not create a new staff with invalid phone', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_CREATE->value,
         ]);
@@ -216,7 +216,7 @@ describe('admin store', function (): void {
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['phone']);
     });
-    it('should not create a new staff with invalid password', function () {
+    it('should not create a new staff with invalid password', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_CREATE->value,
         ]);
@@ -228,7 +228,7 @@ describe('admin store', function (): void {
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['password']);
     });
-    it('should not create a new staff with invalid name', function () {
+    it('should not create a new staff with invalid name', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_CREATE->value,
         ]);
@@ -237,7 +237,7 @@ describe('admin store', function (): void {
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['name']);
     });
-    it('should not create a new staff with invalid role', function () {
+    it('should not create a new staff with invalid role', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_CREATE->value,
         ]);
@@ -248,7 +248,7 @@ describe('admin store', function (): void {
 });
 
 describe('admin show', function (): void {
-    it('should return a specific admin', function () {
+    it('should return a specific admin', function (): void {
         $staff = App\Models\Staff::factory()->create();
         $staff->assignRole('admin');
         $this->authorized_user([
@@ -273,14 +273,14 @@ describe('admin show', function (): void {
             });
     });
 
-    it('should not return a specific staff without required permissions', function () {
+    it('should not return a specific staff without required permissions', function (): void {
         $staff = App\Models\Staff::factory()->create();
         $this->unauthorized_user();
         $response = $this->getJson(route('api.v1.admin.staff.show', $staff));
         $response->assertForbidden();
     });
 
-    it('should return 404 for non-existing admin', function () {
+    it('should return 404 for non-existing admin', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_VIEW->value,
         ]);
@@ -290,7 +290,7 @@ describe('admin show', function (): void {
 });
 
 describe('admin update', function (): void {
-    it('should update an existing admin', function () {
+    it('should update an existing admin', function (): void {
         $staff = App\Models\Staff::factory()->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_UPDATE->value,
@@ -306,7 +306,7 @@ describe('admin update', function (): void {
             'phone' => $this->data['phone'],
         ]);
     });
-    it('should update an existing staff without changing password', function () {
+    it('should update an existing staff without changing password', function (): void {
         $staff    = App\Models\Staff::factory()->create();
         $passowrd = $staff->password;
         $this->authorized_user([
@@ -324,14 +324,14 @@ describe('admin update', function (): void {
             'password' => $passowrd,
         ]);
     });
-    it('should not update an staff without required permissions', function () {
+    it('should not update an staff without required permissions', function (): void {
         $staff = App\Models\Staff::factory()->create();
         $this->unauthorized_user();
         $response = $this->putJson(route('api.v1.admin.staff.update', $staff), $this->data);
         $response->assertForbidden();
     });
 
-    it('should not update an staff with invalid data', function () {
+    it('should not update an staff with invalid data', function (): void {
         $staff = App\Models\Staff::factory()->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_UPDATE->value,
@@ -343,7 +343,7 @@ describe('admin update', function (): void {
             ->assertJsonValidationErrors(['email']);
     });
 
-    it('should not update an staff with duplicate email', function () {
+    it('should not update an staff with duplicate email', function (): void {
         $staff1 = App\Models\Staff::factory()->create();
         $staff2 = App\Models\Staff::factory()->create();
         $this->authorized_user([
@@ -355,7 +355,7 @@ describe('admin update', function (): void {
             ->assertJsonValidationErrors(['email']);
     });
 
-    it('should not update an staff with duplicate phone', function () {
+    it('should not update an staff with duplicate phone', function (): void {
         $staff1 = App\Models\Staff::factory()->create();
         $staff2 = App\Models\Staff::factory()->create();
         $this->authorized_user([
@@ -366,7 +366,7 @@ describe('admin update', function (): void {
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['phone']);
     });
-    it('should not update an staff with invalid phone', function () {
+    it('should not update an staff with invalid phone', function (): void {
         $staff = App\Models\Staff::factory()->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_UPDATE->value,
@@ -376,7 +376,7 @@ describe('admin update', function (): void {
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['phone']);
     });
-    it('should not update an staff with invalid password', function () {
+    it('should not update an staff with invalid password', function (): void {
         $staff = App\Models\Staff::factory()->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_UPDATE->value,
@@ -387,7 +387,7 @@ describe('admin update', function (): void {
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['password']);
     });
-    it('should not update an staff with invalid name', function () {
+    it('should not update an staff with invalid name', function (): void {
         $staff = App\Models\Staff::factory()->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_UPDATE->value,
@@ -397,7 +397,7 @@ describe('admin update', function (): void {
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['name']);
     });
-    it('should not update an staff with invalid role', function () {
+    it('should not update an staff with invalid role', function (): void {
         $staff = App\Models\Staff::factory()->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_UPDATE->value,
@@ -406,7 +406,7 @@ describe('admin update', function (): void {
         $response            = $this->putJson(route('api.v1.admin.staff.update', $staff), $this->data);
         $response->assertInvalid(['roles.0']);
     });
-    it('can update itslef', function () {
+    it('can update itslef', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_DELETE->value,
         ]);
@@ -424,7 +424,7 @@ describe('admin update', function (): void {
             'phone' => $data['phone'],
         ]);
     });
-    it('should not update another super admin', function () {
+    it('should not update another super admin', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_DELETE->value,
         ]);
@@ -441,7 +441,7 @@ describe('admin update', function (): void {
 });
 
 describe('admin destroy', function (): void {
-    it('should delete an existing admin', function () {
+    it('should delete an existing admin', function (): void {
         $staff = App\Models\Staff::factory()->create();
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_DELETE->value,
@@ -454,13 +454,13 @@ describe('admin destroy', function (): void {
         ]);
     });
 
-    it('should not delete an staff without required permissions', function () {
+    it('should not delete an staff without required permissions', function (): void {
         $staff = App\Models\Staff::factory()->create();
         $this->unauthorized_user();
         $response = $this->deleteJson(route('api.v1.admin.staff.destroy', $staff));
         $response->assertForbidden();
     });
-    it('should not delete itslef', function () {
+    it('should not delete itslef', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_DELETE->value,
         ]);
@@ -468,7 +468,7 @@ describe('admin destroy', function (): void {
         $response = $this->deleteJson(route('api.v1.admin.staff.destroy', $this->user));
         $response->assertForbidden();
     });
-    it('should not delete another super admin', function () {
+    it('should not delete another super admin', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_DELETE->value,
         ]);
@@ -483,7 +483,7 @@ describe('admin destroy', function (): void {
         $response->assertForbidden();
     });
 
-    it('should not delete a non-existing admin', function () {
+    it('should not delete a non-existing admin', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::STAFF_DELETE->value,
         ]);

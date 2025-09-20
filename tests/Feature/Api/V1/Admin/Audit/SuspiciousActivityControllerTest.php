@@ -13,16 +13,16 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-describe('SuspiciousActivityController', function () {
+describe('SuspiciousActivityController', function (): void {
 
-    beforeEach(function () {
+    beforeEach(function (): void {
         $this->admin    = Staff::factory()->create();
         $this->baseUrl  = '/api/v1/admin/audit/suspicious-activity';
         $this->dateFrom = verta()->subMonth()->format('Y-m-d');
         $this->dateTo   = verta()->format('Y-m-d');
     });
 
-    it('can detect suspicious activity with proper permissions', function () {
+    it('can detect suspicious activity with proper permissions', function (): void {
         // Create suspicious transaction (large amount)
         WalletTransaction::factory()->create([
             'amount'     => 60000000, // 60M IRR - above default threshold
@@ -53,7 +53,7 @@ describe('SuspiciousActivityController', function () {
         ]);
     });
 
-    it('requires permission to detect suspicious activity', function () {
+    it('requires permission to detect suspicious activity', function (): void {
         $response = $this->authorized_user([])
             ->postJson($this->baseUrl, [
                 'date_from' => $this->dateFrom,
@@ -63,7 +63,7 @@ describe('SuspiciousActivityController', function () {
         $response->assertForbidden();
     });
 
-    it('validates required date_from field', function () {
+    it('validates required date_from field', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
                 'date_to' => $this->dateTo,
@@ -73,7 +73,7 @@ describe('SuspiciousActivityController', function () {
         $response->assertJsonValidationErrors(['date_from']);
     });
 
-    it('validates required date_to field', function () {
+    it('validates required date_to field', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
                 'date_from' => $this->dateFrom,
@@ -83,7 +83,7 @@ describe('SuspiciousActivityController', function () {
         $response->assertJsonValidationErrors(['date_to']);
     });
 
-    it('validates date formats', function () {
+    it('validates date formats', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
                 'date_from' => 'invalid-date',
@@ -94,7 +94,7 @@ describe('SuspiciousActivityController', function () {
         $response->assertJsonValidationErrors(['date_from', 'date_to']);
     });
 
-    it('validates that date_from is before date_to', function () {
+    it('validates that date_from is before date_to', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
                 'date_from' => now()->format('Y-m-d'),
@@ -105,7 +105,7 @@ describe('SuspiciousActivityController', function () {
         $response->assertJsonValidationErrors(['date_from']);
     });
 
-    it('validates threshold values are positive integers', function () {
+    it('validates threshold values are positive integers', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
                 'date_from'                => $this->dateFrom,
@@ -118,7 +118,7 @@ describe('SuspiciousActivityController', function () {
         $response->assertJsonValidationErrors(['large_amount_threshold', 'high_frequency_threshold']);
     });
 
-    it('detects large amount transactions', function () {
+    it('detects large amount transactions', function (): void {
         $largeTransaction = WalletTransaction::factory()->create([
             'amount'     => 60000000, // 60M IRR
             'created_at' => now()->subDays(3),
@@ -145,7 +145,7 @@ describe('SuspiciousActivityController', function () {
         expect($data['suspicious_activities']['large_transactions'][0]['transaction_id'])->toBe($largeTransaction->id);
     });
 
-    it('detects off-hours transactions', function () {
+    it('detects off-hours transactions', function (): void {
         Carbon::setTestNow(Carbon::create(2025, 1, 15, 14, 0, 0)); // Set test time to 2 PM
 
         $offHoursTransaction = WalletTransaction::factory()->create([
@@ -175,7 +175,7 @@ describe('SuspiciousActivityController', function () {
         Carbon::setTestNow(); // Reset
     });
 
-    it('detects high frequency users', function () {
+    it('detects high frequency users', function (): void {
         $highFreqUser = User::factory()->create();
 
         // Create 15 transactions for high frequency user
@@ -208,7 +208,7 @@ describe('SuspiciousActivityController', function () {
         expect($data['suspicious_activities']['high_frequency_users'][0]['transaction_count'])->toBe(15);
     });
 
-    it('detects round number patterns', function () {
+    it('detects round number patterns', function (): void {
         $roundTransaction1 = WalletTransaction::factory()->create([
             'amount'     => 10000000, // 10M - round number
             'created_at' => now()->subDays(3),
@@ -238,7 +238,7 @@ describe('SuspiciousActivityController', function () {
         expect($data['suspicious_activities']['round_number_patterns'])->toHaveCount(2);
     });
 
-    it('includes rapid succession detection automatically', function () {
+    it('includes rapid succession detection automatically', function (): void {
         $user     = User::factory()->create();
         $baseTime = now()->subHours(2);
 
@@ -273,7 +273,7 @@ describe('SuspiciousActivityController', function () {
         expect($data['suspicious_activities'])->toHaveKey('rapid_succession');
     });
 
-    it('includes unusual admin activity detection automatically', function () {
+    it('includes unusual admin activity detection automatically', function (): void {
         $admin = Staff::factory()->create();
 
         // Create multiple high-risk admin actions
@@ -295,7 +295,7 @@ describe('SuspiciousActivityController', function () {
         expect($data['suspicious_activities'])->toHaveKey('unusual_admin_activity');
     });
 
-    it('includes detection period and criteria in response', function () {
+    it('includes detection period and criteria in response', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
                 'date_from'                => $this->dateFrom,
@@ -316,7 +316,7 @@ describe('SuspiciousActivityController', function () {
         expect($data['detection_criteria']['high_frequency_threshold'])->toBe(10);
     });
 
-    it('includes summary of suspicious activities', function () {
+    it('includes summary of suspicious activities', function (): void {
         // Create some suspicious data
         WalletTransaction::factory()->create([
             'amount'     => 60000000, // Large amount
@@ -338,7 +338,7 @@ describe('SuspiciousActivityController', function () {
         expect($data['summary'])->toBeArray();
     });
 
-    it('handles empty results gracefully', function () {
+    it('handles empty results gracefully', function (): void {
         // Don't create any suspicious transactions
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
@@ -358,7 +358,7 @@ describe('SuspiciousActivityController', function () {
         expect($data['summary'])->toBeArray();
     });
 
-    it('respects date range filtering', function () {
+    it('respects date range filtering', function (): void {
         // Transaction outside range
         $outsideRange = WalletTransaction::factory()->create([
             'amount'     => 60000000,
@@ -386,7 +386,7 @@ describe('SuspiciousActivityController', function () {
         expect($data['suspicious_activities']['large_transactions'][0]['transaction_id'])->toBe($withinRange->id);
     });
 
-    it('uses default thresholds when not provided', function () {
+    it('uses default thresholds when not provided', function (): void {
         WalletTransaction::factory()->create([
             'amount'     => 60000000, // Should trigger default threshold
             'created_at' => now()->subDays(3),
@@ -406,7 +406,7 @@ describe('SuspiciousActivityController', function () {
         expect($data['suspicious_activities']['large_transactions'])->not->toBeEmpty();
     });
 
-    it('allows customizing thresholds', function () {
+    it('allows customizing thresholds', function (): void {
         WalletTransaction::factory()->create([
             'amount'     => 30000000, // 30M IRR
             'created_at' => now()->subDays(3),
@@ -427,7 +427,7 @@ describe('SuspiciousActivityController', function () {
         expect($data['detection_criteria']['large_amount_threshold'])->toBe(25000000);
     });
 
-    it('handles boolean flags correctly', function () {
+    it('handles boolean flags correctly', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_SUSPICIOUS_ACTIVITY_VIEW])
             ->postJson($this->baseUrl, [
                 'date_from'              => $this->dateFrom,

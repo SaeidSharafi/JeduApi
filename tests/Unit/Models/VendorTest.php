@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-it('to Array', function () {
+it('to Array', function (): void {
     $vendor = App\Models\Vendor::factory()->create()->fresh();
 
     expect($vendor->toArray())->toEqual([

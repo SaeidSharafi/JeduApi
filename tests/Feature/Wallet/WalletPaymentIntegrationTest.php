@@ -19,7 +19,7 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->customer              = User::factory()->create();
     $this->productDeliveryOption = ProductDeliveryOption::factory()->create(['price' => 50000]);
     $this->authorized_user([
@@ -27,7 +27,7 @@ beforeEach(function () {
     ]);
 });
 
-it('can create a wallet payment successfully', function () {
+it('can create a wallet payment successfully', function (): void {
     // Create a wallet with sufficient balance
     $this->customer->wallet->update([
         'user_id' => $this->customer->id,
@@ -88,7 +88,7 @@ it('can create a wallet payment successfully', function () {
     Event::assertDispatched(PaymentCompletedEvent::class);
 });
 
-it('fails when wallet has insufficient balance', function () {
+it('fails when wallet has insufficient balance', function (): void {
     // Create a wallet with insufficient balance
     $this->customer->wallet->update([
         'user_id' => $this->customer->id,
@@ -125,7 +125,7 @@ it('fails when wallet has insufficient balance', function () {
     expect($this->customer->wallet->balance)->toBe(30000);
 });
 
-it('can process pre-payment wallet payment', function () {
+it('can process pre-payment wallet payment', function (): void {
     // Create a wallet with sufficient balance
     $this->customer->wallet->update([
         'user_id'      => $this->customer->id,
@@ -169,7 +169,7 @@ it('can process pre-payment wallet payment', function () {
     expect($order->balance_due)->toBe(30000); // 50000 - 20000
 });
 
-it('processes wallet payment with localized messages', function () {
+it('processes wallet payment with localized messages', function (): void {
     // Create a wallet with insufficient balance to test error message
     $this->customer->wallet->update([
         'user_id' => $this->customer->id,

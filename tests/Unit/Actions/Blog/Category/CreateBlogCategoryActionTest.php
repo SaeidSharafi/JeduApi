@@ -2,8 +2,8 @@
 
 use App\Actions\Admin\Blog\Category\CreateBlogCategoryAction;
 
-describe('CreateBlogCategoryAction', function () {
-   beforeEach(function (){
+describe('CreateBlogCategoryAction', function (): void {
+   beforeEach(function (): void{
        $this->staff = \App\Models\Staff::factory()->create();
        Storage::fake('public');
 
@@ -15,7 +15,7 @@ describe('CreateBlogCategoryAction', function () {
            ->upload();
    });
 
-    it('creates a blog category', function () {
+    it('creates a blog category', function (): void {
          $data = new \App\Data\Admin\Blog\Category\BlogCategoryCreateData(
               name: 'New Category',
               slug: 'new-category',
@@ -35,7 +35,7 @@ describe('CreateBlogCategoryAction', function () {
              ->and($category->firstMedia('icon')->getUrl())->toBe($this->media->getUrl());
     });
 
-    it('creates a blog category with a parent', function () {
+    it('creates a blog category with a parent', function (): void {
          $parentCategory = \App\Models\Blog\BlogCategory::factory()->create();
 
          $data = new \App\Data\Admin\Blog\Category\BlogCategoryCreateData(
@@ -57,7 +57,7 @@ describe('CreateBlogCategoryAction', function () {
              ->and($category->firstMedia('icon')->getUrl())->toBe($this->media2->getUrl());
     });
 
-    it('creates a blog category without an icon', function () {
+    it('creates a blog category without an icon', function (): void {
          $data = new \App\Data\Admin\Blog\Category\BlogCategoryCreateData(
               name: 'No Icon Category',
               slug: 'no-icon-category',

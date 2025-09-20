@@ -1,6 +1,6 @@
 <?php
 
-it('to array', function () {
+it('to array', function (): void {
     $collaborationRequest = \App\Models\CollaborationRequest::factory()->create([
         'full_name' => 'Jane Smith',
         'phone'     => '0987654321',

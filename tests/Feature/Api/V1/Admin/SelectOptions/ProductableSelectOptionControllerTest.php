@@ -7,12 +7,12 @@ use App\Models\DigitalAsset;
 use App\Models\Seminar;
 
 uses(Tests\AuthTestTrait::class);
-describe('Admin Producatable Select Option API', function () {
-    beforeEach(function () {
+describe('Admin Producatable Select Option API', function (): void {
+    beforeEach(function (): void {
         $this->authorized_user();
     });
 
-    it('retrieves a list of productable items', function () {
+    it('retrieves a list of productable items', function (): void {
         Course::factory()->create([
             'full_name'  => 'Advanced PHP Programming',
             'short_name' => 'AdvPHP',
@@ -45,7 +45,7 @@ describe('Admin Producatable Select Option API', function () {
         ]);
     });
 
-    it('filters productable items by search query', function () {
+    it('filters productable items by search query', function (): void {
         Course::factory()->count(3)->create();
         Seminar::factory()->count(2)->create();
         DigitalAsset::factory()->count(4)->create();
@@ -77,7 +77,7 @@ describe('Admin Producatable Select Option API', function () {
         ]);
     });
 
-    it('limits the number of productable items returned', function () {
+    it('limits the number of productable items returned', function (): void {
         Course::factory()->count(10)->create();
         Seminar::factory()->count(10)->create();
         $response = $this->getJson('/api/v1/admin/select-option/productable?limit=5');
@@ -86,7 +86,7 @@ describe('Admin Producatable Select Option API', function () {
         $this->assertCount(5, $response->json('data'));
     });
 
-    it('filters productable items by types', function () {
+    it('filters productable items by types', function (): void {
         Course::factory()->count(10)->create();
         Seminar::factory()->count(10)->create();
         DigitalAsset::factory()->count(10)->create();
@@ -108,7 +108,7 @@ describe('Admin Producatable Select Option API', function () {
         }
     });
 
-    it('returns empty data when no productable items match the criteria', function () {
+    it('returns empty data when no productable items match the criteria', function (): void {
         Course::factory()->count(3)->create();
         Seminar::factory()->count(2)->create();
         DigitalAsset::factory()->count(4)->create();
@@ -119,7 +119,7 @@ describe('Admin Producatable Select Option API', function () {
         $response->assertJsonCount(0, 'data');
     });
 
-    it('returns empty data when no productable types are specified', function () {
+    it('returns empty data when no productable types are specified', function (): void {
         Course::factory()->count(3)->create();
         Seminar::factory()->count(2)->create();
         DigitalAsset::factory()->count(4)->create();

@@ -28,13 +28,13 @@ final class EnrollmentController extends Controller
         $filters    = request()->array('filter', []);
         $enrollments = auth()->user()->enrollments()
             ->withWhereHas(
-                'productDeliveryOption', function ($query) use ($filters) {
-                    $query->when(data_get($filters, 'fulfillment_type'), function ($query, $fulfillmentType) {
+                'productDeliveryOption', function ($query) use ($filters): void {
+                    $query->when(data_get($filters, 'fulfillment_type'), function ($query, $fulfillmentType): void {
                         $query->where('fulfillment_type', $fulfillmentType);
                     })->withWhereHas(
-                        'product', function ($query) use ($filters) {
+                        'product', function ($query) use ($filters): void {
                             $query
-                                ->when(data_get($filters, 'name'), function ($query, $name) {
+                                ->when(data_get($filters, 'name'), function ($query, $name): void {
                                     $query->where('name', 'like', "%{$name}%");
                                 })
                                 ->with(['productableWithAllRelations']);

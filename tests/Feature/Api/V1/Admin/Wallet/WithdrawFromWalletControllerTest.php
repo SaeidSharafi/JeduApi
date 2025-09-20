@@ -7,7 +7,7 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-test('admin can withdraw from wallet via API', function () {
+test('admin can withdraw from wallet via API', function (): void {
     $admin = $this->authorized_user([
         App\Enums\PermissionEnum::WALLET_WITHDRAWAL,
     ]);
@@ -28,7 +28,7 @@ test('admin can withdraw from wallet via API', function () {
     expect($user->wallet->balance)->toBe(1500);
 });
 
-test('admin cannot withdraw more than available balance via API', function () {
+test('admin cannot withdraw more than available balance via API', function (): void {
     $admin = $this->authorized_user([
         App\Enums\PermissionEnum::WALLET_WITHDRAWAL,
     ]);

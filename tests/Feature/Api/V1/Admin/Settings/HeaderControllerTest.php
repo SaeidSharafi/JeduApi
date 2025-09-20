@@ -44,7 +44,7 @@ it('can update header settings', function (): void {
             'data' => [],
             'metadata',
         ]);
-    $response->assertJson(function (\Illuminate\Testing\Fluent\AssertableJson $json){
+    $response->assertJson(function (\Illuminate\Testing\Fluent\AssertableJson $json): void{
         $json->where('data.contact_phone', '123-456-7890')
             ->where('data.contact_email', 'contactus@example.com')
             ->where('data.navigation_links.0.title', 'About Us')

@@ -8,8 +8,8 @@ use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 uses(Tests\AuthTestTrait::class);
-describe('list filters', function () {
-    it('should return by name', function () {
+describe('list filters', function (): void {
+    it('should return by name', function (): void {
         $this->authorized_user([PermissionEnum::USER_VIEW_ANY]);
 
         User::factory(10)->create();
@@ -26,7 +26,7 @@ describe('list filters', function () {
         $response->assertJsonFragment(['last_name' => $filteringUser->last_name]);
     });
 
-    it('should return by email', function () {
+    it('should return by email', function (): void {
         $this->authorized_user([PermissionEnum::USER_VIEW_ANY]);
 
         User::factory(10)->create();
@@ -41,7 +41,7 @@ describe('list filters', function () {
         $response->assertJsonFragment(['email' => $filteringUser->email]);
     });
 
-    it('should return by phone', function () {
+    it('should return by phone', function (): void {
         $this->authorized_user([PermissionEnum::USER_VIEW_ANY]);
 
         User::factory(10)->create();
@@ -56,7 +56,7 @@ describe('list filters', function () {
         $response->assertJsonFragment(['phone' => $filteringUser->phone]);
     });
 
-    it('should return by civil_id', function () {
+    it('should return by civil_id', function (): void {
         $this->authorized_user([PermissionEnum::USER_VIEW_ANY]);
 
         User::factory(10)->create();
@@ -72,7 +72,7 @@ describe('list filters', function () {
         $response->assertJsonFragment(['civil_id' => $filteringUser->civil_id]);
     });
 
-    it('should return by civil_id_type', function () {
+    it('should return by civil_id_type', function (): void {
         $this->authorized_user([PermissionEnum::USER_VIEW_ANY]);
 
         User::factory(12)
@@ -114,7 +114,7 @@ describe('list filters', function () {
         ]);
     });
 
-    it('should return by date of birth', function () {
+    it('should return by date of birth', function (): void {
         $this->authorized_user([PermissionEnum::USER_VIEW_ANY]);
 
         User::factory(10)->create();
@@ -143,8 +143,8 @@ describe('list filters', function () {
     });
 });
 
-describe('CRUD Autherized', function () {
-    it('should return list of user', function () {
+describe('CRUD Autherized', function (): void {
+    it('should return list of user', function (): void {
         $this->authorized_user([PermissionEnum::USER_VIEW_ANY]);
         $users           = User::factory(10)->create()->fresh();
         $response        = $this->getJson(route('api.v1.admin.user.index'));
@@ -190,7 +190,7 @@ describe('CRUD Autherized', function () {
         }
     });
 
-    it('should create user', function () {
+    it('should create user', function (): void {
         $this->authorized_user([PermissionEnum::USER_CREATE]);
         $user     = User::factory()->withPassport()->make();
         $userData = [
@@ -199,7 +199,7 @@ describe('CRUD Autherized', function () {
         ];
         $response = $this->postJson(route('api.v1.admin.user.store'), $userData);
         $response->assertCreated();
-        $response->assertJson(function (AssertableJson $json) use ($user) {
+        $response->assertJson(function (AssertableJson $json) use ($user): void {
             $json->where('data.phone', $user->phone)
                 ->where('data.first_name', $user->first_name)
                 ->where('data.last_name', $user->last_name)
@@ -245,13 +245,13 @@ describe('CRUD Autherized', function () {
         ]);
     });
 
-    it('should return user data', function () {
+    it('should return user data', function (): void {
         $this->authorized_user([PermissionEnum::USER_VIEW]);
         $user = User::factory()->create()->fresh();
 
         $response = $this->getJson(route('api.v1.admin.user.show', $user->id));
         $response->assertSuccessful();
-        $response->assertJson(function (AssertableJson $json) use ($user) {
+        $response->assertJson(function (AssertableJson $json) use ($user): void {
             $json
                 ->where('data.id', $user->id)
                 ->where('data.phone', $user->phone)
@@ -283,7 +283,7 @@ describe('CRUD Autherized', function () {
         });
     });
 
-    it('should update user', function () {
+    it('should update user', function (): void {
         $this->authorized_user([PermissionEnum::USER_UPDATE]);
         $user           = User::factory()->withPassport()->create();
         $updateUserData = [
@@ -296,7 +296,7 @@ describe('CRUD Autherized', function () {
         $response = $this->putJson(route('api.v1.admin.user.update', $user->id), $updateUserData);
 
         $response->assertSuccessful();
-        $response->assertJson(function (AssertableJson $json) use ($user, $updateUserData) {
+        $response->assertJson(function (AssertableJson $json) use ($user, $updateUserData): void {
             $json->where('data.id', $user->id)
                 ->where('data.phone', $user->phone)
                 ->where('data.first_name', $updateUserData['first_name'])
@@ -337,7 +337,7 @@ describe('CRUD Autherized', function () {
         ]);
     });
 
-    it('should delete user', function () {
+    it('should delete user', function (): void {
         $this->authorized_user([PermissionEnum::USER_DELETE]);
         $user     = User::factory()->create()->fresh();
         $response = $this->deleteJson(route('api.v1.admin.user.destroy', $user->id));
@@ -348,7 +348,7 @@ describe('CRUD Autherized', function () {
         ]);
     });
 
-    it('should delete user if has related data (teacher', function () {
+    it('should delete user if has related data (teacher', function (): void {
         $this->authorized_user([PermissionEnum::USER_DELETE]);
         $user    = User::factory()->create()->fresh();
         $teacher = App\Models\Teacher::factory()->create([
@@ -356,7 +356,7 @@ describe('CRUD Autherized', function () {
         ]);
         $response = $this->deleteJson(route('api.v1.admin.user.destroy', $user->id));
         $response->assertUnprocessable();
-        $response->assertJson(function (AssertableJson $json) {
+        $response->assertJson(function (AssertableJson $json): void {
             $json->where('message', __(
                 'messages.errors.model_has_relationship_data',
                 [
@@ -370,17 +370,17 @@ describe('CRUD Autherized', function () {
         ]);
     });
 });
-describe('CRUD Unautherized', function () {
-    beforeEach(function () {
+describe('CRUD Unautherized', function (): void {
+    beforeEach(function (): void {
         $this->unauthorized_user();
     });
-    it('should not return list of user', function () {
+    it('should not return list of user', function (): void {
         $users    = User::factory(10)->create()->fresh();
         $response = $this->getJson(route('api.v1.admin.user.index'));
         $response->assertForbidden();
     });
 
-    it('should not create user', function () {
+    it('should not create user', function (): void {
         $user = User::factory()->withPassport()->make([
             'date_of_birth' => '1360-01-01',
         ]);
@@ -404,14 +404,14 @@ describe('CRUD Unautherized', function () {
         ]);
     });
 
-    it('should not return user data', function () {
+    it('should not return user data', function (): void {
         $user = User::factory()->create()->fresh();
 
         $response = $this->getJson(route('api.v1.admin.user.show', $user->id));
         $response->assertForbidden();
     });
 
-    it('should update user', function () {
+    it('should update user', function (): void {
         $user           = User::factory()->withPassport()->create();
         $updateUserData = [
             ...$user->toArray(),
@@ -436,7 +436,7 @@ describe('CRUD Unautherized', function () {
         ]);
     });
 
-    it('should delete user', function () {
+    it('should delete user', function (): void {
         $user     = User::factory()->create()->fresh();
         $response = $this->deleteJson(route('api.v1.admin.user.destroy', $user->id));
         $response->assertForbidden();
@@ -447,8 +447,8 @@ describe('CRUD Unautherized', function () {
     });
 });
 
-describe('Validations', function () {
-    it('fail civil id validations', function ($validation_type, $data) {
+describe('Validations', function (): void {
+    it('fail civil id validations', function ($validation_type, $data): void {
         $this->authorized_user([PermissionEnum::USER_CREATE]);
         if ($validation_type === 'duplicated') {
             $user = User::factory()->create(

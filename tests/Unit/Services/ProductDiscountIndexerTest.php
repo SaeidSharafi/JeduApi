@@ -12,14 +12,14 @@ use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\ProductDiscountIndexer;
 use App\Services\Discounts\ProductDiscountPriceCalculator;
 
-describe('ProductDiscountIndexer', function () {
-    beforeEach(function () {
+describe('ProductDiscountIndexer', function (): void {
+    beforeEach(function (): void {
         $this->registry   = app(DiscountHandlerRegistry::class);
         $this->calculator = new ProductDiscountPriceCalculator($this->registry);
         $this->indexer    = new ProductDiscountIndexer($this->registry, $this->calculator);
     });
 
-    it('performs a full reindex and creates correct discount price records', function () {
+    it('performs a full reindex and creates correct discount price records', function (): void {
         $product   = Product::factory()->create();
         $option    = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $promotion = DiscountPromotion::factory()->create(['priority' => 1]);
@@ -36,7 +36,7 @@ describe('ProductDiscountIndexer', function () {
         expect($discounted->discount_promotion_id)->toBe($promotion->id);
     });
 
-    it('handles multiple products and layered promotions with priorities', function () {
+    it('handles multiple products and layered promotions with priorities', function (): void {
         $product1 = Product::factory()->create();
         $product2 = Product::factory()->create();
         $option1  = ProductDeliveryOption::factory()->for($product1)->create(['price' => 1000]);
@@ -65,7 +65,7 @@ describe('ProductDiscountIndexer', function () {
         expect($d1->discount_promotion_id)->toBe($promo1->id); // highest priority
     });
 
-    it('reindexes only for a single promotion', function () {
+    it('reindexes only for a single promotion', function (): void {
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $promo   = DiscountPromotion::factory()->create(['priority' => 1]);
@@ -82,7 +82,7 @@ describe('ProductDiscountIndexer', function () {
         expect($discounted->discount_promotion_id)->toBe($promo->id);
     });
 
-    it('reindexes only for specific product delivery options', function () {
+    it('reindexes only for specific product delivery options', function (): void {
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $promo   = DiscountPromotion::factory()->create(['priority' => 1]);
@@ -99,7 +99,7 @@ describe('ProductDiscountIndexer', function () {
         expect($discounted->discount_promotion_id)->toBe($promo->id);
     });
 
-    it('does not create records if there are no promotions', function () {
+    it('does not create records if there are no promotions', function (): void {
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $this->indexer->reIndexComplete();
@@ -107,7 +107,7 @@ describe('ProductDiscountIndexer', function () {
         expect($discounted)->toBeNull();
     });
 
-    it('does not create records for inactive or expired promotions', function () {
+    it('does not create records for inactive or expired promotions', function (): void {
         $product  = Product::factory()->create();
         $option   = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $inactive = DiscountPromotion::factory()->create(['is_active' => false]);
@@ -129,7 +129,7 @@ describe('ProductDiscountIndexer', function () {
         expect($discounted)->toBeNull();
     });
 
-    it('does not create records if no discount is applied', function () {
+    it('does not create records if no discount is applied', function (): void {
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $promo   = DiscountPromotion::factory()->create(['priority' => 1]);
@@ -144,7 +144,7 @@ describe('ProductDiscountIndexer', function () {
         expect($discounted)->toBeNull();
     });
 
-    it('applies promotions with conditions (e.g., product in category)', function () {
+    it('applies promotions with conditions (e.g., product in category)', function (): void {
         $category = Category::factory()->create();
         $product  = Product::factory()->create();
         $product->categories()->attach($category);
@@ -169,7 +169,7 @@ describe('ProductDiscountIndexer', function () {
         expect($discounted->discount_promotion_id)->toBe($promo->id);
     });
 
-    it('does not apply promotions with conditions if not met', function () {
+    it('does not apply promotions with conditions if not met', function (): void {
         $category = Category::factory()->create();
         $product  = Product::factory()->create();
         $option   = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
@@ -191,7 +191,7 @@ describe('ProductDiscountIndexer', function () {
         expect($discounted)->toBeNull();
     });
 
-    it('can clean all discount price records', function () {
+    it('can clean all discount price records', function (): void {
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $promo   = DiscountPromotion::factory()->create(['priority' => 1]);
@@ -207,7 +207,7 @@ describe('ProductDiscountIndexer', function () {
         expect($discounted)->toBeNull();
     });
 
-    it('can clean discount price records for a specific promotion', function () {
+    it('can clean discount price records for a specific promotion', function (): void {
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $promo   = DiscountPromotion::factory()->create(['priority' => 1]);
@@ -223,13 +223,13 @@ describe('ProductDiscountIndexer', function () {
         expect($discounted)->toBeNull();
     });
 
-    it('does nothing if reIndexProductsByDeliveryOptionIds is called with empty collection', function () {
+    it('does nothing if reIndexProductsByDeliveryOptionIds is called with empty collection', function (): void {
         $this->indexer->reIndexProductsByDeliveryOptionIds(collect([]));
         // Should not throw or do anything
         expect(ProductDeliveryOptionDiscountPrice::count())->toBe(0);
     });
 
-    it('findBestApplicablePromotion returns null if no promotions apply', function () {
+    it('findBestApplicablePromotion returns null if no promotions apply', function (): void {
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $promo   = DiscountPromotion::factory()->create(['priority' => 1]);
@@ -247,7 +247,7 @@ describe('ProductDiscountIndexer', function () {
         expect($result)->toBeNull();
     });
 
-    it('getRepresentativePromotionId falls back to first promotion if none match', function () {
+    it('getRepresentativePromotionId falls back to first promotion if none match', function (): void {
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $promo1  = DiscountPromotion::factory()->create(['priority' => 1]);
@@ -267,7 +267,7 @@ describe('ProductDiscountIndexer', function () {
         expect([$promo1->id, $promo2->id])->toContain($result);
     });
 
-    it('allConditionsPass returns false if handler class not found', function () {
+    it('allConditionsPass returns false if handler class not found', function (): void {
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $promo   = DiscountPromotion::factory()->create(['priority' => 1]);

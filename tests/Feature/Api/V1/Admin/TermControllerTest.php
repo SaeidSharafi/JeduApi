@@ -8,7 +8,7 @@ use App\Models\Term;
 uses(Tests\AuthTestTrait::class);
 
 describe('TermController List Filters', function (): void {
-    it('should filter by name', function () {
+    it('should filter by name', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_VIEW_ANY]);
         Term::factory(20)->create();
         Term::factory()->create(['name' => 'XFall 2024']);
@@ -18,7 +18,7 @@ describe('TermController List Filters', function (): void {
         $response->assertJsonFragment(['name' => 'XFall 2024']);
     });
 
-    it('should filter by status', function () {
+    it('should filter by status', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_VIEW_ANY]);
         Term::factory(20)->create(
             ['status' => TermStatusEnum::INACTIVE->value]
@@ -34,7 +34,7 @@ describe('TermController List Filters', function (): void {
         ]]);
     });
 
-    it('should filter by academic_year', function () {
+    it('should filter by academic_year', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_VIEW_ANY]);
         Term::factory(20)->create();
         Term::factory()->create(['academic_year' => 'X2024-2025']);
@@ -44,7 +44,7 @@ describe('TermController List Filters', function (): void {
         $response->assertJsonFragment(['academic_year' => 'X2024-2025']);
     });
 
-    it('should filter by name and status', function () {
+    it('should filter by name and status', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_VIEW_ANY]);
         Term::factory(20)->create();
         Term::factory()->create(['name' => 'XSpring 2025', 'status' => 'planning']);
@@ -58,8 +58,8 @@ describe('TermController List Filters', function (): void {
     });
 });
 
-describe('TermController Test', function () {
-    it('should list terms', function () {
+describe('TermController Test', function (): void {
+    it('should list terms', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_VIEW_ANY]);
         Term::factory(20)->create();
         $response = $this->getJson(route('api.v1.admin.term.index'));
@@ -67,7 +67,7 @@ describe('TermController Test', function () {
         $response->assertJsonCount(15, 'data.data');
     });
 
-    it('should create a term', function () {
+    it('should create a term', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_CREATE]);
         $data               = Term::factory()->make();
         $data['start_date'] = $this->toJalalitString($data['start_date'], 'Y-m-d');
@@ -77,7 +77,7 @@ describe('TermController Test', function () {
         $this->assertDatabaseHas('terms', ['name' => $data->name]);
     });
 
-    it('should show a term', function () {
+    it('should show a term', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_VIEW]);
         $term     = Term::factory()->create();
         $response = $this->getJson(route('api.v1.admin.term.show', ['term' => $term]));
@@ -85,7 +85,7 @@ describe('TermController Test', function () {
         $response->assertJsonFragment(['name' => $term->name]);
     });
 
-    it('should update a term', function () {
+    it('should update a term', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_UPDATE]);
         $term               = Term::factory()->create();
         $data               = Term::factory()->make();
@@ -96,14 +96,14 @@ describe('TermController Test', function () {
         $this->assertDatabaseHas('terms', ['id' => $term->id, 'name' => $data->name]);
     });
 
-    it('should delete a term', function () {
+    it('should delete a term', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_DELETE]);
         $term     = Term::factory()->create();
         $response = $this->deleteJson(route('api.v1.admin.term.destroy', ['term' => $term]));
         $response->assertNoContent();
         $this->assertDatabaseMissing('terms', ['id' => $term->id]);
     });
-    it('should not delete a term with related data', function () {
+    it('should not delete a term with related data', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_DELETE]);
         $term = Term::factory()->create();
         App\Models\Product::factory()->create(['term_id' => $term->id]);
@@ -115,14 +115,14 @@ describe('TermController Test', function () {
             ]);
         $this->assertDatabaseHas('terms', ['id' => $term->id]);
     });
-    it('should not create a term with missing required fields', function () {
+    it('should not create a term with missing required fields', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_CREATE]);
         $response = $this->postJson(route('api.v1.admin.term.store'), []);
         $response->assertUnprocessable();
         $response->assertJsonValidationErrors(['name']);
     });
 
-    it('should not create a term with invalid dates', function () {
+    it('should not create a term with invalid dates', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_CREATE]);
         $data               = Term::factory()->make()->toArray();
         $data['start_date'] = 'not-a-date';
@@ -132,7 +132,7 @@ describe('TermController Test', function () {
         $response->assertJsonValidationErrors(['start_date', 'end_date']);
     });
 
-    it('should not update a term with invalid status', function () {
+    it('should not update a term with invalid status', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_UPDATE]);
         $term               = Term::factory()->create();
         $data               = Term::factory()->make()->toArray();
@@ -144,13 +144,13 @@ describe('TermController Test', function () {
         $response->assertJsonValidationErrors(['status']);
     });
 
-    it('should return 404 for non-existent term', function () {
+    it('should return 404 for non-existent term', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TERM_VIEW]);
         $response = $this->getJson(route('api.v1.admin.term.show', ['term' => 999999]));
         $response->assertNotFound();
     });
 
-    it('should not allow unauthorized user to create term', function () {
+    it('should not allow unauthorized user to create term', function (): void {
         $this->unauthorized_user();
         $data               = Term::factory()->make()->toArray();
         $data['start_date'] = $this->toJalalitString($data['start_date'], 'Y-m-d');
@@ -159,7 +159,7 @@ describe('TermController Test', function () {
         $response->assertForbidden();
     });
 
-    it('should not allow unauthorized user to update term', function () {
+    it('should not allow unauthorized user to update term', function (): void {
         $this->unauthorized_user();
         $term               = Term::factory()->create();
         $data               = Term::factory()->make()->toArray();
@@ -170,7 +170,7 @@ describe('TermController Test', function () {
         $response->assertForbidden();
     });
 
-    it('should not allow unauthorized user to delete term', function () {
+    it('should not allow unauthorized user to delete term', function (): void {
         $this->unauthorized_user();
         $term     = Term::factory()->create();
         $response = $this->deleteJson(route('api.v1.admin.term.destroy', ['term' => $term]));

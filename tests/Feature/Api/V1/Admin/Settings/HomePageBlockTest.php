@@ -10,7 +10,7 @@ use Plank\Mediable\Media;
 use App\Enums\HomePageBlockTypeEnum;
 
 uses(Tests\AuthTestTrait::class);
-beforeEach(function () {
+beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
     $this->image = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('banner.jpg'))
@@ -18,8 +18,8 @@ beforeEach(function () {
         ->upload();
 
 });
-describe('HomePageBlockController CRUD', function () {
-    it('can list home page blocks', function () {
+describe('HomePageBlockController CRUD', function (): void {
+    it('can list home page blocks', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_VIEW_ANY]);
         HomePageBlock::factory()
             ->banner($this->image)
@@ -46,7 +46,7 @@ describe('HomePageBlockController CRUD', function () {
         $responseData = $response->json('data.data');
         expect(count($responseData))->toBe(4);
     });
-    it('can create a banner home page block successfully', function () {
+    it('can create a banner home page block successfully', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $payload = [
             'type'      => HomePageBlockTypeEnum::BANNER->value,
@@ -74,7 +74,7 @@ describe('HomePageBlockController CRUD', function () {
         $responseData = $response->json('data');
         expect($responseData['content']['image_url'])->toBe($this->image->getUrl());
     });
-    it('admin can view a specific home page block', function () {
+    it('admin can view a specific home page block', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_VIEW]);
         $block = HomePageBlock::factory()->banner($this->image)->create();
         $response = $this->getJson(route('api.v1.admin.settings.home-page-block.show', $block->id));
@@ -90,7 +90,7 @@ describe('HomePageBlockController CRUD', function () {
         expect($responseData['id'])->toBe($block->id);
         expect($responseData['content']['image_url'])->toBe($this->image->getUrl());
     });
-    it('admin can update a home page block', function () {
+    it('admin can update a home page block', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_UPDATE]);
         $block = HomePageBlock::factory()->banner($this->image)->create();
         $newImage = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('new_banner.jpg'))
@@ -132,7 +132,7 @@ describe('HomePageBlockController CRUD', function () {
             ->and($responseData['content']['content'])->toBe('Updated Content')
             ->and($responseData['content']['preset'])->toBe('alternative');
     });
-    it('admin can delete a home page block', function () {
+    it('admin can delete a home page block', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_DELETE]);
         $block = HomePageBlock::factory()->banner($this->image)->create();
         $block->attachMedia($this->image, 'image');
@@ -141,7 +141,7 @@ describe('HomePageBlockController CRUD', function () {
         $this->assertDatabaseMissing('home_page_blocks', ['id' => $block->id]);
         $this->assertDatabaseMissing('media', ['id' => $this->image->id]);
     });
-    it('unauthorized user cannot access home page block endpoints', function () {
+    it('unauthorized user cannot access home page block endpoints', function (): void {
         $this->unauthorized_user();
         $block = HomePageBlock::factory()->banner($this->image)->create();
         $blockData = HomePageBlock::factory()->banner($this->image)->make()->toArray();
@@ -158,8 +158,8 @@ describe('HomePageBlockController CRUD', function () {
     });
 });
 
-describe('HomePageBlockController validation', function () {
-    it('validation fails if required fields are missing', function () {
+describe('HomePageBlockController validation', function (): void {
+    it('validation fails if required fields are missing', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $payload = [
             'type'      => '',
@@ -175,7 +175,7 @@ describe('HomePageBlockController validation', function () {
                 'type', 'title', 'location', 'order', 'is_active', 'content'
             ]);
     });
-    it('validation fails if type is not a valid enum value', function () {
+    it('validation fails if type is not a valid enum value', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $payload = [
             'type'      => 'INVALID_TYPE',
@@ -195,7 +195,7 @@ describe('HomePageBlockController validation', function () {
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['type']);
     });
-    it('validation fails if order is negative', function () {
+    it('validation fails if order is negative', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $payload = [
             'type'      => HomePageBlockTypeEnum::BANNER->value,
@@ -215,7 +215,7 @@ describe('HomePageBlockController validation', function () {
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['order']);
     });
-    it('validation fails if is_active is not boolean', function () {
+    it('validation fails if is_active is not boolean', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $payload = [
             'type'      => HomePageBlockTypeEnum::BANNER->value,
@@ -235,7 +235,7 @@ describe('HomePageBlockController validation', function () {
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['is_active']);
     });
-    it('validation fails if content is missing required keys', function () {
+    it('validation fails if content is missing required keys', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $payload = [
             'type'      => HomePageBlockTypeEnum::BANNER->value,
@@ -255,7 +255,7 @@ describe('HomePageBlockController validation', function () {
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['content.image_id']);
     });
-    it('validation fails if image_id is not an integer', function () {
+    it('validation fails if image_id is not an integer', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $payload = [
             'type'      => HomePageBlockTypeEnum::BANNER->value,
@@ -275,7 +275,7 @@ describe('HomePageBlockController validation', function () {
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['content.image_id']);
     });
-    it('validation fails for minimum and maximum string lengths for title', function () {
+    it('validation fails for minimum and maximum string lengths for title', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $minTitle = '';
         $maxTitle = str_repeat('a', 256); // assuming max is 255
@@ -314,7 +314,7 @@ describe('HomePageBlockController validation', function () {
         $responseMax->assertStatus(422)
             ->assertJsonValidationErrors(['title']);
     });
-    it('validation fails if image_id does not exist', function () {
+    it('validation fails if image_id does not exist', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $payload = [
             'type'      => HomePageBlockTypeEnum::BANNER->value,
@@ -334,7 +334,7 @@ describe('HomePageBlockController validation', function () {
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['content.image_id']);
     });
-    it('validation fails for dynamic list with invalid entity_type', function () {
+    it('validation fails for dynamic list with invalid entity_type', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $payload = [
             'type'      => HomePageBlockTypeEnum::DYNAMIC_LIST->value,
@@ -353,7 +353,7 @@ describe('HomePageBlockController validation', function () {
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['content.entity_type']);
     });
-    it('validation fails for dynamic list with invalid sort_by', function () {
+    it('validation fails for dynamic list with invalid sort_by', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $payload = [
             'type'      => HomePageBlockTypeEnum::DYNAMIC_LIST->value,
@@ -372,7 +372,7 @@ describe('HomePageBlockController validation', function () {
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['content.sort_by']);
     });
-    it('validation fails for dynamic list with limit out of range', function () {
+    it('validation fails for dynamic list with limit out of range', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $payload = [
             'type'      => HomePageBlockTypeEnum::DYNAMIC_LIST->value,
@@ -393,8 +393,8 @@ describe('HomePageBlockController validation', function () {
     });
 });
 
-describe('HomePageBlockController additional scenarios', function () {
-    it('can create a block with MAIN_CATEGORIES type', function () {
+describe('HomePageBlockController additional scenarios', function (): void {
+    it('can create a block with MAIN_CATEGORIES type', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $categories = \App\Models\Category::factory()->count(3)->create();
         $payload = [
@@ -421,7 +421,7 @@ describe('HomePageBlockController additional scenarios', function () {
         $responseData = $response->json('data');
         expect($responseData['content']['items'])->toEqual($categories->pluck('id')->toArray());
     });
-    it('can create a block with CURATED_LIST type', function () {
+    it('can create a block with CURATED_LIST type', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $products = \App\Models\Product::factory()->count(3)->create();
         $payload = [
@@ -448,7 +448,7 @@ describe('HomePageBlockController additional scenarios', function () {
         $responseData = $response->json('data');
         expect($responseData['content']['items'])->toEqual($products->pluck('id')->toArray());
     });
-    it('can create a block with WEBINAR BANNER type', function () {
+    it('can create a block with WEBINAR BANNER type', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $product = \App\Models\Product::factory()->create(
             [
@@ -484,7 +484,7 @@ describe('HomePageBlockController additional scenarios', function () {
             ->and($responseData['content']['text'])->toBe('Join our upcoming webinar!')
             ->and($responseData['content']['image_url'])->toBe($this->image->getUrl());
     });
-    it('can create a block with DYNAMIC_LIST type', function () {
+    it('can create a block with DYNAMIC_LIST type', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $categories = \App\Models\Category::factory()->count(2)->create();
         $payload = [
@@ -518,7 +518,7 @@ describe('HomePageBlockController additional scenarios', function () {
             ->and($responseData['content']['preset'])->toBe('grid')
             ->and($responseData['content']['category_ids'])->toEqual($categories->pluck('id')->toArray());
     });
-    it('response always includes all expected keys even if some values are null', function () {
+    it('response always includes all expected keys even if some values are null', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $payload = [
             'type'      => HomePageBlockTypeEnum::BANNER->value,
@@ -552,7 +552,7 @@ describe('HomePageBlockController additional scenarios', function () {
         expect(array_key_exists('content', $responseData['content']))->toBeTrue();
         expect(array_key_exists('preset', $responseData['content']))->toBeTrue();
     });
-    it('media is attached to the block after creation', function () {
+    it('media is attached to the block after creation', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $payload = [
             'type'      => HomePageBlockTypeEnum::BANNER->value,
@@ -577,7 +577,7 @@ describe('HomePageBlockController additional scenarios', function () {
         expect($block->media->first()->id)->toBe($this->image->id);
     });
 
-    it('can create dynamic list block using factory', function () {
+    it('can create dynamic list block using factory', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_VIEW_ANY]);
         $categories = \App\Models\Category::factory()->count(3)->create();
 
@@ -593,7 +593,7 @@ describe('HomePageBlockController additional scenarios', function () {
             ->and($block->content['category_ids'])->toEqual($categories->pluck('id')->toArray());
     });
 
-    it('can create different types of dynamic lists for different product types', function () {
+    it('can create different types of dynamic lists for different product types', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
 
         // Test course products

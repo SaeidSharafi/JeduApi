@@ -3,8 +3,8 @@
 use App\Enums\MorphTypeEnum;
 
 uses(\Tests\AuthTestTrait::class);
-describe('CategoryItemsController', function () {
-    it('list and filter items', function () {
+describe('CategoryItemsController', function (): void {
+    it('list and filter items', function (): void {
         $category = \App\Models\Category::factory()->create();
         $course = \App\Models\Course::factory()->count(5)->create();
         $seminar = \App\Models\Seminar::factory()->count(5)->create();

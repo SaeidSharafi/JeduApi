@@ -46,7 +46,7 @@ test('relation categories', function (): void {
         ->toHaveCount(3);
 });
 
-test('relation product_delivery_options', function () {
+test('relation product_delivery_options', function (): void {
     $product = App\Models\Product::factory()->create();
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
 
@@ -58,7 +58,7 @@ test('relation product_delivery_options', function () {
         ->toEqual($deliveryOption->id);
 });
 
-test('relation orderItems through product_delivery_options', function () {
+test('relation orderItems through product_delivery_options', function (): void {
     $product = App\Models\Product::factory()->create();
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
     $orderItem = App\Models\OrderItem::factory()->create(['product_delivery_option_id' => $deliveryOption->id]);
@@ -70,8 +70,8 @@ test('relation orderItems through product_delivery_options', function () {
         ->and($product->orderItems->first()->id)
         ->toEqual($orderItem->id);
 });
-describe('scopes', function () {
-    it('active', function () {
+describe('scopes', function (): void {
+    it('active', function (): void {
         $activeProduct = App\Models\Product::factory()->create([
             'status'     => \App\Enums\PublicationStatusEnum::PUBLISHED,
             'is_visible' => true,
@@ -100,7 +100,7 @@ describe('scopes', function () {
             ->toEqual($activeProduct->id);
     });
 
-    it('active with relations', function () {
+    it('active with relations', function (): void {
         $activeProduct = App\Models\Product::factory()->create([
             'status'     => \App\Enums\PublicationStatusEnum::PUBLISHED,
             'is_visible' => true,
@@ -135,7 +135,7 @@ describe('scopes', function () {
             ->toBeTrue();
     });
 
-    it('active with price and media', function () {
+    it('active with price and media', function (): void {
         $activeProduct = App\Models\Product::factory()->create([
             'status'     => \App\Enums\PublicationStatusEnum::PUBLISHED,
             'is_visible' => true,

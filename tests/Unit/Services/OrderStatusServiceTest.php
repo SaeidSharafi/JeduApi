@@ -15,7 +15,7 @@ use App\Services\OrderStatusService;
 use Illuminate\Database\Eloquent\Collection;
 use Mockery;
 
-describe('OrderStatusService', function () {
+describe('OrderStatusService', function (): void {
 
     // Helper function to create a mock OrderItem with a specific status
     $createMockItem = function ($status, $enrollmentStatus = null) {
@@ -40,7 +40,7 @@ describe('OrderStatusService', function () {
     };
 
     // --- Testing updateParentOrderStatus ---
-    it('sets order status to PEDNING when there is no item', function () {
+    it('sets order status to PEDNING when there is no item', function (): void {
         $order        = Mockery::mock(Order::class)->makePartial();
         $items        = new Collection([]);
         $order->items = $items;
@@ -51,7 +51,7 @@ describe('OrderStatusService', function () {
 
         expect($order->status)->toBe(OrderStatusEnum::PENDING);
     });
-    it('sets order status to REFUNDED when all items are refunded', function () use ($createMockItem) {
+    it('sets order status to REFUNDED when all items are refunded', function () use ($createMockItem): void {
         $order = Mockery::mock(Order::class)->makePartial();
         $items = new Collection([
             $createMockItem(OrderItemStatusEnum::REFUNDED),
@@ -66,7 +66,7 @@ describe('OrderStatusService', function () {
         expect($order->status)->toBe(OrderStatusEnum::REFUNDED);
     });
 
-    it('sets order status to PARTIALLY_REFUNDED when some items are refunded', function () use ($createMockItem) {
+    it('sets order status to PARTIALLY_REFUNDED when some items are refunded', function () use ($createMockItem): void {
         $order = Mockery::mock(Order::class)->makePartial();
         $items = new Collection([
             $createMockItem(OrderItemStatusEnum::REFUNDED),
@@ -80,7 +80,7 @@ describe('OrderStatusService', function () {
         expect($order->status)->toBe(OrderStatusEnum::PARTIALLY_REFUNDED);
     });
 
-    it('sets order status to COMPLETED when all items are completed', function () use ($createMockItem) {
+    it('sets order status to COMPLETED when all items are completed', function () use ($createMockItem): void {
         $order = Mockery::mock(Order::class)->makePartial();
         $items = new Collection([
             $createMockItem(OrderItemStatusEnum::COMPLETED),
@@ -94,7 +94,7 @@ describe('OrderStatusService', function () {
         expect($order->status)->toBe(OrderStatusEnum::COMPLETED);
     });
 
-    it('sets order status to PROCESSING when items are in a mixed state', function () use ($createMockItem) {
+    it('sets order status to PROCESSING when items are in a mixed state', function () use ($createMockItem): void {
         $order = Mockery::mock(Order::class)->makePartial();
         $items = new Collection([
             $createMockItem(OrderItemStatusEnum::PENDING),
@@ -107,7 +107,7 @@ describe('OrderStatusService', function () {
 
         expect($order->status)->toBe(OrderStatusEnum::PROCESSING);
     });
-    it('sets order status to CACNELED when items are CACNELED', function () use ($createMockItem) {
+    it('sets order status to CACNELED when items are CACNELED', function () use ($createMockItem): void {
         $order = Mockery::mock(Order::class)->makePartial();
         $items = new Collection([
             $createMockItem(OrderItemStatusEnum::CANCELLED),
@@ -121,7 +121,7 @@ describe('OrderStatusService', function () {
         expect($order->status)->toBe(OrderStatusEnum::CANCELLED);
     });
     // --- Testing updateEnrollmentStatus ---
-    it('updates enrollment to ACTIVE when item becomes COMPLETED', function () use ($createMockItem) {
+    it('updates enrollment to ACTIVE when item becomes COMPLETED', function () use ($createMockItem): void {
         $item = $createMockItem(OrderItemStatusEnum::COMPLETED, EnrollmentStatusEnum::PENDING_PROVISIONING);
 
         // Expect the enrollment's save method to be called
@@ -133,7 +133,7 @@ describe('OrderStatusService', function () {
         expect($item->enrollment->access_start_date)->not->toBeNull();
     });
 
-    it('updates enrollment to CANCELLED when item becomes REFUNDED', function () use ($createMockItem) {
+    it('updates enrollment to CANCELLED when item becomes REFUNDED', function () use ($createMockItem): void {
         $item = $createMockItem(OrderItemStatusEnum::REFUNDED, EnrollmentStatusEnum::ACTIVE);
         $item->enrollment->shouldReceive('saveQuietly')->once();
 
@@ -142,7 +142,7 @@ describe('OrderStatusService', function () {
         expect($item->enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::CANCELLED);
     });
 
-    it('deos not cahnge enrollment status when item is PEDNING', function () use ($createMockItem) {
+    it('deos not cahnge enrollment status when item is PEDNING', function () use ($createMockItem): void {
         $item = $createMockItem(OrderItemStatusEnum::PENDING, EnrollmentStatusEnum::ACTIVE);
         $item->enrollment->shouldNotReceive('saveQuietly');
 
@@ -152,7 +152,7 @@ describe('OrderStatusService', function () {
     });
 
     // --- Testing the main orchestrator method: updateStatusesAfterPayment ---
-    it('correctly cascades all status changes after a payment', function () {
+    it('correctly cascades all status changes after a payment', function (): void {
         // This is a more integrated test using real models
         // --- Arrange ---
         $order = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);

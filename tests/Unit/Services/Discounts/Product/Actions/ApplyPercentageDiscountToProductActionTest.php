@@ -6,9 +6,9 @@ use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\Configs\ApplyPercentageDiscountConfigData;
 use App\Services\Discounts\Product\Actions\ApplyPercentageDiscountToProductAction;
 
-describe('ApplyPercentageDiscountToProductAction', function () {
+describe('ApplyPercentageDiscountToProductAction', function (): void {
 
-    test('it applies percentage discount correctly', function () {
+    test('it applies percentage discount correctly', function (): void {
         // Arrange
         $action = new ApplyPercentageDiscountToProductAction();
         $config = new ApplyPercentageDiscountConfigData(percentage: 20); // 20% off
@@ -21,7 +21,7 @@ describe('ApplyPercentageDiscountToProductAction', function () {
         expect($discountedPrice)->toBe(8000); // $80.00 (20% off)
     });
 
-    test('it handles 100 percent discount correctly', function () {
+    test('it handles 100 percent discount correctly', function (): void {
         // Arrange
         $action = new ApplyPercentageDiscountToProductAction();
         $config = new ApplyPercentageDiscountConfigData(percentage: 100); // 100% off
@@ -34,7 +34,7 @@ describe('ApplyPercentageDiscountToProductAction', function () {
         expect($discountedPrice)->toBe(0); // Free product
     });
 
-    test('it handles zero percentage discount', function () {
+    test('it handles zero percentage discount', function (): void {
         // Arrange
         $action = new ApplyPercentageDiscountToProductAction();
         $config = new ApplyPercentageDiscountConfigData(percentage: 0); // 0% off
@@ -47,7 +47,7 @@ describe('ApplyPercentageDiscountToProductAction', function () {
         expect($discountedPrice)->toBe(10000); // Original price
     });
 
-    test('it rounds discount calculation correctly', function () {
+    test('it rounds discount calculation correctly', function (): void {
         $action = new ApplyPercentageDiscountToProductAction();
         $config = new ApplyPercentageDiscountConfigData(percentage: 33);
         $option = ProductDeliveryOption::factory()->make(['price' => 1010]);
@@ -58,7 +58,7 @@ describe('ApplyPercentageDiscountToProductAction', function () {
         expect($discountedPrice)->toBe(677);
     });
 
-    test('it never returns negative price', function () {
+    test('it never returns negative price', function (): void {
         // Arrange
         $action = new ApplyPercentageDiscountToProductAction();
         $config = new ApplyPercentageDiscountConfigData(percentage: 150); // 150% off (over 100%)
@@ -71,7 +71,7 @@ describe('ApplyPercentageDiscountToProductAction', function () {
         expect($discountedPrice)->toBe(0); // Minimum is 0, not negative
     });
 
-    test('it returns original price when configuration is not the expected type', function () {
+    test('it returns original price when configuration is not the expected type', function (): void {
         // Arrange
         $action      = new ApplyPercentageDiscountToProductAction();
         $wrongConfig = new class extends Spatie\LaravelData\Data

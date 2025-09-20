@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-test('to array', function () {
+test('to array', function (): void {
     $payment = App\Models\Payment::factory()->create()->fresh();
 
     expect($payment->toArray())
@@ -21,7 +21,7 @@ test('to array', function () {
         ]);
 });
 
-test('order relationship', function () {
+test('order relationship', function (): void {
     $order   = App\Models\Order::factory()->create();
     $payment = App\Models\Payment::factory()->create([
         'order_id' => $order->id,
@@ -33,7 +33,7 @@ test('order relationship', function () {
         ->toEqual($order->id);
 });
 
-test('customer relationship', function () {
+test('customer relationship', function (): void {
     $customer = App\Models\User::factory()->create();
     $payment  = App\Models\Payment::factory()->create([
         'customer_id' => $customer->id,

@@ -6,15 +6,15 @@ use App\Models\StudentStory;
 
 uses(Tests\AuthTestTrait::class);
 
-describe('StudentStoryController', function () {
-    beforeEach(function () {
+describe('StudentStoryController', function (): void {
+    beforeEach(function (): void {
         Illuminate\Http\UploadedFile::fake();
         Storage::fake('public');
         $this->avatar = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('avatar.jpg'))
             ->toDisk('public')
             ->upload();
     });
-    it('list and fitler stories', function () {
+    it('list and fitler stories', function (): void {
         $this->authorized_user([PermissionEnum::STUDENT_STORY_VIEW_ANY]);
 
         // Create some student stories
@@ -47,7 +47,7 @@ describe('StudentStoryController', function () {
         $response->assertJsonFragment(['student_name' => 'John Doe']);
     });
 
-    it('shows a specific story', function () {
+    it('shows a specific story', function (): void {
         $this->authorized_user([PermissionEnum::STUDENT_STORY_VIEW]);
 
         $story = StudentStory::factory()->create([
@@ -70,7 +70,7 @@ describe('StudentStoryController', function () {
 
     });
 
-    it('creates a new story', function () {
+    it('creates a new story', function (): void {
         $this->authorized_user([PermissionEnum::STUDENT_STORY_CREATE]);
 
         $postData = [
@@ -96,7 +96,7 @@ describe('StudentStoryController', function () {
         expect($story)->not->toBeNull()
             ->and($story->avatar_url)->toBe($this->avatar->getUrl());
     });
-    it('creates a new story without avatar', function () {
+    it('creates a new story without avatar', function (): void {
         $this->authorized_user([PermissionEnum::STUDENT_STORY_CREATE]);
 
         $postData = [
@@ -125,7 +125,7 @@ describe('StudentStoryController', function () {
             ->and($storyAvatar->getUrl())->toBe($this->avatar->getUrl());
     });
 
-    it('updates an existing story', function () {
+    it('updates an existing story', function (): void {
         $this->authorized_user([PermissionEnum::STUDENT_STORY_UPDATE]);
 
         $story = StudentStory::factory()->create([
@@ -165,7 +165,7 @@ describe('StudentStoryController', function () {
             ->and($storyAvatar->getUrl())->toBe($avatar->getUrl());
     });
 
-    it('updates an existing story and set avatar to null', function () {
+    it('updates an existing story and set avatar to null', function (): void {
         $this->authorized_user([PermissionEnum::STUDENT_STORY_UPDATE]);
 
         $story = StudentStory::factory()->create([
@@ -200,7 +200,7 @@ describe('StudentStoryController', function () {
             ->and($storyAvatar)->toBeNull();
     });
 
-    it('deletes a story', function () {
+    it('deletes a story', function (): void {
         $this->authorized_user([PermissionEnum::STUDENT_STORY_DELETE]);
 
         $story = StudentStory::factory()->create([
@@ -222,7 +222,7 @@ describe('StudentStoryController', function () {
         ]);
     });
 
-    it('validates input data when creating a story', function () {
+    it('validates input data when creating a story', function (): void {
         $this->authorized_user([PermissionEnum::STUDENT_STORY_CREATE]);
 
         // Missing required fields
@@ -240,7 +240,7 @@ describe('StudentStoryController', function () {
         $response->assertJsonValidationErrors(['student_name', 'course_url', 'story_text']);
     });
 
-    it('prevents unauthorized access', function () {
+    it('prevents unauthorized access', function (): void {
         // No permissions
         $this->unauthorized_user();
         $updateData = [

@@ -39,8 +39,8 @@ class ReviewController extends Controller
                     AllowedFilter::exact('reviewable_type'),
                     AllowedFilter::exact('status'),
                     AllowedFilter::exact('is_featured'),
-                    AllowedFilter::callback('customer_name', function ($query, $value) {
-                        $query->withWhereHas('user', function ($query) use ($value) {
+                    AllowedFilter::callback('customer_name', function ($query, $value): void {
+                        $query->withWhereHas('user', function ($query) use ($value): void {
                             $query->where(DB::raw("CONCAT(first_name, ' ', last_name)"), 'LIKE', "%{$value}%");
                         });
                     }),
@@ -54,7 +54,7 @@ class ReviewController extends Controller
                 'created_at',
                 'updated_at'
             ])
-            ->when(!$request->has('customer_name'), function ($query) {
+            ->when(!$request->has('customer_name'), function ($query): void {
                 $query->with('user');
             })
             ->with(['reviewable'])

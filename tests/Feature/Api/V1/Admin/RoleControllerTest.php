@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 uses(Tests\AuthTestTrait::class);
-it('can list roles', function () {
+it('can list roles', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::ROLE_VIEW_ANY->value]);
     $this
         ->getJson(route('api.v1.admin.role.index'))
@@ -21,7 +21,7 @@ it('can list roles', function () {
         ]);
 });
 
-it('can create a role', function () {
+it('can create a role', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::ROLE_CREATE->value]);
     $data = [
         'name'        => 'TestRole', 'label' => 'Test Role',
@@ -62,7 +62,7 @@ it('can create a role', function () {
     ]);
 });
 
-it('can show a role', function () {
+it('can show a role', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::ROLE_VIEW->value]);
     $role = Spatie\Permission\Models\Role::create([
         'name'       => 'TestRole',
@@ -88,7 +88,7 @@ it('can show a role', function () {
                 ],
             ],
         ])
-        ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($role) {
+        ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($role): void {
             $json->where('data.id', $role->id)
                 ->where('data.name', 'TestRole')
                 ->has('data.permissions', 1)
@@ -98,7 +98,7 @@ it('can show a role', function () {
 
 });
 
-it('can update a role', function () {
+it('can update a role', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::ROLE_UPDATE->value]);
     $role = Spatie\Permission\Models\Role::create([
         'name'       => 'TestRole',
@@ -118,7 +118,7 @@ it('can update a role', function () {
         ->putJson(route('api.v1.admin.role.update', $role), $data)
         ->assertOk();
 });
-it('can not update it\'s own role', function () {
+it('can not update it\'s own role', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::ROLE_UPDATE->value]);
     $role = Spatie\Permission\Models\Role::create([
         'name'       => 'TestRole',
@@ -139,7 +139,7 @@ it('can not update it\'s own role', function () {
         ->putJson(route('api.v1.admin.role.update', $role), $data)
         ->assertForbidden();
 });
-it('can delete a role', function () {
+it('can delete a role', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::ROLE_DELETE->value]);
     $role = Spatie\Permission\Models\Role::create([
         'name'       => 'TestRole',
@@ -150,7 +150,7 @@ it('can delete a role', function () {
         ->deleteJson(route('api.v1.admin.role.destroy', $role))
         ->assertNoContent();
 });
-it('can not delete it\'s own role', function () {
+it('can not delete it\'s own role', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::ROLE_DELETE->value]);
     $role = Spatie\Permission\Models\Role::create([
         'name'       => 'TestRole',

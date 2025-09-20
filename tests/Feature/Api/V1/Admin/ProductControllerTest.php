@@ -5,8 +5,8 @@ declare(strict_types=1);
 use App\Models\Product;
 
 uses(Tests\AuthTestTrait::class);
-describe('list filters', function () {
-    it('should filter by name', function () {
+describe('list filters', function (): void {
+    it('should filter by name', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW_ANY]);
         Product::factory()->count(10)->create();
         Product::factory()->create([
@@ -25,7 +25,7 @@ describe('list filters', function () {
             ->assertJsonFragment(['name' => 'Test Product']);
     });
 
-    it('should filter by short_name', function () {
+    it('should filter by short_name', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW_ANY]);
         Product::factory()->count(10)->create();
         Product::factory()->create([
@@ -44,7 +44,7 @@ describe('list filters', function () {
             ->assertJsonFragment(['short_name' => 'Test Short Name']);
     });
 
-    it('should filter by is_visible', function () {
+    it('should filter by is_visible', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW_ANY]);
         Product::factory()->count(10)->create(
             [
@@ -67,7 +67,7 @@ describe('list filters', function () {
             ->assertJsonFragment(['is_visible' => true]);
     });
 
-    it('should filter by is_featured', function () {
+    it('should filter by is_featured', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW_ANY]);
         Product::factory()->count(10)->create(
             [
@@ -90,7 +90,7 @@ describe('list filters', function () {
             ->assertJsonFragment(['is_featured' => true]);
     });
 
-    it('should filter by status', function () {
+    it('should filter by status', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW_ANY]);
         Product::factory()->count(10)->create([
             'status' => App\Enums\PublicationStatusEnum::DRAFT,
@@ -117,11 +117,11 @@ describe('list filters', function () {
     });
 });
 
-describe('Controller Tests', function () {
-    beforeEach(function () {
+describe('Controller Tests', function (): void {
+    beforeEach(function (): void {
         $this->category = App\Models\Category::factory()->create();
     });
-    it('should return a list of products', function () {
+    it('should return a list of products', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW_ANY]);
         Product::factory()->count(10)->create(
             [
@@ -138,7 +138,7 @@ describe('Controller Tests', function () {
             ->assertJsonCount(10, 'data.data');
     });
 
-    it('should create a product', function () {
+    it('should create a product', function (): void {
         $data = Product::factory()->make();
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_CREATE]);
         $product = Product::factory()->make();
@@ -153,7 +153,7 @@ describe('Controller Tests', function () {
             ->assertJsonFragment(['name' => 'New Product']);
     });
 
-    it('should show a product', function () {
+    it('should show a product', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW]);
         $product  = Product::factory()->create()->fresh();
         $response = $this->getJson(route('api.v1.admin.product.show', ['product' => $product->id]));
@@ -161,7 +161,7 @@ describe('Controller Tests', function () {
             ->assertJsonFragment(['name' => $product->name]);
     });
 
-    it('should update a product', function () {
+    it('should update a product', function (): void {
         $product = Product::factory()->create();
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_UPDATE]);
         $data = [
@@ -178,7 +178,7 @@ describe('Controller Tests', function () {
             ->assertJsonFragment(['name' => 'Updated Product']);
     });
 
-    it('should delete a product', function () {
+    it('should delete a product', function (): void {
         $product = Product::factory()->create()->fresh();
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_DELETE]);
         $response = $this->deleteJson(route('api.v1.admin.product.destroy', ['product' => $product->id]));
@@ -186,7 +186,7 @@ describe('Controller Tests', function () {
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
         $this->assertDatabaseCount('products', 0);
     });
-    it('should not delete a product with associated order items', function () {
+    it('should not delete a product with associated order items', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_DELETE]);
         $product        = Product::factory()->create()->fresh();
         $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
@@ -200,14 +200,14 @@ describe('Controller Tests', function () {
             ->assertJsonFragment(['product' => [__('validation.custom.product.cannot_delete_product_with_orders')]]);
         $this->assertDatabaseHas('products', ['id' => $product->id]);
     });
-    it('should not delete a product if unauthorized', function () {
+    it('should not delete a product if unauthorized', function (): void {
         $this->unauthorized_user();
         $product  = Product::factory()->create();
         $response = $this->deleteJson(route('api.v1.admin.product.destroy', ['product' => $product->id]));
         $response->assertForbidden();
         $this->assertDatabaseHas('products', ['id' => $product->id]);
     });
-    it('should not create a product if unauthorized', function () {
+    it('should not create a product if unauthorized', function (): void {
         $this->unauthorized_user();
         $product = Product::factory()->make();
         $data    = [
@@ -218,7 +218,7 @@ describe('Controller Tests', function () {
         $response = $this->postJson(route('api.v1.admin.product.store'), $data);
         $response->assertForbidden();
     });
-    it('should not update a product if unauthorized', function () {
+    it('should not update a product if unauthorized', function (): void {
         $this->unauthorized_user();
         $product = Product::factory()->create()->fresh();
         $data    = [
@@ -233,29 +233,29 @@ describe('Controller Tests', function () {
         $response = $this->putJson(route('api.v1.admin.product.update', ['product' => $product->id]), $data);
         $response->assertForbidden();
     });
-    it('should not show a product if unauthorized', function () {
+    it('should not show a product if unauthorized', function (): void {
         $this->unauthorized_user();
         $product  = Product::factory()->create()->fresh();
         $response = $this->getJson(route('api.v1.admin.product.show', ['product' => $product->id]));
         $response->assertForbidden();
     });
-    it('should not list products if unauthorized', function () {
+    it('should not list products if unauthorized', function (): void {
         $this->unauthorized_user();
         $response = $this->getJson(route('api.v1.admin.product.index'));
         $response->assertForbidden();
     });
-    it('should not delete a product if it does not exist', function () {
+    it('should not delete a product if it does not exist', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_DELETE]);
         $response = $this->deleteJson(route('api.v1.admin.product.destroy', ['product' => 999]));
         $response->assertNotFound();
     });
-    it('should not update a product if it does not exist', function () {
+    it('should not update a product if it does not exist', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_UPDATE]);
         $data     = Product::factory()->make();
         $response = $this->putJson(route('api.v1.admin.product.update', ['product' => 999]), $data->toArray());
         $response->assertNotFound();
     });
-    it('should not create a product with invalid data', function () {
+    it('should not create a product with invalid data', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_CREATE]);
         $product = Product::factory()->make();
         $data    = [
@@ -272,7 +272,7 @@ describe('Controller Tests', function () {
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['name']);
     });
-    it('should not update a product with invalid data', function () {
+    it('should not update a product with invalid data', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_UPDATE]);
         $product = Product::factory()->create();
         $data    = [
@@ -290,12 +290,12 @@ describe('Controller Tests', function () {
     });
 });
 
-describe('Product Creation tests', function () {
-    beforeEach(function () {
+describe('Product Creation tests', function (): void {
+    beforeEach(function (): void {
         $this->category = App\Models\Category::factory()->create();
     });
     it('should not create a published  product when another published product with same productable exist',
-        function () {
+        function (): void {
             $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_CREATE]);
             $course          = App\Models\Course::factory()->create()->fresh();
             $existingProduct = Product::factory()->create([
@@ -316,7 +316,7 @@ describe('Product Creation tests', function () {
 
         });
     it('should create a product with force_create when another published product with same productable exist',
-        function () {
+        function (): void {
             $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_CREATE]);
             $course          = App\Models\Course::factory()->create()->fresh();
             $existingProduct = Product::factory()->create([
@@ -346,8 +346,8 @@ describe('Product Creation tests', function () {
         });
 });
 
-describe('Archive Product Tests', function () {
-    it('should archive a product', function () {
+describe('Archive Product Tests', function (): void {
+    it('should archive a product', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_UPDATE]);
         $product = Product::factory()->create([
             'status' => App\Enums\PublicationStatusEnum::PUBLISHED,
@@ -361,7 +361,7 @@ describe('Archive Product Tests', function () {
             'status' => App\Enums\PublicationStatusEnum::ARCHIVED->value,
         ]);
     });
-    it('should not archive a product if unauthorized', function () {
+    it('should not archive a product if unauthorized', function (): void {
         $this->unauthorized_user();
         $product = Product::factory()->create([
             'status' => App\Enums\PublicationStatusEnum::PUBLISHED,
@@ -373,7 +373,7 @@ describe('Archive Product Tests', function () {
             'status' => App\Enums\PublicationStatusEnum::PUBLISHED->value,
         ]);
     });
-    it('should not archive a product if it does not exist', function () {
+    it('should not archive a product if it does not exist', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_UPDATE]);
         $response = $this->postJson(route('api.v1.admin.product.archive', ['product' => 999]));
         $response->assertNotFound();

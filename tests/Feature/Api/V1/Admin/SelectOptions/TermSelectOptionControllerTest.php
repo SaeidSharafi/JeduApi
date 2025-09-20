@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 uses(Tests\AuthTestTrait::class);
-describe('Admin Term Select Option API', function () {
-    it('returns filtered term select options', function () {
+describe('Admin Term Select Option API', function (): void {
+    it('returns filtered term select options', function (): void {
         $this->authorized_user();
         App\Models\Term::factory()->count(3)->create();
         App\Models\Term::factory()->create([
@@ -33,7 +33,7 @@ describe('Admin Term Select Option API', function () {
         ]);
     });
 
-    it('returns empty data if no match', function () {
+    it('returns empty data if no match', function (): void {
         $this->authorized_user();
         $response = $this->getJson(
             route('api.v1.admin.select-option.term', ['q' => 'NoSuchTerm'])

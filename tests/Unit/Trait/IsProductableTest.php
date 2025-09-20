@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 
-it('get getProductableAttachment', function () {
+it('get getProductableAttachment', function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
     $this->main = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('main.jpg'))
@@ -40,7 +40,7 @@ test('relation products', function (): void {
         ->toEqual($product->id);
 });
 
-it('loades category relationship with loadProductableCategories fucntion', function () {
+it('loades category relationship with loadProductableCategories fucntion', function (): void {
     $course     = App\Models\Course::factory()->create();
     $categories = App\Models\Category::factory(3)->create();
     $course->categories()->sync($categories);

@@ -21,7 +21,7 @@ Route::post('wallet-campaigns/{wallet_campaign}/bulk-trigger-allocation',
     ->name('wallet-campaigns.bulk-trigger-allocation');
 
 // Audit and Compliance routes
-Route::prefix('audit')->name('audit.')->group(function () {
+Route::prefix('audit')->name('audit.')->group(function (): void {
     // Admin action logs
     Route::get('admin-actions', [AdminAuditLogController::class, 'index'])
         ->name('admin-actions.index');

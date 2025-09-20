@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 use App\Data\Casts\ReviewableCast;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->mockProperty = Mockery::mock(Spatie\LaravelData\Support\DataProperty::class);
     $this->mockContext  = Mockery::mock(Spatie\LaravelData\Support\Creation\CreationContext::class);
     Storage::fake('public');
 });
-it('retunr null if value is null', function () {
+it('retunr null if value is null', function (): void {
     $caster = new ReviewableCast();
 
     $producatable = $caster->cast($this->mockProperty, null, [], $this->mockContext);
     expect($producatable)->toBeNull();
 });
 
-it('throws an exception if value is not ReviewableContract', function () {
+it('throws an exception if value is not ReviewableContract', function (): void {
     $caster = new ReviewableCast();
 
     $this->expectException(InvalidArgumentException::class);
@@ -25,7 +25,7 @@ it('throws an exception if value is not ReviewableContract', function () {
     $caster->cast($this->mockProperty, 123, [], $this->mockContext);
 });
 
-it('casts a Course instance to ShowCourseData', function () {
+it('casts a Course instance to ShowCourseData', function (): void {
     $caster = new ReviewableCast();
     $course = App\Models\Course::factory()
         ->withCategory()
@@ -39,7 +39,7 @@ it('casts a Course instance to ShowCourseData', function () {
     expect($productable)->toBeInstanceOf(App\Data\Admin\Course\ShowCourseData::class)
         ->and($productable->short_name)->toBe('Test Course');
 });
-it('casts a Seminar instance to ShowSeminarData', function () {
+it('casts a Seminar instance to ShowSeminarData', function (): void {
     $caster  = new ReviewableCast();
     $seminar = App\Models\Seminar::factory()
         ->withCategory()
@@ -52,7 +52,7 @@ it('casts a Seminar instance to ShowSeminarData', function () {
     expect($productable)->toBeInstanceOf(App\Data\Admin\Seminar\ShowSeminarData::class)
         ->and($productable->short_name)->toBe('Test Seminar');
 });
-it('casts a DigitalAsset instance to ShowDigitalAssetData', function () {
+it('casts a DigitalAsset instance to ShowDigitalAssetData', function (): void {
     $caster       = new ReviewableCast();
     $digitalAsset = App\Models\DigitalAsset::factory()
         ->withCategory()
@@ -68,7 +68,7 @@ it('casts a DigitalAsset instance to ShowDigitalAssetData', function () {
         ->and($productable->name)->toBe('Test Digital Asset');
 });
 
-it('casts a Course instance to CourseListItemData when short is true', function () {
+it('casts a Course instance to CourseListItemData when short is true', function (): void {
     $caster = new App\Data\Casts\ReviewableCast(true);
     $course = App\Models\Course::factory()
         ->withCategory()
@@ -82,7 +82,7 @@ it('casts a Course instance to CourseListItemData when short is true', function 
     expect($productable)->toBeInstanceOf(App\Data\Admin\Course\CourseListItemData::class)
         ->and($productable->short_name)->toBe('Test Course');
 });
-it('casts a Seminar instance to SeminarListItemData when short is true', function () {
+it('casts a Seminar instance to SeminarListItemData when short is true', function (): void {
     $caster  = new App\Data\Casts\ReviewableCast(true);
     $seminar = App\Models\Seminar::factory()
         ->withCategory()
@@ -96,7 +96,7 @@ it('casts a Seminar instance to SeminarListItemData when short is true', functio
     expect($productable)->toBeInstanceOf(App\Data\Admin\Seminar\SeminarListItemData::class)
         ->and($productable->short_name)->toBe('Test Seminar');
 });
-it('casts a DigitalAsset instance to DigitalAssetListItemData when short is true', function () {
+it('casts a DigitalAsset instance to DigitalAssetListItemData when short is true', function (): void {
     $caster       = new App\Data\Casts\ReviewableCast(true);
     $digitalAsset = App\Models\DigitalAsset::factory()
         ->withCategory()
@@ -112,7 +112,7 @@ it('casts a DigitalAsset instance to DigitalAssetListItemData when short is true
         ->and($productable->name)->toBe('Test Digital Asset');
 });
 
-it('throws an exception for unsupported productable type', function () {
+it('throws an exception for unsupported productable type', function (): void {
     $caster                 = new ReviewableCast();
     $unsupportedProductable = new class
     {

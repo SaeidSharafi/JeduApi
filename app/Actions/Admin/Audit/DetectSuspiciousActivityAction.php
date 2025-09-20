@@ -90,7 +90,7 @@ final class DetectSuspiciousActivityAction
         $query = WalletTransaction::query()
             ->with(['user', 'wallet'])
             ->whereBetween('created_at', [$data->date_from, $data->date_to])
-            ->where(function ($q) {
+            ->where(function ($q): void {
                 $q->whereTime('created_at', '<', '06:00:00')
                     ->orWhereTime('created_at', '>', '22:00:00');
             })
@@ -215,7 +215,7 @@ final class DetectSuspiciousActivityAction
 
                         return $sequences;
                     }, collect())
-                    ->filter(fn ($sequence) => $sequence->count() >= 2) // Only sequences with 2+ transactions
+                    ->filter(fn ($sequence): bool => $sequence->count() >= 2) // Only sequences with 2+ transactions
                     ->flatten(); // Flatten all sequences into individual transactions
             })
             ->map(function ($transaction) {
@@ -275,7 +275,7 @@ final class DetectSuspiciousActivityAction
 
         return [
             'total_suspicious_activities' => $typeCountsAndUsers->sum('count'),
-            'by_type'                     => $typeCountsAndUsers->mapWithKeys(fn ($data, $type) => [$type => $data['count']])->toArray(),
+            'by_type'                     => $typeCountsAndUsers->mapWithKeys(fn ($data, $type): array => [$type => $data['count']])->toArray(),
             'high_risk_count'             => 0, // Can be calculated based on specific criteria if needed
             'unique_users_involved'       => $typeCountsAndUsers->pluck('user_ids')->flatten()->unique()->count(),
         ];

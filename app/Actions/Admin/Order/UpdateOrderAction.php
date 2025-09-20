@@ -26,7 +26,7 @@ final readonly class UpdateOrderAction
             if ($order->status    === OrderStatusEnum::CANCELLED
                 || $order->status === OrderStatusEnum::REFUNDED
             ) {
-                $order->enrollments->each(function ($enrollment) {
+                $order->enrollments->each(function ($enrollment): void {
                     $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::CANCELLED]);
                 });
             }

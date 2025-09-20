@@ -11,15 +11,15 @@ use App\Models\User;
 use App\Models\WalletTransaction;
 use Carbon\Carbon;
 
-describe('DetectSuspiciousActivityAction', function () {
+describe('DetectSuspiciousActivityAction', function (): void {
 
-    beforeEach(function () {
+    beforeEach(function (): void {
         $this->action   = new DetectSuspiciousActivityAction();
         $this->dateFrom = verta()->subWeek()->format('Y-m-d');
         $this->dateTo   = verta()->format('Y-m-d');
     });
 
-    it('detects large transactions', function () {
+    it('detects large transactions', function (): void {
         // Create large transaction
         WalletTransaction::factory()->create([
             'amount'     => 60000000, // 60M IRR
@@ -51,7 +51,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($result->suspicious_activities->large_transactions->first()?->amount)->toBe(60000000);
     });
 
-    it('detects off-hours transactions', function () {
+    it('detects off-hours transactions', function (): void {
         // Create off-hours transaction (2 AM)
         Carbon::setTestNow(Carbon::create(2025, 1, 15, 2, 0, 0));
         $offHoursTransaction = WalletTransaction::factory()->create([
@@ -85,7 +85,7 @@ describe('DetectSuspiciousActivityAction', function () {
         Carbon::setTestNow(); // Reset
     });
 
-    it('detects high frequency users', function () {
+    it('detects high frequency users', function (): void {
         $user = User::factory()->create();
 
         // Create 12 transactions for the same user
@@ -120,7 +120,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($result->suspicious_activities->high_frequency_users->first()?->transaction_count)->toBe(12);
     });
 
-    it('detects round number patterns', function () {
+    it('detects round number patterns', function (): void {
         // Create round number transactions
         WalletTransaction::factory()->create([
             'amount'     => 10000000, // 10M IRR - round number
@@ -155,7 +155,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($result->suspicious_activities->round_number_patterns)->toHaveCount(2);
     });
 
-    it('detects rapid succession transactions', function () {
+    it('detects rapid succession transactions', function (): void {
         $user     = User::factory()->create();
         $baseTime = now()->subHours(2);
 
@@ -195,7 +195,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($rapid_succession->isEmpty())->toBeTrue();
     });
 
-    it('detects unusual admin activity', function () {
+    it('detects unusual admin activity', function (): void {
         $admin = Staff::factory()->create();
 
         // Create multiple high-risk admin actions
@@ -221,7 +221,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($result->suspicious_activities->unusual_admin_activity)->toBeEmptyCollection();
     });
 
-    it('includes detection period and criteria in result', function () {
+    it('includes detection period and criteria in result', function (): void {
         $data = SuspiciousActivityRequestData::from([
             'date_from'                => $this->dateFrom,
             'date_to'                  => $this->dateTo,
@@ -245,7 +245,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($result->detection_criteria['high_frequency_threshold'])->toBe(10);
     });
 
-    it('includes summary of suspicious activities', function () {
+    it('includes summary of suspicious activities', function (): void {
         // Create some suspicious data
         WalletTransaction::factory()->create([
             'amount'     => 60000000, // Large amount
@@ -269,7 +269,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($result->summary)->toBeArray();
     });
 
-    it('handles empty results gracefully', function () {
+    it('handles empty results gracefully', function (): void {
         // Don't create any suspicious transactions
 
         $data = SuspiciousActivityRequestData::from([
@@ -289,7 +289,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($result->summary)->toBeArray();
     });
 
-    it('respects date range filtering', function () {
+    it('respects date range filtering', function (): void {
         // Create transaction outside date range
         WalletTransaction::factory()->create([
             'amount'     => 60000000,
@@ -318,7 +318,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($result->suspicious_activities->large_transactions)->toHaveCount(1);
     });
 
-    it('filters large transactions by specific user ids', function () {
+    it('filters large transactions by specific user ids', function (): void {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
         $user3 = User::factory()->create();
@@ -363,7 +363,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($userIds)->not->toContain($user3->id);
     });
 
-    it('filters off-hours transactions by specific user ids', function () {
+    it('filters off-hours transactions by specific user ids', function (): void {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
         $user3 = User::factory()->create();
@@ -408,7 +408,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($userIds)->not->toContain($user2->id);
     });
 
-    it('filters high frequency users by specific user ids', function () {
+    it('filters high frequency users by specific user ids', function (): void {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
         $user3 = User::factory()->create();
@@ -453,7 +453,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($result->suspicious_activities->high_frequency_users->first()->transaction_count)->toBe(15);
     });
 
-    it('filters round number patterns by specific user ids', function () {
+    it('filters round number patterns by specific user ids', function (): void {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
         $user3 = User::factory()->create();
@@ -498,7 +498,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($userIds)->not->toContain($user2->id);
     });
 
-    it('detects actual rapid succession transactions', function () {
+    it('detects actual rapid succession transactions', function (): void {
         $user = User::factory()->create();
 
         // Use timezone-aware Carbon with Asia/Tehran
@@ -577,7 +577,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($transactionIds)->toContain($transaction3->id);
     });
 
-    it('detects unusual admin activity with admin-initiated transactions', function () {
+    it('detects unusual admin activity with admin-initiated transactions', function (): void {
         $user = User::factory()->create();
 
         // Create admin-initiated transaction with proper metadata
@@ -626,7 +626,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($result->suspicious_activities->unusual_admin_activity->first()->ip_address)->toBe('192.168.1.1');
     });
 
-    it('includes detection period from field in result', function () {
+    it('includes detection period from field in result', function (): void {
         $data = SuspiciousActivityRequestData::from([
             'date_from'                => $this->dateFrom,
             'date_to'                  => $this->dateTo,
@@ -644,7 +644,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($result->detection_period['from'])->toBe($this->dateFrom);
     });
 
-    it('includes complete detection criteria in result', function () {
+    it('includes complete detection criteria in result', function (): void {
         $data = SuspiciousActivityRequestData::from([
             'date_from'                => $this->dateFrom,
             'date_to'                  => $this->dateTo,
@@ -664,7 +664,7 @@ describe('DetectSuspiciousActivityAction', function () {
         expect($result->detection_criteria['high_frequency_threshold'])->toBe(15);
     });
 
-    it('generates comprehensive summary with all activity types populated', function () {
+    it('generates comprehensive summary with all activity types populated', function (): void {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
 

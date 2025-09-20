@@ -5,8 +5,8 @@ use App\Enums\PermissionEnum;
 use App\Models\AdviceRequest;
 
 uses(\Tests\AuthTestTrait::class);
-describe('AdviceRequestController', function () {
-    it('list requests and filter them', function () {
+describe('AdviceRequestController', function (): void {
+    it('list requests and filter them', function (): void {
         $this->authorized_user([PermissionEnum::ADVICE_REQUEST_VIEW_ANY]);
         AdviceRequest::factory()->count(4)
             ->create(['status' => AdviceRequestStatusEnum::PENDING]);
@@ -58,7 +58,7 @@ describe('AdviceRequestController', function () {
         }
     });
 
-    it('view a specific advice request', function () {
+    it('view a specific advice request', function (): void {
         $this->authorized_user([PermissionEnum::ADVICE_REQUEST_VIEW]);
         $request = AdviceRequest::factory()->create([
             'status' => AdviceRequestStatusEnum::PENDING
@@ -83,7 +83,7 @@ describe('AdviceRequestController', function () {
     });
 
 
-    it('update a specific advice request', function () {
+    it('update a specific advice request', function (): void {
         $this->authorized_user([PermissionEnum::ADVICE_REQUEST_UPDATE]);
         $request = AdviceRequest::factory()->create([
             'status' => AdviceRequestStatusEnum::PENDING
@@ -121,7 +121,7 @@ describe('AdviceRequestController', function () {
         ]);
     });
 
-    it('delete a specific advice request', function () {
+    it('delete a specific advice request', function (): void {
         $this->authorized_user([PermissionEnum::ADVICE_REQUEST_DELETE]);
         $request = AdviceRequest::factory()->create([
             'status' => AdviceRequestStatusEnum::PENDING
@@ -133,7 +133,7 @@ describe('AdviceRequestController', function () {
         ]);
 });
 
-    it('forbid unauthorized access', function () {
+    it('forbid unauthorized access', function (): void {
         $this->unauthorized_user();
         // List
         $response = $this->getJson('/api/v1/admin/advice-request');
@@ -153,8 +153,8 @@ describe('AdviceRequestController', function () {
     });
 });
 
-describe('AdviceRequestUpdateStatusController', function () {
-    it('update status of a specific advice request', function () {
+describe('AdviceRequestUpdateStatusController', function (): void {
+    it('update status of a specific advice request', function (): void {
         $this->authorized_user([PermissionEnum::ADVICE_REQUEST_UPDATE]);
         $request = AdviceRequest::factory()->create([
             'status' => AdviceRequestStatusEnum::PENDING
@@ -189,7 +189,7 @@ describe('AdviceRequestUpdateStatusController', function () {
         ]);
     });
 
-    it('forbid unauthorized access', function () {
+    it('forbid unauthorized access', function (): void {
         $this->unauthorized_user();
         $request = AdviceRequest::factory()->create();
         $response = $this->patchJson('/api/v1/admin/advice-request/' . $request->id . '/status', [

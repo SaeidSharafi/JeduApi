@@ -6,7 +6,7 @@ use App\Enums\Wallet\WalletStatusEnum;
 use App\Models\User;
 use App\Models\Wallet;
 
-test('wallet has proper relationships', function () {
+test('wallet has proper relationships', function (): void {
     $user   = User::factory()->create();
     $wallet = $user->wallet; // Use the automatically created wallet
 
@@ -18,7 +18,7 @@ test('wallet has proper relationships', function () {
         ->toBeInstanceOf(Illuminate\Database\Eloquent\Collection::class);
 });
 
-test('wallet casts work correctly', function () {
+test('wallet casts work correctly', function (): void {
     $user   = User::factory()->create();
     $wallet = $user->wallet;
 
@@ -40,7 +40,7 @@ test('wallet casts work correctly', function () {
         ->toBe(WalletStatusEnum::ACTIVE);
 });
 
-test('wallet business logic methods work correctly', function () {
+test('wallet business logic methods work correctly', function (): void {
     $user   = User::factory()->create();
     $wallet = $user->wallet;
 
@@ -68,7 +68,7 @@ test('wallet business logic methods work correctly', function () {
         ->toBeFalse();
 });
 
-test('suspended wallet cannot withdraw or spend', function () {
+test('suspended wallet cannot withdraw or spend', function (): void {
     $user   = User::factory()->create();
     $wallet = $user->wallet;
 
@@ -86,7 +86,7 @@ test('suspended wallet cannot withdraw or spend', function () {
         ->toBeTrue();
 });
 
-test('user automatically gets wallet when created', function () {
+test('user automatically gets wallet when created', function (): void {
     $user = User::factory()->create();
 
     expect($user->wallet)
@@ -99,7 +99,7 @@ test('user automatically gets wallet when created', function () {
         ->toBe(WalletStatusEnum::ACTIVE);
 });
 
-test('wallet business logic with different statuses', function () {
+test('wallet business logic with different statuses', function (): void {
     // Create users and update their wallets with different statuses
     $activeUser   = User::factory()->create();
     $activeWallet = $activeUser->wallet;

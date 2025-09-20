@@ -6,12 +6,12 @@ use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->mockProperty = Mockery::mock(Spatie\LaravelData\Support\DataProperty::class);
     $this->mockContext  = Mockery::mock(Spatie\LaravelData\Support\Creation\CreationContext::class);
     Storage::fake('public');
 });
-it('return EmptyDetailsData if value is null', function () {
+it('return EmptyDetailsData if value is null', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::DIGITAL;
     $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD;
@@ -21,7 +21,7 @@ it('return EmptyDetailsData if value is null', function () {
     );
 });
 
-it('return EmptyDetailsData if fulfillment_type or delivery_method is null', function () {
+it('return EmptyDetailsData if fulfillment_type or delivery_method is null', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = null;
     $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD;
@@ -34,7 +34,7 @@ it('return EmptyDetailsData if fulfillment_type or delivery_method is null', fun
     );
 });
 
-it('return DirectDownloadDetailsData if delivery_method is DIRECT_DOWNLOAD', function () {
+it('return DirectDownloadDetailsData if delivery_method is DIRECT_DOWNLOAD', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::DIGITAL;
     $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD;
@@ -48,7 +48,7 @@ it('return DirectDownloadDetailsData if delivery_method is DIRECT_DOWNLOAD', fun
     );
 });
 
-it('return InPersonDetailsData if delivery_method is IN_PERSON', function () {
+it('return InPersonDetailsData if delivery_method is IN_PERSON', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::PHYSICAL;
     $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::IN_PERSON;
@@ -65,7 +65,7 @@ it('return InPersonDetailsData if delivery_method is IN_PERSON', function () {
         ->and($delivery_option->duration)->toBe('20 Minute')
         ->and($delivery_option->schedule)->toBe('Sun-Mon');
 });
-it('return LmsMoodleDetailsData if delivery_method is LMS_MOODLE', function () {
+it('return LmsMoodleDetailsData if delivery_method is LMS_MOODLE', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE;
     $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::LMS_MOODLE;
@@ -86,7 +86,7 @@ it('return LmsMoodleDetailsData if delivery_method is LMS_MOODLE', function () {
         ->toBe(verta($details['enrollment_end_date'])->format('Y-m-d H:i:s'));
 });
 
-it('return LiveSessionBbbDetailsData if delivery_method is LIVE_SESSION_BBB', function () {
+it('return LiveSessionBbbDetailsData if delivery_method is LIVE_SESSION_BBB', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE;
     $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::LIVE_SESSION_BBB;
@@ -116,7 +116,7 @@ it('return LiveSessionBbbDetailsData if delivery_method is LIVE_SESSION_BBB', fu
         ->and($delivery_option->toArray())->toBe($details);
 });
 
-it('return LiveSessionSkyroomDetailsData if delivery_method is LIVE_SESSION_SKYROOM', function () {
+it('return LiveSessionSkyroomDetailsData if delivery_method is LIVE_SESSION_SKYROOM', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE;
     $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::LIVE_SESSION_SKYROOM;
@@ -139,7 +139,7 @@ it('return LiveSessionSkyroomDetailsData if delivery_method is LIVE_SESSION_SKYR
         ->and($delivery_option->toArray())->toBe($details);
 });
 
-it('return VideoPlatformSpotplayerDetailsData if delivery_method is VIDEO_PLATFORM_SPOTPLAYER', function () {
+it('return VideoPlatformSpotplayerDetailsData if delivery_method is VIDEO_PLATFORM_SPOTPLAYER', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::OFFLINE_SERVICE;
     $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER;

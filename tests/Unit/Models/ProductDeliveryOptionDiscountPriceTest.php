@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-it('to array', function () {
+it('to array', function (): void {
     $dsc = App\Models\ProductDeliveryOptionDiscountPrice::create(
         [
             'product_delivery_option_id' => App\Models\ProductDeliveryOption::factory()->create()->id,
@@ -23,7 +23,7 @@ it('to array', function () {
         ]);
 });
 
-it('promotion relation', function () {
+it('promotion relation', function (): void {
     $product   = App\Models\ProductDeliveryOption::factory()->create();
     $promotion = App\Models\DiscountPromotion::factory()->create();
     $dsc       = App\Models\ProductDeliveryOptionDiscountPrice::create([
@@ -42,7 +42,7 @@ it('promotion relation', function () {
 
 });
 
-it('product delivery option relation', function () {
+it('product delivery option relation', function (): void {
     $product   = App\Models\ProductDeliveryOption::factory()->create();
     $promotion = App\Models\DiscountPromotion::factory()->create();
     $dsc       = App\Models\ProductDeliveryOptionDiscountPrice::create([

@@ -12,16 +12,16 @@ use App\Models\User;
 use App\Models\WalletTransaction;
 use Carbon\Carbon;
 
-describe('GenerateComplianceReportAction', function () {
+describe('GenerateComplianceReportAction', function (): void {
 
-    beforeEach(function () {
+    beforeEach(function (): void {
         $this->action   = new GenerateComplianceReportAction();
         $this->dateFrom = verta()->subWeek()->format('Y-m-d');
         $this->dateTo   = verta()->format('Y-m-d');
     });
 
-    describe('execute method', function () {
-        it('generates basic report structure', function () {
+    describe('execute method', function (): void {
+        it('generates basic report structure', function (): void {
             $data = ComplianceReportRequestData::from([
                 'date_from'                    => $this->dateFrom,
                 'date_to'                      => $this->dateTo,
@@ -44,7 +44,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($result['report_period']['type'])->toBe('custom');
         });
 
-        it('includes transaction analysis when requested', function () {
+        it('includes transaction analysis when requested', function (): void {
             $data = ComplianceReportRequestData::from([
                 'date_from'                    => $this->dateFrom,
                 'date_to'                      => $this->dateTo,
@@ -57,7 +57,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($result['report_sections'])->toHaveKey('transaction_analysis');
         });
 
-        it('includes admin activity when requested', function () {
+        it('includes admin activity when requested', function (): void {
             $data = ComplianceReportRequestData::from([
                 'date_from'              => $this->dateFrom,
                 'date_to'                => $this->dateTo,
@@ -69,7 +69,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($result['report_sections'])->toHaveKey('admin_activity');
         });
 
-        it('includes suspicious activity when requested', function () {
+        it('includes suspicious activity when requested', function (): void {
             $data = ComplianceReportRequestData::from([
                 'date_from'                   => $this->dateFrom,
                 'date_to'                     => $this->dateTo,
@@ -81,7 +81,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($result['report_sections'])->toHaveKey('suspicious_activity');
         });
 
-        it('includes risk assessment when requested', function () {
+        it('includes risk assessment when requested', function (): void {
             $data = ComplianceReportRequestData::from([
                 'date_from'               => $this->dateFrom,
                 'date_to'                 => $this->dateTo,
@@ -93,7 +93,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($result['report_sections'])->toHaveKey('risk_assessment');
         });
 
-        it('includes daily breakdown for daily report type', function () {
+        it('includes daily breakdown for daily report type', function (): void {
             $data = ComplianceReportRequestData::from([
                 'date_from'   => $this->dateFrom,
                 'date_to'     => $this->dateTo,
@@ -105,7 +105,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($result['report_sections'])->toHaveKey('daily_breakdown');
         });
 
-        it('does not include daily breakdown for non-daily report types', function () {
+        it('does not include daily breakdown for non-daily report types', function (): void {
             $data = ComplianceReportRequestData::from([
                 'date_from'   => $this->dateFrom,
                 'date_to'     => $this->dateTo,
@@ -118,8 +118,8 @@ describe('GenerateComplianceReportAction', function () {
         });
     });
 
-    describe('generateSummary method', function () {
-        it('generates summary with user filter', function () {
+    describe('generateSummary method', function (): void {
+        it('generates summary with user filter', function (): void {
             $user1 = User::factory()->create();
             $user2 = User::factory()->create();
 
@@ -148,7 +148,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($result['summary']['total_transactions'])->toBe(1);
         });
 
-        it('generates summary with transaction type filter', function () {
+        it('generates summary with transaction type filter', function (): void {
             WalletTransaction::factory()->create([
                 'type'       => TransactionTypeEnum::DEPOSIT,
                 'amount'     => 100000,
@@ -172,7 +172,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($result['summary']['total_transactions'])->toBe(1);
         });
 
-        it('generates summary with amount filters', function () {
+        it('generates summary with amount filters', function (): void {
             WalletTransaction::factory()->create([
                 'amount'     => 50000, // Below min_amount
                 'created_at' => now()->subDays(2),
@@ -200,7 +200,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($result['summary']['total_transactions'])->toBe(1);
         });
 
-        it('generates summary with only min_amount filter', function () {
+        it('generates summary with only min_amount filter', function (): void {
             WalletTransaction::factory()->create([
                 'amount'     => 50000, // Below min_amount
                 'created_at' => now()->subDays(2),
@@ -222,7 +222,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($result['summary']['total_transactions'])->toBe(1);
         });
 
-        it('generates summary with only max_amount filter', function () {
+        it('generates summary with only max_amount filter', function (): void {
             WalletTransaction::factory()->create([
                 'amount'     => 150000, // Above max_amount
                 'created_at' => now()->subDays(2),
@@ -244,7 +244,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($result['summary']['total_transactions'])->toBe(1);
         });
 
-        it('calculates summary statistics correctly', function () {
+        it('calculates summary statistics correctly', function (): void {
             WalletTransaction::factory()->create([
                 'amount'     => 100000, // Credit
                 'created_at' => now()->subDays(2),
@@ -280,8 +280,8 @@ describe('GenerateComplianceReportAction', function () {
         });
     });
 
-    describe('generateTransactionAnalysis method', function () {
-        it('generates transaction analysis with user filter', function () {
+    describe('generateTransactionAnalysis method', function (): void {
+        it('generates transaction analysis with user filter', function (): void {
             $user1 = User::factory()->create();
             $user2 = User::factory()->create();
 
@@ -318,7 +318,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($analysis['by_source'])->toHaveKey(TransactionSourceEnum::STAFF->value);
         });
 
-        it('identifies high risk transactions from metadata', function () {
+        it('identifies high risk transactions from metadata', function (): void {
             WalletTransaction::factory()->create([
                 'metadata' => [
                     'audit' => [
@@ -350,8 +350,8 @@ describe('GenerateComplianceReportAction', function () {
         });
     });
 
-    describe('generateAdminActionsSummary method', function () {
-        it('generates admin actions summary', function () {
+    describe('generateAdminActionsSummary method', function (): void {
+        it('generates admin actions summary', function (): void {
             $admin1 = Staff::factory()->create();
             $admin2 = Staff::factory()->create();
 
@@ -402,8 +402,8 @@ describe('GenerateComplianceReportAction', function () {
         });
     });
 
-    describe('generateSuspiciousActivityReport method', function () {
-        it('generates suspicious activity report with user filter', function () {
+    describe('generateSuspiciousActivityReport method', function (): void {
+        it('generates suspicious activity report with user filter', function (): void {
             $user1 = User::factory()->create();
             $user2 = User::factory()->create();
 
@@ -436,7 +436,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($suspicious['large_transactions'])->toBe(1);
         });
 
-        it('detects various suspicious patterns', function () {
+        it('detects various suspicious patterns', function (): void {
             // Large transaction
             WalletTransaction::factory()->create([
                 'amount'     => 60000000, // > 50M
@@ -487,8 +487,8 @@ describe('GenerateComplianceReportAction', function () {
         });
     });
 
-    describe('generateDailyBreakdown method', function () {
-        it('generates daily breakdown with user filter', function () {
+    describe('generateDailyBreakdown method', function (): void {
+        it('generates daily breakdown with user filter', function (): void {
             $user1 = User::factory()->create();
             $user2 = User::factory()->create();
 
@@ -533,7 +533,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($dailyBreakdown[$dateKey]['admin_initiated'])->toBe(1);
         });
 
-        it('covers all days in range', function () {
+        it('covers all days in range', function (): void {
             $fromDate = Carbon::parse($this->dateFrom);
             $toDate   = Carbon::parse($this->dateTo);
 
@@ -551,8 +551,8 @@ describe('GenerateComplianceReportAction', function () {
         });
     });
 
-    describe('generateRiskAssessmentReport method', function () {
-        it('generates risk assessment with user filter', function () {
+    describe('generateRiskAssessmentReport method', function (): void {
+        it('generates risk assessment with user filter', function (): void {
             $user1 = User::factory()->create();
             $user2 = User::factory()->create();
 
@@ -604,8 +604,8 @@ describe('GenerateComplianceReportAction', function () {
         });
     });
 
-    describe('calculateRiskFactors method', function () {
-        it('calculates risk factors for various transaction patterns', function () {
+    describe('calculateRiskFactors method', function (): void {
+        it('calculates risk factors for various transaction patterns', function (): void {
             // High amount transaction
             WalletTransaction::factory()->create([
                 'amount'     => 60000000, // > 50M
@@ -699,8 +699,8 @@ describe('GenerateComplianceReportAction', function () {
         });
     });
 
-    describe('calculateOverallRiskScore method', function () {
-        it('calculates overall risk score correctly', function () {
+    describe('calculateOverallRiskScore method', function (): void {
+        it('calculates overall risk score correctly', function (): void {
             // Create data that will result in high-risk factors
             WalletTransaction::factory()->count(5)->create([
                 'amount'     => 100000000, // All high amount (100M > 50M)
@@ -733,8 +733,8 @@ describe('GenerateComplianceReportAction', function () {
         });
     });
 
-    describe('generateRiskRecommendations method', function () {
-        it('generates critical recommendations for high overall risk', function () {
+    describe('generateRiskRecommendations method', function (): void {
+        it('generates critical recommendations for high overall risk', function (): void {
             // Create very high-risk scenario - more realistic approach
             WalletTransaction::factory()->count(5)->create([
                 'amount'     => 100000000, // Very high amounts
@@ -769,7 +769,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($highPriorityRecommendations)->not->toBeEmpty();
         });
 
-        it('generates elevated risk recommendations for medium overall risk', function () {
+        it('generates elevated risk recommendations for medium overall risk', function (): void {
             // Create medium risk scenario
             WalletTransaction::factory()->count(20)->create([
                 'amount'     => 60000000, // Some high amounts
@@ -793,7 +793,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($recommendations)->toBeArray();
         });
 
-        it('generates specific recommendations based on risk factor types', function () {
+        it('generates specific recommendations based on risk factor types', function (): void {
             // High transaction volume risk
             WalletTransaction::factory()->count(3)->create([
                 'amount'     => 80000000,
@@ -836,7 +836,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($categories->isNotEmpty())->toBeTrue();
         });
 
-        it('generates default recommendation when no specific risks are detected', function () {
+        it('generates default recommendation when no specific risks are detected', function (): void {
             // Create only low-risk data
             WalletTransaction::factory()->count(10)->create([
                 'amount'     => 10000, // Small amounts
@@ -867,8 +867,8 @@ describe('GenerateComplianceReportAction', function () {
         });
     });
 
-    describe('getRiskLevel method', function () {
-        it('categorizes risk levels correctly', function () {
+    describe('getRiskLevel method', function (): void {
+        it('categorizes risk levels correctly', function (): void {
             // We'll test the logic by creating scenarios that we expect to result in different risk levels
 
             // Test high-risk scenario
@@ -905,8 +905,8 @@ describe('GenerateComplianceReportAction', function () {
         });
     });
 
-    describe('edge cases and boundary conditions', function () {
-        it('handles empty data gracefully', function () {
+    describe('edge cases and boundary conditions', function (): void {
+        it('handles empty data gracefully', function (): void {
             $data = ComplianceReportRequestData::from([
                 'date_from'                    => $this->dateFrom,
                 'date_to'                      => $this->dateTo,
@@ -925,7 +925,7 @@ describe('GenerateComplianceReportAction', function () {
             expect($result['report_sections']['risk_assessment']['overall_risk_score'])->toBeLessThanOrEqual(25);
         });
 
-        it('handles single day date range', function () {
+        it('handles single day date range', function (): void {
             $singleDateJalali = verta()->format('Y-m-d'); // Use Jalali date for request data
             $singleCarbon     = now();
 

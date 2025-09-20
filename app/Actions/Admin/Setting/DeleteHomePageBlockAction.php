@@ -14,7 +14,7 @@ class DeleteHomePageBlockAction
 {
     public function handle(HomePageBlock $block): void
     {
-        DB::transaction(function () use ($block) {
+        DB::transaction(function () use ($block): void {
             $block->media()->delete();
             $block->delete();
         });

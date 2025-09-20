@@ -10,7 +10,7 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-test('deposit to wallet increases balance', function () {
+test('deposit to wallet increases balance', function (): void {
     $user           = User::factory()->create();
     $initialBalance = $user->wallet->balance;
 
@@ -30,7 +30,7 @@ test('deposit to wallet increases balance', function () {
         ->and($user->fresh()->wallet->balance)->toBe($initialBalance + 1000);
 });
 
-test('cannot deposit to suspended wallet', function () {
+test('cannot deposit to suspended wallet', function (): void {
     $user = User::factory()->create();
     $user->wallet->update(['status' => WalletStatusEnum::SUSPENDED]);
 

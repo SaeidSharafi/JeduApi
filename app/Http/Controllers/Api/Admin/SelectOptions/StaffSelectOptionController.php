@@ -31,8 +31,8 @@ final class StaffSelectOptionController extends Controller
 
         $staffs = \App\Models\Staff::query()
             ->select(['id', 'name', 'email'])
-            ->when($query, function ($staff) use ($query) {
-                $staff->where(function ($staff) use ($query) {
+            ->when($query, function ($staff) use ($query): void {
+                $staff->where(function ($staff) use ($query): void {
                     $staff->whereLike('name', '%'.$query.'%')
                         ->orWhereLike('email', '%'.$query.'%')
                         ->orWhereLike('phone', '%'.$query.'%');

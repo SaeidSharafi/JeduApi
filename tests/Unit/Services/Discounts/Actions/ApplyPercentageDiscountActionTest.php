@@ -9,7 +9,7 @@ use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\Cart\Actions\ApplyPercentageDiscountToItemsAction;
 use App\Services\Discounts\Configs\ApplyPercentageDiscountConfigData;
 
-it('does not apply discount if discount is greater than the item price', function () {
+it('does not apply discount if discount is greater than the item price', function (): void {
     // This test covers: if ($discountPerUnit > $item->price)
     $handler = new ApplyPercentageDiscountToItemsAction();
     // This 200% discount will be greater than the price
@@ -33,7 +33,7 @@ it('does not apply discount if discount is greater than the item price', functio
         ->and($context->items[0]->total)->toBe(0);
 });
 
-it('returns early if configuration is not the correct type', function () {
+it('returns early if configuration is not the correct type', function (): void {
     // This test covers: if (!$configuration instanceof ...)
     $handler     = new ApplyPercentageDiscountToItemsAction();
     $wrongConfig = new class extends Spatie\LaravelData\Data
@@ -60,7 +60,7 @@ it('returns early if configuration is not the correct type', function () {
     // Assert: Nothing happened, the item's total is unchanged.
     expect($context->items[0]->total)->toBe(1000);
 });
-it('applies a percentage discount to a full payment item', function () {
+it('applies a percentage discount to a full payment item', function (): void {
     // Arrange
     $handler = new ApplyPercentageDiscountToItemsAction();
     $config  = new ApplyPercentageDiscountConfigData(percentage: 25); // 25% off
@@ -92,7 +92,7 @@ it('applies a percentage discount to a full payment item', function () {
         ->and($context->items[0]->total)->toBe(15000);
 });
 
-it('does not apply discount to a prepayment item', function () {
+it('does not apply discount to a prepayment item', function (): void {
     // Arrange
     $handler = new ApplyPercentageDiscountToItemsAction();
     $config  = new ApplyPercentageDiscountConfigData(percentage: 25);

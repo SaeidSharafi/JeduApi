@@ -9,8 +9,8 @@ use App\Models\Course;
 use App\Models\Product;
 use App\Models\Seminar;
 
-describe('CreateBlogPostAction', function () {
-    beforeEach(function () {
+describe('CreateBlogPostAction', function (): void {
+    beforeEach(function (): void {
         $this->staff = \App\Models\Staff::factory()->create();
 
         Storage::fake('public');
@@ -35,7 +35,7 @@ describe('CreateBlogPostAction', function () {
         $this->productable2 = Seminar::factory()->create();
     });
 
-    it('creates a blog post with all fields', function () {
+    it('creates a blog post with all fields', function (): void {
         $data = new BlogPostCreateData(
             title: 'New Blog Post',
             slug: 'new-blog-post',
@@ -76,7 +76,7 @@ describe('CreateBlogPostAction', function () {
             ->and($post->relatedProductables->pluck('id')->toArray())->toEqualCanonicalizing([$this->productable2->id]);
     });
 
-    it('creates a blog post with minimal fields', function () {
+    it('creates a blog post with minimal fields', function (): void {
         $data = new BlogPostCreateData(
             title: 'Minimal Blog Post',
             slug: null,
@@ -113,7 +113,7 @@ describe('CreateBlogPostAction', function () {
             ->and($post->relatedProductables)->toBeEmpty();
     });
 
-    it('creates a blog post and calculates read time correctly', function (){
+    it('creates a blog post and calculates read time correctly', function (): void{
         $longBody = '<p>' . str_repeat('This is a test sentence. ', 100) . '</p>'; // ~500 words
         $data = new BlogPostCreateData(
             title: 'Long Read Blog Post',

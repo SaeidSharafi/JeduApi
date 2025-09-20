@@ -6,7 +6,7 @@ use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\WalletCampaign\AllocationStatusEnum;
 use App\Models\WalletCampaign;
 
-it('to array', function () {
+it('to array', function (): void {
     $walletCampaign = WalletCampaign::factory()->create()->fresh();
     expect($walletCampaign->toArray())->toEqual([
         'id'                   => $walletCampaign->id,
@@ -28,7 +28,7 @@ it('to array', function () {
 
 });
 
-it('increment usage count', function () {
+it('increment usage count', function (): void {
     $walletCampaign = WalletCampaign::factory()->create([
         'total_usage_count' => 0,
     ])->fresh();
@@ -38,7 +38,7 @@ it('increment usage count', function () {
     expect($walletCampaign->total_usage_count)->toBe(1);
 });
 
-it('return transactions relationship', function () {
+it('return transactions relationship', function (): void {
     $walletCampaign = WalletCampaign::factory()->create();
     $transaction    = App\Models\WalletTransaction::factory()->create([
         'source_type' => TransactionSourceEnum::CAMPAIGN,
@@ -48,7 +48,7 @@ it('return transactions relationship', function () {
     expect($walletCampaign->transactions->first()->toArray())->toEqual($transaction->toArray());
 });
 
-it('check is active attribute', function () {
+it('check is active attribute', function (): void {
     $walletCampaign = WalletCampaign::factory()->create([
         'is_active' => true,
         'starts_at' => now()->subDay(),
@@ -64,7 +64,7 @@ it('check is active attribute', function () {
     expect($walletCampaign->isActive())->toBeFalse();
 });
 
-it('check isWithinDateRange', function () {
+it('check isWithinDateRange', function (): void {
     $walletCampaign = WalletCampaign::factory()->create([
         'is_active' => true,
         'starts_at' => now()->subDay(),
@@ -85,7 +85,7 @@ it('check isWithinDateRange', function () {
     ])->fresh();
     expect($walletCampaign->is_within_date_range)->toBeFalse();
 });
-it('check can allocate attribute', function () {
+it('check can allocate attribute', function (): void {
     $user           = App\Models\User::factory()->create()->fresh();
     $walletCampaign = WalletCampaign::factory()->create([
         'is_active'         => true,
@@ -135,7 +135,7 @@ it('check can allocate attribute', function () {
 
 });
 
-it('check remaining usage count attribute', function () {
+it('check remaining usage count attribute', function (): void {
     $walletCampaign = WalletCampaign::factory()->create([
         'usage_limit_total' => 5,
         'total_usage_count' => 2,
@@ -155,7 +155,7 @@ it('check remaining usage count attribute', function () {
     expect($walletCampaign->remainingUsageCount)->toBe(0);
 });
 
-it('check hasReachedTotalLimit method', function () {
+it('check hasReachedTotalLimit method', function (): void {
     $walletCampaign = WalletCampaign::factory()->create([
         'usage_limit_total' => 5,
         'total_usage_count' => 2,
@@ -175,7 +175,7 @@ it('check hasReachedTotalLimit method', function () {
     expect($walletCampaign->hasReachedTotalLimit())->toBeTrue();
 });
 
-it('check hasReachedUserLimit method', function () {
+it('check hasReachedUserLimit method', function (): void {
     $user           = App\Models\User::factory()->create()->fresh();
     $walletCampaign = WalletCampaign::factory()->create([
         'usage_limit_per_user' => 3,
@@ -204,7 +204,7 @@ it('check hasReachedUserLimit method', function () {
     expect($walletCampaign->hasReachedUserLimit($user))->toBeFalse();
 });
 
-it('get remaining usage count', function () {
+it('get remaining usage count', function (): void {
     $walletCampaign = WalletCampaign::factory()->create([
         'usage_limit_total' => 10,
         'total_usage_count' => 4,
@@ -224,7 +224,7 @@ it('get remaining usage count', function () {
     expect($walletCampaign->remainingUsageCount)->toBe(0);
 });
 
-it('get user remaining usage count', function () {
+it('get user remaining usage count', function (): void {
     $user           = App\Models\User::factory()->create()->fresh();
     $walletCampaign = WalletCampaign::factory()->create([
         'usage_limit_per_user' => 5,

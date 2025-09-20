@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 uses(Tests\AuthTestTrait::class);
-describe('Admin Category Select Option API', function () {
-    it('returns filtered category select options', function () {
+describe('Admin Category Select Option API', function (): void {
+    it('returns filtered category select options', function (): void {
         $this->authorized_user();
         App\Models\Category::factory()->count(3)->create();
         App\Models\Category::factory()->create([
@@ -34,7 +34,7 @@ describe('Admin Category Select Option API', function () {
         ]);
     });
 
-    it('returns empty data if no match', function () {
+    it('returns empty data if no match', function (): void {
         $this->authorized_user();
         $response = $this->getJson(
             route('api.v1.admin.select-option.category', ['q' => 'NoSuchCategory'])

@@ -14,9 +14,9 @@ use App\Models\OrderItem;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
 
-describe('CreatePaymentAction', function () {
+describe('CreatePaymentAction', function (): void {
 
-    beforeEach(function () {
+    beforeEach(function (): void {
         Event::fake([PaymentCompletedEvent::class]);
         $this->adminUser = App\Models\Staff::factory()->create();
         $this->prodcut   = App\Models\Product::factory()
@@ -30,7 +30,7 @@ describe('CreatePaymentAction', function () {
     });
 
     // Test creating the first (initial) payment
-    it('creates the initial payment for an order', function () {
+    it('creates the initial payment for an order', function (): void {
         $items = [
             [
                 'product_delivery_option_id' => App\Models\ProductDeliveryOption::factory()->create(),
@@ -63,7 +63,7 @@ describe('CreatePaymentAction', function () {
     });
 
     // Test creating the final balance payment
-    it('creates the final balance payment correctly', function () {
+    it('creates the final balance payment correctly', function (): void {
         $items = [
             [
                 'product_delivery_option_id' => $this->prodcutDeliveryOption->id,
@@ -104,7 +104,7 @@ describe('CreatePaymentAction', function () {
     });
 
     // Test creating a zero-dollar payment for free orders
-    it('creates a zero-dollar payment for free orders to trigger fulfillment', function () {
+    it('creates a zero-dollar payment for free orders to trigger fulfillment', function (): void {
         $order = Order::factory()->create(['grand_total' => 0]);
 
         $paymentData = new PaymentCreateData(method: 'bank_transfer', status: 'completed', data: null,
@@ -117,7 +117,7 @@ describe('CreatePaymentAction', function () {
     });
 
     // Test overpayment protection
-    it('throws validation exception when trying to pay a fully paid order', function () {
+    it('throws validation exception when trying to pay a fully paid order', function (): void {
         $order = Order::factory()->create(['grand_total' => 10000]);
         $order->payments()->create([
             'customer_id' => $order->customer_id,
@@ -142,7 +142,7 @@ describe('CreatePaymentAction', function () {
     });
 
     // Test conditional validation
-    it('throws validation exception if bank details are missing for a paid order', function () {
+    it('throws validation exception if bank details are missing for a paid order', function (): void {
         $order = Order::factory()->create(['grand_total' => 10000]);
 
         OrderItem::factory()->create([
@@ -163,7 +163,7 @@ describe('CreatePaymentAction', function () {
             ->toThrow(ValidationException::class);
     });
 
-    it('returns null for a free order that already has a completion payment', function () {
+    it('returns null for a free order that already has a completion payment', function (): void {
         // Arrange: A free order that already has a zero-dollar completed payment
         $items = [
             [
@@ -195,7 +195,7 @@ describe('CreatePaymentAction', function () {
         Event::assertNotDispatched(PaymentCompletedEvent::class);
     });
 
-    it('throws validation exception if there is a pending payment', function () {
+    it('throws validation exception if there is a pending payment', function (): void {
         $items = [
             [
                 'product_delivery_option_id' => $this->prodcutDeliveryOption->id,

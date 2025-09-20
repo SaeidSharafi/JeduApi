@@ -9,7 +9,7 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-test('get wallet balance returns correct data', function () {
+test('get wallet balance returns correct data', function (): void {
     $user = User::factory()->create();
     $user->wallet->update(['balance' => 1500, 'gift_balance' => 500]);
 
@@ -28,16 +28,16 @@ test('get wallet balance returns correct data', function () {
     ]);
 });
 
-test('cannot get balance for invalid user', function () {
+test('cannot get balance for invalid user', function (): void {
     $admin = $this->authorized_user([
         App\Enums\PermissionEnum::WALLET_VIEW_ANY,
     ]);
 
-    expect(fn () => (new GetWalletBalanceAction())->execute(999999))
+    expect(fn (): array => (new GetWalletBalanceAction())->execute(999999))
         ->toThrow(Exception::class, __('validation.custom.user_not_found'));
 });
 
-test('cannot get balance for user without wallet', function () {
+test('cannot get balance for user without wallet', function (): void {
     $user = User::factory()->create();
     $user->wallet()->delete();
 
@@ -45,6 +45,6 @@ test('cannot get balance for user without wallet', function () {
         App\Enums\PermissionEnum::WALLET_VIEW_ANY,
     ]);
 
-    expect(fn () => (new GetWalletBalanceAction())->execute($user->id))
+    expect(fn (): array => (new GetWalletBalanceAction())->execute($user->id))
         ->toThrow(Exception::class, __('validation.custom.wallet_not_found'));
 });

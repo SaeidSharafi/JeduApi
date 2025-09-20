@@ -31,14 +31,14 @@ if (! class_exists('App\Models\TestDummyModel')) {
     class_alias(stdClass::class, 'App\Models\TestDummyModel');
 }
 
-describe('ResponseMacroServiceProvider', function () {
-    beforeEach(function () {
+describe('ResponseMacroServiceProvider', function (): void {
+    beforeEach(function (): void {
         // Ensure a fresh request object for each test if request() helper is used.
-        $this->app->singleton('request', fn () => Request::create('/test', 'GET'));
+        $this->app->singleton('request', fn (): \Illuminate\Http\Request => Request::create('/test', 'GET'));
         $this->app->register(ResponseMacroServiceProvider::class);
     });
 
-    it('registers and uses success macro correctly', function () {
+    it('registers and uses success macro correctly', function (): void {
         $data = ['id' => 1, 'name' => 'Test'];
 
         // Test with data and custom message
@@ -76,7 +76,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataNullDefault['metadata'])->toBe([]);
     });
 
-    it('registers and uses created macro correctly', function () {
+    it('registers and uses created macro correctly', function (): void {
         $data       = ['id' => 1, 'name' => 'New Resource'];
         $modelClass = App\Models\TestDummyModel::class;
         $modelLabel = get_model_label($modelClass); // "test dummy model"
@@ -116,7 +116,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataNullData['metadata'])->toBe([]);
     });
 
-    it('registers and uses updated macro correctly', function () {
+    it('registers and uses updated macro correctly', function (): void {
         $data       = ['id' => 1, 'name' => 'Updated Resource'];
         $modelClass = App\Models\TestDummyModel::class;
         $modelLabel = get_model_label($modelClass);
@@ -156,13 +156,13 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataNullData['metadata'])->toBe([]);
     });
 
-    it('registers and uses noContentJson macro correctly', function () {
+    it('registers and uses noContentJson macro correctly', function (): void {
         $response = Response::noContentJson();
         expect($response)->toBeInstanceOf(JsonResponse::class)
             ->and($response->getStatusCode())->toBe(HttpStatus::HTTP_NO_CONTENT);
     });
 
-    it('registers and uses error macro correctly', function () {
+    it('registers and uses error macro correctly', function (): void {
         // Test with message and default status
         $apiResponse = Response::error('A generic error occurred');
         expect($apiResponse)->toBeInstanceOf(ApiFailResponse::class);
@@ -184,7 +184,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataCustom['metadata'])->toBe([]);
     });
 
-    it('registers and uses validationError macro correctly', function () {
+    it('registers and uses validationError macro correctly', function (): void {
         // Test with default message
         // Note: validationError internally calls `Response::error`, so the returned object is ApiFailResponse
         $apiResponse = Response::validationError();
@@ -205,7 +205,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataCustom['metadata'])->toBe([]);
     });
 
-    it('registers and uses validationErrors macro correctly', function () {
+    it('registers and uses validationErrors macro correctly', function (): void {
         $validationErrors = ['email' => ['The email field is required.']];
 
         // Test with errors array and default message
@@ -229,7 +229,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataValidator['metadata'])->toBe([]);
     });
 
-    it('registers and uses notFound macro correctly', function () {
+    it('registers and uses notFound macro correctly', function (): void {
         $modelClass = App\Models\TestDummyModel::class;
         $modelLabel = get_model_label($modelClass);
 
@@ -260,7 +260,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataGeneric['metadata'])->toBe([]);
     });
 
-    it('registers and uses forbidden macro correctly', function () {
+    it('registers and uses forbidden macro correctly', function (): void {
         // Test with default message
         $apiResponse = Response::forbidden();
         expect($apiResponse)->toBeInstanceOf(ApiFailResponse::class); // Because it calls error()
@@ -281,7 +281,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataCustom['metadata'])->toBe([]);
     });
 
-    it('registers and uses unauthorized macro correctly', function () {
+    it('registers and uses unauthorized macro correctly', function (): void {
         // Test with default message
         $apiResponse = Response::unauthorized();
         expect($apiResponse)->toBeInstanceOf(ApiFailResponse::class); // Because it calls error()
@@ -302,7 +302,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataCustom['metadata'])->toBe([]);
     });
 
-    it('registers and uses methodNotAllowed macro correctly', function () {
+    it('registers and uses methodNotAllowed macro correctly', function (): void {
         // Test with default message
         $apiResponse = Response::methodNotAllowed();
         expect($apiResponse)->toBeInstanceOf(ApiFailResponse::class); // Because it calls error()
@@ -322,7 +322,7 @@ describe('ResponseMacroServiceProvider', function () {
             ->and($responseDataCustom['metadata'])->toBe([]);
     });
 
-    it('registers and uses serverError macro correctly', function () {
+    it('registers and uses serverError macro correctly', function (): void {
         $originalDebug = config('app.debug'); // Store original debug state
 
         // Test with default message, app.debug = false

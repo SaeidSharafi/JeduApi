@@ -7,7 +7,7 @@ use App\Enums\DeliveryMethodEnum;
 use App\Enums\ProductableMediaTypeEnum;
 use App\Models\ProductDeliveryOption;
 
-it('return data correctly', function () {
+it('return data correctly', function (): void {
     $course = App\Models\Course::factory()
         ->create()
         ->fresh();
@@ -65,7 +65,7 @@ it('return data correctly', function () {
         ]);
 
 });
-it('cover will be null if course has no image', function () {
+it('cover will be null if course has no image', function (): void {
     $course = App\Models\Course::factory()
         ->create()
         ->fresh();

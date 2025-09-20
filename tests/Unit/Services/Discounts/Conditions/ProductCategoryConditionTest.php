@@ -13,7 +13,7 @@ use App\Models\User;
 use App\Services\Discounts\Cart\Conditions\ProductCategoryCondition;
 use App\Services\Discounts\Configs\ProductCategoryConditionConfigData;
 
-it('passes if match policy is "any" and at least one item is in a category', function () {
+it('passes if match policy is "any" and at least one item is in a category', function (): void {
     // Covers: 'any' => $matchingProductCount > 0
     $categoryA = Category::factory()->create();
     $categoryB = Category::factory()->create();
@@ -53,7 +53,7 @@ it('passes if match policy is "any" and at least one item is in a category', fun
     expect($handler->passes($context, $config))->toBeTrue();
 });
 
-it('passes if match policy is "all" and all items are in categories', function () {
+it('passes if match policy is "all" and all items are in categories', function (): void {
     // Covers: 'all' => $matchingProductCount === count($itemProductIds)
     $categoryA = Category::factory()->create();
     $categoryB = Category::factory()->create();
@@ -94,7 +94,7 @@ it('passes if match policy is "all" and all items are in categories', function (
     expect($handler->passes($context, $config))->toBeTrue();
 });
 
-it('fails if match policy is "all" and one item is not in a category', function () {
+it('fails if match policy is "all" and one item is not in a category', function (): void {
     $categoryA = Category::factory()->create();
     $productA  = Product::factory()->create();
     $productA->categories()->attach($categoryA);
@@ -131,7 +131,7 @@ it('fails if match policy is "all" and one item is not in a category', function 
     expect($handler->passes($context, $config))->toBeFalse();
 });
 
-it('returns true if category_ids config is empty', function () {
+it('returns true if category_ids config is empty', function (): void {
     // Covers: if (empty($configuration->category_ids))
     $handler = new ProductCategoryCondition();
     $config  = new ProductCategoryConditionConfigData(category_ids: []);
@@ -161,7 +161,7 @@ it('returns true if category_ids config is empty', function () {
     expect($handler->passes($context, $config))->toBeTrue();
 });
 
-it('returns false if context has no items', function () {
+it('returns false if context has no items', function (): void {
     // Covers: if (empty($itemProductIds))
     $handler = new ProductCategoryCondition();
     $config  = new ProductCategoryConditionConfigData(category_ids: [1]);
@@ -173,7 +173,7 @@ it('returns false if context has no items', function () {
     expect($handler->passes($context, $config))->toBeFalse();
 });
 
-it('returns false if configuration is not an instance of ProductCategoryConditionConfigData', function () {
+it('returns false if configuration is not an instance of ProductCategoryConditionConfigData', function (): void {
     // Covers: if (! $configuration instanceof ProductCategoryConditionConfigData)
     $handler = new ProductCategoryCondition();
     $context = OrderContextData::from([

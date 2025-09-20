@@ -2,65 +2,65 @@
 
 declare(strict_types=1);
 
-describe('get_model_label', function () {
-    it('returns model label for a class string', function () {
+describe('get_model_label', function (): void {
+    it('returns model label for a class string', function (): void {
         $label = get_model_label(User::class);
         expect($label)->toBe(__('messages.models.user'));
     });
 
-    it('returns model label for an object', function () {
+    it('returns model label for an object', function (): void {
         $user  = new App\Models\User();
         $label = get_model_label($user);
         expect($label)->toBe(__('messages.models.user'));
     });
 
-    it('returns model label for a simple string if class does not exist', function () {
+    it('returns model label for a simple string if class does not exist', function (): void {
         $label = get_model_label('SomeModel');
         expect($label)->toBe(__('messages.models.somemodel'));
     });
 
-    it('returns model label for a class string that does not exist but follows convention', function () {
+    it('returns model label for a class string that does not exist but follows convention', function (): void {
         $label = get_model_label('NonExistentModel');
         expect($label)->toBe(__('messages.models.nonexistentmodel'));
     });
 });
 
-describe('randomNumber', function () {
-    it('generates a random string of default length', function () {
+describe('randomNumber', function (): void {
+    it('generates a random string of default length', function (): void {
         $number = randomNumber();
         expect($number)->toBeString()
             ->and(mb_strlen($number))->toBe(20)
             ->and($number[0])->not->toBe('0');
     });
 
-    it('generates a random string of specified length', function () {
+    it('generates a random string of specified length', function (): void {
         $number = randomNumber(10);
         expect($number)->toBeString()
             ->and(mb_strlen($number))->toBe(10)
             ->and($number[0])->not->toBe('0');
     });
 
-    it('generates a random integer of default length', function () {
+    it('generates a random integer of default length', function (): void {
         $number = randomNumber(20, true);
         expect($number)->toBeInt()
             ->and(mb_strlen((string) $number))->toBeLessThanOrEqual(19);
     });
 
-    it('generates a random integer of specified length', function () {
+    it('generates a random integer of specified length', function (): void {
         $number = randomNumber(5, true);
         expect($number)->toBeInt()
             ->and(mb_strlen((string) $number))->toBe(5)
             ->and(((string) $number)[0])->not->toBe('0');
     });
 
-    it('generates a random integer of length 1', function () {
+    it('generates a random integer of length 1', function (): void {
         $number = randomNumber(1, true);
         expect($number)->toBeInt()
             ->and($number)->toBeGreaterThanOrEqual(1)
             ->and($number)->toBeLessThanOrEqual(9);
     });
 
-    it('generates a random string of length 1', function () {
+    it('generates a random string of length 1', function (): void {
         $number = randomNumber(1);
         expect($number)->toBeString()
             ->and(mb_strlen($number))->toBe(1)
@@ -68,32 +68,32 @@ describe('randomNumber', function () {
     });
 });
 
-describe('getModelLabel', function () {
-    it('returns model label for a class string', function () {
+describe('getModelLabel', function (): void {
+    it('returns model label for a class string', function (): void {
         $label = getModelLabel(App\Models\User::class);
 
         expect($label)->toBe(__('messages.models.user'));
     });
 
-    it('returns label for invalid model', function () {
+    it('returns label for invalid model', function (): void {
         $label = getModelLabel('invalid_model');
 
         expect($label)->toBe(__('messages.models.invalid_model'));
     });
 });
 
-describe('httpStatusText', function () {
-    it('returns localized text for a valid HTTP status code', function () {
+describe('httpStatusText', function (): void {
+    it('returns localized text for a valid HTTP status code', function (): void {
         $text = httpStatusText(200);
         expect($text)->toBe(__('messages.http_status.200'));
     });
 
-    it('returns localized text for a 404 status code', function () {
+    it('returns localized text for a 404 status code', function (): void {
         $text = httpStatusText(404);
         expect($text)->toBe(__('messages.http_status.404'));
     });
 
-    it('returns localized text for an unknown status code', function () {
+    it('returns localized text for an unknown status code', function (): void {
         $text = httpStatusText(999);
         expect($text)->toBe('999');
     });

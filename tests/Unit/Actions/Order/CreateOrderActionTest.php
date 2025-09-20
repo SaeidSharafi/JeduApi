@@ -26,13 +26,13 @@ use Illuminate\Validation\ValidationException;
 
 // Using Pest for cleaner assertions
 
-describe('CreateOrderAction', function () {
+describe('CreateOrderAction', function (): void {
 
-    beforeEach(function () {
+    beforeEach(function (): void {
         Event::fake([OrderCreatedEvent::class]);
     });
 
-    it('creates an order and pending enrollments successfully', function () {
+    it('creates an order and pending enrollments successfully', function (): void {
         $user     = User::factory()->create();
         $product1 = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         $product2 = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
@@ -125,10 +125,10 @@ describe('CreateOrderAction', function () {
             'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
         ]);
 
-        Event::assertDispatched(OrderCreatedEvent::class, fn ($event) => $event->order->id === $order->id);
+        Event::assertDispatched(OrderCreatedEvent::class, fn ($event): bool => $event->order->id === $order->id);
     });
 
-    it('throws validation exception if product capacity is exceeded', function () {
+    it('throws validation exception if product capacity is exceeded', function (): void {
         $user    = User::factory()->create();
         $product = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
 
@@ -156,7 +156,7 @@ describe('CreateOrderAction', function () {
             ]));
     });
 
-    it('throws validation exception if product or delivery option is not published', function () {
+    it('throws validation exception if product or delivery option is not published', function (): void {
         $user           = User::factory()->create();
         $product        = Product::factory()->create(['status' => PublicationStatusEnum::DRAFT]);
         $deliveryOption = ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
@@ -172,7 +172,7 @@ describe('CreateOrderAction', function () {
                 __('messages.order.item_not_available', ['product' => $deliveryOption->name]));
     });
 
-    it('throws validation exception if an active enrollment already exists for an item', function () {
+    it('throws validation exception if an active enrollment already exists for an item', function (): void {
         $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
 
@@ -195,7 +195,7 @@ describe('CreateOrderAction', function () {
             ]));
     });
 
-    it('throws validation exception for unavailable pre-payment option', function () {
+    it('throws validation exception for unavailable pre-payment option', function (): void {
         $user           = User::factory()->create();
         $product        = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         $deliveryOption = ProductDeliveryOption::factory()->create([
@@ -217,7 +217,7 @@ describe('CreateOrderAction', function () {
             ]));
     });
 
-    it('throws InvalidArgumentException if a delivery option ID does not exist', function () {
+    it('throws InvalidArgumentException if a delivery option ID does not exist', function (): void {
         $user  = User::factory()->create();
         $items = [
             new OrderItemCreateData(product_delivery_option_id: 99999, payment_type: 'full_payment'),
@@ -229,7 +229,7 @@ describe('CreateOrderAction', function () {
             ->toThrow(InvalidArgumentException::class);
     });
 
-    it('throws validation exception with a list of all products for multiple duplicate enrollments', function () {
+    it('throws validation exception with a list of all products for multiple duplicate enrollments', function (): void {
         $user            = User::factory()->create();
         $deliveryOption1 = ProductDeliveryOption::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
@@ -265,7 +265,7 @@ describe('CreateOrderAction', function () {
             ->toThrow(ValidationException::class, 'Course A, Course B');
     });
 
-    it('throws ValidationException if a delivery option deosn\'t allow more than 1 quantity', function () {
+    it('throws ValidationException if a delivery option deosn\'t allow more than 1 quantity', function (): void {
         $user = User::factory()->create();
 
         $product        = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
@@ -289,7 +289,7 @@ describe('CreateOrderAction', function () {
                 ['product' => $deliveryOption->name]));
     });
 
-    it('creates an order with a discount from a valid coupon code', function () {
+    it('creates an order with a discount from a valid coupon code', function (): void {
         // --- ARRANGE: SETUP THE PROMOTION ---
         $user           = User::factory()->create();
         $product        = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
@@ -364,7 +364,7 @@ describe('CreateOrderAction', function () {
 
         Event::assertDispatched(OrderCreatedEvent::class);
     });
-    it('applies no discount if coupon code is invalid', function () {
+    it('applies no discount if coupon code is invalid', function (): void {
         // Arrange
         $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
@@ -385,7 +385,7 @@ describe('CreateOrderAction', function () {
         expect($order->grand_total)->toBe(10000);
     });
 
-    it('does not apply discount if a promotion condition is not met', function () {
+    it('does not apply discount if a promotion condition is not met', function (): void {
         // Arrange: Create a promotion that requires a cart value of $200
         $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]); // Price is only $100
@@ -419,7 +419,7 @@ describe('CreateOrderAction', function () {
         expect($order->grand_total)->toBe(10000);
     });
 
-    it('correctly populates discount audit trail columns', function () {
+    it('correctly populates discount audit trail columns', function (): void {
         // Arrange
         $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()
@@ -476,7 +476,7 @@ describe('CreateOrderAction', function () {
             ],
         ]);
     });
-    it('correctly calculates grand total for a mixed payment type order', function () {
+    it('correctly calculates grand total for a mixed payment type order', function (): void {
         // This test covers the prepayment logic in the grand_total calculation (line 89).
         $user = User::factory()->create();
 
@@ -522,7 +522,7 @@ describe('CreateOrderAction', function () {
 
     });
 
-    it('creates an order with cart-level discounts applied', function () {
+    it('creates an order with cart-level discounts applied', function (): void {
         // This test covers line 253 (calculateTotalDiscountFromContext method)
         $user           = User::factory()->create();
         $product        = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
@@ -574,7 +574,7 @@ describe('CreateOrderAction', function () {
         expect($orderItem->total)->toBe(45000);
     });
 
-    it('does not increment usage counts if no promotion was evaluated', function () {
+    it('does not increment usage counts if no promotion was evaluated', function (): void {
         // This test covers the `if (! $promotion)` return in `incrementUsageCounts` (line 155).
         $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([

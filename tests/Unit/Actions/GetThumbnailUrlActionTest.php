@@ -2,17 +2,17 @@
 
 use App\Enums\MediaTagEnum;
 
-describe('GetThumbnailUrlAction', function () {
-    beforeEach(function () {
+describe('GetThumbnailUrlAction', function (): void {
+    beforeEach(function (): void {
         $this->action = new \App\Actions\Admin\GetThumbnailUrlAction();
     });
 
-    it('returns null when media array is empty', function () {
+    it('returns null when media array is empty', function (): void {
         $result = $this->action->handle([]);
         expect($result)->toBeNull();
     });
 
-    it('returns null when COVER tag is missing', function () {
+    it('returns null when COVER tag is missing', function (): void {
         $media = [
             'OTHER_TAG' => [1, 2, 3],
         ];
@@ -20,7 +20,7 @@ describe('GetThumbnailUrlAction', function () {
         expect($result)->toBeNull();
     });
 
-    it('returns null when COVER tag is empty', function () {
+    it('returns null when COVER tag is empty', function (): void {
         $media = [
             MediaTagEnum::COVER->value => [],
         ];
@@ -28,7 +28,7 @@ describe('GetThumbnailUrlAction', function () {
         expect($result)->toBeNull();
     });
 
-    it('returns null when media ID does not exist', function () {
+    it('returns null when media ID does not exist', function (): void {
         $media = [
             MediaTagEnum::COVER->value => [9999], // Assuming 9999 does not exist
         ];
@@ -36,7 +36,7 @@ describe('GetThumbnailUrlAction', function () {
         expect($result)->toBeNull();
     });
 
-    it('returns the correct URL when media ID exists', function () {
+    it('returns the correct URL when media ID exists', function (): void {
         // Create a media item for testing
         Storage::fake('public');
         $mediaItem = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))

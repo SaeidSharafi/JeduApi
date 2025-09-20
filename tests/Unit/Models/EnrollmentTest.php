@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-it('to array', function () {
+it('to array', function (): void {
 
     $enrollment = App\Models\Enrollment::factory()->create();
 
@@ -26,7 +26,7 @@ it('to array', function () {
         ]);
 });
 
-test('order relationship', function () {
+test('order relationship', function (): void {
     $enrollment = App\Models\Enrollment::factory()->create();
 
     $order = $enrollment->order;
@@ -35,7 +35,7 @@ test('order relationship', function () {
         ->and($order->id)->toBe($enrollment->order_id);
 });
 
-test('order item relationship', function () {
+test('order item relationship', function (): void {
     $enrollment = App\Models\Enrollment::factory()->create();
 
     $orderItem = $enrollment->orderItem;
@@ -44,7 +44,7 @@ test('order item relationship', function () {
         ->and($orderItem->id)->toBe($enrollment->order_item_id);
 });
 
-test('customer relationship', function () {
+test('customer relationship', function (): void {
     $enrollment = App\Models\Enrollment::factory()->create();
 
     $customer = $enrollment->customer;

@@ -51,7 +51,7 @@ final class UserController extends Controller
         Gate::authorize('viewAny', User::class);
         $user = QueryBuilder::for(User::class)
             ->allowedFilters([
-                AllowedFilter::callback('name', function ($query, $value) {
+                AllowedFilter::callback('name', function ($query, $value): void {
                     $query->whereRaw("concat(first_name, ' ', last_name) like ?", '%'.$value.'%');
                 }),
                 'email',
@@ -59,12 +59,12 @@ final class UserController extends Controller
                 'civil_id',
                 AllowedFilter::exact('civil_id_type'),
                 AllowedFilter::callback('date_of_birth_from',
-                    function (Builder $query, $value) {
+                    function (Builder $query, $value): void {
                         $query->whereJalaiDate('date_of_birth', '>=', $value);
                     },
                 ),
                 AllowedFilter::callback('date_of_birth_to',
-                    function (Builder $query, $value) {
+                    function (Builder $query, $value): void {
                         $query->whereJalaiDate('date_of_birth', '<=', $value);
                     },
                 ),

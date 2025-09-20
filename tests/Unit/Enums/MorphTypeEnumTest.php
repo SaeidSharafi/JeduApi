@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-it('return alias correctly', function () {
+it('return alias correctly', function (): void {
     $alias = App\Enums\MorphTypeEnum::getAlias(App\Models\Category::class);
     expect($alias)->toBe('category');
     $alias = App\Enums\MorphTypeEnum::getAlias(App\Models\Course::class);
@@ -22,7 +22,7 @@ it('return alias correctly', function () {
     expect($alias)->toBeNull();
 });
 
-it('return model class correctly', function () {
+it('return model class correctly', function (): void {
     $modelClass = App\Enums\MorphTypeEnum::CATEGORY->getModelClass();
     expect($modelClass)->toBe(App\Models\Category::class);
     $modelClass = App\Enums\MorphTypeEnum::COURSE->getModelClass();
@@ -42,7 +42,7 @@ it('return model class correctly', function () {
 
 });
 
-it('return morph map correctly', function () {
+it('return morph map correctly', function (): void {
     $morphMap = App\Enums\MorphTypeEnum::forMorphMap();
     expect($morphMap)->toBeArray()
         ->toHaveKey('category', App\Models\Category::class)

@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-it('it return empty array for invalid types', function () {
+it('it return empty array for invalid types', function (): void {
     $fulfillmentType = App\Enums\FulfillmentTypeEnum::DIGITAL->value;
     $deliveryMethod  = App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD->value;
     $detailsData     = [
@@ -36,7 +36,7 @@ $fulfillmentDeliveryPairs = [
     [App\Enums\FulfillmentTypeEnum::IN_PERSON_SERVICE->value, App\Enums\DeliveryMethodEnum::IN_PERSON->value],
 ];
 
-it('creates delivery validation rules for each valid fulfillmentType/deliveryMethod pair with empty details', function ($fulfillmentType, $deliveryMethod) {
+it('creates delivery validation rules for each valid fulfillmentType/deliveryMethod pair with empty details', function ($fulfillmentType, $deliveryMethod): void {
     $detailsData = [];
     $action      = new App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules       = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
@@ -129,14 +129,14 @@ $fulfillmentDeliveryPairsWithDetails = [
     ],
 ];
 
-it('creates delivery validation rules for each valid fulfillmentType/deliveryMethod pair with sample details', function ($fulfillmentType, $deliveryMethod, $detailsData) {
+it('creates delivery validation rules for each valid fulfillmentType/deliveryMethod pair with sample details', function ($fulfillmentType, $deliveryMethod, $detailsData): void {
     $action = new App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
     $rules  = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     expect($rules)->toBeArray();
 
 })->with($fulfillmentDeliveryPairsWithDetails);
 
-it('creates delivery validation rules for DIRECT_DOWNLOAD', function () {
+it('creates delivery validation rules for DIRECT_DOWNLOAD', function (): void {
     $fulfillmentType = App\Enums\FulfillmentTypeEnum::DIGITAL->value;
     $deliveryMethod  = App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD->value;
     $detailsData     = [
@@ -155,7 +155,7 @@ it('creates delivery validation rules for DIRECT_DOWNLOAD', function () {
     expect($rules['details'][1])->toStartWith('array:');
 });
 
-it('creates delivery validation rules for IN_PERSON', function () {
+it('creates delivery validation rules for IN_PERSON', function (): void {
     $fulfillmentType = App\Enums\FulfillmentTypeEnum::IN_PERSON_SERVICE->value;
     $deliveryMethod  = App\Enums\DeliveryMethodEnum::IN_PERSON->value;
     $detailsData     = [
@@ -176,7 +176,7 @@ it('creates delivery validation rules for IN_PERSON', function () {
     expect($rules['details'][1])->toStartWith('array:');
 });
 
-it('creates delivery validation rules for LMS_MOODLE', function () {
+it('creates delivery validation rules for LMS_MOODLE', function (): void {
     $fulfillmentType = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value;
     $deliveryMethod  = App\Enums\DeliveryMethodEnum::LMS_MOODLE->value;
     $detailsData     = [
@@ -197,7 +197,7 @@ it('creates delivery validation rules for LMS_MOODLE', function () {
     expect($rules['details'][1])->toStartWith('array:');
 });
 
-it('creates delivery validation rules for LIVE_SESSION_BBB', function () {
+it('creates delivery validation rules for LIVE_SESSION_BBB', function (): void {
     $fulfillmentType = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value;
     $deliveryMethod  = App\Enums\DeliveryMethodEnum::LIVE_SESSION_BBB->value;
     $detailsData     = [
@@ -232,7 +232,7 @@ it('creates delivery validation rules for LIVE_SESSION_BBB', function () {
     expect($rules['details'][1])->toStartWith('array:');
 });
 
-it('creates delivery validation rules for LIVE_SESSION_SKYROOM', function () {
+it('creates delivery validation rules for LIVE_SESSION_SKYROOM', function (): void {
     $fulfillmentType = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value;
     $deliveryMethod  = App\Enums\DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value;
     $detailsData     = [
@@ -260,7 +260,7 @@ it('creates delivery validation rules for LIVE_SESSION_SKYROOM', function () {
     expect($rules['details'][1])->toStartWith('array:');
 });
 
-it('creates delivery validation rules for VIDEO_PLATFORM_SPOTPLAYER', function () {
+it('creates delivery validation rules for VIDEO_PLATFORM_SPOTPLAYER', function (): void {
     $fulfillmentType = App\Enums\FulfillmentTypeEnum::OFFLINE_SERVICE->value;
     $deliveryMethod  = App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value;
     $detailsData     = [

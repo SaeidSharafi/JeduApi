@@ -12,14 +12,14 @@ use function Pest\Laravel\getJson;
 
 uses(AuthTestTrait::class);
 
-describe('AdminAuditLogIndexController', function () {
+describe('AdminAuditLogIndexController', function (): void {
 
-    beforeEach(function () {
+    beforeEach(function (): void {
         $this->admin   = Staff::factory()->create();
         $this->baseUrl = '/api/v1/admin/audit/admin-actions';
     });
 
-    it('can list admin audit logs with proper permissions', function () {
+    it('can list admin audit logs with proper permissions', function (): void {
         AdminActionLog::factory()->count(3)->create();
         $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW]);
         $response = getJson($this->baseUrl);
@@ -156,7 +156,7 @@ describe('AdminAuditLogIndexController', function () {
             ]);
     });
 
-    it('requires permission to view audit logs', function () {
+    it('requires permission to view audit logs', function (): void {
         AdminActionLog::factory()->count(3)->create();
 
         $response = $this->authorized_user([])
@@ -165,7 +165,7 @@ describe('AdminAuditLogIndexController', function () {
         $response->assertForbidden();
     });
 
-    it('can filter by admin_id', function () {
+    it('can filter by admin_id', function (): void {
         $targetAdmin = Staff::factory()->create();
         AdminActionLog::factory()->create(['admin_id' => $targetAdmin->id]);
         AdminActionLog::factory()->create(['admin_id' => $this->admin->id]);
@@ -179,7 +179,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data[0]['admin']['id'])->toBe($targetAdmin->id);
     });
 
-    it('can filter by action_type', function () {
+    it('can filter by action_type', function (): void {
         AdminActionLog::factory()->create(['action_type' => 'create']);
         AdminActionLog::factory()->create(['action_type' => 'update']);
         AdminActionLog::factory()->create(['action_type' => 'delete']);
@@ -193,7 +193,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data[0]['action_type'])->toBe('create');
     });
 
-    it('can filter by resource_type', function () {
+    it('can filter by resource_type', function (): void {
         AdminActionLog::factory()->create(['resource_type' => 'App\\Models\\User']);
         AdminActionLog::factory()->create(['resource_type' => 'App\\Models\\WalletTransaction']);
 
@@ -206,7 +206,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data[0]['resource_type'])->toBe('App\\Models\\User');
     });
 
-    it('can filter by risk_level', function () {
+    it('can filter by risk_level', function (): void {
         AdminActionLog::factory()->create(['risk_level' => 'high']);
         AdminActionLog::factory()->create(['risk_level' => 'medium']);
         AdminActionLog::factory()->create(['risk_level' => 'low']);
@@ -220,7 +220,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data[0]['risk_level'])->toBe('high');
     });
 
-    it('can filter by http_method', function () {
+    it('can filter by http_method', function (): void {
         AdminActionLog::factory()->create(['http_method' => 'POST']);
         AdminActionLog::factory()->create(['http_method' => 'GET']);
         AdminActionLog::factory()->create(['http_method' => 'PUT']);
@@ -234,7 +234,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data[0]['http_method'])->toBe('POST');
     });
 
-    it('can filter by response_status', function () {
+    it('can filter by response_status', function (): void {
         AdminActionLog::factory()->create(['response_status' => 200]);
         AdminActionLog::factory()->create(['response_status' => 404]);
         AdminActionLog::factory()->create(['response_status' => 500]);
@@ -248,7 +248,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data[0]['response_status'])->toBe(404);
     });
 
-    it('can filter by partial route_name', function () {
+    it('can filter by partial route_name', function (): void {
         AdminActionLog::factory()->create(['route_name' => 'admin.users.store']);
         AdminActionLog::factory()->create(['route_name' => 'admin.wallet.transaction.create']);
         AdminActionLog::factory()->create(['route_name' => 'api.v1.products.index']);
@@ -262,7 +262,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data[0]['route_name'])->toBe('admin.wallet.transaction.create');
     });
 
-    it('can filter by ip_address', function () {
+    it('can filter by ip_address', function (): void {
         AdminActionLog::factory()->create(['ip_address' => '192.168.1.1']);
         AdminActionLog::factory()->create(['ip_address' => '10.0.0.1']);
 
@@ -275,7 +275,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data[0]['ip_address'])->toBe('192.168.1.1');
     });
 
-    it('can filter by date_from', function () {
+    it('can filter by date_from', function (): void {
         $oldLog    = AdminActionLog::factory()->create(['created_at' => now()->subWeek()]);
         $recentLog = AdminActionLog::factory()->create(['created_at' => now()->subDay()]);
 
@@ -290,7 +290,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data[0]['id'])->toBe($recentLog->id);
     });
 
-    it('can filter by date_to', function () {
+    it('can filter by date_to', function (): void {
         $oldLog    = AdminActionLog::factory()->create(['created_at' => now()->subWeek()]);
         $recentLog = AdminActionLog::factory()->create(['created_at' => now()->subDay()]);
 
@@ -305,7 +305,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data[0]['id'])->toBe($oldLog->id);
     });
 
-    it('can search across multiple fields', function () {
+    it('can search across multiple fields', function (): void {
         $targetAdmin = Staff::factory()->create(['name' => 'Admin Test']);
         AdminActionLog::factory()->create([
             'admin_id'   => $targetAdmin->id,
@@ -324,7 +324,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data[0]['admin']['name'])->toBe('Admin Test');
     });
 
-    it('can search by route name', function () {
+    it('can search by route name', function (): void {
         AdminActionLog::factory()->create(['route_name' => 'admin.users.store']);
         AdminActionLog::factory()->create(['route_name' => 'admin.wallet.transaction.create']);
 
@@ -337,7 +337,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data[0]['route_name'])->toBe('admin.wallet.transaction.create');
     });
 
-    it('supports pagination', function () {
+    it('supports pagination', function (): void {
         AdminActionLog::factory()->count(25)->create();
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
@@ -348,7 +348,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data)->toHaveCount(10);
     });
 
-    it('supports sorting', function () {
+    it('supports sorting', function (): void {
         $oldLog = AdminActionLog::factory()->create(['created_at' => now()->subWeek()]);
         $newLog = AdminActionLog::factory()->create(['created_at' => now()]);
 
@@ -361,7 +361,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data[1]['id'])->toBe($newLog->id);
     });
 
-    it('supports descending sorting', function () {
+    it('supports descending sorting', function (): void {
         $oldLog = AdminActionLog::factory()->create(['created_at' => now()->subWeek()]);
         $newLog = AdminActionLog::factory()->create(['created_at' => now()]);
 
@@ -374,7 +374,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data[1]['id'])->toBe($oldLog->id);
     });
 
-    it('includes admin relationship', function () {
+    it('includes admin relationship', function (): void {
         $admin = Staff::factory()->create(['name' => 'Test Admin']);
         AdminActionLog::factory()->create(['admin_id' => $admin->id]);
 
@@ -387,7 +387,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data[0]['admin']['name'])->toBe('Test Admin');
     });
 
-    it('handles empty result set', function () {
+    it('handles empty result set', function (): void {
         // No logs created
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
             ->getJson($this->baseUrl);
@@ -398,7 +398,7 @@ describe('AdminAuditLogIndexController', function () {
         expect($data)->toHaveCount(0);
     });
 
-    it('combines multiple filters correctly', function () {
+    it('combines multiple filters correctly', function (): void {
         $targetAdmin = Staff::factory()->create();
         AdminActionLog::factory()->create([
             'admin_id'    => $targetAdmin->id,

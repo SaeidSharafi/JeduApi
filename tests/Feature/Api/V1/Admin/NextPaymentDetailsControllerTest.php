@@ -13,12 +13,12 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-describe('NextPaymentDetailsController', function () {
+describe('NextPaymentDetailsController', function (): void {
 
     /**
      * Test the main success case where payment details are returned correctly.
      */
-    it('returns payment details successfully for a valid order', function () {
+    it('returns payment details successfully for a valid order', function (): void {
         // --- Arrange ---
         // Authorize a user with the correct permission to view orders.
         $this->authorized_user([PermissionEnum::ORDER_VIEW_ANY->value]);
@@ -65,7 +65,7 @@ describe('NextPaymentDetailsController', function () {
      * Test the failure case where the action throws an exception (e.g., for a fully paid order).
      * This specifically tests the `try/catch` block in the controller.
      */
-    it('returns a 422 validation error if the action throws an exception', function () {
+    it('returns a 422 validation error if the action throws an exception', function (): void {
         // --- Arrange ---
         $this->authorized_user([PermissionEnum::ORDER_VIEW_ANY->value]);
 
@@ -90,7 +90,7 @@ describe('NextPaymentDetailsController', function () {
     /**
      * Test the authorization gate.
      */
-    it('returns a 403 forbidden error if the user is not authorized', function () {
+    it('returns a 403 forbidden error if the user is not authorized', function (): void {
         // --- Arrange ---
         // Use the helper to simulate an authenticated user WITHOUT the required permission.
         $this->unauthorized_user();
@@ -106,7 +106,7 @@ describe('NextPaymentDetailsController', function () {
     /**
      * Test Laravel's implicit route model binding for a 404 Not Found error.
      */
-    it('returns a 404 not found error for a non-existent order', function () {
+    it('returns a 404 not found error for a non-existent order', function (): void {
         // --- Arrange ---
         $this->authorized_user([PermissionEnum::ORDER_VIEW_ANY->value]);
 

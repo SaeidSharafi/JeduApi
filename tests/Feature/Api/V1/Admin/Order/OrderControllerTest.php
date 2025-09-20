@@ -15,9 +15,9 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-describe('OrderController', function () {
+describe('OrderController', function (): void {
     // 1. Index filters and sorts
-    it('can filter and sort orders', function () {
+    it('can filter and sort orders', function (): void {
         $this->authorized_user([PermissionEnum::ORDER_VIEW_ANY->value]);
 
         $customer = User::factory()->create();
@@ -80,12 +80,12 @@ describe('OrderController', function () {
     });
 
     // 2. CRUD and permissions
-    describe('CRUD operations with permissions', function () {
-        beforeEach(function () {
+    describe('CRUD operations with permissions', function (): void {
+        beforeEach(function (): void {
             $this->product = App\Models\Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         }
         );
-        it('can create an order with permissions (full payment option)', function () {
+        it('can create an order with permissions (full payment option)', function (): void {
             $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
             $user = User::factory()->create();
 
@@ -148,7 +148,7 @@ describe('OrderController', function () {
 
         });
 
-        it('can create a partially paid order with permissions', function () {
+        it('can create a partially paid order with permissions', function (): void {
             $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
             $user    = User::factory()->create();
             $product = ProductDeliveryOption::factory()->create([
@@ -179,7 +179,7 @@ describe('OrderController', function () {
                 ->assertJsonPath('data.balance_due', 100000);
         });
 
-        it('can show an order with permissions', function () {
+        it('can show an order with permissions', function (): void {
             $this->authorized_user([PermissionEnum::ORDER_VIEW->value]);
             $order = Order::factory()->create([
                 'grand_total' => 5000,
@@ -194,7 +194,7 @@ describe('OrderController', function () {
                 ->assertJsonPath('data.id', $order->id);
         });
 
-        it('can update an order with permissions', function () {
+        it('can update an order with permissions', function (): void {
             $this->authorized_user([
                 PermissionEnum::ORDER_UPDATE->value,
             ]);
@@ -223,7 +223,7 @@ describe('OrderController', function () {
                 'tax_amount'                 => 0,
                 'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             ]);
-            $order->items->each(function ($item) use ($user) {
+            $order->items->each(function ($item) use ($user): void {
                 $item->enrollment()->create([
                     'customer_id'                => $user->id,
                     'order_id'                   => $item->order_id,
@@ -258,7 +258,7 @@ describe('OrderController', function () {
                 'id'     => $order->id,
                 'status' => OrderStatusEnum::CANCELLED->value,
             ]);
-            $order->items->each(function ($item) use ($user) {
+            $order->items->each(function ($item) use ($user): void {
                 $this->assertDatabaseHas('enrollments', [
                     'customer_id'                => $user->id,
                     'order_id'                   => $item->order_id,
@@ -269,7 +269,7 @@ describe('OrderController', function () {
 
         });
 
-        it('can delete an order with permissions', function () {
+        it('can delete an order with permissions', function (): void {
             $this->authorized_user([
                 PermissionEnum::ORDER_DELETE->value,
             ]);
@@ -310,7 +310,7 @@ describe('OrderController', function () {
             $this->assertDatabaseMissing('enrollments', ['order_id' => $order->id]);
 
         });
-        it('can not delete an order with payments', function () {
+        it('can not delete an order with payments', function (): void {
             $this->authorized_user([
                 PermissionEnum::ORDER_DELETE->value,
             ]);
@@ -367,7 +367,7 @@ describe('OrderController', function () {
             $this->assertDatabaseHas('payments', ['order_id' => $order->id]);
 
         });
-        it('can not delete a non PENDING order', function () {
+        it('can not delete a non PENDING order', function (): void {
             $this->authorized_user([
                 PermissionEnum::ORDER_DELETE->value,
             ]);
@@ -406,7 +406,7 @@ describe('OrderController', function () {
         });
     });
 
-    it('cannot access CRUD routes without permissions', function () {
+    it('cannot access CRUD routes without permissions', function (): void {
         $this->unauthorized_user();
         $order = Order::factory()->create();
 
@@ -433,14 +433,14 @@ describe('OrderController', function () {
         ])->assertStatus(403);
     });
 
-    it('validates top-level required fields on create', function () {
+    it('validates top-level required fields on create', function (): void {
         $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
         $response = $this->postJson(route('api.v1.admin.order.store'), []);
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['status', 'customer_id', 'items']);
     });
 
-    it('validates required item fields on create', function () {
+    it('validates required item fields on create', function (): void {
         $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
         $user = User::factory()->create();
         $data = [

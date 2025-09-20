@@ -24,8 +24,8 @@ beforeEach(function (): void {
         ]
     );
 });
-describe('OTP SMS Notification', function () {
-    it('creates the correct sms message payload for customer', function () {
+describe('OTP SMS Notification', function (): void {
+    it('creates the correct sms message payload for customer', function (): void {
         $user     = new App\Models\User();
         $otpEvent = new OtpPrepared(
             identifier: '09321456987',
@@ -45,7 +45,7 @@ describe('OTP SMS Notification', function () {
             ->and($smsMessage->type)->toBe('OTP');
     });
 
-    it('creates the correct sms message payload for Staff', function () {
+    it('creates the correct sms message payload for Staff', function (): void {
         $user     = new App\Models\Staff();
         $otpEvent = new OtpPrepared(
             identifier: '09321456987',

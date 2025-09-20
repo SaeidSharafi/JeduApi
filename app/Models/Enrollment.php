@@ -64,7 +64,7 @@ final class Enrollment extends Model
     protected static function boot(): void
     {
         parent::boot();
-        self::creating(function ($model) {
+        self::creating(function ($model): void {
             $model->uuid = (string) Str::uuid7();
         });
     }

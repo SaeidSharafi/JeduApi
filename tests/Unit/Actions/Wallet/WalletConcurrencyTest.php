@@ -11,7 +11,7 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-test('concurrent transactions maintain balance integrity', function () {
+test('concurrent transactions maintain balance integrity', function (): void {
     $user = User::factory()->create();
     $user->wallet->update(['balance' => 1000]);
 
@@ -58,7 +58,7 @@ test('concurrent transactions maintain balance integrity', function () {
     // Verify all transactions were recorded
 });
 
-test('insufficient balance prevents race condition exploitation', function () {
+test('insufficient balance prevents race condition exploitation', function (): void {
     $user = User::factory()->create();
     $user->wallet->update(['balance' => 100]);
 
@@ -93,7 +93,7 @@ test('insufficient balance prevents race condition exploitation', function () {
     expect($user->wallet->balance)->toBeGreaterThanOrEqual(0);
 });
 
-test('database locking prevents balance inconsistency', function () {
+test('database locking prevents balance inconsistency', function (): void {
     $user = User::factory()->create();
     $user->wallet->update(['balance' => 1000]);
     $admin = App\Models\Staff::factory()->create()->fresh();

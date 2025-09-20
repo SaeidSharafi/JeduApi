@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Models\DiscountPromotion;
 use App\Models\DiscountPromotionRule;
 
-it('to array', function () {
+it('to array', function (): void {
     $discount = DiscountPromotion::factory()->create();
     $rule     = DiscountPromotionRule::create([
         'discount_promotion_id' => $discount->id,
@@ -27,7 +27,7 @@ it('to array', function () {
 
 });
 
-it('promotion relation', function () {
+it('promotion relation', function (): void {
     $discount = DiscountPromotion::factory()->create();
     $rule     = DiscountPromotionRule::create([
         'discount_promotion_id' => $discount->id,

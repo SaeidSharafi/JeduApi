@@ -9,8 +9,8 @@ use App\Models\Review;
 use App\Models\User;
 
 uses(\Tests\AuthTestTrait::class);
-describe('ReviewController', function () {
-    it('filters reviews', function ($filters, $expectedCount) {
+describe('ReviewController', function (): void {
+    it('filters reviews', function ($filters, $expectedCount): void {
         $this->authorized_user([PermissionEnum::REVIEW_VIEW_ANY]);
 
         $user = User::factory()->create([
@@ -75,7 +75,7 @@ describe('ReviewController', function () {
         'customer_name'   => [['customer_name' => 'filtered customer'], 3]
     ]);
 
-    it('shows list of review', function () {
+    it('shows list of review', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_VIEW_ANY]);
         Review::factory()->count(5)->create();
         $response = $this->getJson('/api/v1/admin/review');
@@ -105,7 +105,7 @@ describe('ReviewController', function () {
         expect(count($responseData))->toBe(5);
     });
 
-    it('shows a review with correct revieable data', function () {
+    it('shows a review with correct revieable data', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_VIEW]);
         $course = Course::factory()->create();
         $review = Review::factory()->create([
@@ -124,13 +124,13 @@ describe('ReviewController', function () {
             ->and($responseData['reviewable_type']['value'])->toBe(MorphTypeEnum::COURSE->value);
     });
 
-    it('returns 404 if the review does not exist', function () {
+    it('returns 404 if the review does not exist', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_VIEW]);
         $response = $this->getJson('/api/v1/admin/review/999');
         $response->assertNotFound();
     });
 
-    it('deletes a review', function () {
+    it('deletes a review', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_DELETE]);
         $review = Review::factory()->create();
         $response = $this->deleteJson('/api/v1/admin/review/'.$review->id);
@@ -138,7 +138,7 @@ describe('ReviewController', function () {
         $this->assertDatabaseMissing('reviews', ['id' => $review->id]);
     });
 
-    it('returns 404 if the review to delete does not exist', function () {
+    it('returns 404 if the review to delete does not exist', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_DELETE]);
         $response = $this->deleteJson('/api/v1/admin/review/999');
         $response->assertNotFound();
@@ -146,8 +146,8 @@ describe('ReviewController', function () {
 });
 
 
-describe('ApproveReviewController', function () {
-    it('approves a review', function () {
+describe('ApproveReviewController', function (): void {
+    it('approves a review', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE]);
         $review = Review::factory()->create(['status' => ReviewStatusEnum::PENDING->value]);
         $response = $this->postJson('/api/v1/admin/review/'.$review->id.'/approve');
@@ -163,15 +163,15 @@ describe('ApproveReviewController', function () {
         ]);
     });
 
-    it('returns 404 if the review does not exist', function () {
+    it('returns 404 if the review does not exist', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE]);
         $response = $this->postJson('/api/v1/admin/review/999/approve');
         $response->assertNotFound();
     });
 });
 
-describe('RejectReviewController', function () {
-    it('reject a review', function () {
+describe('RejectReviewController', function (): void {
+    it('reject a review', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE]);
         $review = Review::factory()->create(['status' => ReviewStatusEnum::PENDING->value]);
         $response = $this->postJson('/api/v1/admin/review/'.$review->id.'/reject');
@@ -187,15 +187,15 @@ describe('RejectReviewController', function () {
         ]);
     });
 
-    it('returns 404 if the review does not exist', function () {
+    it('returns 404 if the review does not exist', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE]);
         $response = $this->postJson('/api/v1/admin/review/999/reject');
         $response->assertNotFound();
     });
 });
 
-describe('UpdateReviewFeaturedStatusController', function () {
-    it('toggles the featured status of a review when is_featured is not provided', function () {
+describe('UpdateReviewFeaturedStatusController', function (): void {
+    it('toggles the featured status of a review when is_featured is not provided', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE_FEATURED_STATUS]);
         $review = Review::factory()->create(['is_featured' => false]);
         $response = $this->patchJson('/api/v1/admin/review/'.$review->id.'/featured');
@@ -219,7 +219,7 @@ describe('UpdateReviewFeaturedStatusController', function () {
         ]);
     });
 
-    it('sets the featured status of a review when is_featured is provided', function () {
+    it('sets the featured status of a review when is_featured is provided', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE_FEATURED_STATUS]);
         $review = Review::factory()->create(['is_featured' => false]);
         $response = $this->patchJson('/api/v1/admin/review/'.$review->id.'/featured', [
@@ -247,14 +247,14 @@ describe('UpdateReviewFeaturedStatusController', function () {
         ]);
     });
 
-    it('returns 404 if the review does not exist', function () {
+    it('returns 404 if the review does not exist', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE_FEATURED_STATUS]);
         $response = $this->patchJson('/api/v1/admin/review/999/featured');
         $response->assertNotFound();
     });
 });
 
-it('returns 403 if the user does not have permission', function () {
+it('returns 403 if the user does not have permission', function (): void {
     $this->authorized_user(); // No permissions
     $review = Review::factory()->create();
     $response = $this->getJson('/api/v1/admin/review');

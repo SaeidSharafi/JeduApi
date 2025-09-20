@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-test('to array', function () {
+test('to array', function (): void {
     $term = App\Models\Term::factory()->create()->fresh();
 
     $array = $term->toArray();

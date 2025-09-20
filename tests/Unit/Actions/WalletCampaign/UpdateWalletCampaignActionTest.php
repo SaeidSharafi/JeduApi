@@ -12,7 +12,7 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user     = Staff::factory()->create();
     $this->campaign = WalletCampaign::factory()->create([
         'name'                 => 'Original Campaign',
@@ -31,7 +31,7 @@ beforeEach(function () {
     $this->action = new UpdateWalletCampaignAction();
 });
 
-it('successfully updates all campaign fields', function () {
+it('successfully updates all campaign fields', function (): void {
     $newStartDate = Carbon::now()->addDay();
     $newEndDate   = Carbon::now()->addMonth();
 
@@ -72,7 +72,7 @@ it('successfully updates all campaign fields', function () {
     ]);
 });
 
-it('updates campaign with null dates', function () {
+it('updates campaign with null dates', function (): void {
     $updateData = new WalletCampaignCreateData(
         name: 'No Date Limits Campaign',
         description: 'Campaign without date restrictions',
@@ -95,7 +95,7 @@ it('updates campaign with null dates', function () {
     expect($updatedCampaign->metadata)->toBeNull();
 });
 
-it('updates only specific fields while preserving others', function () {
+it('updates only specific fields while preserving others', function (): void {
     $originalUsageCount = $this->campaign->total_usage_count;
 
     $updateData = WalletCampaignCreateData::from(
@@ -126,7 +126,7 @@ it('updates only specific fields while preserving others', function () {
     expect($updatedCampaign->total_usage_count)->toBe($originalUsageCount);
 });
 
-it('handles different campaign types correctly', function () {
+it('handles different campaign types correctly', function (): void {
     foreach (CampaignTypeEnum::cases() as $campaignType) {
         $updateData = new WalletCampaignCreateData(
             name: "Campaign Type: {$campaignType->value}",
@@ -148,7 +148,7 @@ it('handles different campaign types correctly', function () {
     }
 });
 
-it('handles complex metadata updates', function () {
+it('handles complex metadata updates', function (): void {
     $complexMetadata = [
         'rules' => [
             'min_order_amount'    => 50000,
@@ -188,7 +188,7 @@ it('handles complex metadata updates', function () {
     expect($updatedCampaign->metadata['notifications']['email'])->toBeTrue();
 });
 
-it('updates timestamps correctly', function () {
+it('updates timestamps correctly', function (): void {
     $futureStart = Carbon::now()->addDays(5);
     $futureEnd   = Carbon::now()->addDays(30);
 
@@ -211,7 +211,7 @@ it('updates timestamps correctly', function () {
     expect($updatedCampaign->ends_at->format('Y-m-d'))->toBe($futureEnd->format('Y-m-d'));
 });
 
-it('returns the same campaign instance', function () {
+it('returns the same campaign instance', function (): void {
     $updateData = WalletCampaignCreateData::from([
         'name'                 => 'Same Instance Test',
         'description'          => 'Testing instance consistency',

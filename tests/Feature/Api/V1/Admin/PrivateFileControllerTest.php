@@ -6,7 +6,7 @@ use Illuminate\Http\UploadedFile;
 use Plank\Mediable\Media;
 
 uses(Tests\AuthTestTrait::class);
-beforeEach(function () {
+beforeEach(function (): void {
     Storage::fake('local');
 });
 describe('Admin Private File', function (): void {

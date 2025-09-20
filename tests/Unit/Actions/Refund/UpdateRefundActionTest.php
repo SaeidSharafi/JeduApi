@@ -10,8 +10,8 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
 
-describe('UpdateRefundAction', function () {
-    it('updates a pending refund with deduction_amount', function () {
+describe('UpdateRefundAction', function (): void {
+    it('updates a pending refund with deduction_amount', function (): void {
         $order = Order::factory()
             ->withCalculatedTotals([
                 ['price' => 2000, 'total' => 2000],
@@ -46,7 +46,7 @@ describe('UpdateRefundAction', function () {
             ->and($updated->admin_notes)->toBe('Test note');
     });
 
-    it('updates a pending refund with deduction_percent', function () {
+    it('updates a pending refund with deduction_percent', function (): void {
 
         $order = Order::factory()
             ->withCalculatedTotals([
@@ -85,7 +85,7 @@ describe('UpdateRefundAction', function () {
             ->and($updated->admin_notes)->toBe('Percent note');
     });
 
-    it('throws if refund is not pending', function () {
+    it('throws if refund is not pending', function (): void {
         $orderItem = OrderItem::factory()->create();
         $refund    = App\Models\Refund::factory()->create([
             'order_item_id' => $orderItem->id,
@@ -104,11 +104,11 @@ describe('UpdateRefundAction', function () {
             admin_notes: 'Should fail',
         );
         $action = new UpdateRefundAction();
-        expect(fn () => $action->handle($refund, $data))
+        expect(fn (): \App\Models\Refund => $action->handle($refund, $data))
             ->toThrow(Illuminate\Validation\ValidationException::class);
     });
 
-    it('refund amount never goes below zero', function () {
+    it('refund amount never goes below zero', function (): void {
         $order = Order::factory()->create([
             'full_value_grand_total' => 10000,
             'grand_total'            => 10000,
@@ -147,7 +147,7 @@ describe('UpdateRefundAction', function () {
         expect($updated->amount)->toBe(0);
     });
 
-    it('uses fallback deduction amount as zero if both are null', function () {
+    it('uses fallback deduction amount as zero if both are null', function (): void {
         $order = Order::factory()->create([
             'full_value_grand_total' => 10000,
             'grand_total'            => 10000,

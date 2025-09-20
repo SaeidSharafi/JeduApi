@@ -9,7 +9,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
 
-test('wallet transaction has proper relationships', function () {
+test('wallet transaction has proper relationships', function (): void {
     $user   = User::factory()->create();
     $wallet = $user->wallet;
 
@@ -24,7 +24,7 @@ test('wallet transaction has proper relationships', function () {
         ->toBeInstanceOf(User::class);
 });
 
-test('wallet transaction casts work correctly', function () {
+test('wallet transaction casts work correctly', function (): void {
     $user        = User::factory()->create();
     $wallet      = $user->wallet;
     $order       = Order::factory()->create(['customer_id' => $user->id]);
@@ -64,7 +64,7 @@ test('wallet transaction casts work correctly', function () {
         ->toBe(['test' => 'data']);
 });
 
-test('wallet transaction helper methods work correctly', function () {
+test('wallet transaction helper methods work correctly', function (): void {
     $user   = User::factory()->create();
     $wallet = $user->wallet;
 
@@ -95,7 +95,7 @@ test('wallet transaction helper methods work correctly', function () {
         ->toBeTrue();
 });
 
-test('wallet transaction factory states work correctly', function () {
+test('wallet transaction factory states work correctly', function (): void {
     $user   = User::factory()->create();
     $wallet = $user->wallet;
 

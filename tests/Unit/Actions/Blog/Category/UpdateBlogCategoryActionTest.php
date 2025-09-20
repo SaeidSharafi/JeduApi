@@ -3,8 +3,8 @@
 use App\Actions\Admin\Blog\Category\UpdateBlogCategoryAction;
 use App\Data\Admin\Blog\Category\BlogCategoryUpdateData;
 
-describe('UpdateBlogCategoryAction', function () {
-   beforeEach(function (){
+describe('UpdateBlogCategoryAction', function (): void {
+   beforeEach(function (): void{
        $this->staff = \App\Models\Staff::factory()->create();
        Storage::fake('public');
 
@@ -24,7 +24,7 @@ describe('UpdateBlogCategoryAction', function () {
        $this->category->attachMedia($this->media, 'icon');
    });
 
-    it('updates a blog category', function () {
+    it('updates a blog category', function (): void {
          $data = new BlogCategoryUpdateData(
               name: 'Updated Category',
               slug: 'updated-category',
@@ -44,7 +44,7 @@ describe('UpdateBlogCategoryAction', function () {
              ->and($updatedCategory->firstMedia('icon')->getUrl())->toBe($this->media2->getUrl());
     });
 
-    it('updates a blog category and removing the icon', function () {
+    it('updates a blog category and removing the icon', function (): void {
          $data = new BlogCategoryUpdateData(
               name: 'Updated Category No Icon Change',
               slug: null,

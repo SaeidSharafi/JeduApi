@@ -1,7 +1,7 @@
 <?php
 
-describe('DeleteBlogCategoryAction', function () {
-   beforeEach(function (){
+describe('DeleteBlogCategoryAction', function (): void {
+   beforeEach(function (): void{
        $this->staff = \App\Models\Staff::factory()->create();
        Storage::fake('public');
 
@@ -21,7 +21,7 @@ describe('DeleteBlogCategoryAction', function () {
        $this->category->attachMedia($this->media, 'icon');
    });
 
-    it('deletes a blog category', function () {
+    it('deletes a blog category', function (): void {
          $action = new \App\Actions\Admin\Blog\Category\DeleteBlogCategoryAction();
          $action->handle($this->category);
 

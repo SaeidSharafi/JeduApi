@@ -119,7 +119,7 @@ final class ProductDiscountIndexer
         ProductDeliveryOption::query()
             ->where('status', 'published')
             ->with(['product'])
-            ->chunk(1000, function ($deliveryOptions) use ($promotions) {
+            ->chunk(1000, function ($deliveryOptions) use ($promotions): void {
                 $this->processProductChunk($deliveryOptions, $promotions);
             });
     }
@@ -202,10 +202,10 @@ final class ProductDiscountIndexer
         return DiscountPromotion::query()
             ->where('type', DiscountTypeEnum::PRODUCT_SPECIFIC)
             ->where('is_active', true)
-            ->where(function ($q) {
+            ->where(function ($q): void {
                 $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
             })
-            ->where(function ($q) {
+            ->where(function ($q): void {
                 $q->whereNull('ends_at')->orWhere('ends_at', '>=', now());
             })
             ->orderBy('priority', 'asc')

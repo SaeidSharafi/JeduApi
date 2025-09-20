@@ -10,7 +10,7 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-test('withdraw from wallet decreases balance', function () {
+test('withdraw from wallet decreases balance', function (): void {
     $user = User::factory()->create();
     $user->wallet->update(['balance' => 2000]);
     $initialBalance = $user->wallet->balance;
@@ -31,7 +31,7 @@ test('withdraw from wallet decreases balance', function () {
         ->and($user->fresh()->wallet->balance)->toBe($initialBalance - 500);
 });
 
-test('cannot withdraw more than available balance', function () {
+test('cannot withdraw more than available balance', function (): void {
     $user = User::factory()->create();
     $user->wallet->update(['balance' => 100]);
 
@@ -46,7 +46,7 @@ test('cannot withdraw more than available balance', function () {
         ->toThrow(Exception::class, __('validation.custom.insufficient_balance'));
 });
 
-test('cannot withdraw from suspended wallet', function () {
+test('cannot withdraw from suspended wallet', function (): void {
     $user = User::factory()->create();
     $user->wallet->update(['status' => WalletStatusEnum::SUSPENDED, 'balance' => 1000]);
 

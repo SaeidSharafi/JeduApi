@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\ProductableEnum;
 
-it('return alias correctly', function () {
+it('return alias correctly', function (): void {
     $alias = ProductableEnum::getAlias(App\Models\Course::class);
     expect($alias)->toBe('course');
     $alias = ProductableEnum::getAlias(App\Models\DigitalAsset::class);
@@ -15,7 +15,7 @@ it('return alias correctly', function () {
     expect($alias)->toBeNull();
 });
 
-it('return model class correctly', function () {
+it('return model class correctly', function (): void {
     $modelClass = ProductableEnum::COURSE->getModelClass();
     expect($modelClass)->toBe(App\Models\Course::class);
     $modelClass = ProductableEnum::SEMINAR->getModelClass();
@@ -24,7 +24,7 @@ it('return model class correctly', function () {
     expect($modelClass)->toBe(App\Models\DigitalAsset::class);
 });
 
-it('return table from type correctly', function () {
+it('return table from type correctly', function (): void {
     $table = ProductableEnum::getTableFromType('course');
     expect($table)->toBe('courses');
     $table = ProductableEnum::getTableFromType('seminar');

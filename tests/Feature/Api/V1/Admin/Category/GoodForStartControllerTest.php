@@ -7,8 +7,8 @@ use App\Models\Product;
 
 uses(\Tests\AuthTestTrait::class);
 
-describe('GoodForStartController', function () {
-    it('sets good for start for valid course items in category', function () {
+describe('GoodForStartController', function (): void {
+    it('sets good for start for valid course items in category', function (): void {
         $this->authorized_user([\App\Enums\PermissionEnum::CATEGORY_UPDATE]);
 
         // Create a category
@@ -53,7 +53,7 @@ describe('GoodForStartController', function () {
         ]);
     });
 
-    it('returns validation error when non-course items are included', function () {
+    it('returns validation error when non-course items are included', function (): void {
         $this->authorized_user([\App\Enums\PermissionEnum::CATEGORY_UPDATE]);
 
         // Create a category
@@ -97,7 +97,7 @@ describe('GoodForStartController', function () {
 
     });
 
-    it('returns validation error for invalid payload', function () {
+    it('returns validation error for invalid payload', function (): void {
         $this->authorized_user([\App\Enums\PermissionEnum::CATEGORY_UPDATE]);
 
         // Create a category
@@ -149,7 +149,7 @@ describe('GoodForStartController', function () {
         }
     });
 
-    it('returns forbidden error when user lacks permissions', function () {
+    it('returns forbidden error when user lacks permissions', function (): void {
         $this->unauthorized_user(); // No permissions
 
         // Create a category

@@ -18,20 +18,22 @@ final class DiscountPromotionRule extends Model
     protected $guarded = [];
 
     /**
-     * The attributes that should be cast.
-     * The configuration is stored as JSON and will be automatically decoded/encoded.
-     */
-    protected $casts = [
-        'configuration' => 'array',
-        'created_at'    => 'datetime',
-        'updated_at'    => 'datetime',
-    ];
-
-    /**
      * Each rule belongs to exactly one promotion.
      */
     public function promotion(): BelongsTo
     {
         return $this->belongsTo(DiscountPromotion::class, 'discount_promotion_id');
+    }
+    /**
+     * The attributes that should be cast.
+     * The configuration is stored as JSON and will be automatically decoded/encoded.
+     */
+    protected function casts(): array
+    {
+        return [
+            'configuration' => 'array',
+            'created_at'    => 'datetime',
+            'updated_at'    => 'datetime',
+        ];
     }
 }

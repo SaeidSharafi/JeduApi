@@ -10,7 +10,7 @@ use App\Models\Category;
 use App\Models\HomePageBlock;
 use App\Models\Product;
 
-beforeEach(function () {
+beforeEach(function (): void {
     Storage::fake('public');
     $this->media = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('image1.jpg'))
         ->toDisk('public')
@@ -23,8 +23,8 @@ beforeEach(function () {
         ->upload();
 });
 
-describe('HomePageContentController', function () {
-    it('can retrieve home page content with empty blocks', function () {
+describe('HomePageContentController', function (): void {
+    it('can retrieve home page content with empty blocks', function (): void {
         $response = $this->getJson(route('api.v1.shop.home-page-content'));
 
         $response->assertStatus(200)
@@ -40,7 +40,7 @@ describe('HomePageContentController', function () {
             ->and($responseData['main_content'])->toBeArray();
     });
 
-    it('can retrieve home page content with curated list blocks', function () {
+    it('can retrieve home page content with curated list blocks', function (): void {
         // Create some test categories and products
         $categories = Category::factory()->count(3)->create();
         $products = Product::factory()->withDeliveryOptions()
@@ -82,7 +82,7 @@ describe('HomePageContentController', function () {
             ->and(count($responseData['main_content'][1]['content']['items']))->toBe(3);
     });
 
-    it('can retrieve home page content with dynamic list blocks', function () {
+    it('can retrieve home page content with dynamic list blocks', function (): void {
         // Create some test products
         Product::factory()
             ->withDeliveryOptions()
@@ -110,7 +110,7 @@ describe('HomePageContentController', function () {
             ->and(count($responseData['main_content'][0]['content']['items']))->toBe(3);
     });
 
-    it('can retrieve home page content with banner blocks', function () {
+    it('can retrieve home page content with banner blocks', function (): void {
         $image = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('banner.jpg'))
             ->toDisk('public')
             ->upload();
@@ -133,7 +133,7 @@ describe('HomePageContentController', function () {
             ->and($responseData['hero'][0]['content']['image_url'])->toBe($image->getUrl());
     });
 
-    it('filters out inactive blocks', function () {
+    it('filters out inactive blocks', function (): void {
         // Create active and inactive blocks
         HomePageBlock::factory()->banner()->create([
             'title' => 'Active Block',
@@ -156,7 +156,7 @@ describe('HomePageContentController', function () {
             ->and($responseData['main_content'][0]['title'])->toBe('Active Block');
     });
 
-    it('orders blocks correctly by location and order', function () {
+    it('orders blocks correctly by location and order', function (): void {
         HomePageBlock::factory()->banner()->create([
             'title' => 'Main Block 2',
             'location' => 'main_content',

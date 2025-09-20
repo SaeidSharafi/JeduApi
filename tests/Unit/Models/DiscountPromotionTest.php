@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Models\DiscountPromotion;
 
-test('to array', function () {
+test('to array', function (): void {
     $discount = DiscountPromotion::factory()->create()->fresh();
 
     expect($discount->toArray())
@@ -26,7 +26,7 @@ test('to array', function () {
         ]);
 });
 
-test('rule relation', function () {
+test('rule relation', function (): void {
     $discount = DiscountPromotion::factory()->create();
     $rule     = App\Models\DiscountPromotionRule::create(
         [
@@ -44,7 +44,7 @@ test('rule relation', function () {
         ->toEqual($rule->id);
 });
 
-test('coupon relation', function () {
+test('coupon relation', function (): void {
     $discount = DiscountPromotion::factory()->create();
     $coupon   = App\Models\DiscountCoupon::factory()->create(
         ['discount_promotion_id' => $discount->id])->fresh();
@@ -55,7 +55,7 @@ test('coupon relation', function () {
         ->and($discount->coupons->first()->id)
         ->toEqual($coupon->id);
 });
-test('discounted prices relation', function () {
+test('discounted prices relation', function (): void {
     $discount = DiscountPromotion::factory()->create();
     $price    = App\Models\ProductDeliveryOptionDiscountPrice::create([
         'discount_promotion_id'      => $discount->id,

@@ -7,7 +7,7 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-test('admin can deposit to wallet via API', function () {
+test('admin can deposit to wallet via API', function (): void {
     $admin = $this->authorized_user([
         App\Enums\PermissionEnum::WALLET_DEPOSIT,
     ]);
@@ -89,7 +89,7 @@ test('admin can deposit to wallet via API', function () {
 
 });
 
-test('admin cannot deposit to wallet without permission', function () {
+test('admin cannot deposit to wallet without permission', function (): void {
     $admin = $this->authorized_user([]);
     $user  = User::factory()->create();
 
@@ -102,7 +102,7 @@ test('admin cannot deposit to wallet without permission', function () {
     $response->assertStatus(403);
 });
 
-test('validation errors are returned for invalid data', function () {
+test('validation errors are returned for invalid data', function (): void {
     $admin = $this->authorized_user([
         App\Enums\PermissionEnum::WALLET_DEPOSIT,
     ]);

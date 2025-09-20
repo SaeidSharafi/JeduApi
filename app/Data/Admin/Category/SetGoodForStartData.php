@@ -31,7 +31,7 @@ final class SetGoodForStartData extends Data
                 // Rule 2: Ensure each course is actually attached to THIS category.
                 Rule::exists('categorizables', 'categorizable_id')->where(function ($query) use (
                     $category
-                ) {
+                ): void {
                     $query->where('category_id', $category->id)
                         ->where('categorizable_type', MorphTypeEnum::COURSE);
                 }),

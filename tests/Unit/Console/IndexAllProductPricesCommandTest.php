@@ -5,10 +5,10 @@ use App\Enums\FulfillmentTypeEnum;
 use App\Jobs\UpdateProductPriceCacheJob;
 use App\Models\Product;
 
-describe('IndexAllProductPricesCommand', function () {
+describe('IndexAllProductPricesCommand', function (): void {
 
 
-    it('dispatches jobs for all products', function () {
+    it('dispatches jobs for all products', function (): void {
         Bus::fake();
 
         $products = Product::factory()->count(5)->create();
@@ -24,7 +24,7 @@ describe('IndexAllProductPricesCommand', function () {
         Bus::assertDispatchedTimes(UpdateProductPriceCacheJob::class, $products->count());
     });
 
-    it('handles no products gracefully', function () {
+    it('handles no products gracefully', function (): void {
         Bus::fake();
 
         Product::query()->delete();
@@ -34,7 +34,7 @@ describe('IndexAllProductPricesCommand', function () {
         Bus::assertNotDispatched(UpdateProductPriceCacheJob::class);
     });
 
-    it('runs jobs synchronously when --sync option is provided', function () {
+    it('runs jobs synchronously when --sync option is provided', function (): void {
         $product = Product::factory()->withDeliveryOptions(
             realData: [
                 [

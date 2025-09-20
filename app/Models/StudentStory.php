@@ -29,8 +29,10 @@ final class StudentStory extends Model
         ];
     }
 
-    public function getAvatarUrlAttribute(): ?string
+    protected function avatarUrl(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        return $this->firstMedia('avatar')?->getUrl();
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function () {
+            return $this->firstMedia('avatar')?->getUrl();
+        });
     }
 }

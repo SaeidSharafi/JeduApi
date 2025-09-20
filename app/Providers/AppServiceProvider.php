@@ -28,7 +28,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->singleton(OtpGeneratorInterface::class, DefaultOtpGenerator::class);
         $this->app->singleton(DiscountHandlerRegistry::class);
         $this->app->singleton(DiscountMetadataService::class);
-        $this->app->singleton(RequestDataCacheService::class, function ($app) {
+        $this->app->singleton(function ($app): \App\Services\RequestDataCacheService {
             return new RequestDataCacheService();
         });
     }
@@ -48,7 +48,7 @@ final class AppServiceProvider extends ServiceProvider
             ImageManipulation::make(function (
                 Image $image,
                 Media $originalMedia
-            ) {
+            ): void {
                 $image->cover(
                     config('mediable.image_variants.thumb.width'),
                     config('mediable.image_variants.thumb.height')

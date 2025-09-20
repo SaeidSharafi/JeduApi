@@ -30,7 +30,7 @@ test('to array', function (): void {
         ]);
 });
 
-it('check profile completion', function () {
+it('check profile completion', function (): void {
     $user = User::create([
         'phone' => '0912365478',
     ])->fresh();
@@ -41,7 +41,7 @@ it('check profile completion', function () {
     expect($user->profileCompleted())->toBeTrue();
 });
 
-it('return teacher_data relationship', function () {
+it('return teacher_data relationship', function (): void {
     $user    = User::factory()->create();
     $teacher = App\Models\Teacher::factory()->create([
         'user_id' => $user->id,
@@ -50,7 +50,7 @@ it('return teacher_data relationship', function () {
     expect($user->teacherData->toArray())->toEqual($teacher->toArray());
 });
 
-it('return enrollments relationship', function () {
+it('return enrollments relationship', function (): void {
     $user      = User::factory()->create();
     $enrollment = App\Models\Enrollment::factory()->create([
         'customer_id' => $user->id,

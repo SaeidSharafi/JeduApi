@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Bus;
 use Plank\Mediable\Media;
 
 uses(Tests\AuthTestTrait::class);
-beforeEach(function () {
+beforeEach(function (): void {
     Storage::fake('public');
     Bus::fake();
 });

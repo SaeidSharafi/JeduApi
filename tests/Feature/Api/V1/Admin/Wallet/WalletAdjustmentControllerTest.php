@@ -7,7 +7,7 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-test('admin can adjust wallet via API', function () {
+test('admin can adjust wallet via API', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::WALLET_ADJUSTMENT]);
 
     $user = User::factory()->create();
@@ -28,7 +28,7 @@ test('admin can adjust wallet via API', function () {
     expect($user->wallet->balance)->toBe($initialBalance + 300);
 });
 
-test('admin can make negative adjustment via API', function () {
+test('admin can make negative adjustment via API', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::WALLET_ADJUSTMENT]);
 
     $user = User::factory()->create();

@@ -6,20 +6,20 @@ use App\Models\Course;
 use Spatie\LaravelData\Support\DataProperty;
 use Spatie\LaravelData\Support\Transformation\TransformationContext;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->mockProperty = Mockery::mock(DataProperty::class);
     $this->mockContext  = Mockery::mock(TransformationContext::class);
     Storage::fake('public');
 });
 
-describe('functional tests', function () {
-    it('return null if value is null', function () {
+describe('functional tests', function (): void {
+    it('return null if value is null', function (): void {
         $transformer = new ProductableTransformer();
         $productable = $transformer->transform($this->mockProperty, null, $this->mockContext);
         expect($productable)->toBeNull();
     });
 
-    it('throws an exception if value is not ProductableContract', function () {
+    it('throws an exception if value is not ProductableContract', function (): void {
         $transformer = new ProductableTransformer();
 
         $this->expectException(InvalidArgumentException::class);
@@ -28,7 +28,7 @@ describe('functional tests', function () {
         $transformer->transform($this->mockProperty, 123, $this->mockContext);
     });
 
-    it('transforms a collection of Course instances to CourseListItemData', function () {
+    it('transforms a collection of Course instances to CourseListItemData', function (): void {
         $transformer = new ProductableTransformer(short: true);
         $courses = Course::factory()
             ->count(3)
@@ -43,7 +43,7 @@ describe('functional tests', function () {
             ->and($productables->count())->toBe(3);
     });
 
-    it('transforms a collection with mixed productable types throws an exception', function () {
+    it('transforms a collection with mixed productable types throws an exception', function (): void {
         $transformer = new ProductableTransformer(short: true);
         $course = Course::factory()
             ->withCategory()
@@ -58,8 +58,8 @@ describe('functional tests', function () {
         $transformer->transform($this->mockProperty, $collection, $this->mockContext);
     });
 });
-describe('item transformations', function () {
-    it('transforms a Course instance to ShowCourseData', function () {
+describe('item transformations', function (): void {
+    it('transforms a Course instance to ShowCourseData', function (): void {
         $transformer = new ProductableTransformer();
         $course      = Course::factory()
             ->withCategory()
@@ -73,7 +73,7 @@ describe('item transformations', function () {
         expect($productable)->toBeInstanceOf(ShowCourseData::class)
             ->and($productable->short_name)->toBe('Test Course');
     });
-    it('transforms a seminar instance to ShowSeminarData', function () {
+    it('transforms a seminar instance to ShowSeminarData', function (): void {
         $transformer = new ProductableTransformer();
         $seminar     = App\Models\Seminar::factory()
             ->withCategory()
@@ -87,7 +87,7 @@ describe('item transformations', function () {
             ->and($productable->short_name)->toBe('Test Seminar');
     });
 
-    it('transforms a DigitalAsset instance to ShowDigitalAssetData', function () {
+    it('transforms a DigitalAsset instance to ShowDigitalAssetData', function (): void {
         $transformer  = new ProductableTransformer();
         $digitalAsset = App\Models\DigitalAsset::factory()
             ->withCategory()
@@ -102,7 +102,7 @@ describe('item transformations', function () {
         expect($productable)->toBeInstanceOf(App\Data\Admin\DigitalAsset\ShowDigitalAssetData::class)
             ->and($productable->name)->toBe('Test Digital Asset');
     });
-    it('transforms a Course instance to CourseListItemData when short is true', function () {
+    it('transforms a Course instance to CourseListItemData when short is true', function (): void {
         $transformer = new ProductableTransformer(short: true);
         $course      = Course::factory()
             ->withCategory()
@@ -117,7 +117,7 @@ describe('item transformations', function () {
             ->and($productable->short_name)->toBe('Test Course');
     });
 
-    it('transforms a Seminar instance to SeminarListItemData when short is true', function () {
+    it('transforms a Seminar instance to SeminarListItemData when short is true', function (): void {
         $transformer = new ProductableTransformer(short: true);
         $seminar     = App\Models\Seminar::factory()
             ->withCategory()
@@ -132,7 +132,7 @@ describe('item transformations', function () {
             ->and($productable->short_name)->toBe('Test Seminar');
     });
 
-    it('transforms a DigitalAsset instance to DigitalAssetListItemData when short is true', function () {
+    it('transforms a DigitalAsset instance to DigitalAssetListItemData when short is true', function (): void {
         $transformer  = new ProductableTransformer(short: true);
         $digitalAsset = App\Models\DigitalAsset::factory()
             ->withCategory()

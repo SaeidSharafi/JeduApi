@@ -80,30 +80,35 @@ final class AdminActionLog extends Model
     }
 
     // Scopes
-    public function scopeHighRisk($query)
+    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected function highRisk($query)
     {
         return $query->where('risk_level', 'high');
     }
 
-    public function scopeWalletActions($query)
+    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected function walletActions($query)
     {
-        return $query->where(function ($q) {
+        return $query->where(function ($q): void {
             $q->where('route_name', 'like', '%wallet%')
                 ->orWhere('resource_type', 'like', '%Wallet%');
         });
     }
 
-    public function scopeByAdmin($query, int $adminId)
+    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected function byAdmin($query, int $adminId)
     {
         return $query->where('admin_id', $adminId);
     }
 
-    public function scopeByDateRange($query, $startDate, $endDate)
+    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected function byDateRange($query, $startDate, $endDate)
     {
         return $query->whereBetween('created_at', [$startDate, $endDate]);
     }
 
-    public function scopeByRiskLevel($query, string $riskLevel)
+    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected function byRiskLevel($query, string $riskLevel)
     {
         return $query->where('risk_level', $riskLevel);
     }
@@ -123,7 +128,7 @@ final class AdminActionLog extends Model
     protected function actionSummery(): Attribute
     {
         return Attribute::make(
-            get: fn ($value, array $attributes) => $this->getActionSummary(),
+            get: fn ($value, array $attributes): string => $this->getActionSummary(),
         );
     }
 }

@@ -61,7 +61,7 @@ final class AdvancedDateTimeInterfaceCast implements Cast, IterableItemCast
         $this->setTimeZone ??= config('data.date_timezone');
 
         if ($type === Verta::class) {
-            $value = rescue(fn () => Carbon::parse($value), report: false);
+            $value = rescue(fn (): \Carbon\Carbon => Carbon::parse($value), report: false);
             $verta = verta($value, isset($this->timeZone) ? new DateTimeZone($this->timeZone) : null);
 
             if ($this->setTimeZone) {
@@ -76,7 +76,7 @@ final class AdvancedDateTimeInterfaceCast implements Cast, IterableItemCast
                 $value instanceof DateTimeInterface ? $value->format($format) : (string) $value,
                 isset($this->timeZone) ? new DateTimeZone($this->timeZone) : null
             ), report: false))
-            ->first(fn ($value) => (bool) $value);
+            ->first(fn ($value): bool => (bool) $value);
 
         if (! $datetime) {
             throw CannotCastDate::create($formats->toArray(), $type, $value);

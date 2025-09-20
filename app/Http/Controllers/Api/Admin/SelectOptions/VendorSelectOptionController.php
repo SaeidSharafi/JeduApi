@@ -28,8 +28,8 @@ final class VendorSelectOptionController extends Controller
         $limit = request()->integer('limit', 10);
 
         $vendors = \App\Models\Vendor::query()
-            ->when($query, function ($vendor) use ($query) {
-                $vendor->where(function ($vendor) use ($query) {
+            ->when($query, function ($vendor) use ($query): void {
+                $vendor->where(function ($vendor) use ($query): void {
                     $vendor
                         ->where('name', 'like', '%'.$query.'%');
                 });

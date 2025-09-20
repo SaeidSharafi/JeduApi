@@ -47,13 +47,6 @@ class BlogPost extends Model
             'thumbnail_url',
         ];
 
-    protected $casts
-        = [
-            'published_at' => 'datetime',
-            'is_featured'  => 'boolean',
-            'status' => PublicationStatusEnum::class
-        ];
-
     public function author(): BelongsTo
     {
         return $this->belongsTo(Staff::class, 'author_id');
@@ -139,5 +132,13 @@ class BlogPost extends Model
     public function reviews(): MorphMany
     {
         return $this->morphMany(Review::class, 'reviewable');
+    }
+    protected function casts(): array
+    {
+        return [
+            'published_at' => 'datetime',
+            'is_featured'  => 'boolean',
+            'status' => PublicationStatusEnum::class
+        ];
     }
 }

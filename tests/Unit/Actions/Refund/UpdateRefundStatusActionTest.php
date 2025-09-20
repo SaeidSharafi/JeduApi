@@ -16,8 +16,8 @@ use App\Services\OrderStatusService;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
 
-describe('UpdateRefundStatusAction', function () {
-    beforeEach(function () {
+describe('UpdateRefundStatusAction', function (): void {
+    beforeEach(function (): void {
         Event::fake(
             [
                 RefundCompletedEvent::class,
@@ -25,7 +25,7 @@ describe('UpdateRefundStatusAction', function () {
         );
     });
 
-    it('transitions from pending to completed and fires event', function () {
+    it('transitions from pending to completed and fires event', function (): void {
         $order = Order::factory()
             ->withCalculatedTotals([
                 ['price' => 2000, 'total' => 2000],
@@ -69,7 +69,7 @@ describe('UpdateRefundStatusAction', function () {
         ]);
     });
 
-    it('transitions from pending to processing', function () {
+    it('transitions from pending to processing', function (): void {
         $order     = Order::factory()->create();
         $orderItem = OrderItem::factory()->create([
             'order_id' => $order->id,
@@ -89,7 +89,7 @@ describe('UpdateRefundStatusAction', function () {
             ->and($updated->admin_notes)->toBe('Processing refund');
     });
 
-    it('transitions from processing to completed', function () {
+    it('transitions from processing to completed', function (): void {
         $order     = Order::factory()->create();
         $orderItem = OrderItem::factory()->create([
             'order_id' => $order->id,
@@ -111,7 +111,7 @@ describe('UpdateRefundStatusAction', function () {
         Event::assertDispatched(RefundCompletedEvent::class);
     });
 
-    it('throws if transition is not allowed', function () {
+    it('throws if transition is not allowed', function (): void {
         $order     = Order::factory()->create();
         $orderItem = OrderItem::factory()->create([
             'order_id' => $order->id,
@@ -126,11 +126,11 @@ describe('UpdateRefundStatusAction', function () {
             admin_notes: null,
         );
         $action = new UpdateRefundStatusAction(new OrderStatusService());
-        expect(fn () => $action->handle($refund, $data))
+        expect(fn (): \App\Models\Refund => $action->handle($refund, $data))
             ->toThrow(ValidationException::class);
     });
 
-    it('does not allow transition to pending', function () {
+    it('does not allow transition to pending', function (): void {
         $order     = Order::factory()->create();
         $orderItem = OrderItem::factory()->create([
             'order_id' => $order->id,
@@ -145,11 +145,11 @@ describe('UpdateRefundStatusAction', function () {
             admin_notes: null,
         );
         $action = new UpdateRefundStatusAction(new OrderStatusService());
-        expect(fn () => $action->handle($refund, $data))
+        expect(fn (): \App\Models\Refund => $action->handle($refund, $data))
             ->toThrow(ValidationException::class);
     });
 
-    it('transitions from processing to failed', function () {
+    it('transitions from processing to failed', function (): void {
         $order     = Order::factory()->create();
         $orderItem = OrderItem::factory()->create([
             'order_id' => $order->id,
@@ -169,7 +169,7 @@ describe('UpdateRefundStatusAction', function () {
             ->and($updated->admin_notes)->toBe('Failed refund');
     });
 
-    it('transitions from pending to cancelled', function () {
+    it('transitions from pending to cancelled', function (): void {
         $order     = Order::factory()->create();
         $orderItem = OrderItem::factory()->create([
             'order_id' => $order->id,
@@ -189,7 +189,7 @@ describe('UpdateRefundStatusAction', function () {
             ->and($updated->admin_notes)->toBe('Cancelled refund');
     });
 
-    it('does not change admin_notes if not provided', function () {
+    it('does not change admin_notes if not provided', function (): void {
         $order     = Order::factory()->create();
         $orderItem = OrderItem::factory()->create([
             'order_id' => $order->id,

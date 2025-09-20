@@ -59,16 +59,16 @@ final class AdminAuditLogController extends Controller
                 AllowedFilter::exact('response_status'),
                 AllowedFilter::partial('route_name'),
                 AllowedFilter::exact('ip_address'),
-                AllowedFilter::callback('date_from', function ($query, $value) {
+                AllowedFilter::callback('date_from', function ($query, $value): void {
                     $query->whereDate('created_at', '>=', $value);
                 }),
-                AllowedFilter::callback('date_to', function ($query, $value) {
+                AllowedFilter::callback('date_to', function ($query, $value): void {
                     $query->whereDate('created_at', '<=', $value);
                 }),
-                AllowedFilter::callback('search', function ($query, $value) {
-                    $query->where(function ($q) use ($value) {
+                AllowedFilter::callback('search', function ($query, $value): void {
+                    $query->where(function ($q) use ($value): void {
                         $q->where('route_name', 'like', "%{$value}%")
-                            ->orWhereHas('admin', function ($adminQuery) use ($value) {
+                            ->orWhereHas('admin', function ($adminQuery) use ($value): void {
                                 $adminQuery->where('name', 'like', "%{$value}%");
                             });
                     });

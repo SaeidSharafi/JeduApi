@@ -11,9 +11,9 @@ use App\Models\Payment;
 use App\Services\OrderStatusService;
 use Mockery\MockInterface;
 
-describe('UpdateStatusesAfterPaymentListener', function () {
+describe('UpdateStatusesAfterPaymentListener', function (): void {
 
-    it('correctly calls the OrderStatusService when a payment is completed', function () {
+    it('correctly calls the OrderStatusService when a payment is completed', function (): void {
         // --- Arrange ---
         // 1. Create the real data that will be in the event
         $order   = Order::factory()->create();
@@ -22,7 +22,7 @@ describe('UpdateStatusesAfterPaymentListener', function () {
 
         // 2. Mock the OrderStatusService. We don't want to test the service here,
         //    we just want to ensure our listener calls it correctly.
-        $this->mock(OrderStatusService::class, function (MockInterface $mock) use ($order) {
+        $this->mock(OrderStatusService::class, function (MockInterface $mock) use ($order): void {
             // We expect the 'updateStatusesAfterPayment' method to be called exactly once
             // with an Order object that has the same ID as the one we created.
             $mock->shouldReceive('handlePaymentCompletion')
@@ -44,13 +44,13 @@ describe('UpdateStatusesAfterPaymentListener', function () {
         // the test will fail.
     });
 
-    it('does nothing if the payment has no associated order', function () {
+    it('does nothing if the payment has no associated order', function (): void {
         // --- Arrange ---
         $paymentWithoutOrder = new Payment();
         $event               = new PaymentCompletedEvent($paymentWithoutOrder);
 
         // Mock the service but expect it to NEVER be called.
-        $this->mock(OrderStatusService::class, function (MockInterface $mock) {
+        $this->mock(OrderStatusService::class, function (MockInterface $mock): void {
             $mock->shouldNotReceive('handlePaymentCompletion');
         });
 

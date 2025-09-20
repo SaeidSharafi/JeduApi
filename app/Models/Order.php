@@ -177,7 +177,7 @@ final class Order extends Model implements WalletTransactionSourceableContract
     protected function balanceDue(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->full_value_grand_total - $this->total_paid,
+            get: fn (): int|float => $this->full_value_grand_total - $this->total_paid,
         );
     }
 }

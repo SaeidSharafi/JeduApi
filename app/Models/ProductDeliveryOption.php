@@ -66,26 +66,30 @@ final class ProductDeliveryOption extends Model
         return $this->hasOne(ProductDeliveryOptionDiscountPrice::class, 'product_delivery_option_id');
     }
 
-    public function scopeAvailable($query)
+    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected function available($query)
     {
         return $query->where('status', PublicationStatusEnum::PUBLISHED)
             ->where('available_from', '<=', now())
             ->where('available_to', '>=', now());
     }
 
-    public function scopeFeatured($query)
+    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected function featured($query)
     {
         return $query->where('is_featured', true)
             ->where('featured_price_start_date', '<=', now())
             ->where('featured_price_end_date', '>=', now());
     }
 
-    public function scopePrepaymentAvailable($query)
+    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected function prepaymentAvailable($query)
     {
         return $query->where('is_prepayment_available', true);
     }
 
-    public function scopeRegistrationOpen($query)
+    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected function registrationOpen($query)
     {
         return $query->where('registration_start_date', '<=', now())
             ->where('registration_end_date', '>=', now());

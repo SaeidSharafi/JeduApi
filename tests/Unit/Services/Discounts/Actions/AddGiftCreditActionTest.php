@@ -17,7 +17,7 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create();
 
     $this->wallet = $this->user->wallet;
@@ -32,11 +32,11 @@ beforeEach(function () {
     $this->action           = new AddGiftCreditAction($this->mockRecordAction);
 });
 
-it('returns correct config class', function () {
+it('returns correct config class', function (): void {
     expect(AddGiftCreditAction::getConfigClass())->toBe(AddGiftCreditConfigData::class);
 });
 
-it('applies fixed amount gift credit without expiration', function () {
+it('applies fixed amount gift credit without expiration', function (): void {
     $config = new AddGiftCreditConfigData(
         amount: 5000,
         per_item: false,
@@ -69,7 +69,7 @@ it('applies fixed amount gift credit without expiration', function () {
     $this->action->apply($context, $config);
 });
 
-it('applies fixed amount gift credit with expiration', function () {
+it('applies fixed amount gift credit with expiration', function (): void {
     $config = new AddGiftCreditConfigData(
         amount: 7500,
         per_item: false,
@@ -102,7 +102,7 @@ it('applies fixed amount gift credit with expiration', function () {
     $this->action->apply($context, $config);
 });
 
-it('applies per-item gift credit', function () {
+it('applies per-item gift credit', function (): void {
     $config = new AddGiftCreditConfigData(
         amount: 1000,
         per_item: true,
@@ -149,7 +149,7 @@ it('applies per-item gift credit', function () {
     $this->action->apply($context, $config);
 });
 
-it('excludes prepayment items from per-item calculation', function () {
+it('excludes prepayment items from per-item calculation', function (): void {
     $config = new AddGiftCreditConfigData(
         amount: 1000,
         per_item: true,
@@ -194,7 +194,7 @@ it('excludes prepayment items from per-item calculation', function () {
     $this->action->apply($context, $config);
 });
 
-it('does not apply gift credit for zero amount', function () {
+it('does not apply gift credit for zero amount', function (): void {
     $config = new AddGiftCreditConfigData(
         amount: 1000,
         per_item: true,
@@ -215,7 +215,7 @@ it('does not apply gift credit for zero amount', function () {
     $this->action->apply($context, $config);
 });
 
-it('does not apply gift credit when customer has no wallet', function () {
+it('does not apply gift credit when customer has no wallet', function (): void {
     $userWithoutWallet = User::factory()->create();
     $userWithoutWallet->wallet->delete();
     $userWithoutWallet->refresh();
@@ -240,7 +240,7 @@ it('does not apply gift credit when customer has no wallet', function () {
     $this->action->apply($context, $config);
 });
 
-it('uses localized description when none provided', function () {
+it('uses localized description when none provided', function (): void {
     $config = new AddGiftCreditConfigData(
         amount: 5000,
         per_item: false,
@@ -266,7 +266,7 @@ it('uses localized description when none provided', function () {
     $this->action->apply($context, $config);
 });
 
-it('handles record action exceptions gracefully', function () {
+it('handles record action exceptions gracefully', function (): void {
     $config = new AddGiftCreditConfigData(
         amount: 5000,
         per_item: false,
@@ -291,7 +291,7 @@ it('handles record action exceptions gracefully', function () {
     expect(fn () => $this->action->apply($context, $config))->not->toThrow(Exception::class);
 });
 
-it('does not apply gift credit for invalid configuration type', function () {
+it('does not apply gift credit for invalid configuration type', function (): void {
     $invalidConfig = new class extends Spatie\LaravelData\Data
     {
         public function toArray(): array
@@ -313,7 +313,7 @@ it('does not apply gift credit for invalid configuration type', function () {
     $this->action->apply($context, $invalidConfig);
 });
 
-it('includes correct metadata in gift transaction', function () {
+it('includes correct metadata in gift transaction', function (): void {
     $config = new AddGiftCreditConfigData(
         amount: 3000,
         per_item: false,
@@ -346,7 +346,7 @@ it('includes correct metadata in gift transaction', function () {
     $this->action->apply($context, $config);
 });
 
-it('handles zero expiration days correctly', function () {
+it('handles zero expiration days correctly', function (): void {
     $config = new AddGiftCreditConfigData(
         amount: 2500,
         per_item: false,

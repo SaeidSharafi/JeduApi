@@ -12,19 +12,19 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = Staff::factory()->create();
 });
 
-describe('index', function () {
-    beforeEach(function () {
+describe('index', function (): void {
+    beforeEach(function (): void {
         $this->campaigns = WalletCampaign::factory()->count(5)->create([
             'type'       => CampaignTypeEnum::WELCOME_GIFT,
             'created_by' => $this->user->id,
         ]);
     });
 
-    it('returns paginated list of campaigns for authorized staff', function () {
+    it('returns paginated list of campaigns for authorized staff', function (): void {
         $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_VIEW_ANY]);
 
         $response = $this->getJson('/api/v1/admin/wallet-campaigns');
@@ -61,7 +61,7 @@ describe('index', function () {
         expect($response->json('data.data'))->toHaveCount(5);
     });
 
-    it('supports filtering by campaign type', function () {
+    it('supports filtering by campaign type', function (): void {
         $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_VIEW_ANY]);
 
         WalletCampaign::factory()->create([
@@ -76,7 +76,7 @@ describe('index', function () {
         expect($response->json('data.data.0.type'))->toBe('birthday_gift');
     });
 
-    it('supports sorting by creation date', function () {
+    it('supports sorting by creation date', function (): void {
         $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_VIEW_ANY]);
 
         $response = $this->getJson('/api/v1/admin/wallet-campaigns?sort=created_at');
@@ -90,7 +90,7 @@ describe('index', function () {
         expect($dates)->toBe($sortedDates);
     });
 
-    it('denies access without permission', function () {
+    it('denies access without permission', function (): void {
         $this->unauthorized_user();
         $response = $this->getJson('/api/v1/admin/wallet-campaigns');
 
@@ -98,8 +98,8 @@ describe('index', function () {
     });
 });
 
-describe('store', function () {
-    it('creates campaign with valid data', function () {
+describe('store', function (): void {
+    it('creates campaign with valid data', function (): void {
         $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_CREATE]);
 
         $createData = [
@@ -136,7 +136,7 @@ describe('store', function () {
         ]);
     });
 
-    it('validates required fields', function () {
+    it('validates required fields', function (): void {
         $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_CREATE]);
 
         $response = $this->postJson('/api/v1/admin/wallet-campaigns', []);
@@ -145,7 +145,7 @@ describe('store', function () {
             ->assertJsonValidationErrors(['name', 'type', 'amount']);
     });
 
-    it('denies access without permission', function () {
+    it('denies access without permission', function (): void {
         $this->unauthorized_user();
         $response = $this->postJson('/api/v1/admin/wallet-campaigns', [
             'name'      => 'Test Campaign',
@@ -158,14 +158,14 @@ describe('store', function () {
     });
 });
 
-describe('show', function () {
-    beforeEach(function () {
+describe('show', function (): void {
+    beforeEach(function (): void {
         $this->campaign = WalletCampaign::factory()->create([
             'created_by' => $this->user->id,
         ]);
     });
 
-    it('returns campaign details for authorized staff', function () {
+    it('returns campaign details for authorized staff', function (): void {
         $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_VIEW]);
 
         $response = $this->getJson("/api/v1/admin/wallet-campaigns/{$this->campaign->id}");
@@ -192,7 +192,7 @@ describe('show', function () {
         expect($response->json('data.id'))->toBe($this->campaign->id);
     });
 
-    it('includes transaction count', function () {
+    it('includes transaction count', function (): void {
         $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_VIEW]);
 
         // Create some transactions for this campaign
@@ -207,14 +207,14 @@ describe('show', function () {
         expect($response->json('data.transactions_count'))->toBe(3);
     });
 
-    it('denies access without permission', function () {
+    it('denies access without permission', function (): void {
         $this->unauthorized_user();
         $response = $this->getJson("/api/v1/admin/wallet-campaigns/{$this->campaign->id}");
 
         $response->assertForbidden();
     });
 
-    it('returns 404 for non-existent campaign', function () {
+    it('returns 404 for non-existent campaign', function (): void {
         $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_VIEW]);
 
         $response = $this->getJson('/api/v1/admin/wallet-campaigns/99999');
@@ -223,15 +223,15 @@ describe('show', function () {
     });
 });
 
-describe('update', function () {
-    beforeEach(function () {
+describe('update', function (): void {
+    beforeEach(function (): void {
         $this->campaign = WalletCampaign::factory()->create([
             'name'       => 'Original Campaign',
             'created_by' => $this->user->id,
         ]);
     });
 
-    it('updates campaign with valid data', function () {
+    it('updates campaign with valid data', function (): void {
         $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_UPDATE]);
 
         $updateData = [
@@ -271,7 +271,7 @@ describe('update', function () {
         ]);
     });
 
-    it('validates update data', function () {
+    it('validates update data', function (): void {
         $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_UPDATE]);
 
         $response = $this->putJson("/api/v1/admin/wallet-campaigns/{$this->campaign->id}", [
@@ -283,7 +283,7 @@ describe('update', function () {
             ->assertJsonValidationErrors(['name', 'amount']);
     });
 
-    it('denies access without permission', function () {
+    it('denies access without permission', function (): void {
         $this->unauthorized_user();
         $response = $this->putJson("/api/v1/admin/wallet-campaigns/{$this->campaign->id}", [
             'name'      => 'Updated Name',
@@ -296,14 +296,14 @@ describe('update', function () {
     });
 });
 
-describe('destroy', function () {
-    beforeEach(function () {
+describe('destroy', function (): void {
+    beforeEach(function (): void {
         $this->campaign = WalletCampaign::factory()->create([
             'created_by' => $this->user->id,
         ]);
     });
 
-    it('deletes campaign without transactions', function () {
+    it('deletes campaign without transactions', function (): void {
         $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_DELETE]);
 
         $response = $this->deleteJson("/api/v1/admin/wallet-campaigns/{$this->campaign->id}");
@@ -314,7 +314,7 @@ describe('destroy', function () {
         ]);
     });
 
-    it('prevents deletion of campaign with transactions', function () {
+    it('prevents deletion of campaign with transactions', function (): void {
         $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_DELETE]);
 
         // Create transactions for this campaign
@@ -335,14 +335,14 @@ describe('destroy', function () {
         ]);
     });
 
-    it('denies access without permission', function () {
+    it('denies access without permission', function (): void {
         $this->unauthorized_user();
         $response = $this->deleteJson("/api/v1/admin/wallet-campaigns/{$this->campaign->id}");
 
         $response->assertForbidden();
     });
 
-    it('returns 404 for non-existent campaign', function () {
+    it('returns 404 for non-existent campaign', function (): void {
         $this->authorized_user([PermissionEnum::WALLET_CAMPAIGN_DELETE]);
 
         $response = $this->deleteJson('/api/v1/admin/wallet-campaigns/99999');

@@ -31,19 +31,19 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('api')
                 ->prefix('api/v1')
                 ->name('api.v1.')
-                ->group(function () {
+                ->group(function (): void {
                     require base_path('routes/Api/V1/api.php');
 
                     Route::middleware(['auth:staff', 'admin.audit'])
                         ->prefix('admin')
                         ->name('admin.')
-                        ->group(function () {
+                        ->group(function (): void {
                             require base_path('routes/Api/V1/admin/admin.php');
                         });
 
                     Route::prefix('shop')
                         ->name('shop.')
-                        ->group(function () {
+                        ->group(function (): void {
                             require base_path('routes/Api/V1/shop/shop.php');
                         });
                 });
@@ -74,7 +74,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 || str_starts_with($request->path(), 'api/');
         };
 
-        $exceptions->renderable(function (App\Exceptions\InvalidJalaliDateException $e, $request) use ($isApiRequest) {
+        $exceptions->renderable(function (App\Exceptions\InvalidJalaliDateException $e, $request) use ($isApiRequest): void {
             // Check if the request expects a JSON response (typical for APIs)
             if ($isApiRequest($request)) {
                 // Throw a standard Laravel ValidationException

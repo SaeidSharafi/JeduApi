@@ -9,9 +9,9 @@ use App\Services\Discounts\Configs\ProductCategoryConditionConfigData;
 use App\Services\Discounts\Product\Conditions\ProductCategoryCondition;
 use Illuminate\Support\Facades\DB;
 
-describe('ProductCategoryCondition', function () {
+describe('ProductCategoryCondition', function (): void {
 
-    test('it passes when product is in specified category', function () {
+    test('it passes when product is in specified category', function (): void {
         // Arrange
         $condition = new ProductCategoryCondition();
         $config    = new ProductCategoryConditionConfigData(
@@ -46,7 +46,7 @@ describe('ProductCategoryCondition', function () {
         expect($result)->toBeTrue();
     });
 
-    test('it fails when product is not in any specified category', function () {
+    test('it fails when product is not in any specified category', function (): void {
         // Arrange
         $condition = new ProductCategoryCondition();
         $config    = new ProductCategoryConditionConfigData(
@@ -81,7 +81,7 @@ describe('ProductCategoryCondition', function () {
         expect($result)->toBeFalse();
     });
 
-    test('it passes when no categories are specified', function () {
+    test('it passes when no categories are specified', function (): void {
         // Arrange
         $condition = new ProductCategoryCondition();
         $config    = new ProductCategoryConditionConfigData(
@@ -100,7 +100,7 @@ describe('ProductCategoryCondition', function () {
         expect($result)->toBeTrue(); // Should pass vacuously when no categories specified
     });
 
-    test('it fails when product has no ID', function () {
+    test('it fails when product has no ID', function (): void {
         // Arrange
         $condition = new ProductCategoryCondition();
         $config    = new ProductCategoryConditionConfigData(
@@ -119,7 +119,7 @@ describe('ProductCategoryCondition', function () {
         expect($result)->toBeFalse();
     });
 
-    test('it returns false for invalid configuration type', function () {
+    test('it returns false for invalid configuration type', function (): void {
         // Arrange
         $condition     = new ProductCategoryCondition();
         $invalidConfig = new class extends Spatie\LaravelData\Data

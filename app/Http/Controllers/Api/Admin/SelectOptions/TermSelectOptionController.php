@@ -30,8 +30,8 @@ final class TermSelectOptionController extends Controller
         $limit = request()->integer('limit', 10);
 
         $terms = \App\Models\Term::query()
-            ->when($query, function ($term) use ($query) {
-                $term->where(function ($term) use ($query) {
+            ->when($query, function ($term) use ($query): void {
+                $term->where(function ($term) use ($query): void {
                     $term
                         ->where('name', 'like', '%'.$query.'%')
                         ->orWhere('academic_year', 'like', '%'.$query.'%');

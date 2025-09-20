@@ -12,8 +12,8 @@ use function Pest\Laravel\getJson;
 
 uses(Tests\AuthTestTrait::class);
 
-describe('Admin OrderItemController', function () {
-    beforeEach(function () {
+describe('Admin OrderItemController', function (): void {
+    beforeEach(function (): void {
         $this->vendor         = Vendor::factory()->create();
         $this->deliveryOption = ProductDeliveryOption::factory()->create([
             'price'             => 1000,
@@ -40,7 +40,7 @@ describe('Admin OrderItemController', function () {
         ]);
     });
 
-    it('returns order item details (show)', function () {
+    it('returns order item details (show)', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::ORDER_VIEW->value]);
         $response = getJson("/api/v1/admin/order/{$this->order->id}/order-item/{$this->orderItem->id}");
         $response->assertOk();
@@ -70,7 +70,7 @@ describe('Admin OrderItemController', function () {
         ]);
     });
 
-    it('returns all order items for an order (index)', function () {
+    it('returns all order items for an order (index)', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::ORDER_VIEW_ANY->value]);
         $response = getJson("/api/v1/admin/order/{$this->order->id}/order-item");
         $response->assertOk();

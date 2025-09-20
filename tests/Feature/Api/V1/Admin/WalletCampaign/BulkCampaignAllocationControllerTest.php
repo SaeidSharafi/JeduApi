@@ -14,7 +14,7 @@ use function Pest\Laravel\postJson;
 
 uses(AuthTestTrait::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->users = User::factory()->count(3)->create();
     $this->staff = Staff::factory()->create();
 
@@ -32,8 +32,8 @@ beforeEach(function () {
     ]);
 });
 
-describe('BulkCampaignAllocationController', function () {
-    it('can trigger bulk manual campaign allocation successfully', function () {
+describe('BulkCampaignAllocationController', function (): void {
+    it('can trigger bulk manual campaign allocation successfully', function (): void {
         $userIds = $this->users->pluck('id')->toArray();
         $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE]);
         $response = postJson(route('api.v1.admin.wallet-campaigns.bulk-trigger-allocation', $this->campaign), [
@@ -81,7 +81,7 @@ describe('BulkCampaignAllocationController', function () {
         expect($this->campaign->total_usage_count)->toBe(3);
     });
 
-    it('can trigger bulk event-based campaign allocation successfully', function () {
+    it('can trigger bulk event-based campaign allocation successfully', function (): void {
         $userIds = $this->users->pluck('id')->toArray();
 
         $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
@@ -110,7 +110,7 @@ describe('BulkCampaignAllocationController', function () {
         }
     });
 
-    it('handles partial failures gracefully', function () {
+    it('handles partial failures gracefully', function (): void {
         // Create one user with a wallet that already has this allocation
         $existingUser = $this->users->first();
         $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
@@ -171,7 +171,7 @@ describe('BulkCampaignAllocationController', function () {
     //    expect($failedResults->count())->toBe(1);
     //    expect($failedResults->first()['user_id'])->toBe($existingUser->id);
     // });
-    it('requires user_ids field', function () {
+    it('requires user_ids field', function (): void {
         $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
             ->postJson(route('api.v1.admin.wallet-campaigns.bulk-trigger-allocation', $this->campaign), [
                 'trigger_type' => 'manual',
@@ -182,7 +182,7 @@ describe('BulkCampaignAllocationController', function () {
         $response->assertJsonValidationErrors(['user_ids']);
     });
 
-    it('requires at least one user_id', function () {
+    it('requires at least one user_id', function (): void {
         $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
             ->postJson(route('api.v1.admin.wallet-campaigns.bulk-trigger-allocation', $this->campaign), [
                 'user_ids'     => [],
@@ -194,7 +194,7 @@ describe('BulkCampaignAllocationController', function () {
         $response->assertJsonValidationErrors(['user_ids']);
     });
 
-    it('limits bulk operations to maximum users', function () {
+    it('limits bulk operations to maximum users', function (): void {
         // Create more than 100 users (the limit we set)
         $manyUserIds = range(1, 101);
 
@@ -209,7 +209,7 @@ describe('BulkCampaignAllocationController', function () {
         $response->assertJsonValidationErrors(['user_ids']);
     });
 
-    it('validates that all user_ids exist', function () {
+    it('validates that all user_ids exist', function (): void {
         $userIds = [999999, 999998]; // Non-existent users
 
         $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
@@ -223,7 +223,7 @@ describe('BulkCampaignAllocationController', function () {
         $response->assertJsonValidationErrors(['user_ids.0', 'user_ids.1']);
     });
 
-    it('requires trigger_type field', function () {
+    it('requires trigger_type field', function (): void {
         $userIds = $this->users->pluck('id')->toArray();
 
         $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
@@ -236,7 +236,7 @@ describe('BulkCampaignAllocationController', function () {
         $response->assertJsonValidationErrors(['trigger_type']);
     });
 
-    it('requires trigger_event when trigger_type is event', function () {
+    it('requires trigger_event when trigger_type is event', function (): void {
         $userIds = $this->users->pluck('id')->toArray();
 
         $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
@@ -249,7 +249,7 @@ describe('BulkCampaignAllocationController', function () {
         $response->assertJsonValidationErrors(['trigger_event']);
     });
 
-    it('validates trigger_type values', function () {
+    it('validates trigger_type values', function (): void {
         $userIds = $this->users->pluck('id')->toArray();
 
         $response = $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE])
@@ -262,7 +262,7 @@ describe('BulkCampaignAllocationController', function () {
         $response->assertJsonValidationErrors(['trigger_type']);
     });
 
-    it('requires permission to allocate campaigns', function () {
+    it('requires permission to allocate campaigns', function (): void {
         $userIds = $this->users->pluck('id')->toArray();
 
         $response = $this->authorized_user([])
@@ -275,7 +275,7 @@ describe('BulkCampaignAllocationController', function () {
         $response->assertForbidden();
     });
 
-    it('handles campaign that is inactive', function () {
+    it('handles campaign that is inactive', function (): void {
         $this->campaign->update(['is_active' => false]);
         $userIds = $this->users->pluck('id')->toArray();
 

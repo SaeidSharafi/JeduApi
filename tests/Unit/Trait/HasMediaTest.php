@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-it('get getAllMedia', function () {
+it('get getAllMedia', function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
     $this->cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
@@ -33,7 +33,7 @@ it('get getAllMedia', function () {
 });
 
 
-it('get cover media', function () {
+it('get cover media', function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
     $this->cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))

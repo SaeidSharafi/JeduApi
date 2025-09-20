@@ -18,14 +18,16 @@ class AdviceRequest extends Model
         'handled_by_id',
     ];
 
-    protected $casts = [
-        'status' => AdviceRequestStatusEnum::class,
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
-
     public function handler(): BelongsTo
     {
         return $this->belongsTo(Staff::class, 'handled_by_id');
+    }
+    protected function casts(): array
+    {
+        return [
+            'status' => AdviceRequestStatusEnum::class,
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
     }
 }

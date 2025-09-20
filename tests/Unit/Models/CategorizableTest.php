@@ -21,7 +21,7 @@ test('to Array', function (): void {
             'good_for_start'     => false,
         ]);
 });
-test('categorizable realtionship', function () {
+test('categorizable realtionship', function (): void {
     $category = Category::factory()->create();
     $course = Course::factory()->create();
     $course->categories()->attach($category->id);

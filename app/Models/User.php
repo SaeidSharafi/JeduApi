@@ -93,11 +93,11 @@ final class User extends Authenticatable implements MustVerifyEmail
     protected static function boot(): void
     {
         parent::boot();
-        self::creating(function ($model) {
+        self::creating(function ($model): void {
             $model->uuid = (string) Str::uuid7();
         });
 
-        self::created(function ($model) {
+        self::created(function ($model): void {
             // Automatically create a wallet for new users
             $model->wallet()->create([
                 'balance'      => 0,
@@ -126,7 +126,7 @@ final class User extends Authenticatable implements MustVerifyEmail
     protected function isProfileCompleted(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->profileCompleted(),
+            get: fn (): bool => $this->profileCompleted(),
         );
     }
 }

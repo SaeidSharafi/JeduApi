@@ -14,15 +14,15 @@ use App\Models\Payment;
 use App\Models\ProductDeliveryOption;
 use Illuminate\Support\Facades\Queue;
 
-describe('ProvisionPaidResourcesListener', function () {
+describe('ProvisionPaidResourcesListener', function (): void {
 
-    beforeEach(function () {
+    beforeEach(function (): void {
         // This listener is queued, but since it dispatches no jobs yet,
         // faking the queue is good practice for the future.
         Queue::fake();
     });
 
-    it('executes all delivery method checks without error', function () {
+    it('executes all delivery method checks without error', function (): void {
         $order   = Order::factory()->create();
         $payment = Payment::factory()->for($order)->create(['status' => 'completed']);
 
@@ -58,7 +58,7 @@ describe('ProvisionPaidResourcesListener', function () {
         Queue::assertNothingPushed();
     });
 
-    it('handles an order with no items gracefully', function () {
+    it('handles an order with no items gracefully', function (): void {
         $order   = Order::factory()->create(); // No items created for this order
         $payment = Payment::factory()->for($order)->create(['status' => 'completed']);
 
@@ -68,7 +68,7 @@ describe('ProvisionPaidResourcesListener', function () {
         $this->assertTrue(true);
     });
 
-    it('returns early if the order is missing from the payment', function () {
+    it('returns early if the order is missing from the payment', function (): void {
 
         $payment = new Payment(); // A fake payment object in memory without a real order
         $event   = new PaymentCompletedEvent($payment);

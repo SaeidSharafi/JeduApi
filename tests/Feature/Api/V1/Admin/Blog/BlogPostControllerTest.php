@@ -5,8 +5,8 @@ use App\Enums\ProductableEnum;
 use App\Enums\PublicationStatusEnum;
 
 uses(\Tests\AuthTestTrait::class);
-describe('BlogPostController List & Filter', function () {
-    it('should list posts', function () {
+describe('BlogPostController List & Filter', function (): void {
+    it('should list posts', function (): void {
         $this->authorized_user([\App\Enums\PermissionEnum::BLOG_POST_VIEW_ANY]);
         \App\Models\Blog\BlogPost::factory(20)->create();
         $response = $this->getJson(route('api.v1.admin.blog.post.index'));
@@ -49,7 +49,7 @@ describe('BlogPostController List & Filter', function () {
         ]);
     });
 
-    it('should filter by title', function () {
+    it('should filter by title', function (): void {
         $this->authorized_user([\App\Enums\PermissionEnum::BLOG_POST_VIEW_ANY]);
         \App\Models\Blog\BlogPost::factory(20)->create();
         \App\Models\Blog\BlogPost::factory()->create(['title' => 'TechX Innovations']);
@@ -60,7 +60,7 @@ describe('BlogPostController List & Filter', function () {
         $response->assertJsonFragment(['title' => 'TechX Innovations']);
     });
 
-    it('should filter by slug', function () {
+    it('should filter by slug', function (): void {
         $this->authorized_user([\App\Enums\PermissionEnum::BLOG_POST_VIEW_ANY]);
         \App\Models\Blog\BlogPost::factory(20)->create();
         \App\Models\Blog\BlogPost::factory()->create(['slug' => 'unique-post-slug']);
@@ -70,7 +70,7 @@ describe('BlogPostController List & Filter', function () {
         $response->assertJsonFragment(['slug' => 'unique-post-slug']);
     });
 
-    it('should filter by published status', function () {
+    it('should filter by published status', function (): void {
         $this->authorized_user([\App\Enums\PermissionEnum::BLOG_POST_VIEW_ANY]);
         \App\Models\Blog\BlogPost::factory()->create(['status' => PublicationStatusEnum::DRAFT]);
         \App\Models\Blog\BlogPost::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
@@ -81,7 +81,7 @@ describe('BlogPostController List & Filter', function () {
         $response->assertJsonFragment(['status' => PublicationStatusEnum::PUBLISHED->value]);
     });
 
-    it('should filter by author_id', function () {
+    it('should filter by author_id', function (): void {
         $this->authorized_user([\App\Enums\PermissionEnum::BLOG_POST_VIEW_ANY]);
         $author = \App\Models\Staff::factory()->create();
         \App\Models\Blog\BlogPost::factory()->create(['author_id' => $author->id]);
@@ -91,7 +91,7 @@ describe('BlogPostController List & Filter', function () {
         $response->assertJsonCount(1, 'data.data');
         $response->assertJsonFragment(['author_id' => $author->id]);
     });
-    it('should filter by main productable type', function () {
+    it('should filter by main productable type', function (): void {
         $this->authorized_user([\App\Enums\PermissionEnum::BLOG_POST_VIEW_ANY]);
         $course = \App\Models\Course::factory()->create();
         $postWithCourse = \App\Models\Blog\BlogPost::factory()->create();
@@ -113,7 +113,7 @@ describe('BlogPostController List & Filter', function () {
         $response->assertJsonCount(1, 'data.data');
         $response->assertJsonFragment(['id' => $postWithCourse->id]);
     });
-    it('should filter by main productable type and id', function () {
+    it('should filter by main productable type and id', function (): void {
         $this->authorized_user([\App\Enums\PermissionEnum::BLOG_POST_VIEW_ANY]);
         $course = \App\Models\Course::factory()->create();
         $postWithCourse = \App\Models\Blog\BlogPost::factory()->create();
@@ -136,8 +136,8 @@ describe('BlogPostController List & Filter', function () {
 
 });
 
-describe('BlogPostController CRUD', function () {
-    beforeEach(function () {
+describe('BlogPostController CRUD', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
 
         $this->cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
@@ -149,7 +149,7 @@ describe('BlogPostController CRUD', function () {
             ->upload();
     });
 
-    it('should create a post', function () {
+    it('should create a post', function (): void {
         $this->authorized_user([\App\Enums\PermissionEnum::BLOG_POST_CREATE]);
         $category = \App\Models\Blog\BlogCategory::factory()->create();
         $author = \App\Models\Staff::factory()->create();
@@ -206,7 +206,7 @@ describe('BlogPostController CRUD', function () {
         ]);
     });
 
-    it('should show a post', function () {
+    it('should show a post', function (): void {
         $this->authorized_user([\App\Enums\PermissionEnum::BLOG_POST_VIEW]);
         $post = \App\Models\Blog\BlogPost::factory()->create();
         $response = $this->getJson(route('api.v1.admin.blog.post.show', ['post' => $post->id]));
@@ -214,7 +214,7 @@ describe('BlogPostController CRUD', function () {
         $response->assertJsonFragment(['id' => $post->id, 'title' => $post->title]);
     });
 
-    it('should update a post', function () {
+    it('should update a post', function (): void {
         $this->authorized_user([\App\Enums\PermissionEnum::BLOG_POST_UPDATE]);
         $post = \App\Models\Blog\BlogPost::factory()->create(['title' => 'Old Title']);
         $updateData = [
@@ -239,7 +239,7 @@ describe('BlogPostController CRUD', function () {
             ->and($responseData['media']['cover'][0]['id'])->toBe($this->cover->id);
         $this->assertDatabaseHas('blog_posts', ['id' => $post->id, 'title' => 'Updated Blog Post Title']);
     });
-    it('should delete a post', function () {
+    it('should delete a post', function (): void {
         $this->authorized_user([\App\Enums\PermissionEnum::BLOG_POST_DELETE]);
         $post = \App\Models\Blog\BlogPost::factory()->create();
         $response = $this->deleteJson(route('api.v1.admin.blog.post.destroy', ['post' => $post->id]));
@@ -247,7 +247,7 @@ describe('BlogPostController CRUD', function () {
         $this->assertDatabaseMissing('blog_posts', ['id' => $post->id]);
     });
 
-    it('should not allow unauthorized access', function () {
+    it('should not allow unauthorized access', function (): void {
         $this->unauthorized_user();
         $post = \App\Models\Blog\BlogPost::factory()->create();
         $postData = [

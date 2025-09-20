@@ -13,8 +13,8 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-describe('SmsChannel Sending Logic', function () {
-    beforeEach(function () {
+describe('SmsChannel Sending Logic', function (): void {
+    beforeEach(function (): void {
         $this->user = User::factory()->create(['phone' => '09123456789']);
 
         $this->otpEvent = new OtpPrepared(
@@ -33,7 +33,7 @@ describe('SmsChannel Sending Logic', function () {
             'services.ippanel.sand_box' => false,
         ]);
     });
-    it('sends a pattern SMS successfully and creates a log', function () {
+    it('sends a pattern SMS successfully and creates a log', function (): void {
         Http::fake([
             'api2.ippanel.com/*' => Http::response([
                 'data' => ['message_id' => 'fake-message-id'],
@@ -51,7 +51,7 @@ describe('SmsChannel Sending Logic', function () {
             ->and($smsLog->data['data']['message_id'])->toBe('fake-message-id');
     });
 
-    it('throws exception and logs on a 401 client error', function () {
+    it('throws exception and logs on a 401 client error', function (): void {
 
         Http::fake([
             'api2.ippanel.com/*' => Http::response(['message' => 'Unauthorized'], 401),
@@ -66,7 +66,7 @@ describe('SmsChannel Sending Logic', function () {
             ->and($smsLog->status)->toBe(401);
     });
 
-    it('throws exception and logs on a 422 validation error', function () {
+    it('throws exception and logs on a 422 validation error', function (): void {
         $errorResponse = ['errors' => ['recipient' => 'is invalid']];
         Http::fake([
             'api2.ippanel.com/*' => Http::response($errorResponse, 422),
@@ -87,7 +87,7 @@ describe('SmsChannel Sending Logic', function () {
             ->and($smsLog->data)->toBe($errorResponse);
     });
 
-    it('throws exception and logs on a 500 server error', function () {
+    it('throws exception and logs on a 500 server error', function (): void {
         Http::fake([
             'api2.ippanel.com/*' => Http::response(null, 500),
         ]);
@@ -101,7 +101,7 @@ describe('SmsChannel Sending Logic', function () {
             ->and($smsLog->status)->toBe(500);
     });
 
-    it('does not send http request and logs in sandbox mode', function () {
+    it('does not send http request and logs in sandbox mode', function (): void {
         config(['services.ippanel.sand_box' => true]);
         Http::fake();
 
@@ -116,7 +116,7 @@ describe('SmsChannel Sending Logic', function () {
             ->and($smsLog->data['message_id'])->toStartWith('Sandbox_');
     });
 
-    it('throws exception if api key or from is not configured', function () {
+    it('throws exception if api key or from is not configured', function (): void {
         config([
             'services.ippanel.api_key' => null,
             'services.ippanel.from'    => null,
@@ -125,7 +125,7 @@ describe('SmsChannel Sending Logic', function () {
         expect(fn () => $this->user->notify($this->notification))
             ->toThrow(Exception::class, 'IPPanel API key or sender number is not configured.');
     });
-    it('does not send if notifiable does not have a route for sms', function () {
+    it('does not send if notifiable does not have a route for sms', function (): void {
         $userWithoutPhone = User::factory()->create(['phone' => '']);
 
         $notification = new OtpSmsNotification(new OtpPrepared(
@@ -147,16 +147,16 @@ describe('SmsChannel Sending Logic', function () {
         expect(SmsLog::count())->toBe($initialLogCount);
     });
 
-    it('logs an error if notification returns an invalid message type', function () {
+    it('logs an error if notification returns an invalid message type', function (): void {
 
         $badNotification = new class extends Illuminate\Notifications\Notification
         {
-            public function via($notifiable)
+            public function via($notifiable): string
             {
                 return SmsChannel::class;
             }
 
-            public function toSms($notifiable)
+            public function toSms($notifiable): string
             {
                 return 'this is not a valid message object';
             }
@@ -173,11 +173,11 @@ describe('SmsChannel Sending Logic', function () {
         Http::assertNothingSent();
     });
 
-    it('sends a standard content-based SMS correctly', function () {
+    it('sends a standard content-based SMS correctly', function (): void {
 
         $standardSmsNotification = new class extends Illuminate\Notifications\Notification
         {
-            public function via($notifiable)
+            public function via($notifiable): string
             {
                 return SmsChannel::class;
             }
@@ -205,7 +205,7 @@ describe('SmsChannel Sending Logic', function () {
         expect($smsLog->type)->toBe('GREETING');
     });
 
-    it('sends a pattern SMS successfully to a Staff member and creates a log', function () {
+    it('sends a pattern SMS successfully to a Staff member and creates a log', function (): void {
         $staff = App\Models\Staff::factory()->create(['phone' => '09876543210']);
 
         Http::fake([

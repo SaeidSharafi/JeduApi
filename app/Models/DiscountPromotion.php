@@ -21,21 +21,6 @@ final class DiscountPromotion extends Model
     protected $guarded = [];
 
     /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'is_active'                        => 'boolean',
-        'starts_at'                        => 'datetime',
-        'ends_at'                          => 'datetime',
-        'stop_processing_subsequent_rules' => 'boolean',
-        'type'                             => DiscountTypeEnum::class,
-        'created_at'                       => 'datetime',
-        'updated_at'                       => 'datetime',
-    ];
-
-    /**
      * A promotion consists of multiple rules (conditions and actions).
      */
     public function rules(): HasMany
@@ -57,5 +42,22 @@ final class DiscountPromotion extends Model
     public function discountedPrices(): HasMany
     {
         return $this->hasMany(ProductDeliveryOptionDiscountPrice::class, 'discount_promotion_id');
+    }
+    /**
+     * The attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'is_active'                        => 'boolean',
+            'starts_at'                        => 'datetime',
+            'ends_at'                          => 'datetime',
+            'stop_processing_subsequent_rules' => 'boolean',
+            'type'                             => DiscountTypeEnum::class,
+            'created_at'                       => 'datetime',
+            'updated_at'                       => 'datetime',
+        ];
     }
 }

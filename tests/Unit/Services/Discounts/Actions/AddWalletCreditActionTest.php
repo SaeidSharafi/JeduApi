@@ -17,7 +17,7 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create();
 
     $this->wallet = $this->user->wallet;
@@ -32,11 +32,11 @@ beforeEach(function () {
     $this->action           = new AddWalletCreditAction($this->mockRecordAction);
 });
 
-it('returns correct config class', function () {
+it('returns correct config class', function (): void {
     expect(AddWalletCreditAction::getConfigClass())->toBe(AddWalletCreditConfigData::class);
 });
 
-it('applies fixed amount wallet credit', function () {
+it('applies fixed amount wallet credit', function (): void {
     $config = new AddWalletCreditConfigData(
         amount: 5000,
         per_item: false,
@@ -65,7 +65,7 @@ it('applies fixed amount wallet credit', function () {
     $this->action->apply($context, $config);
 });
 
-it('applies per-item wallet credit', function () {
+it('applies per-item wallet credit', function (): void {
     $config = new AddWalletCreditConfigData(
         amount: 1000,
         per_item: true,
@@ -109,7 +109,7 @@ it('applies per-item wallet credit', function () {
     $this->action->apply($context, $config);
 });
 
-it('excludes prepayment items from per-item calculation', function () {
+it('excludes prepayment items from per-item calculation', function (): void {
     $config = new AddWalletCreditConfigData(
         amount: 1000,
         per_item: true,
@@ -153,7 +153,7 @@ it('excludes prepayment items from per-item calculation', function () {
     $this->action->apply($context, $config);
 });
 
-it('does not apply credit for zero amount', function () {
+it('does not apply credit for zero amount', function (): void {
     $config = new AddWalletCreditConfigData(
         amount: 1000,
         per_item: true,
@@ -173,7 +173,7 @@ it('does not apply credit for zero amount', function () {
     $this->action->apply($context, $config);
 });
 
-it('does not apply credit when customer has no wallet', function () {
+it('does not apply credit when customer has no wallet', function (): void {
     $userWithoutWallet = User::factory()->create();
     $userWithoutWallet->wallet->delete();
     $userWithoutWallet->refresh();
@@ -196,7 +196,7 @@ it('does not apply credit when customer has no wallet', function () {
     $this->action->apply($context, $config);
 });
 
-it('uses localized description when none provided', function () {
+it('uses localized description when none provided', function (): void {
     $config = new AddWalletCreditConfigData(
         amount: 5000,
         per_item: false,
@@ -221,7 +221,7 @@ it('uses localized description when none provided', function () {
     $this->action->apply($context, $config);
 });
 
-it('handles record action exceptions gracefully', function () {
+it('handles record action exceptions gracefully', function (): void {
     $config = new AddWalletCreditConfigData(
         amount: 5000,
         per_item: false,
@@ -244,7 +244,7 @@ it('handles record action exceptions gracefully', function () {
     expect(fn () => $this->action->apply($context, $config))->not->toThrow(Exception::class);
 });
 
-it('does not apply credit for invalid configuration type', function () {
+it('does not apply credit for invalid configuration type', function (): void {
     $invalidConfig = new class extends Spatie\LaravelData\Data
     {
         public function toArray(): array

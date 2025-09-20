@@ -40,7 +40,7 @@ final class OrderPreviewData extends Data
         });
 
         return new self(
-            items: $items->toArray(),
+            items: $items->all(),
             subtotal_full_payment_items: $data->subtotal_full_payment_items,
             subtotal_all_items: $data->subtotal_all_items,
             applied_cart_discounts: $data->applied_cart_discounts,

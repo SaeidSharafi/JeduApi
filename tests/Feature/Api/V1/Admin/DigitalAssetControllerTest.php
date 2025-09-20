@@ -22,7 +22,7 @@ beforeEach(function (): void {
         ->upload();
 });
 describe('list filters', function (): void {
-    it('can filter by name', function () {
+    it('can filter by name', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(10)->create();
         $digitalAsset = DigitalAsset::factory()->create(['name' => 'Test Asset']);
@@ -32,7 +32,7 @@ describe('list filters', function (): void {
             ->assertJsonFragment(['name' => $digitalAsset->name]);
     });
 
-    it('can filter by slug', function () {
+    it('can filter by slug', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(10)->create();
         $digitalAsset = DigitalAsset::factory()->create(['slug' => 'test-asset']);
@@ -41,7 +41,7 @@ describe('list filters', function (): void {
             ->assertJsonCount(1, 'data.data')
             ->assertJsonFragment(['slug' => $digitalAsset->slug]);
     });
-    it('can filter by status', function () {
+    it('can filter by status', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(10)->create();
         $digitalAsset = DigitalAsset::factory()->create(['status' => \App\Enums\PublicationStatusEnum::DRAFT]);
@@ -51,7 +51,7 @@ describe('list filters', function (): void {
             ->assertJsonCount(1, 'data.data')
             ->assertJsonFragment(['slug' => $digitalAsset->slug]);
     });
-    it('can filter by is_attachable_to_course', function () {
+    it('can filter by is_attachable_to_course', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(10)
             ->nonAttachable()
@@ -64,7 +64,7 @@ describe('list filters', function (): void {
             ->assertJsonFragment(['slug' => $digitalAsset->slug]);
     });
 
-    it('can sort by name', function () {
+    it('can sort by name', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(5)->create();
         $response = $this->getJson(route('api.v1.admin.digital-asset.index', ['sort' => 'name']));
@@ -77,7 +77,7 @@ describe('list filters', function (): void {
             ->assertJsonPath('data.data.3.slug', $digitalAssets[3]->slug)
             ->assertJsonPath('data.data.4.slug', $digitalAssets[4]->slug);
     });
-    it('can sort by slug', function () {
+    it('can sort by slug', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(5)->create();
         $response = $this->getJson(route('api.v1.admin.digital-asset.index', ['sort' => 'slug']));
@@ -92,7 +92,7 @@ describe('list filters', function (): void {
             ->assertJsonPath('data.data.4.slug', $digitalAssets[4]->slug);
     });
 
-    it('can sort by status', function () {
+    it('can sort by status', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(5)
             ->create();
@@ -108,7 +108,7 @@ describe('list filters', function (): void {
     });
 
 });
-it('can get list of digital assets', function () {
+it('can get list of digital assets', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
     DigitalAsset::factory()->count(10)->create();
     $response = $this->getJson(route('api.v1.admin.digital-asset.index'));
@@ -134,7 +134,7 @@ it('can get list of digital assets', function () {
         ]);
 });
 
-it('can get single digital asset', function () {
+it('can get single digital asset', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW->value]);
     $digitalAsset = DigitalAsset::factory()->create();
     $preview = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
@@ -151,7 +151,7 @@ it('can get single digital asset', function () {
     $digitalAsset->attachMedia($this->video, 'video');
     $response = $this->getJson(route('api.v1.admin.digital-asset.show', $digitalAsset));
     $response->assertStatus(200)
-        ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($main, $preview, $digitalAsset) {
+        ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($main, $preview, $digitalAsset): void {
             $json->where('data.id', $digitalAsset->id)
                 ->where('data.name', $digitalAsset->name)
                 ->where('data.slug', $digitalAsset->slug)
@@ -181,7 +181,7 @@ it('can get single digital asset', function () {
         });
 });
 
-it('can create digital asset', function () {
+it('can create digital asset', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_CREATE->value]);
     $digitalAsset = DigitalAsset::factory()
         ->make();
@@ -276,7 +276,7 @@ it('can create digital asset', function () {
 
 });
 
-it('can update digital asset', function () {
+it('can update digital asset', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_UPDATE->value]);
     $digitalAsset = DigitalAsset::factory()->create()->fresh();
     $preview = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('preview.pdf'))
@@ -310,7 +310,7 @@ it('can update digital asset', function () {
     $updatedData['published_at'] = $this->toJalalitString($digitalAssetUpdate->published_at->format('Y-m-d H:i:s'));
     $response = $this->putJson(route('api.v1.admin.digital-asset.update', $digitalAsset), $updatedData);
     $response->assertStatus(200)
-        ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($updatedData) {
+        ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($updatedData): void {
             $json->where('data.name', $updatedData['name'])
                 ->where('data.slug', $updatedData['slug'])
                 ->where('data.description', $updatedData['description'])
@@ -403,7 +403,7 @@ it('can update digital asset', function () {
     ]);
 
 });
-it('can not update a digital asset with duplicate slug', function () {
+it('can not update a digital asset with duplicate slug', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_UPDATE->value]);
     $digitalAsset = DigitalAsset::factory()->create()->fresh();
     $digitalAssetExist = DigitalAsset::factory()->create(
@@ -443,7 +443,7 @@ it('can not update a digital asset with duplicate slug', function () {
     ]);
 });
 
-it('can delete digital asset', function () {
+it('can delete digital asset', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::FILE_DELETE->value]);
 
     $digitalAsset = DigitalAsset::factory()->create()->fresh();

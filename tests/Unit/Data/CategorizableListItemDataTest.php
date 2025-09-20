@@ -3,8 +3,8 @@
 use App\Data\Admin\Category\CategorizableListItemData;
 use App\Enums\MorphTypeEnum;
 
-describe('CategorizableListItemData', function () {
-    it('can be created from a Categorizable model', function () {
+describe('CategorizableListItemData', function (): void {
+    it('can be created from a Categorizable model', function (): void {
         // Mock a Categorizable model
        $category = \App\Models\Category::factory()->create();
        $course = \App\Models\Course::factory()->create(['short_name' => 'Sample Course']);
@@ -26,7 +26,7 @@ describe('CategorizableListItemData', function () {
         expect($data->good_for_start)->toBeTrue();
     });
 
-    it('get categorizable name fallback works correctly', function () {
+    it('get categorizable name fallback works correctly', function (): void {
         $fakeModel = new class extends \Illuminate\Database\Eloquent\Model {
             public $name = 'Test Name';
         };

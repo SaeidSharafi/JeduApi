@@ -21,16 +21,16 @@ use App\Services\ProductPriceService;
 use App\Services\RequestDataCacheService;
 
 uses(\Tests\Traits\CreatesModelsWithCachedData::class);
-beforeEach(function () {
+beforeEach(function (): void {
     \Illuminate\Support\Facades\Storage::fake('public');
     $this->image = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('image.jpg'))
         ->toDisk('public')
         ->upload();
 });
 
-describe('GetHomePageContentAction', function () {
+describe('GetHomePageContentAction', function (): void {
 
-    it('can handle empty blocks', function () {
+    it('can handle empty blocks', function (): void {
         $action = app(GetHomePageContentAction::class);
         $result = $action->handle();
 
@@ -41,7 +41,7 @@ describe('GetHomePageContentAction', function () {
             ->and(count($result->main_content))->toBe(0);
     });
 
-    it('can handle curated list blocks', function () {
+    it('can handle curated list blocks', function (): void {
         // Create test data
         $categories = Category::factory()->count(3)->create();
         $products = Product::factory()->withDeliveryOptions()
@@ -80,7 +80,7 @@ describe('GetHomePageContentAction', function () {
             ->and(count($result->main_content[0]['content']['items']))->toBe(3)
             ->and(count($result->main_content[1]['content']['items']))->toBe(3);
     });
-    it('can handle dynamic list blocks (Product) wiht generated price', function () {
+    it('can handle dynamic list blocks (Product) wiht generated price', function (): void {
         // Create test data
         $product = Product::factory()
             ->withDeliveryOptions(realData: [
@@ -129,7 +129,7 @@ describe('GetHomePageContentAction', function () {
             ->and($result->main_content[0]['content']['items'][0]['price'])->toBe(20000)
             ->and($result->main_content[0]['content']['items'][0]['original_price'])->toBe(20000);
     });
-    it('can handle dynamic list blocks (Product) wihtout generated price', function () {
+    it('can handle dynamic list blocks (Product) wihtout generated price', function (): void {
         $product = Product::factory()
             ->withDeliveryOptions(realData: [
                 [
@@ -175,7 +175,7 @@ describe('GetHomePageContentAction', function () {
             ->and($result->main_content[0]['content']['items'][0]['original_price'])->toBe(20000);
 
     });
-    it('can handle dynamic list blocks (Product)', function () {
+    it('can handle dynamic list blocks (Product)', function (): void {
         // Create test data
         Product::factory()
             ->withDeliveryOptions()
@@ -203,7 +203,7 @@ describe('GetHomePageContentAction', function () {
             ->and(count($result->main_content[0]['content']['items']))->toBe(3);
     });
 
-    it('can handle dynamic list blocks (BlogPost)', function () {
+    it('can handle dynamic list blocks (BlogPost)', function (): void {
         // Create test data
         BlogPost::factory()->count(5)->create(
             [
@@ -232,7 +232,7 @@ describe('GetHomePageContentAction', function () {
             ->and(count($result->main_content[0]['content']['items']))->toBe(2);
     });
     //test sorts
-    it('can handle dynamic list blocks with different sorts', function ($sortOption) {
+    it('can handle dynamic list blocks with different sorts', function ($sortOption): void {
         // Create test data this needs to be deterministic
         // so we have to create Product and ProductDelveryOption wiht some Order and OrderItem
         // manually one by one
@@ -314,7 +314,7 @@ describe('GetHomePageContentAction', function () {
             [DynamicListSortByEnum::FEATURED],
 
         ]);
-    it('can handle dynamic list blocks with category filter', function () {
+    it('can handle dynamic list blocks with category filter', function (): void {
         // Create test data
         $categories = Category::factory()->count(2)->create();
         $productsInCategory1 = Product::factory()
@@ -353,7 +353,7 @@ describe('GetHomePageContentAction', function () {
             ->toBe($productsInCategory1->sortByDesc('created_at')->pluck('id')->take(3)->toArray());
     });
 
-    it('can handle dynamic list blocks for blogs with popularity sort option', function () {
+    it('can handle dynamic list blocks for blogs with popularity sort option', function (): void {
         // Create test data
         $blogPosts = BlogPost::factory()
             ->count(5)
@@ -388,7 +388,7 @@ describe('GetHomePageContentAction', function () {
             ->toBe($blogPosts->sortByDesc('created_at')->pluck('id')->take(3)->toArray());
     });
 
-    it('can handle banner blocks', function () {
+    it('can handle banner blocks', function (): void {
         // Create banner block
         $banner = HomePageBlock::factory()->banner($this->image)->create([
             'title'     => 'Welcome Banner',
@@ -412,7 +412,7 @@ describe('GetHomePageContentAction', function () {
 
     });
 
-    it('can handle webinar banner blocks', function () {
+    it('can handle webinar banner blocks', function (): void {
         // Create a product for the webinar banner
         $product = Product::factory()->create();
         ProductDeliveryOption::factory()
@@ -444,7 +444,7 @@ describe('GetHomePageContentAction', function () {
             ->and($result->hero[0]['content']['product']['original_price'])->toBe(100000);
     });
 
-    it('filters inactive blocks', function () {
+    it('filters inactive blocks', function (): void {
         // Create active and inactive blocks
         HomePageBlock::factory()->banner()->create([
             'title'     => 'Active Block',
@@ -465,7 +465,7 @@ describe('GetHomePageContentAction', function () {
             ->and($result->main_content[0]['title'])->toBe('Active Block');
     });
 
-    it('orders blocks correctly', function () {
+    it('orders blocks correctly', function (): void {
         HomePageBlock::factory()->banner()->create([
             'title'     => 'Main Block 2',
             'location'  => 'main_content',
@@ -497,7 +497,7 @@ describe('GetHomePageContentAction', function () {
             ->and($result->main_content[1]['title'])->toBe('Main Block 2');
     });
 
-    it('handle laoding media for products in curated list', function () {
+    it('handle laoding media for products in curated list', function (): void {
         // Create test data
         $course = \App\Models\Course::factory()->create();
         $product = Product::factory()->withDeliveryOptions()->create([

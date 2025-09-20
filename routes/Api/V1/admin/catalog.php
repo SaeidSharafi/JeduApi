@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\Admin\Product\SeminarController;
 Route::apiResource('category', CategoryController::class);
 
 // GoodForStart endpoints for category items
-Route::prefix('category/{category}')->name('category.')->group(function () {
+Route::prefix('category/{category}')->name('category.')->group(function (): void {
     Route::get('items', CategoryItemsController::class)->name('items.index');
     Route::post('good-for-start',
         [GoodForStartController::class, 'set'])

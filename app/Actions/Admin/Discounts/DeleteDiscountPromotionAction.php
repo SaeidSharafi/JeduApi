@@ -11,7 +11,7 @@ final class DeleteDiscountPromotionAction
 {
     public function execute(DiscountPromotion $promotion): void
     {
-        DB::transaction(function () use ($promotion) {
+        DB::transaction(function () use ($promotion): void {
             // Delete related rules and coupons (cascading should handle this but being explicit)
             $promotion->rules()->delete();
             $promotion->coupons()->delete();

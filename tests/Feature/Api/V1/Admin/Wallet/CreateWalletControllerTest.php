@@ -11,7 +11,7 @@ use function Pest\Laravel\postJson;
 
 uses(AuthTestTrait::class);
 
-test('admin with permission can create wallet via controller', function () {
+test('admin with permission can create wallet via controller', function (): void {
     $admin = $this->authorized_user([PermissionEnum::WALLET_CREATE]);
     $user  = User::factory()->create();
     $user->wallet->delete(); // Ensure no existing wallet
@@ -26,7 +26,7 @@ test('admin with permission can create wallet via controller', function () {
     $response->assertJsonPath('data.user_id', $user->id);
 });
 
-test('admin without permission cannot create wallet via controller', function () {
+test('admin without permission cannot create wallet via controller', function (): void {
     $admin = $this->authorized_user([]); // No wallet.create permission
     $user  = User::factory()->create();
     $user->wallet->delete(); // Ensure no existing wallet
@@ -40,7 +40,7 @@ test('admin without permission cannot create wallet via controller', function ()
     $response->assertForbidden();
 });
 
-test('validation error on missing fields', function () {
+test('validation error on missing fields', function (): void {
     $admin   = $this->authorized_user([PermissionEnum::WALLET_CREATE]);
     $payload = [
         'balance' => 1000,

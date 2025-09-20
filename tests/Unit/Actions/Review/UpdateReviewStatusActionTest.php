@@ -2,7 +2,7 @@
 
 use App\Enums\ReviewStatusEnum;
 
-it('update review status', function () {
+it('update review status', function (): void {
     $review = \App\Models\Review::factory()->create([
         'status' => ReviewStatusEnum::PENDING,
     ]);
@@ -12,7 +12,7 @@ it('update review status', function () {
     expect($review->status)->toBe(ReviewStatusEnum::APPROVED);
 });
 
-it('does not update review status if the same', function () {
+it('does not update review status if the same', function (): void {
     $review = \App\Models\Review::factory()->create([
         'status' => ReviewStatusEnum::PENDING,
     ]);

@@ -13,7 +13,10 @@ enum DiscountTypeEnum: string
     case PRODUCT_SPECIFIC = 'product_specific';
     case CART_CHECKOUT    = 'cart_checkout';
 
-    public static function getListInfo()
+    /**
+     * @return mixed[]
+     */
+    public static function getListInfo(): array
     {
         $list = [];
         foreach (self::cases() as $case) {

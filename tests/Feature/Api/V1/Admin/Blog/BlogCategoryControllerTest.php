@@ -8,7 +8,7 @@ use Illuminate\Http\UploadedFile;
 
 uses(Tests\AuthTestTrait::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->staff = \App\Models\Staff::factory()->create();
     Storage::fake('public');
 
@@ -20,8 +20,8 @@ beforeEach(function () {
         ->upload();
 });
 
-describe('BlogCategoryController List & Filter', function () {
-    it('should list categories', function () {
+describe('BlogCategoryController List & Filter', function (): void {
+    it('should list categories', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_VIEW_ANY]);
         BlogCategory::factory(20)->create();
         $response = $this->getJson(route('api.v1.admin.blog.category.index'));
@@ -44,7 +44,7 @@ describe('BlogCategoryController List & Filter', function () {
         ]);
     });
 
-    it('should filter by name', function () {
+    it('should filter by name', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_VIEW_ANY]);
         BlogCategory::factory(20)->create();
         BlogCategory::factory()->create(['name' => 'TechX']);
@@ -54,7 +54,7 @@ describe('BlogCategoryController List & Filter', function () {
         $response->assertJsonFragment(['name' => 'TechX']);
     });
 
-    it('should filter by slug', function () {
+    it('should filter by slug', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_VIEW_ANY]);
         BlogCategory::factory(20)->create();
         BlogCategory::factory()->create(['slug' => 'unique-slug']);
@@ -64,7 +64,7 @@ describe('BlogCategoryController List & Filter', function () {
         $response->assertJsonFragment(['slug' => 'unique-slug']);
     });
 
-    it('should sort by name', function () {
+    it('should sort by name', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_VIEW_ANY]);
         BlogCategory::factory()->create(['name' => 'A']);
         BlogCategory::factory()->create(['name' => 'B']);
@@ -76,8 +76,8 @@ describe('BlogCategoryController List & Filter', function () {
     });
 });
 
-describe('BlogCategoryController CRUD', function () {
-    it('should create a category', function () {
+describe('BlogCategoryController CRUD', function (): void {
+    it('should create a category', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_CREATE]);
         $data = BlogCategory::factory()->make([
             'icon' => $this->media ? $this->media->id : null,
@@ -87,7 +87,7 @@ describe('BlogCategoryController CRUD', function () {
         $this->assertDatabaseHas('blog_categories', ['name' => $data['name']]);
     });
 
-    it('should not create with missing required fields', function () {
+    it('should not create with missing required fields', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_CREATE]);
         $data = [
             'name' => null,
@@ -101,7 +101,7 @@ describe('BlogCategoryController CRUD', function () {
         $response->assertJsonValidationErrors(['name']);
     });
 
-    it('should not create with invalid icon', function () {
+    it('should not create with invalid icon', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_CREATE]);
         $data = BlogCategory::factory()->make(['icon' => 999999])->toArray();
         $response = $this->postJson(route('api.v1.admin.blog.category.store'), $data);
@@ -109,7 +109,7 @@ describe('BlogCategoryController CRUD', function () {
         $response->assertJsonValidationErrors(['icon']);
     });
 
-    it('should not create with duplicate slug', function () {
+    it('should not create with duplicate slug', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_CREATE]);
         $existing = BlogCategory::factory()->create(['slug' => 'dupe-slug']);
         $data = BlogCategory::factory()->make(['slug' => 'dupe-slug'])->toArray();
@@ -119,7 +119,7 @@ describe('BlogCategoryController CRUD', function () {
     });
 
 
-    it('should show a category', function () {
+    it('should show a category', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_VIEW]);
         $category = BlogCategory::factory()->create();
         $response = $this->getJson(route('api.v1.admin.blog.category.show', ['category' => $category]));
@@ -127,13 +127,13 @@ describe('BlogCategoryController CRUD', function () {
         $response->assertJsonFragment(['name' => $category->name]);
     });
 
-    it('should return 404 for non-existent category', function () {
+    it('should return 404 for non-existent category', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_VIEW]);
         $response = $this->getJson(route('api.v1.admin.blog.category.show', ['category' => 999999]));
         $response->assertNotFound();
     });
 
-    it('should update a category', function () {
+    it('should update a category', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_UPDATE]);
         $category = BlogCategory::factory()->create();
         $data = BlogCategory::factory()->make([
@@ -144,7 +144,7 @@ describe('BlogCategoryController CRUD', function () {
         $this->assertDatabaseHas('blog_categories', ['id' => $category->id, 'name' => $data['name']]);
     });
 
-    it('should not update with invalid icon', function () {
+    it('should not update with invalid icon', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_UPDATE]);
         $category = BlogCategory::factory()->create();
         $data = BlogCategory::factory()->make(['icon' => 999999])->toArray();
@@ -153,7 +153,7 @@ describe('BlogCategoryController CRUD', function () {
         $response->assertJsonValidationErrors(['icon']);
     });
 
-    it('should not update with missing required fields', function () {
+    it('should not update with missing required fields', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_UPDATE]);
         $category = BlogCategory::factory()->create();
         $response = $this->putJson(route('api.v1.admin.blog.category.update', ['category' => $category]), []);
@@ -161,7 +161,7 @@ describe('BlogCategoryController CRUD', function () {
         $response->assertJsonValidationErrors(['name']);
     });
 
-    it('should delete a category', function () {
+    it('should delete a category', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_DELETE]);
         $category = BlogCategory::factory()->create();
         $response = $this->deleteJson(route('api.v1.admin.blog.category.destroy', ['category' => $category]));
@@ -169,13 +169,13 @@ describe('BlogCategoryController CRUD', function () {
         $this->assertDatabaseMissing('blog_categories', ['id' => $category->id]);
     });
 
-    it('should return 404 for non-existent category on delete', function () {
+    it('should return 404 for non-existent category on delete', function (): void {
         $this->authorized_user([PermissionEnum::BLOG_CATEGORY_DELETE]);
         $response = $this->deleteJson(route('api.v1.admin.blog.category.destroy', ['category' => 999999]));
         $response->assertNotFound();
     });
 
-    it('should not allow unauthorized access', function () {
+    it('should not allow unauthorized access', function (): void {
         $this->unauthorized_user();
         $category = BlogCategory::factory()->create();
         $data = BlogCategory::factory()->make([

@@ -5,22 +5,22 @@ declare(strict_types=1);
 use App\Models\Vendor;
 
 uses(Tests\AuthTestTrait::class);
-describe('Admin Vendor Select Option API', function () {
-    it('returns filtered vendor select options', function () {
+describe('Admin Vendor Select Option API', function (): void {
+    it('returns filtered vendor select options', function (): void {
         $this->authorized_user();
         Storage::fake('public');
         $logo = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('logo.jpg'))
             ->toDisk('public')
             ->upload();
         Vendor::factory()->count(3)
-            ->afterCreating(function (Vendor $vendor) use ($logo) {
+            ->afterCreating(function (Vendor $vendor) use ($logo): void {
                 $vendor->attachMedia($logo->id, 'logo');
                 $vendor->logo_url = $vendor->getMedia('logo')->first()->getUrl();
                 $vendor->save();
             })
             ->create();
         $vendor = Vendor::factory()
-            ->afterCreating(function (Vendor $vendor) use ($logo) {
+            ->afterCreating(function (Vendor $vendor) use ($logo): void {
                 $vendor->attachMedia($logo->id, 'logo');
                 $vendor->logo_url = $vendor->getMedia('logo')->first()->getUrl();
                 $vendor->save();
@@ -51,7 +51,7 @@ describe('Admin Vendor Select Option API', function () {
         ]);
     });
 
-    it('returns empty data if no match', function () {
+    it('returns empty data if no match', function (): void {
         $this->authorized_user();
         $response = $this->getJson(
             route('api.v1.admin.select-option.vendor', ['q' => 'NoSuchVendor'])

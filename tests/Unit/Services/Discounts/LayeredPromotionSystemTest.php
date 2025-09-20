@@ -11,15 +11,15 @@ use App\Models\ProductDeliveryOptionDiscountPrice;
 use App\Services\Discounts\ProductDiscountIndexer;
 use App\Services\Discounts\ProductDiscountPriceCalculator;
 
-describe('LayeredPromotionSystem', function () {
+describe('LayeredPromotionSystem', function (): void {
 
-    beforeEach(function () {
+    beforeEach(function (): void {
         // Clean slate for each test
         ProductDeliveryOptionDiscountPrice::truncate();
         DiscountPromotion::query()->delete();
     });
 
-    test('it applies multiple promotions sequentially by priority', function () {
+    test('it applies multiple promotions sequentially by priority', function (): void {
         // Arrange - Create a product priced at $100
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->create([
@@ -72,7 +72,7 @@ describe('LayeredPromotionSystem', function () {
         expect($finalPrice)->toBe(7500); // $75.00
     });
 
-    test('it stops processing when end_other_rules is true', function () {
+    test('it stops processing when end_other_rules is true', function (): void {
         // Arrange - Create a product priced at $100
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->create([
@@ -125,7 +125,7 @@ describe('LayeredPromotionSystem', function () {
         expect($finalPrice)->toBe(8000); // $80.00 (only Promotion A applied)
     });
 
-    test('it applies promotions in priority order regardless of creation order', function () {
+    test('it applies promotions in priority order regardless of creation order', function (): void {
         // Arrange - Create a product priced at $100
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->create([
@@ -197,7 +197,7 @@ describe('LayeredPromotionSystem', function () {
         expect($finalPrice)->toBe(6460); // $64.60
     });
 
-    test('it indexes discount prices using the new job-based system', function () {
+    test('it indexes discount prices using the new job-based system', function (): void {
         // Arrange - Create a product priced at $100
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->create([
@@ -233,7 +233,7 @@ describe('LayeredPromotionSystem', function () {
             ->and($discountPrice->discount_promotion_id)->toBe($promotion->id);
     });
 
-    test('it demonstrates the complete example from the documentation', function () {
+    test('it demonstrates the complete example from the documentation', function (): void {
         // Arrange - Create a course priced at $100
         $product = Product::factory()->create(['name' => 'Advanced Laravel Course']);
         $option  = ProductDeliveryOption::factory()->create([

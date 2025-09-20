@@ -64,7 +64,7 @@ final readonly class GetHomePageContentAction
         }
 
         $uniqueProductIds = $productIds->unique()->values();
-        $idsToFetch = $uniqueProductIds->filter(fn($id) => !$this->requestCache->hasProduct($id));
+        $idsToFetch = $uniqueProductIds->reject(fn($id): bool => $this->requestCache->hasProduct($id));
 
         // Pre-load all products with relationships to avoid N+1
         if ($idsToFetch->isNotEmpty()) {
@@ -74,7 +74,7 @@ final readonly class GetHomePageContentAction
                 ->keyBy('id');
             $this->requestCache->storeProducts($fetchedProducts);
         }
-        $products = $uniqueProductIds->map(fn($id) => $this->requestCache->getProduct($id))->filter()->keyBy('id');
+        $products = $uniqueProductIds->map(fn($id): ?\App\Models\Product => $this->requestCache->getProduct($id))->filter()->keyBy('id');
         // Pre-load all categories with media
         $categories = $categoryIds->filter()->isNotEmpty()
             ? Category::whereIn('id', $categoryIds->unique()->values())
@@ -116,14 +116,14 @@ final readonly class GetHomePageContentAction
             $items = collect($itemsIds)
                 ->map(fn($id) => $preloadedData['categories']->get($id))
                 ->filter()
-                ->map(fn($category) => $this->formatEntity($category, 'categories', $preloadedData))
+                ->map(fn($category): array => $this->formatEntity($category, 'categories', $preloadedData))
                 ->values()
                 ->toArray();
         } else {
             $items = collect($itemsIds)
                 ->map(fn($id) => $preloadedData['products']->get($id))
                 ->filter()
-                ->map(fn($product) => $this->formatEntity($product, 'products', $preloadedData))
+                ->map(fn($product): array => $this->formatEntity($product, 'products', $preloadedData))
                 ->values()
                 ->toArray();
         }
@@ -149,14 +149,14 @@ final readonly class GetHomePageContentAction
         } else {
             // For products, get the IDs first
             $productIds = $query->pluck('id');
-            $idsToFetch = $productIds->filter(fn($id) => !$this->requestCache->hasProduct($id));
+            $idsToFetch = $productIds->reject(fn($id): bool => $this->requestCache->hasProduct($id));
             if ($idsToFetch->isNotEmpty()) {
                 $fetchedProducts = $query
                     ->whereIn('id', $idsToFetch)
                     ->get();
                 $this->requestCache->storeProducts($fetchedProducts);
             }
-            $entities = $productIds->map(fn($id) => $this->requestCache->getProduct($id))->filter();
+            $entities = $productIds->map(fn($id): ?\App\Models\Product => $this->requestCache->getProduct($id))->filter();
         }
 
         $formatType = match ($entityType) {
@@ -166,7 +166,7 @@ final readonly class GetHomePageContentAction
 
         return [
             'preset' => $preset,
-            'items'  => $entities->map(fn($entity) => $this->formatEntity($entity, $formatType))
+            'items'  => $entities->map(fn($entity): array => $this->formatEntity($entity, $formatType))
                 ->toArray(),
         ];
     }

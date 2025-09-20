@@ -4,8 +4,8 @@ use App\Actions\Admin\Blog\Post\UpdateBlogPostAction;
 use App\Data\Admin\Blog\Post\BlogPostUpdateData;
 use App\Models\Course;
 
-describe('UpdateBlogPostAction', function () {
-   beforeEach(function (){
+describe('UpdateBlogPostAction', function (): void {
+   beforeEach(function (): void{
        $this->staff = \App\Models\Staff::factory()->create();
        Storage::fake('public');
 
@@ -32,7 +32,7 @@ describe('UpdateBlogPostAction', function () {
        $this->post->categories()->attach($this->category1->id);
    });
 
-    it('updates a blog post', function () {
+    it('updates a blog post', function (): void {
          $relatedProductable = Course::factory()->create();
          $data = new BlogPostUpdateData(
               title: 'Updated Title',
@@ -70,7 +70,7 @@ describe('UpdateBlogPostAction', function () {
              ->and($updatedPost->read_time_minutes)->toBe(2); // Assuming ~200 words per minute
     });
 
-    it('updates a blog post and removing media', function () {
+    it('updates a blog post and removing media', function (): void {
          $data = new BlogPostUpdateData(
               title: 'Updated Title No Slug Change',
              slug: null,

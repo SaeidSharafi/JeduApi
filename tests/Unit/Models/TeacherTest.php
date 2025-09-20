@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-test('to array', function () {
+test('to array', function (): void {
     $teahcer = App\Models\Teacher::factory()->create()->fresh();
 
     $array = $teahcer->toArray();

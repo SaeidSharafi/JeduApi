@@ -13,9 +13,9 @@ use App\Models\Refund;
 use function Pest\Laravel\assertDatabaseHas;
 
 uses(Tests\AuthTestTrait::class);
-describe('RefundController', function () {
+describe('RefundController', function (): void {
 
-    it('should return a list of refunds', function () {
+    it('should return a list of refunds', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::REFUND_VIEW_ANY]);
         $order = Order::factory()->withCalculatedTotals(
             [
@@ -74,7 +74,7 @@ describe('RefundController', function () {
             ]);
     });
 
-    it('should create a refund', function () {
+    it('should create a refund', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::REFUND_CREATE]);
         $order = Order::factory()->withCalculatedTotals(
             [
@@ -114,7 +114,7 @@ describe('RefundController', function () {
 
         $response = $this->postJson(route('api.v1.admin.refund.store', ['orderItem' => $orderItem->id]), $data);
         $response->assertCreated()
-            ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) {
+            ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json): void {
                 $json
                     ->where('data.deduction_amount', 10000) // 20% of 50000
                     ->where('data.status', [
@@ -155,7 +155,7 @@ describe('RefundController', function () {
     });
 
     it('should not create a refund with invalid data',
-        function (?int $deductionAmount, ?int $deductionPercent, string $field) {
+        function (?int $deductionAmount, ?int $deductionPercent, string $field): void {
             $this->authorized_user([App\Enums\PermissionEnum::REFUND_CREATE]);
             $order = Order::factory()->withCalculatedTotals(
                 [
@@ -196,7 +196,7 @@ describe('RefundController', function () {
             [null, -10, 'deduction_percent'], // Negative deduction percent
         ]);
 
-    it('should not create a refund for an order item that is not refundable', function () {
+    it('should not create a refund for an order item that is not refundable', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::REFUND_CREATE]);
         $order = Order::factory()->withCalculatedTotals(
             [
@@ -245,7 +245,7 @@ describe('RefundController', function () {
             ->assertJsonValidationErrors(['order_item_id' => __('messages.order.refund.no_completed_payments')]);
     });
 
-    it('should not create a refund for an order item that does not exist', function () {
+    it('should not create a refund for an order item that does not exist', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::REFUND_CREATE]);
         $data = [
             'deduction_percent'   => 20,
@@ -262,7 +262,7 @@ describe('RefundController', function () {
         $response->assertNotFound();
     });
 
-    it('should update only the data of a pending refund', function () {
+    it('should update only the data of a pending refund', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::REFUND_UPDATE]);
         $order = Order::factory()->withCalculatedTotals(
             [
@@ -301,7 +301,7 @@ describe('RefundController', function () {
         $response = $this->putJson(route('api.v1.admin.refund.update',
             ['orderItem' => $orderItem, 'refund' => $refund->id]), $data);
         $response->assertOk()
-            ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) {
+            ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json): void {
                 $json
                     ->where('data.deduction_amount', 5000)
                     ->where('data.transaction_details.receiver_name', 'Jane Doe')
@@ -324,7 +324,7 @@ describe('RefundController', function () {
 
     });
 
-    it('should not update a refund that is not pending', function () {
+    it('should not update a refund that is not pending', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::REFUND_UPDATE]);
         $order = Order::factory()->withCalculatedTotals(
             [
@@ -366,7 +366,7 @@ describe('RefundController', function () {
             ->assertJsonValidationErrors(['refund' => __('messages.order.refund.only_pending_refunds_can_be_edited')]);
     });
 
-    it('show detail of a refund', function () {
+    it('show detail of a refund', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::REFUND_VIEW]);
         $order = Order::factory()->withCalculatedTotals(
             [
@@ -399,7 +399,7 @@ describe('RefundController', function () {
         $response = $this->getJson(route('api.v1.admin.refund.show',
             ['orderItem' => $orderItem, 'refund' => $refund->id]));
         $response->assertOk()
-            ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($refund) {
+            ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($refund): void {
                 $json
                     ->where('data.id', $refund->id)
                     ->where('data.deduction_amount', $refund->deduction_amount)
@@ -414,7 +414,7 @@ describe('RefundController', function () {
             });
     });
 
-    it('should delete a pending refund', function () {
+    it('should delete a pending refund', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::REFUND_DELETE]);
         $order = Order::factory()->withCalculatedTotals(
             [
@@ -445,7 +445,7 @@ describe('RefundController', function () {
         \Pest\Laravel\assertDatabaseMissing('refunds', ['id' => $refund->id]);
     });
 
-    it('should not delete a refund that is not pending', function (RefundStatusEnum $status) {
+    it('should not delete a refund that is not pending', function (RefundStatusEnum $status): void {
         $this->authorized_user([App\Enums\PermissionEnum::REFUND_DELETE]);
         $order = Order::factory()->withCalculatedTotals(
             [
@@ -479,7 +479,7 @@ describe('RefundController', function () {
         [RefundStatusEnum::CANCELLED],
     ]);
 
-    it('should not view list of refunds without permission', function () {
+    it('should not view list of refunds without permission', function (): void {
         $this->unauthorized_user();
         $orderItem = App\Models\OrderItem::factory()->create();
         Refund::factory()->create([
@@ -491,7 +491,7 @@ describe('RefundController', function () {
         $response->assertForbidden();
     });
 
-    it('should not create a refund without permission', function () {
+    it('should not create a refund without permission', function (): void {
         $this->unauthorized_user();
         $orderItem = App\Models\OrderItem::factory()->create();
         Refund::factory()->create([
@@ -513,7 +513,7 @@ describe('RefundController', function () {
         $response->assertForbidden();
     });
 
-    it('should not update a refund without permission', function () {
+    it('should not update a refund without permission', function (): void {
         $this->unauthorized_user();
         $orderItem = App\Models\OrderItem::factory()->create();
         $refund    = Refund::factory()->create([
@@ -538,7 +538,7 @@ describe('RefundController', function () {
         $response->assertForbidden();
     });
 
-    it('should not delete a refund without permission', function () {
+    it('should not delete a refund without permission', function (): void {
         $this->unauthorized_user();
         $refund = Refund::factory()->create([
             'status' => RefundStatusEnum::PENDING,

@@ -1,6 +1,6 @@
 <?php
-describe('DeleteBlogPostAction', function () {
-    beforeEach(function (){
+describe('DeleteBlogPostAction', function (): void {
+    beforeEach(function (): void{
         $this->staff = \App\Models\Staff::factory()->create();
         Storage::fake('public');
 
@@ -16,7 +16,7 @@ describe('DeleteBlogPostAction', function () {
         $this->post->attachMedia($this->media, 'images');
     });
 
-    it('deletes a blog post and its media', function () {
+    it('deletes a blog post and its media', function (): void {
         $action = new \App\Actions\Admin\Blog\Post\DeleteBlogPostAction();
         $action->handle($this->post);
 

@@ -8,10 +8,10 @@ use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
 
 uses(Tests\AuthTestTrait::class);
-beforeEach(function () {
+beforeEach(function (): void {
     $this->customer();
 });
-it('should filter by fulfillment type', function () {
+it('should filter by fulfillment type', function (): void {
     createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, 2);
     createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
     $this->getJson(route('api.v1.shop.my-courses.index', [
@@ -22,7 +22,7 @@ it('should filter by fulfillment type', function () {
         ->assertJsonPath('data.data.0.product.fulfillment_type.value',
             App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value);
 });
-it('should filter by product name', function () {
+it('should filter by product name', function (): void {
     $product = App\Models\Product::factory()->create([
         'name' => 'Test Product',
     ]);
@@ -41,7 +41,7 @@ it('should filter by product name', function () {
         ->assertJsonCount(1, 'data.data')
         ->assertJsonPath('data.data.0.product.name', 'Test Product');
 });
-it('should paginate results', function () {
+it('should paginate results', function (): void {
     createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, count: 5);
     $this->getJson(route('api.v1.shop.my-courses.index', [
         'per_page' => 1,
@@ -50,7 +50,7 @@ it('should paginate results', function () {
         ->assertJsonCount(1, 'data.data')
         ->assertJsonPath('data.total', 5); // Assuming there are 3 enrollments in total
 });
-it('shows current user specific enrollment details', function () {
+it('shows current user specific enrollment details', function (): void {
     $product = App\Models\Product::factory()->create([
         'name' => 'Test Product',
     ]);
@@ -68,7 +68,7 @@ it('shows current user specific enrollment details', function () {
     ]));
 
     $response->assertOk();
-    $response->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($enrollment) {
+    $response->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($enrollment): void {
         $enrollment->load('product');
         $json->where('data.uuid', $enrollment->uuid)
             ->where('data.enrollment_status', [
@@ -80,7 +80,7 @@ it('shows current user specific enrollment details', function () {
     });
 
 });
-it('does not show other users enrollment details', function () {
+it('does not show other users enrollment details', function (): void {
 
     $user      = App\Models\User::factory()->create()->fresh();
     $enrollment = createEnrollment($user, DeliveryMethodEnum::LMS_MOODLE);

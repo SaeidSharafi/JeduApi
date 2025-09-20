@@ -7,10 +7,10 @@ use App\Enums\Payment\PaymentStatusEnum;
 
 uses(Tests\AuthTestTrait::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->customer = App\Models\User::factory()->create();
 });
-it('returns order payments list', function () {
+it('returns order payments list', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_VIEW->value]);
     $order   = App\Models\Order::factory()->create();
     $payment = App\Models\Payment::factory()
@@ -56,7 +56,7 @@ it('returns order payments list', function () {
         'admin_notes' => $payment->admin_notes,
     ]);
 });
-it('returns order payment detail', function () {
+it('returns order payment detail', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_VIEW->value]);
     $order   = App\Models\Order::factory()->create();
     $payment = App\Models\Payment::factory()->create([
@@ -97,7 +97,7 @@ it('returns order payment detail', function () {
         ],
     ]);
 });
-it('create payment successfully', function () {
+it('create payment successfully', function (): void {
     $product1 = App\Models\ProductDeliveryOption::factory()
         ->create([
             'price'                   => 1000,
@@ -180,7 +180,7 @@ it('create payment successfully', function () {
     $this->assertEquals($order->overall_payment_status, App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
 });
 
-it('create partiall payment successfully', function () {
+it('create partiall payment successfully', function (): void {
     $product1 = App\Models\ProductDeliveryOption::factory()
         ->create([
             'price'                   => 1000,
@@ -264,7 +264,7 @@ it('create partiall payment successfully', function () {
     $this->assertEquals($order->payment_status, App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
     $this->assertEquals($order->overall_payment_status, App\Enums\Order\OrderPaymentStatusEnum::PARTIALLY_PAID->value);
 });
-it('prevent creating payment if amount to pay is 0', function () {
+it('prevent creating payment if amount to pay is 0', function (): void {
     $product = App\Models\ProductDeliveryOption::factory()
         ->create([
             'price'                   => 1000,
@@ -313,7 +313,7 @@ it('prevent creating payment if amount to pay is 0', function () {
     $this->assertEquals($order->payment_status, App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
     $this->assertEquals($order->overall_payment_status, App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
 });
-it('can update payment data', function () {
+it('can update payment data', function (): void {
     $payment = App\Models\Payment::factory()->create([
         'order_id'    => App\Models\Order::factory()->create(),
         'customer_id' => $this->customer->id,
@@ -356,7 +356,7 @@ it('can update payment data', function () {
         'admin_notes' => 'Updated payment',
     ]);
 });
-it('can not change completed payment status', function () {
+it('can not change completed payment status', function (): void {
     $payment = App\Models\Payment::factory()->create([
         'order_id'    => App\Models\Order::factory()->create(),
         'customer_id' => $this->customer->id,
@@ -390,7 +390,7 @@ it('can not change completed payment status', function () {
         'admin_notes' => 'Initial payment',
     ]);
 });
-it('can delete payment', function () {
+it('can delete payment', function (): void {
     $product1 = App\Models\ProductDeliveryOption::factory()
         ->create([
             'price'                   => 1000,
@@ -465,7 +465,7 @@ it('can delete payment', function () {
     $this->assertEquals($order->overall_payment_status, App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
 });
 
-it('can not delete completed payment', function () {
+it('can not delete completed payment', function (): void {
     $product1 = App\Models\ProductDeliveryOption::factory()
         ->create([
             'price'                   => 1000,

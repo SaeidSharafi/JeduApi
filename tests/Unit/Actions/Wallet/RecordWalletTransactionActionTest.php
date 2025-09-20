@@ -13,7 +13,7 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-test('admin with permission can record deposit transaction', function () {
+test('admin with permission can record deposit transaction', function (): void {
     $admin = $this->authorized_user([
         App\Enums\PermissionEnum::WALLET_UPDATE,
     ]);
@@ -37,7 +37,7 @@ test('admin with permission can record deposit transaction', function () {
     expect($user->wallet->balance)->toBe(500);
 });
 
-test('admin with permission can record gift transaction', function () {
+test('admin with permission can record gift transaction', function (): void {
     $admin = $this->authorized_user([
         App\Enums\PermissionEnum::WALLET_UPDATE,
     ]);
@@ -60,7 +60,7 @@ test('admin with permission can record gift transaction', function () {
     $user->wallet->refresh();
     expect($user->wallet->gift_balance)->toBe(500);
 });
-test('admin with permission can record bonus transaction', function () {
+test('admin with permission can record bonus transaction', function (): void {
     $admin = $this->authorized_user([
         App\Enums\PermissionEnum::WALLET_UPDATE,
     ]);
@@ -83,7 +83,7 @@ test('admin with permission can record bonus transaction', function () {
     $user->wallet->refresh();
     expect($user->wallet->gift_balance)->toBe(500);
 });
-test('cannot record transaction for invalid user', function () {
+test('cannot record transaction for invalid user', function (): void {
     $admin = $this->authorized_user([
         App\Enums\PermissionEnum::WALLET_UPDATE,
     ]);
@@ -96,11 +96,11 @@ test('cannot record transaction for invalid user', function () {
         'description' => 'Invalid user',
         'metadata'    => [],
     ]);
-    expect(fn () => (new RecordWalletTransactionAction())->execute($data))
+    expect(fn (): \App\Models\WalletTransaction => (new RecordWalletTransactionAction())->execute($data))
         ->toThrow(Exception::class, __('validation.custom.user_not_found'));
 });
 
-test('cannot record transaction for user without wallet', function () {
+test('cannot record transaction for user without wallet', function (): void {
     $user = User::factory()->create();
     $user->wallet->delete(); // Ensure user has no wallet
     $data = RecordTransactionData::from([
@@ -112,11 +112,11 @@ test('cannot record transaction for user without wallet', function () {
         'description' => 'No wallet',
         'metadata'    => [],
     ]);
-    expect(fn () => (new RecordWalletTransactionAction())->execute($data))
+    expect(fn (): \App\Models\WalletTransaction => (new RecordWalletTransactionAction())->execute($data))
         ->toThrow(Exception::class, __('validation.custom.wallet_not_found'));
 });
 
-it('throws an error if tranaction amount is more than balance', function () {
+it('throws an error if tranaction amount is more than balance', function (): void {
     $user = User::factory()->create();
 
     $data = RecordTransactionData::from([
@@ -128,10 +128,10 @@ it('throws an error if tranaction amount is more than balance', function () {
         'description' => 'No wallet',
         'metadata'    => [],
     ]);
-    expect(fn () => (new RecordWalletTransactionAction())->execute($data))
+    expect(fn (): \App\Models\WalletTransaction => (new RecordWalletTransactionAction())->execute($data))
         ->toThrow(Exception::class, __('validation.custom.insufficient_balance'));
 });
-it('will it automatically reduce balance if it\'s withdrawal', function () {
+it('will it automatically reduce balance if it\'s withdrawal', function (): void {
     $user = User::factory()->create();
     $user->wallet->update([
         'balance' => 200,
@@ -155,7 +155,7 @@ it('will it automatically reduce balance if it\'s withdrawal', function () {
     expect($user->wallet->balance)->toBe(100);
 });
 
-it('will correctly set risk level', function () {
+it('will correctly set risk level', function (): void {
     $user = User::factory()->create();
     $user->wallet->update([
         'balance' => 100000000,

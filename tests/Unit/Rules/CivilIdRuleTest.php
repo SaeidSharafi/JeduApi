@@ -43,7 +43,7 @@ it('ignore checks if civil_id is empty', function (): void {
     expect($validator->passes())->toBeTrue();
 });
 
-it('ignore algorith validtion for national code if the config is false', function () {
+it('ignore algorith validtion for national code if the config is false', function (): void {
     config(['app.ignore_national_code_validation' => true]);
     $rule      = new App\Rules\CivilIdRule();
     $validator = Validator::make(

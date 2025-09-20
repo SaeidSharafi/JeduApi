@@ -6,8 +6,8 @@ use App\Models\ProductDeliveryOption;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 uses(Tests\AuthTestTrait::class);
-describe('User with permissions', function () {
-    beforeEach(function () {
+describe('User with permissions', function (): void {
+    beforeEach(function (): void {
         $this->product    = App\Models\Product::factory()->create();
         $this->simpleData = ProductDeliveryOption::factory()
             ->make(
@@ -24,7 +24,7 @@ describe('User with permissions', function () {
         $this->teachers               = App\Models\Teacher::factory()->count(3)->create();
         $this->simpleData['teachers'] = $this->teachers->pluck('id')->toArray();
     });
-    it('should return a list of delivery options for a product', function () {
+    it('should return a list of delivery options for a product', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_VIEW_ANY,
         ]);
@@ -89,7 +89,7 @@ describe('User with permissions', function () {
         }
     });
 
-    it('should create a new delivery option for a product', function () {
+    it('should create a new delivery option for a product', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,
         ]);
@@ -122,7 +122,7 @@ describe('User with permissions', function () {
             'teacher_id'                 => $this->teachers[2]->id,
         ]);
     });
-    it('should return the specified delivery option details', function () {
+    it('should return the specified delivery option details', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_VIEW,
         ]);
@@ -134,7 +134,7 @@ describe('User with permissions', function () {
             ['product' => $deliveryOption->product_id, 'delivery_option' => $deliveryOption->id]));
 
         $response->assertOk();
-        $response->assertJson(function (AssertableJson $json) use ($deliveryOption) {
+        $response->assertJson(function (AssertableJson $json) use ($deliveryOption): void {
             $json->where('data.sku', $deliveryOption->sku)
                 ->where('data.id', $deliveryOption->id)
                 ->where('data.name', $deliveryOption->name)
@@ -175,7 +175,7 @@ describe('User with permissions', function () {
                 ->etc();
         });
     });
-    it('should update the specified delivery option', function () {
+    it('should update the specified delivery option', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_UPDATE,
         ]);
@@ -220,7 +220,7 @@ describe('User with permissions', function () {
         ]);
 
     });
-    it('should delete the specified delivery option', function () {
+    it('should delete the specified delivery option', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_DELETE,
         ]);
@@ -232,8 +232,8 @@ describe('User with permissions', function () {
         $response->assertNoContent();
     });
 });
-describe('User without permissions', function () {
-    beforeEach(function () {
+describe('User without permissions', function (): void {
+    beforeEach(function (): void {
         $this->product    = App\Models\Product::factory()->create();
         $this->simpleData = ProductDeliveryOption::factory()
             ->make(
@@ -251,7 +251,7 @@ describe('User without permissions', function () {
         $this->simpleData['teachers'] = $this->teachers->pluck('id')->toArray();
         $this->unauthorized_user();
     });
-    it('should return 403 if user does not have permission to view delivery options', function () {
+    it('should return 403 if user does not have permission to view delivery options', function (): void {
 
         $product = App\Models\Product::factory()->create();
 
@@ -259,7 +259,7 @@ describe('User without permissions', function () {
 
         $response->assertForbidden();
     });
-    it('should return 403 if user does not have permission to create delivery options', function () {
+    it('should return 403 if user does not have permission to create delivery options', function (): void {
 
         $product  = App\Models\Product::factory()->create();
         $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]),
@@ -267,7 +267,7 @@ describe('User without permissions', function () {
 
         $response->assertForbidden();
     });
-    it('should return 403 if user does not have permission to update delivery options', function () {
+    it('should return 403 if user does not have permission to update delivery options', function (): void {
 
         $deliveryOption = ProductDeliveryOption::factory()->create(
             [
@@ -281,7 +281,7 @@ describe('User without permissions', function () {
 
         $response->assertForbidden();
     });
-    it('should return 403 if user does not have permission to delete delivery options', function () {
+    it('should return 403 if user does not have permission to delete delivery options', function (): void {
 
         $deliveryOption = ProductDeliveryOption::factory()->create();
 
@@ -293,8 +293,8 @@ describe('User without permissions', function () {
 
 });
 
-describe('validation', function () {
-    it('should return validation error for required fields', function () {
+describe('validation', function (): void {
+    it('should return validation error for required fields', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,
         ]);
@@ -307,7 +307,7 @@ describe('validation', function () {
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['name']);
     });
-    it('should return error if delivery option doesn\'t belong to fulfillment type', function () {
+    it('should return error if delivery option doesn\'t belong to fulfillment type', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,
         ]);
@@ -327,7 +327,7 @@ describe('validation', function () {
             ->assertJsonValidationErrors(['delivery_method']);
     });
 
-    it('should return correct validation errors for each delivery option details', function () {
+    it('should return correct validation errors for each delivery option details', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,
         ]);

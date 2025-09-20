@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-it('to array', function () {
+it('to array', function (): void {
     $coupon = App\Models\DiscountCoupon::factory()->create()->fresh();
 
     expect($coupon->toArray())
@@ -18,7 +18,7 @@ it('to array', function () {
         ]);
 });
 
-it('promotion relation', function () {
+it('promotion relation', function (): void {
     $coupon    = App\Models\DiscountCoupon::factory()->create();
     $promotion = $coupon->promotion;
 

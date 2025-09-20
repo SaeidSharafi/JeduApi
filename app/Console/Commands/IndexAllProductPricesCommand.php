@@ -31,7 +31,7 @@ class IndexAllProductPricesCommand extends Command
         $progressBar->start();
 
         // Process in chunks to avoid memory exhaustion on large databases
-        $query->select('id')->chunkById(200, function (Collection $products) use ($progressBar) {
+        $query->select('id')->chunkById(200, function (Collection $products) use ($progressBar): void {
             foreach ($products as $product) {
                 if ($this->option('sync')) {
                     // Run the job synchronously

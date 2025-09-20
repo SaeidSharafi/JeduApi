@@ -61,7 +61,7 @@ final class GenerateComplianceReportAction
         }
 
         if ($data->min_amount || $data->max_amount) {
-            $query->where(function ($q) use ($data) {
+            $query->where(function ($q) use ($data): void {
                 if ($data->min_amount) {
                     $q->where(DB::raw('ABS(amount)'), '>=', $data->min_amount);
                 }
@@ -123,8 +123,8 @@ final class GenerateComplianceReportAction
             ->count();
 
         return [
-            'by_type'                => $typeBreakdown->toArray(),
-            'by_source'              => $sourceBreakdown->toArray(),
+            'by_type'                => $typeBreakdown->all(),
+            'by_source'              => $sourceBreakdown->all(),
             'high_risk_transactions' => $highRiskCount,
         ];
     }
@@ -167,7 +167,7 @@ final class GenerateComplianceReportAction
                 ->where(DB::raw('ABS(amount)'), '>=', 50000000)
                 ->count(),
             'off_hours_transactions' => $query->clone()
-                ->where(function ($q) {
+                ->where(function ($q): void {
                     $q->whereTime('created_at', '<', '06:00:00')
                         ->orWhereTime('created_at', '>', '22:00:00');
                 })

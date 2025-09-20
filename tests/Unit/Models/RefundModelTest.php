@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-it('to array', function () {
+it('to array', function (): void {
     $refund = App\Models\Refund::factory()->create();
 
     expect($refund->toArray())->toBeArray()
@@ -20,7 +20,7 @@ it('to array', function () {
         ]);
 });
 
-it('casts', function () {
+it('casts', function (): void {
     $refund = App\Models\Refund::factory()->create();
 
     expect($refund->transaction_details)->toBeArray()
@@ -28,7 +28,7 @@ it('casts', function () {
         ->and($refund->refunded_at)->toBeInstanceOf(Carbon\CarbonImmutable::class);
 });
 
-it('relationships', function () {
+it('relationships', function (): void {
     $refund = App\Models\Refund::factory()->create();
 
     expect($refund->order)->toBeInstanceOf(App\Models\Order::class)

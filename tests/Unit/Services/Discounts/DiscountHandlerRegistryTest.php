@@ -8,12 +8,12 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Cache;
 use Mockery\MockInterface;
 
-describe('DiscountHandlerRegistry', function () {
-    beforeEach(function () {
+describe('DiscountHandlerRegistry', function (): void {
+    beforeEach(function (): void {
         Cache::flush();
     });
 
-    it('loads handlers from cache when not in debug mode and cache exists', function () {
+    it('loads handlers from cache when not in debug mode and cache exists', function (): void {
         config()->set('app.debug', false);
 
         $cachedData = [
@@ -38,7 +38,7 @@ describe('DiscountHandlerRegistry', function () {
         expect($registry->getHandlerConfigMap())->toBe(['Class1' => 'Config1']);
     });
 
-    it('discovers and caches handlers when not in debug mode and no cache exists', function () {
+    it('discovers and caches handlers when not in debug mode and no cache exists', function (): void {
         config()->set('app.debug', false);
         config()->set('discounts.discovery_paths', []);
 
@@ -66,7 +66,7 @@ describe('DiscountHandlerRegistry', function () {
         expect($registry->getHandlerConfigMap())->toBe([]);
     });
 
-    it('discovers and caches handlers in debug mode', function () {
+    it('discovers and caches handlers in debug mode', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', []);
 
@@ -85,13 +85,13 @@ describe('DiscountHandlerRegistry', function () {
         expect($registry->getCartConditionHandlers())->toBe([]);
     });
 
-    it('skips non-existent directories during discovery', function () {
+    it('skips non-existent directories during discovery', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', [
             'App\\NonExistent\\' => 'NonExistent/Path',
         ]);
 
-        $mockFilesystem = $this->mock(Filesystem::class, function (MockInterface $mock) {
+        $mockFilesystem = $this->mock(Filesystem::class, function (MockInterface $mock): void {
             $mock->shouldReceive('isDirectory')
                 ->with(app_path('NonExistent/Path'))
                 ->andReturn(false);
@@ -104,7 +104,7 @@ describe('DiscountHandlerRegistry', function () {
         expect($registry->getCartConditionHandlers())->toBe([]);
     });
 
-    it('discovers handlers from files in configured paths', function () {
+    it('discovers handlers from files in configured paths', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', []);
 
@@ -116,7 +116,7 @@ describe('DiscountHandlerRegistry', function () {
         expect($registry->getCartConditionHandlers())->toBe([]);
     });
 
-    it('skips non-php files during discovery', function () {
+    it('skips non-php files during discovery', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', []);
 
@@ -127,7 +127,7 @@ describe('DiscountHandlerRegistry', function () {
         expect($registry->getCartConditionHandlers())->toBe([]);
     });
 
-    it('skips classes that do not exist', function () {
+    it('skips classes that do not exist', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', []);
 
@@ -138,7 +138,7 @@ describe('DiscountHandlerRegistry', function () {
         expect($registry->getCartConditionHandlers())->toBe([]);
     });
 
-    it('skips classes without DiscountHandlerKey attribute', function () {
+    it('skips classes without DiscountHandlerKey attribute', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', []); // Empty to avoid discovering real handlers
 
@@ -150,7 +150,7 @@ describe('DiscountHandlerRegistry', function () {
         expect($registry->getCartConditionHandlers())->toBe([]);
     });
 
-    it('skips abstract classes that are not instantiable', function () {
+    it('skips abstract classes that are not instantiable', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', []); // Empty to avoid discovering real handlers
 
@@ -161,7 +161,7 @@ describe('DiscountHandlerRegistry', function () {
         expect($registry->getCartConditionHandlers())->toBe([]);
     });
 
-    it('handles reflection exceptions gracefully', function () {
+    it('handles reflection exceptions gracefully', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', []);
 
@@ -172,7 +172,7 @@ describe('DiscountHandlerRegistry', function () {
         expect($registry->getCartConditionHandlers())->toBe([]);
     });
 
-    it('handles config class discovery exceptions gracefully', function () {
+    it('handles config class discovery exceptions gracefully', function (): void {
         config()->set('app.debug', true);
         config()->set('discounts.discovery_paths', []); // Empty to avoid discovering real handlers
 
@@ -183,8 +183,8 @@ describe('DiscountHandlerRegistry', function () {
         expect($registry->getHandlerConfigMap())->toBe([]);
     });
 
-    describe('getHandlerClassByKey', function () {
-        beforeEach(function () {
+    describe('getHandlerClassByKey', function (): void {
+        beforeEach(function (): void {
             $this->registry = new DiscountHandlerRegistry(app(Filesystem::class));
 
             // Use reflection to set the handlers for testing
@@ -207,37 +207,37 @@ describe('DiscountHandlerRegistry', function () {
             $productActionsProperty->setValue($this->registry, ['test_key' => 'TestProductAction']);
         });
 
-        it('returns cart condition handler for cart checkout discount type', function () {
+        it('returns cart condition handler for cart checkout discount type', function (): void {
             $result = $this->registry->getHandlerClassByKey('test_key', 'condition', DiscountTypeEnum::CART_CHECKOUT);
             expect($result)->toBe('TestCartCondition');
         });
 
-        it('returns cart action handler for cart checkout discount type', function () {
+        it('returns cart action handler for cart checkout discount type', function (): void {
             $result = $this->registry->getHandlerClassByKey('test_key', 'action', DiscountTypeEnum::CART_CHECKOUT);
             expect($result)->toBe('TestCartAction');
         });
 
-        it('returns product condition handler for product specific discount type', function () {
+        it('returns product condition handler for product specific discount type', function (): void {
             $result = $this->registry->getHandlerClassByKey('test_key', 'condition', DiscountTypeEnum::PRODUCT_SPECIFIC);
             expect($result)->toBe('TestProductCondition');
         });
 
-        it('returns product action handler for product specific discount type', function () {
+        it('returns product action handler for product specific discount type', function (): void {
             $result = $this->registry->getHandlerClassByKey('test_key', 'action', DiscountTypeEnum::PRODUCT_SPECIFIC);
             expect($result)->toBe('TestProductAction');
         });
 
-        it('returns null for non-existent key', function () {
+        it('returns null for non-existent key', function (): void {
             $result = $this->registry->getHandlerClassByKey('non_existent', 'condition', DiscountTypeEnum::CART_CHECKOUT);
             expect($result)->toBeNull();
         });
 
-        it('returns null for invalid type', function () {
+        it('returns null for invalid type', function (): void {
             $result = $this->registry->getHandlerClassByKey('test_key', 'invalid', DiscountTypeEnum::CART_CHECKOUT);
             expect($result)->toBeNull();
         });
 
-        it('returns null for mismatched discount type and handler type', function () {
+        it('returns null for mismatched discount type and handler type', function (): void {
             $result = $this->registry->getHandlerClassByKey('test_key', 'condition', DiscountTypeEnum::PRODUCT_SPECIFIC);
             expect($result)->toBe('TestProductCondition'); // This should work
 
@@ -246,8 +246,8 @@ describe('DiscountHandlerRegistry', function () {
         });
     });
 
-    describe('individual getter methods', function () {
-        beforeEach(function () {
+    describe('individual getter methods', function (): void {
+        beforeEach(function (): void {
             $this->registry = new DiscountHandlerRegistry(app(Filesystem::class));
 
             // Use reflection to set the handlers for testing
@@ -274,34 +274,34 @@ describe('DiscountHandlerRegistry', function () {
             $configMapProperty->setValue($this->registry, ['Handler1' => 'Config1']);
         });
 
-        it('returns cart condition handler by key', function () {
+        it('returns cart condition handler by key', function (): void {
             expect($this->registry->getCartConditionHandler('key1'))->toBe('CartCondition1');
             expect($this->registry->getCartConditionHandler('non_existent'))->toBeNull();
         });
 
-        it('returns cart action handler by key', function () {
+        it('returns cart action handler by key', function (): void {
             expect($this->registry->getCartActionHandler('key2'))->toBe('CartAction1');
             expect($this->registry->getCartActionHandler('non_existent'))->toBeNull();
         });
 
-        it('returns product condition handler by key', function () {
+        it('returns product condition handler by key', function (): void {
             expect($this->registry->getProductConditionHandler('key3'))->toBe('ProductCondition1');
             expect($this->registry->getProductConditionHandler('non_existent'))->toBeNull();
         });
 
-        it('returns product action handler by key', function () {
+        it('returns product action handler by key', function (): void {
             expect($this->registry->getProductActionHandler('key4'))->toBe('ProductAction1');
             expect($this->registry->getProductActionHandler('non_existent'))->toBeNull();
         });
 
-        it('returns config class for handler', function () {
+        it('returns config class for handler', function (): void {
             expect($this->registry->getConfigClass('Handler1'))->toBe('Config1');
             expect($this->registry->getConfigClass('NonExistentHandler'))->toBeNull();
         });
     });
 
-    describe('getClassNameFromFile', function () {
-        it('generates correct class name from file path', function () {
+    describe('getClassNameFromFile', function (): void {
+        it('generates correct class name from file path', function (): void {
             $registry   = new DiscountHandlerRegistry(app(Filesystem::class));
             $reflection = new ReflectionClass($registry);
             $method     = $reflection->getMethod('getClassNameFromFile');
@@ -316,7 +316,7 @@ describe('DiscountHandlerRegistry', function () {
             expect($result)->toBe('App\\Services\\Discounts\\Cart\\Conditions\\TestCondition');
         });
 
-        it('handles Windows path separators correctly', function () {
+        it('handles Windows path separators correctly', function (): void {
             $registry   = new DiscountHandlerRegistry(app(Filesystem::class));
             $reflection = new ReflectionClass($registry);
             $method     = $reflection->getMethod('getClassNameFromFile');
@@ -334,8 +334,8 @@ describe('DiscountHandlerRegistry', function () {
         });
     });
 
-    describe('cache operations', function () {
-        it('caches discovered handlers correctly', function () {
+    describe('cache operations', function (): void {
+        it('caches discovered handlers correctly', function (): void {
             config()->set('app.debug', false);
             config()->set('discounts.discovery_paths', []);
 
@@ -359,7 +359,7 @@ describe('DiscountHandlerRegistry', function () {
             new DiscountHandlerRegistry(app(Filesystem::class));
         });
 
-        it('loads from cache with partial data', function () {
+        it('loads from cache with partial data', function (): void {
             config()->set('app.debug', false);
 
             $cachedData = [
@@ -382,8 +382,8 @@ describe('DiscountHandlerRegistry', function () {
         });
     });
 
-    describe('discovery edge cases', function () {
-        it('handles empty discovery paths', function () {
+    describe('discovery edge cases', function (): void {
+        it('handles empty discovery paths', function (): void {
             config()->set('app.debug', true);
             config()->set('discounts.discovery_paths', []);
 
@@ -397,14 +397,14 @@ describe('DiscountHandlerRegistry', function () {
             expect($registry->getProductActionHandlers())->toBe([]);
         });
 
-        it('handles multiple discovery paths', function () {
+        it('handles multiple discovery paths', function (): void {
             config()->set('app.debug', true);
             config()->set('discounts.discovery_paths', [
                 'App\\Services\\Discounts\\' => 'Services/Discounts',
                 'App\\CustomDiscounts\\'     => 'CustomDiscounts',
             ]);
 
-            $mockFilesystem = $this->mock(Filesystem::class, function (MockInterface $mock) {
+            $mockFilesystem = $this->mock(Filesystem::class, function (MockInterface $mock): void {
                 $mock->shouldReceive('isDirectory')
                     ->with(app_path('Services/Discounts'))
                     ->andReturn(false);
@@ -420,7 +420,7 @@ describe('DiscountHandlerRegistry', function () {
             expect($registry->getCartConditionHandlers())->toBe([]);
         });
 
-        it('correctly processes existing discount handlers', function () {
+        it('correctly processes existing discount handlers', function (): void {
             config()->set('app.debug', true);
             config()->set('discounts.discovery_paths', [
                 'App\\Services\\Discounts\\' => 'Services/Discounts',
@@ -444,8 +444,8 @@ describe('DiscountHandlerRegistry', function () {
         });
     });
 
-    describe('real handler discovery', function () {
-        it('can discover real handlers when config is set up properly', function () {
+    describe('real handler discovery', function (): void {
+        it('can discover real handlers when config is set up properly', function (): void {
             config()->set('app.debug', true);
             config()->set('discounts.discovery_paths', [
                 'App\\Services\\Discounts\\' => 'Services/Discounts',

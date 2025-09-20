@@ -8,7 +8,7 @@ use Plank\Mediable\Media;
 use App\Enums\PartnerShowInEnum;
 
 uses(Tests\AuthTestTrait::class);
-beforeEach(function () {
+beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
     $this->image1 = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('image1.jpg'))
@@ -18,7 +18,7 @@ beforeEach(function () {
         ->toDisk('public')
         ->upload();
 });
-it('can list partners', function () {
+it('can list partners', function (): void {
     $this->authorized_user([PermissionEnum::PARTNER_VIEW_ANY]);
     $partner = Partner::factory()->create([
         'title'   => 'Test Partner',
@@ -39,7 +39,7 @@ it('can list partners', function () {
             'metadata',
         ]);
 });
-it('can show a partner', function () {
+it('can show a partner', function (): void {
     $this->authorized_user([PermissionEnum::PARTNER_VIEW]);
     $partner = Partner::factory()->create([
         'title'     => 'Test Partner',
@@ -62,7 +62,7 @@ it('can show a partner', function () {
         ->and($responseData['image']['id'])->toBe($this->image1->id)
         ->and($responseData['image']['url'])->toBe($this->image1->getUrl());
 });
-it('can create a partner', function () {
+it('can create a partner', function (): void {
     $this->authorized_user([PermissionEnum::PARTNER_CREATE]);
     $data = [
         'title'   => 'New Partner',
@@ -94,7 +94,7 @@ it('can create a partner', function () {
         ->and($partner->order)->toBe(2)
         ->and($partner->getImage()->id)->toBe($this->image1->id);
 });
-it('can update a partner', function () {
+it('can update a partner', function (): void {
     $this->authorized_user([PermissionEnum::PARTNER_UPDATE]);
     $partner = Partner::factory()->create([
         'title'     => 'Old Partner',
@@ -132,7 +132,7 @@ it('can update a partner', function () {
         ->and($partner->is_active)->toBeFalse()
         ->and($partner->getImage()->id)->toBe($this->image2->id);
 });
-it('can delete a partner', function () {
+it('can delete a partner', function (): void {
     $this->authorized_user([PermissionEnum::PARTNER_DELETE]);
     $partner = Partner::factory()->create()->fresh();
     $partner->attachMedia($this->image1, 'image');
@@ -141,7 +141,7 @@ it('can delete a partner', function () {
     expect(Partner::query()->find($partner->id))->toBeNull()
         ->and(Media::query()->find($this->image1->id))->toBeNull();
 });
-it('validates required fields on create', function () {
+it('validates required fields on create', function (): void {
     $this->authorized_user([PermissionEnum::PARTNER_CREATE]);
     $data = [
         'title' => '',
@@ -153,7 +153,7 @@ it('validates required fields on create', function () {
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['title', 'image', 'order', 'show_in']);
 });
-it('validates required fields on update', function () {
+it('validates required fields on update', function (): void {
     $this->authorized_user([PermissionEnum::PARTNER_UPDATE]);
     $partner = Partner::factory()->create([
         'title'   => 'Partner',

@@ -23,15 +23,15 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
 use Mockery\MockInterface;
 
-describe('CreateRefundAction', function () {
+describe('CreateRefundAction', function (): void {
 
-    beforeEach(function () {
+    beforeEach(function (): void {
         Event::fake([RefundCompletedEvent::class]);
         $this->adminUser = Staff::factory()->create();
 
         // We mock the OrderStatusService as its own tests cover its internal logic.
         // We just want to ensure the action calls it correctly.
-        $this->mock(OrderStatusService::class, function (MockInterface $mock) {
+        $this->mock(OrderStatusService::class, function (MockInterface $mock): void {
             // Allow these methods to be called without throwing an error.
             $mock->shouldReceive('updateEnrollmentStatus')->zeroOrMoreTimes();
             $mock->shouldReceive('updateParentOrderStatus')->zeroOrMoreTimes();
@@ -40,7 +40,7 @@ describe('CreateRefundAction', function () {
 
     // --- Success Cases ---
 
-    it('successfully creates a full refund for a fully paid item', function () {
+    it('successfully creates a full refund for a fully paid item', function (): void {
         // Arrange
         $product = ProductDeliveryOption::factory()
             ->create(['price' => 50000, 'status' => PublicationStatusEnum::PUBLISHED]);
@@ -94,7 +94,7 @@ describe('CreateRefundAction', function () {
         Event::assertDispatched(RefundCompletedEvent::class);
     });
 
-    it('successfully creates a partial refund with a deduction for a pre-paid item', function () {
+    it('successfully creates a partial refund with a deduction for a pre-paid item', function (): void {
         // Arrange
         $order = Order::factory()->withCalculatedTotals([
             ['price' => 100000, 'prepayment_amount' => 20000, 'payment_type' => 'pre_payment', 'total' => 20000],
@@ -141,7 +141,7 @@ describe('CreateRefundAction', function () {
     });
 
     // --- Failure and Validation Cases ---
-    it('successfully creates a with deduction_amount', function () {
+    it('successfully creates a with deduction_amount', function (): void {
         // Arrange
         $product = ProductDeliveryOption::factory()
             ->create(['price' => 50000, 'status' => PublicationStatusEnum::PUBLISHED]);
@@ -194,7 +194,7 @@ describe('CreateRefundAction', function () {
 
         Event::assertDispatched(RefundCompletedEvent::class);
     });
-    it('successfully creates a with both deduction_amount and deduction_percent', function () {
+    it('successfully creates a with both deduction_amount and deduction_percent', function (): void {
         // Arrange
         $product = ProductDeliveryOption::factory()
             ->create(['price' => 50000, 'status' => PublicationStatusEnum::PUBLISHED]);
@@ -247,7 +247,7 @@ describe('CreateRefundAction', function () {
 
         Event::assertDispatched(RefundCompletedEvent::class);
     });
-    it('edgecase secniario wiht both deduction_amount and deduction_percent as null', function () {
+    it('edgecase secniario wiht both deduction_amount and deduction_percent as null', function (): void {
         // Arrange
         $product = ProductDeliveryOption::factory()
             ->create(['price' => 50000, 'status' => PublicationStatusEnum::PUBLISHED]);
@@ -300,7 +300,7 @@ describe('CreateRefundAction', function () {
 
         Event::assertDispatched(RefundCompletedEvent::class);
     });
-    it('throws validation exception when refunding an item from an unpaid order', function () {
+    it('throws validation exception when refunding an item from an unpaid order', function (): void {
         $order     = Order::factory()->withCalculatedTotals([['total' => 50000]])->create(); // No payment
         $orderItem = $order->items->first();
 
@@ -320,7 +320,7 @@ describe('CreateRefundAction', function () {
             ->toThrow(ValidationException::class, __('messages.order.refund.no_completed_payments'));
     });
 
-    it('throws validation exception when refunding an already refunded item', function () {
+    it('throws validation exception when refunding an already refunded item', function (): void {
         $order     = Order::factory()->create();
         $orderItem = OrderItem::factory()->for($order)->create(['status' => OrderItemStatusEnum::REFUNDED]);
         Payment::factory()
@@ -347,7 +347,7 @@ describe('CreateRefundAction', function () {
             ->toThrow(ValidationException::class, __('messages.order.refund.already_refunded'));
     });
 
-    it('throws validation exception if a pending refund request already exists', function () {
+    it('throws validation exception if a pending refund request already exists', function (): void {
         $order = Order::factory()->withCalculatedTotals(
             [
                 [

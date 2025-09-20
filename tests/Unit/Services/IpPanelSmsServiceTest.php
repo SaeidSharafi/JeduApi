@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 // Test setup common to both test groups
-beforeEach(function () {
+beforeEach(function (): void {
     Http::preventStrayRequests();
 
     config([
@@ -20,8 +20,8 @@ beforeEach(function () {
     $this->service = app(IpPanelSmsService::class);
 });
 
-describe('Normal SMS Sending', function () {
-    it('sends sms successfully and creates a log', function () {
+describe('Normal SMS Sending', function (): void {
+    it('sends sms successfully and creates a log', function (): void {
         $to      = ['09123456789'];
         $message = 'Test message';
         Http::fake([
@@ -37,7 +37,7 @@ describe('Normal SMS Sending', function () {
     });
 
     // We can group error tests for conciseness
-    it('throws exception on client and server errors and still creates a log', function (int $statusCode, ?array $body) {
+    it('throws exception on client and server errors and still creates a log', function (int $statusCode, ?array $body): void {
         Http::fake([
             'api2.ippanel.com/*' => Http::response($body, $statusCode),
         ]);
@@ -58,7 +58,7 @@ describe('Normal SMS Sending', function () {
         '500 Server Error'  => [500, null],
     ]);
 
-    it('handles sandbox mode correctly', function () {
+    it('handles sandbox mode correctly', function (): void {
         config(['services.ippanel.sand_box' => true]);
         Http::fake(); // Assert that NO http requests are sent
 
@@ -70,7 +70,7 @@ describe('Normal SMS Sending', function () {
             ->and($smsLog->data['message_id'])->toBeString();
     });
 
-    it('throws exception if api key or from is not set', function () {
+    it('throws exception if api key or from is not set', function (): void {
         // Arrange
         config([
             'services.ippanel.api_key' => null,
@@ -83,7 +83,7 @@ describe('Normal SMS Sending', function () {
             ->toThrow(Exception::class, 'IPPanel API key or sender number is not configured.');
     });
 
-    it('allows overriding config values with setters', function () {
+    it('allows overriding config values with setters', function (): void {
         config([
             'services.ippanel.api_key' => 'config-key',
             'services.ippanel.from'    => '1111',
@@ -106,8 +106,8 @@ describe('Normal SMS Sending', function () {
     });
 });
 
-describe('Pattern SMS Sending', function () {
-    it('sends pattern sms successfully and creates a log', function () {
+describe('Pattern SMS Sending', function (): void {
+    it('sends pattern sms successfully and creates a log', function (): void {
         Http::fake([
             'api2.ippanel.com/*' => Http::response(['data' => ['message_id' => 'fake-id']], 200),
         ]);
@@ -119,7 +119,7 @@ describe('Pattern SMS Sending', function () {
             ->and($smsLog->type)->toBe('pattern');
     });
 
-    it('throws exception on client and server errors for patterns and still logs', function (int $statusCode, ?array $body) {
+    it('throws exception on client and server errors for patterns and still logs', function (int $statusCode, ?array $body): void {
         Http::fake([
             'api2.ippanel.com/*' => Http::response($body, $statusCode),
         ]);

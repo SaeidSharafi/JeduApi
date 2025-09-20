@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 uses(Tests\AuthTestTrait::class);
-it('show profile', function () {
+it('show profile', function (): void {
     $user     = App\Models\User::factory()->create();
     $response = $this->customer($user)
         ->getJson(route('api.v1.shop.profile.show'));
@@ -28,7 +28,7 @@ it('show profile', function () {
     ]);
 
 });
-it('update all fields on newly created profile', function () {
+it('update all fields on newly created profile', function (): void {
     $user = App\Models\User::create([
         'phone' => '09123456789',
     ]);
@@ -66,7 +66,7 @@ it('update all fields on newly created profile', function () {
     ]);
 
 });
-it('update all fields expcept civil id related fields when they are already filled', function () {
+it('update all fields expcept civil id related fields when they are already filled', function (): void {
     $user = App\Models\User::create([
         'phone'         => '09123456789',
         'civil_id'      => '1122334455',

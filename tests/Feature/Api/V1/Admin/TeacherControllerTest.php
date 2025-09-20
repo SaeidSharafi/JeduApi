@@ -15,7 +15,7 @@ beforeEach(function (): void {
 });
 
 describe('list filters', function (): void {
-    it('should filter by first name', function () {
+    it('should filter by first name', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_VIEW_ANY]);
         App\Models\Teacher::factory(20)->create();
         App\Models\Teacher::factory()->create(['first_name' => 'JohnFirstName']);
@@ -25,7 +25,7 @@ describe('list filters', function (): void {
         $response->assertJsonFragment(['first_name' => 'JohnFirstName']);
     });
 
-    it('should filter by last name', function () {
+    it('should filter by last name', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_VIEW_ANY]);
         App\Models\Teacher::factory(20)->create();
         App\Models\Teacher::factory()->create(['last_name' => 'DoeLastName']);
@@ -34,7 +34,7 @@ describe('list filters', function (): void {
         $response->assertJsonCount(1, 'data.data');
         $response->assertJsonFragment(['last_name' => 'DoeLastName']);
     });
-    it('should filter by email', function () {
+    it('should filter by email', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_VIEW_ANY]);
         App\Models\Teacher::factory(20)->create();
         App\Models\Teacher::factory()->create(['email' => 'teacher@example.com']);
@@ -43,7 +43,7 @@ describe('list filters', function (): void {
         $response->assertJsonCount(1, 'data.data');
         $response->assertJsonFragment(['email' => 'teacher@example.com']);
     });
-    it('should filter by phone', function () {
+    it('should filter by phone', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_VIEW_ANY]);
         App\Models\Teacher::factory(20)->create();
         App\Models\Teacher::factory()->create(['phone' => '1234567890']);
@@ -52,7 +52,7 @@ describe('list filters', function (): void {
         $response->assertJsonCount(1, 'data.data');
         $response->assertJsonFragment(['phone' => '1234567890']);
     });
-    it('should filter by first name and last name', function () {
+    it('should filter by first name and last name', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_VIEW_ANY]);
         App\Models\Teacher::factory(20)->create();
         App\Models\Teacher::factory()->create(['first_name' => 'John', 'last_name' => 'Doe']);
@@ -63,8 +63,8 @@ describe('list filters', function (): void {
     });
 });
 
-describe('TeacherController Test', function () {
-    it('should list teachers', function () {
+describe('TeacherController Test', function (): void {
+    it('should list teachers', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_VIEW_ANY]);
         App\Models\Teacher::factory(20)->create();
         $response = $this->getJson(route('api.v1.admin.teacher.index'));
@@ -72,7 +72,7 @@ describe('TeacherController Test', function () {
         $response->assertJsonCount(15, 'data.data');
     });
 
-    it('should create a teacher', function () {
+    it('should create a teacher', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_CREATE]);
         $data          = App\Models\Teacher::factory()->make();
         $data['media'] = [
@@ -84,7 +84,7 @@ describe('TeacherController Test', function () {
         $this->assertDatabaseHas('teachers', ['email' => $data->email]);
     });
 
-    it('should show a teacher', function () {
+    it('should show a teacher', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_VIEW]);
         $teacher = App\Models\Teacher::factory()->create();
         $teacher->attachMedia($this->profile->id, 'profile');
@@ -92,14 +92,14 @@ describe('TeacherController Test', function () {
         $response->assertOk();
         $response->assertJsonFragment(['email' => $teacher->email]);
         $response
-            ->assertJson(function (AssertableJson $json) {
+            ->assertJson(function (AssertableJson $json): void {
                 $json->has('data.media.profile')
                     ->where('data.media.profile.0.id', $this->profile->id)
                     ->etc();
             });
     });
 
-    it('should update a teacher', function () {
+    it('should update a teacher', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_UPDATE]);
         $teacher       = App\Models\Teacher::factory()->create();
         $data          = App\Models\Teacher::factory()->make();
@@ -117,7 +117,7 @@ describe('TeacherController Test', function () {
         ]);
     });
 
-    it('should delete a teacher', function () {
+    it('should delete a teacher', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_DELETE]);
         $teacher = App\Models\Teacher::factory()->create();
         $teacher->attachMedia($this->profile->id, 'profile');
@@ -132,7 +132,7 @@ describe('TeacherController Test', function () {
         $this->assertDatabaseMissing('media', ['id' => $this->profile->id]);
 
     });
-    it('should not delete a teacher with related data', function () {
+    it('should not delete a teacher with related data', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_DELETE]);
         $teacher  = App\Models\Teacher::factory()->create();
         $delivery = App\Models\ProductDeliveryOption::factory()->create();

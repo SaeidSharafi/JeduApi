@@ -6,7 +6,7 @@ use App\Models\Slider;
 use Plank\Mediable\Media;
 
 uses(Tests\AuthTestTrait::class);
-beforeEach(function () {
+beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
     $this->image1 = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('image1.jpg'))
@@ -16,7 +16,7 @@ beforeEach(function () {
         ->toDisk('public')
         ->upload();
 });
-it('can list sliders', function () {
+it('can list sliders', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::SLIDER_VIEW_ANY->value]);
     $slider = Slider::factory()->create([
         'title'   => 'Test Slider',
@@ -40,7 +40,7 @@ it('can list sliders', function () {
         );
 });
 
-it('can show a slider', function () {
+it('can show a slider', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::SLIDER_VIEW->value]);
     $slider = Slider::factory()->create([
         'title'     => 'Test Slider',
@@ -65,7 +65,7 @@ it('can show a slider', function () {
         ->and($responseData['image']['url'])->toBe($this->image1->getUrl());
 });
 
-it('can create a slider', function () {
+it('can create a slider', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::SLIDER_CREATE->value]);
     $data = [
         'title'   => 'New Slider',
@@ -98,7 +98,7 @@ it('can create a slider', function () {
 
 });
 
-it('can update a slider', function () {
+it('can update a slider', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::SLIDER_UPDATE->value]);
 
     $slider = Slider::factory()->create([
@@ -133,7 +133,7 @@ it('can update a slider', function () {
         ->and($slider->getImage()->id)->toBe($this->image2->id);
 });
 
-it('can delete a slider', function () {
+it('can delete a slider', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::SLIDER_DELETE->value]);
     $slider = Slider::factory()->create()->fresh();
     $slider->attachMedia($this->image1, 'image');
@@ -143,7 +143,7 @@ it('can delete a slider', function () {
         ->and(Media::query()->find($this->image1->id))->toBeNull();
 });
 
-it('validates required fields on create', function () {
+it('validates required fields on create', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::SLIDER_CREATE->value]);
     $data = [
         'title' => '',
@@ -155,7 +155,7 @@ it('validates required fields on create', function () {
         ->assertJsonValidationErrors(['title', 'image', 'order']);
 });
 
-it('validates required fields on update', function () {
+it('validates required fields on update', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::SLIDER_UPDATE->value]);
     $slider = Slider::factory()->create([
         'title'   => 'Slider',

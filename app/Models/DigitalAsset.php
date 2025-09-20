@@ -41,15 +41,6 @@ final class DigitalAsset extends Model implements ProductableContract, Reviewabl
         'created_by',
     ];
 
-    protected $casts = [
-        'status'                  => \App\Enums\PublicationStatusEnum::class,
-        'is_attachable_to_course' => 'boolean',
-        'published_at'            => 'datetime',
-        // with time zone
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
-
     /**
      * @return MorphToMany<Category,$this>
      */
@@ -64,5 +55,16 @@ final class DigitalAsset extends Model implements ProductableContract, Reviewabl
     public function courses(): MorphToMany
     {
         return $this->morphedByMany(Course::class, 'assetable');
+    }
+    protected function casts(): array
+    {
+        return [
+            'status'                  => \App\Enums\PublicationStatusEnum::class,
+            'is_attachable_to_course' => 'boolean',
+            'published_at'            => 'datetime',
+            // with time zone
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
     }
 }

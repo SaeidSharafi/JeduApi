@@ -68,7 +68,7 @@ final class OrderController extends Controller
             ->defaultSort('-created_at')
             ->with(['items.vendor', 'payments'])
             ->withSum([
-                'payments as completed_payments_sum_amount' => function (Builder $query) {
+                'payments as completed_payments_sum_amount' => function (Builder $query): void {
                     $query->where('status', PaymentStatusEnum::COMPLETED);
                 },
             ], 'amount')

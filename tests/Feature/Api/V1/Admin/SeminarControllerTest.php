@@ -267,7 +267,7 @@ describe('SeminarController', function (): void {
             ->assertJsonFragment(['full_name' => $seminar->full_name])
             ->assertJsonFragment(['short_name' => $seminar->short_name])
             ->assertJsonFragment(['slug' => $seminar->slug])
-            ->assertJson(function (AssertableJson $json) use ($digitalAssets, $sortedCategories) {
+            ->assertJson(function (AssertableJson $json) use ($digitalAssets, $sortedCategories): void {
                 $json
                     ->where('data.categories', $sortedCategories->map(fn ($category): array => [
                         'id'     => $category->id,

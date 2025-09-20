@@ -41,7 +41,7 @@ final readonly class ProductPriceService
             );
         }
         $prices = [];
-        $deliveryOptions->each(function ($deliveryOption) use (&$prices){
+        $deliveryOptions->each(function ($deliveryOption) use (&$prices): void{
             $priceData = $this->getPriceDataForOption($deliveryOption);
             $prices[] = $priceData;
         });
@@ -143,7 +143,7 @@ final readonly class ProductPriceService
         }
 
         $prices = $options->map(
-            fn(ProductDeliveryOption $option) => $this->getPriceDataForOption($option)->current_price
+            fn(ProductDeliveryOption $option): int => $this->getPriceDataForOption($option)->current_price
         );
 
         return [

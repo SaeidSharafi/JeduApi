@@ -17,10 +17,10 @@ final class PromotionFinder
         // This is the exact same query logic from the old service.
         $query = DiscountPromotion::query()
             ->where('is_active', true)
-            ->where(function ($q) {
+            ->where(function ($q): void {
                 $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
             })
-            ->where(function ($q) {
+            ->where(function ($q): void {
                 $q->whereNull('ends_at')->orWhere('ends_at', '>=', now());
             })
             ->with('rules');

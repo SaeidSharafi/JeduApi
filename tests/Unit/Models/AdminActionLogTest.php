@@ -6,9 +6,9 @@ use App\Models\AdminActionLog;
 use App\Models\Staff;
 use App\Models\User;
 
-describe('AdminActionLog Model', function () {
+describe('AdminActionLog Model', function (): void {
 
-    it('can be created with factory', function () {
+    it('can be created with factory', function (): void {
         $log = AdminActionLog::factory()->create();
 
         expect($log)->toBeInstanceOf(AdminActionLog::class);
@@ -21,7 +21,7 @@ describe('AdminActionLog Model', function () {
         expect($log->response_status)->toBeInt();
     });
 
-    it('has correct fillable attributes', function () {
+    it('has correct fillable attributes', function (): void {
         $fillable = [
             'admin_id',
             'action_type',
@@ -42,7 +42,7 @@ describe('AdminActionLog Model', function () {
         expect($log->getFillable())->toBe($fillable);
     });
 
-    it('casts attributes correctly', function () {
+    it('casts attributes correctly', function (): void {
         $log = AdminActionLog::factory()->create([
             'request_data'    => ['key' => 'value'],
             'metadata'        => ['test' => 'data'],
@@ -55,7 +55,7 @@ describe('AdminActionLog Model', function () {
         expect($log->created_at?->utc())->toBeInstanceOf(Carbon\CarbonImmutable::class);
     });
 
-    it('belongs to admin (staff)', function () {
+    it('belongs to admin (staff)', function (): void {
         $staff = Staff::factory()->create();
         $log   = AdminActionLog::factory()->create(['admin_id' => $staff->id]);
 
@@ -63,7 +63,7 @@ describe('AdminActionLog Model', function () {
         expect($log->admin->id)->toBe($staff->id);
     });
 
-    it('has polymorphic resource relationship', function () {
+    it('has polymorphic resource relationship', function (): void {
         $user = User::factory()->create();
         $log  = AdminActionLog::factory()->create([
             'resource_type' => User::class,
@@ -75,7 +75,7 @@ describe('AdminActionLog Model', function () {
     });
 
     // Business Logic Tests
-    it('identifies high risk correctly', function () {
+    it('identifies high risk correctly', function (): void {
         $highRiskLog = AdminActionLog::factory()->create(['risk_level' => 'high']);
         $lowRiskLog  = AdminActionLog::factory()->create(['risk_level' => 'low']);
 
@@ -83,7 +83,7 @@ describe('AdminActionLog Model', function () {
         expect($lowRiskLog->isHighRisk())->toBeFalse();
     });
 
-    it('identifies medium risk correctly', function () {
+    it('identifies medium risk correctly', function (): void {
         $mediumRiskLog = AdminActionLog::factory()->create(['risk_level' => 'medium']);
         $lowRiskLog    = AdminActionLog::factory()->create(['risk_level' => 'low']);
 
@@ -91,7 +91,7 @@ describe('AdminActionLog Model', function () {
         expect($lowRiskLog->isMediumRisk())->toBeFalse();
     });
 
-    it('identifies low risk correctly', function () {
+    it('identifies low risk correctly', function (): void {
         $lowRiskLog  = AdminActionLog::factory()->create(['risk_level' => 'low']);
         $highRiskLog = AdminActionLog::factory()->create(['risk_level' => 'high']);
 
@@ -99,7 +99,7 @@ describe('AdminActionLog Model', function () {
         expect($highRiskLog->isLowRisk())->toBeFalse();
     });
 
-    it('identifies successful responses correctly', function () {
+    it('identifies successful responses correctly', function (): void {
         $successLog     = AdminActionLog::factory()->create(['response_status' => 200]);
         $errorLog       = AdminActionLog::factory()->create(['response_status' => 404]);
         $serverErrorLog = AdminActionLog::factory()->create(['response_status' => 500]);
@@ -109,7 +109,7 @@ describe('AdminActionLog Model', function () {
         expect($serverErrorLog->isSuccessful())->toBeFalse();
     });
 
-    it('identifies wallet related actions correctly', function () {
+    it('identifies wallet related actions correctly', function (): void {
         $walletRouteLog    = AdminActionLog::factory()->create(['route_name' => 'admin.wallet.transaction.create']);
         $walletResourceLog = AdminActionLog::factory()->create(['resource_type' => 'App\Models\WalletTransaction']);
         $nonWalletLog      = AdminActionLog::factory()->create([
@@ -122,7 +122,7 @@ describe('AdminActionLog Model', function () {
         expect($nonWalletLog->isWalletRelated())->toBeFalse();
     });
 
-    it('generates action summary correctly', function () {
+    it('generates action summary correctly', function (): void {
         $log = AdminActionLog::factory()->create([
             'action_type'   => 'create',
             'resource_type' => 'App\Models\User',
@@ -132,7 +132,7 @@ describe('AdminActionLog Model', function () {
         expect($log->getActionSummary())->toBe('Create User #123');
     });
 
-    it('generates action summary without resource ID', function () {
+    it('generates action summary without resource ID', function (): void {
         $log = AdminActionLog::factory()->create([
             'action_type'   => 'view',
             'resource_type' => 'App\Models\User',
@@ -143,7 +143,7 @@ describe('AdminActionLog Model', function () {
     });
 
     // Scopes Tests
-    it('filters high risk logs with scope', function () {
+    it('filters high risk logs with scope', function (): void {
         AdminActionLog::factory()->create(['risk_level' => 'high']);
         AdminActionLog::factory()->create(['risk_level' => 'medium']);
         AdminActionLog::factory()->create(['risk_level' => 'low']);
@@ -154,7 +154,7 @@ describe('AdminActionLog Model', function () {
         expect($highRiskLogs->first()->risk_level)->toBe('high');
     });
 
-    it('filters wallet actions with scope', function () {
+    it('filters wallet actions with scope', function (): void {
         AdminActionLog::factory()->create(['route_name' => 'admin.wallet.transactions']);
         AdminActionLog::factory()->create(['resource_type' => 'App\Models\WalletTransaction']);
         AdminActionLog::factory()->create(['route_name' => 'admin.users.index',
@@ -165,7 +165,7 @@ describe('AdminActionLog Model', function () {
         expect($walletLogs)->toHaveCount(2);
     });
 
-    it('filters by admin with scope', function () {
+    it('filters by admin with scope', function (): void {
         $admin = Staff::factory()->create();
         AdminActionLog::factory()->create(['admin_id' => $admin->id]);
         AdminActionLog::factory()->create(['admin_id' => $admin->id]);
@@ -174,10 +174,10 @@ describe('AdminActionLog Model', function () {
         $adminLogs = AdminActionLog::byAdmin($admin->id)->get();
 
         expect($adminLogs)->toHaveCount(2);
-        expect($adminLogs->every(fn ($log) => $log->admin_id === $admin->id))->toBeTrue();
+        expect($adminLogs->every(fn ($log): bool => $log->admin_id === $admin->id))->toBeTrue();
     });
 
-    it('filters by date range with scope', function () {
+    it('filters by date range with scope', function (): void {
         $startDate = now()->subDays(5);
         $endDate   = now()->subDays(2);
 
@@ -191,7 +191,7 @@ describe('AdminActionLog Model', function () {
         expect($rangeLogs)->toHaveCount(2);
     });
 
-    it('filters by risk level with scope', function () {
+    it('filters by risk level with scope', function (): void {
         AdminActionLog::factory()->create(['risk_level' => 'high']);
         AdminActionLog::factory()->create(['risk_level' => 'high']);
         AdminActionLog::factory()->create(['risk_level' => 'medium']);
@@ -199,10 +199,10 @@ describe('AdminActionLog Model', function () {
         $highRiskLogs = AdminActionLog::byRiskLevel('high')->get();
 
         expect($highRiskLogs)->toHaveCount(2);
-        expect($highRiskLogs->every(fn ($log) => $log->risk_level === 'high'))->toBeTrue();
+        expect($highRiskLogs->every(fn ($log): bool => $log->risk_level === 'high'))->toBeTrue();
     });
 
-    it('serializes to array correctly', function () {
+    it('serializes to array correctly', function (): void {
         $staff = Staff::factory()->create();
         $log   = AdminActionLog::factory()->create([
             'admin_id'        => $staff->id,

@@ -7,8 +7,8 @@ use App\Models\Order;
 use App\Models\Refund;
 
 uses(Tests\AuthTestTrait::class);
-describe('RefundUpdateStatusController', function () {
-    it('should update the status of a refund', function () {
+describe('RefundUpdateStatusController', function (): void {
+    it('should update the status of a refund', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::REFUND_UPDATE_STATUS]);
         $order = Order::factory()
             ->withCalculatedTotals([
@@ -61,7 +61,7 @@ describe('RefundUpdateStatusController', function () {
 
     });
 
-    it('should not update the status of a non-pending refund', function () {
+    it('should not update the status of a non-pending refund', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::REFUND_UPDATE_STATUS]);
         $order = Order::factory()
             ->withCalculatedTotals([
@@ -97,7 +97,7 @@ describe('RefundUpdateStatusController', function () {
         $response->assertJsonValidationErrors(['status']);
     });
 
-    it('should not update the status of a refund without permission', function () {
+    it('should not update the status of a refund without permission', function (): void {
         $this->unauthorized_user();
         $order = Order::factory()
             ->withCalculatedTotals([

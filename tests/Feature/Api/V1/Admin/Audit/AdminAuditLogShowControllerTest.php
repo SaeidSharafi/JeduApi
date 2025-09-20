@@ -10,14 +10,14 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-describe('AdminAuditLogShowController', function () {
+describe('AdminAuditLogShowController', function (): void {
 
-    beforeEach(function () {
+    beforeEach(function (): void {
         $this->admin   = Staff::factory()->create();
         $this->baseUrl = '/api/v1/admin/audit/admin-actions';
     });
 
-    it('can show specific admin audit log with proper permissions', function () {
+    it('can show specific admin audit log with proper permissions', function (): void {
         $log = AdminActionLog::factory()->create([
             'action_type'     => 'create',
             'resource_type'   => 'App\\Models\\User',
@@ -75,7 +75,7 @@ describe('AdminAuditLogShowController', function () {
         expect($data['metadata'])->toBe(['test' => 'data']);
     });
 
-    it('requires permission to view audit log details', function () {
+    it('requires permission to view audit log details', function (): void {
         $log = AdminActionLog::factory()->create();
 
         $response = $this->authorized_user([])
@@ -84,7 +84,7 @@ describe('AdminAuditLogShowController', function () {
         $response->assertForbidden();
     });
 
-    it('includes admin relationship in response', function () {
+    it('includes admin relationship in response', function (): void {
         $admin = Staff::factory()->create(['name' => 'John Doe']);
         $log   = AdminActionLog::factory()->create(['admin_id' => $admin->id]);
 
@@ -98,7 +98,7 @@ describe('AdminAuditLogShowController', function () {
         expect($data['admin']['id'])->toBe($admin->id);
     });
 
-    it('includes resource relationship when resource exists', function () {
+    it('includes resource relationship when resource exists', function (): void {
         $user = User::factory()->create(['first_name' => 'Test', 'last_name' => 'User']);
         $log  = AdminActionLog::factory()->create([
             'resource_type' => User::class,
@@ -116,7 +116,7 @@ describe('AdminAuditLogShowController', function () {
         expect($data['resource']['id'])->toBe($user->id);
     });
 
-    it('handles missing resource gracefully', function () {
+    it('handles missing resource gracefully', function (): void {
         $log = AdminActionLog::factory()->create([
             'resource_type' => User::class,
             'resource_id'   => 99999, // Non-existent user
@@ -131,7 +131,7 @@ describe('AdminAuditLogShowController', function () {
         expect($data['resource'] ?? null)->toBeNull();
     });
 
-    it('handles log with no resource relationship', function () {
+    it('handles log with no resource relationship', function (): void {
         $log = AdminActionLog::factory()->create([
             'resource_type' => null,
             'resource_id'   => null,
@@ -146,14 +146,14 @@ describe('AdminAuditLogShowController', function () {
         expect($data['resource_id'])->toBeNull();
     });
 
-    it('returns 404 for non-existent audit log', function () {
+    it('returns 404 for non-existent audit log', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
             ->getJson($this->baseUrl.'/99999');
 
         $response->assertNotFound();
     });
 
-    it('shows correct data types for all fields', function () {
+    it('shows correct data types for all fields', function (): void {
         $log = AdminActionLog::factory()->create([
             'request_data'    => ['key' => 'value'],
             'metadata'        => ['test' => 'data'],
@@ -181,7 +181,7 @@ describe('AdminAuditLogShowController', function () {
         expect($data['created_at'])->toBeString();
     });
 
-    it('shows high risk log correctly', function () {
+    it('shows high risk log correctly', function (): void {
         $log = AdminActionLog::factory()->create(['risk_level' => 'high']);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
@@ -192,7 +192,7 @@ describe('AdminAuditLogShowController', function () {
         expect($data['risk_level'])->toBe('high');
     });
 
-    it('shows wallet-related log with correct data', function () {
+    it('shows wallet-related log with correct data', function (): void {
         $log = AdminActionLog::factory()->create([
             'route_name'    => 'admin.wallet.transaction.create',
             'resource_type' => 'App\\Models\\WalletTransaction',
@@ -207,7 +207,7 @@ describe('AdminAuditLogShowController', function () {
         expect($data['resource_type'])->toBe('App\\Models\\WalletTransaction');
     });
 
-    it('shows error response status correctly', function () {
+    it('shows error response status correctly', function (): void {
         $log = AdminActionLog::factory()->create(['response_status' => 500]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_ADMIN_ACTIONS_VIEW])
@@ -218,7 +218,7 @@ describe('AdminAuditLogShowController', function () {
         expect($data['response_status'])->toBe(500);
     });
 
-    it('handles different HTTP methods', function () {
+    it('handles different HTTP methods', function (): void {
         $methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
         foreach ($methods as $method) {
@@ -233,7 +233,7 @@ describe('AdminAuditLogShowController', function () {
         }
     });
 
-    it('shows complex request data correctly', function () {
+    it('shows complex request data correctly', function (): void {
         $complexRequestData = [
             'user' => [
                 'name'        => 'John Doe',

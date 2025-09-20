@@ -20,7 +20,7 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->customer = User::factory()->create();
     $this->user     = Staff::factory()->create();
 
@@ -45,8 +45,8 @@ beforeEach(function () {
     ]);
 });
 
-describe('TriggerCampaignAllocationAction', function () {
-    it('successfully processes manual campaign allocation', function () {
+describe('TriggerCampaignAllocationAction', function (): void {
+    it('successfully processes manual campaign allocation', function (): void {
         $data = new TriggerCampaignAllocationData(
             trigger_type: 'manual',
             trigger_event: null,
@@ -78,7 +78,7 @@ describe('TriggerCampaignAllocationAction', function () {
         });
     });
 
-    it('successfully processes event-based campaign allocation', function () {
+    it('successfully processes event-based campaign allocation', function (): void {
         $data = new TriggerCampaignAllocationData(
             trigger_type: 'event',
             trigger_event: 'user_registration',
@@ -109,7 +109,7 @@ describe('TriggerCampaignAllocationAction', function () {
         });
     });
 
-    it('prevents duplicate manual allocations for same campaign', function () {
+    it('prevents duplicate manual allocations for same campaign', function (): void {
         // Create existing manual allocation
         $existingTransaction = WalletTransaction::factory()->create([
             'user_id'     => $this->customer->id,
@@ -133,7 +133,7 @@ describe('TriggerCampaignAllocationAction', function () {
         expect($this->campaign->fresh()->total_usage_count)->toBe(0); // Should not increment
     });
 
-    it('prevents duplicate event-based allocations for same trigger event', function () {
+    it('prevents duplicate event-based allocations for same trigger event', function (): void {
         // Create existing event allocation
         $existingTransaction = WalletTransaction::factory()->create([
             'user_id'     => $this->customer->id,
@@ -156,7 +156,7 @@ describe('TriggerCampaignAllocationAction', function () {
         expect($this->campaign->fresh()->total_usage_count)->toBe(0); // Should not increment
     });
 
-    it('allows different event-based allocations for different trigger events', function () {
+    it('allows different event-based allocations for different trigger events', function (): void {
         // Create existing event allocation for registration
         WalletTransaction::factory()->create([
             'user_id'     => $this->customer->id,
@@ -192,7 +192,7 @@ describe('TriggerCampaignAllocationAction', function () {
         expect($this->campaign->fresh()->total_usage_count)->toBe(1);
     });
 
-    it('throws exception when user does not have wallet', function () {
+    it('throws exception when user does not have wallet', function (): void {
         $userWithoutWallet = User::factory()->create();
         $userWithoutWallet->wallet->delete();
         $userWithoutWallet->refresh();
@@ -205,7 +205,7 @@ describe('TriggerCampaignAllocationAction', function () {
             ->toThrow(CustomValidationException::class);
     });
 
-    it('throws exception when campaign is inactive', function () {
+    it('throws exception when campaign is inactive', function (): void {
         $this->campaign->update(['is_active' => false]);
 
         $data = new TriggerCampaignAllocationData(
@@ -217,7 +217,7 @@ describe('TriggerCampaignAllocationAction', function () {
             ->toThrow(CustomValidationException::class);
     });
 
-    it('throws exception when campaign has expired', function () {
+    it('throws exception when campaign has expired', function (): void {
         $this->campaign->update([
             'starts_at' => Carbon::now()->subMonth(),
             'ends_at'   => Carbon::now()->subDay(),
@@ -232,7 +232,7 @@ describe('TriggerCampaignAllocationAction', function () {
             ->toThrow(CustomValidationException::class);
     });
 
-    it('throws exception when campaign has reached total usage limit', function () {
+    it('throws exception when campaign has reached total usage limit', function (): void {
         $this->campaign->update([
             'usage_limit_total' => 5,
             'total_usage_count' => 5,
@@ -247,7 +247,7 @@ describe('TriggerCampaignAllocationAction', function () {
             ->toThrow(CustomValidationException::class);
     });
 
-    it('throws exception when user has reached their usage limit', function () {
+    it('throws exception when user has reached their usage limit', function (): void {
         $this->campaign->update(['usage_limit_per_user' => 1]);
 
         // Create existing transaction for user

@@ -9,7 +9,7 @@ use Spatie\Permission\Models\Permission;
 uses(Tests\AuthTestTrait::class);
 
 describe('permissions listing', function (): void {
-    it('should return permissions list for authenticated staff', function () {
+    it('should return permissions list for authenticated staff', function (): void {
         $this->authorized_user();
 
         $response = $this->getJson(route('api.v1.admin.permission.index'));
@@ -29,7 +29,7 @@ describe('permissions listing', function (): void {
             });
     });
 
-    it('should group permissions by resource correctly', function () {
+    it('should group permissions by resource correctly', function (): void {
         $this->authorized_user();
 
         $response = $this->getJson(route('api.v1.admin.permission.index'));
@@ -62,7 +62,7 @@ describe('permissions listing', function (): void {
             });
     });
 
-    it('should include permission details in response', function () {
+    it('should include permission details in response', function (): void {
         $this->authorized_user();
 
         $response = $this->getJson(route('api.v1.admin.permission.index'));
@@ -85,13 +85,13 @@ describe('permissions listing', function (): void {
             ->and($firstStaffPermission['name'])->toContain('staff.');
     });
 
-    it('should not return permissions list without authentication', function () {
+    it('should not return permissions list without authentication', function (): void {
         $response = $this->getJson(route('api.v1.admin.permission.index'));
 
         $response->assertUnauthorized();
     });
 
-    it('should handle empty permissions gracefully', function () {
+    it('should handle empty permissions gracefully', function (): void {
         // Delete all staff permissions
         Permission::where('guard_name', 'staff')->delete();
 
@@ -109,7 +109,7 @@ describe('permissions listing', function (): void {
             });
     });
 
-    it('should only return permissions for staff guard', function () {
+    it('should only return permissions for staff guard', function (): void {
         // Create a permission for a different guard
         Permission::create(['name' => 'permission_for_user_guard', 'guard_name' => 'user']);
         Permission::create(['name' => 'permission_for_staff_guard', 'guard_name' => 'staff']);
@@ -126,7 +126,7 @@ describe('permissions listing', function (): void {
         }
     });
 
-    it('should work with different guard when specified', function () {
+    it('should work with different guard when specified', function (): void {
         // Create permissions for user guard
         Permission::create(['name' => 'profile.view', 'guard_name' => 'user']);
         Permission::create(['name' => 'profile.update', 'guard_name' => 'user']);
@@ -143,7 +143,7 @@ describe('permissions listing', function (): void {
             ->and($result['profile']['permissions'])->not->toBeEmpty();
     });
 
-    it('should format permission data correctly using PermissionData', function () {
+    it('should format permission data correctly using PermissionData', function (): void {
         $this->authorized_user();
 
         $response = $this->getJson(route('api.v1.admin.permission.index'));
@@ -164,7 +164,7 @@ describe('permissions listing', function (): void {
         expect($firstPermission['resourceKey'])->toBe($nameParts[0]);
     });
 
-    it('should use correct HTTP method', function () {
+    it('should use correct HTTP method', function (): void {
         $this->authorized_user();
 
         // GET should work
@@ -186,11 +186,11 @@ describe('permissions listing', function (): void {
 });
 
 describe('permissions action integration', function (): void {
-    it('should call OutputPermissionsAction correctly', function () {
+    it('should call OutputPermissionsAction correctly', function (): void {
         $this->authorized_user();
 
         // Mock the action to verify it's called
-        $this->mock(OutputPermissionsAction::class, function ($mock) {
+        $this->mock(OutputPermissionsAction::class, function ($mock): void {
             $mock->shouldReceive('handle')
                 ->once()
                 ->withNoArgs()
@@ -210,7 +210,7 @@ describe('permissions action integration', function (): void {
             ->assertJsonPath('data.test.resource', 'test');
     });
 
-    it('should return response with success format', function () {
+    it('should return response with success format', function (): void {
         $this->authorized_user();
 
         $response = $this->getJson(route('api.v1.admin.permission.index'));

@@ -22,11 +22,6 @@ final class Setting extends Model
             'group',
         ];
 
-    protected $casts
-        = [
-            'value' => 'array',
-        ];
-
     /**
      * Get a setting value by key.
      */
@@ -83,10 +78,10 @@ final class Setting extends Model
         $imageIds = [];
 
         // This closure checks if a key matches our defined conventions.
-        $isSingularMediaKey = fn ($key) => in_array($key, $singularMediaKeys) || Str::endsWith($key, $singularMediaSuffixes);
-        $isPluralMediaKey   = fn ($key) => in_array($key, $pluralMediaKeys) || Str::endsWith($key, $pluralMediaSuffixes);
+        $isSingularMediaKey = fn ($key): bool => in_array($key, $singularMediaKeys) || Str::endsWith($key, $singularMediaSuffixes);
+        $isPluralMediaKey   = fn ($key): bool => in_array($key, $pluralMediaKeys) || Str::endsWith($key, $pluralMediaSuffixes);
 
-        array_walk_recursive($settingData, function ($value, $key) use (&$imageIds, $isSingularMediaKey) {
+        array_walk_recursive($settingData, function ($value, $key) use (&$imageIds, $isSingularMediaKey): void {
             // Find single IDs (e.g., "icon": 3 or "image_id": 3)
             if (is_string($key) && $isSingularMediaKey($key) && is_numeric($value)) {
                 $imageIds[] = (int) $value;
@@ -113,7 +108,7 @@ final class Setting extends Model
         $images = Media::find(array_unique($imageIds))->keyBy('id');
 
         // STEP 3: Define a recursive function to replace IDs with DTOs.
-        $replacer = function (&$array) use ($images, $isSingularMediaKey, $isPluralMediaKey, &$replacer) {
+        $replacer = function (&$array) use ($images, $isSingularMediaKey, $isPluralMediaKey, &$replacer): void {
             foreach ($array as $key => &$value) {
                 if (! is_string($key)) {
                     continue; // Skip numeric keys
@@ -122,7 +117,7 @@ final class Setting extends Model
                 if ($isPluralMediaKey($key) && is_array($value)) {
                     // It's an array of IDs. Replace it with DTOs.
                     $value = collect($value)
-                        ->map(fn ($id) => $images->get($id) ? MediaData::fromModel($images->get($id)) : null)
+                        ->map(fn ($id): ?\App\Data\Admin\MediaData => $images->get($id) ? MediaData::fromModel($images->get($id)) : null)
                         ->filter()
                         ->values()
                         ->all();
@@ -140,5 +135,11 @@ final class Setting extends Model
         $replacer($settingData);
 
         return $settingData;
+    }
+    protected function casts(): array
+    {
+        return [
+            'value' => 'array',
+        ];
     }
 }

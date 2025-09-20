@@ -10,10 +10,10 @@ use App\Models\User;
 use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
-beforeEach(function () {
+beforeEach(function (): void {
     $this->staff = Staff::factory()->create();
 });
-test('positive adjustment increases wallet balance', function () {
+test('positive adjustment increases wallet balance', function (): void {
     $user = User::factory()->create();
     $user->wallet->update(['balance' => 1000]);
     $initialBalance = $user->wallet->balance;
@@ -38,7 +38,7 @@ test('positive adjustment increases wallet balance', function () {
         ->and($user->fresh()->wallet->balance)->toBe($initialBalance + 500);
 });
 
-test('negative adjustment decreases wallet balance', function () {
+test('negative adjustment decreases wallet balance', function (): void {
     $user = User::factory()->create();
     $user->wallet->update(['balance' => 1000]);
     $initialBalance = $user->wallet->balance;
@@ -63,7 +63,7 @@ test('negative adjustment decreases wallet balance', function () {
         ->and($user->fresh()->wallet->balance)->toBe($initialBalance - 300);
 });
 
-test('cannot make negative adjustment exceeding available balance', function () {
+test('cannot make negative adjustment exceeding available balance', function (): void {
     $user = User::factory()->create();
     $user->wallet->update(['balance' => 100]);
 
@@ -79,7 +79,7 @@ test('cannot make negative adjustment exceeding available balance', function () 
         ->toThrow(Exception::class, __('validation.custom.insufficient_balance'));
 });
 
-test('cannot adjust suspended wallet', function () {
+test('cannot adjust suspended wallet', function (): void {
     $user = User::factory()->create();
     $user->wallet->update(['status' => WalletStatusEnum::SUSPENDED, 'balance' => 1000]);
 

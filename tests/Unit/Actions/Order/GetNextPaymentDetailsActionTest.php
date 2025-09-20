@@ -8,10 +8,10 @@ use App\Enums\Payment\NextPaymentTypeEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Models\Order;
 
-describe('GetNextPaymentDetailsAction', function () {
+describe('GetNextPaymentDetailsAction', function (): void {
 
     // Test for an order that is already fully paid
-    it('throws an exception for an already paid order', function () {
+    it('throws an exception for an already paid order', function (): void {
         $order = Order::factory()->create(['grand_total' => 10000]);
         $order->payments()->create([
             'customer_id' => $order->customer_id,
@@ -21,12 +21,12 @@ describe('GetNextPaymentDetailsAction', function () {
         ]);
 
         $action = new GetNextPaymentDetailsAction();
-        expect(fn () => $action->handle($order->fresh()))
+        expect(fn (): \App\Data\Admin\Payment\NextPaymentDetailsData => $action->handle($order->fresh()))
             ->toThrow(Exception::class, __('messages.order.already_fully_paid', ['order_id' => $order->increment_id]));
     });
 
     // Test for a free order
-    it('returns "none" details for a free order', function () {
+    it('returns "none" details for a free order', function (): void {
         $order = Order::factory()->create(['grand_total' => 0]);
 
         $details = (new GetNextPaymentDetailsAction())->handle($order);
@@ -37,7 +37,7 @@ describe('GetNextPaymentDetailsAction', function () {
     });
 
     // Test for an initial payment that is also a full payment
-    it('returns correct details for an initial, full payment', function () {
+    it('returns correct details for an initial, full payment', function (): void {
         $prodcut               = App\Models\Product::factory()->create(['status' => App\Enums\PublicationStatusEnum::PUBLISHED]);
         $prodcutDeliveryOption = App\Models\ProductDeliveryOption::factory()->create([
             'product_id' => $prodcut->id,
@@ -67,7 +67,7 @@ describe('GetNextPaymentDetailsAction', function () {
     });
 
     // Test for an initial payment that is only a pre-payment
-    it('returns correct details for an initial pre-payment', function () {
+    it('returns correct details for an initial pre-payment', function (): void {
         $prodcut               = App\Models\Product::factory()->create(['status' => App\Enums\PublicationStatusEnum::PUBLISHED]);
         $prodcutDeliveryOption = App\Models\ProductDeliveryOption::factory()->create([
             'product_id'              => $prodcut->id,
@@ -98,7 +98,7 @@ describe('GetNextPaymentDetailsAction', function () {
             ->and($details->summary_description)->toContain(__('messages.order.initial_payment_partial'))
             ->and($details->line_item_details[0]['items'][0])->toBe('Workshop');
     });
-    it('returns correct details for an initial pre-payment wit mixed payments', function () {
+    it('returns correct details for an initial pre-payment wit mixed payments', function (): void {
         $prodcut               = App\Models\Product::factory()->create(['status' => App\Enums\PublicationStatusEnum::PUBLISHED]);
         $prodcutDeliveryOption = App\Models\ProductDeliveryOption::factory()->create([
             'product_id' => $prodcut->id,
@@ -144,7 +144,7 @@ describe('GetNextPaymentDetailsAction', function () {
             ->and($details->line_item_details[0]['items'][0])->toBe('Full Course');
     });
     // Test for a final balance payment
-    it('returns correct details for a final balance payment', function () {
+    it('returns correct details for a final balance payment', function (): void {
         $order                 = Order::factory()->create(['grand_total' => 100000]);
         $prodcut               = App\Models\Product::factory()->create(['status' => App\Enums\PublicationStatusEnum::PUBLISHED]);
         $prodcutDeliveryOption = App\Models\ProductDeliveryOption::factory()->create([

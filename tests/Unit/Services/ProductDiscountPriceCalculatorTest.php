@@ -10,13 +10,13 @@ use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\ProductDiscountPriceCalculator;
 
-describe('ProductDiscountPriceCalculator', function () {
-    beforeEach(function () {
+describe('ProductDiscountPriceCalculator', function (): void {
+    beforeEach(function (): void {
         $this->registry   = app(DiscountHandlerRegistry::class);
         $this->calculator = new ProductDiscountPriceCalculator($this->registry);
     });
 
-    it('returns original price if no promotions apply', function () {
+    it('returns original price if no promotions apply', function (): void {
         $product    = Product::factory()->create();
         $option     = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $promotions = collect();
@@ -24,7 +24,7 @@ describe('ProductDiscountPriceCalculator', function () {
         expect($result)->toBe(1000);
     });
 
-    it('applies a single fixed discount promotion', function () {
+    it('applies a single fixed discount promotion', function (): void {
         $product   = Product::factory()->create();
         $option    = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $promotion = DiscountPromotion::factory()->create(['priority' => 1]);
@@ -39,7 +39,7 @@ describe('ProductDiscountPriceCalculator', function () {
         expect($result)->toBe(800);
     });
 
-    it('applies multiple promotions in order (layered)', function () {
+    it('applies multiple promotions in order (layered)', function (): void {
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $promo1  = DiscountPromotion::factory()->create(['priority' => 1]);
@@ -62,7 +62,7 @@ describe('ProductDiscountPriceCalculator', function () {
         expect($result)->toBe(700);
     });
 
-    it('stops applying further promotions if stop_processing_subsequent_rules is true', function () {
+    it('stops applying further promotions if stop_processing_subsequent_rules is true', function (): void {
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $promo1  = DiscountPromotion::factory()->create(['priority' => 1, 'stop_processing_subsequent_rules' => true]);
@@ -85,7 +85,7 @@ describe('ProductDiscountPriceCalculator', function () {
         expect($result)->toBe(900);
     });
 
-    it('finds applied promotions for a given price', function () {
+    it('finds applied promotions for a given price', function (): void {
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $promo1  = DiscountPromotion::factory()->create(['priority' => 1]);
@@ -108,7 +108,7 @@ describe('ProductDiscountPriceCalculator', function () {
         expect($applied->pluck('id')->all())->toEqual([$promo1->id, $promo2->id]);
     });
 
-    it('applies condition: only applies if product in category', function () {
+    it('applies condition: only applies if product in category', function (): void {
         $category = Category::factory()->create();
         $product  = Product::factory()->create();
         $product->categories()->attach($category);
@@ -131,7 +131,7 @@ describe('ProductDiscountPriceCalculator', function () {
         expect($result)->toBe(900);
     });
 
-    it('does not apply condition if product not in category', function () {
+    it('does not apply condition if product not in category', function (): void {
         $category = Category::factory()->create();
         $product  = Product::factory()->create();
         $option   = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
@@ -154,7 +154,7 @@ describe('ProductDiscountPriceCalculator', function () {
         expect($result)->toBe(1000);
     });
 
-    it('stops applying further promotions if a middle promotion has stop_processing_subsequent_rules = true', function () {
+    it('stops applying further promotions if a middle promotion has stop_processing_subsequent_rules = true', function (): void {
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
         $promo1  = DiscountPromotion::factory()->create(['priority' => 1]);

@@ -29,8 +29,8 @@ final class TeacherSelectOptionController extends Controller
         $limit = request()->integer('limit', 10);
 
         $teachers = \App\Models\Teacher::query()
-            ->when($query, function ($teacher) use ($query) {
-                $teacher->where(function ($teacher) use ($query) {
+            ->when($query, function ($teacher) use ($query): void {
+                $teacher->where(function ($teacher) use ($query): void {
                     $teacher->whereRaw("concat(first_name, ' ', last_name) like ?", '%'.$query.'%')
                         ->orWhere('email', 'like', '%'.$query.'%')
                         ->orWhere('phone', 'like', '%'.$query.'%');

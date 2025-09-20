@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-describe('ThumbnailData', function () {
-    it('can be created from a Media model', function () {
+describe('ThumbnailData', function (): void {
+    it('can be created from a Media model', function (): void {
         Illuminate\Support\Facades\DB::table('media')
             ->insert([
                 'id'             => 1,

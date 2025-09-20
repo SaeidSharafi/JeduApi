@@ -17,9 +17,9 @@ use Tests\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
-describe('OrderPreviewController', function () {
+describe('OrderPreviewController', function (): void {
 
-    it('can preview an order with a product delivery option', function () {
+    it('can preview an order with a product delivery option', function (): void {
         $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
         $user    = User::factory()->create();
         $product = App\Models\Product::factory()->create([

@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 uses(Tests\AuthTestTrait::class);
-describe('Admin Staff Select Option API', function () {
+describe('Admin Staff Select Option API', function (): void {
 
-    it('returns filtered staff select options', function () {
+    it('returns filtered staff select options', function (): void {
         $this->authorized_user();
         App\Models\Staff::factory()->count(3)->create();
         App\Models\Staff::factory()->create([
@@ -29,7 +29,7 @@ describe('Admin Staff Select Option API', function () {
         ]);
     });
 
-    it('returns empty data if no match', function () {
+    it('returns empty data if no match', function (): void {
         $this->authorized_user();
         $response = $this->getJson(
             '/api/v1/admin/select-option/staff?q=NoSuchStaff'
@@ -38,7 +38,7 @@ describe('Admin Staff Select Option API', function () {
         $response->assertJson(['data' => []]);
     });
 
-    it('filters by email and phone', function () {
+    it('filters by email and phone', function (): void {
         $this->authorized_user();
         App\Models\Staff::factory()->create([
             'name'  => 'Jane XSmith',
@@ -59,7 +59,7 @@ describe('Admin Staff Select Option API', function () {
         ]);
     });
 
-    it('limits the number of results', function () {
+    it('limits the number of results', function (): void {
         $this->authorized_user();
         App\Models\Staff::factory()->count(5)->create();
         $response = $this->getJson('/api/v1/admin/select-option/staff?limit=3');

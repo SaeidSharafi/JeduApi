@@ -2,7 +2,7 @@
 
 use App\Models\StudentStory;
 
-it('to array', function () {
+it('to array', function (): void {
     $studentStory = StudentStory::query()->create([
         'student_name'  => 'John Doe',
         'course_name'   => 'Laravel Basics',
@@ -28,7 +28,7 @@ it('to array', function () {
 
 });
 
-it('get avatar url correctly', function () {
+it('get avatar url correctly', function (): void {
     $studentStory = StudentStory::query()->create([
         'student_name'  => 'John Doe',
         'course_name'   => 'Laravel Basics',

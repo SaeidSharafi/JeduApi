@@ -46,7 +46,7 @@ final class HeaderController extends Controller
         $header = Setting::get('header');
         $links = $header['navigation_links'] ?? [];
         // Sort links by 'order' key
-        usort($links, fn ($a, $b) => ($a['order'] ?? 0) <=> ($b['order'] ?? 0));
+        usort($links, fn ($a, $b): int => ($a['order'] ?? 0) <=> ($b['order'] ?? 0));
         // Reindex array
         $header['navigation_links'] = array_values($links);
         return response()->success(
