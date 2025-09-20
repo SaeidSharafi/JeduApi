@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Contracts\ProductableContract;
 use App\Contracts\ReviewableContract;
 use App\Traits\HasMedia;
+use App\Traits\HasReview;
 use App\Traits\IsProductable;
 use Database\Factories\DigitalAssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,6 +23,7 @@ final class DigitalAsset extends Model implements ProductableContract, Reviewabl
     use IsProductable;
     use Mediable;
     use HasMedia;
+    use HasReview;
 
     protected $fillable = [
         'name',

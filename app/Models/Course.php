@@ -10,6 +10,7 @@ use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Models\Blog\BlogPost;
 use App\Traits\HasMedia;
+use App\Traits\HasReview;
 use App\Traits\IsProductable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,6 +25,7 @@ final class Course extends Model implements ProductableContract, ReviewableContr
     use IsProductable;
     use Mediable;
     use HasMedia;
+    use HasReview;
 
     protected $fillable
         = [

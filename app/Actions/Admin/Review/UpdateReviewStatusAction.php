@@ -3,6 +3,7 @@
 namespace App\Actions\Admin\Review;
 
 use App\Enums\ReviewStatusEnum;
+use App\Events\ReviewableAggregatesChanged;
 use App\Models\Review;
 
 class UpdateReviewStatusAction
@@ -13,5 +14,6 @@ class UpdateReviewStatusAction
             return;
         }
         $review->update(['status' => $statusEnum]);
+        ReviewableAggregatesChanged::dispatch($review->reviewable_id, $review->reviewable_type, $review->id);
     }
 }

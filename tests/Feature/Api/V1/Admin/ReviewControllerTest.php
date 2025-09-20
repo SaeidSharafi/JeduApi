@@ -4,6 +4,7 @@ use App\Enums\MorphTypeEnum;
 use App\Enums\PermissionEnum;
 use App\Enums\ProductableEnum;
 use App\Enums\ReviewStatusEnum;
+use App\Events\ReviewableAggregatesChanged;
 use App\Models\Course;
 use App\Models\Review;
 use App\Models\User;
@@ -131,11 +132,19 @@ describe('ReviewController', function (): void {
     });
 
     it('deletes a review', function (): void {
+        Event::fake([
+            ReviewableAggregatesChanged::class
+        ]);
         $this->authorized_user([PermissionEnum::REVIEW_DELETE]);
         $review = Review::factory()->create();
         $response = $this->deleteJson('/api/v1/admin/review/'.$review->id);
         $response->assertNoContent();
         $this->assertDatabaseMissing('reviews', ['id' => $review->id]);
+        Event::assertDispatched(ReviewableAggregatesChanged::class, function ($event) use ($review) {
+            return $event->reviewId === null
+                && $event->reviewableId === $review->reviewable_id
+                && $event->reviewableType === $review->reviewable_type;
+        });
     });
 
     it('returns 404 if the review to delete does not exist', function (): void {
@@ -145,11 +154,18 @@ describe('ReviewController', function (): void {
     });
 });
 
-
 describe('ApproveReviewController', function (): void {
     it('approves a review', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE]);
-        $review = Review::factory()->create(['status' => ReviewStatusEnum::PENDING->value]);
+        Event::fake([
+            ReviewableAggregatesChanged::class
+        ]);
+        $course = Course::factory()->create();
+        $review = Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::PENDING->value
+        ]);
         $response = $this->postJson('/api/v1/admin/review/'.$review->id.'/approve');
         $response->assertOk();
         $response->assertJson([
@@ -161,6 +177,11 @@ describe('ApproveReviewController', function (): void {
             'id'     => $review->id,
             'status' => ReviewStatusEnum::APPROVED->value,
         ]);
+        Event::assertDispatched(ReviewableAggregatesChanged::class, function ($event) use ($review,$course) {
+            return $event->reviewId === $review->id
+                && $event->reviewableId === $course->id
+                && $event->reviewableType === MorphTypeEnum::COURSE->value;
+        });
     });
 
     it('returns 404 if the review does not exist', function (): void {
@@ -172,8 +193,16 @@ describe('ApproveReviewController', function (): void {
 
 describe('RejectReviewController', function (): void {
     it('reject a review', function (): void {
+        Event::fake([
+            ReviewableAggregatesChanged::class
+        ]);
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE]);
-        $review = Review::factory()->create(['status' => ReviewStatusEnum::PENDING->value]);
+        $course = Course::factory()->create();
+        $review = Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status' => ReviewStatusEnum::PENDING->value
+        ]);
         $response = $this->postJson('/api/v1/admin/review/'.$review->id.'/reject');
         $response->assertOk();
         $response->assertJson([
@@ -185,6 +214,11 @@ describe('RejectReviewController', function (): void {
             'id'     => $review->id,
             'status' => ReviewStatusEnum::REJECTED->value,
         ]);
+        Event::assertDispatched(ReviewableAggregatesChanged::class, function ($event) use ($review,$course) {
+            return $event->reviewId === $review->id
+                && $event->reviewableId === $course->id
+                && $event->reviewableType === MorphTypeEnum::COURSE->value;
+        });
     });
 
     it('returns 404 if the review does not exist', function (): void {
@@ -251,6 +285,221 @@ describe('UpdateReviewFeaturedStatusController', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE_FEATURED_STATUS]);
         $response = $this->patchJson('/api/v1/admin/review/999/featured');
         $response->assertNotFound();
+    });
+});
+describe('ReviewableAggregates', function (): void {
+    it('aggregates reviews on approve correctly ', function (): void {
+        $this->authorized_user([PermissionEnum::REVIEW_UPDATE]);
+
+        $course = Course::factory()->create([
+            'review_count'   => 2,
+            'average_rating' => 4.5,
+        ]);
+        Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::APPROVED->value,
+            'rating'          => 4,
+        ]);
+        Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::APPROVED->value,
+            'rating'          => 5,
+        ]);
+
+        $review = Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::PENDING->value,
+            'rating'          => 1,
+        ]);
+
+        $response = $this->postJson('/api/v1/admin/review/'.$review->id.'/approve');
+        $response->assertOk();
+        $this->assertDatabaseHas('reviews', [
+            'id'     => $review->id,
+            'status' => ReviewStatusEnum::APPROVED->value,
+        ]);
+        $this->assertDatabaseHas('courses', [
+            'id'             => $course->id,
+            'review_count'   => 3,
+            'average_rating' => 3.33, // (4 + 5 + 1) / 3 = 3.33
+        ]);
+    });
+    it('aggregates reviews does not change when rejecting pending review', function (): void {
+        $this->authorized_user([PermissionEnum::REVIEW_UPDATE]);
+        $course = Course::factory()->create([
+            'review_count'   => 2,
+            'average_rating' => 4.5,
+        ]);
+        Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::APPROVED->value,
+            'rating'          => 4,
+        ]);
+        Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::APPROVED->value,
+            'rating'          => 5,
+        ]);
+
+        $review = Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::PENDING->value,
+            'rating'          => 1,
+        ]);
+        $response = $this->postJson('/api/v1/admin/review/'.$review->id.'/reject');
+        $response->assertOk();
+        $this->assertDatabaseHas('reviews', [
+            'id'     => $review->id,
+            'status' => ReviewStatusEnum::REJECTED->value,
+        ]);
+        $this->assertDatabaseHas('courses', [
+            'id'             => $course->id,
+            'review_count'   => 2,
+            'average_rating' => 4.5, // Unchanged
+        ]);
+    });
+
+    it('aggregates reviews correctly when deleting an approved review', function (): void {
+        $this->authorized_user([PermissionEnum::REVIEW_DELETE]);
+        $course = Course::factory()->create([
+            'review_count'   => 3,
+            'average_rating' => 4.0,
+        ]);
+        $review1 = Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::APPROVED->value,
+            'rating'          => 4,
+        ]);
+        $review2 = Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::APPROVED->value,
+            'rating'          => 5,
+        ]);
+        $review3 = Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::APPROVED->value,
+            'rating'          => 3,
+        ]);
+
+        // Delete one approved review
+        $response = $this->deleteJson('/api/v1/admin/review/'.$review3->id);
+        $response->assertNoContent();
+        $this->assertDatabaseMissing('reviews', ['id' => $review3->id]);
+
+        $this->assertDatabaseHas('courses', [
+            'id'             => $course->id,
+            'review_count'   => 2,
+            'average_rating' => 4.5, // (4 + 5) / 2 = 4.5
+        ]);
+    });
+
+    it('does not change aggregates when deleting a non-approved review', function (): void {
+        $this->authorized_user([PermissionEnum::REVIEW_DELETE]);
+        $course = Course::factory()->create([
+            'review_count'   => 2,
+            'average_rating' => 4.5,
+        ]);
+        $review1 = Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::APPROVED->value,
+            'rating'          => 4,
+        ]);
+        $review2 = Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::APPROVED->value,
+            'rating'          => 5,
+        ]);
+        $pendingReview = Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::PENDING->value,
+            'rating'          => 1,
+        ]);
+
+        // Delete the pending review
+        $response = $this->deleteJson('/api/v1/admin/review/'.$pendingReview->id);
+        $response->assertNoContent();
+        $this->assertDatabaseMissing('reviews', ['id' => $pendingReview->id]);
+        $this->assertDatabaseHas('courses', [
+            'id'             => $course->id,
+            'review_count'   => 2,
+            'average_rating' => 4.5, // Unchanged
+        ]);
+    });
+
+    it('does not change aggregates when deleting a rejected review', function (): void {
+        $this->authorized_user([PermissionEnum::REVIEW_DELETE]);
+        $course = Course::factory()->create([
+            'review_count'   => 2,
+            'average_rating' => 4.5,
+        ]);
+        $review1 = Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::APPROVED->value,
+            'rating'          => 4,
+        ]);
+        $review2 = Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::APPROVED->value,
+            'rating'          => 5,
+        ]);
+        $rejectedReview = Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::REJECTED->value,
+            'rating'          => 1,
+        ]);
+
+        // Delete the rejected review
+        $response = $this->deleteJson('/api/v1/admin/review/'.$rejectedReview->id);
+        $response->assertNoContent();
+        $this->assertDatabaseMissing('reviews', ['id' => $rejectedReview->id]);
+        $this->assertDatabaseHas('courses', [
+            'id'             => $course->id,
+            'review_count'   => 2,
+            'average_rating' => 4.5, // Unchanged
+        ]);
+    });
+
+    it('handles aggregates correctly when rejecting an approved review', function (): void {
+        $this->authorized_user([PermissionEnum::REVIEW_UPDATE]);
+        $course = Course::factory()->create([
+            'review_count'   => 2,
+            'average_rating' => 3.0,
+        ]);
+        Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::APPROVED->value,
+            'rating'          => 4,
+        ]);
+        $review = Review::factory()->create([
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'reviewable_id'   => $course->id,
+            'status'          => ReviewStatusEnum::APPROVED->value,
+            'rating'          => 2,
+        ]);
+
+        $response = $this->postJson('/api/v1/admin/review/'.$review->id.'/reject');
+        $response->assertOk();
+        $this->assertDatabaseHas('courses', [
+            'id'             => $course->id,
+            'review_count'   => 1,
+            'average_rating' => 4.0,
+        ]);
     });
 });
 

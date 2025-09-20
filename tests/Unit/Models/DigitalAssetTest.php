@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Enums\MorphTypeEnum;
+
 test('to array', function (): void {
     $digitalAsset = App\Models\DigitalAsset::factory()->create()->fresh();
 
@@ -67,4 +69,36 @@ test('relation courses', function (): void {
     $digitalAsset->refresh();
     expect($digitalAsset->courses)
         ->toHaveCount(3);
+});
+
+test('with reviews', function () {
+    $digitalAsset = App\Models\DigitalAsset::factory()->create();
+    $user1        = App\Models\User::factory()->create();
+    $user2        = App\Models\User::factory()->create();
+
+    $review1 = App\Models\Review::factory()->create([
+        'user_id'          => $user1->id,
+        'reviewable_id'    => $digitalAsset->id,
+        'reviewable_type'  => MorphTypeEnum::DIGITAL_ASSET->value,
+        'rating'          => 4,
+        'status'          => App\Enums\ReviewStatusEnum::APPROVED,
+    ]);
+
+    $review2 = App\Models\Review::factory()->create([
+        'user_id'          => $user2->id,
+        'reviewable_id'    => $digitalAsset->id,
+        'reviewable_type'  => MorphTypeEnum::DIGITAL_ASSET->value,
+        'rating'          => 5,
+        'status'          => App\Enums\ReviewStatusEnum::PENDING,
+    ]);
+
+    $digitalAsset->refresh();
+
+    expect($digitalAsset->reviews)
+        ->toHaveCount(2)
+        ->and($digitalAsset->reviews->first())
+        ->toBeInstanceOf(App\Models\Review::class)
+        ->and($digitalAsset->reviews->pluck('id')->toArray())
+        ->toEqualCanonicalizing([$review1->id, $review2->id]);
+
 });

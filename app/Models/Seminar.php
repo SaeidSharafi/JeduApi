@@ -13,6 +13,7 @@ use App\Traits\HasAssets;
 use App\Traits\HasAuditor;
 use App\Traits\HasCategories;
 use App\Traits\HasMedia;
+use App\Traits\HasReview;
 use App\Traits\IsProductable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -31,6 +32,7 @@ final class Seminar extends Model implements ProductableContract, ReviewableCont
     use IsProductable;
     use Mediable;
     use HasMedia;
+    use HasReview;
 
     protected $fillable = [
         'full_name',

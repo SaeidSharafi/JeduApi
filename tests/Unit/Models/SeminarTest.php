@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Enums\MorphTypeEnum;
+
 test('to array', function (): void {
     $seminar = App\Models\Seminar::factory()->create()->fresh();
 
@@ -113,4 +115,26 @@ test('relation blog posts', function (): void {
         ->toBeInstanceOf(App\Models\Blog\BlogPost::class)
         ->and($seminar->blogPosts->first()->id)
         ->toEqual($blogPost->id);
+});
+
+test('with reviews', function () {
+    $seminar = App\Models\Seminar::factory()->create();
+    $user    = App\Models\User::factory()->create();
+    $review  = App\Models\Review::factory()->create([
+        'user_id'          => $user->id,
+        'reviewable_id'    => $seminar->id,
+        'reviewable_type'  => MorphTypeEnum::SEMINAR->value,
+        'rating'          => 4,
+        'status'          => App\Enums\ReviewStatusEnum::APPROVED,
+        'is_featured'     => false,
+    ]);
+
+    expect($seminar->reviews)
+        ->toHaveCount(1)
+        ->and($seminar->reviews->first())
+        ->toBeInstanceOf(App\Models\Review::class)
+        ->and($seminar->reviews->first()->id)
+        ->toEqual($review->id)
+        ->and($seminar->reviews->first()->user->id)
+        ->toEqual($user->id);
 });

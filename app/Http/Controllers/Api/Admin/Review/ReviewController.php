@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin\Review;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Review\ReviewData;
 use App\Data\Admin\Review\ReviewListItemData;
+use App\Events\ReviewableAggregatesChanged;
 use App\Http\Controllers\Controller;
 use App\Models\Review;
 use Illuminate\Http\JsonResponse;
@@ -91,6 +92,7 @@ class ReviewController extends Controller
     {
         Gate::authorize('delete', $review);
         $review->delete();
+        ReviewableAggregatesChanged::dispatch($review->reviewable_id, $review->reviewable_type);
         return response()->noContentJson();
     }
 }
