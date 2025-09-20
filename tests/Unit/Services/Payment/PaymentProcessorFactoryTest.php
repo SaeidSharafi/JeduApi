@@ -3,52 +3,11 @@
 declare(strict_types=1);
 
 use App\Contracts\Payment\PaymentProcessorContract;
-use App\Data\Admin\Payment\PaymentCreateData;
 use App\Enums\Payment\PaymentMethodEnum;
-use App\Models\Order;
-use App\Models\Payment;
 use App\Services\Payment\PaymentProcessorFactory;
-use Illuminate\Contracts\Auth\Authenticatable;
-
-// Simple mock processor for testing
-final class MockWalletProcessor implements PaymentProcessorContract
-{
-    public function canHandle(PaymentMethodEnum $paymentMethod): bool
-    {
-        return $paymentMethod === PaymentMethodEnum::WALLET;
-    }
-
-    public function process(Order $order, PaymentCreateData $paymentData, Authenticatable $adminUser, int $amountToPay): Payment
-    {
-        return new Payment();
-    }
-}
-
-final class MockBankTransferProcessor implements PaymentProcessorContract
-{
-    public function canHandle(PaymentMethodEnum $paymentMethod): bool
-    {
-        return $paymentMethod === PaymentMethodEnum::BANK_TRANSFER;
-    }
-
-    public function process(Order $order, PaymentCreateData $paymentData, Authenticatable $adminUser, int $amountToPay): Payment
-    {
-        return new Payment();
-    }
-}
-
-final class MockUnsupportedProcessor implements PaymentProcessorContract
-{
-    public function canHandle(PaymentMethodEnum $paymentMethod): bool
-    {
-        return false; // Never handles any method
-    }
-
-    public function process(Order $order, PaymentCreateData $paymentData, Authenticatable $adminUser, int $amountToPay): Payment
-    {
-        return new Payment();
-    }
-}
+use Tests\Fakes\Payment\MockBankTransferProcessor;
+use Tests\Fakes\Payment\MockUnsupportedProcessor;
+use Tests\Fakes\Payment\MockWalletProcessor;
 
 describe('PaymentProcessorFactory', function () {
 
