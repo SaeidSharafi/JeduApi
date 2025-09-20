@@ -6,7 +6,9 @@ namespace App\Http\Controllers\Api\Shop;
 
 use App\Actions\Shop\GetHomePageContentAction;
 use App\Contracts\ApiResponseInterface;
+use App\Enums\CacheKeysEnum;
 use App\Http\Controllers\Controller;
+use SmartCache\Facades\SmartCache;
 
 /**
  * @group Shop - Home Page
@@ -27,8 +29,6 @@ final class HomePageContentController extends Controller
      */
     public function __invoke(GetHomePageContentAction $action): ApiResponseInterface
     {
-        $content = $action->handle();
-
-        return response()->success($content);
+        return response()->success($action->handle());
     }
 }

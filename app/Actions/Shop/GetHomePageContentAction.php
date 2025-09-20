@@ -12,6 +12,7 @@ use App\Data\Shop\HomePageContentData;
 use App\Data\Shop\Product\CategoryCardData;
 use App\Data\Shop\Product\ProductCardData;
 use App\Data\Shop\ProductPriceData;
+use App\Enums\CacheKeysEnum;
 use App\Enums\DynamicListEntityTypeEnum;
 use App\Enums\DynamicListSortByEnum;
 use App\Enums\HomePageBlockTypeEnum;
@@ -24,6 +25,7 @@ use App\Services\ProductPriceService;
 use App\Services\RequestDataCacheService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use SmartCache\Facades\SmartCache;
 
 final readonly class GetHomePageContentAction
 {
@@ -35,22 +37,28 @@ final readonly class GetHomePageContentAction
 
     public function handle(): HomePageContentData
     {
-        $blocks = HomePageBlock::query()
-            ->where('is_active', true)
-            ->orderBy('location')
-            ->orderBy('order')
-            ->get();
+        return SmartCache::remember(
+            CacheKeysEnum::HomePageContent->value,
+            CacheKeysEnum::HomePageContent->ttl(),
+            function (): HomePageContentData {
+                $blocks = HomePageBlock::query()
+                    ->where('is_active', true)
+                    ->orderBy('location')
+                    ->orderBy('order')
+                    ->get();
 
-        $heroBlocks = $blocks->where('location', 'hero');
-        $mainContentBlocks = $blocks->where('location', '!=', 'hero');
+                $heroBlocks = $blocks->where('location', 'hero');
+                $mainContentBlocks = $blocks->where('location', '!=', 'hero');
 
-        // Pre-load all required data to avoid N+1 queries
-        $preloadedData = $this->preloadAllRequiredData($blocks);
+                // Pre-load all required data to avoid N+1 queries
+                $preloadedData = $this->preloadAllRequiredData($blocks);
 
-        return new HomePageContentData(
-            hero: $this->hydrateBlocks($heroBlocks, $preloadedData),
-            main_content: $this->hydrateBlocks($mainContentBlocks, $preloadedData)
-        );
+                return new HomePageContentData(
+                    hero: $this->hydrateBlocks($heroBlocks, $preloadedData),
+                    main_content: $this->hydrateBlocks($mainContentBlocks, $preloadedData)
+                );
+            });
+
     }
 
     private function preloadAllRequiredData(Collection $blocks): array

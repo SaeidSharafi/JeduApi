@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Jobs\Discounts;
 
+use App\Enums\CacheKeysEnum;
+use App\Models\Product;
 use App\Services\Discounts\ProductDiscountIndexer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use SmartCache\Facades\SmartCache;
 
 /**
  * Job to fully regenerate all product discount prices.
@@ -26,6 +29,10 @@ final class RegenerateAllDiscountPricesJob implements ShouldQueue
     {
         $indexer = app(ProductDiscountIndexer::class);
         $indexer->reIndexComplete();
+        $keysToClear = config('cache_invalidation.map.'.Product::class, []);
+        foreach ($keysToClear as $key) {
+            SmartCache::forget($key->key());
+        }
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\CacheKeysEnum;
 use App\Models\Product;
 use App\Services\ProductPriceService;
 use Illuminate\Bus\Queueable;
@@ -9,12 +10,15 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use SmartCache\Facades\SmartCache;
 
 class UpdateProductPriceCacheJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(public int $productId) {}
+    public function __construct(public int $productId)
+    {
+    }
 
     public function handle(ProductPriceService $priceService): void
     {
@@ -29,5 +33,15 @@ class UpdateProductPriceCacheJob implements ShouldQueue
 
         // 2. Save the result to the cache column.
         $product->updateQuietly(['price_data_cache' => $priceData->toJson()]);
+        $this->clearCachesForProduct($product);
+    }
+
+    private function clearCachesForProduct(Product $product): void
+    {
+        $keysToClear = config('cache_invalidation.map.'.Product::class, []);
+
+        foreach ($keysToClear as $key) {
+            SmartCache::forget($key->key());
+        }
     }
 }
