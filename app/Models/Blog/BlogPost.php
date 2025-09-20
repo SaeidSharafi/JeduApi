@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\Review;
 use App\Models\Seminar;
 use App\Traits\HasMedia;
+use App\Traits\HasReview;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -28,6 +29,7 @@ class BlogPost extends Model
     use Mediable;
     use HasFactory;
     use HasMedia;
+    use HasReview;
 
     protected $table = 'blog_posts';
 

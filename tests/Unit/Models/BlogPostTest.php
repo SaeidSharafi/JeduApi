@@ -19,7 +19,9 @@ it('to array', function (): void {
             'meta_keywords'         => $blogPost->meta_keywords,
             'main_productable_id'   => $blogPost->main_productable_id,
             'main_productable_type' => $blogPost->main_productable_type,
-            'thumbnail_url'       => $blogPost->thumbnail_url,
+            'thumbnail_url'         => $blogPost->thumbnail_url,
+            'average_rating'        => $blogPost->average_rating,
+            'review_count'          => $blogPost->review_count,
             'created_at'            => $blogPost->created_at?->utc()->toJSON(),
             'updated_at'            => $blogPost->updated_at?->utc()->toJSON(),
         ]);

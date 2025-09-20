@@ -53,6 +53,33 @@ describe('RecalculateReviewableAggregates', function (){
             ->and($course->average_rating)->toEqual(4.5);
     });
 
+    it('recalculates aggregates for BlogPost', function () {
+        $course = Course::factory()->create([
+            'review_count' => 0,
+            'average_rating' => 0.0,
+        ]);
+
+        Review::factory()->create([
+            'reviewable_id' => $course->id,
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'rating' => 3,
+            'status' => ReviewStatusEnum::APPROVED,
+        ]);
+
+        Review::factory()->create([
+            'reviewable_id' => $course->id,
+            'reviewable_type' => MorphTypeEnum::COURSE->value,
+            'rating' => 5,
+            'status' => ReviewStatusEnum::APPROVED,
+        ]);
+
+        ReviewableAggregatesChanged::dispatch($course->id, MorphTypeEnum::COURSE->value, 1);
+
+        $course->refresh();
+
+        expect($course->review_count)->toBe(2)
+            ->and($course->average_rating)->toEqual(4.0);
+    });
     it('does not recalculate aggregates for non-existent reviewable', function () {
         ReviewableAggregatesChanged::dispatch(9999, MorphTypeEnum::COURSE->value, 1);
 

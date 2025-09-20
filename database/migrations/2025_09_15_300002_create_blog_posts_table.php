@@ -22,6 +22,8 @@ return new class extends Migration {
             $this->addMetaTagColumns($table);
             $table->nullableMorphs('main_productable');
             $table->string('thumbnail_url')->nullable();
+            $table->integer('review_count')->default(0);
+            $table->decimal('average_rating', 3)->default(0.0);
             $table->timestamps();
 
             $table->index('is_featured');
