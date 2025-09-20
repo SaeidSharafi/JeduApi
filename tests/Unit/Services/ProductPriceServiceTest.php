@@ -257,8 +257,8 @@ describe('ProductPriceService', function (): void {
             'featured_price_end_date'   => Carbon::tomorrow(),
         ]);
 
-        $priceData1 = $this->priceService->getPriceDataForProduct($product, $deliveryOption1->id);
-        $priceData2 = $this->priceService->getPriceDataForProduct($product, $deliveryOption2->id);
+        $priceData1 = $this->priceService->calculatePriceDataForProduct($product, $deliveryOption1->id);
+        $priceData2 = $this->priceService->calculatePriceDataForProduct($product, $deliveryOption2->id);
 
         expect($priceData1->min_price)->toBe(10000)
             ->and($priceData1->min_original_price)->toBe(10000)
@@ -347,7 +347,7 @@ describe('ProductPriceService', function (): void {
             ));
 
         $this->priceService = new ProductPriceService($mockRequestCacheService);
-        $pirceData = $this->priceService->getPriceDataForProduct($product);
+        $pirceData = $this->priceService->calculatePriceDataForProduct($product);
 
         expect($pirceData->min_price)->toBe(9000)
             ->and($pirceData->min_original_price)->toBe(12000)

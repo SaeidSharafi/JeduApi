@@ -101,8 +101,8 @@ describe('GetHomePageContentAction', function (): void {
                 ],
             ]);
 
-        $mockedPriceService = Mockery::mock(ProductPriceService::class);
-        $mockedPriceService->shouldNotReceive('getPriceDataForProduct');
+        $mockedPriceService = Mockery::mock(ProductPriceService::class)->makePartial();
+        $mockedPriceService->shouldNotReceive('calculatePriceDataForProduct');
 
         $product = $this->createWithPriceCache($product);
         // Create dynamic list block

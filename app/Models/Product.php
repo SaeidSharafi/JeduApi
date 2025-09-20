@@ -6,6 +6,8 @@ namespace App\Models;
 
 use App\Jobs\UpdateProductPriceCacheJob;
 use App\Traits\HasCategories;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -87,7 +89,7 @@ final class Product extends Model
         return $this->hasManyThrough(OrderItem::class, ProductDeliveryOption::class);
     }
 
-    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    #[Scope]
     protected function active($query)
     {
         return $query->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
@@ -96,18 +98,18 @@ final class Product extends Model
                 $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED);
             })
             ->whereHas('productDeliveryOptions', function ($q): void {
-                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED);
+                $q->available();
             });
     }
 
-    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    #[Scope]
     protected function activeWithRelations($query)
     {
         return $query
             ->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
             ->where('is_visible', true)
             ->withWhereHas('productDeliveryOptions', function ($q): void {
-                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+                $q->available()
                     ->with('productDeliveryOptionDiscountPrice');
             })
             ->withWhereHas('productable', function ($q): void {
@@ -118,22 +120,25 @@ final class Product extends Model
             })
             ->with('vendor');
     }
-    #[\Illuminate\Database\Eloquent\Attributes\Scope]
-    protected function activeWithData($query)
+
+    #[Scope]
+    protected function activeWithData(Builder $query): Builder
     {
         return $query
             ->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
             ->where('is_visible', true)
-            ->whereHas(
+            ->withWhereHas(
                 'productDeliveryOptions', function ($q): void {
-                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED);
+                $q->with(['teachers','productDeliveryOptionDiscountPrice'])
+                    ->available();
             })
             ->withWhereHas('productable', function ($q): void {
                 $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED);
             })
             ->with('vendor');
     }
-    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+
+    #[Scope]
     protected function activeWithPriceAndMedia($query)
     {
         return $query

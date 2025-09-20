@@ -49,7 +49,7 @@ trait CreatesModelsWithCachedData
         $product->loadMissing('productDeliveryOptions');
 
         $priceService = $this->app->make(ProductPriceService::class);
-        $priceData = $priceService->getPriceDataForProduct($product);
+        $priceData = $priceService->calculatePriceDataForProduct($product);
         $product->updateQuietly(['price_data_cache' => $priceData->toJson()]);
     }
 }

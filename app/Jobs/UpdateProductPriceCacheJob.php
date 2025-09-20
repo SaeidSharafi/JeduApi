@@ -25,7 +25,7 @@ class UpdateProductPriceCacheJob implements ShouldQueue
         ]);
 
         // 1. Use your existing service to calculate the rich price data.
-        $priceData = $priceService->getPriceDataForProduct($product);
+        $priceData = $priceService->calculatePriceDataForProduct($product);
 
         // 2. Save the result to the cache column.
         $product->updateQuietly(['price_data_cache' => $priceData->toJson()]);

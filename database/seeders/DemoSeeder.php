@@ -239,6 +239,13 @@ final class DemoSeeder extends Seeder
 
         $this->command->info('Seeding Home Page Blocks...');
         HomePageBlock::factory()
+            ->webinarBanner($cover, Product::query()->where('productable_type', Seminar::class)->inRandomOrder()->first()->id)
+            ->create([
+                'title'    => 'First Webinar Banner',
+                'location' => 'hero',
+                'order'    => 0,
+            ]);
+        HomePageBlock::factory()
             ->banner($cover)
             ->create([
                 'title'    => 'Welcome to Our Store',

@@ -20,13 +20,30 @@ final readonly class ProductPriceService
     }
 
     /**
+     * The single source of truth for getting a product's price data.
+     * It prioritizes the pre-calculated cache and falls back to a live calculation if necessary.
+     */
+    public function getPriceDataForProduct(Product $product): ProductPriceData
+    {
+        // 1. Prioritize the cache.
+        if (!empty($product->price_data_cache)) {
+            // The cache is fresh and valid, use it.
+            return ProductPriceData::from($product->price_data_cache);
+        }
+
+        // 2. Fallback: The cache is empty, so we must calculate it live.
+        // This is the 0.0001% "emergency" case.
+        return $this->calculatePriceDataForProduct($product);
+    }
+
+    /**
      * Get pricing information for a product with all pricing logic centralized.
      * This follows the same hierarchy as OrderCalculationService::getBasePrice():
      * 1. Product-specific discount price (cached from promotions)
      * 2. Featured price (manual sale price)
      * 3. Standard price (default product price)
      */
-    public function getPriceDataForProduct(Product $product, ?int $selectedDeliveryOptionId = null): ProductPriceData
+    public function calculatePriceDataForProduct(Product $product, ?int $selectedDeliveryOptionId = null): ProductPriceData
     {
         if ($selectedDeliveryOptionId === null && $this->requestCache->hasPriceData($product->id)) {
             return $this->requestCache->getPriceDataForProduct($product->id);
@@ -62,7 +79,7 @@ final readonly class ProductPriceService
      */
     public function getMinCurrentPrice(Product $product, ?int $selectedDeliveryOptionId = null): int
     {
-        return $this->getPriceDataForProduct($product, $selectedDeliveryOptionId)->min_price;
+        return $this->calculatePriceDataForProduct($product, $selectedDeliveryOptionId)->min_price;
     }
 
     /**
@@ -117,7 +134,7 @@ final readonly class ProductPriceService
         ]);
 
         return $products->mapWithKeys(function (Product $product) {
-            return [$product->id => $this->getPriceDataForProduct($product)];
+            return [$product->id => $this->calculatePriceDataForProduct($product)];
         });
     }
 
@@ -126,7 +143,7 @@ final readonly class ProductPriceService
      */
     public function hasActiveDiscount(Product $product, ?int $selectedDeliveryOptionId = null): bool
     {
-        $priceData = $this->getPriceDataForProduct($product, $selectedDeliveryOptionId);
+        $priceData = $this->calculatePriceDataForProduct($product, $selectedDeliveryOptionId);
         return $priceData->has_discount || $priceData->has_featured_price;
     }
 
@@ -157,7 +174,7 @@ final readonly class ProductPriceService
      */
     public function getMinimumOriginalPrice(Product $product, ?int $selectedDeliveryOptionId = null): int
     {
-        return $this->getPriceDataForProduct($product, $selectedDeliveryOptionId)->min_original_price;
+        return $this->calculatePriceDataForProduct($product, $selectedDeliveryOptionId)->min_original_price;
     }
 
     /**
@@ -166,7 +183,7 @@ final readonly class ProductPriceService
      */
     public function getHighestDiscountPercentage(Product $product, ?int $selectedDeliveryOptionId = null): float
     {
-        $priceData = $this->getPriceDataForProduct($product, $selectedDeliveryOptionId);
+        $priceData = $this->calculatePriceDataForProduct($product, $selectedDeliveryOptionId);
 
         return $priceData->discount_percentage ?? 0.0;
     }

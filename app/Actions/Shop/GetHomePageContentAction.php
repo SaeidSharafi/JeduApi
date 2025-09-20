@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 namespace App\Actions\Shop;
 
+use App\Data\Shop\Blog\BlogPostCardData;
+use App\Data\Shop\HomePage\BannerData;
+use App\Data\Shop\HomePage\SeminarProductBannerData;
+use App\Data\Shop\HomePage\WebinarBannerData;
 use App\Data\Shop\HomePageContentData;
+use App\Data\Shop\Product\CategoryCardData;
+use App\Data\Shop\Product\ProductCardData;
 use App\Data\Shop\ProductPriceData;
 use App\Enums\DynamicListEntityTypeEnum;
 use App\Enums\DynamicListSortByEnum;
@@ -68,13 +74,15 @@ final readonly class GetHomePageContentAction
 
         // Pre-load all products with relationships to avoid N+1
         if ($idsToFetch->isNotEmpty()) {
-            $fetchedProducts = Product::whereIn('id', $productIds->unique()->values())
+            $fetchedProducts = Product::query()
+                ->whereIn('id', $productIds->unique()->values())
                 ->activeWithData()
                 ->get()
                 ->keyBy('id');
             $this->requestCache->storeProducts($fetchedProducts);
         }
-        $products = $uniqueProductIds->map(fn($id): ?\App\Models\Product => $this->requestCache->getProduct($id))->filter()->keyBy('id');
+        $products = $uniqueProductIds->map(fn($id): ?\App\Models\Product => $this->requestCache->getProduct($id))
+            ->filter()->keyBy('id');
         // Pre-load all categories with media
         $categories = $categoryIds->filter()->isNotEmpty()
             ? Category::whereIn('id', $categoryIds->unique()->values())
@@ -116,14 +124,17 @@ final readonly class GetHomePageContentAction
             $items = collect($itemsIds)
                 ->map(fn($id) => $preloadedData['categories']->get($id))
                 ->filter()
-                ->map(fn($category): array => $this->formatEntity($category, 'categories', $preloadedData))
+                ->map(fn($category): array => CategoryCardData::from($category)->toArray())
                 ->values()
                 ->toArray();
         } else {
             $items = collect($itemsIds)
                 ->map(fn($id) => $preloadedData['products']->get($id))
                 ->filter()
-                ->map(fn($product): array => $this->formatEntity($product, 'products', $preloadedData))
+                ->map(function ($product): array {
+                    $priceData = $this->priceService->getPriceDataForProduct($product);
+                    return ProductCardData::fromModel($product, $priceData)->toArray();
+                })
                 ->values()
                 ->toArray();
         }
@@ -156,17 +167,19 @@ final readonly class GetHomePageContentAction
                     ->get();
                 $this->requestCache->storeProducts($fetchedProducts);
             }
-            $entities = $productIds->map(fn($id): ?\App\Models\Product => $this->requestCache->getProduct($id))->filter();
+            $entities = $productIds->map(fn($id): ?\App\Models\Product => $this->requestCache->getProduct($id))
+                ->filter();
         }
-
-        $formatType = match ($entityType) {
-            DynamicListEntityTypeEnum::BLOG_POST => 'blog_posts',
-            default => 'products',
-        };
 
         return [
             'preset' => $preset,
-            'items'  => $entities->map(fn($entity): array => $this->formatEntity($entity, $formatType))
+            'items'  => $entities->map(function ($entity) use ($entityType): array {
+                if ($entityType == DynamicListEntityTypeEnum::BLOG_POST) {
+                    return BlogPostCardData::from($entity)->toArray();
+                }
+                $priceData = $this->priceService->getPriceDataForProduct($entity);
+                return ProductCardData::fromModel($entity, $priceData)->toArray();
+            })
                 ->toArray(),
         ];
     }
@@ -193,7 +206,7 @@ final readonly class GetHomePageContentAction
 
             DynamicListEntityTypeEnum::BLOG_POST => BlogPost::query()
                 ->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
-                ->with(['author', 'media']),
+                ->with(['author']),
         };
 
         // Apply category filtering if specified
@@ -235,119 +248,14 @@ final readonly class GetHomePageContentAction
 
     private function hydrateBanner(HomePageBlock $block): array
     {
-        return [
-            'image_url'    => $block->content['image_url'] ?? null,
-            'action'       => $block->content['action'] ?? '',
-            'action_title' => $block->content['action_title'] ?? '',
-            'content'      => $block->content['content'] ?? null,
-            'preset'       => $block->content['preset'] ?? 'default',
-        ];
+        return BannerData::from($block->content)->toArray();
     }
 
     private function hydrateWebinarBanner(HomePageBlock $block, array $preloadedData): array
     {
         $productId = $block->content['product_id'] ?? null;
         $product = $productId ? $preloadedData['products']->get($productId) : null;
-
-        return [
-            'text'      => $block->content['text'] ?? '',
-            'image_url' => $block->content['image_url'] ?? null,
-            'product'   => $product ? $this->formatEntity($product, 'seminar', $preloadedData) : null,
-        ];
-    }
-
-    /**
-     * @param $entity
-     * @param  string  $type
-     * @param  array  $preloadedData
-     *
-     * @return array
-     */
-    private function formatEntity($entity, string $type, array $preloadedData = []): array
-    {
-        if (in_array($type, ['products', 'seminar'])) {
-            $priceData = $entity->price_data_cache
-                ? ProductPriceData::from(json_decode($entity->price_data_cache, true))
-                : $this->priceService->getPriceDataForProduct($entity);
-        }
-        return match ($type) {
-            'categories' => [
-                'id'        => $entity->id,
-                'name'      => $entity->name,
-                'slug'      => $entity->slug ?? null,
-                'icon_url'  => $entity->icon_url,
-                'image_url' => $entity->image_url,
-                'link'      => "/categories/{$entity->slug}",
-            ],
-            'products' => [
-                'id'               => $entity->id,
-                'slug'             => $entity->slug,
-                'name'             => $entity->name,
-                'price'            => $priceData?->min_price,
-                'original_price'   => $priceData?->min_original_price,
-                'price_data'       => $priceData,
-                'price_range'      => $priceData?->range,
-                'has_discount'     => $priceData?->has_discount,
-                'discount_percent' => $priceData?->discount_percentage,
-                'is_free'          => ($priceData?->current_price ?? 0) <= 0,
-                'is_featured'      => $entity->is_featured,
-                'product_type'     => $entity->productable_type,
-                'thumbnail_url'  => $this->getProductCoverImage($entity),
-                'teacher_name'     => $entity->productable?->default_teacher_info ??
-                        $entity->vendor?->name ?? 'Unknown',
-                'link'             => "/products/{$entity->id}",
-            ],
-            'seminar' => [
-                'id'                    => $entity->id,
-                'slug'                  => $entity->slug,
-                'name'                  => $entity->name,
-                'price'                 => $priceData?->min_price,
-                'original_price'        => $priceData?->min_original_price,
-                'price_data'            => $priceData,
-                'has_discount'          => $priceData?->has_discount,
-                'discount_percent'      => $priceData?->discount_percentage,
-                'is_free'               => ($priceData?->current_price ?? 0) <= 0,
-                'is_featured'           => $entity->is_featured,
-                'product_type'          => $entity->productable_type,
-                'thumbnail_url'       => $this->getProductCoverImage($entity),
-                'teacher_name'          => $entity->productable?->default_teacher_info ?? $entity->vendor?->name ?? '',
-                'link'                  => "/seminar/{$entity->id}",
-                'start_date'            => data_get($entity, 'details_json.start_date') ? verta(data_get($entity,
-                    'details_json.start_date'))->format('Y-m-d H:i:s') : null,
-                'end_date'              => data_get($entity, 'details_json.end_date') ? verta(data_get($entity,
-                    'details_json.end_date'))->format('Y-m-d H:i:s') : null,
-                'location'              => data_get($entity, 'details_json.location'),
-                'registration_deadline' => data_get($entity, 'details_json.registration_deadline'),
-            ],
-            'blog_posts' => [
-                'id'              => $entity->id,
-                'title'           => $entity->title,
-                'slug'            => $entity->slug,
-                'excerpt'         => $entity->excerpt,
-                'author_name'     => $entity->author?->name ?? 'Unknown',
-                'published_at'    => data_get($entity, 'details_json.published_at') ? verta(data_get($entity,
-                    'details_json.published_at'))->format('Y-m-d') : null,
-                'thumbnail_url' => $entity->relationLoaded('media') ? $entity->firstMedia('main') : null,
-                'link'            => "/blog/{$entity->slug}",
-            ],
-            default => [],
-        };
-    }
-
-    private function getProductCoverImage($product): ?string
-    {
-        //dd($product->productable);
-        return  $product->productable->thumbnail_url;
-        //if ($product->productable) {
-        //    // Check if the productable has the getProductableCover method (IsProductable trait)
-        //    if (method_exists($product->productable, 'getCoverMedia')) {
-        //        $coverImage = $product->productable->getCoverMedia();
-        //        if ($coverImage && count($coverImage) > 0) {
-        //            return data_get($coverImage, '0.url', null);
-        //        }
-        //    }
-        //}
-        //
-        //return null;
+        $priceData = $product ? $this->priceService->getPriceDataForProduct($product) : null;
+        return WebinarBannerData::fromBlock($block->content, $product, $priceData)->toArray();
     }
 }
