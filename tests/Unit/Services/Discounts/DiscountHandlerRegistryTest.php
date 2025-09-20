@@ -2,115 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Attributes\DiscountHandlerKey;
-use App\Contracts\Discounts\DiscountActionContract;
-use App\Contracts\Discounts\DiscountConditionContract;
-use App\Contracts\Discounts\ProductDiscountActionContract;
-use App\Contracts\Discounts\ProductDiscountConditionContract;
-use App\Data\Admin\Discounts\OrderContextData;
 use App\Enums\Order\DiscountTypeEnum;
-use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Cache;
 use Mockery\MockInterface;
-use Spatie\LaravelData\Data;
-
-// Mock handler classes for testing
-#[DiscountHandlerKey('test_cart_condition')]
-final class MockCartCondition implements DiscountConditionContract
-{
-    public static function getConfigClass(): string
-    {
-        return 'MockCartConditionConfig';
-    }
-
-    public function passes(OrderContextData $context, Data $configuration): bool
-    {
-        return true;
-    }
-}
-
-#[DiscountHandlerKey('test_cart_action')]
-final class MockCartAction implements DiscountActionContract
-{
-    public static function getConfigClass(): string
-    {
-        return 'MockCartActionConfig';
-    }
-
-    public function apply(OrderContextData $context, Data $configuration): void
-    {
-        // Do nothing for test
-    }
-}
-
-#[DiscountHandlerKey('test_product_condition')]
-final class MockProductCondition implements ProductDiscountConditionContract
-{
-    public static function getConfigClass(): string
-    {
-        return 'MockProductConditionConfig';
-    }
-
-    public function passes(ProductDeliveryOption $option, Data $configuration): bool
-    {
-        return true;
-    }
-}
-
-#[DiscountHandlerKey('test_product_action')]
-final class MockProductAction implements ProductDiscountActionContract
-{
-    public static function getConfigClass(): string
-    {
-        return 'MockProductActionConfig';
-    }
-
-    public function apply(ProductDeliveryOption $option, Data $configuration): int
-    {
-        return $option->price;
-    }
-}
-
-// Mock handler without attribute
-final class MockHandlerWithoutAttribute implements DiscountConditionContract
-{
-    public static function getConfigClass(): string
-    {
-        return 'MockConfig';
-    }
-
-    public function passes(OrderContextData $context, Data $configuration): bool
-    {
-        return true;
-    }
-}
-
-// Abstract mock class (not instantiable)
-#[DiscountHandlerKey('test_abstract')]
-abstract class MockAbstractHandler implements DiscountConditionContract
-{
-    final public static function getConfigClass(): string
-    {
-        return 'MockConfig';
-    }
-}
-
-// Mock handler that throws exception in getConfigClass
-#[DiscountHandlerKey('test_exception_config')]
-final class MockHandlerWithExceptionConfig implements DiscountConditionContract
-{
-    public static function getConfigClass(): string
-    {
-        throw new Exception('Config class not found');
-    }
-
-    public function passes(OrderContextData $context, Data $configuration): bool
-    {
-        return true;
-    }
-}
 
 describe('DiscountHandlerRegistry', function () {
     beforeEach(function () {
