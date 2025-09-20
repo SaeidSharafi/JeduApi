@@ -27,6 +27,8 @@ test('to array', function (): void {
             'properties'                   => $course->properties,
             'status'                       => $course->status->value,
             'created_by'                   => $course->created_by,
+            'review_count'                 => $course->review_count,
+            'average_rating'               => $course->average_rating,
             'created_at'                   => $course->created_at?->utc()->toJSON(),
             'updated_at'                   => $course->updated_at?->utc()->toJSON(),
 

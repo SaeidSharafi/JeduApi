@@ -23,6 +23,8 @@ test('to array', function (): void {
             'status'                  => $digitalAsset->status->value,
             'published_at'            => $digitalAsset->published_at?->utc()->toJSON(),
             'created_by'              => $digitalAsset->created_by,
+            'review_count'            => $digitalAsset->review_count,
+            'average_rating'          => $digitalAsset->average_rating,
             'created_at'              => $digitalAsset->created_at?->utc()?->toJSON(),
             'updated_at'              => $digitalAsset->updated_at?->utc()?->toJSON(),
         ])->toBeArray();

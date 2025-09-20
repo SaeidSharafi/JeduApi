@@ -28,6 +28,8 @@ test('to array', function (): void {
             'meta_keywords'            => $seminar->meta_keywords,
             'status'                   => $seminar->status->value,
             'created_by'               => $seminar->created_by,
+            'review_count'             => $seminar->review_count,
+            'average_rating'           => $seminar->average_rating,
             'created_at'               => $seminar->created_at?->utc()->toJSON(),
             'updated_at'               => $seminar->updated_at?->utc()->toJSON(),
         ]);

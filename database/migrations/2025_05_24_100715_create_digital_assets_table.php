@@ -30,6 +30,8 @@ return new class extends Migration
             $this->addMetaTagColumns($table);
             $table->timestamp('published_at')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('staff', 'id')->nullOnDelete();
+            $table->integer('review_count')->default(0);
+            $table->decimal('average_rating', 3)->default(0.0);
             $table->timestamps();
         });
     }
