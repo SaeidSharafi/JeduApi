@@ -22,9 +22,9 @@ final class ProductDeliveryOptionFactory extends Factory
             FulfillmentTypeEnum::DIGITAL,
             FulfillmentTypeEnum::ONLINE_SERVICE,
             FulfillmentTypeEnum::IN_PERSON_SERVICE,
-            FulfillmentTypeEnum::OFFILNE_SERVICE,
+            FulfillmentTypeEnum::OFFLINE_SERVICE,
         ]);
-        $pdoType = $this->faker->randomElement($ftype->getDelivieryMethods());
+        $pdoType = $this->faker->randomElement($ftype->getDeliveryMethods());
         $prices  = [
             100000,
             200000,

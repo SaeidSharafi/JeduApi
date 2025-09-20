@@ -8,11 +8,11 @@ use App\Data\Admin\Discounts\CalculatedOrderItemData;
 use App\Data\Admin\Discounts\OrderContextData;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
-use App\Enums\EnrolmentStatusEnum;
+use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Events\OrderCreatedEvent;
-use App\Models\Enrolment;
+use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\OrderCalculationService;
@@ -114,16 +114,16 @@ final readonly class CreateOrderAction
             $order->items()->createMany($orderItemsData->all());
             $order->refresh();
 
-            // --- ENROLMENT CREATION LOGIC (PRESERVED) ---
+            // --- ENROLLMENT CREATION LOGIC (PRESERVED) ---
             // This logic is unchanged as it depends only on the created order items.
             $order->load('items');
             $order->items->each(function ($item) use ($context) {
-                Enrolment::create([
+                Enrollment::create([
                     'order_id'                   => $item->order_id,
                     'order_item_id'              => $item->id,
                     'customer_id'                => $context->customer->id,
                     'product_delivery_option_id' => $item->product_delivery_option_id,
-                    'enrollment_status'          => EnrolmentStatusEnum::PENDING_PROVISIONING,
+                    'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING,
                 ]);
             });
 
@@ -136,7 +136,7 @@ final readonly class CreateOrderAction
         }
         OrderCreatedEvent::dispatch($order);
 
-        return $order->load('items', 'payments', 'enrolments');
+        return $order->load('items', 'payments', 'enrollments');
     }
 
     private function incrementUsageCounts(OrderContextData $context): void
@@ -169,8 +169,8 @@ final readonly class CreateOrderAction
             ]);
         }
         if ($deliveryOption->capacity !== null) {
-            $enrolledCount = $deliveryOption->enrolments()
-                ->where('enrollment_status', '!=', EnrolmentStatusEnum::CANCELLED)->count();
+            $enrolledCount = $deliveryOption->enrollments()
+                ->where('enrollment_status', '!=', EnrollmentStatusEnum::CANCELLED)->count();
             if (($enrolledCount + $itemData->qty_ordered) > $deliveryOption->capacity) {
                 $available = $deliveryOption->capacity - $enrolledCount;
                 throw ValidationException::withMessages([
@@ -213,19 +213,19 @@ final readonly class CreateOrderAction
      */
     private function validateNoDuplicatePurchases(int $customerId, Collection $deliveryOptionIds): void
     {
-        $existingEnrollments = Enrolment::query()
+        $existingEnrollments = Enrollment::query()
             ->where('customer_id', $customerId)
             ->whereIn('product_delivery_option_id', $deliveryOptionIds)
             ->whereIn('enrollment_status', [
-                EnrolmentStatusEnum::PENDING_PROVISIONING,
-                EnrolmentStatusEnum::ACTIVE,
+                EnrollmentStatusEnum::PENDING_PROVISIONING,
+                EnrollmentStatusEnum::ACTIVE,
             ])
             ->with('productDeliveryOption.product') // Load for better error message
             ->get();
 
         if ($existingEnrollments->isNotEmpty()) {
             $purchasedProductNames = $existingEnrollments
-                ->map(fn (Enrolment $e) => $e->productDeliveryOption->name)
+                ->map(fn (Enrollment $e) => $e->productDeliveryOption->name)
                 ->unique()
                 ->implode(', ');
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Casts;
 
-use App\Contracts\DeliveryOptionDetialDataContract;
+use App\Contracts\DeliveryOptionDetailDataContract;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\EmptyDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\InPersonDetailsData;
@@ -19,7 +19,7 @@ use Spatie\LaravelData\Support\DataProperty;
 
 final class DeliveryOptionDetailCast implements Cast
 {
-    public function cast(DataProperty $property, mixed $value, array $properties, CreationContext $context): DeliveryOptionDetialDataContract
+    public function cast(DataProperty $property, mixed $value, array $properties, CreationContext $context): DeliveryOptionDetailDataContract
     {
         $fulfillmentType = $properties['fulfillment_type'] ?? null;
         $deliveryMethod  = $properties['delivery_method']  ?? null;

@@ -19,7 +19,7 @@ final class ProductDeliveryOptionCardData extends Data
         public array $vendor,
         public array $term,
         public int $price,
-        public array $fullfilment_type = [],
+        public array $fulfillment_type = [],
         public array $delivery_method = [],
         public ?string $status = null,
         public ?string $productable_type = null,
@@ -48,7 +48,7 @@ final class ProductDeliveryOptionCardData extends Data
                 'name' => $product->term?->name,
             ],
             price: $deliveryOption->price,
-            fullfilment_type: [
+            fulfillment_type: [
                 'value' => $deliveryOption->fulfillment_type->value,
                 'label' => $deliveryOption->fulfillment_type->translate(),
             ],

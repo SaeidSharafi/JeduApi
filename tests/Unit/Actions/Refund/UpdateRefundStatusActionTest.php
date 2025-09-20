@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Actions\Admin\Refund\UpdateRefundStatusAction;
 use App\Data\Admin\Refund\RefundStatusUpdateData;
-use App\Enums\EnrolmentStatusEnum;
+use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\RefundStatusEnum;
 use App\Events\RefundCompletedEvent;
@@ -34,8 +34,8 @@ describe('UpdateRefundStatusAction', function () {
             ])
             ->create();
         $orderItem  = $order->items()->first();
-        $enrollment = $orderItem->enrolment()->create([
-            'enrollment_status'          => EnrolmentStatusEnum::ACTIVE,
+        $enrollment = $orderItem->enrollment()->create([
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
             'order_id'                   => $order->id,
             'order_item_id'              => $orderItem->id,
             'customer_id'                => $order->customer_id,
@@ -63,9 +63,9 @@ describe('UpdateRefundStatusAction', function () {
             'id'     => $order->id,
             'status' => App\Enums\Order\OrderStatusEnum::REFUNDED,
         ]);
-        \Pest\Laravel\assertDatabaseHas('enrolments', [
+        \Pest\Laravel\assertDatabaseHas('enrollments', [
             'id'                => $enrollment->id,
-            'enrollment_status' => EnrolmentStatusEnum::CANCELLED,
+            'enrollment_status' => EnrollmentStatusEnum::CANCELLED,
         ]);
     });
 

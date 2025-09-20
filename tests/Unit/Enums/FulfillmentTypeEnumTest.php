@@ -5,7 +5,7 @@ declare(strict_types=1);
 it('get delivery methods correctl for DIGITAL', function () {
     $fulfillmentType = App\Enums\FulfillmentTypeEnum::DIGITAL;
 
-    $deliveryMethods = $fulfillmentType->getDelivieryMethods();
+    $deliveryMethods = $fulfillmentType->getDeliveryMethods();
 
     expect($deliveryMethods)
         ->toBeArray()
@@ -16,7 +16,7 @@ it('get delivery methods correctl for DIGITAL', function () {
 it('get delivery methods correctly for PHYSICAL', function () {
     $fulfillmentType = App\Enums\FulfillmentTypeEnum::PHYSICAL;
 
-    $deliveryMethods = $fulfillmentType->getDelivieryMethods();
+    $deliveryMethods = $fulfillmentType->getDeliveryMethods();
 
     expect($deliveryMethods)
         ->toBeArray()
@@ -25,7 +25,7 @@ it('get delivery methods correctly for PHYSICAL', function () {
 it('get delivery methods correctly for ONLINE_SERVICE', function () {
     $fulfillmentType = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE;
 
-    $deliveryMethods = $fulfillmentType->getDelivieryMethods();
+    $deliveryMethods = $fulfillmentType->getDeliveryMethods();
 
     expect($deliveryMethods)
         ->toBeArray()
@@ -34,10 +34,10 @@ it('get delivery methods correctly for ONLINE_SERVICE', function () {
         ->toContain(App\Enums\DeliveryMethodEnum::LIVE_SESSION_SKYROOM)
         ->toContain(App\Enums\DeliveryMethodEnum::LMS_MOODLE);
 });
-it('get delivery methods correctly for OFFILNE_SERVICE', function () {
-    $fulfillmentType = App\Enums\FulfillmentTypeEnum::OFFILNE_SERVICE;
+it('get delivery methods correctly for OFFLINE_SERVICE', function () {
+    $fulfillmentType = App\Enums\FulfillmentTypeEnum::OFFLINE_SERVICE;
 
-    $deliveryMethods = $fulfillmentType->getDelivieryMethods();
+    $deliveryMethods = $fulfillmentType->getDeliveryMethods();
 
     expect($deliveryMethods)
         ->toBeArray()
@@ -48,7 +48,7 @@ it('get delivery methods correctly for OFFILNE_SERVICE', function () {
 it('get delivery methods correctly for IN_PERSON_SERVICE', function () {
     $fulfillmentType = App\Enums\FulfillmentTypeEnum::IN_PERSON_SERVICE;
 
-    $deliveryMethods = $fulfillmentType->getDelivieryMethods();
+    $deliveryMethods = $fulfillmentType->getDeliveryMethods();
 
     expect($deliveryMethods)
         ->toBeArray()

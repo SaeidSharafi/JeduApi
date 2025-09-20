@@ -6,7 +6,7 @@ namespace App\Enums;
 
 use App\Traits\AdvanceEnum;
 
-enum EnrolmentStatusEnum: string
+enum EnrollmentStatusEnum: string
 {
     use AdvanceEnum;
     case PENDING_PROVISIONING = 'pending_provisioning'; // Order paid, access being set up

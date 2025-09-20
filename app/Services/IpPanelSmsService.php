@@ -33,7 +33,7 @@ final class IpPanelSmsService
         $this->from = $from;
     }
 
-    public function send(array $to, string $messeage, string $type = 'custom'): void
+    public function send(array $to, string $message, string $type = 'custom'): void
     {
         $this->validateConfig();
         if (config('services.ippanel.sand_box')) {
@@ -42,7 +42,7 @@ final class IpPanelSmsService
                 'data'   => [
                     'message_id' => 'Sandbox_'.randomNumber(10),
                 ],
-                'content' => $messeage,
+                'content' => $message,
                 'type'    => $type,
                 'to'      => $to,
                 'from'    => $this->from,
@@ -60,14 +60,14 @@ final class IpPanelSmsService
                 [
                     'sender'    => $this->from,
                     'recipient' => $to,
-                    'message'   => $messeage,
+                    'message'   => $message,
                 ]
             );
 
         SmsLog::create([
             'status'  => $response->status(),
             'data'    => $response->json(),
-            'content' => $messeage,
+            'content' => $message,
             'type'    => $type,
             'to'      => $to,
             'from'    => $this->from,
@@ -88,7 +88,7 @@ final class IpPanelSmsService
         }
     }
 
-    public function sendPattern(string $pattern, array $parameters, string $to, $messeage = '', $type = 'pattern'): void
+    public function sendPattern(string $pattern, array $parameters, string $to, $message = '', $type = 'pattern'): void
     {
         $this->validateConfig();
         if (config('services.ippanel.sand_box')) {
@@ -99,7 +99,7 @@ final class IpPanelSmsService
                     'parameters' => $parameters,
                     'message_id' => 'Sandbox_'.randomNumber(10),
                 ],
-                'content' => $messeage,
+                'content' => $message,
                 'type'    => $type,
                 'to'      => $to,
                 'from'    => $this->from,
@@ -125,7 +125,7 @@ final class IpPanelSmsService
         SmsLog::create([
             'status'  => $response->status(),
             'data'    => $response->json(),
-            'content' => $messeage,
+            'content' => $message,
             'type'    => $type,
             'to'      => $to,
             'from'    => $this->from,

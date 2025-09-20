@@ -25,7 +25,7 @@ use Spatie\LaravelData\Support\DataProperty;
 /**
  * @codeCoverageIgnore
  */
-final readonly class TrasnactionSourceCast implements Cast
+final readonly class TransactionSourceCast implements Cast
 {
     public function __construct(private bool $short = false) {}
 

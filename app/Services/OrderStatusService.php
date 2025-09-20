@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Enums\EnrolmentStatusEnum;
+use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Models\Order;
@@ -29,30 +29,30 @@ final class OrderStatusService
     }
 
     /**
-     * Updates an individual Enrolment based on its parent OrderItem's status.
+     * Updates an individual Enrollment based on its parent OrderItem's status.
      * This method can be called from multiple places (payment, refund, cancellation).
      */
     public function updateEnrollmentStatus(OrderItem $item): void
     {
-        if (! $item->enrolment) {
+        if (! $item->enrollment) {
             return;
         }
 
         $newStatus = match ($item->status) {
             // If the item is refunded or cancelled, the student loses access.
-            OrderItemStatusEnum::REFUNDED, OrderItemStatusEnum::CANCELLED => EnrolmentStatusEnum::CANCELLED,
+            OrderItemStatusEnum::REFUNDED, OrderItemStatusEnum::CANCELLED => EnrollmentStatusEnum::CANCELLED,
             // If the item is completed, the student gets access.
-            OrderItemStatusEnum::COMPLETED => EnrolmentStatusEnum::ACTIVE,
+            OrderItemStatusEnum::COMPLETED => EnrollmentStatusEnum::ACTIVE,
             // Otherwise, no change.
-            default => $item->enrolment->enrollment_status,
+            default => $item->enrollment->enrollment_status,
         };
 
-        if ($item->enrolment->enrollment_status !== $newStatus) {
-            $item->enrolment->enrollment_status = $newStatus;
-            if ($newStatus === EnrolmentStatusEnum::ACTIVE && is_null($item->enrolment->access_start_date)) {
-                $item->enrolment->access_start_date = now();
+        if ($item->enrollment->enrollment_status !== $newStatus) {
+            $item->enrollment->enrollment_status = $newStatus;
+            if ($newStatus === EnrollmentStatusEnum::ACTIVE && is_null($item->enrollment->access_start_date)) {
+                $item->enrollment->access_start_date = now();
             }
-            $item->enrolment->saveQuietly();
+            $item->enrollment->saveQuietly();
         }
     }
 
@@ -71,7 +71,7 @@ final class OrderStatusService
     }
 
     /**
-     * Updates an individual OrderItem and its Enrolment after a payment.
+     * Updates an individual OrderItem and its Enrollment after a payment.
      */
     private function completeOrderItemAfterPayment(OrderItem $item): void
     {

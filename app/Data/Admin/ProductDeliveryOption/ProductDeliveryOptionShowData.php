@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\ProductDeliveryOption;
 
-use App\Contracts\DeliveryOptionDetialDataContract;
+use App\Contracts\DeliveryOptionDetailDataContract;
 use App\Data\Admin\Product\ProductData;
 use App\Data\Admin\Teacher\TeacherListItemData;
 use App\Data\Casts\DeliveryOptionDetailCast;
@@ -39,7 +39,7 @@ final class ProductDeliveryOptionShowData extends Data
         public ?int $prepayment_amount,
         #[MapOutputName('details')]
         #[WithCast(DeliveryOptionDetailCast::class)]
-        public DeliveryOptionDetialDataContract $details_json,
+        public DeliveryOptionDetailDataContract $details_json,
         public bool $is_featured,
         public ?int $featured_price,
         public ?Verta $featured_price_start_date,

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\Wallet;
 
 use App\Contracts\WalletTransactionSourceableDataContract;
-use App\Data\Casts\TrasnactionSourceCast;
+use App\Data\Casts\TransactionSourceCast;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
@@ -29,7 +29,7 @@ final class WalletTransactionData extends Data
         public int $gift_balance_after,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public TransactionSourceEnum $source_type,
-        #[WithCast(TrasnactionSourceCast::class, short: false)]
+        #[WithCast(TransactionSourceCast::class, short: false)]
         public ?WalletTransactionSourceableDataContract $source,
         public ?string $description = null,
         public ?array $metadata = null,

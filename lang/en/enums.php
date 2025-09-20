@@ -74,7 +74,7 @@ return [
     ],
     'EducationStatusEnum' => [
         'student'   => 'Student',
-        'college'   => 'College',
+        'university'   => 'University',
         'graduated' => 'Graduated',
         'employed'  => 'Employed',
     ],

@@ -49,9 +49,9 @@ final class OrderItem extends Model
         return $this->belongsTo(Vendor::class);
     }
 
-    public function enrolment(): HasOne
+    public function enrollment(): HasOne
     {
-        return $this->hasOne(Enrolment::class, 'order_item_id');
+        return $this->hasOne(Enrollment::class, 'order_item_id');
     }
 
     public function productDeliveryOption(): BelongsTo

@@ -48,16 +48,16 @@ test('relation vendor', function () {
         ->toEqual($orderItem->vendor_id);
 });
 
-test('relation enrolment', function () {
+test('relation enrollment', function () {
     $orderItem = App\Models\OrderItem::factory()->create();
-    $enrolmet  = App\Models\Enrolment::factory()->create([
+    $enrolmet  = App\Models\Enrollment::factory()->create([
         'order_id'      => $orderItem->order_id,
         'order_item_id' => $orderItem->id,
         'customer_id'   => $orderItem->order->customer_id,
     ]);
-    expect($orderItem->enrolment)
-        ->toBeInstanceOf(App\Models\Enrolment::class)
-        ->and($orderItem->enrolment->order_item_id)
+    expect($orderItem->enrollment)
+        ->toBeInstanceOf(App\Models\Enrollment::class)
+        ->and($orderItem->enrollment->order_item_id)
         ->toEqual($orderItem->id);
 });
 

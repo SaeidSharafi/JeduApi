@@ -4,7 +4,7 @@ namespace App\Actions\Admin;
 
 use App\Enums\MediaTagEnum;
 
-class GetThumnailUrlAction
+class GetThumbnailUrlAction
 {
     public function handle(array $media): ?string
     {

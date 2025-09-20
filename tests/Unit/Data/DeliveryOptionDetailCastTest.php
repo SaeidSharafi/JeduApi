@@ -25,10 +25,10 @@ it('return EmptyDetailsData if fulfillment_type or delivery_method is null', fun
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = null;
     $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD;
-    $detials                        = [
+    $details                        = [
         'max_downloads' => 10,
     ];
-    $delivery_option = $caster->cast($this->mockProperty, $detials, $properties, $this->mockContext);
+    $delivery_option = $caster->cast($this->mockProperty, $details, $properties, $this->mockContext);
     expect($delivery_option)->toBeInstanceOf(
         App\Data\Admin\ProductDeliveryOption\DetailsData\EmptyDetailsData::class
     );
@@ -38,11 +38,11 @@ it('return DirectDownloadDetailsData if delivery_method is DIRECT_DOWNLOAD', fun
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::DIGITAL;
     $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD;
-    $detials                        = [
+    $details                        = [
         'max_downloads'   => 10,
         'expiration_date' => '2023-12-31 23:59:59',
     ];
-    $delivery_option = $caster->cast($this->mockProperty, $detials, $properties, $this->mockContext);
+    $delivery_option = $caster->cast($this->mockProperty, $details, $properties, $this->mockContext);
     expect($delivery_option)->toBeInstanceOf(
         App\Data\Admin\ProductDeliveryOption\DetailsData\DirectDownloadDetailsData::class
     );
@@ -52,13 +52,13 @@ it('return InPersonDetailsData if delivery_method is IN_PERSON', function () {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::PHYSICAL;
     $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::IN_PERSON;
-    $detials                        = [
+    $details                        = [
         'location'        => 'Test Location',
         'duration'        => '20 Minute',
         'schedule'        => 'Sun-Mon',
         'additional_info' => null,
     ];
-    $delivery_option = $caster->cast($this->mockProperty, $detials, $properties, $this->mockContext);
+    $delivery_option = $caster->cast($this->mockProperty, $details, $properties, $this->mockContext);
     expect($delivery_option)
         ->toBeInstanceOf(App\Data\Admin\ProductDeliveryOption\DetailsData\InPersonDetailsData::class)
         ->and($delivery_option->location)->toBe('Test Location')
@@ -69,28 +69,28 @@ it('return LmsMoodleDetailsData if delivery_method is LMS_MOODLE', function () {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE;
     $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::LMS_MOODLE;
-    $detials                        = [
+    $details                        = [
         'course_idnumber'       => 'course123',
         'activity_id'           => 1,
         'enrollment_start_date' => '2023-12-01 00:00:00',
         'enrollment_end_date'   => '2023-12-31 23:59:59',
     ];
-    $delivery_option = $caster->cast($this->mockProperty, $detials, $properties, $this->mockContext);
+    $delivery_option = $caster->cast($this->mockProperty, $details, $properties, $this->mockContext);
     expect($delivery_option)
         ->toBeInstanceOf(App\Data\Admin\ProductDeliveryOption\DetailsData\LmsMoodleDetailsData::class)
-        ->and($delivery_option->course_idnumber)->toBe($detials['course_idnumber'])
-        ->and($delivery_option->activity_id)->toBe($detials['activity_id'])
+        ->and($delivery_option->course_idnumber)->toBe($details['course_idnumber'])
+        ->and($delivery_option->activity_id)->toBe($details['activity_id'])
         ->and($delivery_option->enrollment_start_date->format('Y-m-d H:i:s'))
-        ->toBe(verta($detials['enrollment_start_date'])->format('Y-m-d H:i:s'))
+        ->toBe(verta($details['enrollment_start_date'])->format('Y-m-d H:i:s'))
         ->and($delivery_option->enrollment_end_date->format('Y-m-d H:i:s'))
-        ->toBe(verta($detials['enrollment_end_date'])->format('Y-m-d H:i:s'));
+        ->toBe(verta($details['enrollment_end_date'])->format('Y-m-d H:i:s'));
 });
 
 it('return LiveSessionBbbDetailsData if delivery_method is LIVE_SESSION_BBB', function () {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE;
     $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::LIVE_SESSION_BBB;
-    $detials                        = [
+    $details                        = [
         'moderator_password'                 => 'mod',
         'attendee_password'                  => 'att',
         'record_session'                     => true,
@@ -110,17 +110,17 @@ it('return LiveSessionBbbDetailsData if delivery_method is LIVE_SESSION_BBB', fu
         'default_presentation_url'           => 'https://example.com/presentation',
         'admin_notes'                        => 'Admin Note',
     ];
-    $delivery_option = $caster->cast($this->mockProperty, $detials, $properties, $this->mockContext);
+    $delivery_option = $caster->cast($this->mockProperty, $details, $properties, $this->mockContext);
     expect($delivery_option)
         ->toBeInstanceOf(LiveSessionBbbDetailsData::class)
-        ->and($delivery_option->toArray())->toBe($detials);
+        ->and($delivery_option->toArray())->toBe($details);
 });
 
 it('return LiveSessionSkyroomDetailsData if delivery_method is LIVE_SESSION_SKYROOM', function () {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE;
     $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::LIVE_SESSION_SKYROOM;
-    $detials                        = [
+    $details                        = [
         'meeting_name_identifier'     => 'meeting123',
         'moderator_password_override' => 'mod123',
         'attendee_password'           => 'att123',
@@ -133,21 +133,21 @@ it('return LiveSessionSkyroomDetailsData if delivery_method is LIVE_SESSION_SKYR
         'default_presentation_url'    => 'https://example.com/skyroom-presentation',
         'admin_notes'                 => 'Admin notes for Skyroom session',
     ];
-    $delivery_option = $caster->cast($this->mockProperty, $detials, $properties, $this->mockContext);
+    $delivery_option = $caster->cast($this->mockProperty, $details, $properties, $this->mockContext);
     expect($delivery_option)
         ->toBeInstanceOf(LiveSessionSkyroomDetailsData::class)
-        ->and($delivery_option->toArray())->toBe($detials);
+        ->and($delivery_option->toArray())->toBe($details);
 });
 
 it('return VideoPlatformSpotplayerDetailsData if delivery_method is VIDEO_PLATFORM_SPOTPLAYER', function () {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
-    $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::OFFILNE_SERVICE;
+    $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::OFFLINE_SERVICE;
     $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER;
-    $detials                        = [
+    $details                        = [
         'course_id' => 'course123',
     ];
-    $delivery_option = $caster->cast($this->mockProperty, $detials, $properties, $this->mockContext);
+    $delivery_option = $caster->cast($this->mockProperty, $details, $properties, $this->mockContext);
     expect($delivery_option)
         ->toBeInstanceOf(VideoPlatformSpotplayerDetailsData::class)
-        ->and($delivery_option->toArray())->toBe($detials);
+        ->and($delivery_option->toArray())->toBe($details);
 });

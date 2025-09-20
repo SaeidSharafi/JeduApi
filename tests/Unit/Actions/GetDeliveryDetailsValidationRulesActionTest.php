@@ -30,8 +30,8 @@ $fulfillmentDeliveryPairs = [
     [App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value, App\Enums\DeliveryMethodEnum::LIVE_SESSION_BBB->value],
     [App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value, App\Enums\DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value],
     [App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value, App\Enums\DeliveryMethodEnum::LMS_MOODLE->value],
-    // OFFILNE_SERVICE
-    [App\Enums\FulfillmentTypeEnum::OFFILNE_SERVICE->value, App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value],
+    // OFFLINE_SERVICE
+    [App\Enums\FulfillmentTypeEnum::OFFLINE_SERVICE->value, App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value],
     // IN_PERSON_SERVICE
     [App\Enums\FulfillmentTypeEnum::IN_PERSON_SERVICE->value, App\Enums\DeliveryMethodEnum::IN_PERSON->value],
 ];
@@ -108,9 +108,9 @@ $fulfillmentDeliveryPairsWithDetails = [
             'enrollment_end_date'   => '2023-12-31 23:59:59',
         ],
     ],
-    // OFFILNE_SERVICE - VIDEO_PLATFORM_SPOTPLAYER
+    // OFFLINE_SERVICE - VIDEO_PLATFORM_SPOTPLAYER
     [
-        App\Enums\FulfillmentTypeEnum::OFFILNE_SERVICE->value,
+        App\Enums\FulfillmentTypeEnum::OFFLINE_SERVICE->value,
         App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value,
         [
             'course_id' => 'course123',
@@ -261,7 +261,7 @@ it('creates delivery validation rules for LIVE_SESSION_SKYROOM', function () {
 });
 
 it('creates delivery validation rules for VIDEO_PLATFORM_SPOTPLAYER', function () {
-    $fulfillmentType = App\Enums\FulfillmentTypeEnum::OFFILNE_SERVICE->value;
+    $fulfillmentType = App\Enums\FulfillmentTypeEnum::OFFLINE_SERVICE->value;
     $deliveryMethod  = App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value;
     $detailsData     = [
         'course_id' => 'course123',

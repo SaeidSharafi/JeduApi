@@ -64,9 +64,9 @@ final class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(Teacher::class);
     }
 
-    public function enrolments(): HasMany
+    public function enrollments(): HasMany
     {
-        return $this->hasMany(Enrolment::class, 'customer_id');
+        return $this->hasMany(Enrollment::class, 'customer_id');
     }
 
     public function wallet(): HasOne

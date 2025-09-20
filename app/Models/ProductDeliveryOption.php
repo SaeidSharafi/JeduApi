@@ -56,9 +56,9 @@ final class ProductDeliveryOption extends Model
         return $this->belongsToMany(Teacher::class);
     }
 
-    public function enrolments(): HasMany
+    public function enrollments(): HasMany
     {
-        return $this->hasMany(Enrolment::class, 'product_delivery_option_id');
+        return $this->hasMany(Enrollment::class, 'product_delivery_option_id');
     }
 
     public function productDeliveryOptionDiscountPrice(): HasOne

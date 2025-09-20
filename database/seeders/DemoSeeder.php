@@ -206,7 +206,7 @@ final class DemoSeeder extends Seeder
                     'price'            => 3000000,
                 ],
                 [
-                    'fulfillment_type' => FulfillmentTypeEnum::OFFILNE_SERVICE,
+                    'fulfillment_type' => FulfillmentTypeEnum::OFFLINE_SERVICE,
                     'delivery_method'  => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
                     'price'            => 500000,
                 ],
@@ -223,7 +223,7 @@ final class DemoSeeder extends Seeder
                     OrderItem::factory()
                         ->count(rand(1, 3))
                         ->useExistingRelations()
-                        ->withEnrolment(),
+                        ->withEnrollment(),
                     'items'
                 )
                 ->withCalculatedTotalsAutomated()

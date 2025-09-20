@@ -136,24 +136,24 @@ test('payment status', function () {
 
 });
 
-test('enrolments relationship', function () {
+test('enrollments relationship', function () {
     $order     = Order::factory()->create();
-    $enrolment = App\Models\Enrolment::factory()->create([
+    $enrollment = App\Models\Enrollment::factory()->create([
         'order_id' => $order->id,
     ]);
 
-    expect($order->enrolments)
+    expect($order->enrollments)
         ->toHaveCount(1)
-        ->and($order->enrolments->first())
-        ->toBeInstanceOf(App\Models\Enrolment::class)
-        ->and($order->enrolments->first()->id)
-        ->toEqual($enrolment->id);
+        ->and($order->enrollments->first())
+        ->toBeInstanceOf(App\Models\Enrollment::class)
+        ->and($order->enrollments->first()->id)
+        ->toEqual($enrollment->id);
 
-    $enrolments = App\Models\Enrolment::factory()->count(3)->create([
+    $enrollments = App\Models\Enrollment::factory()->count(3)->create([
         'order_id' => $order->id,
     ]);
     $order->refresh();
-    expect($order->enrolments)
+    expect($order->enrollments)
         ->toHaveCount(4);
 });
 

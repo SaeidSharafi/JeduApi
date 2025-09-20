@@ -12,7 +12,7 @@ final class IbanNumberRule implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (empty($value) || ! $this->validateIranianSheba($value)) {
-            $fail('validation.custom.enrolment.optout.iban_number_is_invalid')->translate();
+            $fail('validation.custom.enrollment.optout.iban_number_is_invalid')->translate();
         }
     }
 

@@ -69,7 +69,7 @@ return [
     ],
     'EducationStatusEnum' => [
         'student'   => 'دانشجو',
-        'college'   => 'دانشگاه',
+        'university'   => 'دانشگاه',
         'graduated' => 'فارغ‌التحصیل',
         'employed'  => 'شاغل',
     ],

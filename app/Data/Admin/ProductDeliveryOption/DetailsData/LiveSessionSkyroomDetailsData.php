@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\ProductDeliveryOption\DetailsData;
 
-use App\Contracts\DeliveryOptionDetialDataContract;
+use App\Contracts\DeliveryOptionDetailDataContract;
 use Spatie\LaravelData\Attributes\Validation\BooleanType;
 use Spatie\LaravelData\Attributes\Validation\IntegerType;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -13,7 +13,7 @@ use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Attributes\Validation\Url;
 use Spatie\LaravelData\Data;
 
-final class LiveSessionSkyroomDetailsData extends Data implements DeliveryOptionDetialDataContract
+final class LiveSessionSkyroomDetailsData extends Data implements DeliveryOptionDetailDataContract
 {
     public function __construct(
         #[Nullable, StringType, Max(255)]

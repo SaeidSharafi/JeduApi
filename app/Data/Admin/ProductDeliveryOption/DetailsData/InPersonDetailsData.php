@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\ProductDeliveryOption\DetailsData;
 
-use App\Contracts\DeliveryOptionDetialDataContract;
+use App\Contracts\DeliveryOptionDetailDataContract;
 use Spatie\LaravelData\Data;
 
-final class InPersonDetailsData extends Data implements DeliveryOptionDetialDataContract
+final class InPersonDetailsData extends Data implements DeliveryOptionDetailDataContract
 {
     public function __construct(
         public string $location,

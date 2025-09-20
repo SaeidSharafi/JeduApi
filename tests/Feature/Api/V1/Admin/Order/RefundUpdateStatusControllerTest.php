@@ -24,12 +24,12 @@ describe('RefundUpdateStatusController', function () {
             'status'      => App\Enums\Payment\PaymentStatusEnum::COMPLETED,
             'method'      => App\Enums\Payment\PaymentMethodEnum::BANK_TRANSFER,
         ]);
-        $orderItem->enrolment()
+        $orderItem->enrollment()
             ->create([
                 'customer_id'                => $order->customer_id,
                 'order_id'                   => $order->id,
                 'product_delivery_option_id' => $orderItem->product_delivery_option_id,
-                'enrollment_status'          => App\Enums\EnrolmentStatusEnum::ACTIVE,
+                'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE,
             ]);
         $refund = Refund::factory()->create([
             'order_item_id' => $orderItem->id,
@@ -53,10 +53,10 @@ describe('RefundUpdateStatusController', function () {
             'id'     => $orderItem->id,
             'status' => App\Enums\Order\OrderItemStatusEnum::REFUNDED,
         ]);
-        $this->assertDatabaseHas('enrolments', [
+        $this->assertDatabaseHas('enrollments', [
             'order_id'          => $order->id,
             'order_item_id'     => $orderItem->id,
-            'enrollment_status' => App\Enums\EnrolmentStatusEnum::CANCELLED,
+            'enrollment_status' => App\Enums\EnrollmentStatusEnum::CANCELLED,
         ]);
 
     });
@@ -77,12 +77,12 @@ describe('RefundUpdateStatusController', function () {
             'status'      => App\Enums\Payment\PaymentStatusEnum::COMPLETED,
             'method'      => App\Enums\Payment\PaymentMethodEnum::BANK_TRANSFER,
         ]);
-        $orderItem->enrolment()
+        $orderItem->enrollment()
             ->create([
                 'customer_id'                => $order->customer_id,
                 'order_id'                   => $order->id,
                 'product_delivery_option_id' => $orderItem->product_delivery_option_id,
-                'enrollment_status'          => App\Enums\EnrolmentStatusEnum::ACTIVE,
+                'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE,
             ]);
         $refund = Refund::factory()->create([
             'order_item_id' => $orderItem->id,
@@ -113,12 +113,12 @@ describe('RefundUpdateStatusController', function () {
             'status'      => App\Enums\Payment\PaymentStatusEnum::COMPLETED,
             'method'      => App\Enums\Payment\PaymentMethodEnum::BANK_TRANSFER,
         ]);
-        $orderItem->enrolment()
+        $orderItem->enrollment()
             ->create([
                 'customer_id'                => $order->customer_id,
                 'order_id'                   => $order->id,
                 'product_delivery_option_id' => $orderItem->product_delivery_option_id,
-                'enrollment_status'          => App\Enums\EnrolmentStatusEnum::ACTIVE,
+                'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE,
             ]);
         $refund = Refund::factory()->create([
             'order_item_id' => $orderItem->id,

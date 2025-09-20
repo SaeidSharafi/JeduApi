@@ -95,7 +95,7 @@ describe('GetHomePageContentAction', function () {
                     'price'            => 20000,
                 ],
                 [
-                    'fulfillment_type' => FulfillmentTypeEnum::OFFILNE_SERVICE,
+                    'fulfillment_type' => FulfillmentTypeEnum::OFFLINE_SERVICE,
                     'delivery_method'  => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
                     'price'            => 20000,
                 ],
@@ -143,7 +143,7 @@ describe('GetHomePageContentAction', function () {
                     'price'            => 20000,
                 ],
                 [
-                    'fulfillment_type' => FulfillmentTypeEnum::OFFILNE_SERVICE,
+                    'fulfillment_type' => FulfillmentTypeEnum::OFFLINE_SERVICE,
                     'delivery_method'  => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
                     'price'            => 20000,
                 ],

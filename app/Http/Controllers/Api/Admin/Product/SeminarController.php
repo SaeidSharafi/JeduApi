@@ -27,7 +27,7 @@ use Spatie\QueryBuilder\QueryBuilder;
 final class SeminarController extends Controller
 {
     /**
-     * Retrun a listing of the seminars.
+     * Return a listing of the seminars.
      *
      * @queryParam filter[full_name] string Filter by seminar full name. Example: Introduction to Programming
      * @queryParam filter[short_name] string Filter by seminar short name. Example: IntroProg
@@ -56,7 +56,7 @@ final class SeminarController extends Controller
     }
 
     /**
-     * Store a newly created semianr in database.
+     * Store a newly created seminar in database.
      *
      * @response 201
      */

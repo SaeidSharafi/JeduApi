@@ -2,9 +2,9 @@
 
 use App\Enums\MediaTagEnum;
 
-describe('GetThumnailUrlAction', function () {
+describe('GetThumbnailUrlAction', function () {
     beforeEach(function () {
-        $this->action = new \App\Actions\Admin\GetThumnailUrlAction();
+        $this->action = new \App\Actions\Admin\GetThumbnailUrlAction();
     });
 
     it('returns null when media array is empty', function () {

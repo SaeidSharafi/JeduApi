@@ -6,7 +6,7 @@ declare(strict_types=1);
 use App\Actions\Admin\Order\CreateOrderAction;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
-use App\Enums\EnrolmentStatusEnum;
+use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\DiscountTypeEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
@@ -16,7 +16,7 @@ use App\Enums\PublicationStatusEnum;
 use App\Events\OrderCreatedEvent;
 use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
-use App\Models\Enrolment;
+use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
@@ -112,17 +112,17 @@ describe('CreateOrderAction', function () {
             'status'                     => OrderItemStatusEnum::PENDING->value,
         ]);
 
-        \Pest\Laravel\assertDatabaseHas('enrolments', [
+        \Pest\Laravel\assertDatabaseHas('enrollments', [
             'order_id'                   => $order->id,
             'customer_id'                => $user->id,
             'product_delivery_option_id' => $deliveryOption1->id,
-            'enrollment_status'          => EnrolmentStatusEnum::PENDING_PROVISIONING->value,
+            'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
         ]);
-        \Pest\Laravel\assertDatabaseHas('enrolments', [
+        \Pest\Laravel\assertDatabaseHas('enrollments', [
             'order_id'                   => $order->id,
             'customer_id'                => $user->id,
             'product_delivery_option_id' => $deliveryOption2->id,
-            'enrollment_status'          => EnrolmentStatusEnum::PENDING_PROVISIONING->value,
+            'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
         ]);
 
         Event::assertDispatched(OrderCreatedEvent::class, fn ($event) => $event->order->id === $order->id);
@@ -138,9 +138,9 @@ describe('CreateOrderAction', function () {
             'capacity'   => 1,
         ]); // Only 1 seat
 
-        Enrolment::factory()->create([
+        Enrollment::factory()->create([
             'product_delivery_option_id' => $deliveryOption->id,
-            'enrollment_status'          => EnrolmentStatusEnum::ACTIVE,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
         ]);
 
         $items = [
@@ -177,10 +177,10 @@ describe('CreateOrderAction', function () {
         $deliveryOption = ProductDeliveryOption::factory()->create();
 
         // Setup: Create a pre-existing ACTIVE enrollment for this user and item.
-        Enrolment::factory()->create([
+        Enrollment::factory()->create([
             'customer_id'                => $user->id,
             'product_delivery_option_id' => $deliveryOption->id,
-            'enrollment_status'          => EnrolmentStatusEnum::ACTIVE,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
         ]);
 
         $items = [
@@ -241,15 +241,15 @@ describe('CreateOrderAction', function () {
         ]);
 
         // Setup: Create TWO pre-existing active enrollments
-        Enrolment::factory()->create([
+        Enrollment::factory()->create([
             'customer_id'                => $user->id,
             'product_delivery_option_id' => $deliveryOption1->id,
-            'enrollment_status'          => EnrolmentStatusEnum::ACTIVE,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
         ]);
-        Enrolment::factory()->create([
+        Enrollment::factory()->create([
             'customer_id'                => $user->id,
             'product_delivery_option_id' => $deliveryOption2->id,
-            'enrollment_status'          => EnrolmentStatusEnum::ACTIVE,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
         ]);
 
         // Attempt to create an order with both of these items again

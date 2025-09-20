@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('enrolments', function (Blueprint $table) {
+        Schema::create('enrollments', function (Blueprint $table) {
             $table->id();
             $table->uuid()->unique()->index();
             $table->unsignedBigInteger('order_id');
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreign('product_delivery_option_id', 'pdo_id_foreign')->references('id')->on('product_delivery_options')
                 ->onDelete('cascade');
             $table->string('enrollment_status')
-                ->default(App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING->value);
+                ->default(App\Enums\EnrollmentStatusEnum::PENDING_PROVISIONING->value);
             $table->date('access_start_date')->nullable();
             $table->date('access_end_date')->nullable();
             $table->unsignedBigInteger('external_enrollment_id')->nullable();
@@ -35,6 +35,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('enrolments');
+        Schema::dropIfExists('enrollments');
     }
 };

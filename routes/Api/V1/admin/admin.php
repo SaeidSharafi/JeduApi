@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\Admin\AdviceRequest\AdviceRequestController;
 use App\Http\Controllers\Api\Admin\AdviceRequest\AdviceRequestUpdateStatusController;
 
-use App\Http\Controllers\Api\Admin\PermissonController;
+use App\Http\Controllers\Api\Admin\PermissionController;
 use App\Http\Controllers\Api\Admin\Review\ApproveReviewController;
 use App\Http\Controllers\Api\Admin\Review\RejectReviewController;
 use App\Http\Controllers\Api\Admin\Review\ReviewController;
@@ -28,7 +28,7 @@ require __DIR__.'/wallet.php';
 
 Route::apiResource('staff', StaffController::class);
 Route::apiResource('role', RoleController::class);
-Route::get('permission', PermissonController::class)->name('permission.index');
+Route::get('permission', PermissionController::class)->name('permission.index');
 
 Route::apiResource('vendor', VendorController::class);
 Route::apiResource('teacher', TeacherController::class);

@@ -140,10 +140,10 @@ describe('OrderController', function () {
                 'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             ]);
 
-            $this->assertDatabaseHas('enrolments', [
+            $this->assertDatabaseHas('enrollments', [
                 'order_id'          => $response->json('data.id'),
                 'customer_id'       => $user->id,
-                'enrollment_status' => App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING,
+                'enrollment_status' => App\Enums\EnrollmentStatusEnum::PENDING_PROVISIONING,
             ]);
 
         });
@@ -224,11 +224,11 @@ describe('OrderController', function () {
                 'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             ]);
             $order->items->each(function ($item) use ($user) {
-                $item->enrolment()->create([
+                $item->enrollment()->create([
                     'customer_id'                => $user->id,
                     'order_id'                   => $item->order_id,
                     'product_delivery_option_id' => $item->product_delivery_option_id,
-                    'enrollment_status'          => App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING,
+                    'enrollment_status'          => App\Enums\EnrollmentStatusEnum::PENDING_PROVISIONING,
                 ]);
             });
 
@@ -259,11 +259,11 @@ describe('OrderController', function () {
                 'status' => OrderStatusEnum::CANCELLED->value,
             ]);
             $order->items->each(function ($item) use ($user) {
-                $this->assertDatabaseHas('enrolments', [
+                $this->assertDatabaseHas('enrollments', [
                     'customer_id'                => $user->id,
                     'order_id'                   => $item->order_id,
                     'product_delivery_option_id' => $item->product_delivery_option_id,
-                    'enrollment_status'          => App\Enums\EnrolmentStatusEnum::CANCELLED,
+                    'enrollment_status'          => App\Enums\EnrollmentStatusEnum::CANCELLED,
                 ]);
             });
 
@@ -292,11 +292,11 @@ describe('OrderController', function () {
                     'status'                     => App\Enums\Order\OrderItemStatusEnum::PENDING,
                 ]
             );
-            $item->enrolment()->create([
+            $item->enrollment()->create([
                 'customer_id'                => $user->id,
                 'order_id'                   => $item->order_id,
                 'product_delivery_option_id' => $item->product_delivery_option_id,
-                'enrollment_status'          => App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING,
+                'enrollment_status'          => App\Enums\EnrollmentStatusEnum::PENDING_PROVISIONING,
             ]);
             $response = $this->deleteJson(route('api.v1.admin.order.destroy', ['order' => $order->id]));
             $response->assertStatus(204);
@@ -307,7 +307,7 @@ describe('OrderController', function () {
                 'order_id' => $order->id,
             ]);
 
-            $this->assertDatabaseMissing('enrolments', ['order_id' => $order->id]);
+            $this->assertDatabaseMissing('enrollments', ['order_id' => $order->id]);
 
         });
         it('can not delete an order with payments', function () {
@@ -342,11 +342,11 @@ describe('OrderController', function () {
                 'created_by'  => null,
                 'customer_id' => $user->id,
             ]);
-            $item->enrolment()->create([
+            $item->enrollment()->create([
                 'customer_id'                => $user->id,
                 'order_id'                   => $item->order_id,
                 'product_delivery_option_id' => $item->product_delivery_option_id,
-                'enrollment_status'          => App\Enums\EnrolmentStatusEnum::PENDING_PROVISIONING,
+                'enrollment_status'          => App\Enums\EnrollmentStatusEnum::PENDING_PROVISIONING,
             ]);
             $response = $this->deleteJson(route('api.v1.admin.order.destroy', ['order' => $order->id]));
             $response->assertStatus(422);
@@ -363,7 +363,7 @@ describe('OrderController', function () {
                 'order_id' => $order->id,
             ]);
 
-            $this->assertDatabaseHas('enrolments', ['order_id' => $order->id]);
+            $this->assertDatabaseHas('enrollments', ['order_id' => $order->id]);
             $this->assertDatabaseHas('payments', ['order_id' => $order->id]);
 
         });

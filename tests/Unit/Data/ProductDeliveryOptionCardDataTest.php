@@ -48,7 +48,7 @@ it('return data correctly', function () {
             'name' => $product->term?->name,
         ])
         ->and($data->price)->toBe($deliveryOption->price)
-        ->and($data->fullfilment_type)->toBe([
+        ->and($data->fulfillment_type)->toBe([
             'value' => $deliveryOption->fulfillment_type->value,
             'label' => $deliveryOption->fulfillment_type->translate(),
         ])

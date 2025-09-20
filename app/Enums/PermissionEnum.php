@@ -49,11 +49,11 @@ enum PermissionEnum: string
     case DISCOUNT_UPDATE = 'discount.update';
     case DISCOUNT_VIEW = 'discount.view';
     case DISCOUNT_VIEW_ANY = 'discount.view_any';
-    case ENROLMENT_CREATE = 'enrolment.create';
-    case ENROLMENT_DELETE = 'enrolment.delete';
-    case ENROLMENT_UPDATE = 'enrolment.update';
-    case ENROLMENT_VIEW = 'enrolment.view';
-    case ENROLMENT_VIEW_ANY = 'enrolment.view_any';
+    case ENROLLMENT_CREATE = 'enrollment.create';
+    case ENROLLMENT_DELETE = 'enrollment.delete';
+    case ENROLLMENT_UPDATE = 'enrollment.update';
+    case ENROLLMENT_VIEW = 'enrollment.view';
+    case ENROLLMENT_VIEW_ANY = 'enrollment.view_any';
     case FILE_CREATE = 'file.create';
     case FILE_DELETE = 'file.delete';
     case FILE_DELETE_OWN = 'file.delete_own';

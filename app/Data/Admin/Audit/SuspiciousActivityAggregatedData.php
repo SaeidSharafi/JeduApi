@@ -6,7 +6,7 @@ namespace App\Data\Admin\Audit;
 
 use Spatie\LaravelData\Data;
 
-final class SuspiciousActivityAgregratedData extends Data
+final class SuspiciousActivityAggregatedData extends Data
 {
     public function __construct(
         public array $detection_period,

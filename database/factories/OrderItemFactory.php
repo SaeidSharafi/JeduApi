@@ -7,7 +7,7 @@ namespace Database\Factories;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\PublicationStatusEnum;
-use App\Models\Enrolment;
+use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
@@ -75,20 +75,20 @@ final class OrderItemFactory extends Factory
     }
 
     /**
-     * STATE: Create a corresponding Enrolment for this OrderItem.
+     * STATE: Create a corresponding Enrollment for this OrderItem.
      * This is the performant way to create a child record.
      */
-    public function withEnrolment(): self
+    public function withEnrollment(): self
     {
         return $this->has(
-            Enrolment::factory()->state(function (array $attributes, OrderItem $orderItem) {
+            Enrollment::factory()->state(function (array $attributes, OrderItem $orderItem) {
                 return [
                     'order_id'                   => $orderItem->order_id,
                     'customer_id'                => $orderItem->order->customer_id,
                     'product_delivery_option_id' => $orderItem->product_delivery_option_id,
                 ];
             }),
-            'enrolment' // The name of the hasOne relationship on the OrderItem model
+            'enrollment' // The name of the hasOne relationship on the OrderItem model
         );
     }
 }

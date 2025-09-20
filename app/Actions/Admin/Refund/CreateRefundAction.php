@@ -22,7 +22,7 @@ final readonly class CreateRefundAction
 
     public function handle(RefundCreateData $data, OrderItem $orderItem): Refund
     {
-        $orderItem->loadMissing('order', 'enrolment');
+        $orderItem->loadMissing('order', 'enrollment');
         $this->validateOrderItemIsRefundable($orderItem);
 
         $amountPaidForItem = $this->calculateAmountPaidForItem($orderItem);

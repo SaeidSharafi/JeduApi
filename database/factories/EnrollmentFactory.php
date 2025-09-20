@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\Enrolment;
+use App\Models\Enrollment;
 use App\Models\OrderItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
-final class EnrolmentFactory extends Factory
+final class EnrollmentFactory extends Factory
 {
-    protected $model = Enrolment::class;
+    protected $model = Enrollment::class;
 
     public function definition(): array
     {
@@ -25,7 +25,7 @@ final class EnrolmentFactory extends Factory
             ) => OrderItem::find($attributes['order_item_id'])->order->customer_id,
             'product_delivery_option_id' => fn (array $attributes
             ) => OrderItem::find($attributes['order_item_id'])->product_delivery_option_id,
-            'enrollment_status' => $this->faker->randomElement(\App\Enums\EnrolmentStatusEnum::getAllValues()),
+            'enrollment_status' => $this->faker->randomElement(\App\Enums\EnrollmentStatusEnum::getAllValues()),
             'access_start_date' => $startData,
             'access_end_date'   => $startData ? Carbon::parse($startData)
                 ->addDays($this->faker->numberBetween(1, 365)) : null,

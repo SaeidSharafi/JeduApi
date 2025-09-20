@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Seminar;
 
-use App\Actions\Admin\GetThumnailUrlAction;
+use App\Actions\Admin\GetThumbnailUrlAction;
 use App\Data\Admin\Seminar\CreateSeminarData;
 use App\Models\Seminar;
 
 final class CreateSeminarAction
 {
     public function __construct(
-        protected GetThumnailUrlAction $thumnailUrlAction
+        protected GetThumbnailUrlAction $thumbnailUrlAction
     )
     {
     }
@@ -22,7 +22,7 @@ final class CreateSeminarAction
         $categoriesToAttach  = $data->categories     ?? [];
         $digitalAssetsAttach = $data->digital_assets ?? [];
         $valdiatedData = $data->except('media', 'categories', 'digital_assets')->toArray();
-        $valdiatedData['thumbnail_url'] = $this->thumnailUrlAction->handle($data->media);
+        $valdiatedData['thumbnail_url'] = $this->thumbnailUrlAction->handle($data->media);
         $seminar             = Seminar::query()->create($valdiatedData);
         $seminar->categories()->attach($categoriesToAttach);
         $seminar->digitalAssets()->attach($digitalAssetsAttach);

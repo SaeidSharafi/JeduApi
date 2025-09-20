@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 it('to array', function () {
 
-    $enrolment = App\Models\Enrolment::factory()->create();
+    $enrollment = App\Models\Enrollment::factory()->create();
 
-    $array = $enrolment->toArray();
+    $array = $enrollment->toArray();
 
     expect($array)->toBeArray()
         ->and($array)->toHaveKeys([
@@ -27,28 +27,28 @@ it('to array', function () {
 });
 
 test('order relationship', function () {
-    $enrolment = App\Models\Enrolment::factory()->create();
+    $enrollment = App\Models\Enrollment::factory()->create();
 
-    $order = $enrolment->order;
+    $order = $enrollment->order;
 
     expect($order)->toBeInstanceOf(App\Models\Order::class)
-        ->and($order->id)->toBe($enrolment->order_id);
+        ->and($order->id)->toBe($enrollment->order_id);
 });
 
 test('order item relationship', function () {
-    $enrolment = App\Models\Enrolment::factory()->create();
+    $enrollment = App\Models\Enrollment::factory()->create();
 
-    $orderItem = $enrolment->orderItem;
+    $orderItem = $enrollment->orderItem;
 
     expect($orderItem)->toBeInstanceOf(App\Models\OrderItem::class)
-        ->and($orderItem->id)->toBe($enrolment->order_item_id);
+        ->and($orderItem->id)->toBe($enrollment->order_item_id);
 });
 
 test('customer relationship', function () {
-    $enrolment = App\Models\Enrolment::factory()->create();
+    $enrollment = App\Models\Enrollment::factory()->create();
 
-    $customer = $enrolment->customer;
+    $customer = $enrollment->customer;
 
     expect($customer)->toBeInstanceOf(App\Models\User::class)
-        ->and($customer->id)->toBe($enrolment->customer_id);
+        ->and($customer->id)->toBe($enrollment->customer_id);
 });

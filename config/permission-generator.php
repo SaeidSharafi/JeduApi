@@ -157,7 +157,7 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
         ],
-        'enrolment' => [
+        'enrollment' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
             PermissionAction::UPDATE,

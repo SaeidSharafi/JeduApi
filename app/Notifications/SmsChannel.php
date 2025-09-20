@@ -36,7 +36,7 @@ final class SmsChannel
                 pattern: $message->pattern,
                 parameters: $message->parameters,
                 to: $to,
-                messeage: $message->content,
+                message: $message->content,
                 type: $message->type,
             );
 
@@ -45,7 +45,7 @@ final class SmsChannel
         if ($message->content) {
             $this->sms->send(
                 to: [$to],
-                messeage: $message->content,
+                message: $message->content,
                 type: $message->type
             );
         }

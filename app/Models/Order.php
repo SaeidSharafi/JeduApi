@@ -74,9 +74,9 @@ final class Order extends Model implements WalletTransactionSourceableContract
         return $this->hasMany(Payment::class);
     }
 
-    public function enrolments(): HasMany
+    public function enrollments(): HasMany
     {
-        return $this->hasMany(Enrolment::class, 'order_id');
+        return $this->hasMany(Enrollment::class, 'order_id');
     }
 
     public function customer(): BelongsTo

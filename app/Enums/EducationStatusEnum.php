@@ -10,7 +10,7 @@ enum EducationStatusEnum: string
 {
     use AdvanceEnum;
     case STUDENT   = 'student';
-    case CollEGE   = 'college';
+    case UNIVERSITY   = 'university';
     case GRADUATED = 'graduated';
     case EMPLOYED  = 'employed';
 }

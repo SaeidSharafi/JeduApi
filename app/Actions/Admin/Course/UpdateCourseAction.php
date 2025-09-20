@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Course;
 
-use App\Actions\Admin\GetThumnailUrlAction;
+use App\Actions\Admin\GetThumbnailUrlAction;
 use App\Data\Admin\Course\CreateCourseData;
 use App\Enums\MediaTagEnum;
 use App\Models\Course;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 final readonly class UpdateCourseAction
 {
     public function __construct(
-        protected GetThumnailUrlAction $thumnailUrlAction
+        protected GetThumbnailUrlAction $thumbnailUrlAction
     ) {
     }
 
@@ -24,7 +24,7 @@ final readonly class UpdateCourseAction
     {
         DB::transaction(function () use ($data, $course): void {
             $valdiatedData = $data->except('media', 'categories', 'digital_assets')->all();
-            $valdiatedData['thumbnail_url'] = $this->thumnailUrlAction->handle($data->media);
+            $valdiatedData['thumbnail_url'] = $this->thumbnailUrlAction->handle($data->media);
             $course->update($valdiatedData);
             $course->products()->update(['slug' => $data->slug]);
             $mediaInput = $data->media ?? [];

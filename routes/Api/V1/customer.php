@@ -10,11 +10,11 @@ Route::middleware(['auth:user'])
             ->only(['show', 'update']);
 
         Route::prefix('my-courses')->name('my-courses.')->group(function () {
-            Route::get('/', [App\Http\Controllers\Api\Shop\MyCourses\EnrolmentController::class, 'index'])
+            Route::get('/', [App\Http\Controllers\Api\Shop\MyCourses\EnrollmentController::class, 'index'])
                 ->name('index');
 
-            Route::get('/{enrolment:uuid}',
-                [App\Http\Controllers\Api\Shop\MyCourses\EnrolmentController::class, 'show'])
+            Route::get('/{enrollment:uuid}',
+                [App\Http\Controllers\Api\Shop\MyCourses\EnrollmentController::class, 'show'])
                 ->name('show');
         });
     });

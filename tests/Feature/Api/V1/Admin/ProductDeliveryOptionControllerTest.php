@@ -315,7 +315,7 @@ describe('validation', function () {
         $data    = ProductDeliveryOption::factory()
             ->make([
                 'product_id'       => $product->id,
-                'fulfillment_type' => App\Enums\FulfillmentTypeEnum::OFFILNE_SERVICE->value,
+                'fulfillment_type' => App\Enums\FulfillmentTypeEnum::OFFLINE_SERVICE->value,
                 'delivery_method'  => App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD->value,
             ])->toArray();
         $data['details'] = [
@@ -327,7 +327,7 @@ describe('validation', function () {
             ->assertJsonValidationErrors(['delivery_method']);
     });
 
-    it('should return correct validation errors for each delivery option detials', function () {
+    it('should return correct validation errors for each delivery option details', function () {
         $this->authorized_user([
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,
         ]);
@@ -367,7 +367,7 @@ describe('validation', function () {
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['details.meeting_name_identifier']);
 
-        $data['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::OFFILNE_SERVICE->value;
+        $data['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::OFFLINE_SERVICE->value;
         $data['delivery_method']  = App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value;
         $response                 = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
 

@@ -6,7 +6,7 @@ namespace App\Data\Shop\MyCourses;
 
 use App\Data\Shop\Product\ProductDeliveryOptionCardData;
 use App\Data\Transformer\TranslatableEnumData;
-use App\Enums\EnrolmentStatusEnum;
+use App\Enums\EnrollmentStatusEnum;
 use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
 use Hekmatinasser\Verta\Verta;
@@ -16,7 +16,7 @@ use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-final class EnrolmentData extends Data
+final class EnrollmentData extends Data
 {
     // #[Computed]
     // public ProductData $product;
@@ -24,7 +24,7 @@ final class EnrolmentData extends Data
     public function __construct(
         public string $uuid,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
-        public EnrolmentStatusEnum $enrollment_status,
+        public EnrollmentStatusEnum $enrollment_status,
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]
         public ?Verta $access_start_date,
         #[WithCast(DateTimeInterfaceCast::class, 'Y-m-d')]

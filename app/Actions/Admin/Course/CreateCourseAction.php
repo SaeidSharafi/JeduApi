@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Course;
 
-use App\Actions\Admin\GetThumnailUrlAction;
+use App\Actions\Admin\GetThumbnailUrlAction;
 use App\Data\Admin\Course\CreateCourseData;
 use App\Enums\MediaTagEnum;
 use App\Models\Course;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 final readonly class CreateCourseAction
 {
     public function __construct(
-        protected GetThumnailUrlAction $thumnailUrlAction
+        protected GetThumbnailUrlAction $thumbnailUrlAction
     )
     {
     }
@@ -29,7 +29,7 @@ final readonly class CreateCourseAction
             $digitalAssetsAttach = $data->digital_assets ?? [];
 
             $valdiatedData = $data->except('media', 'categories', 'digital_assets')->all();
-            $valdiatedData['thumbnail_url'] = $this->thumnailUrlAction->handle($mediaToAttach);
+            $valdiatedData['thumbnail_url'] = $this->thumbnailUrlAction->handle($mediaToAttach);
 
             $course = Course::query()->create($valdiatedData);
             $course->categories()->attach($categoriesToAttach);

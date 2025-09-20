@@ -93,13 +93,13 @@ describe('RefundController', function () {
         ]);
 
         $orderItem = $order->items()->first();
-        App\Models\Enrolment::factory()
+        App\Models\Enrollment::factory()
             ->create([
                 'order_id'                   => $order->id,
                 'order_item_id'              => $orderItem->id,
                 'customer_id'                => $order->customer_id,
                 'product_delivery_option_id' => $orderItem->product_delivery_option_id,
-                'enrollment_status'          => App\Enums\EnrolmentStatusEnum::ACTIVE->value,
+                'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE->value,
             ]);
         $data = [
             'deduction_percent'   => 20,
@@ -147,10 +147,10 @@ describe('RefundController', function () {
             'id'     => $order->id,
             'status' => OrderStatusEnum::REFUNDED->value,
         ]);
-        assertDatabaseHas('enrolments', [
+        assertDatabaseHas('enrollments', [
             'order_id'          => $order->id,
             'order_item_id'     => $orderItem->id,
-            'enrollment_status' => App\Enums\EnrolmentStatusEnum::CANCELLED->value,
+            'enrollment_status' => App\Enums\EnrollmentStatusEnum::CANCELLED->value,
         ]);
     });
 

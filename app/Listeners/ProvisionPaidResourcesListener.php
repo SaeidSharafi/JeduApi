@@ -19,7 +19,7 @@ final class ProvisionPaidResourcesListener implements ShouldQueue
     {
         $order = $event->payment->order()->with([
             'customer',
-            'items' => fn ($q) => $q->with('enrolment', 'productDeliveryOption'),
+            'items' => fn ($q) => $q->with('enrollment', 'productDeliveryOption'),
         ])->first();
 
         if (! $order) {
@@ -28,8 +28,8 @@ final class ProvisionPaidResourcesListener implements ShouldQueue
 
         foreach ($order->items as $item) {
 
-            if ($item->enrolment) {
-                $deliveryMethod = $item->enrolment->productDeliveryOption->delivery_method;
+            if ($item->enrollment) {
+                $deliveryMethod = $item->enrollment->productDeliveryOption->delivery_method;
                 if ($deliveryMethod === DeliveryMethodEnum::IN_PERSON) {
                     /**
                      * TODO: Implement the job to provision In person details.

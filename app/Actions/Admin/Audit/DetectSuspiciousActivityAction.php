@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Audit;
 
-use App\Data\Admin\Audit\SuspiciousActivityAgregratedData;
+use App\Data\Admin\Audit\SuspiciousActivityAggregatedData;
 use App\Data\Admin\Audit\SuspiciousActivityCollectionData;
 use App\Data\Admin\Audit\SuspiciousActivityData;
 use App\Data\Admin\Audit\SuspiciousActivityRequestData;
@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 
 final class DetectSuspiciousActivityAction
 {
-    public function handle(SuspiciousActivityRequestData $data): SuspiciousActivityAgregratedData
+    public function handle(SuspiciousActivityRequestData $data): SuspiciousActivityAggregatedData
     {
         if ($data->include_large_amounts) {
             $large_transactions = $this->detectLargeTransactions($data);
@@ -44,7 +44,7 @@ final class DetectSuspiciousActivityAction
             round_number_patterns: $round_number_patterns   ?? null,
         );
 
-        return new SuspiciousActivityAgregratedData(
+        return new SuspiciousActivityAggregatedData(
             detection_period: [
                 'from' => verta($data->date_from)->format('Y-m-d'),
                 'to'   => verta($data->date_to)->format('Y-m-d'),

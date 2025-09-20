@@ -7,7 +7,7 @@ namespace Tests\Unit\Listeners;
 use App\Enums\DeliveryMethodEnum;
 use App\Events\PaymentCompletedEvent;
 use App\Listeners\ProvisionPaidResourcesListener;
-use App\Models\Enrolment;
+use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -29,22 +29,22 @@ describe('ProvisionPaidResourcesListener', function () {
         $inPersonItem = OrderItem::factory()->for($order)->create([
             'product_delivery_option_id' => ProductDeliveryOption::factory()->create(['delivery_method' => DeliveryMethodEnum::IN_PERSON])->id,
         ]);
-        Enrolment::factory()->for($inPersonItem)->create();
+        Enrollment::factory()->for($inPersonItem)->create();
 
         $moodleItem = OrderItem::factory()->for($order)->create([
             'product_delivery_option_id' => ProductDeliveryOption::factory()->create(['delivery_method' => DeliveryMethodEnum::LMS_MOODLE])->id,
         ]);
-        Enrolment::factory()->for($moodleItem)->create();
+        Enrollment::factory()->for($moodleItem)->create();
 
         $spotplayerItem = OrderItem::factory()->for($order)->create([
             'product_delivery_option_id' => ProductDeliveryOption::factory()->create(['delivery_method' => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER])->id,
         ]);
-        Enrolment::factory()->for($spotplayerItem)->create();
+        Enrollment::factory()->for($spotplayerItem)->create();
 
         $downloadItem = OrderItem::factory()->for($order)->create([
             'product_delivery_option_id' => ProductDeliveryOption::factory()->create(['delivery_method' => DeliveryMethodEnum::DIRECT_DOWNLOAD])->id,
         ]);
-        Enrolment::factory()->for($downloadItem)->create();
+        Enrollment::factory()->for($downloadItem)->create();
 
         OrderItem::factory()->for($order)->create();
 

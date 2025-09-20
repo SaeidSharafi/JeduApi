@@ -12,14 +12,14 @@ beforeEach(function () {
     $this->customer();
 });
 it('should filter by fulfillment type', function () {
-    createEnrolment($this->user, DeliveryMethodEnum::IN_PERSON, 2);
-    createEnrolment($this->user, DeliveryMethodEnum::LMS_MOODLE);
+    createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, 2);
+    createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
     $this->getJson(route('api.v1.shop.my-courses.index', [
         'filter' => ['fulfillment_type' => App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value],
     ]))
         ->assertOk()
         ->assertJsonCount(1, 'data.data')
-        ->assertJsonPath('data.data.0.product.fullfilment_type.value',
+        ->assertJsonPath('data.data.0.product.fulfillment_type.value',
             App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value);
 });
 it('should filter by product name', function () {
@@ -32,8 +32,8 @@ it('should filter by product name', function () {
             'delivery_method' => DeliveryMethodEnum::LMS_MOODLE->value,
             'product_id'      => $product->id,
         ]);
-    createEnrolment($this->user, DeliveryMethodEnum::LMS_MOODLE, 5);
-    createEnrolment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, 5);
+    createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
     $this->getJson(route('api.v1.shop.my-courses.index', [
         'filter' => ['name' => 'Test Product'],
     ]))
@@ -42,15 +42,15 @@ it('should filter by product name', function () {
         ->assertJsonPath('data.data.0.product.name', 'Test Product');
 });
 it('should paginate results', function () {
-    createEnrolment($this->user, DeliveryMethodEnum::LMS_MOODLE, count: 5);
+    createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, count: 5);
     $this->getJson(route('api.v1.shop.my-courses.index', [
         'per_page' => 1,
     ]))
         ->assertOk()
         ->assertJsonCount(1, 'data.data')
-        ->assertJsonPath('data.total', 5); // Assuming there are 3 enrolments in total
+        ->assertJsonPath('data.total', 5); // Assuming there are 3 enrollments in total
 });
-it('shows current user specific enrolment details', function () {
+it('shows current user specific enrollment details', function () {
     $product = App\Models\Product::factory()->create([
         'name' => 'Test Product',
     ]);
@@ -60,32 +60,32 @@ it('shows current user specific enrolment details', function () {
             'delivery_method' => DeliveryMethodEnum::LMS_MOODLE->value,
             'product_id'      => $product->id,
         ]);
-    createEnrolment($this->user, DeliveryMethodEnum::LMS_MOODLE, 5);
-    $enrolment = createEnrolment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, 5);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
     $response  = $this->getJson(route('api.v1.shop.my-courses.show', [
-        'enrolment' => $enrolment->uuid,
+        'enrollment' => $enrollment->uuid,
         'per_page'  => 1,
     ]));
 
     $response->assertOk();
-    $response->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($enrolment) {
-        $enrolment->load('product');
-        $json->where('data.uuid', $enrolment->uuid)
+    $response->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($enrollment) {
+        $enrollment->load('product');
+        $json->where('data.uuid', $enrollment->uuid)
             ->where('data.enrollment_status', [
-                'value' => $enrolment->enrollment_status->value,
-                'label' => $enrolment->enrollment_status->translate(),
+                'value' => $enrollment->enrollment_status->value,
+                'label' => $enrollment->enrollment_status->translate(),
             ])
-            ->where('data.product.name', $enrolment->product->name)
+            ->where('data.product.name', $enrollment->product->name)
             ->etc();
     });
 
 });
-it('does not show other users enrolment details', function () {
+it('does not show other users enrollment details', function () {
 
     $user      = App\Models\User::factory()->create()->fresh();
-    $enrolment = createEnrolment($user, DeliveryMethodEnum::LMS_MOODLE);
+    $enrollment = createEnrollment($user, DeliveryMethodEnum::LMS_MOODLE);
     $response  = $this->getJson(route('api.v1.shop.my-courses.show', [
-        'enrolment' => $enrolment->uuid,
+        'enrollment' => $enrollment->uuid,
         'per_page'  => 1,
     ]));
 
@@ -93,12 +93,12 @@ it('does not show other users enrolment details', function () {
     $response->assertJsonFragment(['message' => __('messages.enrollments.not_found')]);
 
 });
-function createEnrolment(
+function createEnrollment(
     App\Models\User|Illuminate\Contracts\Auth\Authenticatable $customer,
     DeliveryMethodEnum $deliveryMethod,
     int $count = 1,
     ?ProductDeliveryOption $deliveryOption = null,
-): App\Models\Enrolment {
+): App\Models\Enrollment {
     $order = Order::factory()->create(
         [
             'customer_id'            => $customer->id,
@@ -117,7 +117,7 @@ function createEnrolment(
         ]);
 
     $order_item = OrderItem::factory()
-        ->withEnrolment()
+        ->withEnrollment()
         ->count($count)
         ->create([
             'order_id'                   => $order->id,
@@ -127,5 +127,5 @@ function createEnrolment(
             'product_data_snapshot_json' => $product->product->toArray(),
         ])->fresh();
 
-    return $order_item->first()->enrolment;
+    return $order_item->first()->enrollment;
 }

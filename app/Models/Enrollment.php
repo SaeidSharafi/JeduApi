@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\EnrolmentStatusEnum;
+use App\Enums\EnrollmentStatusEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Support\Str;
 
-final class Enrolment extends Model
+final class Enrollment extends Model
 {
     use HasFactory;
 
@@ -56,7 +56,7 @@ final class Enrolment extends Model
             ProductDeliveryOption::class,
             'id', // Foreign key on ProductDeliveryOption table
             'id', // Foreign key on Product table
-            'product_delivery_option_id', // Local key on Enrolment table
+            'product_delivery_option_id', // Local key on Enrollment table
             'product_id' // Local key on ProductDeliveryOption table
         );
     }
@@ -72,7 +72,7 @@ final class Enrolment extends Model
     protected function casts(): array
     {
         return [
-            'enrollment_status' => EnrolmentStatusEnum::class,
+            'enrollment_status' => EnrollmentStatusEnum::class,
             'access_start_date' => 'date:Y-m-d',
             'access_end_date'   => 'date:Y-m-d',
             'provisioning_data' => 'array',

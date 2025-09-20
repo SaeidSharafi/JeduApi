@@ -50,11 +50,11 @@ it('return teacher_data relationship', function () {
     expect($user->teacherData->toArray())->toEqual($teacher->toArray());
 });
 
-it('return enrolments relationship', function () {
+it('return enrollments relationship', function () {
     $user      = User::factory()->create();
-    $enrolment = App\Models\Enrolment::factory()->create([
+    $enrollment = App\Models\Enrollment::factory()->create([
         'customer_id' => $user->id,
     ])->fresh();
-    $user->load('enrolments');
-    expect($user->enrolments->first()->toArray())->toEqual($enrolment->toArray());
+    $user->load('enrollments');
+    expect($user->enrollments->first()->toArray())->toEqual($enrollment->toArray());
 });

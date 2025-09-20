@@ -13,7 +13,7 @@ use App\Http\Controllers\Controller;
  *
  * APIs for getting all permissions
  */
-final class PermissonController extends Controller
+final class PermissionController extends Controller
 {
     /**
      * Get all permissions

@@ -12,17 +12,17 @@ enum FulfillmentTypeEnum: string
     case DIGITAL           = 'digital';
     case PHYSICAL          = 'physical';
     case ONLINE_SERVICE    = 'online_service';
-    case OFFILNE_SERVICE   = 'offline_service';
+    case OFFLINE_SERVICE   = 'offline_service';
     case IN_PERSON_SERVICE = 'in_person_service';
 
     public static function getDeliveryMethodsFor(string $fulfillmentType): array
     {
         $fulfillmentType = FulfillmentTypeEnum::tryFrom($fulfillmentType);
 
-        return $fulfillmentType ? $fulfillmentType->getDelivieryMethods() : [];
+        return $fulfillmentType ? $fulfillmentType->getDeliveryMethods() : [];
     }
 
-    public function getDelivieryMethods(): array
+    public function getDeliveryMethods(): array
     {
         return match ($this) {
             self::DIGITAL => [
@@ -35,7 +35,7 @@ enum FulfillmentTypeEnum: string
                 DeliveryMethodEnum::LIVE_SESSION_SKYROOM,
                 DeliveryMethodEnum::LMS_MOODLE,
             ],
-            self::OFFILNE_SERVICE => [
+            self::OFFLINE_SERVICE => [
                 DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
             ],
             self::IN_PERSON_SERVICE => [
@@ -49,7 +49,7 @@ enum FulfillmentTypeEnum: string
         if (is_string($deliveryMethod)) {
             $deliveryMethod = DeliveryMethodEnum::tryFrom($deliveryMethod);
         }
-        if (in_array($deliveryMethod, $this->getDelivieryMethods())) {
+        if (in_array($deliveryMethod, $this->getDeliveryMethods())) {
             return true;
         }
 
