@@ -45,6 +45,9 @@ class BlogPost extends Model
             'main_productable_id',
             'main_productable_type',
             'thumbnail_url',
+            'meta_title',
+            'meta_description',
+            'meta_keywords',
         ];
 
     public function author(): BelongsTo

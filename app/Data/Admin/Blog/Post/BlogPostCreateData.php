@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\Blog\Post;
 
 use App\Enums\ProductableEnum;
+use App\Traits\ValidatesMetaTags;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
@@ -12,6 +13,8 @@ use App\Enums\PublicationStatusEnum;
 
 final class BlogPostCreateData extends Data
 {
+    use ValidatesMetaTags;
+
     public function __construct(
         public string $title,
         public ?string $slug = null,
@@ -26,6 +29,9 @@ final class BlogPostCreateData extends Data
         public ?array $category_ids = [],
         /** @var array<int, array{id: int, type: string}> */
         public ?array $related_productables = null,
+        public ?string $meta_title = null,
+        public ?string $meta_description = null,
+        public ?string $meta_keywords = null,
         public array $media = []
     ) {
     }
@@ -35,7 +41,7 @@ final class BlogPostCreateData extends Data
         $mainProductableType = $context?->payload['main_productable']['type'] ?? null;
         $mainProductableTable = ProductableEnum::getTableFromType($mainProductableType);
 
-        return [
+        return array_merge([
             'title'                       => ['required', 'string', 'max:255'],
             'slug'                        => ['nullable', 'string', 'max:255', Rule::unique('blog_posts', 'slug')],
             'body'                        => ['required', 'string'],
@@ -63,6 +69,6 @@ final class BlogPostCreateData extends Data
             'media.cover.*'               => ['required', 'integer', 'exists:media,id'],
             'media.gallery.*'             => ['nullable', 'integer', 'exists:media,id'],
             'media.video.*'               => ['nullable', 'integer', 'exists:media,id'],
-        ];
+        ], self::metaTagValidationRules());
     }
 }

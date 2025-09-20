@@ -5,6 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
+    use App\Traits\HasMetaTagsMigration;
     public function up(): void
     {
         Schema::create('blog_categories', function (Blueprint $table) {
@@ -13,6 +14,7 @@ return new class extends Migration {
             $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->foreignId('parent_id')->nullable()->constrained('blog_categories')->onDelete('cascade');
+            $this->addMetaTagColumns($table);
             $table->string('icon')->nullable();
             $table->timestamps();
         });

@@ -35,6 +35,9 @@ final class BlogPostData extends Data
         public ?Verta $published_at = null,
         public int $read_time_minutes,
         public bool $is_featured,
+        public ?string $meta_title = null,
+        public ?string $meta_description = null,
+        public ?string $meta_keywords = null,
         #[WithCast(ProductableCast::class, short: true)]
         public ?ProductableDataContract $main_productable = null,
         #[DataCollectionOf(BlogCategoryData::class)]

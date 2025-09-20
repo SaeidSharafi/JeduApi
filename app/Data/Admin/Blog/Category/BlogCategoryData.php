@@ -18,6 +18,9 @@ final class BlogCategoryData extends Data
         public string $slug,
         public ?string $description,
         public ?int $parent_id,
+        public ?string $meta_title = null,
+        public ?string $meta_description = null,
+        public ?string $meta_keywords = null,
         public ?MediaData $icon = null,
         public ?int $posts_count = null,
         public ?Verta $created_at = null,
@@ -30,13 +33,16 @@ final class BlogCategoryData extends Data
         $media = $category->firstMedia('icon');
         return self::from(
             [
-                'id'          => $category->id,
-                'name'        => $category->name,
-                'slug'        => $category->slug,
-                'description' => $category->description,
-                'parent_id'   => $category->parent_id,
-                'icon'        => $media,
-                'posts_count' => $category->posts_count ?? null,
+                'id'               => $category->id,
+                'name'             => $category->name,
+                'slug'             => $category->slug,
+                'description'      => $category->description,
+                'parent_id'        => $category->parent_id,
+                'meta_title'       => $category->meta_title,
+                'meta_description' => $category->meta_description,
+                'meta_keywords'    => $category->meta_keywords,
+                'icon'             => $media,
+                'posts_count'      => $category->posts_count ?? null,
             ]
         );
     }

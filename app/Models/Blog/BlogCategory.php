@@ -24,6 +24,9 @@ class BlogCategory extends Model
         'description',
         'parent_id',
         'icon',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
     ];
 
     public function parent(): BelongsTo

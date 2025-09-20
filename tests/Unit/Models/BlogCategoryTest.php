@@ -11,6 +11,9 @@ it('to array', function (): void {
             'description' => $blogCategory->description,
             'parent_id'   => $blogCategory->parent_id,
             'icon'        => $blogCategory->icon,
+            'meta_title'       => $blogCategory->meta_title,
+            'meta_description' => $blogCategory->meta_description,
+            'meta_keywords'    => $blogCategory->meta_keywords,
             'created_at'  => $blogCategory->created_at?->utc()->toJSON(),
             'updated_at'  => $blogCategory->updated_at?->utc()->toJSON(),
         ]);

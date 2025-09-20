@@ -3,6 +3,7 @@
 use App\Enums\MorphTypeEnum;
 use App\Enums\ProductableEnum;
 use App\Enums\PublicationStatusEnum;
+use Illuminate\Support\Str;
 
 uses(\Tests\AuthTestTrait::class);
 describe('BlogPostController List & Filter', function (): void {
@@ -24,6 +25,9 @@ describe('BlogPostController List & Filter', function (): void {
                         'status',
                         'read_time_minutes',
                         'is_featured',
+                        'meta_title',
+                        'meta_description',
+                        'meta_keywords',
                         'categories' => [
                             '*' => [
                                 'id',
@@ -163,6 +167,9 @@ describe('BlogPostController CRUD', function (): void {
             'author_id'    => $author->id,
             'category_ids' => [$category->id],
             'is_featured'  => false,
+            'meta_title'               => Str::random(70),
+            'meta_description'         => Str::random(100),
+            'meta_keywords'            => Str::random(10) . ',' . Str::random(10),
             'media'        => [
                 'cover' => [$this->cover->id],
                 'video' => [$this->video->id],
@@ -221,6 +228,9 @@ describe('BlogPostController CRUD', function (): void {
             'title'   => 'Updated Blog Post Title',
             'excerpt' => 'Updated excerpt.',
             'body'    => 'Updated full content.',
+            'meta_title'               => Str::random(70),
+            'meta_description'         => Str::random(100),
+            'meta_keywords'            => Str::random(10) . ',' . Str::random(10),
             'status'  => PublicationStatusEnum::PUBLISHED->value,
             'media'        => [
                 'cover' => [$this->cover->id],
@@ -257,6 +267,9 @@ describe('BlogPostController CRUD', function (): void {
             'body'         => 'Full content of the new blog post.',
             'status'       => PublicationStatusEnum::DRAFT->value,
             'published_at' => now()->toDateTimeString(),
+            'meta_title'               => Str::random(70),
+            'meta_description'         => Str::random(100),
+            'meta_keywords'            => Str::random(10) . ',' . Str::random(10),
             'author_id'    => null,
             'category_ids' => [],
             'is_featured'  => false,

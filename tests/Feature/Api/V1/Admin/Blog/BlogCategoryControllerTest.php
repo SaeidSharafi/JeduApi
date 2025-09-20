@@ -35,6 +35,11 @@ describe('BlogCategoryController List & Filter', function (): void {
                         'name',
                         'slug',
                         'icon',
+                        'description',
+                        'parent_id',
+                        'meta_title',
+                        'meta_description',
+                        'meta_keywords',
                         'posts_count',
                         'created_at',
                         'updated_at',
@@ -94,6 +99,9 @@ describe('BlogCategoryController CRUD', function (): void {
             'slug' => null,
             'description' => 'This is a test category',
             'icon' => $this->media ? $this->media->id : null,
+            'meta_title'               => Str::random(70),
+            'meta_description'         => Str::random(100),
+            'meta_keywords'            => Str::random(10) . ',' . Str::random(10),
             'parent_id' => null,
         ];
         $response = $this->postJson(route('api.v1.admin.blog.category.store'), $data);

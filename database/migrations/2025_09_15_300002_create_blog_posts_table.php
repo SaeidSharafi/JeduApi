@@ -5,6 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
+    use App\Traits\HasMetaTagsMigration;
     public function up(): void
     {
         Schema::create('blog_posts', function (Blueprint $table) {
@@ -18,6 +19,7 @@ return new class extends Migration {
             $table->timestamp('published_at')->nullable();
             $table->integer('read_time_minutes');
             $table->boolean('is_featured')->default(false);
+            $this->addMetaTagColumns($table);
             $table->nullableMorphs('main_productable');
             $table->string('thumbnail_url')->nullable();
             $table->timestamps();

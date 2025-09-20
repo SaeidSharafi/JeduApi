@@ -50,6 +50,9 @@ describe('CreateBlogPostAction', function (): void {
             related_productables: [
                 ['type' => 'seminar', 'id' => $this->productable2->id],
             ],
+            meta_title: \Illuminate\Support\Str::random(70),
+            meta_description: \Illuminate\Support\Str::random(100),
+            meta_keywords: \Illuminate\Support\Str::random(50),
             media: [
                 'cover' => [$this->media->id],
             ],
@@ -89,6 +92,8 @@ describe('CreateBlogPostAction', function (): void {
             main_productable: null,
             category_ids: [],
             related_productables: [],
+            meta_title: \Illuminate\Support\Str::random(70),
+            meta_description: \Illuminate\Support\Str::random(100),
             media: [
                 'cover' => [$this->media->id],
             ],
@@ -127,6 +132,8 @@ describe('CreateBlogPostAction', function (): void {
             main_productable: null,
             category_ids: [],
             related_productables: [],
+            meta_title: \Illuminate\Support\Str::random(70),
+            meta_description: \Illuminate\Support\Str::random(100),
             media: [
                 'cover' => [$this->media->id],
             ],

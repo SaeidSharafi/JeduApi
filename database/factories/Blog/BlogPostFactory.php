@@ -8,6 +8,7 @@ use App\Models\Blog\BlogPost;
 use App\Models\Staff;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Plank\Mediable\Media;
 
 /** @mixin Factory<BlogPost> */
@@ -26,7 +27,10 @@ class BlogPostFactory extends Factory
             'published_at'          => Carbon::now(),
             'read_time_minutes'     => $this->faker->randomNumber(),
             'is_featured'           => $this->faker->boolean(),
-            'thumbnail_url'       => $this->faker->imageUrl(),
+            'meta_title'            => mb_trim(Str::take($this->faker->persianWords(4, true), 70)),
+            'meta_description'      => mb_trim(Str::take($this->faker->persianParagraph(20, false), 100)),
+            'meta_keywords'         => mb_trim(Str::take(implode(',', $this->faker->persianWords(3)), 255)),
+            'thumbnail_url'         => $this->faker->imageUrl(),
             'main_productable_id'   => null,
             'main_productable_type' => null,
             'created_at'            => Carbon::now(),
