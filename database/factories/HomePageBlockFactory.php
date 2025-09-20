@@ -23,7 +23,7 @@ class HomePageBlockFactory extends Factory
             'location'   => $this->faker->word(),
             'content'    => null,
             'order'      => $this->faker->randomNumber(),
-            'is_active'  => $this->faker->boolean(),
+            'is_active'  => true,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];
