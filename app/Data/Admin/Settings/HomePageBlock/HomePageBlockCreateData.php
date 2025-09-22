@@ -73,7 +73,7 @@ final class HomePageBlockCreateData extends Data
             'location'  => ['description' => 'The location where the block will be displayed.'],
             'order'     => ['description' => 'The order of the block in the specified location.'],
             'is_active' => ['description' => 'Whether the block is active or not.'],
-            'content'   => ['description' => 'The content of the home page block. The structure of this field varies based on the block type. See below for details.'],
+            'content'   => ['description' => 'The content of the home page block. The structure of this field varies based on the block type. See endpoint description for details.'],
             // if type is curated list or Curated Item List (title, item ids, type)
             'content.item_ids' => ['description' => 'An array of item IDs (product or category) to be displayed in the curated list. Required for Curated List and Main Categories type.'],
             // if type is Banner

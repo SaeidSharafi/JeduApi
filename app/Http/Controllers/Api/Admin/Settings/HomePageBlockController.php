@@ -47,6 +47,51 @@ class HomePageBlockController
 
     /**
      * Store a newly created home page block in storage.
+     * <aside class="warning">The structure of `content` object varies based on the type of block being created.</aside>
+     * ### type MAIN_CATEGORIES:
+     * - `items` (array of integers, required): An array of category IDs to be featured in the block.
+     * - `preset` (string, optional): The display preset for the block. Default is 'default'.
+     *
+     * ### type CURATED_LIST:
+     * - `items` (array of integers, required): An array of product IDs to be featured in the block.
+     * - `preset` (string, optional): The display preset for the block. Default is 'default'.
+     *
+     * ### type BANNER:
+     * - `image_id` (integer, required): The ID of the image to be used in the banner.
+     * - `action` (string, required): The URL or action to be taken when the banner is clicked.
+     * - `action_title` (string, required): The title of the action button on the banner.
+     * - `content` (string, optional): Additional content or description for the banner.
+     * - `preset` (string, optional): The display preset for the banner. Default is 'default'.
+     *
+     * ### type WEBINAR_BANNER:
+     * - `image_id` (integer, required): The ID of the image to be used in the webinar banner.
+     * - `product_id` (integer, required): The ID of the webinar product.
+     * - `text` (string, required): The text to be displayed on the webinar banner.
+     * - `action` (string, required): The URL or action to be taken when the banner is clicked.
+     * - `action_title` (string, required): The title of the action button on the banner.
+     * - `preset` (string, optional): The display preset for the webinar banner. Default is 'default'.
+     *
+     * ### type DYNAMIC_LIST:
+     * - `category_ids` (array, required): An array of category IDs to filter the items. If empty, items from all categories will be considered.
+     * - `item_type` (string, required): The type of items to display can be one of (course_products, seminar_products, digital_asset_products, blog_post, all_products  :
+     *     - `course_products` = Products where productable_type = Course
+     *     - `seminar_products` = Products where productable_type = Seminar
+     *     - `digital_asset_products` = Products where productable_type = DigitalAsset
+     *     - `blog_post` = Actual blog posts (not products)
+     *     - `all_products` = All products regardless of productable_type
+     * - `sort_by` (string, required): The criteria for sorting the items, can be one of:
+     *     - `created_at:desc` = Newest first
+     *     - `created_at:asc` = Oldest first
+     *     - `updated_at:desc` = Recently updated first
+     *     - `updated_at:asc` = Least recently updated first
+     *     - `name:asc` = Alphabetical A-Z
+     *     - `name:desc` = Alphabetical Z-A
+     *     - `popular` = Most popular items based on order count (only for products)
+     *     - `featured` = Featured items
+     * - `limit` (integer, required): The maximum number of items to display in the block. Must be between 1 and 20.
+     * - `preset` (string, optional): The display preset for the dynamic list. Default is 'default'.
+     *
+     *
      *
      * @responseFile 200 responses/settings/home-page-block/show.json
      * @responseFile 403 responses/403.json
