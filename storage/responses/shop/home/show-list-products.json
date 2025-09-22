@@ -1,0 +1,431 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 2,
+    "type": "CURATED_LIST",
+    "title": "Random Products",
+    "location": "middle",
+    "content": {
+      "items": [
+        {
+          "id": 47,
+          "slug": "quaerat-quibusdam-dolor-voluptas-et-suscipit",
+          "name": "Arianna Cummerata MD",
+          "price": 500000,
+          "original_price": 500000,
+          "price_range": {
+            "min": 500000,
+            "max": 3000000
+          },
+          "has_discount": false,
+          "discount_percent": null,
+          "is_free": false,
+          "is_featured": true,
+          "product_type": {
+            "value": "seminar",
+            "label": "سمینار"
+          },
+          "thumbnail_url": null,
+          "teachers": [
+            "جناب آقای Eveline Kris",
+            "جناب آقای Mya Bednar",
+            "جناب آقای Bruce Nader",
+            "جناب آقای Vidal Schulist"
+          ],
+          "reviews_count": 0,
+          "average_rating": 0,
+          "price_data": {
+            "min_price": 500000,
+            "min_original_price": 500000,
+            "has_featured_price": false,
+            "has_discount": false,
+            "has_pre_payment": true,
+            "discount_type": null,
+            "discount_percentage": null,
+            "range": {
+              "min": 500000,
+              "max": 3000000
+            },
+            "prices": [
+              {
+                "current_price": 1000000,
+                "original_price": 1000000,
+                "pre_payment_price": 11000,
+                "featured_price": null,
+                "discount_amount": null,
+                "has_pre_payment_price": true,
+                "has_featured_price": false,
+                "has_discount": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": null
+              },
+              {
+                "current_price": 3000000,
+                "original_price": 3000000,
+                "pre_payment_price": 14000,
+                "featured_price": null,
+                "discount_amount": null,
+                "has_pre_payment_price": true,
+                "has_featured_price": false,
+                "has_discount": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": null
+              },
+              {
+                "current_price": 500000,
+                "original_price": 500000,
+                "pre_payment_price": null,
+                "featured_price": null,
+                "discount_amount": null,
+                "has_pre_payment_price": false,
+                "has_featured_price": false,
+                "has_discount": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": null
+              }
+            ]
+          }
+        },
+        {
+          "id": 43,
+          "slug": "sint-consequatur-quod-rem-architecto-molestiae-deserunt",
+          "name": "Donny Grimes",
+          "price": 500000,
+          "original_price": 500000,
+          "price_range": {
+            "min": 500000,
+            "max": 3000000
+          },
+          "has_discount": false,
+          "discount_percent": null,
+          "is_free": false,
+          "is_featured": true,
+          "product_type": {
+            "value": "seminar",
+            "label": "سمینار"
+          },
+          "thumbnail_url": null,
+          "teachers": [
+            "جناب آقای Reginald Hahn",
+            "سرکار خانم Adeline Lynch",
+            "جناب آقای Angel Spinka",
+            "جناب آقای Eveline Kris",
+            "جناب آقای Magali Kiehn"
+          ],
+          "reviews_count": 0,
+          "average_rating": 0,
+          "price_data": {
+            "min_price": 500000,
+            "min_original_price": 500000,
+            "has_featured_price": false,
+            "has_discount": false,
+            "has_pre_payment": true,
+            "discount_type": null,
+            "discount_percentage": null,
+            "range": {
+              "min": 500000,
+              "max": 3000000
+            },
+            "prices": [
+              {
+                "current_price": 1000000,
+                "original_price": 1000000,
+                "pre_payment_price": null,
+                "featured_price": null,
+                "discount_amount": null,
+                "has_pre_payment_price": false,
+                "has_featured_price": false,
+                "has_discount": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": null
+              },
+              {
+                "current_price": 3000000,
+                "original_price": 3000000,
+                "pre_payment_price": 170000,
+                "featured_price": null,
+                "discount_amount": null,
+                "has_pre_payment_price": true,
+                "has_featured_price": false,
+                "has_discount": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": null
+              },
+              {
+                "current_price": 500000,
+                "original_price": 500000,
+                "pre_payment_price": null,
+                "featured_price": null,
+                "discount_amount": null,
+                "has_pre_payment_price": false,
+                "has_featured_price": false,
+                "has_discount": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": null
+              }
+            ]
+          }
+        },
+        {
+          "id": 57,
+          "slug": "assumenda-modi-quibusdam-et-ad-eaque",
+          "name": "Paxton Paucek",
+          "price": 500000,
+          "original_price": 500000,
+          "price_range": {
+            "min": 500000,
+            "max": 3000000
+          },
+          "has_discount": false,
+          "discount_percent": null,
+          "is_free": false,
+          "is_featured": false,
+          "product_type": {
+            "value": "seminar",
+            "label": "سمینار"
+          },
+          "thumbnail_url": null,
+          "teachers": [
+            "جناب آقای Bruce Nader",
+            "جناب آقای Gaylord Dickinson",
+            "جناب آقای Magali Kiehn",
+            "سرکار خانم Belle Boyer",
+            "جناب آقای Lorenzo Jenkins"
+          ],
+          "reviews_count": 0,
+          "average_rating": 0,
+          "price_data": {
+            "min_price": 500000,
+            "min_original_price": 500000,
+            "has_featured_price": false,
+            "has_discount": false,
+            "has_pre_payment": true,
+            "discount_type": null,
+            "discount_percentage": null,
+            "range": {
+              "min": 500000,
+              "max": 3000000
+            },
+            "prices": [
+              {
+                "current_price": 1000000,
+                "original_price": 1000000,
+                "pre_payment_price": 225000,
+                "featured_price": null,
+                "discount_amount": null,
+                "has_pre_payment_price": true,
+                "has_featured_price": false,
+                "has_discount": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": null
+              },
+              {
+                "current_price": 3000000,
+                "original_price": 3000000,
+                "pre_payment_price": null,
+                "featured_price": null,
+                "discount_amount": null,
+                "has_pre_payment_price": false,
+                "has_featured_price": false,
+                "has_discount": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": null
+              },
+              {
+                "current_price": 500000,
+                "original_price": 500000,
+                "pre_payment_price": null,
+                "featured_price": null,
+                "discount_amount": null,
+                "has_pre_payment_price": false,
+                "has_featured_price": false,
+                "has_discount": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": null
+              }
+            ]
+          }
+        },
+        {
+          "id": 7,
+          "slug": "iste-sit-occaecati-assumenda-ullam-beatae-ea-dolorem",
+          "name": "Ed Powlowski Sr.",
+          "price": 500000,
+          "original_price": 500000,
+          "price_range": {
+            "min": 500000,
+            "max": 3000000
+          },
+          "has_discount": false,
+          "discount_percent": null,
+          "is_free": false,
+          "is_featured": true,
+          "product_type": {
+            "value": "seminar",
+            "label": "سمینار"
+          },
+          "thumbnail_url": null,
+          "teachers": [
+            "جناب آقای Vidal Schulist",
+            "جناب آقای Bruce Nader",
+            "سرکار خانم Bethany Carter",
+            "سرکار خانم Gretchen Eichmann"
+          ],
+          "reviews_count": 0,
+          "average_rating": 0,
+          "price_data": {
+            "min_price": 500000,
+            "min_original_price": 500000,
+            "has_featured_price": false,
+            "has_discount": false,
+            "has_pre_payment": true,
+            "discount_type": null,
+            "discount_percentage": null,
+            "range": {
+              "min": 500000,
+              "max": 3000000
+            },
+            "prices": [
+              {
+                "current_price": 1000000,
+                "original_price": 1000000,
+                "pre_payment_price": 198000,
+                "featured_price": null,
+                "discount_amount": null,
+                "has_pre_payment_price": true,
+                "has_featured_price": false,
+                "has_discount": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": null
+              },
+              {
+                "current_price": 3000000,
+                "original_price": 3000000,
+                "pre_payment_price": 28999,
+                "featured_price": null,
+                "discount_amount": null,
+                "has_pre_payment_price": true,
+                "has_featured_price": false,
+                "has_discount": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": null
+              },
+              {
+                "current_price": 500000,
+                "original_price": 500000,
+                "pre_payment_price": 180000,
+                "featured_price": null,
+                "discount_amount": null,
+                "has_pre_payment_price": true,
+                "has_featured_price": false,
+                "has_discount": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": null
+              }
+            ]
+          }
+        },
+        {
+          "id": 80,
+          "slug": "provident-sed-quia-ipsam-ut-porro-nihil",
+          "name": "Vicente Padberg",
+          "price": 500000,
+          "original_price": 500000,
+          "price_range": {
+            "min": 500000,
+            "max": 3000000
+          },
+          "has_discount": false,
+          "discount_percent": null,
+          "is_free": false,
+          "is_featured": true,
+          "product_type": {
+            "value": "digital_asset",
+            "label": "فایل"
+          },
+          "thumbnail_url": null,
+          "teachers": [
+            "سرکار خانم Elmore Toy",
+            "جناب آقای Lorenzo Jenkins",
+            "جناب آقای Jaunita Altenwerth",
+            "سرکار خانم Oswald Jacobs",
+            "جناب آقای Vidal Schulist",
+            "سرکار خانم Adeline Lynch",
+            "جناب آقای Eveline Kris",
+            "سرکار خانم Jade Nolan"
+          ],
+          "reviews_count": 0,
+          "average_rating": 0,
+          "price_data": {
+            "min_price": 500000,
+            "min_original_price": 500000,
+            "has_featured_price": false,
+            "has_discount": false,
+            "has_pre_payment": true,
+            "discount_type": null,
+            "discount_percentage": null,
+            "range": {
+              "min": 500000,
+              "max": 3000000
+            },
+            "prices": [
+              {
+                "current_price": 1000000,
+                "original_price": 1000000,
+                "pre_payment_price": 88000,
+                "featured_price": null,
+                "discount_amount": null,
+                "has_pre_payment_price": true,
+                "has_featured_price": false,
+                "has_discount": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": null
+              },
+              {
+                "current_price": 3000000,
+                "original_price": 3000000,
+                "pre_payment_price": 144000,
+                "featured_price": null,
+                "discount_amount": null,
+                "has_pre_payment_price": true,
+                "has_featured_price": false,
+                "has_discount": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": null
+              },
+              {
+                "current_price": 500000,
+                "original_price": 500000,
+                "pre_payment_price": null,
+                "featured_price": null,
+                "discount_amount": null,
+                "has_pre_payment_price": false,
+                "has_featured_price": false,
+                "has_discount": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": null
+              }
+            ]
+          }
+        }
+      ],
+      "preset": "default"
+    }
+  },
+  "metadata": []
+}

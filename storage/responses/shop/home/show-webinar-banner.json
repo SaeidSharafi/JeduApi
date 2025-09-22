@@ -1,0 +1,95 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 7,
+    "type": "WEBINAR_BANNER",
+    "title": "First Webinar Banner",
+    "location": "hero",
+    "content": {
+      "image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+      "text": "چای پل آتش گوشی ساز شب.",
+      "product": {
+        "id": 13,
+        "slug": "assumenda-sed-eius-aut-tenetur-quia",
+        "name": "Devon Turner",
+        "price": 500000,
+        "original_price": 500000,
+        "price_range": {
+          "min": 500000,
+          "max": 3000000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": false,
+        "product_type": {
+          "value": "seminar",
+          "label": "سمینار"
+        },
+        "thumbnail_url": null,
+        "teacher_name": "",
+        "reviews_count": 0,
+        "average_rating": 0,
+        "start_date": null,
+        "end_date": null,
+        "location": null,
+        "registration_deadline": null,
+        "price_data": {
+          "min_price": 500000,
+          "min_original_price": 500000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": true,
+          "discount_type": null,
+          "discount_percentage": null,
+          "range": {
+            "min": 500000,
+            "max": 3000000
+          },
+          "prices": [
+            {
+              "current_price": 1000000,
+              "original_price": 1000000,
+              "pre_payment_price": 66000,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": true,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null
+            },
+            {
+              "current_price": 3000000,
+              "original_price": 3000000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null
+            },
+            {
+              "current_price": 500000,
+              "original_price": 500000,
+              "pre_payment_price": 126000,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": true,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null
+            }
+          ]
+        }
+      }
+    }
+  },
+  "metadata": []
+}

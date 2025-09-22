@@ -3,11 +3,10 @@
 declare(strict_types=1);
 
 use App\Data\Shop\ProductPriceData;
-use App\Services\ProductPriceService;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\ProductDeliveryOptionDiscountPrice;
-use App\Models\Course;
+use App\Services\ProductPriceService;
 use Carbon\Carbon;
 
 beforeEach(function (): void {
@@ -16,7 +15,7 @@ beforeEach(function (): void {
 
 describe('ProductPriceService', function (): void {
     it('returns standard price when no featured or discount price exists', function (): void {
-        $product = Product::factory()->create();
+        $product        = Product::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id'     => $product->id,
             'price'          => 10000,
@@ -30,7 +29,7 @@ describe('ProductPriceService', function (): void {
     });
 
     it('returns featured price when active and no discount exists', function (): void {
-        $product = Product::factory()->create();
+        $product        = Product::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id'                => $product->id,
             'price'                     => 10000,
@@ -46,7 +45,7 @@ describe('ProductPriceService', function (): void {
     });
 
     it('returns standard price when featured price is expired', function (): void {
-        $product = Product::factory()->create();
+        $product        = Product::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id'                => $product->id,
             'price'                     => 10000,
@@ -62,7 +61,7 @@ describe('ProductPriceService', function (): void {
     });
 
     it('returns standard price when featured price is not yet active', function (): void {
-        $product = Product::factory()->create();
+        $product        = Product::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id'                => $product->id,
             'price'                     => 10000,
@@ -78,7 +77,7 @@ describe('ProductPriceService', function (): void {
     });
 
     it('returns discount price when available (highest priority)', function (): void {
-        $product = Product::factory()->create();
+        $product        = Product::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id'                => $product->id,
             'price'                     => 10000,
@@ -99,7 +98,7 @@ describe('ProductPriceService', function (): void {
     });
 
     it('correctly identifies when product has active discount', function (): void {
-        $product = Product::factory()->create();
+        $product        = Product::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
             'price'      => 10000,
@@ -114,7 +113,7 @@ describe('ProductPriceService', function (): void {
     });
 
     it('correctly identifies when product has active featured price', function (): void {
-        $product = Product::factory()->create();
+        $product        = Product::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id'                => $product->id,
             'price'                     => 10000,
@@ -128,7 +127,7 @@ describe('ProductPriceService', function (): void {
     });
 
     it('correctly identifies when product has no active discount', function (): void {
-        $product = Product::factory()->create();
+        $product        = Product::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id'     => $product->id,
             'price'          => 10000,
@@ -140,7 +139,7 @@ describe('ProductPriceService', function (): void {
     });
 
     it('returns original price correctly', function (): void {
-        $product = Product::factory()->create();
+        $product        = Product::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id'     => $product->id,
             'price'          => 10000,
@@ -161,9 +160,9 @@ describe('ProductPriceService', function (): void {
     it('handles products without delivery options gracefully', function (): void {
         $product = Product::factory()->create();
 
-        $currentPrice = $this->priceService->getMinCurrentPrice($product);
+        $currentPrice  = $this->priceService->getMinCurrentPrice($product);
         $originalPrice = $this->priceService->getMinimumOriginalPrice($product);
-        $hasDiscount = $this->priceService->hasActiveDiscount($product);
+        $hasDiscount   = $this->priceService->hasActiveDiscount($product);
 
         expect($currentPrice)->toBe(0)
             ->and($originalPrice)->toBe(0)
@@ -171,7 +170,7 @@ describe('ProductPriceService', function (): void {
     });
 
     it('calculates discount percentage correctly', function (): void {
-        $product = Product::factory()->create();
+        $product        = Product::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
             'price'      => 10000,
@@ -188,7 +187,7 @@ describe('ProductPriceService', function (): void {
     });
 
     it('calculates featured price discount percentage correctly', function (): void {
-        $product = Product::factory()->create();
+        $product        = Product::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id'                => $product->id,
             'price'                     => 10000,
@@ -204,7 +203,7 @@ describe('ProductPriceService', function (): void {
     });
 
     it('returns 0 discount percentage when no discount exists', function (): void {
-        $product = Product::factory()->create();
+        $product        = Product::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
             'price'      => 10000,
@@ -216,13 +215,13 @@ describe('ProductPriceService', function (): void {
     });
 
     it('returns correct price data for multiple products', function (): void {
-        $product1 = Product::factory()->create();
+        $product1        = Product::factory()->create();
         $deliveryOption1 = ProductDeliveryOption::factory()->create([
             'product_id' => $product1->id,
             'price'      => 10000,
         ]);
 
-        $product2 = Product::factory()->create();
+        $product2        = Product::factory()->create();
         $deliveryOption2 = ProductDeliveryOption::factory()->create([
             'product_id'                => $product2->id,
             'price'                     => 20000,
@@ -243,7 +242,7 @@ describe('ProductPriceService', function (): void {
     });
 
     it('returns correct price data for a specific delivery option', function (): void {
-        $product = Product::factory()->create();
+        $product         = Product::factory()->create();
         $deliveryOption1 = ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
             'price'      => 10000,
@@ -268,7 +267,7 @@ describe('ProductPriceService', function (): void {
             ->and($priceData2->discount_percentage)->toBe(25.0);
     });
     it('returns correct price range for a product with multiple delivery options', function (): void {
-        $product = Product::factory()->create();
+        $product         = Product::factory()->create();
         $deliveryOption1 = ProductDeliveryOption::factory()->create([
             'product_id' => $product->id,
             'price'      => 10000,
@@ -303,7 +302,7 @@ describe('ProductPriceService', function (): void {
     });
 
     it('returns correct current price for a specific delivery option', function (): void {
-        $product = Product::factory()->create();
+        $product        = Product::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id'                => $product->id,
             'price'                     => 20000,
@@ -319,7 +318,7 @@ describe('ProductPriceService', function (): void {
     });
 
     it('returns correct prices if the procuts exist in requestCacheService', function (): void {
-        $product = Product::factory()->create();
+        $product        = Product::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create([
             'product_id'     => $product->id,
             'price'          => 10000,
@@ -328,7 +327,7 @@ describe('ProductPriceService', function (): void {
         ]);
 
         // mock the requestCacheService
-        $mockRequestCacheService = Mockery::mock(\App\Services\RequestDataCacheService::class);
+        $mockRequestCacheService = Mockery::mock(App\Services\RequestDataCacheService::class);
         $mockRequestCacheService->shouldReceive('hasPriceData')
             ->with($product->id)
             ->andReturn(true);
@@ -347,12 +346,54 @@ describe('ProductPriceService', function (): void {
             ));
 
         $this->priceService = new ProductPriceService($mockRequestCacheService);
-        $pirceData = $this->priceService->calculatePriceDataForProduct($product);
+        $pirceData          = $this->priceService->calculatePriceDataForProduct($product);
 
         expect($pirceData->min_price)->toBe(9000)
             ->and($pirceData->min_original_price)->toBe(12000)
             ->and($pirceData->has_discount)->toBeTrue()
             ->and($pirceData->discount_percentage)->toBe(25.0);
+
+    });
+
+    it('returns correct price data for a product from price_data_cache column', function (): void {
+        $product        = Product::factory()->create();
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'product_id'                => $product->id,
+            'price'                     => 15000,
+            'featured_price'            => 15000,
+            'is_featured'               => true,
+            'featured_price_start_date' => Carbon::yesterday(),
+            'featured_price_end_date'   => Carbon::tomorrow(),
+        ]);
+
+        ProductDeliveryOptionDiscountPrice::factory()
+            ->forProductDeliveryOption($deliveryOption)
+            ->withPrice(6000)
+            ->create();
+        // Simulate price_data_cache being set
+        $product->price_data_cache = [
+            'min_price'           => 12000,
+            'min_original_price'  => 20000,
+            'has_featured_price'  => true,
+            'has_discount'        => true,
+            'has_pre_payment'     => false,
+            'discount_type'       => 'seasonal',
+            'discount_percentage' => 40.0,
+            'range'               => ['min' => 12000, 'max' => 25000],
+            'prices'              => [],
+        ];
+        $product->save();
+        $product->refresh();
+
+        $priceData = $this->priceService->getPriceDataForProduct($product);
+
+        expect($priceData->min_price)->toBe(12000)
+            ->and($priceData->min_original_price)->toBe(20000)
+            ->and($priceData->has_featured_price)->toBeTrue()
+            ->and($priceData->has_discount)->toBeTrue()
+            ->and($priceData->discount_type)->toBe('seasonal')
+            ->and($priceData->discount_percentage)->toBe(40.0)
+            ->and($priceData->range)->toEqual(['min' => 12000, 'max' => 25000]);
 
     });
 

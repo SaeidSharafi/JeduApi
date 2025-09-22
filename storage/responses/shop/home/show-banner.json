@@ -1,0 +1,17 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 1,
+    "type": "BANNER",
+    "title": "Welcome to Our Store",
+    "location": "hero",
+    "content": {
+      "image_url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+      "action": "https://example.com",
+      "action_title": "Click Here",
+      "content": "This is a banner",
+      "preset": "default"
+    }
+  },
+  "metadata": []
+}

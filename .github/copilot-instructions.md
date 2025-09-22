@@ -22,8 +22,53 @@ This is the required architecture for the JeduShop API.
 *   **API Contract (Data Transfer Objects):**
     *   **MUST** use `spatie/laravel-data` for **ALL** API requests and responses. **DO NOT USE** Laravel's `Form Requests` or `API Resources`.
     *   Every controller method **MUST** accept a Data class for requests and return a Data class in responses.
+    *   in controllers add the docblock for scribe API documentation before the class definition:
+        ```php
+        /**
+         * @group Admin - Products
+         * 
+         * Manage products in the system.
+         */
+        ```
+    * for each controller method, add a docblock describing the parameters (only query parameters), and responses for Scribe documentation:
+        ```php
+        /**
+         * Display a listing of the products.
+         *
+         * @queryParam filter[name] string Filter by product name. Example: Laptop
+         * @queryParam sort string Sort by field. Prefix with '-' for descending. Example: -created_at
+         * @queryParam page[number] integer Page number for pagination. Example: 1
+         * @queryParam page[size] integer Number of items per page. Example: 15
+         *
+         * @response 200 {
+         *   "data": [
+         *     {
+         *       "id": 1,
+         *       "name": "Laptop",
+         *       "price": 999.99,
+         *       // ...
+         *     }
+         *   ],
+         *   "meta": {
+         *     "current_page": 1,
+         *     "last_page": 10,
+         *     // ...
+         *   }
+         * }
+         */
+        ```
+        if there is nor QUery parameters, you can skip the `@queryParam` section.
+    *   you can create json files in storage/responses for complex response examples and reference them in the docblock:
+        ```php
+        /**
+         * @responseFile 200 storage/responses/shop/products/index.json
+         */
+        ```
+        for most of the controllers we use index and show response examples.
+        for general responses like 403, 404 and 422 we have already exisit file ins storage/responses.
     *   All Data classes **MUST** be placed in `app/Data/` with proper namespace organization.
     *   Request Data classes **MUST** implement both `rules()` for validation and `bodyParameters()` for Scribe API documentation.
+    * 
 
 *   **Business Logic Separation:**
     *   All business logic **MUST** be placed in Action classes within `app/Actions/`.
@@ -112,6 +157,7 @@ This is the required architecture for the JeduShop API.
     *   Use the Arrange-Act-Assert pattern.
     *   Use model factories for test data setup.
     *   Mock external dependencies and services.
+    *   pest functions (like `postJson()`) can also be called like `$this->postJson()` within test closures.
 
 ## 4. Commit Message Convention
 
