@@ -3,384 +3,578 @@
 ## User & Staff Management
 
 ### Table: `users`
-- **Purpose:** Stores customer account information. This is the primary table for end-users of the e-commerce platform.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `uuid` (UUID NOT NULL UNIQUE): A public, unique identifier for the user.
-    - `first_name` (VARCHAR(100)): User's first name.
-    - `last_name` (VARCHAR(100)): User's last name.
-    - `phone` (VARCHAR(20) NOT NULL UNIQUE): Primary mobile number, used for login and notifications.
-    - `phone2` (VARCHAR(20)): Secondary contact number.
-    - `phone_verified_at` (TIMESTAMP): Timestamp for when the primary phone was verified.
-    - `email` (VARCHAR(255) UNIQUE): User's email address.
-    - `email_verified_at` (TIMESTAMP): Timestamp for when the email was verified.
-    - `password` (VARCHAR(255)): Hashed password for password-based login.
-    - `civil_id` (VARCHAR(255)): National or civil identification number.
-    - `civil_id_type` (VARCHAR(255)): Type of civil ID (e.g., 'national_id').
-    - `date_of_birth` (DATE): User's date of birth.
-    - `father_name` (VARCHAR(100)): User's father's name.
-    - `gender` (VARCHAR(255)): User's gender.
-    - `education_level` (VARCHAR(20)): Highest level of education achieved.
-    - `field_of_study` (VARCHAR(255)): Academic field of study.
-    - `education_status` (VARCHAR(20)): Current education status.
-- **Relationships & Foreign Keys:** None. This is a primary entity.
-- **Indexes:**
-    - `PRIMARY KEY`: `id`
-    - `UNIQUE`: `uuid`, `phone`, `email`, (`civil_id_type`, `civil_id`)
-    - `INDEX`: (`last_name`, `first_name`), `civil_id`, `date_of_birth` for search performance.
+- Purpose: Stores customer account information.
+- Columns:
+  - id (BIGINT, PK)
+  - uuid (UUID, unique, indexed) — public identifier
+  - first_name (VARCHAR(100), nullable)
+  - last_name (VARCHAR(100), nullable)
+  - phone (VARCHAR(20), unique)
+  - phone2 (VARCHAR(20), nullable)
+  - phone_verified_at (TIMESTAMP, nullable)
+  - email (VARCHAR(255), unique, nullable)
+  - email_verified_at (TIMESTAMP, nullable)
+  - password (VARCHAR(255), nullable)
+  - civil_id (VARCHAR(255), nullable)
+  - civil_id_type (VARCHAR(255), nullable)
+  - date_of_birth (DATE, nullable)
+  - father_name (VARCHAR(100), nullable)
+  - gender (VARCHAR(255), nullable)
+  - education_level (VARCHAR(20), nullable)
+  - field_of_study (VARCHAR(255), nullable)
+  - education_status (VARCHAR(20), nullable)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes:
+  - PK(id)
+  - UNIQUE(uuid), UNIQUE(phone), UNIQUE(email), UNIQUE(civil_id_type, civil_id)
+  - INDEX(uuid)
+  - INDEX(last_name, first_name), INDEX(civil_id), INDEX(date_of_birth)
 
 ### Table: `staff`
-- **Purpose:** Stores accounts for administrative users who manage the platform.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `name` (VARCHAR(255)): Staff member's name.
-    - `email` (VARCHAR(255) UNIQUE): Staff member's email address.
-    - `phone` (VARCHAR(20) NOT NULL UNIQUE): Staff member's phone number, used for login.
-    - `password` (VARCHAR(255)): Hashed password.
-    - `is_admin` (BOOLEAN NOT NULL DEFAULT false): Super-admin privilege flag.
-    - `remember_token` (VARCHAR(100)): "Remember me" token.
-- **Relationships & Foreign Keys:** None. This is a primary entity for the admin guard.
+- Purpose: Administrative accounts.
+- Columns:
+  - id (BIGINT, PK)
+  - name (VARCHAR, nullable)
+  - email (VARCHAR, unique, nullable)
+  - phone (VARCHAR(20), unique)
+  - password (VARCHAR, nullable)
+  - is_admin (BOOLEAN, default false)
+  - remember_token (VARCHAR(100), nullable)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: PK(id), UNIQUE(email), UNIQUE(phone)
 
 ### Table: `teachers`
-- **Purpose:** Stores profiles and detailed information for instructors.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `first_name`, `last_name` (VARCHAR(255) NOT NULL): Teacher's name.
-    - `bio` (TEXT NOT NULL): Detailed biography.
-    - `rate` (DOUBLE PRECISION): Teacher's rating.
-    - `email` (VARCHAR(255) NOT NULL UNIQUE): Teacher's contact email.
-    - `phone` (VARCHAR(255)): Teacher's contact phone.
-    - `gender` (VARCHAR(255)): Teacher's gender.
-    - `birth_date` (DATE): Teacher's birth date.
-    - `social_links` (JSON): JSON object for social media links.
-    - `user_id` (BIGINT NOT NULL): The associated user account.
-    - `created_by` (BIGINT): The staff member who created this record.
-- **Relationships & Foreign Keys:**
-    - `FK(user_id)` -> `users(id)` ON DELETE RESTRICT. A user record cannot be deleted if it is linked to a teacher.
-    - `FK(created_by)` -> `staff(id)` ON DELETE SET NULL.
-- **Indexes:**
-    - `PRIMARY KEY`: `id`
-    - `UNIQUE`: `email`
+- Purpose: Instructor profiles.
+- Columns:
+  - id (BIGINT, PK)
+  - first_name (VARCHAR)
+  - last_name (VARCHAR)
+  - bio (TEXT)
+  - rate (FLOAT, nullable)
+  - email (VARCHAR, unique)
+  - phone (VARCHAR, nullable)
+  - gender (VARCHAR, nullable)
+  - birth_date (DATE, nullable)
+  - social_links (JSON, nullable)
+  - user_id (BIGINT) FK -> users(id) RESTRICT
+  - created_by (BIGINT, nullable) FK -> staff(id) SET NULL
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: PK(id), UNIQUE(email)
 
 ---
 ## Product & Catalog Management
 
 ### Table: `vendors`
-- **Purpose:** Represents internal departments or external entities that offer products.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `name` (VARCHAR(255) NOT NULL): The name of the vendor/department.
-    - `email`, `phone`, `phone2`: Contact information.
-    - `address`, `map_location`: Physical location details.
-    - `logo_url`, `favicon_url`: URLs for branding images.
-    - `social_links`, `theme_options` (JSON): Flexible fields for additional data.
-- **Relationships & Foreign Keys:** None.
+- Purpose: Product vendors/departments.
+- Columns:
+  - id (BIGINT, PK)
+  - name (VARCHAR)
+  - email (VARCHAR, nullable)
+  - phone (VARCHAR(20), nullable)
+  - phone2 (VARCHAR(20), nullable)
+  - address (TEXT, nullable)
+  - map_location (TEXT, nullable)
+  - logo_url (VARCHAR, nullable)
+  - favicon_url (VARCHAR, nullable)
+  - social_links (JSON, nullable)
+  - theme_options (JSON, nullable)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: PK(id)
 
 ### Table: `terms`
-- **Purpose:** Defines academic terms or scheduling periods (e.g., "Fall 2025").
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `name` (VARCHAR(255) NOT NULL): The name of the term.
-    - `status` (VARCHAR(255) NOT NULL DEFAULT 'inactive'): The current status (e.g., 'active', 'inactive').
-    - `academic_year` (VARCHAR(255)): The academic year this term belongs to.
-    - `start_date`, `end_date` (DATE): The start and end dates of the term.
-- **Relationships & Foreign Keys:** None.
-- **Indexes:** `status`.
+- Purpose: Academic terms/scheduling periods.
+- Columns:
+  - id (BIGINT, PK)
+  - name (VARCHAR)
+  - status (VARCHAR, default inactive, indexed)
+  - academic_year (VARCHAR, nullable)
+  - start_date (DATE, nullable)
+  - end_date (DATE, nullable)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: PK(id), INDEX(status)
 
 ### Table: `categories`
-- **Purpose:** Provides hierarchical organization for products.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `parent_id` (BIGINT): Self-referencing key for creating a parent-child hierarchy.
-    - `name` (VARCHAR(255) NOT NULL UNIQUE): The category name.
-    - `slug` (VARCHAR(255) NOT NULL UNIQUE): URL-friendly identifier.
-    - `status` (VARCHAR(255) NOT NULL DEFAULT 'published'): Publication status.
-    - `description`, `image_url`, `icon_url`, `educational_calendar_url`: Descriptive and media fields.
-    - `created_by` (BIGINT): Staff member who created the category.
-- **Relationships & Foreign Keys:**
-    - `FK(parent_id)` -> `categories(id)` ON DELETE RESTRICT. A parent category cannot be deleted if it has children.
-    - `FK(created_by)` -> `staff(id)` ON DELETE SET NULL.
-- **Indexes:** `PRIMARY KEY`, `UNIQUE(name)`, `UNIQUE(slug)`, `status`.
+- Purpose: Product categories (hierarchical).
+- Columns:
+  - id (BIGINT, PK)
+  - parent_id (BIGINT, nullable) FK -> categories(id) RESTRICT
+  - name (VARCHAR, unique)
+  - slug (VARCHAR, unique)
+  - status (VARCHAR, default published, indexed)
+  - description (VARCHAR, nullable)
+  - image_url (VARCHAR, nullable)
+  - icon_url (VARCHAR, nullable)
+  - educational_calendar_url (VARCHAR, default '0' per migration)
+  - color_scheme (VARCHAR, nullable)
+  - meta_title (VARCHAR(70), nullable)
+  - meta_description (VARCHAR(160), nullable)
+  - meta_keywords (VARCHAR(255), nullable)
+  - properties (JSON, nullable)
+  - additional_info (JSON, nullable)
+  - created_by (BIGINT, nullable) FK -> staff(id) SET NULL
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: PK(id), UNIQUE(name), UNIQUE(slug), INDEX(status)
 
-### Table: `courses`, `seminars`, `digital_assets`
-- **Purpose:** These tables store the unique attributes for the three different types of products. They are the "productable" entities.
-- **Common Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `slug` (VARCHAR(255) UNIQUE): URL-friendly identifier.
-    - `status` (VARCHAR(255) NOT NULL DEFAULT 'draft'): Publication status.
-    - `full_name` / `name`, `description`: Core descriptive fields.
-    - `meta_title`, `meta_description`, `meta_keywords`: SEO fields.
-    - `created_by` (BIGINT): The staff member who created the record.
-    - `review_count` (INT) and `average_rating` (DECIMAL(3,2)): Denormalized review data for quick access.
-- ** `courses` Specific Columns:**
-    - `short_name`, `thumbnail_url`, `sample_certificate_image_url`, `duration` (INT), `difficulty_level`, `career_prospects_text`, `curriculum_summary_text`, `outcomes_json` (JSON), `default_teacher_info`, `additional_info` (JSON).
-- ** `seminars` Specific Columns:**
-    - `subtitle`, `thumbnail_url`, `learning_objectives`, `prerequisites`, `promo_video_external_url`, `estimated_duration_desc`.
-- ** `digital_assets` Specific Columns:**
-    - `thumbnail_url`, `version` (VARCHAR(50)), `page_count` (INT), `duration_seconds` (INT), `is_attachable_to_course` (BOOLEAN).
-- **Relationships & Foreign Keys:**
-    - Each of these tables has a polymorphic `morphOne` relationship to the `products` table.
-    - `FK(created_by)` -> `staff(id)` ON DELETE SET NULL.
+### Tables: `courses`, `seminars`, `digital_assets`
+- Purpose: Productable entities.
+- Common columns:
+  - id (BIGINT, PK)
+  - slug (VARCHAR unique) [courses, seminars, digital_assets]
+  - status (VARCHAR, default draft, indexed)
+  - name/full_name, description (TEXT/VARCHAR as per table)
+  - meta_title (VARCHAR(70) nullable), meta_description (VARCHAR(160) nullable), meta_keywords (VARCHAR(255) nullable)
+  - created_by (BIGINT nullable) FK -> staff(id) SET NULL
+  - review_count (INT default 0), average_rating (DECIMAL(3,2) default 0.0)
+  - created_at/updated_at (TIMESTAMPS)
+- courses specific:
+  - short_name (VARCHAR nullable), thumbnail_url (VARCHAR nullable), sample_certificate_image_url (VARCHAR nullable)
+  - duration (INT nullable), difficulty_level (VARCHAR), career_prospects_text (TEXT nullable)
+  - curriculum_summary_text (TEXT nullable), outcomes_json (JSON nullable)
+  - default_teacher_info (TEXT nullable), additional_info (JSON nullable), properties (JSON nullable)
+- seminars specific:
+  - short_name (VARCHAR not null per migration), subtitle (VARCHAR nullable), slug (unique)
+  - description (TEXT not null), thumbnail_url (VARCHAR nullable)
+  - learning_objectives (TEXT nullable), target_audience (TEXT nullable), prerequisites (TEXT nullable)
+  - promo_video_external_url (VARCHAR nullable), estimated_duration_desc (VARCHAR nullable), level (VARCHAR nullable)
+  - provides_certificate (BOOLEAN default false)
+  - faq (JSON nullable), keywords (TEXT nullable)
+- digital_assets specific:
+  - name (VARCHAR), slug (unique), description (TEXT nullable)
+  - thumbnail_url (VARCHAR nullable), version (VARCHAR(50) nullable)
+  - page_count (INT unsigned nullable), duration_seconds (INT unsigned nullable)
+  - is_attachable_to_course (BOOLEAN default false), status (VARCHAR indexed)
+  - keywords (TEXT nullable), published_at (TIMESTAMP nullable)
 
 ### Table: `products`
-- **Purpose:** The central, sellable entity that links a product type (Course, Seminar, etc.) with common e-commerce attributes like vendor and term.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `vendor_id` (BIGINT NOT NULL): Foreign key to `vendors`.
-    - `productable_id` (BIGINT NOT NULL): The ID of the related model (e.g., an ID from `courses`).
-    - `productable_type` (VARCHAR(255) NOT NULL): The class name of the related model.
-    - `term_id` (BIGINT NOT NULL): Foreign key to `terms`.
-    - `status`, `is_visible`, `is_featured`: Control visibility and promotion.
-    - `name`, `short_name`, `slug`: Display names and identifiers.
-    - `details_json` (JSONB NOT NULL): Flexible storage for additional product attributes.
-- **Relationships & Foreign Keys:**
-    - `FK(vendor_id)` -> `vendors(id)` ON DELETE NO ACTION.
-    - `FK(term_id)` -> `terms(id)` ON DELETE NO ACTION.
-    - `morphTo('productable')`: Connects to a `courses`, `seminars`, or `digital_assets` record.
-- **Indexes:** (`productable_type`, `productable_id`) for the polymorphic relation.
+- Purpose: Sellable entity linked to productable.
+- Columns:
+  - id (BIGINT, PK)
+  - vendor_id (BIGINT) FK -> vendors(id)
+  - productable_id (BIGINT)
+  - productable_type (VARCHAR)
+  - term_id (BIGINT) FK -> terms(id)
+  - status (VARCHAR default draft, indexed)
+  - is_visible (BOOLEAN default false, indexed)
+  - short_description (VARCHAR)
+  - short_name (VARCHAR)
+  - name (VARCHAR)
+  - slug (VARCHAR) — not unique here
+  - is_featured (BOOLEAN default false, indexed)
+  - price_data_cache (JSONB nullable)
+  - details_json (JSONB not null)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes:
+  - INDEX(status), INDEX(is_visible), INDEX(is_featured)
+  - INDEX(productable_type, productable_id)
+  - INDEX(vendor_id, term_id)
+  - INDEX(status, is_visible)
 
 ### Table: `product_delivery_options`
-- **Purpose:** Defines a specific way a product can be purchased, including its unique price, schedule, and delivery method. A single product can have many delivery options.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `product_id` (BIGINT NOT NULL): Foreign key to `products`.
-    - `sku` (VARCHAR(255) NOT NULL UNIQUE): Unique stock-keeping unit.
-    - `price` (BIGINT NOT NULL): The standard price.
-    - `status` (VARCHAR(255) NOT NULL DEFAULT 'draft'): Availability status.
-    - `is_featured`, `featured_price`, `featured_price_start_date`, `featured_price_end_date`: Fields for promotional pricing.
-    - `registration_start_date`, `registration_end_date`: The window for customer registration.
-- **Relationships & Foreign Keys:**
-    - `FK(product_id)` -> `products(id)` ON DELETE CASCADE. Deleting a product deletes its delivery options.
-- **Indexes:** `UNIQUE(sku)`, `status`.
+- Purpose: Purchase options with pricing/schedule.
+- Columns:
+  - id (BIGINT, PK)
+  - product_id (BIGINT) FK -> products(id) CASCADE
+  - name (VARCHAR)
+  - sku (VARCHAR, unique)
+  - fulfillment_type (VARCHAR)
+  - delivery_method (VARCHAR)
+  - price (BIGINT)
+  - capacity (INT nullable)
+  - allow_multiple_quantity (BOOLEAN default false)
+  - status (VARCHAR default draft, indexed)
+  - is_prepayment_available (BOOLEAN default false)
+  - prepayment_amount (BIGINT nullable)
+  - details_json (JSONB not null)
+  - is_featured (BOOLEAN default false)
+  - featured_price (BIGINT nullable)
+  - featured_price_start_date (DATETIME nullable)
+  - featured_price_end_date (DATETIME nullable)
+  - registration_start_date (DATE nullable)
+  - registration_end_date (DATE nullable)
+  - available_from (DATE nullable)
+  - available_to (DATE nullable)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: UNIQUE(sku), INDEX(status)
+
+### Pivot: `product_delivery_option_teacher`
+- Columns:
+  - product_delivery_option_id (BIGINT) FK -> product_delivery_options(id) CASCADE
+  - teacher_id (BIGINT) FK -> teachers(id) RESTRICT
+- Keys: PRIMARY(product_delivery_option_id, teacher_id)
 
 ---
 ## Order & Payment Management
 
 ### Table: `orders`
-- **Purpose:** The central table for customer transactions, holding a summary of each purchase.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `increment_id` (VARCHAR(255) NOT NULL UNIQUE): A human-readable, unique order identifier.
-    - `status` (VARCHAR(255) NOT NULL DEFAULT 'pending'): The current status (e.g., pending, completed).
-    - `customer_id` (BIGINT NOT NULL): Foreign key to `users`.
-    - `customer_snapshot_json` (JSONB NOT NULL): A complete JSON snapshot of the customer's data at the time of order creation for historical accuracy.
-    - `grand_total` (BIGINT NOT NULL): The final amount paid.
-    - `applied_coupon_code` (VARCHAR(255)): The coupon code used for the order.
-    - `created_by` (BIGINT): Staff member who may have created the order manually.
-- **Relationships & Foreign Keys:**
-    - `FK(customer_id)` -> `users(id)` ON DELETE NO ACTION.
-    - `FK(created_by)` -> `staff(id)` ON DELETE SET NULL.
-- **Indexes:** `UNIQUE(increment_id)`, `status`, (`customer_id`, `status`).
+- Purpose: Order header/summary.
+- Columns:
+  - id (BIGINT, PK)
+  - increment_id (VARCHAR unique)
+  - status (VARCHAR default pending, indexed)
+  - customer_id (BIGINT) FK -> users(id)
+  - customer_email (VARCHAR)
+  - customer_phone (VARCHAR)
+  - customer_first_name (VARCHAR)
+  - customer_last_name (VARCHAR)
+  - customer_snapshot_json (JSONB)
+  - total_item_count (INT unsigned)
+  - total_qty_ordered (INT unsigned)
+  - subtotal (BIGINT)
+  - discount_amount (BIGINT default 0)
+  - tax_amount (BIGINT default 0)
+  - grand_total (BIGINT)
+  - full_value_grand_total (BIGINT default 0)
+  - currency_code (VARCHAR default 'IRR')
+  - applied_coupon_code (VARCHAR nullable)
+  - admin_notes (TEXT nullable)
+  - created_by (BIGINT nullable) FK -> staff(id) SET NULL
+  - applied_cart_discounts_json (JSON nullable)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes:
+  - UNIQUE(increment_id)
+  - INDEX(status)
+  - INDEX(customer_id, status) as idx_orders_customer_status
+  - INDEX(customer_id, created_at) as idx_customer_created
 
 ### Table: `order_items`
-- **Purpose:** Represents a single line item within an order.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `order_id` (BIGINT NOT NULL): Foreign key to `orders`.
-    - `product_delivery_option_id` (BIGINT): Foreign key to the specific `product_delivery_options` purchased.
-    - `vendor_id` (BIGINT): Denormalized vendor ID for reporting.
-    - `product_data_snapshot_json` (JSONB NOT NULL): A snapshot of the product and delivery option data at the time of purchase.
-    - `price`, `total`, `discount_amount`: Financial details for this line item.
-    - `status` (VARCHAR(255) NOT NULL DEFAULT 'completed'): Status of this specific item.
-- **Relationships & Foreign Keys:**
-    - `FK(order_id)` -> `orders(id)` ON DELETE CASCADE.
-    - `FK(product_delivery_option_id)` -> `product_delivery_options(id)` ON DELETE SET NULL.
-    - `FK(vendor_id)` -> `vendors(id)` ON DELETE SET NULL.
-- **Indexes:** `status`, (`status`, `created_at`).
+- Purpose: Order line items.
+- Columns:
+  - id (BIGINT, PK)
+  - order_id (BIGINT) FK -> orders(id) CASCADE
+  - product_delivery_option_id (BIGINT nullable) FK -> product_delivery_options(id) SET NULL
+  - vendor_id (BIGINT nullable) FK -> vendors(id) SET NULL
+  - name (VARCHAR)
+  - sku (VARCHAR)
+  - product_data_snapshot_json (JSONB)
+  - applied_discount_details_json (JSON nullable)
+  - qty_ordered (INT default 1)
+  - price (BIGINT)
+  - total (BIGINT)
+  - payment_type (VARCHAR)
+  - prepayment_amount (BIGINT nullable)
+  - discount_amount (BIGINT default 0)
+  - tax_amount (BIGINT default 0)
+  - total_refunded (BIGINT default 0)
+  - qty_refunded (INT default 0)
+  - status (VARCHAR default completed, indexed)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: INDEX(status), INDEX(status, created_at) as idx_status_created
 
 ### Table: `payments`
-- **Purpose:** Records financial transactions (payments received) associated with an order.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `order_id` (BIGINT NOT NULL): Foreign key to `orders`.
-    - `customer_id` (BIGINT NOT NULL): Foreign key to `users`.
-    - `amount` (BIGINT NOT NULL): The amount paid.
-    - `method` (VARCHAR(255) NOT NULL): Payment method used (e.g., 'wallet', 'bank_transfer').
-    - `status` (VARCHAR(255) NOT NULL DEFAULT 'pending'): Status of the payment (e.g., pending, completed, failed).
-    - `data` (JSONB): Stores gateway responses or other payment details.
-    - `created_by` (BIGINT): Staff member who recorded the payment.
-- **Relationships & Foreign Keys:**
-    - `FK(order_id)` -> `orders(id)` ON DELETE CASCADE.
-    - `FK(customer_id)` -> `users(id)` ON DELETE RESTRICT.
-    - `FK(created_by)` -> `staff(id)` ON DELETE SET NULL.
+- Purpose: Order payments.
+- Columns:
+  - id (BIGINT, PK)
+  - order_id (BIGINT) FK -> orders(id) CASCADE
+  - customer_id (BIGINT) FK -> users(id) RESTRICT
+  - amount (BIGINT)
+  - method (VARCHAR)
+  - status (VARCHAR default pending, indexed)
+  - data (JSONB nullable)
+  - admin_notes (TEXT nullable)
+  - created_by (BIGINT nullable) FK -> staff(id) SET NULL
+  - created_at/updated_at (TIMESTAMPS)
 
 ### Table: `refunds`
-- **Purpose:** Manages refund transactions for specific order items.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `order_id`, `order_item_id`, `customer_id`: Foreign keys for context.
-    - `amount`, `deduction_amount` (BIGINT NOT NULL): Refund amounts.
-    - `status` (VARCHAR(255) NOT NULL DEFAULT 'pending'): Status of the refund request.
-    - `transaction_details` (JSON NOT NULL): Details of the refund transaction.
-    - `created_by` (BIGINT): Staff member who processed the refund.
-- **Relationships & Foreign Keys:**
-    - `FK(order_id)` -> `orders(id)` ON DELETE CASCADE.
-    - `FK(order_item_id)` -> `order_items(id)` ON DELETE CASCADE.
-    - `FK(customer_id)` -> `users(id)` ON DELETE SET NULL.
-    - `FK(created_by)` -> `staff(id)` ON DELETE SET NULL.
+- Purpose: Refunds per order item.
+- Columns:
+  - id (BIGINT, PK)
+  - order_id (BIGINT) FK -> orders(id) CASCADE
+  - order_item_id (BIGINT) FK -> order_items(id) CASCADE
+  - customer_id (BIGINT nullable) FK -> users(id) SET NULL
+  - created_by (BIGINT nullable) FK -> staff(id) SET NULL
+  - amount (BIGINT)
+  - deduction_amount (BIGINT)
+  - status (VARCHAR default pending, indexed)
+  - transaction_details (JSON)
+  - refunded_at (TIMESTAMP nullable)
+  - admin_notes (TEXT nullable)
+  - created_at/updated_at (TIMESTAMPS)
 
-### Table: `enrolments`
-- **Purpose:** Connects a customer to a purchased product, granting them access. This is the bridge between a transaction and content access.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `uuid` (UUID NOT NULL UNIQUE): A public, unique identifier for the enrolment.
-    - `order_id`, `order_item_id`, `customer_id`, `product_delivery_option_id`: Foreign keys linking all relevant entities.
-    - `enrollment_status` (VARCHAR(255) NOT NULL): Status of access (e.g., 'active', 'pending_provisioning', 'expired').
-    - `access_start_date`, `access_end_date` (DATE): The validity period of the access.
-- **Relationships & Foreign Keys:**
-    - `FK(order_id)` -> `orders(id)` ON DELETE CASCADE.
-    - `FK(order_item_id)` -> `order_items(id)` ON DELETE CASCADE.
-    - `FK(customer_id)` -> `users(id)` ON DELETE CASCADE.
-    - `FK(product_delivery_option_id)` -> `product_delivery_options(id)` ON DELETE CASCADE.
+### Table: `enrollments`
+- Purpose: Access records resulting from orders.
+- Columns:
+  - id (BIGINT, PK)
+  - uuid (UUID unique, indexed)
+  - order_id (BIGINT) FK -> orders(id) CASCADE
+  - order_item_id (BIGINT) FK -> order_items(id) CASCADE
+  - customer_id (BIGINT) FK -> users(id) CASCADE
+  - product_delivery_option_id (BIGINT) FK -> product_delivery_options(id) CASCADE
+  - enrollment_status (VARCHAR default pending_provisioning)
+  - access_start_date (DATE nullable)
+  - access_end_date (DATE nullable)
+  - external_enrollment_id (BIGINT nullable)
+  - provisioning_data (JSONB nullable)
+  - notes (TEXT nullable)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: UNIQUE(uuid), INDEX(uuid)
 
 ---
 ## Discount & Wallet System
 
 ### Table: `discount_promotions`
-- **Purpose:** The master table for a discount, promotion, or coupon campaign.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `name` (VARCHAR(255) NOT NULL): The name of the promotion.
-    - `type` (VARCHAR(255) NOT NULL): The type of promotion (e.g., 'cart_rule', 'coupon').
-    - `is_active`, `starts_at`, `ends_at`, `priority`: Control the application logic of the discount.
-- **Relationships & Foreign Keys:** None.
+- Purpose: Promotion master.
+- Columns:
+  - id (BIGINT, PK)
+  - name (VARCHAR)
+  - description (TEXT nullable)
+  - type (VARCHAR)
+  - is_active (BOOLEAN default false, indexed)
+  - starts_at (TIMESTAMP nullable)
+  - ends_at (TIMESTAMP nullable)
+  - priority (INT default 0, indexed)
+  - stop_processing_subsequent_rules (BOOLEAN default false)
+  - usage_limit_total (INT nullable)
+  - usage_limit_per_customer (INT nullable)
+  - total_usage_count (INT default 0)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes:
+  - INDEX(is_active, starts_at, ends_at) as idx_active_dates
+  - INDEX(type, priority) as idx_type_priority
 
 ### Table: `discount_promotion_rules`
-- **Purpose:** Stores the specific conditions and actions for a `discount_promotion`. A promotion can have many rules.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `discount_promotion_id` (BIGINT NOT NULL): Foreign key to `discount_promotions`.
-    - `type` (VARCHAR(255) NOT NULL): The type of rule (e.g., 'condition', 'action').
-    - `handler` (VARCHAR(255) NOT NULL): The class responsible for processing this rule.
-    - `configuration` (JSONB NOT NULL): JSON object containing the specific parameters for the rule handler.
-- **Relationships & Foreign Keys:**
-    - `FK(discount_promotion_id)` -> `discount_promotions(id)` ON DELETE CASCADE.
+- Purpose: Promotion rules (conditions/actions).
+- Columns:
+  - id (BIGINT, PK)
+  - discount_promotion_id (BIGINT) FK -> discount_promotions(id) CASCADE
+  - type (VARCHAR)
+  - handler (VARCHAR)
+  - configuration (JSONB)
+  - created_at/updated_at (TIMESTAMPS)
 
 ### Table: `discount_coupons`
-- **Purpose:** Stores individual coupon codes linked to a promotion.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `discount_promotion_id` (BIGINT NOT NULL): Foreign key to `discount_promotions`.
-    - `code` (VARCHAR(255) NOT NULL UNIQUE): The actual coupon code customers enter.
-    - `usage_limit`, `usage_count`: Tracks the usage of the coupon.
-- **Relationships & Foreign Keys:**
-    - `FK(discount_promotion_id)` -> `discount_promotions(id)` ON DELETE CASCADE.
+- Purpose: Coupon codes.
+- Columns:
+  - id (BIGINT, PK)
+  - discount_promotion_id (BIGINT) FK -> discount_promotions(id) CASCADE
+  - code (VARCHAR unique)
+  - usage_limit (INT nullable)
+  - usage_count (INT default 0)
+  - is_active (BOOLEAN default true)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: UNIQUE(code), INDEX(is_active, code) as idx_active_code
+
+### Table: `product_delivery_option_discount_prices`
+- Purpose: Precomputed discounted prices per option and promotion.
+- Columns:
+  - product_delivery_option_id (BIGINT, PK) FK -> product_delivery_options(id) CASCADE
+  - discount_promotion_id (BIGINT) FK -> discount_promotions(id) CASCADE
+  - discounted_price (BIGINT)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: PK(product_delivery_option_id), INDEX(product_delivery_option_id, discount_promotion_id) as idx_pdo_promotion
 
 ### Table: `wallets`
-- **Purpose:** Manages a user's credit and gift balances.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `user_id` (BIGINT NOT NULL UNIQUE): Foreign key to `users`.
-    - `balance`, `gift_balance` (BIGINT NOT NULL DEFAULT 0): The user's credit balances.
-    - `status` (VARCHAR(255) NOT NULL DEFAULT 'active'): Status of the wallet.
-    - `created_by` (BIGINT): Staff member who created the wallet.
-- **Relationships & Foreign Keys:**
-    - `FK(user_id)` -> `users(id)` ON DELETE CASCADE.
-    - `FK(created_by)` -> `staff(id)` ON DELETE SET NULL.
+- Purpose: User wallet balances.
+- Columns:
+  - id (BIGINT, PK)
+  - user_id (BIGINT unique) FK -> users(id) CASCADE
+  - balance (BIGINT default 0)
+  - gift_balance (BIGINT default 0)
+  - status (VARCHAR default active, indexed)
+  - created_by (BIGINT nullable) FK -> staff(id) SET NULL
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: UNIQUE(user_id), INDEX(status)
 
 ### Table: `wallet_transactions`
-- **Purpose:** An immutable log of every credit or debit operation on a user's wallet.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `wallet_id`, `user_id`: Foreign keys to `wallets` and `users`.
-    - `type` (VARCHAR(255) NOT NULL): The transaction type (e.g., 'deposit', 'withdrawal', 'refund').
-    - `amount` (BIGINT NOT NULL): The transaction amount (can be negative).
-    - `balance_after`, `gift_balance_after`: The balances after this transaction occurred.
-    - `source_type`, `source_id`: A polymorphic relationship to the source of the transaction (e.g., an Order, a Refund, a WalletCampaign).
-- **Relationships & Foreign Keys:**
-    - `FK(wallet_id)` -> `wallets(id)` ON DELETE CASCADE.
-    - `FK(user_id)` -> `users(id)` ON DELETE RESTRICT.
+- Purpose: Ledger of wallet changes.
+- Columns:
+  - id (BIGINT, PK)
+  - wallet_id (BIGINT) FK -> wallets(id) CASCADE
+  - user_id (BIGINT) FK -> users(id) RESTRICT
+  - type (VARCHAR)
+  - amount (BIGINT)
+  - balance_after (BIGINT)
+  - gift_balance_after (BIGINT)
+  - source_type (STRING)
+  - source_id (BIGINT nullable)
+  - description (TEXT nullable)
+  - metadata (JSONB nullable)
+  - expires_at (TIMESTAMP nullable)
+  - created_by (BIGINT nullable) FK -> staff(id) SET NULL
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: INDEX(wallet_id), INDEX(user_id), INDEX(type), INDEX(source_type, source_id), INDEX(created_at), INDEX(expires_at)
 
 ### Table: `wallet_campaigns`
-- **Purpose:** Manages campaigns for bulk distribution of wallet credits.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `name` (VARCHAR(255) NOT NULL): The campaign name.
-    - `amount` (BIGINT NOT NULL): The amount of credit to be allocated per user.
-    - `is_active`, `starts_at`, `ends_at`: Control the campaign's lifecycle.
-    - `created_by` (BIGINT): Staff member who created the campaign.
-- **Relationships & Foreign Keys:**
-    - `FK(created_by)` -> `staff(id)` ON DELETE SET NULL.
+- Purpose: Gift/bonus campaigns.
+- Columns:
+  - id (BIGINT, PK)
+  - name (VARCHAR)
+  - description (TEXT nullable)
+  - type (VARCHAR(50))
+  - is_active (BOOLEAN default true)
+  - amount (BIGINT)
+  - usage_limit_total (INT nullable)
+  - usage_limit_per_user (INT nullable default 1)
+  - total_usage_count (INT default 0)
+  - starts_at (TIMESTAMP nullable)
+  - ends_at (TIMESTAMP nullable)
+  - metadata (JSONB nullable)
+  - created_by (BIGINT nullable) FK -> staff(id) SET NULL
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: INDEX(is_active, starts_at, ends_at) as idx_campaign_active_dates, INDEX(type, is_active) as idx_campaign_type_active
 
 ---
 ## Content & Settings Management
 
-### Table: `blog_categories` & `blog_posts`
-- **Purpose:** A standard blogging system. `blog_categories` are hierarchical, and `blog_posts` contain the articles.
-- **`blog_posts` Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `title`, `slug` (UNIQUE), `body`, `excerpt`: Standard blog fields.
-    - `author_id` (BIGINT): The `staff` member who wrote the post.
-    - `status` (VARCHAR(255) NOT NULL DEFAULT 'draft'): Publication workflow status.
-    - `published_at` (TIMESTAMP): The scheduled publication time.
-    - `main_productable_type`, `main_productable_id`: A polymorphic link to a featured product.
-- **Relationships & Foreign Keys:**
-    - `blog_categories` has a self-referencing `parent_id` foreign key.
-    - `blog_posts.author_id` -> `staff(id)` ON DELETE SET NULL.
-    - A many-to-many relationship exists between `blog_posts` and `blog_categories` via the `blog_post_category` pivot table.
+### Table: `blog_categories`
+- Purpose: Blog taxonomy.
+- Columns:
+  - id (BIGINT, PK)
+  - name (VARCHAR)
+  - slug (VARCHAR unique)
+  - description (TEXT nullable)
+  - parent_id (BIGINT nullable) FK -> blog_categories(id) CASCADE
+  - meta_title/meta_description/meta_keywords (from meta tags trait)
+  - icon (VARCHAR nullable)
+  - created_at/updated_at (TIMESTAMPS)
+
+### Table: `blog_posts`
+- Purpose: Blog posts.
+- Columns:
+  - id (BIGINT, PK)
+  - title (VARCHAR)
+  - slug (VARCHAR unique)
+  - body (LONGTEXT)
+  - excerpt (TEXT)
+  - author_id (BIGINT nullable) FK -> staff(id) SET NULL
+  - status (VARCHAR default draft, indexed)
+  - published_at (TIMESTAMP nullable)
+  - read_time_minutes (INT)
+  - is_featured (BOOLEAN default false, indexed)
+  - meta_title/meta_description/meta_keywords (from meta tags trait)
+  - main_productable_type/main_productable_id (nullable morphs)
+  - thumbnail_url (VARCHAR nullable)
+  - review_count (INT default 0)
+  - average_rating (DECIMAL(3,2) default 0.0)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: INDEX(is_featured), INDEX(published_at), INDEX(status, published_at)
+
+### Pivot: `blog_post_category`
+- Columns: id (PK), blog_post_id (FK), blog_category_id (FK), timestamps
+
+### Pivot: `blog_post_productables`
+- Columns: id (PK), blog_post_id (FK), productable_type/productable_id (morphs), timestamps
 
 ### Table: `settings`
-- **Purpose:** A key-value store for managing global application settings.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `key` (VARCHAR(255) NOT NULL UNIQUE): The unique key for the setting (e.g., 'contact_info').
-    - `value` (JSON NOT NULL): The setting value, stored as a flexible JSON object.
-    - `group` (VARCHAR(255)): A group name for organization (e.g., 'homepage', 'footer').
-- **Relationships & Foreign Keys:** None.
+- Purpose: Key-value global settings.
+- Columns:
+  - id (BIGINT, PK)
+  - key (VARCHAR unique)
+  - value (JSON)
+  - type (VARCHAR default 'json')
+  - group (VARCHAR nullable, indexed)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: UNIQUE(key), INDEX(group)
 
-### Table: `home_page_blocks`, `sliders`, `student_stories`
-- **Purpose:** These tables store content for various components of the website's front end.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `title`, `caption`, `image_url`, `link`, `order`, `is_active` / `is_visible`: Common fields for controlling the display of content blocks, sliders, and stories.
-- **Relationships & Foreign Keys:** None.
+### Table: `home_page_blocks`
+- Purpose: Home page content blocks.
+- Columns: id (PK), type, title, location, content (JSON), order (INT), is_active (BOOLEAN), timestamps
+
+### Table: `sliders`
+- Purpose: Slider images.
+- Columns: id (PK), title, caption (nullable), image_url (nullable), image_alt (nullable), link (nullable), order (INT default 0), timestamps
+
+### Table: `student_stories`
+- Purpose: Student testimonials.
+- Columns: id (PK), student_name, course_name, course_url, story_text, is_visible (BOOLEAN), display_order (INT), timestamps
+
+### Table: `contact_us_requests`
+- Purpose: Captured messages from the public contact form.
+- Columns: id (PK), full_name, phone (nullable), subject, email (nullable), message (TEXT), timestamps
+
+### Table: `collaboration_requests`
+- Purpose: Requests from users to collaborate.
+- Columns: id (PK), full_name, phone, email, message (TEXT), timestamps
+
+### Table: `partners`
+- Purpose: Logos/links of partner organizations displayed on site.
+- Columns: id (PK), title, caption (nullable), image_url (nullable), image_alt (nullable), image_id (BIGINT nullable), url (nullable), show_in (VARCHAR default 'home'), order (INT default 0), is_active (BOOLEAN default false), timestamps
 
 ---
 ## System & Auditing
 
 ### Table: `admin_action_logs`
-- **Purpose:** A detailed audit trail for all actions performed by staff members, crucial for security and compliance.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `admin_id` (BIGINT NOT NULL): The `staff` member who performed the action.
-    - `action_type` (VARCHAR(50) NOT NULL): The type of action (e.g., 'create', 'update', 'delete').
-    - `resource_type`, `resource_id`: A polymorphic link to the model that was affected.
-    - `route_name`, `http_method`, `request_data` (JSONB): Full details of the API request.
-    - `risk_level` (VARCHAR(255) NOT NULL DEFAULT 'low'): An assessed risk level for the action.
-- **Relationships & Foreign Keys:**
-    - `FK(admin_id)` -> `staff(id)` ON DELETE RESTRICT.
+- Purpose: Staff action audit trail.
+- Columns:
+  - id (BIGINT, PK)
+  - admin_id (BIGINT) FK -> staff(id) RESTRICT
+  - action_type (VARCHAR(50))
+  - resource_type (VARCHAR nullable), resource_id (BIGINT nullable)
+  - route_name (VARCHAR), http_method (VARCHAR(10))
+  - request_data (JSONB nullable)
+  - response_status (SMALLINT)
+  - ip_address (IP ADDRESS)
+  - user_agent (TEXT nullable)
+  - session_id (VARCHAR nullable)
+  - risk_level (VARCHAR default 'low')
+  - metadata (JSONB nullable)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: INDEX(admin_id, created_at), INDEX(action_type, created_at), INDEX(resource_type, resource_id), INDEX(risk_level, created_at), INDEX(route_name), INDEX(ip_address)
 
 ### Table: `reviews`
-- **Purpose:** Stores customer reviews for various entities like products and courses.
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `user_id` (BIGINT NOT NULL): The user who wrote the review.
-    - `reviewable_type`, `reviewable_id`: A polymorphic relationship to the item being reviewed.
-    - `rating` (SMALLINT): The star rating.
-    - `comment` (TEXT NOT NULL): The review text.
-    - `status` (VARCHAR(255) NOT NULL DEFAULT 'pending'): Moderation status (pending, approved, rejected).
-    - `is_featured` (BOOLEAN NOT NULL): Flag to feature the review.
-- **Relationships & Foreign Keys:**
-    - `FK(user_id)` -> `users(id)` ON DELETE CASCADE.
-- **Indexes:** (`reviewable_type`, `reviewable_id`), (`user_id`, `reviewable_type`, `reviewable_id`) for uniqueness.
+- Purpose: User reviews for entities.
+- Columns:
+  - id (BIGINT, PK)
+  - user_id (BIGINT) FK -> users(id) CASCADE
+  - reviewable_type/reviewable_id (morphs)
+  - rating (TINYINT nullable)
+  - title (VARCHAR)
+  - comment (TEXT)
+  - status (VARCHAR default pending, indexed)
+  - is_featured (BOOLEAN)
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes: INDEX(user_id, reviewable_type, reviewable_id), INDEX(status, is_featured), INDEX(reviewable_type, reviewable_id, status, is_featured), INDEX(reviewable_type, reviewable_id, status)
 
 ### Table: `sms_logs`
-- **Purpose:** Logs all outgoing SMS messages sent by the system (e.g., OTPs).
-- **Columns:**
-    - `id` (SERIAL): **Primary Key**.
-    - `status` (INTEGER NOT NULL): The status code from the SMS provider.
-    - `data` (JSONB): The full response from the provider.
-    - `content` (TEXT): The message body.
-    - `to` (JSONB): The recipient phone number(s).
-- **Relationships & Foreign Keys:** None.
+- Purpose: Outbound SMS logs.
+- Columns: id (PK), status (INT), data (JSONB nullable), content (TEXT nullable), type (VARCHAR), to (JSONB), from (VARCHAR), sent_at (DATETIME), timestamps
 
 ---
 ## Pivot & Relationship Tables
 
-- **`assetables`**: Polymorphic pivot table linking `digital_assets` to other models (like `courses`).
-- **`categorizables`**: Polymorphic pivot table linking `categories` to products.
-- **`blog_post_category`**: Many-to-many pivot between `blog_posts` and `blog_categories`.
-- **`blog_post_productables`**: Polymorphic pivot linking `blog_posts` to various product types.
-- **`mediables`**: Polymorphic pivot table from the `plank/laravel-mediable` package, linking `media` records to any model.
-- **`product_delivery_option_teacher`**: Many-to-many pivot between `product_delivery_options` and `teachers`.
-- **Spatie Permission Tables (`roles`, `permissions`, `role_has_permissions`, `model_has_roles`, `model_has_permissions`)**: Standard tables for managing role-based access control for the `staff` model.
+### Table: `assetables`
+- Purpose: Attach digital assets to any model.
+- Columns: digital_asset_id (FK), assetable_id, assetable_type
+- Keys: PRIMARY(digital_asset_id, assetable_id, assetable_type); INDEX(digital_asset_id, assetable_type)
+
+### Table: `categorizables`
+- Purpose: Attach categories to any model.
+- Columns: id (PK), category_id (FK), categorizable_id, categorizable_type, good_for_start (BOOLEAN default false)
+- Keys: UNIQUE(category_id, categorizable_id, categorizable_type); INDEX(categorizable_id, categorizable_type)
+
+### Table: `product_delivery_option_teacher`
+- See above (pivot section in products).
+
+### Table: `blog_post_category`
+- See above (content section).
+
+### Table: `blog_post_productables`
+- See above (content section).
+
+### Table: `mediables` (plank/laravel-mediable)
+- Columns: media_id (FK -> media.id), mediable_id, mediable_type, tag (indexed), order (indexed)
+- Keys: PRIMARY(media_id, mediable_type, mediable_id, tag); INDEX(mediable_id, mediable_type)
+
+### Table: `media` (plank/laravel-mediable)
+- Columns: id, disk, directory, filename, extension, mime_type, aggregate_type (indexed), size, variant_name (nullable), original_media_id (nullable FK -> media.id), timestamps
+- Keys: UNIQUE(disk, directory, filename, extension)
+
+### Spatie Permission Tables
+- roles: id (PK), team_foreign_key (nullable, indexed when teams enabled), name (unique with guard), label, guard_name, timestamps
+- permissions: id (PK), name (unique with guard), guard_name, timestamps
+- model_has_roles: PK(role_id, model_id, model_type[, team_fk]), indexes on model and team
+- model_has_permissions: PK(permission_id, model_id, model_type[, team_fk]), indexes on model and team
+- role_has_permissions: PK(permission_id, role_id)
+
+---
+## Infrastructure & Framework Tables
+
+- cache: key (PRIMARY), value (MEDIUMTEXT), expiration (INT)
+- cache_locks: key (PRIMARY), owner (STRING), expiration (INT)
+- jobs: id (PK), queue (indexed), payload, attempts, reserved_at, available_at, created_at
+- job_batches: id (PRIMARY), name, total_jobs, pending_jobs, failed_jobs, failed_job_ids, options, cancelled_at, created_at, finished_at
+- failed_jobs: id (PK), uuid (UNIQUE), connection, queue, payload, exception, failed_at
+- personal_access_tokens: id (PK), tokenable_type/id, name, token (UNIQUE), abilities (TEXT nullable), last_used_at, expires_at, timestamps
+- webhook_calls: id (PK), name, url, headers (JSON nullable), payload (JSON nullable), exception (TEXT nullable), timestamps
+- telescope_entries: sequence (PRIMARY), uuid (UNIQUE), batch_id (INDEXED), family_hash (INDEXED), should_display_on_index, type (20), content (LONGTEXT), created_at (INDEXED), plus INDEX(type, should_display_on_index)
+- telescope_entries_tags: PRIMARY(entry_uuid, tag), INDEX(tag), FK(entry_uuid) -> telescope_entries(uuid)
+- telescope_monitoring: tag (PRIMARY)
