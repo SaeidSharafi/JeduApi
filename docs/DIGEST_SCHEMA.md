@@ -111,6 +111,13 @@
     - `full_name` / `name`, `description`: Core descriptive fields.
     - `meta_title`, `meta_description`, `meta_keywords`: SEO fields.
     - `created_by` (BIGINT): The staff member who created the record.
+    - `review_count` (INT) and `average_rating` (DECIMAL(3,2)): Denormalized review data for quick access.
+- ** `courses` Specific Columns:**
+    - `short_name`, `thumbnail_url`, `sample_certificate_image_url`, `duration` (INT), `difficulty_level`, `career_prospects_text`, `curriculum_summary_text`, `outcomes_json` (JSON), `default_teacher_info`, `additional_info` (JSON).
+- ** `seminars` Specific Columns:**
+    - `subtitle`, `thumbnail_url`, `learning_objectives`, `prerequisites`, `promo_video_external_url`, `estimated_duration_desc`.
+- ** `digital_assets` Specific Columns:**
+    - `thumbnail_url`, `version` (VARCHAR(50)), `page_count` (INT), `duration_seconds` (INT), `is_attachable_to_course` (BOOLEAN).
 - **Relationships & Foreign Keys:**
     - Each of these tables has a polymorphic `morphOne` relationship to the `products` table.
     - `FK(created_by)` -> `staff(id)` ON DELETE SET NULL.
