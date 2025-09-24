@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\Shop\HomePage\HeaderController;
 use App\Http\Controllers\Api\Shop\HomePage\PartnerController;
 use App\Http\Controllers\Api\Shop\HomePage\SliderController;
+use App\Http\Controllers\Api\Shop\HomePage\StudentStoryController;
 use App\Http\Controllers\Api\Shop\HomePageContentController;
 use App\Http\Controllers\Api\Shop\Shared\FooterController;
 
@@ -16,3 +17,4 @@ Route::get('sliders', SliderController::class)->name('sliders.index');
 Route::get('header', HeaderController::class)->name('header.index');
 Route::get('footer', FooterController::class)->name('footer.index');
 Route::get('partners', PartnerController::class)->name('partners.index');
+Route::get('student-stories', StudentStoryController::class)->name('student-stories.index');
