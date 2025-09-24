@@ -13,7 +13,18 @@ use Illuminate\Database\Seeder;
 final class SettingsSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Seed initial application settings into the database.
+     *
+     * Persists structured default settings by calling Setting::setValue for:
+     * - contact (ContactInfoData::getDefaults())
+     * - header (HeaderData::getDefaults())
+     * - footer (FooterData::getDefaults())
+     * - about (inline rich content blocks)
+     * - rules (minimal HTML text)
+     * - sliders (empty array)
+     * - home_page_blocks (structured homepage defaults)
+     *
+     * All values are stored as JSON and grouped by their respective setting group.
      */
     public function run(): void
     {

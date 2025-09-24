@@ -16,33 +16,13 @@ use SmartCache\Facades\SmartCache;
 class StudentStoryController extends Controller
 {
     /**
-     * List Student Stories
-     *
-     * Returns a list of student stories to be displayed on the home page.
-     *
-     * @response {
-     *  "message": "عملیات با موفقیت انجام شد.",
-     *  "data": [
-     *      {
-     *          "student_name": "فراگیر یک",
-     *          "avatar_url": "http://jedu.test/storage/fake-media/placeholder1.jpg",
-     *          "course_name": "دوره حسابداری",
-     *          "course_url": "http://rempel.com/sunt-nihil-accusantium-harum-mollitia",
-     *          "story_text": "داستان فراگیر یک",
-     *          "display_order": 0
-     *      },
-     *      {
-     *          "student_name": "فراگیر دو",
-     *          "avatar_url": "http://jedu.test/storage/fake-media/placeholder2.jpg",
-     *          "course_name": "دوره حسابداری",
-     *          "course_url": "http://rempel.com/sunt-nihil-accusantium-harum-mollitia",
-     *          "story_text": "داستان فراگیر دو",
-     *          "display_order": 0
-     *      }
-     *  ],
-     *  "metadata": []
-     * }
-     */
+         * List student stories for the shop home page.
+         *
+         * Returns a JSON success response containing an array of student story objects (mapped via StudentStoryData).
+         * Results are served from cache using CacheKeysEnum::StudentStory; the cache key and TTL come from that enum.
+         *
+         * @return \Illuminate\Http\JsonResponse JSON response with `data` set to an array of student story DTOs.
+         */
     public function __invoke()
     {
         $stories = SmartCache::remember(CacheKeysEnum::StudentStory->value, CacheKeysEnum::StudentStory->ttl(),

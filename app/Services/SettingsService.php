@@ -10,6 +10,16 @@ use SmartCache\Facades\SmartCache;
 class SettingsService
 {
 
+    /**
+     * Retrieve a setting value by key.
+     *
+     * Returns the setting value for the given key, or $default if the key does not exist.
+     * If the stored value is a non-empty array, it is processed with Setting::witImages() before returning.
+     *
+     * @param string $key The setting key to look up.
+     * @param mixed|null $default Value to return when the setting is not found.
+     * @return mixed The processed setting value or the provided default.
+     */
     public function get(string $key, mixed $default = null): mixed
     {
         $allSettings = $this->getAll();
@@ -33,7 +43,9 @@ class SettingsService
     }
 
     /**
-     * Forgets the settings cache. This is our public method for invalidation.
+     * Clears the cached application settings.
+     *
+     * Removes the settings entry from the cache so future reads will reload settings from persistent storage.
      */
     public function forget(): void
     {
@@ -41,8 +53,14 @@ class SettingsService
     }
 
     /**
-     * Retrieves the entire collection of settings.
-     * If not in the cache, it loads from the DB and caches it forever.
+     * Retrieve all settings keyed by their 'key', cached indefinitely.
+     *
+     * Loads all Setting records, keys them by the 'key' attribute, and stores the
+     * resulting Collection in the cache forever under the Settings cache key.
+     * Returns the cached Collection when present; on cache miss the database is
+     * queried once to populate the cache.
+     *
+     * @return Collection<string, Setting> Collection of Setting models keyed by setting key.
      */
     private function getAll(): Collection
     {

@@ -34,7 +34,16 @@ final class FooterController extends Controller
     }
 
     /**
-     * Update footer settings.
+     * Update the stored footer settings.
+     *
+     * Authorizes the current user for the 'update' action on the Setting model, persists the provided
+     * footer data under the 'footer' setting (as JSON), and, if a logo ID is included, resolves the
+     * corresponding Media record and synchronizes it to the setting under the 'logo' collection.
+     *
+     * Returns a success API response containing the updated FooterData.
+     *
+     * @param FooterCreateData $data Validated DTO containing footer fields; may include a `logo` media ID.
+     * @return ApiResponseInterface Success response with the updated FooterData.
      *
      * @responseFile 200 responses/settings/footer.json
      * @responseFile 422 responses/422.json

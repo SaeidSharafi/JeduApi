@@ -36,9 +36,15 @@ enum CacheKeysEnum:string
     }
 
     /**
-     * Defines the Time-To-Live (TTL) for each cache key.
+     * Get the Time-To-Live (TTL) for this cache key.
      *
-     * @return int|DateInterval The cache duration in seconds or a DateInterval object.
+     * Returns the TTL as an integer number of seconds or a DateInterval. Mapping:
+     * - HomePageContent => 3600 (1 hour)
+     * - UserProfile => 86400 (24 hours)
+     * - StudentStory, Slider, PartnersInHome, PartnersInCourse, Partners => 7200 (2 hours)
+     * - Settings and other unspecified keys => 0 (no expiration / forever)
+     *
+     * @return int|DateInterval TTL in seconds or a DateInterval; 0 means no expiration.
      */
     public function ttl(): int|DateInterval
     {
