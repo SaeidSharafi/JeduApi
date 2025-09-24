@@ -1,7 +1,5 @@
 <?php
 
-namespace Tests\Feature\Services;
-
 use App\Data\Admin\MediaData;
 use App\Models\Setting;
 use App\Services\SettingsService;
