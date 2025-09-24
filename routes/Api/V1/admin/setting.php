@@ -7,7 +7,8 @@ use App\Http\Controllers\Api\Admin\Settings\HeaderController;
 use App\Http\Controllers\Api\Admin\Settings\HomePageBlockController;
 use App\Http\Controllers\Api\Admin\Settings\PartnerController;
 use App\Http\Controllers\Api\Admin\Settings\SettingController;
-use App\Http\Controllers\Api\Admin\Settings\SliderController;
+use App\Http\Controllers\Api\Admin\Settings\Slider\SliderController;
+use App\Http\Controllers\Api\Admin\Settings\Slider\UpdateSliderStatusController;
 use App\Http\Controllers\Api\Admin\Settings\StudentStoryController;
 
 Route::prefix('settings')->name('settings.')->group(function (): void {
@@ -29,8 +30,9 @@ Route::prefix('settings')->name('settings.')->group(function (): void {
         ->name('header.show');
     Route::put('header', [HeaderController::class, 'update'])
         ->name('header.update');
-    Route::resource('slider', SliderController::class)
-        ->only(['index', 'show', 'store', 'update', 'destroy']);
+    Route::apiResource('slider', SliderController::class);
+    Route::patch('slider/{slider}/staus',  UpdateSliderStatusController::class)
+        ->name('slider.staus');
     Route::apiResource('partner', PartnerController::class);
     Route::apiResource('home-page-block', HomePageBlockController::class);
 

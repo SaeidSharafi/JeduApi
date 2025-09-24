@@ -2,22 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api\Admin\Settings;
+namespace App\Http\Controllers\Api\Admin\Settings\Slider;
 
 use App\Actions\Admin\Slider\CreateSliderAction;
 use App\Actions\Admin\Slider\DeleteSliderAction;
 use App\Actions\Admin\Slider\UpdateSliderAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Slider\SliderCreateData;
+use App\Data\Admin\Slider\SliderData;
 use App\Data\Admin\Slider\SliderListItemData;
 use App\Data\Admin\Slider\SliderUpdateData;
-use App\Data\Admin\Slider\SliderData;
 use App\Http\Controllers\Controller;
 use App\Models\Slider;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Http\Response;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**

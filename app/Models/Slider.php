@@ -21,10 +21,20 @@ final class Slider extends Model
             'image_id',
             'image_url',
             'image_alt',
+            'status',
             'link',
             'order',
         ];
 
+    protected function casts(): array
+    {
+        return [
+            'status' => \App\Enums\PublicationStatusEnum::class,
+            'order' => 'integer',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
     public function getImage(): ?MediaData
     {
         if ($this->relationLoaded('media')) {
