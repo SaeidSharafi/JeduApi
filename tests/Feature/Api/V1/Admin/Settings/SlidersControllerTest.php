@@ -191,7 +191,7 @@ it('update slider status', function () {
     $data = [
         'status' => App\Enums\PublicationStatusEnum::DRAFT->value,
     ];
-    $response = $this->patchJson(route('api.v1.admin.settings.slider.staus', $slider), $data);
+    $response = $this->patchJson(route('api.v1.admin.settings.slider.status', $slider), $data);
     $response->assertStatus(200)
         ->assertJsonStructure([
             'message',
