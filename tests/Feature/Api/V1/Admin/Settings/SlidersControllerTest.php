@@ -32,7 +32,7 @@ it('can list sliders', function (): void {
                 'message',
                 'data' => [
                     'data' => [
-                        '*' => ['id', 'title', 'caption', 'image_url', 'link', 'order'],
+                        '*' => ['id', 'title', 'caption', 'image_url', 'status', 'link', 'order'],
                     ],
                 ],
                 'metadata',
@@ -56,7 +56,7 @@ it('can show a slider', function (): void {
     $response->assertStatus(200)
         ->assertJsonStructure([
             'message',
-            'data' => ['id', 'title', 'caption', 'image', 'link', 'order'],
+            'data' => ['id', 'title', 'caption', 'status', 'image', 'link', 'order'],
             'metadata',
         ]);
     $responseData = $response->json('data');
@@ -71,6 +71,7 @@ it('can create a slider', function (): void {
         'title'   => 'New Slider',
         'caption' => 'New Caption',
         'image'   => $this->image1->id,
+        'status'  => App\Enums\PublicationStatusEnum::PUBLISHED->value,
         'link'    => '/new',
         'order'   => 2,
     ];
@@ -78,7 +79,7 @@ it('can create a slider', function (): void {
     $response->assertStatus(201)
         ->assertJsonStructure([
             'message',
-            'data' => ['id', 'title', 'caption', 'image', 'link', 'order'],
+            'data' => ['id', 'title', 'caption', 'status', 'image', 'link', 'order'],
             'metadata',
         ]);
     $responseData = $response->json('data');
@@ -113,6 +114,7 @@ it('can update a slider', function (): void {
     $data = [
         'title'   => 'Updated Slider',
         'caption' => 'Updated Caption',
+        'status'  => App\Enums\PublicationStatusEnum::DRAFT->value,
         'image'   => $this->image2->id,
         'link'    => '/updated',
         'order'   => 3,
@@ -121,7 +123,7 @@ it('can update a slider', function (): void {
     $response->assertStatus(200)
         ->assertJsonStructure([
             'message',
-            'data' => ['id', 'title', 'caption', 'image', 'link', 'order'],
+            'data' => ['id', 'title', 'caption', 'status', 'image', 'link', 'order'],
             'metadata',
         ]);
     $slider->refresh();
@@ -171,4 +173,31 @@ it('validates required fields on update', function (): void {
     $response = $this->putJson(route('api.v1.admin.settings.slider.update', $slider), $data);
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['title', 'image', 'order']);
+});
+
+it('update slider status', function () {
+    $this->authorized_user([App\Enums\PermissionEnum::SLIDER_UPDATE->value]);
+
+    $slider = Slider::factory()->create([
+        'title'     => 'Status Slider',
+        'caption'   => 'Status Caption',
+        'image_url' => $this->image1->getUrl(),
+        'image_alt' => 'Status Alt',
+        'link'      => '/status',
+        'order'     => 1,
+        'status'    => App\Enums\PublicationStatusEnum::PUBLISHED,
+    ]);
+    $slider->attachMedia($this->image1, 'image');
+    $data = [
+        'status' => App\Enums\PublicationStatusEnum::DRAFT->value,
+    ];
+    $response = $this->patchJson(route('api.v1.admin.settings.slider.status', $slider), $data);
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'message',
+            'data' => ['id', 'title', 'caption', 'status', 'image', 'link', 'order'],
+            'metadata',
+        ]);
+    $slider->refresh();
+    expect($slider->status)->toBe(App\Enums\PublicationStatusEnum::DRAFT);
 });

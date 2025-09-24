@@ -101,6 +101,10 @@
             "@test:lint",
             "@test:types",
             "@test:refactor"
+        ],
+        "fresh-dev": [
+            "php artisan migrate:fresh --force",
+            "php artisan db:seed --class=DemoSeeder"
         ]
     },
     "extra": {
