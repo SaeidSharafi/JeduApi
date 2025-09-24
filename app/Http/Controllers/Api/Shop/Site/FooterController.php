@@ -87,7 +87,7 @@ class FooterController extends Controller
      */
     public function __invoke(SettingsService $service)
     {
-        $footer = $service->get('footer', AdminFooterData::class::getDefaults());
+        $footer = $service->get('footer', AdminFooterData::getDefaults());
         return response()->success(FooterData::from($footer));
     }
 }

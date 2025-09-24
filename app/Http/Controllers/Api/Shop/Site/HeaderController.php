@@ -67,7 +67,7 @@ final class HeaderController extends Controller
      * */
     public function __invoke(SettingsService $service)
     {
-        $header = $service->get('header', \App\Data\Admin\Settings\HeaderData::class::getDefaults());
+        $header = $service->get('header', \App\Data\Admin\Settings\HeaderData::getDefaults());
 
         return response()->success(HeaderData::from($header));
     }

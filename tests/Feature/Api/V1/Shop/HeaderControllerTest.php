@@ -8,7 +8,7 @@ use App\Models\Setting;
 describe('HeaderController', function () {
     it('retrieves header settings successfully', function () {
         $response = $this->getJson('/api/v1/shop/header');
-        $header   = Setting::getValue('header', HeaderData::class::getDefaults());
+        $header   = Setting::getValue('header', HeaderData::getDefaults());
         $response->assertStatus(200);
 
         $response->assertJsonStructure([
