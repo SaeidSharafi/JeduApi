@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Plank\Mediable\Mediable;
@@ -21,6 +23,11 @@ final class StudentStory extends Model
         'display_order',
     ];
 
+    #[Scope]
+    public function visible(Builder $query): Builder
+    {
+        return $query->where('is_visible', true);
+    }
     protected function casts(): array
     {
         return [

@@ -28,19 +28,24 @@ final class FooterData extends Data
     {
         return [
             'logo'                  => null,
-            'caption'               => 'Your partner in modern education.',
+            'logo_url'              => null,
+            'logo_alt'              => "جهاددانشگاهی قزوین",
+            'caption'               => 'شریک شما در آموزش مدرن',
             'support_link'          => '/contact-us',
             'support_email_address' => 'support@jedu.ir',
-            'addresses'             => [],
-            'categories'            => [],
+            'addresses'             => ContactInfoData::getDefaults()['addresses'],
+            'categories'            => ['دوره‌ها', 'معماری', 'آموزش صنعتی', 'زبان‌های خارجی'],
             'main_links'            => [
-                ['title' => 'About Us', 'link' => '/about-us'],
-                ['title' => 'Blog', 'link' => '/blog'],
-                ['title' => 'Contact Us', 'link' => '/contact-us'],
-                ['title' => 'Rules', 'link' => '/rules'],
+                ['title' => 'درباره ما', 'link' => '/about-us'],
+                ['title' => 'وبلاگ', 'link' => '/blog'],
+                ['title' => 'تماس با ما', 'link' => '/contact-us'],
+                ['title' => 'قوانین', 'link' => '/rules'],
             ],
-            'social_media_links' => [],
-            'certifications'     => [],
+            'social_media_links' => ContactInfoData::getDefaults()['social_media_links'],
+            'certifications'     => [
+                ['name' => 'اینماد', 'image' => null, 'html' => ''],
+                ['name' => 'ساماندهی', 'image' => null, 'html' => ''],
+            ],
         ];
     }
 }

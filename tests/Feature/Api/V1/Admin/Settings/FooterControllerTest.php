@@ -40,7 +40,7 @@ it('can update footer settings', function (): void {
             ['title' => 'About Us', 'link' => '/about-us'],
             ['title' => 'Blog', 'link' => '/blog'],
         ],
-        'social_media_links' => [
+        'social_media_links'    => [
             [
                 'platform' => 'instagram',
                 'link'     => 'https://instagram.com/jedushop',
@@ -50,8 +50,17 @@ it('can update footer settings', function (): void {
                 'link'     => 'https://linkedin.com/company/jedushop',
             ],
         ],
-        'certifications' => [
-            "<img src='cert.jpg' alt='Enamad' />",
+        'certifications'        => [
+            [
+                'name'  => 'Enamad',
+                'image' => null,
+                'html'  => "<img src='enamad.jpg' alt='Enamad' />",
+            ],
+            [
+                'name'  => 'Samandehi',
+                'image' => null,
+                'html'  => "<img src='samandehi.jpg' alt='Samandehi' />",
+            ],
         ],
     ];
 
@@ -65,9 +74,10 @@ it('can update footer settings', function (): void {
 
     $setting = App\Models\Setting::where('key', 'footer')->first();
     expect($setting)->not->toBeNull()
-
         ->and($setting->value['caption'])->toBe('Your partner in modern education.')
-        ->and($setting->value['logo'])->toBe($logo->id);
+        ->and($setting->value['logo'])->toBe($logo->id)
+        ->and($setting->value['logo_url'])->toBe($logo->getUrl())
+        ->and($setting->value['logo_alt'])->toBe($logo->alt);
 });
 
 it('validates footer data - missing required fields', function (): void {
@@ -123,7 +133,7 @@ it('cannot access footer settings without auth', function (): void {
     $response->assertStatus(403);
 
     // Create valid category for required field
-    $cat        = App\Models\Category::factory()->create(['name' => 'Cat']);
+    $cat = App\Models\Category::factory()->create(['name' => 'Cat']);
     $footerData = [
         'logo'                  => null,
         'caption'               => 'Test Caption',
@@ -134,7 +144,7 @@ it('cannot access footer settings without auth', function (): void {
         'main_links'            => [
             ['title' => 'About Us', 'link' => '/about-us'],
         ],
-        'social_media_links' => [
+        'social_media_links'    => [
             [
                 'platform' => 'instagram',
                 'link'     => 'https://instagram.com/jedushop',
@@ -144,7 +154,18 @@ it('cannot access footer settings without auth', function (): void {
                 'link'     => 'https://linkedin.com/company/jedushop',
             ],
         ],
-        'certifications' => ["<img src='cert.jpg' alt='Enamad' />"],
+        'certifications'        => [
+            [
+                'name'  => 'Enamad',
+                'image' => null,
+                'html'  => "<img src='enamad.jpg' alt='Enamad' />",
+            ],
+            [
+                'name'  => 'Samandehi',
+                'image' => null,
+                'html'  => "<img src='samandehi.jpg' alt='Samandehi' />",
+            ],
+        ],
     ];
     $response = $this->putJson(route('api.v1.admin.settings.footer.update'), $footerData);
     $response->assertStatus(403);
@@ -156,6 +177,6 @@ it('returns default values when no footer setting exists', function (): void {
     $response = $this->getJson(route('api.v1.admin.settings.footer.show'));
     $response->assertStatus(200);
     $data = $response->json('data');
-    expect($data['caption'])->toBe('Your partner in modern education.')
-        ->and($data['main_links'][0]['title'])->toBe('About Us');
+    expect($data['caption'])->toBe('شریک شما در آموزش مدرن')
+        ->and($data['main_links'][0]['title'])->toBe('درباره ما');
 });
