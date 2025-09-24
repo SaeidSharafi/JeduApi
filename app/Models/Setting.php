@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Plank\Mediable\Media;
+use Plank\Mediable\Mediable;
 
 final class Setting extends Model
 {
     use HasFactory;
+    use Mediable;
 
     protected $fillable
         = [
@@ -25,7 +27,7 @@ final class Setting extends Model
     /**
      * Get a setting value by key.
      */
-    public static function get(string $key, mixed $default = null): mixed
+    public static function getValue(string $key, mixed $default = null): mixed
     {
         $setting = self::where('key', $key)->first();
         // Make sure we have an array to work with before passing to witImages
@@ -42,7 +44,7 @@ final class Setting extends Model
     /**
      * Set a setting value by key.
      */
-    public static function set(string $key, mixed $value, string $type = 'json', ?string $group = null): static
+    public static function setValue(string $key, mixed $value, string $type = 'json', ?string $group = null): static
     {
         return self::updateOrCreate(
             ['key' => $key],
@@ -136,6 +138,7 @@ final class Setting extends Model
 
         return $settingData;
     }
+
     protected function casts(): array
     {
         return [

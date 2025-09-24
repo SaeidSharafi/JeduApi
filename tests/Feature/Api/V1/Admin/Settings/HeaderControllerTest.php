@@ -25,16 +25,15 @@ it('can update header settings', function (): void {
         ->toDisk('public')
         ->upload();
 
-
     $headerData = [
-        'logo'                  => $logo->id,
-        'navigation_links'      => [
+        'logo'             => $logo->id,
+        'navigation_links' => [
             ['title' => 'About Us', 'url' => '/about-us', 'order' => 0],
             ['title' => 'Contact Us', 'url' => '/contact-us', 'order' => 2],
             ['title' => 'Blog', 'url' => '/blog', 'order' => 1],
         ],
-        'contact_phone'         => '123-456-7890',
-        'contact_email'         => 'contactus@example.com'
+        'contact_phone' => '123-456-7890',
+        'contact_email' => 'contactus@example.com',
     ];
 
     $response = $this->putJson(route('api.v1.admin.settings.header.update'), $headerData);
@@ -44,12 +43,14 @@ it('can update header settings', function (): void {
             'data' => [],
             'metadata',
         ]);
-    $response->assertJson(function (\Illuminate\Testing\Fluent\AssertableJson $json): void{
-        $json->where('data.contact_phone', '123-456-7890')
+    $response->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($logo): void {
+        $json
+            ->where('data.contact_phone', '123-456-7890')
             ->where('data.contact_email', 'contactus@example.com')
             ->where('data.navigation_links.0.title', 'About Us')
             ->where('data.navigation_links.1.title', 'Blog')
             ->where('data.navigation_links.2.title', 'Contact Us')
+            ->where('data.logo.url', $logo->getUrl())
             ->etc();
     });
 
@@ -59,9 +60,11 @@ it('can update header settings', function (): void {
         ->and($setting->value['contact_phone'])->toBe('123-456-7890')
         ->and($setting->value['contact_email'])->toBe('contactus@example.com')
         ->and($setting->value['navigation_links'][0]['title'])->toBe('About Us')
-        ->and($setting->value['navigation_links'][1]['title'])->toBe('Contact Us')
-        ->and($setting->value['navigation_links'][2]['title'])->toBe('Blog')
-        ->and($setting->value['logo'])->toBe($logo->id);
+        ->and($setting->value['navigation_links'][1]['title'])->toBe('Blog')
+        ->and($setting->value['navigation_links'][2]['title'])->toBe('Contact Us')
+        ->and($setting->value['logo'])->toBe($logo->id)
+        ->and($setting->value['logo_url'])->toBe($logo->getUrl());
+
 });
 
 it('validates header data - missing required fields', function (): void {
@@ -87,8 +90,8 @@ it('validates header data - missing required fields', function (): void {
             ['title' => '', 'url' => '/about-us'], // title is required
             ['title' => 'Contact Us', 'url' => ''], // url is required
         ],
-        'contact_phone'    => '123-456-7890',
-        'contact_email'    => 'example@example.com',
+        'contact_phone' => '123-456-7890',
+        'contact_email' => 'example@example.com',
     ];
 
     $response = $this->putJson(route('api.v1.admin.settings.header.update'), $invalidNavData);
@@ -98,7 +101,6 @@ it('validates header data - missing required fields', function (): void {
             'navigation_links.1.url',
         ]);
 });
-
 
 it('cannot access header settings without auth', function (): void {
     $this->unauthorized_user();
@@ -111,8 +113,8 @@ it('cannot access header settings without auth', function (): void {
             ['title' => 'Contact Us', 'url' => '/contact-us', 'order' => 2],
             ['title' => 'Blog', 'url' => '/blog', 'order' => 1],
         ],
-        'contact_phone'    => '123-456-7890',
-        'contact_email'    => 'example@example.com',
+        'contact_phone' => '123-456-7890',
+        'contact_email' => 'example@example.com',
     ];
     $response = $this->putJson(route('api.v1.admin.settings.header.update'), $headerData);
     $response->assertStatus(403);
@@ -123,7 +125,7 @@ it('returns default values when no header setting exists', function (): void {
     App\Models\Setting::where('key', 'header')->delete();
     $response = $this->getJson(route('api.v1.admin.settings.header.show'));
     $response->assertStatus(200);
-    $data = $response->json('data');
+    $data     = $response->json('data');
     $defaults = App\Data\Admin\Settings\HeaderData::getDefaults();
     expect($data['contact_phone'])->toBe($defaults['contact_phone'])
         ->and($data['contact_email'])->toBe($defaults['contact_email'])

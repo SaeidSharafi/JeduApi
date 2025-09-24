@@ -26,7 +26,7 @@ final class ContactInfoController extends Controller
     {
         Gate::authorize('viewAny', Setting::class);
 
-        $contactInfo = Setting::get('contact_info', ContactInfoData::getDefaults());
+        $contactInfo = Setting::getValue('contact_info', ContactInfoData::getDefaults());
 
         return response()->success(ContactInfoData::from($contactInfo));
     }
@@ -41,7 +41,7 @@ final class ContactInfoController extends Controller
     {
         Gate::authorize('update', Setting::class);
 
-        Setting::set('contact_info', $data->toArray(), 'json', 'contact');
+        Setting::setValue('contact_info', $data->toArray(), 'json', 'contact');
 
         return response()->success(
             $data->toArray(),

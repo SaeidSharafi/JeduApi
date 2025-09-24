@@ -30,7 +30,7 @@ it('to array', function (): void {
 
 it('get and set setting', function (): void {
     // Set a setting
-    $setting = App\Models\Setting::set('site_name', ['en' => 'My Site', 'fa' => 'سایت من'], 'json', 'general');
+    $setting = App\Models\Setting::setValue('site_name', ['en' => 'My Site', 'fa' => 'سایت من'], 'json', 'general');
 
     expect($setting)->toBeInstanceOf(App\Models\Setting::class)
         ->and($setting->key)->toBe('site_name')
@@ -39,11 +39,11 @@ it('get and set setting', function (): void {
         ->and($setting->group)->toBe('general');
 
     // Get the setting
-    $value = App\Models\Setting::get('site_name');
+    $value = App\Models\Setting::getValue('site_name');
     expect($value)->toBe(['en' => 'My Site', 'fa' => 'سایت من']);
 
     // Get a non-existing setting with default value
-    $defaultValue = App\Models\Setting::get('non_existing_key', 'default_value');
+    $defaultValue = App\Models\Setting::getValue('non_existing_key', 'default_value');
     expect($defaultValue)->toBe('default_value');
 });
 
@@ -59,11 +59,11 @@ it('get setting with images', function (): void {
         ->toDisk('public')
         ->upload();
 
-    $media = App\Models\Setting::set('site_logo', [
+    $media = App\Models\Setting::setValue('site_logo', [
         'images' => [$image1->id, $image2->id],
     ], 'json', 'general');
     // Get the setting
-    $value = App\Models\Setting::get('site_logo');
+    $value = App\Models\Setting::getValue('site_logo');
     expect($value)->toBeArray()
         ->and($value['images'])->toBeArray()
         ->and(count($value['images']))->toBe(2)
@@ -77,7 +77,7 @@ it('get setting with images', function (): void {
 
 it('get setting with non-array value', function (): void {
     // Set a setting with a non-array value
-    $setting = App\Models\Setting::set('site_name', 'My Site', 'text', 'general');
+    $setting = App\Models\Setting::setValue('site_name', 'My Site', 'text', 'general');
 
     expect($setting)->toBeInstanceOf(App\Models\Setting::class)
         ->and($setting->key)->toBe('site_name')
@@ -86,13 +86,13 @@ it('get setting with non-array value', function (): void {
         ->and($setting->group)->toBe('general');
 
     // Get the setting
-    $value = App\Models\Setting::get('site_name');
+    $value = App\Models\Setting::getValue('site_name');
     expect($value)->toBe('My Site');
 });
 
 it('get setting with empty array value', function (): void {
     // Set a setting with an empty array value
-    $setting = App\Models\Setting::set('empty_setting', [], 'json', 'general');
+    $setting = App\Models\Setting::setValue('empty_setting', [], 'json', 'general');
 
     expect($setting)->toBeInstanceOf(App\Models\Setting::class)
         ->and($setting->key)->toBe('empty_setting')
@@ -101,6 +101,6 @@ it('get setting with empty array value', function (): void {
         ->and($setting->group)->toBe('general');
 
     // Get the setting
-    $value = App\Models\Setting::get('empty_setting', 'default_value');
+    $value = App\Models\Setting::getValue('empty_setting', 'default_value');
     expect($value)->toBe([]);
 });
