@@ -20,6 +20,7 @@ final class HeaderData extends Data
     {
         return [
             'logo'             => null,
+            'logo_url'         => null,
             'navigation_links' => [
                 ['title' => 'درباره ما', 'url' => '/about-us'],
                 ['title' => 'ارتباط با ما', 'url' => '/contact-us'],
@@ -30,8 +31,8 @@ final class HeaderData extends Data
                 ['title' => 'بلاگ', 'url' => '/blog'],
                 ['title' => 'دوره‌ها', 'url' => '/courses'],
             ],
-            'contact_phone'    => '+98-21-12345678',
-            'contact_email'    => 'info@jedu.ir',
+            'contact_phone' => '+98-21-12345678',
+            'contact_email' => 'info@jedu.ir',
         ];
     }
 }

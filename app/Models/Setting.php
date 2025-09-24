@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Plank\Mediable\Media;
+use Plank\Mediable\Mediable;
 
 final class Setting extends Model
 {
     use HasFactory;
+    use Mediable;
 
     protected $fillable
         = [
@@ -136,6 +138,7 @@ final class Setting extends Model
 
         return $settingData;
     }
+
     protected function casts(): array
     {
         return [

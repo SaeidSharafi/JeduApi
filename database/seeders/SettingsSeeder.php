@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Data\Admin\Settings\ContactInfoData;
+use App\Data\Admin\Settings\HeaderData;
 use App\Models\Setting;
 use Illuminate\Database\Seeder;
 
@@ -17,6 +18,8 @@ final class SettingsSeeder extends Seeder
     {
         // Contact Info Settings
         Setting::setValue('contact_info', ContactInfoData::getDefaults(), 'json', 'contact');
+
+        Setting::setValue('header', HeaderData::getDefaults(), 'json', 'header');
 
         // Footer Settings (placeholder)
         Setting::setValue('footer', [

@@ -10,6 +10,7 @@ use App\Data\Admin\Settings\HeaderData;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
+use Plank\Mediable\Media;
 
 /**
  * @group Admin - Settings Management
@@ -42,15 +43,21 @@ final class HeaderController extends Controller
     {
         Gate::authorize('update', Setting::class);
 
-        Setting::setValue('header', $data->toArray(), 'json', 'header');
-        $header = Setting::getValue('header');
-        $links = $header['navigation_links'] ?? [];
+        $header = $data->toArray();
         // Sort links by 'order' key
+        $links = $header['navigation_links'] ?? [];
         usort($links, fn ($a, $b): int => ($a['order'] ?? 0) <=> ($b['order'] ?? 0));
-        // Reindex array
         $header['navigation_links'] = array_values($links);
+        $logo                       = $data->logo ? Media::find($data->logo) : null;
+        $header['logo_url']         = $logo?->getUrl();
+        $setting                    = Setting::setValue('header', $header, 'json', 'header');
+        // Handle logo media
+        $setting->syncMedia($logo, 'logo');
+
         return response()->success(
-            HeaderData::from($header),
+            HeaderData::from(
+                Setting::getValue('header', HeaderData::getDefaults())
+            ),
             __('messages.updated', ['model' => __('messages.models.header')])
         );
     }
