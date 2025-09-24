@@ -3,13 +3,15 @@
 namespace App\Http\Controllers\Api\Shop\HomePage;
 
 use App\Data\Shop\HomePage\StudentStoryData;
+use App\Enums\CacheKeysEnum;
 use App\Http\Controllers\Controller;
 use App\Models\StudentStory;
+use SmartCache\Facades\SmartCache;
 
 /**
  * @group Shop - Home Page
  *
- * APIs for managing home page student stories
+ * APIs for retrieving Home Page Content
  */
 class StudentStoryController extends Controller
 {
@@ -43,12 +45,15 @@ class StudentStoryController extends Controller
      */
     public function __invoke()
     {
-        $stories = StudentStory::query()
-            ->withMedia('avatar')
-            ->visible()
-            ->orderBy('display_order')
-            ->get();
-        $stories = $stories->map(fn ($story) => StudentStoryData::fromModel($story));
+        $stories = SmartCache::remember(CacheKeysEnum::StudentStory->value, CacheKeysEnum::StudentStory->ttl(),
+            function () {
+                $stories = StudentStory::query()
+                    ->withMedia('avatar')
+                    ->visible()
+                    ->orderBy('display_order')
+                    ->get();
+                return $stories->map(fn($story) => StudentStoryData::fromModel($story));
+            });
         return response()->success($stories);
     }
 }

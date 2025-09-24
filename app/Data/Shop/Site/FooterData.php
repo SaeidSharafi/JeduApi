@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Data\Shop\Shared;
+namespace App\Data\Shop\Site;
 
 use App\Data\Admin\Settings\SocialMediaLinkData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;

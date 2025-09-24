@@ -6,6 +6,12 @@ enum CacheKeysEnum:string
 {
     case HomePageContent = 'shop.homepage.content';
     case UserProfile    = 'user.{id}.profile';
+    case StudentStory   = 'shop.homepage.student-stories';
+    case Slider         = 'shop.homepage.sliders';
+    case PartnersInHome = 'shop.homepage.partners';
+    case PartnersInCourse = 'shop.course.partners';
+    case Partners = 'shop.partners';
+    case Settings = 'settings.all';
 
 
     /**
@@ -38,7 +44,12 @@ enum CacheKeysEnum:string
     {
         return match ($this) {
             self::HomePageContent => 3600,
+            self::UserProfile    => 86400,
+            self::StudentStory, self::Slider,
+            self::PartnersInHome, self::PartnersInCourse, self::Partners => 7200,
+            default => 0, // Default to no expiration (forever)
         };
     }
+
 
 }

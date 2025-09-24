@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Api\Shop\HomePage;
 
 use App\Data\Shop\HomePage\PartnerData;
+use App\Enums\CacheKeysEnum;
+use App\Enums\PartnerShowInEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
 use Illuminate\Http\Request;
+use SmartCache\Facades\SmartCache;
 
 /**
- * @group Shop - Home Page Management
+ * @group Shop - Home Page
  *
- * APIs for managing home page content in the shop
+ * APIs for retrieving Home Page Content
  */
 class PartnerController extends Controller
 {
@@ -41,12 +44,18 @@ class PartnerController extends Controller
     public function __invoke(Request $request)
     {
         $showIn = $request->query('show_in');
-        $partners = Partner::query()
-            ->active()
-            ->when($showIn, fn($query) => $query->where('show_in', $showIn))
-            ->orderBy('order')
-            ->get();
+        $cacheKey = PartnerShowInEnum::getCacheKey($showIn);
+        $partners =  SmartCache::remember($cacheKey->value, $cacheKey->ttl(),
+            function () use ($showIn) {
+                $partners = Partner::query()
+                    ->active()
+                    ->when($showIn && PartnerShowInEnum::tryFrom($showIn),
+                        fn($query) => $query->where('show_in', $showIn))
+                    ->orderBy('order')
+                    ->get();
+                return PartnerData::collect($partners);
+            });
 
-        return response()->success(PartnerData::collect($partners));
+        return response()->success($partners);
     }
 }

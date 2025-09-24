@@ -10,7 +10,10 @@ use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\Review;
 use App\Models\Seminar;
-use \App\Enums\CacheKeysEnum;
+use App\Enums\CacheKeysEnum;
+use App\Models\StudentStory;
+use \App\Models\Slider;
+use \App\Models\Partner;
 
 return [
     /**
@@ -49,7 +52,20 @@ return [
         BlogPost::class                           => [
             CacheKeysEnum::HomePageContent,
         ],
-
+        StudentStory::class                       => [
+            CacheKeysEnum::StudentStory,
+        ],
+        Slider::class                             => [
+            CacheKeysEnum::Slider,
+        ],
+        Partner::class                => [
+            CacheKeysEnum::PartnersInHome,
+            CacheKeysEnum::PartnersInCourse,
+            CacheKeysEnum::Partners,
+        ],
+        \App\Models\Setting::class => [
+            CacheKeysEnum::Settings,
+        ],
         // You can add other cache keys here too!
         // For example, if you have a separate cache for just categories:
         // Category::class => [
