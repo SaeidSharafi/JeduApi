@@ -9,7 +9,9 @@ use App\Enums\DynamicListEntityTypeEnum;
 use App\Enums\DynamicListSortByEnum;
 use App\Enums\FulfillmentTypeEnum;
 use App\Enums\HomePageBlockTypeEnum;
+use App\Enums\MorphTypeEnum;
 use App\Enums\PermissionEnum;
+use App\Enums\ProductableEnum;
 use App\Models\Blog\BlogCategory;
 use App\Models\Blog\BlogPost;
 use App\Models\Category;
@@ -21,6 +23,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\Seminar;
+use App\Models\Slider;
 use App\Models\Staff;
 use App\Models\Teacher;
 use App\Models\Term;
@@ -193,6 +196,87 @@ final class DemoSeeder extends Seeder
             ->create();
 
         $this->command->info('Creating Products from existing blueprints...');
+        Product::factory()
+            ->withDeliveryOptions(realData: [
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+                    'price'            => 1000000,
+                ],
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::IN_PERSON_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
+                    'price'            => 3000000,
+                ],
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::OFFLINE_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
+                    'price'            => 500000,
+                ],
+            ])
+            ->withCategory(3)
+            ->create(
+                [
+                    'productable_type' => ProductableEnum::COURSE->value,
+                    'productable_id'   => Course::query()->inRandomOrder()->first()->id,
+                    'term_id' => Term::query()->inRandomOrder()->first()->id,
+                    'vendor_id' => Vendor::query()->inRandomOrder()->first()->id,
+                ]
+            );
+        Product::factory()
+            ->withDeliveryOptions(realData: [
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+                    'price'            => 1000000,
+                ],
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::IN_PERSON_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
+                    'price'            => 3000000,
+                ],
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::OFFLINE_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
+                    'price'            => 500000,
+                ],
+            ])
+            ->withCategory(3)
+            ->create(
+                [
+                    'productable_type' => ProductableEnum::SEMINAR->value,
+                    'productable_id'   => Seminar::query()->inRandomOrder()->first()->id,
+                    'term_id' => Term::query()->inRandomOrder()->first()->id,
+                    'vendor_id' => Vendor::query()->inRandomOrder()->first()->id,
+                ]
+            );
+        Product::factory()
+            ->withDeliveryOptions(realData: [
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
+                    'price'            => 1000000,
+                ],
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::IN_PERSON_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
+                    'price'            => 3000000,
+                ],
+                [
+                    'fulfillment_type' => FulfillmentTypeEnum::OFFLINE_SERVICE,
+                    'delivery_method'  => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
+                    'price'            => 500000,
+                ],
+            ])
+            ->withCategory(3)
+            ->create(
+                [
+                    'productable_type' => ProductableEnum::DIGITAL_ASSET->value,
+                    'productable_id'   => DigitalAsset::query()->inRandomOrder()->first()->id,
+                    'term_id' => Term::query()->inRandomOrder()->first()->id,
+                    'vendor_id' => Vendor::query()->inRandomOrder()->first()->id,
+                ]
+            );
         Product::factory(100)
             ->withDeliveryOptions(realData: [
                 [
@@ -239,7 +323,7 @@ final class DemoSeeder extends Seeder
 
         $this->command->info('Seeding Home Page Blocks...');
         HomePageBlock::factory()
-            ->webinarBanner($cover, Product::query()->where('productable_type', Seminar::class)->inRandomOrder()->first()->id)
+            ->webinarBanner($cover, Product::query()->where('productable_type', MorphTypeEnum::SEMINAR->value)->inRandomOrder()->first()->id)
             ->create([
                 'title'    => 'First Webinar Banner',
                 'location' => 'hero',
@@ -290,6 +374,9 @@ final class DemoSeeder extends Seeder
                 'location' => 'middle',
                 'order'    => 6,
             ]);
+
+        Slider::factory(5)
+            ->create();
 
         $this->command->info('Running post-seeding indexing and caching commands...');
         Artisan::call('discounts:reindex-all');
