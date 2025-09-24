@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Enums\ProductableEnum;
@@ -12,7 +14,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
-class ReviewFactory extends Factory
+final class ReviewFactory extends Factory
 {
     protected $model = Review::class;
 
@@ -37,11 +39,12 @@ class ReviewFactory extends Factory
                 $reviewableType = ProductableEnum::COURSE->value;
                 $reviewableId   = Course::factory();
         }
+
         return [
             'user_id'         => User::factory(),
             'reviewable_type' => $reviewableType,
             'reviewable_id'   => $reviewableId,
-            'rating'          => random_int(1,5),
+            'rating'          => random_int(1, 5),
             'title'           => $this->faker->persianWord(),
             'comment'         => $this->faker->persianText(),
             'status'          => $this->faker->randomElement(ReviewStatusEnum::cases()),

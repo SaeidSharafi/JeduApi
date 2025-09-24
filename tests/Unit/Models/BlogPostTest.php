@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 it('to array', function (): void {
     $blogPost = App\Models\Blog\BlogPost::factory()->create()->fresh();
 
@@ -29,7 +31,7 @@ it('to array', function (): void {
 
 it('relation author', function (): void {
     $blogPost = App\Models\Blog\BlogPost::factory()->create();
-    $author = App\Models\Staff::factory()->create();
+    $author   = App\Models\Staff::factory()->create();
     $blogPost->author()->associate($author);
     $blogPost->save();
     $blogPost->refresh();
@@ -61,7 +63,7 @@ it('relation categories', function (): void {
 
 it('relation courses', function (): void {
     $blogPost = App\Models\Blog\BlogPost::factory()->create();
-    $course = App\Models\Course::factory()->create();
+    $course   = App\Models\Course::factory()->create();
     $blogPost->courses()->attach($course->id);
 
     expect($blogPost->courses)
@@ -80,7 +82,7 @@ it('relation courses', function (): void {
 
 it('relation seminars', function (): void {
     $blogPost = App\Models\Blog\BlogPost::factory()->create();
-    $seminar = App\Models\Seminar::factory()->create();
+    $seminar  = App\Models\Seminar::factory()->create();
     $blogPost->seminars()->attach($seminar->id);
 
     expect($blogPost->seminars)
@@ -98,7 +100,7 @@ it('relation seminars', function (): void {
 });
 
 it('relation digitalAssets', function (): void {
-    $blogPost = App\Models\Blog\BlogPost::factory()->create();
+    $blogPost     = App\Models\Blog\BlogPost::factory()->create();
     $digitalAsset = App\Models\DigitalAsset::factory()->create();
     $blogPost->digitalAssets()->attach($digitalAsset->id);
 
@@ -118,7 +120,7 @@ it('relation digitalAssets', function (): void {
 
 it('relation main productable', function (): void {
     $blogPost = App\Models\Blog\BlogPost::factory()->create();
-    $course = App\Models\Course::factory()->create();
+    $course   = App\Models\Course::factory()->create();
     $blogPost->mainProductable()->associate($course);
     $blogPost->save();
     $blogPost->refresh();
@@ -152,8 +154,8 @@ it('relation main productable', function (): void {
 it('relation related productables', function (): void {
     $blogPost = App\Models\Blog\BlogPost::factory()->create()->fresh();
 
-    $course = App\Models\Course::factory()->create();
-    $seminar = App\Models\Seminar::factory()->create();
+    $course       = App\Models\Course::factory()->create();
+    $seminar      = App\Models\Seminar::factory()->create();
     $digitalAsset = App\Models\DigitalAsset::factory()->create();
 
     $blogPost->courses()->attach($course->id);
@@ -190,8 +192,8 @@ it('relation related productables', function (): void {
 it('syncRelatedProductables with empty array detaches all', function (): void {
     $blogPost = App\Models\Blog\BlogPost::factory()->create();
 
-    $course = App\Models\Course::factory()->create();
-    $seminar = App\Models\Seminar::factory()->create();
+    $course       = App\Models\Course::factory()->create();
+    $seminar      = App\Models\Seminar::factory()->create();
     $digitalAsset = App\Models\DigitalAsset::factory()->create();
 
     $blogPost->courses()->attach($course->id);
@@ -214,9 +216,9 @@ it('syncRelatedProductables with empty array detaches all', function (): void {
 
 it('relation reviews', function (): void {
     $blogPost = App\Models\Blog\BlogPost::factory()->create();
-    $review = App\Models\Review::factory()->create([
+    $review   = App\Models\Review::factory()->create([
         'reviewable_id'   => $blogPost->id,
-        'reviewable_type' => \App\Enums\MorphTypeEnum::BLOG_POST,
+        'reviewable_type' => App\Enums\MorphTypeEnum::BLOG_POST,
     ]);
 
     expect($blogPost->reviews)

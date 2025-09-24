@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Admin\Review;
 
 use App\Contracts\ReviewableDataContract;
@@ -13,7 +15,7 @@ use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
 
-class ReviewData extends Data
+final class ReviewData extends Data
 {
     public function __construct(
         public int $id,
@@ -31,7 +33,5 @@ class ReviewData extends Data
         public ?CustomerData $user = null,
         public ?Verta $created_at = null,
         public ?Verta $updated_at = null,
-    )
-    {
-    }
+    ) {}
 }

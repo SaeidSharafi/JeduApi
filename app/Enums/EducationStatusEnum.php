@@ -9,8 +9,8 @@ use App\Traits\AdvanceEnum;
 enum EducationStatusEnum: string
 {
     use AdvanceEnum;
-    case STUDENT   = 'student';
-    case UNIVERSITY   = 'university';
-    case GRADUATED = 'graduated';
-    case EMPLOYED  = 'employed';
+    case STUDENT    = 'student';
+    case UNIVERSITY = 'university';
+    case GRADUATED  = 'graduated';
+    case EMPLOYED   = 'employed';
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\Review;
 
 use App\Contracts\ApiResponseInterface;
@@ -22,10 +24,9 @@ use Spatie\QueryBuilder\QueryBuilder;
  *
  * APIs for managing reviews
  */
-class ReviewController extends Controller
+final class ReviewController extends Controller
 {
     /**
-     *
      * Display a listing of the reviews.
      *
      * @responseFile 200  responses/review/index.json
@@ -53,9 +54,9 @@ class ReviewController extends Controller
                 'status',
                 'is_featured',
                 'created_at',
-                'updated_at'
+                'updated_at',
             ])
-            ->when(!$request->has('customer_name'), function ($query): void {
+            ->when(! $request->has('customer_name'), function ($query): void {
                 $query->with('user');
             })
             ->with(['reviewable'])
@@ -66,7 +67,6 @@ class ReviewController extends Controller
     }
 
     /**
-     *
      * Display the specified review.
      *
      * @responseFile 200  responses/review/show.json
@@ -77,14 +77,15 @@ class ReviewController extends Controller
     {
         Gate::authorize('view', $review);
         $review->load(['user', 'reviewable']);
+
         return response()->success(ReviewData::from($review));
     }
 
     /**
-     *
      * Remove the specified review from storage.
      *
      * @response 204
+     *
      * @responseFile 404 responses/404.json
      * @responseFile 403 responses/403.json
      */
@@ -93,6 +94,7 @@ class ReviewController extends Controller
         Gate::authorize('delete', $review);
         $review->delete();
         ReviewableAggregatesChanged::dispatch($review->reviewable_id, $review->reviewable_type);
+
         return response()->noContentJson();
     }
 }

@@ -69,19 +69,21 @@ final class ProductDeliveryOption extends Model
         return $this->hasOne(ProductDeliveryOptionDiscountPrice::class, 'product_delivery_option_id');
     }
 
-    public function getTeachersName():array
+    public function getTeachersName(): array
     {
         return $this->teachers->map(function ($teacher) {
             $title = $teacher->gender === GenderEnum::FEMALE ? __('shop.teahcer_titles.sir') : __('shop.teahcer_titles.madam');
-            return $title . ' ' . $teacher->first_name . ' ' . $teacher->last_name;
+
+            return $title.' '.$teacher->first_name.' '.$teacher->last_name;
         })->toArray();
     }
+
     #[\Illuminate\Database\Eloquent\Attributes\Scope]
     protected function available($query)
     {
-        //available_from and available_to are optional, if they are null, it means the product is always available
+        // available_from and available_to are optional, if they are null, it means the product is always available
         return $query->where('status', PublicationStatusEnum::PUBLISHED)
-            ->where(function (Builder $q) {;
+            ->where(function (Builder $q) {
                 $q->whereNull('available_from')
                     ->orWhere('available_from', '<=', now());
             })
@@ -116,13 +118,12 @@ final class ProductDeliveryOption extends Model
     {
         if ($this->relationLoaded('productDeliveryOptionDiscountPrice')) {
             return Attribute::make(
-                get: fn($value, array $attributes) => $this->productDeliveryOptionDiscountPrice?->discounted_price ??
-                    $this->price,
+                get: fn ($value, array $attributes) => $this->productDeliveryOptionDiscountPrice?->discounted_price ?? $this->price,
             );
         }
 
         return Attribute::make(
-            get: fn($value, array $attributes) => $this->price,
+            get: fn ($value, array $attributes) => $this->price,
         );
     }
 

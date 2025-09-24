@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 uses(Tests\AuthTestTrait::class);
 describe('Admin Staff Select Option API', function (): void {
@@ -24,7 +25,7 @@ describe('Admin Staff Select Option API', function (): void {
             ],
         ]);
         $response->assertJsonFragment([
-            'title'  => 'John XDoe',
+            'title'    => 'John XDoe',
             'subtitle' => 'example@example.com',
         ]);
     });
@@ -48,13 +49,13 @@ describe('Admin Staff Select Option API', function (): void {
         $response = $this->getJson('/api/v1/admin/select-option/staff?q=example@example.com');
         $response->assertOk();
         $response->assertJsonFragment([
-            'title'  => 'Jane XSmith',
+            'title'    => 'Jane XSmith',
             'subtitle' => 'example@example.com',
         ]);
         $response = $this->getJson('/api/v1/admin/select-option/staff?q=1234567890');
         $response->assertOk();
         $response->assertJsonFragment([
-            'title'  => 'Jane XSmith',
+            'title'    => 'Jane XSmith',
             'subtitle' => 'example@example.com',
         ]);
     });

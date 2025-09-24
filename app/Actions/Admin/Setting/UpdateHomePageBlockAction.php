@@ -5,23 +5,22 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Setting;
 
 use App\Data\Admin\Settings\HomePageBlock\HomePageBlockCreateData;
-use App\Enums\HomePageBlockTypeEnum;
 use App\Models\HomePageBlock;
 use Illuminate\Support\Facades\DB;
 use Plank\Mediable\Media;
 
-class UpdateHomePageBlockAction
+final class UpdateHomePageBlockAction
 {
     public function handle(HomePageBlock $block, HomePageBlockCreateData $data): HomePageBlock
     {
         return DB::transaction(function () use ($data, $block) {
 
             if (isset($data->content['image_id'])) {
-                $media = Media::findOrFail($data->content['image_id']);
+                $media                      = Media::findOrFail($data->content['image_id']);
                 $data->content['image_url'] = $media->getUrl();
             }
 
-           $block->update([
+            $block->update([
                 'type'      => $data->type,
                 'title'     => $data->title,
                 'location'  => $data->location,
@@ -33,6 +32,7 @@ class UpdateHomePageBlockAction
                 $block->syncMedia($media, 'image');
             }
             $block->refresh();
+
             return $block;
         });
     }

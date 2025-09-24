@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\PublicationStatusEnum;
 
-describe("PublishPostCommand", function (): void {
+describe('PublishPostCommand', function (): void {
     beforeEach(function (): void {
         $this->command = new App\Console\Commands\PublishPostCommand();
     });
 
-    it("should publish scheduled posts with past publish_at dates", function (): void {
+    it('should publish scheduled posts with past publish_at dates', function (): void {
         // Create a scheduled post with a past publish_at date
         $post = App\Models\Blog\BlogPost::factory()->create([
             'status'       => PublicationStatusEnum::SCHEDULED,
@@ -16,9 +18,9 @@ describe("PublishPostCommand", function (): void {
 
         // Run the command
         $this->artisan('post:publish')
-                ->expectsOutput('Starting post publishing process...')
-                ->expectsOutput('Successfully published 1 post(s).')
-                ->assertExitCode(0);
+            ->expectsOutput('Starting post publishing process...')
+            ->expectsOutput('Successfully published 1 post(s).')
+            ->assertExitCode(0);
 
         // Refresh the post instance to get the latest data from the database
         $post->refresh();
@@ -27,7 +29,7 @@ describe("PublishPostCommand", function (): void {
         expect($post->status)->toBe(PublicationStatusEnum::PUBLISHED);
     });
 
-    it("should not publish posts with future publish_at dates", function (): void {
+    it('should not publish posts with future publish_at dates', function (): void {
         // Create a scheduled post with a future publish_at date
         $post = App\Models\Blog\BlogPost::factory()->create([
             'status'       => PublicationStatusEnum::SCHEDULED,
@@ -36,9 +38,9 @@ describe("PublishPostCommand", function (): void {
 
         // Run the command
         $this->artisan('post:publish')
-                ->expectsOutput('Starting post publishing process...')
-                ->expectsOutput('No posts are scheduled for publication at this time.')
-                ->assertExitCode(0);
+            ->expectsOutput('Starting post publishing process...')
+            ->expectsOutput('No posts are scheduled for publication at this time.')
+            ->assertExitCode(0);
 
         // Refresh the post instance to get the latest data from the database
         $post->refresh();
@@ -47,7 +49,7 @@ describe("PublishPostCommand", function (): void {
         expect($post->status)->toBe(PublicationStatusEnum::SCHEDULED);
     });
 
-    it("should not publish posts that are not scheduled", function (): void {
+    it('should not publish posts that are not scheduled', function (): void {
         // Create a draft post
         $draftPost = App\Models\Blog\BlogPost::factory()->create([
             'status'       => PublicationStatusEnum::DRAFT,
@@ -62,9 +64,9 @@ describe("PublishPostCommand", function (): void {
 
         // Run the command
         $this->artisan('post:publish')
-                ->expectsOutput('Starting post publishing process...')
-                ->expectsOutput('No posts are scheduled for publication at this time.')
-                ->assertExitCode(0);
+            ->expectsOutput('Starting post publishing process...')
+            ->expectsOutput('No posts are scheduled for publication at this time.')
+            ->assertExitCode(0);
 
         // Refresh the post instances to get the latest data from the database
         $draftPost->refresh();

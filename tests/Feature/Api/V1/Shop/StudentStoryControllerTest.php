@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\StudentStory;
 
-describe('StudentStoryController', function (){
+describe('StudentStoryController', function () {
 
-    it('can fetch student stories', function (){
+    it('can fetch student stories', function () {
         StudentStory::factory(5)->create(
             ['is_visible' => true]
         );
@@ -30,7 +32,7 @@ describe('StudentStoryController', function (){
         $this->assertCount(5, $response->json('data'));
     });
 
-    it('return student story data correctly', function (){
+    it('return student story data correctly', function () {
         $story = StudentStory::factory()->create(
             ['is_visible' => true]
         );
@@ -67,21 +69,21 @@ describe('StudentStoryController', function (){
 
     });
 
-    it('stories are ordered by display_order', function (){
+    it('stories are ordered by display_order', function () {
         StudentStory::factory()->create([
-            'student_name' => 'Student One',
+            'student_name'  => 'Student One',
             'display_order' => 2,
-            'is_visible' => true,
+            'is_visible'    => true,
         ]);
         StudentStory::factory()->create([
-            'student_name' => 'Student Two',
+            'student_name'  => 'Student Two',
             'display_order' => 1,
-            'is_visible' => true,
+            'is_visible'    => true,
         ]);
         StudentStory::factory()->create([
-            'student_name' => 'Student Three',
+            'student_name'  => 'Student Three',
             'display_order' => 3,
-            'is_visible' => true,
+            'is_visible'    => true,
         ]);
         $response = $this->getJson(route('api.v1.shop.student-stories.index'));
         $response->assertOk();

@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Partner;
 
-use Spatie\LaravelData\DataCollection;
-use Spatie\LaravelData\Data;
 use App\Enums\PartnerShowInEnum;
+use Spatie\LaravelData\Data;
 
 final class PartnerListItemData extends Data
 {
@@ -19,7 +18,6 @@ final class PartnerListItemData extends Data
         public PartnerShowInEnum $show_in,
         public int $order,
         public bool $is_active,
-    ) {
-    }
+    ) {}
 
 }

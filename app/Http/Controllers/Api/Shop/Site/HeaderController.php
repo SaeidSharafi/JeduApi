@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Site;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Site\HeaderData;
 use App\Http\Controllers\Controller;
-use App\Models\Setting;
 use App\Services\SettingsService;
 
 /**
@@ -65,7 +65,7 @@ final class HeaderController extends Controller
      *  "metadata": []
      * }
      * */
-    public function __invoke(SettingsService $service)
+    public function __invoke(SettingsService $service): ApiResponseInterface
     {
         $header = $service->get('header', \App\Data\Admin\Settings\HeaderData::getDefaults());
 

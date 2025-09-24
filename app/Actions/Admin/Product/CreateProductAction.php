@@ -15,10 +15,10 @@ final readonly class CreateProductAction
 {
     public function handle(ProductCreateData $data): Product
     {
-        $product =  DB::transaction(function () use ($data): Product {
-            $forceCreate = $data->force_create ?? false;
+        $product = DB::transaction(function () use ($data): Product {
+            $forceCreate      = $data->force_create ?? false;
             $productableClass = ProductableEnum::from($data->productable_type)->getModelClass();
-            $productable = $productableClass::find($data->productable_id);
+            $productable      = $productableClass::find($data->productable_id);
             if ($forceCreate) {
                 Product::query()
                     ->where('productable_id', $data->productable_id)
@@ -33,9 +33,11 @@ final readonly class CreateProductAction
                 'slug' => $productable->slug,
             ])->fresh();
             $product->categories()->sync($data->categories);
+
             return $product;
         });
         ProductCacheInvalidated::dispatch($product->id);
+
         return $product;
     }
 }

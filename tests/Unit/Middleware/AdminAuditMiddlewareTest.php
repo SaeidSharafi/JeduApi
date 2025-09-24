@@ -19,7 +19,7 @@ uses(AuthTestTrait::class);
 
 beforeEach(function (): void {
     $this->middleware = new AdminAuditMiddleware();
-    $this->next       = fn ($request): \Symfony\Component\HttpFoundation\Response => new Response('Success', 200);
+    $this->next       = fn ($request): Response => new Response('Success', 200);
 });
 
 describe('AdminAuditMiddleware', function (): void {
@@ -31,7 +31,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/users', 'POST', ['name' => 'John Doe']);
         $route   = new Route('POST', '/users', ['as' => 'admin.users.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $response = $this->middleware->handle($request, $this->next);
 
@@ -55,7 +55,7 @@ describe('AdminAuditMiddleware', function (): void {
 
         $route->bind($request);
 
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -73,7 +73,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/users/1', 'GET');
         $route   = new Route('GET', '/users/1', ['as' => 'admin.users.show']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -85,7 +85,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/some-url', 'POST'); // Method would normally be logged
         $route   = new Route('POST', '/some-url', ['as' => $routeName]);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -112,7 +112,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/wallet', 'POST', ['amount' => 100000]);
         $route   = new Route('POST', '/wallet', ['as' => $routeName]);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -133,7 +133,7 @@ describe('AdminAuditMiddleware', function (): void {
             $request = Request::create('/test', $method);
             $route   = new Route($method, '/test', ['as' => $routeName]);
             $route->bind($request);
-            $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+            $request->setRouteResolver(fn (): Route => $route);
 
             $this->middleware->handle($request, $this->next);
 
@@ -153,7 +153,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'OPTIONS');
         $route   = new Route('OPTIONS', '/test', ['as' => 'admin.test.options']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -195,7 +195,7 @@ describe('AdminAuditMiddleware', function (): void {
             // Mock the route parameters
             $route->bind($request);
             $route->setParameter($paramName, $resourceId);
-            $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+            $request->setRouteResolver(fn (): Route => $route);
 
             $this->middleware->handle($request, $this->next);
 
@@ -223,7 +223,7 @@ describe('AdminAuditMiddleware', function (): void {
 
         $route->bind($request);
         $route->setParameter('user', $user); // Simulate model binding
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -238,7 +238,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'POST');
         $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -252,10 +252,10 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'POST');
         $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         // Mock next to return server error
-        $nextWithError = fn ($request): \Symfony\Component\HttpFoundation\Response => new Response('Server Error', 500);
+        $nextWithError = fn ($request): Response => new Response('Server Error', 500);
 
         $this->middleware->handle($request, $nextWithError);
 
@@ -269,7 +269,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'DELETE');
         $route   = new Route('DELETE', '/test', ['as' => 'admin.test.destroy']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -283,7 +283,7 @@ describe('AdminAuditMiddleware', function (): void {
             $request = Request::create('/wallet/deposit', 'POST', ['amount' => $amount]);
             $route   = new Route('POST', '/wallet/deposit', ['as' => 'admin.wallet.deposit']);
             $route->bind($request);
-            $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+            $request->setRouteResolver(fn (): Route => $route);
 
             $this->middleware->handle($request, $this->next);
 
@@ -301,7 +301,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/bulk-create', 'POST');
         $route   = new Route('POST', '/bulk-create', ['as' => 'admin.users.bulk.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -317,7 +317,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'POST');
         $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -336,7 +336,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'POST');
         $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -351,7 +351,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'POST', ['amount' => 100000]);
         $route   = new Route('POST', '/test', ['as' => $routeName]);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -387,7 +387,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'POST', $sensitiveData);
         $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -412,7 +412,7 @@ describe('AdminAuditMiddleware', function (): void {
 
         $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -428,7 +428,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'POST', $largeData);
         $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -444,7 +444,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'POST', ['test' => 'data']);
         $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -468,7 +468,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'POST');
         $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $jsonResponse = response()->json(['message' => 'success', 'data' => ['id' => 1]]);
         $nextWithJson = fn ($request) => $jsonResponse;
@@ -484,7 +484,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'POST');
         $route   = new Route('POST', '/test', []); // No route name
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -496,7 +496,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'PATCH', ['name' => 'Updated Name']);
         $route   = new Route('PATCH', '/test', ['as' => 'admin.test.update']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -514,7 +514,7 @@ describe('AdminAuditMiddleware', function (): void {
 
         $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -530,7 +530,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'POST');
         $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -619,7 +619,7 @@ describe('AdminAuditMiddleware', function (): void {
 
         $route->setParameter('user', 1);
         $route->setParameter('wallet', 2);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -634,11 +634,11 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'POST');
         $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         // Mock next to return regular response (not JSON)
         $regularResponse = new Response('Plain text response');
-        $nextWithRegular = fn ($request): \Symfony\Component\HttpFoundation\Response => $regularResponse;
+        $nextWithRegular = fn ($request): Response => $regularResponse;
 
         $this->middleware->handle($request, $nextWithRegular);
 
@@ -651,7 +651,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'POST');
         $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -665,7 +665,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/wallet/adjust', 'POST', ['amount' => 15000000]); // Large amount
         $route   = new Route('POST', '/wallet/adjust', ['as' => 'admin.wallet.adjust']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -681,7 +681,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/wallet/deposit', 'POST', ['amount' => 0]);
         $route   = new Route('POST', '/wallet/deposit', ['as' => 'admin.wallet.deposit']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -708,7 +708,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'POST', $requestData);
         $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -728,7 +728,7 @@ describe('AdminAuditMiddleware', function (): void {
 
         $route = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -744,7 +744,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request      = Request::create('/test', 'POST', [], [], [], [], $largeContent);
         $route        = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -757,7 +757,7 @@ describe('AdminAuditMiddleware', function (): void {
         $request = Request::create('/test', 'POST');
         $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
         $route->bind($request);
-        $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+        $request->setRouteResolver(fn (): Route => $route);
 
         $this->middleware->handle($request, $this->next);
 
@@ -771,7 +771,7 @@ test('it does not log if staff member is not authenticated', function (): void {
     $request = Request::create('/users', 'POST');
     $route   = new Route('POST', '/users', ['as' => 'admin.users.store']);
     $route->bind($request);
-    $request->setRouteResolver(fn (): \Illuminate\Routing\Route => $route);
+    $request->setRouteResolver(fn (): Route => $route);
 
     $this->middleware->handle($request, $this->next);
 

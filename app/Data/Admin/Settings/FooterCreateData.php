@@ -22,9 +22,7 @@ final class FooterCreateData extends Data
         #[DataCollectionOf(SocialMediaLinkData::class)]
         public DataCollection $social_media_links,
         public ?array $certifications
-    )
-    {
-    }
+    ) {}
 
     public static function rules(ValidationContext $context): array
     {

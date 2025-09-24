@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 use App\Http\Controllers\Api\Admin\Category\CategoryController;
 use App\Http\Controllers\Api\Admin\Category\CategoryItemsController;
 use App\Http\Controllers\Api\Admin\Category\GoodForStartController;

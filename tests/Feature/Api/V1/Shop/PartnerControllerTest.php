@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\PartnerShowInEnum;
 use App\Models\Partner;
 
@@ -31,14 +33,14 @@ describe('PartnerController', function () {
             ->create(
                 [
                     'is_active' => true,
-                    'show_in' => PartnerShowInEnum::HOME,
+                    'show_in'   => PartnerShowInEnum::HOME,
                 ]
             );
         Partner::factory(5)
             ->create(
                 [
                     'is_active' => true,
-                    'show_in' => PartnerShowInEnum::COURSE,
+                    'show_in'   => PartnerShowInEnum::COURSE,
                 ]
             );
         $response = $this->getJson(route('api.v1.shop.partners.index', ['show_in' => PartnerShowInEnum::HOME->value]));

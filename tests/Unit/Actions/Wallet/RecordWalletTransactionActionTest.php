@@ -96,7 +96,7 @@ test('cannot record transaction for invalid user', function (): void {
         'description' => 'Invalid user',
         'metadata'    => [],
     ]);
-    expect(fn (): \App\Models\WalletTransaction => (new RecordWalletTransactionAction())->execute($data))
+    expect(fn (): WalletTransaction => (new RecordWalletTransactionAction())->execute($data))
         ->toThrow(Exception::class, __('validation.custom.user_not_found'));
 });
 
@@ -112,7 +112,7 @@ test('cannot record transaction for user without wallet', function (): void {
         'description' => 'No wallet',
         'metadata'    => [],
     ]);
-    expect(fn (): \App\Models\WalletTransaction => (new RecordWalletTransactionAction())->execute($data))
+    expect(fn (): WalletTransaction => (new RecordWalletTransactionAction())->execute($data))
         ->toThrow(Exception::class, __('validation.custom.wallet_not_found'));
 });
 
@@ -128,7 +128,7 @@ it('throws an error if tranaction amount is more than balance', function (): voi
         'description' => 'No wallet',
         'metadata'    => [],
     ]);
-    expect(fn (): \App\Models\WalletTransaction => (new RecordWalletTransactionAction())->execute($data))
+    expect(fn (): WalletTransaction => (new RecordWalletTransactionAction())->execute($data))
         ->toThrow(Exception::class, __('validation.custom.insufficient_balance'));
 });
 it('will it automatically reduce balance if it\'s withdrawal', function (): void {

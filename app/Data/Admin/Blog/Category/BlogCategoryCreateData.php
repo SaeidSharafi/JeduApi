@@ -19,8 +19,7 @@ final class BlogCategoryCreateData extends Data
         public ?string $description = null,
         public ?int $parent_id = null,
         public ?int $icon = null,
-    ) {
-    }
+    ) {}
 
     public static function rules(?ValidationContext $context = null): array
     {
@@ -30,6 +29,6 @@ final class BlogCategoryCreateData extends Data
             'description' => ['nullable', 'string'],
             'parent_id'   => ['nullable', 'integer', 'exists:blog_categories,id'],
             'icon'        => ['nullable', 'integer:', 'exists:media,id'],
-        ],self::metaTagValidationRules());
+        ], self::metaTagValidationRules());
     }
 }

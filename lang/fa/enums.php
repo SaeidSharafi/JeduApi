@@ -68,10 +68,10 @@ return [
         'doctorate'     => 'دکتری',
     ],
     'EducationStatusEnum' => [
-        'student'   => 'دانشجو',
-        'university'   => 'دانشگاه',
-        'graduated' => 'فارغ‌التحصیل',
-        'employed'  => 'شاغل',
+        'student'    => 'دانشجو',
+        'university' => 'دانشگاه',
+        'graduated'  => 'فارغ‌التحصیل',
+        'employed'   => 'شاغل',
     ],
     'OrderItemStatusEnum' => [
         'active'    => 'فعال',

@@ -121,9 +121,9 @@ test('with reviews', function () {
     $seminar = App\Models\Seminar::factory()->create();
     $user    = App\Models\User::factory()->create();
     $review  = App\Models\Review::factory()->create([
-        'user_id'          => $user->id,
-        'reviewable_id'    => $seminar->id,
-        'reviewable_type'  => MorphTypeEnum::SEMINAR->value,
+        'user_id'         => $user->id,
+        'reviewable_id'   => $seminar->id,
+        'reviewable_type' => MorphTypeEnum::SEMINAR->value,
         'rating'          => 4,
         'status'          => App\Enums\ReviewStatusEnum::APPROVED,
         'is_featured'     => false,

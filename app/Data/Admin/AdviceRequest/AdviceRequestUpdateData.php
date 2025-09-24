@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Admin\AdviceRequest;
 
 use App\Enums\AdviceRequestStatusEnum;
@@ -7,14 +9,12 @@ use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class AdviceRequestUpdateData extends Data
+final class AdviceRequestUpdateData extends Data
 {
     public function __construct(
         public string $status,
         public ?string $note = null,
-    )
-    {
-    }
+    ) {}
 
     public static function rules(?ValidationContext $context = null): array
     {

@@ -32,7 +32,6 @@ it('get getAllMedia', function (): void {
         ->toHaveCount(0);
 });
 
-
 it('get cover media', function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');

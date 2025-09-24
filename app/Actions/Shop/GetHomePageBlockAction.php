@@ -60,7 +60,7 @@ final readonly class GetHomePageBlockAction
         // Collect required IDs for this specific block
         match ($block->type) {
             HomePageBlockTypeEnum::MAIN_CATEGORIES => $categoryIds = $categoryIds->merge($block->content['items'] ?? []),
-            HomePageBlockTypeEnum::CURATED_LIST    => $productIds     = $productIds->merge($block->content['items'] ?? []),
+            HomePageBlockTypeEnum::CURATED_LIST    => $productIds  = $productIds->merge($block->content['items'] ?? []),
             HomePageBlockTypeEnum::WEBINAR_BANNER  => $productIds->push($block->content['product_id'] ?? null),
             default                                => null,
         };

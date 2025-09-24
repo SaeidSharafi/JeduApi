@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Data\Admin\Course\ShowCourseData;
 use App\Data\Transformer\ProductableTransformer;
 use App\Models\Course;
@@ -30,7 +32,7 @@ describe('functional tests', function (): void {
 
     it('transforms a collection of Course instances to CourseListItemData', function (): void {
         $transformer = new ProductableTransformer(short: true);
-        $courses = Course::factory()
+        $courses     = Course::factory()
             ->count(3)
             ->withCategory()
             ->withMedia()
@@ -45,12 +47,12 @@ describe('functional tests', function (): void {
 
     it('transforms a collection with mixed productable types throws an exception', function (): void {
         $transformer = new ProductableTransformer(short: true);
-        $course = Course::factory()
+        $course      = Course::factory()
             ->withCategory()
             ->withMedia()
             ->create();
         $invalidItem = new stdClass();
-        $collection = collect([$course, $invalidItem]);
+        $collection  = collect([$course, $invalidItem]);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Value must implement ProductableContract, object given.');
@@ -149,5 +151,3 @@ describe('item transformations', function (): void {
     });
 
 });
-
-

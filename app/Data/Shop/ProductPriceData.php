@@ -11,8 +11,8 @@ use Spatie\LaravelData\Data;
 final class ProductPriceData extends Data
 {
     public function __construct(
-        public int $min_price = 0,
-        public int $min_original_price = 0,
+        public int $min_price,
+        public int $min_original_price,
         public bool $has_featured_price,
         public bool $has_discount,
         public bool $has_pre_payment,
@@ -21,28 +21,24 @@ final class ProductPriceData extends Data
         public ?array $range,
         #[DataCollectionOf(ProductDeliveryOptionPriceData::class)]
         public ?Collection $prices,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<int,ProductDeliveryOptionPriceData>  $prices
-     * @param  array|null  $range
-     *
-     * @return self
      */
     public static function make(
         array $prices,
         ?array $range = null,
     ): self {
-        $has_featured_price = false;
-        $has_discount = false;
-        $has_pre_payment = false;
-        $maxDiscountAmount = 0;
-        $minDiscountAmount = null;
-        $maxPrice = 0;
-        $minPrice = null;
-        $minOriginalPrice = null;
-        $discountType = null;
+        $has_featured_price  = false;
+        $has_discount        = false;
+        $has_pre_payment     = false;
+        $maxDiscountAmount   = 0;
+        $minDiscountAmount   = null;
+        $maxPrice            = 0;
+        $minPrice            = null;
+        $minOriginalPrice    = null;
+        $discountType        = null;
         $discount_percentage = null;
         foreach ($prices as $price) {
             if ($price->has_pre_payment_price) {
@@ -60,8 +56,8 @@ final class ProductPriceData extends Data
                     $minDiscountAmount = $price->discount_amount;
                 }
                 if ($price->discount_amount > $maxDiscountAmount) {
-                    $discountType = $price->discount_type;
-                    $maxDiscountAmount = $price->discount_amount;
+                    $discountType        = $price->discount_type;
+                    $maxDiscountAmount   = $price->discount_amount;
                     $discount_percentage = $price->discount_percentage;
                 }
             }
@@ -77,7 +73,7 @@ final class ProductPriceData extends Data
         }
 
         return new self(
-            min_price: $minPrice ?? 0,
+            min_price: $minPrice                  ?? 0,
             min_original_price: $minOriginalPrice ?? 0,
             has_featured_price: $has_featured_price,
             has_discount: $has_discount,

@@ -25,6 +25,7 @@ final class CourseListItemData extends Data implements ProductableDataContract, 
 {
     #[WithTransformer(TranslatableEnumData::class)]
     public ProductableEnum $type = ProductableEnum::COURSE;
+
     public function __construct(
         public int $id,
         public string $slug,

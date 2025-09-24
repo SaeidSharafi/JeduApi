@@ -20,10 +20,10 @@ final class DigitalAsset extends Model implements ProductableContract, Reviewabl
     /** @use  HasFactory<DigitalAssetFactory>*/
     use HasFactory;
 
-    use IsProductable;
-    use Mediable;
     use HasMedia;
     use HasReview;
+    use IsProductable;
+    use Mediable;
 
     protected $fillable = [
         'name',
@@ -58,6 +58,7 @@ final class DigitalAsset extends Model implements ProductableContract, Reviewabl
     {
         return $this->morphedByMany(Course::class, 'assetable');
     }
+
     protected function casts(): array
     {
         return [

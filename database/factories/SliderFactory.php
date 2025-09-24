@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Enums\PublicationStatusEnum;
@@ -7,7 +9,7 @@ use App\Models\Slider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @mixin Factory<Slider> */
-class SliderFactory extends Factory
+final class SliderFactory extends Factory
 {
     protected $model = Slider::class;
 

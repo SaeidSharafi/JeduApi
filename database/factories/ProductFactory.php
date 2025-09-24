@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\FulfillmentTypeEnum;
 use App\Enums\ProductableEnum;
 use App\Enums\PublicationStatusEnum;
 use App\Models\Category;
@@ -29,19 +27,19 @@ final class ProductFactory extends Factory
         switch ($type) {
             case ProductableEnum::COURSE:
                 $productableType = ProductableEnum::COURSE->value;
-                $productableId = Course::factory();
+                $productableId   = Course::factory();
                 break;
             case ProductableEnum::SEMINAR:
                 $productableType = ProductableEnum::SEMINAR->value;
-                $productableId = Seminar::factory();
+                $productableId   = Seminar::factory();
                 break;
             case ProductableEnum::DIGITAL_ASSET:
                 $productableType = ProductableEnum::DIGITAL_ASSET->value;
-                $productableId = DigitalAsset::factory();
+                $productableId   = DigitalAsset::factory();
                 break;
             default:
                 $productableType = ProductableEnum::COURSE->value;
-                $productableId = Course::factory();
+                $productableId   = Course::factory();
         }
 
         return [
@@ -86,13 +84,13 @@ final class ProductFactory extends Factory
         });
     }
 
-    public function withDeliveryOptions(int $count = 3,array $realData = []): static
+    public function withDeliveryOptions(int $count = 3, array $realData = []): static
     {
         return $this->afterCreating(function (Product $product) use ($count, $realData) {
             \App\Models\ProductDeliveryOption::factory()
                 ->withTeachers()
-                ->count(count($realData) > 0  ? count($realData) : $count)
-                ->when($realData, fn($q) => $q->sequence(
+                ->count(count($realData) > 0 ? count($realData) : $count)
+                ->when($realData, fn ($q) => $q->sequence(
                     ...$realData
                 ))
                 ->create([
@@ -105,22 +103,22 @@ final class ProductFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $vendor = Vendor::inRandomOrder()->first() ?? Vendor::factory()->create();
-            $term = Term::inRandomOrder()->first() ?? Term::factory()->create();
-            $type = $this->faker->randomElement(ProductableEnum::cases());
+            $term   = Term::inRandomOrder()->first()   ?? Term::factory()->create();
+            $type   = $this->faker->randomElement(ProductableEnum::cases());
 
             switch ($type) {
                 case ProductableEnum::SEMINAR:
                     $productableType = ProductableEnum::SEMINAR->value;
-                    $productable = Seminar::inRandomOrder()->first();
+                    $productable     = Seminar::inRandomOrder()->first();
                     break;
                 case ProductableEnum::DIGITAL_ASSET:
                     $productableType = ProductableEnum::DIGITAL_ASSET->value;
-                    $productable = DigitalAsset::inRandomOrder()->first();
+                    $productable     = DigitalAsset::inRandomOrder()->first();
                     break;
                 case ProductableEnum::COURSE:
                 default:
                     $productableType = ProductableEnum::COURSE->value;
-                    $productable = Course::inRandomOrder()->first();
+                    $productable     = Course::inRandomOrder()->first();
             }
 
             return [

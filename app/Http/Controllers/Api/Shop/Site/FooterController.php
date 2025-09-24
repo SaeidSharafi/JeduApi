@@ -1,23 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Shop\Site;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Settings\FooterData as AdminFooterData;
 use App\Data\Shop\Site\FooterData;
 use App\Http\Controllers\Controller;
-use App\Models\Setting;
 use App\Services\SettingsService;
 
 /**
  * @group Shop - Site
  *
  * API for retrieving site configuration
- *
  */
-class FooterController extends Controller
+final class FooterController extends Controller
 {
     /**
-     *
      * Get Footer Configuration
      * Returns the configuration settings for the website footer.
      *
@@ -85,9 +85,10 @@ class FooterController extends Controller
      * "metadata": []
      * }
      */
-    public function __invoke(SettingsService $service)
+    public function __invoke(SettingsService $service): ApiResponseInterface
     {
         $footer = $service->get('footer', AdminFooterData::getDefaults());
+
         return response()->success(FooterData::from($footer));
     }
 }

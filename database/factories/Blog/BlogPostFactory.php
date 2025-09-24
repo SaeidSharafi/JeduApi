@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories\Blog;
 
 use App\Enums\MediaTagEnum;
@@ -12,7 +14,7 @@ use Illuminate\Support\Str;
 use Plank\Mediable\Media;
 
 /** @mixin Factory<BlogPost> */
-class BlogPostFactory extends Factory
+final class BlogPostFactory extends Factory
 {
     protected $model = BlogPost::class;
 

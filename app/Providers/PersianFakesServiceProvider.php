@@ -16,7 +16,7 @@ final class PersianFakesServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(function (): \Faker\Generator {
+        $this->app->singleton(function (): Generator {
             $faker = Factory::create(config('app.locale'));
             $faker->addProvider(new PersianFakesProvider($faker));
 

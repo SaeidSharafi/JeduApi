@@ -15,14 +15,14 @@ final class CuratedListBlockContentData extends Data
         public string $preset = 'default',
     ) {}
 
-
     /**
      * @codeCoverageIgnore
      */
     public static function rules(?ValidationContext $context = null): array
     {
-        $type = request()->input('type') ?? HomePageBlockTypeEnum::CURATED_LIST->value;
+        $type  = request()->input('type') ?? HomePageBlockTypeEnum::CURATED_LIST->value;
         $table = $type === HomePageBlockTypeEnum::MAIN_CATEGORIES->value ? 'categories' : 'products';
+
         return [
             'items'   => ['required', 'array'],
             'items.*' => ['integer', 'exists:'.$table.',id'],

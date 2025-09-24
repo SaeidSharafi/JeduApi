@@ -18,4 +18,3 @@ Route::middleware(['auth:user'])
                 ->name('show');
         });
     });
-

@@ -77,17 +77,17 @@ test('with reviews', function () {
     $user2        = App\Models\User::factory()->create();
 
     $review1 = App\Models\Review::factory()->create([
-        'user_id'          => $user1->id,
-        'reviewable_id'    => $digitalAsset->id,
-        'reviewable_type'  => MorphTypeEnum::DIGITAL_ASSET->value,
+        'user_id'         => $user1->id,
+        'reviewable_id'   => $digitalAsset->id,
+        'reviewable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
         'rating'          => 4,
         'status'          => App\Enums\ReviewStatusEnum::APPROVED,
     ]);
 
     $review2 = App\Models\Review::factory()->create([
-        'user_id'          => $user2->id,
-        'reviewable_id'    => $digitalAsset->id,
-        'reviewable_type'  => MorphTypeEnum::DIGITAL_ASSET->value,
+        'user_id'         => $user2->id,
+        'reviewable_id'   => $digitalAsset->id,
+        'reviewable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
         'rating'          => 5,
         'status'          => App\Enums\ReviewStatusEnum::PENDING,
     ]);

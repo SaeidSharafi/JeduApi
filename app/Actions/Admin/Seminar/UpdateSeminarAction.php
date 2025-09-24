@@ -11,14 +11,12 @@ use App\Models\Seminar;
 final class UpdateSeminarAction
 {
     public function __construct(
-        protected GetThumbnailUrlAction $thumbnailUrlAction
-    )
-    {
-    }
+        private GetThumbnailUrlAction $thumbnailUrlAction
+    ) {}
 
     public function handle(CreateSeminarData $data, Seminar $seminar): void
     {
-        $valdiatedData = $data->except('media', 'categories', 'digital_assets')->toArray();
+        $valdiatedData                  = $data->except('media', 'categories', 'digital_assets')->toArray();
         $valdiatedData['thumbnail_url'] = $this->thumbnailUrlAction->handle($data->media);
         $seminar->update($valdiatedData);
         $seminar->products()->update(['slug' => $data->slug]);

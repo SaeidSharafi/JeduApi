@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Observers;
 
 use Illuminate\Database\Eloquent\Model;
 use SmartCache\Facades\SmartCache;
 
-class InvalidationObserver
+final class InvalidationObserver
 {
     public function saved(Model $model): void
     {
@@ -23,7 +25,7 @@ class InvalidationObserver
         $modelClass = get_class($model);
 
         // Look up this class in our config map
-        $keysToClear = config('cache_invalidation.map.' . $modelClass);
+        $keysToClear = config('cache_invalidation.map.'.$modelClass);
 
         // If it's in our map, clear all associated cache keys
         if ($keysToClear && is_array($keysToClear)) {

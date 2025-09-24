@@ -90,7 +90,6 @@ test('relation digitalAssets', function (): void {
         ->toHaveCount(3);
 });
 
-
 test('blogPosts relation', function (): void {
     $course   = App\Models\Course::factory()->create();
     $blogPost = App\Models\Blog\BlogPost::factory()->create();

@@ -126,7 +126,7 @@ describe('UpdateRefundStatusAction', function (): void {
             admin_notes: null,
         );
         $action = new UpdateRefundStatusAction(new OrderStatusService());
-        expect(fn (): \App\Models\Refund => $action->handle($refund, $data))
+        expect(fn (): Refund => $action->handle($refund, $data))
             ->toThrow(ValidationException::class);
     });
 
@@ -145,7 +145,7 @@ describe('UpdateRefundStatusAction', function (): void {
             admin_notes: null,
         );
         $action = new UpdateRefundStatusAction(new OrderStatusService());
-        expect(fn (): \App\Models\Refund => $action->handle($refund, $data))
+        expect(fn (): Refund => $action->handle($refund, $data))
             ->toThrow(ValidationException::class);
     });
 

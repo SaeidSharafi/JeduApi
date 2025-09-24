@@ -25,6 +25,7 @@ final readonly class CreateProductDeliveryOptionAction
             return $pdo;
         });
         ProductCacheInvalidated::dispatch($pdo->product_id);
+
         return $pdo;
     }
 }

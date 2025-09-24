@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Traits;
 
 use App\Models\Product;
@@ -14,7 +16,6 @@ trait CreatesModelsWithCachedData
      * for the resulting model(s). This is the most flexible and robust helper.
      *
      * @param  Factory  $factory  The factory instance to be executed.
-     *
      * @return Product|Collection
      */
     public function createWithPriceCache(Factory $factory)
@@ -26,7 +27,7 @@ trait CreatesModelsWithCachedData
         // 2. Determine if we created a single model or a collection.
         if ($models instanceof Collection) {
             // If it's a collection, iterate and update the cache for each one.
-            $models->each(fn(Product $product) => $this->generatePriceCacheForProduct($product));
+            $models->each(fn (Product $product) => $this->generatePriceCacheForProduct($product));
         } else {
             // If it's a single model, update its cache.
             $this->generatePriceCacheForProduct($models);
@@ -38,10 +39,6 @@ trait CreatesModelsWithCachedData
 
     /**
      * The core logic for generating the cache for a single product.
-     *
-     * @param  Product  $product
-     *
-     * @return void
      */
     private function generatePriceCacheForProduct(Product $product): void
     {
@@ -49,7 +46,7 @@ trait CreatesModelsWithCachedData
         $product->loadMissing('productDeliveryOptions');
 
         $priceService = $this->app->make(ProductPriceService::class);
-        $priceData = $priceService->calculatePriceDataForProduct($product);
+        $priceData    = $priceService->calculatePriceDataForProduct($product);
         $product->updateQuietly(['price_data_cache' => $priceData->toJson()]);
     }
 }

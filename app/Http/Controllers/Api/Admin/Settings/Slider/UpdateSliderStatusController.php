@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\Settings\Slider;
 
 use App\Actions\Admin\Slider\UpdateSliderStatusAction;
@@ -14,7 +16,7 @@ use Illuminate\Support\Facades\Gate;
  *
  * APIs for managing sliders
  */
-class UpdateSliderStatusController extends Controller
+final class UpdateSliderStatusController extends Controller
 {
     /**
      * Update Slider Status
@@ -30,6 +32,7 @@ class UpdateSliderStatusController extends Controller
     {
         Gate::authorize('update', $slider);
         $updatedSlider = $action->handle($data, $slider);
+
         return response()->updated(data: SliderData::from($updatedSlider), model: $updatedSlider);
     }
 }

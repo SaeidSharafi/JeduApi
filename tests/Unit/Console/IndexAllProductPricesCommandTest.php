@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\DeliveryMethodEnum;
 use App\Enums\FulfillmentTypeEnum;
 use App\Jobs\UpdateProductPriceCacheJob;
 use App\Models\Product;
 
 describe('IndexAllProductPricesCommand', function (): void {
-
 
     it('dispatches jobs for all products', function (): void {
         Bus::fake();

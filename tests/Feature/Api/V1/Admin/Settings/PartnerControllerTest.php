@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Enums\PartnerShowInEnum;
 use App\Enums\PermissionEnum;
 use App\Models\Partner;
 use Plank\Mediable\Media;
-use App\Enums\PartnerShowInEnum;
 
 uses(Tests\AuthTestTrait::class);
 beforeEach(function (): void {
@@ -65,13 +65,13 @@ it('can show a partner', function (): void {
 it('can create a partner', function (): void {
     $this->authorized_user([PermissionEnum::PARTNER_CREATE]);
     $data = [
-        'title'   => 'New Partner',
-        'caption' => 'New Caption',
-        'image'   => $this->image1->id,
-        'url'     => '/new',
-        'show_in' => PartnerShowInEnum::COURSE->value,
-        'order'   => 2,
-        'is_active'  => true,
+        'title'     => 'New Partner',
+        'caption'   => 'New Caption',
+        'image'     => $this->image1->id,
+        'url'       => '/new',
+        'show_in'   => PartnerShowInEnum::COURSE->value,
+        'order'     => 2,
+        'is_active' => true,
     ];
     $response = $this->postJson(route('api.v1.admin.settings.partner.store'), $data);
     $response->assertStatus(201)
@@ -107,13 +107,13 @@ it('can update a partner', function (): void {
     ]);
     $partner->attachMedia($this->image1, 'image');
     $data = [
-        'title'   => 'Updated Partner',
-        'caption' => 'Updated Caption',
-        'image'   => $this->image2->id,
-        'url'     => '/updated',
-        'show_in' => PartnerShowInEnum::COURSE,
-        'order'   => 3,
-        'is_active'  => false,
+        'title'     => 'Updated Partner',
+        'caption'   => 'Updated Caption',
+        'image'     => $this->image2->id,
+        'url'       => '/updated',
+        'show_in'   => PartnerShowInEnum::COURSE,
+        'order'     => 3,
+        'is_active' => false,
     ];
     $response = $this->putJson(route('api.v1.admin.settings.partner.update', $partner), $data);
     $response->assertStatus(200)
@@ -144,9 +144,9 @@ it('can delete a partner', function (): void {
 it('validates required fields on create', function (): void {
     $this->authorized_user([PermissionEnum::PARTNER_CREATE]);
     $data = [
-        'title' => '',
-        'image' => null,
-        'order' => null,
+        'title'   => '',
+        'image'   => null,
+        'order'   => null,
         'show_in' => null,
     ];
     $response = $this->postJson(route('api.v1.admin.settings.partner.store'), $data);
@@ -163,10 +163,10 @@ it('validates required fields on update', function (): void {
         'order'   => 1,
     ]);
     $data = [
-        'title'    => '',
-        'image'    => null,
-        'order'    => null,
-        'show_in'  => null,
+        'title'   => '',
+        'image'   => null,
+        'order'   => null,
+        'show_in' => null,
     ];
     $response = $this->putJson(route('api.v1.admin.settings.partner.update', $partner), $data);
     $response->assertStatus(422)

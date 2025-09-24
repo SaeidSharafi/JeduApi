@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Jobs\UpdateProductPriceCacheJob;
 use App\Traits\HasCategories;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -36,19 +35,6 @@ final class Product extends Model
             'price_data_cache',
             'details_json',
         ];
-
-    protected function casts(): array
-    {
-        return [
-            'is_visible'       => 'boolean',
-            'is_featured'      => 'boolean',
-            'price_data_cache' => 'array',
-            'details_json'     => 'array',
-            'status'           => \App\Enums\PublicationStatusEnum::class,
-            'created_at'       => 'datetime',
-            'updated_at'       => 'datetime',
-        ];
-    }
 
     public function term(): BelongsTo
     {
@@ -87,6 +73,19 @@ final class Product extends Model
     public function orderItems(): HasManyThrough
     {
         return $this->hasManyThrough(OrderItem::class, ProductDeliveryOption::class);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'is_visible'       => 'boolean',
+            'is_featured'      => 'boolean',
+            'price_data_cache' => 'array',
+            'details_json'     => 'array',
+            'status'           => \App\Enums\PublicationStatusEnum::class,
+            'created_at'       => 'datetime',
+            'updated_at'       => 'datetime',
+        ];
     }
 
     #[Scope]
@@ -129,9 +128,9 @@ final class Product extends Model
             ->where('is_visible', true)
             ->withWhereHas(
                 'productDeliveryOptions', function ($q): void {
-                $q->with(['teachers','productDeliveryOptionDiscountPrice'])
-                    ->available();
-            })
+                    $q->with(['teachers', 'productDeliveryOptionDiscountPrice'])
+                        ->available();
+                })
             ->withWhereHas('productable', function ($q): void {
                 $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED);
             })
@@ -146,9 +145,9 @@ final class Product extends Model
             ->where('is_visible', true)
             ->withWhereHas(
                 'productDeliveryOptions', function ($q): void {
-                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
-                    ->with('productDeliveryOptionDiscountPrice');
-            })
+                    $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+                        ->with('productDeliveryOptionDiscountPrice');
+                })
             ->withWhereHas('productable', function ($q): void {
                 $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
                     ->withProductableMedia();

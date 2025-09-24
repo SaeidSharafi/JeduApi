@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 use App\Enums\DynamicListEntityTypeEnum;
 use App\Enums\DynamicListSortByEnum;
+use App\Enums\HomePageBlockTypeEnum;
 use App\Enums\PermissionEnum;
 use App\Models\HomePageBlock;
-use Plank\Mediable\Media;
-use App\Enums\HomePageBlockTypeEnum;
 
 uses(Tests\AuthTestTrait::class);
 beforeEach(function (): void {
@@ -39,9 +38,9 @@ describe('HomePageBlockController CRUD', function (): void {
             ->assertJsonStructure([
                 'data' => [
                     'data' => [
-                        '*' => ['id', 'type', 'title', 'location', 'order', 'is_active', 'content']
-                    ]
-                ]
+                        '*' => ['id', 'type', 'title', 'location', 'order', 'is_active', 'content'],
+                    ],
+                ],
             ]);
         $responseData = $response->json('data.data');
         expect(count($responseData))->toBe(4);
@@ -67,24 +66,24 @@ describe('HomePageBlockController CRUD', function (): void {
             ->assertJsonStructure([
                 'data' => [
                     'id', 'type', 'title', 'location', 'order', 'is_active', 'content' => [
-                        'image_id', 'image_url', 'action', 'action_title', 'content', 'preset'
-                    ]
-                ]
+                        'image_id', 'image_url', 'action', 'action_title', 'content', 'preset',
+                    ],
+                ],
             ]);
         $responseData = $response->json('data');
         expect($responseData['content']['image_url'])->toBe($this->image->getUrl());
     });
     it('admin can view a specific home page block', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_VIEW]);
-        $block = HomePageBlock::factory()->banner($this->image)->create();
+        $block    = HomePageBlock::factory()->banner($this->image)->create();
         $response = $this->getJson(route('api.v1.admin.settings.home-page-block.show', $block->id));
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
                     'id', 'type', 'title', 'location', 'order', 'is_active', 'content' => [
-                        'image_id', 'image_url', 'action', 'action_title', 'content', 'preset'
-                    ]
-                ]
+                        'image_id', 'image_url', 'action', 'action_title', 'content', 'preset',
+                    ],
+                ],
             ]);
         $responseData = $response->json('data');
         expect($responseData['id'])->toBe($block->id);
@@ -92,7 +91,7 @@ describe('HomePageBlockController CRUD', function (): void {
     });
     it('admin can update a home page block', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_UPDATE]);
-        $block = HomePageBlock::factory()->banner($this->image)->create();
+        $block    = HomePageBlock::factory()->banner($this->image)->create();
         $newImage = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('new_banner.jpg'))
             ->toDisk('public')
             ->upload();
@@ -115,9 +114,9 @@ describe('HomePageBlockController CRUD', function (): void {
             ->assertJsonStructure([
                 'data' => [
                     'id', 'type', 'title', 'location', 'order', 'is_active', 'content' => [
-                        'image_id', 'image_url', 'action', 'action_title', 'content', 'preset'
-                    ]
-                ]
+                        'image_id', 'image_url', 'action', 'action_title', 'content', 'preset',
+                    ],
+                ],
             ]);
         $responseData = $response->json('data');
         expect($responseData['id'])->toBe($block->id)
@@ -143,8 +142,8 @@ describe('HomePageBlockController CRUD', function (): void {
     });
     it('unauthorized user cannot access home page block endpoints', function (): void {
         $this->unauthorized_user();
-        $block = HomePageBlock::factory()->banner($this->image)->create();
-        $blockData = HomePageBlock::factory()->banner($this->image)->make()->toArray();
+        $block         = HomePageBlock::factory()->banner($this->image)->create();
+        $blockData     = HomePageBlock::factory()->banner($this->image)->make()->toArray();
         $responseIndex = $this->getJson(route('api.v1.admin.settings.home-page-block.index'));
         $responseIndex->assertStatus(403);
         $responseStore = $this->postJson(route('api.v1.admin.settings.home-page-block.store'), $blockData);
@@ -172,7 +171,7 @@ describe('HomePageBlockController validation', function (): void {
         $response = $this->postJson(route('api.v1.admin.settings.home-page-block.store'), $payload);
         $response->assertStatus(422)
             ->assertJsonValidationErrors([
-                'type', 'title', 'location', 'order', 'is_active', 'content'
+                'type', 'title', 'location', 'order', 'is_active', 'content',
             ]);
     });
     it('validation fails if type is not a valid enum value', function (): void {
@@ -277,8 +276,8 @@ describe('HomePageBlockController validation', function (): void {
     });
     it('validation fails for minimum and maximum string lengths for title', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
-        $minTitle = '';
-        $maxTitle = str_repeat('a', 256); // assuming max is 255
+        $minTitle   = '';
+        $maxTitle   = str_repeat('a', 256); // assuming max is 255
         $payloadMin = [
             'type'      => HomePageBlockTypeEnum::BANNER->value,
             'title'     => $minTitle,
@@ -396,8 +395,8 @@ describe('HomePageBlockController validation', function (): void {
 describe('HomePageBlockController additional scenarios', function (): void {
     it('can create a block with MAIN_CATEGORIES type', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
-        $categories = \App\Models\Category::factory()->count(3)->create();
-        $payload = [
+        $categories = App\Models\Category::factory()->count(3)->create();
+        $payload    = [
             'type'      => HomePageBlockTypeEnum::MAIN_CATEGORIES->value,
             'title'     => 'Main Categories Block',
             'location'  => 'homepage_top',
@@ -413,9 +412,9 @@ describe('HomePageBlockController additional scenarios', function (): void {
             ->assertJsonStructure([
                 'data' => [
                     'id', 'type', 'title', 'location', 'order', 'is_active', 'content' => [
-                        'items', 'preset'
-                    ]
-                ]
+                        'items', 'preset',
+                    ],
+                ],
             ]);
 
         $responseData = $response->json('data');
@@ -423,8 +422,8 @@ describe('HomePageBlockController additional scenarios', function (): void {
     });
     it('can create a block with CURATED_LIST type', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
-        $products = \App\Models\Product::factory()->count(3)->create();
-        $payload = [
+        $products = App\Models\Product::factory()->count(3)->create();
+        $payload  = [
             'type'      => HomePageBlockTypeEnum::CURATED_LIST->value,
             'title'     => 'Curated Products',
             'location'  => 'homepage_top',
@@ -440,9 +439,9 @@ describe('HomePageBlockController additional scenarios', function (): void {
             ->assertJsonStructure([
                 'data' => [
                     'id', 'type', 'title', 'location', 'order', 'is_active', 'content' => [
-                        'items', 'preset'
-                    ]
-                ]
+                        'items', 'preset',
+                    ],
+                ],
             ]);
 
         $responseData = $response->json('data');
@@ -450,10 +449,10 @@ describe('HomePageBlockController additional scenarios', function (): void {
     });
     it('can create a block with WEBINAR BANNER type', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
-        $product = \App\Models\Product::factory()->create(
+        $product = App\Models\Product::factory()->create(
             [
-                'productable_type' => \App\Enums\ProductableEnum::SEMINAR,
-                'productable_id'   => \App\Models\Seminar::factory()
+                'productable_type' => App\Enums\ProductableEnum::SEMINAR,
+                'productable_id'   => App\Models\Seminar::factory(),
             ]
         );
         $payload = [
@@ -475,8 +474,8 @@ describe('HomePageBlockController additional scenarios', function (): void {
                 'data' => [
                     'id', 'type', 'title', 'location', 'order', 'is_active', 'content' => [
                         'product_id', 'text', 'image_id', 'image_url',
-                    ]
-                ]
+                    ],
+                ],
             ]);
 
         $responseData = $response->json('data');
@@ -486,8 +485,8 @@ describe('HomePageBlockController additional scenarios', function (): void {
     });
     it('can create a block with DYNAMIC_LIST type', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
-        $categories = \App\Models\Category::factory()->count(2)->create();
-        $payload = [
+        $categories = App\Models\Category::factory()->count(2)->create();
+        $payload    = [
             'type'      => HomePageBlockTypeEnum::DYNAMIC_LIST->value,
             'title'     => 'Dynamic Product List',
             'location'  => 'homepage_middle',
@@ -507,8 +506,8 @@ describe('HomePageBlockController additional scenarios', function (): void {
                 'data' => [
                     'id', 'type', 'title', 'location', 'order', 'is_active', 'content' => [
                         'entity_type', 'sort_by', 'limit', 'preset', 'category_ids',
-                    ]
-                ]
+                    ],
+                ],
             ]);
 
         $responseData = $response->json('data');
@@ -539,9 +538,9 @@ describe('HomePageBlockController additional scenarios', function (): void {
             ->assertJsonStructure([
                 'data' => [
                     'id', 'type', 'title', 'location', 'order', 'is_active', 'content' => [
-                        'image_id', 'image_url', 'action', 'action_title', 'content', 'preset'
-                    ]
-                ]
+                        'image_id', 'image_url', 'action', 'action_title', 'content', 'preset',
+                    ],
+                ],
             ]);
         $responseData = $response->json('data');
         expect(array_key_exists('content', $responseData))->toBeTrue();
@@ -571,7 +570,7 @@ describe('HomePageBlockController additional scenarios', function (): void {
         $response = $this->postJson(route('api.v1.admin.settings.home-page-block.store'), $payload);
         $response->assertStatus(201);
         $blockId = $response->json('data.id');
-        $block = HomePageBlock::find($blockId);
+        $block   = HomePageBlock::find($blockId);
         $block->load('media');
         expect($block->media->count())->toBeGreaterThan(0);
         expect($block->media->first()->id)->toBe($this->image->id);
@@ -579,7 +578,7 @@ describe('HomePageBlockController additional scenarios', function (): void {
 
     it('can create dynamic list block using factory', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_VIEW_ANY]);
-        $categories = \App\Models\Category::factory()->count(3)->create();
+        $categories = App\Models\Category::factory()->count(3)->create();
 
         $block = HomePageBlock::factory()->dynamicList(
             DynamicListEntityTypeEnum::ALL_PRODUCTS,

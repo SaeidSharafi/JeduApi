@@ -22,9 +22,8 @@ use Spatie\QueryBuilder\QueryBuilder;
  *
  * APIs for managing home page blocks
  */
-class HomePageBlockController
+final class HomePageBlockController
 {
-
     /**
      * Display a listing of the home page blocks.
      *
@@ -33,7 +32,7 @@ class HomePageBlockController
      */
     public function index()
     {
-        Gate::authorize('view-any',HomePageBlock::class);
+        Gate::authorize('view-any', HomePageBlock::class);
 
         $blocks = QueryBuilder::for(HomePageBlock::class)
             ->with('media')
@@ -43,7 +42,6 @@ class HomePageBlockController
 
         return response()->success(HomePageBlockData::collect($blocks));
     }
-
 
     /**
      * Store a newly created home page block in storage.
@@ -106,6 +104,7 @@ class HomePageBlockController
         $block = $action->handle($data);
 
         $responseDto = HomePageBlockData::fromModel($block);
+
         return response()->created($responseDto);
     }
 
@@ -149,6 +148,7 @@ class HomePageBlockController
      * Remove the specified home page block from storage.
      *
      * @response 204
+     *
      * @responseFile 403 responses/403.json
      * @responseFile 404 responses/404.json
      */

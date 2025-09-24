@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('increment_id')->unique();
 
             // --- Statuses ---
-            $table->string('status')->index()->default(\App\Enums\Order\OrderStatusEnum::PENDING->value)
+            $table->string('status')->index()->default(App\Enums\Order\OrderStatusEnum::PENDING->value)
                 ->comment('Tracks fulfillment (e.g., pending, completed).');
 
             // --- Customer Details ---

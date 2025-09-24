@@ -29,10 +29,10 @@ final class Seminar extends Model implements ProductableContract, ReviewableCont
     /** @use HasFactory<\Database\Factories\SeminarFactory> */
     use HasFactory;
 
-    use IsProductable;
-    use Mediable;
     use HasMedia;
     use HasReview;
+    use IsProductable;
+    use Mediable;
 
     protected $fillable = [
         'full_name',

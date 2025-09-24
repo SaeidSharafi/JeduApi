@@ -28,11 +28,12 @@ final class StudentStory extends Model
     {
         return $query->where('is_visible', true);
     }
+
     protected function casts(): array
     {
         return [
-            'created_at'  => 'datetime',
-            'updated_at'  => 'datetime',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
         ];
     }
 

@@ -1,19 +1,21 @@
 <?php
 
-use App\Models\ProductDeliveryOptionDiscountPrice;
+declare(strict_types=1);
+
+use App\Enums\CacheKeysEnum;
 use App\Models\Blog\BlogPost;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\DiscountPromotion;
 use App\Models\HomePageBlock;
+use App\Models\Partner;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
+use App\Models\ProductDeliveryOptionDiscountPrice;
 use App\Models\Review;
 use App\Models\Seminar;
-use App\Enums\CacheKeysEnum;
+use App\Models\Slider;
 use App\Models\StudentStory;
-use \App\Models\Slider;
-use \App\Models\Partner;
 
 return [
     /**
@@ -22,48 +24,48 @@ return [
      * every cache key in the array on the right will be cleared.
      */
     'map' => [
-        HomePageBlock::class                      => [
+        HomePageBlock::class => [
             CacheKeysEnum::HomePageContent,
         ],
-        Product::class                            => [
+        Product::class => [
             CacheKeysEnum::HomePageContent,
         ],
-        ProductDeliveryOption::class              => [
+        ProductDeliveryOption::class => [
             CacheKeysEnum::HomePageContent,
         ],
         ProductDeliveryOptionDiscountPrice::class => [
             CacheKeysEnum::HomePageContent,
         ],
-        Course::class                             => [
+        Course::class => [
             CacheKeysEnum::HomePageContent,
         ],
-        Seminar::class                            => [
+        Seminar::class => [
             CacheKeysEnum::HomePageContent,
         ],
-        Category::class                           => [
+        Category::class => [
             CacheKeysEnum::HomePageContent,
         ],
-        DiscountPromotion::class                  => [
+        DiscountPromotion::class => [
             CacheKeysEnum::HomePageContent,
         ],
-        Review::class                             => [
+        Review::class => [
             CacheKeysEnum::HomePageContent,
         ],
-        BlogPost::class                           => [
+        BlogPost::class => [
             CacheKeysEnum::HomePageContent,
         ],
-        StudentStory::class                       => [
+        StudentStory::class => [
             CacheKeysEnum::StudentStory,
         ],
-        Slider::class                             => [
+        Slider::class => [
             CacheKeysEnum::Slider,
         ],
-        Partner::class                => [
+        Partner::class => [
             CacheKeysEnum::PartnersInHome,
             CacheKeysEnum::PartnersInCourse,
             CacheKeysEnum::Partners,
         ],
-        \App\Models\Setting::class => [
+        App\Models\Setting::class => [
             CacheKeysEnum::Settings,
         ],
         // You can add other cache keys here too!

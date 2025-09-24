@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Enums\CacheKeysEnum;
@@ -7,9 +9,8 @@ use App\Models\Setting;
 use Illuminate\Support\Collection;
 use SmartCache\Facades\SmartCache;
 
-class SettingsService
+final class SettingsService
 {
-
     public function get(string $key, mixed $default = null): mixed
     {
         $allSettings = $this->getAll();
@@ -18,13 +19,13 @@ class SettingsService
         $setting = $allSettings->get($key);
 
         // If the setting doesn't exist, return the default.
-        if (!$setting) {
+        if (! $setting) {
             return $default;
         }
 
         // The value is an array, so we can process it with our image logic.
         $value = $setting->value;
-        if (is_array($value) && !empty($value)) {
+        if (is_array($value) && ! empty($value)) {
             // Your powerful witImages logic is still used here!
             return Setting::witImages($value);
         }
@@ -52,5 +53,4 @@ class SettingsService
             return Setting::all()->keyBy('key');
         });
     }
-
 }

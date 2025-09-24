@@ -24,6 +24,7 @@ final class ShowCourseData extends Data implements ProductableDataContract, Revi
 {
     #[WithTransformer(TranslatableEnumData::class)]
     public ProductableEnum $type = ProductableEnum::COURSE;
+
     public function __construct(
         public int $id,
         public string $slug,

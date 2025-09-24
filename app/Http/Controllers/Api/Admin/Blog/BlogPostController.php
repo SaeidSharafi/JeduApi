@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Admin\Blog;
 
 use App\Actions\Admin\Blog\Post\CreateBlogPostAction;
-use App\Actions\Admin\Blog\Post\UpdateBlogPostAction;
 use App\Actions\Admin\Blog\Post\DeleteBlogPostAction;
+use App\Actions\Admin\Blog\Post\UpdateBlogPostAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Blog\Post\BlogPostCreateData;
+use App\Data\Admin\Blog\Post\BlogPostData;
 use App\Data\Admin\Blog\Post\BlogPostListItemData;
 use App\Data\Admin\Blog\Post\BlogPostUpdateData;
-use App\Data\Admin\Blog\Post\BlogPostData;
-use App\Enums\PermissionEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Blog\BlogPost;
 use Illuminate\Http\JsonResponse;
@@ -39,8 +38,6 @@ final class BlogPostController extends Controller
      * @queryParam filter[main_productable_type] string Filter by main productable type. Example: filter[main_productable_type]=course
      * @queryParam filter[main_productable_id] integer Filter by main productable ID. Example: filter[main_productable_id]=5
      *             note: this filter is connected to mainProductable_type filter, without it, this filter will not work
-     *
-     *
      */
     public function index(): ApiResponseInterface
     {
@@ -58,8 +55,8 @@ final class BlogPostController extends Controller
             ->defaultSort('-created_at')
             ->with(['courses', 'seminars', 'digitalAssets', 'media', 'mainProductable', 'categories', 'author'])
             ->paginate(request()->integer('per_page', 15))
-            ->withQueryString()
-        ;
+            ->withQueryString();
+
         return response()->success(BlogPostListItemData::collect($posts));
     }
 
@@ -74,6 +71,7 @@ final class BlogPostController extends Controller
         $post
             ->loadRelatedproductables()
             ->load('author', 'media', 'mainProductable');
+
         return response()->success(BlogPostData::from($post));
     }
 
@@ -88,6 +86,7 @@ final class BlogPostController extends Controller
         $post = $action->handle($data, staff: auth('staff')->user());
         $post->loadRelatedproductables()
             ->load('author', 'media', 'mainProductable');
+
         return response()->created(BlogPostData::from($post), model: BlogPost::class);
     }
 
@@ -102,6 +101,7 @@ final class BlogPostController extends Controller
         $post = $action->handle($post, $data);
         $post->loadRelatedproductables()
             ->load('author', 'media', 'mainProductable');
+
         return response()->updated(BlogPostData::from($post), model: $post);
     }
 
@@ -114,6 +114,7 @@ final class BlogPostController extends Controller
     {
         Gate::authorize('delete', $post);
         $action->handle($post);
+
         return response()->noContentJson();
     }
 }

@@ -8,7 +8,6 @@ use App\Data\Admin\Settings\SocialMediaLinkData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\DataCollection;
-use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 final class FooterData extends Data
 {

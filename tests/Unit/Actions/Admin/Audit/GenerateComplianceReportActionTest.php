@@ -15,7 +15,7 @@ use Carbon\Carbon;
 describe('GenerateComplianceReportAction', function (): void {
 
     beforeEach(function (): void {
-        $this->action   = new GenerateComplianceReportAction();
+        $this->action         = new GenerateComplianceReportAction();
         $this->dateFromJalali = verta()->subWeek()->format('Y-m-d');
         $this->dateToJalali   = verta()->format('Y-m-d');
         $this->dateFromCarbon = Carbon::now()->subWeek()->toImmutable();

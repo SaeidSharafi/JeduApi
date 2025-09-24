@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\SelectOptions;
 
 use App\Data\Admin\SelectOptions\ProductableSelectOptionData;
@@ -12,10 +14,11 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * @group Admin - Select Options
+ *
  * @authenticated
  * retrieve a list of productable items (courses, seminars, digital assets) for select options
  */
-class ProductableSelectOptionController extends Controller
+final class ProductableSelectOptionController extends Controller
 {
     /**
      * Productable items list
@@ -33,7 +36,7 @@ class ProductableSelectOptionController extends Controller
         $types = request()->array('types') ?: [
             ProductableEnum::COURSE->value,
             ProductableEnum::SEMINAR->value,
-            ProductableEnum::DIGITAL_ASSET->value
+            ProductableEnum::DIGITAL_ASSET->value,
         ];
 
         $queries = [];
@@ -45,11 +48,11 @@ class ProductableSelectOptionController extends Controller
                     'id',
                     'full_name as name',
                     'slug',
-                    DB::raw("'" . ProductableEnum::COURSE->value . "' as type") // Add a literal 'type' column
+                    DB::raw("'".ProductableEnum::COURSE->value."' as type"), // Add a literal 'type' column
                 ])
                 ->when($query, function ($q, $search): void {
                     $q->whereLike('full_name', "%{$search}%")
-                    ->orWhereLike('short_name', "%{$search}%");
+                        ->orWhereLike('short_name', "%{$search}%");
                 });
             $queries[] = $coursesQuery;
         }
@@ -61,11 +64,11 @@ class ProductableSelectOptionController extends Controller
                     'id',
                     'full_name as name',
                     'slug',
-                    DB::raw("'" . ProductableEnum::SEMINAR->value . "' as type")
+                    DB::raw("'".ProductableEnum::SEMINAR->value."' as type"),
                 ])
                 ->when($query, function ($q, $search): void {
                     $q->whereLike('full_name', "%{$search}%")
-                    ->orWhereLike('short_name', "%{$search}%");
+                        ->orWhereLike('short_name', "%{$search}%");
                 });
             $queries[] = $seminarsQuery;
         }
@@ -77,7 +80,7 @@ class ProductableSelectOptionController extends Controller
                     'id',
                     'name', // Note: DigitalAsset has 'name', not 'full_name'
                     'slug',
-                    DB::raw("'" . ProductableEnum::DIGITAL_ASSET->value . "' as type")
+                    DB::raw("'".ProductableEnum::DIGITAL_ASSET->value."' as type"),
                 ])
                 ->when($query, function ($q, $search): void {
                     $q->whereLike('name', "%{$search}%");
@@ -101,7 +104,6 @@ class ProductableSelectOptionController extends Controller
         $results = $firstQuery->limit($limit)->get();
 
         return response()->success(ProductableSelectOptionData::collect($results));
-
 
     }
 }

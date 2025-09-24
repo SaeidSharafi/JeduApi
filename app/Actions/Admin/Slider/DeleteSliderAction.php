@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Admin\Slider;
 
-use App\Data\Admin\Slider\SliderCreateData;
 use App\Models\Slider;
 use Illuminate\Support\Facades\DB;
-use Plank\Mediable\Media;
 
-class DeleteSliderAction
+final class DeleteSliderAction
 {
     public function handle(Slider $slider): void
     {

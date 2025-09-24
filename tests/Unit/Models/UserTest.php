@@ -51,7 +51,7 @@ it('return teacher_data relationship', function (): void {
 });
 
 it('return enrollments relationship', function (): void {
-    $user      = User::factory()->create();
+    $user       = User::factory()->create();
     $enrollment = App\Models\Enrollment::factory()->create([
         'customer_id' => $user->id,
     ])->fresh();

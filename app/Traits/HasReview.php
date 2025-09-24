@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Traits;
 
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 trait HasReview
 {
@@ -14,7 +15,7 @@ trait HasReview
 
     protected function initializeHasReview(): void
     {
-        $this->fillable[]    = 'review_count';
-        $this->fillable[]    = 'average_rating';
+        $this->fillable[] = 'review_count';
+        $this->fillable[] = 'average_rating';
     }
 }

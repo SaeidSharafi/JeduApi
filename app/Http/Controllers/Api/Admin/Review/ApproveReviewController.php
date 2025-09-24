@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\Review;
 
 use App\Actions\Admin\Review\UpdateReviewStatusAction;
@@ -15,10 +17,9 @@ use Illuminate\Support\Facades\Gate;
  *
  * APIs for managing reviews
  */
-class ApproveReviewController extends Controller
+final class ApproveReviewController extends Controller
 {
     /**
-     *
      * Approve the specified review.
      *
      *
@@ -30,8 +31,9 @@ class ApproveReviewController extends Controller
      */
     public function __invoke(Review $review, UpdateReviewStatusAction $action)
     {
-        Gate::authorize('update',$review);
+        Gate::authorize('update', $review);
         $action->handle($review, ReviewStatusEnum::APPROVED);
+
         return response()->success(message: __('messages.review.approved'));
     }
 }

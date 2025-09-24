@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories\Blog;
 
 use App\Models\Blog\BlogCategory;
@@ -8,7 +10,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /** @mixin Factory<BlogCategory> */
-class BlogCategoryFactory extends Factory
+final class BlogCategoryFactory extends Factory
 {
     protected $model = BlogCategory::class;
 

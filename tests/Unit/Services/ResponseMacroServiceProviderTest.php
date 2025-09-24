@@ -34,7 +34,7 @@ if (! class_exists('App\Models\TestDummyModel')) {
 describe('ResponseMacroServiceProvider', function (): void {
     beforeEach(function (): void {
         // Ensure a fresh request object for each test if request() helper is used.
-        $this->app->singleton('request', fn (): \Illuminate\Http\Request => Request::create('/test', 'GET'));
+        $this->app->singleton('request', fn (): Request => Request::create('/test', 'GET'));
         $this->app->register(ResponseMacroServiceProvider::class);
     });
 

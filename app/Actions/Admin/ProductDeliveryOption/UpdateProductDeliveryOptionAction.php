@@ -16,7 +16,7 @@ final readonly class UpdateProductDeliveryOptionAction
      */
     public function handle(ProductDeliveryOptionUpdateData $data, ProductDeliveryOption $deliveryOption): ProductDeliveryOption
     {
-        $pdo =  DB::transaction(function () use ($data, $deliveryOption): ProductDeliveryOption {
+        $pdo = DB::transaction(function () use ($data, $deliveryOption): ProductDeliveryOption {
             $pdoData = $data->except('teachers')->toArray();
             $deliveryOption->update($pdoData);
             $deliveryOption->teachers()->sync($data->teachers);
@@ -24,6 +24,7 @@ final readonly class UpdateProductDeliveryOptionAction
             return $deliveryOption->fresh();
         });
         ProductCacheInvalidated::dispatch($pdo->product_id);
+
         return $pdo;
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Admin\Slider;
 
 use App\Data\Admin\Slider\SliderCreateData;
@@ -7,13 +9,13 @@ use App\Models\Slider;
 use Illuminate\Support\Facades\DB;
 use Plank\Mediable\Media;
 
-class CreateSliderAction
+final class CreateSliderAction
 {
     public function handle(SliderCreateData $data): Slider
     {
-       return DB::transaction(function () use ($data): Slider {
-            $image    = null;
-            if ($data->image){
+        return DB::transaction(function () use ($data): Slider {
+            $image = null;
+            if ($data->image) {
                 $image = Media::find($data->image);
             }
             $sliderData = [

@@ -6,9 +6,8 @@ namespace App\Actions\Admin\Category;
 
 use App\Data\Admin\Category\SetGoodForStartData;
 use App\Enums\MorphTypeEnum;
-use App\Models\Category;
 use App\Models\Categorizable;
-use Illuminate\Validation\ValidationException;
+use App\Models\Category;
 
 final readonly class SetGoodForStartAction
 {

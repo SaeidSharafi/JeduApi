@@ -27,22 +27,22 @@ enum ProductableEnum: string
         return null;
     }
 
+    public static function getTableFromType(?string $type): string
+    {
+        return match ($type) {
+            self::COURSE->value        => 'courses',
+            self::SEMINAR->value       => 'seminars',
+            self::DIGITAL_ASSET->value => 'digital_assets',
+            default                    => 'courses',
+        };
+    }
+
     public function getModelClass(): string
     {
         return match ($this) {
             self::COURSE        => Course::class,
             self::SEMINAR       => Seminar::class,
             self::DIGITAL_ASSET => DigitalAsset::class,
-        };
-    }
-
-    public static function getTableFromType(?string $type): string
-    {
-        return match ($type) {
-            self::COURSE->value => 'courses',
-            self::SEMINAR->value => 'seminars',
-            self::DIGITAL_ASSET->value => 'digital_assets',
-            default => 'courses',
         };
     }
 }

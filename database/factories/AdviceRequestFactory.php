@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Enums\AdviceRequestStatusEnum;
@@ -8,7 +10,7 @@ use App\Models\Staff;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
-class AdviceRequestFactory extends Factory
+final class AdviceRequestFactory extends Factory
 {
     protected $model = AdviceRequest::class;
 

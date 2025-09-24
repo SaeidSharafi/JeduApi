@@ -73,10 +73,10 @@ return [
         'doctorate'     => 'Doctorate',
     ],
     'EducationStatusEnum' => [
-        'student'   => 'Student',
-        'university'   => 'University',
-        'graduated' => 'Graduated',
-        'employed'  => 'Employed',
+        'student'    => 'Student',
+        'university' => 'University',
+        'graduated'  => 'Graduated',
+        'employed'   => 'Employed',
     ],
     'OrderItemStatusEnum' => [
         'active'    => 'Active',

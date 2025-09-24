@@ -13,7 +13,7 @@ final readonly class UpdateProductAction
 {
     public function handle(ProductUpdateData $data, Product $product): Product
     {
-        $product =  DB::transaction(function () use ($data, $product): Product {
+        $product = DB::transaction(function () use ($data, $product): Product {
             $product->update($data->except('categories')->toArray());
             $product->categories()->sync($data->categories);
             $product->refresh();
@@ -21,6 +21,7 @@ final readonly class UpdateProductAction
             return $product;
         });
         ProductCacheInvalidated::dispatch($product->id);
+
         return $product;
     }
 }

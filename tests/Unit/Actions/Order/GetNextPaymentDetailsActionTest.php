@@ -21,7 +21,7 @@ describe('GetNextPaymentDetailsAction', function (): void {
         ]);
 
         $action = new GetNextPaymentDetailsAction();
-        expect(fn (): \App\Data\Admin\Payment\NextPaymentDetailsData => $action->handle($order->fresh()))
+        expect(fn (): App\Data\Admin\Payment\NextPaymentDetailsData => $action->handle($order->fresh()))
             ->toThrow(Exception::class, __('messages.order.already_fully_paid', ['order_id' => $order->increment_id]));
     });
 

@@ -12,22 +12,21 @@ use Illuminate\Support\Facades\DB;
 final readonly class CreateDigitalAssetAction
 {
     public function __construct(
-        protected GetThumbnailUrlAction $thumbnailUrlAction
-    )
-    {
-    }
+        private GetThumbnailUrlAction $thumbnailUrlAction
+    ) {}
+
     /**
      * Execute the action.
      */
     public function handle(CreateDigitalAssetData $data): void
     {
         DB::transaction(function () use ($data): void {
-            $attachments        = $data->attachments ?: [];
-            $categoriesToAttach = $data->categories ?? [];
-            $mediaToAttach      = $data->media      ?? [];
-            $valdiatedData = $data->except('media', 'attachments', 'categories')->toArray();
+            $attachments                    = $data->attachments ?: [];
+            $categoriesToAttach             = $data->categories ?? [];
+            $mediaToAttach                  = $data->media      ?? [];
+            $valdiatedData                  = $data->except('media', 'attachments', 'categories')->toArray();
             $valdiatedData['thumbnail_url'] = $this->thumbnailUrlAction->handle($data->media);
-            $digitalAsset       = DigitalAsset::query()
+            $digitalAsset                   = DigitalAsset::query()
                 ->create($valdiatedData)
                 ->fresh();
             $digitalAsset->categories()->attach($categoriesToAttach);

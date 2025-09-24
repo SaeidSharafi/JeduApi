@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Api\Admin\DiscountInfoController;
 use App\Http\Controllers\Api\Admin\DiscountPromotionController;
 use App\Http\Controllers\Api\Admin\DiscountPromotionStatisticsController;
@@ -42,7 +44,7 @@ Route::get('discount-promotion-statistics', DiscountPromotionStatisticsControlle
 Route::get('discount-info', [DiscountInfoController::class, 'index'])
     ->name('discount-info');
 Route::get('discount-info/conditions',
-    [App\Http\Controllers\Api\Admin\DiscountInfoController::class, 'conditions'])
+    [DiscountInfoController::class, 'conditions'])
     ->name('discount-info.conditions');
 Route::get('discount-info/actions', [DiscountInfoController::class, 'actions'])
     ->name('discount-info.actions');

@@ -1,23 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums;
 
-enum CacheKeysEnum:string
+enum CacheKeysEnum: string
 {
-    case HomePageContent = 'shop.homepage.content';
-    case UserProfile    = 'user.{id}.profile';
-    case StudentStory   = 'shop.homepage.student-stories';
-    case Slider         = 'shop.homepage.sliders';
-    case PartnersInHome = 'shop.homepage.partners';
+    case HomePageContent  = 'shop.homepage.content';
+    case UserProfile      = 'user.{id}.profile';
+    case StudentStory     = 'shop.homepage.student-stories';
+    case Slider           = 'shop.homepage.sliders';
+    case PartnersInHome   = 'shop.homepage.partners';
     case PartnersInCourse = 'shop.course.partners';
-    case Partners = 'shop.partners';
-    case Settings = 'settings.all';
-
+    case Partners         = 'shop.partners';
+    case Settings         = 'settings.all';
 
     /**
      * Generates the final cache key string by replacing placeholders.
      *
-     * @param array<string, scalar> $params Associative array of placeholders and their values.
+     * @param  array<string, scalar>  $params  Associative array of placeholders and their values.
      * @return string The final, ready-to-use cache key.
      */
     public function key(array $params = []): string
@@ -44,12 +45,10 @@ enum CacheKeysEnum:string
     {
         return match ($this) {
             self::HomePageContent => 3600,
-            self::UserProfile    => 86400,
+            self::UserProfile     => 86400,
             self::StudentStory, self::Slider,
             self::PartnersInHome, self::PartnersInCourse, self::Partners => 7200,
             default => 0, // Default to no expiration (forever)
         };
     }
-
-
 }

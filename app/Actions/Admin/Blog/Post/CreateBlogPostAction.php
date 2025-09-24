@@ -8,7 +8,6 @@ use App\Data\Admin\Blog\Post\BlogPostCreateData;
 use App\Enums\MediaTagEnum;
 use App\Enums\ProductableEnum;
 use App\Models\Blog\BlogPost;
-use App\Models\Product;
 use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -19,11 +18,11 @@ final readonly class CreateBlogPostAction
     public function handle(BlogPostCreateData $data, ?Staff $staff = null): BlogPost
     {
         return DB::transaction(function () use ($data, $staff): BlogPost {
-            $slug = $data->slug ?? Str::slug($data->title);
-            $readTime = $this->calculateReadTime($data->body);
-            $media = $data->media;
+            $slug          = $data->slug ?? Str::slug($data->title);
+            $readTime      = $this->calculateReadTime($data->body);
+            $media         = $data->media;
             $coverImageUrl = null;
-            if ($cover = data_get($media, MediaTagEnum::COVER->value  . '.0')) {
+            if ($cover = data_get($media, MediaTagEnum::COVER->value.'.0')) {
                 $coverImageUrl = Media::find($cover)?->getUrl();
             }
             $postData = [
@@ -36,11 +35,11 @@ final readonly class CreateBlogPostAction
                 'published_at'      => $data->published_at,
                 'read_time_minutes' => $readTime,
                 'is_featured'       => $data->is_featured ?? false,
-                'thumbnail_url'   => $coverImageUrl,
+                'thumbnail_url'     => $coverImageUrl,
             ];
 
             if ($data->main_productable) {
-                $postData['main_productable_id'] = $data->main_productable['id'];
+                $postData['main_productable_id']   = $data->main_productable['id'];
                 $postData['main_productable_type'] = ProductableEnum::from($data->main_productable['type'])
                     ->getModelClass();
             }
@@ -51,14 +50,15 @@ final readonly class CreateBlogPostAction
                 $post->attachMedia($mediaId, $key);
             }
 
-            if (!empty($data->category_ids)) {
+            if (! empty($data->category_ids)) {
                 $post->categories()->sync($data->category_ids);
             }
 
-            if (!empty($data->related_productables)) {
+            if (! empty($data->related_productables)) {
                 $post->syncRelatedProductables($data->related_productables);
             }
             $post->refresh();
+
             return $post;
         });
 
@@ -67,6 +67,7 @@ final readonly class CreateBlogPostAction
     private function calculateReadTime(string $body): int
     {
         $wordCount = str_word_count(strip_tags($body));
+
         return max(1, (int) ceil($wordCount / 200)); // 200 wpm average
     }
 }

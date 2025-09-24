@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Enums\PublicationStatusEnum;
@@ -8,7 +10,7 @@ use App\Models\Product;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 
-class IndexAllProductPricesCommand extends Command
+final class IndexAllProductPricesCommand extends Command
 {
     protected $signature = 'prices:index-all {--queue=default : The queue to dispatch jobs to} {--sync : Run jobs synchronously}';
 
@@ -24,6 +26,7 @@ class IndexAllProductPricesCommand extends Command
         $totalProducts = $query->count();
         if ($totalProducts === 0) {
             $this->warn('No published products found to index.');
+
             return Command::SUCCESS;
         }
 
@@ -36,6 +39,7 @@ class IndexAllProductPricesCommand extends Command
                 if ($this->option('sync')) {
                     // Run the job synchronously
                     UpdateProductPriceCacheJob::dispatchSync($product->id);
+
                     continue;
                 }
 

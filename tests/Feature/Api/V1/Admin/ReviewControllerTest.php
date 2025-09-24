@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\MorphTypeEnum;
 use App\Enums\PermissionEnum;
 use App\Enums\ProductableEnum;
@@ -9,7 +11,7 @@ use App\Models\Course;
 use App\Models\Review;
 use App\Models\User;
 
-uses(\Tests\AuthTestTrait::class);
+uses(Tests\AuthTestTrait::class);
 describe('ReviewController', function (): void {
     it('filters reviews', function ($filters, $expectedCount): void {
         $this->authorized_user([PermissionEnum::REVIEW_VIEW_ANY]);
@@ -51,8 +53,7 @@ describe('ReviewController', function (): void {
                 Review::factory()->count($expectedCount)->create(['is_featured' => $isFeatured]);
                 break;
         }
-        if ($filters) // Make API request with filter
-        {
+        if ($filters) { // Make API request with filter
             $response = $this->getJson('/api/v1/admin/review'.'?'.http_build_query(['filter' => $filters]));
         }
 
@@ -61,19 +62,18 @@ describe('ReviewController', function (): void {
         $responseData = $response->json('data.data');
         expect(count($responseData))->toBe($expectedCount);
     })->with([
-        'user_id'         => [
+        'user_id' => [
             [
-                'user_id' =>
-                    function () {
-                        return User::query()->where('email', 'filtered_customer@eaxmple.com')->first()->id;
-                    }
+                'user_id' => function () {
+                    return User::query()->where('email', 'filtered_customer@eaxmple.com')->first()->id;
+                },
             ],
-            3
+            3,
         ],
         'reviewable_type' => [['reviewable_type' => ProductableEnum::COURSE->value], 4],
         'status'          => [['status' => ReviewStatusEnum::APPROVED->value], 2],
         'is_featured'     => [['is_featured' => '1'], 3],
-        'customer_name'   => [['customer_name' => 'filtered customer'], 3]
+        'customer_name'   => [['customer_name' => 'filtered customer'], 3],
     ]);
 
     it('shows list of review', function (): void {
@@ -98,7 +98,7 @@ describe('ReviewController', function (): void {
                         'user',
                         'created_at',
                         'updated_at',
-                    ]
+                    ],
                 ],
             ],
         ]);
@@ -133,16 +133,16 @@ describe('ReviewController', function (): void {
 
     it('deletes a review', function (): void {
         Event::fake([
-            ReviewableAggregatesChanged::class
+            ReviewableAggregatesChanged::class,
         ]);
         $this->authorized_user([PermissionEnum::REVIEW_DELETE]);
-        $review = Review::factory()->create();
+        $review   = Review::factory()->create();
         $response = $this->deleteJson('/api/v1/admin/review/'.$review->id);
         $response->assertNoContent();
         $this->assertDatabaseMissing('reviews', ['id' => $review->id]);
         Event::assertDispatched(ReviewableAggregatesChanged::class, function ($event) use ($review) {
-            return $event->reviewId === null
-                && $event->reviewableId === $review->reviewable_id
+            return $event->reviewId       === null
+                && $event->reviewableId   === $review->reviewable_id
                 && $event->reviewableType === $review->reviewable_type;
         });
     });
@@ -158,13 +158,13 @@ describe('ApproveReviewController', function (): void {
     it('approves a review', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE]);
         Event::fake([
-            ReviewableAggregatesChanged::class
+            ReviewableAggregatesChanged::class,
         ]);
         $course = Course::factory()->create();
         $review = Review::factory()->create([
             'reviewable_type' => MorphTypeEnum::COURSE->value,
             'reviewable_id'   => $course->id,
-            'status'          => ReviewStatusEnum::PENDING->value
+            'status'          => ReviewStatusEnum::PENDING->value,
         ]);
         $response = $this->postJson('/api/v1/admin/review/'.$review->id.'/approve');
         $response->assertOk();
@@ -177,9 +177,9 @@ describe('ApproveReviewController', function (): void {
             'id'     => $review->id,
             'status' => ReviewStatusEnum::APPROVED->value,
         ]);
-        Event::assertDispatched(ReviewableAggregatesChanged::class, function ($event) use ($review,$course) {
-            return $event->reviewId === $review->id
-                && $event->reviewableId === $course->id
+        Event::assertDispatched(ReviewableAggregatesChanged::class, function ($event) use ($review, $course) {
+            return $event->reviewId       === $review->id
+                && $event->reviewableId   === $course->id
                 && $event->reviewableType === MorphTypeEnum::COURSE->value;
         });
     });
@@ -194,14 +194,14 @@ describe('ApproveReviewController', function (): void {
 describe('RejectReviewController', function (): void {
     it('reject a review', function (): void {
         Event::fake([
-            ReviewableAggregatesChanged::class
+            ReviewableAggregatesChanged::class,
         ]);
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE]);
         $course = Course::factory()->create();
         $review = Review::factory()->create([
             'reviewable_type' => MorphTypeEnum::COURSE->value,
             'reviewable_id'   => $course->id,
-            'status' => ReviewStatusEnum::PENDING->value
+            'status'          => ReviewStatusEnum::PENDING->value,
         ]);
         $response = $this->postJson('/api/v1/admin/review/'.$review->id.'/reject');
         $response->assertOk();
@@ -214,9 +214,9 @@ describe('RejectReviewController', function (): void {
             'id'     => $review->id,
             'status' => ReviewStatusEnum::REJECTED->value,
         ]);
-        Event::assertDispatched(ReviewableAggregatesChanged::class, function ($event) use ($review,$course) {
-            return $event->reviewId === $review->id
-                && $event->reviewableId === $course->id
+        Event::assertDispatched(ReviewableAggregatesChanged::class, function ($event) use ($review, $course) {
+            return $event->reviewId       === $review->id
+                && $event->reviewableId   === $course->id
                 && $event->reviewableType === MorphTypeEnum::COURSE->value;
         });
     });
@@ -231,7 +231,7 @@ describe('RejectReviewController', function (): void {
 describe('UpdateReviewFeaturedStatusController', function (): void {
     it('toggles the featured status of a review when is_featured is not provided', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE_FEATURED_STATUS]);
-        $review = Review::factory()->create(['is_featured' => false]);
+        $review   = Review::factory()->create(['is_featured' => false]);
         $response = $this->patchJson('/api/v1/admin/review/'.$review->id.'/featured');
         $response->assertOk();
         $response->assertJson([
@@ -255,7 +255,7 @@ describe('UpdateReviewFeaturedStatusController', function (): void {
 
     it('sets the featured status of a review when is_featured is provided', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE_FEATURED_STATUS]);
-        $review = Review::factory()->create(['is_featured' => false]);
+        $review   = Review::factory()->create(['is_featured' => false]);
         $response = $this->patchJson('/api/v1/admin/review/'.$review->id.'/featured', [
             'is_featured' => true,
         ]);
@@ -505,7 +505,7 @@ describe('ReviewableAggregates', function (): void {
 
 it('returns 403 if the user does not have permission', function (): void {
     $this->authorized_user(); // No permissions
-    $review = Review::factory()->create();
+    $review   = Review::factory()->create();
     $response = $this->getJson('/api/v1/admin/review');
     $response->assertForbidden();
 

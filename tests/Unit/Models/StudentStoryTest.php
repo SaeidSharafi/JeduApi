@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\StudentStory;
 
 it('to array', function (): void {

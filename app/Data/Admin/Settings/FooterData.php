@@ -29,7 +29,7 @@ final class FooterData extends Data
         return [
             'logo'                  => null,
             'logo_url'              => null,
-            'logo_alt'              => "جهاددانشگاهی قزوین",
+            'logo_alt'              => 'جهاددانشگاهی قزوین',
             'caption'               => 'شریک شما در آموزش مدرن',
             'support_link'          => '/contact-us',
             'support_email_address' => 'support@jedu.ir',

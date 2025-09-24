@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-
 it('get getProductableAttachment', function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');

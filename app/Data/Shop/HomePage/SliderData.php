@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Shop\HomePage;
 
 use Spatie\LaravelData\Data;
 
-class SliderData extends Data
+final class SliderData extends Data
 {
     public function __construct(
         public ?string $title,
@@ -13,7 +15,5 @@ class SliderData extends Data
         public ?string $image_alt,
         public ?string $link,
         public ?int $order,
-    )
-    {
-    }
+    ) {}
 }

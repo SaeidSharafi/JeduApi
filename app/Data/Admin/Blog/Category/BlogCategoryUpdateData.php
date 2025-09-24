@@ -12,6 +12,7 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 final class BlogCategoryUpdateData extends Data
 {
     use ValidatesMetaTags;
+
     public function __construct(
         public string $name,
         public ?string $slug = null,
@@ -23,15 +24,16 @@ final class BlogCategoryUpdateData extends Data
     public static function rules(?ValidationContext $context = null): array
     {
         $categoryId = request()->route('category');
+
         return array_merge([
             'name' => ['required', 'string', 'max:255'],
             'slug' => [
                 'nullable', 'string', 'max:255',
-                Rule::unique('blog_categories', 'slug')->ignore($categoryId)
+                Rule::unique('blog_categories', 'slug')->ignore($categoryId),
             ],
             'description' => ['nullable', 'string'],
-            'parent_id' => ['nullable', 'integer', 'exists:blog_categories,id'],
+            'parent_id'   => ['nullable', 'integer', 'exists:blog_categories,id'],
             'icon'        => ['nullable', 'integer:', 'exists:media,id'],
-        ],self::metaTagValidationRules());
+        ], self::metaTagValidationRules());
     }
 }

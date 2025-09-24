@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\AdviceRequestStatusEnum;
 use App\Enums\PermissionEnum;
 use App\Models\AdviceRequest;
 
-uses(\Tests\AuthTestTrait::class);
+uses(Tests\AuthTestTrait::class);
 describe('AdviceRequestController', function (): void {
     it('list requests and filter them', function (): void {
         $this->authorized_user([PermissionEnum::ADVICE_REQUEST_VIEW_ANY]);
@@ -17,11 +19,11 @@ describe('AdviceRequestController', function (): void {
         AdviceRequest::factory()->count(4)
             ->create(['status' => AdviceRequestStatusEnum::NO_RESPONSE]);
 
-        $staff = \App\Models\Staff::factory()->create();
+        $staff = App\Models\Staff::factory()->create();
         AdviceRequest::factory()->count(2)
             ->create([
                 'status'        => AdviceRequestStatusEnum::CONTACTED,
-                'handled_by_id' => $staff->id
+                'handled_by_id' => $staff->id,
             ]);
         $response = $this->getJson('/api/v1/admin/advice-request');
         $response->assertOk();
@@ -49,7 +51,7 @@ describe('AdviceRequestController', function (): void {
         foreach ($responseData as $item) {
             $this->assertEquals(AdviceRequestStatusEnum::CONTACTED->value, $item['status']['value']);
         }
-        $response = $this->getJson('/api/v1/admin/advice-request?filter[handled_by_id]=' . $staff->id);
+        $response = $this->getJson('/api/v1/admin/advice-request?filter[handled_by_id]='.$staff->id);
         $response->assertOk();
         $responseData = $response->json('data.data');
         $this->assertCount(2, $responseData);
@@ -61,9 +63,9 @@ describe('AdviceRequestController', function (): void {
     it('view a specific advice request', function (): void {
         $this->authorized_user([PermissionEnum::ADVICE_REQUEST_VIEW]);
         $request = AdviceRequest::factory()->create([
-            'status' => AdviceRequestStatusEnum::PENDING
+            'status' => AdviceRequestStatusEnum::PENDING,
         ]);
-        $response = $this->getJson('/api/v1/admin/advice-request/' . $request->id);
+        $response = $this->getJson('/api/v1/admin/advice-request/'.$request->id);
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
@@ -82,17 +84,16 @@ describe('AdviceRequestController', function (): void {
         $this->assertEquals($request->status->value, $responseData['status']['value']);
     });
 
-
     it('update a specific advice request', function (): void {
         $this->authorized_user([PermissionEnum::ADVICE_REQUEST_UPDATE]);
         $request = AdviceRequest::factory()->create([
-            'status' => AdviceRequestStatusEnum::PENDING
+            'status' => AdviceRequestStatusEnum::PENDING,
         ]);
         $payload = [
-            'status'        => AdviceRequestStatusEnum::CONTACTED->value,
-            'note'          => 'This is a note',
+            'status' => AdviceRequestStatusEnum::CONTACTED->value,
+            'note'   => 'This is a note',
         ];
-        $response = $this->putJson('/api/v1/admin/advice-request/' . $request->id, $payload);
+        $response = $this->putJson('/api/v1/admin/advice-request/'.$request->id, $payload);
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
@@ -114,9 +115,9 @@ describe('AdviceRequestController', function (): void {
         $this->assertEquals($this->user->id, $responseData['handler']['id']);
 
         $this->assertDatabaseHas('advice_requests', [
-            'id'    => $request->id,
-            'status'=> $payload['status'],
-            'note'  => $payload['note'],
+            'id'            => $request->id,
+            'status'        => $payload['status'],
+            'note'          => $payload['note'],
             'handled_by_id' => $this->user->id,
         ]);
     });
@@ -124,14 +125,14 @@ describe('AdviceRequestController', function (): void {
     it('delete a specific advice request', function (): void {
         $this->authorized_user([PermissionEnum::ADVICE_REQUEST_DELETE]);
         $request = AdviceRequest::factory()->create([
-            'status' => AdviceRequestStatusEnum::PENDING
+            'status' => AdviceRequestStatusEnum::PENDING,
         ]);
-        $response = $this->deleteJson('/api/v1/admin/advice-request/' . $request->id);
+        $response = $this->deleteJson('/api/v1/admin/advice-request/'.$request->id);
         $response->assertNoContent();
         $this->assertDatabaseMissing('advice_requests', [
             'id' => $request->id,
         ]);
-});
+    });
 
     it('forbid unauthorized access', function (): void {
         $this->unauthorized_user();
@@ -139,16 +140,16 @@ describe('AdviceRequestController', function (): void {
         $response = $this->getJson('/api/v1/admin/advice-request');
         $response->assertForbidden();
         // View
-        $request = AdviceRequest::factory()->create();
-        $response = $this->getJson('/api/v1/admin/advice-request/' . $request->id);
+        $request  = AdviceRequest::factory()->create();
+        $response = $this->getJson('/api/v1/admin/advice-request/'.$request->id);
         $response->assertForbidden();
         // Update
-        $response = $this->putJson('/api/v1/admin/advice-request/' . $request->id, [
+        $response = $this->putJson('/api/v1/admin/advice-request/'.$request->id, [
             'status' => AdviceRequestStatusEnum::CONTACTED->value,
         ]);
         $response->assertForbidden();
         // Delete
-        $response = $this->deleteJson('/api/v1/admin/advice-request/' . $request->id);
+        $response = $this->deleteJson('/api/v1/admin/advice-request/'.$request->id);
         $response->assertForbidden();
     });
 });
@@ -157,12 +158,12 @@ describe('AdviceRequestUpdateStatusController', function (): void {
     it('update status of a specific advice request', function (): void {
         $this->authorized_user([PermissionEnum::ADVICE_REQUEST_UPDATE]);
         $request = AdviceRequest::factory()->create([
-            'status' => AdviceRequestStatusEnum::PENDING
+            'status' => AdviceRequestStatusEnum::PENDING,
         ]);
         $payload = [
             'status' => AdviceRequestStatusEnum::CONTACTED->value,
         ];
-        $response = $this->patchJson('/api/v1/admin/advice-request/' . $request->id . '/status', $payload);
+        $response = $this->patchJson('/api/v1/admin/advice-request/'.$request->id.'/status', $payload);
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
@@ -183,16 +184,16 @@ describe('AdviceRequestUpdateStatusController', function (): void {
         $this->assertEquals($this->user->id, $responseData['handler']['id']);
 
         $this->assertDatabaseHas('advice_requests', [
-            'id'    => $request->id,
-            'status'=> $payload['status'],
+            'id'            => $request->id,
+            'status'        => $payload['status'],
             'handled_by_id' => $this->user->id,
         ]);
     });
 
     it('forbid unauthorized access', function (): void {
         $this->unauthorized_user();
-        $request = AdviceRequest::factory()->create();
-        $response = $this->patchJson('/api/v1/admin/advice-request/' . $request->id . '/status', [
+        $request  = AdviceRequest::factory()->create();
+        $response = $this->patchJson('/api/v1/admin/advice-request/'.$request->id.'/status', [
             'status' => AdviceRequestStatusEnum::CONTACTED->value,
         ]);
         $response->assertForbidden();

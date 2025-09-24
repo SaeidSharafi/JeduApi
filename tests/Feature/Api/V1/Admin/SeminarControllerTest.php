@@ -331,9 +331,9 @@ describe('SeminarController', function (): void {
         $seminar = App\Models\Seminar::first();
         $this->assertDatabaseCount('seminars', 1);
         $this->assertDatabaseHas('seminars', [
-            'full_name'  => $seminarData['full_name'],
-            'short_name' => $seminarData['short_name'],
-            'slug'       => $seminarData['slug'],
+            'full_name'     => $seminarData['full_name'],
+            'short_name'    => $seminarData['short_name'],
+            'slug'          => $seminarData['slug'],
             'thumbnail_url' => $this->cover->getUrl(),
         ]);
         $this->assertDatabaseHas('categorizables',
@@ -451,9 +451,9 @@ describe('SeminarController', function (): void {
             ->assertJsonFragment(['short_name' => 'Updated Short Name']);
 
         $this->assertDatabaseHas('seminars', [
-            'id'         => $seminar->id,
-            'full_name'  => 'Updated Seminar Name',
-            'short_name' => 'Updated Short Name',
+            'id'            => $seminar->id,
+            'full_name'     => 'Updated Seminar Name',
+            'short_name'    => 'Updated Short Name',
             'thumbnail_url' => $this->cover->getUrl(),
         ]);
     });

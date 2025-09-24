@@ -16,8 +16,7 @@ final readonly class ProductPriceService
 {
     public function __construct(
         private RequestDataCacheService $requestCache
-    ) {
-    }
+    ) {}
 
     /**
      * The single source of truth for getting a product's price data.
@@ -26,7 +25,7 @@ final readonly class ProductPriceService
     public function getPriceDataForProduct(Product $product): ProductPriceData
     {
         // 1. Prioritize the cache.
-        if (!empty($product->price_data_cache)) {
+        if (! empty($product->price_data_cache)) {
             // The cache is fresh and valid, use it.
             return ProductPriceData::from($product->price_data_cache);
         }
@@ -53,14 +52,15 @@ final readonly class ProductPriceService
         $deliveryOptions = $this->findDeliveryOptionsForProduct($product, $selectedDeliveryOptionId);
         if ($deliveryOptions->isEmpty()) {
             $optionPirces = [ProductDeliveryOptionPriceData::make(0, 0)];
+
             return ProductPriceData::make(
                 $optionPirces
             );
         }
         $prices = [];
-        $deliveryOptions->each(function ($deliveryOption) use (&$prices): void{
+        $deliveryOptions->each(function ($deliveryOption) use (&$prices): void {
             $priceData = $this->getPriceDataForOption($deliveryOption);
-            $prices[] = $priceData;
+            $prices[]  = $priceData;
         });
 
         $productPriceData = ProductPriceData::make(
@@ -89,26 +89,26 @@ final readonly class ProductPriceService
     public function getPriceDataForOption(ProductDeliveryOption $option): ProductDeliveryOptionPriceData
     {
         // Get all pricing components
-        $standardPrice = $option->price;
-        $featuredPrice = $this->getActiveFeaturedPrice($option);
-        $discountPrice = $this->getDiscountPrice($option);
+        $standardPrice   = $option->price;
+        $featuredPrice   = $this->getActiveFeaturedPrice($option);
+        $discountPrice   = $this->getDiscountPrice($option);
         $prePaymentPrice = $option->is_prepayment_available ? $option->prepayment_amount : null;
         // Determine current price following hierarchy
-        $currentPrice = $standardPrice;
+        $currentPrice   = $standardPrice;
         $discountAmount = null;
-        $discountType = null;
+        $discountType   = null;
 
         // Apply pricing hierarchy
         if ($discountPrice !== null) {
             // Highest priority: Product-specific discount
-            $currentPrice = $discountPrice;
+            $currentPrice   = $discountPrice;
             $discountAmount = $standardPrice - $discountPrice;
-            $discountType = 'promotion';
+            $discountType   = 'promotion';
         } elseif ($featuredPrice !== null) {
             // Second priority: Featured price
-            $currentPrice = $featuredPrice;
+            $currentPrice   = $featuredPrice;
             $discountAmount = $standardPrice - $featuredPrice;
-            $discountType = 'featured';
+            $discountType   = 'featured';
         }
 
         return ProductDeliveryOptionPriceData::make(
@@ -130,7 +130,7 @@ final readonly class ProductPriceService
         // Preload all necessary relationships
         $products->loadMissing([
             'productDeliveryOptions',
-            'productDeliveryOptions.productDeliveryOptionDiscountPrice:product_delivery_option_id,discounted_price'
+            'productDeliveryOptions.productDeliveryOptionDiscountPrice:product_delivery_option_id,discounted_price',
         ]);
 
         return $products->mapWithKeys(function (Product $product) {
@@ -144,6 +144,7 @@ final readonly class ProductPriceService
     public function hasActiveDiscount(Product $product, ?int $selectedDeliveryOptionId = null): bool
     {
         $priceData = $this->calculatePriceDataForProduct($product, $selectedDeliveryOptionId);
+
         return $priceData->has_discount || $priceData->has_featured_price;
     }
 
@@ -160,7 +161,7 @@ final readonly class ProductPriceService
         }
 
         $prices = $options->map(
-            fn(ProductDeliveryOption $option): int => $this->getPriceDataForOption($option)->current_price
+            fn (ProductDeliveryOption $option): int => $this->getPriceDataForOption($option)->current_price
         );
 
         return [
@@ -188,6 +189,11 @@ final readonly class ProductPriceService
         return $priceData->discount_percentage ?? 0.0;
     }
 
+    public function getCurrentPriceForOption(ProductDeliveryOption $option): int
+    {
+        return $this->getPriceDataForOption($option)->current_price;
+    }
+
     /**
      * Get the appropriate delivery option for pricing.
      */
@@ -200,6 +206,7 @@ final readonly class ProductPriceService
         if ($id) {
             return $options->where('id', $id);
         }
+
         // Default to first available delivery option
         return $options
             ->where('status', PublicationStatusEnum::PUBLISHED);
@@ -212,17 +219,17 @@ final readonly class ProductPriceService
     private function getActiveFeaturedPrice(ProductDeliveryOption $option): ?int
     {
         // Guard clause - check if featured pricing is enabled
-        if (!$option->is_featured || is_null($option->featured_price)) {
+        if (! $option->is_featured || is_null($option->featured_price)) {
             return null;
         }
 
         // Check date ranges
-        $now = Carbon::now();
+        $now    = Carbon::now();
         $starts = $option->featured_price_start_date;
-        $ends = $option->featured_price_end_date;
+        $ends   = $option->featured_price_end_date;
 
         $isAfterStart = is_null($starts) || $now->greaterThanOrEqualTo($starts);
-        $isBeforeEnd = is_null($ends) || $now->lessThanOrEqualTo($ends);
+        $isBeforeEnd  = is_null($ends)   || $now->lessThanOrEqualTo($ends);
 
         return ($isAfterStart && $isBeforeEnd) ? $option->featured_price : null;
     }
@@ -234,10 +241,5 @@ final readonly class ProductPriceService
     {
         // the productDeliveryOptionDiscountPrice should be loaded via eager loading
         return $option->productDeliveryOptionDiscountPrice?->discounted_price;
-    }
-
-    public function getCurrentPriceForOption(ProductDeliveryOption $option): int
-    {
-        return $this->getPriceDataForOption($option)->current_price;
     }
 }

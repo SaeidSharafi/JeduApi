@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Data\Shop\ProductPriceData;
@@ -10,7 +12,7 @@ use Illuminate\Support\Collection;
  * A Singleton service to cache data for the duration of a single HTTP request.
  * This prevents fetching the same model or calculating the same data multiple times.
  */
-class RequestDataCacheService
+final class RequestDataCacheService
 {
     /** @var Collection<int, Product> */
     private Collection $products;

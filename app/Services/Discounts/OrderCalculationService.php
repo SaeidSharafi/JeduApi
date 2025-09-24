@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Discounts;
 
-use App\Services\ProductPriceService;
 use App\Contracts\Discounts\DiscountActionContract;
 use App\Contracts\Discounts\DiscountConditionContract;
 use App\Data\Admin\Discounts\CalculatedOrderItemData;
@@ -15,6 +14,7 @@ use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
+use App\Services\ProductPriceService;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -59,7 +59,7 @@ final class OrderCalculationService
         $deliveryOptions = ProductDeliveryOption::query()
             ->with([
                 'product',
-                'productDeliveryOptionDiscountPrice'  // Load discount prices for ProductPriceService
+                'productDeliveryOptionDiscountPrice',  // Load discount prices for ProductPriceService
             ])
             ->findMany($pdoIds)
             ->keyBy('id');
@@ -80,9 +80,9 @@ final class OrderCalculationService
             /** @var ProductDeliveryOption $option */
             $option = $deliveryOptions->get($itemData->product_delivery_option_id);
 
-            $originalFullPrice    = $option->price;
+            $originalFullPrice = $option->price;
             // Use ProductPriceService for consistent pricing logic
-            $priceData = $this->priceService->getPriceDataForOption($option);
+            $priceData            = $this->priceService->getPriceDataForOption($option);
             $startingPriceForCalc = $priceData->current_price;
 
             $initialLineItemTotal = $startingPriceForCalc * $itemData->qty_ordered;

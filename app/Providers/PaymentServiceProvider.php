@@ -27,7 +27,7 @@ final class PaymentServiceProvider extends ServiceProvider
             BankTransferPaymentProcessor::class,
         ], self::PAYMENT_PROCESSOR_TAG);
 
-        $this->app->singleton(function ($app): \App\Services\Payment\PaymentProcessorFactory {
+        $this->app->singleton(function ($app): PaymentProcessorFactory {
             return new PaymentProcessorFactory($app->tagged(self::PAYMENT_PROCESSOR_TAG));
         });
     }

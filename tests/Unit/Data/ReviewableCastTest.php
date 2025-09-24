@@ -69,7 +69,7 @@ it('casts a DigitalAsset instance to ShowDigitalAssetData', function (): void {
 });
 
 it('casts a Course instance to CourseListItemData when short is true', function (): void {
-    $caster = new App\Data\Casts\ReviewableCast(true);
+    $caster = new ReviewableCast(true);
     $course = App\Models\Course::factory()
         ->withCategory()
         ->withMedia()
@@ -83,7 +83,7 @@ it('casts a Course instance to CourseListItemData when short is true', function 
         ->and($productable->short_name)->toBe('Test Course');
 });
 it('casts a Seminar instance to SeminarListItemData when short is true', function (): void {
-    $caster  = new App\Data\Casts\ReviewableCast(true);
+    $caster  = new ReviewableCast(true);
     $seminar = App\Models\Seminar::factory()
         ->withCategory()
         ->withMedia()
@@ -97,7 +97,7 @@ it('casts a Seminar instance to SeminarListItemData when short is true', functio
         ->and($productable->short_name)->toBe('Test Seminar');
 });
 it('casts a DigitalAsset instance to DigitalAssetListItemData when short is true', function (): void {
-    $caster       = new App\Data\Casts\ReviewableCast(true);
+    $caster       = new ReviewableCast(true);
     $digitalAsset = App\Models\DigitalAsset::factory()
         ->withCategory()
         ->withFile()

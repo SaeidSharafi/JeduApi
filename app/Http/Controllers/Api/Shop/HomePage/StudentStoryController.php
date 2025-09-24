@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Shop\HomePage;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\HomePage\StudentStoryData;
 use App\Enums\CacheKeysEnum;
 use App\Http\Controllers\Controller;
@@ -13,7 +16,7 @@ use SmartCache\Facades\SmartCache;
  *
  * APIs for retrieving Home Page Content
  */
-class StudentStoryController extends Controller
+final class StudentStoryController extends Controller
 {
     /**
      * List Student Stories
@@ -43,7 +46,7 @@ class StudentStoryController extends Controller
      *  "metadata": []
      * }
      */
-    public function __invoke()
+    public function __invoke(): ApiResponseInterface
     {
         $stories = SmartCache::remember(CacheKeysEnum::StudentStory->value, CacheKeysEnum::StudentStory->ttl(),
             function () {
@@ -52,8 +55,10 @@ class StudentStoryController extends Controller
                     ->visible()
                     ->orderBy('display_order')
                     ->get();
-                return $stories->map(fn($story) => StudentStoryData::fromModel($story));
+
+                return $stories->map(fn ($story) => StudentStoryData::fromModel($story));
             });
+
         return response()->success($stories);
     }
 }

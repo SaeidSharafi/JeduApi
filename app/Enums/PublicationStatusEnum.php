@@ -10,9 +10,9 @@ enum PublicationStatusEnum: string
 {
     use AdvanceEnum;
 
-    case DRAFT = 'draft';
+    case DRAFT     = 'draft';
     case PUBLISHED = 'published';
-    case ARCHIVED = 'archived';
+    case ARCHIVED  = 'archived';
     case SCHEDULED = 'scheduled';
 
 }

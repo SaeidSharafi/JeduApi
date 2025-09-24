@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Admin\Slider;
 
 use App\Data\Admin\Slider\SliderCreateData;
@@ -7,11 +9,11 @@ use App\Models\Slider;
 use Illuminate\Support\Facades\DB;
 use Plank\Mediable\Media;
 
-class UpdateSliderAction
+final class UpdateSliderAction
 {
     public function handle(Slider $slider, SliderCreateData $data): Slider
     {
-       return DB::transaction(function () use ($slider, $data): Slider {
+        return DB::transaction(function () use ($slider, $data): Slider {
             $image = null;
             if ($data->image) {
                 $image = Media::find($data->image);

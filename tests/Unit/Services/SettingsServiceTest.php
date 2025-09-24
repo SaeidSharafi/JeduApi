@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Data\Admin\MediaData;
 use App\Models\Setting;
 use App\Services\SettingsService;
@@ -55,7 +57,7 @@ test('it hits the database only once and then uses the cache', function () {
 
     // Assert 2: We prove it used the cache because only ONE query ever ran.
     $queryCount = collect(DB::getQueryLog())->filter(
-        fn($query) => str_contains($query['query'], 'select * from "settings"')
+        fn ($query) => str_contains($query['query'], 'select * from "settings"')
     )->count();
 
     expect($queryCount)->toBe(1);
@@ -88,7 +90,7 @@ test('the forget method clears the cache and forces a new database read', functi
 
     // Because the cache was gone, the second call to get() MUST have run a query to rebuild it.
     $queryCount = collect(DB::getQueryLog())->filter(
-        fn($query) => str_contains($query['query'], 'select * from "settings"')
+        fn ($query) => str_contains($query['query'], 'select * from "settings"')
     )->count();
 
     expect($queryCount)->toBe(1);
@@ -98,7 +100,7 @@ test('it calls the Setting::witImages method for array values', function () {
     Storage::fake('public');
     $logo = MediaUploader::fromSource(UploadedFile::fake()->image('cover.jpg'))
         ->toDisk('public')
-        ->upload();;
+        ->upload();
 
     $setting = Setting::factory()->create([
         'key'   => 'footer_settings',

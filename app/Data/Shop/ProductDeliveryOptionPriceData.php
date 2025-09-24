@@ -30,13 +30,14 @@ final class ProductDeliveryOptionPriceData extends Data
         ?int $discountAmount = null,
         ?string $discountType = null
     ): self {
-        $hasFeaturedPrice = $featuredPrice !== null && $featuredPrice !== $originalPrice;
-        $hasDiscount = $discountAmount !== null && $discountAmount > 0;
+        $hasFeaturedPrice   = $featuredPrice   !== null && $featuredPrice !== $originalPrice;
+        $hasDiscount        = $discountAmount  !== null && $discountAmount > 0;
         $hasPrePaymentPrice = $prePaymentPrice !== null && $prePaymentPrice < $originalPrice;
         $discountPercentage = null;
         if ($hasDiscount && $originalPrice > 0) {
             $discountPercentage = round(($discountAmount / $originalPrice) * 100, 2);
         }
+
         return new self(
             current_price: $currentPrice,
             original_price: $originalPrice,

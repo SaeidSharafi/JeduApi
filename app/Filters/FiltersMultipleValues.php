@@ -1,15 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filters;
 
 use Illuminate\Database\Eloquent\Builder;
 use Spatie\QueryBuilder\Filters\Filter;
 
-class FiltersMultipleValues implements Filter
+final class FiltersMultipleValues implements Filter
 {
-
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function __invoke(Builder $query, mixed $value, string $property)
     {

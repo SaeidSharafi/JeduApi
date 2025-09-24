@@ -11,8 +11,8 @@ enum HomePageBlockTypeEnum: string
     use AdvanceEnum;
 
     case MAIN_CATEGORIES = 'MAIN_CATEGORIES';
-    case BANNER = 'BANNER';
-    case CURATED_LIST = 'CURATED_LIST';
-    case WEBINAR_BANNER = 'WEBINAR_BANNER';
-    case DYNAMIC_LIST = 'DYNAMIC_LIST';
+    case BANNER          = 'BANNER';
+    case CURATED_LIST    = 'CURATED_LIST';
+    case WEBINAR_BANNER  = 'WEBINAR_BANNER';
+    case DYNAMIC_LIST    = 'DYNAMIC_LIST';
 }

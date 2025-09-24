@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Admin\SelectOptions;
 
 use App\Data\Transformer\TranslatableEnumData;
@@ -10,7 +12,7 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-class ProductableSelectOptionData extends Data
+final class ProductableSelectOptionData extends Data
 {
     public function __construct(
         public int $id,
@@ -21,6 +23,5 @@ class ProductableSelectOptionData extends Data
         #[WithCast(EnumCast::class)]
         #[WithTransformer(TranslatableEnumData::class)]
         public ProductableEnum $type,
-    ) {
-    }
+    ) {}
 }

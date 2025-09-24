@@ -25,7 +25,7 @@ final class EnrollmentController extends Controller
      */
     public function index(): ApiResponseInterface
     {
-        $filters    = request()->array('filter', []);
+        $filters     = request()->array('filter', []);
         $enrollments = auth()->user()->enrollments()
             ->withWhereHas(
                 'productDeliveryOption', function ($query) use ($filters): void {

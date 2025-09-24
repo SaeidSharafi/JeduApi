@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\HomePage;
 
-use App\Data\Admin\MediaData;
 use App\Models\StudentStory;
 use Spatie\LaravelData\Data;
 

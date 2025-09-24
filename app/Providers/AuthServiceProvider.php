@@ -9,12 +9,12 @@ use App\Models\AdviceRequest;
 use App\Models\Blog\BlogCategory;
 use App\Models\Blog\BlogPost;
 use App\Models\Category;
-use App\Models\Partner;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\DiscountPromotion;
 use App\Models\HomePageBlock;
 use App\Models\Order;
+use App\Models\Partner;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\Refund;
@@ -34,12 +34,12 @@ use App\Policies\Admin\AdminActionLogPolicy;
 use App\Policies\Admin\Blog\BlogCategoryPolicy;
 use App\Policies\Admin\Blog\BlogPostPolicy;
 use App\Policies\Admin\CategoryPolicy;
-use App\Policies\Admin\PartnerPolicy;
 use App\Policies\Admin\CoursePolicy;
 use App\Policies\Admin\DigitalAssetPolicy;
 use App\Policies\Admin\DiscountPromotionPolicy;
 use App\Policies\Admin\HomePageBlockPolicy;
 use App\Policies\Admin\OrderPolicy;
+use App\Policies\Admin\PartnerPolicy;
 use App\Policies\Admin\ProductDeliveryOptionPolicy;
 use App\Policies\Admin\ProductPolicy;
 use App\Policies\Admin\RefundPolicy;
@@ -103,8 +103,6 @@ final class AuthServiceProvider extends ServiceProvider
         Gate::policy(AdviceRequest::class, AdviceRequestPolicy::class);
         Gate::policy(BlogCategory::class, BlogCategoryPolicy::class);
         Gate::policy(BlogPost::class, BlogPostPolicy::class);
-
-
 
     }
 }

@@ -11,7 +11,6 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Slider\SliderCreateData;
 use App\Data\Admin\Slider\SliderData;
 use App\Data\Admin\Slider\SliderListItemData;
-use App\Data\Admin\Slider\SliderUpdateData;
 use App\Http\Controllers\Controller;
 use App\Models\Slider;
 use Illuminate\Http\JsonResponse;
@@ -29,7 +28,7 @@ final class SliderController extends Controller
 {
     /**
      * @return ApiResponseInterface
-     * Display a listing of the resource.
+     *                              Display a listing of the resource.
      *
      * @queryParam filter[title] string Filter by title Example: Welcome
      * @queryParam sort string Sort by title,order,created_at Example: -order
@@ -50,11 +49,11 @@ final class SliderController extends Controller
             ->allowedSorts('order', 'title', 'created_at')
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
+
         return response()->success(SliderListItemData::collect($sliders));
     }
 
     /**
-     *
      * @responseFile 200 scenario="success" responses/settings/slider/show.json
      * @responseFile 403 responses/403.json
      * @responseFile 404 responses/404.json
@@ -63,6 +62,7 @@ final class SliderController extends Controller
     {
         Gate::authorize('view', $slider);
         $slider->load('media');
+
         return response()->success(SliderData::from([
             ...$slider->toArray(),
             'image' => $slider->getImage(),
@@ -70,7 +70,6 @@ final class SliderController extends Controller
     }
 
     /**
-     *
      * @responseFile 201 scenario="success" responses/settings/slider/show.json
      * @responseFile 403 responses/403.json
      * @responseFile 422 responses/422.json
@@ -80,6 +79,7 @@ final class SliderController extends Controller
         Gate::authorize('create', Slider::class);
         $slider = $action->handle($data);
         $slider->load('media');
+
         return response()->created(SliderData::from([
             ...$slider->toArray(),
             'image' => $slider->getImage(),
@@ -87,7 +87,6 @@ final class SliderController extends Controller
     }
 
     /**
-     *
      * @responseFile 200 scenario="success" responses/settings/slider/show.json
      * @responseFile 403 responses/403.json
      * @responseFile 404 responses/404.json
@@ -98,6 +97,7 @@ final class SliderController extends Controller
         Gate::authorize('update', $slider);
         $slider = $action->handle($slider, $data);
         $slider->load('media');
+
         return response()->updated(SliderData::from([
             ...$slider->toArray(),
             'image' => $slider->getImage(),
@@ -105,8 +105,8 @@ final class SliderController extends Controller
     }
 
     /**
-     *
      * @response 204
+     *
      * @responseFile 403 responses/403.json
      * @responseFile 404 responses/404.json
      */
@@ -114,6 +114,7 @@ final class SliderController extends Controller
     {
         Gate::authorize('delete', $slider);
         $action->handle($slider);
+
         return response()->noContentJson();
     }
 }

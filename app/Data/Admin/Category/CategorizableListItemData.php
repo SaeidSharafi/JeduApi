@@ -37,10 +37,10 @@ final class CategorizableListItemData extends Data
      */
     private static function getCategorizableName(Model $categorizable): string
     {
-        if (isset($categorizable->name)){
+        if (isset($categorizable->name)) {
             return $categorizable->name;
         }
-        if (isset($categorizable->title)){
+        if (isset($categorizable->title)) {
             return $categorizable->title;
         }
         if (isset($categorizable->short_name)) {
@@ -49,6 +49,7 @@ final class CategorizableListItemData extends Data
         if (isset($categorizable->full_name)) {
             return $categorizable->full_name;
         }
+
         return 'N/A';
     }
 }

@@ -8,8 +8,8 @@ use App\Data\Admin\MediaData;
 use App\Enums\PartnerShowInEnum;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Plank\Mediable\Media;
 use Plank\Mediable\Mediable;
 
@@ -30,13 +30,6 @@ final class Partner extends Model
             'is_active',
         ];
 
-    protected function casts(): array
-    {
-        return [
-            'show_in' => PartnerShowInEnum::class,
-        ];
-    }
-
     #[Scope]
     public function active(Builder $query): Builder
     {
@@ -47,9 +40,17 @@ final class Partner extends Model
     {
         if ($this->relationLoaded('media')) {
             return $this->getMedia('image')
-                ->map(fn(Media $m): MediaData => MediaData::fromModel($m, 'image'))
+                ->map(fn (Media $m): MediaData => MediaData::fromModel($m, 'image'))
                 ->first();
         }
+
         return null;
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'show_in' => PartnerShowInEnum::class,
+        ];
     }
 }

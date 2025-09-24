@@ -22,10 +22,10 @@ final class Course extends Model implements ProductableContract, ReviewableContr
     /** @use HasFactory<\Database\Factories\CourseFactory> */
     use HasFactory;
 
-    use IsProductable;
-    use Mediable;
     use HasMedia;
     use HasReview;
+    use IsProductable;
+    use Mediable;
 
     protected $fillable
         = [

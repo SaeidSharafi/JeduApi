@@ -17,7 +17,7 @@ final readonly class UpdateBlogCategoryAction
         return DB::transaction(function () use ($data, $category): BlogCategory {
             $slug = $data->slug ?? Str::slug($data->name);
             $icon = null;
-            if ($data->icon){
+            if ($data->icon) {
                 $icon = Media::find($data->icon);
             }
             $category->update([

@@ -26,11 +26,11 @@ final class DynamicListBlockContentData extends Data
     public static function rules(?ValidationContext $context = null): array
     {
         return [
-            'entity_type' => ['required', 'string', Rule::enum(DynamicListEntityTypeEnum::class)],
-            'sort_by' => ['required', 'string', Rule::enum(DynamicListSortByEnum::class)],
-            'limit' => ['required', 'integer', 'min:1', 'max:20'],
-            'preset' => ['required', 'string'],
-            'category_ids' => ['nullable', 'array'],
+            'entity_type'    => ['required', 'string', Rule::enum(DynamicListEntityTypeEnum::class)],
+            'sort_by'        => ['required', 'string', Rule::enum(DynamicListSortByEnum::class)],
+            'limit'          => ['required', 'integer', 'min:1', 'max:20'],
+            'preset'         => ['required', 'string'],
+            'category_ids'   => ['nullable', 'array'],
             'category_ids.*' => ['integer', 'exists:categories,id'],
         ];
     }

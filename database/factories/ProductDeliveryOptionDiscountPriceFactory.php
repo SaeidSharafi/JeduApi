@@ -17,8 +17,8 @@ final class ProductDeliveryOptionDiscountPriceFactory extends Factory
     {
         return [
             'product_delivery_option_id' => ProductDeliveryOption::factory(),
-            'discount_promotion_id' => DiscountPromotion::factory(),
-            'discounted_price' => $this->faker->numberBetween(1000, 50000), // Price in cents
+            'discount_promotion_id'      => DiscountPromotion::factory(),
+            'discounted_price'           => $this->faker->numberBetween(1000, 50000), // Price in cents
         ];
     }
 

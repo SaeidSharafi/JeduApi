@@ -28,7 +28,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->singleton(OtpGeneratorInterface::class, DefaultOtpGenerator::class);
         $this->app->singleton(DiscountHandlerRegistry::class);
         $this->app->singleton(DiscountMetadataService::class);
-        $this->app->singleton(function ($app): \App\Services\RequestDataCacheService {
+        $this->app->singleton(function ($app): RequestDataCacheService {
             return new RequestDataCacheService();
         });
     }

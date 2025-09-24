@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\Review;
 
 use App\Actions\Admin\Review\UpdateReviewStatusAction;
@@ -14,10 +16,9 @@ use Illuminate\Support\Facades\Gate;
  * @authenticated
  * APIs for managing reviews
  */
-class RejectReviewController extends Controller
+final class RejectReviewController extends Controller
 {
     /**
-     *
      * Reject the specified review.
      *
      *
@@ -29,8 +30,9 @@ class RejectReviewController extends Controller
      */
     public function __invoke(Review $review, UpdateReviewStatusAction $action)
     {
-        Gate::authorize('update',$review);
+        Gate::authorize('update', $review);
         $action->handle($review, ReviewStatusEnum::REJECTED);
+
         return response()->success(message: __('messages.review.rejected'));
     }
 }

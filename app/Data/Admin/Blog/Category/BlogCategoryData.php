@@ -7,7 +7,6 @@ namespace App\Data\Admin\Blog\Category;
 use App\Data\Admin\MediaData;
 use App\Models\Blog\BlogCategory;
 use Hekmatinasser\Verta\Verta;
-use Plank\Mediable\Mediable;
 use Spatie\LaravelData\Data;
 
 final class BlogCategoryData extends Data
@@ -25,12 +24,12 @@ final class BlogCategoryData extends Data
         public ?int $posts_count = null,
         public ?Verta $created_at = null,
         public ?Verta $updated_at = null
-    ) {
-    }
+    ) {}
 
     public static function fromModel(BlogCategory $category): self
     {
         $media = $category->firstMedia('icon');
+
         return self::from(
             [
                 'id'               => $category->id,

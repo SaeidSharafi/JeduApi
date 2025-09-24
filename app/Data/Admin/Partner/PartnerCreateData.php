@@ -18,8 +18,7 @@ final class PartnerCreateData extends Data
         public PartnerShowInEnum $show_in,
         public int $order,
         public bool $is_active = false,
-    ) {
-    }
+    ) {}
 
     public static function rules(?ValidationContext $context = null): array
     {
@@ -30,7 +29,7 @@ final class PartnerCreateData extends Data
             'url'       => ['nullable', 'string', 'max:255'],
             'show_in'   => ['required', 'string', 'in:home,course'],
             'order'     => ['required', 'integer', 'min:0'],
-            'is_active' => ['sometimes', 'boolean']
+            'is_active' => ['sometimes', 'boolean'],
         ];
     }
 }

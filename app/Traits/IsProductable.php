@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
-use App\Data\Admin\MediaData;
 use App\Data\Admin\PrivateFileData;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,7 +16,6 @@ trait IsProductable
     {
         return $this->morphMany(Product::class, 'productable');
     }
-
 
     public function scopeWithProductableCategories(Builder $query): Builder
     {
@@ -57,7 +55,6 @@ trait IsProductable
     //
     //    return $query;
     // }
-
 
     public function loadProductableCategories(): void
     {

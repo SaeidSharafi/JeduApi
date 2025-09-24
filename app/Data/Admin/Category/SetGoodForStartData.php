@@ -14,16 +14,16 @@ final class SetGoodForStartData extends Data
     public function __construct(
         public array $course_ids,
         public bool $good_for_start,
-    ) {
-    }
+    ) {}
 
-    public static function rules(ValidationContext $context = null): array
+    public static function rules(?ValidationContext $context = null): array
     {
         $category = request()->route()->parameter('category');
+
         return [
-            'course_ids'     => ['required', 'array', 'min:1'],
+            'course_ids' => ['required', 'array', 'min:1'],
             // This rule is now much more powerful
-            'course_ids.*'   => [
+            'course_ids.*' => [
                 'required',
                 'integer',
                 // Rule 1: Ensure each ID exists in the 'courses' table.
@@ -43,11 +43,10 @@ final class SetGoodForStartData extends Data
     /**
      * @codeCoverageIgnore
      */
-
     public function bodyParameters(): array
     {
         return [
-            'item_ids'       => [
+            'item_ids' => [
                 'description' => 'An array of categorizable pivot table item IDs to update the good_for_start flag for.',
                 'example'     => [1, 2, 3],
             ],

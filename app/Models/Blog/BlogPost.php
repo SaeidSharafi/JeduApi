@@ -7,9 +7,9 @@ namespace App\Models\Blog;
 use App\Enums\PublicationStatusEnum;
 use App\Models\Course;
 use App\Models\DigitalAsset;
-use App\Models\Product;
 use App\Models\Review;
 use App\Models\Seminar;
+use App\Models\Staff;
 use App\Traits\HasMedia;
 use App\Traits\HasReview;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -17,19 +17,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
 use Plank\Mediable\Mediable;
-use App\Models\Staff;
 
-class BlogPost extends Model
+final class BlogPost extends Model
 {
-    use Mediable;
     use HasFactory;
     use HasMedia;
     use HasReview;
+    use Mediable;
 
     protected $table = 'blog_posts';
 
@@ -89,26 +88,16 @@ class BlogPost extends Model
     public function loadRelatedproductables(): self
     {
         $this->loadMissing(['courses', 'seminars', 'digitalAssets']);
+
         return $this;
     }
+
     /**
      * The single, featured productable for this post.
      */
     public function mainProductable(): MorphTo
     {
         return $this->morphTo();
-    }
-
-    protected function relatedProductables(): Attribute
-    {
-        return Attribute::make(
-            get: function (): Collection {
-                return collect()
-                    ->merge($this->relationLoaded('courses') ? $this->courses : collect())
-                    ->merge($this->relationLoaded('seminars') ? $this->seminars : collect())
-                    ->merge($this->relationLoaded('digitalAssets') ? $this->digitalAssets : collect());
-            }
-        );
     }
 
     public function syncRelatedProductables(?array $productables): void
@@ -118,6 +107,7 @@ class BlogPost extends Model
             $this->courses()->sync([]);
             $this->seminars()->sync([]);
             $this->digitalAssets()->sync([]);
+
             return;
         }
 
@@ -138,12 +128,25 @@ class BlogPost extends Model
     {
         return $this->morphMany(Review::class, 'reviewable');
     }
+
+    protected function relatedProductables(): Attribute
+    {
+        return Attribute::make(
+            get: function (): Collection {
+                return collect()
+                    ->merge($this->relationLoaded('courses') ? $this->courses : collect())
+                    ->merge($this->relationLoaded('seminars') ? $this->seminars : collect())
+                    ->merge($this->relationLoaded('digitalAssets') ? $this->digitalAssets : collect());
+            }
+        );
+    }
+
     protected function casts(): array
     {
         return [
             'published_at' => 'datetime',
             'is_featured'  => 'boolean',
-            'status' => PublicationStatusEnum::class
+            'status'       => PublicationStatusEnum::class,
         ];
     }
 }

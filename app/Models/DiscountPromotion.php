@@ -43,6 +43,7 @@ final class DiscountPromotion extends Model
     {
         return $this->hasMany(ProductDeliveryOptionDiscountPrice::class, 'discount_promotion_id');
     }
+
     /**
      * The attributes that should be cast.
      *

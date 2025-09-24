@@ -35,7 +35,7 @@ return new class extends Migration
             $table->string('education_status', 20)->nullable();
             $table->timestamps();
 
-            //Index
+            // Index
             $table->index(['last_name', 'first_name']);
             $table->index('civil_id');
             $table->unique(['civil_id_type', 'civil_id']);

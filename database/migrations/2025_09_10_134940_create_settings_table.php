@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('key')->unique();
             $table->json('value');
             $table->string('type')->default('json')
-            ->comment('Data type of the value: json or plain text');
+                ->comment('Data type of the value: json or plain text');
             $table->string('group')->nullable()->index();
             $table->timestamps();
         });

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\AdviceRequest;
 
 use App\Actions\Admin\AdviceRequest\UpdateAdviceRequestAction;
@@ -15,11 +17,12 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 /**
  * @group Admin - Advice Requests
+ *
  * @authenticated
  *
  * APIs for managing advice requests
  */
-class AdviceRequestController extends Controller
+final class AdviceRequestController extends Controller
 {
     /**
      * List Advice Requests
@@ -33,8 +36,8 @@ class AdviceRequestController extends Controller
      * @queryParam page integer Page number. Default is 1. Example: 1
      *
      * @responseFile 200 responses/advice-request/index.json
-     * @response 403 responses/403.json
      *
+     * @response 403 responses/403.json
      */
     public function index(): ApiResponseInterface
     {
@@ -42,13 +45,14 @@ class AdviceRequestController extends Controller
         $requests = QueryBuilder::for(AdviceRequest::class)
             ->allowedFilters([
                 AllowedFilter::exact('status'),
-                AllowedFilter::exact('handled_by_id')
+                AllowedFilter::exact('handled_by_id'),
             ])
             ->allowedSorts(['status', 'created_at', 'handled_by_id'])
             ->defaultSort('-created_at')
             ->with('handler')
             ->paginate(request()->get('per_page', 15))
             ->withQueryString();
+
         return response()->success(AdviceRequestData::collect($requests));
     }
 
@@ -58,6 +62,7 @@ class AdviceRequestController extends Controller
      * Display detailed information about a specific advice request.
      *
      * @responseFile 200 responses/advice-request/show.json
+     *
      * @response 403 responses/403.json
      * @response 404 responses/404.json
      */
@@ -65,6 +70,7 @@ class AdviceRequestController extends Controller
     {
         Gate::authorize('view', $adviceRequest);
         $adviceRequest->load('handler');
+
         return response()->success(AdviceRequestData::from($adviceRequest));
     }
 
@@ -74,6 +80,7 @@ class AdviceRequestController extends Controller
      * Update the details of a specific advice request.
      *
      * @responseFile 200 responses/advice-request/show.json
+     *
      * @response 403 responses/403.json
      * @response 404 responses/404.json
      */
@@ -86,6 +93,7 @@ class AdviceRequestController extends Controller
 
         $adviceRequest = $action->handle($data, $adviceRequest, auth('staff')->user());
         $adviceRequest->load('handler');
+
         return response()->updated(AdviceRequestData::from($adviceRequest), model: AdviceRequest::class);
     }
 

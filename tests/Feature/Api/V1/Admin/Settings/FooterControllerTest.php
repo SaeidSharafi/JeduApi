@@ -40,7 +40,7 @@ it('can update footer settings', function (): void {
             ['title' => 'About Us', 'link' => '/about-us'],
             ['title' => 'Blog', 'link' => '/blog'],
         ],
-        'social_media_links'    => [
+        'social_media_links' => [
             [
                 'platform' => 'instagram',
                 'link'     => 'https://instagram.com/jedushop',
@@ -50,7 +50,7 @@ it('can update footer settings', function (): void {
                 'link'     => 'https://linkedin.com/company/jedushop',
             ],
         ],
-        'certifications'        => [
+        'certifications' => [
             [
                 'name'  => 'Enamad',
                 'image' => null,
@@ -133,7 +133,7 @@ it('cannot access footer settings without auth', function (): void {
     $response->assertStatus(403);
 
     // Create valid category for required field
-    $cat = App\Models\Category::factory()->create(['name' => 'Cat']);
+    $cat        = App\Models\Category::factory()->create(['name' => 'Cat']);
     $footerData = [
         'logo'                  => null,
         'caption'               => 'Test Caption',
@@ -144,7 +144,7 @@ it('cannot access footer settings without auth', function (): void {
         'main_links'            => [
             ['title' => 'About Us', 'link' => '/about-us'],
         ],
-        'social_media_links'    => [
+        'social_media_links' => [
             [
                 'platform' => 'instagram',
                 'link'     => 'https://instagram.com/jedushop',
@@ -154,7 +154,7 @@ it('cannot access footer settings without auth', function (): void {
                 'link'     => 'https://linkedin.com/company/jedushop',
             ],
         ],
-        'certifications'        => [
+        'certifications' => [
             [
                 'name'  => 'Enamad',
                 'image' => null,

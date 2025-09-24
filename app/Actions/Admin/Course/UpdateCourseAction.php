@@ -13,9 +13,8 @@ use Illuminate\Support\Facades\DB;
 final readonly class UpdateCourseAction
 {
     public function __construct(
-        protected GetThumbnailUrlAction $thumbnailUrlAction
-    ) {
-    }
+        private GetThumbnailUrlAction $thumbnailUrlAction
+    ) {}
 
     /**
      * Execute the action.
@@ -23,12 +22,12 @@ final readonly class UpdateCourseAction
     public function handle(CreateCourseData $data, Course $course): void
     {
         DB::transaction(function () use ($data, $course): void {
-            $valdiatedData = $data->except('media', 'categories', 'digital_assets')->all();
+            $valdiatedData                  = $data->except('media', 'categories', 'digital_assets')->all();
             $valdiatedData['thumbnail_url'] = $this->thumbnailUrlAction->handle($data->media);
             $course->update($valdiatedData);
             $course->products()->update(['slug' => $data->slug]);
-            $mediaInput = $data->media ?? [];
-            $categories = $data->categories ?? [];
+            $mediaInput    = $data->media          ?? [];
+            $categories    = $data->categories     ?? [];
             $digitalAssets = $data->digital_assets ?? [];
             $course->categories()->sync($categories);
             $course->digitalAssets()->sync($digitalAssets);

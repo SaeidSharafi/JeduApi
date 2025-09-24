@@ -35,6 +35,7 @@ final class Refund extends Model implements WalletTransactionSourceableContract
     {
         return $this->belongsTo(User::class);
     }
+
     protected function casts(): array
     {
         return [

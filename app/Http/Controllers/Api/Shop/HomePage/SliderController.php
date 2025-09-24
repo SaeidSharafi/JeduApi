@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Shop\HomePage;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\HomePage\SliderData;
 use App\Enums\CacheKeysEnum;
 use App\Http\Controllers\Controller;
@@ -13,7 +16,7 @@ use SmartCache\Facades\SmartCache;
  *
  * APIs for retrieving Home Page Content
  */
-class SliderController extends Controller
+final class SliderController extends Controller
 {
     /**
      * List Sliders
@@ -43,13 +46,14 @@ class SliderController extends Controller
      *  "metadata": []
      * }
      */
-    public function __invoke()
+    public function __invoke(): ApiResponseInterface
     {
         $sliders = SmartCache::remember(CacheKeysEnum::Slider->value, CacheKeysEnum::Slider->ttl(),
-            fn() => SliderData::collect(
+            fn () => SliderData::collect(
                 Slider::query()->active()->orderBy('order')->get()
             )
         );
+
         return response()->success($sliders);
     }
 }

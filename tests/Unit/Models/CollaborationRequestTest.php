@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 it('to array', function (): void {
-    $collaborationRequest = \App\Models\CollaborationRequest::factory()->create([
+    $collaborationRequest = App\Models\CollaborationRequest::factory()->create([
         'full_name' => 'Jane Smith',
         'phone'     => '0987654321',
         'email'     => 'johnsmith@example.com',

@@ -8,7 +8,7 @@ use App\Models\Product;
 
 test('to Array', function (): void {
     $category = Category::factory()->create();
-    $product = Product::factory()->create();
+    $product  = Product::factory()->create();
     $product->categories()->attach($category->id);
     $categorizbale = App\Models\Categorizable::first();
     expect($categorizbale)->toBeInstanceOf(App\Models\Categorizable::class)
@@ -23,7 +23,7 @@ test('to Array', function (): void {
 });
 test('categorizable realtionship', function (): void {
     $category = Category::factory()->create();
-    $course = Course::factory()->create();
+    $course   = Course::factory()->create();
     $course->categories()->attach($category->id);
     $categorizable = App\Models\Categorizable::first();
     expect($categorizable)->toBeInstanceOf(App\Models\Categorizable::class)

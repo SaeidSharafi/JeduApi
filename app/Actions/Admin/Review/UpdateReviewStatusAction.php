@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Admin\Review;
 
 use App\Enums\ReviewStatusEnum;
 use App\Events\ReviewableAggregatesChanged;
 use App\Models\Review;
 
-class UpdateReviewStatusAction
+final class UpdateReviewStatusAction
 {
     public function handle(Review $review, ReviewStatusEnum $statusEnum): void
     {

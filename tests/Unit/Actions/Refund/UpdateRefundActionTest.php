@@ -104,7 +104,7 @@ describe('UpdateRefundAction', function (): void {
             admin_notes: 'Should fail',
         );
         $action = new UpdateRefundAction();
-        expect(fn (): \App\Models\Refund => $action->handle($refund, $data))
+        expect(fn (): App\Models\Refund => $action->handle($refund, $data))
             ->toThrow(Illuminate\Validation\ValidationException::class);
     });
 

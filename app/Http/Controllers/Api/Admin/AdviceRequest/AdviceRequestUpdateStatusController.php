@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Admin\AdviceRequest;
 
 use App\Actions\Admin\AdviceRequest\UpdateAdviceRequestStatusAction;
@@ -16,7 +18,7 @@ use Illuminate\Support\Facades\Gate;
  * @authenticated
  * APIs for managing advice requests
  */
-class AdviceRequestUpdateStatusController extends Controller
+final class AdviceRequestUpdateStatusController extends Controller
 {
     /**
      * Update Advice Request Status
@@ -26,6 +28,7 @@ class AdviceRequestUpdateStatusController extends Controller
      * @bodyParam status string required The new status of the advice request. Example: handled
      *
      * @responseFile 200 responses/advice-request/show.json
+     *
      * @response 403 responses/403.json
      * @response 404 responses/404.json
      */
@@ -38,7 +41,7 @@ class AdviceRequestUpdateStatusController extends Controller
 
         $adviceRequest = $action->handle($data, $adviceRequest, auth('staff')->user());
         $adviceRequest->load('handler');
+
         return response()->updated(AdviceRequestData::from($adviceRequest), model: AdviceRequest::class);
     }
-
 }

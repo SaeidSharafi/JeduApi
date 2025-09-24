@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Jobs\Discounts;
 
-use App\Enums\CacheKeysEnum;
 use App\Models\Product;
 use App\Services\Discounts\ProductDiscountIndexer;
 use Illuminate\Bus\Queueable;

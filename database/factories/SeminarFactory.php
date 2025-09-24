@@ -45,7 +45,7 @@ final class SeminarFactory extends Factory
                 ['question' => $this->faker->sentence(), 'answer' => $this->faker->paragraph()],
             ],
             'keywords'         => implode(',', $this->faker->words(5)),
-            'status'               => PublicationStatusEnum::PUBLISHED,
+            'status'           => PublicationStatusEnum::PUBLISHED,
             'created_by'       => Staff::factory(),
             'meta_title'       => mb_trim(Str::take($this->faker->persianWords(4, true), 70)),
             'meta_description' => mb_trim(Str::take($this->faker->persianParagraph(20, false), 100)),

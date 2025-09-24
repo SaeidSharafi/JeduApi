@@ -1,21 +1,23 @@
 <?php
+
+declare(strict_types=1);
 it('to array', function (): void {
     $blogCategory = App\Models\Blog\BlogCategory::factory()->create()->fresh();
 
     $array = $blogCategory->toArray();
     expect($array)
         ->toEqual([
-            'id'          => $blogCategory->id,
-            'name'        => $blogCategory->name,
-            'slug'        => $blogCategory->slug,
-            'description' => $blogCategory->description,
-            'parent_id'   => $blogCategory->parent_id,
-            'icon'        => $blogCategory->icon,
+            'id'               => $blogCategory->id,
+            'name'             => $blogCategory->name,
+            'slug'             => $blogCategory->slug,
+            'description'      => $blogCategory->description,
+            'parent_id'        => $blogCategory->parent_id,
+            'icon'             => $blogCategory->icon,
             'meta_title'       => $blogCategory->meta_title,
             'meta_description' => $blogCategory->meta_description,
             'meta_keywords'    => $blogCategory->meta_keywords,
-            'created_at'  => $blogCategory->created_at?->utc()->toJSON(),
-            'updated_at'  => $blogCategory->updated_at?->utc()->toJSON(),
+            'created_at'       => $blogCategory->created_at?->utc()->toJSON(),
+            'updated_at'       => $blogCategory->updated_at?->utc()->toJSON(),
         ]);
 });
 
@@ -30,7 +32,7 @@ it('relation parent category', function (): void {
 });
 
 it('relation child categories', function (): void {
-    $parentCategory = App\Models\Blog\BlogCategory::factory()->create();
+    $parentCategory  = App\Models\Blog\BlogCategory::factory()->create();
     $childCategories = App\Models\Blog\BlogCategory::factory()->count(3)->create(['parent_id' => $parentCategory->id]);
 
     expect($parentCategory->children)
@@ -59,6 +61,3 @@ it('relation posts', function (): void {
     expect($blogCategory->posts)
         ->toHaveCount(3);
 });
-
-
-

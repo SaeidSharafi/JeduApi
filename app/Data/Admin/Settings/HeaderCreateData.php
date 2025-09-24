@@ -14,10 +14,9 @@ final class HeaderCreateData extends Data
         public array $navigation_links,
         public string $contact_phone,
         public string $contact_email
-    ) {
-    }
+    ) {}
 
-    public static function rules(ValidationContext $context = null): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'logo'                     => ['nullable', 'integer', 'exists:media,id'],

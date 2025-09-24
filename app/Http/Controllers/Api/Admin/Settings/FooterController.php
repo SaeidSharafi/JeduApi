@@ -43,16 +43,16 @@ final class FooterController extends Controller
     {
         Gate::authorize('update', Setting::class);
 
-        $logo = null;
+        $logo      = null;
         $validated = $data->toArray();
         if ($data->logo !== null) {
             $logo = Media::find($data->logo);
         }
         $validated['logo_url'] = $logo?->getUrl() ?? null;
-        $validated['logo_alt'] = $logo?->alt ?? null;
+        $validated['logo_alt'] = $logo?->alt      ?? null;
 
         $setting = Setting::setValue('footer', $validated, 'json', 'footer');
-        $setting->syncMedia($logo,'logo');
+        $setting->syncMedia($logo, 'logo');
         $footer = Setting::getValue('footer');
 
         return response()->success(

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Enums\PartnerShowInEnum;
@@ -7,7 +9,7 @@ use App\Models\Partner;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @mixin Factory<Partner> */
-class PartnerFactory extends Factory
+final class PartnerFactory extends Factory
 {
     protected $model = Partner::class;
 
@@ -21,7 +23,7 @@ class PartnerFactory extends Factory
             'url'       => $this->faker->optional()->url,
             'show_in'   => $this->faker->randomElement(PartnerShowInEnum::cases()),
             'order'     => $this->faker->numberBetween(0, 100),
-            'is_active'    => $this->faker->boolean(80), // 80% chance of being true
+            'is_active' => $this->faker->boolean(80), // 80% chance of being true
         ];
     }
 }

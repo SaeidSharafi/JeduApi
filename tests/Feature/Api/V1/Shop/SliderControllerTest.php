@@ -1,38 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\PublicationStatusEnum;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 
 describe('SliderController', function () {
 
-
     it('can fetch the list of sliders', function () {
-        \App\Models\Slider::factory()
+        App\Models\Slider::factory()
             ->count(5)
             ->state(new Sequence(
                 [
                     'order'  => 2,
-                    'status' => PublicationStatusEnum::PUBLISHED
+                    'status' => PublicationStatusEnum::PUBLISHED,
                 ],
                 [
                     'order'  => 1,
-                    'status' => PublicationStatusEnum::DRAFT
+                    'status' => PublicationStatusEnum::DRAFT,
                 ],
                 [
                     'order'  => 4,
-                    'status' => PublicationStatusEnum::PUBLISHED
+                    'status' => PublicationStatusEnum::PUBLISHED,
                 ],
                 [
                     'order'  => 5,
-                    'status' => PublicationStatusEnum::ARCHIVED
+                    'status' => PublicationStatusEnum::ARCHIVED,
                 ],
                 [
                     'order'  => 3,
-                    'status' => PublicationStatusEnum::PUBLISHED
+                    'status' => PublicationStatusEnum::PUBLISHED,
                 ],
             ))
             ->create();
-        $sliders = \App\Models\Slider::query()
+        $sliders = App\Models\Slider::query()
             ->where('status', PublicationStatusEnum::PUBLISHED)
             ->orderBy('order')
             ->get();
@@ -43,12 +44,12 @@ describe('SliderController', function () {
             ->assertJson([
                 'data' => $sliders->map(function ($slider) {
                     return [
-                        'title'      => $slider->title,
-                        'caption'    => $slider->caption,
-                        'image_url'  => $slider->image_url,
-                        'image_alt'  => $slider->image_alt,
-                        'link'       => $slider->link,
-                        'order'      => $slider->order,
+                        'title'     => $slider->title,
+                        'caption'   => $slider->caption,
+                        'image_url' => $slider->image_url,
+                        'image_alt' => $slider->image_alt,
+                        'link'      => $slider->link,
+                        'order'     => $slider->order,
                     ];
                 })->toArray(),
             ]);

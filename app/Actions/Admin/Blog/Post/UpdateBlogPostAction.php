@@ -15,11 +15,11 @@ final readonly class UpdateBlogPostAction
 {
     public function handle(BlogPost $post, BlogPostUpdateData $data): BlogPost
     {
-        $slug = $data->slug ?? Str::slug($data->title);
-        $readTime = $this->calculateReadTime($data->body);
-        $media = $data->media;
+        $slug          = $data->slug ?? Str::slug($data->title);
+        $readTime      = $this->calculateReadTime($data->body);
+        $media         = $data->media;
         $coverImageUrl = null;
-        if ($cover = data_get($media, MediaTagEnum::COVER->value . '.0')) {
+        if ($cover = data_get($media, MediaTagEnum::COVER->value.'.0')) {
             $coverImageUrl = Media::find($cover)?->getUrl();
         }
         $postData = [
@@ -34,10 +34,10 @@ final readonly class UpdateBlogPostAction
             'is_featured'           => $data->is_featured,
             'main_productable_id'   => null,
             'main_productable_type' => null,
-            'thumbnail_url'       => $coverImageUrl,
+            'thumbnail_url'         => $coverImageUrl,
         ];
         if ($data->main_productable) {
-            $postData['main_productable_id'] = $data->main_productable['id'];
+            $postData['main_productable_id']   = $data->main_productable['id'];
             $postData['main_productable_type'] = ProductableEnum::from($data->main_productable['type'])
                 ->getModelClass();
         }
@@ -49,12 +49,14 @@ final readonly class UpdateBlogPostAction
 
         $post->syncRelatedProductables($data->related_productables);
         $post->refresh();
+
         return $post;
     }
 
     private function calculateReadTime(string $body): int
     {
         $wordCount = str_word_count(strip_tags($body));
+
         return max(1, (int) ceil($wordCount / 200)); // 200 wpm average
     }
 }

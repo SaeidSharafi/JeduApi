@@ -62,9 +62,9 @@ it('shows current user specific enrollment details', function (): void {
         ]);
     createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, 5);
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
-    $response  = $this->getJson(route('api.v1.shop.my-courses.show', [
+    $response   = $this->getJson(route('api.v1.shop.my-courses.show', [
         'enrollment' => $enrollment->uuid,
-        'per_page'  => 1,
+        'per_page'   => 1,
     ]));
 
     $response->assertOk();
@@ -82,11 +82,11 @@ it('shows current user specific enrollment details', function (): void {
 });
 it('does not show other users enrollment details', function (): void {
 
-    $user      = App\Models\User::factory()->create()->fresh();
+    $user       = App\Models\User::factory()->create()->fresh();
     $enrollment = createEnrollment($user, DeliveryMethodEnum::LMS_MOODLE);
-    $response  = $this->getJson(route('api.v1.shop.my-courses.show', [
+    $response   = $this->getJson(route('api.v1.shop.my-courses.show', [
         'enrollment' => $enrollment->uuid,
-        'per_page'  => 1,
+        'per_page'   => 1,
     ]));
 
     $response->assertNotFound();

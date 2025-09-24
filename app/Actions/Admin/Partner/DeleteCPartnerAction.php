@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Admin\Partner;
 
 use App\Models\Partner;
 use Illuminate\Support\Facades\DB;
-use Plank\Mediable\Media;
 
-class DeleteCPartnerAction
+final class DeleteCPartnerAction
 {
     public function handle(Partner $partner): void
     {

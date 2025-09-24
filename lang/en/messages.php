@@ -47,11 +47,11 @@ return [
         'about_us'      => 'About Us',
     ],
 
-    'errors'                                  => [
+    'errors' => [
         'model_has_relationship_data'                       => 'The selected record has related data (:related_model) and cannot be deleted.',
         'model_has_relationship_data_without_related_model' => 'The selected record has related data and cannot be deleted.',
     ],
-    'order'                                   => [
+    'order' => [
         'items_already_purchased'             => 'You have already purchased the following items: :products.',
         'item_already_purchased'              => 'You have already purchased this item.',
         'prepayment_not_available'            => 'Pre-payment is not available for product :product.',
@@ -90,7 +90,7 @@ return [
             'delete_completed_payment_error'        => 'Cannot delete a completed payment.',
             'update_completed_payment_status_error' => 'Cannot update a completed payment status.',
         ],
-        'refund'                              => [
+        'refund' => [
             'not_allowed'                           => 'Refunds are not allowed for this order.',
             'already_refunded'                      => 'This order has already been refunded.',
             'refund_already_processed'              => 'This refund has already been processed.',
@@ -104,8 +104,8 @@ return [
             'invalid_status_transition'             => 'Cannot transition refund from :from to :to.',
         ],
     ],
-    'auth'                                    => [
-        'otp'   => [
+    'auth' => [
+        'otp' => [
             'invalid_code'          => 'The provided OTP code is invalid.',
             'expired_code'          => 'The OTP code has expired.',
             'already_verified'      => 'The phone number is already verified.',
@@ -119,7 +119,7 @@ return [
             'invalid_credentials' => 'The provided credentials are incorrect.',
         ],
     ],
-    'enrollments'                             => [
+    'enrollments' => [
         'not_found' => 'Enrollment not found.',
     ],
 

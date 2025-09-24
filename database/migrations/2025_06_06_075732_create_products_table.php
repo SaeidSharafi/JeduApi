@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('productable_type');
             $table->unsignedBigInteger('term_id');
             $table->foreign('term_id')->references('id')->on('terms');
-            $table->string('status')->default(\App\Enums\PublicationStatusEnum::DRAFT->value);
+            $table->string('status')->default(App\Enums\PublicationStatusEnum::DRAFT->value);
             $table->boolean('is_visible')->default(false);
             $table->string('short_description');
             $table->string('short_name');

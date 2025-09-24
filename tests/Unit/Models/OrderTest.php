@@ -137,7 +137,7 @@ test('payment status', function (): void {
 });
 
 test('enrollments relationship', function (): void {
-    $order     = Order::factory()->create();
+    $order      = Order::factory()->create();
     $enrollment = App\Models\Enrollment::factory()->create([
         'order_id' => $order->id,
     ]);

@@ -41,7 +41,7 @@ describe('PaymentProcessorFactory', function (): void {
             'invalid_processor', // This should cause a type error
         ];
 
-        expect(fn (): \App\Services\Payment\PaymentProcessorFactory => new PaymentProcessorFactory($invalidProcessors))
+        expect(fn (): PaymentProcessorFactory => new PaymentProcessorFactory($invalidProcessors))
             ->toThrow(TypeError::class);
     });
 
@@ -84,7 +84,7 @@ describe('PaymentProcessorFactory', function (): void {
     it('handles empty processor list gracefully', function (): void {
         $factory = new PaymentProcessorFactory([]);
 
-        expect(fn (): \App\Contracts\Payment\PaymentProcessorContract => $factory->make(PaymentMethodEnum::WALLET))
+        expect(fn (): PaymentProcessorContract => $factory->make(PaymentMethodEnum::WALLET))
             ->toThrow(InvalidArgumentException::class, 'No payment processor found for method: wallet');
     });
 
@@ -127,7 +127,7 @@ describe('PaymentProcessorFactory', function (): void {
         $processor = $singleProcessorFactory->make(PaymentMethodEnum::WALLET);
         expect($processor)->toBe($this->walletProcessor);
 
-        expect(fn (): \App\Contracts\Payment\PaymentProcessorContract => $singleProcessorFactory->make(PaymentMethodEnum::BANK_TRANSFER))
+        expect(fn (): PaymentProcessorContract => $singleProcessorFactory->make(PaymentMethodEnum::BANK_TRANSFER))
             ->toThrow(InvalidArgumentException::class);
     });
 

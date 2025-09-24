@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Data\Casts;
 
-use App\Contracts\ProductableContract;
 use App\Contracts\ReviewableContract;
 use App\Data\Admin\Course\CourseListItemData;
 use App\Data\Admin\Course\ShowCourseData;

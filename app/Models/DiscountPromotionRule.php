@@ -24,6 +24,7 @@ final class DiscountPromotionRule extends Model
     {
         return $this->belongsTo(DiscountPromotion::class, 'discount_promotion_id');
     }
+
     /**
      * The attributes that should be cast.
      * The configuration is stored as JSON and will be automatically decoded/encoded.

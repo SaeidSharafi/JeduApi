@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\MediaTagEnum;
 
 describe('GetThumbnailUrlAction', function (): void {
     beforeEach(function (): void {
-        $this->action = new \App\Actions\Admin\GetThumbnailUrlAction();
+        $this->action = new App\Actions\Admin\GetThumbnailUrlAction();
     });
 
     it('returns null when media array is empty', function (): void {

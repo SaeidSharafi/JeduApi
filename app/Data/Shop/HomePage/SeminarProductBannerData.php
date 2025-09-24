@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Shop\HomePage;
 
 use App\Data\Shop\ProductPriceData;
@@ -9,7 +11,7 @@ use App\Models\Product;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
 
-class SeminarProductBannerData extends Data
+final class SeminarProductBannerData extends Data
 {
     public function __construct(
         public int $id,
@@ -26,16 +28,15 @@ class SeminarProductBannerData extends Data
         public ProductableEnum $product_type,
         public ?string $thumbnail_url,
         public ?string $teacher_name,
-        public ?int $reviews_count = 0,
-        public ?float $average_rating = 0.0,
-        public ?string $start_date = null,
-        public ?string $end_date = null,
-        public ?string $location = null,
-        public ?string $registration_deadline = null,
+        public ?int $reviews_count,
+        public ?float $average_rating,
+        public ?string $start_date,
+        public ?string $end_date,
+        public ?string $location,
+        public ?string $registration_deadline,
         public ProductPriceData $price_data,
 
-    ) {
-    }
+    ) {}
 
     public static function fromModel(Product $product, ProductPriceData $priceData): self
     {
@@ -51,10 +52,10 @@ class SeminarProductBannerData extends Data
             is_free: ($priceData?->min_price ?? 0) <= 0,
             is_featured: $product->is_featured,
             product_type: ProductableEnum::from($product->productable_type),
-            thumbnail_url: $product->productable->thumbnail_url ?? null,
+            thumbnail_url: $product->productable->thumbnail_url       ?? null,
             teacher_name: $entity->productable?->default_teacher_info ?? '',
-            reviews_count: $product->reviews_count ?? 0,
-            average_rating: $product->average_rating ?? 0.0,
+            reviews_count: $product->reviews_count                    ?? 0,
+            average_rating: $product->average_rating                  ?? 0.0,
             start_date: data_get($product, 'details_json.start_date') ? verta(data_get($product,
                 'details_json.start_date'))->format('Y-m-d H:i:s') : null,
             end_date: data_get($product, 'details_json.end_date') ? verta(data_get($product,

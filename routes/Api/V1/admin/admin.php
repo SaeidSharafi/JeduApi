@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\Admin\AdviceRequest\AdviceRequestController;
 use App\Http\Controllers\Api\Admin\AdviceRequest\AdviceRequestUpdateStatusController;
-
 use App\Http\Controllers\Api\Admin\PermissionController;
 use App\Http\Controllers\Api\Admin\Review\ApproveReviewController;
 use App\Http\Controllers\Api\Admin\Review\RejectReviewController;
@@ -16,7 +15,6 @@ use App\Http\Controllers\Api\Admin\TeacherController;
 use App\Http\Controllers\Api\Admin\TermController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\VendorController;
-
 
 require __DIR__.'/blog.php';
 require __DIR__.'/catalog.php';

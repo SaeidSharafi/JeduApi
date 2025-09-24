@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Admin\Blog;
 
 use App\Actions\Admin\Blog\Category\CreateBlogCategoryAction;
-use App\Actions\Admin\Blog\Category\UpdateBlogCategoryAction;
 use App\Actions\Admin\Blog\Category\DeleteBlogCategoryAction;
+use App\Actions\Admin\Blog\Category\UpdateBlogCategoryAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Blog\Category\BlogCategoryCreateData;
-use App\Data\Admin\Blog\Category\BlogCategoryUpdateData;
 use App\Data\Admin\Blog\Category\BlogCategoryData;
+use App\Data\Admin\Blog\Category\BlogCategoryUpdateData;
 use App\Http\Controllers\Controller;
 use App\Models\Blog\BlogCategory;
 use Illuminate\Support\Facades\Gate;
@@ -23,7 +23,6 @@ use Spatie\QueryBuilder\QueryBuilder;
  */
 final class BlogCategoryController extends Controller
 {
-
     /**
      * List Blog Categories
      *
@@ -45,8 +44,8 @@ final class BlogCategoryController extends Controller
             ->withCount('posts')
             ->with('media')
             ->paginate(request()->integer('per_page', 15))
-            ->withQueryString()
-        ;
+            ->withQueryString();
+
         return response()->success(BlogCategoryData::collect($categories));
     }
 
@@ -54,12 +53,12 @@ final class BlogCategoryController extends Controller
      * Get Blog Category
      *
      * Display the specified blog category.
-     *
      */
     public function show(BlogCategory $category): ApiResponseInterface
     {
         Gate::authorize('view', $category);
         $category->load('media');
+
         return response()->success(BlogCategoryData::fromModel($category));
     }
 
@@ -67,13 +66,13 @@ final class BlogCategoryController extends Controller
      * Create Blog Category
      *
      * Store a newly created blog category in storage.
-     *
      */
     public function store(BlogCategoryCreateData $data, CreateBlogCategoryAction $action): ApiResponseInterface
     {
         Gate::authorize('create', BlogCategory::class);
         $category = $action->handle($data);
         $category->load('media');
+
         return response()->created(BlogCategoryData::fromModel($category), model: BlogCategory::class);
     }
 
@@ -81,13 +80,13 @@ final class BlogCategoryController extends Controller
      * Update Blog Category
      *
      * Update the specified blog category in storage.
-     *
      */
     public function update(BlogCategory $category, BlogCategoryUpdateData $data, UpdateBlogCategoryAction $action): ApiResponseInterface
     {
         Gate::authorize('update', $category);
         $category = $action->handle($category, $data);
         $category->load('media');
+
         return response()->updated(BlogCategoryData::fromModel($category), model: $category);
     }
 
@@ -95,12 +94,12 @@ final class BlogCategoryController extends Controller
      * Delete Blog Category
      *
      * Remove the specified blog category from storage.
-     *
      */
     public function destroy(BlogCategory $category, DeleteBlogCategoryAction $action): ApiResponseInterface
     {
         Gate::authorize('delete', $category);
         $action->handle($category);
+
         return response()->success();
     }
 }

@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 it('to array', function (): void {
-    $contactUsRequest = \App\Models\ContactUsRequest::factory()->create([
+    $contactUsRequest = App\Models\ContactUsRequest::factory()->create([
         'full_name' => 'John Doe',
         'phone'     => '1234567890',
         'subject'   => 'Test Subject',

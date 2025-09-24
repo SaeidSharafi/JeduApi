@@ -276,11 +276,11 @@ final class GenerateComplianceReportAction
         })->count();
 
         // Calculate risk percentages
-        $highAmountPercentage    = $totalTransactions > 0 ? ($highAmountTransactions / $totalTransactions)   * 100 : 0;
-        $offHoursPercentage      = $totalTransactions > 0 ? ($offHoursTransactions / $totalTransactions)       * 100 : 0;
-        $highRiskPercentage      = $totalTransactions > 0 ? ($highRiskTransactions / $totalTransactions)       * 100 : 0;
+        $highAmountPercentage    = $totalTransactions > 0 ? ($highAmountTransactions / $totalTransactions)  * 100 : 0;
+        $offHoursPercentage      = $totalTransactions > 0 ? ($offHoursTransactions / $totalTransactions)    * 100 : 0;
+        $highRiskPercentage      = $totalTransactions > 0 ? ($highRiskTransactions / $totalTransactions)    * 100 : 0;
         $roundNumberPercentage   = $totalTransactions > 0 ? ($roundNumberTransactions / $totalTransactions) * 100 : 0;
-        $highRiskAdminPercentage = $totalAdminActions > 0 ? ($highRiskAdminActions / $totalAdminActions)  * 100 : 0;
+        $highRiskAdminPercentage = $totalAdminActions > 0 ? ($highRiskAdminActions / $totalAdminActions)    * 100 : 0;
         $failedAdminPercentage   = $totalAdminActions > 0 ? ($failedAdminActions / $totalAdminActions)      * 100 : 0;
 
         return [

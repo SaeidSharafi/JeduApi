@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Listeners;
 
 use App\Enums\MorphTypeEnum;
@@ -10,7 +12,7 @@ use App\Traits\HasReview;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
-class RecalculateReviewableAggregates implements ShouldQueue
+final class RecalculateReviewableAggregates implements ShouldQueue
 {
     use InteractsWithQueue;
 
@@ -28,9 +30,9 @@ class RecalculateReviewableAggregates implements ShouldQueue
     public function handle(ReviewableAggregatesChanged $event): void
     {
         $reviewableModel = MorphTypeEnum::from($event->reviewableType)->getModelClass();
-        $reviewable = $reviewableModel::find($event->reviewableId);
+        $reviewable      = $reviewableModel::find($event->reviewableId);
 
-        if (!$reviewable || ! in_array(HasReview::class, class_uses($reviewable))) {
+        if (! $reviewable || ! in_array(HasReview::class, class_uses($reviewable))) {
             return;
         }
 
@@ -41,7 +43,7 @@ class RecalculateReviewableAggregates implements ShouldQueue
             ->first();
 
         $reviewable->updateQuietly([
-            'review_count' => $stats->count ?? 0,
+            'review_count'   => $stats->count      ?? 0,
             'average_rating' => $stats->avg_rating ?? 0.00,
         ]);
     }

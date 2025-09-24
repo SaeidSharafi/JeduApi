@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class ProductDeliveryOptionDiscountPrice extends Model
 {
     use HasFactory;
+
     /**
      * The primary key is not an auto-incrementing integer.
      */

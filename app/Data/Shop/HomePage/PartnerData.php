@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\HomePage;
 
-use App\Data\Admin\MediaData;
 use Spatie\LaravelData\Data;
-use App\Enums\PartnerShowInEnum;
 
 final class PartnerData extends Data
 {

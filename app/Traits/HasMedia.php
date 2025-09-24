@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace App\Traits;
 
 use App\Data\Admin\MediaData;
-use App\Data\Admin\PrivateFileData;
 use App\Enums\MediaTagEnum;
-use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Plank\Mediable\Media;
 
 trait HasMedia
@@ -31,7 +28,7 @@ trait HasMedia
             $media = [];
             foreach ($tags as $tag) {
                 $media[$tag->value] = $this->getMedia($tag)
-                    ->map(fn(Media $m): MediaData => MediaData::fromModel($m, $tag->value))
+                    ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag->value))
                     ->toArray();
             }
 
@@ -43,17 +40,17 @@ trait HasMedia
 
     public function getCoverMedia(bool $first = false): null|MediaData|array
     {
-        if (!$this->relationLoaded('media')) {
+        if (! $this->relationLoaded('media')) {
             return [];
         }
         if ($first) {
             return $this->getMedia(MediaTagEnum::COVER->value)
-                ->map(fn(Media $m): MediaData => MediaData::fromModel($m, MediaTagEnum::COVER->value))
+                ->map(fn (Media $m): MediaData => MediaData::fromModel($m, MediaTagEnum::COVER->value))
                 ->first();
         }
 
         return $this->getMedia(MediaTagEnum::COVER->value)
-            ->map(fn(Media $m): MediaData => MediaData::fromModel($m, MediaTagEnum::COVER->value))
+            ->map(fn (Media $m): MediaData => MediaData::fromModel($m, MediaTagEnum::COVER->value))
             ->toArray();
     }
 

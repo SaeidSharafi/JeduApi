@@ -6,17 +6,14 @@ namespace App\Actions\Admin\Course;
 
 use App\Actions\Admin\GetThumbnailUrlAction;
 use App\Data\Admin\Course\CreateCourseData;
-use App\Enums\MediaTagEnum;
 use App\Models\Course;
 use Illuminate\Support\Facades\DB;
 
 final readonly class CreateCourseAction
 {
     public function __construct(
-        protected GetThumbnailUrlAction $thumbnailUrlAction
-    )
-    {
-    }
+        private GetThumbnailUrlAction $thumbnailUrlAction
+    ) {}
 
     /**
      * Execute the action.
@@ -24,11 +21,11 @@ final readonly class CreateCourseAction
     public function handle(CreateCourseData $data): void
     {
         DB::transaction(function () use ($data): void {
-            $mediaToAttach = $data->media ?? [];
-            $categoriesToAttach = $data->categories ?? [];
+            $mediaToAttach       = $data->media          ?? [];
+            $categoriesToAttach  = $data->categories     ?? [];
             $digitalAssetsAttach = $data->digital_assets ?? [];
 
-            $valdiatedData = $data->except('media', 'categories', 'digital_assets')->all();
+            $valdiatedData                  = $data->except('media', 'categories', 'digital_assets')->all();
             $valdiatedData['thumbnail_url'] = $this->thumbnailUrlAction->handle($mediaToAttach);
 
             $course = Course::query()->create($valdiatedData);

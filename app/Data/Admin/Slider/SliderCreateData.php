@@ -18,10 +18,9 @@ final class SliderCreateData extends Data
         public int $image,
         public ?string $link,
         public int $order,
-    ) {
-    }
+    ) {}
 
-    public static function rules(ValidationContext $context = null): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'title'   => ['required', 'string', 'max:255'],

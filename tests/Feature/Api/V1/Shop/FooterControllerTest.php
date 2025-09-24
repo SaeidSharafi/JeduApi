@@ -1,6 +1,7 @@
 <?php
-describe('FooterController', function () {
 
+declare(strict_types=1);
+describe('FooterController', function () {
 
     it('retrieves footer settings successfully', function () {
         // Simulate a GET request to the footer endpoint

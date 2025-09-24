@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Enums\DynamicListEntityTypeEnum;
@@ -8,10 +10,11 @@ use App\Enums\HomePageBlockTypeEnum;
 use App\Models\HomePageBlock;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
+use InvalidArgumentException;
 use Plank\Mediable\Media;
 
 /** @mixin Factory<HomePageBlock> */
-class HomePageBlockFactory extends Factory
+final class HomePageBlockFactory extends Factory
 {
     protected $model = HomePageBlock::class;
 
@@ -31,36 +34,37 @@ class HomePageBlockFactory extends Factory
 
     public function banner(?Media $image = null): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'type'    => HomePageBlockTypeEnum::BANNER,
             'content' => [
-                'action'      => 'https://example.com',
-                'action_title'=> 'Click Here',
-                'content'     => 'This is a banner',
-                'preset'      => 'default',
-                'image_id'    => $image?->id,
-                'image_url'   => $image?->getUrl(),
+                'action'       => 'https://example.com',
+                'action_title' => 'Click Here',
+                'content'      => 'This is a banner',
+                'preset'       => 'default',
+                'image_id'     => $image?->id,
+                'image_url'    => $image?->getUrl(),
             ],
         ]);
     }
 
-    public function curatedList(array $itemsIds = [],HomePageBlockTypeEnum $typeEnum = HomePageBlockTypeEnum::CURATED_LIST): static
+    public function curatedList(array $itemsIds = [], HomePageBlockTypeEnum $typeEnum = HomePageBlockTypeEnum::CURATED_LIST): static
     {
         if ($typeEnum !== HomePageBlockTypeEnum::CURATED_LIST && $typeEnum !== HomePageBlockTypeEnum::MAIN_CATEGORIES) {
-            throw new \InvalidArgumentException('Type must be CURATED_LIST or MAIN_CATEGORIES');
+            throw new InvalidArgumentException('Type must be CURATED_LIST or MAIN_CATEGORIES');
         }
-        return $this->state(fn(array $attributes) => [
+
+        return $this->state(fn (array $attributes) => [
             'type'    => $typeEnum,
             'content' => [
                 'items'  => $itemsIds ?: [1, 2, 3],
                 'preset' => 'default',
-            ]
+            ],
         ]);
     }
 
     public function webinarBanner(?Media $image = null, ?int $productId = null): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'type'    => HomePageBlockTypeEnum::WEBINAR_BANNER,
             'content' => [
                 'product_id' => $productId,
@@ -76,7 +80,7 @@ class HomePageBlockFactory extends Factory
         int $limit = 10,
         ?array $categoryIds = null): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'type'    => HomePageBlockTypeEnum::DYNAMIC_LIST,
             'content' => [
                 'entity_type'  => $entityType->value,
@@ -87,6 +91,4 @@ class HomePageBlockFactory extends Factory
             ],
         ]);
     }
-
-
 }

@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Models\CollaborationRequest;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
-class CollaborationRequestFactory extends Factory
+final class CollaborationRequestFactory extends Factory
 {
     protected $model = CollaborationRequest::class;
 

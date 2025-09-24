@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     use App\Traits\HasMetaTagsMigration;
+
     public function up(): void
     {
         Schema::create('blog_posts', function (Blueprint $table) {
@@ -15,7 +19,7 @@ return new class extends Migration {
             $table->longText('body');
             $table->text('excerpt');
             $table->foreignId('author_id')->nullable()->constrained('staff', 'id')->nullOnDelete();
-            $table->string('status')->index()->default(\App\Enums\PublicationStatusEnum::DRAFT->value);
+            $table->string('status')->index()->default(App\Enums\PublicationStatusEnum::DRAFT->value);
             $table->timestamp('published_at')->nullable();
             $table->integer('read_time_minutes');
             $table->boolean('is_featured')->default(false);

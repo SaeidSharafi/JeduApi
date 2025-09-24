@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Actions\Admin\Review\UpdateReviewStatusAction;
 use App\Enums\MorphTypeEnum;
 use App\Enums\ReviewStatusEnum;
@@ -7,25 +9,25 @@ use App\Events\ReviewableAggregatesChanged;
 use App\Models\Course;
 use App\Models\Review;
 
-describe('RecalculateReviewableAggregates', function (){
+describe('RecalculateReviewableAggregates', function () {
     it('recalculates aggregates when a review is approved', function () {
         $course = Course::factory()->create([
-            'review_count' => 0,
+            'review_count'   => 0,
             'average_rating' => 0.0,
         ]);
 
         Review::factory()->create([
-            'reviewable_id' => $course->id,
+            'reviewable_id'   => $course->id,
             'reviewable_type' => MorphTypeEnum::COURSE->value,
-            'rating' => 4,
-            'status' => ReviewStatusEnum::PENDING,
+            'rating'          => 4,
+            'status'          => ReviewStatusEnum::PENDING,
         ]);
 
         Review::factory()->create([
-            'reviewable_id' => $course->id,
+            'reviewable_id'   => $course->id,
             'reviewable_type' => MorphTypeEnum::COURSE->value,
-            'rating' => 5,
-            'status' => ReviewStatusEnum::PENDING,
+            'rating'          => 5,
+            'status'          => ReviewStatusEnum::PENDING,
         ]);
 
         $reviewToApprove = Review::where('reviewable_id', $course->id)
@@ -55,22 +57,22 @@ describe('RecalculateReviewableAggregates', function (){
 
     it('recalculates aggregates for BlogPost', function () {
         $course = Course::factory()->create([
-            'review_count' => 0,
+            'review_count'   => 0,
             'average_rating' => 0.0,
         ]);
 
         Review::factory()->create([
-            'reviewable_id' => $course->id,
+            'reviewable_id'   => $course->id,
             'reviewable_type' => MorphTypeEnum::COURSE->value,
-            'rating' => 3,
-            'status' => ReviewStatusEnum::APPROVED,
+            'rating'          => 3,
+            'status'          => ReviewStatusEnum::APPROVED,
         ]);
 
         Review::factory()->create([
-            'reviewable_id' => $course->id,
+            'reviewable_id'   => $course->id,
             'reviewable_type' => MorphTypeEnum::COURSE->value,
-            'rating' => 5,
-            'status' => ReviewStatusEnum::APPROVED,
+            'rating'          => 5,
+            'status'          => ReviewStatusEnum::APPROVED,
         ]);
 
         ReviewableAggregatesChanged::dispatch($course->id, MorphTypeEnum::COURSE->value, 1);

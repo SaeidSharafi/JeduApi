@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 final class Categorizable extends Model
 {
     public $timestamps = false;
+
     protected $table = 'categorizables';
 
     protected $fillable = [

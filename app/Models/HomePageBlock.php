@@ -8,12 +8,11 @@ use App\Enums\HomePageBlockTypeEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Plank\Mediable\Mediable;
-use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 
-class HomePageBlock extends Model
+final class HomePageBlock extends Model
 {
-    use Mediable;
     use HasFactory;
+    use Mediable;
 
     protected $fillable = [
         'type',
@@ -27,9 +26,9 @@ class HomePageBlock extends Model
     protected function casts(): array
     {
         return [
-            'type' => HomePageBlockTypeEnum::class,
-            'content' => 'array',
-            'order' => 'integer',
+            'type'      => HomePageBlockTypeEnum::class,
+            'content'   => 'array',
+            'order'     => 'integer',
             'is_active' => 'boolean',
         ];
     }
