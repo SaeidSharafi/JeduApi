@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Data\Admin\Settings\ContactInfoData;
+use App\Data\Admin\Settings\FooterData;
 use App\Data\Admin\Settings\HeaderData;
 use App\Models\Setting;
 use Illuminate\Database\Seeder;
@@ -22,25 +23,7 @@ final class SettingsSeeder extends Seeder
         Setting::setValue('header', HeaderData::getDefaults(), 'json', 'header');
 
         // Footer Settings (placeholder)
-        Setting::setValue('footer', [
-            'logo'                  => null,
-            'caption'               => 'شریک شما در آموزش مدرن',
-            'support_link'          => '/contact-us',
-            'support_email_address' => 'support@jedu.ir',
-            'addresses'             => ContactInfoData::getDefaults()['addresses'],
-            'categories'            => ['دوره‌ها', 'معماری', 'آموزش صنعتی', 'زبان‌های خارجی'],
-            'main_links'            => [
-                ['title' => 'درباره ما', 'link' => '/about-us'],
-                ['title' => 'وبلاگ', 'link' => '/blog'],
-                ['title' => 'تماس با ما', 'link' => '/contact-us'],
-                ['title' => 'قوانین', 'link' => '/rules'],
-            ],
-            'social_media_links' => ContactInfoData::getDefaults()['social_media_links'],
-            'certifications'     => [
-                ['name' => 'اینماد', 'image' => null],
-                ['name' => 'ساماندهی', 'image' => null],
-            ],
-        ], 'json', 'footer');
+        Setting::setValue('footer', FooterData::getDefaults(), 'json', 'footer');
 
         // About Us Settings (placeholder)
         Setting::setValue('about_us', [

@@ -10,6 +10,7 @@ use App\Data\Admin\Settings\FooterData;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
+use Plank\Mediable\Media;
 
 /**
  * @group Admin - Settings Management
@@ -42,7 +43,16 @@ final class FooterController extends Controller
     {
         Gate::authorize('update', Setting::class);
 
-        Setting::setValue('footer', $data->toArray(), 'json', 'footer');
+        $logo = null;
+        $validated = $data->toArray();
+        if ($data->logo !== null) {
+            $logo = Media::find($data->logo);
+        }
+        $validated['logo_url'] = $logo?->getUrl() ?? null;
+        $validated['logo_alt'] = $logo?->alt ?? null;
+
+        $setting = Setting::setValue('footer', $validated, 'json', 'footer');
+        $setting->syncMedia($logo,'logo');
         $footer = Setting::getValue('footer');
 
         return response()->success(
