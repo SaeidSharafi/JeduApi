@@ -109,7 +109,7 @@ test('blogPosts relation', function (): void {
         ->toHaveCount(3);
 });
 
-test('with reviews', function () {
+test('with reviews', function (): void {
     $course = App\Models\Course::factory()->create();
     $user   = App\Models\User::factory()->create();
     $review = App\Models\Review::factory()->create([

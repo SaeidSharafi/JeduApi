@@ -5,9 +5,9 @@ declare(strict_types=1);
 use App\Enums\PartnerShowInEnum;
 use App\Models\Partner;
 
-describe('PartnerController', function () {
+describe('PartnerController', function (): void {
 
-    it('can fetch partners', function () {
+    it('can fetch partners', function (): void {
         Partner::factory(10)
             ->create(
                 ['is_active' => true]
@@ -28,7 +28,7 @@ describe('PartnerController', function () {
         $this->assertCount(10, $response->json('data'));
     });
 
-    it('can fetch partners filtered by show_in', function () {
+    it('can fetch partners filtered by show_in', function (): void {
         Partner::factory(5)
             ->create(
                 [

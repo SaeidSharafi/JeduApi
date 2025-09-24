@@ -9,8 +9,8 @@ use App\Events\ReviewableAggregatesChanged;
 use App\Models\Course;
 use App\Models\Review;
 
-describe('RecalculateReviewableAggregates', function () {
-    it('recalculates aggregates when a review is approved', function () {
+describe('RecalculateReviewableAggregates', function (): void {
+    it('recalculates aggregates when a review is approved', function (): void {
         $course = Course::factory()->create([
             'review_count'   => 0,
             'average_rating' => 0.0,
@@ -55,7 +55,7 @@ describe('RecalculateReviewableAggregates', function () {
             ->and($course->average_rating)->toEqual(4.5);
     });
 
-    it('recalculates aggregates for BlogPost', function () {
+    it('recalculates aggregates for BlogPost', function (): void {
         $course = Course::factory()->create([
             'review_count'   => 0,
             'average_rating' => 0.0,
@@ -82,7 +82,7 @@ describe('RecalculateReviewableAggregates', function () {
         expect($course->review_count)->toBe(2)
             ->and($course->average_rating)->toEqual(4.0);
     });
-    it('does not recalculate aggregates for non-existent reviewable', function () {
+    it('does not recalculate aggregates for non-existent reviewable', function (): void {
         ReviewableAggregatesChanged::dispatch(9999, MorphTypeEnum::COURSE->value, 1);
 
         expect(true)->toBeTrue();

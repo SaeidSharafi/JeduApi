@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Plank\Mediable\Facades\MediaUploader;
 use SmartCache\Facades\SmartCache;
 
-test('it retrieves an existing setting from the database', function () {
+test('it retrieves an existing setting from the database', function (): void {
     // Arrange: Create a setting in our fresh, empty database.
     Setting::factory()->create([
         'key'   => 'site_name',
@@ -27,7 +27,7 @@ test('it retrieves an existing setting from the database', function () {
     expect($value)->toBe(['name' => 'Jedu Platform']);
 });
 
-test('it returns a default value when a setting does not exist', function () {
+test('it returns a default value when a setting does not exist', function (): void {
     // Arrange: The database is empty.
     $service = new SettingsService();
 
@@ -38,7 +38,7 @@ test('it returns a default value when a setting does not exist', function () {
     expect($value)->toBe(['default' => 'value']);
 });
 
-test('it hits the database only once and then uses the cache', function () {
+test('it hits the database only once and then uses the cache', function (): void {
     // This entire test runs with its own fresh, empty cache and database.
 
     // Arrange
@@ -57,13 +57,13 @@ test('it hits the database only once and then uses the cache', function () {
 
     // Assert 2: We prove it used the cache because only ONE query ever ran.
     $queryCount = collect(DB::getQueryLog())->filter(
-        fn ($query) => str_contains($query['query'], 'select * from "settings"')
+        fn ($query): bool => str_contains($query['query'], 'select * from "settings"')
     )->count();
 
     expect($queryCount)->toBe(1);
 });
 
-test('the forget method clears the cache and forces a new database read', function () {
+test('the forget method clears the cache and forces a new database read', function (): void {
     // This test also has its own fresh, empty cache and database.
 
     // Arrange:
@@ -90,13 +90,13 @@ test('the forget method clears the cache and forces a new database read', functi
 
     // Because the cache was gone, the second call to get() MUST have run a query to rebuild it.
     $queryCount = collect(DB::getQueryLog())->filter(
-        fn ($query) => str_contains($query['query'], 'select * from "settings"')
+        fn ($query): bool => str_contains($query['query'], 'select * from "settings"')
     )->count();
 
     expect($queryCount)->toBe(1);
 });
 
-test('it calls the Setting::witImages method for array values', function () {
+test('it calls the Setting::witImages method for array values', function (): void {
     Storage::fake('public');
     $logo = MediaUploader::fromSource(UploadedFile::fake()->image('cover.jpg'))
         ->toDisk('public')

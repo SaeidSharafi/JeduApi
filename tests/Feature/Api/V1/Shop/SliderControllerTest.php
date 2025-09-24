@@ -5,9 +5,9 @@ declare(strict_types=1);
 use App\Enums\PublicationStatusEnum;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 
-describe('SliderController', function () {
+describe('SliderController', function (): void {
 
-    it('can fetch the list of sliders', function () {
+    it('can fetch the list of sliders', function (): void {
         App\Models\Slider::factory()
             ->count(5)
             ->state(new Sequence(
@@ -56,7 +56,7 @@ describe('SliderController', function () {
 
     });
 
-    it('returns an empty array when there are no sliders', function () {
+    it('returns an empty array when there are no sliders', function (): void {
         $response = $this->getJson(route('api.v1.shop.sliders.index'));
 
         $response->assertStatus(200)

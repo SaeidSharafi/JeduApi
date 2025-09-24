@@ -1,9 +1,9 @@
 <?php
 
 declare(strict_types=1);
-describe('FooterController', function () {
+describe('FooterController', function (): void {
 
-    it('retrieves footer settings successfully', function () {
+    it('retrieves footer settings successfully', function (): void {
         // Simulate a GET request to the footer endpoint
         $response = $this->getJson(route('api.v1.shop.footer.index'));
 

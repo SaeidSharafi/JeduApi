@@ -175,7 +175,7 @@ it('validates required fields on update', function (): void {
         ->assertJsonValidationErrors(['title', 'image', 'order']);
 });
 
-it('update slider status', function () {
+it('update slider status', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::SLIDER_UPDATE->value]);
 
     $slider = Slider::factory()->create([

@@ -117,7 +117,7 @@ test('relation blog posts', function (): void {
         ->toEqual($blogPost->id);
 });
 
-test('with reviews', function () {
+test('with reviews', function (): void {
     $seminar = App\Models\Seminar::factory()->create();
     $user    = App\Models\User::factory()->create();
     $review  = App\Models\Review::factory()->create([

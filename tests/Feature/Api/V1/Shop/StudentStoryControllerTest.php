@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use App\Models\StudentStory;
 
-describe('StudentStoryController', function () {
+describe('StudentStoryController', function (): void {
 
-    it('can fetch student stories', function () {
+    it('can fetch student stories', function (): void {
         StudentStory::factory(5)->create(
             ['is_visible' => true]
         );
@@ -32,7 +32,7 @@ describe('StudentStoryController', function () {
         $this->assertCount(5, $response->json('data'));
     });
 
-    it('return student story data correctly', function () {
+    it('return student story data correctly', function (): void {
         $story = StudentStory::factory()->create(
             ['is_visible' => true]
         );
@@ -69,7 +69,7 @@ describe('StudentStoryController', function () {
 
     });
 
-    it('stories are ordered by display_order', function () {
+    it('stories are ordered by display_order', function (): void {
         StudentStory::factory()->create([
             'student_name'  => 'Student One',
             'display_order' => 2,

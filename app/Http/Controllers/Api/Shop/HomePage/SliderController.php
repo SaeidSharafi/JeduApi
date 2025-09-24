@@ -9,6 +9,7 @@ use App\Data\Shop\HomePage\SliderData;
 use App\Enums\CacheKeysEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Slider;
+use Illuminate\Support\Collection;
 use SmartCache\Facades\SmartCache;
 
 /**
@@ -49,7 +50,7 @@ final class SliderController extends Controller
     public function __invoke(): ApiResponseInterface
     {
         $sliders = SmartCache::remember(CacheKeysEnum::Slider->value, CacheKeysEnum::Slider->ttl(),
-            fn () => SliderData::collect(
+            fn(): Collection => SliderData::collect(
                 Slider::query()->active()->orderBy('order')->get()
             )
         );

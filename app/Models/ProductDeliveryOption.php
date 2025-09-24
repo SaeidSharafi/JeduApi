@@ -83,11 +83,11 @@ final class ProductDeliveryOption extends Model
     {
         // available_from and available_to are optional, if they are null, it means the product is always available
         return $query->where('status', PublicationStatusEnum::PUBLISHED)
-            ->where(function (Builder $q) {
+            ->where(function (Builder $q): void {
                 $q->whereNull('available_from')
                     ->orWhere('available_from', '<=', now());
             })
-            ->where(function (Builder $q) {
+            ->where(function (Builder $q): void {
                 $q->whereNull('available_to')
                     ->orWhere('available_to', '>=', now());
             });

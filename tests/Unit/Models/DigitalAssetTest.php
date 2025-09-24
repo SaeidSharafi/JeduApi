@@ -71,7 +71,7 @@ test('relation courses', function (): void {
         ->toHaveCount(3);
 });
 
-test('with reviews', function () {
+test('with reviews', function (): void {
     $digitalAsset = App\Models\DigitalAsset::factory()->create();
     $user1        = App\Models\User::factory()->create();
     $user2        = App\Models\User::factory()->create();

@@ -56,7 +56,7 @@ final class StudentStoryController extends Controller
                     ->orderBy('display_order')
                     ->get();
 
-                return $stories->map(fn ($story) => StudentStoryData::fromModel($story));
+                return $stories->map(fn ($story): \App\Data\Shop\HomePage\StudentStoryData => StudentStoryData::fromModel($story));
             });
 
         return response()->success($stories);
