@@ -27,7 +27,7 @@ final class FooterController extends Controller
     {
         Gate::authorize('viewAny', Setting::class);
 
-        $footer = Setting::get('footer', FooterData::getDefaults());
+        $footer = Setting::getValue('footer', FooterData::getDefaults());
 
         return response()->success(FooterData::from($footer));
     }
@@ -42,8 +42,8 @@ final class FooterController extends Controller
     {
         Gate::authorize('update', Setting::class);
 
-        Setting::set('footer', $data->toArray(), 'json', 'footer');
-        $footer = Setting::get('footer');
+        Setting::setValue('footer', $data->toArray(), 'json', 'footer');
+        $footer = Setting::getValue('footer');
 
         return response()->success(
             FooterData::from($footer),

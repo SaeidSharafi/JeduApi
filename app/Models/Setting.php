@@ -25,7 +25,7 @@ final class Setting extends Model
     /**
      * Get a setting value by key.
      */
-    public static function get(string $key, mixed $default = null): mixed
+    public static function getValue(string $key, mixed $default = null): mixed
     {
         $setting = self::where('key', $key)->first();
         // Make sure we have an array to work with before passing to witImages
@@ -42,7 +42,7 @@ final class Setting extends Model
     /**
      * Set a setting value by key.
      */
-    public static function set(string $key, mixed $value, string $type = 'json', ?string $group = null): static
+    public static function setValue(string $key, mixed $value, string $type = 'json', ?string $group = null): static
     {
         return self::updateOrCreate(
             ['key' => $key],

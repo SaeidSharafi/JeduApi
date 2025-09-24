@@ -16,10 +16,10 @@ final class SettingsSeeder extends Seeder
     public function run(): void
     {
         // Contact Info Settings
-        Setting::set('contact_info', ContactInfoData::getDefaults(), 'json', 'contact');
+        Setting::setValue('contact_info', ContactInfoData::getDefaults(), 'json', 'contact');
 
         // Footer Settings (placeholder)
-        Setting::set('footer', [
+        Setting::setValue('footer', [
             'logo'                  => null,
             'caption'               => 'شریک شما در آموزش مدرن',
             'support_link'          => '/contact-us',
@@ -40,7 +40,7 @@ final class SettingsSeeder extends Seeder
         ], 'json', 'footer');
 
         // About Us Settings (placeholder)
-        Setting::set('about_us', [
+        Setting::setValue('about_us', [
             'title'      => 'درباره جدویار',
             'main_block' => [
                 'title'   => 'جدویار، مرکز آموزش‌های تخصصی و مهارتی',
@@ -104,15 +104,15 @@ final class SettingsSeeder extends Seeder
         ], 'json', 'about');
 
         // Rules Settings (placeholder)
-        Setting::set('rules', [
+        Setting::setValue('rules', [
             'text' => '<h1>قوانین و مقررات</h1><p>این بخش شامل قوانین و مقررات استفاده از سایت است.</p>',
         ], 'json', 'rules');
 
         // Sliders Settings (placeholder)
-        Setting::set('sliders', [], 'json', 'homepage');
+        Setting::setValue('sliders', [], 'json', 'homepage');
 
         // Home Page Settings (placeholder)
-        Setting::set('home_page_blocks', [
+        Setting::setValue('home_page_blocks', [
             'main_categories'          => [],
             'banners'                  => [],
             'curated_lists'            => [],

@@ -27,7 +27,7 @@ final class HeaderController extends Controller
     {
         Gate::authorize('viewAny', Setting::class);
 
-        $header = Setting::get('header', HeaderData::getDefaults());
+        $header = Setting::getValue('header', HeaderData::getDefaults());
 
         return response()->success(HeaderData::from($header));
     }
@@ -42,8 +42,8 @@ final class HeaderController extends Controller
     {
         Gate::authorize('update', Setting::class);
 
-        Setting::set('header', $data->toArray(), 'json', 'header');
-        $header = Setting::get('header');
+        Setting::setValue('header', $data->toArray(), 'json', 'header');
+        $header = Setting::getValue('header');
         $links = $header['navigation_links'] ?? [];
         // Sort links by 'order' key
         usort($links, fn ($a, $b): int => ($a['order'] ?? 0) <=> ($b['order'] ?? 0));
