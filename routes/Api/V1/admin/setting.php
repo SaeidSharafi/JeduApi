@@ -31,8 +31,8 @@ Route::prefix('settings')->name('settings.')->group(function (): void {
     Route::put('header', [HeaderController::class, 'update'])
         ->name('header.update');
     Route::apiResource('slider', SliderController::class);
-    Route::patch('slider/{slider}/staus',  UpdateSliderStatusController::class)
-        ->name('slider.staus');
+    Route::patch('slider/{slider}/status',  UpdateSliderStatusController::class)
+        ->name('slider.status');
     Route::apiResource('partner', PartnerController::class);
     Route::apiResource('home-page-block', HomePageBlockController::class);
 
