@@ -16,15 +16,17 @@ describe('GenerateComplianceReportAction', function (): void {
 
     beforeEach(function (): void {
         $this->action   = new GenerateComplianceReportAction();
-        $this->dateFrom = verta()->subWeek()->format('Y-m-d');
-        $this->dateTo   = verta()->format('Y-m-d');
+        $this->dateFromJalali = verta()->subWeek()->format('Y-m-d');
+        $this->dateToJalali   = verta()->format('Y-m-d');
+        $this->dateFromCarbon = Carbon::now()->subWeek()->toImmutable();
+        $this->dateToCarbon   = Carbon::now()->toImmutable();
     });
 
     describe('execute method', function (): void {
         it('generates basic report structure', function (): void {
             $data = ComplianceReportRequestData::from([
-                'date_from'                    => $this->dateFrom,
-                'date_to'                      => $this->dateTo,
+                'date_from'                    => $this->dateFromJalali,
+                'date_to'                      => $this->dateToJalali,
                 'report_type'                  => 'custom',
                 'include_transaction_analysis' => false,
                 'include_admin_activity'       => false,
@@ -38,29 +40,29 @@ describe('GenerateComplianceReportAction', function (): void {
                 'report_period',
                 'summary',
                 'transaction_analysis',
-            ]);
+            ])
+                ->and($result['report_period'])->toHaveKeys(['from', 'to', 'type'])
+                ->and($result['report_period']['type'])->toBe('custom');
 
-            expect($result['report_period'])->toHaveKeys(['from', 'to', 'type']);
-            expect($result['report_period']['type'])->toBe('custom');
         });
 
         it('includes transaction analysis when requested', function (): void {
             $data = ComplianceReportRequestData::from([
-                'date_from'                    => $this->dateFrom,
-                'date_to'                      => $this->dateTo,
+                'date_from'                    => $this->dateFromJalali,
+                'date_to'                      => $this->dateToJalali,
                 'include_transaction_analysis' => true,
             ]);
 
             $result = $this->action->execute($data);
 
-            expect($result)->toHaveKey('report_sections');
-            expect($result['report_sections'])->toHaveKey('transaction_analysis');
+            expect($result)->toHaveKey('report_sections')
+                ->and($result['report_sections'])->toHaveKey('transaction_analysis');
         });
 
         it('includes admin activity when requested', function (): void {
             $data = ComplianceReportRequestData::from([
-                'date_from'              => $this->dateFrom,
-                'date_to'                => $this->dateTo,
+                'date_from'              => $this->dateFromJalali,
+                'date_to'                => $this->dateToJalali,
                 'include_admin_activity' => true,
             ]);
 
@@ -71,8 +73,8 @@ describe('GenerateComplianceReportAction', function (): void {
 
         it('includes suspicious activity when requested', function (): void {
             $data = ComplianceReportRequestData::from([
-                'date_from'                   => $this->dateFrom,
-                'date_to'                     => $this->dateTo,
+                'date_from'                   => $this->dateFromJalali,
+                'date_to'                     => $this->dateToJalali,
                 'include_suspicious_activity' => true,
             ]);
 
@@ -83,8 +85,8 @@ describe('GenerateComplianceReportAction', function (): void {
 
         it('includes risk assessment when requested', function (): void {
             $data = ComplianceReportRequestData::from([
-                'date_from'               => $this->dateFrom,
-                'date_to'                 => $this->dateTo,
+                'date_from'               => $this->dateFromJalali,
+                'date_to'                 => $this->dateToJalali,
                 'include_risk_assessment' => true,
             ]);
 
@@ -95,8 +97,8 @@ describe('GenerateComplianceReportAction', function (): void {
 
         it('includes daily breakdown for daily report type', function (): void {
             $data = ComplianceReportRequestData::from([
-                'date_from'   => $this->dateFrom,
-                'date_to'     => $this->dateTo,
+                'date_from'   => $this->dateFromJalali,
+                'date_to'     => $this->dateToJalali,
                 'report_type' => 'daily',
             ]);
 
@@ -107,8 +109,8 @@ describe('GenerateComplianceReportAction', function (): void {
 
         it('does not include daily breakdown for non-daily report types', function (): void {
             $data = ComplianceReportRequestData::from([
-                'date_from'   => $this->dateFrom,
-                'date_to'     => $this->dateTo,
+                'date_from'   => $this->dateFromJalali,
+                'date_to'     => $this->dateToJalali,
                 'report_type' => 'monthly',
             ]);
 
@@ -138,8 +140,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to'   => $this->dateTo,
+                'date_from' => $this->dateFromJalali,
+                'date_to'   => $this->dateToJalali,
                 'user_ids'  => [$user1->id],
             ]);
 
@@ -162,8 +164,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'         => $this->dateFrom,
-                'date_to'           => $this->dateTo,
+                'date_from'         => $this->dateFromJalali,
+                'date_to'           => $this->dateToJalali,
                 'transaction_types' => [TransactionTypeEnum::DEPOSIT],
             ]);
 
@@ -189,8 +191,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'  => $this->dateFrom,
-                'date_to'    => $this->dateTo,
+                'date_from'  => $this->dateFromJalali,
+                'date_to'    => $this->dateToJalali,
                 'min_amount' => 100000,
                 'max_amount' => 200000,
             ]);
@@ -212,8 +214,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'  => $this->dateFrom,
-                'date_to'    => $this->dateTo,
+                'date_from'  => $this->dateFromJalali,
+                'date_to'    => $this->dateToJalali,
                 'min_amount' => 100000,
             ]);
 
@@ -234,8 +236,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'  => $this->dateFrom,
-                'date_to'    => $this->dateTo,
+                'date_from'  => $this->dateFromJalali,
+                'date_to'    => $this->dateToJalali,
                 'max_amount' => 100000,
             ]);
 
@@ -261,8 +263,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from' => $this->dateFrom,
-                'date_to'   => $this->dateTo,
+                'date_from' => $this->dateFromJalali,
+                'date_to'   => $this->dateToJalali,
             ]);
 
             $result  = $this->action->execute($data);
@@ -304,8 +306,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'                    => $this->dateFrom,
-                'date_to'                      => $this->dateTo,
+                'date_from'                    => $this->dateFromJalali,
+                'date_to'                      => $this->dateToJalali,
                 'user_ids'                     => [$user1->id],
                 'include_transaction_analysis' => true,
             ]);
@@ -338,8 +340,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'                    => $this->dateFrom,
-                'date_to'                      => $this->dateTo,
+                'date_from'                    => $this->dateFromJalali,
+                'date_to'                      => $this->dateToJalali,
                 'include_transaction_analysis' => true,
             ]);
 
@@ -380,8 +382,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'              => $this->dateFrom,
-                'date_to'                => $this->dateTo,
+                'date_from'              => $this->dateFromJalali,
+                'date_to'                => $this->dateToJalali,
                 'include_admin_activity' => true,
             ]);
 
@@ -424,8 +426,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'                   => $this->dateFrom,
-                'date_to'                     => $this->dateTo,
+                'date_from'                   => $this->dateFromJalali,
+                'date_to'                     => $this->dateToJalali,
                 'user_ids'                    => [$user1->id],
                 'include_suspicious_activity' => true,
             ]);
@@ -471,8 +473,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'                   => $this->dateFrom,
-                'date_to'                     => $this->dateTo,
+                'date_from'                   => $this->dateFromJalali,
+                'date_to'                     => $this->dateToJalali,
                 'include_suspicious_activity' => true,
             ]);
 
@@ -493,7 +495,7 @@ describe('GenerateComplianceReportAction', function (): void {
             $user2 = User::factory()->create();
 
             // Use a date within our test range
-            $specificDate = Verta::parse($this->dateFrom)->addDays(1)->toCarbon();
+            $specificDate = $this->dateFromCarbon->addDays(1);
 
             WalletTransaction::factory()->create([
                 'user_id'   => $user1->id,
@@ -515,8 +517,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'   => $this->dateFrom,
-                'date_to'     => $this->dateTo,
+                'date_from'   => $this->dateFromJalali,
+                'date_to'     => $this->dateToJalali,
                 'user_ids'    => [$user1->id],
                 'report_type' => 'daily',
             ]);
@@ -534,19 +536,16 @@ describe('GenerateComplianceReportAction', function (): void {
         });
 
         it('covers all days in range', function (): void {
-            $fromDate = Carbon::parse($this->dateFrom);
-            $toDate   = Carbon::parse($this->dateTo);
-
             $data = ComplianceReportRequestData::from([
-                'date_from'   => $this->dateFrom,
-                'date_to'     => $this->dateTo,
+                'date_from'   => $this->dateFromJalali,
+                'date_to'     => $this->dateToJalali,
                 'report_type' => 'daily',
             ]);
 
             $result         = $this->action->execute($data);
             $dailyBreakdown = $result['report_sections']['daily_breakdown'];
 
-            $expectedDays = $fromDate->diffInDays($toDate) + 1;
+            $expectedDays = $this->dateFromCarbon->diffInDays($this->dateToCarbon) + 1;
             expect(count($dailyBreakdown))->toBe((int) $expectedDays);
         });
     });
@@ -583,8 +582,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'               => $this->dateFrom,
-                'date_to'                 => $this->dateTo,
+                'date_from'               => $this->dateFromJalali,
+                'date_to'                 => $this->dateToJalali,
                 'user_ids'                => [$user1->id],
                 'include_risk_assessment' => true,
             ]);
@@ -650,8 +649,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'               => $this->dateFrom,
-                'date_to'                 => $this->dateTo,
+                'date_from'               => $this->dateFromJalali,
+                'date_to'                 => $this->dateToJalali,
                 'include_risk_assessment' => true,
             ]);
 
@@ -719,8 +718,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'               => $this->dateFrom,
-                'date_to'                 => $this->dateTo,
+                'date_from'               => $this->dateFromJalali,
+                'date_to'                 => $this->dateToJalali,
                 'include_risk_assessment' => true,
             ]);
 
@@ -753,8 +752,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'               => $this->dateFrom,
-                'date_to'                 => $this->dateTo,
+                'date_from'               => $this->dateFromJalali,
+                'date_to'                 => $this->dateToJalali,
                 'include_risk_assessment' => true,
             ]);
 
@@ -782,8 +781,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'               => $this->dateFrom,
-                'date_to'                 => $this->dateTo,
+                'date_from'               => $this->dateFromJalali,
+                'date_to'                 => $this->dateToJalali,
                 'include_risk_assessment' => true,
             ]);
 
@@ -819,8 +818,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'               => $this->dateFrom,
-                'date_to'                 => $this->dateTo,
+                'date_from'               => $this->dateFromJalali,
+                'date_to'                 => $this->dateToJalali,
                 'include_risk_assessment' => true,
             ]);
 
@@ -850,8 +849,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'               => $this->dateFrom,
-                'date_to'                 => $this->dateTo,
+                'date_from'               => $this->dateFromJalali,
+                'date_to'                 => $this->dateToJalali,
                 'include_risk_assessment' => true,
             ]);
 
@@ -878,8 +877,8 @@ describe('GenerateComplianceReportAction', function (): void {
             ]);
 
             $data = ComplianceReportRequestData::from([
-                'date_from'               => $this->dateFrom,
-                'date_to'                 => $this->dateTo,
+                'date_from'               => $this->dateFromJalali,
+                'date_to'                 => $this->dateToJalali,
                 'include_risk_assessment' => true,
             ]);
 
@@ -908,8 +907,8 @@ describe('GenerateComplianceReportAction', function (): void {
     describe('edge cases and boundary conditions', function (): void {
         it('handles empty data gracefully', function (): void {
             $data = ComplianceReportRequestData::from([
-                'date_from'                    => $this->dateFrom,
-                'date_to'                      => $this->dateTo,
+                'date_from'                    => $this->dateFromJalali,
+                'date_to'                      => $this->dateToJalali,
                 'include_transaction_analysis' => true,
                 'include_admin_activity'       => true,
                 'include_suspicious_activity'  => true,
