@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\Shop\CMS\AboutUsController;
 use App\Http\Controllers\Api\Shop\HomePage\PartnerController;
 use App\Http\Controllers\Api\Shop\HomePage\SliderController;
 use App\Http\Controllers\Api\Shop\HomePage\StudentStoryController;
@@ -16,5 +17,6 @@ Route::get('home-page-blocks/{homePageBlock}', [HomePageContentController::class
 Route::get('sliders', SliderController::class)->name('sliders.index');
 Route::get('header', HeaderController::class)->name('header.index');
 Route::get('footer', FooterController::class)->name('footer.index');
+Route::get('aboutus', AboutUsController::class)->name('aboutus.show');
 Route::get('partners', PartnerController::class)->name('partners.index');
 Route::get('student-stories', StudentStoryController::class)->name('student-stories.index');
