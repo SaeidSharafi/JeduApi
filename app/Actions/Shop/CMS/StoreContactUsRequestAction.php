@@ -9,9 +9,9 @@ use App\Models\ContactUsRequest;
 
 final class StoreContactUsRequestAction
 {
-    public function handle(ContactUsRequestData $data): ContactUsRequest
+    public function handle(ContactUsRequestData $data): void
     {
-        return ContactUsRequest::create([
+        ContactUsRequest::create([
             'full_name' => $data->full_name,
             'phone'     => $data->phone,
             'subject'   => $data->subject,

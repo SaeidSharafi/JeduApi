@@ -25,7 +25,7 @@ final class ContactUsRequestController extends Controller
      */
     public function __invoke(ContactUsRequestData $data, StoreContactUsRequestAction $action): ApiResponseInterface
     {
-        $contactRequest = $action->handle($data);
-        return response()->success($contactRequest);
+        $action->handle($data);
+        return response()->success(message:__('shop.responses.contact_form_submitted'));
     }
 }

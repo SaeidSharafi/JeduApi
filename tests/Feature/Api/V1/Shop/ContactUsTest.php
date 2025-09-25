@@ -41,7 +41,7 @@ describe('ContactUsRequestController', function () {
 
         // Assert
         $response->assertOk();
-        $response->assertJsonPath('data.full_name', 'John Doe');
+        $response->assertJsonPath('message', __('shop.responses.contact_form_submitted'));
         expect(ContactUsRequest::where('email', 'john@example.com')->exists())->toBeTrue();
     });
 

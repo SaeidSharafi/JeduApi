@@ -15,4 +15,7 @@ return [
         'digital_assets'    => 'Digital Assets',
         'home_page_content' => 'Home Page Content',
     ],
+    'responses' => [
+        'contact_form_submitted' => 'Your message has been successfully sent. We will get back to you as soon as possible.',
+    ],
 ];
