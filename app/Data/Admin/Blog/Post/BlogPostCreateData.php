@@ -179,25 +179,4 @@ final class BlogPostCreateData extends Data
             ],
         ] + self::metaTagBodyParameters();
     }
-
-    /**
-     * Helper for meta tag body parameters for Scribe documentation.
-     */
-    private static function metaTagBodyParameters(): array
-    {
-        return [
-            'meta_title' => [
-                'description' => 'SEO meta title for the blog post.',
-                'example'     => 'Ultimate Guide to Laravel',
-            ],
-            'meta_description' => [
-                'description' => 'SEO meta description for the blog post.',
-                'example'     => 'Learn everything about Laravel in this comprehensive guide.',
-            ],
-            'meta_keywords' => [
-                'description' => 'SEO meta keywords for the blog post.',
-                'example'     => 'laravel,php,guide',
-            ],
-        ];
-    }
 }

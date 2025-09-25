@@ -65,25 +65,4 @@ final class BlogCategoryUpdateData extends Data
             ],
         ] + self::metaTagBodyParameters();
     }
-
-    /**
-     * Helper for meta tag body parameters for Scribe documentation.
-     */
-    private static function metaTagBodyParameters(): array
-    {
-        return [
-            'meta_title' => [
-                'description' => 'SEO meta title for the category.',
-                'example'     => 'Tech News Category',
-            ],
-            'meta_description' => [
-                'description' => 'SEO meta description for the category.',
-                'example'     => 'Stay updated with the latest tech news.',
-            ],
-            'meta_keywords' => [
-                'description' => 'SEO meta keywords for the category.',
-                'example'     => 'tech,news,updates',
-            ],
-        ];
-    }
 }

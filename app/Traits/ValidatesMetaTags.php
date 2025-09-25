@@ -18,6 +18,12 @@ trait ValidatesMetaTags
         ];
     }
 
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+
     protected static function metaTagBodyParameters(): array
     {
         return [
