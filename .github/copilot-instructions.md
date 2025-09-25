@@ -21,10 +21,85 @@ This is the required architecture for the JeduShop API.
 *   **API Contract (Data Transfer Objects):**
     *   **MUST** use `spatie/laravel-data` for **ALL** API requests and responses. **DO NOT USE** Laravel's `Form Requests` or `API Resources`.
     *   Every controller method **MUST** accept a Data class for requests and return a Data class in responses.
-    *   In controllers add the docblock for Scribe API documentation before the class definition.
-    *   For each controller method, add a docblock describing the parameters and responses for Scribe documentation, including `@responseFile` for complex examples.
     *   All Data classes **MUST** be placed in `app/Data/` with proper namespace organization.
     *   Request Data classes **MUST** implement both `rules()` for validation and `bodyParameters()` for Scribe API documentation.
+
+    *   **Controller DocBlocks for Scribe Documentation:**
+        *   Controller docblocks are for high-level organization and description. Scribe automatically reads the request body details from the type-hinted Data class.
+        *   **Class DocBlock:** Every API controller **MUST** have a docblock with `@group` to organize the generated documentation.
+        * if the controller requires authentication, add `@authenticated` to the class docblock.
+        *   **Method DocBlock:** Every method **MUST** have a concise description of its action (e.g., "Create a new product") and follow the response file rules below.
+        *   **`@responseFile` Convention:** The path for the response file is mandatory and **MUST** follow the structure: `storage/responses/<scope>/<resource>/<action>.json`.
+            *   **`<scope>`:** Must be `admin` for admin controllers or `shop` for shop controllers.
+            *   **`<resource>`:** A lowercase folder name matching the controller's resource (e.g., `slider` for `SliderController`, `product` for `ProductController`). Files must not be placed directly in the `<scope>` directory.
+            *   **`<action>.json`:**
+                *   Use `index.json` for methods that return a list or collection of resources (e.g., `index()`).
+                *   Use `show.json` for methods that create, show, or update a single resource (e.g., `store()`, `show()`, `update()`).
+        *   **Delete methods** (e.g., `destroy()`) that return a 204 No Content response **MUST NOT** have a `@responseFile` annotation.
+        *   **The Single Source of Truth Principle:** The request's validation rules and the `bodyParameters()` method in the Laravel Data class are the single source of truth for the request body. Therefore, you **MUST NOT** add `@bodyParam` annotations in the controller's docblock if they have Laravel Data class.
+        * do not include authentication details in the docblocks. Authentication is handled globally.
+        * do not include route binded parameters in the docblocks. Scribe automatically documents them.
+
+        *   **CORRECT (Example for a `store` or `update` method):**
+            ```php
+            <?php
+
+            namespace App\Http\Controllers\Api\V1\Admin\Slider;
+
+            // ...
+
+            /**
+             * @group Slider Management
+             * @subgroup Sliders
+             */
+            final class SliderController
+            {
+                /**
+                 * Create a new Slider.
+                 *
+                 * This endpoint allows an authorized admin to create a new slider.
+                 *
+                 * @responseFile storage/responses/admin/slider/show.json
+                 */
+                public function store(SliderCreateData $data, CreateSliderAction $action): JsonResponse
+                {
+                    // ...
+                }
+            }
+            ```
+
+    *   **Scribe Documentation for Arrays of Objects:**
+        *   Scribe has a known limitation where it cannot automatically infer examples for the sub-fields of an array of objects (e.g., `main_links.*.title`). To ensure documentation is generated correctly, you **MUST** explicitly define the description and example for **EACH** sub-field using the `.*.` syntax within the `bodyParameters()` method.
+
+        *   **INCORRECT (Scribe will fail to generate examples for `title` and `link`):**
+            ```php
+            'main_links' => [
+                'description' => 'An array of main links to display in the footer.',
+                'example' => [
+                    ['title' => 'Home', 'link' => '/home'],
+                    ['title' => 'About Us', 'link' => '/about'],
+                ],
+            ],
+            ```
+
+        *   **CORRECT (Explicitly defines each sub-field for Scribe):**
+            ```php
+            'main_links'            => [
+                'description' => 'An array of main links to display in the footer.',
+                'example'     => [
+                    ['title' => 'Home', 'link' => '/home'],
+                    ['title' => 'About Us', 'link' => '/about'],
+                ],
+            ],
+            'main_links.*.title'    => [
+                'description' => 'The display text for the link.',
+                'example'     => 'Home',
+            ],
+            'main_links.*.link'     => [
+                'description' => 'The URL for the link.',
+                'example'     => '/home',
+            ],
+            ```
 
 *   **Business Logic Separation:**
     *   All business logic **MUST** be placed in Action classes within `app/Actions/`.
