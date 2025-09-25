@@ -28,6 +28,9 @@ abstract class GetFromLaravelDataBase extends Strategy
 
     protected function getRouteValidationRules(Data $data): mixed
     {
+        if (method_exists($data, 'rules')) {
+            return $data::rules();
+        }
         if (method_exists($data, 'getValidationRules')) {
             $properties = get_object_vars($data);
 
