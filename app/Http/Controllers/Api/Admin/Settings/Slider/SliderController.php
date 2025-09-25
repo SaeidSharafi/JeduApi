@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Gate;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
- * @groupAdmin - Settings - Slider
+ * @group Admin - Settings - Slider
  *
  * @authenticated
  *
