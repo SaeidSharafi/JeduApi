@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Forms;
 
-use App\Actions\Shop\CMS\StoreContactUsRequestAction;
+use App\Actions\Shop\Forms\StoreContactUsRequestAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Forms\ContactUsRequestData;
 use App\Http\Controllers\Controller;

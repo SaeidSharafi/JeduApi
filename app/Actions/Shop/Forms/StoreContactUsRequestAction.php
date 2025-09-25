@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Shop\CMS;
+namespace App\Actions\Shop\Forms;
 
 use App\Data\Shop\Forms\ContactUsRequestData;
 use App\Models\ContactUsRequest;
