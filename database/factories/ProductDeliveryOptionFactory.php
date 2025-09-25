@@ -64,7 +64,7 @@ final class ProductDeliveryOptionFactory extends Factory
 
     public function withTeachers(int $maxTeachers = 3, $fixedAmount = false): static
     {
-        return $this->afterCreating(function (ProductDeliveryOption $deliveryOption, $fixedAmount) use ($maxTeachers) {
+        return $this->afterCreating(function (ProductDeliveryOption $deliveryOption,) use ($maxTeachers, $fixedAmount) {
             if (Teacher::count() < 10) {
                 Teacher::factory(15)->create();
             }
