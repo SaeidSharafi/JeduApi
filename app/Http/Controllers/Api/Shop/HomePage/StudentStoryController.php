@@ -19,7 +19,7 @@ use SmartCache\Facades\SmartCache;
 final class StudentStoryController extends Controller
 {
     /**
-     * List Student Stories
+     * Student Stories
      *
      * Returns a list of student stories to be displayed on the home page.
      *
