@@ -1,16 +1,33 @@
 {
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
     "title": "Contact Us",
     "subtitle": "We'd love to hear from you!",
     "main_links": [
-        {"title": "Home", "link": "/"},
-        {"title": "Courses", "link": "/courses"}
+      {
+        "title": "Home",
+        "link": "/"
+      },
+      {
+        "title": "Courses",
+        "link": "/courses"
+      }
     ],
     "social_links": [
-        {"platform": "Telegram", "url": "https://t.me/jedushop"},
-        {"platform": "Instagram", "url": "https://instagram.com/jedushop"}
+      {
+        "platform": "Telegram",
+        "url": "https://t.me/jedushop"
+      },
+      {
+        "platform": "Instagram",
+        "url": "https://instagram.com/jedushop"
+      }
     ],
     "address": "123 Main St, City, Country",
     "phone": "+1234567890",
     "email": "info@jedushop.com",
     "map_embed_url": "https://maps.google.com/?q=jedushop"
+  },
+  "metadata": []
 }
+
