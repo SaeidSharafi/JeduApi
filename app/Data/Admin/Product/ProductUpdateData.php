@@ -26,7 +26,7 @@ final class ProductUpdateData extends Data
         public ?array $details_json
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'vendor_id' => ['required', 'integer', 'exists:vendors,id'],

@@ -29,7 +29,7 @@ final class WalletCampaignCreateData extends Data
         public ?array $metadata
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         $now = verta()->format('Y-m-d');
 
@@ -65,6 +65,57 @@ final class WalletCampaignCreateData extends Data
             'starts_at'            => 'Campaign start date and time.',
             'ends_at'              => 'Campaign end date and time.',
             'metadata'             => 'Additional configuration data for the campaign.',
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'name' => [
+                'description' => 'Campaign name for admin reference.',
+                'example'     => 'Spring Bonus',
+            ],
+            'description' => [
+                'description' => 'Detailed description of the campaign purpose and terms.',
+                'example'     => 'Special bonus for spring season.',
+            ],
+            'type' => [
+                'description' => 'Type of campaign (registration_bonus, birthday_gift, etc.).',
+                'example'     => 'registration_bonus',
+            ],
+            'is_active' => [
+                'description' => 'Whether the campaign is currently active.',
+                'example'     => true,
+            ],
+            'amount' => [
+                'description' => 'Gift amount in rials to be awarded.',
+                'example'     => 50000,
+            ],
+            'usage_limit_total' => [
+                'description' => 'Total number of times this campaign can be used (null for unlimited).',
+                'example'     => 100,
+            ],
+            'usage_limit_per_user' => [
+                'description' => 'Number of times each user can use this campaign (null for unlimited).',
+                'example'     => 1,
+            ],
+            'starts_at' => [
+                'description' => 'Campaign start date and time.',
+                'example'     => '1402-01-01',
+            ],
+            'ends_at' => [
+                'description' => 'Campaign end date and time.',
+                'example'     => '1402-01-30',
+            ],
+            'metadata' => [
+                'description' => 'Additional configuration data for the campaign.',
+                'example'     => ['source' => 'admin_panel'],
+            ],
         ];
     }
 }

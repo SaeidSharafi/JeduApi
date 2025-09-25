@@ -15,7 +15,7 @@ final class CreateRoleData extends Data
         public array $permissions,
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'name'          => ['required', 'string', 'alpha_num', 'max:60', 'unique:roles,name'],
@@ -58,6 +58,10 @@ final class CreateRoleData extends Data
             'permissions' => [
                 'description' => 'An array of permission names that this role has.',
                 'example'     => ['course.view', 'course.create'],
+            ],
+            'permissions.*' => [
+                'description' => 'A permission name.',
+                'example'     => 'course.view',
             ],
         ];
     }

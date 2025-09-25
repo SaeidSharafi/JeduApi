@@ -32,4 +32,43 @@ final class PartnerCreateData extends Data
             'is_active' => ['sometimes', 'boolean'],
         ];
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'title' => [
+                'description' => 'Title of the partner.',
+                'example'     => 'Jedu Academy',
+            ],
+            'caption' => [
+                'description' => 'Short caption for the partner.',
+                'example'     => 'Leading online education provider.',
+            ],
+            'image' => [
+                'description' => 'Media ID for the partner logo.',
+                'example'     => 101,
+            ],
+            'url' => [
+                'description' => 'URL for the partner.',
+                'example'     => 'https://partner.com',
+            ],
+            'show_in' => [
+                'description' => 'Where to show the partner: home or course.',
+                'example'     => 'home',
+            ],
+            'order' => [
+                'description' => 'Display order for the partner.',
+                'example'     => 1,
+            ],
+            'is_active' => [
+                'description' => 'Whether the partner is active.',
+                'example'     => true,
+            ],
+        ];
+    }
 }

@@ -36,7 +36,7 @@ final class UserCreateData extends Data
         public ?string $education_status,
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'phone' => [

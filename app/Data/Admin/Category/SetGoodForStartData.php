@@ -46,12 +46,16 @@ final class SetGoodForStartData extends Data
     public function bodyParameters(): array
     {
         return [
-            'item_ids' => [
-                'description' => 'An array of categorizable pivot table item IDs to update the good_for_start flag for.',
+            'course_ids' => [
+                'description' => 'Array of course IDs to set as good for start.',
                 'example'     => [1, 2, 3],
             ],
+            'course_ids.*' => [
+                'description' => 'A course ID.',
+                'example'     => 1,
+            ],
             'good_for_start' => [
-                'description' => 'The value to set for the good_for_start flag (true or false).',
+                'description' => 'Whether the selected courses are good for start.',
                 'example'     => true,
             ],
         ];

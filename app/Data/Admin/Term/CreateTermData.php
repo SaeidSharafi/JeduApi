@@ -26,7 +26,7 @@ final class CreateTermData extends Data
         public ?Carbon $end_date,
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         $now = verta()->format('Y-m-d');
 
@@ -36,6 +36,37 @@ final class CreateTermData extends Data
             'academic_year' => ['nullable', 'string', 'max:255'],
             'start_date'    => ['nullable', 'jdate:Y-m-d'],
             'end_date'      => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('start_date').',Y-m-d'],
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'name' => [
+                'description' => 'Name of the academic term.',
+                'example'     => 'Spring 1402',
+            ],
+            'status' => [
+                'description' => 'Status of the term.',
+                'example'     => TermStatusEnum::ACTIVE->value,
+            ],
+            'academic_year' => [
+                'description' => 'Academic year for the term.',
+                'example'     => '1402-1403',
+            ],
+            'start_date' => [
+                'description' => 'Start date of the term (Jalali format).',
+                'example'     => '1402-01-01',
+            ],
+            'end_date' => [
+                'description' => 'End date of the term (Jalali format).',
+                'example'     => '1402-04-31',
+            ],
         ];
     }
 }

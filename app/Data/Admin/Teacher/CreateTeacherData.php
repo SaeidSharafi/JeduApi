@@ -26,7 +26,7 @@ final class CreateTeacherData extends Data
         public array $media,
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'first_name' => ['required', 'string', 'max:255'],

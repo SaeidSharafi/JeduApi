@@ -33,7 +33,7 @@ final class CreateCategoryData extends Data
         public ?array $media = [],
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return array_merge(
             [

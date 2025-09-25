@@ -26,7 +26,7 @@ final class SuspiciousActivityRequestData extends Data
         public ?array $user_ids = null,
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         $now = verta()->format('Y-m-d');
 
@@ -41,6 +41,57 @@ final class SuspiciousActivityRequestData extends Data
             'include_round_numbers'    => ['boolean'],
             'user_ids'                 => ['nullable', 'array'],
             'user_ids.*'               => ['integer', 'exists:users,id'],
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'date_from' => [
+                'description' => 'Start date for suspicious activity search (Jalali format).',
+                'example'     => '1402-01-01',
+            ],
+            'date_to' => [
+                'description' => 'End date for suspicious activity search (Jalali format).',
+                'example'     => '1402-01-30',
+            ],
+            'large_amount_threshold' => [
+                'description' => 'Threshold for large transaction amounts (IRR).',
+                'example'     => 50000000,
+            ],
+            'high_frequency_threshold' => [
+                'description' => 'Threshold for high frequency transactions per day.',
+                'example'     => 10,
+            ],
+            'include_off_hours' => [
+                'description' => 'Include transactions outside normal business hours.',
+                'example'     => true,
+            ],
+            'include_large_amounts' => [
+                'description' => 'Include transactions with large amounts.',
+                'example'     => true,
+            ],
+            'include_high_frequency' => [
+                'description' => 'Include high frequency transactions.',
+                'example'     => true,
+            ],
+            'include_round_numbers' => [
+                'description' => 'Include transactions with round numbers.',
+                'example'     => true,
+            ],
+            'user_ids' => [
+                'description' => 'Array of user IDs to filter suspicious activity.',
+                'example'     => [1, 2, 3],
+            ],
+            'user_ids.*' => [
+                'description' => 'User ID for filtering.',
+                'example'     => 1,
+            ],
         ];
     }
 }

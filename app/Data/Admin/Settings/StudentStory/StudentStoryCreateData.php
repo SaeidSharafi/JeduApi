@@ -31,4 +31,43 @@ final class StudentStoryCreateData extends Data
             'display_order' => ['nullable', 'integer', 'min:0'],
         ];
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'student_name' => [
+                'description' => 'Name of the student.',
+                'example'     => 'Ali Rezaei',
+            ],
+            'course_name' => [
+                'description' => 'Name of the course.',
+                'example'     => 'Advanced Mathematics',
+            ],
+            'course_url' => [
+                'description' => 'URL of the course.',
+                'example'     => 'https://jedu.ir/courses/advanced-math',
+            ],
+            'story_text' => [
+                'description' => 'Text of the student story.',
+                'example'     => 'This course helped me excel in university.',
+            ],
+            'avatar' => [
+                'description' => 'Media ID for the student avatar.',
+                'example'     => 123,
+            ],
+            'is_visible' => [
+                'description' => 'Whether the story is visible.',
+                'example'     => true,
+            ],
+            'display_order' => [
+                'description' => 'Order for displaying the story.',
+                'example'     => 1,
+            ],
+        ];
+    }
 }

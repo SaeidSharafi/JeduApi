@@ -14,7 +14,7 @@ final class SocialMediaLinkData extends Data
         public string $link,
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'platform' => ['required', 'string', 'max:50'],

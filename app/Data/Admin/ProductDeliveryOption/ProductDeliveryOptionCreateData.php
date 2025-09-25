@@ -53,7 +53,7 @@ final class ProductDeliveryOptionCreateData extends Data
      *
      * @return array<string, array<int,mixed>>
      */
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         $now       = verta()->format('Y-m-d');
         $baseRules = [

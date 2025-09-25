@@ -41,6 +41,7 @@ final class CreateDigitalAssetData extends Data
     ) {}
 
     /**
+     * @codeCoverageIgnore
      * Get the validation rules for the data.
      *
      * @return array<string, array<string, mixed>>

@@ -29,7 +29,7 @@ final class ProductCreateData extends Data
         public ?array $details_json
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'force_create'      => ['required', 'boolean'],

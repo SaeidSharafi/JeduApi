@@ -24,24 +24,113 @@ final class FooterCreateData extends Data
         public ?array $certifications
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
-            'logo'                   => ['nullable', 'integer', 'exists:media,id'],
-            'caption'                => ['required', 'string', 'max:255'],
-            'support_link'           => ['required', 'string', 'max:255'],
-            'support_email_address'  => ['required', 'string', 'email', 'max:255'],
-            'addresses'              => ['required', 'array'],
-            'categories'             => ['required', 'array'],
-            'categories.*'           => ['integer', 'exists:categories,id'],
-            'main_links'             => ['required', 'array'],
-            'main_links.*.title'     => ['required', 'string', 'max:255'],
-            'main_links.*.link'      => ['required', 'string', 'max:255'],
-            'social_media_links'     => ['required', 'array'],
-            'certifications'         => ['nullable', 'array'],
-            'certifications.*.name'  => ['required', 'string'],
-            'certifications.*.image' => ['nullable', 'integer', 'exists:media,id'],
-            'certifications.*.html'  => ['nullable', 'string'],
+            'logo'                          => ['nullable', 'integer', 'exists:media,id'],
+            'caption'                       => ['required', 'string', 'max:255'],
+            'support_link'                  => ['required', 'string', 'max:255'],
+            'support_email_address'         => ['required', 'string', 'email', 'max:255'],
+            'addresses'                     => ['required', 'array'],
+            'categories'                    => ['required', 'array'],
+            'categories.*'                  => ['integer', 'exists:categories,id'],
+            'main_links'                    => ['required', 'array'],
+            'main_links.*.title'            => ['required', 'string', 'max:255'],
+            'main_links.*.link'             => ['required', 'string', 'max:255'],
+            'social_media_links'            => ['required', 'array'],
+            'social_media_links.*.platform' => ['required', 'string', 'max:100'],
+            'social_media_links.*.url'      => ['required', 'string', 'max:255'],
+            'certifications'                => ['nullable', 'array'],
+            'certifications.*.name'         => ['required', 'string'],
+            'certifications.*.image'        => ['nullable', 'integer', 'exists:media,id'],
+            'certifications.*.html'         => ['nullable', 'string'],
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'logo' => [
+                'description' => 'The ID of the logo image (media).',
+                'example'     => 12,
+            ],
+            'caption' => [
+                'description' => 'Footer caption text.',
+                'example'     => 'Shop with confidence!',
+            ],
+            'support_link' => [
+                'description' => 'URL for support page.',
+                'example'     => 'https://support.example.com',
+            ],
+            'support_email_address' => [
+                'description' => 'Support contact email address.',
+                'example'     => 'support@example.com',
+            ],
+            'addresses' => [
+                'description' => 'Array of address strings to display in the footer.',
+                'example'     => ['123 Main St', '456 Elm St'],
+            ],
+            'categories' => [
+                'description' => 'Array of category IDs to display in the footer.',
+                'example'     => [1, 2, 3],
+            ],
+            'categories.*' => [
+                'description' => 'A category ID.',
+                'example'     => 1,
+            ],
+            'main_links' => [
+                'description' => 'Array of main link objects for the footer.',
+                'example'     => [
+                    ['title' => 'Home', 'link' => '/home'],
+                    ['title' => 'About Us', 'link' => '/about'],
+                ],
+            ],
+            'main_links.*.title' => [
+                'description' => 'The display text for the link.',
+                'example'     => 'Home',
+            ],
+            'main_links.*.link' => [
+                'description' => 'The URL for the link.',
+                'example'     => '/home',
+            ],
+            'social_media_links' => [
+                'description' => 'Array of social media link objects.',
+                'example'     => [
+                    ['platform' => 'Instagram', 'url' => 'https://instagram.com/shop'],
+                    ['platform' => 'Twitter', 'url' => 'https://twitter.com/shop'],
+                ],
+            ],
+            'social_media_links.*.platform' => [
+                'description' => 'Social media platform name.',
+                'example'     => 'Instagram',
+            ],
+            'social_media_links.*.url' => [
+                'description' => 'URL for the social media profile.',
+                'example'     => 'https://instagram.com/shop',
+            ],
+            'certifications' => [
+                'description' => 'Array of certification objects.',
+                'example'     => [
+                    ['name' => 'SSL Secure', 'image' => 5, 'html' => '<img src="...">'],
+                ],
+            ],
+            'certifications.*.name' => [
+                'description' => 'Certification name.',
+                'example'     => 'SSL Secure',
+            ],
+            'certifications.*.image' => [
+                'description' => 'Media ID for the certification image.',
+                'example'     => 5,
+            ],
+            'certifications.*.html' => [
+                'description' => 'Optional HTML snippet for the certification.',
+                'example'     => '<img src="/cert.png">',
+            ],
         ];
     }
 }

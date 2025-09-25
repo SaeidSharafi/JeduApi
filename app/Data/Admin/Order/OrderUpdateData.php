@@ -15,7 +15,7 @@ final class OrderUpdateData extends Data
         public string $status,
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'status' => ['required', 'string', Rule::enum(OrderStatusEnum::class)],

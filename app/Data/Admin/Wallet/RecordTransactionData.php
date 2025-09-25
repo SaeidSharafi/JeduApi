@@ -26,7 +26,7 @@ final class RecordTransactionData extends Data
     /**
      * @codeCoverageIgnore
      */
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'user_id'     => ['required', 'exists:users,id'],

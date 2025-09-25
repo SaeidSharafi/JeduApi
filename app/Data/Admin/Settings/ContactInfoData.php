@@ -20,7 +20,7 @@ final class ContactInfoData extends Data
         public DataCollection $social_media_links,
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'addresses'                     => ['required', 'array', 'min:1'],
@@ -76,6 +76,69 @@ final class ContactInfoData extends Data
                     'platform' => 'linkedin',
                     'link'     => 'https://linkedin.com/company/jedushop',
                 ],
+            ],
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'addresses' => [
+                'description' => 'Array of address objects.',
+                'example'     => [
+                    [
+                        'name'         => 'دفتر مرکزی',
+                        'address'      => 'تهران، خیابان آزادی، پلاک ۱۲۳',
+                        'location_url' => 'https://maps.example.com/?q=35.6892,51.3890',
+                        'phone'        => '۰۲۱-۱۲۳۴۵۶۷۸',
+                    ],
+                ],
+            ],
+            'addresses.*.name' => [
+                'description' => 'Name of the address.',
+                'example'     => 'دفتر مرکزی',
+            ],
+            'addresses.*.address' => [
+                'description' => 'Physical address.',
+                'example'     => 'تهران، خیابان آزادی، پلاک ۱۲۳',
+            ],
+            'addresses.*.location_url' => [
+                'description' => 'Google Maps URL for the address.',
+                'example'     => 'https://maps.example.com/?q=35.6892,51.3890',
+            ],
+            'addresses.*.phone' => [
+                'description' => 'Phone number for the address.',
+                'example'     => '۰۲۱-۱۲۳۴۵۶۷۸',
+            ],
+            'working_hours' => [
+                'description' => 'Working hours for support.',
+                'example'     => 'شنبه تا چهارشنبه، ۹ صبح تا ۵ بعدازظهر',
+            ],
+            'support_email' => [
+                'description' => 'Support email address.',
+                'example'     => 'info@jedu.ir',
+            ],
+            'social_media_links' => [
+                'description' => 'Array of social media link objects.',
+                'example'     => [
+                    [
+                        'platform' => 'instagram',
+                        'link'     => 'https://instagram.com/jedushop',
+                    ],
+                ],
+            ],
+            'social_media_links.*.platform' => [
+                'description' => 'Social media platform name.',
+                'example'     => 'instagram',
+            ],
+            'social_media_links.*.link' => [
+                'description' => 'URL for the social media platform.',
+                'example'     => 'https://instagram.com/jedushop',
             ],
         ];
     }

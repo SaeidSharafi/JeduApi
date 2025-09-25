@@ -40,7 +40,7 @@ final class ProductDeliveryOptionUpdateData extends Data
      *
      * @return array<string, array<int,mixed>>
      */
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         $baseRules = [
             'name' => ['required', 'string', 'max:255'],

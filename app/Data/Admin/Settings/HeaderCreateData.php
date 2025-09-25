@@ -28,4 +28,46 @@ final class HeaderCreateData extends Data
             'contact_email'            => ['required', 'string', 'email', 'max:255'],
         ];
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'logo' => [
+                'description' => 'Media ID for the logo.',
+                'example'     => 301,
+            ],
+            'navigation_links' => [
+                'description' => 'Array of navigation links.',
+                'example'     => [
+                    ['title' => 'Home', 'url' => '/', 'order' => 1],
+                    ['title' => 'Courses', 'url' => '/courses', 'order' => 2],
+                ],
+            ],
+            'navigation_links.*.title' => [
+                'description' => 'Title of the navigation link.',
+                'example'     => 'Home',
+            ],
+            'navigation_links.*.url' => [
+                'description' => 'URL of the navigation link.',
+                'example'     => '/',
+            ],
+            'navigation_links.*.order' => [
+                'description' => 'Order of the navigation link.',
+                'example'     => 1,
+            ],
+            'contact_phone' => [
+                'description' => 'Contact phone number.',
+                'example'     => '+982112345678',
+            ],
+            'contact_email' => [
+                'description' => 'Contact email address.',
+                'example'     => 'info@jedu.ir',
+            ],
+        ];
+    }
 }

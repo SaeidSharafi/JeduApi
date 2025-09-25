@@ -21,7 +21,7 @@ final class AddGiftCreditConfigData extends Data
      *
      * @codeCoverageIgnore
      */
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'amount'       => ['required', 'integer', 'min:1'],

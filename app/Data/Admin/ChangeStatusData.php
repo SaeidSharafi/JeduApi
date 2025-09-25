@@ -20,4 +20,19 @@ final class ChangeStatusData extends Data
             'status' => ['required', 'string', Rule::enum(PublicationStatusEnum::class)],
         ];
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'status' => [
+                'description' => 'Publication status value.',
+                'example'     => PublicationStatusEnum::PUBLISHED->value,
+            ],
+        ];
+    }
 }

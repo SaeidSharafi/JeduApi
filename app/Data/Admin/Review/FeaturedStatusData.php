@@ -19,4 +19,19 @@ final class FeaturedStatusData extends Data
             'is_featured' => ['sometimes', 'boolean'],
         ];
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'is_featured' => [
+                'description' => 'Whether the review is featured.',
+                'example'     => true,
+            ],
+        ];
+    }
 }

@@ -23,4 +23,23 @@ final class AdviceRequestUpdateData extends Data
             'note'   => ['nullable', 'string', 'max:1000'],
         ];
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'status' => [
+                'description' => 'Advice request status. Must be a valid AdviceRequestStatusEnum value.',
+                'example'     => AdviceRequestStatusEnum::PENDING->value,
+            ],
+            'note' => [
+                'description' => 'Optional note for the advice request.',
+                'example'     => 'Additional context for the request.',
+            ],
+        ];
+    }
 }

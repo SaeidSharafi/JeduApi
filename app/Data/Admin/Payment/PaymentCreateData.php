@@ -19,7 +19,7 @@ final class PaymentCreateData extends Data
 
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         $now = verta()->format('Y-m-d');
 
@@ -60,9 +60,21 @@ final class PaymentCreateData extends Data
                 'description' => 'Optional notes for administrative purposes',
                 'example'     => 'Payment received, awaiting confirmation.',
             ],
-            'wallet_data' => [
-                'description' => 'Wallet payment data when using wallet as payment method',
-                'example'     => ['wallet_id' => 1, 'amount' => 50000, 'description' => 'Order payment'],
+            'data.transaction_id' => [
+                'description' => 'The unique identifier for the bank transaction.',
+                'example'     => 'TX123456789',
+            ],
+            'data.transaction_date' => [
+                'description' => 'The date when the bank transaction occurred (Jalali date format).',
+                'example'     => '1402-01-15',
+            ],
+            'data.sender_name' => [
+                'description' => 'The name of the person who sent the bank transfer.',
+                'example'     => 'Ali Rezaei',
+            ],
+            'data.notes' => [
+                'description' => 'Any additional notes related to the bank transfer.',
+                'example'     => 'Payment for order #1234',
             ],
         ];
     }

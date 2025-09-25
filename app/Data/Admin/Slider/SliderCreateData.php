@@ -31,4 +31,39 @@ final class SliderCreateData extends Data
             'order'   => ['required', 'integer', 'min:0'],
         ];
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'title' => [
+                'description' => 'Title of the slider.',
+                'example'     => 'Welcome Banner',
+            ],
+            'caption' => [
+                'description' => 'Caption for the slider.',
+                'example'     => 'Start your learning journey!',
+            ],
+            'status' => [
+                'description' => 'Publication status value.',
+                'example'     => PublicationStatusEnum::PUBLISHED->value,
+            ],
+            'image' => [
+                'description' => 'Media ID for the slider image.',
+                'example'     => 201,
+            ],
+            'link' => [
+                'description' => 'Optional link for the slider.',
+                'example'     => 'https://jedu.ir/slider',
+            ],
+            'order' => [
+                'description' => 'Display order for the slider.',
+                'example'     => 1,
+            ],
+        ];
+    }
 }

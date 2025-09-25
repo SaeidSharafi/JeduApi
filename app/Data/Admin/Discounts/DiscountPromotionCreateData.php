@@ -35,7 +35,7 @@ final class DiscountPromotionCreateData extends Data
         public array $coupons = [],
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         $now = verta()->format('Y-m-d');
 
@@ -68,63 +68,80 @@ final class DiscountPromotionCreateData extends Data
     {
         return [
             'name' => [
-                'description' => 'Name of the promotion',
-                'example'     => 'Summer Sale 2025',
+                'description' => 'The name of the discount promotion.',
+                'example'     => 'Back to School Sale',
             ],
             'type' => [
-                'description' => 'Type of promotion',
-                'example'     => DiscountTypeEnum::CART_CHECKOUT->value,
+                'description' => 'The type of discount.',
+                'example'     => 'order',
             ],
             'description' => [
-                'description' => 'Internal description for admins',
-                'example'     => '10% off all courses during summer',
+                'description' => 'Description of the promotion.',
+                'example'     => 'Special discount for school supplies.',
             ],
             'is_active' => [
-                'description' => 'Whether the promotion is active',
+                'description' => 'Whether the promotion is active.',
                 'example'     => true,
             ],
             'starts_at' => [
-                'description' => 'When the promotion starts (ISO 8601 format)',
-                'example'     => '2025-06-01T00:00:00Z',
+                'description' => 'Start date in Jalali format.',
+                'example'     => '1402-01-01',
             ],
             'ends_at' => [
-                'description' => 'When the promotion ends (ISO 8601 format)',
-                'example'     => '2025-08-31T23:59:59Z',
+                'description' => 'End date in Jalali format.',
+                'example'     => '1402-01-10',
             ],
             'priority' => [
-                'description' => 'Priority for conflict resolution (higher runs first)',
+                'description' => 'Priority of the promotion.',
                 'example'     => 10,
             ],
+            'stop_processing_subsequent_rules' => [
+                'description' => 'Whether to stop processing subsequent rules.',
+                'example'     => false,
+            ],
+            'usage_limit_total' => [
+                'description' => 'Total usage limit.',
+                'example'     => 100,
+            ],
+            'usage_limit_per_customer' => [
+                'description' => 'Usage limit per customer.',
+                'example'     => 1,
+            ],
             'rules' => [
-                'description' => 'Array of promotion rules (conditions and actions)',
+                'description' => 'Array of discount rules.',
                 'example'     => [
-                    [
-                        'type'          => 'condition',
-                        'handler'       => 'cart_value_over',
-                        'configuration' => [
-                            'operator'            => '>=',
-                            'value'               => 50000,
-                            'include_prepayments' => false,
-                        ],
-                    ],
-                    [
-                        'type'          => 'action',
-                        'handler'       => 'apply_percentage_off',
-                        'configuration' => [
-                            'percentage' => 10,
-                        ],
-                    ],
+                    ['type' => 'condition', 'handler' => 'min_order_amount', 'configuration' => ['amount' => 10000]],
                 ],
             ],
+            'rules.*.type' => [
+                'description' => 'Type of rule (condition/action).',
+                'example'     => 'condition',
+            ],
+            'rules.*.handler' => [
+                'description' => 'Handler for the rule.',
+                'example'     => 'min_order_amount',
+            ],
+            'rules.*.configuration' => [
+                'description' => 'Configuration for the rule.',
+                'example'     => json_encode(['amount' => 10000]),
+            ],
             'coupons' => [
-                'description' => 'Array of coupon codes for this promotion',
+                'description' => 'Array of discount coupons.',
                 'example'     => [
-                    [
-                        'code'        => 'SUMMER10',
-                        'usage_limit' => 100,
-                        'is_active'   => true,
-                    ],
+                    ['code' => 'BACK2SCHOOL', 'usage_limit' => 10, 'is_active' => true],
                 ],
+            ],
+            'coupons.*.code' => [
+                'description' => 'Coupon code.',
+                'example'     => 'BACK2SCHOOL',
+            ],
+            'coupons.*.usage_limit' => [
+                'description' => 'Usage limit for the coupon.',
+                'example'     => 10,
+            ],
+            'coupons.*.is_active' => [
+                'description' => 'Whether the coupon is active.',
+                'example'     => true,
             ],
         ];
     }

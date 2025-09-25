@@ -24,4 +24,27 @@ final class RefundStatusUpdateData extends Data
             'admin_notes'   => ['nullable', 'string'],
         ];
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'status' => [
+                'description' => 'Refund status value.',
+                'example'     => 'approved',
+            ],
+            'tracking_code' => [
+                'description' => 'Optional tracking code for the refund.',
+                'example'     => 'TRK123456',
+            ],
+            'admin_notes' => [
+                'description' => 'Optional admin notes for the refund.',
+                'example'     => 'Refund processed successfully.',
+            ],
+        ];
+    }
 }

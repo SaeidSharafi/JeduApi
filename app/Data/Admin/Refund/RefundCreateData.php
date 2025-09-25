@@ -22,7 +22,7 @@ final class RefundCreateData extends Data
         public readonly ?string $admin_notes,
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'deduction_amount' => [
@@ -42,6 +42,58 @@ final class RefundCreateData extends Data
             'transaction_details.card_number'   => ['required', 'string', 'digits:16'],
             'transaction_details.iban_number'   => ['required', 'string', new IbanNumberRule()],
             'transaction_details.tracking_code' => ['nullable', 'string', 'max:255'],
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'deduction_amount' => [
+                'description' => 'Amount to deduct from the refund.',
+                'example'     => 10000,
+            ],
+            'deduction_percent' => [
+                'description' => 'Percent to deduct from the refund.',
+                'example'     => 10,
+            ],
+            'transaction_details' => [
+                'description' => 'Transaction details for the refund.',
+                'example'     => [
+                    'receiver_name' => 'Ali Rezaei',
+                    'card_number'   => '1234567890123456',
+                    'iban_number'   => 'IR123456789012345678901234',
+                    'tracking_code' => 'TRK987654',
+                ],
+            ],
+            'transaction_details.receiver_name' => [
+                'description' => 'Name of the receiver.',
+                'example'     => 'Ali Rezaei',
+            ],
+            'transaction_details.card_number' => [
+                'description' => 'Card number of the receiver.',
+                'example'     => '1234567890123456',
+            ],
+            'transaction_details.iban_number' => [
+                'description' => 'IBAN number of the receiver.',
+                'example'     => 'IR123456789012345678901234',
+            ],
+            'transaction_details.tracking_code' => [
+                'description' => 'Optional tracking code for the transaction.',
+                'example'     => 'TRK987654',
+            ],
+            'status' => [
+                'description' => 'Refund status value.',
+                'example'     => 'pending',
+            ],
+            'admin_notes' => [
+                'description' => 'Optional admin notes for the refund.',
+                'example'     => 'Refund requested by customer.',
+            ],
         ];
     }
 }

@@ -23,7 +23,7 @@ final class OrderCreateData extends Data
         public ?int $promotion_id = null,
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'status'                             => ['required', 'string', Rule::enum(OrderStatusEnum::class)],

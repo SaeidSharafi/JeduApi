@@ -17,7 +17,7 @@ final class OrderItemCreateData extends Data
         public int $qty_ordered = 1,
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'product_delivery_option_id' => ['required', 'integer', 'exists:product_delivery_options,id'],

@@ -18,7 +18,7 @@ final class CreateStaffData extends Data
         public array $roles = [],
     ) {}
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'name'     => ['required', 'string', 'max:255'],
