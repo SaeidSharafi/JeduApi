@@ -23,6 +23,7 @@ This is the required architecture for the JeduShop API.
     *   Every controller method **MUST** accept a Data class for requests and return a Data class in responses.
     *   All Data classes **MUST** be placed in `app/Data/` with proper namespace organization.
     *   Request Data classes **MUST** implement both `rules()` for validation and `bodyParameters()` for Scribe API documentation.
+    *   add `@codeCoverageIgnore` to the `bodyParameters()` method to exclude it from test coverage.
 
     *   **Controller DocBlocks for Scribe Documentation:**
         *   Controller docblocks are for high-level organization and description. Scribe automatically reads the request body details from the type-hinted Data class.
