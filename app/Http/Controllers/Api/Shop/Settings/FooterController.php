@@ -19,6 +19,7 @@ final class FooterController extends Controller
 {
     /**
      * Get Footer Configuration
+     *
      * Returns the configuration settings for the website footer.
      *
      * @response 200 {

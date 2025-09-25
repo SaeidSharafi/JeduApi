@@ -11,7 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Services\SettingsService;
 
 /**
- * @group Shop - Settings
+ * @group Shop - CMS
  *
  * API for retrieving site configuration
  */

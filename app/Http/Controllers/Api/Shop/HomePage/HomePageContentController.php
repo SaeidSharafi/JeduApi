@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api\Shop;
+namespace App\Http\Controllers\Api\Shop\HomePage;
 
 use App\Actions\Shop\GetHomePageBlockAction;
 use App\Actions\Shop\GetHomePageBlocksListAction;
@@ -11,11 +11,11 @@ use App\Http\Controllers\Controller;
 use App\Models\HomePageBlock;
 
 /**
- * @group Shop - Home Page Blocks
+ * @group Shop - Home Page
  *
  * @unauthenticated
  *
- * APIs for managing home page blocks
+ * APIs for retrieving Home Page Content
  */
 final class HomePageContentController extends Controller
 {

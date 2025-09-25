@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\Shop\CMS\AboutUsController;
 use App\Http\Controllers\Api\Shop\CMS\ContactPageController;
+use App\Http\Controllers\Api\Shop\HomePage\HomePageContentController;
 use App\Http\Controllers\Api\Shop\HomePage\PartnerController;
 use App\Http\Controllers\Api\Shop\HomePage\SliderController;
 use App\Http\Controllers\Api\Shop\HomePage\StudentStoryController;
-use App\Http\Controllers\Api\Shop\HomePageContentController;
 use App\Http\Controllers\Api\Shop\Settings\FooterController;
 use App\Http\Controllers\Api\Shop\Settings\HeaderController;
 

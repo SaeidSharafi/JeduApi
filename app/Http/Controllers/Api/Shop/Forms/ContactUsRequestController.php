@@ -10,14 +10,14 @@ use App\Data\Shop\Forms\ContactUsRequestData;
 use App\Http\Controllers\Controller;
 
 /**
- * @group Shop - Contact
+ * @group Shop - Forms
  *
  * Public Contact Us form submission
  */
 final class ContactUsRequestController extends Controller
 {
     /**
-     * Submit Contact Us form
+     * Contact Us form
      *
      * Accepts and stores a public contact request.
      *

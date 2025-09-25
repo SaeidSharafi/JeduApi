@@ -11,7 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Services\SettingsService;
 
 /**
- * @group Shop - Settings
+ * @group Shop - CMS
  *
  * API for retrieving site configuration
  */
@@ -19,6 +19,7 @@ final class AboutUsController extends Controller
 {
     /**
      * Get About Us Configuration
+     *
      * Returns the configuration settings for the About Us page.
      *
      * @responseFile storage/responses/shop/aboutus/show.json
