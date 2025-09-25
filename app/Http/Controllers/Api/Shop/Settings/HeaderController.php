@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api\Shop\Site;
+namespace App\Http\Controllers\Api\Shop\Settings;
 
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Site\HeaderData;
@@ -10,7 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Services\SettingsService;
 
 /**
- * @group Shop - Shared
+ * @group Shop - Settings
  *
  * API for retrieving site configuration
  */

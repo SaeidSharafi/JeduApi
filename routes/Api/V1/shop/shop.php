@@ -6,8 +6,8 @@ use App\Http\Controllers\Api\Shop\HomePage\PartnerController;
 use App\Http\Controllers\Api\Shop\HomePage\SliderController;
 use App\Http\Controllers\Api\Shop\HomePage\StudentStoryController;
 use App\Http\Controllers\Api\Shop\HomePageContentController;
-use App\Http\Controllers\Api\Shop\Site\FooterController;
-use App\Http\Controllers\Api\Shop\Site\HeaderController;
+use App\Http\Controllers\Api\Shop\Settings\FooterController;
+use App\Http\Controllers\Api\Shop\Settings\HeaderController;
 
 // Home Page Blocks
 Route::get('home-page-blocks', [HomePageContentController::class, 'index'])->name('home-page-blocks.index');
