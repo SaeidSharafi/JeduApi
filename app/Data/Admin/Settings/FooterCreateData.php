@@ -39,7 +39,7 @@ final class FooterCreateData extends Data
             'main_links.*.link'             => ['required', 'string', 'max:255'],
             'social_media_links'            => ['required', 'array'],
             'social_media_links.*.platform' => ['required', 'string', 'max:100'],
-            'social_media_links.*.url'      => ['required', 'string', 'max:255'],
+            'social_media_links.*.link'      => ['required', 'string', 'max:255'],
             'certifications'                => ['nullable', 'array'],
             'certifications.*.name'         => ['required', 'string'],
             'certifications.*.image'        => ['nullable', 'integer', 'exists:media,id'],
@@ -109,7 +109,7 @@ final class FooterCreateData extends Data
                 'description' => 'Social media platform name.',
                 'example'     => 'Instagram',
             ],
-            'social_media_links.*.url' => [
+            'social_media_links.*.link' => [
                 'description' => 'URL for the social media profile.',
                 'example'     => 'https://instagram.com/shop',
             ],
