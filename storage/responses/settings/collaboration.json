@@ -1,0 +1,19 @@
+{
+  "message": "موارد درباره ما با موفقیت به‌روزرسانی شد.",
+  "data": {
+    "title": "فرصت همکاری",
+    "content": "<h3>فرصت همکاری با موسسه آموزشی جهاد دانشگاهی استان قزوین</h3>",
+    "image": {
+      "id": 4,
+      "url": "http://jedu.test/storage/fake-media/fake-gallery.svg",
+      "size": 896,
+      "file_name": "fake-gallery",
+      "alt": "",
+      "mime_type": "image/svg+xml",
+      "extension": "svg",
+      "tag": null,
+      "thumbnail": null
+    }
+  },
+  "metadata": []
+}

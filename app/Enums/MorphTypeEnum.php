@@ -7,6 +7,7 @@ namespace App\Enums;
 use App\Models\Blog\BlogCategory;
 use App\Models\Blog\BlogPost;
 use App\Models\Category;
+use App\Models\CollaborationRequest;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\HomePageBlock;
@@ -50,6 +51,7 @@ enum MorphTypeEnum: string
     case BLOG_POST     = 'blog_post';
     case BLOG_CATEGORY = 'blog_category';
     case SETTING       = 'setting';
+    case COLLABORATION_REQUEST = 'collaboration_request';
 
     public static function forMorphMap(): array
     {
@@ -120,6 +122,7 @@ enum MorphTypeEnum: string
             self::BLOG_POST       => BlogPost::class,
             self::BLOG_CATEGORY   => BlogCategory::class,
             self::SETTING         => Setting::class,
+            self::COLLABORATION_REQUEST => CollaborationRequest::class,
         };
     }
 }

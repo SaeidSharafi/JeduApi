@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Traits\HasMedia;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Plank\Mediable\Mediable;
 
 final class CollaborationRequest extends Model
 {
     use HasFactory;
-    use HasMedia;
+    use Mediable;
 
     protected $fillable = [
         'full_name',
         'phone',
         'email',
+        'department',
         'message',
     ];
 }

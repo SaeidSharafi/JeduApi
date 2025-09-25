@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\Admin\Settings\AboutUsInfoController;
+use App\Http\Controllers\Api\Admin\Settings\CollaborationInfoController;
 use App\Http\Controllers\Api\Admin\Settings\ContactInfoController;
 use App\Http\Controllers\Api\Admin\Settings\FooterController;
 use App\Http\Controllers\Api\Admin\Settings\HeaderController;
@@ -24,6 +25,11 @@ Route::prefix('settings')->name('settings.')->group(function (): void {
         ->name('about-us.show');
     Route::put('about-us', [AboutUsInfoController::class, 'update'])
         ->name('about-us.update');
+    Route::get('collaboration', [CollaborationInfoController::class, 'show'])
+        ->name('collaboration.show');
+    Route::put('collaboration', [CollaborationInfoController::class, 'update'])
+        ->name('collaboration.update');
+
     Route::get('footer', [FooterController::class, 'show'])
         ->name('footer.show');
     Route::put('footer', [FooterController::class, 'update'])
