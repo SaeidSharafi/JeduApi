@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Data\Shop\Product\ProductDeliveryOptionCardData;
+use App\Enums\MediaTagEnum;
 use App\Enums\Product\DeliveryMethodEnum;
-use App\Enums\Product\ProductableMediaTypeEnum;
 use App\Models\ProductDeliveryOption;
 
 it('return data correctly', function (): void {
@@ -17,7 +17,7 @@ it('return data correctly', function (): void {
         ->toDisk('public')
         ->upload();
 
-    $course->attachMedia($cover, ProductableMediaTypeEnum::COVER->value);
+    $course->attachMedia($cover, MediaTagEnum::COVER->value);
 
     $course->loadMediaWithVariantsMatchAll();
 
