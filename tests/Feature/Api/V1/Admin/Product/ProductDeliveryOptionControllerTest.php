@@ -29,11 +29,13 @@ describe('User with permissions', function (): void {
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_VIEW_ANY,
         ]);
         $product         = App\Models\Product::factory()->create();
-        $deliveryOptions = ProductDeliveryOption::factory()
+        ProductDeliveryOption::factory()
             ->withTeachers(3, true)
             ->count(3)
             ->create(['product_id' => $product->id]);
-
+        $deliveryOptions = ProductDeliveryOption::query()
+            ->with('teachers', fn($q) => $q->orderBy('id'))
+            ->get();
         $response = $this->getJson(route('api.v1.admin.delivery-option.index', ['product' => $product->id]));
         $response->assertOk()
             ->assertJsonCount(3, 'data');
@@ -41,9 +43,9 @@ describe('User with permissions', function (): void {
 
         foreach ($deliveryOptions as $expectedDeliveryOption) {
             $match = $actualDataItems->first(function ($actualItem) use ($expectedDeliveryOption) {
-                return $actualItem['sku'] === $expectedDeliveryOption->sku;
+                return $actualItem['id'] === $expectedDeliveryOption->id;
             });
-            expect($match)->not->toBeNull("Expected PDO with sku '{$expectedDeliveryOption->sku}' not found or properties mismatch.");
+            expect($match)->not->toBeNull("Expected PDO with id '{$expectedDeliveryOption->id}' not found or properties mismatch.");
 
             if ($match) {
                 AssertableJson::fromArray($match)
