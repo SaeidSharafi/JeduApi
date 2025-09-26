@@ -33,6 +33,6 @@ class CollaborationRequestController extends Controller
     public function __invoke(CreateCollaborationRequestData $data, CreateCollaborationRequestAction $action)
     {
         $action->handle($data);
-        return response()->created(null, __('messages.collaboration_request_submitted'));
+        return response()->created(null, __('shop.responses.forms.collaboration_request_submitted') );
     }
 }
