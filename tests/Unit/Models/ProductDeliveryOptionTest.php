@@ -71,12 +71,12 @@ test('relation discount prices', function (): void {
 });
 test('scope available', function (): void {
     $availableOption = App\Models\ProductDeliveryOption::factory()->create([
-        'status'         => App\Enums\PublicationStatusEnum::PUBLISHED,
+        'status'         => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         'available_from' => now()->subDays(1),
         'available_to'   => now()->addDays(1),
     ])->fresh();
     $unavailableOption = App\Models\ProductDeliveryOption::factory()->create([
-        'status'         => App\Enums\PublicationStatusEnum::DRAFT,
+        'status'         => \App\Enums\Content\PublicationStatusEnum::DRAFT,
         'available_from' => now()->addDays(1),
         'available_to'   => now()->addDays(2),
     ])->fresh();

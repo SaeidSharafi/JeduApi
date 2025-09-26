@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Blog;
 
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Review;

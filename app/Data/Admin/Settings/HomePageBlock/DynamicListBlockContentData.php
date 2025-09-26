@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Settings\HomePageBlock;
 
-use App\Enums\DynamicListEntityTypeEnum;
-use App\Enums\DynamicListSortByEnum;
+use App\Enums\Content\DynamicListEntityTypeEnum;
+use App\Enums\Content\DynamicListSortByEnum;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;

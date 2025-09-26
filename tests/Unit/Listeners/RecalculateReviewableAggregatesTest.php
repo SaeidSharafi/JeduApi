@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Actions\Admin\Review\UpdateReviewStatusAction;
-use App\Enums\MorphTypeEnum;
-use App\Enums\ReviewStatusEnum;
+use App\Enums\Content\ReviewStatusEnum;
+use App\Enums\System\MorphTypeEnum;
 use App\Events\ReviewableAggregatesChanged;
 use App\Models\Course;
 use App\Models\Review;

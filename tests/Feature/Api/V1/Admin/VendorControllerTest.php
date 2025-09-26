@@ -138,13 +138,13 @@ describe('CRUD', function (): void {
         $vendor = Vendor::where('email', $data['email'])->first();
         $this->assertDatabaseHas('mediables', [
             'mediable_id'   => $vendor->id,
-            'mediable_type' => App\Enums\MorphTypeEnum::VENDOR->value,
+            'mediable_type' => \App\Enums\System\MorphTypeEnum::VENDOR->value,
             'media_id'      => $this->logo->id,
             'tag'           => 'logo',
         ]);
         $this->assertDatabaseHas('mediables', [
             'mediable_id'   => $vendor->id,
-            'mediable_type' => App\Enums\MorphTypeEnum::VENDOR->value,
+            'mediable_type' => \App\Enums\System\MorphTypeEnum::VENDOR->value,
             'media_id'      => $this->favicon->id,
             'tag'           => 'favicon',
         ]);
@@ -191,13 +191,13 @@ describe('CRUD', function (): void {
         ]);
         $this->assertDatabaseHas('mediables', [
             'mediable_id'   => $vendor->id,
-            'mediable_type' => App\Enums\MorphTypeEnum::VENDOR->value,
+            'mediable_type' => \App\Enums\System\MorphTypeEnum::VENDOR->value,
             'media_id'      => $this->logo->id,
             'tag'           => 'logo',
         ]);
         $this->assertDatabaseHas('mediables', [
             'mediable_id'   => $vendor->id,
-            'mediable_type' => App\Enums\MorphTypeEnum::VENDOR->value,
+            'mediable_type' => \App\Enums\System\MorphTypeEnum::VENDOR->value,
             'media_id'      => $this->favicon->id,
             'tag'           => 'favicon',
         ]);
@@ -214,12 +214,12 @@ describe('CRUD', function (): void {
         $this->assertDatabaseMissing('vendors', ['id' => $vendor->id]);
         $this->assertDatabaseMissing('mediables', [
             'mediable_id'   => $vendor->id,
-            'mediable_type' => App\Enums\MorphTypeEnum::VENDOR->value,
+            'mediable_type' => \App\Enums\System\MorphTypeEnum::VENDOR->value,
             'media_id'      => $this->logo->id,
         ]);
         $this->assertDatabaseMissing('mediables', [
             'mediable_id'   => $vendor->id,
-            'mediable_type' => App\Enums\MorphTypeEnum::VENDOR->value,
+            'mediable_type' => \App\Enums\System\MorphTypeEnum::VENDOR->value,
             'media_id'      => $this->favicon->id,
         ]);
         $this->assertDatabaseMissing('media', ['id' => $this->logo->id]);

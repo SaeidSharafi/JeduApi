@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\FulfillmentTypeEnum;
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\Teacher;

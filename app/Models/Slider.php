@@ -42,13 +42,13 @@ final class Slider extends Model
     #[Scope]
     public function active(Builder $query): Builder
     {
-        return $query->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED);
+        return $query->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED);
     }
 
     protected function casts(): array
     {
         return [
-            'status'     => \App\Enums\PublicationStatusEnum::class,
+            'status'     => \App\Enums\Content\PublicationStatusEnum::class,
             'order'      => 'integer',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',

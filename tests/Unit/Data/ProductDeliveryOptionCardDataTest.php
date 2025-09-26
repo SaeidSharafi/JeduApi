@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Data\Shop\Product\ProductDeliveryOptionCardData;
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\ProductableMediaTypeEnum;
+use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\ProductableMediaTypeEnum;
 use App\Models\ProductDeliveryOption;
 
 it('return data correctly', function (): void {
@@ -23,7 +23,7 @@ it('return data correctly', function (): void {
 
     $product = App\Models\Product::factory()->create([
         'name'             => 'Test Product',
-        'productable_type' => App\Enums\ProductableEnum::COURSE->value,
+        'productable_type' => \App\Enums\Product\ProductableEnum::COURSE->value,
         'productable_id'   => $course->id,
     ]);
     $deliveryOption = ProductDeliveryOption::factory()
@@ -74,7 +74,7 @@ it('cover will be null if course has no image', function (): void {
 
     $product = App\Models\Product::factory()->create([
         'name'             => 'Test Product',
-        'productable_type' => App\Enums\ProductableEnum::COURSE->value,
+        'productable_type' => \App\Enums\Product\ProductableEnum::COURSE->value,
         'productable_id'   => $course->id,
     ]);
     $deliveryOption = ProductDeliveryOption::factory()

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Product;
 
-use App\Enums\ProductableMediaTypeEnum;
+use App\Enums\Product\ProductableMediaTypeEnum;
 use App\Models\ProductDeliveryOption;
 use Spatie\LaravelData\Data;
 

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Data\Admin\MediaData;
-use App\Enums\SettingKeyEnum;
+use App\Enums\System\SettingKeyEnum;
 use App\Models\Setting;
 use App\Services\SettingsService;
 use Illuminate\Http\UploadedFile;

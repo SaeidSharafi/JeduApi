@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\MorphTypeEnum;
+use App\Enums\System\MorphTypeEnum;
 
 test('to array', function (): void {
     $digitalAsset = App\Models\DigitalAsset::factory()->create()->fresh();
@@ -81,7 +81,7 @@ test('with reviews', function (): void {
         'reviewable_id'   => $digitalAsset->id,
         'reviewable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
         'rating'          => 4,
-        'status'          => App\Enums\ReviewStatusEnum::APPROVED,
+        'status'          => \App\Enums\Content\ReviewStatusEnum::APPROVED,
     ]);
 
     $review2 = App\Models\Review::factory()->create([
@@ -89,7 +89,7 @@ test('with reviews', function (): void {
         'reviewable_id'   => $digitalAsset->id,
         'reviewable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
         'rating'          => 5,
-        'status'          => App\Enums\ReviewStatusEnum::PENDING,
+        'status'          => \App\Enums\Content\ReviewStatusEnum::PENDING,
     ]);
 
     $digitalAsset->refresh();

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\CacheKeysEnum;
+use App\Enums\System\CacheKeysEnum;
 use App\Models\Blog\BlogPost;
 use App\Models\Category;
 use App\Models\Course;

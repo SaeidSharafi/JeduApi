@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Api\Shop\Settings;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Settings\FooterData as AdminFooterData;
 use App\Data\Shop\Site\FooterData;
-use App\Enums\SettingKeyEnum;
+use App\Enums\System\SettingKeyEnum;
 use App\Http\Controllers\Controller;
 use App\Services\SettingsService;
 

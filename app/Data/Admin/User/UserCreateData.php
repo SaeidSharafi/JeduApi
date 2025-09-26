@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Data\Admin\User;
 
 use App\Data\Transformer\CarbonFromJalaliString;
-use App\Enums\CivilIdTypeEnum;
-use App\Enums\EducationLevelEnum;
-use App\Enums\EducationStatusEnum;
-use App\Enums\GenderEnum;
+use App\Enums\User\CivilIdTypeEnum;
+use App\Enums\User\EducationLevelEnum;
+use App\Enums\User\EducationStatusEnum;
+use App\Enums\User\GenderEnum;
 use App\Rules\CivilIdRule;
 use App\Rules\UniqueCivilIdRule;
 use Carbon\Carbon;

@@ -12,7 +12,7 @@ use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionBbbDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\LiveSessionSkyroomDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\LmsMoodleDetailsData;
 use App\Data\Admin\ProductDeliveryOption\DetailsData\VideoPlatformSpotplayerDetailsData;
-use App\Enums\DeliveryMethodEnum;
+use App\Enums\Product\DeliveryMethodEnum;
 use Spatie\LaravelData\Casts\Cast;
 use Spatie\LaravelData\Support\Creation\CreationContext;
 use Spatie\LaravelData\Support\DataProperty;

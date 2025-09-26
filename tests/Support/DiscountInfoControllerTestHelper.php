@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Http\Controllers\Api\Admin\DiscountInfoController;
+use App\Http\Controllers\Api\Admin\Promotion\DiscountInfoController;
 use App\Services\Discounts\OrderCalculationService;
 use ReflectionClass;
 use ReflectionType;

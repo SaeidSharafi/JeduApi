@@ -6,9 +6,9 @@ namespace App\Data\Admin\ProductDeliveryOption;
 
 use App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction;
 use App\Data\Transformer\CarbonFromJalaliString;
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\FulfillmentTypeEnum;
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
 use App\Rules\ProductDeliveryOptionCheckRule;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;

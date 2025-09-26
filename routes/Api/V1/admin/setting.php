@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Api\Admin\Settings\AboutUsInfoController;
-use App\Http\Controllers\Api\Admin\Settings\CollaborationInfoController;
-use App\Http\Controllers\Api\Admin\Settings\ContactInfoController;
-use App\Http\Controllers\Api\Admin\Settings\FooterController;
-use App\Http\Controllers\Api\Admin\Settings\HeaderController;
-use App\Http\Controllers\Api\Admin\Settings\HomePageBlockController;
-use App\Http\Controllers\Api\Admin\Settings\PartnerController;
+use App\Http\Controllers\Api\Admin\Content\AboutUsInfoController;
+use App\Http\Controllers\Api\Admin\Content\CollaborationInfoController;
+use App\Http\Controllers\Api\Admin\Content\ContactInfoController;
+use App\Http\Controllers\Api\Admin\Content\FooterController;
+use App\Http\Controllers\Api\Admin\Content\HeaderController;
+use App\Http\Controllers\Api\Admin\Content\HomePageBlockController;
+use App\Http\Controllers\Api\Admin\Content\PartnerController;
+use App\Http\Controllers\Api\Admin\Content\Slider\SliderController;
+use App\Http\Controllers\Api\Admin\Content\Slider\UpdateSliderStatusController;
+use App\Http\Controllers\Api\Admin\Content\StudentStoryController;
 use App\Http\Controllers\Api\Admin\Settings\SettingController;
-use App\Http\Controllers\Api\Admin\Settings\Slider\SliderController;
-use App\Http\Controllers\Api\Admin\Settings\Slider\UpdateSliderStatusController;
-use App\Http\Controllers\Api\Admin\Settings\StudentStoryController;
 
 Route::prefix('settings')->name('settings.')->group(function (): void {
     Route::get('/', [SettingController::class, 'index'])

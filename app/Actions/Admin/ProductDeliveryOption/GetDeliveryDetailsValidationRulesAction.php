@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\ProductDeliveryOption;
 
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\FulfillmentTypeEnum;
+use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
 
 final readonly class GetDeliveryDetailsValidationRulesAction
 {

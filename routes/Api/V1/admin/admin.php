@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Api\Admin\AdviceRequest\AdviceRequestController;
-use App\Http\Controllers\Api\Admin\AdviceRequest\AdviceRequestUpdateStatusController;
-use App\Http\Controllers\Api\Admin\PermissionController;
+use App\Http\Controllers\Api\Admin\Forms\AdviceRequest\AdviceRequestController;
+use App\Http\Controllers\Api\Admin\Forms\AdviceRequest\AdviceRequestUpdateStatusController;
 use App\Http\Controllers\Api\Admin\Review\ApproveReviewController;
 use App\Http\Controllers\Api\Admin\Review\RejectReviewController;
 use App\Http\Controllers\Api\Admin\Review\ReviewController;
 use App\Http\Controllers\Api\Admin\Review\UpdateReviewFeaturedStatusController;
-use App\Http\Controllers\Api\Admin\RoleController;
-use App\Http\Controllers\Api\Admin\StaffController;
-use App\Http\Controllers\Api\Admin\TeacherController;
+use App\Http\Controllers\Api\Admin\System\PermissionController;
+use App\Http\Controllers\Api\Admin\System\RoleController;
 use App\Http\Controllers\Api\Admin\TermController;
-use App\Http\Controllers\Api\Admin\UserController;
+use App\Http\Controllers\Api\Admin\User\StaffController;
+use App\Http\Controllers\Api\Admin\User\TeacherController;
+use App\Http\Controllers\Api\Admin\User\UserController;
 use App\Http\Controllers\Api\Admin\VendorController;
 
 require __DIR__.'/blog.php';

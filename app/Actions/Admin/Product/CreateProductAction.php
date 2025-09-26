@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Product;
 
 use App\Data\Admin\Product\ProductCreateData;
-use App\Enums\ProductableEnum;
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Events\ProductCacheInvalidated;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;

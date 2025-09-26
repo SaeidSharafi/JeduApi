@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\OtpType;
+use App\Enums\System\OtpType;
 use App\Events\OtpPrepared;
 use App\Models\Staff;
 use App\Models\User;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Rules;
 
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Models\Product;
 use Closure;
 use Illuminate\Contracts\Validation\DataAwareRule;

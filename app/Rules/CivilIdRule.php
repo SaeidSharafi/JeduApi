@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Rules;
 
-use App\Enums\CivilIdTypeEnum;
+use App\Enums\User\CivilIdTypeEnum;
 use Closure;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;

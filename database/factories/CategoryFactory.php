@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\Category;
-use App\Models\Course;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use Plank\Mediable\Media;
@@ -21,7 +20,7 @@ final class CategoryFactory extends Factory
         return [
             'name'                     => $this->faker->unique()->persianWord(),
             'slug'                     => $this->faker->unique()->slug,
-            'status'                   => \App\Enums\PublicationStatusEnum::PUBLISHED,
+            'status'                   => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             'description'              => $this->faker->text,
             'image_url'                => $this->faker->imageUrl(),
             'icon_url'                 => $this->faker->imageUrl(),

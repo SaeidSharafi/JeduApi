@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Data\OtpManager\SentOtpDto;
-use App\Enums\OtpType;
+use App\Enums\System\OtpType;
 
 describe('SentOtpDto', function (): void {
     it('constructs and returns correct array', function (): void {

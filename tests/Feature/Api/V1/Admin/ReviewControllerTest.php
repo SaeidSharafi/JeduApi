@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Enums\MorphTypeEnum;
+use App\Enums\Content\ReviewStatusEnum;
 use App\Enums\PermissionEnum;
-use App\Enums\ProductableEnum;
-use App\Enums\ReviewStatusEnum;
+use App\Enums\Product\ProductableEnum;
+use App\Enums\System\MorphTypeEnum;
 use App\Events\ReviewableAggregatesChanged;
 use App\Models\Course;
 use App\Models\Review;

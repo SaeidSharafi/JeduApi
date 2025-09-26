@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\DynamicListEntityTypeEnum;
-use App\Enums\DynamicListSortByEnum;
-use App\Enums\HomePageBlockTypeEnum;
+use App\Enums\Content\DynamicListEntityTypeEnum;
+use App\Enums\Content\DynamicListSortByEnum;
+use App\Enums\Content\HomePageBlockTypeEnum;
 use App\Models\HomePageBlock;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;

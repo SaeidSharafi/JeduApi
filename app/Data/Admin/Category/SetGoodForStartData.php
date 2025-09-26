@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Category;
 
-use App\Enums\MorphTypeEnum;
+use App\Enums\System\MorphTypeEnum;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;

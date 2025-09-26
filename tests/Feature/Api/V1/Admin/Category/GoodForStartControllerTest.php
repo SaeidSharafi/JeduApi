@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\MorphTypeEnum;
+use App\Enums\System\MorphTypeEnum;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\Product;

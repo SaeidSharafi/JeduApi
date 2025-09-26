@@ -28,7 +28,7 @@ test('relation products', function (): void {
     $course  = App\Models\Course::factory()->create();
     $product = App\Models\Product::factory()->create([
         'productable_id'   => $course->id,
-        'productable_type' => App\Enums\ProductableEnum::COURSE->value,
+        'productable_type' => \App\Enums\Product\ProductableEnum::COURSE->value,
     ]);
 
     expect($course->products)

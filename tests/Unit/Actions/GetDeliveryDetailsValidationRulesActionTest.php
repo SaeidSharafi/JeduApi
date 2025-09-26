@@ -1,9 +1,14 @@
 <?php
 
 declare(strict_types=1);
+
+use App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction;
+use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
+
 it('it return empty array for invalid types', function (): void {
-    $fulfillmentType = App\Enums\FulfillmentTypeEnum::DIGITAL->value;
-    $deliveryMethod  = App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD->value;
+    $fulfillmentType = FulfillmentTypeEnum::DIGITAL->value;
+    $deliveryMethod  = DeliveryMethodEnum::DIRECT_DOWNLOAD->value;
     $detailsData     = [
         'max_downloads'   => 10,
         'expiration_date' => '2023-12-31 23:59:59',
@@ -25,20 +30,20 @@ it('it return empty array for invalid types', function (): void {
 // Dataset for valid fulfillmentType/deliveryMethod pairs
 $fulfillmentDeliveryPairs = [
     // DIGITAL
-    [App\Enums\FulfillmentTypeEnum::DIGITAL->value, App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD->value],
+    [FulfillmentTypeEnum::DIGITAL->value, DeliveryMethodEnum::DIRECT_DOWNLOAD->value],
     // ONLINE_SERVICE
-    [App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value, App\Enums\DeliveryMethodEnum::LIVE_SESSION_BBB->value],
-    [App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value, App\Enums\DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value],
-    [App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value, App\Enums\DeliveryMethodEnum::LMS_MOODLE->value],
+    [FulfillmentTypeEnum::ONLINE_SERVICE->value, DeliveryMethodEnum::LIVE_SESSION_BBB->value],
+    [FulfillmentTypeEnum::ONLINE_SERVICE->value, DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value],
+    [FulfillmentTypeEnum::ONLINE_SERVICE->value, DeliveryMethodEnum::LMS_MOODLE->value],
     // OFFLINE_SERVICE
-    [App\Enums\FulfillmentTypeEnum::OFFLINE_SERVICE->value, App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value],
+    [FulfillmentTypeEnum::OFFLINE_SERVICE->value, DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value],
     // IN_PERSON_SERVICE
-    [App\Enums\FulfillmentTypeEnum::IN_PERSON_SERVICE->value, App\Enums\DeliveryMethodEnum::IN_PERSON->value],
+    [FulfillmentTypeEnum::IN_PERSON_SERVICE->value, DeliveryMethodEnum::IN_PERSON->value],
 ];
 
 it('creates delivery validation rules for each valid fulfillmentType/deliveryMethod pair with empty details', function ($fulfillmentType, $deliveryMethod): void {
     $detailsData = [];
-    $action      = new App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction();
+    $action      = new GetDeliveryDetailsValidationRulesAction();
     $rules       = $action->handle($fulfillmentType, $deliveryMethod, $detailsData);
     expect($rules)->toBeArray();
 })->with($fulfillmentDeliveryPairs);
@@ -47,8 +52,8 @@ it('creates delivery validation rules for each valid fulfillmentType/deliveryMet
 $fulfillmentDeliveryPairsWithDetails = [
     // DIGITAL - DIRECT_DOWNLOAD
     [
-        App\Enums\FulfillmentTypeEnum::DIGITAL->value,
-        App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD->value,
+        FulfillmentTypeEnum::DIGITAL->value,
+        DeliveryMethodEnum::DIRECT_DOWNLOAD->value,
         [
             'max_downloads'   => 10,
             'expiration_date' => '2023-12-31 23:59:59',
@@ -56,8 +61,8 @@ $fulfillmentDeliveryPairsWithDetails = [
     ],
     // ONLINE_SERVICE - LIVE_SESSION_BBB
     [
-        App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value,
-        App\Enums\DeliveryMethodEnum::LIVE_SESSION_BBB->value,
+        FulfillmentTypeEnum::ONLINE_SERVICE->value,
+        DeliveryMethodEnum::LIVE_SESSION_BBB->value,
         [
             'moderator_password'                 => 'mod',
             'attendee_password'                  => 'att',
@@ -81,8 +86,8 @@ $fulfillmentDeliveryPairsWithDetails = [
     ],
     // ONLINE_SERVICE - LIVE_SESSION_SKYROOM
     [
-        App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value,
-        App\Enums\DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value,
+        FulfillmentTypeEnum::ONLINE_SERVICE->value,
+        DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value,
         [
             'meeting_name_identifier'     => 'meeting123',
             'moderator_password_override' => 'mod123',
@@ -99,8 +104,8 @@ $fulfillmentDeliveryPairsWithDetails = [
     ],
     // ONLINE_SERVICE - LMS_MOODLE
     [
-        App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value,
-        App\Enums\DeliveryMethodEnum::LMS_MOODLE->value,
+        FulfillmentTypeEnum::ONLINE_SERVICE->value,
+        DeliveryMethodEnum::LMS_MOODLE->value,
         [
             'course_idnumber'       => 'course123',
             'activity_id'           => 1,
@@ -110,16 +115,16 @@ $fulfillmentDeliveryPairsWithDetails = [
     ],
     // OFFLINE_SERVICE - VIDEO_PLATFORM_SPOTPLAYER
     [
-        App\Enums\FulfillmentTypeEnum::OFFLINE_SERVICE->value,
-        App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value,
+        FulfillmentTypeEnum::OFFLINE_SERVICE->value,
+        DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value,
         [
             'course_id' => 'course123',
         ],
     ],
     // IN_PERSON_SERVICE - IN_PERSON
     [
-        App\Enums\FulfillmentTypeEnum::IN_PERSON_SERVICE->value,
-        App\Enums\DeliveryMethodEnum::IN_PERSON->value,
+        FulfillmentTypeEnum::IN_PERSON_SERVICE->value,
+        DeliveryMethodEnum::IN_PERSON->value,
         [
             'location'        => 'Test Location',
             'duration'        => '20 Minute',
@@ -137,8 +142,8 @@ it('creates delivery validation rules for each valid fulfillmentType/deliveryMet
 })->with($fulfillmentDeliveryPairsWithDetails);
 
 it('creates delivery validation rules for DIRECT_DOWNLOAD', function (): void {
-    $fulfillmentType = App\Enums\FulfillmentTypeEnum::DIGITAL->value;
-    $deliveryMethod  = App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD->value;
+    $fulfillmentType = FulfillmentTypeEnum::DIGITAL->value;
+    $deliveryMethod  = DeliveryMethodEnum::DIRECT_DOWNLOAD->value;
     $detailsData     = [
         'max_downloads'   => 10,
         'expiration_date' => '2023-12-31 23:59:59',
@@ -156,8 +161,8 @@ it('creates delivery validation rules for DIRECT_DOWNLOAD', function (): void {
 });
 
 it('creates delivery validation rules for IN_PERSON', function (): void {
-    $fulfillmentType = App\Enums\FulfillmentTypeEnum::IN_PERSON_SERVICE->value;
-    $deliveryMethod  = App\Enums\DeliveryMethodEnum::IN_PERSON->value;
+    $fulfillmentType = FulfillmentTypeEnum::IN_PERSON_SERVICE->value;
+    $deliveryMethod  = DeliveryMethodEnum::IN_PERSON->value;
     $detailsData     = [
         'location'        => 'Test Location',
         'duration'        => '20 Minute',
@@ -177,8 +182,8 @@ it('creates delivery validation rules for IN_PERSON', function (): void {
 });
 
 it('creates delivery validation rules for LMS_MOODLE', function (): void {
-    $fulfillmentType = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value;
-    $deliveryMethod  = App\Enums\DeliveryMethodEnum::LMS_MOODLE->value;
+    $fulfillmentType = FulfillmentTypeEnum::ONLINE_SERVICE->value;
+    $deliveryMethod  = DeliveryMethodEnum::LMS_MOODLE->value;
     $detailsData     = [
         'course_idnumber'       => 'course123',
         'activity_id'           => 1,
@@ -198,8 +203,8 @@ it('creates delivery validation rules for LMS_MOODLE', function (): void {
 });
 
 it('creates delivery validation rules for LIVE_SESSION_BBB', function (): void {
-    $fulfillmentType = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value;
-    $deliveryMethod  = App\Enums\DeliveryMethodEnum::LIVE_SESSION_BBB->value;
+    $fulfillmentType = FulfillmentTypeEnum::ONLINE_SERVICE->value;
+    $deliveryMethod  = DeliveryMethodEnum::LIVE_SESSION_BBB->value;
     $detailsData     = [
         'moderator_password'                 => 'mod',
         'attendee_password'                  => 'att',
@@ -233,8 +238,8 @@ it('creates delivery validation rules for LIVE_SESSION_BBB', function (): void {
 });
 
 it('creates delivery validation rules for LIVE_SESSION_SKYROOM', function (): void {
-    $fulfillmentType = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value;
-    $deliveryMethod  = App\Enums\DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value;
+    $fulfillmentType = FulfillmentTypeEnum::ONLINE_SERVICE->value;
+    $deliveryMethod  = DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value;
     $detailsData     = [
         'meeting_name_identifier'     => 'meeting123',
         'moderator_password_override' => 'mod123',
@@ -261,8 +266,8 @@ it('creates delivery validation rules for LIVE_SESSION_SKYROOM', function (): vo
 });
 
 it('creates delivery validation rules for VIDEO_PLATFORM_SPOTPLAYER', function (): void {
-    $fulfillmentType = App\Enums\FulfillmentTypeEnum::OFFLINE_SERVICE->value;
-    $deliveryMethod  = App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value;
+    $fulfillmentType = FulfillmentTypeEnum::OFFLINE_SERVICE->value;
+    $deliveryMethod  = DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value;
     $detailsData     = [
         'course_id' => 'course123',
     ];

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Enums\CacheKeysEnum;
-use App\Enums\SettingKeyEnum;
+use App\Enums\System\CacheKeysEnum;
+use App\Enums\System\SettingKeyEnum;
 use App\Models\Setting;
 use Illuminate\Support\Collection;
 use SmartCache\Facades\SmartCache;

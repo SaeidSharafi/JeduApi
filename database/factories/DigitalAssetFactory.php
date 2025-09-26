@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Models\Category;
 use App\Models\DigitalAsset;
 use App\Models\Staff;

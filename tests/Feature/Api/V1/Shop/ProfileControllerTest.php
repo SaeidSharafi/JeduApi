@@ -40,13 +40,13 @@ it('update all fields on newly created profile', function (): void {
             'email'            => 'john@example.com',
             'phone2'           => '09123456789',
             'civil_id'         => '1234567890',
-            'civil_id_type'    => App\Enums\CivilIdTypeEnum::PASSPORT->value,
+            'civil_id_type'    => \App\Enums\User\CivilIdTypeEnum::PASSPORT->value,
             'date_of_birth'    => '1402-01-01',
             'father_name'      => 'Father Name',
-            'gender'           => App\Enums\GenderEnum::MALE->value,
-            'education_level'  => App\Enums\EducationLevelEnum::BACHELOR->value,
+            'gender'           => \App\Enums\User\GenderEnum::MALE->value,
+            'education_level'  => \App\Enums\User\EducationLevelEnum::BACHELOR->value,
             'field_of_study'   => 'Computer Science',
-            'education_status' => App\Enums\EducationStatusEnum::GRADUATED->value,
+            'education_status' => \App\Enums\User\EducationStatusEnum::GRADUATED->value,
         ]);
     $response->assertOk();
     $this->assertDatabaseHas('users', [
@@ -56,13 +56,13 @@ it('update all fields on newly created profile', function (): void {
         'email'            => 'john@example.com',
         'phone2'           => '09123456789',
         'civil_id'         => '1234567890',
-        'civil_id_type'    => App\Enums\CivilIdTypeEnum::PASSPORT->value,
+        'civil_id_type'    => \App\Enums\User\CivilIdTypeEnum::PASSPORT->value,
         'date_of_birth'    => Hekmatinasser\Verta\Facades\Verta::parse('1402-01-01')->toCarbon(),
         'father_name'      => 'Father Name',
-        'gender'           => App\Enums\GenderEnum::MALE->value,
-        'education_level'  => App\Enums\EducationLevelEnum::BACHELOR->value,
+        'gender'           => \App\Enums\User\GenderEnum::MALE->value,
+        'education_level'  => \App\Enums\User\EducationLevelEnum::BACHELOR->value,
         'field_of_study'   => 'Computer Science',
-        'education_status' => App\Enums\EducationStatusEnum::GRADUATED->value,
+        'education_status' => \App\Enums\User\EducationStatusEnum::GRADUATED->value,
     ]);
 
 });
@@ -70,7 +70,7 @@ it('update all fields expcept civil id related fields when they are already fill
     $user = App\Models\User::create([
         'phone'         => '09123456789',
         'civil_id'      => '1122334455',
-        'civil_id_type' => App\Enums\CivilIdTypeEnum::PASSPORT->value,
+        'civil_id_type' => \App\Enums\User\CivilIdTypeEnum::PASSPORT->value,
     ]);
 
     $response = $this->customer($user)
@@ -80,13 +80,13 @@ it('update all fields expcept civil id related fields when they are already fill
             'email'            => 'john@example.com',
             'phone2'           => '09123456789',
             'civil_id'         => '12345678',
-            'civil_id_type'    => App\Enums\CivilIdTypeEnum::IMMIGRANT_CODE->value,
+            'civil_id_type'    => \App\Enums\User\CivilIdTypeEnum::IMMIGRANT_CODE->value,
             'date_of_birth'    => '1402-01-01',
             'father_name'      => 'Father Name',
-            'gender'           => App\Enums\GenderEnum::MALE->value,
-            'education_level'  => App\Enums\EducationLevelEnum::BACHELOR->value,
+            'gender'           => \App\Enums\User\GenderEnum::MALE->value,
+            'education_level'  => \App\Enums\User\EducationLevelEnum::BACHELOR->value,
             'field_of_study'   => 'Computer Science',
-            'education_status' => App\Enums\EducationStatusEnum::GRADUATED->value,
+            'education_status' => \App\Enums\User\EducationStatusEnum::GRADUATED->value,
         ]);
     $response->assertOk();
     $this->assertDatabaseHas('users', [
@@ -96,16 +96,16 @@ it('update all fields expcept civil id related fields when they are already fill
         'email'            => 'john@example.com',
         'phone2'           => '09123456789',
         'civil_id'         => '1122334455',
-        'civil_id_type'    => App\Enums\CivilIdTypeEnum::PASSPORT->value,
+        'civil_id_type'    => \App\Enums\User\CivilIdTypeEnum::PASSPORT->value,
         'date_of_birth'    => Hekmatinasser\Verta\Facades\Verta::parse('1402-01-01')->toCarbon(),
         'father_name'      => 'Father Name',
-        'gender'           => App\Enums\GenderEnum::MALE->value,
-        'education_level'  => App\Enums\EducationLevelEnum::BACHELOR->value,
+        'gender'           => \App\Enums\User\GenderEnum::MALE->value,
+        'education_level'  => \App\Enums\User\EducationLevelEnum::BACHELOR->value,
         'field_of_study'   => 'Computer Science',
-        'education_status' => App\Enums\EducationStatusEnum::GRADUATED->value,
+        'education_status' => \App\Enums\User\EducationStatusEnum::GRADUATED->value,
     ]);
     $this->assertDatabaseMissing('users', [
         'civil_id'      => '12345678',
-        'civil_id_type' => App\Enums\CivilIdTypeEnum::IMMIGRANT_CODE->value,
+        'civil_id_type' => \App\Enums\User\CivilIdTypeEnum::IMMIGRANT_CODE->value,
     ]);
 });

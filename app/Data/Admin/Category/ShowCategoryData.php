@@ -6,7 +6,7 @@ namespace App\Data\Admin\Category;
 
 use App\Data\Admin\MediaData;
 use App\Data\Transformer\TranslatableEnumData;
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Models\Category;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;

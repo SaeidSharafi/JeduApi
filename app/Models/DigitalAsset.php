@@ -62,7 +62,7 @@ final class DigitalAsset extends Model implements ProductableContract, Reviewabl
     protected function casts(): array
     {
         return [
-            'status'                  => \App\Enums\PublicationStatusEnum::class,
+            'status'                  => \App\Enums\Content\PublicationStatusEnum::class,
             'is_attachable_to_course' => 'boolean',
             'published_at'            => 'datetime',
             // with time zone

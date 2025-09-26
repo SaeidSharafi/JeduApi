@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('caption')->nullable();
             $table->string('image_url')->nullable();
             $table->string('image_alt')->nullable();
-            $table->string('status')->default(App\Enums\PublicationStatusEnum::DRAFT->value);
+            $table->string('status')->default(\App\Enums\Content\PublicationStatusEnum::DRAFT->value);
             $table->string('link')->nullable();
             $table->integer('order')->default(0);
             $table->timestamps();

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Models\Blog\BlogPost;
 use Illuminate\Console\Command;
 

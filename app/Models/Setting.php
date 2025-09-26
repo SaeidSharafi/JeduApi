@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Data\Admin\MediaData;
-use App\Enums\SettingKeyEnum;
+use App\Enums\System\SettingKeyEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;

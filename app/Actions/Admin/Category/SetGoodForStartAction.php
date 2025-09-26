@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Category;
 
 use App\Data\Admin\Category\SetGoodForStartData;
-use App\Enums\MorphTypeEnum;
+use App\Enums\System\MorphTypeEnum;
 use App\Models\Categorizable;
 use App\Models\Category;
 

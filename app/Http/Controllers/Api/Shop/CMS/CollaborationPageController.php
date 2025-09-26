@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Api\Shop\CMS;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Settings\CollaborationPageData as AdminCollaborationPageData;
 use App\Data\Shop\CMS\CollaborationPageData;
-use App\Enums\SettingKeyEnum;
+use App\Enums\System\SettingKeyEnum;
 use App\Http\Controllers\Controller;
 use App\Services\SettingsService;
 

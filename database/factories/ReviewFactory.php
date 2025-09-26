@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\ProductableEnum;
-use App\Enums\ReviewStatusEnum;
+use App\Enums\Content\ReviewStatusEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Review;

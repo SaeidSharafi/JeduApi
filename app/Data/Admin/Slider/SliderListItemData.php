@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\Slider;
 
 use App\Data\Transformer\TranslatableEnumData;
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
 

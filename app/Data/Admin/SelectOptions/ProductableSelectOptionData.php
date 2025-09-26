@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\SelectOptions;
 
 use App\Data\Transformer\TranslatableEnumData;
-use App\Enums\ProductableEnum;
+use App\Enums\Product\ProductableEnum;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;

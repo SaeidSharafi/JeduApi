@@ -12,7 +12,7 @@ use App\Data\Admin\Product\ProductCreateData;
 use App\Data\Admin\Product\ProductData;
 use App\Data\Admin\Product\ProductListItemData;
 use App\Data\Admin\Product\ProductUpdateData;
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;

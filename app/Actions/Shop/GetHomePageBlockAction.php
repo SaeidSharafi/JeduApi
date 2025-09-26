@@ -10,10 +10,10 @@ use App\Data\Shop\HomePage\HomePageBlockData;
 use App\Data\Shop\HomePage\WebinarBannerData;
 use App\Data\Shop\Product\CategoryCardData;
 use App\Data\Shop\Product\ProductCardData;
-use App\Enums\DynamicListEntityTypeEnum;
-use App\Enums\DynamicListSortByEnum;
-use App\Enums\HomePageBlockTypeEnum;
-use App\Enums\ProductableEnum;
+use App\Enums\Content\DynamicListEntityTypeEnum;
+use App\Enums\Content\DynamicListSortByEnum;
+use App\Enums\Content\HomePageBlockTypeEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Models\Blog\BlogPost;
 use App\Models\Category;
 use App\Models\HomePageBlock;
@@ -187,7 +187,7 @@ final readonly class GetHomePageBlockAction
             DynamicListEntityTypeEnum::ALL_PRODUCTS => $baseProductQuery,
 
             DynamicListEntityTypeEnum::BLOG_POST => BlogPost::query()
-                ->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+                ->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED)
                 ->with(['author']),
         };
 

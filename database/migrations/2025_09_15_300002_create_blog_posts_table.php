@@ -19,7 +19,7 @@ return new class extends Migration
             $table->longText('body');
             $table->text('excerpt');
             $table->foreignId('author_id')->nullable()->constrained('staff', 'id')->nullOnDelete();
-            $table->string('status')->index()->default(App\Enums\PublicationStatusEnum::DRAFT->value);
+            $table->string('status')->index()->default(\App\Enums\Content\PublicationStatusEnum::DRAFT->value);
             $table->timestamp('published_at')->nullable();
             $table->integer('read_time_minutes');
             $table->boolean('is_featured')->default(false);

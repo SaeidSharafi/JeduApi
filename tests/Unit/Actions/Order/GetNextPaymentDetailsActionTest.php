@@ -38,11 +38,11 @@ describe('GetNextPaymentDetailsAction', function (): void {
 
     // Test for an initial payment that is also a full payment
     it('returns correct details for an initial, full payment', function (): void {
-        $prodcut               = App\Models\Product::factory()->create(['status' => App\Enums\PublicationStatusEnum::PUBLISHED]);
+        $prodcut               = App\Models\Product::factory()->create(['status' => \App\Enums\Content\PublicationStatusEnum::PUBLISHED]);
         $prodcutDeliveryOption = App\Models\ProductDeliveryOption::factory()->create([
             'product_id' => $prodcut->id,
             'price'      => 15000,
-            'status'     => App\Enums\PublicationStatusEnum::PUBLISHED,
+            'status'     => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
         $items = [
             [
@@ -68,11 +68,11 @@ describe('GetNextPaymentDetailsAction', function (): void {
 
     // Test for an initial payment that is only a pre-payment
     it('returns correct details for an initial pre-payment', function (): void {
-        $prodcut               = App\Models\Product::factory()->create(['status' => App\Enums\PublicationStatusEnum::PUBLISHED]);
+        $prodcut               = App\Models\Product::factory()->create(['status' => \App\Enums\Content\PublicationStatusEnum::PUBLISHED]);
         $prodcutDeliveryOption = App\Models\ProductDeliveryOption::factory()->create([
             'product_id'              => $prodcut->id,
             'price'                   => 100000,
-            'status'                  => App\Enums\PublicationStatusEnum::PUBLISHED,
+            'status'                  => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             'is_prepayment_available' => true,
             'prepayment_amount'       => 20000,
         ]);
@@ -99,16 +99,16 @@ describe('GetNextPaymentDetailsAction', function (): void {
             ->and($details->line_item_details[0]['items'][0])->toBe('Workshop');
     });
     it('returns correct details for an initial pre-payment wit mixed payments', function (): void {
-        $prodcut               = App\Models\Product::factory()->create(['status' => App\Enums\PublicationStatusEnum::PUBLISHED]);
+        $prodcut               = App\Models\Product::factory()->create(['status' => \App\Enums\Content\PublicationStatusEnum::PUBLISHED]);
         $prodcutDeliveryOption = App\Models\ProductDeliveryOption::factory()->create([
             'product_id' => $prodcut->id,
             'price'      => 150000,
-            'status'     => App\Enums\PublicationStatusEnum::PUBLISHED,
+            'status'     => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
         $prodcutDeliveryOption2 = App\Models\ProductDeliveryOption::factory()->create([
             'product_id'              => $prodcut->id,
             'price'                   => 100000,
-            'status'                  => App\Enums\PublicationStatusEnum::PUBLISHED,
+            'status'                  => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             'is_prepayment_available' => true,
             'prepayment_amount'       => 20000,
         ]);
@@ -146,11 +146,11 @@ describe('GetNextPaymentDetailsAction', function (): void {
     // Test for a final balance payment
     it('returns correct details for a final balance payment', function (): void {
         $order                 = Order::factory()->create(['grand_total' => 100000]);
-        $prodcut               = App\Models\Product::factory()->create(['status' => App\Enums\PublicationStatusEnum::PUBLISHED]);
+        $prodcut               = App\Models\Product::factory()->create(['status' => \App\Enums\Content\PublicationStatusEnum::PUBLISHED]);
         $prodcutDeliveryOption = App\Models\ProductDeliveryOption::factory()->create([
             'product_id'              => $prodcut->id,
             'price'                   => 100000,
-            'status'                  => App\Enums\PublicationStatusEnum::PUBLISHED,
+            'status'                  => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             'is_prepayment_available' => true,
             'prepayment_amount'       => 20000,
         ]);

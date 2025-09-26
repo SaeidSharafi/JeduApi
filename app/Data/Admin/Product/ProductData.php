@@ -8,7 +8,7 @@ use App\Contracts\ProductableDataContract;
 use App\Data\Admin\Term\ShowTermData;
 use App\Data\Casts\ProductableCast;
 use App\Data\Transformer\TranslatableEnumData;
-use App\Enums\MorphTypeEnum;
+use App\Enums\System\MorphTypeEnum;
 use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
@@ -28,7 +28,7 @@ final class ProductData extends Data
         public ProductableDataContract $productable,
         public ShowTermData $term,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
-        public \App\Enums\PublicationStatusEnum $status,
+        public \App\Enums\Content\PublicationStatusEnum $status,
         public bool $is_visible,
         public ?string $short_description,
         public ?string $short_name,

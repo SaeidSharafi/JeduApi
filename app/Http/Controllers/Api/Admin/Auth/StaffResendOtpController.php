@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api\Admin\Auth;
 
 use App\Actions\Auth\RequestOtpAction;
 use App\Contracts\ApiResponseInterface;
-use App\Enums\OtpType;
+use App\Enums\System\OtpType;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\OtpRequest;

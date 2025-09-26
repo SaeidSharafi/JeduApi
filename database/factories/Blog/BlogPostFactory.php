@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories\Blog;
 
+use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\MediaTagEnum;
-use App\Enums\PublicationStatusEnum;
 use App\Models\Blog\BlogPost;
 use App\Models\Staff;
 use Illuminate\Database\Eloquent\Factories\Factory;

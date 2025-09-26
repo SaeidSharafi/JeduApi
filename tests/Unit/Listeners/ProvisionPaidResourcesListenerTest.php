@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Listeners;
 
-use App\Enums\DeliveryMethodEnum;
+use App\Enums\Product\DeliveryMethodEnum;
 use App\Events\PaymentCompletedEvent;
 use App\Listeners\ProvisionPaidResourcesListener;
 use App\Models\Enrollment;

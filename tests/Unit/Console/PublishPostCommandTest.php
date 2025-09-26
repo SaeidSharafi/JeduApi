@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
 
 describe('PublishPostCommand', function (): void {
     beforeEach(function (): void {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\CacheKeysEnum;
+use App\Enums\System\CacheKeysEnum;
 
 describe('CacheKeysEnum', function (): void {
     it('can generate cache key without placeholders', function (): void {

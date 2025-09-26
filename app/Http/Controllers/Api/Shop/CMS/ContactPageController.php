@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Api\Shop\CMS;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Settings\ContactInfoData;
 use App\Data\Shop\CMS\ContactPageData;
-use App\Enums\SettingKeyEnum;
+use App\Enums\System\SettingKeyEnum;
 use App\Http\Controllers\Controller;
 use App\Services\SettingsService;
 

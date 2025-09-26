@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\ReviewStatusEnum;
+use App\Enums\Content\ReviewStatusEnum;
 
 it('update review status', function (): void {
     $review = App\Models\Review::factory()->create([

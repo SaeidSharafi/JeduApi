@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Data\OtpManager\OtpDto;
-use App\Enums\OtpType;
+use App\Enums\System\OtpType;
 use App\Models\Staff;
 use App\Services\OtpManagerService;
 use Illuminate\Database\Eloquent\Factories\Factory;

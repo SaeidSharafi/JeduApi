@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Data\Admin\Blog\Post;
 
 use App\Data\Transformer\CarbonFromJalaliString;
-use App\Enums\ProductableEnum;
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Traits\ValidatesMetaTags;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;

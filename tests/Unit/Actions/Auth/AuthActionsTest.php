@@ -7,7 +7,7 @@ use App\Actions\Auth\GenerateOtpAction;
 use App\Actions\Auth\InitiateAuthAction;
 use App\Actions\Auth\PasswordLoginAction;
 use App\Data\OtpManager\SentOtpDto;
-use App\Enums\OtpType;
+use App\Enums\System\OtpType;
 use App\Exceptions\UserHasPasswordException;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
