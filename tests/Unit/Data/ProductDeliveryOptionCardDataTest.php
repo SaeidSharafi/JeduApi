@@ -39,14 +39,8 @@ it('return data correctly', function (): void {
     expect($data->name)->toBe('Test Product')
         ->and($data->short_name)->toBe($product->short_name)
         ->and($data->short_description)->toBe($product->short_description)
-        ->and($data->vendor)->toBe([
-            'id'   => $product->vendor?->id,
-            'name' => $product->vendor?->name,
-        ])
-        ->and($data->term)->toBe([
-            'id'   => $product->term?->id,
-            'name' => $product->term?->name,
-        ])
+        ->and($data->vendor)->toBe($product->vendor?->name)
+        ->and($data->term)->toBe($product->term?->name,)
         ->and($data->price)->toBe($deliveryOption->price)
         ->and($data->fulfillment_type)->toBe([
             'value' => $deliveryOption->fulfillment_type->value,

@@ -9,7 +9,6 @@
       "preset": "default",
       "items": [
         {
-          "id": 76,
           "slug": "et-dolorem-incidunt-id-vitae-maiores",
           "name": "Prof. Heidi Huel",
           "price": 500000,
@@ -88,7 +87,6 @@
           }
         },
         {
-          "id": 88,
           "slug": "officia-alias-cumque-ullam-qui-et-veniam-aut",
           "name": "Genoveva Corkery",
           "price": 500000,
@@ -167,7 +165,6 @@
           }
         },
         {
-          "id": 61,
           "slug": "laborum-repellendus-ducimus-maxime-et-est-aliquam-veritatis-vel",
           "name": "Prof. Kory Jakubowski PhD",
           "price": 500000,
@@ -249,7 +246,6 @@
           }
         },
         {
-          "id": 69,
           "slug": "animi-ut-atque-omnis-cumque-ut-omnis",
           "name": "Tabitha Muller",
           "price": 500000,
@@ -331,7 +327,6 @@
           }
         },
         {
-          "id": 81,
           "slug": "atque-ullam-nemo-a-quo-et-facere-explicabo",
           "name": "Jaycee Shanahan",
           "price": 500000,
@@ -416,7 +411,6 @@
           }
         },
         {
-          "id": 84,
           "slug": "iste-minima-eligendi-autem-sint",
           "name": "Tillman Kertzmann",
           "price": 500000,
@@ -495,7 +489,6 @@
           }
         },
         {
-          "id": 53,
           "slug": "sunt-et-enim-autem-rerum-soluta-ut-sint-illo",
           "name": "Zackery Ernser",
           "price": 500000,
@@ -577,7 +570,6 @@
           }
         },
         {
-          "id": 57,
           "slug": "assumenda-modi-quibusdam-et-ad-eaque",
           "name": "Paxton Paucek",
           "price": 500000,
@@ -660,7 +652,6 @@
           }
         },
         {
-          "id": 65,
           "slug": "rem-harum-voluptatem-sint-voluptatem",
           "name": "Hugh Bogisich",
           "price": 500000,
@@ -743,7 +734,6 @@
           }
         },
         {
-          "id": 92,
           "slug": "quibusdam-eligendi-nesciunt-eius-numquam-tenetur",
           "name": "Ayla Davis",
           "price": 500000,

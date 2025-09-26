@@ -8,35 +8,30 @@
     "content": {
       "items": [
         {
-          "id": 53,
           "name": "ساعت",
           "slug": "voluptatem-molestiae-sed-est-et-accusamus",
           "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
           "image_url": "http://jedu.test/storage/fake-media/placeholder.svg"
         },
         {
-          "id": 73,
           "name": "سریال",
           "slug": "error-cumque-earum-eum-rerum-magnam-voluptas",
           "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
           "image_url": "http://jedu.test/storage/fake-media/placeholder.svg"
         },
         {
-          "id": 64,
           "name": "دیجیتال",
           "slug": "exercitationem-incidunt-ut-est-aut-odio",
           "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
           "image_url": "http://jedu.test/storage/fake-media/placeholder.svg"
         },
         {
-          "id": 100,
           "name": "کلمه",
           "slug": "officiis-dolorem-dolores-velit-mollitia-mollitia-aspernatur-sed",
           "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
           "image_url": "http://jedu.test/storage/fake-media/placeholder.svg"
         },
         {
-          "id": 67,
           "name": "جایزه",
           "slug": "suscipit-esse-soluta-rerum-officia-blanditiis-dignissimos",
           "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
