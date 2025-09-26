@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\Shop\Settings;
 
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Site\HeaderData;
+use App\Enums\SettingKeyEnum;
 use App\Http\Controllers\Controller;
 use App\Services\SettingsService;
 
@@ -67,7 +68,7 @@ final class HeaderController extends Controller
      * */
     public function __invoke(SettingsService $service): ApiResponseInterface
     {
-        $header = $service->get('header', \App\Data\Admin\Settings\HeaderData::getDefaults());
+        $header = $service->get(SettingKeyEnum::HEADER, \App\Data\Admin\Settings\HeaderData::getDefaults());
 
         return response()->success(HeaderData::from($header));
     }

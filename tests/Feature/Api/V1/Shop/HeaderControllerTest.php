@@ -3,12 +3,13 @@
 declare(strict_types=1);
 
 use App\Data\Admin\Settings\HeaderData;
+use App\Enums\SettingKeyEnum;
 use App\Models\Setting;
 
 describe('HeaderController', function (): void {
     it('retrieves header settings successfully', function (): void {
         $response = $this->getJson('/api/v1/shop/header');
-        $header   = Setting::getValue('header', HeaderData::getDefaults());
+        $header   = Setting::getValue(SettingKeyEnum::HEADER, HeaderData::getDefaults());
         $response->assertStatus(200);
 
         $response->assertJsonStructure([

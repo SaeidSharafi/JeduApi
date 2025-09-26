@@ -5,18 +5,19 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\CacheKeysEnum;
+use App\Enums\SettingKeyEnum;
 use App\Models\Setting;
 use Illuminate\Support\Collection;
 use SmartCache\Facades\SmartCache;
 
 final class SettingsService
 {
-    public function get(string $key, mixed $default = null): mixed
+    public function get(SettingKeyEnum $key, mixed $default = null): mixed
     {
         $allSettings = $this->getAll();
 
         // Retrieve the specific setting model from the collection.
-        $setting = $allSettings->get($key);
+        $setting = $allSettings->get($key->value);
 
         // If the setting doesn't exist, return the default.
         if (! $setting) {

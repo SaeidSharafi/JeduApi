@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\Admin\Settings;
 
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Settings\ContactInfoData;
+use App\Enums\SettingKeyEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
@@ -26,7 +27,7 @@ final class ContactInfoController extends Controller
     {
         Gate::authorize('viewAny', Setting::class);
 
-        $contactInfo = Setting::getValue('contact_info', ContactInfoData::getDefaults());
+        $contactInfo = Setting::getValue(SettingKeyEnum::CONTACT_INFO, ContactInfoData::getDefaults());
 
         return response()->success(ContactInfoData::from($contactInfo));
     }
@@ -41,10 +42,10 @@ final class ContactInfoController extends Controller
     {
         Gate::authorize('update', Setting::class);
 
-        Setting::setValue('contact_info', $data->toArray(), 'json', 'contact');
-
+        Setting::setValue(SettingKeyEnum::CONTACT_INFO, $data->toArray(), 'json', 'cms');
+        $contactInfo = Setting::getValue(SettingKeyEnum::CONTACT_INFO);
         return response()->success(
-            $data->toArray(),
+            ContactInfoData::from($contactInfo),
             __('messages.updated', ['model' => __('messages.models.contact_info')])
         );
     }

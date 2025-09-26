@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\Admin\Settings;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Settings\HeaderCreateData;
 use App\Data\Admin\Settings\HeaderData;
+use App\Enums\SettingKeyEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
@@ -28,7 +29,7 @@ final class HeaderController extends Controller
     {
         Gate::authorize('viewAny', Setting::class);
 
-        $header = Setting::getValue('header', HeaderData::getDefaults());
+        $header = Setting::getValue(SettingKeyEnum::HEADER, HeaderData::getDefaults());
 
         return response()->success(HeaderData::from($header));
     }
@@ -50,13 +51,13 @@ final class HeaderController extends Controller
         $header['navigation_links'] = array_values($links);
         $logo                       = $data->logo ? Media::find($data->logo) : null;
         $header['logo_url']         = $logo?->getUrl();
-        $setting                    = Setting::setValue('header', $header, 'json', 'header');
+        $setting                    = Setting::setValue(SettingKeyEnum::HEADER, $header, 'json', 'site');
         // Handle logo media
         $setting->syncMedia($logo, 'logo');
 
         return response()->success(
             HeaderData::from(
-                Setting::getValue('header', HeaderData::getDefaults())
+                Setting::getValue(SettingKeyEnum::HEADER, HeaderData::getDefaults())
             ),
             __('messages.updated', ['model' => __('messages.models.header')])
         );

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\Shop\CMS;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Settings\ContactInfoData;
 use App\Data\Shop\CMS\ContactPageData;
+use App\Enums\SettingKeyEnum;
 use App\Http\Controllers\Controller;
 use App\Services\SettingsService;
 
@@ -26,7 +27,7 @@ final class ContactPageController extends Controller
      */
     public function __invoke(SettingsService $service): ApiResponseInterface
     {
-        $contactPage = $service->get('contact_page', ContactInfoData::getDefaults());
+        $contactPage = $service->get(SettingKeyEnum::CONTACT_INFO, ContactInfoData::getDefaults());
         return response()->success(ContactPageData::fromSetting($contactPage));
     }
 }

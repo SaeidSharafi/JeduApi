@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Data\Admin\MediaData;
+use App\Enums\SettingKeyEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -27,9 +28,9 @@ final class Setting extends Model
     /**
      * Get a setting value by key.
      */
-    public static function getValue(string $key, mixed $default = null): mixed
+    public static function getValue(SettingKeyEnum $key, mixed $default = null): mixed
     {
-        $setting = self::where('key', $key)->first();
+        $setting = self::where('key', $key->value)->first();
         // Make sure we have an array to work with before passing to witImages
         $value = $setting ? $setting->value : $default;
 
@@ -44,10 +45,10 @@ final class Setting extends Model
     /**
      * Set a setting value by key.
      */
-    public static function setValue(string $key, mixed $value, string $type = 'json', ?string $group = null): static
+    public static function setValue(SettingKeyEnum $key, mixed $value, string $type = 'json', ?string $group = null): static
     {
         return self::updateOrCreate(
-            ['key' => $key],
+            ['key' => $key->value],
             [
                 'value' => $value,
                 'type'  => $type,

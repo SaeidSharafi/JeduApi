@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Data\Admin\MediaData;
+use App\Enums\SettingKeyEnum;
 use App\Models\Setting;
 use function Pest\Laravel\getJson;
 use Illuminate\Http\UploadedFile;
@@ -74,7 +75,7 @@ it('returns about us data with correct media', function () {
         ],
     ];
 
-    Setting::setValue('about_us', $aboutusData);
+    Setting::setValue(SettingKeyEnum::ABOUT_US, $aboutusData);
 
     $response = getJson(route('api.v1.shop.aboutus.show'));
 

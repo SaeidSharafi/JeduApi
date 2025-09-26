@@ -9,6 +9,7 @@ use App\Data\Admin\Settings\AboutUsCreateData;
 use App\Data\Admin\Settings\AboutUsData;
 use App\Data\Admin\Settings\CollaborationPageCreateData;
 use App\Data\Admin\Settings\CollaborationPageData;
+use App\Enums\SettingKeyEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
@@ -29,7 +30,7 @@ final class CollaborationInfoController extends Controller
     {
         Gate::authorize('viewAny', Setting::class);
 
-        $collaboration           = Setting::getValue('collaboration', CollaborationPageData::getDefaults());
+        $collaboration           = Setting::getValue(SettingKeyEnum::COLLABORATION, CollaborationPageData::getDefaults());
         $collaboration['images'] = Setting::witImages($collaboration);
 
         return response()->success(CollaborationPageData::from($collaboration));
@@ -45,8 +46,8 @@ final class CollaborationInfoController extends Controller
     {
         Gate::authorize('update', Setting::class);
 
-        Setting::setValue('collaboration', $data->toArray(), 'json', 'about');
-        $collaboration = Setting::getValue('collaboration');
+        Setting::setValue(SettingKeyEnum::COLLABORATION, $data->toArray(), 'json', 'cms');
+        $collaboration = Setting::getValue(SettingKeyEnum::COLLABORATION);
 
         return response()->success(
             CollaborationPageData::from($collaboration),

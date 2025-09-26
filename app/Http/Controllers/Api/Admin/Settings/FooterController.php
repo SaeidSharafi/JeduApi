@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\Admin\Settings;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Settings\FooterCreateData;
 use App\Data\Admin\Settings\FooterData;
+use App\Enums\SettingKeyEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
@@ -28,7 +29,7 @@ final class FooterController extends Controller
     {
         Gate::authorize('viewAny', Setting::class);
 
-        $footer = Setting::getValue('footer', FooterData::getDefaults());
+        $footer = Setting::getValue(SettingKeyEnum::FOOTER, FooterData::getDefaults());
 
         return response()->success(FooterData::from($footer));
     }
@@ -51,9 +52,9 @@ final class FooterController extends Controller
         $validated['logo_url'] = $logo?->getUrl() ?? null;
         $validated['logo_alt'] = $logo?->alt      ?? null;
 
-        $setting = Setting::setValue('footer', $validated, 'json', 'footer');
+        $setting = Setting::setValue(SettingKeyEnum::FOOTER, $validated, 'json', 'site');
         $setting->syncMedia($logo, 'logo');
-        $footer = Setting::getValue('footer');
+        $footer = Setting::getValue(SettingKeyEnum::FOOTER);
 
         return response()->success(
             FooterData::from($footer),

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Data\Admin\MediaData;
+use App\Enums\SettingKeyEnum;
 
 it('to array', function (): void {
     $setting = new App\Models\Setting([
@@ -30,20 +31,20 @@ it('to array', function (): void {
 
 it('get and set setting', function (): void {
     // Set a setting
-    $setting = App\Models\Setting::setValue('site_name', ['en' => 'My Site', 'fa' => 'سایت من'], 'json', 'general');
+    $setting = App\Models\Setting::setValue(SettingKeyEnum::HEADER, ['en' => 'My Site', 'fa' => 'سایت من'], 'json', 'general');
 
     expect($setting)->toBeInstanceOf(App\Models\Setting::class)
-        ->and($setting->key)->toBe('site_name')
+        ->and($setting->key)->toBe(SettingKeyEnum::HEADER->value)
         ->and($setting->value)->toBe(['en' => 'My Site', 'fa' => 'سایت من'])
         ->and($setting->type)->toBe('json')
         ->and($setting->group)->toBe('general');
 
     // Get the setting
-    $value = App\Models\Setting::getValue('site_name');
+    $value = App\Models\Setting::getValue(SettingKeyEnum::HEADER);
     expect($value)->toBe(['en' => 'My Site', 'fa' => 'سایت من']);
 
     // Get a non-existing setting with default value
-    $defaultValue = App\Models\Setting::getValue('non_existing_key', 'default_value');
+    $defaultValue = App\Models\Setting::getValue(SettingKeyEnum::FOOTER, 'default_value');
     expect($defaultValue)->toBe('default_value');
 });
 
@@ -59,11 +60,11 @@ it('get setting with images', function (): void {
         ->toDisk('public')
         ->upload();
 
-    $media = App\Models\Setting::setValue('site_logo', [
+    $media = App\Models\Setting::setValue(SettingKeyEnum::HEADER, [
         'images' => [$image1->id, $image2->id],
     ], 'json', 'general');
     // Get the setting
-    $value = App\Models\Setting::getValue('site_logo');
+    $value = App\Models\Setting::getValue(SettingKeyEnum::HEADER);
     expect($value)->toBeArray()
         ->and($value['images'])->toBeArray()
         ->and(count($value['images']))->toBe(2)
@@ -77,30 +78,30 @@ it('get setting with images', function (): void {
 
 it('get setting with non-array value', function (): void {
     // Set a setting with a non-array value
-    $setting = App\Models\Setting::setValue('site_name', 'My Site', 'text', 'general');
+    $setting = App\Models\Setting::setValue(SettingKeyEnum::HEADER, 'My Site', 'text', 'general');
 
     expect($setting)->toBeInstanceOf(App\Models\Setting::class)
-        ->and($setting->key)->toBe('site_name')
+        ->and($setting->key)->toBe(SettingKeyEnum::HEADER->value)
         ->and($setting->value)->toBe('My Site')
         ->and($setting->type)->toBe('text')
         ->and($setting->group)->toBe('general');
 
     // Get the setting
-    $value = App\Models\Setting::getValue('site_name');
+    $value = App\Models\Setting::getValue(SettingKeyEnum::HEADER);
     expect($value)->toBe('My Site');
 });
 
 it('get setting with empty array value', function (): void {
     // Set a setting with an empty array value
-    $setting = App\Models\Setting::setValue('empty_setting', [], 'json', 'general');
+    $setting = App\Models\Setting::setValue(SettingKeyEnum::HEADER, [], 'json', 'general');
 
     expect($setting)->toBeInstanceOf(App\Models\Setting::class)
-        ->and($setting->key)->toBe('empty_setting')
+        ->and($setting->key)->toBe(SettingKeyEnum::HEADER->value)
         ->and($setting->value)->toBe([])
         ->and($setting->type)->toBe('json')
         ->and($setting->group)->toBe('general');
 
     // Get the setting
-    $value = App\Models\Setting::getValue('empty_setting', 'default_value');
+    $value = App\Models\Setting::getValue(SettingKeyEnum::HEADER, 'default_value');
     expect($value)->toBe([]);
 });

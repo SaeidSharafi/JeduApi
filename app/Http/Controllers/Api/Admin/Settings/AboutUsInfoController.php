@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\Admin\Settings;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Settings\AboutUsCreateData;
 use App\Data\Admin\Settings\AboutUsData;
+use App\Enums\SettingKeyEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Gate;
@@ -27,7 +28,7 @@ final class AboutUsInfoController extends Controller
     {
         Gate::authorize('viewAny', Setting::class);
 
-        $aboutUs           = Setting::getValue('about_us', AboutUsData::getDefaults());
+        $aboutUs           = Setting::getValue(SettingKeyEnum::ABOUT_US, AboutUsData::getDefaults());
         $aboutUs['images'] = Setting::witImages($aboutUs);
 
         return response()->success(AboutUsData::from($aboutUs));
@@ -43,8 +44,8 @@ final class AboutUsInfoController extends Controller
     {
         Gate::authorize('update', Setting::class);
 
-        Setting::setValue('about_us', $data->toArray(), 'json', 'about');
-        $aboutUs = Setting::getValue('about_us');
+        Setting::setValue(SettingKeyEnum::ABOUT_US, $data->toArray(), 'json', 'cms');
+        $aboutUs = Setting::getValue(SettingKeyEnum::ABOUT_US);
 
         return response()->success(
             AboutUsData::from($aboutUs),
