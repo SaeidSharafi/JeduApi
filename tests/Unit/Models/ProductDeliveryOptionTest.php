@@ -8,6 +8,7 @@ test('to array', function (): void {
     expect($productDeliveryOption->toArray())
         ->toEqual([
             'id'                                     => $productDeliveryOption->id,
+            'uuid'                                   => $productDeliveryOption->uuid,
             'product_id'                             => $productDeliveryOption->product_id,
             'name'                                   => $productDeliveryOption->name,
             'sku'                                    => $productDeliveryOption->sku,

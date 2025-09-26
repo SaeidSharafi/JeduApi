@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 final class ProductDeliveryOption extends Model
 {
@@ -48,6 +49,15 @@ final class ProductDeliveryOption extends Model
         = [
             'productDeliveryOptionDiscountPrice',
         ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        self::creating(function ($model): void {
+            $model->uuid = (string) Str::uuid7();
+        });
+    }
 
     public function product(): BelongsTo
     {
