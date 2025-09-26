@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\Category;
 
 use App\Data\Transformer\TranslatableEnumData;
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;

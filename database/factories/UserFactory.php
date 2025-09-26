@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Data\OtpManager\OtpDto;
-use App\Enums\CivilIdTypeEnum;
-use App\Enums\EducationLevelEnum;
-use App\Enums\EducationStatusEnum;
-use App\Enums\GenderEnum;
-use App\Enums\OtpType;
+use App\Enums\System\OtpType;
+use App\Enums\User\CivilIdTypeEnum;
+use App\Enums\User\EducationLevelEnum;
+use App\Enums\User\EducationStatusEnum;
+use App\Enums\User\GenderEnum;
 use App\Models\User;
 use App\Services\OtpManagerService;
 use Illuminate\Database\Eloquent\Factories\Factory;

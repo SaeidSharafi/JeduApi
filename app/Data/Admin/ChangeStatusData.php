@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin;
 
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 

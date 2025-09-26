@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api\Shop\HomePage;
 
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\HomePage\StudentStoryData;
-use App\Enums\CacheKeysEnum;
+use App\Enums\System\CacheKeysEnum;
 use App\Http\Controllers\Controller;
 use App\Models\StudentStory;
 use SmartCache\Facades\SmartCache;

@@ -5,7 +5,7 @@
 - **Key Fields:** `uuid`, `first_name`, `last_name`, `email`, `phone`, `password`, `civil_id`, `date_of_birth`, `gender`, `education_level`
 - **Relationships:** 
   - `hasOne(Teacher::class)` - teacherData
-  - `hasMany(Enrolment::class, 'customer_id')` - enrolments
+  - `hasMany(Enrollment::class, 'customer_id')` - enrollments
   - `hasOne(Wallet::class)` - wallet
   - `hasMany(Review::class)` - reviews
 - **Guard:** `user` (Sanctum authentication)
@@ -32,48 +32,51 @@
 - **Relationships:**
   - `hasMany(OrderItem::class)` - items
   - `hasMany(Payment::class)` - payments
-  - `hasMany(Enrolment::class, 'order_id')` - enrolments
+  - `hasMany(Enrollment::class, 'order_id')` - enrollments
   - `belongsTo(User::class, 'customer_id')` - customer
 - **Special Features:** Auto-incrementing order numbers, payment status calculations
 
 ### Product (`app/Models/Product.php`)
 - **Purpose:** Sellable instances of educational content with polymorphic relationships
-- **Key Fields:** `vendor_id`, `productable_id`, `productable_type`, `term_id`, `status`, `name`, `short_description`, `slug`, `is_featured`, `details_json`
+- **Key Fields:** `vendor_id`, `productable_id`, `productable_type`, `term_id`, `status`, `is_visible`, `short_name`, `name`, `slug`, `short_description`, `is_featured`, `price_data_cache`, `details_json`
 - **Relationships:**
   - `morphTo()` - productable (Course, Seminar, DigitalAsset)
   - `belongsTo(Vendor::class)` - vendor
   - `belongsTo(Term::class)` - term
   - `hasMany(ProductDeliveryOption::class)` - productDeliveryOptions
-  - `hasMany(Review::class, 'reviewable_id')` - reviews (polymorphic)
-  - Uses `HasCategories` trait for categorization
-- **Special Features:** Active product scopes with relationship filtering, automatic slug management from productable entities
+  - `hasManyThrough(OrderItem::class, ProductDeliveryOption::class)` - orderItems
+- **Traits:** Uses `HasCategories` and `HasFactory` for taxonomy tagging and database seeding support
+- **Special Features:** Publication-aware scopes (`active*` helpers) combine status, visibility, and availability checks; SmartCache-backed price snapshots in `price_data_cache`; enum-backed casting for `status` with JSON casting on cached fields
 
 ### Course (`app/Models/Course.php`)
 - **Purpose:** Educational course definitions and blueprints
-- **Key Fields:** Course-specific metadata and content structure
+- **Key Fields:** `slug`, `thumbnail_url`, `full_name`, `short_name`, `description`, `duration`, `difficulty_level`, `career_prospects_text`, `curriculum_summary_text`, `outcomes_json`, `default_teacher_info`, `additional_info`, `properties`, review aggregates (`review_count`, `average_rating`), `meta_title`, `meta_description`, `meta_keywords`, `status`
 - **Relationships:** 
   - Polymorphic relationship as `productable` to Product
   - `hasMany(Review::class, 'reviewable_id')` - reviews (polymorphic)
   - `morphToMany(DigitalAsset::class, 'assetable')` - digitalAssets
   - `morphToMany(BlogPost::class, 'productable', 'blog_post_productables')` - blogPosts
-- **Traits:** Uses `HasMedia` trait for standardized media management with tagged media support
+  - `morphToMany(Category::class, 'categorizable', 'categorizables')` - categories
+- **Traits:** Uses `HasMedia`, `HasReview`, `IsProductable`, and `Mediable` to centralize media handling, review aggregation (auto-maintained `review_count`/`average_rating`), and polymorphic product binding
+- **Special Features:** Implements `ProductableContract` and `ReviewableContract`; participates in review aggregation events to keep cached review metrics synchronized; enum-backed casting for publication status and difficulty level
 
 ### Seminar (`app/Models/Seminar.php`)
 - **Purpose:** One-off educational events
-- **Key Fields:** Seminar-specific scheduling and content metadata
+- **Key Fields:** `full_name`, `short_name`, `subtitle`, `slug`, `thumbnail_url`, `description`, `learning_objectives`, `target_audience`, `prerequisites`, `promo_video_external_url`, `estimated_duration_desc`, `level`, `provides_certificate`, `faq`, `keywords`, review aggregates (`review_count`, `average_rating`), `meta_title`, `meta_description`, `meta_keywords`, `status`
 - **Relationships:** 
   - Polymorphic relationship as `productable` to Product
   - `hasMany(Review::class, 'reviewable_id')` - reviews (polymorphic)
   - `morphToMany(BlogPost::class, 'productable', 'blog_post_productables')` - blogPosts
-- **Traits:** Uses `HasMedia` trait for standardized media management with tagged media support
+- **Traits:** Combines `HasAssets`, `HasAuditor`, `HasCategories`, `HasMedia`, `HasReview`, `IsProductable`, and `Mediable` to manage attached resources, audit data, categories, and review aggregates
 
 ### DigitalAsset (`app/Models/DigitalAsset.php`)
 - **Purpose:** Standalone digital products (PDFs, videos, etc.)
-- **Key Fields:** Digital asset metadata and file associations
+- **Key Fields:** `name`, `slug`, `thumbnail_url`, `description`, `version`, `page_count`, `duration_seconds`, `is_attachable_to_course`, review aggregates (`review_count`, `average_rating`), `keywords`, `meta_title`, `meta_description`, `meta_keywords`, `published_at`, `status`
 - **Relationships:** 
   - Polymorphic relationship as `productable` to Product
-  - `hasMany(Review::class, 'reviewable_id')` - reviews (polymorphic)
-- **Traits:** Uses `HasMedia` trait for standardized media management with tagged media support
+  - `morphToMany(Category::class, 'categorizable', 'categorizables')` - categories
+  - `morphedByMany(Course::class, 'assetable')` - courses
+- **Traits:** Uses `HasMedia`, `HasReview`, `IsProductable`, and `Mediable` for media, review aggregation, and polymorphic bindings
 
 ### ProductDeliveryOption (`app/Models/ProductDeliveryOption.php`)
 - **Purpose:** Specific purchase/delivery methods per product with pricing
@@ -97,16 +100,19 @@
 - **Relationships:**
   - `belongsTo(Order::class)` - order
   - `belongsTo(ProductDeliveryOption::class)` - productDeliveryOption
-  - `hasOne(Enrolment::class)` - enrolment
+  - `hasOne(Enrollment::class)` - enrollment
   - `hasMany(Refund::class)` - refunds
 
-### Enrolment (`app/Models/Enrolment.php`)
-- **Purpose:** Student access records linking users to purchased products
-- **Key Fields:** `customer_id`, `order_id`, `order_item_id`, `enrollment_status`, access control fields
+### Enrollment (`app/Models/Enrollment.php`)
+- **Purpose:** Student access records linking customers to purchased delivery options
+- **Key Fields:** `uuid`, `order_id`, `order_item_id`, `customer_id`, `product_delivery_option_id`, `enrollment_status`, `access_start_date`, `access_end_date`, `external_enrollment_id`, `provisioning_data`
 - **Relationships:**
   - `belongsTo(User::class, 'customer_id')` - customer
   - `belongsTo(Order::class)` - order
   - `belongsTo(OrderItem::class)` - orderItem
+  - `belongsTo(ProductDeliveryOption::class, 'product_delivery_option_id')` - productDeliveryOption
+  - `hasOneThrough(Product::class, ProductDeliveryOption::class)` - product
+- **Special Features:** UUID (`uuid7`) generation on create for external references, enum-backed `enrollment_status`, date casting for access window, and JSON provisioning payloads
 
 ### Payment (`app/Models/Payment.php`)
 - **Purpose:** Financial transaction handling
@@ -197,45 +203,57 @@
 - **Relationships:** Campaign management for bulk wallet operations
 
 ### Setting (`app/Models/Setting.php`)
-- **Purpose:** Application configuration and settings management
-- **Key Fields:** `key`, `value`, `type`, `group`
-- **Relationships:** Self-contained configuration system
-- **Special Features:** Media integration, recursive image processing, type casting
+- **Purpose:** Application configuration registry powering CMS and storefront content
+- **Key Fields:** `key`, `value` (JSON payload), `type`, `group`
+- **Relationships:** Self-contained configuration system with media attachments via Mediable
+- **Special Features:** `witImages()` helper resolves stored media IDs into `MediaData` DTOs; integrates with SettingsService and SmartCache invalidation to serve hydrated settings payloads
 
 ### HomePageBlock (`app/Models/HomePageBlock.php`)
-- **Purpose:** Dynamic content blocks for homepage layout
-- **Key Fields:** Block content, positioning, display rules
-- **Relationships:** Media attachments for images and content
+- **Purpose:** Dynamic homepage block definitions rendered on the shop front
+- **Key Fields:** `type` (enum), `title`, `location`, `content` (JSON), `order`, `is_active`
+- **Relationships:** Media attachments for block imagery via Mediable
+- **Special Features:** Enum-backed block type with boolean activation flag and ordering casts for precise layout control
 
 ### Slider (`app/Models/Slider.php`)
-- **Purpose:** Homepage and promotional slider management
-- **Key Fields:** Slider content, ordering, display settings
-- **Relationships:** Media attachments for slider images
+- **Purpose:** Homepage and promotional slider management with publication workflow
+- **Key Fields:** `title`, `caption`, `image_id`, `image_url`, `image_alt`, `status`, `link`, `order`
+- **Relationships:** Media attachments for slider images, `getImage()` helper returns hydrated `MediaData`
+- **Special Features:** `active()` scope filters to published sliders via `PublicationStatusEnum`; leverages Mediable for tagged image retrieval
+
+### Partner (`app/Models/Partner.php`)
+- **Purpose:** Strategic partner logos and showcases for marketing sections
+- **Key Fields:** `title`, `caption`, `image_id`, `image_url`, `image_alt`, `url`, `show_in`, `order`, `is_active`
+- **Relationships:** Media attachments for partner imagery with `getImage()` helper returning `MediaData`
+- **Special Features:** `active()` scope limits to visible partners; `show_in` enum targets specific storefront regions
 
 ### StudentStory (`app/Models/StudentStory.php`)
-- **Purpose:** Success stories and testimonials from students
-- **Key Fields:** Story content, student information, featured status
-- **Relationships:** Media attachments for photos and content
-
-### CollaborationCarousel (`app/Models/CollaborationCarousel.php`)
-- **Purpose:** Partner and collaboration showcase carousel
-- **Key Fields:** Partner information, carousel ordering, display settings
-- **Relationships:** Media attachments for partner logos
+- **Purpose:** Success stories and testimonials showcased on the storefront
+- **Key Fields:** `student_name`, `course_name`, `course_url`, `story_text`, `is_visible`, `display_order`
+- **Relationships:** Media attachments (avatar) via Mediable with accessor exposing `avatar_url`
+- **Special Features:** `visible()` scope limits listings to published stories; maintains ordered display via `display_order`
 
 ### CollaborationRequest (`app/Models/CollaborationRequest.php`)
-- **Purpose:** Incoming collaboration and partnership requests
-- **Key Fields:** Request details, contact information, status tracking
-- **Relationships:** Contact form submissions for partnerships
+- **Purpose:** Incoming collaboration and partnership requests submitted from the shop
+- **Key Fields:** `full_name`, `phone`, `email`, `department`, `message`
+- **Relationships:** Media attachments for supporting documents via Mediable
+- **Special Features:** Factory-backed model used by public collaboration form endpoints
+
+### AdviceRequest (`app/Models/AdviceRequest.php`)
+- **Purpose:** Callback requests for educational counseling follow-up
+- **Key Fields:** `phone`, `status`, `note`, `handled_by_id`
+- **Relationships:** `belongsTo(Staff::class, 'handled_by_id')` - handler
+- **Special Features:** Enum-backed `status` with timestamps for handling workflow
 
 ### ContactUsRequest (`app/Models/ContactUsRequest.php`)
-- **Purpose:** Customer contact form submissions
-- **Key Fields:** Contact details, message content, response status
-- **Relationships:** Customer service interaction tracking
+- **Purpose:** Customer contact form submissions captured from the shop CMS
+- **Key Fields:** `full_name`, `phone`, `subject`, `email`, `message`
+- **Relationships:** Self-contained request records for support follow-up
 
 ### SmsLog (`app/Models/SmsLog.php`)
 - **Purpose:** SMS delivery tracking and logging
-- **Key Fields:** Phone numbers, message content, delivery status, provider details
-- **Relationships:** SMS service audit trail
+- **Key Fields:** `provider`, `status`, `to` (array of recipients), `message`, `data`, `sent_at`
+- **Relationships:** Self-contained audit records for outbound SMS
+- **Special Features:** Casts payload and recipient metadata to arrays for structured logging
 
 ### BlogCategory (`app/Models/Blog/BlogCategory.php`)
 - **Purpose:** Hierarchical blog content organization

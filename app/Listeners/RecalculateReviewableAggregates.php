@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Enums\MorphTypeEnum;
-use App\Enums\ReviewStatusEnum;
+use App\Enums\Content\ReviewStatusEnum;
+use App\Enums\System\MorphTypeEnum;
 use App\Events\ReviewableAggregatesChanged;
 use App\Models\Review;
 use App\Traits\HasReview;

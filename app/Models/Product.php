@@ -82,7 +82,7 @@ final class Product extends Model
             'is_featured'      => 'boolean',
             'price_data_cache' => 'array',
             'details_json'     => 'array',
-            'status'           => \App\Enums\PublicationStatusEnum::class,
+            'status'           => \App\Enums\Content\PublicationStatusEnum::class,
             'created_at'       => 'datetime',
             'updated_at'       => 'datetime',
         ];
@@ -91,10 +91,10 @@ final class Product extends Model
     #[Scope]
     protected function active($query)
     {
-        return $query->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+        return $query->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED)
             ->where('is_visible', true)
             ->whereHas('productable', function ($q): void {
-                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED);
+                $q->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED);
             })
             ->whereHas('productDeliveryOptions', function ($q): void {
                 $q->available();
@@ -105,14 +105,14 @@ final class Product extends Model
     protected function activeWithRelations($query)
     {
         return $query
-            ->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+            ->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED)
             ->where('is_visible', true)
             ->withWhereHas('productDeliveryOptions', function ($q): void {
                 $q->available()
                     ->with('productDeliveryOptionDiscountPrice');
             })
             ->withWhereHas('productable', function ($q): void {
-                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+                $q->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED)
                     ->withProductableMedia()
                     ->withProductableCategories()
                     ->withProductableAssets();
@@ -124,7 +124,7 @@ final class Product extends Model
     protected function activeWithData(Builder $query): Builder
     {
         return $query
-            ->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+            ->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED)
             ->where('is_visible', true)
             ->withWhereHas(
                 'productDeliveryOptions', function ($q): void {
@@ -132,7 +132,7 @@ final class Product extends Model
                         ->available();
                 })
             ->withWhereHas('productable', function ($q): void {
-                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED);
+                $q->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED);
             })
             ->with('vendor');
     }
@@ -141,15 +141,15 @@ final class Product extends Model
     protected function activeWithPriceAndMedia($query)
     {
         return $query
-            ->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+            ->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED)
             ->where('is_visible', true)
             ->withWhereHas(
                 'productDeliveryOptions', function ($q): void {
-                    $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+                    $q->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED)
                         ->with('productDeliveryOptionDiscountPrice');
                 })
             ->withWhereHas('productable', function ($q): void {
-                $q->where('status', \App\Enums\PublicationStatusEnum::PUBLISHED)
+                $q->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED)
                     ->withProductableMedia();
             })
             ->with('vendor');

@@ -73,23 +73,23 @@ test('relation orderItems through product_delivery_options', function (): void {
 describe('scopes', function (): void {
     it('active', function (): void {
         $activeProduct = App\Models\Product::factory()->create([
-            'status'     => App\Enums\PublicationStatusEnum::PUBLISHED,
+            'status'     => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             'is_visible' => true,
         ]);
         $inactiveProduct = App\Models\Product::factory()->create([
-            'status'     => App\Enums\PublicationStatusEnum::DRAFT,
+            'status'     => \App\Enums\Content\PublicationStatusEnum::DRAFT,
             'is_visible' => false,
         ]);
 
         // Ensure the productable is published
         $productable         = $activeProduct->productable;
-        $productable->status = App\Enums\PublicationStatusEnum::PUBLISHED;
+        $productable->status = \App\Enums\Content\PublicationStatusEnum::PUBLISHED;
         $productable->save();
 
         // Ensure the product delivery option is published
         $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
             'product_id' => $activeProduct->id,
-            'status'     => App\Enums\PublicationStatusEnum::PUBLISHED,
+            'status'     => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
 
         $activeProducts = App\Models\Product::active()->get();
@@ -102,23 +102,23 @@ describe('scopes', function (): void {
 
     it('active with relations', function (): void {
         $activeProduct = App\Models\Product::factory()->create([
-            'status'     => App\Enums\PublicationStatusEnum::PUBLISHED,
+            'status'     => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             'is_visible' => true,
         ]);
         $inactiveProduct = App\Models\Product::factory()->create([
-            'status'     => App\Enums\PublicationStatusEnum::DRAFT,
+            'status'     => \App\Enums\Content\PublicationStatusEnum::DRAFT,
             'is_visible' => false,
         ]);
 
         // Ensure the productable is published
         $productable         = $activeProduct->productable;
-        $productable->status = App\Enums\PublicationStatusEnum::PUBLISHED;
+        $productable->status = \App\Enums\Content\PublicationStatusEnum::PUBLISHED;
         $productable->save();
 
         // Ensure the product delivery option is published
         $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
             'product_id' => $activeProduct->id,
-            'status'     => App\Enums\PublicationStatusEnum::PUBLISHED,
+            'status'     => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
 
         $activeProducts = App\Models\Product::activeWithRelations()->get();
@@ -137,23 +137,23 @@ describe('scopes', function (): void {
 
     it('active with price and media', function (): void {
         $activeProduct = App\Models\Product::factory()->create([
-            'status'     => App\Enums\PublicationStatusEnum::PUBLISHED,
+            'status'     => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             'is_visible' => true,
         ]);
         $inactiveProduct = App\Models\Product::factory()->create([
-            'status'     => App\Enums\PublicationStatusEnum::DRAFT,
+            'status'     => \App\Enums\Content\PublicationStatusEnum::DRAFT,
             'is_visible' => false,
         ]);
 
         // Ensure the productable is published
         $productable         = $activeProduct->productable;
-        $productable->status = App\Enums\PublicationStatusEnum::PUBLISHED;
+        $productable->status = \App\Enums\Content\PublicationStatusEnum::PUBLISHED;
         $productable->save();
 
         // Ensure the product delivery option is published
         $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
             'product_id' => $activeProduct->id,
-            'status'     => App\Enums\PublicationStatusEnum::PUBLISHED,
+            'status'     => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
 
         $activeProducts = App\Models\Product::activeWithPriceAndMedia()->get();

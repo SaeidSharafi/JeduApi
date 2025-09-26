@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Api\Admin\DiscountInfoController;
-use App\Http\Controllers\Api\Admin\DiscountPromotionController;
-use App\Http\Controllers\Api\Admin\DiscountPromotionStatisticsController;
-use App\Http\Controllers\Api\Admin\DiscountPromotionStatusUpdateController;
-use App\Http\Controllers\Api\Admin\NextPaymentDetailsController;
-use App\Http\Controllers\Api\Admin\OrderCalculationController;
-use App\Http\Controllers\Api\Admin\OrderController;
-use App\Http\Controllers\Api\Admin\OrderItemController;
-use App\Http\Controllers\Api\Admin\PaymentController;
-use App\Http\Controllers\Api\Admin\RefundUpdateStatusController;
+use App\Http\Controllers\Api\Admin\Order\NextPaymentDetailsController;
+use App\Http\Controllers\Api\Admin\Order\OrderCalculationController;
+use App\Http\Controllers\Api\Admin\Order\OrderController;
+use App\Http\Controllers\Api\Admin\Order\OrderItemController;
+use App\Http\Controllers\Api\Admin\Order\PaymentController;
+use App\Http\Controllers\Api\Admin\Order\RefundUpdateStatusController;
+use App\Http\Controllers\Api\Admin\Promotion\DiscountInfoController;
+use App\Http\Controllers\Api\Admin\Promotion\DiscountPromotionController;
+use App\Http\Controllers\Api\Admin\Promotion\DiscountPromotionStatisticsController;
+use App\Http\Controllers\Api\Admin\Promotion\DiscountPromotionStatusUpdateController;
 use App\Http\Controllers\Api\Admin\Wallet\AdjustWalletController;
 use App\Http\Controllers\Api\Admin\Wallet\AdminWalletController;
 use App\Http\Controllers\Api\Admin\Wallet\CreateWalletController;
@@ -29,7 +29,7 @@ Route::apiResource('order/{order}/payment', PaymentController::class);
 Route::get('order/{order}/next-payment-details', NextPaymentDetailsController::class)
     ->name('next-payment-details');
 
-Route::apiResource('/order-item/{orderItem}/refund', App\Http\Controllers\Api\Admin\RefundController::class);
+Route::apiResource('/order-item/{orderItem}/refund', \App\Http\Controllers\Api\Admin\Order\RefundController::class);
 Route::put('refund/{refund}/status', RefundUpdateStatusController::class)
     ->name('refund.status');
 

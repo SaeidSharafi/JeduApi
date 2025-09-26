@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\Shop\Settings;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Settings\FooterData as AdminFooterData;
 use App\Data\Shop\Site\FooterData;
+use App\Enums\System\SettingKeyEnum;
 use App\Http\Controllers\Controller;
 use App\Services\SettingsService;
 
@@ -19,6 +20,7 @@ final class FooterController extends Controller
 {
     /**
      * Get Footer Configuration
+     *
      * Returns the configuration settings for the website footer.
      *
      * @response 200 {
@@ -87,7 +89,7 @@ final class FooterController extends Controller
      */
     public function __invoke(SettingsService $service): ApiResponseInterface
     {
-        $footer = $service->get('footer', AdminFooterData::getDefaults());
+        $footer = $service->get(SettingKeyEnum::FOOTER, AdminFooterData::getDefaults());
 
         return response()->success(FooterData::from($footer));
     }

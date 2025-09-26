@@ -75,7 +75,7 @@ final class Category extends Model
     protected function casts(): array
     {
         return [
-            'status'          => \App\Enums\PublicationStatusEnum::class,
+            'status'          => \App\Enums\Content\PublicationStatusEnum::class,
             'properties'      => 'array',
             'additional_info' => 'array',
             'created_at'      => 'datetime',

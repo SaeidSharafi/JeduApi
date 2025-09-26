@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Contracts\OtpGeneratorInterface;
 use App\Data\OtpManager\OtpDto;
 use App\Data\OtpManager\SentOtpDto;
-use App\Enums\OtpType;
+use App\Enums\System\OtpType;
 use App\Services\OtpManagerService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;

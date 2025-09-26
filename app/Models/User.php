@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\CivilIdTypeEnum;
-use App\Enums\EducationLevelEnum;
-use App\Enums\EducationStatusEnum;
-use App\Enums\GenderEnum;
+use App\Enums\User\CivilIdTypeEnum;
+use App\Enums\User\EducationLevelEnum;
+use App\Enums\User\EducationStatusEnum;
+use App\Enums\User\GenderEnum;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;

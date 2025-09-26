@@ -1,9 +1,10 @@
 <?php
 
 declare(strict_types=1);
+
 use App\Http\Controllers\Api\Admin\Category\CategoryController;
 use App\Http\Controllers\Api\Admin\Category\CategoryItemsController;
-use App\Http\Controllers\Api\Admin\Category\GoodForStartController;
+use App\Http\Controllers\Api\Admin\Content\GoodForStartController;
 use App\Http\Controllers\Api\Admin\Product\ArchiveProductController;
 use App\Http\Controllers\Api\Admin\Product\CourseController;
 use App\Http\Controllers\Api\Admin\Product\DigitalAssetController;

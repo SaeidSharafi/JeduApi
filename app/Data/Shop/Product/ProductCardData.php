@@ -6,7 +6,7 @@ namespace App\Data\Shop\Product;
 
 use App\Data\Shop\ProductPriceData;
 use App\Data\Transformer\TranslatableEnumData;
-use App\Enums\ProductableEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Models\Product;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;

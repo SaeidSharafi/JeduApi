@@ -20,11 +20,11 @@ describe('CreatePaymentAction', function (): void {
         Event::fake([PaymentCompletedEvent::class]);
         $this->adminUser = App\Models\Staff::factory()->create();
         $this->prodcut   = App\Models\Product::factory()
-            ->create(['status' => App\Enums\PublicationStatusEnum::PUBLISHED]);
+            ->create(['status' => \App\Enums\Content\PublicationStatusEnum::PUBLISHED]);
         $this->prodcutDeliveryOption = App\Models\ProductDeliveryOption::factory()->create([
             'product_id' => $this->prodcut->id,
             'price'      => 50000,
-            'status'     => App\Enums\PublicationStatusEnum::PUBLISHED,
+            'status'     => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
 
     });

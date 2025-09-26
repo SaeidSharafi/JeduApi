@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\ProductableEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Seminar;

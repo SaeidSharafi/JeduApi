@@ -1,11 +1,12 @@
 <?php
 
 declare(strict_types=1);
+
+use App\Http\Controllers\Api\Admin\FileManagement\PrivateFileDownloadController;
 use App\Http\Controllers\Api\Admin\FileManagement\UploadMediaController;
 use App\Http\Controllers\Api\Admin\FileManagement\UploadPrivateController;
 use App\Http\Controllers\Api\Admin\FileManagement\ViewMediaController;
 use App\Http\Controllers\Api\Admin\FileManagement\ViewPrivateFileController;
-use App\Http\Controllers\Api\Admin\PrivateFileDownloadController;
 
 Route::post('media/upload', UploadMediaController::class)->name('media.upload');
 Route::get('media/{media}', ViewMediaController::class)->name('media.view');

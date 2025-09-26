@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\DeliveryMethodEnum;
+use App\Enums\Product\DeliveryMethodEnum;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
@@ -15,12 +15,12 @@ it('should filter by fulfillment type', function (): void {
     createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, 2);
     createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
     $this->getJson(route('api.v1.shop.my-courses.index', [
-        'filter' => ['fulfillment_type' => App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value],
+        'filter' => ['fulfillment_type' => \App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value],
     ]))
         ->assertOk()
         ->assertJsonCount(1, 'data.data')
         ->assertJsonPath('data.data.0.product.fulfillment_type.value',
-            App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE->value);
+            \App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value);
 });
 it('should filter by product name', function (): void {
     $product = App\Models\Product::factory()->create([

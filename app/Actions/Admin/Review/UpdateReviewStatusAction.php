@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Review;
 
-use App\Enums\ReviewStatusEnum;
+use App\Enums\Content\ReviewStatusEnum;
 use App\Events\ReviewableAggregatesChanged;
 use App\Models\Review;
 

@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api\Shop\HomePage;
 
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\HomePage\PartnerData;
-use App\Enums\PartnerShowInEnum;
+use App\Enums\Content\PartnerShowInEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
 use Illuminate\Http\Request;

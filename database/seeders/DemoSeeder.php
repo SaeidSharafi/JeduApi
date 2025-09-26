@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\DynamicListEntityTypeEnum;
-use App\Enums\DynamicListSortByEnum;
-use App\Enums\FulfillmentTypeEnum;
-use App\Enums\HomePageBlockTypeEnum;
-use App\Enums\MorphTypeEnum;
+use App\Enums\Content\DynamicListEntityTypeEnum;
+use App\Enums\Content\DynamicListSortByEnum;
+use App\Enums\Content\HomePageBlockTypeEnum;
 use App\Enums\PermissionEnum;
-use App\Enums\ProductableEnum;
+use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
+use App\Enums\Product\ProductableEnum;
+use App\Enums\System\MorphTypeEnum;
 use App\Models\Blog\BlogCategory;
 use App\Models\Blog\BlogPost;
 use App\Models\Category;

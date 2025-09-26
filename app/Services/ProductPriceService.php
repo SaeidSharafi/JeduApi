@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Data\Shop\ProductDeliveryOptionPriceData;
 use App\Data\Shop\ProductPriceData;
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use Carbon\Carbon;

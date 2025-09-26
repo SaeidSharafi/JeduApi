@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\ProductableEnum;
+use App\Enums\Product\ProductableEnum;
 
 it('return alias correctly', function (): void {
     $alias = ProductableEnum::getAlias(App\Models\Course::class);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Partner;
 
-use App\Enums\PartnerShowInEnum;
+use App\Enums\Content\PartnerShowInEnum;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 

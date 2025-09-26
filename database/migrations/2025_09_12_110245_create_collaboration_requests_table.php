@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('full_name');
             $table->string('phone');
             $table->string('email');
+            $table->string('department')->nullable();
             $table->text('message');
             $table->timestamps();
         });

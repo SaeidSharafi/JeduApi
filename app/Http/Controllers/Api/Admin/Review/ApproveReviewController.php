@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Admin\Review;
 
 use App\Actions\Admin\Review\UpdateReviewStatusAction;
-use App\Enums\ReviewStatusEnum;
+use App\Enums\Content\ReviewStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Review;
 use Illuminate\Support\Facades\Gate;

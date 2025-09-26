@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Product;
 
-use App\Enums\ProductableEnum;
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Rules\ProductableExistRule;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;

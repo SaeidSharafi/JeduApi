@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Category;
 
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Traits\ValidatesMetaTags;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;

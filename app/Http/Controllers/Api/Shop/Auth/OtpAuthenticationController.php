@@ -8,7 +8,7 @@ use App\Actions\Auth\AuthenticateUserAction;
 use App\Actions\Auth\VerifyOtpAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Customer\CustomerData;
-use App\Enums\OtpType;
+use App\Enums\System\OtpType;
 use App\Exceptions\InvalidOtpCode;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;

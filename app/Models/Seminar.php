@@ -6,8 +6,8 @@ namespace App\Models;
 
 use App\Contracts\ProductableContract;
 use App\Contracts\ReviewableContract;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\CourseDifficultyLevelEnum;
-use App\Enums\PublicationStatusEnum;
 use App\Models\Blog\BlogPost;
 use App\Traits\HasAssets;
 use App\Traits\HasAuditor;

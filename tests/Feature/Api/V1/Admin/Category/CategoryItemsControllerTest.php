@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\MorphTypeEnum;
+use App\Enums\System\MorphTypeEnum;
 
 uses(Tests\AuthTestTrait::class);
 describe('CategoryItemsController', function (): void {

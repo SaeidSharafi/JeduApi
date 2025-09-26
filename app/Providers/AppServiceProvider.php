@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Contracts\OtpGeneratorInterface;
-use App\Enums\MorphTypeEnum;
+use App\Enums\System\MorphTypeEnum;
 use App\Services\DefaultOtpGenerator;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\DiscountMetadataService;

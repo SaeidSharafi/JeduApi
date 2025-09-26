@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Settings\HomePageBlock;
 
-use App\Enums\HomePageBlockTypeEnum;
+use App\Enums\Content\HomePageBlockTypeEnum;
 use App\Models\HomePageBlock;
 use Spatie\LaravelData\Data;
 
@@ -42,8 +42,8 @@ final class HomePageBlockData extends Data
                 image_url: $block->content['image_url']   ?? null,
             ),
             HomePageBlockTypeEnum::DYNAMIC_LIST => new DynamicListBlockContentData(
-                entity_type: \App\Enums\DynamicListEntityTypeEnum::from($block->content['entity_type'] ?? 'product'),
-                sort_by: \App\Enums\DynamicListSortByEnum::from($block->content['sort_by'] ?? 'created_at:desc'),
+                entity_type: \App\Enums\Content\DynamicListEntityTypeEnum::from($block->content['entity_type'] ?? 'product'),
+                sort_by: \App\Enums\Content\DynamicListSortByEnum::from($block->content['sort_by'] ?? 'created_at:desc'),
                 limit: $block->content['limit']               ?? 10,
                 preset: $block->content['preset']             ?? 'default',
                 category_ids: $block->content['category_ids'] ?? null,

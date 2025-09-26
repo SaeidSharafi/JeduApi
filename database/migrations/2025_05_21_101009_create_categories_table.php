@@ -20,7 +20,7 @@ return new class extends Migration
             $table->foreignId('parent_id')->nullable()->constrained('categories')->restrictOnDelete();
             $table->string('name')->unique();
             $table->string('slug')->unique();
-            $table->string('status')->index()->default(App\Enums\PublicationStatusEnum::PUBLISHED->value);
+            $table->string('status')->index()->default(\App\Enums\Content\PublicationStatusEnum::PUBLISHED->value);
             $table->string('description')->nullable();
             $table->string('image_url')->nullable();
             $table->string('icon_url')->nullable();

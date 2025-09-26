@@ -7,7 +7,7 @@ namespace App\Data\Admin\Teacher;
 use App\Data\Admin\User\ShowUserData;
 use App\Data\Transformer\AdvancedDateTimeInterfaceTransformer;
 use App\Data\Transformer\TranslatableEnumData;
-use App\Enums\GenderEnum;
+use App\Enums\User\GenderEnum;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;

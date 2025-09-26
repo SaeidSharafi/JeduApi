@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Teacher;
 
-use App\Enums\GenderEnum;
+use App\Enums\User\GenderEnum;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;

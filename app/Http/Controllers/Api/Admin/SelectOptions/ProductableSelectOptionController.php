@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Admin\SelectOptions;
 
 use App\Data\Admin\SelectOptions\ProductableSelectOptionData;
-use App\Enums\ProductableEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\DigitalAsset;

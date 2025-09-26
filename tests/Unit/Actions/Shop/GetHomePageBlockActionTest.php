@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 use App\Actions\Shop\GetHomePageBlockAction;
 use App\Data\Shop\HomePage\HomePageBlockData;
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\DynamicListEntityTypeEnum;
-use App\Enums\DynamicListSortByEnum;
-use App\Enums\FulfillmentTypeEnum;
-use App\Enums\HomePageBlockTypeEnum;
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\DynamicListEntityTypeEnum;
+use App\Enums\Content\DynamicListSortByEnum;
+use App\Enums\Content\HomePageBlockTypeEnum;
+use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
 use App\Models\Blog\BlogPost;
 use App\Models\Category;
 use App\Models\HomePageBlock;
@@ -436,7 +436,7 @@ describe('GetHomePageBlockAction', function (): void {
         // Create test data
         $course  = App\Models\Course::factory()->create();
         $product = Product::factory()->withDeliveryOptions()->create([
-            'productable_type' => App\Enums\ProductableEnum::COURSE,
+            'productable_type' => \App\Enums\Product\ProductableEnum::COURSE,
             'productable_id'   => $course->id,
         ]);
         $course->attachMedia($this->image, 'cover');

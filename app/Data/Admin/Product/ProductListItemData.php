@@ -9,7 +9,7 @@ use App\Data\Admin\Term\TermListItemData;
 use App\Data\Admin\Vendor\VendorShortListItemData;
 use App\Data\Casts\ProductableCast;
 use App\Data\Transformer\TranslatableEnumData;
-use App\Enums\MorphTypeEnum;
+use App\Enums\System\MorphTypeEnum;
 use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
@@ -33,7 +33,7 @@ final class ProductListItemData extends Data
         public ProductableDataContract $productable,
         public TermListItemData $term,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
-        public \App\Enums\PublicationStatusEnum $status,
+        public \App\Enums\Content\PublicationStatusEnum $status,
         public ?array $details_json
     ) {}
 }

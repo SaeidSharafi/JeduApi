@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Settings\HomePageBlock;
 
-use App\Enums\HomePageBlockTypeEnum;
+use App\Enums\Content\HomePageBlockTypeEnum;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;

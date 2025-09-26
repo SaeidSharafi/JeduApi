@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Enums\DeliveryMethodEnum;
+use App\Enums\Product\DeliveryMethodEnum;
 use App\Events\PaymentCompletedEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;

@@ -6,7 +6,7 @@ namespace App\Actions\Admin\Blog\Post;
 
 use App\Data\Admin\Blog\Post\BlogPostUpdateData;
 use App\Enums\MediaTagEnum;
-use App\Enums\ProductableEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Models\Blog\BlogPost;
 use Illuminate\Support\Str;
 use Plank\Mediable\Media;

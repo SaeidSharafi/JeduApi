@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\PartnerShowInEnum;
+use App\Enums\Content\PartnerShowInEnum;
 use App\Models\Partner;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Course;
 
+use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\CourseDifficultyLevelEnum;
-use App\Enums\PublicationStatusEnum;
 use App\Rules\DigitalAssetIsAttachableRule;
 use App\Traits\ValidatesMetaTags;
 use Illuminate\Database\Query\Builder;

@@ -16,4 +16,11 @@ return [
         'digital_assets'    => 'کتب و جزوات',
         'home_page_content' => 'محتوای صفحه اصلی',
     ],
+
+    'responses' => [
+        'forms' => [
+            'collaboration_request_submitted' => 'درخواست همکاری شما با موفقیت ارسال شد. در اسرع وقت پاسخگوی شما خواهیم بود.',
+        ],
+        'contact_form_submitted' => 'پیام شما با موفقیت ارسال شد. در اسرع وقت پاسخگوی شما خواهیم بود.',
+    ],
 ];

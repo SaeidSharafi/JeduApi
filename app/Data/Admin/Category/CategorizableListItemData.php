@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Category;
 
-use App\Enums\MorphTypeEnum;
+use App\Enums\System\MorphTypeEnum;
 use App\Models\Categorizable;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\LaravelData\Data;

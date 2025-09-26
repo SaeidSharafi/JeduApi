@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Enums\DeliveryMethodEnum;
-use App\Enums\FulfillmentTypeEnum;
+use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\Product\FulfillmentTypeEnum;
 use App\Jobs\UpdateProductPriceCacheJob;
 use App\Models\Product;
 

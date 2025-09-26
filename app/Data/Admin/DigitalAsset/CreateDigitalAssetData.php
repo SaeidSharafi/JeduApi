@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\DigitalAsset;
 
 use App\Data\Transformer\CarbonFromJalaliString;
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Traits\ValidatesMetaTags;
 use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;

@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\GenderEnum;
-use App\Models\Course;
+use App\Enums\User\GenderEnum;
 use App\Models\Teacher;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Plank\Mediable\Media;

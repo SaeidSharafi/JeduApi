@@ -6,7 +6,7 @@ namespace App\Actions\Admin\Blog\Post;
 
 use App\Data\Admin\Blog\Post\BlogPostCreateData;
 use App\Enums\MediaTagEnum;
-use App\Enums\ProductableEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Models\Blog\BlogPost;
 use App\Models\Staff;
 use Illuminate\Support\Facades\DB;

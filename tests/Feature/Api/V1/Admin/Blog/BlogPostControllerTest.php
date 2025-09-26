@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Enums\MorphTypeEnum;
-use App\Enums\ProductableEnum;
-use App\Enums\PublicationStatusEnum;
+use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Product\ProductableEnum;
+use App\Enums\System\MorphTypeEnum;
 use Illuminate\Support\Str;
 
 uses(Tests\AuthTestTrait::class);

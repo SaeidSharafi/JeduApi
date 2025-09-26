@@ -13,8 +13,8 @@ beforeEach(function (): void {
 });
 it('return EmptyDetailsData if value is null', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
-    $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::DIGITAL;
-    $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD;
+    $properties['fulfillment_type'] = \App\Enums\Product\FulfillmentTypeEnum::DIGITAL;
+    $properties['delivery_method']  = \App\Enums\Product\DeliveryMethodEnum::DIRECT_DOWNLOAD;
     $delivery_option                = $caster->cast($this->mockProperty, null, $properties, $this->mockContext);
     expect($delivery_option)->toBeInstanceOf(
         App\Data\Admin\ProductDeliveryOption\DetailsData\EmptyDetailsData::class
@@ -24,7 +24,7 @@ it('return EmptyDetailsData if value is null', function (): void {
 it('return EmptyDetailsData if fulfillment_type or delivery_method is null', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
     $properties['fulfillment_type'] = null;
-    $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD;
+    $properties['delivery_method']  = \App\Enums\Product\DeliveryMethodEnum::DIRECT_DOWNLOAD;
     $details                        = [
         'max_downloads' => 10,
     ];
@@ -36,8 +36,8 @@ it('return EmptyDetailsData if fulfillment_type or delivery_method is null', fun
 
 it('return DirectDownloadDetailsData if delivery_method is DIRECT_DOWNLOAD', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
-    $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::DIGITAL;
-    $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::DIRECT_DOWNLOAD;
+    $properties['fulfillment_type'] = \App\Enums\Product\FulfillmentTypeEnum::DIGITAL;
+    $properties['delivery_method']  = \App\Enums\Product\DeliveryMethodEnum::DIRECT_DOWNLOAD;
     $details                        = [
         'max_downloads'   => 10,
         'expiration_date' => '2023-12-31 23:59:59',
@@ -50,8 +50,8 @@ it('return DirectDownloadDetailsData if delivery_method is DIRECT_DOWNLOAD', fun
 
 it('return InPersonDetailsData if delivery_method is IN_PERSON', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
-    $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::PHYSICAL;
-    $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::IN_PERSON;
+    $properties['fulfillment_type'] = \App\Enums\Product\FulfillmentTypeEnum::PHYSICAL;
+    $properties['delivery_method']  = \App\Enums\Product\DeliveryMethodEnum::IN_PERSON;
     $details                        = [
         'location'        => 'Test Location',
         'duration'        => '20 Minute',
@@ -67,8 +67,8 @@ it('return InPersonDetailsData if delivery_method is IN_PERSON', function (): vo
 });
 it('return LmsMoodleDetailsData if delivery_method is LMS_MOODLE', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
-    $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE;
-    $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::LMS_MOODLE;
+    $properties['fulfillment_type'] = \App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE;
+    $properties['delivery_method']  = \App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE;
     $details                        = [
         'course_idnumber'       => 'course123',
         'activity_id'           => 1,
@@ -88,8 +88,8 @@ it('return LmsMoodleDetailsData if delivery_method is LMS_MOODLE', function (): 
 
 it('return LiveSessionBbbDetailsData if delivery_method is LIVE_SESSION_BBB', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
-    $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE;
-    $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::LIVE_SESSION_BBB;
+    $properties['fulfillment_type'] = \App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE;
+    $properties['delivery_method']  = \App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_BBB;
     $details                        = [
         'moderator_password'                 => 'mod',
         'attendee_password'                  => 'att',
@@ -118,8 +118,8 @@ it('return LiveSessionBbbDetailsData if delivery_method is LIVE_SESSION_BBB', fu
 
 it('return LiveSessionSkyroomDetailsData if delivery_method is LIVE_SESSION_SKYROOM', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
-    $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::ONLINE_SERVICE;
-    $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::LIVE_SESSION_SKYROOM;
+    $properties['fulfillment_type'] = \App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE;
+    $properties['delivery_method']  = \App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_SKYROOM;
     $details                        = [
         'meeting_name_identifier'     => 'meeting123',
         'moderator_password_override' => 'mod123',
@@ -141,8 +141,8 @@ it('return LiveSessionSkyroomDetailsData if delivery_method is LIVE_SESSION_SKYR
 
 it('return VideoPlatformSpotplayerDetailsData if delivery_method is VIDEO_PLATFORM_SPOTPLAYER', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
-    $properties['fulfillment_type'] = App\Enums\FulfillmentTypeEnum::OFFLINE_SERVICE;
-    $properties['delivery_method']  = App\Enums\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER;
+    $properties['fulfillment_type'] = \App\Enums\Product\FulfillmentTypeEnum::OFFLINE_SERVICE;
+    $properties['delivery_method']  = \App\Enums\Product\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER;
     $details                        = [
         'course_id' => 'course123',
     ];

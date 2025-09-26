@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Data\Admin\Category\CategorizableListItemData;
-use App\Enums\MorphTypeEnum;
+use App\Enums\System\MorphTypeEnum;
 
 describe('CategorizableListItemData', function (): void {
     it('can be created from a Categorizable model', function (): void {

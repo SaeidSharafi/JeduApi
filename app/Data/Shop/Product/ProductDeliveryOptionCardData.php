@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Product;
 
-use App\Enums\ProductableMediaTypeEnum;
+use App\Enums\MediaTagEnum;
 use App\Models\ProductDeliveryOption;
 use Spatie\LaravelData\Data;
 
@@ -64,8 +64,8 @@ final class ProductDeliveryOptionCardData extends Data
 
     private static function getCoverMedia(array $media): ?array
     {
-        if (isset($media[ProductableMediaTypeEnum::COVER->value])) {
-            $cover = $media[ProductableMediaTypeEnum::COVER->value][0] ?? null;
+        if (isset($media[MediaTagEnum::COVER->value])) {
+            $cover = $media[MediaTagEnum::COVER->value][0] ?? null;
 
             return $cover
                 ? [

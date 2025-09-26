@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use App\Enums\DeliveryMethodEnum;
+use App\Enums\Product\DeliveryMethodEnum;
 
 it('passes if the delivery method belongs to fulfillment type', function (): void {
     $rule      = new App\Rules\ProductDeliveryOptionCheckRule();
     $course    = App\Models\Course::factory()->create()->fresh();
     $validator = Validator::make(
         [
-            'fulfillment_type' => App\Enums\FulfillmentTypeEnum::DIGITAL->value,
+            'fulfillment_type' => \App\Enums\Product\FulfillmentTypeEnum::DIGITAL->value,
             'delivery_method'  => DeliveryMethodEnum::DIRECT_DOWNLOAD->value,
         ],
         [
@@ -24,7 +24,7 @@ it('fails if the delivery method does not belongs to fulfillment type', function
     $course    = App\Models\Course::factory()->create()->fresh();
     $validator = Validator::make(
         [
-            'fulfillment_type' => App\Enums\FulfillmentTypeEnum::DIGITAL->value,
+            'fulfillment_type' => \App\Enums\Product\FulfillmentTypeEnum::DIGITAL->value,
             'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE->value,
         ],
         [
@@ -53,7 +53,7 @@ it('ignore (passes) if delivery method is null', function (): void {
     $course    = App\Models\Course::factory()->create()->fresh();
     $validator = Validator::make(
         [
-            'fulfillment_type' => App\Enums\FulfillmentTypeEnum::PHYSICAL->value,
+            'fulfillment_type' => \App\Enums\Product\FulfillmentTypeEnum::PHYSICAL->value,
             'delivery_method'  => null,
         ],
         [

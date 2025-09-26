@@ -218,7 +218,7 @@ it('relation reviews', function (): void {
     $blogPost = App\Models\Blog\BlogPost::factory()->create();
     $review   = App\Models\Review::factory()->create([
         'reviewable_id'   => $blogPost->id,
-        'reviewable_type' => App\Enums\MorphTypeEnum::BLOG_POST,
+        'reviewable_type' => \App\Enums\System\MorphTypeEnum::BLOG_POST,
     ]);
 
     expect($blogPost->reviews)
