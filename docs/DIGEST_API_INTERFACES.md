@@ -59,7 +59,7 @@
 ### CategoryItemsController (`app/Http/Controllers/Api/Admin/Category/CategoryItemsController.php`)
 - `__invoke(Category $category)`: **Route:** `GET /api/v1/admin/category/{category}/items` - **Delegates to:** Category product listing - **Response DTO:** ProductData collection
 
-### GoodForStartController (`app/Http/Controllers/Api/Admin/Category/GoodForStartController.php`)
+### GoodForStartController (`app/Http/Controllers/Api/Admin/Content/GoodForStartController.php`)
 - `set(Category $category)`: **Route:** `POST /api/v1/admin/category/{category}/good-for-start` - **Delegates to:** SetGoodForStartAction - **Response DTO:** CategoryData
 
 ### CourseController (`app/Http/Controllers/Api/Admin/Product/CourseController.php`)
@@ -208,51 +208,58 @@
 ### SuspiciousActivityController (`app/Http/Controllers/Api/Admin/Audit/SuspiciousActivityController.php`)
 - `__invoke(SuspiciousActivityRequestData $request)`: **Route:** `POST /api/v1/admin/audit/suspicious-activity` - **Request DTO:** SuspiciousActivityRequestData - **Response DTO:** SuspiciousActivityData
 
-### Settings Management Controllers
+### Settings & Content Management Controllers
 
 #### SettingController (`app/Http/Controllers/Api/Admin/Settings/SettingController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/settings` - **Response DTO:** SettingData collection
+- `index()`: **Route:** `GET /api/v1/admin/settings` - **Response DTO:** SettingData collection assembled from cached CMS payloads
 
-#### ContactInfoController (`app/Http/Controllers/Api/Admin/Settings/ContactInfoController.php`)
-- `show()`: **Route:** `GET /api/v1/admin/settings/contact-info` - **Response DTO:** ContactInfoData
-- `update(ContactInfoUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/contact-info` - **Request DTO:** ContactInfoUpdateData - **Response DTO:** ContactInfoData
+#### ContactInfoController (`app/Http/Controllers/Api/Admin/Content/ContactInfoController.php`)
+- `show()`: **Route:** `GET /api/v1/admin/settings/contact-info` - **Response DTO:** ContactInfoData sourced from SmartCache-backed SettingsService
+- `update(ContactInfoUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/contact-info` - **Request DTO:** ContactInfoUpdateData - **Response DTO:** ContactInfoData after cache invalidation
 
-#### AboutUsInfoController (`app/Http/Controllers/Api/Admin/Settings/AboutUsInfoController.php`)
+#### AboutUsInfoController (`app/Http/Controllers/Api/Admin/Content/AboutUsInfoController.php`)
 - `show()`: **Route:** `GET /api/v1/admin/settings/about-us` - **Response DTO:** AboutUsInfoData
 - `update(AboutUsInfoUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/about-us` - **Request DTO:** AboutUsInfoUpdateData - **Response DTO:** AboutUsInfoData
 
-#### FooterController (`app/Http/Controllers/Api/Admin/Settings/FooterController.php`)
-- `show()`: **Route:** `GET /api/v1/admin/settings/footer` - **Response DTO:** FooterData
-- `update(FooterUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/footer` - **Request DTO:** FooterUpdateData - **Response DTO:** FooterData
+#### CollaborationInfoController (`app/Http/Controllers/Api/Admin/Content/CollaborationInfoController.php`)
+- `show()`: **Route:** `GET /api/v1/admin/settings/collaboration` - **Response DTO:** CollaborationInfoData
+- `update(CollaborationInfoUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/collaboration` - **Request DTO:** CollaborationInfoUpdateData - **Response DTO:** CollaborationInfoData
 
-#### HeaderController (`app/Http/Controllers/Api/Admin/Settings/HeaderController.php`)
-- `show()`: **Route:** `GET /api/v1/admin/settings/header` - **Response DTO:** HeaderData
+#### FooterController (`app/Http/Controllers/Api/Admin/Content/FooterController.php`)
+- `show()`: **Route:** `GET /api/v1/admin/settings/footer` - **Response DTO:** FooterData with nested link arrays
+- `update(FooterUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/footer` - **Request DTO:** FooterUpdateData - **Response DTO:** FooterData post-update
+
+#### HeaderController (`app/Http/Controllers/Api/Admin/Content/HeaderController.php`)
+- `show()`: **Route:** `GET /api/v1/admin/settings/header` - **Response DTO:** HeaderData including navigation links
 - `update(HeaderUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/header` - **Request DTO:** HeaderUpdateData - **Response DTO:** HeaderData
 
-#### SliderController (`app/Http/Controllers/Api/Admin/Settings/SliderController.php`)
+#### SliderController (`app/Http/Controllers/Api/Admin/Content/Slider/SliderController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/settings/slider` - **Response DTO:** SliderData collection
 - `store(SliderCreateData $request)`: **Route:** `POST /api/v1/admin/settings/slider` - **Request DTO:** SliderCreateData - **Response DTO:** SliderData
 - `show(Slider $slider)`: **Route:** `GET /api/v1/admin/settings/slider/{slider}` - **Response DTO:** SliderData
 - `update(SliderUpdateData $request, Slider $slider)`: **Route:** `PUT /api/v1/admin/settings/slider/{slider}` - **Response DTO:** SliderData
 - `destroy(Slider $slider)`: **Route:** `DELETE /api/v1/admin/settings/slider/{slider}` - **Delegates to:** Slider deletion
 
-#### CollaborationCarouselController (`app/Http/Controllers/Api/Admin/Settings/CollaborationCarouselController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/settings/collaboration-carousel` - **Response DTO:** CollaborationCarouselData collection
-- `store(CollaborationCarouselCreateData $request)`: **Route:** `POST /api/v1/admin/settings/collaboration-carousel` - **Response DTO:** CollaborationCarouselData
-- `show(CollaborationCarousel $collaborationCarousel)`: **Route:** `GET /api/v1/admin/settings/collaboration-carousel/{collaboration_carousel}` - **Response DTO:** CollaborationCarouselData
-- `update(CollaborationCarouselUpdateData $request, CollaborationCarousel $collaborationCarousel)`: **Route:** `PUT /api/v1/admin/settings/collaboration-carousel/{collaboration_carousel}` - **Response DTO:** CollaborationCarouselData
-- `destroy(CollaborationCarousel $collaborationCarousel)`: **Route:** `DELETE /api/v1/admin/settings/collaboration-carousel/{collaboration_carousel}` - **Delegates to:** Collaboration carousel deletion
+#### UpdateSliderStatusController (`app/Http/Controllers/Api/Admin/Content/Slider/UpdateSliderStatusController.php`)
+- `__invoke(SliderStatusUpdateData $request, Slider $slider)`: **Route:** `PATCH /api/v1/admin/settings/slider/{slider}/status` - **Request DTO:** SliderStatusUpdateData - **Response DTO:** SliderData with updated publication flag
 
-#### HomePageBlockController (`app/Http/Controllers/Api/Admin/Settings/HomePageBlockController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/settings/home-page-block` - **Response DTO:** HomePageBlockData collection
-- `store(HomePageBlockCreateData $request)`: **Route:** `POST /api/v1/admin/settings/home-page-block` - **Response DTO:** HomePageBlockData
+#### PartnerController (`app/Http/Controllers/Api/Admin/Content/PartnerController.php`)
+- `index()`: **Route:** `GET /api/v1/admin/settings/partner` - **Response DTO:** PartnerData collection
+- `store(PartnerCreateData $request)`: **Route:** `POST /api/v1/admin/settings/partner` - **Request DTO:** PartnerCreateData - **Response DTO:** PartnerData
+- `show(Partner $partner)`: **Route:** `GET /api/v1/admin/settings/partner/{partner}` - **Response DTO:** PartnerData
+- `update(PartnerUpdateData $request, Partner $partner)`: **Route:** `PUT /api/v1/admin/settings/partner/{partner}` - **Response DTO:** PartnerData
+- `destroy(Partner $partner)`: **Route:** `DELETE /api/v1/admin/settings/partner/{partner}` - **Delegates to:** Partner removal
+
+#### HomePageBlockController (`app/Http/Controllers/Api/Admin/Content/HomePageBlockController.php`)
+- `index()`: **Route:** `GET /api/v1/admin/settings/home-page-block` - **Response DTO:** HomePageBlockData collection with block ordering
+- `store(HomePageBlockCreateData $request)`: **Route:** `POST /api/v1/admin/settings/home-page-block` - **Request DTO:** HomePageBlockCreateData - **Response DTO:** HomePageBlockData
 - `show(HomePageBlock $homePageBlock)`: **Route:** `GET /api/v1/admin/settings/home-page-block/{home_page_block}` - **Response DTO:** HomePageBlockData
 - `update(HomePageBlockUpdateData $request, HomePageBlock $homePageBlock)`: **Route:** `PUT /api/v1/admin/settings/home-page-block/{home_page_block}` - **Response DTO:** HomePageBlockData
 - `destroy(HomePageBlock $homePageBlock)`: **Route:** `DELETE /api/v1/admin/settings/home-page-block/{home_page_block}` - **Delegates to:** Home page block deletion
 
-#### StudentStoryController (`app/Http/Controllers/Api/Admin/Settings/StudentStoryController.php`)
+#### StudentStoryController (`app/Http/Controllers/Api/Admin/Content/StudentStoryController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/settings/student-stories` - **Response DTO:** StudentStoryData collection
-- `store(StudentStoryCreateData $request)`: **Route:** `POST /api/v1/admin/settings/student-stories` - **Response DTO:** StudentStoryData
+- `store(StudentStoryCreateData $request)`: **Route:** `POST /api/v1/admin/settings/student-stories` - **Request DTO:** StudentStoryCreateData - **Response DTO:** StudentStoryData
 - `show(StudentStory $studentStory)`: **Route:** `GET /api/v1/admin/settings/student-stories/{student_story}` - **Response DTO:** StudentStoryData
 - `update(StudentStoryUpdateData $request, StudentStory $studentStory)`: **Route:** `PUT /api/v1/admin/settings/student-stories/{student_story}` - **Response DTO:** StudentStoryData
 - `destroy(StudentStory $studentStory)`: **Route:** `DELETE /api/v1/admin/settings/student-stories/{student_story}` - **Delegates to:** Student story deletion
@@ -272,6 +279,17 @@
 
 #### UpdateReviewFeaturedStatusController (`app/Http/Controllers/Api/Admin/Review/UpdateReviewFeaturedStatusController.php`)
 - `__invoke(ReviewFeaturedStatusData $request, Review $review)`: **Route:** `PATCH /api/v1/admin/review/{review}/featured` - **Request DTO:** ReviewFeaturedStatusData - **Response DTO:** ReviewData
+
+### Forms Management Controllers
+
+#### AdviceRequestController (`app/Http/Controllers/Api/Admin/Forms/AdviceRequest/AdviceRequestController.php`)
+- `index()`: **Route:** `GET /api/v1/admin/advice-request` - **Response DTO:** AdviceRequestData paginated collection with handler relation
+- `show(AdviceRequest $adviceRequest)`: **Route:** `GET /api/v1/admin/advice-request/{advice_request}` - **Response DTO:** AdviceRequestData
+- `update(AdviceRequestUpdateData $data, AdviceRequest $adviceRequest, UpdateAdviceRequestAction $action)`: **Route:** `PUT /api/v1/admin/advice-request/{advice_request}` - **Request DTO:** AdviceRequestUpdateData - **Response DTO:** AdviceRequestData
+- `destroy(AdviceRequest $adviceRequest)`: **Route:** `DELETE /api/v1/admin/advice-request/{advice_request}` - **Delegates to:** Advice request deletion
+
+#### AdviceRequestUpdateStatusController (`app/Http/Controllers/Api/Admin/Forms/AdviceRequest/AdviceRequestUpdateStatusController.php`)
+- `__invoke(AdviceRequestUpdateData $data, AdviceRequest $adviceRequest, UpdateAdviceRequestStatusAction $action)`: **Route:** `PATCH /api/v1/admin/advice-request/{advice_request}/status` - **Request DTO:** AdviceRequestUpdateData - **Response DTO:** AdviceRequestData with updated status
 
 ### File Management Controllers
 
@@ -345,9 +363,42 @@
 ### Shop Public Endpoints (`/api/v1/shop/*`)
 **Authentication:** Unauthenticated public access
 
-#### HomePageContentController (`app/Http/Controllers/Api/Shop/HomePageContentController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/shop/home-page-content` - **Delegates to:** GetHomePageContentAction - **Response DTO:** HomePageContentData
-- **Special Features:** Comprehensive home page content assembly with hero and main content blocks, supports curated lists, dynamic lists, banners, and webinar banners with integrated pricing data
+#### HomePageContentController (`app/Http/Controllers/Api/Shop/HomePage/HomePageContentController.php`)
+- `index(GetHomePageBlocksListAction $action)`: **Route:** `GET /api/v1/shop/home-page-blocks` - **Response DTO:** HomePageBlockListData collection summarising id, location, preset
+- `show(HomePageBlock $homePageBlock, GetHomePageBlockAction $action)`: **Route:** `GET /api/v1/shop/home-page-blocks/{home_page_block}` - **Response DTO:** HomePageBlockData for the requested block, including curated and dynamic list payloads
+
+#### SliderController (`app/Http/Controllers/Api/Shop/HomePage/SliderController.php`)
+- `__invoke()`: **Route:** `GET /api/v1/shop/sliders` - **Response DTO:** SliderData collection cached via SmartCache using `CacheKeysEnum::Slider`
+
+#### PartnerController (`app/Http/Controllers/Api/Shop/HomePage/PartnerController.php`)
+- `__invoke(Request $request)`: **Route:** `GET /api/v1/shop/partners` - **Query Params:** `show_in=home|course` - **Response DTO:** PartnerData collection filtered by display location and cached per `PartnerShowInEnum`
+
+#### StudentStoryController (`app/Http/Controllers/Api/Shop/HomePage/StudentStoryController.php`)
+- `__invoke()`: **Route:** `GET /api/v1/shop/student-stories` - **Response DTO:** StudentStoryData collection sorted by display order and cached by SmartCache
+
+#### HeaderController (`app/Http/Controllers/Api/Shop/Settings/HeaderController.php`)
+- `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/header` - **Response DTO:** HeaderData derived from SettingsService payload
+
+#### FooterController (`app/Http/Controllers/Api/Shop/Settings/FooterController.php`)
+- `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/footer` - **Response DTO:** FooterData including addresses, categories, links, social media entries
+
+#### AboutUsController (`app/Http/Controllers/Api/Shop/CMS/AboutUsController.php`)
+- `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/aboutus` - **Response DTO:** AboutUsData transformed from SettingsService
+
+#### ContactPageController (`app/Http/Controllers/Api/Shop/CMS/ContactPageController.php`)
+- `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/contact-page` - **Response DTO:** ContactPageData with support and address details
+
+#### CollaborationPageController (`app/Http/Controllers/Api/Shop/CMS/CollaborationPageController.php`)
+- `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/collaboration` - **Response DTO:** CollaborationPageData providing collaboration content sections
+
+### Shop Form Submission Endpoints (`/api/v1/shop/*`)
+**Rate Limiting:** `throttle:10,1` (10 requests per minute)
+
+#### ContactUsRequestController (`app/Http/Controllers/Api/Shop/Forms/ContactUsRequestController.php`)
+- `__invoke(ContactUsRequestData $data, StoreContactUsRequestAction $action)`: **Route:** `POST /api/v1/shop/contact-us` - **Request DTO:** ContactUsRequestData - **Response:** Success message on acceptance
+
+#### CollaborationRequestController (`app/Http/Controllers/Api/Shop/Forms/CollaborationRequestController.php`)
+- `__invoke(CreateCollaborationRequestData $data, CreateCollaborationRequestAction $action)`: **Route:** `POST /api/v1/shop/collaboration` - **Request DTO:** CreateCollaborationRequestData - **Response:** `201 Created` acknowledgement on submission (subject to throttle)
 
 ### Admin Auth Endpoints (`/api/v1/admin/auth/*`)
 
@@ -376,6 +427,7 @@
 - **Base Routes:** `/api/v1/api.php` includes all interface route files
 - **Admin Routes:** `/api/v1/admin.php` - Complete platform management with `auth:staff` + `admin.audit`
 - **Customer Routes:** `/api/v1/customer.php` - Protected customer operations with `auth:user`
-- **Public Routes:** `/api/v1/shop.php` - Public browsing endpoints (currently empty - no public endpoints defined)
+- **Public Routes:** `/api/v1/shop/shop.php` - CMS-driven public endpoints (home page blocks, sliders, partners, header/footer, about/contact/collaboration pages)
+- **Rate-Limited Shop Routes:** `/api/v1/shop/rate-limited.php` - Public form submissions (contact us, collaboration) protected by `throttle:10,1`
 - **Auth Routes:** `/api/v1/auth.php` - Dual authentication system for both interfaces
 - **Select Options:** `/api/v1/select_option.php` - Dropdown/select data endpoints for admin interface

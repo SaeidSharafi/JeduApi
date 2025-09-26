@@ -6,7 +6,7 @@
 - **Core Principle:** Business logic is centralized in Actions/Services consumed by thin controllers for each interface
 
 ## 2. Core Technologies
-- **PHP Version:** ^8.2
+- **PHP Version:** ^8.4
 - **Laravel Version:** ^12.0
 - **Database:** PostgreSQL with JSONB support
 - **Key Packages:**
@@ -14,6 +14,7 @@
   - `spatie/laravel-permission`: Role-based access control for admin operations (v6.18)
   - `spatie/laravel-query-builder`: Advanced API filtering and querying (v6.3)
   - `plank/laravel-mediable`: Media management and file handling (v6.3)
+  - `iazaran/smart-cache`: Smart cache facade with configurable invalidation map powering SettingsService and content cache refreshes
   - `spatie/laravel-webhook-client`: External integrations and webhooks (v3.4)
   - `laravel/sanctum`: Dual-guard authentication system (v4.0)
 
@@ -37,8 +38,10 @@
 - **Staff Management:** Role-based admin users with comprehensive permission system using Spatie Permission
 - **Audit System:** Complete action logging with risk assessment, compliance reporting, and suspicious activity detection
 - **Content Management:** Categories with hierarchy, media management, and "good for start" recommendations
+- **Site CMS:** Modular `App\Http\Controllers\Api\Admin\Content\*` controllers covering header, footer, about us, collaboration content, partners, sliders (with publication status toggles), and homepage blocks backed by reusable DTOs
 - **Blog System:** Complete blog management with hierarchical categories, publication workflow, content relationships to educational materials, and automated scheduling
-- **Settings Management:** Application configuration including contact info, about us, headers, footers, sliders, and homepage blocks
+- **Settings Management:** Settings index endpoint plus SmartCache-backed SettingsService with eviction observer to keep responses consistent across the admin and shop surfaces
+- **Form Intake:** Admin review workflows for advice requests alongside new collaboration/contact form submissions with attachment handling
 - **Review System:** Customer review management with approval workflow and featured selection
 - **Wallet System:** User credit management with campaigns, bulk allocations, and transaction tracking
 - **File Management:** Public media and private file handling with secure access controls
@@ -46,9 +49,10 @@
 ### Customer Features
 - **Authentication:** OTP and password-based login with secure token management
 - **Profile Management:** Customer account management and profile updates
-- **Course Access:** Enrolment-based access to purchased content
+- **Course Access:** Enrollment-based access to purchased content
 - **Review System:** Customer review submission for products and courses
-- **Home Page Content:** Dynamic home page assembly with curated and dynamic content blocks, integrated pricing data
+- **Home Page Content:** Dynamic home page block hydration with curated, dynamic, banner, and webinar layouts powered by cached pricing data and block-specific hydration actions
+- **Public CMS Pages:** Read-only endpoints for header, footer, about us, collaboration, contact page, partner listings, sliders, and student stories derived from admin-managed settings
 
 ### System Features
 - **Multi-tenancy Support:** Vendor-based product organization
@@ -58,6 +62,8 @@
 - **API Documentation:** Comprehensive endpoint coverage with DTOs
 - **Select Options:** Dropdown data provision for admin interface
 - **Content Automation:** Scheduled blog post publication with automated workflow management
+- **Smart Cache Invalidation:** Event-driven cache invalidation map with `InvalidationObserver`, `CacheKeysEnum`, and `SettingsService` to keep storefront content fresh
+- **Review Aggregation:** Background listener recomputes `review_count` and `average_rating` whenever reviews change for reviewable models
 
 ## 5. Security & Compliance
 - **Audit Trail:** All admin actions logged with risk assessment
@@ -68,12 +74,12 @@
 - **Compliance Reporting:** Automated compliance report generation
 
 ## 6. Data Model Completeness
-**36 Models Total:** User, Staff, AdminActionLog, Order, OrderItem, Product (polymorphic to Course/Seminar/DigitalAsset), ProductDeliveryOption, ProductDeliveryOptionDiscountPrice, Enrolment, Payment, Refund, Review, Category, Categorizable, Teacher, Vendor, Term, DiscountPromotion, DiscountPromotionRule, DiscountCoupon, Wallet, WalletTransaction, WalletCampaign, Setting, HomePageBlock, Slider, StudentStory, CollaborationCarousel, CollaborationRequest, ContactUsRequest, SmsLog, BlogCategory, BlogPost
+**36 Models Total:** User, Staff, AdminActionLog, Order, OrderItem, Product (polymorphic to Course/Seminar/DigitalAsset), ProductDeliveryOption, ProductDeliveryOptionDiscountPrice, Enrollment, Payment, Refund, Review, Category, Categorizable, Teacher, Vendor, Term, DiscountPromotion, DiscountPromotionRule, DiscountCoupon, Wallet, WalletTransaction, WalletCampaign, Setting, HomePageBlock, Slider, StudentStory, CollaborationCarousel, CollaborationRequest, ContactUsRequest, SmsLog, BlogCategory, BlogPost
 
 ## 7. Business Logic Coverage
-**96+ Action Classes** organized by domain (after adding blog management actions):
-- **Admin Actions:** Complete CRUD operations for all entities with business logic including new blog management
-- **Shop Actions:** Customer-facing operations and profile management
+**100+ Action Classes** organized by domain after the content and form refactor:
+- **Admin Actions:** Complete CRUD operations for all entities plus new helpers such as `GetThumbnailUrlAction` and `UpdateSliderStatusAction`, aligning with the Content namespace split and review aggregation workflows
+- **Shop Actions:** Customer-facing operations now include `GetHomePageBlocksListAction`, `GetHomePageBlockAction`, attachment-aware collaboration/contact form submissions, and shared file upload handling
 - **Auth Actions:** Comprehensive authentication system with OTP and password support
 - **Wallet Actions:** Credit management and transaction processing
 
@@ -81,18 +87,19 @@
 - **Order Management:** Status tracking and lifecycle management
 - **Discount Engine:** Advanced promotion calculation with multiple rule types, conditions, and cart/product-level actions
 - **Payment Processing:** Multi-gateway support with factory pattern
-- **Product Pricing:** Centralized pricing service with hierarchy support (product discounts > featured prices > standard prices) and request-scoped caching
-- **Content Management:** Dynamic home page content assembly with performance optimization
+- **Product Pricing:** Centralized pricing service with hierarchy support (product discounts > featured prices > standard prices) and request-scoped caching, plus `UpdateProductPriceCacheJob` and the `prices:index-all` console command for cache warming
+- **Content Management:** Dynamic home page content assembly with performance optimization and SmartCache-aware invalidation
+- **Settings:** New `SettingsService` centralizes cached reads/writes for site-wide configuration
 - **OTP Management:** Secure verification code handling
 - **SMS Service:** Integration with external SMS provider
-- **Console Commands:** Automated blog post publication and system maintenance
+- **Console Commands:** Automated blog post publication and price indexing maintenance
 - **Performance Optimization:** Request-scoped caching service to prevent N+1 queries and duplicate calculations
 
 ## 8. API Interface Completeness
 **210+ Endpoints** across all domains:
-- **Admin API:** Complete platform management with 160+ endpoints including blog management
+- **Admin API:** Complete platform management with 160+ endpoints including the new Content module for CMS settings and slider status toggles
 - **Customer API:** Profile and course access management
-- **Shop Public API:** Home page content delivery with dynamic block assembly and integrated pricing
+- **Shop Public API:** Modular endpoints for home page blocks, sliders, partners, header/footer, CMS pages, and rate-limited contact/collaboration form submissions
 - **Authentication:** Dual system for both admin and customer interfaces
 - **File Management:** Secure media and private file handling
 - **Select Options:** Dropdown data for admin interface

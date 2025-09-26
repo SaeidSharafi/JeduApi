@@ -4,6 +4,10 @@
 
 ### Admin Actions (`app/Actions/Admin/`)
 
+#### Utility Actions
+- **GetThumbnailUrlAction** (`app/Actions/Admin/GetThumbnailUrlAction.php`)
+  - `handle(array $media): ?string`: Extracts the first cover-tagged media ID and resolves its CDN URL through Mediable. Centralized helper for admin responses that need lightweight thumbnail references without hydrating full media relations.
+
 #### Order Actions (`app/Actions/Admin/Order/`)
 - **CreateOrderAction** (`app/Actions/Admin/Order/CreateOrderAction.php`)
   - `handle(OrderCreateData $data): Order`: Creates order bills with discount calculations, handles concurrency with pessimistic locking, validates duplicate purchases, creates enrolments
@@ -146,9 +150,10 @@
   - `handle(StudentStory $story): void`: Removes student stories
 
 #### Slider Actions (`app/Actions/Admin/Slider/`)
-- **CreateSliderAction**: Creates new promotional sliders
-- **UpdateSliderAction**: Updates slider content and positioning
-- **DeleteSliderAction**: Removes sliders
+- **CreateSliderAction**: Wraps slider creation with media synchronization for hero imagery
+- **UpdateSliderAction**: Updates slider copy, media, and ordering metadata
+- **UpdateSliderStatusAction**: Applies publication state changes using `ChangeStatusData`, ensuring enum-safe transitions
+- **DeleteSliderAction**: Removes sliders and detaches associated media assets
 
 #### Review Actions (`app/Actions/Admin/Review/`)
 - **ApproveReviewAction**: Approves customer reviews for publication
@@ -164,16 +169,34 @@
 - **DetectSuspiciousActivityAction**: Analyzes admin actions for security risks
 - **GenerateComplianceReportAction**: Creates audit and compliance reports
 
-#### CollaborationCarousel Actions (`app/Actions/Admin/CollaborationCarousel/`)
-- **CreateCollaborationCarouselAction**: Adds new partnership showcases
-- **UpdateCollaborationCarouselAction**: Updates partner information
-- **DeleteCollaborationCarouselAction**: Removes partnership displays
+#### Partner Actions (`app/Actions/Admin/Partner/`)
+- **CreatePartnerAction**: Persists partner showcase cards, linking uploaded media and deriving alt text automatically
+- **UpdatePartnerAction**: Updates partner metadata and resyncs media while handling nullified assets
+- **DeleteCPartnerAction**: Performs transactional deletion and cleans up linked media assets
+
+#### AdviceRequest Actions (`app/Actions/Admin/AdviceRequest/`)
+- **UpdateAdviceRequestAction**: Records staff notes and marks handlers while keeping existing status intact
+- **UpdateAdviceRequestStatusAction**: Transitions advice request status (e.g., pending → completed) and stamps handler attribution
 
 ### Shop Actions (`app/Actions/Shop/`)
-- **EnrolmentAccessAction**: Manages customer access to purchased content
-- **ProfileUpdateAction**: Handles customer profile updates
-- **GetHomePageContentAction** (`app/Actions/Shop/GetHomePageContentAction.php`)
-  - `handle(): HomePageContentData`: Retrieves and formats complete home page content including hero sections and main content blocks. Handles both curated and dynamic lists, pre-loads all required data to prevent N+1 queries, integrates with ProductPriceService for consistent pricing
+
+#### Customer Profile & Utilities
+- **UpdateProfileAction** (`app/Actions/Shop/UpdateProfileAction.php`)
+  - `handle(UpdateProfileData $data, User $user): User`: Transactionally updates customer profile fields, respecting immutable civil ID constraints and returning a fresh model instance.
+- **UploadFileAction** (`app/Actions/Shop/UploadFileAction.php`)
+  - `handle(UploadedFile $file, bool $isPublic = true): Media`: Streams uploaded attachments into Mediable storage with duplicate-safe filenames, reused by form actions.
+
+#### Home Page Composition
+- **GetHomePageBlocksListAction** (`app/Actions/Shop/GetHomePageBlocksListAction.php`)
+  - `handle(): Collection<HomePageBlockListData>`: Fetches active blocks ordered by location/order for lightweight listings.
+- **GetHomePageBlockAction** (`app/Actions/Shop/GetHomePageBlockAction.php`)
+  - `handle(HomePageBlock $block): HomePageBlockData`: Hydrates individual blocks (curated, dynamic, banner, webinar) by preloading products/categories, leveraging `RequestDataCacheService` + `ProductPriceService` to avoid N+1 pricing calculations.
+
+#### Shop Form Actions (`app/Actions/Shop/Forms/`)
+- **CreateCollaborationRequestAction** (`app/Actions/Shop/Forms/CreateCollaborationRequestAction.php`)
+  - `handle(CreateCollaborationRequestData $data): void`: Stores collaboration enquiries, optionally persisting private attachments via `UploadFileAction`.
+- **StoreContactUsRequestAction** (`app/Actions/Shop/Forms/StoreContactUsRequestAction.php`)
+  - `handle(ContactUsRequestData $data): void`: Persists contact form submissions for staff follow-up.
 
 ### Auth Actions (`app/Actions/Auth/`)
 - **GenerateOtpAction** (`app/Actions/Auth/GenerateOtpAction.php`)
@@ -285,6 +308,31 @@
   - `getPriceDataForProduct(int $productId): ?ProductPriceData`: Retrieves cached price data
   - `storeProductPriceData(int $productId, ProductPriceData $priceData): void`: Caches price calculations
 - **Pattern:** Singleton service registered in AppServiceProvider for request lifecycle management
+
+### SettingsService (`app/Services/SettingsService.php`)
+- **Purpose:** SmartCache-backed facade over `Setting` models powering CMS content payloads
+- **Public Methods:**
+  - `get(SettingKeyEnum $key, mixed $default = null): mixed`: Reads a single setting, hydrating media references through `Setting::witImages()` and falling back to defaults
+  - `forget(): void`: Exposes cache invalidation hook used by observers/actions to refresh settings payloads
+- **Implementation Notes:** Caches the full settings collection forever using `SmartCache` keyed by `CacheKeysEnum::Settings`, ensuring single query hydration per deploy cycle
+
+## Observers, Events & Async Processing
+
+### InvalidationObserver (`app/Observers/InvalidationObserver.php`)
+- **Purpose:** Global Eloquent observer that translates model save/delete events into cache invalidations.
+- **Mechanism:** Reads `config/cache_invalidation.php` to map model classes (Product, Slider, Partner, HomePageBlock, Setting, etc.) to `CacheKeysEnum` instances, calling `SmartCache::forget()` for each affected key.
+- **Usage:** Registered for multiple CMS/content models to keep SmartCache payloads (home page content, partner lists, settings) fresh without manual cache calls.
+
+### Review Aggregation Pipeline
+- **Event:** `ReviewableAggregatesChanged` (`app/Events/ReviewableAggregatesChanged.php`) carries the reviewable ID/type whenever reviews change.
+- **Listener:** `RecalculateReviewableAggregates` (`app/Listeners/RecalculateReviewableAggregates.php`) runs on the queue, filters to models using the `HasReview` trait, and recomputes `review_count` & `average_rating` from approved reviews.
+- **Impact:** Keeps course/seminar/digital asset review snapshots synchronized for storefront queries without heavy joins.
+
+### Product Price Cache Refresh
+- **Event:** `ProductCacheInvalidated` (`app/Events/ProductCacheInvalidated.php`) is dispatched when pricing-sensitive data mutates.
+- **Listener:** `QueueProductPriceCacheUpdate` (`app/Listeners/QueueProductPriceCacheUpdate.php`) asynchronously dispatches `UpdateProductPriceCacheJob` with the affected product ID.
+- **Job:** `UpdateProductPriceCacheJob` (`app/Jobs/UpdateProductPriceCacheJob.php`) recalculates price data via `ProductPriceService`, persists it to `price_data_cache`, and clears related SmartCache keys per the invalidation map.
+- **Result:** Ensures shop endpoints read precomputed pricing snapshots while remaining consistent after admin edits.
 
 ### Payment Services (`app/Services/Payment/`)
 
