@@ -22,7 +22,7 @@ final class DigitalAssetListItemData extends Data implements ProductableDataCont
 
     public function __construct(
         public int $id,
-        public string $name,
+        public string $short_name,
         public string $slug,
         public ?string $thumbnail_url,
         public bool $is_attachable_to_course,

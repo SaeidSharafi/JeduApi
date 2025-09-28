@@ -25,11 +25,12 @@ describe('list filters', function (): void {
     it('can filter by name', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(10)->create();
-        $digitalAsset = DigitalAsset::factory()->create(['name' => 'Test Asset']);
-        $response     = $this->getJson(route('api.v1.admin.digital-asset.index', ['filter[name]' => $digitalAsset->name]));
+        $digitalAsset = DigitalAsset::factory()->create(['short_name' => 'Test Asset']);
+        $response     = $this->getJson(route('api.v1.admin.digital-asset.index',
+            ['filter[name]' => $digitalAsset->short_name]));
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data.data')
-            ->assertJsonFragment(['name' => $digitalAsset->name]);
+            ->assertJsonFragment(['short_name' => $digitalAsset->short_name]);
     });
 
     it('can filter by slug', function (): void {
@@ -44,7 +45,7 @@ describe('list filters', function (): void {
     it('can filter by status', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(10)->create();
-        $digitalAsset = DigitalAsset::factory()->create(['status' => \App\Enums\Content\PublicationStatusEnum::DRAFT]);
+        $digitalAsset = DigitalAsset::factory()->create(['status' => App\Enums\Content\PublicationStatusEnum::DRAFT]);
         $response     = $this->getJson(route('api.v1.admin.digital-asset.index',
             ['filter[status]' => $digitalAsset->status->value]));
         $response->assertStatus(200)
@@ -68,7 +69,7 @@ describe('list filters', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::FILE_VIEW_ANY->value]);
         DigitalAsset::factory()->count(5)->create();
         $response      = $this->getJson(route('api.v1.admin.digital-asset.index', ['sort' => 'name']));
-        $digitalAssets = DigitalAsset::orderBy('name')->get();
+        $digitalAssets = DigitalAsset::orderBy('short_name')->orderBy('full_name')->get();
         $response->assertStatus(200)
             ->assertJsonCount(5, 'data.data')
             ->assertJsonPath('data.data.0.slug', $digitalAssets[0]->slug)
@@ -118,7 +119,7 @@ it('can get list of digital assets', function (): void {
                 'data' => [
                     '*' => [
                         'id',
-                        'name',
+                        'short_name',
                         'slug',
                         'status',
                         'thumbnail_url',
@@ -151,9 +152,14 @@ it('can get single digital asset', function (): void {
     $digitalAsset->attachMedia($this->video, 'video');
     $response = $this->getJson(route('api.v1.admin.digital-asset.show', $digitalAsset));
     $response->assertStatus(200)
-        ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($main, $preview, $digitalAsset): void {
+        ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use (
+            $main,
+            $preview,
+            $digitalAsset
+        ): void {
             $json->where('data.id', $digitalAsset->id)
-                ->where('data.name', $digitalAsset->name)
+                ->where('data.short_name', $digitalAsset->short_name)
+                ->where('data.full_name', $digitalAsset->full_name)
                 ->where('data.slug', $digitalAsset->slug)
                 ->where('data.description', $digitalAsset->description)
                 ->where('data.version', $digitalAsset->version)
@@ -195,7 +201,8 @@ it('can create digital asset', function (): void {
 
     $categories = App\Models\Category::factory()->count(2)->create();
     $response   = $this->postJson(route('api.v1.admin.digital-asset.store'), [
-        'name'                    => $digitalAsset->name,
+        'short_name'              => $digitalAsset->short_name,
+        'full_name'               => $digitalAsset->full_name,
         'slug'                    => $digitalAsset->slug,
         'description'             => $digitalAsset->description,
         'version'                 => $digitalAsset->version,
@@ -222,7 +229,8 @@ it('can create digital asset', function (): void {
     $response->assertStatus(201);
 
     $this->assertDatabaseHas('digital_assets', [
-        'name'                    => $digitalAsset->name,
+        'short_name'              => $digitalAsset->short_name,
+        'full_name'               => $digitalAsset->full_name,
         'slug'                    => $digitalAsset->slug,
         'description'             => $digitalAsset->description,
         'thumbnail_url'           => $this->cover->getUrl(),
@@ -311,7 +319,7 @@ it('can update digital asset', function (): void {
     $response                    = $this->putJson(route('api.v1.admin.digital-asset.update', $digitalAsset), $updatedData);
     $response->assertStatus(200)
         ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($updatedData): void {
-            $json->where('data.name', $updatedData['name'])
+            $json->where('data.short_name', $updatedData['short_name'])
                 ->where('data.slug', $updatedData['slug'])
                 ->where('data.description', $updatedData['description'])
                 ->where('data.version', $updatedData['version'])
@@ -320,7 +328,7 @@ it('can update digital asset', function (): void {
                 ->where('data.is_attachable_to_course', $updatedData['is_attachable_to_course'])
                 ->where('data.status', [
                     'value' => $updatedData['status'],
-                    'label' => \App\Enums\Content\PublicationStatusEnum::from($updatedData['status'])->translate(),
+                    'label' => App\Enums\Content\PublicationStatusEnum::from($updatedData['status'])->translate(),
                 ])
                 ->where('data.keywords', $updatedData['keywords'])
                 ->where('data.meta_title', $updatedData['meta_title'])
@@ -338,7 +346,7 @@ it('can update digital asset', function (): void {
 
     $this->assertDatabaseHas('digital_assets', [
         'id'                      => $digitalAsset->id,
-        'name'                    => $updatedData['name'],
+        'short_name'              => $updatedData['short_name'],
         'slug'                    => $updatedData['slug'],
         'description'             => $updatedData['description'],
         'thumbnail_url'           => $this->cover->getUrl(),
@@ -346,7 +354,7 @@ it('can update digital asset', function (): void {
         'page_count'              => $updatedData['page_count'],
         'duration_seconds'        => $updatedData['duration_seconds'],
         'is_attachable_to_course' => $updatedData['is_attachable_to_course'],
-        'status'                  => \App\Enums\Content\PublicationStatusEnum::from($updatedData['status'])->value,
+        'status'                  => App\Enums\Content\PublicationStatusEnum::from($updatedData['status'])->value,
         'keywords'                => $updatedData['keywords'],
         'meta_title'              => $updatedData['meta_title'],
         'meta_description'        => $updatedData['meta_description'],
@@ -425,14 +433,14 @@ it('can not update a digital asset with duplicate slug', function (): void {
 
     $this->assertDatabaseMissing('digital_assets', [
         'id'                      => $digitalAsset->id,
-        'name'                    => $updatedData['name'],
+        'short_name'              => $updatedData['short_name'],
         'slug'                    => 'existing-slug',
         'description'             => $updatedData['description'],
         'version'                 => $updatedData['version'],
         'page_count'              => $updatedData['page_count'],
         'duration_seconds'        => $updatedData['duration_seconds'],
         'is_attachable_to_course' => $updatedData['is_attachable_to_course'],
-        'status'                  => \App\Enums\Content\PublicationStatusEnum::from($updatedData['status'])->value,
+        'status'                  => App\Enums\Content\PublicationStatusEnum::from($updatedData['status'])->value,
         'keywords'                => $updatedData['keywords'],
         'meta_title'              => $updatedData['meta_title'],
         'meta_description'        => $updatedData['meta_description'],

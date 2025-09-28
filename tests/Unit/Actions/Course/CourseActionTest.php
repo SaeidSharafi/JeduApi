@@ -28,7 +28,7 @@ describe('CourseActionTest', function (): void {
                 'slug'       => 'test-course',
                 'full_name'  => 'Test Course',
                 'short_name' => 'TC',
-                'status'     => \App\Enums\Content\PublicationStatusEnum::DRAFT->value,
+                'status'     => App\Enums\Content\PublicationStatusEnum::DRAFT->value,
             ]
         )->toArray();
         $ditialAssets = App\Models\DigitalAsset::factory(3)->create();
@@ -61,11 +61,11 @@ describe('CourseActionTest', function (): void {
             ->and($course->full_name)->toBe('Test Course')
             ->and($course->short_name)->toBe('TC')
             ->and($course->thumbnail_url)->toBe($this->media->getUrl())
-            ->and($course->status)->toBe(\App\Enums\Content\PublicationStatusEnum::DRAFT)
+            ->and($course->status)->toBe(App\Enums\Content\PublicationStatusEnum::DRAFT)
             ->and($course->categories)->toHaveCount(1)
             ->and($course->categories->first()->name)->toBe('Test Category')
             ->and($course->digitalAssets)->toHaveCount(3)
-            ->and($course->digitalAssets->first()->name)->toBeInCollection($ditialAssets, 'name');
+            ->and($course->digitalAssets->first()->short_name)->toBeInCollection($ditialAssets, 'short_name');
     });
 
     test('UpdateCourseAction successfully update course', function (): void {
@@ -79,7 +79,7 @@ describe('CourseActionTest', function (): void {
                 'slug'       => 'test-course',
                 'full_name'  => 'Updated Course Name',
                 'short_name' => 'TC',
-                'status'     => \App\Enums\Content\PublicationStatusEnum::DRAFT->value,
+                'status'     => App\Enums\Content\PublicationStatusEnum::DRAFT->value,
             ]
         )->toArray();
         $ditialAssets = App\Models\DigitalAsset::factory(3)->create();
@@ -88,7 +88,7 @@ describe('CourseActionTest', function (): void {
             ...$course->toArray(),
             'full_name'      => 'Updated Course Name',
             'short_name'     => 'UC',
-            'status'         => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+            'status'         => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
             'digital_assets' => $ditialAssets->pluck('id')->toArray(),
             'categories'     => $course->categories->pluck('id')->toArray(),
             'media'          => [
@@ -108,7 +108,7 @@ describe('CourseActionTest', function (): void {
             ->and($course->full_name)->toBe('Updated Course Name')
             ->and($course->short_name)->toBe('UC')
             ->and($course->thumbnail_url)->toBe($this->media2->getUrl())
-            ->and($course->status)->toBe(\App\Enums\Content\PublicationStatusEnum::PUBLISHED)
+            ->and($course->status)->toBe(App\Enums\Content\PublicationStatusEnum::PUBLISHED)
             ->and($course->media)->toHaveCount(3)
             ->and($course->media?->first()?->id)->toBe($this->media2->id);
 
@@ -116,23 +116,23 @@ describe('CourseActionTest', function (): void {
             'slug'       => $course->slug,
             'full_name'  => 'Updated Course Name',
             'short_name' => 'UC',
-            'status'     => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+            'status'     => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
         ]);
         \Pest\Laravel\assertDatabaseHas('assetables', [
             'assetable_id'     => $course->id,
-            'assetable_type'   => \App\Enums\System\MorphTypeEnum::COURSE->value,
+            'assetable_type'   => App\Enums\System\MorphTypeEnum::COURSE->value,
             'digital_asset_id' => $ditialAssets->first()->id,
         ]);
 
         \Pest\Laravel\assertDatabaseMissing('assetables', [
             'assetable_id'     => $course->id,
-            'assetable_type'   => \App\Enums\System\MorphTypeEnum::COURSE->value,
+            'assetable_type'   => App\Enums\System\MorphTypeEnum::COURSE->value,
             'digital_asset_id' => $digitalAssetId,
         ]);
 
         \Pest\Laravel\assertDatabaseHas('categorizables', [
             'categorizable_id'   => $course->id,
-            'categorizable_type' => \App\Enums\System\MorphTypeEnum::COURSE->value,
+            'categorizable_type' => App\Enums\System\MorphTypeEnum::COURSE->value,
             'category_id'        => $course->categories->first()->id,
         ]);
     });
@@ -161,11 +161,11 @@ describe('CourseActionTest', function (): void {
         ]);
         \Pest\Laravel\assertDatabaseMissing('categorizables', [
             'categorizable_id'   => $course->id,
-            'categorizable_type' => \App\Enums\System\MorphTypeEnum::COURSE->value,
+            'categorizable_type' => App\Enums\System\MorphTypeEnum::COURSE->value,
         ]);
         \Pest\Laravel\assertDatabaseMissing('assetables', [
             'assetable_id'   => $course->id,
-            'assetable_type' => \App\Enums\System\MorphTypeEnum::COURSE->value,
+            'assetable_type' => App\Enums\System\MorphTypeEnum::COURSE->value,
         ]);
     });
 });

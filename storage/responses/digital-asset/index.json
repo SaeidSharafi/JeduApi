@@ -5,7 +5,7 @@
     "data": [
       {
         "id": 1,
-        "name": "صوت",
+        "short_name": "صوت",
         "slug": "perspiciatis-laboriosam-quo-eos-sed-sunt",
         "is_attachable_to_course": true,
         "status": {
@@ -20,7 +20,7 @@
       },
       {
         "id": 2,
-        "name": "قفل",
+        "short_name": "قفل",
         "slug": "ut-quo-asperiores-quo-sapiente-autem-aspernatur-aut-exercitationem",
         "is_attachable_to_course": true,
         "status": {
@@ -35,7 +35,7 @@
       },
       {
         "id": 3,
-        "name": "دریاچه",
+        "short_name": "دریاچه",
         "slug": "tempore-voluptas-occaecati-molestias",
         "is_attachable_to_course": true,
         "status": {
@@ -50,7 +50,7 @@
       },
       {
         "id": 4,
-        "name": "پوستر",
+        "short_name": "پوستر",
         "slug": "totam-repellat-voluptatem-qui-sed-eos-dicta-sunt",
         "is_attachable_to_course": true,
         "status": {
@@ -65,7 +65,7 @@
       },
       {
         "id": 5,
-        "name": "بانک",
+        "short_name": "بانک",
         "slug": "facere-reprehenderit-consequatur-beatae-est-et-dolores-aspernatur",
         "is_attachable_to_course": true,
         "status": {
@@ -80,7 +80,7 @@
       },
       {
         "id": 6,
-        "name": "ملک",
+        "short_name": "ملک",
         "slug": "delectus-reiciendis-accusantium-ab",
         "is_attachable_to_course": true,
         "status": {
@@ -95,7 +95,7 @@
       },
       {
         "id": 7,
-        "name": "ژاکت",
+        "short_name": "ژاکت",
         "slug": "quibusdam-sapiente-sint-unde-est-quos-dolores",
         "is_attachable_to_course": true,
         "status": {
@@ -110,7 +110,7 @@
       },
       {
         "id": 8,
-        "name": "پوستر",
+        "short_name": "پوستر",
         "slug": "esse-eius-vel-voluptatem-aliquid-mollitia-sint",
         "is_attachable_to_course": true,
         "status": {
@@ -125,7 +125,7 @@
       },
       {
         "id": 9,
-        "name": "نمک",
+        "short_name": "نمک",
         "slug": "voluptas-voluptate-accusantium-dolorum-qui-sint-porro",
         "is_attachable_to_course": true,
         "status": {
@@ -140,7 +140,7 @@
       },
       {
         "id": 10,
-        "name": "هنر",
+        "short_name": "هنر",
         "slug": "eaque-eius-et-rerum-explicabo",
         "is_attachable_to_course": true,
         "status": {
@@ -155,7 +155,7 @@
       },
       {
         "id": 11,
-        "name": "ساعت",
+        "short_name": "ساعت",
         "slug": "sint-inventore-quasi-facilis-consequuntur",
         "is_attachable_to_course": true,
         "status": {
@@ -170,7 +170,7 @@
       },
       {
         "id": 12,
-        "name": "نان",
+        "short_name": "نان",
         "slug": "deserunt-officia-eius-non-distinctio-est-est",
         "is_attachable_to_course": true,
         "status": {
@@ -185,7 +185,7 @@
       },
       {
         "id": 13,
-        "name": "پارو",
+        "short_name": "پارو",
         "slug": "saepe-doloribus-in-tenetur-esse-quam-dolor",
         "is_attachable_to_course": true,
         "status": {
@@ -200,7 +200,7 @@
       },
       {
         "id": 14,
-        "name": "تاکسی",
+        "short_name": "تاکسی",
         "slug": "quam-assumenda-doloremque-et-dolore-exercitationem",
         "is_attachable_to_course": true,
         "status": {
@@ -215,7 +215,7 @@
       },
       {
         "id": 15,
-        "name": "بالش",
+        "short_name": "بالش",
         "slug": "vero-et-qui-minima-aut-consequuntur-officia-est-impedit",
         "is_attachable_to_course": true,
         "status": {

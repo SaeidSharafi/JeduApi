@@ -78,12 +78,13 @@ final class ProductableSelectOptionController extends Controller
             $digitalAssetsQuery = DigitalAsset::query()
                 ->select([
                     'id',
-                    'name', // Note: DigitalAsset has 'name', not 'full_name'
+                    'full_name as name',
                     'slug',
                     DB::raw("'".ProductableEnum::DIGITAL_ASSET->value."' as type"),
                 ])
                 ->when($query, function ($q, $search): void {
-                    $q->whereLike('name', "%{$search}%");
+                    $q->whereLike('full_name', "%{$search}%")
+                        ->orWhereLike('short_name', "%{$search}%");
                 });
             $queries[] = $digitalAssetsQuery;
         }

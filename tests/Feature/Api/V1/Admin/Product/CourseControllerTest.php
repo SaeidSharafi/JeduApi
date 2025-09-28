@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\System\MorphTypeEnum;
 use Illuminate\Testing\Fluent\AssertableJson;
+
 use function Pest\Laravel\assertDatabaseHas;
 
 uses(Tests\AuthTestTrait::class);
@@ -25,14 +26,14 @@ describe('list filters', function (): void {
             ->withCategory()
             ->withDigitalAssets()
             ->create([
-                'status' => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+                'status' => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
             ])
             ->fresh();
         $draftCourse = App\Models\Course::factory()
             ->withCategory()
             ->withDigitalAssets()
             ->create([
-                'status' => \App\Enums\Content\PublicationStatusEnum::DRAFT->value,
+                'status' => App\Enums\Content\PublicationStatusEnum::DRAFT->value,
             ])
             ->fresh();
         $this->authorized_user([
@@ -40,7 +41,7 @@ describe('list filters', function (): void {
         ]);
         $response = $this->getJson(route('api.v1.admin.course.index', [
             'filter' => [
-                'status' => \App\Enums\Content\PublicationStatusEnum::DRAFT->value,
+                'status' => App\Enums\Content\PublicationStatusEnum::DRAFT->value,
             ],
         ]));
         $response
@@ -267,11 +268,11 @@ it('can view list of courses', function (): void {
                 ->where('digital_assets',
                     $expectedCourse->digitalAssets?->map(fn (App\Models\DigitalAsset $asset): array => [
                         'type' => [
-                            'value' => \App\Enums\Product\ProductableEnum::DIGITAL_ASSET->value,
-                            'label' => \App\Enums\Product\ProductableEnum::DIGITAL_ASSET->translate(),
+                            'value' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->value,
+                            'label' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->translate(),
                         ],
                         'id'                      => $asset->id,
-                        'name'                    => $asset->name,
+                        'short_name'              => $asset->short_name,
                         'slug'                    => $asset->slug,
                         'thumbnail_url'           => $asset->thumbnail_url,
                         'is_attachable_to_course' => $asset->is_attachable_to_course,
@@ -485,11 +486,11 @@ it('can view a course', function (): void {
                 ]))
                 ->where('data.digital_assets', $digitalAssets->map(fn (App\Models\DigitalAsset $asset): array => [
                     'type' => [
-                        'value' => \App\Enums\Product\ProductableEnum::DIGITAL_ASSET->value,
-                        'label' => \App\Enums\Product\ProductableEnum::DIGITAL_ASSET->translate(),
+                        'value' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->value,
+                        'label' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->translate(),
                     ],
                     'id'                      => $asset->id,
-                    'name'                    => $asset->name,
+                    'short_name'              => $asset->short_name,
                     'slug'                    => $asset->slug,
                     'thumbnail_url'           => $asset->thumbnail_url,
                     'is_attachable_to_course' => $asset->is_attachable_to_course,

@@ -20,6 +20,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 use Plank\Mediable\Media;
 use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
@@ -52,10 +53,20 @@ final class DigitalAssetController extends Controller
     {
         Gate::authorize('view-any', DigitalAsset::class);
         $files = QueryBuilder::for(DigitalAsset::class)
-            ->allowedFilters(['name', 'slug', 'status',
+            ->allowedFilters([
+                'slug', 'status',
+                AllowedFilter::callback('name', function ($q, $value) {
+                    $q->where('short_name', 'LIKE', "%{$value}%")
+                        ->orWhere('full_name', 'LIKE', "%{$value}%");
+                }),
                 AllowedFilter::exact('is_attachable_to_course'),
             ])
-            ->allowedSorts(['name', 'slug', 'status'])
+            ->allowedSorts([
+                AllowedSort::callback('name', function ($q, $descending, $property) {
+                    $q->orderBy('short_name', $descending ? 'desc' : 'asc')
+                        ->orderBy('full_name', $descending ? 'desc' : 'asc');
+                }), 'slug', 'status'])
+
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 

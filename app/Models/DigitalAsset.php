@@ -26,7 +26,8 @@ final class DigitalAsset extends Model implements ProductableContract, Reviewabl
     use Mediable;
 
     protected $fillable = [
-        'name',
+        'full_name',
+        'short_name',
         'slug',
         'thumbnail_url',
         'description',

@@ -86,7 +86,7 @@
     "digital_assets": [
       {
         "id": 100,
-        "name": "دیجیتال",
+        "short_name": "دیجیتال",
         "slug": "quisquam-exercitationem-et-ratione-impedit-possimus-enim",
         "is_attachable_to_course": true,
         "status": {
@@ -101,7 +101,7 @@
       },
       {
         "id": 52,
-        "name": "ملک",
+        "short_name": "ملک",
         "slug": "pariatur-sapiente-voluptas-excepturi-voluptatem",
         "is_attachable_to_course": true,
         "status": {

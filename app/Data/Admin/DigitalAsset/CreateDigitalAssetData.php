@@ -19,7 +19,8 @@ final class CreateDigitalAssetData extends Data
     use ValidatesMetaTags;
 
     public function __construct(
-        public string $name,
+        public string $short_name,
+        public string $full_name,
         public string $slug,
         public ?string $description,
         public ?string $version,
@@ -51,8 +52,9 @@ final class CreateDigitalAssetData extends Data
 
         return array_merge(
             [
-                'name' => ['required', 'string', 'max:255'],
-                'slug' => [
+                'short_name' => ['required', 'string', 'max:100'],
+                'full_name'  => ['required', 'string', 'max:191'],
+                'slug'       => [
                     'required',
                     'string',
                     'alpha_dash',
@@ -100,7 +102,8 @@ final class CreateDigitalAssetData extends Data
     public static function attributes(...$args): array
     {
         return [
-            'name'                    => __('validation.attributes.digital_asset.name'),
+            'short_name'                    => __('validation.attributes.digital_asset.short_name'),
+            'full_name'                     => __('validation.attributes.digital_asset.full_name'),
             'version'                 => __('validation.attributes.digital_asset.version'),
             'is_attachable_to_course' => __('validation.attributes.digital_asset.is_attachable_to_course'),
             'published_at'            => __('validation.attributes.digital_asset.published_at'),
@@ -123,9 +126,13 @@ final class CreateDigitalAssetData extends Data
     public function bodyParameters(): array
     {
         return [
-            'name' => [
-                'description' => 'The name of the digital asset.',
-                'example'     => 'Digital Asset Name',
+            'short_name' => [
+                'description' => 'The short name of the digital asset.',
+                'example'     => 'Digital Asset',
+            ],
+            'full_name' => [
+                'description' => 'The full name of the digital asset.',
+                'example'     => 'Digital Asset Full Name',
             ],
             'slug' => [
                 'description' => 'A unique slug for the digital asset, used in URLs.',

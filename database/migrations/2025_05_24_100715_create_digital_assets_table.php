@@ -17,7 +17,8 @@ return new class extends Migration
     {
         Schema::create('digital_assets', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('full_name', 255);
+            $table->string('short_name', 100);
             $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->string('thumbnail_url')->nullable();
@@ -25,7 +26,7 @@ return new class extends Migration
             $table->unsignedInteger('page_count')->nullable()->comment('For documents like PDFs');
             $table->unsignedInteger('duration_seconds')->nullable()->comment('For audio/video file types');
             $table->boolean('is_attachable_to_course')->default(false);
-            $table->string('status')->index()->default(\App\Enums\Content\PublicationStatusEnum::DRAFT->value);
+            $table->string('status')->index()->default(App\Enums\Content\PublicationStatusEnum::DRAFT->value);
             $table->text('keywords')->nullable()->comment('Comma-separated keywords');
             $this->addMetaTagColumns($table);
             $table->timestamp('published_at')->nullable();

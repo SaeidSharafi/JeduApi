@@ -59,7 +59,7 @@
           "value": "digital_asset",
           "label": "فایل"
         },
-        "name": "الماس",
+        "short_name": "الماس",
         "slug": "aut-incidunt-ut-voluptas-assumenda-quae-asperiores",
         "description": "کلمه محل بلیط میز موسیقی فرش.",
         "version": "excepturi",
@@ -76,7 +76,7 @@
           "value": "digital_asset",
           "label": "فایل"
         },
-        "name": "جنگل",
+        "short_name": "جنگل",
         "slug": "sunt-est-facilis-in-consequatur-qui-voluptates-assumenda",
         "description": "گلیم نور دارو شهر الماس دفتر لوازم برق.",
         "version": "officia",

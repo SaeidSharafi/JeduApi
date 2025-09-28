@@ -25,7 +25,8 @@ final class ShowDigitalAssetData extends Data implements ProductableDataContract
 
     public function __construct(
         public int $id,
-        public string $name,
+        public string $short_name,
+        public string $full_name,
         public string $slug,
         public ?string $description,
         public ?string $version,

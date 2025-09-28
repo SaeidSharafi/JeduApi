@@ -2,7 +2,8 @@
   "message": "Operation successful.",
   "data": {
     "id": 11,
-    "name": "ساعت",
+    "short_name": "صوت",
+    "full_name": "قفل صوت",
     "slug": "sint-inventore-quasi-facilis-consequuntur",
     "description": "پل ژاکت نمک شیر بالین پارو.",
     "version": "qui",
