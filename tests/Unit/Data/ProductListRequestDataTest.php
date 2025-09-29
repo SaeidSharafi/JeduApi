@@ -43,7 +43,6 @@ describe('ProductListRequestData Validation Rules', function () {
         'filter with_discounts is not boolean'    => [['filter' => ['with_discounts' => 'yes']], 'filter.with_discounts'],
     ]);
 
-    // Test Case 2: The "Happy Path" to ensure valid data is not blocked.
     it('passes validation with valid data', function () {
         $category  = Category::factory()->create();
         $validData = [
@@ -55,7 +54,7 @@ describe('ProductListRequestData Validation Rules', function () {
                 'max_price'      => 200,
                 'with_discounts' => true,
             ],
-            'sortBy'    => 'title',
+            'sortBy'    => 'name',
             'sortOrder' => 'asc',
             'page'      => 2,
             'per_page'  => 50,
