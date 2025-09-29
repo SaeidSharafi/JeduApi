@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Product\Course;
 
+use App\Services\Shop\ProductQueryService;
+use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -26,7 +28,7 @@ final class CourseListRequestData extends Data
             'filter'   => ['sometimes', 'array'],
             'filter.*' => ['sometimes'],
             ...$filters,
-            'sortBy'    => ['sometimes', 'string', 'in:created_at,updated_at,name,price'],
+            'sortBy'    => ['sometimes', 'string', Rule::in(ProductQueryService::allowedSortFields)],
             'sortOrder' => ['sometimes', 'string', 'in:asc,desc'],
             'page'      => ['sometimes', 'integer', 'min:1'],
             'per_page'  => ['sometimes', 'integer', 'min:1', 'max:100'],

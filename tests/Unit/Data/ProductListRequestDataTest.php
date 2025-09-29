@@ -63,7 +63,6 @@ describe('ProductListRequestData Validation Rules', function () {
         $rules     = ProductListRequestData::rules();
         $validator = Validator::make($validData, $rules);
 
-        // Assert that validation passes with no errors.
         expect($validator->fails())->toBeFalse();
     });
 });

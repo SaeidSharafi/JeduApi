@@ -26,6 +26,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
  */
 final class ProductQueryService
 {
+    public const array allowedSortFields = ['created_at', 'updated_at', 'name', 'price'];
     private Builder $query;
 
     /**
@@ -315,8 +316,8 @@ final class ProductQueryService
 
     public function sortBy(string $field, string $direction = 'desc'): self
     {
-        $allowedFields = ['created_at', 'updated_at', 'name', 'price'];
-        if (! in_array($field, $allowedFields) || ! in_array($direction, ['asc', 'desc'])) {
+
+        if (! in_array($field, self::allowedSortFields) || ! in_array($direction, ['asc', 'desc'])) {
             return $this;
         }
 
