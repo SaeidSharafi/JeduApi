@@ -214,7 +214,6 @@ final readonly class ProductPriceService
         foreach ($products as $product) {
             // Calculate the price data DTO
             $priceData = $this->calculatePriceDataForProduct($product, useCache: false);
-            // dd($priceData);
             // Prepare the payload for the price index table
             $payload = $this->buildPriceIndexPayload($product, $priceData);
 

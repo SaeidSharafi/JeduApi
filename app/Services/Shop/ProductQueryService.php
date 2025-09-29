@@ -143,7 +143,6 @@ final class ProductQueryService
             }
         }
 
-        // dd($this->getQuery()->toRawSql());
         return $this
             ->sortBy($requestData->sortBy, $requestData->sortOrder)
             ->paginate($requestData->per_page);
