@@ -26,7 +26,7 @@ final class ProductListRequestData extends Data
             'filter'   => ['sometimes', 'array'],
             'filter.*' => ['sometimes'],
             ...$filters,
-            'sortBy'    => ['sometimes', 'string', 'in:title,created_at'],
+            'sortBy'    => ['sometimes', 'string', 'in:created_at,updated_at,name,price'],
             'sortOrder' => ['sometimes', 'string', 'in:asc,desc'],
             'page'      => ['sometimes', 'integer', 'min:1'],
             'per_page'  => ['sometimes', 'integer', 'min:1', 'max:100'],
