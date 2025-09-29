@@ -84,7 +84,7 @@ final class ProductFactory extends Factory
         });
     }
 
-    public function witCourse(?Course $course = null): self
+    public function withCourse(?Course $course = null): self
     {
         return $this->state(fn (array $attributes) => [
             'productable_type' => ProductableEnum::COURSE->value,

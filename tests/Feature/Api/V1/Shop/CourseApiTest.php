@@ -14,7 +14,7 @@ describe('Course API', function (): void {
         $product = Product::factory()
             ->withDeliveryOptions(1)
             ->count(5)
-            ->witCourse()
+            ->withCourse()
             ->create();
 
         $response = $this->getJson(route('api.v1.shop.courses.index'));
@@ -62,7 +62,7 @@ describe('Course API', function (): void {
                     'price'            => 3000000,
                 ],
             ])
-            ->witCourse()
+            ->withCourse()
             ->create();
 
         $response = $this->getJson(route('api.v1.shop.courses.show', ['product' => $product->slug]));
@@ -92,7 +92,7 @@ describe('Course Lsiting filters', function (): void {
     it('filter by search in title and description', function (): void {
         Product::factory()
             ->withDeliveryOptions(1)
-            ->witCourse(
+            ->withCourse(
                 Course::factory()->create(
                     ['short_name' => 'Laravel for Beginners', 'description' => 'Learn Laravel from scratch']
                 )
@@ -100,13 +100,13 @@ describe('Course Lsiting filters', function (): void {
             ->create(['name' => 'Laravel for Beginners']);
         Product::factory()
             ->withDeliveryOptions(1)
-            ->witCourse(Course::factory()->create(
+            ->withCourse(Course::factory()->create(
                 ['short_name' => 'Advanced PHP', 'description' => 'Deep dive into PHP programming']
             ))
             ->create(['name' => 'Advanced PHP']);
         Product::factory()
             ->withDeliveryOptions(1)
-            ->witCourse(Course::factory()->create(
+            ->withCourse(Course::factory()->create(
                 ['short_name' => 'JavaScript Basics', 'description' => 'Introduction to JavaScript']
             ))
             ->create(['name' => 'JavaScript Basics']);
@@ -121,12 +121,12 @@ describe('Course Lsiting filters', function (): void {
         $otherCategory     = Category::factory()->create(['name' => 'Design', 'slug' => 'design']);
         $productInCategory = Product::factory()
             ->withDeliveryOptions(1)
-            ->witCourse()
+            ->withCourse()
             ->create();
         $productInCategory->categories()->attach($category->id);
         $productNotInCategory = Product::factory()
             ->withDeliveryOptions(1)
-            ->witCourse()
+            ->withCourse()
             ->create();
         $productNotInCategory->categories()->attach($otherCategory->id);
         $response = $this->getJson(route('api.v1.shop.courses.index', ['filter[categorySlug]' => 'programming']));
@@ -140,15 +140,15 @@ describe('Course Lsiting filters', function (): void {
     it('filter by level', function (): void {
         $product1 = Product::factory()
             ->withDeliveryOptions(1)
-            ->witCourse(Course::factory()->create(['difficulty_level' => CourseDifficultyLevelEnum::BEGINNER]))
+            ->withCourse(Course::factory()->create(['difficulty_level' => CourseDifficultyLevelEnum::BEGINNER]))
             ->create();
         $product2 = Product::factory()
             ->withDeliveryOptions(1)
-            ->witCourse(Course::factory()->create(['difficulty_level' => CourseDifficultyLevelEnum::INTERMEDIATE]))
+            ->withCourse(Course::factory()->create(['difficulty_level' => CourseDifficultyLevelEnum::INTERMEDIATE]))
             ->create();
         $product3 = Product::factory()
             ->withDeliveryOptions(1)
-            ->witCourse(Course::factory()->create(['difficulty_level' => CourseDifficultyLevelEnum::ADVANCED]))
+            ->withCourse(Course::factory()->create(['difficulty_level' => CourseDifficultyLevelEnum::ADVANCED]))
             ->create();
         $response = $this->getJson(route('api.v1.shop.courses.index', ['filter[level]' => 'beginner']));
         $response->assertStatus(200)

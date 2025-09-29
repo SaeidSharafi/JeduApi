@@ -37,7 +37,7 @@ describe('ProductQueryService integration', function () {
             Product::factory()
                 ->withDeliveryOptions(1)
                 ->withCategory(1)
-                ->witCourse()
+                ->withCourse()
                 ->count(6)
                 ->create();
             Product::factory()
@@ -49,7 +49,7 @@ describe('ProductQueryService integration', function () {
             Product::factory()
                 ->withDeliveryOptions(1)
                 ->withCategory(1)
-                ->witCourse()
+                ->withCourse()
                 ->count(6)
                 ->create();
             Product::factory()
@@ -132,7 +132,7 @@ describe('ProductQueryService integration', function () {
             ]);
 
             $targetProduct = Product::factory()
-                ->witCourse($targetCourse)
+                ->withCourse($targetCourse)
                 ->create([
                     'name'              => 'Laravel Bootcamp Special',
                     'short_description' => 'Hands-on Laravel training',
@@ -158,7 +158,7 @@ describe('ProductQueryService integration', function () {
             ]);
 
             $otherProduct = Product::factory()
-                ->witCourse($otherCourse)
+                ->withCourse($otherCourse)
                 ->create([
                     'name'              => 'Symfony Mastery',
                     'short_description' => 'Advanced Symfony topics',
@@ -191,7 +191,7 @@ describe('ProductQueryService integration', function () {
         it('filter courses by price range', function () {
             $cheapCourse  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED->value]);
             $cheapProduct = Product::factory()
-                ->witCourse($cheapCourse)
+                ->withCourse($cheapCourse)
                 ->create(['name' => 'Affordable Course']);
             ProductDeliveryOption::factory()->for($cheapProduct)->create([
                 'price'            => 80_000,
@@ -202,7 +202,7 @@ describe('ProductQueryService integration', function () {
 
             $expensiveCourse  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED->value]);
             $expensiveProduct = Product::factory()
-                ->witCourse($expensiveCourse)
+                ->withCourse($expensiveCourse)
                 ->create(['name' => 'Premium Course']);
             ProductDeliveryOption::factory()->for($expensiveProduct)->create([
                 'price'            => 250_000,
@@ -281,7 +281,7 @@ describe('ProductQueryService integration', function () {
             $courseCategory  = Category::factory()->create();
 
             $courseProduct = Product::factory()
-                ->witCourse(Course::factory()->create())
+                ->withCourse(Course::factory()->create())
                 ->create(['name' => 'Course Product']);
             $courseProduct->categories()->sync([$courseCategory->id]);
             ProductDeliveryOption::factory()->for($courseProduct)->create([
@@ -316,7 +316,7 @@ describe('ProductQueryService integration', function () {
         });
 
         it('filters by price range and sorts by price ascending', function () {
-            $courseProduct = Product::factory()->witCourse(Course::factory()->create())->create(['name' => 'Course A']);
+            $courseProduct = Product::factory()->withCourse(Course::factory()->create())->create(['name' => 'Course A']);
             ProductDeliveryOption::factory()->for($courseProduct)->create([
                 'price'            => 90_000,
                 'status'           => PublicationStatusEnum::PUBLISHED->value,
@@ -360,7 +360,7 @@ describe('ProductQueryService integration', function () {
         });
 
         it('filter product by search term matches product name', function () {
-            $courseProduct = Product::factory()->witCourse(Course::factory()->create())
+            $courseProduct = Product::factory()->withCourse(Course::factory()->create())
                 ->create(['name' => 'Learn PHP']);
             ProductDeliveryOption::factory()->for($courseProduct)->create([
                 'price'            => 100_000,
@@ -400,7 +400,7 @@ describe('ProductQueryService integration', function () {
         });
 
         it('filter product by search term matches data in produtable fields', function () {
-            $courseProduct = Product::factory()->witCourse(
+            $courseProduct = Product::factory()->withCourse(
                 Course::factory()->create([
                     'full_name'   => 'Full Stack Web Development',
                     'short_name'  => 'Web Dev Bootcamp',
@@ -453,7 +453,7 @@ describe('ProductQueryService integration', function () {
         });
 
         it('filter product by discounted products only', function () {
-            $discountedProduct = Product::factory()->witCourse(Course::factory()->create())
+            $discountedProduct = Product::factory()->withCourse(Course::factory()->create())
                 ->create(['name' => 'Discounted Course']);
             $discountedOption = ProductDeliveryOption::factory()->for($discountedProduct)->create([
                 'price'            => 200_000,
@@ -466,7 +466,7 @@ describe('ProductQueryService integration', function () {
                 ->create();
             indexProductPrice($discountedProduct);
 
-            $fullPriceProduct = Product::factory()->witCourse(Course::factory()->create())
+            $fullPriceProduct = Product::factory()->withCourse(Course::factory()->create())
                 ->create(['name' => 'Full Price Course']);
             ProductDeliveryOption::factory()->for($fullPriceProduct)->create([
                 'price'            => 180_000,
@@ -490,7 +490,7 @@ describe('ProductQueryService integration', function () {
 
     describe('fluent query helpers', function () {
         it('excludes unavailable products from availableProducts()', function () {
-            $validProduct = Product::factory()->witCourse(Course::factory()->create())->create();
+            $validProduct = Product::factory()->withCourse(Course::factory()->create())->create();
             $validOption  = ProductDeliveryOption::factory()->for($validProduct)->create([
                 'status'           => PublicationStatusEnum::PUBLISHED->value,
                 'price'            => 120_000,
@@ -498,24 +498,24 @@ describe('ProductQueryService integration', function () {
             ]);
             indexProductPrice($validProduct);
 
-            Product::factory()->witCourse(Course::factory()->create([
+            Product::factory()->withCourse(Course::factory()->create([
                 'status' => PublicationStatusEnum::DRAFT->value,
             ]))->create([
                 'name' => 'Draft Course Product',
             ]);
 
-            Product::factory()->witCourse(Course::factory()->create())->create([
+            Product::factory()->withCourse(Course::factory()->create())->create([
                 'name'       => 'Invisible Product',
                 'is_visible' => false,
             ]);
 
             $inactiveTerm = Term::factory()->create(['status' => TermStatusEnum::INACTIVE->value]);
-            Product::factory()->witCourse(Course::factory()->create())->create([
+            Product::factory()->withCourse(Course::factory()->create())->create([
                 'name'    => 'Inactive Term Product',
                 'term_id' => $inactiveTerm->id,
             ]);
 
-            $productWithDraftOption = Product::factory()->witCourse(Course::factory()->create())->create([
+            $productWithDraftOption = Product::factory()->withCourse(Course::factory()->create())->create([
                 'name' => 'Draft Option Product',
             ]);
             ProductDeliveryOption::factory()->for($productWithDraftOption)->create([
@@ -536,7 +536,7 @@ describe('ProductQueryService integration', function () {
                 'full_name' => 'Kotlin Expert Bootcamp',
             ]);
 
-            $product = Product::factory()->witCourse($course)->create([
+            $product = Product::factory()->withCourse($course)->create([
                 'name'              => 'Kotlin Mobile Development Course',
                 'short_description' => 'Build Kotlin-powered Android apps',
             ]);
@@ -557,7 +557,7 @@ describe('ProductQueryService integration', function () {
         });
 
         it('keeps only discounted products when withDiscounts() is applied', function () {
-            $discounted     = Product::factory()->witCourse(Course::factory()->create())->create(['name' => 'Discounted']);
+            $discounted     = Product::factory()->withCourse(Course::factory()->create())->create(['name' => 'Discounted']);
             $discountOption = ProductDeliveryOption::factory()->for($discounted)->create([
                 'price'            => 180_000,
                 'status'           => PublicationStatusEnum::PUBLISHED->value,
@@ -569,7 +569,7 @@ describe('ProductQueryService integration', function () {
                 ->create();
             $discounted = indexProductPrice($discounted);
 
-            $fullPrice = Product::factory()->witCourse(Course::factory()->create())->create(['name' => 'Full Price']);
+            $fullPrice = Product::factory()->withCourse(Course::factory()->create())->create(['name' => 'Full Price']);
             ProductDeliveryOption::factory()->for($fullPrice)->create([
                 'price'            => 160_000,
                 'status'           => PublicationStatusEnum::PUBLISHED->value,
@@ -587,7 +587,7 @@ describe('ProductQueryService integration', function () {
         });
 
         it('orders products by popularity when popular() is chained', function () {
-            $popularProduct = Product::factory()->witCourse(Course::factory()->create())->create(['name' => 'Popular']);
+            $popularProduct = Product::factory()->withCourse(Course::factory()->create())->create(['name' => 'Popular']);
             $popularOption  = ProductDeliveryOption::factory()->for($popularProduct)->create([
                 'status'           => PublicationStatusEnum::PUBLISHED->value,
                 'price'            => 120_000,
@@ -595,7 +595,7 @@ describe('ProductQueryService integration', function () {
             ]);
             indexProductPrice($popularProduct);
 
-            $lessPopularProduct = Product::factory()->witCourse(Course::factory()->create())
+            $lessPopularProduct = Product::factory()->withCourse(Course::factory()->create())
                 ->create(['name' => 'Less Popular']);
             $lessPopularOption = ProductDeliveryOption::factory()->for($lessPopularProduct)->create([
                 'status'           => PublicationStatusEnum::PUBLISHED->value,
@@ -634,7 +634,7 @@ describe('ProductQueryService integration', function () {
             $instructor = App\Models\Teacher::factory()->create();
 
             $courseByInstructor = Product::factory()
-                ->witCourse(Course::factory()->create())
+                ->withCourse(Course::factory()->create())
                 ->create(['name' => 'Instructor Course']);
             $pdo = ProductDeliveryOption::factory()->for($courseByInstructor)->create([
                 'price'            => 120_000,
@@ -647,7 +647,7 @@ describe('ProductQueryService integration', function () {
             indexProductPrice($courseByInstructor);
 
             $otherCourse = Product::factory()
-                ->witCourse(Course::factory()->create())
+                ->withCourse(Course::factory()->create())
                 ->create(['name' => 'Other Course']);
             ProductDeliveryOption::factory()->for($otherCourse)->create([
                 'price'            => 130_000,
@@ -682,7 +682,7 @@ describe('ProductQueryService integration', function () {
                         'price'            => 3000000,
                     ],
                 ])
-                ->witCourse($course)
+                ->withCourse($course)
                 ->create();
             $product = indexProductPrice($product);
 
@@ -721,7 +721,7 @@ describe('ProductQueryService integration', function () {
                         'price'            => 1000000,
                     ],
                 ])
-                ->witCourse($course)
+                ->withCourse($course)
                 ->create();
             $product = indexProductPrice($product);
 
@@ -750,7 +750,7 @@ describe('ProductQueryService integration', function () {
         it('does not return full products when includeFullProducts is false', function () {
             $product = Product::factory()
                 ->withCategory()
-                ->witCourse()
+                ->withCourse()
                 ->create();
             $deliveryOption = ProductDeliveryOption::factory()
                 ->for($product)
@@ -785,7 +785,7 @@ describe('ProductQueryService integration', function () {
                         'capacity'         => 1,
                     ],
                 ])
-                ->witCourse()
+                ->withCourse()
                 ->count(3)
                 ->create();
 
