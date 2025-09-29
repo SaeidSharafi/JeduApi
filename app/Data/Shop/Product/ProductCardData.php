@@ -14,7 +14,6 @@ use Spatie\LaravelData\Data;
 final class ProductCardData extends Data
 {
     public function __construct(
-        public int $id,
         public string $slug,
         public string $name,
         public ?int $price,
@@ -42,7 +41,6 @@ final class ProductCardData extends Data
         }
 
         return new self(
-            id: $product->id,
             slug: $product->slug,
             name: $product->name,
             price: $priceData->min_price,

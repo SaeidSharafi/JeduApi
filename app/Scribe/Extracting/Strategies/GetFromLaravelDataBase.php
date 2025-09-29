@@ -109,6 +109,12 @@ abstract class GetFromLaravelDataBase extends Strategy
 
         $laravelData = (new ReflectionClass($className))->newInstanceWithoutConstructor();
 
+        if (
+            $this->customParameterDataMethodName !== 'queryParameters'
+            && ! method_exists($laravelData, $this->customParameterDataMethodName)
+            && method_exists($laravelData, 'queryParameters')) {
+            return [];
+        }
         $parametersFromLaravelData = $this->getParametersFromValidationRules(
             $this->getRouteValidationRules($laravelData),
             $this->getCustomParameterData($laravelData)

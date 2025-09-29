@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Traits\HasCategories;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 final class Product extends Model
@@ -75,6 +74,14 @@ final class Product extends Model
         return $this->hasManyThrough(OrderItem::class, ProductDeliveryOption::class);
     }
 
+    /**
+     * @return HasOne<ProductPrice, $this>
+     */
+    public function productPrice(): HasOne
+    {
+        return $this->hasOne(ProductPrice::class);
+    }
+
     protected function casts(): array
     {
         return [
@@ -86,72 +93,5 @@ final class Product extends Model
             'created_at'       => 'datetime',
             'updated_at'       => 'datetime',
         ];
-    }
-
-    #[Scope]
-    protected function active($query)
-    {
-        return $query->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED)
-            ->where('is_visible', true)
-            ->whereHas('productable', function ($q): void {
-                $q->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED);
-            })
-            ->whereHas('productDeliveryOptions', function ($q): void {
-                $q->available();
-            });
-    }
-
-    #[Scope]
-    protected function activeWithRelations($query)
-    {
-        return $query
-            ->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED)
-            ->where('is_visible', true)
-            ->withWhereHas('productDeliveryOptions', function ($q): void {
-                $q->available()
-                    ->with('productDeliveryOptionDiscountPrice');
-            })
-            ->withWhereHas('productable', function ($q): void {
-                $q->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED)
-                    ->withProductableMedia()
-                    ->withProductableCategories()
-                    ->withProductableAssets();
-            })
-            ->with('vendor');
-    }
-
-    #[Scope]
-    protected function activeWithData(Builder $query): Builder
-    {
-        return $query
-            ->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED)
-            ->where('is_visible', true)
-            ->withWhereHas(
-                'productDeliveryOptions', function ($q): void {
-                    $q->with(['teachers', 'productDeliveryOptionDiscountPrice'])
-                        ->available();
-                })
-            ->withWhereHas('productable', function ($q): void {
-                $q->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED);
-            })
-            ->with('vendor');
-    }
-
-    #[Scope]
-    protected function activeWithPriceAndMedia($query)
-    {
-        return $query
-            ->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED)
-            ->where('is_visible', true)
-            ->withWhereHas(
-                'productDeliveryOptions', function ($q): void {
-                    $q->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED)
-                        ->with('productDeliveryOptionDiscountPrice');
-                })
-            ->withWhereHas('productable', function ($q): void {
-                $q->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED)
-                    ->withProductableMedia();
-            })
-            ->with('vendor');
     }
 }

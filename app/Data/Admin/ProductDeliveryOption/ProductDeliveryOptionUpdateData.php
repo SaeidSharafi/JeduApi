@@ -7,8 +7,6 @@ namespace App\Data\Admin\ProductDeliveryOption;
 use App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction;
 use App\Data\Transformer\CarbonFromJalaliString;
 use Carbon\Carbon;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
@@ -43,18 +41,8 @@ final class ProductDeliveryOptionUpdateData extends Data
     public static function rules(?ValidationContext $context = null): array
     {
         $baseRules = [
-            'name' => ['required', 'string', 'max:255'],
-            'sku'  => [
-                'required', 'alpha_dash', 'max:255',
-                Rule::unique('product_delivery_options', 'sku')->where(function (Builder $query) {
-                    $delivery_option = request()->route()->parameter('delivery_option');
-                    if ($delivery_option && $delivery_option->id) {
-                        $query->whereNot('id', $delivery_option->id);
-                    }
-
-                    return $query;
-                }),
-            ],
+            'name'                      => ['required', 'string', 'max:255'],
+            'sku'                       => ['required', 'alpha_dash', 'max:255'],
             'price'                     => ['required', 'integer', 'min:0'],
             'capacity'                  => ['nullable', 'integer', 'min:0'],
             'status'                    => ['required', 'string', 'in:draft,published,archived'],
@@ -64,9 +52,11 @@ final class ProductDeliveryOptionUpdateData extends Data
             'is_featured'               => ['required', 'boolean'],
             'featured_price'            => ['nullable', 'integer', 'min:0'],
             'featured_price_start_date' => ['nullable', 'jdate:Y-m-d H:i:s'],
-            'featured_price_end_date'   => ['nullable', 'jdate:Y-m-d H:i:s', 'jdate_after:'.request('featured_price_start_date').',Y-m-d H:i:s'],
-            'teachers'                  => ['required', 'array'],
-            'teachers.*'                => ['required', 'integer', 'exists:teachers,id'],
+            'featured_price_end_date'   => [
+                'nullable', 'jdate:Y-m-d H:i:s', 'jdate_after:'.request('featured_price_start_date').',Y-m-d H:i:s',
+            ],
+            'teachers'   => ['required', 'array'],
+            'teachers.*' => ['required', 'integer', 'exists:teachers,id'],
         ];
 
         // Get the existing delivery option to determine its delivery method for details validation

@@ -23,7 +23,7 @@ final class TermFactory extends Factory
 
         return [
             'name'          => $this->faker->randomElement(['Fall', 'Spring', 'Summer']).' '.$this->faker->year(),
-            'status'        => $this->faker->randomElement(TermStatusEnum::getAllValues()),
+            'status'        => TermStatusEnum::ACTIVE,
             'academic_year' => $year.'-'.($year + 1),
             'start_date'    => $startDate->format('Y-m-d'),
             'end_date'      => Carbon::parse($startDate->format('Y-m-d'))->addMonths(3)->format('Y-m-d'),

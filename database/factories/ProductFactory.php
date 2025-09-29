@@ -84,6 +84,30 @@ final class ProductFactory extends Factory
         });
     }
 
+    public function witCourse(?Course $course = null): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'productable_type' => ProductableEnum::COURSE->value,
+            'productable_id'   => $course?->id ?? Course::factory(),
+        ]);
+    }
+
+    public function withSeminar(?Seminar $seminar = null): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'productable_type' => ProductableEnum::SEMINAR->value,
+            'productable_id'   => $seminar?->id ?? Seminar::factory(),
+        ]);
+    }
+
+    public function withDigitalAsset(?DigitalAsset $digitalAsset = null): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'productable_type' => ProductableEnum::DIGITAL_ASSET->value,
+            'productable_id'   => $digitalAsset?->id ?? DigitalAsset::factory(),
+        ]);
+    }
+
     public function withDeliveryOptions(int $count = 3, array $realData = []): static
     {
         return $this->afterCreating(function (Product $product) use ($count, $realData) {

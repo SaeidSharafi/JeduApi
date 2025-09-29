@@ -177,7 +177,7 @@ describe('SeminarController', function (): void {
                             'digital_assets' => [
                                 '*' => [
                                     'id',
-                                    'name',
+                                    'short_name',
                                     'slug',
                                     'is_attachable_to_course',
                                     'status',
@@ -227,11 +227,11 @@ describe('SeminarController', function (): void {
                     ->where('digital_assets',
                         $expectedSeminar->digitalAssets?->map(fn (App\Models\DigitalAsset $asset): array => [
                             'type' => [
-                                'value' => \App\Enums\Product\ProductableEnum::DIGITAL_ASSET->value,
-                                'label' => \App\Enums\Product\ProductableEnum::DIGITAL_ASSET->translate(),
+                                'value' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->value,
+                                'label' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->translate(),
                             ],
                             'id'                      => $asset->id,
-                            'name'                    => $asset->name,
+                            'short_name'              => $asset->short_name,
                             'slug'                    => $asset->slug,
                             'thumbnail_url'           => $asset->thumbnail_url,
                             'is_attachable_to_course' => $asset->is_attachable_to_course,
@@ -286,11 +286,11 @@ describe('SeminarController', function (): void {
                     ]))
                     ->where('data.digital_assets', $digitalAssets->map(fn (App\Models\DigitalAsset $asset): array => [
                         'type' => [
-                            'value' => \App\Enums\Product\ProductableEnum::DIGITAL_ASSET->value,
-                            'label' => \App\Enums\Product\ProductableEnum::DIGITAL_ASSET->translate(),
+                            'value' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->value,
+                            'label' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->translate(),
                         ],
                         'id'                      => $asset->id,
-                        'name'                    => $asset->name,
+                        'short_name'              => $asset->short_name,
                         'slug'                    => $asset->slug,
                         'thumbnail_url'           => $asset->thumbnail_url,
                         'is_attachable_to_course' => $asset->is_attachable_to_course,
@@ -339,14 +339,14 @@ describe('SeminarController', function (): void {
         $this->assertDatabaseHas('categorizables',
             [
                 'categorizable_id'   => $seminar->id,
-                'categorizable_type' => \App\Enums\System\MorphTypeEnum::SEMINAR->value,
+                'categorizable_type' => App\Enums\System\MorphTypeEnum::SEMINAR->value,
                 'category_id'        => $cateogires[0]->id,
             ]
         );
         $this->assertDatabaseHas('categorizables',
             [
                 'categorizable_id'   => $seminar->id,
-                'categorizable_type' => \App\Enums\System\MorphTypeEnum::SEMINAR->value,
+                'categorizable_type' => App\Enums\System\MorphTypeEnum::SEMINAR->value,
                 'category_id'        => $cateogires[1]->id,
             ]
         );
@@ -354,30 +354,30 @@ describe('SeminarController', function (): void {
         $this->assertDatabaseHas('assetables',
             [
                 'assetable_id'     => $seminar->id,
-                'assetable_type'   => \App\Enums\System\MorphTypeEnum::SEMINAR->value,
+                'assetable_type'   => App\Enums\System\MorphTypeEnum::SEMINAR->value,
                 'digital_asset_id' => $seminarData['digital_assets'][0],
             ]
         );
         $this->assertDatabaseHas('assetables',
             [
                 'assetable_id'     => $seminar->id,
-                'assetable_type'   => \App\Enums\System\MorphTypeEnum::SEMINAR->value,
+                'assetable_type'   => App\Enums\System\MorphTypeEnum::SEMINAR->value,
                 'digital_asset_id' => $seminarData['digital_assets'][1],
             ]
         );
         $this->assertDatabaseHas('mediables', [
             'mediable_id'   => $seminar->id,
-            'mediable_type' => \App\Enums\System\MorphTypeEnum::SEMINAR->value,
+            'mediable_type' => App\Enums\System\MorphTypeEnum::SEMINAR->value,
             'media_id'      => $this->cover->id,
         ]);
         $this->assertDatabaseHas('mediables', [
             'mediable_id'   => $seminar->id,
-            'mediable_type' => \App\Enums\System\MorphTypeEnum::SEMINAR->value,
+            'mediable_type' => App\Enums\System\MorphTypeEnum::SEMINAR->value,
             'media_id'      => $this->gallery->id,
         ]);
         $this->assertDatabaseHas('mediables', [
             'mediable_id'   => $seminar->id,
-            'mediable_type' => \App\Enums\System\MorphTypeEnum::SEMINAR->value,
+            'mediable_type' => App\Enums\System\MorphTypeEnum::SEMINAR->value,
             'media_id'      => $this->video->id,
         ]);
     });
@@ -488,7 +488,7 @@ describe('SeminarController', function (): void {
         $seminar = App\Models\Seminar::factory()->create();
         App\Models\Product::factory()->create([
             'productable_id'   => $seminar->id,
-            'productable_type' => \App\Enums\System\MorphTypeEnum::SEMINAR->value,
+            'productable_type' => App\Enums\System\MorphTypeEnum::SEMINAR->value,
         ]);
         $this->authorized_user([
             App\Enums\PermissionEnum::SEMINAR_DELETE->value,

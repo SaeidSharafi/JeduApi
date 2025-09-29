@@ -25,7 +25,8 @@ final class DigitalAssetFactory extends Factory
     public function definition(): array
     {
         return [
-            'name'                    => $this->faker->persianWord(),
+            'short_name'              => $this->faker->persianWord(),
+            'full_name'               => $this->faker->persianWords(3, true),
             'slug'                    => $this->faker->unique()->slug(),
             'description'             => $this->faker->persianSentence(),
             'version'                 => $this->faker->word(),

@@ -373,7 +373,8 @@ return [
             'default_teacher_info'    => 'اطلاعات مدرس پیش فرض دوره',
         ],
         'digital_asset' => [
-            'name'                    => 'عنوان',
+            'full_name'               => 'نام کامل فایل',
+            'short_name'              => 'نام کوتاه فایل',
             'duration_seconds'        => 'مدت زمان به ثانیه برای ویدئو',
             'published_at'            => 'تاریخ انتشار',
             'keywords'                => 'کلیدواژه ها',

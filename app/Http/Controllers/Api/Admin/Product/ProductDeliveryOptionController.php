@@ -34,7 +34,9 @@ final class ProductDeliveryOptionController extends Controller
     public function index(Product $product): ApiResponseInterface
     {
         Gate::authorize('view-any', ProductDeliveryOption::class);
-        $deliveryOptions = $product->productDeliveryOptions()->with('teachers')->get();
+        $deliveryOptions = $product->productDeliveryOptions()
+            ->with('teachers', fn ($q) => $q->orderBy('id'))
+            ->get();
 
         return response()->success(ProductDeliveryOptionShowData::collect($deliveryOptions));
     }

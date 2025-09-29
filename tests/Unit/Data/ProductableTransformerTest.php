@@ -96,13 +96,13 @@ describe('item transformations', function (): void {
             ->withFile()
             ->withMedia()
             ->create(
-                ['name' => 'Test Digital Asset']
+                ['short_name' => 'Test Digital Asset']
             );
 
         $productable = $transformer->transform($this->mockProperty, $digitalAsset, $this->mockContext);
 
         expect($productable)->toBeInstanceOf(App\Data\Admin\DigitalAsset\ShowDigitalAssetData::class)
-            ->and($productable->name)->toBe('Test Digital Asset');
+            ->and($productable->short_name)->toBe('Test Digital Asset');
     });
     it('transforms a Course instance to CourseListItemData when short is true', function (): void {
         $transformer = new ProductableTransformer(short: true);
@@ -141,13 +141,13 @@ describe('item transformations', function (): void {
             ->withFile()
             ->withMedia()
             ->create(
-                ['name' => 'Test Digital Asset']
+                ['short_name' => 'Test Digital Asset']
             );
 
         $productable = $transformer->transform($this->mockProperty, $digitalAsset, $this->mockContext);
 
         expect($productable)->toBeInstanceOf(App\Data\Admin\DigitalAsset\DigitalAssetListItemData::class)
-            ->and($productable->name)->toBe('Test Digital Asset');
+            ->and($productable->short_name)->toBe('Test Digital Asset');
     });
 
 });

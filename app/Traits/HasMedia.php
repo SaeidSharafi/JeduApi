@@ -20,7 +20,7 @@ trait HasMedia
         return $query;
     }
 
-    public function getAllMedia(): array
+    public function getAllMedia(bool $urlOnly = false): array
     {
         $tags = array_diff(MediaTagEnum::cases(), $this->exceptTags);
 
@@ -29,6 +29,10 @@ trait HasMedia
             foreach ($tags as $tag) {
                 $media[$tag->value] = $this->getMedia($tag)
                     ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag->value))
+                    ->when(
+                        $urlOnly,
+                        static fn ($items) => $items->map(static fn (MediaData $d) => $d->url)
+                    )
                     ->toArray();
             }
 

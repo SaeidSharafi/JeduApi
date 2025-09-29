@@ -20,6 +20,7 @@ final class ProductDeliveryOptionPriceData extends Data
         public ?string $discount_type,
         public ?float $discount_percentage,
         public ?array $range = null,
+        public ?string $uuid = null,
     ) {}
 
     public static function make(
@@ -28,7 +29,9 @@ final class ProductDeliveryOptionPriceData extends Data
         ?int $prePaymentPrice = null,
         ?int $featuredPrice = null,
         ?int $discountAmount = null,
-        ?string $discountType = null
+        ?string $discountType = null,
+        ?string $uuid = null,
+
     ): self {
         $hasFeaturedPrice   = $featuredPrice   !== null && $featuredPrice !== $originalPrice;
         $hasDiscount        = $discountAmount  !== null && $discountAmount > 0;
@@ -49,6 +52,7 @@ final class ProductDeliveryOptionPriceData extends Data
             has_discount: $hasDiscount,
             discount_type: $discountType,
             discount_percentage: $discountPercentage,
+            uuid: $uuid,
         );
     }
 }

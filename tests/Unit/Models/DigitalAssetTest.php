@@ -10,7 +10,8 @@ test('to array', function (): void {
     expect($digitalAsset->toArray())
         ->toEqual([
             'id'                      => $digitalAsset->id,
-            'name'                    => $digitalAsset->name,
+            'short_name'              => $digitalAsset->short_name,
+            'full_name'               => $digitalAsset->full_name,
             'slug'                    => $digitalAsset->slug,
             'description'             => $digitalAsset->description,
             'thumbnail_url'           => $digitalAsset->thumbnail_url,
@@ -81,7 +82,7 @@ test('with reviews', function (): void {
         'reviewable_id'   => $digitalAsset->id,
         'reviewable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
         'rating'          => 4,
-        'status'          => \App\Enums\Content\ReviewStatusEnum::APPROVED,
+        'status'          => App\Enums\Content\ReviewStatusEnum::APPROVED,
     ]);
 
     $review2 = App\Models\Review::factory()->create([
@@ -89,7 +90,7 @@ test('with reviews', function (): void {
         'reviewable_id'   => $digitalAsset->id,
         'reviewable_type' => MorphTypeEnum::DIGITAL_ASSET->value,
         'rating'          => 5,
-        'status'          => \App\Enums\Content\ReviewStatusEnum::PENDING,
+        'status'          => App\Enums\Content\ReviewStatusEnum::PENDING,
     ]);
 
     $digitalAsset->refresh();

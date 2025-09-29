@@ -31,7 +31,46 @@ it('get getAllMedia', function (): void {
         ->and($course->getAllMedia()['certificate'])
         ->toHaveCount(0);
 });
+it('get getAllMedia as url only list', function (): void {
+    Illuminate\Http\UploadedFile::fake();
+    Storage::fake('public');
+    $this->cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
+        ->toDisk('public')
+        ->upload();
+    $categories    = App\Models\Category::factory(3)->create();
+    $digitalAssets = App\Models\DigitalAsset::factory(2)->create();
+    $course        = App\Models\Course::factory()->create();
+    $course->categories()->sync($categories);
+    $course->digitalAssets()->sync($digitalAssets);
+    $course->attachMedia($this->cover, 'cover');
 
+    expect($course->getAllMedia(true))
+        ->toBeArray()
+        ->toHaveCount(0);
+    $course->refresh()->loadMediaWitVariant();
+    $media = $course->getAllMedia(true);
+    // should only be list of urls
+    expect($media)
+        ->toBeArray()
+        ->and($media)
+        ->toHaveCount(5)
+        ->and($media['gallery'])
+        ->toHaveCount(0)
+        ->and($media['video'])
+        ->toHaveCount(0)
+        ->and($media['cover'])
+        ->toHaveCount(1)
+        ->and($media['cover'][0])
+        ->toBeString()
+        ->and($media['certificate'])
+        ->toHaveCount(0);
+
+    foreach ($media as $tag => $items) {
+        foreach ($items as $item) {
+            $this->assertIsString($item);
+        }
+    }
+});
 it('get cover media', function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');

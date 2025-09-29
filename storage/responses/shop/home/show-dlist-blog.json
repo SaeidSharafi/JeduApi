@@ -9,7 +9,6 @@
       "preset": "default",
       "items": [
         {
-          "id": 18,
           "title": "ad",
           "slug": "aperiam-corporis-velit-aut-et",
           "excerpt": "id",
@@ -22,7 +21,6 @@
           "thumbnail_url": "http://jedu.test/storage/fake-media/placeholder.svg"
         },
         {
-          "id": 7,
           "title": "eaque",
           "slug": "voluptatum-animi-molestias-eos-unde-quo-reiciendis-natus",
           "excerpt": "laudantium",
@@ -35,7 +33,6 @@
           "thumbnail_url": "http://jedu.test/storage/fake-media/placeholder.svg"
         },
         {
-          "id": 9,
           "title": "laudantium",
           "slug": "magnam-ad-voluptatem-deleniti-culpa",
           "excerpt": "dolor",
@@ -48,7 +45,6 @@
           "thumbnail_url": "http://jedu.test/storage/fake-media/placeholder.svg"
         },
         {
-          "id": 13,
           "title": "ipsum",
           "slug": "dolores-harum-labore-architecto-incidunt-est-quisquam-occaecati",
           "excerpt": "unde",

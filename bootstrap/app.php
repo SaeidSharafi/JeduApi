@@ -23,6 +23,16 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('post:publish')
             ->everyTenMinutes()
             ->withoutOverlapping();
+
+        // Price indexing and featured price checks
+        $schedule->command('prices:check-expired-featured')
+            ->everyFifteenMinutes()
+            ->withoutOverlapping();
+
+        // Full price reindex (both JSON cache AND price index table)
+        $schedule->command('prices:index-all')
+            ->twiceDailyAt(2, 14, 3)
+            ->withoutOverlapping();
     })
     ->withRouting(
         commands: __DIR__.'/../routes/console.php',

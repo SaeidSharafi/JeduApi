@@ -8,7 +8,6 @@
     "content": {
       "items": [
         {
-          "id": 47,
           "slug": "quaerat-quibusdam-dolor-voluptas-et-suscipit",
           "name": "Arianna Cummerata MD",
           "price": 500000,
@@ -90,7 +89,6 @@
           }
         },
         {
-          "id": 43,
           "slug": "sint-consequatur-quod-rem-architecto-molestiae-deserunt",
           "name": "Donny Grimes",
           "price": 500000,
@@ -173,7 +171,6 @@
           }
         },
         {
-          "id": 57,
           "slug": "assumenda-modi-quibusdam-et-ad-eaque",
           "name": "Paxton Paucek",
           "price": 500000,
@@ -256,7 +253,6 @@
           }
         },
         {
-          "id": 7,
           "slug": "iste-sit-occaecati-assumenda-ullam-beatae-ea-dolorem",
           "name": "Ed Powlowski Sr.",
           "price": 500000,
@@ -338,7 +334,6 @@
           }
         },
         {
-          "id": 80,
           "slug": "provident-sed-quia-ipsam-ut-porro-nihil",
           "name": "Vicente Padberg",
           "price": 500000,

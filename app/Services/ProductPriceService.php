@@ -9,6 +9,7 @@ use App\Data\Shop\ProductPriceData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
+use App\Models\ProductPrice;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -42,20 +43,19 @@ final readonly class ProductPriceService
      * 2. Featured price (manual sale price)
      * 3. Standard price (default product price)
      */
-    public function calculatePriceDataForProduct(Product $product, ?int $selectedDeliveryOptionId = null): ProductPriceData
-    {
-        if ($selectedDeliveryOptionId === null && $this->requestCache->hasPriceData($product->id)) {
+    public function calculatePriceDataForProduct(
+        Product $product,
+        ?int $selectedDeliveryOptionId = null,
+        bool $useCache = true
+    ): ProductPriceData {
+        if ($useCache && $selectedDeliveryOptionId === null && $this->requestCache->hasPriceData($product->id)) {
             return $this->requestCache->getPriceDataForProduct($product->id);
         }
 
         // Get the delivery option to work with
         $deliveryOptions = $this->findDeliveryOptionsForProduct($product, $selectedDeliveryOptionId);
         if ($deliveryOptions->isEmpty()) {
-            $optionPirces = [ProductDeliveryOptionPriceData::make(0, 0)];
-
-            return ProductPriceData::make(
-                $optionPirces
-            );
+            return ProductPriceData::make([]);
         }
         $prices = [];
         $deliveryOptions->each(function ($deliveryOption) use (&$prices): void {
@@ -67,7 +67,7 @@ final readonly class ProductPriceService
             prices: $prices,
             range: $this->getPriceRangeForProduct($product),
         );
-        if ($selectedDeliveryOptionId === null) {
+        if ($useCache && $selectedDeliveryOptionId === null) {
             $this->requestCache->storeProductPriceData($product->id, $productPriceData);
         }
 
@@ -88,54 +88,49 @@ final readonly class ProductPriceService
      */
     public function getPriceDataForOption(ProductDeliveryOption $option): ProductDeliveryOptionPriceData
     {
-        // Get all pricing components
         $standardPrice   = $option->price;
         $featuredPrice   = $this->getActiveFeaturedPrice($option);
-        $discountPrice   = $this->getDiscountPrice($option);
+        $discountPrice   = $this->getDiscountPrice($option); // From catalog-style rules
         $prePaymentPrice = $option->is_prepayment_available ? $option->prepayment_amount : null;
-        // Determine current price following hierarchy
-        $currentPrice   = $standardPrice;
+
+        // 2. Determine the final effective price using the "Best Price Wins" model
+        $finalPrice = $standardPrice;
+
+        // Check if the featured price is a candidate
+        if ($featuredPrice !== null) {
+            $finalPrice = min($finalPrice, $featuredPrice);
+        }
+
+        // Check if the promotional discount price is a candidate
+        if ($discountPrice !== null) {
+            $finalPrice = min($finalPrice, $discountPrice);
+        }
+
+        // 3. Determine the type of discount that resulted in the final price
         $discountAmount = null;
         $discountType   = null;
 
-        // Apply pricing hierarchy
-        if ($discountPrice !== null) {
-            // Highest priority: Product-specific discount
-            $currentPrice   = $discountPrice;
-            $discountAmount = $standardPrice - $discountPrice;
-            $discountType   = 'promotion';
-        } elseif ($featuredPrice !== null) {
-            // Second priority: Featured price
-            $currentPrice   = $featuredPrice;
-            $discountAmount = $standardPrice - $featuredPrice;
-            $discountType   = 'featured';
+        if ($finalPrice < $standardPrice) {
+            $discountAmount = $standardPrice - $finalPrice;
+
+            if ($featuredPrice !== null && $featuredPrice <= ($discountPrice ?? PHP_INT_MAX)) {
+                $discountType = 'featured';
+            } else {
+                $discountType = 'promotion';
+            }
         }
 
+        // 4. Return the final, consistent DTO
         return ProductDeliveryOptionPriceData::make(
-            currentPrice: $currentPrice,
+            currentPrice: $finalPrice,
             originalPrice: $standardPrice,
             prePaymentPrice: $prePaymentPrice,
             featuredPrice: $featuredPrice,
             discountAmount: $discountAmount,
-            discountType: $discountType
+            discountType: $discountType,
+            uuid: $option->uuid
         );
 
-    }
-
-    /**
-     * Get pricing data for multiple products efficiently.
-     */
-    public function getPriceDataForProducts(\Illuminate\Database\Eloquent\Collection $products): Collection
-    {
-        // Preload all necessary relationships
-        $products->loadMissing([
-            'productDeliveryOptions',
-            'productDeliveryOptions.productDeliveryOptionDiscountPrice:product_delivery_option_id,discounted_price',
-        ]);
-
-        return $products->mapWithKeys(function (Product $product) {
-            return [$product->id => $this->calculatePriceDataForProduct($product)];
-        });
     }
 
     /**
@@ -192,6 +187,91 @@ final readonly class ProductPriceService
     public function getCurrentPriceForOption(ProductDeliveryOption $option): int
     {
         return $this->getPriceDataForOption($option)->current_price;
+    }
+
+    /**
+     * Update the price index table for a given product.
+     * This should be called whenever product prices change.
+     */
+    public function updatePriceIndex(Product $product): void
+    {
+        // Load all necessary relations
+        $product->loadMissing([
+            'productDeliveryOptions' => fn ($q) => $q->where('status', PublicationStatusEnum::PUBLISHED),
+            'productDeliveryOptions.productDeliveryOptionDiscountPrice',
+        ]);
+        $this->updatePriceIndexForProducts(collect([$product]));
+    }
+
+    /**
+     * Update price index for multiple products efficiently.
+     */
+    public function updatePriceIndexForProducts(Collection $products): void
+    {
+        $priceIndexPayloads    = [];
+        $productsToUpdateCache = [];
+
+        foreach ($products as $product) {
+            // Calculate the price data DTO
+            $priceData = $this->calculatePriceDataForProduct($product, useCache: false);
+            // dd($priceData);
+            // Prepare the payload for the price index table
+            $payload = $this->buildPriceIndexPayload($product, $priceData);
+
+            if ($payload) {
+                $priceIndexPayloads[] = $payload;
+            }
+
+            // Also update the JSON cache on the product model itself
+            $product->price_data_cache = $priceData->toArray();
+            $productsToUpdateCache[]   = $product;
+        }
+
+        // --- Bulk Operations for Performance ---
+
+        // 1. Perform a single bulk UPSERT for the price index table
+        if (! empty($priceIndexPayloads)) {
+            ProductPrice::upsert(
+                $priceIndexPayloads,
+                ['product_id'], // Unique identifier to match on
+                // Columns to update if a match is found
+                [
+                    'min_price', 'min_original_price', 'max_price', 'max_original_price',
+                    'has_discount', 'has_featured_price', 'has_prepayment',
+                    'discount_percentage', 'highest_discount_amount',
+                ]
+            );
+        }
+
+        // 2. Update the JSON cache on all products (uses one query per product)
+        // This can't be a single query, but it's still efficient.
+        foreach ($productsToUpdateCache as $product) {
+            $product->saveQuietly();
+        }
+    }
+
+    private function buildPriceIndexPayload(Product $product, ProductPriceData $priceData): ?array
+    {
+        $prices = collect($priceData->prices);
+
+        if ($prices->isEmpty()) {
+            ProductPrice::where('product_id', $product->id)->delete();
+
+            return null;
+        }
+
+        return [
+            'product_id'              => $product->id,
+            'min_price'               => $prices->min('current_price'),
+            'min_original_price'      => $prices->min('original_price'),
+            'max_price'               => $prices->max('current_price'),
+            'max_original_price'      => $prices->max('original_price'),
+            'has_discount'            => $priceData->has_discount,
+            'has_featured_price'      => $priceData->has_featured_price,
+            'has_prepayment'          => $priceData->has_pre_payment,
+            'discount_percentage'     => $priceData->discount_percentage,
+            'highest_discount_amount' => $priceData->highest_discount_amount,
+        ];
     }
 
     /**

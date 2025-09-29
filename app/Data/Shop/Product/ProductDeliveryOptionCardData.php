@@ -11,13 +11,13 @@ use Spatie\LaravelData\Data;
 final class ProductDeliveryOptionCardData extends Data
 {
     public function __construct(
-        public int $id,
-        public int $productable_id,
+        public string $uuid,
+        public string $slug,
         public ?string $name,
         public ?string $short_name,
         public ?string $short_description,
-        public array $vendor,
-        public array $term,
+        public ?string $vendor,
+        public ?string $term,
         public int $price,
         public array $fulfillment_type = [],
         public array $delivery_method = [],
@@ -34,19 +34,13 @@ final class ProductDeliveryOptionCardData extends Data
         $cover   = self::getCoverMedia($media);
 
         return new self(
-            id: $product->id,
-            productable_id: $product->productable_id,
+            uuid: $deliveryOption->uuid,
+            slug: $product->slug,
             name: $product->name,
             short_name: $product->short_name,
             short_description: $product->short_description,
-            vendor: [
-                'id'   => $product->vendor?->id,
-                'name' => $product->vendor?->name,
-            ],
-            term: [
-                'id'   => $product->term?->id,
-                'name' => $product->term?->name,
-            ],
+            vendor: $product->vendor?->name,
+            term: $product->term?->name,
             price: $deliveryOption->price,
             fulfillment_type: [
                 'value' => $deliveryOption->fulfillment_type->value,

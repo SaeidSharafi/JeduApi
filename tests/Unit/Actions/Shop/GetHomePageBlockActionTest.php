@@ -116,7 +116,7 @@ describe('GetHomePageBlockAction', function (): void {
             ->and($result->title)->toBe('Latest Products')
             ->and($result->type)->toBe('DYNAMIC_LIST')
             ->and(count($result->content['items']))->toBe(1)
-            ->and($result->content['items'][0]['id'])->toBe($product->id)
+            ->and($result->content['items'][0]['slug'])->toBe($product->slug)
             ->and($result->content['items'][0]['price'])->toBe(20000)
             ->and($result->content['items'][0]['original_price'])->toBe(20000);
     });
@@ -160,7 +160,7 @@ describe('GetHomePageBlockAction', function (): void {
             ->and($result->title)->toBe('Latest Products')
             ->and($result->type)->toBe('DYNAMIC_LIST')
             ->and(count($result->content['items']))->toBe(1)
-            ->and($result->content['items'][0]['id'])->toBe($product->id)
+            ->and($result->content['items'][0]['slug'])->toBe($product->slug)
             ->and($result->content['items'][0]['price'])->toBe(20000)
             ->and($result->content['items'][0]['original_price'])->toBe(20000);
 
@@ -281,8 +281,8 @@ describe('GetHomePageBlockAction', function (): void {
                 ->take(3)->get(),
         };
 
-        $resultProductIds   = array_map(fn ($item) => $item['id'], $result->content['items']);
-        $expectedProductIds = $sortedProducts->pluck('id')->toArray();
+        $resultProductIds   = array_map(fn ($item) => $item['slug'], $result->content['items']);
+        $expectedProductIds = $sortedProducts->pluck('slug')->toArray();
 
         expect($resultProductIds)->toBe($expectedProductIds)
             ->and($result)->toBeInstanceOf(HomePageBlockData::class)
@@ -304,6 +304,43 @@ describe('GetHomePageBlockAction', function (): void {
             [DynamicListSortByEnum::FEATURED],
 
         ]);
+    it('can handle dynamic list blocks for featured blog posts', function () {
+        // Create test data
+        $blogPosts = BlogPost::factory()
+            ->count(5)
+            ->sequence(
+                ['is_featured' => true, 'created_at' => now()->subDays(5), 'status' => PublicationStatusEnum::PUBLISHED],
+                ['is_featured' => false, 'created_at' => now()->subDays(4), 'status' => PublicationStatusEnum::PUBLISHED],
+                ['is_featured' => true, 'created_at' => now()->subDays(3), 'status' => PublicationStatusEnum::PUBLISHED],
+                ['is_featured' => false, 'created_at' => now()->subDays(2), 'status' => PublicationStatusEnum::PUBLISHED],
+                ['is_featured' => true, 'created_at' => now()->subDays(1), 'status' => PublicationStatusEnum::PUBLISHED],
+            )
+            ->create();
+        $action = app()->Make(GetHomePageBlockAction::class);
+        $block  = HomePageBlock::factory()->dynamicList(
+            DynamicListEntityTypeEnum::BLOG_POST,
+            DynamicListSortByEnum::FEATURED,
+            3
+        )->create([
+            'title'     => 'Featured Blog Posts',
+            'location'  => 'content',
+            'order'     => 1,
+            'is_active' => true,
+        ]);
+        $result = $action->handle($block);
+
+        expect($result)->toBeInstanceOf(HomePageBlockData::class)
+
+            ->and($result->title)->toBe('Featured Blog Posts')
+            ->and($result->type)->toBe('DYNAMIC_LIST')
+            ->and(count($result->content['items']))->toBe(3)
+            ->and(collect($result->content['items'])->pluck('slug')->toArray())
+            ->toBe($blogPosts->where('is_featured', true)
+                ->sortByDesc('created_at')
+                ->pluck('slug')
+                ->take(3)
+                ->toArray());
+    });
     it('can handle dynamic list blocks with category filter', function (): void {
         // Create test data
         $categories          = Category::factory()->count(2)->create();
@@ -339,8 +376,8 @@ describe('GetHomePageBlockAction', function (): void {
             ->and($result->title)->toBe('Category 1 Products')
             ->and($result->type)->toBe('DYNAMIC_LIST')
             ->and(count($result->content['items']))->toBe(3)
-            ->and(collect($result->content['items'])->pluck('id')->toArray())
-            ->toBe($productsInCategory1->sortByDesc('created_at')->pluck('id')->take(3)->toArray());
+            ->and(collect($result->content['items'])->pluck('slug')->toArray())
+            ->toBe($productsInCategory1->sortByDesc('created_at')->pluck('slug')->take(3)->toArray());
     });
 
     it('can handle dynamic list blocks for blogs with popularity sort option', function (): void {
@@ -374,8 +411,8 @@ describe('GetHomePageBlockAction', function (): void {
             ->and($result->title)->toBe('Popular Blog Posts')
             ->and($result->type)->toBe('DYNAMIC_LIST')
             ->and(count($result->content['items']))->toBe(3)
-            ->and(collect($result->content['items'])->pluck('id')->toArray())
-            ->toBe($blogPosts->sortByDesc('created_at')->pluck('id')->take(3)->toArray());
+            ->and(collect($result->content['items'])->pluck('slug')->toArray())
+            ->toBe($blogPosts->sortByDesc('created_at')->pluck('slug')->take(3)->toArray());
     });
 
     it('can handle banner blocks', function (): void {
@@ -426,7 +463,7 @@ describe('GetHomePageBlockAction', function (): void {
             ->and($result->type)->toBe('WEBINAR_BANNER')
             ->and($result->content['image_url'])->toBe($this->image->getUrl())
             ->and($result->content['text'])->toBe($webinarBanner->content['text'])
-            ->and($result->content['product']['id'])->toBe($product->id)
+            ->and($result->content['product']['slug'])->toBe($product->slug)
             ->and($result->content['product']['name'])->toBe($product->name)
             ->and($result->content['product']['price'])->toBe(100000)
             ->and($result->content['product']['original_price'])->toBe(100000);
@@ -436,7 +473,7 @@ describe('GetHomePageBlockAction', function (): void {
         // Create test data
         $course  = App\Models\Course::factory()->create();
         $product = Product::factory()->withDeliveryOptions()->create([
-            'productable_type' => \App\Enums\Product\ProductableEnum::COURSE,
+            'productable_type' => App\Enums\Product\ProductableEnum::COURSE,
             'productable_id'   => $course->id,
         ]);
         $course->attachMedia($this->image, 'cover');
@@ -459,7 +496,7 @@ describe('GetHomePageBlockAction', function (): void {
             ->and($result->title)->toBe('Featured Products')
             ->and($result->type)->toBe('CURATED_LIST')
             ->and(count($result->content['items']))->toBe(1)
-            ->and($result->content['items'][0]['id'])->toBe($product->id)
+            ->and($result->content['items'][0]['slug'])->toBe($product->slug)
             ->and($result->content['items'][0]['thumbnail_url'])->toBe($course->thumbnail_url);
     });
 });

@@ -59,7 +59,8 @@ describe('Admin Producatable Select Option API', function (): void {
             'short_name' => 'AdvWebDev',
         ]);
         DigitalAsset::factory()->create([
-            'name' => 'Advanced Design Patterns',
+            'short_name' => 'Advanced Design Patterns',
+            'full_name'  => 'Design Patterns in Software Engineering',
         ]);
 
         $response = $this->getJson('/api/v1/admin/select-option/productable?q=advanced');

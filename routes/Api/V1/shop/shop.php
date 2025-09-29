@@ -9,10 +9,11 @@ use App\Http\Controllers\Api\Shop\HomePage\HomePageContentController;
 use App\Http\Controllers\Api\Shop\HomePage\PartnerController;
 use App\Http\Controllers\Api\Shop\HomePage\SliderController;
 use App\Http\Controllers\Api\Shop\HomePage\StudentStoryController;
+use App\Http\Controllers\Api\Shop\Product\CourseController;
 use App\Http\Controllers\Api\Shop\Settings\FooterController;
 use App\Http\Controllers\Api\Shop\Settings\HeaderController;
 
-require __DIR__."/rate-limited.php";
+require __DIR__.'/rate-limited.php';
 
 // Home Page Blocks
 Route::get('home-page-blocks', [HomePageContentController::class, 'index'])->name('home-page-blocks.index');
@@ -26,3 +27,7 @@ Route::get('contact-page', ContactPageController::class)->name('contactpage.show
 Route::get('collaboration', CollaborationPageController::class)->name('collaboration.show');
 Route::get('partners', PartnerController::class)->name('partners.index');
 Route::get('student-stories', StudentStoryController::class)->name('student-stories.index');
+
+Route::get('courses', [CourseController::class, 'index'])->name('courses.index');
+Route::get('course/{product:slug}', [CourseController::class, 'show'])
+    ->name('courses.show');
