@@ -11,17 +11,19 @@ use Spatie\LaravelData\Data;
 final class ProductPriceData extends Data
 {
     public function __construct(
-        public int $min_price,
-        public int $min_original_price,
-        public bool $has_featured_price,
-        public bool $has_discount,
-        public bool $has_pre_payment,
+        public ?int $min_price,
+        public ?int $min_original_price,
+        public ?bool $has_featured_price,
+        public ?bool $has_discount,
+        public ?bool $has_pre_payment,
         public ?string $discount_type,
         public ?float $discount_percentage,
+        public ?int $highest_discount_amount,
         public ?array $range,
         #[DataCollectionOf(ProductDeliveryOptionPriceData::class)]
         public ?Collection $prices,
-    ) {}
+    ) {
+    }
 
     /**
      * @param  array<int,ProductDeliveryOptionPriceData>  $prices
@@ -30,58 +32,57 @@ final class ProductPriceData extends Data
         array $prices,
         ?array $range = null,
     ): self {
-        $has_featured_price  = false;
-        $has_discount        = false;
-        $has_pre_payment     = false;
-        $maxDiscountAmount   = 0;
-        $minDiscountAmount   = null;
-        $maxPrice            = 0;
-        $minPrice            = null;
-        $minOriginalPrice    = null;
-        $discountType        = null;
-        $discount_percentage = null;
-        foreach ($prices as $price) {
-            if ($price->has_pre_payment_price) {
-                $has_pre_payment = true;
-            }
-            if ($price->has_featured_price) {
-                $has_featured_price = true;
-            }
-            if ($price->has_discount) {
-                $has_discount = true;
-            }
-
-            if ($price->discount_amount !== null) {
-                if ($minDiscountAmount === null || $price->discount_amount < $minDiscountAmount) {
-                    $minDiscountAmount = $price->discount_amount;
-                }
-                if ($price->discount_amount > $maxDiscountAmount) {
-                    $discountType        = $price->discount_type;
-                    $maxDiscountAmount   = $price->discount_amount;
-                    $discount_percentage = $price->discount_percentage;
-                }
-            }
-            if ($price->current_price > $maxPrice) {
-                $maxPrice = $price->current_price;
-            }
-            if ($minPrice === null || $price->current_price < $minPrice) {
-                $minPrice = $price->current_price;
-            }
-            $minOriginalPrice = $minOriginalPrice === null
-                ? $price->original_price
-                : min($price->original_price, $minOriginalPrice);
+        if (empty($prices)) {
+            return self::makeNoPrice();
         }
 
+        $pricesCollection = collect($prices);
+
+        $bestDiscountOption = $pricesCollection
+            ->filter(fn(ProductDeliveryOptionPriceData $p) => $p->discount_amount > 0)
+            ->sortByDesc('discount_amount')
+            ->first();
+
+        $discountType = $bestDiscountOption?->discount_type;
+        $discountPercentage = $bestDiscountOption?->discount_percentage;
+
+        // --- "Capability Flags" logic (This is the change) ---
+        // These flags are now independent of which discount won. They check for presence.
+        $hasDiscount = $pricesCollection->some(fn(ProductDeliveryOptionPriceData $p) => $p->discount_type
+            === 'promotion');
+        $hasFeaturedPrice = $pricesCollection->some(fn(ProductDeliveryOptionPriceData $p) => $p->discount_type
+            === 'featured'
+            || $p->featured_price !== null);
+        $hasPrePayment = $pricesCollection->some('has_pre_payment_price', true);
+
+        // --- Aggregation (This stays the same) ---
         return new self(
-            min_price: $minPrice                  ?? 0,
-            min_original_price: $minOriginalPrice ?? 0,
-            has_featured_price: $has_featured_price,
-            has_discount: $has_discount,
-            has_pre_payment: $has_pre_payment,
-            discount_type: $discountType,
-            discount_percentage: $discount_percentage,
+            min_price: $pricesCollection->min('current_price'),
+            min_original_price: $pricesCollection->min('original_price'),
+            has_featured_price: $hasFeaturedPrice, // Now a capability flag
+            has_discount: $hasDiscount, // Now a capability flag
+            has_pre_payment: $hasPrePayment,
+            discount_type: $discountType, // The effective discount type
+            discount_percentage: $discountPercentage,
+            highest_discount_amount: $bestDiscountOption?->discount_amount,
             range: $range,
-            prices: collect($prices),
+            prices: $pricesCollection,
+        );
+    }
+
+    private static function makeNoPrice(): self
+    {
+        return new self(
+            min_price: 0,
+            min_original_price: 0,
+            has_featured_price: false,
+            has_discount: false,
+            has_pre_payment: false,
+            discount_type: null,
+            discount_percentage: null,
+            highest_discount_amount: null,
+            range: null,
+            prices: collect([]),
         );
     }
 }

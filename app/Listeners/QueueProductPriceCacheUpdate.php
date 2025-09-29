@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Events\ProductCacheInvalidated;
-use App\Jobs\UpdateProductPriceCacheJob;
+use App\Jobs\UpdateProductPricingJob;
 
 final class QueueProductPriceCacheUpdate
 {
@@ -19,6 +19,6 @@ final class QueueProductPriceCacheUpdate
      */
     public function handle(ProductCacheInvalidated $event): void
     {
-        UpdateProductPriceCacheJob::dispatch($event->productId);
+        UpdateProductPricingJob::dispatch([$event->productId]);
     }
 }
