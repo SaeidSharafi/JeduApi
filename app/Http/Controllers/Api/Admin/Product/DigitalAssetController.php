@@ -67,7 +67,7 @@ final class DigitalAssetController extends Controller
                 AllowedSort::callback('name', function ($q, $descending, $property) {
                     $q->orderBy('short_name', $descending ? 'desc' : 'asc')
                         ->orderBy('full_name', $descending ? 'desc' : 'asc');
-                }), 'slug', 'status'
+                }), 'slug', 'status',
             ])
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
@@ -106,13 +106,13 @@ final class DigitalAssetController extends Controller
         $attachments = [];
         foreach (['main', 'preview'] as $tag) {
             $attachments[$tag] = $digitalAsset->getMedia($tag)
-                ->map(fn(Media $m): PrivateFileData => PrivateFileData::fromModel($m, $tag))
+                ->map(fn (Media $m): PrivateFileData => PrivateFileData::fromModel($m, $tag))
                 ->toArray();
         }
         $media = [];
         foreach (['gallery', 'video', 'cover'] as $tag) {
             $media[$tag] = $digitalAsset->getMedia($tag)
-                ->map(fn(Media $m): MediaData => MediaData::fromModel($m, $tag))
+                ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag))
                 ->toArray();
         }
 
@@ -145,13 +145,13 @@ final class DigitalAssetController extends Controller
         $attachments = [];
         foreach (['main', 'preview'] as $tag) {
             $attachments[$tag] = $digitalAsset->getMedia($tag)
-                ->map(fn(Media $m): PrivateFileData => PrivateFileData::fromModel($m, $tag))
+                ->map(fn (Media $m): PrivateFileData => PrivateFileData::fromModel($m, $tag))
                 ->toArray();
         }
         $media = [];
         foreach (['gallery', 'video', 'cover'] as $tag) {
             $media[$tag] = $digitalAsset->getMedia($tag)
-                ->map(fn(Media $m): MediaData => MediaData::fromModel($m, $tag))
+                ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag))
                 ->toArray();
         }
 

@@ -49,7 +49,7 @@ it('get getAllMedia as url only list', function (): void {
         ->toHaveCount(0);
     $course->refresh()->loadMediaWitVariant();
     $media = $course->getAllMedia(true);
-    //should only be list of urls
+    // should only be list of urls
     expect($media)
         ->toBeArray()
         ->and($media)

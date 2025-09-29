@@ -22,8 +22,7 @@ final class ProductPriceData extends Data
         public ?array $range,
         #[DataCollectionOf(ProductDeliveryOptionPriceData::class)]
         public ?Collection $prices,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<int,ProductDeliveryOptionPriceData>  $prices
@@ -39,18 +38,18 @@ final class ProductPriceData extends Data
         $pricesCollection = collect($prices);
 
         $bestDiscountOption = $pricesCollection
-            ->filter(fn(ProductDeliveryOptionPriceData $p) => $p->discount_amount > 0)
+            ->filter(fn (ProductDeliveryOptionPriceData $p) => $p->discount_amount > 0)
             ->sortByDesc('discount_amount')
             ->first();
 
-        $discountType = $bestDiscountOption?->discount_type;
+        $discountType       = $bestDiscountOption?->discount_type;
         $discountPercentage = $bestDiscountOption?->discount_percentage;
 
         // --- "Capability Flags" logic (This is the change) ---
         // These flags are now independent of which discount won. They check for presence.
-        $hasDiscount = $pricesCollection->some(fn(ProductDeliveryOptionPriceData $p) => $p->discount_type
+        $hasDiscount = $pricesCollection->some(fn (ProductDeliveryOptionPriceData $p) => $p->discount_type
             === 'promotion');
-        $hasFeaturedPrice = $pricesCollection->some(fn(ProductDeliveryOptionPriceData $p) => $p->discount_type
+        $hasFeaturedPrice = $pricesCollection->some(fn (ProductDeliveryOptionPriceData $p) => $p->discount_type
             === 'featured'
             || $p->featured_price !== null);
         $hasPrePayment = $pricesCollection->some('has_pre_payment_price', true);

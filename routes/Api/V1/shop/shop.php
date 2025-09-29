@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\Shop\Product\CourseController;
 use App\Http\Controllers\Api\Shop\Settings\FooterController;
 use App\Http\Controllers\Api\Shop\Settings\HeaderController;
 
-require __DIR__."/rate-limited.php";
+require __DIR__.'/rate-limited.php';
 
 // Home Page Blocks
 Route::get('home-page-blocks', [HomePageContentController::class, 'index'])->name('home-page-blocks.index');

@@ -6,7 +6,6 @@ namespace App\Console\Commands;
 
 use App\Enums\Content\PublicationStatusEnum;
 use App\Jobs\UpdateProductPricingJob;
-use App\Jobs\UpdateProductPriceIndexJob;
 use App\Models\Product;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
@@ -25,7 +24,7 @@ final class IndexAllProductPricesCommand extends Command
     {
         $lock = Cache::lock('price-indexing', 300); // 5 minutes lock
 
-        if (!$lock->get()) {
+        if (! $lock->get()) {
             $this->warn('Another price indexing operation is already running. Skipping.');
 
             return Command::SUCCESS;

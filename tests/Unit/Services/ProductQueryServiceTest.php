@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Services\Shop\ProductQueryService;
-use App\Enums\Product\ProductableEnum;
 use App\Enums\CourseDifficultyLevelEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Models\Product;
+use App\Services\Shop\ProductQueryService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -46,23 +46,23 @@ describe('ProductQueryService unit tests', function () {
 
             // Use reflection to check internal state
             $reflection = new ReflectionClass($service);
-            $property = $reflection->getProperty('productableTypes');
+            $property   = $reflection->getProperty('productableTypes');
             $property->setAccessible(true);
 
             expect($property->getValue($service))->toBe([ProductableEnum::COURSE->value]);
         });
 
         it('sets multiple product types correctly', function () {
-            $types = [ProductableEnum::COURSE, ProductableEnum::SEMINAR];
+            $types   = [ProductableEnum::COURSE, ProductableEnum::SEMINAR];
             $service = ProductQueryService::make()->ofTypes($types);
 
             $reflection = new ReflectionClass($service);
-            $property = $reflection->getProperty('productableTypes');
+            $property   = $reflection->getProperty('productableTypes');
             $property->setAccessible(true);
 
             expect($property->getValue($service))->toBe([
                 ProductableEnum::COURSE->value,
-                ProductableEnum::SEMINAR->value
+                ProductableEnum::SEMINAR->value,
             ]);
         });
 
@@ -70,7 +70,7 @@ describe('ProductQueryService unit tests', function () {
             $service = ProductQueryService::make();
 
             $reflection = new ReflectionClass($service);
-            $property = $reflection->getProperty('productableTypes');
+            $property   = $reflection->getProperty('productableTypes');
             $property->setAccessible(true);
 
             expect($property->getValue($service))->toBe(ProductableEnum::getAllValues());
@@ -123,7 +123,7 @@ describe('ProductQueryService unit tests', function () {
         });
 
         it('accepts valid sort combinations', function () {
-            $validFields = ['created_at', 'updated_at', 'name', 'price'];
+            $validFields     = ['created_at', 'updated_at', 'name', 'price'];
             $validDirections = ['asc', 'desc'];
 
             foreach ($validFields as $field) {
@@ -161,16 +161,16 @@ describe('ProductQueryService unit tests', function () {
 
             $queryMock->shouldReceive('whereHasMorph')
                 ->once()
-                ->with('productable', [ProductableEnum::COURSE->value], \Mockery::type(Closure::class));
+                ->with('productable', [ProductableEnum::COURSE->value], Mockery::type(Closure::class));
 
             $queryMock->shouldReceive('get')->once()->andReturn(new Collection(['product1', 'product2']));
 
             $reflection = new ReflectionClass($service);
-            $property = $reflection->getProperty('query');
+            $property   = $reflection->getProperty('query');
             $property->setAccessible(true);
             $property->setValue($service, $queryMock);
             $service->ofType(ProductableEnum::COURSE);
-            $service->byCourseLevel(\App\Enums\CourseDifficultyLevelEnum::BEGINNER); // Add a constraint
+            $service->byCourseLevel(CourseDifficultyLevelEnum::BEGINNER); // Add a constraint
 
             // 7. Finally, call the public method we are testing.
             $result = $service->get();
@@ -191,16 +191,16 @@ describe('ProductQueryService unit tests', function () {
 
             $queryMock->shouldReceive('whereHasMorph')
                 ->once()
-                ->with('productable', [ProductableEnum::COURSE->value], \Mockery::type(Closure::class));
+                ->with('productable', [ProductableEnum::COURSE->value], Mockery::type(Closure::class));
 
             $queryMock->shouldReceive('first')->once()->andReturn($product);
 
             $reflection = new ReflectionClass($service);
-            $property = $reflection->getProperty('query');
+            $property   = $reflection->getProperty('query');
             $property->setAccessible(true);
             $property->setValue($service, $queryMock);
             $service->ofType(ProductableEnum::COURSE);
-            $service->byCourseLevel(\App\Enums\CourseDifficultyLevelEnum::BEGINNER);
+            $service->byCourseLevel(CourseDifficultyLevelEnum::BEGINNER);
 
             $result = $service->first();
 
@@ -224,16 +224,16 @@ describe('ProductQueryService unit tests', function () {
 
             $queryMock->shouldReceive('whereHasMorph')
                 ->once()
-                ->with('productable', [ProductableEnum::COURSE->value], \Mockery::type(Closure::class));
+                ->with('productable', [ProductableEnum::COURSE->value], Mockery::type(Closure::class));
 
             $queryMock->shouldReceive('paginate')->once()->andReturn($paginator);
 
             $reflection = new ReflectionClass($service);
-            $property = $reflection->getProperty('query');
+            $property   = $reflection->getProperty('query');
             $property->setAccessible(true);
             $property->setValue($service, $queryMock);
             $service->ofType(ProductableEnum::COURSE);
-            $service->byCourseLevel(\App\Enums\CourseDifficultyLevelEnum::BEGINNER);
+            $service->byCourseLevel(CourseDifficultyLevelEnum::BEGINNER);
 
             $result = $service->paginate(10);
 
@@ -257,7 +257,7 @@ describe('ProductQueryService unit tests', function () {
 
             // Both constraints should be collected for 'categories' relationship
             $reflection = new ReflectionClass($service);
-            $property = $reflection->getProperty('relationshipConstraints');
+            $property   = $reflection->getProperty('relationshipConstraints');
             $property->setAccessible(true);
 
             $constraints = $property->getValue($service);

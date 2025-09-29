@@ -41,7 +41,7 @@ describe('ProductPriceService: Fetching Data', function (): void {
     });
 
     it('handles products without delivery options gracefully', function (): void {
-        $product = Product::factory()->create();
+        $product   = Product::factory()->create();
         $priceData = $this->priceService->getPriceDataForProduct($product);
 
         expect($priceData->min_price)->toBe(0)
@@ -70,7 +70,7 @@ describe('ProductPriceService: Fetching Data', function (): void {
             'prices'              => [],
         ];
 
-        $product = Product::factory()->create(['price_data_cache' => $cachedData]);
+        $product   = Product::factory()->create(['price_data_cache' => $cachedData]);
         $priceData = $this->priceService->getPriceDataForProduct($product);
 
         expect($priceData->min_price)->toBe(12000)
@@ -107,12 +107,12 @@ describe('ProductPriceService: Updating Data', function (): void {
     it('updates price index and JSON cache for a single product', function (): void {
         $product = Product::factory()
             ->has(ProductDeliveryOption::factory([
-                'price'          => 20000,
-                'is_featured'    => true,
-                'is_prepayment_available' => false,
-                'featured_price' => 18000,
+                'price'                     => 20000,
+                'is_featured'               => true,
+                'is_prepayment_available'   => false,
+                'featured_price'            => 18000,
                 'featured_price_start_date' => Carbon::yesterday(),
-                'featured_price_end_date' => Carbon::tomorrow(),
+                'featured_price_end_date'   => Carbon::tomorrow(),
             ])->has(ProductDeliveryOptionDiscountPrice::factory(['discounted_price' => 10000]))
             )->create()->fresh();
 
@@ -135,7 +135,7 @@ describe('ProductPriceService: Updating Data', function (): void {
             'has_discount'            => true,
             'has_featured_price'      => true,
             'has_prepayment'          => false,
-            'discount_percentage'     => "50.00",
+            'discount_percentage'     => '50.00',
             'highest_discount_amount' => 10000,
         ]);
     });
@@ -172,9 +172,9 @@ describe('ProductPriceService: Updating Data', function (): void {
         $productToDelete = Product::factory()->create();
 
         $productToDelete->productPrice()->create([
-            'product_id' => $productToDelete->id, 'min_price' => 500, 'min_original_price' => 500,
-            'max_price' => 500, 'max_original_price' => 500, 'has_discount' => false,
-            'has_featured_price' => false, 'has_prepayment' => false, 'discount_percentage' => 0,
+            'product_id'              => $productToDelete->id, 'min_price' => 500, 'min_original_price' => 500,
+            'max_price'               => 500, 'max_original_price' => 500, 'has_discount' => false,
+            'has_featured_price'      => false, 'has_prepayment' => false, 'discount_percentage' => 0,
             'highest_discount_amount' => 0,
         ]);
 
@@ -185,8 +185,8 @@ describe('ProductPriceService: Updating Data', function (): void {
         $this->priceService->updatePriceIndexForProducts($products);
 
         $this->assertDatabaseHas('product_prices', [
-            'product_id' => $productToUpdate->id,
-            'min_price' => 10000,
+            'product_id'   => $productToUpdate->id,
+            'min_price'    => 10000,
             'has_discount' => false,
         ]);
 
@@ -251,7 +251,7 @@ describe('ProductPriceService: Updating Data', function (): void {
         $deliveryOption = ProductDeliveryOption::factory([
             'price' => 30000,
         ])->for($product)->create();
-        $priceData = $this->priceService->calculatePriceDataForProduct($product,$deliveryOption->id);
+        $priceData = $this->priceService->calculatePriceDataForProduct($product, $deliveryOption->id);
 
         expect($priceData->min_price)->toBe(30000)
             ->and($priceData->min_original_price)->toBe(30000)

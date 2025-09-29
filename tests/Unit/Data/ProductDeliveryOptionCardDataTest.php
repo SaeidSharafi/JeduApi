@@ -23,7 +23,7 @@ it('return data correctly', function (): void {
 
     $product = App\Models\Product::factory()->create([
         'name'             => 'Test Product',
-        'productable_type' => \App\Enums\Product\ProductableEnum::COURSE->value,
+        'productable_type' => App\Enums\Product\ProductableEnum::COURSE->value,
         'productable_id'   => $course->id,
     ]);
     $deliveryOption = ProductDeliveryOption::factory()
@@ -40,7 +40,7 @@ it('return data correctly', function (): void {
         ->and($data->short_name)->toBe($product->short_name)
         ->and($data->short_description)->toBe($product->short_description)
         ->and($data->vendor)->toBe($product->vendor?->name)
-        ->and($data->term)->toBe($product->term?->name,)
+        ->and($data->term)->toBe($product->term?->name)
         ->and($data->price)->toBe($deliveryOption->price)
         ->and($data->fulfillment_type)->toBe([
             'value' => $deliveryOption->fulfillment_type->value,
@@ -68,7 +68,7 @@ it('cover will be null if course has no image', function (): void {
 
     $product = App\Models\Product::factory()->create([
         'name'             => 'Test Product',
-        'productable_type' => \App\Enums\Product\ProductableEnum::COURSE->value,
+        'productable_type' => App\Enums\Product\ProductableEnum::COURSE->value,
         'productable_id'   => $course->id,
     ]);
     $deliveryOption = ProductDeliveryOption::factory()

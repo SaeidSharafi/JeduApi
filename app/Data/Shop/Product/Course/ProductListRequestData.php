@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Product\Course;
 
-use App\Models\Product;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 

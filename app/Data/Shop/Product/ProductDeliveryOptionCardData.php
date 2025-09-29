@@ -25,14 +25,13 @@ final class ProductDeliveryOptionCardData extends Data
         public ?string $productable_type = null,
         public ?array $cover = [],
 
-    ) {
-    }
+    ) {}
 
     public static function fromModel(ProductDeliveryOption $deliveryOption): self
     {
         $product = $deliveryOption->product;
-        $media = $product->productable->getAllMedia();
-        $cover = self::getCoverMedia($media);
+        $media   = $product->productable->getAllMedia();
+        $cover   = self::getCoverMedia($media);
 
         return new self(
             uuid: $deliveryOption->uuid,

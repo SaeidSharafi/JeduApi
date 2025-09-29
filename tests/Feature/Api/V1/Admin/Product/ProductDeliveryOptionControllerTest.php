@@ -13,8 +13,8 @@ describe('User with permissions', function (): void {
             ->make(
                 [
                     'product_id'       => $this->product->id,
-                    'fulfillment_type' => \App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE,
-                    'delivery_method'  => \App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE,
+                    'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE,
+                    'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE,
                 ]
             )->toArray();
         $this->simpleData['details'] = [
@@ -28,13 +28,13 @@ describe('User with permissions', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_VIEW_ANY,
         ]);
-        $product         = App\Models\Product::factory()->create();
+        $product = App\Models\Product::factory()->create();
         ProductDeliveryOption::factory()
             ->withTeachers(3, true)
             ->count(3)
             ->create(['product_id' => $product->id]);
         $deliveryOptions = ProductDeliveryOption::query()
-            ->with('teachers', fn($q) => $q->orderBy('id'))
+            ->with('teachers', fn ($q) => $q->orderBy('id'))
             ->get();
         $response = $this->getJson(route('api.v1.admin.delivery-option.index', ['product' => $product->id]));
         $response->assertOk()
@@ -151,7 +151,7 @@ describe('User with permissions', function (): void {
         ]);
     })->with([
         [''],
-        [null]
+        [null],
     ]);
     it('should return the specified delivery option details', function (): void {
         $this->authorized_user([
@@ -213,8 +213,8 @@ describe('User with permissions', function (): void {
         $deliveryOption = ProductDeliveryOption::factory()->create(
             [
                 'product_id'       => $this->product->id,
-                'fulfillment_type' => \App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE,
-                'delivery_method'  => \App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE,
+                'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE,
+                'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE,
             ]
         )->fresh();
         $data            = $deliveryOption->toArray();
@@ -270,8 +270,8 @@ describe('User without permissions', function (): void {
             ->make(
                 [
                     'product_id'       => $this->product->id,
-                    'fulfillment_type' => \App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE,
-                    'delivery_method'  => \App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE,
+                    'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE,
+                    'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE,
                 ]
             )->toArray();
         $this->simpleData['details'] = [
@@ -303,8 +303,8 @@ describe('User without permissions', function (): void {
         $deliveryOption = ProductDeliveryOption::factory()->create(
             [
                 'product_id'       => $this->product->id,
-                'fulfillment_type' => \App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE,
-                'delivery_method'  => \App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE,
+                'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE,
+                'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE,
             ]
         );
         $response = $this->putJson(route('api.v1.admin.delivery-option.update',
@@ -346,8 +346,8 @@ describe('validation', function (): void {
         $data    = ProductDeliveryOption::factory()
             ->make([
                 'product_id'       => $product->id,
-                'fulfillment_type' => \App\Enums\Product\FulfillmentTypeEnum::OFFLINE_SERVICE->value,
-                'delivery_method'  => \App\Enums\Product\DeliveryMethodEnum::DIRECT_DOWNLOAD->value,
+                'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::OFFLINE_SERVICE->value,
+                'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::DIRECT_DOWNLOAD->value,
             ])->toArray();
         $data['details'] = [
             'file_id' => 'file-id-123',
@@ -366,8 +366,8 @@ describe('validation', function (): void {
         $data    = ProductDeliveryOption::factory()
             ->make([
                 'product_id'       => $product->id,
-                'fulfillment_type' => \App\Enums\Product\FulfillmentTypeEnum::DIGITAL->value,
-                'delivery_method'  => \App\Enums\Product\DeliveryMethodEnum::DIRECT_DOWNLOAD->value,
+                'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::DIGITAL->value,
+                'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::DIRECT_DOWNLOAD->value,
             ])->toArray();
         $data['details'] = [];
 
@@ -376,37 +376,37 @@ describe('validation', function (): void {
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['details.max_downloads']);
 
-        $data['fulfillment_type'] = \App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value;
-        $data['delivery_method']  = \App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE->value;
+        $data['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value;
+        $data['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE->value;
 
         $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['details.course_idnumber']);
 
-        $data['fulfillment_type'] = \App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value;
-        $data['delivery_method']  = \App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_BBB->value;
+        $data['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value;
+        $data['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_BBB->value;
 
         $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['details']);
 
-        $data['delivery_method'] = \App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value;
+        $data['delivery_method'] = App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value;
         $response                = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['details.meeting_name_identifier']);
 
-        $data['fulfillment_type'] = \App\Enums\Product\FulfillmentTypeEnum::OFFLINE_SERVICE->value;
-        $data['delivery_method']  = \App\Enums\Product\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value;
+        $data['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::OFFLINE_SERVICE->value;
+        $data['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value;
         $response                 = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['details.course_id']);
 
-        $data['fulfillment_type'] = \App\Enums\Product\FulfillmentTypeEnum::IN_PERSON_SERVICE->value;
-        $data['delivery_method']  = \App\Enums\Product\DeliveryMethodEnum::IN_PERSON->value;
+        $data['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::IN_PERSON_SERVICE->value;
+        $data['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::IN_PERSON->value;
         $response                 = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()

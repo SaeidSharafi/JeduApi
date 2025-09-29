@@ -17,8 +17,7 @@ final readonly class ProductPriceService
 {
     public function __construct(
         private RequestDataCacheService $requestCache
-    ) {
-    }
+    ) {}
 
     /**
      * The single source of truth for getting a product's price data.
@@ -27,7 +26,7 @@ final readonly class ProductPriceService
     public function getPriceDataForProduct(Product $product): ProductPriceData
     {
         // 1. Prioritize the cache.
-        if (!empty($product->price_data_cache)) {
+        if (! empty($product->price_data_cache)) {
             // The cache is fresh and valid, use it.
             return ProductPriceData::from($product->price_data_cache);
         }
@@ -61,7 +60,7 @@ final readonly class ProductPriceService
         $prices = [];
         $deliveryOptions->each(function ($deliveryOption) use (&$prices): void {
             $priceData = $this->getPriceDataForOption($deliveryOption);
-            $prices[] = $priceData;
+            $prices[]  = $priceData;
         });
 
         $productPriceData = ProductPriceData::make(
@@ -157,7 +156,7 @@ final readonly class ProductPriceService
         }
 
         $prices = $options->map(
-            fn(ProductDeliveryOption $option): int => $this->getPriceDataForOption($option)->current_price
+            fn (ProductDeliveryOption $option): int => $this->getPriceDataForOption($option)->current_price
         );
 
         return [
@@ -198,7 +197,7 @@ final readonly class ProductPriceService
     {
         // Load all necessary relations
         $product->loadMissing([
-            'productDeliveryOptions' => fn($q) => $q->where('status', PublicationStatusEnum::PUBLISHED),
+            'productDeliveryOptions' => fn ($q) => $q->where('status', PublicationStatusEnum::PUBLISHED),
             'productDeliveryOptions.productDeliveryOptionDiscountPrice',
         ]);
         $this->updatePriceIndexForProducts(collect([$product]));
@@ -209,13 +208,13 @@ final readonly class ProductPriceService
      */
     public function updatePriceIndexForProducts(Collection $products): void
     {
-        $priceIndexPayloads = [];
+        $priceIndexPayloads    = [];
         $productsToUpdateCache = [];
 
         foreach ($products as $product) {
             // Calculate the price data DTO
             $priceData = $this->calculatePriceDataForProduct($product, useCache: false);
-            //dd($priceData);
+            // dd($priceData);
             // Prepare the payload for the price index table
             $payload = $this->buildPriceIndexPayload($product, $priceData);
 
@@ -225,13 +224,13 @@ final readonly class ProductPriceService
 
             // Also update the JSON cache on the product model itself
             $product->price_data_cache = $priceData->toArray();
-            $productsToUpdateCache[] = $product;
+            $productsToUpdateCache[]   = $product;
         }
 
         // --- Bulk Operations for Performance ---
 
         // 1. Perform a single bulk UPSERT for the price index table
-        if (!empty($priceIndexPayloads)) {
+        if (! empty($priceIndexPayloads)) {
             ProductPrice::upsert(
                 $priceIndexPayloads,
                 ['product_id'], // Unique identifier to match on
@@ -239,7 +238,7 @@ final readonly class ProductPriceService
                 [
                     'min_price', 'min_original_price', 'max_price', 'max_original_price',
                     'has_discount', 'has_featured_price', 'has_prepayment',
-                    'discount_percentage', 'highest_discount_amount'
+                    'discount_percentage', 'highest_discount_amount',
                 ]
             );
         }
@@ -257,6 +256,7 @@ final readonly class ProductPriceService
 
         if ($prices->isEmpty()) {
             ProductPrice::where('product_id', $product->id)->delete();
+
             return null;
         }
 
@@ -299,17 +299,17 @@ final readonly class ProductPriceService
     private function getActiveFeaturedPrice(ProductDeliveryOption $option): ?int
     {
         // Guard clause - check if featured pricing is enabled
-        if (!$option->is_featured || is_null($option->featured_price)) {
+        if (! $option->is_featured || is_null($option->featured_price)) {
             return null;
         }
 
         // Check date ranges
-        $now = Carbon::now();
+        $now    = Carbon::now();
         $starts = $option->featured_price_start_date;
-        $ends = $option->featured_price_end_date;
+        $ends   = $option->featured_price_end_date;
 
         $isAfterStart = is_null($starts) || $now->greaterThanOrEqualTo($starts);
-        $isBeforeEnd = is_null($ends) || $now->lessThanOrEqualTo($ends);
+        $isBeforeEnd  = is_null($ends)   || $now->lessThanOrEqualTo($ends);
 
         return ($isAfterStart && $isBeforeEnd) ? $option->featured_price : null;
     }

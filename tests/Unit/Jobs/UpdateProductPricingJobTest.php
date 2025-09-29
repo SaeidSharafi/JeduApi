@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 it('handle empty product ids', function (): void {
     $job = new App\Jobs\UpdateProductPricingJob([]);
     $job->handle(app(App\Services\ProductPriceService::class));

@@ -21,8 +21,7 @@ final class UpdateProductPricingJob implements ShouldQueue
 
     public function __construct(
         public array $productIds
-    ) {
-    }
+    ) {}
 
     public function handle(ProductPriceService $priceService): void
     {
@@ -32,13 +31,14 @@ final class UpdateProductPricingJob implements ShouldQueue
 
         $products = Product::whereIn('id', $this->productIds)
             ->with([
-                'productDeliveryOptions' => fn($q) => $q->where('status', 'published'),
+                'productDeliveryOptions' => fn ($q) => $q->where('status', 'published'),
                 'productDeliveryOptions.productDeliveryOptionDiscountPrice',
             ])
             ->get();
 
         if ($products->isEmpty()) {
             Log::warning('No valid products found for price update', ['product_ids' => $this->productIds]);
+
             return;
         }
 

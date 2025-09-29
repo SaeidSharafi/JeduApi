@@ -28,10 +28,10 @@ trait HasMedia
             $media = [];
             foreach ($tags as $tag) {
                 $media[$tag->value] = $this->getMedia($tag)
-                    ->map(fn(Media $m): MediaData => MediaData::fromModel($m, $tag->value))
+                    ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag->value))
                     ->when(
                         $urlOnly,
-                        static fn($items) => $items->map(static fn(MediaData $d) => $d->url)
+                        static fn ($items) => $items->map(static fn (MediaData $d) => $d->url)
                     )
                     ->toArray();
             }
@@ -44,17 +44,17 @@ trait HasMedia
 
     public function getCoverMedia(bool $first = false): null|MediaData|array
     {
-        if (!$this->relationLoaded('media')) {
+        if (! $this->relationLoaded('media')) {
             return [];
         }
         if ($first) {
             return $this->getMedia(MediaTagEnum::COVER->value)
-                ->map(fn(Media $m): MediaData => MediaData::fromModel($m, MediaTagEnum::COVER->value))
+                ->map(fn (Media $m): MediaData => MediaData::fromModel($m, MediaTagEnum::COVER->value))
                 ->first();
         }
 
         return $this->getMedia(MediaTagEnum::COVER->value)
-            ->map(fn(Media $m): MediaData => MediaData::fromModel($m, MediaTagEnum::COVER->value))
+            ->map(fn (Media $m): MediaData => MediaData::fromModel($m, MediaTagEnum::COVER->value))
             ->toArray();
     }
 

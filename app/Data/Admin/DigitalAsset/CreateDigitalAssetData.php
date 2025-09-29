@@ -102,8 +102,8 @@ final class CreateDigitalAssetData extends Data
     public static function attributes(...$args): array
     {
         return [
-            'short_name'                    => __('validation.attributes.digital_asset.short_name'),
-            'full_name'                     => __('validation.attributes.digital_asset.full_name'),
+            'short_name'              => __('validation.attributes.digital_asset.short_name'),
+            'full_name'               => __('validation.attributes.digital_asset.full_name'),
             'version'                 => __('validation.attributes.digital_asset.version'),
             'is_attachable_to_course' => __('validation.attributes.digital_asset.is_attachable_to_course'),
             'published_at'            => __('validation.attributes.digital_asset.published_at'),

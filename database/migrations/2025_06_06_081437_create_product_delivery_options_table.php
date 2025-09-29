@@ -22,7 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger('price');
             $table->integer('capacity')->nullable();
             $table->boolean('allow_multiple_quantity')->default(false);
-            $table->string('status')->default(\App\Enums\Content\PublicationStatusEnum::DRAFT->value);
+            $table->string('status')->default(App\Enums\Content\PublicationStatusEnum::DRAFT->value);
             $table->boolean('is_prepayment_available')->default(false);
             $table->unsignedBigInteger('prepayment_amount')->nullable();
             $table->jsonb('details_json');

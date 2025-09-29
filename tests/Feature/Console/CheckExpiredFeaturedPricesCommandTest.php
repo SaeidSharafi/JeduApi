@@ -1,6 +1,8 @@
 <?php
 
-describe('CheckExpiredFeaturedPricesCommand', function (){
+declare(strict_types=1);
+
+describe('CheckExpiredFeaturedPricesCommand', function () {
     it('handles no expired featured prices', function (): void {
         $this->artisan('prices:check-expired-featured')
             ->expectsOutput('Checking for expired featured prices...')
@@ -10,20 +12,20 @@ describe('CheckExpiredFeaturedPricesCommand', function (){
 
     it('handles expired featured prices without dry-run', function (): void {
         // Arrange
-        $mockedRequestService = mock(\App\Services\RequestDataCacheService::class);
+        $mockedRequestService = mock(App\Services\RequestDataCacheService::class);
         $mockedRequestService->shouldReceive('hasPriceData')->andReturnFalse();
         $product = App\Models\Product::factory()->create();
 
         $option = App\Models\ProductDeliveryOption::factory()->create([
-            'product_id' => $product->id,
-            'is_featured' => true,
+            'product_id'                => $product->id,
+            'is_featured'               => true,
             'featured_price_start_date' => now()->subDays(2),
-            'featured_price_end_date' => now()->addDay(),
+            'featured_price_end_date'   => now()->addDay(),
         ]);
         $priceService = app(App\Services\ProductPriceService::class);
         $priceService->updatePriceIndexForProducts(collect([$product]));
         $product->refresh();
-        $priceIndex = $product->productPrice;
+        $priceIndex    = $product->productPrice;
         $priceCacheCol = $product->price_data_cache;
         expect($priceIndex)->not->toBeNull()
             ->and($priceCacheCol)->not->toBeNull()
@@ -34,7 +36,7 @@ describe('CheckExpiredFeaturedPricesCommand', function (){
 
         $this->artisan('prices:check-expired-featured')
             ->expectsOutput('Checking for expired featured prices...')
-            ->expectsOutput("Found 1 expired featured prices.")
+            ->expectsOutput('Found 1 expired featured prices.')
             ->assertExitCode(0);
 
         $product->refresh();
@@ -43,7 +45,7 @@ describe('CheckExpiredFeaturedPricesCommand', function (){
             ->and($priceCacheCol['has_featured_price'])->toBeFalse();
 
         $this->assertDatabaseHas('product_prices', [
-            'product_id' => $product->id,
+            'product_id'         => $product->id,
             'has_featured_price' => false,
         ]);
 
@@ -52,16 +54,16 @@ describe('CheckExpiredFeaturedPricesCommand', function (){
     it('handles expired featured prices with dry-run', function (): void {
         // Arrange
         $product = App\Models\Product::factory()->create();
-        $option = App\Models\ProductDeliveryOption::factory()->create([
-            'product_id' => $product->id,
-            'is_featured' => true,
+        $option  = App\Models\ProductDeliveryOption::factory()->create([
+            'product_id'              => $product->id,
+            'is_featured'             => true,
             'featured_price_end_date' => now()->subDay(),
         ]);
 
         // Act & Assert
         $this->artisan('prices:check-expired-featured --dry-run')
             ->expectsOutput('Checking for expired featured prices...')
-            ->expectsOutput("Found 1 expired featured prices.")
+            ->expectsOutput('Found 1 expired featured prices.')
             ->expectsOutput('DRY RUN MODE - No changes will be made')
             ->assertExitCode(0);
 
@@ -72,7 +74,7 @@ describe('CheckExpiredFeaturedPricesCommand', function (){
 
     it('handles lock already acquired', function (): void {
         // Arrange
-        $lock = \Illuminate\Support\Facades\Cache::lock('price-indexing', 60);
+        $lock = Illuminate\Support\Facades\Cache::lock('price-indexing', 60);
         $lock->get(); // Acquire the lock
 
         // Act & Assert
@@ -94,8 +96,8 @@ describe('CheckExpiredFeaturedPricesCommand', function (){
         // Arrange
         $product = App\Models\Product::factory()->create();
         App\Models\ProductDeliveryOption::factory()->create([
-            'product_id' => $product->id,
-            'is_featured' => true,
+            'product_id'              => $product->id,
+            'is_featured'             => true,
             'featured_price_end_date' => now()->addDay(),
         ]);
         $priceService = app(App\Services\ProductPriceService::class);
@@ -105,7 +107,7 @@ describe('CheckExpiredFeaturedPricesCommand', function (){
         // Act & Assert
         $this->artisan('prices:check-expired-featured --dry-run')
             ->expectsOutput('Checking for expired featured prices...')
-            ->expectsOutput("Found 1 expired featured prices.")
+            ->expectsOutput('Found 1 expired featured prices.')
             ->expectsOutput('DRY RUN MODE - No changes will be made')
             ->assertExitCode(0);
         $product->refresh();

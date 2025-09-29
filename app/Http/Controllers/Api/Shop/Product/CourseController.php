@@ -52,7 +52,6 @@ final class CourseController extends Controller
                 return ProductCardData::fromModel($product, $priceData);
             });
 
-
         return response()->success($courses);
     }
 

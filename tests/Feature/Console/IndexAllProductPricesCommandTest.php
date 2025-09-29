@@ -6,8 +6,8 @@ declare(strict_types=1);
 use App\Console\Commands\IndexAllProductPricesCommand;
 use App\Jobs\UpdateProductPricingJob;
 use App\Models\Product;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+
 use function Pest\Laravel\artisan;
 
 it('processes all published products into a single chunk without --missing-only option', function () {
@@ -72,7 +72,7 @@ it('handles synchronous processing by updating the database directly', function 
 });
 
 it('handles lock already acquired', function (): void {
-    $lock = \Illuminate\Support\Facades\Cache::lock('price-indexing', 60);
+    $lock = Illuminate\Support\Facades\Cache::lock('price-indexing', 60);
     $lock->get(); // Acquire the lock
 
     artisan(IndexAllProductPricesCommand::class)

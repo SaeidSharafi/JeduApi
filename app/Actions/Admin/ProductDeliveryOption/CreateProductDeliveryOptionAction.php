@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 final readonly class CreateProductDeliveryOptionAction
 {
-    public function __construct(private SkuGeneratorService $skuGenerator)
-    {
-    }
+    public function __construct(private SkuGeneratorService $skuGenerator) {}
 
     /**
      * Execute the action.
@@ -23,8 +21,8 @@ final readonly class CreateProductDeliveryOptionAction
     public function handle(ProductDeliveryOptionCreateData $data, Product $product): ProductDeliveryOption
     {
         $pdo = DB::transaction(function () use ($data, $product): ProductDeliveryOption {
-            $pdoData = $data->except('teachers')->toArray();
-            $providedSku = data_get($pdoData, 'sku');
+            $pdoData        = $data->except('teachers')->toArray();
+            $providedSku    = data_get($pdoData, 'sku');
             $pdoData['sku'] = filled($providedSku)
                 ? $providedSku
                 : $this->skuGenerator->generateBaseSku($data, $product);

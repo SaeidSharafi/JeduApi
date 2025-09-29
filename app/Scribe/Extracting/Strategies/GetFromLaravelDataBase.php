@@ -111,7 +111,7 @@ abstract class GetFromLaravelDataBase extends Strategy
 
         if (
             $this->customParameterDataMethodName !== 'queryParameters'
-            && !method_exists($laravelData, $this->customParameterDataMethodName)
+            && ! method_exists($laravelData, $this->customParameterDataMethodName)
             && method_exists($laravelData, 'queryParameters')) {
             return [];
         }

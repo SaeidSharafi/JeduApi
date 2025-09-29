@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Shop\Product\Course;
 
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class CourseListRequestData extends Data
+final class CourseListRequestData extends Data
 {
     public function __construct(
         public ?CourseFilterData $filter = null,
@@ -14,16 +16,15 @@ class CourseListRequestData extends Data
 
         public ?int $page = null,
         public ?int $per_page = 15,
-    ) {
-    }
+    ) {}
 
     public static function rules(?ValidationContext $context = null): array
     {
         $filters = CourseFilterData::rules($context, 'filter.');
 
         return [
-            'filter'    => ['sometimes', 'array'],
-            'filter.*'  => ['sometimes'],
+            'filter'   => ['sometimes', 'array'],
+            'filter.*' => ['sometimes'],
             ...$filters,
             'sortBy'    => ['sometimes', 'string', 'in:title,created_at'],
             'sortOrder' => ['sometimes', 'string', 'in:asc,desc'],
@@ -38,9 +39,9 @@ class CourseListRequestData extends Data
     public function queryParameters(): array
     {
         return [
-            'filter'    => [
+            'filter' => [
                 'description' => 'Filter criteria for courses',
-                'example'     => ['category_id' => 1, 'status' => 'published']
+                'example'     => ['category_id' => 1, 'status' => 'published'],
             ],
             'sortBy'    => ['description' => 'Field to sort by', 'example' => 'created_at'],
             'sortOrder' => ['description' => 'Sort order (asc or desc)', 'example' => 'desc'],

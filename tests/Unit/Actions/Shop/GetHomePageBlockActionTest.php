@@ -304,16 +304,16 @@ describe('GetHomePageBlockAction', function (): void {
             [DynamicListSortByEnum::FEATURED],
 
         ]);
-    it('can handle dynamic list blocks for featured blog posts', function (){
+    it('can handle dynamic list blocks for featured blog posts', function () {
         // Create test data
         $blogPosts = BlogPost::factory()
             ->count(5)
             ->sequence(
                 ['is_featured' => true, 'created_at' => now()->subDays(5), 'status' => PublicationStatusEnum::PUBLISHED],
-                ['is_featured' => false,'created_at' => now()->subDays(4), 'status' => PublicationStatusEnum::PUBLISHED],
-                ['is_featured' => true,'created_at' => now()->subDays(3), 'status' => PublicationStatusEnum::PUBLISHED],
-                ['is_featured' => false,'created_at' => now()->subDays(2), 'status' => PublicationStatusEnum::PUBLISHED],
-                ['is_featured' => true,'created_at' => now()->subDays(1), 'status' => PublicationStatusEnum::PUBLISHED],
+                ['is_featured' => false, 'created_at' => now()->subDays(4), 'status' => PublicationStatusEnum::PUBLISHED],
+                ['is_featured' => true, 'created_at' => now()->subDays(3), 'status' => PublicationStatusEnum::PUBLISHED],
+                ['is_featured' => false, 'created_at' => now()->subDays(2), 'status' => PublicationStatusEnum::PUBLISHED],
+                ['is_featured' => true, 'created_at' => now()->subDays(1), 'status' => PublicationStatusEnum::PUBLISHED],
             )
             ->create();
         $action = app()->Make(GetHomePageBlockAction::class);
@@ -473,7 +473,7 @@ describe('GetHomePageBlockAction', function (): void {
         // Create test data
         $course  = App\Models\Course::factory()->create();
         $product = Product::factory()->withDeliveryOptions()->create([
-            'productable_type' => \App\Enums\Product\ProductableEnum::COURSE,
+            'productable_type' => App\Enums\Product\ProductableEnum::COURSE,
             'productable_id'   => $course->id,
         ]);
         $course->attachMedia($this->image, 'cover');

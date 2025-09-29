@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 describe('ProductDeliveryOptionData', function () {
     it('can be created from a model', function () {
         $deliveryOption = new App\Models\ProductDeliveryOption([
@@ -9,7 +11,7 @@ describe('ProductDeliveryOptionData', function () {
             'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
         ]);
         $deliveryOption->uuid = '123e4567-e89b-12d3-a456-426614174000';
-        $priceData = new App\Data\Shop\ProductDeliveryOptionPriceData(
+        $priceData            = new App\Data\Shop\ProductDeliveryOptionPriceData(
             current_price: 800,
             original_price: 1000,
             pre_payment_price: false,

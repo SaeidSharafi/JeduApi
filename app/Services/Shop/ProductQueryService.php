@@ -141,7 +141,8 @@ final class ProductQueryService
                 $this->productableTypes = [ProductableEnum::from($filter->type)->value];
             }
         }
-        //dd($this->getQuery()->toRawSql());
+
+        // dd($this->getQuery()->toRawSql());
         return $this
             ->sortBy($requestData->sortBy, $requestData->sortOrder)
             ->paginate($requestData->per_page);
@@ -186,7 +187,7 @@ final class ProductQueryService
      */
     public function ofTypes(array $types): self
     {
-        $this->productableTypes = array_map(fn($type) => $type->value, $types);
+        $this->productableTypes = array_map(fn ($type) => $type->value, $types);
 
         return $this;
     }
@@ -261,16 +262,16 @@ final class ProductQueryService
         $this->query->where(function (Builder $q) use ($searchTerm) {
 
             // Condition A: Search directly on the products table
-            $q->where('name', 'like', '%' . $searchTerm . '%')
-                ->orWhere('short_description', 'like', '%' . $searchTerm . '%');
+            $q->where('name', 'like', '%'.$searchTerm.'%')
+                ->orWhere('short_description', 'like', '%'.$searchTerm.'%');
 
             // Condition B: OR search within the related productable models
             // This correctly uses orWhereHasMorph, linking it to the conditions above.
             $q->orWhereHasMorph('productable', $this->productableTypes, function (Builder $sq) use ($searchTerm) {
                 // No extra nested where() is needed here, as they are all OR conditions.
-                $sq->where('short_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('full_name', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('description', 'like', '%' . $searchTerm . '%');
+                $sq->where('short_name', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('full_name', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('description', 'like', '%'.$searchTerm.'%');
             });
         });
 
@@ -315,7 +316,7 @@ final class ProductQueryService
     public function sortBy(string $field, string $direction = 'desc'): self
     {
         $allowedFields = ['created_at', 'updated_at', 'name', 'price'];
-        if (!in_array($field, $allowedFields) || !in_array($direction, ['asc', 'desc'])) {
+        if (! in_array($field, $allowedFields) || ! in_array($direction, ['asc', 'desc'])) {
             return $this;
         }
 
@@ -408,6 +409,7 @@ final class ProductQueryService
     public function getQuery()
     {
         $this->applyDeferredConstraints();
+
         return $this->query;
     }
 
@@ -425,7 +427,7 @@ final class ProductQueryService
         // Filter by available delivery options
         $this->addRelationshipConstraint('productDeliveryOptions', function ($q) {
             $q->where('status', PublicationStatusEnum::PUBLISHED);
-            if (!$this->includeFullProducts) {
+            if (! $this->includeFullProducts) {
                 $q->where(function ($capacityQuery) {
                     $capacityQuery->where('capacity', 0)
                         ->orWhereRaw('capacity > (SELECT COUNT(*) FROM enrollments WHERE product_delivery_option_id = product_delivery_options.id AND enrollment_status IN (?, ?))',
@@ -444,7 +446,7 @@ final class ProductQueryService
         if ($this->checkTermStatus) {
             $this->query->where(function ($q) {
                 $q->whereNull('term_id')
-                    ->orWhereHas('term', fn($termQuery) => $termQuery->where('status', TermStatusEnum::ACTIVE));
+                    ->orWhereHas('term', fn ($termQuery) => $termQuery->where('status', TermStatusEnum::ACTIVE));
             });
         }
     }
@@ -493,10 +495,9 @@ final class ProductQueryService
      */
     private function applyPriceJoinOnce(): void
     {
-        if (!in_array('price_filter', $this->appliedJoins)) {
+        if (! in_array('price_filter', $this->appliedJoins)) {
             $this->query->join('product_prices', 'products.id', '=', 'product_prices.product_id');
             $this->appliedJoins[] = 'price_filter';
         }
     }
-
 }

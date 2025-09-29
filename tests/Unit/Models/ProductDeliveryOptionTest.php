@@ -10,24 +10,24 @@ test('to array', function (): void {
 
     expect($productDeliveryOption->toArray())
         ->toEqual([
-            'id'                                     => $productDeliveryOption->id,
-            'uuid'                                   => $productDeliveryOption->uuid,
-            'product_id'                             => $productDeliveryOption->product_id,
-            'name'                                   => $productDeliveryOption->name,
-            'sku'                                    => $productDeliveryOption->sku,
-            'fulfillment_type'                       => $productDeliveryOption->fulfillment_type->value,
-            'delivery_method'                        => $productDeliveryOption->delivery_method->value,
-            'price'                                  => $productDeliveryOption->price,
-            'capacity'                               => $productDeliveryOption->capacity,
-            'status'                                 => $productDeliveryOption->status->value,
-            'is_prepayment_available'                => $productDeliveryOption->is_prepayment_available,
-            'prepayment_amount'                      => $productDeliveryOption->prepayment_amount,
-            'details_json'                           => $productDeliveryOption->details_json,
-            'is_featured'                            => $productDeliveryOption->is_featured,
-            'featured_price'                         => $productDeliveryOption->featured_price,
-            'featured_price_start_date'              => $productDeliveryOption->featured_price_start_date?->utc()
+            'id'                        => $productDeliveryOption->id,
+            'uuid'                      => $productDeliveryOption->uuid,
+            'product_id'                => $productDeliveryOption->product_id,
+            'name'                      => $productDeliveryOption->name,
+            'sku'                       => $productDeliveryOption->sku,
+            'fulfillment_type'          => $productDeliveryOption->fulfillment_type->value,
+            'delivery_method'           => $productDeliveryOption->delivery_method->value,
+            'price'                     => $productDeliveryOption->price,
+            'capacity'                  => $productDeliveryOption->capacity,
+            'status'                    => $productDeliveryOption->status->value,
+            'is_prepayment_available'   => $productDeliveryOption->is_prepayment_available,
+            'prepayment_amount'         => $productDeliveryOption->prepayment_amount,
+            'details_json'              => $productDeliveryOption->details_json,
+            'is_featured'               => $productDeliveryOption->is_featured,
+            'featured_price'            => $productDeliveryOption->featured_price,
+            'featured_price_start_date' => $productDeliveryOption->featured_price_start_date?->utc()
                 ->toJSON(),
-            'featured_price_end_date'                => $productDeliveryOption->featured_price_end_date?->utc()
+            'featured_price_end_date' => $productDeliveryOption->featured_price_end_date?->utc()
                 ->toJSON(),
             'registration_start_date'                => $productDeliveryOption->registration_start_date?->format('Y-m-d'),
             'registration_end_date'                  => $productDeliveryOption->registration_end_date?->format('Y-m-d'),
@@ -42,7 +42,7 @@ test('to array', function (): void {
 });
 
 test('relation products', function (): void {
-    $product = App\Models\Product::factory()->create();
+    $product        = App\Models\Product::factory()->create();
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
     expect($deliveryOption->product)
         ->toBeInstanceOf(App\Models\Product::class)
@@ -52,7 +52,7 @@ test('relation products', function (): void {
 
 test('relation teachers', function (): void {
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create();
-    $teachers = App\Models\Teacher::factory()->count(3)->create();
+    $teachers       = App\Models\Teacher::factory()->count(3)->create();
     $deliveryOption->teachers()->attach($teachers->pluck('id'));
     $deliveryOption->load('teachers');
     expect($deliveryOption->teachers)
@@ -64,7 +64,7 @@ test('relation teachers', function (): void {
 test('relation discount prices', function (): void {
 
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create();
-    $discountPrice = App\Models\ProductDeliveryOptionDiscountPrice::create([
+    $discountPrice  = App\Models\ProductDeliveryOptionDiscountPrice::create([
         'product_delivery_option_id' => $deliveryOption->id,
         'discount_promotion_id'      => App\Models\DiscountPromotion::factory()->create()->id,
         'discounted_price'           => 5000,
@@ -170,7 +170,7 @@ describe('scopes', function () {
 
     it('withCapacityInfo adds enrolled_count', function (): void {
         $deliveryOption = App\Models\ProductDeliveryOption::factory()->create();
-        $enrollments = App\Models\Enrollment::factory()->count(3)->create([
+        $enrollments    = App\Models\Enrollment::factory()->count(3)->create([
             'product_delivery_option_id' => $deliveryOption->id,
             'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
         ]);

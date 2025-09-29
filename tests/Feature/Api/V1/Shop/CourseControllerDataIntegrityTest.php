@@ -204,8 +204,8 @@ describe('CourseController Data Integrity Tests', function (): void {
             $courseData = $response->json('data.data.0');
 
             expect($courseData['price'])->toBe(600000) // Featured price is lower
-            ->and($courseData['original_price'])->toBe(700000) // Minimum original price
-            ->and($courseData['has_discount'])->toBeFalse()
+                ->and($courseData['original_price'])->toBe(700000) // Minimum original price
+                ->and($courseData['has_discount'])->toBeFalse()
                 ->and($courseData['is_featured'])->toBeTrue()
                 ->and($courseData['price_data']['min_price'])->toBe(600000)
                 ->and($courseData['price_data']['min_original_price'])->toBe(700000)

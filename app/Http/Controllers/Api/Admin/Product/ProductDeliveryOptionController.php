@@ -14,7 +14,6 @@ use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionUpdateData;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 
@@ -36,7 +35,7 @@ final class ProductDeliveryOptionController extends Controller
     {
         Gate::authorize('view-any', ProductDeliveryOption::class);
         $deliveryOptions = $product->productDeliveryOptions()
-            ->with('teachers', fn($q) => $q->orderBy('id'))
+            ->with('teachers', fn ($q) => $q->orderBy('id'))
             ->get();
 
         return response()->success(ProductDeliveryOptionShowData::collect($deliveryOptions));
