@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Shop\Product\Course;
 
 use App\Enums\CourseDifficultyLevelEnum;
@@ -8,16 +10,17 @@ use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-class CourseFilterData extends Data
+final class CourseFilterData extends Data
 {
     public function __construct(
         public ?string $search = null,
         public ?string $fulfillment_type = null,
         public ?string $categorySlug = null,
         public ?string $level = null,
-    )
-    {
-    }
+        public ?int $min_price = null,
+        public ?int $max_price = null,
+        public ?bool $with_discounts = null,
+    ) {}
 
     public static function rules(?ValidationContext $context = null): array
     {
@@ -26,13 +29,15 @@ class CourseFilterData extends Data
             'fulfillment_type' => ['sometimes', 'string', Rule::enum(FulfillmentTypeEnum::class)],
             'categorySlug'     => ['sometimes', 'string', 'exists:categories,slug'],
             'level'            => ['sometimes', 'string', Rule::enum(CourseDifficultyLevelEnum::class)],
+            'min_price'        => ['sometimes', 'integer', 'min:0'],
+            'max_price'        => ['sometimes', 'integer', 'gt:min_price'],
+            'with_discounts'   => ['sometimes', 'boolean'],
         ];
     }
 
     /**
      * @codeCoverageIgnore
      */
-
     public function queryParameters(): array
     {
         return [
@@ -40,6 +45,9 @@ class CourseFilterData extends Data
             'fulfillment_type' => 'Filter by fulfillment type (e.g., online, offline)',
             'categorySlug'     => 'Filter by category slug',
             'level'            => 'Filter by course difficulty level (e.g., beginner, intermediate, advanced)',
+            'min_price'        => 'Only include courses with a minimum price greater than or equal to this amount.',
+            'max_price'        => 'Only include courses with a minimum price less than or equal to this amount.',
+            'with_discounts'   => 'When true, only include courses that currently have an active discount.',
         ];
     }
 }

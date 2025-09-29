@@ -1,29 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Shop\Product\Course;
 
-use App\Data\Admin\Category\CategoryListItemData;
-use App\Data\Admin\DigitalAsset\DigitalAssetListItemData;
 use App\Data\Shop\Product\CategoryCardData;
-use App\Data\Shop\Product\DigitalAssetPublicData;
+use App\Data\Shop\Product\ProductDeliveryOptionData;
+use App\Data\Shop\ProductPriceData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Models\Product;
+use Illuminate\Support\Collection;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
-use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
-use Spatie\LaravelData\DataCollection;
 
-class CourseDetailData extends Data
+final class CourseDetailData extends Data
 {
     public function __construct(
         public string $slug,
         public string $full_name,
         public string $short_name,
+        public ?ProductPriceData $priceData,
         public ?string $description,
         public ?int $duration,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
@@ -41,21 +42,57 @@ class CourseDetailData extends Data
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public PublicationStatusEnum $status,
         #[DataCollectionOf(CategoryCardData::class)]
-        public ?DataCollection $categories,
-        #[DataCollectionOf(DigitalAssetPublicData::class)]
-        #[MapInputName('digitalAssets')]
-        public ?DataCollection $digital_assets,
+        public ?Collection $categories,
+        #[DataCollectionOf(ProductDeliveryOptionData::class)]
+        public ?Collection $delivery_options = null,
         public array $media = [],
-    ) {
-    }
+    ) {}
 
-    public static function fromModel(Product $product): self
+    public static function fromModel(Product $product, ProductPriceData $data): self
     {
+        $pdoData = null;
+        if ($product->productDeliveryOptions->isNotEmpty() && $data->prices !== null) {
+            $pdoData = $data->prices
+                ->filter(function ($pdoPrice) use ($product) {
+                    $pdo = $product->productDeliveryOptions->firstWhere('uuid', $pdoPrice->uuid);
+
+                    return $pdo !== null
+                        && $pdo->status === PublicationStatusEnum::PUBLISHED;
+                    // Note: Removed capacity check as enrolled_count property needs verification
+                })
+                ->map(function ($pdoPrice) use ($product) {
+                    $pdo = $product->productDeliveryOptions->firstWhere('uuid', $pdoPrice->uuid);
+
+                    return new ProductDeliveryOptionData(
+                        uuid: $pdo->uuid,
+                        sku: $pdo->sku,
+                        name: $pdo->name,
+                        price_data: $pdoPrice,
+                        fulfillment_type: $pdo->fulfillment_type,
+                        delivery_method: $pdo->delivery_method,
+                    );
+                });
+        }
+
+        $courseDetailPriceData = new ProductPriceData(
+            min_price: $data->min_price,
+            min_original_price: $data->min_original_price,
+            has_featured_price: $data->has_featured_price,
+            has_discount: $data->has_discount,
+            has_pre_payment: $data->has_pre_payment,
+            discount_type: $data->discount_type,
+            discount_percentage: $data->discount_percentage,
+            highest_discount_amount: $data->highest_discount_amount,
+            range: $data->range,
+            prices: null,
+        );
+
         return self::from(
             [
                 'slug'                    => $product->slug,
                 'full_name'               => $product->name ?? $product->productable->full_name,
                 'short_name'              => $product->short_name,
+                'priceData'               => $courseDetailPriceData,
                 'description'             => $product->productable->description,
                 'duration'                => $product->productable->duration,
                 'difficulty_level'        => $product->productable->difficulty_level,
@@ -71,7 +108,7 @@ class CourseDetailData extends Data
                 'details'                 => $product->details_json,
                 'status'                  => $product->status,
                 'categories'              => $product->categories,
-                'digitalAssets'           => $product->productable->digitalAssets,
+                'delivery_options'        => $pdoData,
                 'media'                   => $product->productable->getAllMedia(urlOnly: true),
             ]
         );
