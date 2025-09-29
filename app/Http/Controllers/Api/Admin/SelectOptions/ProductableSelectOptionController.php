@@ -24,7 +24,8 @@ final class ProductableSelectOptionController extends Controller
      * Productable items list
      *
      * @queryParam  q string The search query for filtering productable items (match name). Example: "advanced"
-     * @queryParam  types array The types of productable items to include. Possible values: course, seminar, digital_asset. Example: ["course", "seminar"]
+     * @queryParam  types array The types of productable items to include. Possible values: course, seminar,
+     *     digital_asset. Example: ["course", "seminar"]
      * @queryParam  limit integer The maximum number of results to return. Default is 15. Example: 10
      *
      * @responseFile 200 responses/select-options/productable.json
@@ -33,15 +34,15 @@ final class ProductableSelectOptionController extends Controller
     {
         $query = request()->string('q', '');
         $limit = request()->integer('limit', 15);
-        $types = request()->array('types') ?: [
-            ProductableEnum::COURSE->value,
-            ProductableEnum::SEMINAR->value,
-            ProductableEnum::DIGITAL_ASSET->value,
-        ];
+        $types = request()->array('types')
+            ?: [
+                ProductableEnum::COURSE->value,
+                ProductableEnum::SEMINAR->value,
+                ProductableEnum::DIGITAL_ASSET->value,
+            ];
 
         $queries = [];
 
-        // 1. Build a query for Courses if requested
         if (in_array(ProductableEnum::COURSE->value, $types)) {
             $coursesQuery = Course::query()
                 ->select([
@@ -50,9 +51,12 @@ final class ProductableSelectOptionController extends Controller
                     'slug',
                     DB::raw("'".ProductableEnum::COURSE->value."' as type"), // Add a literal 'type' column
                 ])
-                ->when($query, function ($q, $search): void {
-                    $q->whereLike('full_name', "%{$search}%")
-                        ->orWhereLike('short_name', "%{$search}%");
+                ->when($query->isNotEmpty(), function ($q) use ($query): void {
+                    $term = '%'.addcslashes((string) $query, '%_').'%';
+                    $q->where(function ($w) use ($term) {
+                        $w->whereLike('full_name', $term)
+                            ->orWhereLike('short_name', $term);
+                    });
                 });
             $queries[] = $coursesQuery;
         }
