@@ -30,6 +30,8 @@ return new class extends Migration
             $table->jsonb('provisioning_data')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
+            $table->index(['product_delivery_option_id', 'enrollment_status'], 'pdo_enrollment_status_index');
+
         });
     }
 
