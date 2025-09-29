@@ -304,6 +304,43 @@ describe('GetHomePageBlockAction', function (): void {
             [DynamicListSortByEnum::FEATURED],
 
         ]);
+    it('can handle dynamic list blocks for featured blog posts', function (){
+        // Create test data
+        $blogPosts = BlogPost::factory()
+            ->count(5)
+            ->sequence(
+                ['is_featured' => true, 'created_at' => now()->subDays(5), 'status' => PublicationStatusEnum::PUBLISHED],
+                ['is_featured' => false,'created_at' => now()->subDays(4), 'status' => PublicationStatusEnum::PUBLISHED],
+                ['is_featured' => true,'created_at' => now()->subDays(3), 'status' => PublicationStatusEnum::PUBLISHED],
+                ['is_featured' => false,'created_at' => now()->subDays(2), 'status' => PublicationStatusEnum::PUBLISHED],
+                ['is_featured' => true,'created_at' => now()->subDays(1), 'status' => PublicationStatusEnum::PUBLISHED],
+            )
+            ->create();
+        $action = app()->Make(GetHomePageBlockAction::class);
+        $block  = HomePageBlock::factory()->dynamicList(
+            DynamicListEntityTypeEnum::BLOG_POST,
+            DynamicListSortByEnum::FEATURED,
+            3
+        )->create([
+            'title'     => 'Featured Blog Posts',
+            'location'  => 'content',
+            'order'     => 1,
+            'is_active' => true,
+        ]);
+        $result = $action->handle($block);
+
+        expect($result)->toBeInstanceOf(HomePageBlockData::class)
+
+            ->and($result->title)->toBe('Featured Blog Posts')
+            ->and($result->type)->toBe('DYNAMIC_LIST')
+            ->and(count($result->content['items']))->toBe(3)
+            ->and(collect($result->content['items'])->pluck('slug')->toArray())
+            ->toBe($blogPosts->where('is_featured', true)
+                ->sortByDesc('created_at')
+                ->pluck('slug')
+                ->take(3)
+                ->toArray());
+    });
     it('can handle dynamic list blocks with category filter', function (): void {
         // Create test data
         $categories          = Category::factory()->count(2)->create();

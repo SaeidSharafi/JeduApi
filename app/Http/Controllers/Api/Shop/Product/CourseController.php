@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Shop\Product;
 
 use App\Data\Shop\Product\Course\CourseDetailData;
@@ -9,18 +11,18 @@ use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Services\ProductPriceService;
+use App\Services\Shop\ProductQueryService;
 
 /**
  * @group Shop - Products - Courses
  *
  * APIs for retrieving courses in the shop.
  */
-class CourseController extends Controller
+final class CourseController extends Controller
 {
     public function __construct(
         private ProductPriceService $priceService,
-    ) {
-    }
+    ) {}
 
     /**
      * Course List
@@ -37,39 +39,19 @@ class CourseController extends Controller
      * @queryParam per_page int Optional number of items per page. Default is 15. Example: 15
      *
      * @responseFile responses/shop/products/courses/index.json
-     *
      */
     public function index(CourseListRequestData $requestData)
     {
-        $courses = Product::query()
-            ->activeWithData()
-            ->where('productable_type', ProductableEnum::COURSE)
-            ->with(['categories'])
-            ->when($requestData->filter?->search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('title', 'like', '%'.$search.'%')
-                        ->orWhere('description', 'like', '%'.$search.'%');
-                });
-            })
-            ->when($requestData->filter?->categorySlug, function ($query, $categorySlug) {
-                $query->whereHas('categories', function ($q) use ($categorySlug) {
-                    $q->where('slug', $categorySlug);
-                });
-            })
-            ->when($requestData->filter?->level, function ($query, $level) {
-                $query->whereHas('productable', function ($q) use ($level) {
-                    $q->where('level', $level);
-                });
-            })
-            ->orderBy($requestData->sortBy ?? 'created_at', $requestData->sortOrder ?? 'desc')
-            ->forPage($requestData->page)
-            ->paginate($requestData->per_page ?? 15)
-            ->withQueryString()
+        $courses = ProductQueryService::make()
+            ->availableProducts()
+            ->ofType(ProductableEnum::COURSE)
+            ->getCourseList($requestData)
             ->through(function (Product $product) {
-                ;
                 $priceData = $this->priceService->getPriceDataForProduct($product);
+
                 return ProductCardData::fromModel($product, $priceData);
             });
+
 
         return response()->success($courses);
     }
@@ -81,20 +63,20 @@ class CourseController extends Controller
      *
      * @responseFile  200 responses/shop/products/courses/show.json
      * @responseFile  404 responses/404.json
-     *
      */
     public function show(Product $product)
     {
-        $product->load([
-            'productableWithAllRelations',
-            'productDeliveryOptions',
-            'productDeliveryOptions.productDeliveryOptionDiscountPrice',
-            'categories',
-            'term',
-            'vendor',
-            'productDeliveryOptions.teachers'
-        ]);
-        $product->productable->load('digitalAssets');
-        return response()->success(CourseDetailData::fromModel($product));
+        // Load the product with all required relations for detail view
+        $product = ProductQueryService::make()
+            ->ofType(ProductableEnum::COURSE)
+            ->availableProducts()
+            ->forDetail()
+            ->getQuery()
+            ->where('id', $product->id)
+            ->firstOrFail();
+
+        $priceData = $this->priceService->getPriceDataForProduct($product);
+
+        return response()->success(CourseDetailData::fromModel($product, $priceData));
     }
 }

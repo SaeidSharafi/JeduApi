@@ -20,6 +20,7 @@ use App\Models\HomePageBlock;
 use App\Models\Product;
 use App\Services\ProductPriceService;
 use App\Services\RequestDataCacheService;
+use App\Services\Shop\ProductQueryService;
 use Illuminate\Database\Eloquent\Builder;
 
 final readonly class GetHomePageBlockAction
@@ -70,9 +71,11 @@ final readonly class GetHomePageBlockAction
 
         // Pre-load products with relationships to avoid N+1
         if ($idsToFetch->isNotEmpty()) {
-            $fetchedProducts = Product::query()
+            $fetchedProducts = ProductQueryService::make()
+                ->availableProducts()
+                ->forListing()
+                ->getQuery()
                 ->whereIn('id', $uniqueProductIds)
-                ->activeWithData()
                 ->get()
                 ->keyBy('id');
             $this->requestCache->storeProducts($fetchedProducts);
@@ -172,19 +175,26 @@ final readonly class GetHomePageBlockAction
         int $limit,
         ?array $categoryIds
     ): Builder|\Illuminate\Database\Query\Builder {
-        $baseProductQuery = Product::query()
-            ->activeWithData();
+
         $query = match ($entityType) {
-            DynamicListEntityTypeEnum::COURSE_PRODUCTS => $baseProductQuery
-                ->where('productable_type', ProductableEnum::COURSE),
+            DynamicListEntityTypeEnum::COURSE_PRODUCTS => ProductQueryService::make()
+                ->availableProducts()
+                ->ofType(ProductableEnum::COURSE)
+                ->forListing(),
 
-            DynamicListEntityTypeEnum::SEMINAR_PRODUCTS => $baseProductQuery
-                ->where('productable_type', ProductableEnum::SEMINAR),
+            DynamicListEntityTypeEnum::SEMINAR_PRODUCTS => ProductQueryService::make()
+                ->availableProducts()
+                ->ofType(ProductableEnum::SEMINAR)
+                ->forListing(),
 
-            DynamicListEntityTypeEnum::DIGITAL_ASSET_PRODUCTS => $baseProductQuery
-                ->where('productable_type', ProductableEnum::DIGITAL_ASSET),
+            DynamicListEntityTypeEnum::DIGITAL_ASSET_PRODUCTS => ProductQueryService::make()
+                ->availableProducts()
+                ->ofType(ProductableEnum::DIGITAL_ASSET)
+                ->forListing(),
 
-            DynamicListEntityTypeEnum::ALL_PRODUCTS => $baseProductQuery,
+            DynamicListEntityTypeEnum::ALL_PRODUCTS => ProductQueryService::make()
+                ->availableProducts()
+                ->forListing(),
 
             DynamicListEntityTypeEnum::BLOG_POST => BlogPost::query()
                 ->where('status', \App\Enums\Content\PublicationStatusEnum::PUBLISHED)
@@ -200,32 +210,59 @@ final readonly class GetHomePageBlockAction
                 DynamicListEntityTypeEnum::ALL_PRODUCTS,
             ])
         ) {
-            $query->whereHas('categories', fn (Builder $q) => $q->whereIn('categories.id', $categoryIds));
+            if ($query instanceof ProductQueryService) {
+                $query->inCategories($categoryIds);
+            }
         }
 
         // Apply sorting
         match ($sortBy) {
-            DynamicListSortByEnum::CREATED_AT_DESC => $query->orderBy('created_at', 'desc'),
-            DynamicListSortByEnum::CREATED_AT_ASC  => $query->orderBy('created_at', 'asc'),
-            DynamicListSortByEnum::UPDATED_AT_DESC => $query->orderBy('updated_at', 'desc'),
-            DynamicListSortByEnum::UPDATED_AT_ASC  => $query->orderBy('updated_at', 'asc'),
-            DynamicListSortByEnum::NAME_ASC        => $query->orderBy('name', 'asc'),
-            DynamicListSortByEnum::NAME_DESC       => $query->orderBy('name', 'desc'),
+            DynamicListSortByEnum::CREATED_AT_DESC => $this->applySorting($query, 'created_at', 'desc'),
+            DynamicListSortByEnum::CREATED_AT_ASC  => $this->applySorting($query, 'created_at', 'asc'),
+            DynamicListSortByEnum::UPDATED_AT_DESC => $this->applySorting($query, 'updated_at', 'desc'),
+            DynamicListSortByEnum::UPDATED_AT_ASC  => $this->applySorting($query, 'updated_at', 'asc'),
+            DynamicListSortByEnum::NAME_ASC        => $this->applySorting($query, 'name', 'asc'),
+            DynamicListSortByEnum::NAME_DESC       => $this->applySorting($query, 'name', 'desc'),
             DynamicListSortByEnum::POPULAR         => $this->applyPopularSorting($query, $entityType),
-            DynamicListSortByEnum::FEATURED        => $query->where('is_featured', true)->orderBy('created_at', 'desc'),
+            DynamicListSortByEnum::FEATURED        => $this->applyFeaturedSorting($query, $entityType),
         };
+
+        // Apply limit and return appropriate query
+        if ($query instanceof ProductQueryService) {
+            return $query->limit($limit)->getQuery();
+        }
 
         return $query->limit($limit);
     }
 
-    private function applyPopularSorting(Builder $query, DynamicListEntityTypeEnum $entityType): void
+    private function applySorting($query, string $field, string $direction): void
+    {
+        if ($query instanceof ProductQueryService) {
+            $query->sortBy($field, $direction);
+        } else {
+            $query->orderBy($field, $direction);
+        }
+    }
+
+    private function applyPopularSorting($query, DynamicListEntityTypeEnum $entityType): void
     {
         if ($entityType === DynamicListEntityTypeEnum::BLOG_POST) {
             // For blog posts, we could sort by view count if we had that field
             $query->orderBy('created_at', 'desc');
         } else {
-            // For products, sort by order count
-            $query->withCount('orderItems')->orderBy('order_items_count', 'desc');
+            // For products using ProductQueryService
+            if ($query instanceof ProductQueryService) {
+                $query->popular();
+            }
+        }
+    }
+
+    private function applyFeaturedSorting($query, DynamicListEntityTypeEnum $entityType): void
+    {
+        if ($query instanceof ProductQueryService) {
+            $query->featured()->sortBy('created_at', 'desc');
+        } else {
+            $query->where('is_featured', true)->orderBy('created_at', 'desc');
         }
     }
 

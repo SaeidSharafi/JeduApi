@@ -235,7 +235,6 @@ describe('ProductPriceService: Updating Data', function (): void {
         expect($this->priceService->getPriceRangeForProduct($product))->toEqual(['min' => 0, 'max' => 0]);
     });
 
-    //calculatePriceDataForProduct with ProductDeliveryOption id to check findDeliveryOptionsForProduct with id
     it('calculates price data correctly for a product with various delivery options and discounts', function (): void {
         $product = Product::factory()
             ->has(ProductDeliveryOption::factory([

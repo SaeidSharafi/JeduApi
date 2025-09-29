@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\EnrollmentStatusEnum;
+
 test('to array', function (): void {
     $productDeliveryOption = App\Models\ProductDeliveryOption::factory()->create()->fresh();
 
@@ -22,8 +25,10 @@ test('to array', function (): void {
             'details_json'                           => $productDeliveryOption->details_json,
             'is_featured'                            => $productDeliveryOption->is_featured,
             'featured_price'                         => $productDeliveryOption->featured_price,
-            'featured_price_start_date'              => $productDeliveryOption->featured_price_start_date?->utc()->toJSON(),
-            'featured_price_end_date'                => $productDeliveryOption->featured_price_end_date?->utc()->toJSON(),
+            'featured_price_start_date'              => $productDeliveryOption->featured_price_start_date?->utc()
+                ->toJSON(),
+            'featured_price_end_date'                => $productDeliveryOption->featured_price_end_date?->utc()
+                ->toJSON(),
             'registration_start_date'                => $productDeliveryOption->registration_start_date?->format('Y-m-d'),
             'registration_end_date'                  => $productDeliveryOption->registration_end_date?->format('Y-m-d'),
             'available_from'                         => $productDeliveryOption->available_from?->format('Y-m-d'),
@@ -37,7 +42,7 @@ test('to array', function (): void {
 });
 
 test('relation products', function (): void {
-    $product        = App\Models\Product::factory()->create();
+    $product = App\Models\Product::factory()->create();
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create(['product_id' => $product->id]);
     expect($deliveryOption->product)
         ->toBeInstanceOf(App\Models\Product::class)
@@ -47,7 +52,7 @@ test('relation products', function (): void {
 
 test('relation teachers', function (): void {
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create();
-    $teachers       = App\Models\Teacher::factory()->count(3)->create();
+    $teachers = App\Models\Teacher::factory()->count(3)->create();
     $deliveryOption->teachers()->attach($teachers->pluck('id'));
     $deliveryOption->load('teachers');
     expect($deliveryOption->teachers)
@@ -59,7 +64,7 @@ test('relation teachers', function (): void {
 test('relation discount prices', function (): void {
 
     $deliveryOption = App\Models\ProductDeliveryOption::factory()->create();
-    $discountPrice  = App\Models\ProductDeliveryOptionDiscountPrice::create([
+    $discountPrice = App\Models\ProductDeliveryOptionDiscountPrice::create([
         'product_delivery_option_id' => $deliveryOption->id,
         'discount_promotion_id'      => App\Models\DiscountPromotion::factory()->create()->id,
         'discounted_price'           => 5000,
@@ -72,12 +77,12 @@ test('relation discount prices', function (): void {
 });
 test('scope available', function (): void {
     $availableOption = App\Models\ProductDeliveryOption::factory()->create([
-        'status'         => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+        'status'         => PublicationStatusEnum::PUBLISHED,
         'available_from' => now()->subDays(1),
         'available_to'   => now()->addDays(1),
     ])->fresh();
     $unavailableOption = App\Models\ProductDeliveryOption::factory()->create([
-        'status'         => \App\Enums\Content\PublicationStatusEnum::DRAFT,
+        'status'         => PublicationStatusEnum::DRAFT,
         'available_from' => now()->addDays(1),
         'available_to'   => now()->addDays(2),
     ])->fresh();
@@ -159,4 +164,71 @@ test('discountPrice', function (): void {
 
     $deliveryOption->load('productDeliveryOptionDiscountPrice');
     expect($deliveryOption->discountPrice)->toEqual(10000);
+});
+
+describe('scopes', function () {
+
+    it('withCapacityInfo adds enrolled_count', function (): void {
+        $deliveryOption = App\Models\ProductDeliveryOption::factory()->create();
+        $enrollments = App\Models\Enrollment::factory()->count(3)->create([
+            'product_delivery_option_id' => $deliveryOption->id,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
+        ]);
+        // Add a cancelled enrollment which should not be counted
+        App\Models\Enrollment::factory()->create([
+            'product_delivery_option_id' => $deliveryOption->id,
+            'enrollment_status'          => EnrollmentStatusEnum::CANCELLED,
+        ]);
+
+        $result = App\Models\ProductDeliveryOption::withCapacityInfo()->find($deliveryOption->id);
+
+        expect($result)
+            ->not->toBeNull()
+            ->and($result->enrolled_count)->toEqual(3);
+    });
+
+    it('availableWithCapacity returns only options with available spots', function (): void {
+        $optionWithCapacity = App\Models\ProductDeliveryOption::factory()->create([
+            'status'         => PublicationStatusEnum::PUBLISHED,
+            'capacity'       => 5,
+            'available_from' => now()->subDays(1),
+            'available_to'   => now()->addDays(1),
+        ]);
+        // 3 active enrollments, capacity 5 -> should be available
+        App\Models\Enrollment::factory()->count(3)->create([
+            'product_delivery_option_id' => $optionWithCapacity->id,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
+        ]);
+
+        $optionAtCapacity = App\Models\ProductDeliveryOption::factory()->create([
+            'status'         => PublicationStatusEnum::PUBLISHED,
+            'capacity'       => 3,
+            'available_from' => now()->subDays(1),
+            'available_to'   => now()->addDays(1),
+        ]);
+        // 3 active enrollments, capacity 3 -> should NOT be available
+        App\Models\Enrollment::factory()->count(3)->create([
+            'product_delivery_option_id' => $optionAtCapacity->id,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
+        ]);
+
+        $optionWithoutCapacity = App\Models\ProductDeliveryOption::factory()->create([
+            'status'         => PublicationStatusEnum::PUBLISHED,
+            'capacity'       => null,
+            'available_from' => now()->subDays(1),
+            'available_to'   => now()->addDays(1),
+        ]);
+        // No capacity limit -> should be available
+        App\Models\Enrollment::factory()->count(10)->create([
+            'product_delivery_option_id' => $optionWithoutCapacity->id,
+            'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
+        ]);
+        $result = App\Models\ProductDeliveryOption::availableWithCapacity()->get();
+        expect($result->pluck('id')->all())
+            ->toContain($optionWithCapacity->id)
+            ->and($result->pluck('id')->all())
+            ->toContain($optionWithoutCapacity->id)
+            ->and($result->pluck('id')->all())
+            ->not->toContain($optionAtCapacity->id);
+    });
 });

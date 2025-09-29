@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\User\GenderEnum;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -50,15 +52,6 @@ final class ProductDeliveryOption extends Model
             'productDeliveryOptionDiscountPrice',
         ];
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        self::creating(function ($model): void {
-            $model->uuid = (string) Str::uuid7();
-        });
-    }
-
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
@@ -88,7 +81,16 @@ final class ProductDeliveryOption extends Model
         })->toArray();
     }
 
-    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected static function boot()
+    {
+        parent::boot();
+
+        self::creating(function ($model): void {
+            $model->uuid = (string) Str::uuid7();
+        });
+    }
+
+    #[Scope]
     protected function available($query)
     {
         // available_from and available_to are optional, if they are null, it means the product is always available
@@ -100,10 +102,63 @@ final class ProductDeliveryOption extends Model
             ->where(function (Builder $q): void {
                 $q->whereNull('available_to')
                     ->orWhere('available_to', '>=', now());
+            })
+            ->where(function (Builder $q): void {
+                $q->where(function (Builder $sq): void {
+                    // Both dates are null (always open)
+                    $sq->whereNull('registration_start_date')
+                        ->whereNull('registration_end_date');
+                })
+                    ->orWhere(function (Builder $sq): void {
+                        // Both dates exist and current time is within range
+                        $sq->whereNotNull('registration_start_date')
+                            ->whereNotNull('registration_end_date')
+                            ->where('registration_start_date', '<=', now())
+                            ->where('registration_end_date', '>=', now());
+                    })
+                    ->orWhere(function (Builder $sq): void {
+                        // Only start date exists and we're past it
+                        $sq->whereNotNull('registration_start_date')
+                            ->whereNull('registration_end_date')
+                            ->where('registration_start_date', '<=', now());
+                    })
+                    ->orWhere(function (Builder $sq): void {
+                        // Only end date exists and we're before it
+                        $sq->whereNull('registration_start_date')
+                            ->whereNotNull('registration_end_date')
+                            ->where('registration_end_date', '>=', now());
+                    });
             });
     }
 
-    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    #[Scope]
+    protected function availableWithCapacity($query)
+    {
+        return $query->available() // Use the query builder method, not scope method directly
+            ->where(function (Builder $q): void {
+                $q->whereNull('capacity')
+                    ->orWhereRaw('
+                      capacity > (
+                          SELECT COUNT(*)
+                          FROM enrollments
+                          WHERE product_delivery_option_id = product_delivery_options.id
+                          AND enrollment_status != ?
+                      )
+                  ', [EnrollmentStatusEnum::CANCELLED->value]);
+            });
+    }
+
+    #[Scope]
+    protected function withCapacityInfo($query)
+    {
+        return $query->withCount([
+            'enrollments as enrolled_count' => function ($q): void {
+                $q->where('enrollment_status', '!=', EnrollmentStatusEnum::CANCELLED);
+            },
+        ]);
+    }
+
+    #[Scope]
     protected function featured($query)
     {
         return $query->where('is_featured', true)
@@ -111,13 +166,13 @@ final class ProductDeliveryOption extends Model
             ->where('featured_price_end_date', '>=', now());
     }
 
-    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    #[Scope]
     protected function prepaymentAvailable($query)
     {
         return $query->where('is_prepayment_available', true);
     }
 
-    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    #[Scope]
     protected function registrationOpen($query)
     {
         return $query->where('registration_start_date', '<=', now())
