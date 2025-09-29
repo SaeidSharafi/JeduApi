@@ -213,16 +213,32 @@ describe('ProductQueryService unit tests', function () {
             /** @var Builder|MockInterface $queryMock */
             $queryMock = mock(Builder::class);
 
-            $queryMock->shouldReceive('first')->once()->andReturn(null);
+            $paginator = new LengthAwarePaginator(
+                items: ['product1', 'product2'],
+                total: 2,
+                perPage: 10,
+                currentPage: 1
+            );
+
+            $service->ofType(ProductableEnum::COURSE);
+
+            $queryMock->shouldReceive('whereHasMorph')
+                ->once()
+                ->with('productable', [ProductableEnum::COURSE->value], \Mockery::type(Closure::class));
+
+            $queryMock->shouldReceive('paginate')->once()->andReturn($paginator);
 
             $reflection = new ReflectionClass($service);
             $property = $reflection->getProperty('query');
             $property->setAccessible(true);
             $property->setValue($service, $queryMock);
+            $service->ofType(ProductableEnum::COURSE);
+            $service->byCourseLevel(\App\Enums\CourseDifficultyLevelEnum::BEGINNER);
 
-            $result = $service->first();
+            $result = $service->paginate(10);
 
-            expect($result)->toBeNull();
+            expect($result)->toBeInstanceOf(LengthAwarePaginator::class)
+                ->and($result->total())->toBe(2);
         });
     });
 
