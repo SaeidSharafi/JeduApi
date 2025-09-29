@@ -27,7 +27,7 @@ final class CourseController extends Controller
     /**
      * Course List
      *
-     * Retrieve a paginated list of active proudct of course type with optional filtering and sorting.
+     * Retrieve a paginated list of active product of course type with optional filtering and sorting.
      *
      * @queryParam filter[search] string Optional search term to filter courses by title or description. Example: "programming"
      * @queryParam filter[fulfillment_type] string Optional fulfillment type to filter courses by. Example: "online"
