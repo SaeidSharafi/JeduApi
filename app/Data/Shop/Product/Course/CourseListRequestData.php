@@ -43,7 +43,14 @@ final class CourseListRequestData extends Data
         return [
             'filter' => [
                 'description' => 'Filter criteria for courses',
-                'example'     => ['category_id' => 1, 'status' => 'published'],
+                'example'     => [
+                    'search'         => 'kotlin',
+                    'categorySlug'   => 'mobile-dev',
+                    'level'          => 'BEGINNER',
+                    'min_price'      => 10000,
+                    'max_price'      => 50000,
+                    'with_discounts' => true,
+                ],
             ],
             'sortBy'    => ['description' => 'Field to sort by', 'example' => 'created_at'],
             'sortOrder' => ['description' => 'Sort order (asc or desc)', 'example' => 'desc'],
