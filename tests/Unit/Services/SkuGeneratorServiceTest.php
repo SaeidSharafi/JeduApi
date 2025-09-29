@@ -69,7 +69,7 @@ describe('SkuGeneratorService', function (): void {
         expect($sku1)->toBe("PYT-F1402-OFF-VID");
     });
 
-    it('crrect code for term', function (string $termCode, array $termData): void {
+    it('correct code for term', function (string $termCode, array $termData): void {
         $term = Term::factory()->create($termData);
         $this->product->term_id = $term->id;
         $this->product->save();
@@ -113,7 +113,7 @@ describe('SkuGeneratorService', function (): void {
         ['X1402', ['academic_year' => '1402-1403', 'start_date' => null, 'end_date' => null]],
     ]);
 
-    it('crrect code for delviey and fulfillment type', function (array $codes, FulfillmentTypeEnum $ftype,DeliveryMethodEnum $dmethod): void {
+    it('correct code for delivery and fulfillment type', function (array $codes, FulfillmentTypeEnum $ftype,DeliveryMethodEnum $dmethod): void {
         $data = ProductDeliveryOptionCreateData::from([
             'name'                      => 'گزینه جدید',
             'fulfillment_type'          => $ftype->value,

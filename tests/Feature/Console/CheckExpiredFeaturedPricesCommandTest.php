@@ -84,13 +84,13 @@ describe('CheckExpiredFeaturedPricesCommand', function (){
         $lock->release();
     });
 
-    it('handels dry-run with no expired prices', function (): void {
+    it('handles dry-run with no expired prices', function (): void {
         $this->artisan('prices:check-expired-featured --dry-run')
             ->expectsOutput('Checking for expired featured prices...')
             ->expectsOutput('No expired featured prices found.')
             ->assertExitCode(0);
     });
-    it('handels dry-run with expired featured prices', function (): void {
+    it('handles dry-run with expired featured prices', function (): void {
         // Arrange
         $product = App\Models\Product::factory()->create();
         App\Models\ProductDeliveryOption::factory()->create([
