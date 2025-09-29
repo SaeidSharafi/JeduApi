@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Product\Course;
 
+use App\Models\Product;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -20,11 +21,7 @@ final class ProductListRequestData extends Data
 
     public static function rules(?ValidationContext $context = null): array
     {
-        $filters = CourseFilterData::rules($context);
-        foreach ($filters as $key => $rule) {
-            $filters["filter.$key"] = $rule;
-            unset($filters[$key]);
-        }
+        $filters = ProductFilterData::rules($context, 'filter.');
 
         return [
             'filter'   => ['sometimes', 'array'],

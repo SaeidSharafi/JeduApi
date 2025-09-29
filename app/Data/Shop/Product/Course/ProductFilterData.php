@@ -20,16 +20,16 @@ final class ProductFilterData extends Data
         public ?bool $with_discounts = null,
     ) {}
 
-    public static function rules(?ValidationContext $context = null): array
+    public static function rules(?ValidationContext $context = null, string $prefix = ''): array
     {
         return [
-            'search'         => ['sometimes', 'string', 'max:255'],
-            'category_ids'   => ['sometimes', 'array'],
-            'category_ids.*' => ['integer', 'exists:categories,id'],
-            'type'           => ['sometimes', 'string', Rule::enum(ProductableEnum::class)],
-            'min_price'      => ['sometimes', 'integer', 'min:0'],
-            'max_price'      => ['sometimes', 'integer', 'gt:min_price'],
-            'with_discounts' => ['sometimes', 'boolean'],
+            $prefix.'search'         => ['sometimes', 'string', 'max:255'],
+            $prefix.'category_ids'   => ['sometimes', 'array'],
+            $prefix.'category_ids.*' => ['integer', 'exists:categories,id'],
+            $prefix.'type'           => ['sometimes', 'string', Rule::enum(ProductableEnum::class)],
+            $prefix.'min_price'      => ['sometimes', 'integer', 'min:0'],
+            $prefix.'max_price'      => ['sometimes', 'integer', "gt:{$prefix}min_price"],
+            $prefix.'with_discounts' => ['sometimes', 'boolean'],
         ];
     }
 }
