@@ -473,7 +473,7 @@ describe('GetHomePageBlockAction', function (): void {
         // Create test data
         $course  = App\Models\Course::factory()->create();
         $product = Product::factory()->withDeliveryOptions()->create([
-            'productable_type' => App\Enums\Product\ProductableEnum::COURSE,
+            'productable_type' => App\Enums\Product\ProductableEnum::COURSE->value,
             'productable_id'   => $course->id,
         ]);
         $course->attachMedia($this->image, 'cover');
