@@ -17,17 +17,17 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
             $table->primary('product_id');
 
-            $table->integer('min_price')->index('idx_min_price');
-            $table->integer('min_original_price');
-            $table->integer('max_price');
-            $table->integer('max_original_price');
+            $table->unsignedInteger('min_price')->index('idx_min_price');
+            $table->unsignedInteger('min_original_price');
+            $table->unsignedInteger('max_price');
+            $table->unsignedInteger('max_original_price');
 
             $table->boolean('has_discount')->default(false)->index('idx_has_discount');
             $table->boolean('has_featured_price')->default(false)->index('idx_has_featured');
             $table->boolean('has_prepayment')->default(false)->index('idx_has_prepayment');
 
             $table->decimal('discount_percentage', 5, 2)->nullable();
-            $table->integer('highest_discount_amount')->nullable();
+            $table->unsignedInteger('highest_discount_amount')->nullable();
 
             $table->timestamps();
 
