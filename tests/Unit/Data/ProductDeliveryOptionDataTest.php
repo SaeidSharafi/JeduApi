@@ -14,7 +14,7 @@ describe('ProductDeliveryOptionData', function () {
         $priceData            = new App\Data\Shop\ProductDeliveryOptionPriceData(
             current_price: 800,
             original_price: 1000,
-            pre_payment_price: false,
+            pre_payment_price: null,
             featured_price: null,
             discount_amount: 200,
             has_pre_payment_price: false,
