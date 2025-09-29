@@ -75,6 +75,14 @@ final class Product extends Model
         return $this->hasManyThrough(OrderItem::class, ProductDeliveryOption::class);
     }
 
+    /**
+     * @return HasOne<ProductPrice, $this>
+     */
+    public function productPrice(): HasOne
+    {
+        return $this->hasOne(ProductPrice::class);
+    }
+
     protected function casts(): array
     {
         return [
