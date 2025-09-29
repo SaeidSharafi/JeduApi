@@ -33,6 +33,7 @@ describe('RequestDataCacheService', function (): void {
             has_pre_payment: false,
             discount_type: 'percentage',
             discount_percentage: 16.67,
+            highest_discount_amount: 200,
             range: [1000, 1500],
             prices: collect(),
         );
