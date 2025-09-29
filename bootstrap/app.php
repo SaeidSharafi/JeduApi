@@ -31,7 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Full price reindex (both JSON cache AND price index table)
         $schedule->command('prices:index-all')
-            ->twiceDaily('02:03', '14:03')
+            ->twiceDailyAt(2, 14, 3)
             ->withoutOverlapping();
     })
     ->withRouting(
