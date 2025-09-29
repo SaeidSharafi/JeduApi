@@ -19,11 +19,8 @@ class CourseListRequestData extends Data
 
     public static function rules(?ValidationContext $context = null): array
     {
-        $filters = CourseFilterData::rules($context);
-        foreach ($filters as $key => $rule) {
-            $filters["filter.$key"] = $rule;
-            unset($filters[$key]);
-        }
+        $filters = CourseFilterData::rules($context, 'filter.');
+
         return [
             'filter'    => ['sometimes', 'array'],
             'filter.*'  => ['sometimes'],
