@@ -124,6 +124,35 @@ describe('User with permissions', function (): void {
             'teacher_id'                 => $this->teachers[2]->id,
         ]);
     });
+    it('should create a new delivery option for a product without providing sku', function (?string $sku): void {
+        $this->authorized_user([
+            App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,
+        ]);
+        if ($sku !== null) {
+            $this->simpleData['sku'] = $sku;
+        } else {
+            unset($this->simpleData['sku']);
+        }
+
+        $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $this->product->id]),
+            $this->simpleData);
+
+        $response->assertCreated()
+            ->assertJsonFragment(['name' => $this->simpleData['name']]);
+
+        $this->assertDatabaseHas('product_delivery_options', [
+            'product_id'       => $this->product->id,
+            'name'             => $this->simpleData['name'],
+            'sku'              => $response->json('data.sku'),
+            'fulfillment_type' => $this->simpleData['fulfillment_type'],
+            'delivery_method'  => $this->simpleData['delivery_method'],
+            'price'            => $this->simpleData['price'],
+            'capacity'         => $this->simpleData['capacity'],
+        ]);
+    })->with([
+        [''],
+        [null]
+    ]);
     it('should return the specified delivery option details', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_VIEW,
