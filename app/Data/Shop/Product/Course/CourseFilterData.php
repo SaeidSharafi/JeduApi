@@ -30,7 +30,7 @@ final class CourseFilterData extends Data
             $prefix.'categorySlug'     => ['sometimes', 'string', 'exists:categories,slug'],
             $prefix.'level'            => ['sometimes', 'string', Rule::enum(CourseDifficultyLevelEnum::class)],
             $prefix.'min_price'        => ['sometimes', 'integer', 'min:0'],
-            $prefix.'max_price'        => ['sometimes', 'integer', "gt:{$prefix}min_price"],
+            $prefix.'max_price'        => ['sometimes', 'integer', "gte:{$prefix}min_price"],
             $prefix.'with_discounts'   => ['sometimes', 'boolean'],
         ];
     }
