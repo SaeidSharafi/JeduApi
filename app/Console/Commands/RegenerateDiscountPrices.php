@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Jobs\UpdateProductPriceIndexJob;
 use App\Services\Discounts\ProductDiscountIndexer;
 use Illuminate\Console\Command;
 
@@ -14,20 +15,26 @@ final class RegenerateDiscountPrices extends Command
      *
      * @var string
      */
-    protected $signature = 'discounts:reindex-all';
+    protected $signature = 'discounts:reindex-all {--skip-price-index : Skip updating the price index table}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Regenerate the product_delivery_option_discount_prices table for all active promotions.';
+    protected $description = 'Regenerate the product_delivery_option_discount_prices table for all active promotions and update price index.';
 
     public function handle(ProductDiscountIndexer $indexer): int
     {
         $this->info('Regenerating discount prices...');
         $indexer->reIndexComplete();
         $this->info('Discount prices regenerated successfully.');
+
+        if (! $this->option('skip-price-index')) {
+            $this->info('Updating price index for all products...');
+            UpdateProductPriceIndexJob::dispatchForAllProducts();
+            $this->info('Price index update jobs dispatched successfully.');
+        }
 
         return 0;
     }
