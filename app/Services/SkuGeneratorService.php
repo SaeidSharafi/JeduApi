@@ -102,13 +102,12 @@ final class SkuGeneratorService
      */
     private function generateDeliveryCode(ProductDeliveryOptionCreateData $data): string
     {
-        // fullfilment_type is enum FullfilmentTypeEnum
         $typeCode = match ($data->fulfillment_type) {
             FulfillmentTypeEnum::IN_PERSON_SERVICE->value => 'INP',
             FulfillmentTypeEnum::ONLINE_SERVICE->value    => 'ONL',
             FulfillmentTypeEnum::OFFLINE_SERVICE->value   => 'OFF',
             FulfillmentTypeEnum::DIGITAL->value           => 'DIG',
-            default                                       => 'OTH', // Other/Unknown
+            default                                       => 'OTH',
         };
 
         $methodCode = match ($data->delivery_method) {
@@ -120,7 +119,7 @@ final class SkuGeneratorService
             DeliveryMethodEnum::DIRECT_DOWNLOAD->value           => 'DLD',
             // @codeCoverageIgnoreStart
             // This should never happen because of validation, but just in case...
-            default => 'OTH', // Other/Unknown
+            default => 'OTH',
             // @codeCoverageIgnoreEnd
         };
 
