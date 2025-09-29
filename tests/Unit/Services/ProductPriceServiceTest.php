@@ -250,6 +250,8 @@ describe('ProductPriceService: Updating Data', function (): void {
 
         $deliveryOption = ProductDeliveryOption::factory([
             'price' => 30000,
+            'is_prepayment_available' => false,
+            'prepayment_amount'         => 10000,
         ])->for($product)->create();
         $priceData = $this->priceService->calculatePriceDataForProduct($product, $deliveryOption->id);
 
