@@ -75,7 +75,7 @@ final readonly class GetHomePageBlockAction
                 ->availableProducts()
                 ->forListing()
                 ->getQuery()
-                ->whereIn('id', $uniqueProductIds)
+                ->whereIn('id', $idsToFetch)
                 ->get()
                 ->keyBy('id');
             $this->requestCache->storeProducts($fetchedProducts);
