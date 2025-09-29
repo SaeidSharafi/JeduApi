@@ -25,7 +25,7 @@ final class CheckExpiredFeaturedPricesCommand extends Command
 
     public function handle(): int
     {
-        $lock = Cache::lock('price-indexing', 60); // 1 minute lock
+        $lock = Cache::lock('price-indexing', 1800);
 
         if (! $lock->get()) {
             $this->warn('Another price indexing operation is already running. Skipping expired price check.');
