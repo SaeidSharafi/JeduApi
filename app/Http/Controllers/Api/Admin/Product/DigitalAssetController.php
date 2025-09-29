@@ -56,8 +56,10 @@ final class DigitalAssetController extends Controller
             ->allowedFilters([
                 'slug', 'status',
                 AllowedFilter::callback('name', function ($q, $value) {
-                    $q->where('short_name', 'LIKE', "%{$value}%")
-                        ->orWhere('full_name', 'LIKE', "%{$value}%");
+                    $q->where(function ($q2) use ($value) {
+                        $q2->where('short_name', 'LIKE', "%{$value}%")
+                            ->orWhere('full_name', 'LIKE', "%{$value}%");
+                    });
                 }),
                 AllowedFilter::exact('is_attachable_to_course'),
             ])
@@ -65,8 +67,8 @@ final class DigitalAssetController extends Controller
                 AllowedSort::callback('name', function ($q, $descending, $property) {
                     $q->orderBy('short_name', $descending ? 'desc' : 'asc')
                         ->orderBy('full_name', $descending ? 'desc' : 'asc');
-                }), 'slug', 'status'])
-
+                }), 'slug', 'status'
+            ])
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
@@ -104,13 +106,13 @@ final class DigitalAssetController extends Controller
         $attachments = [];
         foreach (['main', 'preview'] as $tag) {
             $attachments[$tag] = $digitalAsset->getMedia($tag)
-                ->map(fn (Media $m): PrivateFileData => PrivateFileData::fromModel($m, $tag))
+                ->map(fn(Media $m): PrivateFileData => PrivateFileData::fromModel($m, $tag))
                 ->toArray();
         }
         $media = [];
         foreach (['gallery', 'video', 'cover'] as $tag) {
             $media[$tag] = $digitalAsset->getMedia($tag)
-                ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag))
+                ->map(fn(Media $m): MediaData => MediaData::fromModel($m, $tag))
                 ->toArray();
         }
 
@@ -129,8 +131,11 @@ final class DigitalAssetController extends Controller
      * @responseFile 404 responses/404.json
      * @responseFile 403 responses/403.json
      */
-    public function update(CreateDigitalAssetData $request, DigitalAsset $digitalAsset, UpdateDigitalAssetAction $action): ApiResponseInterface
-    {
+    public function update(
+        CreateDigitalAssetData $request,
+        DigitalAsset $digitalAsset,
+        UpdateDigitalAssetAction $action
+    ): ApiResponseInterface {
         Gate::authorize('update', $digitalAsset);
         $action->handle($request, $digitalAsset);
         $digitalAsset->refresh();
@@ -140,13 +145,13 @@ final class DigitalAssetController extends Controller
         $attachments = [];
         foreach (['main', 'preview'] as $tag) {
             $attachments[$tag] = $digitalAsset->getMedia($tag)
-                ->map(fn (Media $m): PrivateFileData => PrivateFileData::fromModel($m, $tag))
+                ->map(fn(Media $m): PrivateFileData => PrivateFileData::fromModel($m, $tag))
                 ->toArray();
         }
         $media = [];
         foreach (['gallery', 'video', 'cover'] as $tag) {
             $media[$tag] = $digitalAsset->getMedia($tag)
-                ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag))
+                ->map(fn(Media $m): MediaData => MediaData::fromModel($m, $tag))
                 ->toArray();
         }
 
@@ -165,8 +170,10 @@ final class DigitalAssetController extends Controller
      *
      * @response 204
      */
-    public function destroy(DigitalAsset $digitalAsset, DeleteDigitalAssetAction $action): JsonResponse|ApiResponseInterface
-    {
+    public function destroy(
+        DigitalAsset $digitalAsset,
+        DeleteDigitalAssetAction $action
+    ): JsonResponse|ApiResponseInterface {
         Gate::authorize('delete', $digitalAsset);
         try {
             $action->handle($digitalAsset);
