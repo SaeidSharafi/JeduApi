@@ -57,10 +57,9 @@ describe('ProductQueryService unit tests', function () {
         it('join with price cache works', function () {
             $result = $this->service->withPrices();
             expect($result)->toBe($this->service);
-            // Use reflection to check internal state
             $reflection = new ReflectionClass($this->service);
-            $property   = $reflection->getProperty('query');
-            expect($property->getValue($this->service)->toSql())->toContain('join "product_prices" on "products"."id" = "product_prices"."product_id"');
+            $joinsProp  = $reflection->getProperty('appliedJoins');
+            expect($joinsProp->getValue($this->service))->toContain('price_filter');
         });
     });
 
