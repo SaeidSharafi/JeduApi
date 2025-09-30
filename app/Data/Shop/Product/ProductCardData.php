@@ -34,10 +34,9 @@ final class ProductCardData extends Data
 
     public static function fromModel(Product $product, ProductPriceData $priceData): self
     {
-        $teachers = isset($product->productable?->default_teacher_info) ? [$product->productable?->default_teacher_info] : [];
+        $teachers = $product->productDeliveryOptions->flatMap(fn ($option) => $option->getTeachersName())->unique()->values()->toArray();
         if (! $teachers) {
-            // get all teahcers from product delivery options teahcers relation
-            $teachers = $product->productDeliveryOptions->flatMap(fn ($option) => $option->getTeachersName())->unique()->values()->toArray();
+            $teachers = isset($product->productable?->default_teacher_info) ? [$product->productable?->default_teacher_info] : [];
         }
 
         return new self(

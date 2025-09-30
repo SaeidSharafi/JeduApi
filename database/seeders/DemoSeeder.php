@@ -163,7 +163,7 @@ final class DemoSeeder extends Seeder
             ->withMedia()
             ->create();
         Term::factory(10)->create();
-        Category::factory(100)
+        Category::factory(50)
             ->withIcon()
             ->withImage()
             ->create([
@@ -298,6 +298,30 @@ final class DemoSeeder extends Seeder
             ->useExistingRelations()
             ->withCategory(3)
             ->create();
+        $realCat1 = Category::factory()
+            ->withIcon()
+            ->withImage()
+            ->create([
+                'name'       => 'Real Category 1',
+                'created_by' => $staff->id,
+            ]);
+        $realCat2 = Category::factory()
+            ->withIcon()
+            ->withImage()
+            ->create([
+                'name'       => 'Real Category 2',
+                'created_by' => $staff->id,
+            ]);
+        $products = Product::query()
+            ->inRandomOrder()
+            ->take(30)
+            ->get();
+        $realCat1->products()->sync($products);
+        $products = Product::query()
+            ->inRandomOrder()
+            ->take(30)
+            ->get();
+        $realCat2->products()->sync($products);
 
         $this->command->info('Seeding historical Orders...');
         for ($i = 0; $i < 100; $i++) {

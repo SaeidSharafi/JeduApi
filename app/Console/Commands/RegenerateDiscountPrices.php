@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Jobs\UpdateProductPriceIndexJob;
 use App\Services\Discounts\ProductDiscountIndexer;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
 final class RegenerateDiscountPrices extends Command
 {
@@ -30,11 +31,15 @@ final class RegenerateDiscountPrices extends Command
         $indexer->reIndexComplete();
         $this->info('Discount prices regenerated successfully.');
 
-        if (! $this->option('skip-price-index')) {
-            $this->info('Updating price index for all products...');
-            UpdateProductPriceIndexJob::dispatchForAllProducts();
-            $this->info('Price index update jobs dispatched successfully.');
-        }
+        DB::afterCommit(function () {
+            if (! $this->option('skip-price-index')) {
+                $this->info('Updating price index for all products...');
+
+                Artisan::call('prices:index-all --sync');
+                $this->info('Price index update jobs dispatched successfully.');
+            }
+
+        });
 
         return 0;
     }

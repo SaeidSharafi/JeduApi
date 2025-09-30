@@ -16,6 +16,7 @@ use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use InvalidArgumentException;
 
 /**
  * Shop Product Query Service
@@ -27,6 +28,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 final class ProductQueryService
 {
     public const array allowedSortFields = ['created_at', 'updated_at', 'name', 'price'];
+
     private Builder $query;
 
     /**
@@ -58,6 +60,16 @@ final class ProductQueryService
     public static function make(): self
     {
         return app(self::class);
+    }
+
+    public function setQuery(Builder $query): self
+    {
+        if ($query->getModel() instanceof Product === false) {
+            throw new InvalidArgumentException('The provided query builder must be for the Product model.');
+        }
+        $this->query = $query;
+
+        return $this;
     }
 
     // === PRESET METHODS FOR DTO-BASED LISTINGS ===
@@ -307,6 +319,13 @@ final class ProductQueryService
     {
         $this->applyPriceJoinOnce();
         $this->query->where('product_prices.has_discount', true);
+
+        return $this;
+    }
+
+    public function withPrices(): self
+    {
+        $this->applyPriceJoinOnce();
 
         return $this;
     }

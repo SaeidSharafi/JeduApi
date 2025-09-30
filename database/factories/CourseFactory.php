@@ -33,6 +33,7 @@ final class CourseFactory extends Factory
             'description'             => $this->faker->persianParagraph(),
             'duration'                => random_int(1, 100),
             'difficulty_level'        => $this->faker->randomElement(CourseDifficultyLevelEnum::getAllValues()),
+            'thumbnail_url'           => 'https://placehold.co/300x200.png?text='.urlencode($this->faker->persianWord()),
             'career_prospects_text'   => $this->faker->persianParagraph(),
             'curriculum_summary_text' => $this->faker->persianWords(5, true),
             'outcomes_json'           => [

@@ -77,6 +77,35 @@ describe('ProductPriceService: Fetching Data', function (): void {
             ->and($priceData->discount_percentage)->toBe(40.0)
             ->and($priceData->range)->toEqual(['min' => 12000, 'max' => 25000]);
     });
+    it('returns correct price data for multiple products', function () {
+        $cachedData = [
+            'min_price'           => 1000,
+            'min_original_price'  => 20000,
+            'has_featured_price'  => true,
+            'has_discount'        => true,
+            'has_pre_payment'     => false,
+            'discount_type'       => 'seasonal',
+            'discount_percentage' => 10.0,
+            'range'               => ['min' => 12000, 'max' => 25000],
+            'prices'              => [],
+        ];
+        $products = Product::factory()
+            ->count(5)
+            ->sequence(
+                fn ($sequence) => [
+                    'name'             => 'Product '.($sequence->index + 1),
+                    'price_data_cache' => array_merge($cachedData, ['min_price' => 1000 * ($sequence->index + 1)]),
+                ],
+            )
+            ->create();
+        $priceData = $this->priceService->getPriceDataForProducts($products);
+        foreach ($products as $product) {
+            $multplier = (int) filter_var($product->name, FILTER_SANITIZE_NUMBER_INT);
+            expect($priceData->get($product->id)->min_price)->toBe(1000 * $multplier)
+                ->and($priceData->get($product->id)->discount_percentage)->toBe(10.0)
+                ->and($priceData->get($product->id)->range)->toEqual(['min' => 12000, 'max' => 25000]);
+        }
+    });
     it('returns cached price in the same request without recalculating', function (): void {
         $product = Product::factory()->has(ProductDeliveryOption::factory(['price' => 10000]))->create();
 
@@ -249,9 +278,9 @@ describe('ProductPriceService: Updating Data', function (): void {
             ->create();
 
         $deliveryOption = ProductDeliveryOption::factory([
-            'price' => 30000,
+            'price'                   => 30000,
             'is_prepayment_available' => false,
-            'prepayment_amount'         => 10000,
+            'prepayment_amount'       => 10000,
         ])->for($product)->create();
         $priceData = $this->priceService->calculatePriceDataForProduct($product, $deliveryOption->id);
 

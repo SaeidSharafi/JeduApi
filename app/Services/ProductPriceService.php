@@ -37,6 +37,19 @@ final readonly class ProductPriceService
     }
 
     /**
+     * Efficiently get price data for a collection of products.
+     *
+     * @param  Collection<Product>  $products
+     * @return Collection A collection of ProductPriceData keyed by product ID.
+     */
+    public function getPriceDataForProducts(Collection $products): Collection
+    {
+        return $products->keyBy('id')->map(
+            fn (Product $product) => $this->getPriceDataForProduct($product)
+        );
+    }
+
+    /**
      * Get pricing information for a product with all pricing logic centralized.
      * This follows the same hierarchy as OrderCalculationService::getBasePrice():
      * 1. Product-specific discount price (cached from promotions)

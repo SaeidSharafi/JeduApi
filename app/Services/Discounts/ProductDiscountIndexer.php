@@ -30,20 +30,32 @@ final class ProductDiscountIndexer
      */
     public function reIndexComplete(): void
     {
-        DB::beginTransaction();
-        // Clear all existing discount prices
-        $this->cleanAllDiscountPrices();
+        try {
+            DB::beginTransaction();
 
-        // Get all active promotions
-        $promotions = $this->getActivePromotions();
+            $this->cleanAllDiscountPrices();
+            $promotions = $this->getActivePromotions();
 
-        if ($promotions->isEmpty()) {
-            return;
+            if ($promotions->isEmpty()) {
+                DB::commit();
+
+                return;
+            }
+
+            $this->indexProductDiscountPrices($promotions);
+
+            DB::commit(); // Commit on success
+
         }
+        // @codeCoverageIgnoreStart
+        catch (Exception $e) {
+            DB::rollBack(); // If anything goes wrong, undo all changes
 
-        // Process products in chunks to avoid memory issues
-        $this->indexProductDiscountPrices($promotions);
-        DB::commit();
+            // Log the error and re-throw it so the console command will show a failure
+            Log::error('Failed to re-index discount prices: '.$e->getMessage());
+            throw $e;
+        }
+        // @codeCoverageIgnoreEnd
 
     }
 

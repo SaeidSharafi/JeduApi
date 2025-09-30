@@ -1,0 +1,27 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "name": "بدل",
+      "slug": "iste-voluptas-veniam-omnis-qui",
+      "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+      "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+      "products_count": 2
+    },
+    {
+      "name": "صندلی",
+      "slug": "ipsa-quia-natus-velit-quia",
+      "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+      "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+      "products_count": 1
+    },
+    {
+      "name": "قرص",
+      "slug": "et-qui-ipsa-quis-eligendi-ullam",
+      "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+      "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+      "products_count": 4
+    }
+  ],
+  "metadata": []
+}

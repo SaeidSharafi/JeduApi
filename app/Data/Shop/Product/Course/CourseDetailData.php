@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Product\Course;
 
-use App\Data\Shop\Product\CategoryCardData;
+use App\Data\Shop\Product\Category\CategoryCardData;
 use App\Data\Shop\Product\ProductDeliveryOptionData;
 use App\Data\Shop\ProductPriceData;
 use App\Data\Transformer\TranslatableEnumData;
