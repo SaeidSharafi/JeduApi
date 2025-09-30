@@ -1,11 +1,12 @@
 <?php
 
-use App\Enums\Product\ProductableEnum;
+declare(strict_types=1);
+
 use App\Models\Product;
 
 describe('CategoryController', function () {
 
-    it('get lsit of categories', function () {
+    it('get list of categories', function () {
         $response = $this->getJson(route('api.v1.shop.categories.index'));
         $response->assertOk();
         $response->assertJsonStructure([
@@ -23,14 +24,14 @@ describe('CategoryController', function () {
                     'meta_description',
                     'meta_keywords',
                     'products_count',
-                ]
-            ]
+                ],
+            ],
         ]);
     });
 
     it('get single category details', function () {
-        $category = \App\Models\Category::factory()->create();
-        $anotherCategory = \App\Models\Category::factory()->create();
+        $category        = App\Models\Category::factory()->create();
+        $anotherCategory = App\Models\Category::factory()->create();
 
         $courses = Product::factory()
             ->withCourse()
@@ -70,7 +71,7 @@ describe('CategoryController', function () {
                 'meta_title',
                 'meta_description',
                 'meta_keywords',
-                'courses'        => [
+                'courses' => [
                     '*' => [
                         'slug',
                         'name',
@@ -87,9 +88,9 @@ describe('CategoryController', function () {
                         'reviews_count',
                         'average_rating',
                         'price_data',
-                    ]
+                    ],
                 ],
-                'seminars'       => [
+                'seminars' => [
                     '*' => [
                         'slug',
                         'name',
@@ -106,7 +107,7 @@ describe('CategoryController', function () {
                         'reviews_count',
                         'average_rating',
                         'price_data',
-                    ]
+                    ],
                 ],
                 'digital_assets' => [
                     '*' => [
@@ -125,9 +126,9 @@ describe('CategoryController', function () {
                         'reviews_count',
                         'average_rating',
                         'price_data',
-                    ]
+                    ],
                 ],
-            ]
+            ],
         ]);
         $responseData = $response->json('data');
 
@@ -153,7 +154,7 @@ describe('CategoryController', function () {
     });
 
     it('get single category details for courses', function () {
-        $category = \App\Models\Category::factory()->create();
+        $category = App\Models\Category::factory()->create();
 
         $courses = Product::factory()
             ->withCourse()
@@ -169,7 +170,7 @@ describe('CategoryController', function () {
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
-                'data'  => [
+                'data' => [
                     '*' => [
                         'slug',
                         'name',
@@ -186,9 +187,9 @@ describe('CategoryController', function () {
                         'reviews_count',
                         'average_rating',
                         'price_data',
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ]);
         $responseData = $response->json('data');
 
@@ -214,15 +215,14 @@ describe('CategoryController', function () {
         }
     });
 
-    it('get single category details for semianrs', function () {
-        $category = \App\Models\Category::factory()->create();
+    it('get single category details for seminars', function () {
+        $category = App\Models\Category::factory()->create();
 
         $seminars = Product::factory()
             ->withSeminar()
             ->withDeliveryOptions(1)
             ->count(15)
             ->create();
-
 
         $category->products()->attach($seminars);
 
@@ -232,7 +232,7 @@ describe('CategoryController', function () {
         $response->assertJsonStructure([
             'data' => [
                 'current_page',
-                'data'  => [
+                'data' => [
                     '*' => [
                         'slug',
                         'name',
@@ -249,9 +249,9 @@ describe('CategoryController', function () {
                         'reviews_count',
                         'average_rating',
                         'price_data',
-                    ]
+                    ],
                 ],
-            ]
+            ],
         ]);
         $responseData = $response->json('data');
 
@@ -277,8 +277,8 @@ describe('CategoryController', function () {
         }
     });
     it('get single category details for digital assets', function () {
-        $category = \App\Models\Category::factory()->create();
-        $assets = Product::factory()
+        $category = App\Models\Category::factory()->create();
+        $assets   = Product::factory()
             ->withDigitalAsset()
             ->withDeliveryOptions(1)
             ->count(15)
@@ -310,7 +310,7 @@ describe('CategoryController', function () {
                         'price_data',
                     ],
                 ],
-            ]
+            ],
         ]);
         $responseData = $response->json('data');
         expect($responseData['data'])->toHaveCount(10)

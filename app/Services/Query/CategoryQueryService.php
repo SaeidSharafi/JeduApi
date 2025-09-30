@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Query;
 
 use App\Data\Shop\Product\ProductCardData;
@@ -9,13 +11,11 @@ use App\Models\Product;
 use App\Services\ProductPriceService;
 use App\Services\Shop\ProductQueryService;
 
-class CategoryQueryService
+final class CategoryQueryService
 {
     public function __construct(
-        protected ProductPriceService $priceService,
-    )
-    {
-    }
+        private ProductPriceService $priceService,
+    ) {}
 
     public function getProductsForCategory(Category $category, ProductableEnum $type, int $limit, bool $paginate = false)
     {

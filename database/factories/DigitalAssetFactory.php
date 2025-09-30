@@ -29,7 +29,7 @@ final class DigitalAssetFactory extends Factory
             'full_name'               => $this->faker->persianWords(3, true),
             'slug'                    => $this->faker->unique()->slug(),
             'description'             => $this->faker->persianSentence(),
-            'thumbnail_url'           =>  'https://placehold.co/300x200.png?text=' . urlencode($this->faker->persianWord()),
+            'thumbnail_url'           => 'https://placehold.co/300x200.png?text='.urlencode($this->faker->persianWord()),
             'version'                 => $this->faker->word(),
             'page_count'              => $this->faker->numberBetween(1, 100),
             'duration_seconds'        => $this->faker->numberBetween(60, 3600),

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Jobs\UpdateProductPricingJob;
 use App\Services\Discounts\ProductDiscountIndexer;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
@@ -32,7 +31,7 @@ final class RegenerateDiscountPrices extends Command
         $indexer->reIndexComplete();
         $this->info('Discount prices regenerated successfully.');
 
-        DB::afterCommit(function (){
+        DB::afterCommit(function () {
             if (! $this->option('skip-price-index')) {
                 $this->info('Updating price index for all products...');
 

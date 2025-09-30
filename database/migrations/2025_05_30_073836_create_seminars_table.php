@@ -37,7 +37,7 @@ return new class extends Migration
 
             $table->json('faq')->nullable()->comment('Store as JSON: [{"q": "...", "a": "..."}, ...]');
             $table->text('keywords')->nullable()->comment('Comma-separated keywords');
-            $table->string('status')->index()->default(\App\Enums\Content\PublicationStatusEnum::DRAFT->value);
+            $table->string('status')->index()->default(App\Enums\Content\PublicationStatusEnum::DRAFT->value);
             $table->foreignId('created_by')->nullable()->constrained('staff', 'id')->nullOnDelete();
             $this->addMetaTagColumns($table);
             $table->integer('review_count')->default(0);

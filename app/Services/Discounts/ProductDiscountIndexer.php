@@ -38,6 +38,7 @@ final class ProductDiscountIndexer
 
             if ($promotions->isEmpty()) {
                 DB::commit();
+
                 return;
             }
 
@@ -47,11 +48,11 @@ final class ProductDiscountIndexer
 
         }
         // @codeCoverageIgnoreStart
-        catch (\Exception $e) {
+        catch (Exception $e) {
             DB::rollBack(); // If anything goes wrong, undo all changes
 
             // Log the error and re-throw it so the console command will show a failure
-            Log::error('Failed to re-index discount prices: ' . $e->getMessage());
+            Log::error('Failed to re-index discount prices: '.$e->getMessage());
             throw $e;
         }
         // @codeCoverageIgnoreEnd

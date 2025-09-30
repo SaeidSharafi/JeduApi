@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Shop\Product\Category;
 
 use App\Data\Shop\Product\ProductCardData;
@@ -7,7 +9,7 @@ use Illuminate\Support\Collection;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 
-class CategoryDetailData extends Data
+final class CategoryDetailData extends Data
 {
     public function __construct(
         public string $name,
@@ -26,6 +28,5 @@ class CategoryDetailData extends Data
         public ?Collection $seminars = null,
         #[DataCollectionOf(ProductCardData::class)]
         public ?Collection $digital_assets = null,
-    ) {
-    }
+    ) {}
 }

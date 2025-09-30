@@ -95,7 +95,7 @@ test('relation products', function (): void {
     $seminar = App\Models\Seminar::factory()->create();
     $product = App\Models\Product::factory()->create([
         'productable_id'   => $seminar->id,
-        'productable_type' => \App\Enums\Product\ProductableEnum::SEMINAR->value,
+        'productable_type' => App\Enums\Product\ProductableEnum::SEMINAR->value,
     ]);
 
     expect($seminar->products)
@@ -126,7 +126,7 @@ test('with reviews', function (): void {
         'reviewable_id'   => $seminar->id,
         'reviewable_type' => MorphTypeEnum::SEMINAR->value,
         'rating'          => 4,
-        'status'          => \App\Enums\Content\ReviewStatusEnum::APPROVED,
+        'status'          => App\Enums\Content\ReviewStatusEnum::APPROVED,
         'is_featured'     => false,
     ]);
 
