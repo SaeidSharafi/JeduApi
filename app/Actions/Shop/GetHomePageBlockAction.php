@@ -8,7 +8,7 @@ use App\Data\Shop\Blog\BlogPostCardData;
 use App\Data\Shop\HomePage\BannerData;
 use App\Data\Shop\HomePage\HomePageBlockData;
 use App\Data\Shop\HomePage\WebinarBannerData;
-use App\Data\Shop\Product\CategoryCardData;
+use App\Data\Shop\Product\Category\CategoryCardData;
 use App\Data\Shop\Product\ProductCardData;
 use App\Enums\Content\DynamicListEntityTypeEnum;
 use App\Enums\Content\DynamicListSortByEnum;

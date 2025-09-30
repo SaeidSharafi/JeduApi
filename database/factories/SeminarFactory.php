@@ -32,6 +32,7 @@ final class SeminarFactory extends Factory
             'subtitle'                 => $this->faker->sentence(6),
             'slug'                     => $this->faker->slug(),
             'description'              => $this->faker->paragraph(),
+            'thumbnail_url'            =>  'https://placehold.co/300x200.png?text=' . urlencode($this->faker->persianWord()),
             'curriculum_summary_text'  => $this->faker->paragraph(),
             'outcomes_json'            => [
                 'outcome1' => $this->faker->persianSentences(5),

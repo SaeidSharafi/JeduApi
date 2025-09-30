@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Http\Controllers\Api\Shop\Product;
+
+use App\Data\Shop\PaginationRequestData;
+use App\Enums\Product\ProductableEnum;
+use App\Http\Controllers\Controller;
+use App\Models\Category;
+use App\Services\Query\CategoryQueryService;
+
+class CategoryCourseController extends Controller
+{
+
+    /**
+     * Display the specified resource.
+     */
+    public function __invoke(PaginationRequestData $data,Category $category, CategoryQueryService $service)
+    {
+        $paginatedCourses = $service->getProductsForCategory($category, ProductableEnum::COURSE, $data->per_page,true);
+
+        return response()->success($paginatedCourses);
+    }
+}

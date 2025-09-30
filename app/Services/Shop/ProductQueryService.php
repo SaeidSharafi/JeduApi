@@ -214,7 +214,6 @@ final class ProductQueryService
         if (empty($categoryIds)) {
             return $this;
         }
-
         return $this->addRelationshipConstraint('categories', function ($q) use ($categoryIds) {
             $q->whereIn('categories.id', $categoryIds);
         });

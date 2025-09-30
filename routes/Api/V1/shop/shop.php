@@ -9,6 +9,10 @@ use App\Http\Controllers\Api\Shop\HomePage\HomePageContentController;
 use App\Http\Controllers\Api\Shop\HomePage\PartnerController;
 use App\Http\Controllers\Api\Shop\HomePage\SliderController;
 use App\Http\Controllers\Api\Shop\HomePage\StudentStoryController;
+use App\Http\Controllers\Api\Shop\Product\CategoryController;
+use App\Http\Controllers\Api\Shop\Product\CategoryCourseController;
+use App\Http\Controllers\Api\Shop\Product\CategoryDigitalAssetController;
+use App\Http\Controllers\Api\Shop\Product\CategorySeminarController;
 use App\Http\Controllers\Api\Shop\Product\CourseController;
 use App\Http\Controllers\Api\Shop\Settings\FooterController;
 use App\Http\Controllers\Api\Shop\Settings\HeaderController;
@@ -28,6 +32,11 @@ Route::get('collaboration', CollaborationPageController::class)->name('collabora
 Route::get('partners', PartnerController::class)->name('partners.index');
 Route::get('student-stories', StudentStoryController::class)->name('student-stories.index');
 
+Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
+Route::get('category/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
+Route::get('category/{category:slug}/courses', CategoryCourseController::class)->name('categories.courses');
+Route::get('category/{category:slug}/seminars', CategorySeminarController::class)->name('categories.seminars');
+Route::get('category/{category:slug}/digital-assets', CategoryDigitalAssetController::class)->name('categories.digital-assets');
 Route::get('courses', [CourseController::class, 'index'])->name('courses.index');
 Route::get('course/{product:slug}', [CourseController::class, 'show'])
     ->name('courses.show');

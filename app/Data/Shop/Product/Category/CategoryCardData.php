@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Data\Shop\Product;
+namespace App\Data\Shop\Product\Category;
 
 use Spatie\LaravelData\Data;
 
@@ -13,5 +13,6 @@ final class CategoryCardData extends Data
         public ?string $slug = null,
         public ?string $icon_url = null,
         public ?string $image_url = null,
+        public ?int $products_count = null,
     ) {}
 }
