@@ -23,7 +23,8 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->text('description');
             $table->string('thumbnail_url')->nullable();
-            $table->text('learning_objectives')->nullable();
+            $table->text('curriculum_summary_text')->nullable();
+            $table->jsonb('outcomes_json')->nullable();
             $table->text('target_audience')->nullable();
             $table->text('prerequisites')->nullable();
 
