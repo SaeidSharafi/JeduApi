@@ -29,6 +29,7 @@ final class CreateSeminarData extends Data
         public CourseDifficultyLevelEnum $level,
         public bool $provides_certificate,
         public ?string $description,
+        public ?string $curriculum_summary_text,
         public ?string $learning_objectives,
         public ?string $target_audience,
         public ?string $prerequisites,
@@ -68,6 +69,7 @@ final class CreateSeminarData extends Data
             'level'                    => ['nullable', Rule::enum(CourseDifficultyLevelEnum::class)],
             'provides_certificate'     => ['boolean'],
             'description'              => ['nullable', 'string'],
+            'curriculum_summary_text'  => ['nullable', 'string'],
             'learning_objectives'      => ['nullable', 'string'],
             'target_audience'          => ['nullable', 'string'],
             'prerequisites'            => ['nullable', 'string'],
@@ -151,6 +153,10 @@ final class CreateSeminarData extends Data
             'description' => [
                 'description' => 'Detailed description of the course',
                 'example'     => 'This is a detailed description of the course.',
+            ],
+            'curriculum_summary_text' => [
+                'description' => 'Summary of the course curriculum',
+                'example'     => 'This course covers the following topics...',
             ],
             'learning_objectives' => [
                 'description' => 'Learning objectives of the course',

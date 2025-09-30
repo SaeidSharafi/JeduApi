@@ -32,6 +32,7 @@ final class SeminarFactory extends Factory
             'subtitle'                 => $this->faker->sentence(6),
             'slug'                     => $this->faker->slug(),
             'description'              => $this->faker->paragraph(),
+            'curriculum_summary_text'  => $this->faker->paragraph(),
             'learning_objectives'      => $this->faker->paragraph(),
             'target_audience'          => $this->faker->paragraph(),
             'prerequisites'            => $this->faker->paragraph(),

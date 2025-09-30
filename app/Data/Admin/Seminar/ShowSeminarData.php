@@ -38,6 +38,7 @@ final class ShowSeminarData extends Data implements ProductableDataContract, Rev
         public CourseDifficultyLevelEnum $level,
         public bool $provides_certificate,
         public ?string $description,
+        public ?string $curriculum_summary_text,
         public ?string $learning_objectives,
         public ?string $target_audience,
         public ?string $prerequisites,

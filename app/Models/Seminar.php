@@ -41,6 +41,7 @@ final class Seminar extends Model implements ProductableContract, ReviewableCont
         'slug',
         'thumbnail_url',
         'description',
+        'curriculum_summary_text',
         'learning_objectives',
         'target_audience',
         'prerequisites',
