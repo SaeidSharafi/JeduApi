@@ -10,10 +10,23 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Services\Query\CategoryQueryService;
 
+/**
+ * @group Shop - Products - Categories
+ *
+ * APIs for retrieving seminars within a specific product category in the shop.
+ */
 final class CategorySeminarController extends Controller
 {
     /**
-     * Display the specified resource.
+     * Category Seminars
+     *
+     * Retrieve a paginated list of seminars associated with a specific product category.
+     *
+     * @urlParam category_slug string required The slug of the category. Example: programming
+     * @queryParam per_page int Optional number of items per page. Default is 15. Example: 15
+     * @queryParam page int Optional page number for pagination. Default is 1. Example
+     *
+     * @responseFile responses/shop/products/categories/seminars.json
      */
     public function __invoke(PaginationRequestData $data, Category $category, CategoryQueryService $service)
     {

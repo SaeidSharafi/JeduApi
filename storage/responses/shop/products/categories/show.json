@@ -1,0 +1,195 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "name": "محل",
+    "slug": "rerum-cupiditate-dolores-minima-eum",
+    "description": "Eius excepturi est consequatur id corrupti laborum cupiditate libero. Unde et non dolorem deserunt temporibus optio consequatur aut. Minus dolor ullam qui enim. Non voluptatibus quia repellat aut.",
+    "educational_calendar_url": "https://via.placeholder.com/640x480.png/002244?text=pariatur",
+    "color_scheme": "#f15b62",
+    "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+    "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+    "meta_title": "بدل نوازش شب الکتریک",
+    "meta_description": "برف آرایش دفتر برق. برق شب دایره نان قفل ملل بدل. روزنامه آرایش ساحل تصویر صف ساز. پل آخر شن ملل دور",
+    "meta_keywords": "دفترچه,دوربین,عطر",
+    "courses": [
+      {
+        "slug": "sed-laudantium-id-tempore-quas-quia-adipisci-quia",
+        "name": "Gillian Conn",
+        "price": 500000,
+        "original_price": 500000,
+        "price_range": {
+          "max": 3000000,
+          "min": 500000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": false,
+        "product_type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "thumbnail_url": "https://via.placeholder.com/300x200.png?text=%D9%81%DB%8C%D9%84%D9%85",
+        "teachers": [
+          "جناب آقای Damaris Nienow",
+          "سرکار خانم Ada Homenick",
+          "سرکار خانم Gabriella Zulauf",
+          "جناب آقای Kenneth Cole",
+          "سرکار خانم Alisha Mueller",
+          "سرکار خانم Joaquin Gleason"
+        ],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 500000,
+          "min_original_price": 500000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": true,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "max": 3000000,
+            "min": 500000
+          },
+          "prices": [
+            {
+              "current_price": 1000000,
+              "original_price": 1000000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "01999a57-3952-7039-9892-73e4e189dc77"
+            },
+            {
+              "current_price": 3000000,
+              "original_price": 3000000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "01999a57-3963-7182-8470-fda1c5254be3"
+            },
+            {
+              "current_price": 500000,
+              "original_price": 500000,
+              "pre_payment_price": 42000,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": true,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "01999a57-3973-739f-9646-229716256b55"
+            }
+          ]
+        }
+      }
+    ],
+    "seminars": [],
+    "digital_assets": [
+      {
+        "slug": "qui-fuga-et-cumque-rem",
+        "name": "America Pfeffer",
+        "price": 500000,
+        "original_price": 500000,
+        "price_range": {
+          "max": 3000000,
+          "min": 500000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": false,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "https://via.placeholder.com/300x200.png?text=%D9%85%D9%88%D8%B3%DB%8C%D9%82%DB%8C",
+        "teachers": [
+          "جناب آقای Winston Cassin",
+          "سرکار خانم Estell Thiel",
+          "جناب آقای Luisa Ward",
+          "سرکار خانم Ada Homenick",
+          "سرکار خانم Joaquin Gleason",
+          "جناب آقای Ramona Nicolas"
+        ],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 500000,
+          "min_original_price": 500000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": true,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "max": 3000000,
+            "min": 500000
+          },
+          "prices": [
+            {
+              "current_price": 1000000,
+              "original_price": 1000000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "01999a57-243a-70f2-9ee8-bec403425fa3"
+            },
+            {
+              "current_price": 3000000,
+              "original_price": 3000000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "01999a57-244a-73c4-925e-70a150d6fe67"
+            },
+            {
+              "current_price": 500000,
+              "original_price": 500000,
+              "pre_payment_price": 180000,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": true,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "01999a57-2459-7212-8b6f-21edeb999fb8"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "metadata": []
+}

@@ -1,0 +1,126 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "slug": "sed-laudantium-id-tempore-quas-quia-adipisci-quia",
+        "name": "Gillian Conn",
+        "price": 500000,
+        "original_price": 500000,
+        "price_range": {
+          "max": 3000000,
+          "min": 500000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": false,
+        "product_type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "thumbnail_url": "https://via.placeholder.com/300x200.png?text=%D9%81%DB%8C%D9%84%D9%85",
+        "teachers": [
+          "جناب آقای Damaris Nienow",
+          "سرکار خانم Ada Homenick",
+          "سرکار خانم Gabriella Zulauf",
+          "جناب آقای Kenneth Cole",
+          "سرکار خانم Alisha Mueller",
+          "سرکار خانم Joaquin Gleason"
+        ],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 500000,
+          "min_original_price": 500000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": true,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "max": 3000000,
+            "min": 500000
+          },
+          "prices": [
+            {
+              "current_price": 1000000,
+              "original_price": 1000000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "01999a57-3952-7039-9892-73e4e189dc77"
+            },
+            {
+              "current_price": 3000000,
+              "original_price": 3000000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "01999a57-3963-7182-8470-fda1c5254be3"
+            },
+            {
+              "current_price": 500000,
+              "original_price": 500000,
+              "pre_payment_price": 42000,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": true,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "01999a57-3973-739f-9646-229716256b55"
+            }
+          ]
+        }
+      }
+    ],
+    "first_page_url": "http://jedu.test/api/v1/shop/category/rerum-cupiditate-dolores-minima-eum/courses?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "http://jedu.test/api/v1/shop/category/rerum-cupiditate-dolores-minima-eum/courses?page=1",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; قبلی",
+        "page": null,
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/shop/category/rerum-cupiditate-dolores-minima-eum/courses?page=1",
+        "label": "1",
+        "page": 1,
+        "active": true
+      },
+      {
+        "url": null,
+        "label": "بعدی &raquo;",
+        "page": null,
+        "active": false
+      }
+    ],
+    "next_page_url": null,
+    "path": "http://jedu.test/api/v1/shop/category/rerum-cupiditate-dolores-minima-eum/courses",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 1,
+    "total": 1
+  },
+  "metadata": []
+}

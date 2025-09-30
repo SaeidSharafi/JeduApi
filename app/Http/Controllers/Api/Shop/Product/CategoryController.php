@@ -13,10 +13,18 @@ use App\Models\Category;
 use App\Services\Query\CategoryQueryService;
 use App\Services\Shop\ProductQueryService;
 
+/**
+ * @group Shop - Products - Categories
+ *
+ * APIs for retrieving product categories in the shop.
+ */
 final class CategoryController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Category List
+     *
+     * Retrieve a list of all product categories with the count of available products in each category.
+     * @responseFile responses/shop/products/categories/index.json
      */
     public function index()
     {
@@ -34,7 +42,14 @@ final class CategoryController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Category Detail
+     *
+     * Retrieve detailed information about a specific product category, including paginated lists of associated courses, seminars, and digital assets.
+     *
+     * @urlParam category_slug string required The slug of the category. Example: programming
+     * @queryParam per_page int Optional number of items per page for each product type. Default is 15. Example: 15
+     *
+     * @responseFile responses/shop/products/categories/show.json
      */
     public function show(PaginationRequestData $data, Category $category, CategoryQueryService $service)
     {

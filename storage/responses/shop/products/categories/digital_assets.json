@@ -1,0 +1,213 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "slug": "aperiam-non-aperiam-nesciunt",
+        "name": "Dr. Pattie Pfannerstill PhD",
+        "price": 500000,
+        "original_price": 500000,
+        "price_range": {
+          "max": 3000000,
+          "min": 500000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": false,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "https://via.placeholder.com/300x200.png?text=%D9%85%D8%B4%DA%A9",
+        "teachers": [
+          "سرکار خانم Kailyn Thiel",
+          "سرکار خانم Reyna Ullrich",
+          "سرکار خانم Estell Thiel",
+          "جناب آقای Bailey Hammes",
+          "سرکار خانم Joaquin Gleason",
+          "جناب آقای Enid Fahey"
+        ],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 500000,
+          "min_original_price": 500000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": true,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "max": 3000000,
+            "min": 500000
+          },
+          "prices": [
+            {
+              "current_price": 1000000,
+              "original_price": 1000000,
+              "pre_payment_price": 64000,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": true,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "01999a57-2e2b-72bc-85ab-5fbe7a47647a"
+            },
+            {
+              "current_price": 3000000,
+              "original_price": 3000000,
+              "pre_payment_price": 190000,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": true,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "01999a57-2e3a-7007-9a03-cf0b046ce98d"
+            },
+            {
+              "current_price": 500000,
+              "original_price": 500000,
+              "pre_payment_price": 11000,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": true,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "01999a57-2e49-737e-9360-6c6d0928c43e"
+            }
+          ]
+        }
+      },
+      {
+        "slug": "est-eum-modi-voluptas-ut-sequi-dolor-labore",
+        "name": "Dr. Heber Ziemann",
+        "price": 500000,
+        "original_price": 500000,
+        "price_range": {
+          "max": 3000000,
+          "min": 500000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": true,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "https://via.placeholder.com/300x200.png?text=%D8%AF%D8%B1%D8%AE%D8%AA",
+        "teachers": [
+          "سرکار خانم Ada Homenick",
+          "جناب آقای Damaris Nienow",
+          "سرکار خانم Estell Thiel",
+          "جناب آقای Enid Fahey",
+          "سرکار خانم Joaquin Gleason",
+          "سرکار خانم Elsa Herzog"
+        ],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 500000,
+          "min_original_price": 500000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": true,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "max": 3000000,
+            "min": 500000
+          },
+          "prices": [
+            {
+              "current_price": 1000000,
+              "original_price": 1000000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "01999a57-2edb-7102-83c8-5be12f6223a1"
+            },
+            {
+              "current_price": 3000000,
+              "original_price": 3000000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "01999a57-2eeb-7021-9820-4dbd6f55060c"
+            },
+            {
+              "current_price": 500000,
+              "original_price": 500000,
+              "pre_payment_price": 72000,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": true,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "01999a57-2efa-732d-85ff-65c91f66e90e"
+            }
+          ]
+        }
+      }
+    ],
+    "first_page_url": "http://jedu.test/api/v1/shop/category/et-qui-ipsa-quis-eligendi-ullam/digital-assets?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "http://jedu.test/api/v1/shop/category/et-qui-ipsa-quis-eligendi-ullam/digital-assets?page=1",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; قبلی",
+        "page": null,
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/shop/category/et-qui-ipsa-quis-eligendi-ullam/digital-assets?page=1",
+        "label": "1",
+        "page": 1,
+        "active": true
+      },
+      {
+        "url": null,
+        "label": "بعدی &raquo;",
+        "page": null,
+        "active": false
+      }
+    ],
+    "next_page_url": null,
+    "path": "http://jedu.test/api/v1/shop/category/et-qui-ipsa-quis-eligendi-ullam/digital-assets",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 2,
+    "total": 2
+  },
+  "metadata": []
+}
