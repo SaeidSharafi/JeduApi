@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\Product\ProductableEnum;
+use App\Models\Course;
 use App\Models\Product;
 use App\Services\Shop\ProductQueryService;
 use Illuminate\Database\Eloquent\Builder;
@@ -37,6 +38,29 @@ describe('ProductQueryService unit tests', function () {
                 ->limit(5);
 
             expect($result)->toBe($this->service);
+        });
+        it('set the query correctly', function () {
+            $builder = Product::query()->where('id', '>', 0);
+            $result  = $this->service->setQuery($builder);
+            expect($result)->toBe($this->service);
+
+            // Use reflection to check internal state
+            $reflection = new ReflectionClass($this->service);
+            $property   = $reflection->getProperty('query');
+
+            expect($property->getValue($this->service))->toBe($builder);
+        });
+        it('throws exception for query with invalid model', function () {
+            $this->expectException(InvalidArgumentException::class);
+            $this->service->setQuery(Course::query()->where('id', '>', 0));
+        });
+        it('join with price cache works', function () {
+            $result = $this->service->withPrices();
+            expect($result)->toBe($this->service);
+            // Use reflection to check internal state
+            $reflection = new ReflectionClass($this->service);
+            $property   = $reflection->getProperty('query');
+            expect($property->getValue($this->service)->toSql())->toContain('join "product_prices" on "products"."id" = "product_prices"."product_id"');
         });
     });
 

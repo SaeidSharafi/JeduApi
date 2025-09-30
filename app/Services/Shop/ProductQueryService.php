@@ -60,6 +60,16 @@ final class ProductQueryService
         return app(self::class);
     }
 
+    public function setQuery(Builder $query): self
+    {
+        if ($query->getModel() instanceof Product === false) {
+            throw new \InvalidArgumentException('The provided query builder must be for the Product model.');
+        }
+        $this->query = $query;
+
+        return $this;
+    }
+
     // === PRESET METHODS FOR DTO-BASED LISTINGS ===
 
     /**
@@ -187,7 +197,7 @@ final class ProductQueryService
      */
     public function ofTypes(array $types): self
     {
-        $this->productableTypes = array_map(fn ($type) => $type->value, $types);
+        $this->productableTypes = array_map(fn($type) => $type->value, $types);
 
         return $this;
     }
@@ -311,12 +321,19 @@ final class ProductQueryService
         return $this;
     }
 
+    public function withPrices(): self
+    {
+        $this->applyPriceJoinOnce();
+
+        return $this;
+    }
+
     // === SORTING AND EXECUTION ===
 
     public function sortBy(string $field, string $direction = 'desc'): self
     {
 
-        if (! in_array($field, self::allowedSortFields) || ! in_array($direction, ['asc', 'desc'])) {
+        if (!in_array($field, self::allowedSortFields) || !in_array($direction, ['asc', 'desc'])) {
             return $this;
         }
 
@@ -427,7 +444,7 @@ final class ProductQueryService
         // Filter by available delivery options
         $this->addRelationshipConstraint('productDeliveryOptions', function ($q) {
             $q->where('status', PublicationStatusEnum::PUBLISHED);
-            if (! $this->includeFullProducts) {
+            if (!$this->includeFullProducts) {
                 $q->where(function ($capacityQuery) {
                     $capacityQuery->where('capacity', 0)
                         ->orWhereRaw('capacity > (SELECT COUNT(*) FROM enrollments WHERE product_delivery_option_id = product_delivery_options.id AND enrollment_status IN (?, ?))',
@@ -446,7 +463,7 @@ final class ProductQueryService
         if ($this->checkTermStatus) {
             $this->query->where(function ($q) {
                 $q->whereNull('term_id')
-                    ->orWhereHas('term', fn ($termQuery) => $termQuery->where('status', TermStatusEnum::ACTIVE));
+                    ->orWhereHas('term', fn($termQuery) => $termQuery->where('status', TermStatusEnum::ACTIVE));
             });
         }
     }
@@ -495,7 +512,7 @@ final class ProductQueryService
      */
     private function applyPriceJoinOnce(): void
     {
-        if (! in_array('price_filter', $this->appliedJoins)) {
+        if (!in_array('price_filter', $this->appliedJoins)) {
             $this->query->join('product_prices', 'products.id', '=', 'product_prices.product_id');
             $this->appliedJoins[] = 'price_filter';
         }
