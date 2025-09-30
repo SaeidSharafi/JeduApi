@@ -394,7 +394,7 @@ return [
         'seminar' => [
             'level'                    => 'سطح سمینار',
             'provides_certificate'     => 'صدور گواهینامه',
-            'learning_objectives'      => 'اهداف یادگیری',
+            'outcomes_json'      => 'اهداف یادگیری',
             'target_audience'          => 'مخاطبان هدف',
             'prerequisites'            => 'پیش نیازها',
             'promo_video_external_url' => 'لینک ویدیو تبلیغاتی',

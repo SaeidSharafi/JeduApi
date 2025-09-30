@@ -30,7 +30,7 @@ final class CreateSeminarData extends Data
         public bool $provides_certificate,
         public ?string $description,
         public ?string $curriculum_summary_text,
-        public ?string $learning_objectives,
+        public ?array $outcomes_json,
         public ?string $target_audience,
         public ?string $prerequisites,
         public ?string $promo_video_external_url,
@@ -43,15 +43,16 @@ final class CreateSeminarData extends Data
         public array $categories,
         public array $digital_assets,
         public array $media = [],
-    ) {}
+    ) {
+    }
 
     public static function rules(): array
     {
         return array_merge([
-            'full_name'  => ['required', 'string', 'max:255'],
-            'short_name' => ['required', 'string', 'max:255'],
-            'subtitle'   => ['nullable', 'string', 'max:255'],
-            'slug'       => [
+            'full_name'                => ['required', 'string', 'max:255'],
+            'short_name'               => ['required', 'string', 'max:255'],
+            'subtitle'                 => ['nullable', 'string', 'max:255'],
+            'slug'                     => [
                 'required',
                 'string',
                 'alpha_dash',
@@ -70,7 +71,7 @@ final class CreateSeminarData extends Data
             'provides_certificate'     => ['boolean'],
             'description'              => ['nullable', 'string'],
             'curriculum_summary_text'  => ['nullable', 'string'],
-            'learning_objectives'      => ['nullable', 'string'],
+            'outcomes_json'            => ['required', 'array'],
             'target_audience'          => ['nullable', 'string'],
             'prerequisites'            => ['nullable', 'string'],
             'promo_video_external_url' => ['nullable', 'url'],
@@ -104,7 +105,7 @@ final class CreateSeminarData extends Data
         return [
             'level'                    => __('validation.attributes.seminar.level'),
             'provides_certificate'     => __('validation.attributes.seminar.provides_certificate'),
-            'learning_objectives'      => __('validation.attributes.seminar.learning_objectives'),
+            'outcomes_json'      => __('validation.attributes.seminar.outcomes_json'),
             'target_audience'          => __('validation.attributes.seminar.target_audience'),
             'prerequisites'            => __('validation.attributes.seminar.prerequisites'),
             'promo_video_external_url' => __('validation.attributes.seminar.promo_video_external_url'),
@@ -122,51 +123,51 @@ final class CreateSeminarData extends Data
     public function bodyParameters(): array
     {
         return [
-            'slug' => [
+            'slug'                     => [
                 'description' => 'Slug of the course',
                 'example'     => 'course-slug',
             ],
-            'full_name' => [
+            'full_name'                => [
                 'description' => 'Full name of the course',
                 'example'     => 'Full Course Name',
             ],
-            'short_name' => [
+            'short_name'               => [
                 'description' => 'Short name of the course',
                 'example'     => 'Short Course Name',
             ],
-            'subtitle' => [
+            'subtitle'                 => [
                 'description' => 'Subtitle of the course',
                 'example'     => 'This is a subtitle for the course',
             ],
-            'status' => [
+            'status'                   => [
                 'description' => 'Publication status of the course',
                 'example'     => 'published',
             ],
-            'level' => [
+            'level'                    => [
                 'description' => 'Difficulty level of the course',
                 'example'     => CourseDifficultyLevelEnum::BEGINNER->value,
             ],
-            'provides_certificate' => [
+            'provides_certificate'     => [
                 'description' => 'Indicates if the course provides a certificate upon completion',
                 'example'     => true,
             ],
-            'description' => [
+            'description'              => [
                 'description' => 'Detailed description of the course',
                 'example'     => 'This is a detailed description of the course.',
             ],
-            'curriculum_summary_text' => [
+            'curriculum_summary_text'  => [
                 'description' => 'Summary of the course curriculum',
                 'example'     => 'This course covers the following topics...',
             ],
-            'learning_objectives' => [
+            'outcomes_json'      => [
                 'description' => 'Learning objectives of the course',
                 'example'     => 'By the end of this course, you will be able to...',
             ],
-            'target_audience' => [
+            'target_audience'          => [
                 'description' => 'Target audience for the course',
                 'example'     => 'This course is designed for...',
             ],
-            'prerequisites' => [
+            'prerequisites'            => [
                 'description' => 'Prerequisites for the course',
                 'example'     => 'Before taking this course, you should have...',
             ],
@@ -174,81 +175,81 @@ final class CreateSeminarData extends Data
                 'description' => 'External URL for the promotional video of the course',
                 'example'     => 'https://example.com/promo-video',
             ],
-            'estimated_duration_desc' => [
+            'estimated_duration_desc'  => [
                 'description' => 'Estimated duration of the course in a human-readable format',
                 'example'     => 'Approximately 3 hours',
             ],
-            'faq' => [
+            'faq'                      => [
                 'description' => 'Frequently Asked Questions for the course',
                 'example'     => [
                     ['question' => 'What is the course about?', 'answer' => 'This course covers...'],
                     ['question' => 'Who is the instructor?', 'answer' => 'The instructor is...'],
                 ],
             ],
-            'faq.*.question' => [
+            'faq.*.question'           => [
                 'description' => 'Question in the FAQ',
                 'example'     => 'What is the course about?',
             ],
-            'faq.*.answer' => [
+            'faq.*.answer'             => [
                 'description' => 'Answer to the FAQ question',
                 'example'     => 'This course covers...',
             ],
-            'keywords' => [
+            'keywords'                 => [
                 'description' => 'Keywords for the course, used for SEO.',
                 'example'     => 'keyword1, keyword2',
             ],
-            'meta_title' => [
+            'meta_title'               => [
                 'description' => 'The meta title for the digital asset, used for SEO.',
                 'example'     => 'Digital Asset Meta Title',
             ],
-            'meta_description' => [
+            'meta_description'         => [
                 'description' => 'The meta description for the digital asset, used for SEO.',
                 'example'     => 'This is a meta description for the digital asset.',
             ],
-            'meta_keywords' => [
+            'meta_keywords'            => [
                 'description' => 'Meta keywords for the digital asset, used for SEO.',
                 'example'     => 'meta keyword1, meta keyword2',
             ],
-            'categories' => [
+            'categories'               => [
                 'description' => 'Array of category ids for the course',
                 'example'     => [1, 2, 3],
             ],
-            'categories.*' => [
+            'categories.*'             => [
                 'description' => 'Array of category ids for the course',
                 'example'     => 1,
             ],
-            'digital_assets' => [
+            'digital_assets'           => [
                 'description' => 'Array of digital asset ids for the course',
                 'example'     => [1, 2, 3],
             ],
-            'digital_assets.*' => [
+            'digital_assets.*'         => [
                 'description' => 'Array of digital asset ids for the course',
                 'example'     => 1,
             ],
-            'media' => [
+            'media'                    => [
                 'description' => 'Media of the course',
             ],
-            'media.gallery' => [
+            'media.gallery'            => [
                 'description' => 'media ids for gallery',
                 'example'     => [1, 2, 3],
             ],
-            'media.cover' => [
+            'media.cover'              => [
                 'description' => 'media ids for cover',
                 'example'     => [1],
             ],
-            'media.video' => [
+            'media.video'              => [
                 'description' => 'media ids for video',
                 'example'     => [1],
             ],
-            'media.cover.*' => [
+            'media.cover.*'            => [
                 'description' => 'Array of media ids for cover',
                 'example'     => 1,
             ],
-            'media.gallery.*' => [
+            'media.gallery.*'          => [
                 'description' => 'Array of media ids for gallery',
                 'example'     => 1,
             ],
-            'media.video.*' => [
+            'media.video.*'            => [
                 'description' => 'Array of media ids for video',
                 'example'     => 1,
             ],

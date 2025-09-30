@@ -24,7 +24,7 @@ return new class extends Migration
             $table->text('description');
             $table->string('thumbnail_url')->nullable();
             $table->text('curriculum_summary_text')->nullable();
-            $table->text('learning_objectives')->nullable();
+            $table->jsonb('outcomes_json')->nullable();
             $table->text('target_audience')->nullable();
             $table->text('prerequisites')->nullable();
 

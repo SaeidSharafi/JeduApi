@@ -42,7 +42,7 @@ final class Seminar extends Model implements ProductableContract, ReviewableCont
         'thumbnail_url',
         'description',
         'curriculum_summary_text',
-        'learning_objectives',
+        'outcomes_json',
         'target_audience',
         'prerequisites',
         'promo_video_external_url',
@@ -70,6 +70,7 @@ final class Seminar extends Model implements ProductableContract, ReviewableCont
             'provides_certificate' => 'boolean',
             'status'               => PublicationStatusEnum::class,
             'level'                => CourseDifficultyLevelEnum::class,
+            'outcomes_json'        => 'array',
             'created_at'           => 'datetime',
             'updated_at'           => 'datetime',
         ];

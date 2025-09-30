@@ -39,7 +39,7 @@ final class ShowSeminarData extends Data implements ProductableDataContract, Rev
         public bool $provides_certificate,
         public ?string $description,
         public ?string $curriculum_summary_text,
-        public ?string $learning_objectives,
+        public ?array $outcomes_json,
         public ?string $target_audience,
         public ?string $prerequisites,
         public ?string $promo_video_external_url,
