@@ -67,7 +67,6 @@ final class RelatedProductController extends Controller
 
         $relatedProducts = $product->relatedProducts()
             ->wherePivot('relation_type', $data->relation_type->value)
-            ->with(['term', 'productable', 'vendor'])
             ->get();
 
         return response()->created(data: RelatedProductData::collect($relatedProducts));
@@ -93,9 +92,9 @@ final class RelatedProductController extends Controller
         $relationType = request()->input('relation_type', 'invalid');
         $relationType = RelationTypeEnum::tryFrom($relationType);
         if (! $relationType) {
-            return response()->json([
-                'message' => 'Invalid or missing relation_type parameter.',
-            ], 422);
+            return response()->validationErrors([
+                'relation_type' => [__('validation.in', ['values' => implode(',', RelationTypeEnum::values())])],
+            ]);
         }
 
         $action->handle($product, $relationType,$relatedProduct);
