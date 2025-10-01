@@ -274,16 +274,17 @@ final class ProductQueryService
         $this->query->where(function (Builder $q) use ($searchTerm) {
 
             // Condition A: Search directly on the products table
-            $q->where('name', 'like', '%'.$searchTerm.'%')
-                ->orWhere('short_description', 'like', '%'.$searchTerm.'%');
+            $q->whereLike('name', '%'.$searchTerm.'%')
+                ->orWhereLike('short_name','%'.$searchTerm.'%')
+                ->orWhereLike('short_description','%'.$searchTerm.'%');
 
             // Condition B: OR search within the related productable models
             // This correctly uses orWhereHasMorph, linking it to the conditions above.
             $q->orWhereHasMorph('productable', $this->productableTypes, function (Builder $sq) use ($searchTerm) {
                 // No extra nested where() is needed here, as they are all OR conditions.
-                $sq->where('short_name', 'like', '%'.$searchTerm.'%')
-                    ->orWhere('full_name', 'like', '%'.$searchTerm.'%')
-                    ->orWhere('description', 'like', '%'.$searchTerm.'%');
+                $sq->whereLike('short_name', '%'.$searchTerm.'%')
+                    ->orWhereLike('full_name','%'.$searchTerm.'%')
+                    ->orWhereLike('description', '%'.$searchTerm.'%');
             });
         });
 
