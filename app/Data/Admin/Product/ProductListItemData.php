@@ -25,13 +25,13 @@ final class ProductListItemData extends Data
         public ?string $short_name,
         public ?string $name,
         public bool $is_featured,
-        public VendorShortListItemData $vendor,
+        public ?VendorShortListItemData $vendor,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public MorphTypeEnum $productable_type,
         #[WithCast(ProductableCast::class, short: true)]
         #[MapOutputName('productable_data')]
-        public ProductableDataContract $productable,
-        public TermListItemData $term,
+        public ?ProductableDataContract $productable,
+        public ?TermListItemData $term,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public \App\Enums\Content\PublicationStatusEnum $status,
         public ?array $details_json
