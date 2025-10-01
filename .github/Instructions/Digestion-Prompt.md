@@ -2,9 +2,9 @@
 
 Your task is to update my existing "Codebase Digest" files to reflect recent changes in the codebase. The digest files are located in the docs folder (#file:DIGEST_API_INTERFACES.md #file:DIGEST_CORE_LOGIC.md #file:DIGEST_DATA_MODELS.md #file:DIGEST_CORE_LOGIC.md ).
 
-I need you to perform a `git diff` to find all the code changes between these two commits:
-- **Previous State Commit:** `86494f53`
-- **Current State Commit:** `7cfe30fc`
+I need you to perform a `git diff` to find all the code changes between these two commits, you can use the `GitKraken` MCP server or any other git diff tool you prefer.:
+- **Previous State Commit:** `7cfe30fc`
+- **Current State Commit:** `62f7320f`
 
 Based on the diff, I need you to update these files:
 - `CODEBASE_DIGEST.md`
