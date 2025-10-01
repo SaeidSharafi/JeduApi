@@ -27,7 +27,7 @@ use InvalidArgumentException;
  */
 final class ProductQueryService
 {
-    public const array allowedSortFields = ['created_at', 'updated_at', 'name', 'price'];
+    public const array allowedSortFields = ['created_at', 'updated_at', 'name', 'short_name', 'price'];
 
     private Builder $query;
 
