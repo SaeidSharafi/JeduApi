@@ -102,6 +102,11 @@
 - `update(ProductDeliveryOptionUpdateData $request, Product $product, ProductDeliveryOption $deliveryOption)`: **Route:** `PUT /api/v1/admin/product/{product}/delivery-option/{delivery_option}` - **Response DTO:** ProductDeliveryOptionData
 - `destroy(Product $product, ProductDeliveryOption $deliveryOption)`: **Route:** `DELETE /api/v1/admin/product/{product}/delivery-option/{delivery_option}` - **Delegates to:** Delivery option deletion
 
+### RelatedProductController (`app/Http/Controllers/Api/Admin/Product/RelatedProductController.php`)
+- `index(Product $product)`: **Route:** `GET /api/v1/admin/product/{product}/related-products` - **Query Param:** `relation_type` (optional, filters by: related, cross_sell, upsell) - **Response DTO:** RelatedProductData collection with nested ProductListItemData for each related product - **Delegates to:** Product policy authorization
+- `store(Product $product, RelatedProductSyncData $data, CreateRelatedProductAction $action)`: **Route:** `POST /api/v1/admin/product/{product}/related-products` - **Request DTO:** RelatedProductSyncData (product_ids array, relation_type enum) - **Response DTO:** RelatedProductData collection (201 Created) - **Delegates to:** CreateRelatedProductAction for transactional sync - **Special Features:** Replaces all existing relations of the specified type; validates product cannot be related to itself
+- `destroy(Product $product, Product $relatedProduct, DeleteRelatedProductAction $action)`: **Route:** `DELETE /api/v1/admin/product/{product}/related-products/{relatedProduct}` - **Query Param:** `relation_type` (required) - **Response:** 204 No Content - **Delegates to:** DeleteRelatedProductAction - **Validation:** Returns 422 if relation_type is invalid or missing
+
 ### BlogCategoryController (`app/Http/Controllers/Api/Admin/Blog/BlogCategoryController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/blog/category` - **Delegates to:** Blog category listing with hierarchy - **Response DTO:** BlogCategoryData collection
 - `store(BlogCategoryCreateData $data)`: **Route:** `POST /api/v1/admin/blog/category` - **Request DTO:** BlogCategoryCreateData - **Delegates to:** CreateBlogCategoryAction - **Response DTO:** BlogCategoryData
@@ -323,6 +328,9 @@
 
 #### TeacherSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/TeacherSelectOptionController.php`)
 - `__invoke()`: **Route:** `GET /api/v1/admin/select-option/teacher` - **Response DTO:** TeacherSelectOptionData collection
+
+#### ProductSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/ProductSelectOptionController.php`)
+- `__invoke(ProductQueryService $service, ?ProductableEnum $productableType = null)`: **Route:** `GET /api/v1/admin/select-option/products/{productableType?}` - **Path Param:** `productableType` (optional: course, seminar, digital_asset) - **Query Params:** `q` (search term for name/SKU matching), `limit` (default: 15) - **Response DTO:** ProductSelectOptionData collection (id, title=short_name, subtitle=slug, type=productable_type) - **Delegates to:** ProductQueryService for filtering and search with `whereLike()` matching - **Special Features:** Supports type filtering, search across product names, and configurable result limits; sorted by short_name ascending
 
 ## Customer API Interface (`/api/v1/*`)
 **Authentication:** `auth:user` guard for protected endpoints  

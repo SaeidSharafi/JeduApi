@@ -45,8 +45,12 @@
   - `belongsTo(Term::class)` - term
   - `hasMany(ProductDeliveryOption::class)` - productDeliveryOptions
   - `hasManyThrough(OrderItem::class, ProductDeliveryOption::class)` - orderItems
+  - `belongsToMany(self::class, 'related_products', 'product_id', 'related_product_id')` - relatedProducts (all types)
+  - `relatedProductsOfType()` - related products filtered by RELATED type
+  - `crossSellProducts()` - related products filtered by CROSS_SELL type
+  - `upsellProducts()` - related products filtered by UPSELL type
 - **Traits:** Uses `HasCategories` and `HasFactory` for taxonomy tagging and database seeding support
-- **Special Features:** Publication-aware scopes (`active*` helpers) combine status, visibility, and availability checks; SmartCache-backed price snapshots in `price_data_cache`; enum-backed casting for `status` with JSON casting on cached fields
+- **Special Features:** Publication-aware scopes (`active*` helpers) combine status, visibility, and availability checks; SmartCache-backed price snapshots in `price_data_cache`; enum-backed casting for `status` with JSON casting on cached fields; supports product relationships (related, cross-sell, upsell) via pivot table with `relation_type` column
 
 ### Course (`app/Models/Course.php`)
 - **Purpose:** Educational course definitions and blueprints
@@ -154,6 +158,15 @@
 - **Purpose:** Pivot model for polymorphic category relationships
 - **Key Fields:** `category_id`, `categorizable_type`, `categorizable_id`
 - **Relationships:** Connects categories to various models
+
+### RelatedProducts (Pivot Table: `related_products`)
+- **Purpose:** Many-to-many self-referential relationships between products for merchandising (related, cross-sell, upsell)
+- **Key Fields:** `id`, `product_id`, `related_product_id`, `relation_type`, `created_at`, `updated_at`
+- **Relationship Types:** Uses `RelationTypeEnum` with values: `related` (similar/alternative products), `cross_sell` (frequently bought together), `upsell` (premium alternatives)
+- **Relationships:** 
+  - `product_id` FK to `products(id)` CASCADE
+  - `related_product_id` FK to `products(id)` CASCADE
+- **Special Features:** Unique constraint on (`product_id`, `related_product_id`, `relation_type`) prevents duplicates; indexed on `product_id` and `relation_type` for efficient queries; supports bulk attach/sync operations through `CreateRelatedProductAction`
 
 ### Teacher (`app/Models/Teacher.php`)
 - **Purpose:** Instructor profiles

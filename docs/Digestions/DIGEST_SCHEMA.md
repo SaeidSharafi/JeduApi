@@ -205,6 +205,20 @@
   - teacher_id (BIGINT) FK -> teachers(id) RESTRICT
 - Keys: PRIMARY(product_delivery_option_id, teacher_id)
 
+### Table: `related_products`
+- Purpose: Product merchandising relationships (related, cross-sell, upsell)
+- Columns:
+  - id (BIGINT, PK)
+  - product_id (BIGINT not null) FK -> products(id) CASCADE
+  - related_product_id (BIGINT not null) FK -> products(id) CASCADE
+  - relation_type (VARCHAR default 'related') [Enum: related, cross_sell, upsell]
+  - created_at/updated_at (TIMESTAMPS)
+- Indexes:
+  - INDEX(product_id, relation_type) [for filtering by product and type]
+  - INDEX(related_product_id) [for reverse lookups]
+  - UNIQUE(product_id, related_product_id, relation_type) named 'unique_product_relation' [prevents duplicate relationships]
+- Special Features: Supports bulk attach/sync operations; validates product cannot be related to itself
+
 ### Table: `product_prices`
 - Purpose: Pricing index for fast querying with discount/featured price calculations.
 - Columns:

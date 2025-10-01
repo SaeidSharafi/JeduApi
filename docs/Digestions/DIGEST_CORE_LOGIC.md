@@ -70,6 +70,12 @@
 - **DeleteProductAction** (`app/Actions/Admin/Product/DeleteProductAction.php`)
   - `handle(Product $product): void`: Handles product deletion and archival
 
+#### RelatedProduct Actions (`app/Actions/Admin/RelatedProduct/`)
+- **CreateRelatedProductAction** (`app/Actions/Admin/RelatedProduct/CreateRelatedProductAction.php`)
+  - `handle(Product $product, RelatedProductSyncData $data): void`: Syncs related products for a specific relation type by replacing all existing relations of that type; validates that a product cannot be related to itself; performs transactional delete and bulk attach operations
+- **DeleteRelatedProductAction** (`app/Actions/Admin/RelatedProduct/DeleteRelatedProductAction.php`)
+  - `handle(Product $product, RelationTypeEnum $relationType, ?Product $relatedProduct = null): void`: Removes related product relationships filtered by relation type; optionally removes a specific related product or all products of the given type
+
 #### Course Actions (`app/Actions/Admin/Course/`)
 - **CreateCourseAction**: Creates new course instances with content structure
 - **UpdateCourseAction**: Updates course metadata and structure
@@ -362,7 +368,7 @@
   - `availableProducts(): self`: Filters to published products with active productables and available delivery options
   - `ofType(ProductableEnum $type): self`: Filters by productable type (Course, Seminar, DigitalAsset)
   - `ofTypes(array $types): self`: Filters by multiple productable types
-  - `search(?string $term): self`: Full-text search across product name and productable fields
+  - `search(?string $term): self`: Full-text search across product name, short_name, short_description and productable fields (short_name, full_name, description); uses `whereLike()` for optimized pattern matching
   - `inCategory(string $slug): self`: Filters by category slug
   - `inCategories(array $categoryIds): self`: Filters by multiple category IDs
   - `byCourseLevel(CourseDifficultyLevelEnum $level): self`: Filters courses by difficulty level
@@ -370,7 +376,7 @@
   - `priceRange(?int $min, ?int $max): self`: Filters by price range using price index
   - `featured(): self`: Filters to featured products
   - `popular(): self`: Sorts by order count descending
-  - `sortBy(string $field, string $direction = 'asc'): self`: Applies sorting (name, price, created_at, updated_at)
+  - `sortBy(string $field, string $direction = 'asc'): self`: Applies sorting (name, short_name, price, created_at, updated_at)
   - `forListing(): self`: Eager loads common relations (productable, vendor, categories) for list views
   - `withPrices(): self`: Joins product_prices table for efficient price filtering
   - `limit(int $limit): self`: Applies query limit
@@ -379,7 +385,7 @@
   - `paginate(int $perPage = 15): LengthAwarePaginator`: Returns paginated results
   - `getQuery(): Builder`: Returns underlying Eloquent builder
 - **Pattern:** Service pattern with deferred constraint application for optimized query building
-- **Allowed Sort Fields:** created_at, updated_at, name, price
+- **Allowed Sort Fields:** created_at, updated_at, name, short_name, price
 
 ### CategoryQueryService (`app/Services/Shop/CategoryQueryService.php`)
 - **Purpose:** Specialized query service for category filtering and product retrieval by category

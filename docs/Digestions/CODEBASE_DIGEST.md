@@ -42,6 +42,7 @@
 - **Staff Management:** Role-based admin users with comprehensive permission system using Spatie Permission
 - **Audit System:** Complete action logging with risk assessment, compliance reporting, and suspicious activity detection
 - **Content Management:** Categories with hierarchy, media management, and "good for start" recommendations
+- **Product Relationships:** Comprehensive related product management with support for related (similar/alternative), cross-sell (frequently bought together), and upsell (premium alternatives) relationships; includes list, filter by type, bulk attach/sync, and delete operations with validation to prevent self-referencing
 - **Site CMS:** Modular `App\Http\Controllers\Api\Admin\Content\*` controllers covering header, footer, about us, collaboration content, partners, sliders (with publication status toggles), and homepage blocks backed by reusable DTOs
 - **Blog System:** Complete blog management with hierarchical categories, publication workflow, content relationships to educational materials, and automated scheduling
 - **Settings Management:** Settings index endpoint plus SmartCache-backed SettingsService with eviction observer to keep responses consistent across the admin and shop surfaces
@@ -49,6 +50,7 @@
 - **Review System:** Customer review management with approval workflow and featured selection
 - **Wallet System:** User credit management with campaigns, bulk allocations, and transaction tracking
 - **File Management:** Public media and private file handling with secure access controls
+- **Product Select Options:** Dedicated endpoint for product dropdowns with id, title (short_name), subtitle (slug), and type; supports search across product names, filtering by productable type (course, seminar, digital_asset), and configurable result limits
 
 ### Customer Features
 - **Authentication:** OTP and password-based login with secure token management
@@ -91,7 +93,7 @@
 
 ## 7. Business Logic Coverage
 **100+ Action Classes** organized by domain after the content and form refactor:
-- **Admin Actions:** Complete CRUD operations for all entities plus new helpers such as `GetThumbnailUrlAction` and `UpdateSliderStatusAction`, aligning with the Content namespace split and review aggregation workflows
+- **Admin Actions:** Complete CRUD operations for all entities plus new helpers such as `GetThumbnailUrlAction` and `UpdateSliderStatusAction`, aligning with the Content namespace split and review aggregation workflows; includes `CreateRelatedProductAction` and `DeleteRelatedProductAction` for managing product merchandising relationships
 - **Shop Actions:** Customer-facing operations now include `GetHomePageBlocksListAction`, `GetHomePageBlockAction`, attachment-aware collaboration/contact form submissions, and shared file upload handling
 - **Auth Actions:** Comprehensive authentication system with OTP and password support
 - **Wallet Actions:** Credit management and transaction processing
@@ -103,7 +105,7 @@
 - **Product Pricing:** Centralized pricing service with hierarchy support (product discounts > featured prices > standard prices) and request-scoped caching
 - **Price Indexing:** Denormalized pricing table with `UpdateProductPricingJob` for batch updates and scheduled `CheckExpiredFeaturedPricesCommand` for expiry checks
 - **SKU Generation:** Automatic SKU generation via `SkuGeneratorService` with pattern-based formatting
-- **Product Querying:** `ProductQueryService` provides fluent interface for complex product filtering with discount, price range, category, and availability filters
+- **Product Querying:** `ProductQueryService` provides fluent interface for complex product filtering with discount, price range, category, and availability filters; enhanced search matching across product names (name, short_name) and productable fields using `whereLike()` for optimized pattern matching
 - **Category Querying:** `CategoryQueryService` handles category-based product retrieval with type filtering
 - **Content Management:** Dynamic home page content assembly with performance optimization and SmartCache-aware invalidation
 - **Settings:** `SettingsService` centralizes cached reads/writes for site-wide configuration
@@ -113,15 +115,15 @@
 - **Performance Optimization:** Request-scoped caching service to prevent N+1 queries and duplicate calculations
 
 ## 8. API Interface Completeness
-**220+ Endpoints** across all domains:
-- **Admin API:** Complete platform management with 160+ endpoints including the new Content module for CMS settings and slider status toggles
+**225+ Endpoints** across all domains:
+- **Admin API:** Complete platform management with 165+ endpoints including the new Content module for CMS settings, slider status toggles, and product relationship management (related, cross-sell, upsell)
 - **Customer API:** Profile and course access management
 - **Shop Public API:** Modular endpoints for home page blocks, sliders, partners, header/footer, CMS pages, and rate-limited contact/collaboration form submissions
 - **Course Catalog API:** Public course listing with advanced filtering (search, category, level, price range, discounts) and detailed course pages
 - **Category API:** Category listing, detail pages, and category-based product browsing by type with pagination
 - **Authentication:** Dual system for both admin and customer interfaces
 - **File Management:** Secure media and private file handling
-- **Select Options:** Dropdown data for admin interface
+- **Select Options:** Dropdown data for admin interface including dedicated product select-options endpoint with search, type filtering, and configurable limits
 - **Blog Management:** Full CRUD operations for blog categories and posts with publication workflow
 
 ## 9. Digest Index

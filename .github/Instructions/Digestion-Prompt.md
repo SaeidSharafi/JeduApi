@@ -3,8 +3,8 @@
 Your task is to update my existing "Codebase Digest" files to reflect recent changes in the codebase. The digest files are located in the docs folder (#file:DIGEST_API_INTERFACES.md #file:DIGEST_CORE_LOGIC.md #file:DIGEST_DATA_MODELS.md #file:DIGEST_CORE_LOGIC.md ).
 
 I need you to perform a `git diff` to find all the code changes between these two commits, you can use the `GitKraken` MCP server or any other git diff tool you prefer.:
-- **Previous State Commit:** `7cfe30fc`
-- **Current State Commit:** `62f7320f`
+- **Previous State Commit:** `62f7320f`
+- **Current State Commit:** `f8a3d0ba`
 
 Based on the diff, I need you to update these files:
 - `CODEBASE_DIGEST.md`
@@ -31,3 +31,20 @@ Please follow these precise instructions for the update:
 
 5. **Modify `DIGEST_SCHEMA.md`:**
     - If you find changes in the database schema (new tables, modified columns, deleted tables), **update** the relevant sections to reflect these changes.
+
+New Features
+
+Admin can manage product relationships (related, cross-sell, upsell): list, filter by type, bulk attach/sync, and delete.
+New product select-options endpoint for dropdowns with id, title, subtitle, and type; supports search, limit, and type filters.
+Improvements
+
+Refined product search matching for more accurate select-option results.
+Database
+
+Added related_products table with relation type, timestamps, indexes, and uniqueness constraints.
+Tests
+
+Comprehensive API and unit tests covering permissions, validations, syncing, filtering, and deletion.
+Localization
+
+Added validation messages for related-product errors.
