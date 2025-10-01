@@ -191,6 +191,7 @@ return [
         ],
         'product' => [
             'cannot_delete_product_with_orders' => 'محصولی که سفارش دارد را نمی توان حذف کرد.',
+            'related_product_cannot_be_self'   => 'محصول مرتبط نمی تواند خودش باشد.',
         ],
         'product_delivery_option_check_rule' => [
             'invalid_delivery_method' => 'نحوه ارائه :delivery_method برای نوع محصول :fulfillment_type معتبر نیست.',
