@@ -13,9 +13,39 @@ final class RelatedProductSyncData extends Data
 {
     public function __construct(
         /** @var array<int> */
-        #[Exists('products', 'id')]
         public array $product_ids,
-        #[Enum(RelationTypeEnum::class)]
         public RelationTypeEnum $relation_type
-    ) {}
+    ) {
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function rules(): array
+    {
+        return [
+            'product_ids'   => ['required', 'array', 'min:1'],
+            'product_ids.*' => ['required', 'integer', 'exists:products,id'],
+            'relation_type' => ['required', 'string', 'in:related,cross_sell,upsell'],
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     * @return array<string, mixed>
+     */
+    public static function bodyParameters(): array
+    {
+        return [
+            'product_ids' => [
+                'description' => 'Array of product IDs to relate to the main product.',
+                'example' => [2, 3, 4],
+            ],
+            'relation_type' => [
+                'description' => 'Type of relation. Possible values: related, cross_sell, upsell.',
+                'example' => 'related',
+            ],
+        ];
+    }
+
 }
