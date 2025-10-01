@@ -6,13 +6,16 @@ namespace App\Actions\Admin\RelatedProduct;
 
 use App\Enums\Product\RelationTypeEnum;
 use App\Models\Product;
+use Illuminate\Support\Facades\DB;
 
 final class DeleteRelatedProductAction
 {
-    public function handle(Product $product, Product $relatedProduct, RelationTypeEnum $relationType): void
+    public function handle(Product $product, RelationTypeEnum $relationType, ?Product $relatedProduct = null): void
     {
-        $product->relatedProducts()
-            ->wherePivot('relation_type', $relationType)
-            ->detach($relatedProduct->id);
+        DB::table('related_products')
+            ->where('product_id', $product->id)
+            ->when($relatedProduct,fn($q) => $q->where('related_product_id', $relatedProduct->id))
+            ->where('relation_type', $relationType->value)
+            ->delete();
     }
 }

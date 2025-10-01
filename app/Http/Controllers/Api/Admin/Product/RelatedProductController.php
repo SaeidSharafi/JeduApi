@@ -98,7 +98,7 @@ final class RelatedProductController extends Controller
             ], 422);
         }
 
-        $action->handle($product, $relatedProduct, $relationType);
+        $action->handle($product, $relationType,$relatedProduct);
 
         return response()->noContentJson();
     }

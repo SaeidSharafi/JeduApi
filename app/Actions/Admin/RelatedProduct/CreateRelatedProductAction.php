@@ -7,20 +7,20 @@ namespace App\Actions\Admin\RelatedProduct;
 use App\Data\Admin\Product\RelatedProductSyncData;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 final class CreateRelatedProductAction
 {
-    public function handle(Product $product, RelatedProductSyncData $data): void
+    public function handle(Product $product, RelatedProductSyncData $data,DeleteRelatedProductAction $deleteAction): void
     {
-        if (in_array($product->id, $data->product_ids)) {
-            abort(422, 'A product cannot be related to itself.');
+        if (in_array($product->id, $data->product_ids, true)) {
+            throw ValidationException::withMessages([
+                'product_ids' => [__('validation.custom.product.related_product_cannot_be_self')],
+            ]);
         }
 
-        DB::transaction(function () use ($product, $data) {
-            $product->relatedProducts()
-                ->wherePivot('relation_type', $data->relation_type->value)
-                ->detach();
-
+        DB::transaction(function () use ($product, $data, $deleteAction) {
+            $deleteAction->handle($product, $data->relation_type);
             $syncData = [];
             foreach ($data->product_ids as $relatedProductId) {
                 $syncData[$relatedProductId] = [
