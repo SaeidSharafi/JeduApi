@@ -71,17 +71,19 @@
 
 ### DigitalAssetController (`app/Http/Controllers/Api/Admin/Product/DigitalAssetController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/digital-asset` - **Delegates to:** Digital asset listing - **Response DTO:** DigitalAssetData collection
-- `store(DigitalAssetCreateData $request)`: **Route:** `POST /api/v1/admin/digital-asset` - **Request DTO:** DigitalAssetCreateData - **Response DTO:** DigitalAssetData
-- `show(DigitalAsset $digitalAsset)`: **Route:** `GET /api/v1/admin/digital-asset/{digital_asset}` - **Response DTO:** DigitalAssetData
-- `update(DigitalAssetUpdateData $request, DigitalAsset $digitalAsset)`: **Route:** `PUT /api/v1/admin/digital-asset/{digital_asset}` - **Request DTO:** DigitalAssetUpdateData - **Response DTO:** DigitalAssetData
+- `store(DigitalAssetCreateData $request)`: **Route:** `POST /api/v1/admin/digital-asset` - **Request DTO:** DigitalAssetCreateData (includes short_name, full_name instead of name field) - **Response DTO:** DigitalAssetData
+- `show(DigitalAsset $digitalAsset)`: **Route:** `GET /api/v1/admin/digital-asset/{digital_asset}` - **Response DTO:** DigitalAssetData (includes short_name, full_name)
+- `update(DigitalAssetUpdateData $request, DigitalAsset $digitalAsset)`: **Route:** `PUT /api/v1/admin/digital-asset/{digital_asset}` - **Request DTO:** DigitalAssetUpdateData (includes short_name, full_name) - **Response DTO:** DigitalAssetData
 - `destroy(DigitalAsset $digitalAsset)`: **Route:** `DELETE /api/v1/admin/digital-asset/{digital_asset}` - **Delegates to:** Digital asset deletion
+- **DTO Changes:** All DigitalAsset DTOs now use `short_name` (max 100 chars) and `full_name` (max 191 chars) instead of single `name` field
 
 ### SeminarController (`app/Http/Controllers/Api/Admin/Product/SeminarController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/seminar` - **Delegates to:** Seminar listing - **Response DTO:** SeminarData collection
-- `store(SeminarCreateData $request)`: **Route:** `POST /api/v1/admin/seminar` - **Request DTO:** SeminarCreateData - **Response DTO:** SeminarData
-- `show(Seminar $seminar)`: **Route:** `GET /api/v1/admin/seminar/{seminar}` - **Response DTO:** SeminarData
-- `update(SeminarUpdateData $request, Seminar $seminar)`: **Route:** `PUT /api/v1/admin/seminar/{seminar}` - **Request DTO:** SeminarUpdateData - **Response DTO:** SeminarData
+- `store(SeminarCreateData $request)`: **Route:** `POST /api/v1/admin/seminar` - **Request DTO:** SeminarCreateData (includes curriculum_summary_text, outcomes_json array instead of learning_objectives) - **Response DTO:** SeminarData
+- `show(Seminar $seminar)`: **Route:** `GET /api/v1/admin/seminar/{seminar}` - **Response DTO:** SeminarData (includes curriculum_summary_text, outcomes_json)
+- `update(SeminarUpdateData $request, Seminar $seminar)`: **Route:** `PUT /api/v1/admin/seminar/{seminar}` - **Request DTO:** SeminarUpdateData (includes curriculum_summary_text, outcomes_json) - **Response DTO:** SeminarData
 - `destroy(Seminar $seminar)`: **Route:** `DELETE /api/v1/admin/seminar/{seminar}` - **Delegates to:** Seminar deletion
+- **DTO Changes:** All Seminar DTOs replaced `learning_objectives` text field with `curriculum_summary_text` (nullable text) and `outcomes_json` (required array) for structured curriculum data
 
 ### ProductController (`app/Http/Controllers/Api/Admin/Product/ProductController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/product` - **Delegates to:** Product listing with filtering - **Response DTO:** ProductData collection
@@ -375,6 +377,35 @@
 
 #### StudentStoryController (`app/Http/Controllers/Api/Shop/HomePage/StudentStoryController.php`)
 - `__invoke()`: **Route:** `GET /api/v1/shop/student-stories` - **Response DTO:** StudentStoryData collection sorted by display order and cached by SmartCache
+
+### Shop Public Course Endpoints (`/api/v1/shop/courses/*`)
+**Authentication:** Unauthenticated public access
+
+#### CourseListController (`app/Http/Controllers/Api/Shop/Course/CourseListController.php`)
+- `__invoke(CourseListRequestData $request, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/courses` - **Request DTO:** CourseListRequestData (includes CourseFilterData with search, fulfillment_type, categorySlug, level, price range, with_discounts filters; plus sortBy, sortOrder, pagination) - **Response DTO:** Paginated collection of ProductCardData with precomputed pricing via ProductPriceService
+- **Query Parameters:** `filter[search]`, `filter[fulfillment_type]`, `filter[categorySlug]`, `filter[level]`, `filter[min_price]`, `filter[max_price]`, `filter[with_discounts]`, `sortBy`, `sortOrder`, `page`, `per_page`
+- **Delegates to:** ProductQueryService for unified filtering, sorting (created_at, updated_at, name, price), and pagination
+
+#### CourseDetailController (`app/Http/Controllers/Api/Shop/Course/CourseDetailController.php`)
+- `__invoke(string $slug, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/courses/{slug}` - **Response DTO:** CourseDetailData including product details, pricing, delivery options (filtered to published/available), categories, and media
+- **Delegates to:** Product resolution by slug, ProductPriceService for comprehensive pricing data, CourseDetailData::fromModel() for structured response
+
+### Shop Public Category Endpoints (`/api/v1/shop/categories/*`)
+**Authentication:** Unauthenticated public access
+
+#### CategoryListController (`app/Http/Controllers/Api/Shop/Category/CategoryListController.php`)
+- `__invoke()`: **Route:** `GET /api/v1/shop/categories` - **Response DTO:** CategoryCardData collection with product counts per category, includes icon_url and image_url, cached via SmartCache
+- **Special Features:** Returns categories with `products_count` aggregation for each type (courses, seminars, digital_assets)
+
+#### CategoryDetailController (`app/Http/Controllers/Api/Shop/Category/CategoryDetailController.php`)
+- `__invoke(string $slug, CategoryQueryService $categoryQuery, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/categories/{slug}` - **Response DTO:** CategoryDetailData with category metadata plus structured product listings (courses, seminars, digital_assets collections)
+- **Delegates to:** CategoryQueryService::getProductsByType() for paginated type-specific product lists, ProductPriceService for batch pricing
+- **Response Structure:** Returns category details with separate arrays for courses (ProductCardData[]), seminars (ProductCardData[]), digital_assets (ProductCardData[])
+
+#### CategoryProductsController (`app/Http/Controllers/Api/Shop/Category/CategoryProductsController.php`)
+- `__invoke(string $slug, string $type, PaginationRequestData $pagination, CategoryQueryService $categoryQuery, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/categories/{slug}/products/{type}` - **Request DTO:** PaginationRequestData (page, per_page) - **Response DTO:** Paginated ProductCardData collection
+- **Path Parameters:** `type` must be one of: courses, seminars, digital-assets
+- **Delegates to:** CategoryQueryService for type-filtered, paginated product retrieval with pricing
 
 #### HeaderController (`app/Http/Controllers/Api/Shop/Settings/HeaderController.php`)
 - `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/header` - **Response DTO:** HeaderData derived from SettingsService payload

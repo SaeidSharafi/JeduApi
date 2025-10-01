@@ -134,12 +134,14 @@
 - seminars specific:
   - short_name (VARCHAR not null per migration), subtitle (VARCHAR nullable), slug (unique)
   - description (TEXT not null), thumbnail_url (VARCHAR nullable)
-  - learning_objectives (TEXT nullable), target_audience (TEXT nullable), prerequisites (TEXT nullable)
+  - curriculum_summary_text (TEXT nullable), outcomes_json (JSON nullable) [replaces learning_objectives]
+  - target_audience (TEXT nullable), prerequisites (TEXT nullable)
   - promo_video_external_url (VARCHAR nullable), estimated_duration_desc (VARCHAR nullable), level (VARCHAR nullable)
   - provides_certificate (BOOLEAN default false)
   - faq (JSON nullable), keywords (TEXT nullable)
 - digital_assets specific:
-  - name (VARCHAR), slug (unique), description (TEXT nullable)
+  - short_name (VARCHAR(100) not null), full_name (VARCHAR(191) not null) [replaces name]
+  - slug (unique), description (TEXT nullable)
   - thumbnail_url (VARCHAR nullable), version (VARCHAR(50) nullable)
   - page_count (INT unsigned nullable), duration_seconds (INT unsigned nullable)
   - is_attachable_to_course (BOOLEAN default false), status (VARCHAR indexed)
@@ -173,9 +175,10 @@
 - Purpose: Purchase options with pricing/schedule.
 - Columns:
   - id (BIGINT, PK)
+  - uuid (UUID not null, unique) [added for external referencing]
   - product_id (BIGINT) FK -> products(id) CASCADE
   - name (VARCHAR)
-  - sku (VARCHAR, unique)
+  - sku (VARCHAR nullable, unique) [auto-generated via SkuGeneratorService if not provided]
   - fulfillment_type (VARCHAR)
   - delivery_method (VARCHAR)
   - price (BIGINT)
@@ -201,6 +204,26 @@
   - product_delivery_option_id (BIGINT) FK -> product_delivery_options(id) CASCADE
   - teacher_id (BIGINT) FK -> teachers(id) RESTRICT
 - Keys: PRIMARY(product_delivery_option_id, teacher_id)
+
+### Table: `product_prices`
+- Purpose: Pricing index for fast querying with discount/featured price calculations.
+- Columns:
+  - id (BIGINT, PK)
+  - product_delivery_option_id (BIGINT, unique) FK -> product_delivery_options(id) CASCADE
+  - base_price (BIGINT not null) [regular price]
+  - final_price (BIGINT not null) [after applying best discount]
+  - discount_id (BIGINT nullable) FK -> discounts(id) SET NULL [best applicable discount]
+  - discount_amount (BIGINT default 0) [discount value applied]
+  - has_discount (BOOLEAN default false, indexed)
+  - featured_price (BIGINT nullable) [promotional price]
+  - featured_price_active (BOOLEAN default false, indexed) [true if within featured date range]
+  - featured_price_start_date (DATETIME nullable)
+  - featured_price_end_date (DATETIME nullable)
+  - is_available (BOOLEAN default true, indexed) [based on registration/availability dates]
+  - created_at/updated_at (TIMESTAMPS)
+- Purpose: Denormalized pricing data for efficient querying and filtering
+- Updated by: UpdateProductPricingJob (queued), CheckExpiredFeaturedPricesCommand (scheduled)
+- Indexes: UNIQUE(product_delivery_option_id), INDEX(has_discount), INDEX(featured_price_active), INDEX(is_available)
 
 ---
 ## Order & Payment Management

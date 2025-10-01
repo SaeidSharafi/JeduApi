@@ -6,7 +6,43 @@
 
 #### Utility Actions
 - **GetThumbnailUrlAction** (`app/Actions/Admin/GetThumbnailUrlAction.php`)
-  - `handle(array $media): ?string`: Extracts the first cover-tagged media ID and resolves its CDN URL through Mediable. Centralized helper for admin responses that need lightweight thumbnail references without hydrating full media relations.
+  - `handle(array $media): ?string`: Extracts the first cover-tagged media ID and resolves its CDN URL through Mediable. Centralized helper for admin### Jobs (`app/Jobs/`)
+
+#### UpdateProductPricingJob (`app/Jobs/UpdateProductPricingJob.php`)
+- **Purpose:** Asynchronous batch pricing index update for products
+- **Signature:** `handle(ProductPriceService $priceService): void`
+- **Functionality:** Accepts array of product IDs, recalculates pricing data via `ProductPriceService`, upserts to `product_prices` table, updates `price_data_cache` JSON column on products
+- **Dispatch:** Triggered by `ProductCacheInvalidated` event listener, admin pricing changes, and scheduled commands
+- **Performance:** Processes products in batches to avoid memory exhaustion
+
+### Console Commands (`app/Console/Commands/`)
+
+#### PublishPostCommand (`app/Console/Commands/PublishPostCommand.php`)
+- **Purpose:** Automated blog post publication for scheduled content
+- **Signature:** `post:publish`
+- **Functionality:** Publishes blog posts with SCHEDULED status where `published_at` date has passed, updating status to PUBLISHED
+- **Usage:** Intended for cron job scheduling to automate content publication workflow
+
+#### IndexAllProductPricesCommand (`app/Console/Commands/IndexAllProductPricesCommand.php`)
+- **Purpose:** Batch re-index or initialize pricing index for products
+- **Signature:** `prices:index-all {--queue=default} {--sync} {--missing-only}`
+- **Functionality:** Dispatches `UpdateProductPricingJob` for published products in chunks of 200; supports sync execution, custom queue, and missing-only mode for initial setup
+- **Options:**
+  - `--missing-only`: Only process products without price index entries (useful for initial setup)
+  - `--sync`: Run jobs synchronously for immediate updates
+  - `--queue`: Specify queue name for job dispatch
+- **Locking:** Uses distributed lock `price-indexing` with 30-minute timeout to prevent concurrent executions
+- **Usage:** `php artisan prices:index-all --missing-only` for first run, `php artisan prices:index-all` for full refresh
+
+#### CheckExpiredFeaturedPricesCommand (`app/Console/Commands/CheckExpiredFeaturedPricesCommand.php`)
+- **Purpose:** Automated cleanup of expired featured prices with price index synchronization
+- **Signature:** `prices:check-expired-featured {--dry-run} {--queue=default}`
+- **Functionality:** Finds delivery options with expired `featured_price_end_date`, dispatches `UpdateProductPricingJob` for affected products to recalculate index
+- **Options:**
+  - `--dry-run`: Preview affected products without making changes
+  - `--queue`: Specify queue for job dispatch
+- **Locking:** Uses same distributed lock as index command to prevent conflicts
+- **Usage:** Intended for scheduled task (e.g., daily at midnight) to automatically update pricing when featured prices expireses that need lightweight thumbnail references without hydrating full media relations.
 
 #### Order Actions (`app/Actions/Admin/Order/`)
 - **CreateOrderAction** (`app/Actions/Admin/Order/CreateOrderAction.php`)
@@ -51,7 +87,7 @@
 
 #### ProductDeliveryOption Actions (`app/Actions/Admin/ProductDeliveryOption/`)
 - **CreateProductDeliveryOptionAction** (`app/Actions/Admin/ProductDeliveryOption/CreateProductDeliveryOptionAction.php`)
-  - `handle(ProductDeliveryOptionCreateData $data): ProductDeliveryOption`: Creates new delivery methods for products
+  - `handle(ProductDeliveryOptionCreateData $data, Product $product): ProductDeliveryOption`: Creates new delivery methods for products with automatic SKU generation via `SkuGeneratorService` when SKU not provided in request data
 - **UpdateProductDeliveryOptionAction** (`app/Actions/Admin/ProductDeliveryOption/UpdateProductDeliveryOptionAction.php`)
   - `handle(ProductDeliveryOptionUpdateData $data, ProductDeliveryOption $option): ProductDeliveryOption`: Updates delivery option pricing and terms
 - **DeleteProductDeliveryOptionAction** (`app/Actions/Admin/ProductDeliveryOption/DeleteProductDeliveryOptionAction.php`)
@@ -190,7 +226,7 @@
 - **GetHomePageBlocksListAction** (`app/Actions/Shop/GetHomePageBlocksListAction.php`)
   - `handle(): Collection<HomePageBlockListData>`: Fetches active blocks ordered by location/order for lightweight listings.
 - **GetHomePageBlockAction** (`app/Actions/Shop/GetHomePageBlockAction.php`)
-  - `handle(HomePageBlock $block): HomePageBlockData`: Hydrates individual blocks (curated, dynamic, banner, webinar) by preloading products/categories, leveraging `RequestDataCacheService` + `ProductPriceService` to avoid N+1 pricing calculations.
+  - `handle(HomePageBlock $block): HomePageBlockData`: Hydrates individual blocks (curated, dynamic, banner, webinar) by preloading products/categories using `ProductQueryService` for unified querying, leveraging `RequestDataCacheService` + `ProductPriceService` to avoid N+1 pricing calculations. Dynamic lists support popular/featured sorting via ProductQueryService methods.
 
 #### Shop Form Actions (`app/Actions/Shop/Forms/`)
 - **CreateCollaborationRequestAction** (`app/Actions/Shop/Forms/CreateCollaborationRequestAction.php`)
@@ -308,6 +344,48 @@
   - `getPriceDataForProduct(int $productId): ?ProductPriceData`: Retrieves cached price data
   - `storeProductPriceData(int $productId, ProductPriceData $priceData): void`: Caches price calculations
 - **Pattern:** Singleton service registered in AppServiceProvider for request lifecycle management
+
+### SkuGeneratorService (`app/Services/SkuGeneratorService.php`)
+- **Purpose:** Automatic SKU generation for product delivery options based on product type, term, and delivery method
+- **Public Methods:**
+  - `generateBaseSku(ProductDeliveryOptionCreateData $data, Product $product): string`: Generates SKU following pattern: `{PRODUCT_CODE}-{TERM_CODE}-{FULFILLMENT_CODE}-{DELIVERY_CODE}` (e.g., "PYT-F1402-OFF-VID" for Python course, Fall 1402, Offline, Video)
+- **SKU Structure:**
+  - Product code: 3-char abbreviation from short_name
+  - Term code: Academic year + season (F/W/S/SU/X for Fall/Winter/Spring/Summer/Unknown)
+  - Fulfillment: OFF/ONL/DIG/INP/OTH
+  - Delivery: VID/DL (Video platform/Direct download)
+- **Dependencies:** Integrated into `CreateProductDeliveryOptionAction` for automatic SKU assignment
+
+### ProductQueryService (`app/Services/Shop/ProductQueryService.php`)
+- **Purpose:** Fluent query builder for complex product filtering, sorting, and pagination across shop endpoints
+- **Public Methods:**
+  - `availableProducts(): self`: Filters to published products with active productables and available delivery options
+  - `ofType(ProductableEnum $type): self`: Filters by productable type (Course, Seminar, DigitalAsset)
+  - `ofTypes(array $types): self`: Filters by multiple productable types
+  - `search(?string $term): self`: Full-text search across product name and productable fields
+  - `inCategory(string $slug): self`: Filters by category slug
+  - `inCategories(array $categoryIds): self`: Filters by multiple category IDs
+  - `byCourseLevel(CourseDifficultyLevelEnum $level): self`: Filters courses by difficulty level
+  - `withDiscounts(): self`: Joins with product_prices to filter products having active discounts
+  - `priceRange(?int $min, ?int $max): self`: Filters by price range using price index
+  - `featured(): self`: Filters to featured products
+  - `popular(): self`: Sorts by order count descending
+  - `sortBy(string $field, string $direction = 'asc'): self`: Applies sorting (name, price, created_at, updated_at)
+  - `forListing(): self`: Eager loads common relations (productable, vendor, categories) for list views
+  - `withPrices(): self`: Joins product_prices table for efficient price filtering
+  - `limit(int $limit): self`: Applies query limit
+  - `get(): Collection`: Executes query and returns collection
+  - `first(): ?Product`: Returns first result
+  - `paginate(int $perPage = 15): LengthAwarePaginator`: Returns paginated results
+  - `getQuery(): Builder`: Returns underlying Eloquent builder
+- **Pattern:** Service pattern with deferred constraint application for optimized query building
+- **Allowed Sort Fields:** created_at, updated_at, name, price
+
+### CategoryQueryService (`app/Services/Shop/CategoryQueryService.php`)
+- **Purpose:** Specialized query service for category filtering and product retrieval by category
+- **Public Methods:**
+  - `getProductsByType(Category $category, ProductableEnum $type, int $perPage = 15): LengthAwarePaginator`: Returns paginated products of specific type within a category, using `ProductQueryService` internally for consistent filtering/sorting
+- **Integration:** Used by category detail endpoints to provide type-filtered product listings
 
 ### SettingsService (`app/Services/SettingsService.php`)
 - **Purpose:** SmartCache-backed facade over `Setting` models powering CMS content payloads

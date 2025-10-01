@@ -17,6 +17,10 @@
   - `iazaran/smart-cache`: Smart cache facade with configurable invalidation map powering SettingsService and content cache refreshes
   - `spatie/laravel-webhook-client`: External integrations and webhooks (v3.4)
   - `laravel/sanctum`: Dual-guard authentication system (v4.0)
+- **Service Layer Architecture:**
+  - `SkuGeneratorService`: Automatic SKU generation with pattern-based formatting for product delivery options
+  - `ProductQueryService`: Fluent query builder for product filtering, search, and sorting with price range support
+  - `CategoryQueryService`: Category-based product retrieval with type filtering
 
 ## 3. Architectural Principles & Patterns (Mandatory for New Code)
 - **API Contract:** All API requests and responses MUST use `spatie/laravel-data` DTOs in `app/Data/`. These DTOs are the definitive contract for all API interactions
@@ -53,6 +57,10 @@
 - **Review System:** Customer review submission for products and courses
 - **Home Page Content:** Dynamic home page block hydration with curated, dynamic, banner, and webinar layouts powered by cached pricing data and block-specific hydration actions
 - **Public CMS Pages:** Read-only endpoints for header, footer, about us, collaboration, contact page, partner listings, sliders, and student stories derived from admin-managed settings
+- **Public Course Catalog:** Browse courses with filtering by fulfillment type, category, level, price range, and discount availability
+- **Course Details:** Detailed course information pages with curriculum, pricing options, and teacher information
+- **Category Browsing:** Hierarchical category listing and detail pages with product counts
+- **Category Products:** Browse products within categories by type (course, seminar, digital asset) with pagination
 
 ### System Features
 - **Multi-tenancy Support:** Vendor-based product organization
@@ -64,6 +72,11 @@
 - **Content Automation:** Scheduled blog post publication with automated workflow management
 - **Smart Cache Invalidation:** Event-driven cache invalidation map with `InvalidationObserver`, `CacheKeysEnum`, and `SettingsService` to keep storefront content fresh
 - **Review Aggregation:** Background listener recomputes `review_count` and `average_rating` whenever reviews change for reviewable models
+- **Price Indexing System:** Denormalized product_prices table for fast price queries with discount and featured price calculations
+  - **Automated Updates:** `UpdateProductPricingJob` for batch updates, `CheckExpiredFeaturedPricesCommand` for scheduled expiry checks
+  - **Manual Indexing:** `prices:index-all` command with --missing-only, --sync, and --queue options for maintenance
+  - **Query Optimization:** ProductQueryService leverages price index for efficient filtering and sorting
+- **Automatic SKU Generation:** SkuGeneratorService creates unique product codes when SKU not manually provided
 
 ## 5. Security & Compliance
 - **Audit Trail:** All admin actions logged with risk assessment
@@ -74,7 +87,7 @@
 - **Compliance Reporting:** Automated compliance report generation
 
 ## 6. Data Model Completeness
-**36 Models Total:** User, Staff, AdminActionLog, Order, OrderItem, Product (polymorphic to Course/Seminar/DigitalAsset), ProductDeliveryOption, ProductDeliveryOptionDiscountPrice, Enrollment, Payment, Refund, Review, Category, Categorizable, Teacher, Vendor, Term, DiscountPromotion, DiscountPromotionRule, DiscountCoupon, Wallet, WalletTransaction, WalletCampaign, Setting, HomePageBlock, Slider, StudentStory, CollaborationCarousel, CollaborationRequest, ContactUsRequest, SmsLog, BlogCategory, BlogPost
+**37 Models Total:** User, Staff, AdminActionLog, Order, OrderItem, Product (polymorphic to Course/Seminar/DigitalAsset), ProductDeliveryOption, ProductDeliveryOptionDiscountPrice, ProductPrice (pricing index), Enrollment, Payment, Refund, Review, Category, Categorizable, Teacher, Vendor, Term, DiscountPromotion, DiscountPromotionRule, DiscountCoupon, Wallet, WalletTransaction, WalletCampaign, Setting, HomePageBlock, Slider, StudentStory, CollaborationCarousel, CollaborationRequest, ContactUsRequest, SmsLog, BlogCategory, BlogPost
 
 ## 7. Business Logic Coverage
 **100+ Action Classes** organized by domain after the content and form refactor:
@@ -87,19 +100,25 @@
 - **Order Management:** Status tracking and lifecycle management
 - **Discount Engine:** Advanced promotion calculation with multiple rule types, conditions, and cart/product-level actions
 - **Payment Processing:** Multi-gateway support with factory pattern
-- **Product Pricing:** Centralized pricing service with hierarchy support (product discounts > featured prices > standard prices) and request-scoped caching, plus `UpdateProductPriceCacheJob` and the `prices:index-all` console command for cache warming
+- **Product Pricing:** Centralized pricing service with hierarchy support (product discounts > featured prices > standard prices) and request-scoped caching
+- **Price Indexing:** Denormalized pricing table with `UpdateProductPricingJob` for batch updates and scheduled `CheckExpiredFeaturedPricesCommand` for expiry checks
+- **SKU Generation:** Automatic SKU generation via `SkuGeneratorService` with pattern-based formatting
+- **Product Querying:** `ProductQueryService` provides fluent interface for complex product filtering with discount, price range, category, and availability filters
+- **Category Querying:** `CategoryQueryService` handles category-based product retrieval with type filtering
 - **Content Management:** Dynamic home page content assembly with performance optimization and SmartCache-aware invalidation
-- **Settings:** New `SettingsService` centralizes cached reads/writes for site-wide configuration
+- **Settings:** `SettingsService` centralizes cached reads/writes for site-wide configuration
 - **OTP Management:** Secure verification code handling
 - **SMS Service:** Integration with external SMS provider
-- **Console Commands:** Automated blog post publication and price indexing maintenance
+- **Console Commands:** Automated blog post publication, price indexing with `prices:index-all` (--missing-only, --sync, --queue options), and featured price expiry checks with `prices:check-expired-featured` (--dry-run, --queue options)
 - **Performance Optimization:** Request-scoped caching service to prevent N+1 queries and duplicate calculations
 
 ## 8. API Interface Completeness
-**210+ Endpoints** across all domains:
+**220+ Endpoints** across all domains:
 - **Admin API:** Complete platform management with 160+ endpoints including the new Content module for CMS settings and slider status toggles
 - **Customer API:** Profile and course access management
 - **Shop Public API:** Modular endpoints for home page blocks, sliders, partners, header/footer, CMS pages, and rate-limited contact/collaboration form submissions
+- **Course Catalog API:** Public course listing with advanced filtering (search, category, level, price range, discounts) and detailed course pages
+- **Category API:** Category listing, detail pages, and category-based product browsing by type with pagination
 - **Authentication:** Dual system for both admin and customer interfaces
 - **File Management:** Secure media and private file handling
 - **Select Options:** Dropdown data for admin interface

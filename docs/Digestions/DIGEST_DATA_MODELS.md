@@ -62,29 +62,34 @@
 
 ### Seminar (`app/Models/Seminar.php`)
 - **Purpose:** One-off educational events
-- **Key Fields:** `full_name`, `short_name`, `subtitle`, `slug`, `thumbnail_url`, `description`, `learning_objectives`, `target_audience`, `prerequisites`, `promo_video_external_url`, `estimated_duration_desc`, `level`, `provides_certificate`, `faq`, `keywords`, review aggregates (`review_count`, `average_rating`), `meta_title`, `meta_description`, `meta_keywords`, `status`
+- **Key Fields:** `full_name`, `short_name`, `subtitle`, `slug`, `thumbnail_url`, `description`, `curriculum_summary_text`, `outcomes_json`, `target_audience`, `prerequisites`, `promo_video_external_url`, `estimated_duration_desc`, `level`, `provides_certificate`, `faq`, `keywords`, review aggregates (`review_count`, `average_rating`), `meta_title`, `meta_description`, `meta_keywords`, `status`
 - **Relationships:** 
   - Polymorphic relationship as `productable` to Product
   - `hasMany(Review::class, 'reviewable_id')` - reviews (polymorphic)
   - `morphToMany(BlogPost::class, 'productable', 'blog_post_productables')` - blogPosts
 - **Traits:** Combines `HasAssets`, `HasAuditor`, `HasCategories`, `HasMedia`, `HasReview`, `IsProductable`, and `Mediable` to manage attached resources, audit data, categories, and review aggregates
+- **Special Features:** Curriculum structure replaced `learning_objectives` with `curriculum_summary_text` (text summary) and `outcomes_json` (structured learning outcomes array) for better content organization
 
 ### DigitalAsset (`app/Models/DigitalAsset.php`)
 - **Purpose:** Standalone digital products (PDFs, videos, etc.)
-- **Key Fields:** `name`, `slug`, `thumbnail_url`, `description`, `version`, `page_count`, `duration_seconds`, `is_attachable_to_course`, review aggregates (`review_count`, `average_rating`), `keywords`, `meta_title`, `meta_description`, `meta_keywords`, `published_at`, `status`
+- **Key Fields:** `short_name`, `full_name`, `slug`, `thumbnail_url`, `description`, `version`, `page_count`, `duration_seconds`, `is_attachable_to_course`, review aggregates (`review_count`, `average_rating`), `keywords`, `meta_title`, `meta_description`, `meta_keywords`, `published_at`, `status`
 - **Relationships:** 
   - Polymorphic relationship as `productable` to Product
   - `morphToMany(Category::class, 'categorizable', 'categorizables')` - categories
   - `morphedByMany(Course::class, 'assetable')` - courses
 - **Traits:** Uses `HasMedia`, `HasReview`, `IsProductable`, and `Mediable` for media, review aggregation, and polymorphic bindings
+- **Special Features:** Name split into `short_name` (max 100 chars) and `full_name` (max 191 chars) for display flexibility
 
 ### ProductDeliveryOption (`app/Models/ProductDeliveryOption.php`)
 - **Purpose:** Specific purchase/delivery methods per product with pricing
-- **Key Fields:** Pricing, delivery terms, availability
+- **Key Fields:** `uuid` (UUID v7 auto-generated), `sku` (optional, auto-generated if not provided), `name`, `price`, `capacity`, `status`, `fulfillment_type`, `delivery_method`, `is_prepayment_available`, `prepayment_amount`, `is_featured`, `featured_price`, `featured_price_start_date`, `featured_price_end_date`, `registration_start_date`, `registration_end_date`, `available_from`, `available_to`, `details_json`
 - **Relationships:**
   - `belongsTo(Product::class)` - product
   - `hasMany(ProductDeliveryOptionDiscountPrice::class)` - discountPrices
-  - Purchase options for products
+  - `belongsToMany(Teacher::class, 'product_delivery_option_teacher')` - teachers
+  - `hasMany(Enrollment::class, 'product_delivery_option_id')` - enrollments
+  - `hasMany(OrderItem::class)` - orderItems
+- **Special Features:** UUID for external references, SKU auto-generation via `SkuGeneratorService` when not provided, capacity tracking with `withCapacityInfo()` and `availableWithCapacity()` scopes for enrollment limits
 
 ### ProductDeliveryOptionDiscountPrice (`app/Models/ProductDeliveryOptionDiscountPrice.php`)
 - **Purpose:** Discount pricing records for specific delivery options
@@ -196,6 +201,15 @@
 - **Relationships:** 
   - `belongsTo(Wallet::class)` - wallet
   - Polymorphic source tracking
+
+### ProductPrice (`app/Models/ProductPrice.php`)
+- **Purpose:** Precomputed pricing index for fast product price lookups across the storefront
+- **Key Fields:** `product_id`, `min_price`, `max_price`, `min_original_price`, `max_original_price`, `has_discount`, `has_featured_price`, `has_prepayment`, `discount_percentage`, `highest_discount_amount`
+- **Relationships:**
+  - `belongsTo(Product::class)` - product
+- **Special Features:** Index table populated by `UpdateProductPricingJob` and maintained by `prices:index-all` command; provides efficient price range queries via `priceRange()`, discount filtering via `withDiscount()` and `withFeaturedPrice()` scopes; enables fast "products with discounts" queries without joins
+- **Scopes:** `withDiscount()`, `withFeaturedPrice()`, `priceRange($min, $max)`
+- **Methods:** `hasActiveDiscount()`, `isSinglePrice()`, `getDiscountAmount()`, `getPriceRange()`, `getEffectiveMinPrice()`
 
 ### WalletCampaign (`app/Models/WalletCampaign.php`)
 - **Purpose:** Bulk wallet credit campaigns and promotions
