@@ -9,9 +9,13 @@ use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-final class CreateRelatedProductAction
+final readonly class CreateRelatedProductAction
 {
-    public function handle(Product $product, RelatedProductSyncData $data,DeleteRelatedProductAction $deleteAction): void
+    public function __construct(private DeleteRelatedProductAction $deleteAction)
+    {
+    }
+
+    public function handle(Product $product, RelatedProductSyncData $data): void
     {
         if (in_array($product->id, $data->product_ids, true)) {
             throw ValidationException::withMessages([
@@ -19,8 +23,8 @@ final class CreateRelatedProductAction
             ]);
         }
 
-        DB::transaction(function () use ($product, $data, $deleteAction) {
-            $deleteAction->handle($product, $data->relation_type);
+        DB::transaction(function () use ($product, $data) {
+            $this->deleteAction->handle($product, $data->relation_type);
             $syncData = [];
             foreach ($data->product_ids as $relatedProductId) {
                 $syncData[$relatedProductId] = [
