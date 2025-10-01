@@ -70,3 +70,48 @@ test('relation orderItems through product_delivery_options', function (): void {
         ->and($product->orderItems->first()->id)
         ->toEqual($orderItem->id);
 });
+
+test('relation relatedProducts', function () {
+    $productA = App\Models\Product::factory()->create();
+    $productB = App\Models\Product::factory()->create();
+
+    $productA->relatedProducts()->attach($productB->id, ['relation_type' => 'related']);
+
+    expect($productA->relatedProducts)
+        ->toHaveCount(1)
+        ->and($productA->relatedProducts->first())
+        ->toBeInstanceOf(App\Models\Product::class)
+        ->and($productA->relatedProducts->first()->id)
+        ->toEqual($productB->id);
+});
+
+test('relation relatedProducts with type', function () {
+    $productA = App\Models\Product::factory()->create();
+    $productB = App\Models\Product::factory()->create();
+    $productC = App\Models\Product::factory()->create();
+    $productD = App\Models\Product::factory()->create();
+
+    $productA->relatedProducts()->attach($productB->id, ['relation_type' => 'related']);
+    $productA->relatedProducts()->attach($productC->id, ['relation_type' => 'cross_sell']);
+    $productA->relatedProducts()->attach($productD->id, ['relation_type' => 'upsell']);
+
+    expect($productA->relatedProductsOfType()->get())
+        ->toHaveCount(1)
+        ->and($productA->relatedProductsOfType()->first())
+        ->toBeInstanceOf(App\Models\Product::class)
+        ->and($productA->relatedProductsOfType()->first()->id)
+        ->toEqual($productB->id)
+        ->and($productA->crossSellProducts()->get())
+        ->toHaveCount(1)
+        ->and($productA->crossSellProducts()->first())
+        ->toBeInstanceOf(App\Models\Product::class)
+        ->and($productA->crossSellProducts()->first()->id)
+        ->toEqual($productC->id)
+        ->and($productA->upsellProducts()->get())
+        ->toHaveCount(1)
+        ->and($productA->upsellProducts()->first())
+        ->toBeInstanceOf(App\Models\Product::class)
+        ->and($productA->upsellProducts()->first()->id)
+        ->toEqual($productD->id);
+
+});

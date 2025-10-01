@@ -1,0 +1,141 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "id": 5,
+      "title": "D'angelo Cummerata",
+      "subtitle": "ipsum-ut-in-vel-eligendi",
+      "type": {
+        "value": "digital_asset",
+        "label": "فایل"
+      }
+    },
+    {
+      "id": 10,
+      "title": "Selmer Moen",
+      "subtitle": "consequatur-amet-quam-enim-qui-veniam-consequatur",
+      "type": {
+        "value": "course",
+        "label": "دوره"
+      }
+    },
+    {
+      "id": 15,
+      "title": "Miss Roslyn Runolfsson",
+      "subtitle": "sed-ratione-voluptatem-nobis-laudantium",
+      "type": {
+        "value": "course",
+        "label": "دوره"
+      }
+    },
+    {
+      "id": 19,
+      "title": "Aileen Witting",
+      "subtitle": "fuga-aspernatur-vero-dolor-iste-consequatur",
+      "type": {
+        "value": "digital_asset",
+        "label": "فایل"
+      }
+    },
+    {
+      "id": 29,
+      "title": "Mrs. Heloise Homenick PhD",
+      "subtitle": "necessitatibus-et-enim-enim-ullam-ad-consectetur",
+      "type": {
+        "value": "digital_asset",
+        "label": "فایل"
+      }
+    },
+    {
+      "id": 84,
+      "title": "Helene Moore",
+      "subtitle": "delectus-odit-est-blanditiis-reprehenderit-et-non-praesentium",
+      "type": {
+        "value": "digital_asset",
+        "label": "فایل"
+      }
+    },
+    {
+      "id": 66,
+      "title": "Doyle Ankunding",
+      "subtitle": "omnis-et-quo-nihil",
+      "type": {
+        "value": "digital_asset",
+        "label": "فایل"
+      }
+    },
+    {
+      "id": 98,
+      "title": "Kenyatta Waters Sr.",
+      "subtitle": "consequatur-et-eligendi-nulla-ipsa-optio-labore-consequatur",
+      "type": {
+        "value": "digital_asset",
+        "label": "فایل"
+      }
+    },
+    {
+      "id": 60,
+      "title": "Letha Kuhlman",
+      "subtitle": "corporis-impedit-dolorem-aut-excepturi-quis",
+      "type": {
+        "value": "seminar",
+        "label": "سمینار"
+      }
+    },
+    {
+      "id": 79,
+      "title": "Felipe Maggio",
+      "subtitle": "consequuntur-exercitationem-consequatur-itaque-et",
+      "type": {
+        "value": "course",
+        "label": "دوره"
+      }
+    },
+    {
+      "id": 89,
+      "title": "Bennie Reinger",
+      "subtitle": "iusto-non-qui-ut-aliquam-quis",
+      "type": {
+        "value": "digital_asset",
+        "label": "فایل"
+      }
+    },
+    {
+      "id": 32,
+      "title": "Bruce Schneider",
+      "subtitle": "illum-aut-quasi-cumque-cupiditate-exercitationem-quo-et",
+      "type": {
+        "value": "seminar",
+        "label": "سمینار"
+      }
+    },
+    {
+      "id": 1,
+      "title": "Lily Schroeder DDS",
+      "subtitle": "quas-consectetur-quasi-sit-deserunt-velit",
+      "type": {
+        "value": "course",
+        "label": "دوره"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Ayden Yost DVM",
+      "subtitle": "autem-dignissimos-placeat-delectus-voluptatem-nulla",
+      "type": {
+        "value": "seminar",
+        "label": "سمینار"
+      }
+    },
+    {
+      "id": 96,
+      "title": "Prof. Tamia Nolan III",
+      "subtitle": "libero-aliquid-aperiam-ut-dolorem",
+      "type": {
+        "value": "seminar",
+        "label": "سمینار"
+      }
+    }
+  ],
+  "metadata": []
+}

@@ -1,0 +1,144 @@
+{
+  "message": " با موفقیت ایجاد شد.",
+  "data": [
+    {
+      "product_id": 1,
+      "related_product_id": 2,
+      "relation_type": {
+        "value": "related",
+        "label": "enums.RelationTypeEnum.related"
+      },
+      "related_product": {
+        "id": 2,
+        "is_visible": true,
+        "short_description": "Non dolorem laboriosam maiores molestiae exercitationem quia tempora. Labore repellat soluta nihil ut quia dolore. Qui deserunt iste non libero sit voluptatibus magni.",
+        "short_name": "Ayden Yost DVM",
+        "name": "Brown Bergnaum",
+        "is_featured": false,
+        "vendor": {
+          "id": 2,
+          "name": "Maggio, Lesch and Feeney",
+          "email": "megane.barrows@example.com",
+          "phone": "02843998945",
+          "logo_url": "http://jedu.test/storage/fake-media/placeholder.svg"
+        },
+        "productable_type": {
+          "value": "seminar",
+          "label": "سمینار"
+        },
+        "productable_data": {
+          "type": {
+            "value": "seminar",
+            "label": "سمینار"
+          },
+          "id": 58,
+          "full_name": "Voluptate maxime delectus.",
+          "short_name": "Et nostrum.",
+          "subtitle": "Aliquam a assumenda ex animi quasi.",
+          "slug": "nulla-rerum-eum-iste-dolorem",
+          "thumbnail_url": "https://via.placeholder.com/300x200.png?text=%D9%86%D9%88%D8%A7%D8%B2%D8%B4",
+          "status": {
+            "value": "published",
+            "label": "منتشر شده"
+          },
+          "level": {
+            "value": "advanced",
+            "label": "پیشرفته"
+          },
+          "provides_certificate": true,
+          "created_by": 1,
+          "categories": [],
+          "digital_assets": null,
+          "created_at": "1404-07-08 14:46:52",
+          "updated_at": "1404-07-08 14:46:52"
+        },
+        "term": {
+          "id": 1,
+          "name": "Spring 2008",
+          "status": {
+            "value": "active",
+            "label": "فعال"
+          },
+          "academic_year": "2007-2008",
+          "start_date": "1386-09-13 00:00:00",
+          "end_date": "1386-12-14 00:00:00",
+          "created_at": "1404-07-08 14:46:31",
+          "updated_at": "1404-07-08 14:46:31"
+        },
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "details_json": []
+      },
+      "created_at": "2025-10-01T09:52:20.000000Z"
+    },
+    {
+      "product_id": 1,
+      "related_product_id": 3,
+      "relation_type": {
+        "value": "related",
+        "label": "enums.RelationTypeEnum.related"
+      },
+      "related_product": {
+        "id": 3,
+        "is_visible": true,
+        "short_description": "A ea distinctio consequuntur molestiae quia officiis. Eius consequatur pariatur voluptatem magni. Commodi expedita perspiciatis sint at omnis et vel. Eum culpa et fugiat.",
+        "short_name": "Myriam Morissette PhD",
+        "name": "Declan Stoltenberg Sr.",
+        "is_featured": false,
+        "vendor": {
+          "id": 1,
+          "name": "Cronin and Sons",
+          "email": "hermiston.jeremy@example.org",
+          "phone": "03164548508",
+          "logo_url": "http://jedu.test/storage/fake-media/placeholder.svg"
+        },
+        "productable_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "productable_data": {
+          "type": {
+            "value": "digital_asset",
+            "label": "فایل"
+          },
+          "id": 43,
+          "short_name": "صندلی",
+          "slug": "ducimus-dolorum-laboriosam-suscipit-omnis-optio",
+          "thumbnail_url": "https://via.placeholder.com/300x200.png?text=%D8%A2%D8%AE%D8%B1",
+          "is_attachable_to_course": true,
+          "status": {
+            "value": "published",
+            "label": "منتشر شده"
+          },
+          "version": "sint",
+          "published_at": "1384-07-25 17:53:39",
+          "created_by": 1,
+          "created_at": "1404-07-08 14:46:40",
+          "updated_at": "1404-07-08 14:46:40"
+        },
+        "term": {
+          "id": 4,
+          "name": "Spring 1995",
+          "status": {
+            "value": "active",
+            "label": "فعال"
+          },
+          "academic_year": "1976-1977",
+          "start_date": "1354-11-08 00:00:00",
+          "end_date": "1355-02-08 00:00:00",
+          "created_at": "1404-07-08 14:46:31",
+          "updated_at": "1404-07-08 14:46:31"
+        },
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "details_json": []
+      },
+      "created_at": "2025-10-01T09:52:20.000000Z"
+    }
+  ],
+  "metadata": []
+}
