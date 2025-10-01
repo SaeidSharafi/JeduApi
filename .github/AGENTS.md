@@ -18,7 +18,72 @@ These principles should guide all code generation:
     *   **Robust Error Handling:** Use the project's custom response macros for all success and error responses.
     *   **Security:** Implement security through the established patterns: `spatie/laravel-data` for validation, Gates and Policies for authorization, and the project's built-in authentication.
 
-## 2. Core Mandates & Unbreakable Rules
+## 2. Project Glossary: Core Concepts & Terminology
+
+This glossary defines the essential entities within the Jedu E-Commerce platform. Understanding these concepts is mandatory for correctly interpreting tasks and modifying the codebase.
+
+### The Product Catalog: From Concept to SKU
+
+The catalog uses a three-layer model to separate academic content from its commercial packaging.
+
+-   **Productable (Course, Seminar, DigitalAsset):** This is the **academic blueprint** or intellectual property. It is an abstract concept representing the raw content (curriculum, event details, ebook content) and is **not directly sellable**.
+    -   **Course:** The blueprint for a multi-session educational program, defining its curriculum, difficulty, and learning outcomes.
+    -   **Seminar:** The blueprint for a one-off event, workshop, or webinar.
+    -   **DigitalAsset:** The blueprint for a standalone piece of content, like a PDF, video, or software tool.
+
+-   **Product:** This is the **commercial shell**. It makes a `Productable` sellable by wrapping it with business context: **who** is selling it (`Vendor`) and **when** it is being offered (`Term`). A single `Course` blueprint can be sold as multiple different `Products` (e.g., "Fall Semester Course" vs. "Corporate Training Course").
+
+-   **ProductDeliveryOption:** This is the **concrete SKU** that a customer adds to their cart. It defines the specific price, format, and terms of a purchase for a `Product`. A single `Product` can have many delivery options (e.g., "Live Online Class," "Self-Paced with Videos," "Ebook Only"). This is the entity that holds the price.
+
+-   **Vendor:** An internal department or external entity responsible for selling products (e.g., "Data Science Department," "Marketing Academy").
+
+-   **Term:** An academic period or semester (e.g., "Fall 2025," "Q1 2026"). It provides a time-based context for `Products`.
+
+-   **Category:** A hierarchical tag used to organize and classify `Productables` (e.g., "Programming," "Beginner Level," "Data Science").
+
+-   **Teacher:** An instructor profile containing their biography, qualifications, and other metadata. Can be linked to a `ProductDeliveryOption`.
+
+### The Sales & Fulfillment Engine
+
+These entities manage the entire transaction lifecycle, from purchase to access.
+
+-   **Order:** The master record for a customer's transaction. It acts as the primary receipt, summarizing all items, discounts, and totals.
+
+-   **OrderItem:** A single line item within an `Order`, corresponding to a specific `ProductDeliveryOption` that was purchased. It contains an immutable JSON snapshot of the product data at the time of purchase for historical accuracy.
+
+-   **Payment:** A record of a financial transaction (e.g., wallet payment, bank transfer) applied to an `Order`.
+
+-   **Enrollment:** The crucial link between a purchase and content access. An `Enrollment` record is created automatically after a successful `OrderItem` payment. It grants a specific `User` access to their purchased `ProductDeliveryOption` and is the definitive "proof of access" for the system.
+
+### The Commercial & Engagement Engine
+
+These entities drive marketing, promotions, and customer value.
+
+-   **DiscountPromotion:** The core of the discount engine. It defines a set of rules (`DiscountPromotionRule`) that determine eligibility (Conditions) and outcomes (Actions) for promotions, such as cart-wide sales or product-specific discounts.
+
+-   **Wallet:** A user's personal credit balance system. It is an immutable ledger where all credits and debits are recorded as individual `WalletTransaction` entries.
+
+-   **WalletTransaction:** An immutable record of any change to a `Wallet`'s balance (deposit, withdrawal, gift). It ensures a perfect audit trail of all funds.
+
+-   **WalletCampaign:** An administrative tool for running marketing campaigns that grant wallet credits to users in bulk, often triggered by system events (e.g., "New User Welcome Bonus").
+
+### Content & Administration
+
+These entities power the CMS, blog, and the administrative backbone of the platform.
+
+-   **Staff:** An administrative user account with specific permissions managed by the role-based access control system.
+
+-   **AdminActionLog:** A comprehensive and immutable audit trail that records every action performed by a `Staff` user, used for security, compliance, and risk assessment.
+
+-   **Review:** A customer-submitted rating and comment for a `Productable` (Course, Seminar, etc.). It follows an approval workflow.
+
+-   **BlogPost:** An article in the content management system. `BlogPosts` can be linked to `Productables` to act as marketing or supplementary educational content.
+
+-   **Setting:** A key-value record in the database that powers the dynamic content of the storefront (e.g., footer links, contact information, "About Us" text). Managed via the `SettingsService`.
+
+-   **HomePageBlock, Slider, Partner, StudentStory:** A collection of dynamic, admin-managed models used to build the content of the homepage and other marketing sections of the site.
+
+## 3. Core Mandates & Unbreakable Rules
 
 This is the required architecture for the JeduShop API.
 
@@ -134,7 +199,7 @@ This is the required architecture for the JeduShop API.
     *   To add permissions: Edit `config/permission-generator.php`, then run `sail artisan permission:generate` and `sail artisan permission:sync`.
     *   **DO NOT** manually edit `PermissionEnum.php` or use hardcoded permission strings.
 
-## 3. Testing with PEST and AuthTestTrait
+## 4. Testing with PEST and AuthTestTrait
 
 *   **Framework:** **MUST** use PEST for all feature tests.
 *   **Authentication:** **MUST** use the custom `AuthTestTrait` for authenticating users in tests. **DO NOT** use Laravel's standard `actingAs()`.
@@ -165,14 +230,14 @@ This is the required architecture for the JeduShop API.
     ```
 *[General testing best practices are now in the laravel-boost-guidelines section]*
 
-## 4. Commit Message Convention
+## 5. Commit Message Convention
 
 *   **Conventional Commits:** All commit messages **MUST** follow the Conventional Commits specification.
 *   **Format:** `type(scope): imperative description`.
 *   **Example:** `feat(api-product): add endpoint for creating new products`
 
 ---
-## 5. Architectural Patterns, Directory Structure & Forbidden Patterns
+## 6. Architectural Patterns, Directory Structure & Forbidden Patterns
 
 *(This section remains unchanged as it contains highly project-specific examples, directory structures, naming conventions, and a summary of the most critical "DO NOT" rules.)*
 
