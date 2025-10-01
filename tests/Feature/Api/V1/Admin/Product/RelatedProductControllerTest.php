@@ -250,9 +250,8 @@ describe('User with permissions - Related Products Management', function (): voi
             route('api.v1.admin.product.related-products.store', ['product' => $this->mainProduct->id]),
             $data
         );
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors('product_ids');
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['product_ids.0', 'product_ids.1']);
     });
 
     it('should validate relation_type is valid', function (): void {
@@ -365,7 +364,7 @@ describe('User with permissions - Related Products Management', function (): voi
 
         $response->assertStatus(422)
             ->assertJson([
-                'message' => 'Invalid or missing relation_type parameter.',
+                'message' => __('validation.custom.product.related_product_type_invalid'),
             ]);
     });
 
@@ -386,7 +385,7 @@ describe('User with permissions - Related Products Management', function (): voi
 
         $response->assertStatus(422)
             ->assertJson([
-                'message' => 'Invalid or missing relation_type parameter.',
+                'message' => __('validation.custom.product.related_product_type_invalid'),
             ]);
     });
 });

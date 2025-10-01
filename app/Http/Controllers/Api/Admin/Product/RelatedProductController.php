@@ -85,16 +85,14 @@ final class RelatedProductController extends Controller
      * @responseFile 404 responses/404.json
      * @responseFile 422 responses/422.json
      */
-    public function destroy(Product $product, Product $relatedProduct, DeleteRelatedProductAction $action): JsonResponse
+    public function destroy(Product $product, Product $relatedProduct, DeleteRelatedProductAction $action): JsonResponse|ApiResponseInterface
     {
         Gate::authorize('update', $product);
 
         $relationType = request()->input('relation_type', 'invalid');
         $relationType = RelationTypeEnum::tryFrom($relationType);
         if (! $relationType) {
-            return response()->validationErrors([
-                'relation_type' => [__('validation.in', ['values' => implode(',', RelationTypeEnum::values())])],
-            ]);
+            return response()->validationError(__('validation.custom.product.related_product_type_invalid'));
         }
 
         $action->handle($product, $relationType,$relatedProduct);
