@@ -227,10 +227,8 @@ describe('User with permissions - Related Products Management', function (): voi
             $data
         );
 
-        $response->assertStatus(422)
-            ->assertJson([
-                'message' => 'A product cannot be related to itself.',
-            ]);
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['product_ids']);
 
         $this->assertDatabaseMissing('related_products', [
             'product_id'         => $this->mainProduct->id,
