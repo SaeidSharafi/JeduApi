@@ -4,6 +4,12 @@ This document provides a comprehensive set of instructions for GitHub Copilot. I
 
 These principles should guide all code generation:
 
+*   **The Digests are Your Single Source of Truth:** Before you write or modify any code, you **MUST** consult the project digest files located in the `docs/Digestions/` directory.
+    *   `DIGEST_DATA_MODELS.md`: Explains all database models and their relationships.
+    *   `DIGEST_CORE_LOGIC.md`: Details the Actions/Services architecture and core business logic.
+    *   `DIGEST_API_INTERFACES.md`: Documents all API endpoints, their routes, and their DTO contracts.
+    *   `DIGEST_SCHEMA.md`: Provides the complete database schema.
+        These files are the definitive blueprint for the application. Trust them over trying to infer the architecture from scratch. They will save you time and prevent you from making incorrect assumptions.
 *   **Prioritize Minimal Impact:** Before modification, understand the context (routes, controllers, actions, DTOs). Aim for the smallest possible change that fulfills the requirement while preserving existing API contracts. Avoid unnecessary refactoring.
 *   **Targeted Implementation:** Identify and modify only the essential code sections. Preserve unrelated code to maintain API stability.
 *   **Clarify Ambiguity:** If the required scope (API behavior, response structure, validation rules) is unclear, ask for clarification before proceeding. Do not make assumptions.
