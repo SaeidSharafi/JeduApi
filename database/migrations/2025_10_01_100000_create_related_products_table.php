@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('relation_type')->default(App\Enums\Product\RelationTypeEnum::RELATED->value);
             $table->timestamps();
 
-            // Foreign key constraints
             $table->foreign('product_id')
                 ->references('id')
                 ->on('products')
@@ -28,12 +27,9 @@ return new class extends Migration
                 ->on('products')
                 ->onDelete('cascade');
 
-            // Indexes for better query performance
             $table->index(['product_id', 'relation_type']);
             $table->index('related_product_id');
 
-            // Ensure a product cannot be related to itself
-            // and prevent duplicate relations of the same type
             $table->unique(['product_id', 'related_product_id', 'relation_type'], 'unique_product_relation');
         });
     }
