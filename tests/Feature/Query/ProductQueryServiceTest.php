@@ -309,7 +309,7 @@ describe('ProductQueryService integration', function () {
                 ],
             ]);
 
-            $results = ProductQueryService::make()->globalSearchProducts($request);
+            $results = ProductQueryService::make()->globalSearchProductsDatabase($request);
 
             expect($results->total())->toBe(1)
                 ->and($results->first()->is($seminarProduct))->toBeTrue();
@@ -353,7 +353,7 @@ describe('ProductQueryService integration', function () {
                 'sortOrder' => 'asc',
             ]);
 
-            $results = ProductQueryService::make()->globalSearchProducts($request);
+            $results = ProductQueryService::make()->globalSearchProductsDatabase($request);
 
             expect($results->total())->toBe(2)
                 ->and($results->items()[0]->is($courseProduct->fresh()))->toBeTrue()
@@ -392,7 +392,7 @@ describe('ProductQueryService integration', function () {
                 'search' => 'JavaScript',
             ]);
 
-            $results = ProductQueryService::make()->globalSearchProducts($request);
+            $results = ProductQueryService::make()->globalSearchProductsDatabase($request);
 
             expect($results->total())->toBe(1)
                 ->and($results->first()->is($seminarProduct->fresh()))->toBeTrue();
@@ -444,7 +444,7 @@ describe('ProductQueryService integration', function () {
                     'search' => 'data science',
             ]);
 
-            $results = ProductQueryService::make()->globalSearchProducts($request);
+            $results = ProductQueryService::make()->globalSearchProductsDatabase($request);
             expect($results->total())->toBe(1)
                 ->and($results->first()->is($seminarProduct->fresh()))->toBeTrue();
         });
@@ -478,7 +478,7 @@ describe('ProductQueryService integration', function () {
                 ],
             ]);
 
-            $results = ProductQueryService::make()->globalSearchProducts($request);
+            $results = ProductQueryService::make()->globalSearchProductsDatabase($request);
 
             expect($results->total())->toBe(1)
                 ->and($results->first()->is($discountedProduct->fresh()))->toBeTrue();

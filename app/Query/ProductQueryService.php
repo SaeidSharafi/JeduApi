@@ -16,7 +16,9 @@ use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Benchmark;
 use InvalidArgumentException;
+use function Clue\StreamFilter\fun;
 
 /**
  * Shop Product Query Service
@@ -115,7 +117,7 @@ final class ProductQueryService
     {
         return $this
             ->ofType(ProductableEnum::SEMINAR)
-            ->globalSearchProducts($requestData);
+            ->globalSearchProductsDatabase($requestData);
     }
 
     /**
@@ -125,13 +127,13 @@ final class ProductQueryService
     {
         return $this
             ->ofType(ProductableEnum::DIGITAL_ASSET)
-            ->globalSearchProducts($requestData);
+            ->globalSearchProductsDatabase($requestData);
     }
 
     /**
      * Perform a global search across all available product types.
      */
-    public function globalSearchProducts(ProductListRequestData $requestData): LengthAwarePaginator
+    public function globalSearchProductsDatabase(ProductListRequestData $requestData): LengthAwarePaginator
     {
         // Keeps the default of all productableTypes
         $this->availableProducts()->forListing();
@@ -160,6 +162,72 @@ final class ProductQueryService
         return $this
             ->sortBy($requestData->sortBy, $requestData->sortOrder)
             ->paginate($requestData->per_page);
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function globalSearchProductsScout(ProductListRequestData $requestData): LengthAwarePaginator
+    {
+        if (config('scout.driver') !== 'typesense') {
+            return $this->globalSearchProductsDatabase($requestData);
+        }
+
+        $query = Product::search($requestData->search)
+        ->options([
+            'query_by' => 'embedding'
+        ]);
+
+        $query->where('status', PublicationStatusEnum::PUBLISHED->value);
+        $query->where('is_visible', true);
+        $query->where('productable_status', PublicationStatusEnum::PUBLISHED->value);
+        $query->where('has_published_delivery_option', true);
+        $query->where('is_term_active', true);
+
+        // This is a static filter for this method
+        $query->where('productable_type', ProductableEnum::COURSE->value);
+
+        if ($requestData->filter) {
+            $filter = $requestData->filter;
+
+            if ($filter->categorySlug) {
+                $query->where('category_slugs', $filter->categorySlug);
+            }
+            if ($filter->level) {
+                $query->where('level', $filter->level);
+            }
+            if ($filter->fulfillment_type) {
+                $query->where('fulfillment_types', $filter->fulfillment_type);
+            }
+            if ($filter->min_price || $filter->max_price) {
+                // Build a Typesense filter string for ranges
+                $priceFilters = [];
+                if ($filter->min_price) $priceFilters[] = "price:>={$filter->min_price}";
+                if ($filter->max_price) $priceFilters[] = "price:<={$filter->max_price}";
+
+                // The ->raw() method is powerful for custom driver logic
+                $query->within('filter_by', implode(' && ', $priceFilters));
+            }
+        }
+
+        // Apply Sorting
+        if (in_array($requestData->sortBy, ['created_at', 'updated_at', 'price', 'name'])) {
+            $query->orderBy($requestData->sortBy, $requestData->sortOrder);
+        }
+
+        return $query
+            ->query(function ($query){
+                $query->with([
+                    'vendor:id,name',
+                    'categories:id,name,slug',
+                    'productable:id,thumbnail_url,default_teacher_info',
+                    'productDeliveryOptions' => function ($q) {
+                        $q->where('status', PublicationStatusEnum::PUBLISHED)
+                            ->with(['productDeliveryOptionDiscountPrice', 'teachers:id,first_name,last_name,gender']);
+                    },
+                ]);
+            })
+            ->paginate($requestData->per_page)->withQueryString();
     }
 
     /**
