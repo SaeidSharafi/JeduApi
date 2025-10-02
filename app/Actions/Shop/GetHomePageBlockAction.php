@@ -18,9 +18,9 @@ use App\Models\Blog\BlogPost;
 use App\Models\Category;
 use App\Models\HomePageBlock;
 use App\Models\Product;
+use App\Query\ProductQueryService;
 use App\Services\ProductPriceService;
 use App\Services\RequestDataCacheService;
-use App\Services\Shop\ProductQueryService;
 use Illuminate\Database\Eloquent\Builder;
 
 final readonly class GetHomePageBlockAction

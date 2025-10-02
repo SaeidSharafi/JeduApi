@@ -8,7 +8,7 @@ use App\Data\Shop\PaginationRequestData;
 use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
-use App\Services\Query\CategoryQueryService;
+use App\Query\CategoryQueryService;
 
 /**
  * @group Shop - Products - Categories

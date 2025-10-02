@@ -8,7 +8,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\SelectOptions\ProductSelectOptionData;
 use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
-use App\Services\Shop\ProductQueryService;
+use App\Query\ProductQueryService;
 
 /**
  * @group Admin - Select Options

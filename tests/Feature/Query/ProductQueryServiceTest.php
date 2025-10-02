@@ -21,8 +21,8 @@ use App\Models\ProductDeliveryOption;
 use App\Models\ProductDeliveryOptionDiscountPrice;
 use App\Models\Seminar;
 use App\Models\Term;
+use App\Query\ProductQueryService;
 use App\Services\ProductPriceService;
-use App\Services\Shop\ProductQueryService;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 describe('ProductQueryService integration', function () {

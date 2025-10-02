@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Product\Course;
 
-use App\Services\Shop\ProductQueryService;
+use App\Query\ProductQueryService;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;

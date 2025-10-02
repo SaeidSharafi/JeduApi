@@ -10,8 +10,8 @@ use App\Data\Shop\Product\ProductCardData;
 use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Query\ProductQueryService;
 use App\Services\ProductPriceService;
-use App\Services\Shop\ProductQueryService;
 
 /**
  * @group Shop - Products - Courses

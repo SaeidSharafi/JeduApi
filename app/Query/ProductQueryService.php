@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Shop;
+namespace App\Query;
 
 use App\Data\Shop\Product\Course\CourseListRequestData;
 use App\Data\Shop\Product\Course\ProductListRequestData;
@@ -37,7 +37,7 @@ final class ProductQueryService
     private array $appliedJoins = [];
 
     /**
-     * @var array<string, Closure[]> Collects relationship constraints to be applied later.
+     * @var Closure Collects relationship constraints to be applied later.
      */
     private array $relationshipConstraints = [];
 

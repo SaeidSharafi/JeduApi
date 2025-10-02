@@ -10,8 +10,8 @@ use App\Data\Shop\Product\Category\CategoryDetailData;
 use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
-use App\Services\Query\CategoryQueryService;
-use App\Services\Shop\ProductQueryService;
+use App\Query\CategoryQueryService;
+use App\Query\ProductQueryService;
 
 /**
  * @group Shop - Products - Categories
