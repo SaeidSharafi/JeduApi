@@ -31,7 +31,7 @@ final class VendorSelectOptionController extends Controller
             ->when($query, function ($vendor) use ($query): void {
                 $vendor->where(function ($vendor) use ($query): void {
                     $vendor
-                        ->where('name', 'like', '%'.$query.'%');
+                        ->whereLike('name', '%'.$query.'%');
                 });
             })
             ->orderBy('name')

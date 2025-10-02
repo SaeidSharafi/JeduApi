@@ -34,8 +34,8 @@ final class CategorySelectOptionController extends Controller
             ->when($query, function ($category) use ($query): void {
                 $category->where(function ($category) use ($query): void {
                     $category
-                        ->where('name', 'like', '%'.$query.'%')
-                        ->orWhere('slug', 'like', '%'.$query.'%');
+                        ->whereLike('name', '%'.$query.'%')
+                        ->orWhereLike('slug', '%'.$query.'%');
                 });
             })
             ->orderBy('name')

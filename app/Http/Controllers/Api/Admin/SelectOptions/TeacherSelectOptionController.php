@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\Admin\SelectOptions;
 use App\Data\Admin\SelectOptions\TeacherSelectOptionData;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @group Admin - Select Options
@@ -31,9 +32,10 @@ final class TeacherSelectOptionController extends Controller
         $teachers = \App\Models\Teacher::query()
             ->when($query, function ($teacher) use ($query): void {
                 $teacher->where(function ($teacher) use ($query): void {
-                    $teacher->whereRaw("concat(first_name, ' ', last_name) like ?", '%'.$query.'%')
-                        ->orWhere('email', 'like', '%'.$query.'%')
-                        ->orWhere('phone', 'like', '%'.$query.'%');
+
+                    $teacher->whereLike(DB::raw("CONCAT(first_name, ' ', last_name)"), '%'.$query.'%')
+                        ->orWhereLike('email', '%'.$query.'%')
+                        ->orWhereLike('phone', '%'.$query.'%');
                 });
             })
             ->withMediaAndVariants(['profile'])
