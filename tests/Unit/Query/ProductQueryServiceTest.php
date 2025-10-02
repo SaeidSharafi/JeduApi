@@ -6,7 +6,7 @@ use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Models\Course;
 use App\Models\Product;
-use App\Services\Shop\ProductQueryService;
+use App\Query\ProductQueryService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;

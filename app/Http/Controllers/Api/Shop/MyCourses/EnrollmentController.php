@@ -35,7 +35,7 @@ final class EnrollmentController extends Controller
                         'product', function ($query) use ($filters): void {
                             $query
                                 ->when(data_get($filters, 'name'), function ($query, $name): void {
-                                    $query->where('name', 'like', "%{$name}%");
+                                    $query->whereLike('name', "%{$name}%");
                                 })
                                 ->with(['productableWithAllRelations']);
                         })->with('teachers.media');

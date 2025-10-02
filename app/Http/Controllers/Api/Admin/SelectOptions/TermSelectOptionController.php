@@ -33,8 +33,8 @@ final class TermSelectOptionController extends Controller
             ->when($query, function ($term) use ($query): void {
                 $term->where(function ($term) use ($query): void {
                     $term
-                        ->where('name', 'like', '%'.$query.'%')
-                        ->orWhere('academic_year', 'like', '%'.$query.'%');
+                        ->whereLike('name', '%'.$query.'%')
+                        ->orWhereLike('academic_year', '%'.$query.'%');
                 });
             })
             ->orderBy('name')

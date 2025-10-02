@@ -67,9 +67,9 @@ final class AdminAuditLogController extends Controller
                 }),
                 AllowedFilter::callback('search', function ($query, $value): void {
                     $query->where(function ($q) use ($value): void {
-                        $q->where('route_name', 'like', "%{$value}%")
+                        $q->whereLike('route_name', "%{$value}%")
                             ->orWhereHas('admin', function ($adminQuery) use ($value): void {
-                                $adminQuery->where('name', 'like', "%{$value}%");
+                                $adminQuery->whereLike('name', "%{$value}%");
                             });
                     });
                 }),

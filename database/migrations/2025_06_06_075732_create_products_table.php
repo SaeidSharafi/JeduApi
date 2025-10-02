@@ -37,6 +37,7 @@ return new class extends Migration
             $table->index(['productable_type', 'productable_id']);
             $table->index(['vendor_id', 'term_id']);
             $table->index(['status', 'is_visible']);
+            $table->fullText(['name', 'short_name', 'short_description', 'slug']);
         });
     }
 

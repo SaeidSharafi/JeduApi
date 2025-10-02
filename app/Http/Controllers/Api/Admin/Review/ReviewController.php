@@ -43,7 +43,7 @@ final class ReviewController extends Controller
                     AllowedFilter::exact('is_featured'),
                     AllowedFilter::callback('customer_name', function ($query, $value): void {
                         $query->withWhereHas('user', function ($query) use ($value): void {
-                            $query->where(DB::raw("CONCAT(first_name, ' ', last_name)"), 'LIKE', "%{$value}%");
+                            $query->whereLike(DB::raw("CONCAT(first_name, ' ', last_name)"), "%{$value}%");
                         });
                     }),
                 ]

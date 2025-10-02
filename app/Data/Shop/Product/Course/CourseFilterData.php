@@ -13,7 +13,6 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 final class CourseFilterData extends Data
 {
     public function __construct(
-        public ?string $search = null,
         public ?string $fulfillment_type = null,
         public ?string $categorySlug = null,
         public ?string $level = null,
@@ -25,7 +24,6 @@ final class CourseFilterData extends Data
     public static function rules(?ValidationContext $context = null, string $prefix = ''): array
     {
         return [
-            $prefix.'search'           => ['sometimes', 'string', 'max:255'],
             $prefix.'fulfillment_type' => ['sometimes', 'string', Rule::enum(FulfillmentTypeEnum::class)],
             $prefix.'categorySlug'     => ['sometimes', 'string', 'exists:categories,slug'],
             $prefix.'level'            => ['sometimes', 'string', Rule::enum(CourseDifficultyLevelEnum::class)],

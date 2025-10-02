@@ -57,8 +57,8 @@ final class DigitalAssetController extends Controller
                 'slug', 'status',
                 AllowedFilter::callback('name', function ($q, $value) {
                     $q->where(function ($q2) use ($value) {
-                        $q2->where('short_name', 'LIKE', "%{$value}%")
-                            ->orWhere('full_name', 'LIKE', "%{$value}%");
+                        $q2->whereLike('short_name', "%{$value}%")
+                            ->orWhereLike('full_name', "%{$value}%");
                     });
                 }),
                 AllowedFilter::exact('is_attachable_to_course'),

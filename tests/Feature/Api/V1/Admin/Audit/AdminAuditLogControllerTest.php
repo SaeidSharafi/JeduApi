@@ -320,8 +320,14 @@ describe('AdminAuditLogIndexController', function (): void {
 
         $response->assertSuccessful();
         $data = $response->json('data.data');
-        expect($data)->toHaveCount(1);
-        expect($data[0]['admin']['name'])->toBe('Admin Test');
+        expect($data)->toHaveCount(2);
+        $adminIds = array_column($data, 'admin');
+        $adminIds = array_column($adminIds, 'id');
+        expect($adminIds)->toContain($targetAdmin->id);
+        $routeNames = array_column($data, 'route_name');
+        expect($routeNames)->toContain('admin.users.store')
+            ->and($routeNames)->toContain('admin.wallet.transaction.create');
+
     });
 
     it('can search by route name', function (): void {

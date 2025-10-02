@@ -90,8 +90,8 @@ final class AdminActionLog extends Model
     protected function walletActions($query)
     {
         return $query->where(function ($q): void {
-            $q->where('route_name', 'like', '%wallet%')
-                ->orWhere('resource_type', 'like', '%Wallet%');
+            $q->whereLike('route_name', '%wallet%')
+                ->orWhereLike('resource_type', '%Wallet%');
         });
     }
 

@@ -10,8 +10,8 @@ use App\Data\Shop\Product\ProductCardData;
 use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Query\ProductQueryService;
 use App\Services\ProductPriceService;
-use App\Services\Shop\ProductQueryService;
 
 /**
  * @group Shop - Products - Courses
@@ -29,7 +29,7 @@ final class CourseController extends Controller
      *
      * Retrieve a paginated list of active product of course type with optional filtering and sorting.
      *
-     * @queryParam filter[search] string Optional search term to filter courses by title or description. Example: "programming"
+     * @queryParam search string Optional search term to filter courses by title or description. Example: "programming"
      * @queryParam filter[fulfillment_type] string Optional fulfillment type to filter courses by. Example: "online"
      * @queryParam filter[level] string Optional course level to filter courses by level. Example: "beginner"
      * @queryParam filter[instructor_id] int Optional instructor ID to filter courses by instructor. Example: 5

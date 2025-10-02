@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Query;
+namespace App\Query;
 
 use App\Data\Shop\Product\ProductCardData;
 use App\Enums\Product\ProductableEnum;
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\ProductPriceService;
-use App\Services\Shop\ProductQueryService;
 
 final class CategoryQueryService
 {
