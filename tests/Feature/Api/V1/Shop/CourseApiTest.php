@@ -110,7 +110,7 @@ describe('Course Lsiting filters', function (): void {
                 ['short_name' => 'JavaScript Basics', 'description' => 'Introduction to JavaScript']
             ))
             ->create(['name' => 'JavaScript Basics']);
-        $response = $this->getJson(route('api.v1.shop.courses.index', ['filter[search]' => 'Laravel']));
+        $response = $this->getJson(route('api.v1.shop.courses.index', ['search' => 'Laravel']));
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data.data')
             ->assertJsonFragment(['name' => 'Laravel for Beginners']);

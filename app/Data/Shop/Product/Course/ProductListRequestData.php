@@ -13,20 +13,23 @@ final class ProductListRequestData extends Data
 {
     public function __construct(
         public ?ProductFilterData $filter = null,
+        public ?string $search = null,
         public ?string $sortBy = 'created_at',
         public ?string $sortOrder = 'desc',
 
         public ?int $page = null,
         public ?int $per_page = 15,
-    ) {}
+    ) {
+    }
 
     public static function rules(?ValidationContext $context = null): array
     {
         $filters = ProductFilterData::rules($context, 'filter.');
 
         return [
-            'filter'   => ['sometimes', 'array'],
-            'filter.*' => ['sometimes'],
+            'search'    => ['sometimes', 'string', 'max:255'],
+            'filter'    => ['sometimes', 'array'],
+            'filter.*'  => ['sometimes'],
             ...$filters,
             'sortBy'    => ['sometimes', 'string', Rule::in(ProductQueryService::allowedSortFields)],
             'sortOrder' => ['sometimes', 'string', 'in:asc,desc'],
@@ -41,7 +44,7 @@ final class ProductListRequestData extends Data
     public function queryParameters(): array
     {
         return [
-            'filter' => [
+            'filter'    => [
                 'description' => 'Filter criteria for courses',
                 'example'     => ['category_id' => 1, 'status' => 'published'],
             ],

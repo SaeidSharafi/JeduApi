@@ -122,7 +122,7 @@ describe('ProductQueryService integration', function () {
     describe('Product listings', function () {
         it('applies search, category, fulfillment_type, and level filters', function () {
             $targetCategory = Category::factory()->create(['slug' => 'laravel-bootcamp']);
-            $otherCategory  = Category::factory()->create();
+            $otherCategory = Category::factory()->create();
 
             $targetCourse = Course::factory()->create([
                 'full_name'        => 'Laravel Zero to Hero',
@@ -173,8 +173,8 @@ describe('ProductQueryService integration', function () {
             indexProductPrice($otherProduct);
 
             $request = CourseListRequestData::from([
-                'filter' => [
-                    'search'           => 'Laravel',
+                'search'           => 'Laravel',
+                'filter'   => [
                     'categorySlug'     => $targetCategory->slug,
                     'level'            => CourseDifficultyLevelEnum::BEGINNER->value,
                     'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
@@ -189,7 +189,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($targetProduct))->toBeTrue();
         });
         it('filter courses by price range', function () {
-            $cheapCourse  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED->value]);
+            $cheapCourse = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED->value]);
             $cheapProduct = Product::factory()
                 ->withCourse($cheapCourse)
                 ->create(['name' => 'Affordable Course']);
@@ -200,7 +200,7 @@ describe('ProductQueryService integration', function () {
             ]);
             indexProductPrice($cheapProduct);
 
-            $expensiveCourse  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED->value]);
+            $expensiveCourse = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED->value]);
             $expensiveProduct = Product::factory()
                 ->withCourse($expensiveCourse)
                 ->create(['name' => 'Premium Course']);
@@ -278,7 +278,7 @@ describe('ProductQueryService integration', function () {
         });
         it('narrows results by product type and categories', function () {
             $seminarCategory = Category::factory()->create();
-            $courseCategory  = Category::factory()->create();
+            $courseCategory = Category::factory()->create();
 
             $courseProduct = Product::factory()
                 ->withCourse(Course::factory()->create())
@@ -316,7 +316,8 @@ describe('ProductQueryService integration', function () {
         });
 
         it('filters by price range and sorts by price ascending', function () {
-            $courseProduct = Product::factory()->withCourse(Course::factory()->create())->create(['name' => 'Course A']);
+            $courseProduct = Product::factory()->withCourse(Course::factory()->create())
+                ->create(['name' => 'Course A']);
             ProductDeliveryOption::factory()->for($courseProduct)->create([
                 'price'            => 90_000,
                 'status'           => PublicationStatusEnum::PUBLISHED->value,
@@ -343,7 +344,7 @@ describe('ProductQueryService integration', function () {
             indexProductPrice($assetProduct);
 
             $request = ProductListRequestData::from([
-                'filter' => [
+                'filter'    => [
                     'min_price'      => 80_000,
                     'max_price'      => 200_000,
                     'with_discounts' => false,
@@ -388,9 +389,7 @@ describe('ProductQueryService integration', function () {
             indexProductPrice($assetProduct);
 
             $request = ProductListRequestData::from([
-                'filter' => [
-                    'search' => 'JavaScript',
-                ],
+                'search' => 'JavaScript',
             ]);
 
             $results = ProductQueryService::make()->globalSearchProducts($request);
@@ -442,9 +441,7 @@ describe('ProductQueryService integration', function () {
             indexProductPrice($assetProduct);
 
             $request = ProductListRequestData::from([
-                'filter' => [
                     'search' => 'data science',
-                ],
             ]);
 
             $results = ProductQueryService::make()->globalSearchProducts($request);
@@ -491,7 +488,7 @@ describe('ProductQueryService integration', function () {
     describe('fluent query helpers', function () {
         it('excludes unavailable products from availableProducts()', function () {
             $validProduct = Product::factory()->withCourse(Course::factory()->create())->create();
-            $validOption  = ProductDeliveryOption::factory()->for($validProduct)->create([
+            $validOption = ProductDeliveryOption::factory()->for($validProduct)->create([
                 'status'           => PublicationStatusEnum::PUBLISHED->value,
                 'price'            => 120_000,
                 'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
@@ -557,7 +554,7 @@ describe('ProductQueryService integration', function () {
         });
 
         it('keeps only discounted products when withDiscounts() is applied', function () {
-            $discounted     = Product::factory()->withCourse(Course::factory()->create())->create(['name' => 'Discounted']);
+            $discounted = Product::factory()->withCourse(Course::factory()->create())->create(['name' => 'Discounted']);
             $discountOption = ProductDeliveryOption::factory()->for($discounted)->create([
                 'price'            => 180_000,
                 'status'           => PublicationStatusEnum::PUBLISHED->value,
@@ -587,8 +584,9 @@ describe('ProductQueryService integration', function () {
         });
 
         it('orders products by popularity when popular() is chained', function () {
-            $popularProduct = Product::factory()->withCourse(Course::factory()->create())->create(['name' => 'Popular']);
-            $popularOption  = ProductDeliveryOption::factory()->for($popularProduct)->create([
+            $popularProduct = Product::factory()->withCourse(Course::factory()->create())
+                ->create(['name' => 'Popular']);
+            $popularOption = ProductDeliveryOption::factory()->for($popularProduct)->create([
                 'status'           => PublicationStatusEnum::PUBLISHED->value,
                 'price'            => 120_000,
                 'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
@@ -604,7 +602,7 @@ describe('ProductQueryService integration', function () {
             ]);
             indexProductPrice($lessPopularProduct);
 
-            $order       = Order::factory()->create();
+            $order = Order::factory()->create();
             $secondOrder = Order::factory()->create();
 
             OrderItem::factory()->create([

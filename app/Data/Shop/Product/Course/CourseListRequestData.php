@@ -13,6 +13,7 @@ final class CourseListRequestData extends Data
 {
     public function __construct(
         public ?CourseFilterData $filter = null,
+        public ?string $search = null,
         public ?string $sortBy = 'created_at',
         public ?string $sortOrder = 'desc',
 
@@ -28,6 +29,7 @@ final class CourseListRequestData extends Data
             'filter'   => ['sometimes', 'array'],
             'filter.*' => ['sometimes'],
             ...$filters,
+            'search'    => ['sometimes', 'string', 'max:255'],
             'sortBy'    => ['sometimes', 'string', Rule::in(ProductQueryService::allowedSortFields)],
             'sortOrder' => ['sometimes', 'string', 'in:asc,desc'],
             'page'      => ['sometimes', 'integer', 'min:1'],

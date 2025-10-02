@@ -57,6 +57,7 @@ return new class extends Migration
             $table->index(['action_type', 'created_at']);
             $table->index(['resource_type', 'resource_id']);
             $table->index(['risk_level', 'created_at']);
+            $table->index(['route_name','resource_type']);
             $table->index('route_name');
             $table->index('ip_address');
         });

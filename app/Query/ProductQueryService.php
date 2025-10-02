@@ -83,11 +83,12 @@ final class ProductQueryService
 
         $this->availableProducts()->forListing();
 
+        if ($requestData->search) {
+            $this->search($requestData->search);
+        }
+
         if ($requestData->filter) {
             $filter = $requestData->filter;
-            if ($filter->search) {
-                $this->search($filter->search);
-            }
             if ($filter->categorySlug) {
                 $this->inCategory($filter->categorySlug);
             }
@@ -135,11 +136,12 @@ final class ProductQueryService
         // Keeps the default of all productableTypes
         $this->availableProducts()->forListing();
 
+        if ($requestData->search) {
+            $this->search($requestData->search);
+        }
         if ($requestData->filter) {
             $filter = $requestData->filter;
-            if ($filter->search) {
-                $this->search($filter->search);
-            }
+
             if ($filter->category_ids) {
                 $this->inCategories($filter->category_ids);
             }
@@ -159,8 +161,6 @@ final class ProductQueryService
             ->sortBy($requestData->sortBy, $requestData->sortOrder)
             ->paginate($requestData->per_page);
     }
-
-    // === CORE QUERY CONFIGURATION METHODS ===
 
     /**
      * Start with available products (shop-ready).
@@ -199,7 +199,7 @@ final class ProductQueryService
      */
     public function ofTypes(array $types): self
     {
-        $this->productableTypes = array_map(fn ($type) => $type->value, $types);
+        $this->productableTypes = array_map(fn($type) => $type->value, $types);
 
         return $this;
     }
@@ -262,30 +262,28 @@ final class ProductQueryService
         });
     }
 
-    // === DIRECT QUERY FILTERS (NON-DEFERRED) ===
-
     public function search(?string $searchTerm): self
     {
         if (empty($searchTerm)) {
             return $this;
         }
 
-        // Basic SQL search fallback. TODO: Replace with Typesense.
         $this->query->where(function (Builder $q) use ($searchTerm) {
 
-            // Condition A: Search directly on the products table
-            $q->whereLike('name', '%'.$searchTerm.'%')
-                ->orWhereLike('short_name','%'.$searchTerm.'%')
-                ->orWhereLike('short_description','%'.$searchTerm.'%');
+            $q->whereFullText(['name', 'short_name', 'short_description', 'slug'], $searchTerm);
 
-            // Condition B: OR search within the related productable models
-            // This correctly uses orWhereHasMorph, linking it to the conditions above.
-            $q->orWhereHasMorph('productable', $this->productableTypes, function (Builder $sq) use ($searchTerm) {
-                // No extra nested where() is needed here, as they are all OR conditions.
-                $sq->whereLike('short_name', '%'.$searchTerm.'%')
-                    ->orWhereLike('full_name','%'.$searchTerm.'%')
-                    ->orWhereLike('description', '%'.$searchTerm.'%');
-            });
+
+            foreach ($this->productableTypes as $type) {
+                $q->orWhereHasMorph('productable', [$type], function (Builder $sq) use ($searchTerm, $type) {
+                    $searchColumns = ['full_name', 'short_name', 'description', 'slug'];
+
+                    if (in_array($type, [ProductableEnum::SEMINAR->value, ProductableEnum::DIGITAL_ASSET->value])) {
+                        $searchColumns[] = 'keywords';
+                    }
+
+                    $sq->whereFullText($searchColumns, $searchTerm);
+                });
+            }
         });
 
         return $this;
@@ -336,7 +334,7 @@ final class ProductQueryService
     public function sortBy(string $field, string $direction = 'desc'): self
     {
 
-        if (! in_array($field, self::allowedSortFields) || ! in_array($direction, ['asc', 'desc'])) {
+        if (!in_array($field, self::allowedSortFields) || !in_array($direction, ['asc', 'desc'])) {
             return $this;
         }
 
@@ -447,7 +445,7 @@ final class ProductQueryService
         // Filter by available delivery options
         $this->addRelationshipConstraint('productDeliveryOptions', function ($q) {
             $q->where('status', PublicationStatusEnum::PUBLISHED);
-            if (! $this->includeFullProducts) {
+            if (!$this->includeFullProducts) {
                 $q->where(function ($capacityQuery) {
                     $capacityQuery->where('capacity', 0)
                         ->orWhereRaw('capacity > (SELECT COUNT(*) FROM enrollments WHERE product_delivery_option_id = product_delivery_options.id AND enrollment_status IN (?, ?))',
@@ -466,7 +464,7 @@ final class ProductQueryService
         if ($this->checkTermStatus) {
             $this->query->where(function ($q) {
                 $q->whereNull('term_id')
-                    ->orWhereHas('term', fn ($termQuery) => $termQuery->where('status', TermStatusEnum::ACTIVE));
+                    ->orWhereHas('term', fn($termQuery) => $termQuery->where('status', TermStatusEnum::ACTIVE));
             });
         }
     }
@@ -515,7 +513,7 @@ final class ProductQueryService
      */
     private function applyPriceJoinOnce(): void
     {
-        if (! in_array('price_filter', $this->appliedJoins)) {
+        if (!in_array('price_filter', $this->appliedJoins)) {
             $this->query->join('product_prices', 'products.id', '=', 'product_prices.product_id');
             $this->appliedJoins[] = 'price_filter';
         }
