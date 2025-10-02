@@ -6,6 +6,7 @@ use App\Enums\Content\DynamicListEntityTypeEnum;
 use App\Enums\Content\DynamicListSortByEnum;
 use App\Enums\Content\HomePageBlockTypeEnum;
 use App\Enums\PermissionEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Models\HomePageBlock;
 
 uses(Tests\AuthTestTrait::class);
@@ -451,7 +452,7 @@ describe('HomePageBlockController additional scenarios', function (): void {
         $this->authorized_user([PermissionEnum::HOME_PAGE_BLOCK_CREATE]);
         $product = App\Models\Product::factory()->create(
             [
-                'productable_type' => \App\Enums\Product\ProductableEnum::SEMINAR,
+                'productable_type' => ProductableEnum::SEMINAR->value,
                 'productable_id'   => App\Models\Seminar::factory(),
             ]
         );

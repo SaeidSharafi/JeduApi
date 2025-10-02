@@ -31,7 +31,7 @@ describe('SkuGeneratorService', function (): void {
             'end_date'      => '2025-12-20',
         ]);
         $this->product = Product::factory()->create([
-            'productable_type' => MorphTypeEnum::COURSE,
+            'productable_type' => MorphTypeEnum::COURSE->value,
             'productable_id'   => $this->course->id,
             'slug'             => $this->course->slug,
             'short_name'       => $this->course->short_name,
