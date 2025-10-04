@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Data\Shop\Product\Course\CourseListRequestData;
+use App\Data\Shop\Product\Course\ProductFilterData;
 use App\Data\Shop\Product\Course\ProductListRequestData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\CourseDifficultyLevelEnum;
@@ -24,6 +25,7 @@ use App\Models\Term;
 use App\Query\ProductQueryService;
 use App\Services\ProductPriceService;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Tests\Support\TypesenseTestHelper;
 
 describe('ProductQueryService integration', function () {
     describe('get by type', function () {
@@ -122,7 +124,7 @@ describe('ProductQueryService integration', function () {
     describe('Product listings', function () {
         it('applies search, category, fulfillment_type, and level filters', function () {
             $targetCategory = Category::factory()->create(['slug' => 'laravel-bootcamp']);
-            $otherCategory = Category::factory()->create();
+            $otherCategory  = Category::factory()->create();
 
             $targetCourse = Course::factory()->create([
                 'full_name'        => 'Laravel Zero to Hero',
@@ -173,8 +175,8 @@ describe('ProductQueryService integration', function () {
             indexProductPrice($otherProduct);
 
             $request = CourseListRequestData::from([
-                'search'           => 'Laravel',
-                'filter'   => [
+                'search' => 'Laravel',
+                'filter' => [
                     'categorySlug'     => $targetCategory->slug,
                     'level'            => CourseDifficultyLevelEnum::BEGINNER->value,
                     'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
@@ -189,7 +191,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($targetProduct))->toBeTrue();
         });
         it('filter courses by price range', function () {
-            $cheapCourse = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED->value]);
+            $cheapCourse  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED->value]);
             $cheapProduct = Product::factory()
                 ->withCourse($cheapCourse)
                 ->create(['name' => 'Affordable Course']);
@@ -200,7 +202,7 @@ describe('ProductQueryService integration', function () {
             ]);
             indexProductPrice($cheapProduct);
 
-            $expensiveCourse = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED->value]);
+            $expensiveCourse  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED->value]);
             $expensiveProduct = Product::factory()
                 ->withCourse($expensiveCourse)
                 ->create(['name' => 'Premium Course']);
@@ -278,7 +280,7 @@ describe('ProductQueryService integration', function () {
         });
         it('narrows results by product type and categories', function () {
             $seminarCategory = Category::factory()->create();
-            $courseCategory = Category::factory()->create();
+            $courseCategory  = Category::factory()->create();
 
             $courseProduct = Product::factory()
                 ->withCourse(Course::factory()->create())
@@ -309,7 +311,7 @@ describe('ProductQueryService integration', function () {
                 ],
             ]);
 
-            $results = ProductQueryService::make()->globalSearchProducts($request);
+            $results = ProductQueryService::make()->globalSearchProductsDatabase($request);
 
             expect($results->total())->toBe(1)
                 ->and($results->first()->is($seminarProduct))->toBeTrue();
@@ -344,7 +346,7 @@ describe('ProductQueryService integration', function () {
             indexProductPrice($assetProduct);
 
             $request = ProductListRequestData::from([
-                'filter'    => [
+                'filter' => [
                     'min_price'      => 80_000,
                     'max_price'      => 200_000,
                     'with_discounts' => false,
@@ -353,7 +355,7 @@ describe('ProductQueryService integration', function () {
                 'sortOrder' => 'asc',
             ]);
 
-            $results = ProductQueryService::make()->globalSearchProducts($request);
+            $results = ProductQueryService::make()->globalSearchProductsDatabase($request);
 
             expect($results->total())->toBe(2)
                 ->and($results->items()[0]->is($courseProduct->fresh()))->toBeTrue()
@@ -392,7 +394,7 @@ describe('ProductQueryService integration', function () {
                 'search' => 'JavaScript',
             ]);
 
-            $results = ProductQueryService::make()->globalSearchProducts($request);
+            $results = ProductQueryService::make()->globalSearchProductsDatabase($request);
 
             expect($results->total())->toBe(1)
                 ->and($results->first()->is($seminarProduct->fresh()))->toBeTrue();
@@ -441,10 +443,10 @@ describe('ProductQueryService integration', function () {
             indexProductPrice($assetProduct);
 
             $request = ProductListRequestData::from([
-                    'search' => 'data science',
+                'search' => 'data science',
             ]);
 
-            $results = ProductQueryService::make()->globalSearchProducts($request);
+            $results = ProductQueryService::make()->globalSearchProductsDatabase($request);
             expect($results->total())->toBe(1)
                 ->and($results->first()->is($seminarProduct->fresh()))->toBeTrue();
         });
@@ -478,7 +480,7 @@ describe('ProductQueryService integration', function () {
                 ],
             ]);
 
-            $results = ProductQueryService::make()->globalSearchProducts($request);
+            $results = ProductQueryService::make()->globalSearchProductsDatabase($request);
 
             expect($results->total())->toBe(1)
                 ->and($results->first()->is($discountedProduct->fresh()))->toBeTrue();
@@ -488,7 +490,7 @@ describe('ProductQueryService integration', function () {
     describe('fluent query helpers', function () {
         it('excludes unavailable products from availableProducts()', function () {
             $validProduct = Product::factory()->withCourse(Course::factory()->create())->create();
-            $validOption = ProductDeliveryOption::factory()->for($validProduct)->create([
+            $validOption  = ProductDeliveryOption::factory()->for($validProduct)->create([
                 'status'           => PublicationStatusEnum::PUBLISHED->value,
                 'price'            => 120_000,
                 'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
@@ -554,7 +556,7 @@ describe('ProductQueryService integration', function () {
         });
 
         it('keeps only discounted products when withDiscounts() is applied', function () {
-            $discounted = Product::factory()->withCourse(Course::factory()->create())->create(['name' => 'Discounted']);
+            $discounted     = Product::factory()->withCourse(Course::factory()->create())->create(['name' => 'Discounted']);
             $discountOption = ProductDeliveryOption::factory()->for($discounted)->create([
                 'price'            => 180_000,
                 'status'           => PublicationStatusEnum::PUBLISHED->value,
@@ -602,7 +604,7 @@ describe('ProductQueryService integration', function () {
             ]);
             indexProductPrice($lessPopularProduct);
 
-            $order = Order::factory()->create();
+            $order       = Order::factory()->create();
             $secondOrder = Order::factory()->create();
 
             OrderItem::factory()->create([
@@ -807,4 +809,80 @@ describe('ProductQueryService integration', function () {
 
         return $product->fresh(['productPrice', 'productDeliveryOptions.productDeliveryOptionDiscountPrice']);
     }
+});
+describe('ProductQueryService - globalSearch', function () {
+    it('uses Typesense when available', function () {
+        TypesenseTestHelper::skipIfTypesenseUnavailable();
+
+        $requestData = new ProductListRequestData(
+            filter: null,
+            search: 'test',
+            page: 1,
+            per_page: 15,
+        );
+
+        $results = ProductQueryService::make()->globalSearch($requestData);
+
+        expect($results)->toBeInstanceOf(LengthAwarePaginator::class)
+            ->and($results->perPage())->toBe(15);
+    });
+
+    it('uses database fallback when Typesense is not available', function () {
+        // Force database fallback by setting wrong driver
+        Config::set('scout.driver', 'database');
+
+        $requestData = new ProductListRequestData(
+            filter: null,
+            search: 'test',
+            page: 1,
+            per_page: 15,
+        );
+
+        $results = ProductQueryService::make()->globalSearch($requestData);
+
+        expect($results)->toBeInstanceOf(LengthAwarePaginator::class);
+    });
+
+    it('uses database fallback when Typesense throws exception', function () {
+        // Even if Typesense is configured, exceptions should trigger fallback
+        // This test verifies the try-catch logic
+        Config::set('scout.driver', 'typesense');
+        Config::set('scout.typesense.client-settings.api_key', 'invalid_key');
+
+        $requestData = new ProductListRequestData(
+            filter: null,
+            search: 'test',
+            page: 1,
+            per_page: 15,
+        );
+
+        // Should not throw exception; should gracefully fall back to database
+        $results = ProductQueryService::make()->globalSearch($requestData);
+
+        expect($results)->toBeInstanceOf(LengthAwarePaginator::class);
+    });
+
+    it('returns paginated results from database search', function () {
+        Config::set('scout.driver', 'database');
+
+        $filterData = new ProductFilterData(
+            category_ids: null,
+            type: null,
+            min_price: null,
+            max_price: null,
+            with_discounts: null,
+        );
+
+        $requestData = new ProductListRequestData(
+            filter: $filterData,
+            search: 'course',
+            page: 1,
+            per_page: 10,
+        );
+
+        $results = ProductQueryService::make()->globalSearch($requestData);
+
+        expect($results)->toBeInstanceOf(LengthAwarePaginator::class)
+            ->and($results->perPage())->toBe(10);
+    });
 });

@@ -1,0 +1,133 @@
+[
+  {
+    "id": 1,
+    "type": "webinar_banner",
+    "title": "وبینار ویژه: اکتشافات فضایی",
+    "location": "hero",
+    "content": {
+      "product_id": 7,
+      "text": "در این وبینار آنلاین و جذاب، با دکتر فیروز نادری به اعماق کیهان سفر کنید و با جدیدترین یافته‌های تلسکوپ جیمز وب آشنا شوید. فرصت را از دست ندهید.",
+      "image_id": null,
+      "image_url": "fake-cover.svg"
+    },
+    "order": 0,
+    "is_active": true,
+    "created_at": "2024-10-23 11:00:00",
+    "updated_at": "2024-10-23 11:00:00"
+  },
+  {
+    "id": 2,
+    "type": "banner",
+    "title": "به آکادمی آنلاین ما خوش آمدید",
+    "location": "hero",
+    "content": {
+      "action": "/",
+      "action_title": "مشاهده دوره‌ها",
+      "content": "مسیر یادگیری خود را با برترین دوره‌های آموزشی در حوزه‌های برنامه‌نویسی، هنر و کسب‌وکار آغاز کنید.",
+      "preset": "default",
+      "image_id": null,
+      "image_url": "main.svg"
+    },
+    "order": 1,
+    "is_active": true,
+    "created_at": "2024-10-23 11:01:00",
+    "updated_at": "2024-10-23 11:01:00"
+  },
+  {
+    "id": 3,
+    "type": "curated_list",
+    "title": "دوره‌های پیشنهادی برای شما",
+    "location": "middle",
+    "content": {
+      "items": [1, 6, 12, 30, 48],
+      "preset": "default"
+    },
+    "order": 2,
+    "is_active": true,
+    "created_at": "2024-10-23 11:02:00",
+    "updated_at": "2024-10-23 11:02:00"
+  },
+  {
+    "id": 4,
+    "type": "main_categories",
+    "title": "دسته‌بندی‌های محبوب",
+    "location": "middle",
+    "content": {
+      "items": [1, 2, 3, 4],
+      "preset": "default"
+    },
+    "order": 3,
+    "is_active": true,
+    "created_at": "2024-10-23 11:03:00",
+    "updated_at": "2024-10-23 11:03:00"
+  },
+  {
+    "id": 5,
+    "type": "dynamic_list",
+    "title": "جدیدترین دوره‌ها",
+    "location": "middle",
+    "content": {
+      "entity_type": "course_products",
+      "sort_by": "created_at:desc",
+      "limit": 5,
+      "preset": "default",
+      "category_ids": null
+    },
+    "order": 4,
+    "is_active": true,
+    "created_at": "2024-10-23 11:04:00",
+    "updated_at": "2024-10-23 11:04:00"
+  },
+  {
+    "id": 6,
+    "type": "dynamic_list",
+    "title": "پرفروش‌ترین محصولات",
+    "location": "middle",
+    "content": {
+      "entity_type": "all_products",
+      "sort_by": "popular",
+      "limit": 5,
+      "preset": "default",
+      "category_ids": null
+    },
+    "order": 5,
+    "is_active": true,
+    "created_at": "2024-10-23 11:05:00",
+    "updated_at": "2024-10-23 11:05:00"
+  },
+  {
+    "id": 7,
+    "type": "dynamic_list",
+    "title": "آخرین مقالات وبلاگ",
+    "location": "middle",
+    "content": {
+      "entity_type": "blog_post",
+      "sort_by": "created_at:desc",
+      "limit": 4,
+      "preset": "default",
+      "category_ids": null
+    },
+    "order": 6,
+    "is_active": true,
+    "created_at": "2024-10-23 11:06:00",
+    "updated_at": "2024-10-23 11:06:00"
+  },
+  {
+    "id": 8,
+    "type": "banner",
+    "title": "با اساتید برجسته ایران بیاموزید",
+    "location": "full_width",
+    "content": {
+      "action": "/teachers",
+      "action_title": "مشاهده لیست اساتید",
+      "content": "مجموعه‌ای از برترین اساتید و متخصصان کشور، تجربیات خود را با شما به اشتراک می‌گذارند.",
+      "preset": "default",
+      "image_id": null,
+      "image_url": "fake-gallery.svg"
+    },
+    "order": 7,
+    "is_active": true,
+    "created_at": "2024-10-23 11:07:00",
+    "updated_at": "2024-10-23 11:07:00"
+  }
+]

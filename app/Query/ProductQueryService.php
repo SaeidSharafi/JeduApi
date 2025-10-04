@@ -13,6 +13,7 @@ use App\Enums\Product\ProductableEnum;
 use App\Enums\TermStatusEnum;
 use App\Models\Product;
 use Closure;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -115,7 +116,7 @@ final class ProductQueryService
     {
         return $this
             ->ofType(ProductableEnum::SEMINAR)
-            ->globalSearchProducts($requestData);
+            ->globalSearchProductsDatabase($requestData);
     }
 
     /**
@@ -125,13 +126,13 @@ final class ProductQueryService
     {
         return $this
             ->ofType(ProductableEnum::DIGITAL_ASSET)
-            ->globalSearchProducts($requestData);
+            ->globalSearchProductsDatabase($requestData);
     }
 
     /**
      * Perform a global search across all available product types.
      */
-    public function globalSearchProducts(ProductListRequestData $requestData): LengthAwarePaginator
+    public function globalSearchProductsDatabase(ProductListRequestData $requestData): LengthAwarePaginator
     {
         // Keeps the default of all productableTypes
         $this->availableProducts()->forListing();
@@ -160,6 +161,99 @@ final class ProductQueryService
         return $this
             ->sortBy($requestData->sortBy, $requestData->sortOrder)
             ->paginate($requestData->per_page);
+    }
+
+    /**
+     * Smart search with automatic fallback.
+     * Uses Typesense if available, falls back to database search.
+     */
+    public function globalSearch(ProductListRequestData $requestData): LengthAwarePaginator
+    {
+        // we can only test this manually, so ignore for code coverage
+        // @codeCoverageIgnoreStart
+        if ($this->isTypesenseAvailable()) {
+            try {
+                return $this->globalSearchProductsScout($requestData);
+            } catch (Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('Typesense product search failed, falling back to database', [
+                    'query' => $requestData->search,
+                    'error' => $e->getMessage(),
+                ]);
+                // Fall through to database search
+            }
+        }
+        // @codeCoverageIgnoreEnd
+
+        return $this->globalSearchProductsDatabase($requestData);
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function globalSearchProductsScout(ProductListRequestData $requestData): LengthAwarePaginator
+    {
+        if (config('scout.driver') !== 'typesense') {
+            return $this->globalSearchProductsDatabase($requestData);
+        }
+
+        $query = Product::search($requestData->search)
+            ->options([
+                'query_by' => 'embedding',
+            ]);
+
+        $query->where('status', PublicationStatusEnum::PUBLISHED->value);
+        $query->where('is_visible', true);
+        $query->where('productable_status', PublicationStatusEnum::PUBLISHED->value);
+        $query->where('has_published_delivery_option', true);
+        $query->where('is_term_active', true);
+
+        // This is a static filter for this method
+        $query->where('productable_type', ProductableEnum::COURSE->value);
+
+        if ($requestData->filter) {
+            $filter = $requestData->filter;
+
+            if ($filter->categorySlug) {
+                $query->where('category_slugs', $filter->categorySlug);
+            }
+            if ($filter->level) {
+                $query->where('level', $filter->level);
+            }
+            if ($filter->fulfillment_type) {
+                $query->where('fulfillment_types', $filter->fulfillment_type);
+            }
+            if ($filter->min_price || $filter->max_price) {
+                // Build a Typesense filter string for ranges
+                $priceFilters = [];
+                // Price filters need to be applied via options() for Typesense
+                if ($filter->min_price && $filter->max_price) {
+                    $query->options(['filter_by' => "price:[{$filter->min_price}..{$filter->max_price}]"]);
+                } elseif ($filter->min_price) {
+                    $query->options(['filter_by' => "price:>={$filter->min_price}"]);
+                } elseif ($filter->max_price) {
+                    $query->options(['filter_by' => "price:<={$filter->max_price}"]);
+                }
+            }
+        }
+
+        // Apply Sorting
+        if (in_array($requestData->sortBy, ['created_at', 'updated_at', 'price', 'name'])) {
+            $query->orderBy($requestData->sortBy, $requestData->sortOrder);
+        }
+
+        return $query
+            ->query(function ($query) {
+                $query->with([
+                    'vendor:id,name',
+                    'categories:id,name,slug',
+                    'productable:id,thumbnail_url,default_teacher_info',
+                    'productDeliveryOptions' => function ($q) {
+                        $q->where('status', PublicationStatusEnum::PUBLISHED)
+                            ->with(['productDeliveryOptionDiscountPrice', 'teachers:id,first_name,last_name,gender']);
+                    },
+                ]);
+            })
+            ->paginate($requestData->per_page)->withQueryString();
     }
 
     /**
@@ -199,7 +293,7 @@ final class ProductQueryService
      */
     public function ofTypes(array $types): self
     {
-        $this->productableTypes = array_map(fn($type) => $type->value, $types);
+        $this->productableTypes = array_map(fn ($type) => $type->value, $types);
 
         return $this;
     }
@@ -272,7 +366,6 @@ final class ProductQueryService
 
             $q->whereFullText(['name', 'short_name', 'short_description', 'slug'], $searchTerm);
 
-
             foreach ($this->productableTypes as $type) {
                 $q->orWhereHasMorph('productable', [$type], function (Builder $sq) use ($searchTerm, $type) {
                     $searchColumns = ['full_name', 'short_name', 'description', 'slug'];
@@ -334,7 +427,7 @@ final class ProductQueryService
     public function sortBy(string $field, string $direction = 'desc'): self
     {
 
-        if (!in_array($field, self::allowedSortFields) || !in_array($direction, ['asc', 'desc'])) {
+        if (! in_array($field, self::allowedSortFields) || ! in_array($direction, ['asc', 'desc'])) {
             return $this;
         }
 
@@ -445,7 +538,7 @@ final class ProductQueryService
         // Filter by available delivery options
         $this->addRelationshipConstraint('productDeliveryOptions', function ($q) {
             $q->where('status', PublicationStatusEnum::PUBLISHED);
-            if (!$this->includeFullProducts) {
+            if (! $this->includeFullProducts) {
                 $q->where(function ($capacityQuery) {
                     $capacityQuery->where('capacity', 0)
                         ->orWhereRaw('capacity > (SELECT COUNT(*) FROM enrollments WHERE product_delivery_option_id = product_delivery_options.id AND enrollment_status IN (?, ?))',
@@ -464,7 +557,7 @@ final class ProductQueryService
         if ($this->checkTermStatus) {
             $this->query->where(function ($q) {
                 $q->whereNull('term_id')
-                    ->orWhereHas('term', fn($termQuery) => $termQuery->where('status', TermStatusEnum::ACTIVE));
+                    ->orWhereHas('term', fn ($termQuery) => $termQuery->where('status', TermStatusEnum::ACTIVE));
             });
         }
     }
@@ -513,9 +606,25 @@ final class ProductQueryService
      */
     private function applyPriceJoinOnce(): void
     {
-        if (!in_array('price_filter', $this->appliedJoins)) {
+        if (! in_array('price_filter', $this->appliedJoins)) {
             $this->query->join('product_prices', 'products.id', '=', 'product_prices.product_id');
             $this->appliedJoins[] = 'price_filter';
         }
+    }
+
+    /**
+     * Check if Typesense is configured and available.
+     */
+    private function isTypesenseAvailable(): bool
+    {
+        static $available = null;
+
+        if ($available === null) {
+            $available = config('scout.driver') === 'typesense'
+                && ! empty(config('scout.typesense.client-settings.api_key'))
+                && ! app()->runningUnitTests();
+        }
+
+        return $available;
     }
 }

@@ -1,0 +1,322 @@
+[
+  {
+    "id": 1,
+    "first_name": "محمدرضا",
+    "last_name": "شجریان",
+    "bio": "استاد برجسته آواز و موسیقی سنتی ایران، با سابقه‌ای درخشان در تدریس ردیف‌های آوازی.",
+    "rate": 4.9,
+    "email": "m.shajarian@jedushop.com",
+    "phone": "9100000001",
+    "gender": "male",
+    "birth_date": "1940-09-23",
+    "social_links": {
+      "linkedin": "https://ir.linkedin.com/in/mohammad-reza-shajarian",
+      "website": "https://shajarian.com"
+    },
+    "user_id": 1
+  },
+  {
+    "id": 2,
+    "first_name": "عباس",
+    "last_name": "کیارستمی",
+    "bio": "کارگردان و فیلم‌نامه‌نویس شهیر بین‌المللی، مدرس دوره‌های کارگردانی و سینمای مفهومی.",
+    "rate": 4.8,
+    "email": "a.kiarostami@jedushop.com",
+    "phone": "9100000002",
+    "gender": "male",
+    "birth_date": "1940-06-22",
+    "social_links": {
+      "imdb": "https://www.imdb.com/name/nm0001424/",
+      "website": null
+    },
+    "user_id": 2
+  },
+  {
+    "id": 3,
+    "first_name": "مجید",
+    "last_name": "سمیعی",
+    "bio": "جراح مغز و اعصاب و متخصص علوم شناختی، ارائه‌دهنده کارگاه‌های پیشرفته در حوزه مغز و شناخت.",
+    "rate": 5.0,
+    "email": "m.samii@jedushop.com",
+    "phone": "9100000003",
+    "gender": "male",
+    "birth_date": "1937-06-19",
+    "social_links": {
+      "linkedin": "https://ir.linkedin.com/in/madjid-samii",
+      "website": "https://professorsamii.com"
+    },
+    "user_id": 3
+  },
+  {
+    "id": 4,
+    "first_name": "محمود",
+    "last_name": "فرشچیان",
+    "bio": "نگارگر و نقاش صاحب‌سبک، استاد دوره‌های مینیاتور و نقاشی ایرانی.",
+    "rate": 4.9,
+    "email": "m.farshchian@jedushop.com",
+    "phone": "9100000004",
+    "gender": "male",
+    "birth_date": "1930-01-24",
+    "social_links": {
+      "linkedin": null,
+      "website": "https://farshchianart.com"
+    },
+    "user_id": 4
+  },
+  {
+    "id": 5,
+    "first_name": "حسین",
+    "last_name": "الهی قمشه‌ای",
+    "bio": "عارف، فیلسوف و سخنران برجسته در زمینه ادبیات عرفانی و فلسفه شرق.",
+    "rate": 4.8,
+    "email": "h.ghomshei@jedushop.com",
+    "phone": "9100000005",
+    "gender": "male",
+    "birth_date": "1940-01-04",
+    "social_links": {
+      "linkedin": null,
+      "website": "https://drelahighomshei.com"
+    },
+    "user_id": 5
+  },
+  {
+    "id": 6,
+    "first_name": "بهرام",
+    "last_name": "بیضایی",
+    "bio": "نمایشنامه‌نویس و کارگردان تئاتر و سینما، مدرس کارگاه‌های تخصصی نمایشنامه‌نویسی.",
+    "rate": 4.7,
+    "email": "b.beyzaie@jedushop.com",
+    "phone": "9100000006",
+    "gender": "male",
+    "birth_date": "1938-12-26",
+    "social_links": {
+      "imdb": "https://www.imdb.com/name/nm0067285/",
+      "website": null
+    },
+    "user_id": 6
+  },
+  {
+    "id": 7,
+    "first_name": "مریم",
+    "last_name": "میرزاخانی",
+    "bio": "نابغه ریاضی و استاد دانشگاه استنفورد، ارائه‌دهنده دوره‌های پیشرفته هندسه و توپولوژی.",
+    "rate": 5.0,
+    "email": "m.mirzakhani@jedushop.com",
+    "phone": "9100000007",
+    "gender": "female",
+    "birth_date": "1977-05-12",
+    "social_links": {
+      "linkedin": null,
+      "website": "https://stanford.edu/~mmir"
+    },
+    "user_id": 7
+  },
+  {
+    "id": 8,
+    "first_name": "اصغر",
+    "last_name": "فرهادی",
+    "bio": "کارگردان و فیلم‌نامه‌نویس برنده اسکار، مدرس دوره‌های فیلم‌نامه‌نویسی و کارگردانی سینما.",
+    "rate": 4.9,
+    "email": "a.farhadi@jedushop.com",
+    "phone": "9100000008",
+    "gender": "male",
+    "birth_date": "1972-05-07",
+    "social_links": {
+      "imdb": "https://www.imdb.com/name/nm1410815/",
+      "website": null
+    },
+    "user_id": 8
+  },
+  {
+    "id": 9,
+    "first_name": "عبدالکریم",
+    "last_name": "سروش",
+    "bio": "فیلسوف و نظریه‌پرداز، مدرس دوره‌های فلسفه دین و کلام جدید.",
+    "rate": 4.6,
+    "email": "a.soroush@jedushop.com",
+    "phone": "9100000009",
+    "gender": "male",
+    "birth_date": "1945-12-16",
+    "social_links": {
+      "linkedin": null,
+      "website": "https://drsoroush.com"
+    },
+    "user_id": 9
+  },
+  {
+    "id": 10,
+    "first_name": "حسین",
+    "last_name": "علیزاده",
+    "bio": "نوازنده و آهنگساز برجسته موسیقی ایرانی، استاد دوره‌های تار و سه‌تار.",
+    "rate": 4.8,
+    "email": "h.alizadeh@jedushop.com",
+    "phone": "9100000010",
+    "gender": "male",
+    "birth_date": "1951-08-23",
+    "social_links": {
+      "linkedin": null,
+      "website": "https://hosseinalizadeh.net"
+    },
+    "user_id": 10
+  },
+  {
+    "id": 11,
+    "first_name": "علی",
+    "last_name": "شریعتی",
+    "bio": "جامعه‌شناس و متفکر دینی، ارائه‌دهنده تحلیل‌های عمیق در حوزه جامعه‌شناسی دین.",
+    "rate": 4.7,
+    "email": "a.shariati@jedushop.com",
+    "phone": "9100000011",
+    "gender": "male",
+    "birth_date": "1933-11-23",
+    "social_links": {
+      "linkedin": null,
+      "website": "https://shariati.com"
+    },
+    "user_id": 11
+  },
+  {
+    "id": 12,
+    "first_name": "مرتضی",
+    "last_name": "ممیز",
+    "bio": "پدر گرافیک نوین ایران، مدرس کارگاه‌های خلاقیت در طراحی گرافیک و هویت بصری.",
+    "rate": 4.9,
+    "email": "m.momayez@jedushop.com",
+    "phone": "9100000012",
+    "gender": "male",
+    "birth_date": "1936-08-26",
+    "social_links": {
+      "linkedin": null,
+      "website": "https://momayez.ir"
+    },
+    "user_id": 12
+  },
+  {
+    "id": 13,
+    "first_name": "فیروز",
+    "last_name": "نادری",
+    "bio": "دانشمند برجسته ناسا و مدیر سابق اکتشافات منظومه شمسی، ارائه‌دهنده وبینارهای نجوم و فضا.",
+    "rate": 5.0,
+    "email": "f.naderi@jedushop.com",
+    "phone": "9100000013",
+    "gender": "male",
+    "birth_date": "1946-03-25",
+    "social_links": {
+      "linkedin": "https://www.linkedin.com/in/firouz-naderi-9b222910/",
+      "website": "https://solarsystem.nasa.gov/people/2391/firouz-naderi/"
+    },
+    "user_id": 13
+  },
+  {
+    "id": 14,
+    "first_name": "آیدین",
+    "last_name": "آغداشلو",
+    "bio": "نقاش، گرافیست و نویسنده، مدرس دوره‌های تاریخ هنر و نقد هنری.",
+    "rate": 4.6,
+    "email": "a.aghdashloo@jedushop.com",
+    "phone": "9100000014",
+    "gender": "male",
+    "birth_date": "1940-10-30",
+    "social_links": {
+      "instagram": "https://www.instagram.com/aghdashloo/",
+      "website": null
+    },
+    "user_id": 14
+  },
+  {
+    "id": 15,
+    "first_name": "مصطفی",
+    "last_name": "ملکیان",
+    "bio": "فیلسوف و روشنفکر، مدرس کارگاه‌های معنویت و عقلانیت در زندگی مدرن.",
+    "rate": 4.7,
+    "email": "m.malekian@jedushop.com",
+    "phone": "9100000015",
+    "gender": "male",
+    "birth_date": "1956-06-01",
+    "social_links": {
+      "linkedin": null,
+      "website": "https://mostafamalekian.com"
+    },
+    "user_id": 15
+  },
+  {
+    "id": 16,
+    "first_name": "کیهان",
+    "last_name": "کلهر",
+    "bio": "نوازنده جهانی کمانچه و آهنگساز، استاد کارگاه‌های تخصصی موسیقی تلفیقی.",
+    "rate": 4.9,
+    "email": "k.kalhor@jedushop.com",
+    "phone": "9100000016",
+    "gender": "male",
+    "birth_date": "1963-11-24",
+    "social_links": {
+      "instagram": "https://www.instagram.com/kayhan_kalhor/",
+      "website": "https://kayhankalhor.net"
+    },
+    "user_id": 16
+  },
+  {
+    "id": 17,
+    "first_name": "رضا",
+    "last_name": "داوری اردکانی",
+    "bio": "فیلسوف و رئیس فرهنگستان علوم، مدرس دوره‌های فلسفه غرب و فلسفه تطبیقی.",
+    "rate": 4.5,
+    "email": "r.davari@jedushop.com",
+    "phone": "9100000017",
+    "gender": "male",
+    "birth_date": "1933-07-06",
+    "social_links": {
+      "linkedin": null,
+      "website": "https://davariardakani.ir"
+    },
+    "user_id": 17
+  },
+  {
+    "id": 18,
+    "first_name": "شهرام",
+    "last_name": "ناظری",
+    "bio": "شوالیه آواز ایران، استاد دوره‌های آواز سنتی و موسیقی مقامی.",
+    "rate": 4.8,
+    "email": "s.nazeri@jedushop.com",
+    "phone": "9100000018",
+    "gender": "male",
+    "birth_date": "1950-02-18",
+    "social_links": {
+      "instagram": "https://www.instagram.com/shahram_nazeri_official/",
+      "website": null
+    },
+    "user_id": 18
+  },
+  {
+    "id": 19,
+    "first_name": "محسن",
+    "last_name": "کدیور",
+    "bio": "پژوهشگر دینی و استاد دانشگاه، ارائه‌دهنده مباحث تخصصی در حوزه فقه و حقوق اسلامی.",
+    "rate": 4.6,
+    "email": "m.kadivar@jedushop.com",
+    "phone": "9100000019",
+    "gender": "male",
+    "birth_date": "1959-06-07",
+    "social_links": {
+      "linkedin": "https://www.linkedin.com/in/mohsen-kadivar-3a2b1b1a/",
+      "website": "https://kadivar.com"
+    },
+    "user_id": 19
+  },
+  {
+    "id": 20,
+    "first_name": "سهراب",
+    "last_name": "سپهری",
+    "bio": "شاعر و نقاش معاصر، الهام‌بخش کارگاه‌های شعر نو و نقاشی آبستره.",
+    "rate": 4.7,
+    "email": "s.sehpehri@jedushop.com",
+    "phone": "9100000020",
+    "gender": "male",
+    "birth_date": "1928-10-07",
+    "social_links": {
+      "linkedin": null,
+      "website": null
+    },
+    "user_id": 20
+  }
+]

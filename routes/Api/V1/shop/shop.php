@@ -14,8 +14,10 @@ use App\Http\Controllers\Api\Shop\Product\CategoryCourseController;
 use App\Http\Controllers\Api\Shop\Product\CategoryDigitalAssetController;
 use App\Http\Controllers\Api\Shop\Product\CategorySeminarController;
 use App\Http\Controllers\Api\Shop\Product\CourseController;
+use App\Http\Controllers\Api\Shop\SearchController;
 use App\Http\Controllers\Api\Shop\Settings\FooterController;
 use App\Http\Controllers\Api\Shop\Settings\HeaderController;
+use App\Http\Controllers\Api\Shop\SuggestSearchController;
 
 require __DIR__.'/rate-limited.php';
 
@@ -40,3 +42,5 @@ Route::get('category/{category:slug}/digital-assets', CategoryDigitalAssetContro
 Route::get('courses', [CourseController::class, 'index'])->name('courses.index');
 Route::get('course/{product:slug}', [CourseController::class, 'show'])
     ->name('courses.show');
+Route::get('search', SearchController::class)->name('search');
+Route::get('search/suggest', SuggestSearchController::class)->name('search.suggest');

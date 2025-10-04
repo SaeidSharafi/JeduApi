@@ -1,0 +1,12 @@
+[
+  {"id": 1, "name": "مدیر کل سیستم", "email": "staff@example.com", "phone": "9300000000", "password": "password", "is_admin": true},
+  {"id": 2, "name": "سعید شرفی", "email": "saeid@example.com", "phone": "9300000001", "password": "password", "is_admin": false},
+  {"id": 3, "name": "مریم رضایی", "email": "maryam@example.com", "phone": "9300000002", "password": "password", "is_admin": false},
+  {"id": 4, "name": "احمد کریمی", "email": "ahmad@example.com", "phone": "9300000003", "password": "password", "is_admin": false},
+  {"id": 5, "name": "زهرا حسینی", "email": "zahra@example.com", "phone": "9300000004", "password": "password", "is_admin": false},
+  {"id": 6, "name": "علی محمدی", "email": "ali@example.com", "phone": "9300000005", "password": "password", "is_admin": false},
+  {"id": 7, "name": "فاطمه جعفری", "email": "fatemeh@example.com", "phone": "9300000006", "password": "password", "is_admin": false},
+  {"id": 8, "name": "حسین قاسمی", "email": "hossein@example.com", "phone": "9300000007", "password": "password", "is_admin": false},
+  {"id": 9, "name": "سارا نعمتی", "email": "sara@example.com", "phone": "9300000008", "password": "password", "is_admin": false},
+  {"id": 10, "name": "مهدی شریفی", "email": "mahdi@example.com", "phone": "9300000009", "password": "password", "is_admin": false}
+]

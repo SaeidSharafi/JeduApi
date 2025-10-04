@@ -1,0 +1,94 @@
+[
+  {
+    "id": 1,
+    "name": "دپارتمان فنی و مهندسی",
+    "email": "tech@jedushop.com",
+    "phone": "021-12345678",
+    "phone2": "021-87654321",
+    "address": "تهران، خیابان آزادی، دانشگاه صنعتی شریف",
+    "map_location": "https://maps.google.com/?q=35.7028,51.3536",
+    "logo_url": "logo-tech.svg",
+    "favicon_url": "favicon-tech.svg",
+    "social_links": {
+      "facebook": "https://facebook.com/jedushop.tech",
+      "twitter": "https://twitter.com/jedushop.tech",
+      "instagram": "https://instagram.com/jedushop.tech",
+      "linkedin": "https://linkedin.com/company/jedushop-tech"
+    },
+    "theme_options": {
+      "primary_color": "#005f73",
+      "secondary_color": "#0a9396",
+      "font_family": "Vazirmatn",
+      "layout": "full-width"
+    }
+  },
+  {
+    "id": 2,
+    "name": "دپارتمان هنر و رسانه",
+    "email": "art@jedushop.com",
+    "phone": "021-23456789",
+    "phone2": null,
+    "address": "تهران، خیابان انقلاب، دانشگاه هنر",
+    "map_location": "https://maps.google.com/?q=35.7093,51.4183",
+    "logo_url": "logo-art.svg",
+    "favicon_url": "favicon-art.svg",
+    "social_links": {
+      "facebook": "https://facebook.com/jedushop.art",
+      "twitter": "https://twitter.com/jedushop.art",
+      "instagram": "https://instagram.com/jedushop.art",
+      "linkedin": "https://linkedin.com/company/jedushop-art"
+    },
+    "theme_options": {
+      "primary_color": "#9b2226",
+      "secondary_color": "#ae2012",
+      "font_family": "Lalezar",
+      "layout": "boxed"
+    }
+  },
+  {
+    "id": 3,
+    "name": "دپارتمان علوم انسانی",
+    "email": "humanities@jedushop.com",
+    "phone": "021-34567890",
+    "phone2": "021-09876543",
+    "address": "تهران، میدان بهارستان، دانشگاه علامه طباطبایی",
+    "map_location": "https://maps.google.com/?q=35.6944,51.4244",
+    "logo_url": "logo-humanities.svg",
+    "favicon_url": "favicon-humanities.svg",
+    "social_links": {
+      "facebook": "https://facebook.com/jedushop.humanities",
+      "twitter": "https://twitter.com/jedushop.humanities",
+      "instagram": "https://instagram.com/jedushop.humanities",
+      "linkedin": "https://linkedin.com/company/jedushop-humanities"
+    },
+    "theme_options": {
+      "primary_color": "#ee9b00",
+      "secondary_color": "#ca6702",
+      "font_family": "Sahel",
+      "layout": "full-width"
+    }
+  },
+  {
+    "id": 4,
+    "name": "دپارتمان زبان‌های خارجی",
+    "email": "languages@jedushop.com",
+    "phone": "021-45678901",
+    "phone2": null,
+    "address": "تهران، خیابان ولیعصر، کانون زبان ایران",
+    "map_location": "https://maps.google.com/?q=35.7219,51.4181",
+    "logo_url": "logo-lang.svg",
+    "favicon_url": "favicon-lang.svg",
+    "social_links": {
+      "facebook": "https://facebook.com/jedushop.languages",
+      "twitter": "https://twitter.com/jedushop.languages",
+      "instagram": "https://instagram.com/jedushop.languages",
+      "linkedin": "https://linkedin.com/company/jedushop-languages"
+    },
+    "theme_options": {
+      "primary_color": "#001219",
+      "secondary_color": "#005f73",
+      "font_family": "Roboto",
+      "layout": "boxed"
+    }
+  }
+]
