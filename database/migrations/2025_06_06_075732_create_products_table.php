@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('productable_type');
             $table->unsignedBigInteger('term_id');
             $table->foreign('term_id')->references('id')->on('terms');
-            $table->string('status')->default(\App\Enums\Content\PublicationStatusEnum::DRAFT->value);
+            $table->string('status')->default(App\Enums\Content\PublicationStatusEnum::DRAFT->value);
             $table->boolean('is_visible')->default(false);
             $table->string('short_description');
             $table->string('short_name');
@@ -37,7 +37,10 @@ return new class extends Migration
             $table->index(['productable_type', 'productable_id']);
             $table->index(['vendor_id', 'term_id']);
             $table->index(['status', 'is_visible']);
-            $table->fullText(['name', 'short_name', 'short_description', 'slug'], 'products_fulltext_index');
+            // skip on sqlite
+            if (DB::connection()->getDriverName() !== 'sqlite') {
+                $table->fullText(['name', 'short_name', 'short_description', 'slug'], 'products_fulltext_index');
+            }
         });
     }
 

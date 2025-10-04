@@ -43,8 +43,10 @@ return new class extends Migration
             $table->integer('review_count')->default(0);
             $table->decimal('average_rating', 3)->default(0.0);
             $table->timestamps();
-
-            $table->fullText(['full_name', 'short_name', 'slug', 'description', 'keywords'], 'seminars_fulltext_index');
+            if (DB::connection()->getDriverName() !== 'sqlite') {
+                $table->fullText(['full_name', 'short_name', 'slug', 'description', 'keywords'],
+                    'seminars_fulltext_index');
+            }
         });
     }
 };
