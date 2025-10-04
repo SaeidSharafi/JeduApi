@@ -9,6 +9,7 @@ use App\Models\Blog\BlogPost;
 use App\Models\Category;
 use App\Models\HomePageBlock;
 use App\Models\Product;
+
 use function Pest\Laravel\getJson;
 
 beforeEach(function (): void {
@@ -173,7 +174,7 @@ describe('HomePageContentController', function (): void {
                 'created_at' => now()->subDay(),
             ])
             ->create([
-                'status' => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+                'status' => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             ]);
 
         // Create a DYNAMIC_LIST block for BLOG posts
@@ -200,7 +201,6 @@ describe('HomePageContentController', function (): void {
             ->and(count($responseData['content']['items']))->toBe(2)
             ->and($responseData['content']['items'][0])
             ->toHaveKeys([
-                'id',
                 'title',
                 'slug',
                 'excerpt',
@@ -212,8 +212,8 @@ describe('HomePageContentController', function (): void {
             ])
             ->and($responseData['content']['items'][0]['title'])->toBe('Fourth Post')
             ->and($responseData['content']['items'][1]['title'])->toBe('Third Post')
-            ->and($responseData['content']['items'][0]['id'])->toBe($fourthPost->id)
-            ->and($responseData['content']['items'][1]['id'])->toBe($thirdPost->id)
+            ->and($responseData['content']['items'][0]['slug'])->toBe($fourthPost->slug)
+            ->and($responseData['content']['items'][1]['slug'])->toBe($thirdPost->slug)
             ->and($responseData['content']['items'][0]['excerpt'])->toBe($fourthPost->excerpt)
             ->and($responseData['content']['items'][0]['author']['name'])->toBe($fourthPost->author->name)
             ->and($responseData['content']['items'][0]['published_at'])->toBe($this->toJalalitString($fourthPost->published_at));

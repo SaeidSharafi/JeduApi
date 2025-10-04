@@ -6,10 +6,10 @@ namespace App\Http\Controllers\Api\Shop;
 
 use App\Data\Shop\Blog\BlogPostCardData;
 use App\Data\Shop\Product\ProductCardData;
+use App\Data\Shop\Search\SearchData;
 use App\Http\Controllers\Controller;
 use App\Services\GlobalSearchService;
 use App\Services\ProductPriceService;
-use Illuminate\Http\Request;
 
 /**
  * @group Shop - Search
@@ -25,6 +25,7 @@ final class SearchController extends Controller
      *
      * @queryParam q string required The search query. Example: "laptop"
      * @queryParam per_page int The number of results to return per page. Default is 15, max 100. Example: 10
+     * @queryParam result_types string[] Filter by result type. Options: "product", "blog_post". Returns both if not specified. Example: ["product"]
      * @queryParam productable_type string Filter by product type (e.g., "course", "seminar", "digital_asset"). Example: course
      * @queryParam has_discount boolean Filter products with active discounts. Example: true
      * @queryParam category_ids int[] Filter by category IDs. Example: [1,2,3]
@@ -37,35 +38,10 @@ final class SearchController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function __invoke(Request $request, GlobalSearchService $service, ProductPriceService $priceService)
+    public function __invoke(SearchData $searchData, GlobalSearchService $service, ProductPriceService $priceService)
     {
-        $request->validate([
-            'q'                   => 'required|string|max:255',
-            'per_page'            => 'sometimes|integer|min:1|max:100',
-            'productable_type'    => 'sometimes|string',
-            'has_discount'        => 'sometimes|boolean',
-            'category_ids'        => 'sometimes|array',
-            'category_ids.*'      => 'integer',
-            'price_min'           => 'sometimes|integer|min:0',
-            'price_max'           => 'sometimes|integer',
-            'level'               => 'sometimes|string',
-            'fulfillment_types'   => 'sometimes|array',
-            'fulfillment_types.*' => 'string',
-        ]);
-
-        $query   = $request->input('q');
-        $perPage = $request->input('per_page', 15);
-        $filters = $request->only([
-            'productable_type',
-            'has_discount',
-            'category_ids',
-            'price_min',
-            'price_max',
-            'level',
-            'fulfillment_types',
-        ]);
-
-        $results = $service->search($query, $perPage, $filters);
+        // Pass SearchData DTO directly to service - no intermediate transformation needed!
+        $results = $service->search($searchData);
 
         $data = $results->through(function ($item) use ($priceService) {
             if ($item instanceof \App\Models\Product) {
@@ -79,7 +55,9 @@ final class SearchController extends Controller
                     ->additional(['type' => 'blog_post']);
             }
 
-            return null;
+            // @codeCoverageIgnoreStart
+            return null; // Should never happen - only Product or BlogPost in results
+            // @codeCoverageIgnoreEnd
         });
 
         return response()->success($data);

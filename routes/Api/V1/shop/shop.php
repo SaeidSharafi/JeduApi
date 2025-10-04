@@ -14,7 +14,6 @@ use App\Http\Controllers\Api\Shop\Product\CategoryCourseController;
 use App\Http\Controllers\Api\Shop\Product\CategoryDigitalAssetController;
 use App\Http\Controllers\Api\Shop\Product\CategorySeminarController;
 use App\Http\Controllers\Api\Shop\Product\CourseController;
-use App\Http\Controllers\Api\Shop\Product\ProductSearchController;
 use App\Http\Controllers\Api\Shop\SearchController;
 use App\Http\Controllers\Api\Shop\Settings\FooterController;
 use App\Http\Controllers\Api\Shop\Settings\HeaderController;
@@ -43,6 +42,5 @@ Route::get('category/{category:slug}/digital-assets', CategoryDigitalAssetContro
 Route::get('courses', [CourseController::class, 'index'])->name('courses.index');
 Route::get('course/{product:slug}', [CourseController::class, 'show'])
     ->name('courses.show');
-Route::get('product/search', ProductSearchController::class)->name('product.search');
 Route::get('search', SearchController::class)->name('search');
 Route::get('search/suggest', SuggestSearchController::class)->name('search.suggest');

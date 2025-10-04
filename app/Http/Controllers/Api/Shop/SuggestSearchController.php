@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop;
 
+use App\Data\Shop\Search\SearchSuggestRequestData;
 use App\Http\Controllers\Controller;
 use App\Services\GlobalSearchService;
-use Illuminate\Http\Request;
 
 /**
  * @group Shop - Search
@@ -34,17 +34,9 @@ final class SuggestSearchController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function __invoke(Request $request, GlobalSearchService $service)
+    public function __invoke(SearchSuggestRequestData $requestData, GlobalSearchService $service)
     {
-        $request->validate([
-            'q'     => 'required|string|min:2|max:255',
-            'limit' => 'sometimes|integer|min:1|max:20',
-        ]);
-
-        $query = $request->input('q');
-        $limit = $request->input('limit', 5);
-
-        $suggestions = $service->suggest($query, $limit);
+        $suggestions = $service->suggest($requestData->q, $requestData->limit);
 
         return response()->success($suggestions);
     }

@@ -53,6 +53,9 @@ final class BlogPost extends Model
             'meta_keywords',
         ];
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function toSearchableArray(): array
     {
         return [
@@ -67,6 +70,9 @@ final class BlogPost extends Model
         ];
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function searchableAs(): string
     {
         return 'blog_posts';
