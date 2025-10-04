@@ -364,7 +364,8 @@ final class ProductQueryService
 
         $this->query->where(function (Builder $q) use ($searchTerm) {
 
-            $q->whereFullText(['name', 'short_name', 'short_description', 'slug'], $searchTerm);
+            $q->whereLike('name', '%'.$searchTerm.'%')
+                ->orWhereFullText(['name', 'short_name', 'short_description', 'slug'], $searchTerm);
 
             foreach ($this->productableTypes as $type) {
                 $q->orWhereHasMorph('productable', [$type], function (Builder $sq) use ($searchTerm, $type) {
@@ -374,7 +375,8 @@ final class ProductQueryService
                         $searchColumns[] = 'keywords';
                     }
 
-                    $sq->whereFullText($searchColumns, $searchTerm);
+                    $sq->whereLike('full_name', '%'.$searchTerm.'%')
+                        ->orWhereFullText($searchColumns, $searchTerm);
                 });
             }
         });
