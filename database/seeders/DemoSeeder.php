@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\PermissionEnum;
 use App\Enums\System\MorphTypeEnum;
 use App\Models\Blog\BlogCategory;
 use App\Models\Blog\BlogPost;
@@ -21,12 +22,14 @@ use App\Models\Term;
 use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 final class DemoSeeder extends Seeder
 {
@@ -48,9 +51,9 @@ final class DemoSeeder extends Seeder
         $this->command->info('Starting Farsi demo data seeding...');
 
         $this->truncateTables();
-        $this->seedModel(User::class, 'users.json', fn ($data) => [...$data, 'password' => Hash::make('password')]);
+        $this->seedModel(User::class, 'users.json', fn($data) => [...$data, 'password' => Hash::make('password')]);
         $this->seedModel(Staff::class, 'staff.json',
-            fn ($data) => [...$data, 'password' => Hash::make($data['password'])]);
+            fn($data) => [...$data, 'password' => Hash::make($data['password'])]);
         $this->seedModel(Vendor::class, 'vendors.json', function ($data) {
             // Check if the keys exist to avoid errors with partially filled data
             if (isset($data['social_links'])) {
@@ -121,6 +124,62 @@ final class DemoSeeder extends Seeder
         $this->seedModel(HomePageBlock::class, 'home_page_blocks.json');
 
         $this->command->info('Farsi demo data seeding complete.');
+
+        $role = Role::firstOrCreate(
+            [
+                'name'       => 'admin',
+                'guard_name' => 'staff',
+                'label'      => 'Admin',
+            ]
+        );
+        $manager = Role::firstOrCreate(
+            [
+                'name'       => 'manager',
+                'guard_name' => 'staff',
+                'label'      => 'Manager',
+            ]
+        );
+        $editor = Role::firstOrCreate(
+            [
+                'name'       => 'editor',
+                'guard_name' => 'staff',
+                'label'      => 'Editor',
+            ]
+        );
+        Artisan::call('permissions:sync', [
+            '--guard' => 'staff',
+        ]);
+        $permissions = Permission::query()->where('guard_name', 'staff')->get()->pluck('name')->toArray();
+        $role->syncPermissions($permissions);
+        $manager->syncPermissions([
+            PermissionEnum::COURSE_VIEW->value,
+            PermissionEnum::COURSE_VIEW_ANY->value,
+            PermissionEnum::COURSE_CREATE->value,
+            PermissionEnum::COURSE_UPDATE->value,
+            PermissionEnum::COURSE_DELETE->value,
+            PermissionEnum::SEMINAR_VIEW->value,
+            PermissionEnum::SEMINAR_VIEW_ANY->value,
+            PermissionEnum::SEMINAR_CREATE->value,
+            PermissionEnum::SEMINAR_UPDATE->value,
+            PermissionEnum::SEMINAR_DELETE->value,
+        ]);
+
+        $editor->syncPermissions([
+            PermissionEnum::COURSE_UPDATE->value,
+            PermissionEnum::SEMINAR_UPDATE->value,
+        ]);
+        $staff = Staff::firstOrCreate([
+            'email' => 'staff@example.com',
+            'phone' => '9300000000',
+        ],
+            [
+                'first_name' => 'Staff',
+                'last_name'  => 'Member',
+                'password'   => Hash::make('password'),
+                'status'     => true,
+            ]
+        );
+        $staff->assignRole('admin');
     }
 
     protected function disableForeignKeyChecks(): void
@@ -161,7 +220,7 @@ final class DemoSeeder extends Seeder
     {
         $this->command->info('inserting '.$jsonFile.'...');
         $path = $this->demoDataPath.'/'.$jsonFile;
-        if (! File::exists($path)) {
+        if (!File::exists($path)) {
             $this->command->error("File not found: {$path}");
 
             return;
@@ -169,9 +228,9 @@ final class DemoSeeder extends Seeder
         $model = new $modelClass();
         $table = $model->getTable();
 
-        $collection     = collect(json_decode(File::get($path), true));
+        $collection = collect(json_decode(File::get($path), true));
         $categorizables = $collection->flatMap(function (array $item) use ($modelClass) {
-            if (! isset($item['category_ids']) || ! is_array($item['category_ids'])) {
+            if (!isset($item['category_ids']) || !is_array($item['category_ids'])) {
                 return []; // If no category_ids, return an empty set for this item.
             }
 
@@ -212,11 +271,11 @@ final class DemoSeeder extends Seeder
             return $item;
         })->all();
 
-        if (! empty($preparedData)) {
+        if (!empty($preparedData)) {
             DB::table($table)->insert($preparedData);
         }
 
-        if (! empty($categorizables)) {
+        if (!empty($categorizables)) {
             DB::table('categorizables')->insert($categorizables);
         }
 
