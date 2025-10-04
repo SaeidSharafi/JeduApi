@@ -21,7 +21,7 @@ final class ScribeSetupJob extends BaseDeploymentJob
 
             return;
         }
-        $command = "{$artisanScript} scribe:setup --fresh --seed";
+        $command = "{$artisanScript} scribe:generate";
         Log::channel('deployment')->info("Artisan: Running '{$command}'...");
         $this->runProcess($command, $this->projectPath, 180);
 
