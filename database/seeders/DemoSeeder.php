@@ -4,13 +4,6 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Enums\Content\DynamicListEntityTypeEnum;
-use App\Enums\Content\DynamicListSortByEnum;
-use App\Enums\Content\HomePageBlockTypeEnum;
-use App\Enums\PermissionEnum;
-use App\Enums\Product\DeliveryMethodEnum;
-use App\Enums\Product\FulfillmentTypeEnum;
-use App\Enums\Product\ProductableEnum;
 use App\Enums\System\MorphTypeEnum;
 use App\Models\Blog\BlogCategory;
 use App\Models\Blog\BlogPost;
@@ -18,8 +11,6 @@ use App\Models\Category;
 use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\HomePageBlock;
-use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\Seminar;
@@ -30,386 +21,106 @@ use App\Models\Term;
 use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Database\Seeder;
-use Illuminate\Http\File;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Plank\Mediable\Facades\MediaUploader;
-use Plank\Mediable\Media;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
-use Storage;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
+
 
 final class DemoSeeder extends Seeder
 {
+    private string $demoDataPath;
+
+    public function __construct()
+    {
+        $this->demoDataPath = database_path('demo');
+    }
+
     public function run(): void
     {
-
         if (app()->isProduction()) {
             $this->command->error('You cannot run this seeder in production.');
 
             return;
         }
 
-        if (app()->environment() === 'local') {
-            $this->disableForeignKeyChecks();
-            DB::table('mediables')->truncate();
-            BlogPost::query()->truncate();
-            BlogCategory::query()->truncate();
-            HomePageBlock::query()->truncate();
-            Order::query()->truncate();
-            Media::query()->truncate();
-            Course::query()->truncate();
-            Seminar::query()->truncate();
-            Category::query()->truncate();
-            DigitalAsset::query()->truncate();
-            Media::query()->truncate();
-            Staff::query()->truncate();
-            ProductDeliveryOption::query()->truncate();
-            Product::query()->truncate();
-            Teacher::query()->truncate();
-            Vendor::query()->truncate();
-            Term::query()->truncate();
-            User::query()->truncate();
-            $this->enableForeignKeyChecks();
-        }
-        $this->command->info('Cleared existing data.');
-        $this->command->info('Preparing media files...');
+        $this->command->info('Starting Farsi demo data seeding...');
 
-        Storage::disk('public')->deleteDirectory('fake-media');
-        $videoPath       = base_path().'/resources/seed-media/placeholder.mp4';
-        $coverPath       = base_path().'/resources/seed-media/fake-cover.svg';
-        $galleryPath     = base_path().'/resources/seed-media/fake-gallery.svg';
-        $palceHolderPath = base_path().'/resources/seed-media/placeholder.svg';
-        $iconPath        = base_path().'/resources/seed-media/icon.svg';
-        Storage::disk('public')->putFileAs('fake-media', new File($videoPath), 'placeholder1.mp4');
-        Storage::disk('public')->putFileAs('fake-media', new File($videoPath), 'placeholder2.mp4');
-        Storage::disk('public')->putFileAs('fake-media', new File($videoPath), 'placeholder3.mp4');
-        Storage::disk('public')->putFileAs('fake-media', new File($coverPath), 'fake-cover.svg');
-        Storage::disk('public')->putFileAs('fake-media', new File($galleryPath), 'fake-gallery.svg');
-        Storage::disk('public')->putFileAs('fake-media', new File($palceHolderPath), 'placeholder.svg');
-        Storage::disk('public')->putFileAs('fake-media', new File($iconPath), 'icon.svg');
-        Storage::disk('public')->putFileAs('fake-media', new File($palceHolderPath), 'main.svg');
-        Storage::disk('public')->putFileAs('fake-media', new File($palceHolderPath), 'preview.svg');
-        MediaUploader::importPath('public', 'fake-media/placeholder1.mp4');
-        MediaUploader::importPath('public', 'fake-media/placeholder2.mp4');
-        MediaUploader::importPath('public', 'fake-media/placeholder3.mp4');
-        MediaUploader::importPath('public', 'fake-media/fake-gallery.svg');
-        MediaUploader::importPath('public', 'fake-media/placeholder.svg');
-        MediaUploader::importPath('public', 'fake-media/icon.svg');
-        MediaUploader::importPath('public', 'fake-media/main.svg');
-        MediaUploader::importPath('public', 'fake-media/preview.svg');
-        $cover = MediaUploader::importPath('public', 'fake-media/fake-cover.svg');
+        $this->truncateTables();
+        $this->seedModel(User::class, 'users.json', fn ($data) => [...$data, 'password' => Hash::make('password')]);
+        $this->seedModel(Staff::class, 'staff.json',
+            fn ($data) => [...$data, 'password' => Hash::make($data['password'])]);
+        $this->seedModel(Vendor::class, 'vendors.json', function ($data) {
+            // Check if the keys exist to avoid errors with partially filled data
+            if (isset($data['social_links'])) {
+                $data['social_links'] = json_encode($data['social_links']);
+            }
+            if (isset($data['theme_options'])) {
+                $data['theme_options'] = json_encode($data['theme_options']);
+            }
 
-        $this->command->info('Setting up roles and permissions...');
-        $role = Role::firstOrCreate(
-            [
-                'name'       => 'admin',
-                'guard_name' => 'staff',
-                'label'      => 'Admin',
-            ]
-        );
-        $manager = Role::firstOrCreate(
-            [
-                'name'       => 'manager',
-                'guard_name' => 'staff',
-                'label'      => 'Manager',
-            ]
-        );
-        $edito = Role::firstOrCreate(
-            [
-                'name'       => 'editor',
-                'guard_name' => 'staff',
-                'label'      => 'Editor',
-            ]
-        );
-        Artisan::call('permissions:sync', [
-            '--guard' => 'staff',
-        ]);
+            return $data;
+        });
+        $this->seedModel(Term::class, 'terms.json');
+        $this->seedModel(Teacher::class, 'teachers.json', function ($data) {
+            if (isset($data['social_links'])) {
+                $data['social_links'] = json_encode($data['social_links']);
+            }
 
-        $permissions = Permission::query()->where('guard_name', 'staff')->get()->pluck('name')->toArray();
-        $role->syncPermissions($permissions);
-        $manager->syncPermissions([
-            PermissionEnum::COURSE_VIEW->value,
-            PermissionEnum::COURSE_VIEW_ANY->value,
-            PermissionEnum::COURSE_CREATE->value,
-            PermissionEnum::COURSE_UPDATE->value,
-            PermissionEnum::COURSE_DELETE->value,
-            PermissionEnum::SEMINAR_VIEW->value,
-            PermissionEnum::SEMINAR_VIEW_ANY->value,
-            PermissionEnum::SEMINAR_CREATE->value,
-            PermissionEnum::SEMINAR_UPDATE->value,
-            PermissionEnum::SEMINAR_DELETE->value,
-        ]);
+            return $data;
+        });
+        $this->seedModel(Category::class, 'categories.json');
+        $this->seedModel(Course::class, 'courses.json', function ($data) {
+            foreach ($data as $key => &$value) {
+                // If the value for any column is an array, encode it to a JSON string.
+                if (is_array($value)) {
+                    $value = json_encode($value);
+                }
+            }
 
-        $edito->syncPermissions([
-            PermissionEnum::COURSE_UPDATE->value,
-            PermissionEnum::SEMINAR_UPDATE->value,
-        ]);
-        $this->command->info('Seeding foundational data (Users, Vendors, Categories, Courses, etc.)...');
+            return $data;
+        });
+        $this->seedModel(Seminar::class, 'seminars.json', function ($data) {
+            foreach ($data as $key => &$value) {
+                // If the value for any column is an array, encode it to a JSON string.
+                if (is_array($value)) {
+                    $value = json_encode($value);
+                }
+            }
 
-        $user = Staff::forceCreate([
-            'name'     => 'Admin',
-            'email'    => 'staff@example.com',
-            'phone'    => '9300000000',
-            'password' => bcrypt('password'),
-            'is_admin' => true,
-        ]);
-        User::factory(10)->create();
+            return $data;
+        });
+        $this->seedModel(DigitalAsset::class, 'digital_assets.json', function ($data) {
+            foreach ($data as $key => &$value) {
+                // If the value for any column is an array, encode it to a JSON string.
+                if (is_array($value)) {
+                    $value = json_encode($value);
+                }
+            }
 
-        $user->assignRole('admin');
-        $staff = Staff::query()->first();
-        Staff::factory(50)->create();
-        Vendor::factory(4)
-            ->withMedia()
-            ->create();
-        Term::factory(10)->create();
-        Category::factory(50)
-            ->withIcon()
-            ->withImage()
-            ->create([
-                'created_by' => $staff->id,
-            ]);
-        DigitalAsset::factory(100)
-            ->withFile()
-            ->withCategory()
-            ->create([
-                'created_by' => $staff->id,
-            ]);
+            return $data;
+        });
+        $this->seedModel(Product::class, 'products.json', function ($data) {
+            if (empty($data['term_id'])) {
+                $data['term_id'] = random_int(1, 4);
+            }
+            foreach ($data as $key => &$value) {
+                // If the value for any column is an array, encode it to a JSON string.
+                if (is_array($value)) {
+                    $value = json_encode($value);
+                }
+            }
 
-        Course::factory(100)
-            ->withMedia(['gallery', 'cover', 'video'])
-            ->withCategory(3)
-            ->withDigitalAssets(2, true)
-            ->create([
-                'created_by' => $staff->id,
-            ]);
-        Seminar::factory(100)
-            ->withMedia(['gallery', 'cover', 'video'])
-            ->withCategory(3)
-            ->withDigitalAssets(2, true)
-            ->create([
-                'created_by' => $staff->id,
-            ]);
+            return $data;
+        });
+        $this->seedModel(ProductDeliveryOption::class, 'product_delivery_options.json');
+        $this->seedModel(BlogCategory::class, 'blog_categories.json');
+        $this->seedModel(BlogPost::class, 'blog_posts.json');
+        $this->seedModel(Slider::class, 'sliders.json');
+        $this->seedModel(HomePageBlock::class, 'home_page_blocks.json');
 
-        Teacher::factory(25)
-            ->withMedia()
-            ->create();
-
-        $this->command->info('Creating Products from existing blueprints...');
-        Product::factory()
-            ->withDeliveryOptions(realData: [
-                [
-                    'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE,
-                    'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
-                    'price'            => 1000000,
-                ],
-                [
-                    'fulfillment_type' => FulfillmentTypeEnum::IN_PERSON_SERVICE,
-                    'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
-                    'price'            => 3000000,
-                ],
-                [
-                    'fulfillment_type' => FulfillmentTypeEnum::OFFLINE_SERVICE,
-                    'delivery_method'  => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
-                    'price'            => 500000,
-                ],
-            ])
-            ->withCategory(3)
-            ->create(
-                [
-                    'productable_type' => ProductableEnum::COURSE->value,
-                    'productable_id'   => Course::query()->inRandomOrder()->first()->id,
-                    'term_id'          => Term::query()->inRandomOrder()->first()->id,
-                    'vendor_id'        => Vendor::query()->inRandomOrder()->first()->id,
-                ]
-            );
-        Product::factory()
-            ->withDeliveryOptions(realData: [
-                [
-                    'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE,
-                    'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
-                    'price'            => 1000000,
-                ],
-                [
-                    'fulfillment_type' => FulfillmentTypeEnum::IN_PERSON_SERVICE,
-                    'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
-                    'price'            => 3000000,
-                ],
-                [
-                    'fulfillment_type' => FulfillmentTypeEnum::OFFLINE_SERVICE,
-                    'delivery_method'  => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
-                    'price'            => 500000,
-                ],
-            ])
-            ->withCategory(3)
-            ->create(
-                [
-                    'productable_type' => ProductableEnum::SEMINAR->value,
-                    'productable_id'   => Seminar::query()->inRandomOrder()->first()->id,
-                    'term_id'          => Term::query()->inRandomOrder()->first()->id,
-                    'vendor_id'        => Vendor::query()->inRandomOrder()->first()->id,
-                ]
-            );
-        Product::factory()
-            ->withDeliveryOptions(realData: [
-                [
-                    'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE,
-                    'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
-                    'price'            => 1000000,
-                ],
-                [
-                    'fulfillment_type' => FulfillmentTypeEnum::IN_PERSON_SERVICE,
-                    'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
-                    'price'            => 3000000,
-                ],
-                [
-                    'fulfillment_type' => FulfillmentTypeEnum::OFFLINE_SERVICE,
-                    'delivery_method'  => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
-                    'price'            => 500000,
-                ],
-            ])
-            ->withCategory(3)
-            ->create(
-                [
-                    'productable_type' => ProductableEnum::DIGITAL_ASSET->value,
-                    'productable_id'   => DigitalAsset::query()->inRandomOrder()->first()->id,
-                    'term_id'          => Term::query()->inRandomOrder()->first()->id,
-                    'vendor_id'        => Vendor::query()->inRandomOrder()->first()->id,
-                ]
-            );
-        Product::factory(100)
-            ->withDeliveryOptions(realData: [
-                [
-                    'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE,
-                    'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE,
-                    'price'            => 1000000,
-                ],
-                [
-                    'fulfillment_type' => FulfillmentTypeEnum::IN_PERSON_SERVICE,
-                    'delivery_method'  => DeliveryMethodEnum::IN_PERSON,
-                    'price'            => 3000000,
-                ],
-                [
-                    'fulfillment_type' => FulfillmentTypeEnum::OFFLINE_SERVICE,
-                    'delivery_method'  => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
-                    'price'            => 500000,
-                ],
-            ])
-            ->useExistingRelations()
-            ->withCategory(3)
-            ->create();
-        $realCat1 = Category::factory()
-            ->withIcon()
-            ->withImage()
-            ->create([
-                'name'       => 'Real Category 1',
-                'created_by' => $staff->id,
-            ]);
-        $realCat2 = Category::factory()
-            ->withIcon()
-            ->withImage()
-            ->create([
-                'name'       => 'Real Category 2',
-                'created_by' => $staff->id,
-            ]);
-        $products = Product::query()
-            ->inRandomOrder()
-            ->take(30)
-            ->get();
-        $realCat1->products()->sync($products);
-        $products = Product::query()
-            ->inRandomOrder()
-            ->take(30)
-            ->get();
-        $realCat2->products()->sync($products);
-
-        $this->command->info('Seeding historical Orders...');
-        for ($i = 0; $i < 100; $i++) {
-            Order::factory()
-                ->useExistingCustomer()
-                ->has(
-                    OrderItem::factory()
-                        ->count(rand(1, 3))
-                        ->useExistingRelations()
-                        ->withEnrollment(),
-                    'items'
-                )
-                ->withCalculatedTotalsAutomated()
-                ->create();
-        }
-        $this->command->info('Seeding Blog Categories and Posts...');
-        BlogPost::factory()
-            ->count(20)
-            ->withMedia()
-            ->create([
-                'author_id' => $staff->id,
-            ]);
-
-        $this->command->info('Seeding Home Page Blocks...');
-        HomePageBlock::factory()
-            ->webinarBanner($cover, Product::query()->where('productable_type', MorphTypeEnum::SEMINAR->value)->inRandomOrder()->first()->id)
-            ->create([
-                'title'    => 'First Webinar Banner',
-                'location' => 'hero',
-                'order'    => 0,
-            ]);
-        HomePageBlock::factory()
-            ->banner($cover)
-            ->create([
-                'title'    => 'Welcome to Our Store',
-                'location' => 'hero',
-                'order'    => 1,
-            ]);
-        HomePageBlock::factory()
-            ->curatedList(Product::query()->inRandomOrder()->take(5)->pluck('id')->values()->toArray())
-            ->create([
-                'title'    => 'Random Products',
-                'location' => 'middle',
-                'order'    => 2,
-            ]);
-
-        HomePageBlock::factory()
-            ->curatedList(Category::query()->inRandomOrder()->take(5)->pluck('id')->values()->toArray(),
-                HomePageBlockTypeEnum::MAIN_CATEGORIES)
-            ->create([
-                'title'    => 'Main Categories',
-                'location' => 'middle',
-                'order'    => 3,
-            ]);
-
-        HomePageBlock::factory()
-            ->dynamicList()
-            ->create([
-                'title'    => 'Latest Course',
-                'location' => 'middle',
-                'order'    => 4,
-            ]);
-        HomePageBlock::factory()
-            ->dynamicList(DynamicListEntityTypeEnum::ALL_PRODUCTS, DynamicListSortByEnum::POPULAR)
-            ->create([
-                'title'    => 'Popular Products',
-                'location' => 'middle',
-                'order'    => 5,
-            ]);
-        HomePageBlock::factory()
-            ->dynamicList(DynamicListEntityTypeEnum::BLOG_POST)
-            ->create([
-                'title'    => 'Latest Blog Posts',
-                'location' => 'middle',
-                'order'    => 6,
-            ]);
-
-        Slider::factory(5)
-            ->create();
-
-        $this->command->info('Running post-seeding indexing and caching commands...');
-        Artisan::call('discounts:reindex-all');
-        $this->command->info('Discount price index generated.');
-
-        Artisan::call('prices:index-all --sync');
-        $this->command->info('Product price cache generated.');
-
-        $this->command->info('Seeding complete! The application is now in a consistent state.');
+        $this->command->info('Farsi demo data seeding complete.');
     }
 
     protected function disableForeignKeyChecks(): void
@@ -444,5 +155,96 @@ final class DemoSeeder extends Seeder
                 DB::statement('PRAGMA foreign_keys = ON');
                 break;
         }
+    }
+
+    private function seedModel(string $modelClass, string $jsonFile, ?callable $modifier = null): void
+    {
+        $this->command->info('inserting '.$jsonFile.'...');
+        $path = $this->demoDataPath.'/'.$jsonFile;
+        if (! File::exists($path)) {
+            $this->command->error("File not found: {$path}");
+
+            return;
+        }
+        $model = new $modelClass();
+        $table = $model->getTable();
+
+        $collection     = collect(json_decode(File::get($path), true));
+        $categorizables = $collection->flatMap(function (array $item) use ($modelClass) {
+            if (! isset($item['category_ids']) || ! is_array($item['category_ids'])) {
+                return []; // If no category_ids, return an empty set for this item.
+            }
+
+            // For each category ID, create a new pivot record.
+            // `flatMap` will merge all the returned arrays into a single, flat collection.
+            return collect($item['category_ids'])->map(function ($categoryId) use ($item, $modelClass) {
+                return [
+                    'category_id'        => $categoryId,
+                    'categorizable_id'   => $item['id'],
+                    'categorizable_type' => MorphTypeEnum::fromModelClass($modelClass)->value,
+                ];
+            });
+        })->all();
+
+        $preparedData = $collection->map(function (array $item) use ($modifier, $table) {
+            // Apply the initial custom modifier first (e.g., for hashing passwords)
+            if ($modifier) {
+                $item = $modifier($item);
+            }
+
+            // Add UUID if the column exists and it's not already set
+            if (Schema::hasColumn($table, 'uuid') && empty($item['uuid'])) {
+                $item['uuid'] = (string) Str::uuid();
+            }
+
+            // The temporary key is no longer needed in the final data
+            unset($item['category_ids']);
+
+            // Robustly encode ANY remaining array values to JSON strings.
+            // This permanently solves the "Array to string conversion" error.
+            foreach ($item as $key => &$value) {
+                if (is_array($value)) {
+                    $value = json_encode($value);
+                }
+            }
+            unset($value); // Good practice after a loop by reference.
+
+            return $item;
+        })->all();
+
+        if (! empty($preparedData)) {
+            DB::table($table)->insert($preparedData);
+        }
+
+        if (! empty($categorizables)) {
+            DB::table('categorizables')->insert($categorizables);
+        }
+
+        $this->command->line("  <info>Seeded:</info>  {$jsonFile}");
+    }
+
+    private function truncateTables(): void
+    {
+        $this->command->warn('Truncating all relevant tables...');
+
+        $this->disableForeignKeyChecks();
+
+        $tables = [
+            'home_page_blocks', 'sliders', 'blog_posts', 'blog_categories',
+            'product_delivery_options', 'products', 'digital_assets', 'seminars',
+            'courses', 'categories', 'teachers', 'terms', 'vendors', 'staff', 'users',
+            // Add pivot tables or others that need clearing
+            'categorizables', 'mediables', 'enrollments', 'order_items', 'orders',
+        ];
+
+        foreach ($tables as $table) {
+            if (Schema::hasTable($table)) {
+                DB::table($table)->truncate();
+            }
+        }
+
+        $this->enableForeignKeyChecks();
+
+        $this->command->info('Tables truncated successfully.');
     }
 }

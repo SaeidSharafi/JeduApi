@@ -107,7 +107,7 @@
         ],
         "fresh-dev": [
             "php artisan migrate:fresh --force",
-            "php artisan db:seed --class=FarsiDemoDataGeneratorSeeder"
+            "php artisan db:seed --class=DemoSeeder"
         ]
     },
     "extra": {
