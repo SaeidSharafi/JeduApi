@@ -35,7 +35,7 @@ return new class extends Migration
             $table->decimal('average_rating', 3)->default(0.0);
             $table->timestamps();
 
-            $table->fullText(['full_name', 'short_name', 'slug', 'description', 'keywords']);
+            $table->fullText(['full_name', 'short_name', 'slug', 'description', 'keywords'], 'digital_assets_fulltext_index');
         });
     }
 };
