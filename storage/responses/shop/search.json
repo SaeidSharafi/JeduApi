@@ -1,0 +1,260 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "slug": "php-design-patterns-book",
+        "name": "کتاب الگوهای طراحی در PHP",
+        "price": 150000,
+        "original_price": 150000,
+        "price_range": {
+          "min": 150000,
+          "max": 150000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": true,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "main.svg",
+        "teachers": [],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": null,
+        "type": "product"
+      },
+      {
+        "slug": "responsive-web-design-course-spring-1404",
+        "name": "دوره طراحی وب ریسپانسیو - بهار ۱۴۰۴",
+        "price": 1250000,
+        "original_price": 1250000,
+        "price_range": {
+          "min": 1250000,
+          "max": 1250000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": true,
+        "product_type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "thumbnail_url": "preview.svg",
+        "teachers": [
+          "ارائه توسط دکتر مجید سمیعی"
+        ],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": null,
+        "type": "product"
+      },
+      {
+        "slug": "persian-handwritten-fonts-collection",
+        "name": "مجموعه فونت‌های دست‌نویس فارسی",
+        "price": 350000,
+        "original_price": 350000,
+        "price_range": {
+          "min": 350000,
+          "max": 350000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": false,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "fake-gallery.svg",
+        "teachers": [],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": null,
+        "type": "product"
+      },
+      {
+        "slug": "graphic-design-course-fall-1403",
+        "name": "دوره طراحی گرافیک - پاییز ۱۴۰۳",
+        "price": 1600000,
+        "original_price": 1600000,
+        "price_range": {
+          "min": 1600000,
+          "max": 3200000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": true,
+        "product_type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "thumbnail_url": "fake-gallery.svg",
+        "teachers": [
+          "ارائه توسط استاد مرتضی ممیز"
+        ],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": null,
+        "type": "product"
+      },
+      {
+        "slug": "php-design-patterns-course-spring-1404",
+        "name": "دوره الگوهای طراحی در PHP - بهار ۱۴۰۴",
+        "price": 1800000,
+        "original_price": 1800000,
+        "price_range": {
+          "min": 1800000,
+          "max": 1800000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": true,
+        "product_type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "thumbnail_url": "fake-cover.svg",
+        "teachers": [
+          "ارائه توسط دکتر مجید سمیعی"
+        ],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": null,
+        "type": "product"
+      },
+      {
+        "id": 4,
+        "title": "معرفی دوره جامع طراحی گرافیک",
+        "slug": "introducing-comprehensive-graphic-design-course",
+        "excerpt": "دوره جدید طراحی گرافیک با تدریس استاد مرتضی ممیز، فرصتی استثنایی برای یادگیری مبانی طراحی، رنگ و تایپوگرافی و ورود به بازار کار است.",
+        "body": "دوره جدید طراحی گرافیک با تدریس استاد مرتضی ممیز، فرصتی استثنایی برای علاقه‌مندان به این هنر است. این دوره شامل مبانی طراحی، تئوری رنگ، تایپوگرافی و کار با نرم‌افزارهای Adobe می‌باشد و شما را برای ورود به بازار کار آماده می‌کند. برای اطلاعات بیشتر و ثبت‌نام کلیک کنید.",
+        "author": null,
+        "reviews_count": 0,
+        "average_rating": 0,
+        "published_at": "1403-12-23 10:00:00",
+        "thumbnail_url": "fake-gallery.svg",
+        "type": "blog_post"
+      },
+      {
+        "id": 27,
+        "title": "۵ ابزار آنلاین رایگان برای طراحان گرافیک",
+        "slug": "5-free-online-tools-for-graphic-designers",
+        "excerpt": "همیشه به نرم‌افزارهای گران‌قیمت نیاز ندارید. با این ۵ ابزار آنلاین و رایگان قدرتمند مانند Canva و Figma، خلاقیت خود را شکوفا کنید.",
+        "body": "برای طراحی حرفه‌ای همیشه به نرم‌افزارهای گران‌قیمت مانند فتوشاپ نیاز ندارید. در این مقاله، ۵ ابزار آنلاین و رایگان قدرتمند مانند Canva و Figma را معرفی می‌کنیم که به شما کمک می‌کنند خلاقیت خود را بدون هیچ هزینه‌ای شکوفا کنید.",
+        "author": null,
+        "reviews_count": 0,
+        "average_rating": 0,
+        "published_at": "1404-01-17 10:00:00",
+        "thumbnail_url": "fake-gallery.svg",
+        "type": "blog_post"
+      },
+      {
+        "id": 36,
+        "title": "استخدام برنامه‌نویس React در شرکت X",
+        "slug": "hiring-react-developer-at-x-company",
+        "excerpt": "یک شرکت معتبر فین‌تک به دنبال استخدام برنامه‌نویس ارشد React مسلط به Redux و TypeScript با حقوق و مزایای عالی است.",
+        "body": "یک شرکت معتبر در حوزه فین‌تک، برای تکمیل تیم فنی خود به دنبال استخدام برنامه‌نویس ارشد React با حداقل ۴ سال سابقه کار و مسلط به Redux و TypeScript است. حقوق و مزایای عالی و امکان دورکاری فراهم است. برای اطلاعات بیشتر و ارسال رزومه کلیک کنید.",
+        "author": null,
+        "reviews_count": 0,
+        "average_rating": 0,
+        "published_at": "1404-01-26 13:00:00",
+        "thumbnail_url": "fake-gallery.svg",
+        "type": "blog_post"
+      },
+      {
+        "id": 33,
+        "title": "آینده اینترنت: وب ۳.۰ چیست؟",
+        "slug": "the-future-of-the-internet-what-is-web-3-0",
+        "excerpt": "وب ۳.۰، نسل بعدی اینترنت، با مفاهیم تمرکززدایی و بلاکچین قصد دارد قدرت را به کاربران بازگرداند. با آینده اینترنت بیشتر آشنا شوید.",
+        "body": "وب ۳.۰، نسل بعدی اینترنت، با مفاهیمی مانند تمرکززدایی، بلاکچین و اقتصاد مبتنی بر توکن گره خورده است. این نسل جدید از وب قصد دارد قدرت را از شرکت‌های بزرگ به کاربران بازگرداند. در این مقاله، با مفاهیم کلیدی و آینده اینترنت بیشتر آشنا شوید.",
+        "author": null,
+        "reviews_count": 0,
+        "average_rating": 0,
+        "published_at": "1404-01-23 11:00:00",
+        "thumbnail_url": "fake-cover.svg",
+        "type": "blog_post"
+      },
+      {
+        "id": 22,
+        "title": "بازار کار برنامه‌نویسان PHP در سال ۲۰۲۶",
+        "slug": "job-market-for-php-developers-in-2026",
+        "excerpt": "برخلاف تصورات، PHP به لطف اکوسیستم قدرتمندی مانند لاراول، همچنان بازار کار بسیار خوبی دارد. وضعیت فعلی و آینده این زبان را بررسی کنید.",
+        "body": "با وجود ظهور زبان‌ها و فریم‌ورک‌های جدید، PHP به لطف جامعه بزرگ، اکوسیستم قدرتمند (مانند لاراول) و هزینه نگهداری پایین، همچنان یکی از محبوب‌ترین زبان‌ها برای توسعه وب است. در این مقاله، وضعیت بازار کار و متوسط درآمد برنامه‌نویسان PHP را بررسی می‌کنیم.",
+        "author": null,
+        "reviews_count": 0,
+        "average_rating": 0,
+        "published_at": "1404-01-12 11:45:00",
+        "thumbnail_url": "main.svg",
+        "type": "blog_post"
+      }
+    ],
+    "first_page_url": "http://jedu.test/api/v1/shop/search?q=%D8%B7%D8%B1%D8%A7%D8%AD%DB%8C%20%D9%88%D8%A8&page=1",
+    "from": 1,
+    "last_page": 6,
+    "last_page_url": "http://jedu.test/api/v1/shop/search?q=%D8%B7%D8%B1%D8%A7%D8%AD%DB%8C%20%D9%88%D8%A8&page=6",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; قبلی",
+        "page": null,
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/shop/search?q=%D8%B7%D8%B1%D8%A7%D8%AD%DB%8C%20%D9%88%D8%A8&page=1",
+        "label": "1",
+        "page": 1,
+        "active": true
+      },
+      {
+        "url": "http://jedu.test/api/v1/shop/search?q=%D8%B7%D8%B1%D8%A7%D8%AD%DB%8C%20%D9%88%D8%A8&page=2",
+        "label": "2",
+        "page": 2,
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/shop/search?q=%D8%B7%D8%B1%D8%A7%D8%AD%DB%8C%20%D9%88%D8%A8&page=3",
+        "label": "3",
+        "page": 3,
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/shop/search?q=%D8%B7%D8%B1%D8%A7%D8%AD%DB%8C%20%D9%88%D8%A8&page=4",
+        "label": "4",
+        "page": 4,
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/shop/search?q=%D8%B7%D8%B1%D8%A7%D8%AD%DB%8C%20%D9%88%D8%A8&page=5",
+        "label": "5",
+        "page": 5,
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/shop/search?q=%D8%B7%D8%B1%D8%A7%D8%AD%DB%8C%20%D9%88%D8%A8&page=6",
+        "label": "6",
+        "page": 6,
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/shop/search?q=%D8%B7%D8%B1%D8%A7%D8%AD%DB%8C%20%D9%88%D8%A8&page=2",
+        "label": "بعدی &raquo;",
+        "page": 2,
+        "active": false
+      }
+    ],
+    "next_page_url": "http://jedu.test/api/v1/shop/search?q=%D8%B7%D8%B1%D8%A7%D8%AD%DB%8C%20%D9%88%D8%A8&page=2",
+    "path": "http://jedu.test/api/v1/shop/search",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 10,
+    "total": 90
+  },
+  "metadata": []
+}

@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Collection;
+use Laravel\Scout\Searchable;
 use Plank\Mediable\Mediable;
 
 final class BlogPost extends Model
@@ -29,6 +30,7 @@ final class BlogPost extends Model
     use HasMedia;
     use HasReview;
     use Mediable;
+    use Searchable;
 
     protected $table = 'blog_posts';
 
@@ -50,6 +52,25 @@ final class BlogPost extends Model
             'meta_description',
             'meta_keywords',
         ];
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'id'           => (string) $this->id,
+            'title'        => $this->title,
+            'slug'         => $this->slug,
+            'body'         => strip_tags($this->body),
+            'excerpt'      => $this->excerpt,
+            'status'       => $this->status->value,
+            'published_at' => $this->published_at?->timestamp,
+            'created_at'   => $this->created_at->timestamp,
+        ];
+    }
+
+    public function searchableAs(): string
+    {
+        return 'blog_posts';
+    }
 
     public function author(): BelongsTo
     {

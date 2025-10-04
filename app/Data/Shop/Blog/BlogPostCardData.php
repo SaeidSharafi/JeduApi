@@ -24,6 +24,7 @@ final class BlogPostCardData extends Data
         public string $title,
         public string $slug,
         public ?string $excerpt = null,
+        public ?string $body = null,
         public ?AuthorData $author = null,
         public ?int $reviews_count = 0,
         public ?float $average_rating = 0.0,

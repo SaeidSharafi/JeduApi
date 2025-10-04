@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -159,8 +161,8 @@ return [
 
     'typesense' => [
         'client-settings' => [
-            'api_key'                      => env('TYPESENSE_API_KEY', 'xyz'),
-            'nodes'                        => [
+            'api_key' => env('TYPESENSE_API_KEY', 'xyz'),
+            'nodes'   => [
                 [
                     'host'     => env('TYPESENSE_HOST', 'localhost'),
                     'port'     => env('TYPESENSE_PORT', '8108'),
@@ -168,7 +170,7 @@ return [
                     'protocol' => env('TYPESENSE_PROTOCOL', 'http'),
                 ],
             ],
-            'nearest_node'                 => [
+            'nearest_node' => [
                 'host'     => env('TYPESENSE_HOST', 'localhost'),
                 'port'     => env('TYPESENSE_PORT', '8108'),
                 'path'     => env('TYPESENSE_PATH', ''),
@@ -180,10 +182,10 @@ return [
             'retry_interval_seconds'       => env('TYPESENSE_RETRY_INTERVAL_SECONDS', 1),
         ],
         // 'max_total_results' => env('TYPESENSE_MAX_TOTAL_RESULTS', 1000),
-        'model-settings'  => [
-            \App\Models\Product::class => [
+        'model-settings' => [
+            App\Models\Product::class => [
                 'collection-schema' => [
-                    'fields'                => [
+                    'fields' => [
                         ['name' => 'name', 'type' => 'string', 'locale' => 'fa'],
                         ['name' => 'short_name', 'type' => 'string', 'locale' => 'fa'],
                         ['name' => 'short_description', 'type' => 'string', 'locale' => 'fa'],
@@ -212,26 +214,65 @@ return [
                         ['name' => 'has_published_delivery_option', 'type' => 'bool', 'facet' => true],
                         ['name' => 'is_term_active', 'type' => 'bool', 'facet' => true],
                         [
-                            "name"  => "embedding",
-                            "type"  => "float[]",
-                            "embed" => [
-                                "from"         => [
-                                    "short_name",
-                                    "short_description",
-                                    "productable_full_name",
-                                    "productable_short_name",
-                                    "productable_description",
+                            'name'  => 'embedding',
+                            'type'  => 'float[]',
+                            'embed' => [
+                                'from' => [
+                                    'short_name',
+                                    'short_description',
+                                    'productable_full_name',
+                                    'productable_short_name',
+                                    'productable_description',
                                 ],
-                                "model_config" => [
-                                    "model_name" => "ts/all-MiniLM-L12-v2"
-                                ]
-                            ]
-                        ]
+                                'model_config' => [
+                                    'model_name' => 'ts/distiluse-base-multilingual-cased-v2',
+                                ],
+                            ],
+                        ],
                     ],
                     'default_sorting_field' => 'created_at',
                 ],
                 'search-parameters' => [
-                    'query_by' => 'embedding, name, short_name, productable_full_name, productable_short_name, short_description, productable_description',
+                    'query_by'              => 'name, short_name, productable_full_name, productable_short_name, short_description, productable_description',
+                    'prefix'                => 'true,true,true,true,false,false',
+                    'num_typos'             => '2,2,2,2,1,1',
+                    'drop_tokens_threshold' => 10,
+                    'typo_tokens_threshold' => 1,
+                ],
+            ],
+            App\Models\Blog\BlogPost::class => [
+                'collection-schema' => [
+                    'fields' => [
+                        ['name' => 'title', 'type' => 'string', 'locale' => 'fa'],
+                        ['name' => 'slug', 'type' => 'string'],
+                        ['name' => 'body', 'type' => 'string', 'locale' => 'fa'],
+                        ['name' => 'excerpt', 'type' => 'string', 'locale' => 'fa'],
+                        ['name' => 'status', 'type' => 'string', 'facet' => true],
+                        ['name' => 'published_at', 'type' => 'int64', 'optional' => true],
+                        ['name' => 'created_at', 'type' => 'int64'],
+                        [
+                            'name'  => 'embedding',
+                            'type'  => 'float[]',
+                            'embed' => [
+                                'from' => [
+                                    'title',
+                                    'body',
+                                    'excerpt',
+                                ],
+                                'model_config' => [
+                                    'model_name' => 'ts/distiluse-base-multilingual-cased-v2',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'default_sorting_field' => 'created_at',
+                ],
+                'search-parameters' => [
+                    'query_by'              => 'title, body, excerpt',
+                    'prefix'                => 'true,false,false',
+                    'num_typos'             => '2,1,1',
+                    'drop_tokens_threshold' => 10,
+                    'typo_tokens_threshold' => 1,
                 ],
             ],
         ],

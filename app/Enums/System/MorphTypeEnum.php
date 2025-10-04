@@ -46,11 +46,11 @@ enum MorphTypeEnum: string
     case SLIDER          = 'slider';
     case HOME_PAGE_BLOCK = 'home_page_block';
 
-    case PARTNER       = 'partner';
-    case STUDENT_STORY = 'student_story';
-    case BLOG_POST     = 'blog_post';
-    case BLOG_CATEGORY = 'blog_category';
-    case SETTING       = 'setting';
+    case PARTNER               = 'partner';
+    case STUDENT_STORY         = 'student_story';
+    case BLOG_POST             = 'blog_post';
+    case BLOG_CATEGORY         = 'blog_category';
+    case SETTING               = 'setting';
     case COLLABORATION_REQUEST = 'collaboration_request';
 
     public static function forMorphMap(): array
@@ -100,28 +100,39 @@ enum MorphTypeEnum: string
         return $categorizables;
     }
 
+    public static function fromModelClass(string $modelClass): ?self
+    {
+        foreach (self::cases() as $case) {
+            if ($case->getModelClass() === $modelClass) {
+                return $case;
+            }
+        }
+
+        return null;
+    }
+
     public function getModelClass(): string
     {
         return match ($this) {
-            self::CATEGORY        => Category::class,
-            self::COURSE          => Course::class,
-            self::SEMINAR         => Seminar::class,
-            self::DIGITAL_ASSET   => DigitalAsset::class,
-            self::STAFF           => Staff::class,
-            self::USER            => User::class,
-            self::TEACHER         => Teacher::class,
-            self::VENDOR          => Vendor::class,
-            self::PRODUCT         => Product::class,
-            self::ORDER           => Order::class,
-            self::REFUND          => Refund::class,
-            self::CAMPAIGN        => WalletCampaign::class,
-            self::SLIDER          => Slider::class,
-            self::HOME_PAGE_BLOCK => HomePageBlock::class,
-            self::PARTNER         => Partner::class,
-            self::STUDENT_STORY   => StudentStory::class,
-            self::BLOG_POST       => BlogPost::class,
-            self::BLOG_CATEGORY   => BlogCategory::class,
-            self::SETTING         => Setting::class,
+            self::CATEGORY              => Category::class,
+            self::COURSE                => Course::class,
+            self::SEMINAR               => Seminar::class,
+            self::DIGITAL_ASSET         => DigitalAsset::class,
+            self::STAFF                 => Staff::class,
+            self::USER                  => User::class,
+            self::TEACHER               => Teacher::class,
+            self::VENDOR                => Vendor::class,
+            self::PRODUCT               => Product::class,
+            self::ORDER                 => Order::class,
+            self::REFUND                => Refund::class,
+            self::CAMPAIGN              => WalletCampaign::class,
+            self::SLIDER                => Slider::class,
+            self::HOME_PAGE_BLOCK       => HomePageBlock::class,
+            self::PARTNER               => Partner::class,
+            self::STUDENT_STORY         => StudentStory::class,
+            self::BLOG_POST             => BlogPost::class,
+            self::BLOG_CATEGORY         => BlogCategory::class,
+            self::SETTING               => Setting::class,
             self::COLLABORATION_REQUEST => CollaborationRequest::class,
         };
     }

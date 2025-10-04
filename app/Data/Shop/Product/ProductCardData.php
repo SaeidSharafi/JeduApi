@@ -29,10 +29,10 @@ final class ProductCardData extends Data
         public ?array $teachers,
         public ?int $reviews_count,
         public ?float $average_rating,
-        public ProductPriceData $price_data,
+        public ?ProductPriceData $price_data = null,
     ) {}
 
-    public static function fromModel(Product $product, ProductPriceData $priceData): self
+    public static function fromModel(Product $product, ProductPriceData $priceData, bool $withFullPriceData = true): self
     {
         $teachers = $product->productDeliveryOptions->flatMap(fn ($option) => $option->getTeachersName())->unique()->values()->toArray();
         if (! $teachers) {
@@ -54,7 +54,7 @@ final class ProductCardData extends Data
             teachers: $teachers,
             reviews_count: $product->reviews_count   ?? 0,
             average_rating: $product->average_rating ?? 0.0,
-            price_data: $priceData,
+            price_data: $withFullPriceData ? $priceData : null,
         );
     }
 }
