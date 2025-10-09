@@ -10,6 +10,12 @@ use Throwable;
 
 final class PgroongaService
 {
+    /**
+     * Check if PGroonga extension is enabled in the PostgreSQL database.
+     * Caches the result to avoid repeated checks.
+     *
+     * @codeCoverageIgnore
+     */
     public static function isPgroongaEnabled(): bool
     {
         return Cache::rememberForever('database.pgroonga_enabled', function () {

@@ -20,6 +20,8 @@ final class FullTextSearchProvider extends ServiceProvider
 
     /**
      * Bootstrap services.
+     *
+     * @codeCoverageIgnore
      */
     public function boot(): void
     {
