@@ -39,5 +39,11 @@ return new class extends Migration
                 $table->fullText(['full_name', 'short_name', 'slug', 'description'], 'courses_fulltext_index');
             }
         });
+        Schema::table('courses', function (Blueprint $table) {
+            if (DB::connection()->getDriverName() === 'pgsql') {
+                DB::statement('CREATE EXTENSION IF NOT EXISTS pgroonga');
+                DB::statement('CREATE INDEX courses_pgroonga_index ON courses USING pgroonga (full_name, short_name, slug, description)');
+            }
+        });
     }
 };

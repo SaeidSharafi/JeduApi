@@ -157,9 +157,13 @@ final class ProductQueryService
                 $this->productableTypes = [ProductableEnum::from($filter->type)->value];
             }
         }
+        $isDefaultOrder = $requestData->sortBy === 'created_at' && $requestData->sortOrder === 'desc';
 
         return $this
-            ->sortBy($requestData->sortBy, $requestData->sortOrder)
+            ->when($isDefaultOrder && $requestData->search,
+                fn ($q) => $q->query->orderByScore(),
+                fn ($q) => $q->sortBy($requestData->sortBy, $requestData->sortOrder)
+            )
             ->paginate($requestData->per_page);
     }
 
@@ -363,9 +367,9 @@ final class ProductQueryService
         }
 
         $this->query->where(function (Builder $q) use ($searchTerm) {
-
-            $q->whereLike('name', '%'.$searchTerm.'%')
-                ->orWhereFullText(['name', 'short_name', 'short_description', 'slug'], $searchTerm);
+            // Use the new fullTextSearch macro which automatically detects the database driver
+            // and falls back to appropriate methods (PGroonga for PostgreSQL, MATCH AGAINST for MySQL, etc.)
+            $q->fullTextSearch(['name', 'short_name', 'short_description', 'slug'], $searchTerm);
 
             foreach ($this->productableTypes as $type) {
                 $q->orWhereHasMorph('productable', [$type], function (Builder $sq) use ($searchTerm, $type) {
@@ -375,8 +379,7 @@ final class ProductQueryService
                         $searchColumns[] = 'keywords';
                     }
 
-                    $sq->whereLike('full_name', '%'.$searchTerm.'%')
-                        ->orWhereFullText($searchColumns, $searchTerm);
+                    $sq->fullTextSearch($searchColumns, $searchTerm);
                 });
             }
         });
@@ -628,5 +631,16 @@ final class ProductQueryService
         }
 
         return $available;
+    }
+
+    private function when(bool $condition, Closure $trueCallback, ?Closure $falseCallback = null): self
+    {
+        if ($condition) {
+            $trueCallback($this);
+        } elseif ($falseCallback) {
+            $falseCallback($this);
+        }
+
+        return $this;
     }
 }

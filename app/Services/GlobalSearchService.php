@@ -201,7 +201,7 @@ final class GlobalSearchService
             return BlogPost::query()
                 ->where('status', PublicationStatusEnum::PUBLISHED)
                 ->where(function ($q) use ($searchData) {
-                    $q->whereFullText(['title', 'body', 'excerpt'], $searchData->q);
+                    $q->fullTextSearch(['title', 'body', 'slug', 'excerpt'], $searchData->q);
                 })->paginate()
                 ->withQueryString();
         }

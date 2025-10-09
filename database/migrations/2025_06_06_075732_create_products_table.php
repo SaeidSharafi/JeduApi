@@ -42,6 +42,11 @@ return new class extends Migration
                 $table->fullText(['name', 'short_name', 'short_description', 'slug'], 'products_fulltext_index');
             }
         });
+
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            DB::statement('CREATE EXTENSION IF NOT EXISTS pgroonga');
+            DB::statement('CREATE INDEX products_pgroonga_index ON products USING pgroonga (name, short_name, short_description, slug)');
+        }
     }
 
     public function down(): void

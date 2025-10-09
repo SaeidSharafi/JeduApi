@@ -19,7 +19,7 @@ return new class extends Migration
             $table->longText('body');
             $table->text('excerpt');
             $table->foreignId('author_id')->nullable()->constrained('staff', 'id')->nullOnDelete();
-            $table->string('status')->index()->default(\App\Enums\Content\PublicationStatusEnum::DRAFT->value);
+            $table->string('status')->index()->default(App\Enums\Content\PublicationStatusEnum::DRAFT->value);
             $table->timestamp('published_at')->nullable();
             $table->integer('read_time_minutes');
             $table->boolean('is_featured')->default(false);
@@ -33,6 +33,12 @@ return new class extends Migration
             $table->index('is_featured');
             $table->index('published_at');
             $table->index(['status', 'published_at']);
+        });
+        Schema::table('blog_posts', function (Blueprint $table) {
+            if (DB::connection()->getDriverName() === 'pgsql') {
+                DB::statement('CREATE EXTENSION IF NOT EXISTS pgroonga');
+                DB::statement('CREATE INDEX blog_posts_pgroonga_index ON blog_posts USING pgroonga (title, body, excerpt, slug)');
+            }
         });
     }
 
