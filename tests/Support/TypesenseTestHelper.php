@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Models\Blog\BlogPost;
+use App\Models\Product;
 use Exception;
+use Illuminate\Support\Facades\Artisan;
 
 final class TypesenseTestHelper
 {
@@ -43,7 +46,6 @@ final class TypesenseTestHelper
             }
 
             $data = json_decode((string) $response, true);
-
             return isset($data['ok']) && $data['ok'] === true;
 
         } catch (Exception $e) {
@@ -60,5 +62,11 @@ final class TypesenseTestHelper
         if (! self::setUpTypeSense()) {
             test()->markTestSkipped('Typesense is not available');
         }
+    }
+
+    public static function regenerateIndex(): void
+    {
+        Product::query()->searchable();
+        BlogPost::query()->searchable();
     }
 }

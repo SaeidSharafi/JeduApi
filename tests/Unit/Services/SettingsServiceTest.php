@@ -40,21 +40,16 @@ test('it returns a default value when a setting does not exist', function (): vo
 });
 
 test('it hits the database only once and then uses the cache', function (): void {
-    // Arrange
     Setting::factory()->create(['key' => SettingKeyEnum::HEADER->value, 'value' => 'value1']);
     $service = new SettingsService();
     DB::enableQueryLog();
 
-    // Act 1: The first call. This should run a DB query and populate the cache.
     $service->get(SettingKeyEnum::HEADER);
 
-    // Assert 1: The cache should now have our settings in it.
     expect(Cache::has('settings.all'))->toBeTrue();
 
-    // Act 2: The second call. This should NOT run a DB query.
     $service->get(SettingKeyEnum::HEADER);
 
-    // Assert 2: We prove it used the cache because only ONE query ever ran.
     $queryCount = collect(DB::getQueryLog())->filter(
         fn ($query): bool => str_contains($query['query'], 'select * from "settings"')
     )->count();
@@ -63,31 +58,21 @@ test('it hits the database only once and then uses the cache', function (): void
 });
 
 test('the forget method clears the cache and forces a new database read', function (): void {
-    // This test also has its own fresh, empty cache and database.
-
-    // Arrange:
-    // 1. Create a setting.
     Setting::factory()->create(['key' => SettingKeyEnum::HEADER->value, 'value' => 'Jedu']);
     $service = new SettingsService();
 
-    // 2. Warm up the cache by calling get() once.
     $service->get(SettingKeyEnum::HEADER);
 
-    // 3. Sanity check: make sure the cache is actually populated.
     expect(Cache::has('settings.all'))->toBeTrue();
 
     DB::enableQueryLog(); // Start counting queries now.
 
-    // Act:
-    // 1. Forget the cache.
     $service->forget();
 
     expect(SmartCache::has('settings.all'))->toBeFalse();
 
-    // 2. Request the setting again.
     $service->get(SettingKeyEnum::HEADER);
 
-    // Because the cache was gone, the second call to get() MUST have run a query to rebuild it.
     $queryCount = collect(DB::getQueryLog())->filter(
         fn ($query): bool => str_contains($query['query'], 'select * from "settings"')
     )->count();

@@ -289,7 +289,7 @@ describe('AdminAuditMiddleware', function (): void {
 
             $this->assertDatabaseHas('admin_action_logs', [
                 'risk_level'   => $expectedRiskLevel,
-                'request_data' => json_encode(['amount' => $amount]),
+                'request_data->amount' => $amount,
             ]);
         })->with([
             [50000, 'low'], // Less than 100K Toman

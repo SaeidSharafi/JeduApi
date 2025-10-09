@@ -25,6 +25,7 @@ it('to array', function () {
 
     expect($array)
         ->toHaveKeys([
+            'id',
             'product_id',
             'min_price',
             'min_original_price',

@@ -14,8 +14,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('product_prices', function (Blueprint $table): void {
-            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
-            $table->primary('product_id');
+            $table->id();
+            $table->foreignId('product_id')->unique()->constrained('products')->cascadeOnDelete();
 
             $table->unsignedInteger('min_price')->index('idx_min_price');
             $table->unsignedInteger('min_original_price');

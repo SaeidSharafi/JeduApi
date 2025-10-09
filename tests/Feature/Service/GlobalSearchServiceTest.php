@@ -119,7 +119,7 @@ describe('Typesense Integration', function () {
 
     it('filters by result_types=product in Typesense', function () {
         TypesenseTestHelper::skipIfTypesenseUnavailable();
-
+        TypesenseTestHelper::regenerateIndex();
         $service = app(GlobalSearchService::class);
         $results = $service->search(SearchData::from([
             'q'            => 'test',
@@ -132,7 +132,7 @@ describe('Typesense Integration', function () {
 
     it('filters by result_types=blog_post in Typesense', function () {
         TypesenseTestHelper::skipIfTypesenseUnavailable();
-
+        TypesenseTestHelper::regenerateIndex();
         $service = app(GlobalSearchService::class);
         $results = $service->search(SearchData::from([
             'q'            => 'test',
@@ -145,7 +145,7 @@ describe('Typesense Integration', function () {
 
     it('returns suggestions when Typesense is available', function () {
         TypesenseTestHelper::skipIfTypesenseUnavailable();
-
+        TypesenseTestHelper::regenerateIndex();
         $service     = app(GlobalSearchService::class);
         $suggestions = $service->suggest('test', 5);
 
@@ -155,7 +155,7 @@ describe('Typesense Integration', function () {
 
     it('caches suggestions for performance', function () {
         TypesenseTestHelper::skipIfTypesenseUnavailable();
-
+        TypesenseTestHelper::regenerateIndex();
         Cache::flush();
         $service = app(GlobalSearchService::class);
 

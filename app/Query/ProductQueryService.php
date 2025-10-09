@@ -365,7 +365,7 @@ final class ProductQueryService
         if (empty($searchTerm)) {
             return $this;
         }
-
+        $this->query->selectScore();
         $this->query->where(function (Builder $q) use ($searchTerm) {
             // Use the new fullTextSearch macro which automatically detects the database driver
             // and falls back to appropriate methods (PGroonga for PostgreSQL, MATCH AGAINST for MySQL, etc.)
@@ -612,6 +612,19 @@ final class ProductQueryService
     private function applyPriceJoinOnce(): void
     {
         if (! in_array('price_filter', $this->appliedJoins)) {
+            $this->query->select([
+                'product_prices.product_id',
+                'product_prices.min_price',
+                'product_prices.min_original_price',
+                'product_prices.max_price',
+                'product_prices.max_original_price',
+                'product_prices.has_discount',
+                'product_prices.has_featured_price',
+                'product_prices.has_prepayment',
+                'product_prices.discount_percentage',
+                'product_prices.highest_discount_amount',
+            ]);
+            $this->query->selectRaw('products.*');
             $this->query->join('product_prices', 'products.id', '=', 'product_prices.product_id');
             $this->appliedJoins[] = 'price_filter';
         }

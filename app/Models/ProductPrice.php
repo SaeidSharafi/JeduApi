@@ -10,11 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class ProductPrice extends Model
 {
     /**
-     * The primary key for the model.
-     */
-    protected $primaryKey = 'product_id';
-
-    /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [

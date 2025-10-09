@@ -117,7 +117,7 @@ describe('Response Transformation', function () {
             ->withCategory(1)
             ->withCourse()
             ->create(['name' => 'Unique XYZ123 Product']);
-
+        TypesenseTestHelper::regenerateIndex();
         $response = getJson(route('api.v1.shop.search', [
             'q'            => 'XYZ123',
             'result_types' => ['product'],
@@ -139,7 +139,7 @@ describe('Response Transformation', function () {
             'title'  => 'Unique XYZ123 Blog Post',
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
-
+        TypesenseTestHelper::regenerateIndex();
         $response = getJson(route('api.v1.shop.search', [
             'q'            => 'XYZ123',
             'result_types' => ['blog_post'],

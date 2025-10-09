@@ -65,13 +65,10 @@ final class FullTextSearchProvider extends ServiceProvider
             // MySQL with FULLTEXT index
             if ($dbDriver === 'mysql') {
                 $columnList = implode(', ', array_map(fn ($col) => "`{$col}`", $columns));
+                $this->whereRaw("MATCH({$columnList}) AGAINST(? IN BOOLEAN MODE)", [$value]);
 
                 if ($scoreAs) {
-                    $this->selectRaw("*, MATCH({$columnList}) AGAINST(? IN NATURAL LANGUAGE MODE) as `{$scoreAs}`",
-                        [$value]);
-                    $this->whereRaw("MATCH({$columnList}) AGAINST(? IN NATURAL LANGUAGE MODE)", [$value]);
-                } else {
-                    $this->whereRaw("MATCH({$columnList}) AGAINST(? IN NATURAL LANGUAGE MODE)", [$value]);
+                    $this->selectRaw("*, MATCH({$columnList}) AGAINST(? IN BOOLEAN MODE) as `{$scoreAs}`", [$value]);
                 }
 
                 return $this;
@@ -134,6 +131,18 @@ final class FullTextSearchProvider extends ServiceProvider
 
             if ($dbDriver === 'pgsql' && PgroongaService::isPgroongaEnabled()) {
                 return $this->orderBy($scoreColumn, $direction);
+            }
+
+            return $this;
+        });
+        Builder::macro('selectScore', function (string $scoreColumn = 'score') {
+            /** @var Builder $this */
+            $driver           = config('database.default');
+            $connectionConfig = config("database.connections.{$driver}");
+            $dbDriver         = $connectionConfig['driver'] ?? 'mysql';
+
+            if ($dbDriver === 'pgsql' && PgroongaService::isPgroongaEnabled()) {
+                return $this->selectRaw('*, pgroonga_score(tableoid, ctid) as '.$scoreColumn);
             }
 
             return $this;

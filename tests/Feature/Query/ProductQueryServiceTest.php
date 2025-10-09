@@ -820,7 +820,7 @@ describe('ProductQueryService - globalSearch', function () {
             page: 1,
             per_page: 15,
         );
-
+        TypesenseTestHelper::regenerateIndex();
         $results = ProductQueryService::make()->globalSearch($requestData);
 
         expect($results)->toBeInstanceOf(LengthAwarePaginator::class)

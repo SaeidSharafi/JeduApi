@@ -165,7 +165,7 @@ describe('BlogPostController CRUD', function (): void {
             'excerpt'          => 'This is a new blog post.',
             'body'             => 'Full content of the new blog post.',
             'status'           => PublicationStatusEnum::DRAFT->value,
-            'published_at'     => now()->toDateTimeString(),
+            'published_at'     => verta()->format('Y-m-d H:i:s'),
             'author_id'        => $author->id,
             'category_ids'     => [$category->id],
             'is_featured'      => false,

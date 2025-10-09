@@ -278,17 +278,17 @@ describe('ComplianceReportController', function (): void {
     it('filters data by date range correctly', function (): void {
         $withinRange = WalletTransaction::factory()->create([
             'amount'     => 5000000,
-            'created_at' => Carbon::parse($this->dateFrom)->addDays(5),
+            'created_at' => Verta::parse($this->dateFrom)->addDays(5)->toCarbon(),
         ]);
 
         $beforeRange = WalletTransaction::factory()->create([
             'amount'     => 10000000,
-            'created_at' => Carbon::parse($this->dateFrom)->subDays(1),
+            'created_at' => Verta::parse($this->dateFrom)->subDays(1)->toCarbon(),
         ]);
 
         $afterRange = WalletTransaction::factory()->create([
             'amount'     => 15000000,
-            'created_at' => Carbon::parse($this->dateTo)->addDays(1),
+            'created_at' => Verta::parse($this->dateTo)->addDays(1)->toCarbon(),
         ]);
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_COMPLIANCE_REPORTS_VIEW])

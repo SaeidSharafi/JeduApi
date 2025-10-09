@@ -33,6 +33,9 @@ return new class extends Migration
             $table->index('is_featured');
             $table->index('published_at');
             $table->index(['status', 'published_at']);
+            if (DB::connection()->getDriverName() !== 'sqlite') {
+                $table->fullText(['title', 'body', 'excerpt', 'slug'], 'blog_post_fulltext_index');
+            }
         });
         Schema::table('blog_posts', function (Blueprint $table) {
             if (DB::connection()->getDriverName() === 'pgsql') {
