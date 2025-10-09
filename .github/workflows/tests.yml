@@ -13,7 +13,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: groonga/pgroonga:latest-alpine-17
         env:
           POSTGRES_DB: testing
           POSTGRES_USER: sail
