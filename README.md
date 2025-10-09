@@ -43,3 +43,18 @@ docker run --rm \
 # Run tests
 ./vendor/bin/sail pest
 ```
+
+# Database Support
+
+This project is built and tested with a "PostgreSQL First" approach. All Continuous Integration (CI) and automated tests are run against PostgreSQL, which we consider the primary, fully-supported database environment.
+
+### PostgreSQL (Primary Support)
+
+*   **Version:** 14+
+*   **Status:** All features are fully tested and guaranteed to be stable.
+
+### MySQL (Community Support)
+
+*   **Version:** 8.0+
+*   **Status:** The application is fully compatible with MySQL, and all core features are expected to work correctly. However, due to differences in database engine behavior (particularly around full-text search in transactional tests), our automated test suite does not run against MySQL in CI.
+*   **Note:** While we expect full functionality, some edge cases specific to MySQL may not be discovered as quickly as on PostgreSQL. We welcome and appreciate pull requests that improve compatibility or address MySQL-specific issues.
