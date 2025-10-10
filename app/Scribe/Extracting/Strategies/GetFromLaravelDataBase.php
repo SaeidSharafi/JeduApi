@@ -9,6 +9,7 @@ use Knuckles\Camel\Extraction\ExtractedEndpointData;
 use Knuckles\Scribe\Extracting\ParsesValidationRules;
 use Knuckles\Scribe\Extracting\Strategies\Strategy;
 use Knuckles\Scribe\Tools\ConsoleOutputUtils as c;
+use League\CommonMark\Parser\Block\DocumentBlockParser;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunctionAbstract;
@@ -129,6 +130,46 @@ abstract class GetFromLaravelDataBase extends Strategy
             $this->getCustomParameterData($laravelData)
         );
 
-        return $this->normaliseArrayAndObjectParameters($parametersFromLaravelData);
+        $ignoredProperties = $this->getIgnoredProperties($method);
+        $filteredParameters = array_filter(
+            $parametersFromLaravelData,
+            fn ($parameterName) => ! in_array($parameterName, $ignoredProperties, true),
+            ARRAY_FILTER_USE_KEY
+        );
+        return $this->normaliseArrayAndObjectParameters($filteredParameters);
+    }
+
+    /**
+     * Get the properties that should be ignored from the documentation based on the @ignoreQueryParam annotation.
+     */
+    private function getIgnoredProperties(ReflectionFunctionAbstract $method): array
+    {
+        $docComment = $method->getDocComment();
+        if (!$docComment) {
+            return [];
+        }
+
+        // This regex finds all "@ignoreQueryParam" tags and captures the text that follows on the same line.
+        preg_match_all('/@ignoreQueryParam\s+(.*)/', $docComment, $matches);
+
+        // If no matches were found, return an empty array.
+        if (empty($matches[1])) {
+            return [];
+        }
+
+        $ignoredProperties = [];
+        // $matches[1] contains an array of all captured strings (the text after the tag).
+        foreach ($matches[1] as $paramsString) {
+            // Split the string by commas to handle multiple parameters on one line.
+            $propertiesOnThisLine = explode(',', $paramsString);
+            foreach ($propertiesOnThisLine as $property) {
+                $trimmedProperty = trim($property);
+                if ($trimmedProperty) { // Ensure we don't add empty strings
+                    $ignoredProperties[] = $trimmedProperty;
+                }
+            }
+        }
+
+        return $ignoredProperties;
     }
 }
