@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Services\PgroongaService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
 final class FullTextSearchProvider extends ServiceProvider
@@ -58,7 +59,7 @@ final class FullTextSearchProvider extends ServiceProvider
 
                 // Add score if requested
                 if ($scoreAs) {
-                    $this->selectRaw("*, pgroonga_score(tableoid, ctid) as \"{$scoreAs}\"");
+                    $this->selectRaw("pgroonga_score(tableoid, ctid) as \"{$scoreAs}\"");
                 }
 
                 return $this;
@@ -70,7 +71,7 @@ final class FullTextSearchProvider extends ServiceProvider
                 $this->whereRaw("MATCH({$columnList}) AGAINST(? IN BOOLEAN MODE)", [$value]);
 
                 if ($scoreAs) {
-                    $this->selectRaw("*, MATCH({$columnList}) AGAINST(? IN BOOLEAN MODE) as `{$scoreAs}`", [$value]);
+                    $this->selectRaw("MATCH({$columnList}) AGAINST(? IN BOOLEAN MODE) as `{$scoreAs}`", [$value]);
                 }
 
                 return $this;
@@ -137,14 +138,15 @@ final class FullTextSearchProvider extends ServiceProvider
 
             return $this;
         });
-        Builder::macro('selectScore', function (string $scoreColumn = 'score') {
+        Builder::macro('selectScore', function (string $scoreColumn = 'score', string $table = '') {
             /** @var Builder $this */
             $driver           = config('database.default');
             $connectionConfig = config("database.connections.{$driver}");
             $dbDriver         = $connectionConfig['driver'] ?? 'mysql';
 
             if ($dbDriver === 'pgsql' && PgroongaService::isPgroongaEnabled()) {
-                return $this->selectRaw('*, pgroonga_score(tableoid, ctid) as '.$scoreColumn);
+                $table = $table ? "{$table}." : '';
+                return $this->addSelect(DB::raw("pgroonga_score({$table}tableoid, {$table}ctid) as {$scoreColumn}"));
             }
 
             return $this;
