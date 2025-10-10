@@ -14,6 +14,7 @@ use ReflectionException;
 use ReflectionFunctionAbstract;
 use ReflectionUnionType;
 use Spatie\LaravelData\Data;
+use Throwable;
 
 abstract class GetFromLaravelDataBase extends Strategy
 {
@@ -28,13 +29,22 @@ abstract class GetFromLaravelDataBase extends Strategy
 
     protected function getRouteValidationRules(Data $data): mixed
     {
-        if (method_exists($data, 'rules')) {
-            return $data::rules();
-        }
-        if (method_exists($data, 'getValidationRules')) {
-            $properties = get_object_vars($data);
+        try {
+            if (method_exists($data, 'rules')) {
+                return $data::rules();
+            }
+            if (method_exists($data, 'getValidationRules')) {
+                $properties = get_object_vars($data);
 
-            return app()->call([$data, 'getValidationRules'], ['payload' => $properties]);
+                return app()->call([$data, 'getValidationRules'], ['payload' => $properties]);
+            }
+        } catch (Throwable $e) {
+            // During Scribe documentation generation, route parameters may not be available
+            // causing rules() to fail. We'll fall back to using only the custom parameter data.
+            c::warn('Failed to extract validation rules from '.get_class($data).': '.$e->getMessage());
+            c::warn('Falling back to using only '.$this->customParameterDataMethodName.'() method for parameter documentation.');
+
+            return [];
         }
 
         return [];
@@ -109,12 +119,11 @@ abstract class GetFromLaravelDataBase extends Strategy
 
         $laravelData = (new ReflectionClass($className))->newInstanceWithoutConstructor();
 
-        if (
-            $this->customParameterDataMethodName !== 'queryParameters'
-            && ! method_exists($laravelData, $this->customParameterDataMethodName)
-            && method_exists($laravelData, 'queryParameters')) {
+        // Skip if this Data class doesn't have the expected method for this strategy
+        if (! method_exists($laravelData, $this->customParameterDataMethodName)) {
             return [];
         }
+
         $parametersFromLaravelData = $this->getParametersFromValidationRules(
             $this->getRouteValidationRules($laravelData),
             $this->getCustomParameterData($laravelData)
