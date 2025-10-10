@@ -67,6 +67,7 @@ final class DigitalAsset extends Model implements ProductableContract, Reviewabl
             'status'                  => \App\Enums\Content\PublicationStatusEnum::class,
             'is_attachable_to_course' => 'boolean',
             'published_at'            => 'datetime',
+            'difficulty_level'        => \App\Enums\CourseDifficultyLevelEnum::class,
             // with time zone
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
