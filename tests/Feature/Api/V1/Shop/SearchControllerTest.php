@@ -178,14 +178,14 @@ describe('Search Validation', function () {
             ->assertJsonValidationErrors(['per_page']);
     });
 
-    it('rejects non-array category_ids parameter', function () {
+    it('rejects non-array category_slugs parameter', function () {
         $response = getJson(route('api.v1.shop.search', [
             'q'            => 'test',
-            'category_ids' => 'not-an-array',
+            'category_slugs' => 'not-an-array',
         ]));
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['category_ids']);
+            ->assertJsonValidationErrors(['category_slugs']);
     });
 
     it('rejects non-integer price_min parameter', function () {
@@ -240,7 +240,7 @@ describe('Search Validation', function () {
             'per_page'          => 10,
             'productable_type'  => 'course',
             'has_discount'      => true,
-            'category_ids'      => [1, 2, 3],
+            'category_slugs'      => ['art', 'programming'],
             'price_min'         => 100000,
             'price_max'         => 500000,
             'difficulty_level'  => 'beginner',
@@ -416,7 +416,7 @@ describe('filters tests', function () {
         }
     });
 
-    it('filters by category_ids', function () {
+    it('filters by category_slugs', function () {
         $category1 = App\Models\Category::factory()->create(['name' => 'Category One']);
         $category2 = App\Models\Category::factory()->create(['name' => 'Category Two']);
         $category3 = App\Models\Category::factory()->create(['name' => 'Category Three']);
@@ -437,7 +437,7 @@ describe('filters tests', function () {
         // Filter by category1 and category3
         $response = getJson(route('api.v1.shop.search', [
             'q'            => 'Course',
-            'category_ids' => [$category1->id, $category3->id],
+            'category_slugs' => [$category1->slug, $category3->slug],
         ]));
         $response->assertOk();
         $json = $response->json();
@@ -532,7 +532,7 @@ describe('filters tests', function () {
 
         $response = getJson(route('api.v1.shop.search', [
             'q'     => 'Course',
-            'level' => 'beginner',
+            'difficulty_level' => 'beginner',
         ]));
 
         $response->assertOk();

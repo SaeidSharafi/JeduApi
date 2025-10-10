@@ -211,7 +211,7 @@ final readonly class GetHomePageBlockAction
             ])
         ) {
             if ($query instanceof ProductQueryService) {
-                $query->inCategories($categoryIds);
+                $query->inCategoryIds($categoryIds);
             }
         }
 

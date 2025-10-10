@@ -36,7 +36,7 @@ describe('ProductListRequestData Validation Rules', function () {
 
         // --- Dataset for dynamically prefixed rules from ProductFilterData ---
         'search is not a string'                  => [['search' => 123], 'search'],
-        'filter category_ids is not an array'     => [['filter' => ['category_ids' => '1,2']], 'filter.category_ids'],
+        'filter category_slugs is not an array'     => [['filter' => ['category_slugs' => '1,2']], 'filter.category_slugs'],
         'filter type has invalid enum value'      => [['filter' => ['type' => 'invalid-type']], 'filter.type'],
         'filter min_price is negative'            => [['filter' => ['min_price' => -10]], 'filter.min_price'],
         'filter max_price is less than min_price' => [

@@ -16,7 +16,7 @@ describe('Filter Building', function () {
             'q'                 => 'test',
             'productable_type'  => 'course',
             'has_discount'      => true,
-            'category_ids'      => [1, 2, 3],
+            'category_slugs'      => ["art", "science", "math"],
             'price_min'         => 100000,
             'price_max'         => 500000,
             'difficulty_level'  => 'beginner',
@@ -29,7 +29,7 @@ describe('Filter Building', function () {
             ->and($result)->toContain('is_visible:=true')
             ->and($result)->toContain('productable_type:=course')
             ->and($result)->toContain('has_discount:=true')
-            ->and($result)->toContain('category_ids:=[1,2,3]')
+            ->and($result)->toContain('category_slugs:=[art,science,math]')
             ->and($result)->toContain('price:[100000..500000]')
             ->and($result)->toContain('difficulty_level:=beginner')
             ->and($result)->toContain('fulfillment_types:=digital')

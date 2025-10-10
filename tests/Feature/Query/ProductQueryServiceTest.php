@@ -865,7 +865,7 @@ describe('ProductQueryService - globalSearch', function () {
         Config::set('scout.driver', 'database');
 
         $filterData = new ProductFilterData(
-            category_ids: null,
+            category_slugs: null,
             type: null,
             min_price: null,
             max_price: null,

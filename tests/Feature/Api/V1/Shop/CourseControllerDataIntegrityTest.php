@@ -518,7 +518,7 @@ describe('CourseController Data Integrity Tests', function (): void {
 
             // Test filtering by web development category
             $response = getJson(route('api.v1.shop.courses.index', [
-                'filter[categorySlug]' => 'web-development',
+                'filter[category_slugs][]' => 'web-development',
             ]));
 
             $response->assertOk()
@@ -529,7 +529,7 @@ describe('CourseController Data Integrity Tests', function (): void {
 
             // Test filtering by mobile development category
             $response = getJson(route('api.v1.shop.courses.index', [
-                'filter[categorySlug]' => 'mobile-development',
+                'filter[category_slugs][]' => 'mobile-development',
             ]));
 
             $response->assertOk()

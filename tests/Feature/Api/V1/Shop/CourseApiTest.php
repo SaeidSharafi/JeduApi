@@ -129,7 +129,7 @@ describe('Course Lsiting filters', function (): void {
             ->withCourse()
             ->create();
         $productNotInCategory->categories()->attach($otherCategory->id);
-        $response = $this->getJson(route('api.v1.shop.courses.index', ['filter[categorySlug]' => 'programming']));
+        $response = $this->getJson(route('api.v1.shop.courses.index', ['filter[category_slugs][]' => 'programming']));
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data.data')
             ->assertJsonFragment(['slug' => $productInCategory->slug])

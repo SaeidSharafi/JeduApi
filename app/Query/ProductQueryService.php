@@ -120,8 +120,8 @@ final class ProductQueryService
         if ($requestData->filter) {
             $filter = $requestData->filter;
 
-            if ($filter->category_ids) {
-                $this->inCategories($filter->category_ids);
+            if ($filter->category_slugs) {
+                $this->inCategories($filter->category_slugs);
             }
             if ($filter->min_price || $filter->max_price) {
                 $this->priceRange($filter->min_price, $filter->max_price);
@@ -291,9 +291,20 @@ final class ProductQueryService
     /**
      * Filter by categories.
      *
-     * @param  int[]  $categoryIds
+     * @param  int[]  $categorySlugs
      */
-    public function inCategories(array $categoryIds): self
+    public function inCategories(array $categorySlugs): self
+    {
+        if (empty($categorySlugs)) {
+            return $this;
+        }
+
+        return $this->addRelationshipConstraint('categories', function ($q) use ($categorySlugs) {
+            $q->whereIn('categories.slug', $categorySlugs);
+        });
+    }
+
+    public function inCategoryIds(array $categoryIds): self
     {
         if (empty($categoryIds)) {
             return $this;

@@ -14,20 +14,21 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 final class ProductFilterData extends Data
 {
     public function __construct(
-        public ?array $category_ids = null, // Use IDs for global search
+        public ?array $category_slugs = null, // Use IDs for global search
         public ?string $type = null,
         public ?array $fulfillment_types = [],
         public ?string $difficulty_level = null,
         public ?int $min_price = null,
         public ?int $max_price = null,
         public ?bool $with_discounts = null,
-    ) {}
+    ) {
+    }
 
     public static function rules(?ValidationContext $context = null, string $prefix = ''): array
     {
         return [
-            $prefix.'category_ids'        => ['sometimes', 'array'],
-            $prefix.'category_ids.*'      => ['integer', 'exists:categories,id'],
+            $prefix.'category_slugs'      => ['sometimes', 'array'],
+            $prefix.'category_slugs.*'    => ['string'],
             $prefix.'type'                => ['sometimes', 'string', Rule::enum(ProductableEnum::class)],
             $prefix.'fulfillment_types'   => ['sometimes', 'array'],
             $prefix.'fulfillment_types.*' => ['string', Rule::enum(FulfillmentTypeEnum::class)],
@@ -44,17 +45,19 @@ final class ProductFilterData extends Data
     public static function queryParameters(string $prefix = ''): array
     {
         return [
-            $prefix.'category_ids' => [
+            $prefix.'category_ids'       => [
                 'description' => 'Filter by category IDs',
                 'example'     => [1, 2, 3],
             ],
-            $prefix.'type' => [
+            $prefix.'type'               => [
                 'description' => 'Filter by product type (e.g., course, ebook)',
                 'example'     => ProductableEnum::COURSE->value,
             ],
-            $prefix.'fulfillment_types' => [
+            $prefix.'fulfillment_types'  => [
                 'description' => 'Filter by fulfillment types (e.g., online, offline)',
-                'example'     => [FulfillmentTypeEnum::ONLINE_SERVICE->value, FulfillmentTypeEnum::OFFLINE_SERVICE->value],
+                'example'     => [
+                    FulfillmentTypeEnum::ONLINE_SERVICE->value, FulfillmentTypeEnum::OFFLINE_SERVICE->value
+                ],
             ],
             $prefix.'fulfillment_type.*' => [
                 'description' => 'fulfillment type',
@@ -66,15 +69,15 @@ final class ProductFilterData extends Data
                 'example'     => CourseDifficultyLevelEnum::BEGINNER->value,
 
             ],
-            $prefix.'min_price' => [
+            $prefix.'min_price'        => [
                 'description' => 'Only include products with a minimum price greater than or equal to this amount.',
                 'example'     => 100_000,
             ],
-            $prefix.'max_price' => [
+            $prefix.'max_price'        => [
                 'description' => 'Only include products with a maximum price less than or equal to this amount.',
                 'example'     => 500_000,
             ],
-            $prefix.'with_discounts' => [
+            $prefix.'with_discounts'   => [
                 'description' => 'When true, only include products that currently have an active discount.',
                 'example'     => true,
             ],

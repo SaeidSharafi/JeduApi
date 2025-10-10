@@ -208,7 +208,7 @@ final class GlobalSearchService
 
         // Search products using ProductQueryService with database
         $productFilterData = new ProductFilterData(
-            category_ids: $searchData->category_ids,
+            category_slugs: $searchData->category_slugs,
             type: $searchData->productable_type,
             fulfillment_types: $searchData->fulfillment_types,
             difficulty_level: $searchData->difficulty_level,
@@ -310,9 +310,9 @@ final class GlobalSearchService
             $baseFilters[] = "has_discount:={$value}";
         }
 
-        if (! empty($searchData->category_ids)) {
-            $ids           = implode(',', $searchData->category_ids);
-            $baseFilters[] = "category_ids:=[{$ids}]";
+        if (! empty($searchData->category_slugs)) {
+            $slugs           = implode(',', $searchData->category_slugs);
+            $baseFilters[] = "category_slugs:=[{$slugs}]";
         }
 
         if ($searchData->price_min !== null && $searchData->price_max !== null) {
