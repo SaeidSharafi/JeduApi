@@ -798,6 +798,48 @@ describe('ProductQueryService integration', function () {
                 ->and($fetchedProducts)->toHaveCount(3);
         });
 
+        it('filter products by category slugs', function () {
+            $categoryA = Category::factory()->create(['slug' => 'category-a']);
+            $categoryB = Category::factory()->create(['slug' => 'category-b']);
+
+            $productA = Product::factory()->withDeliveryOptions()->withCourse(Course::factory()->create())
+                ->create(['name' => 'Product A']);
+            $productA->categories()->sync([$categoryA->id]);
+
+            $productB = Product::factory()->withDeliveryOptions()->withCourse(Course::factory()->create())
+                ->create(['name' => 'Product B']);
+            $productB->categories()->sync([$categoryB->id]);
+
+            $results = ProductQueryService::make()
+                ->availableProducts()
+                ->inCategories([$categoryA->slug])
+                ->get();
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->is($productA->fresh()))->toBeTrue();
+        });
+        it('filter products by category ids', function () {
+            $categoryA = Category::factory()->create(['slug' => 'category-a']);
+            $categoryB = Category::factory()->create(['slug' => 'category-b']);
+
+            $productA = Product::factory()->withDeliveryOptions()->withCourse(Course::factory()->create())
+                ->create(['name' => 'Product A']);
+            $productA->categories()->sync([$categoryA->id]);
+
+            $productB = Product::factory()->withDeliveryOptions()->withCourse(Course::factory()->create())
+                ->create(['name' => 'Product B']);
+            $productB->categories()->sync([$categoryB->id]);
+
+
+
+
+            $results = ProductQueryService::make()
+                ->availableProducts()
+                ->inCategoryIds([$categoryA->id])
+                ->get();
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->is($productA->fresh()))->toBeTrue();
+        });
+
     });
 
     function indexProductPrice(Product $product): Product
