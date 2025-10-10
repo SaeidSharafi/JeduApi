@@ -114,8 +114,11 @@ final class ProductQueryService
         // Keeps the default of all productableTypes
         $this->availableProducts()->forListing();
 
-        if ($requestData->search) {
-            $this->search($requestData->search);
+        if ($requestData->q) {
+            $this->search($requestData->q);
+        }
+        if ($requestData->type) {
+            $this->productableTypes = [ProductableEnum::from($requestData->type)->value];
         }
         if ($requestData->filter) {
             $filter = $requestData->filter;
@@ -135,15 +138,12 @@ final class ProductQueryService
             if ($filter->fulfillment_types) {
                 $this->byFulfillmentTypes($filter->fulfillment_types);
             }
-            if ($filter->type) {
-                // If a type is specified in a global search, we narrow the scope.
-                $this->productableTypes = [ProductableEnum::from($filter->type)->value];
-            }
+
         }
         $isDefaultOrder = $requestData->sortBy === 'created_at' && $requestData->sortOrder === 'desc';
 
         return $this
-            ->when($isDefaultOrder && $requestData->search,
+            ->when($isDefaultOrder && $requestData->q,
                 fn ($q) => $q->query->orderByScore(),
                 fn ($q) => $q->sortBy($requestData->sortBy, $requestData->sortOrder)
             )
@@ -163,7 +163,7 @@ final class ProductQueryService
                 return $this->globalSearchProductsScout($requestData);
             } catch (Exception $e) {
                 \Illuminate\Support\Facades\Log::warning('Typesense product search failed, falling back to database', [
-                    'query' => $requestData->search,
+                    'query' => $requestData->q,
                     'error' => $e->getMessage(),
                 ]);
                 // Fall through to database search
@@ -183,7 +183,7 @@ final class ProductQueryService
             return $this->globalSearchProductsDatabase($requestData);
         }
 
-        $query = Product::search($requestData->search)
+        $query = Product::search($requestData->q)
             ->options([
                 'query_by' => 'embedding',
             ]);

@@ -35,9 +35,11 @@ describe('ProductListRequestData Validation Rules', function () {
         'per_page is more than 100'               => [['per_page' => 101], 'per_page'],
 
         // --- Dataset for dynamically prefixed rules from ProductFilterData ---
-        'search is not a string'                  => [['search' => 123], 'search'],
-        'filter category_slugs is not an array'     => [['filter' => ['category_slugs' => '1,2']], 'filter.category_slugs'],
-        'filter type has invalid enum value'      => [['filter' => ['type' => 'invalid-type']], 'filter.type'],
+        'query is not a string'                  => [['q' => 123], 'q'],
+        'filter category_slugs is not an array'   => [
+            ['filter' => ['category_slugs' => '1,2']], 'filter.category_slugs'
+        ],
+        'filter type has invalid enum value'      => [['type' => 'invalid-type'], 'type'],
         'filter min_price is negative'            => [['filter' => ['min_price' => -10]], 'filter.min_price'],
         'filter max_price is less than min_price' => [
             ['filter' => ['min_price' => 100, 'max_price' => 50]], 'filter.max_price'
@@ -50,10 +52,10 @@ describe('ProductListRequestData Validation Rules', function () {
     it('passes validation with valid data', function () {
         $category = Category::factory()->create();
         $validData = [
+            'type'           => ProductableEnum::COURSE->value,
             'filter'    => [
-                'search'         => 'My Awesome Product',
+                'q'         => 'My Awesome Product',
                 'category_ids'   => [$category->id],
-                'type'           => ProductableEnum::COURSE->value,
                 'min_price'      => 100,
                 'max_price'      => 200,
                 'with_discounts' => true,

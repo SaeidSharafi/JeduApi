@@ -174,8 +174,8 @@ describe('ProductQueryService integration', function () {
             indexProductPrice($otherProduct);
 
             $request = ProductListRequestData::from([
-                'search' => 'Laravel',
-                'filter' => [
+                'q'        => 'Laravel',
+                'filter'   => [
                     'categorySlug'     => $targetCategory->slug,
                     'difficulty_level' => CourseDifficultyLevelEnum::BEGINNER->value,
                     'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
@@ -304,8 +304,8 @@ describe('ProductQueryService integration', function () {
             indexProductPrice($seminarProduct);
 
             $request = ProductListRequestData::from([
+                'type'         => ProductableEnum::SEMINAR->value,
                 'filter' => [
-                    'type'         => ProductableEnum::SEMINAR->value,
                     'category_ids' => [$seminarCategory->id],
                 ],
             ]);
@@ -390,7 +390,7 @@ describe('ProductQueryService integration', function () {
             indexProductPrice($assetProduct);
 
             $request = ProductListRequestData::from([
-                'search' => 'JavaScript',
+                'q' => 'JavaScript',
             ]);
 
             $results = ProductQueryService::make()->globalSearchProductsDatabase($request);
@@ -442,7 +442,7 @@ describe('ProductQueryService integration', function () {
             indexProductPrice($assetProduct);
 
             $request = ProductListRequestData::from([
-                'search' => 'data science',
+                'q' => 'data science',
             ]);
 
             $results = ProductQueryService::make()->globalSearchProductsDatabase($request);
@@ -857,7 +857,7 @@ describe('ProductQueryService - globalSearch', function () {
 
         $requestData = new ProductListRequestData(
             filter: null,
-            search: 'test',
+            q: 'test',
             page: 1,
             per_page: 15,
         );
@@ -874,7 +874,7 @@ describe('ProductQueryService - globalSearch', function () {
 
         $requestData = new ProductListRequestData(
             filter: null,
-            search: 'test',
+            q: 'test',
             page: 1,
             per_page: 15,
         );
@@ -892,7 +892,7 @@ describe('ProductQueryService - globalSearch', function () {
 
         $requestData = new ProductListRequestData(
             filter: null,
-            search: 'test',
+            q: 'test',
             page: 1,
             per_page: 15,
         );
@@ -908,7 +908,6 @@ describe('ProductQueryService - globalSearch', function () {
 
         $filterData = new ProductFilterData(
             category_slugs: null,
-            type: null,
             min_price: null,
             max_price: null,
             with_discounts: null,
@@ -916,7 +915,8 @@ describe('ProductQueryService - globalSearch', function () {
 
         $requestData = new ProductListRequestData(
             filter: $filterData,
-            search: 'course',
+            q: 'course',
+            type: null,
             page: 1,
             per_page: 10,
         );

@@ -209,7 +209,6 @@ final class GlobalSearchService
         // Search products using ProductQueryService with database
         $productFilterData = new ProductFilterData(
             category_slugs: $searchData->category_slugs,
-            type: $searchData->productable_type,
             fulfillment_types: $searchData->fulfillment_types,
             difficulty_level: $searchData->difficulty_level,
             min_price: $searchData->price_min,
@@ -219,7 +218,8 @@ final class GlobalSearchService
 
         $productRequestData = new ProductListRequestData(
             filter: $productFilterData,
-            search: $searchData->q,
+            q: $searchData->q,
+            type: $searchData->productable_type,
             page: $page,
             per_page: $searchData->per_page,
         );

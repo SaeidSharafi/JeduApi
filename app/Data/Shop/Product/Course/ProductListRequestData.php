@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Product\Course;
 
+use App\Enums\Product\ProductableEnum;
 use App\Query\ProductQueryService;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
@@ -13,7 +14,8 @@ final class ProductListRequestData extends Data
 {
     public function __construct(
         public ?ProductFilterData $filter = null,
-        public ?string $search = null,
+        public ?string $q = null,
+        public ?string $type = null,
         public ?string $sortBy = 'created_at',
         public ?string $sortOrder = 'desc',
 
@@ -27,7 +29,8 @@ final class ProductListRequestData extends Data
         $filters = ProductFilterData::rules($context, 'filter.');
 
         return [
-            'search'    => ['sometimes', 'string', 'max:255'],
+            'q'         => ['sometimes', 'string', 'max:255'],
+            'type'      => ['sometimes', 'string', Rule::enum(ProductableEnum::class)],
             'filter'    => ['sometimes', 'array'],
             'filter.*'  => ['sometimes'],
             ...$filters,
@@ -46,6 +49,11 @@ final class ProductListRequestData extends Data
         $parameters = ProductFilterData::queryParameters('filter.');
 
         return [
+            'q'         => ['description' => 'Search query string', 'example' => 'laravel'],
+            'type'      => [
+                'description' => 'Filter by product type (e.g., course, ebook)',
+                'example'     => ProductableEnum::COURSE->value,
+            ],
             'filter'    => [
                 'description' => 'Filter criteria for courses',
                 'example'     => ['category_id' => 1, 'status' => 'published'],

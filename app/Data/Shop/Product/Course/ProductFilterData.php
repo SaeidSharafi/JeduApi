@@ -15,7 +15,6 @@ final class ProductFilterData extends Data
 {
     public function __construct(
         public ?array $category_slugs = null, // Use IDs for global search
-        public ?string $type = null,
         public ?array $fulfillment_types = [],
         public ?string $difficulty_level = null,
         public ?int $min_price = null,
@@ -29,7 +28,6 @@ final class ProductFilterData extends Data
         return [
             $prefix.'category_slugs'      => ['sometimes', 'array'],
             $prefix.'category_slugs.*'    => ['string'],
-            $prefix.'type'                => ['sometimes', 'string', Rule::enum(ProductableEnum::class)],
             $prefix.'fulfillment_types'   => ['sometimes', 'array'],
             $prefix.'fulfillment_types.*' => ['string', Rule::enum(FulfillmentTypeEnum::class)],
             $prefix.'difficulty_level'    => ['sometimes', 'string', Rule::enum(CourseDifficultyLevelEnum::class)],
@@ -48,10 +46,6 @@ final class ProductFilterData extends Data
             $prefix.'category_ids'       => [
                 'description' => 'Filter by category IDs',
                 'example'     => [1, 2, 3],
-            ],
-            $prefix.'type'               => [
-                'description' => 'Filter by product type (e.g., course, ebook)',
-                'example'     => ProductableEnum::COURSE->value,
             ],
             $prefix.'fulfillment_types'  => [
                 'description' => 'Filter by fulfillment types (e.g., online, offline)',
