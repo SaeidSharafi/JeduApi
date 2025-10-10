@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\Product;
 
 use App\Data\Shop\Product\Course\CourseDetailData;
-use App\Data\Shop\Product\Course\CourseListRequestData;
+use App\Data\Shop\Product\Course\ProductListRequestData;
 use App\Data\Shop\Product\ProductCardData;
 use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
@@ -29,18 +29,10 @@ final class CourseController extends Controller
      *
      * Retrieve a paginated list of active product of course type with optional filtering and sorting.
      *
-     * @queryParam search string Optional search term to filter courses by title or description. Example: "programming"
-     * @queryParam filter[fulfillment_type] string Optional fulfillment type to filter courses by. Example: "online"
-     * @queryParam filter[level] string Optional course level to filter courses by level. Example: "beginner"
-     * @queryParam filter[instructor_id] int Optional instructor ID to filter courses by instructor. Example: 5
-     * @queryParam sortBy string Optional field to sort by. Default is "created_at". Example: "title"
-     * @queryParam sortOrder string Optional sort order, either "asc" or "desc". Default is "desc"
-     * @queryParam page int Optional page number for pagination. Default is 1. Example: 1
-     * @queryParam per_page int Optional number of items per page. Default is 15. Example: 15
      *
      * @responseFile responses/shop/products/courses/index.json
      */
-    public function index(CourseListRequestData $requestData)
+    public function index(ProductListRequestData $requestData)
     {
         $courses = ProductQueryService::make()
             ->availableProducts()
