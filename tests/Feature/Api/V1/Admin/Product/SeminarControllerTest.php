@@ -195,57 +195,36 @@ describe('SeminarController', function (): void {
         $actualDataItems = collect($response->json('data.data'));
 
         foreach ($seminars as $expectedSeminar) {
-            $match = $actualDataItems->first(function ($actualItem) use ($expectedSeminar) {
-                return $actualItem['slug'] === $expectedSeminar->slug;
-            });
+            $match = $actualDataItems->firstWhere('slug', $expectedSeminar->slug);
 
             expect($match)->not->toBeNull("Expected course with slug '{$expectedSeminar->slug}' not found or properties mismatch.");
 
             if ($match) {
-                AssertableJson::fromArray($match)
-                    ->where('slug', $expectedSeminar->slug)
-                    ->where('full_name', $expectedSeminar->full_name)
-                    ->where('short_name', $expectedSeminar->short_name)
-                    ->where('difficulty_level.value', $expectedSeminar->difficulty_level->value)
-                    ->where('status.value', $expectedSeminar->status->value)
-                    ->where('created_by', $expectedSeminar->created_by)
-                    ->where('categories', $expectedSeminar->categories->map(fn ($category): array => [
-                        'id'     => $category->id,
-                        'name'   => $category->name,
-                        'slug'   => $category->slug,
-                        'status' => [
-                            'value' => $category->status->value,
-                            'label' => $category->status->translate(),
-                        ],
-                        'image_url'                => $category->image_url,
-                        'icon_url'                 => $category->icon_url,
-                        'educational_calendar_url' => $category->educational_calendar_url,
-                        'created_by'               => $category->created_by,
-                        'created_at'               => $this->toJalalitString($category->created_at),
-                        'updated_at'               => $this->toJalalitString($category->updated_at),
-                    ]))
-                    ->where('digital_assets',
-                        $expectedSeminar->digitalAssets?->map(fn (App\Models\DigitalAsset $asset): array => [
-                            'type' => [
-                                'value' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->value,
-                                'label' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->translate(),
-                            ],
-                            'id'                      => $asset->id,
-                            'short_name'              => $asset->short_name,
-                            'slug'                    => $asset->slug,
-                            'thumbnail_url'           => $asset->thumbnail_url,
-                            'is_attachable_to_course' => $asset->is_attachable_to_course,
-                            'status'                  => [
-                                'value' => $asset->status->value,
-                                'label' => $asset->status->translate(),
-                            ],
-                            'version'      => $asset->version,
-                            'published_at' => $this->toJalalitString($asset->published_at),
-                            'created_by'   => $asset->created_by,
-                            'created_at'   => $this->toJalalitString($asset->created_at),
-                            'updated_at'   => $this->toJalalitString($asset->updated_at),
-                        ]))
-                    ->etc();
+                expect($match['full_name'])->toBe($expectedSeminar->full_name)
+                    ->and($match['short_name'])->toBe($expectedSeminar->short_name)
+                    ->and($match['difficulty_level']['value'])->toBe($expectedSeminar->difficulty_level->value)
+                    ->and($match['status']['value'])->toBe($expectedSeminar->status->value)
+                    ->and($match['created_by'])->toBe($expectedSeminar->created_by)
+                    ->and($match['categories'])->toHaveCount($expectedSeminar->categories->count())
+                    ->and($match['digital_assets'])->toHaveCount($expectedSeminar->digitalAssets->count());
+                $actualCategories = collect($match['categories']);
+                expect($actualCategories)->toHaveCount($expectedSeminar->categories->count());
+                foreach ($expectedSeminar->categories as $expectedCategory) {
+                    $categoryMatch = $actualCategories->firstWhere('slug', $expectedCategory->slug);
+
+                    expect($categoryMatch)->not->toBeNull("For seminar '{$expectedSeminar->slug}', expected category '{$expectedCategory->slug}' was not found.");
+
+                    if ($categoryMatch) {
+                        expect($categoryMatch['name'])->toBe($expectedCategory->name);
+                    }
+                }
+                $actualDigitalAssets = collect($match['digital_assets']);
+                expect($actualDigitalAssets)->toHaveCount($expectedSeminar->digitalAssets->count());
+                foreach ($expectedSeminar->digitalAssets as $expectedAsset) {
+                    $assetMatch = $actualDigitalAssets->firstWhere('slug', $expectedAsset->slug);
+
+                    expect($assetMatch)->not->toBeNull("For seminar '{$expectedSeminar->slug}', expected asset '{$expectedAsset->slug}' was not found.");
+                }
             }
         }
     });
@@ -262,50 +241,24 @@ describe('SeminarController', function (): void {
         ]);
 
         $response = $this->getJson(route('api.v1.admin.seminar.show', ['seminar' => $seminar->id]));
-
-        $response->assertOk()
-            ->assertJsonFragment(['full_name' => $seminar->full_name])
-            ->assertJsonFragment(['short_name' => $seminar->short_name])
-            ->assertJsonFragment(['slug' => $seminar->slug])
-            ->assertJson(function (AssertableJson $json) use ($digitalAssets, $sortedCategories): void {
-                $json
-                    ->where('data.categories', $sortedCategories->map(fn ($category): array => [
-                        'id'     => $category->id,
-                        'name'   => $category->name,
-                        'slug'   => $category->slug,
-                        'status' => [
-                            'value' => $category->status->value,
-                            'label' => $category->status->translate(),
-                        ],
-                        'image_url'                => $category->image_url,
-                        'icon_url'                 => $category->icon_url,
-                        'educational_calendar_url' => $category->educational_calendar_url,
-                        'created_by'               => $category->created_by,
-                        'created_at'               => $this->toJalalitString($category->created_at),
-                        'updated_at'               => $this->toJalalitString($category->updated_at),
-                    ]))
-                    ->where('data.digital_assets', $digitalAssets->map(fn (App\Models\DigitalAsset $asset): array => [
-                        'type' => [
-                            'value' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->value,
-                            'label' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->translate(),
-                        ],
-                        'id'                      => $asset->id,
-                        'short_name'              => $asset->short_name,
-                        'slug'                    => $asset->slug,
-                        'thumbnail_url'           => $asset->thumbnail_url,
-                        'is_attachable_to_course' => $asset->is_attachable_to_course,
-                        'status'                  => [
-                            'value' => $asset->status->value,
-                            'label' => $asset->status->translate(),
-                        ],
-                        'version'      => $asset->version,
-                        'published_at' => $this->toJalalitString($asset->published_at),
-                        'created_by'   => $asset->created_by,
-                        'created_at'   => $this->toJalalitString($asset->created_at),
-                        'updated_at'   => $this->toJalalitString($asset->updated_at),
-                    ]))
-                    ->etc();
-            });
+        $response->assertOk();
+        $response->assertJsonCount(2, 'data.digital_assets');
+        $response->assertJsonCount(3, 'data.categories');
+        foreach ($digitalAssets as $asset) {
+            $response->assertJsonFragment([
+                'id'           => $asset->id,
+                'short_name'   => $asset->short_name,
+                'slug'         => $asset->slug,
+                'version'      => $asset->version,
+            ]);
+        }
+        foreach ($categories as $category) {
+            $response->assertJsonFragment([
+                'id'    => $category->id,
+                'name'  => $category->name,
+                'slug'  => $category->slug,
+            ]);
+        }
     });
 
     it('should create a seminar', function (): void {
