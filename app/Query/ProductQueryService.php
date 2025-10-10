@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Query;
 
-use App\Data\Shop\Product\Course\CourseListRequestData;
 use App\Data\Shop\Product\Course\ProductListRequestData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\CourseDifficultyLevelEnum;
@@ -51,6 +50,8 @@ final class ProductQueryService
 
     private bool $checkTermStatus = true;
 
+    private bool $selectClauseModified = false;
+
     public function __construct()
     {
         $this->query = Product::query();
@@ -78,35 +79,11 @@ final class ProductQueryService
     /**
      * Get a paginated list of courses based on filter criteria.
      */
-    public function getCourseList(CourseListRequestData $requestData): LengthAwarePaginator
+    public function getCourseList(ProductListRequestData $requestData): LengthAwarePaginator
     {
-        $this->productableTypes = [ProductableEnum::COURSE->value]; // Narrow the productable type
-
-        $this->availableProducts()->forListing();
-
-        if ($requestData->search) {
-            $this->search($requestData->search);
-        }
-
-        if ($requestData->filter) {
-            $filter = $requestData->filter;
-            if ($filter->categorySlug) {
-                $this->inCategory($filter->categorySlug);
-            }
-            if ($filter->level) {
-                $this->byCourseLevel(CourseDifficultyLevelEnum::from($filter->level));
-            }
-            if ($filter->fulfillment_type) {
-                $this->byFulfillmentType($filter->fulfillment_type);
-            }
-            if ($filter->min_price || $filter->max_price) {
-                $this->priceRange($filter->min_price, $filter->max_price);
-            }
-        }
-
         return $this
-            ->sortBy($requestData->sortBy, $requestData->sortOrder)
-            ->paginate($requestData->per_page);
+            ->ofType(ProductableEnum::COURSE)
+            ->globalSearch($requestData);
     }
 
     /**
@@ -116,7 +93,7 @@ final class ProductQueryService
     {
         return $this
             ->ofType(ProductableEnum::SEMINAR)
-            ->globalSearchProductsDatabase($requestData);
+            ->globalSearch($requestData);
     }
 
     /**
@@ -126,7 +103,7 @@ final class ProductQueryService
     {
         return $this
             ->ofType(ProductableEnum::DIGITAL_ASSET)
-            ->globalSearchProductsDatabase($requestData);
+            ->globalSearch($requestData);
     }
 
     /**
@@ -143,14 +120,20 @@ final class ProductQueryService
         if ($requestData->filter) {
             $filter = $requestData->filter;
 
-            if ($filter->category_ids) {
-                $this->inCategories($filter->category_ids);
+            if ($filter->category_slugs) {
+                $this->inCategories($filter->category_slugs);
             }
             if ($filter->min_price || $filter->max_price) {
                 $this->priceRange($filter->min_price, $filter->max_price);
             }
             if ($filter->with_discounts) {
                 $this->withDiscounts();
+            }
+            if ($filter->difficulty_level) {
+                $this->byCourseLevel(CourseDifficultyLevelEnum::from($filter->difficulty_level));
+            }
+            if ($filter->fulfillment_types) {
+                $this->byFulfillmentTypes($filter->fulfillment_types);
             }
             if ($filter->type) {
                 // If a type is specified in a global search, we narrow the scope.
@@ -220,8 +203,8 @@ final class ProductQueryService
             if ($filter->categorySlug) {
                 $query->where('category_slugs', $filter->categorySlug);
             }
-            if ($filter->level) {
-                $query->where('level', $filter->level);
+            if ($filter->difficulty_level) {
+                $query->where('difficulty_level', $filter->difficulty_level);
             }
             if ($filter->fulfillment_type) {
                 $query->where('fulfillment_types', $filter->fulfillment_type);
@@ -257,7 +240,8 @@ final class ProductQueryService
                     },
                 ]);
             })
-            ->paginate($requestData->per_page)->withQueryString();
+            ->paginate($requestData->per_page)
+            ->withQueryString();
     }
 
     /**
@@ -307,9 +291,20 @@ final class ProductQueryService
     /**
      * Filter by categories.
      *
-     * @param  int[]  $categoryIds
+     * @param  int[]  $categorySlugs
      */
-    public function inCategories(array $categoryIds): self
+    public function inCategories(array $categorySlugs): self
+    {
+        if (empty($categorySlugs)) {
+            return $this;
+        }
+
+        return $this->addRelationshipConstraint('categories', function ($q) use ($categorySlugs) {
+            $q->whereIn('categories.slug', $categorySlugs);
+        });
+    }
+
+    public function inCategoryIds(array $categoryIds): self
     {
         if (empty($categoryIds)) {
             return $this;
@@ -317,16 +312,6 @@ final class ProductQueryService
 
         return $this->addRelationshipConstraint('categories', function ($q) use ($categoryIds) {
             $q->whereIn('categories.id', $categoryIds);
-        });
-    }
-
-    /**
-     * Filter by single category slug.
-     */
-    public function inCategory(string $categorySlug): self
-    {
-        return $this->addRelationshipConstraint('categories', function ($q) use ($categorySlug) {
-            $q->where('slug', $categorySlug);
         });
     }
 
@@ -343,20 +328,20 @@ final class ProductQueryService
     /**
      * Filter by course difficulty level. (Applies to 'productable')
      */
-    public function byCourseLevel(CourseDifficultyLevelEnum $level): self
+    public function byCourseLevel(CourseDifficultyLevelEnum $difficulty_level): self
     {
-        return $this->addRelationshipConstraint('productable', function ($q) use ($level) {
-            $q->where('difficulty_level', $level->value);
+        return $this->addRelationshipConstraint('productable', function ($q) use ($difficulty_level) {
+            $q->where('difficulty_level', $difficulty_level->value);
         });
     }
 
     /**
      * Filter by fulfillment type. (Applies to 'productable')
      */
-    public function byFulfillmentType(string $fulfillmentType): self
+    public function byFulfillmentTypes(array $fulfillmentTypes): self
     {
-        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($fulfillmentType) {
-            $q->where('fulfillment_type', $fulfillmentType);
+        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($fulfillmentTypes) {
+            $q->whereIn('fulfillment_type', $fulfillmentTypes);
         });
     }
 
@@ -365,7 +350,8 @@ final class ProductQueryService
         if (empty($searchTerm)) {
             return $this;
         }
-        $this->query->selectScore();
+        $this->ensureBaseSelects();
+        $this->query->selectScore(table: 'products');
         $this->query->where(function (Builder $q) use ($searchTerm) {
             // Use the new fullTextSearch macro which automatically detects the database driver
             // and falls back to appropriate methods (PGroonga for PostgreSQL, MATCH AGAINST for MySQL, etc.)
@@ -612,7 +598,9 @@ final class ProductQueryService
     private function applyPriceJoinOnce(): void
     {
         if (! in_array('price_filter', $this->appliedJoins)) {
-            $this->query->select([
+            $this->ensureBaseSelects();
+
+            $this->query->addSelect([
                 'product_prices.product_id',
                 'product_prices.min_price',
                 'product_prices.min_original_price',
@@ -624,9 +612,16 @@ final class ProductQueryService
                 'product_prices.discount_percentage',
                 'product_prices.highest_discount_amount',
             ]);
-            $this->query->selectRaw('products.*');
             $this->query->join('product_prices', 'products.id', '=', 'product_prices.product_id');
             $this->appliedJoins[] = 'price_filter';
+        }
+    }
+
+    private function ensureBaseSelects(): void
+    {
+        if (! $this->selectClauseModified) {
+            $this->query->select('products.*');
+            $this->selectClauseModified = true;
         }
     }
 

@@ -9,6 +9,7 @@ use App\Contracts\ReviewableDataContract;
 use App\Data\Admin\Category\CategoryListItemData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\Product\ProductableEnum;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
@@ -31,6 +32,8 @@ final class ShowDigitalAssetData extends Data implements ProductableDataContract
         public ?string $description,
         public ?string $version,
         public bool $is_attachable_to_course,
+        #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
+        public CourseDifficultyLevelEnum $difficulty_level,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public PublicationStatusEnum $status,
         public ?int $created_by,

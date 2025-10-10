@@ -159,18 +159,33 @@ describe('ProductQueryService unit tests', function () {
     });
 
     describe('category filtering', function () {
-        it('handles empty category array gracefully', function () {
+        it('handles empty category slug array gracefully', function () {
             $result = $this->service->inCategories([]);
             expect($result)->toBe($this->service);
         });
 
-        it('handles single category correctly', function () {
-            $result = $this->service->inCategories([1]);
+        it('handles single category slug correctly', function () {
+            $result = $this->service->inCategories(["art"]);
             expect($result)->toBe($this->service);
         });
 
-        it('handles multiple categories correctly', function () {
-            $result = $this->service->inCategories([1, 2, 3]);
+        it('handles multiple categories slug correctly', function () {
+            $result = $this->service->inCategories(["art", "science", "history"]);
+            expect($result)->toBe($this->service);
+        });
+
+        it('handles empty category id array gracefully', function () {
+            $result = $this->service->inCategoryIds([]);
+            expect($result)->toBe($this->service);
+        });
+
+        it('handles single category id correctly', function () {
+            $result = $this->service->inCategoryIds([1]);
+            expect($result)->toBe($this->service);
+        });
+
+        it('handles multiple category ids correctly', function () {
+            $result = $this->service->inCategoryIds([1, 2, 3, 4]);
             expect($result)->toBe($this->service);
         });
     });
@@ -265,8 +280,8 @@ describe('ProductQueryService unit tests', function () {
         });
     });
 
-    describe('course level filtering', function () {
-        it('handles course level enum correctly', function () {
+    describe('course difficulty_level filtering', function () {
+        it('handles course difficulty_level enum correctly', function () {
             $result = $this->service->byCourseLevel(CourseDifficultyLevelEnum::BEGINNER);
             expect($result)->toBe($this->service);
         });
@@ -275,8 +290,8 @@ describe('ProductQueryService unit tests', function () {
     describe('deferred constraints collection', function () {
         it('collects multiple constraints for same relationship', function () {
             $service = $this->service
-                ->inCategory('test-slug')
-                ->inCategories([1, 2, 3]);
+                ->inCategories(['test-slug'])
+                ->inCategoryIds([1, 2, 3]);
 
             // Both constraints should be collected for 'categories' relationship
             $reflection = new ReflectionClass($service);

@@ -6,6 +6,7 @@ namespace App\Data\Admin\DigitalAsset;
 
 use App\Data\Transformer\CarbonFromJalaliString;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\CourseDifficultyLevelEnum;
 use App\Traits\ValidatesMetaTags;
 use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
@@ -25,6 +26,7 @@ final class CreateDigitalAssetData extends Data
         public ?string $description,
         public ?string $version,
         public bool $is_attachable_to_course,
+        public string $difficulty_level,
         #[WithCast(EnumCast::class)]
         public PublicationStatusEnum $status,
         public ?int $created_by,
@@ -71,6 +73,9 @@ final class CreateDigitalAssetData extends Data
                 'description'             => ['nullable', 'string'],
                 'version'                 => ['nullable', 'string', 'max:50'],
                 'is_attachable_to_course' => ['nullable', 'boolean'],
+                'difficulty_level' => [
+                    'required', Rule::enum(CourseDifficultyLevelEnum::class),
+                ],
                 'status'                  => ['required', Rule::enum(PublicationStatusEnum::class)],
                 'created_by'              => ['nullable', 'integer', 'exists:staff,id'],
                 'keywords'                => ['nullable', 'string', 'max:255'],

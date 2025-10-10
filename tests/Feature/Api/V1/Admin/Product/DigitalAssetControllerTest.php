@@ -124,6 +124,7 @@ it('can get list of digital assets', function (): void {
                         'status',
                         'thumbnail_url',
                         'is_attachable_to_course',
+                        'difficulty_level',
                         'version',
                         'published_at',
                         'created_by',
@@ -209,6 +210,7 @@ it('can create digital asset', function (): void {
         'page_count'              => $digitalAsset->page_count,
         'duration_seconds'        => $digitalAsset->duration_seconds,
         'is_attachable_to_course' => $digitalAsset->is_attachable_to_course,
+        'difficulty_level'        => $digitalAsset->difficulty_level->value,
         'status'                  => $digitalAsset->status,
         'keywords'                => $digitalAsset->keywords,
         'meta_title'              => $digitalAsset->meta_title,
@@ -238,6 +240,7 @@ it('can create digital asset', function (): void {
         'page_count'              => $digitalAsset->page_count,
         'duration_seconds'        => $digitalAsset->duration_seconds,
         'is_attachable_to_course' => $digitalAsset->is_attachable_to_course,
+        'difficulty_level'        => $digitalAsset->difficulty_level->value,
         'status'                  => $digitalAsset->status,
         'keywords'                => $digitalAsset->keywords,
         'meta_title'              => $digitalAsset->meta_title,
@@ -326,6 +329,10 @@ it('can update digital asset', function (): void {
                 ->where('data.page_count', $updatedData['page_count'])
                 ->where('data.duration_seconds', $updatedData['duration_seconds'])
                 ->where('data.is_attachable_to_course', $updatedData['is_attachable_to_course'])
+                ->where('data.difficulty_level', [
+                    'value' => $updatedData['difficulty_level'],
+                    'label' => App\Enums\CourseDifficultyLevelEnum::from($updatedData['difficulty_level'])->translate(),
+                ])
                 ->where('data.status', [
                     'value' => $updatedData['status'],
                     'label' => App\Enums\Content\PublicationStatusEnum::from($updatedData['status'])->translate(),

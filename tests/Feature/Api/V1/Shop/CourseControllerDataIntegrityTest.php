@@ -518,7 +518,7 @@ describe('CourseController Data Integrity Tests', function (): void {
 
             // Test filtering by web development category
             $response = getJson(route('api.v1.shop.courses.index', [
-                'filter[categorySlug]' => 'web-development',
+                'filter[category_slugs][]' => 'web-development',
             ]));
 
             $response->assertOk()
@@ -529,7 +529,7 @@ describe('CourseController Data Integrity Tests', function (): void {
 
             // Test filtering by mobile development category
             $response = getJson(route('api.v1.shop.courses.index', [
-                'filter[categorySlug]' => 'mobile-development',
+                'filter[category_slugs][]' => 'mobile-development',
             ]));
 
             $response->assertOk()
@@ -608,7 +608,7 @@ describe('CourseController Data Integrity Tests', function (): void {
                 'status'           => PublicationStatusEnum::PUBLISHED,
                 'is_visible'       => true,
                 'is_featured'      => true,
-                'details_json'     => ['level' => 'intermediate', 'language' => 'English'],
+                'details_json'     => ['difficulty_level' => 'intermediate', 'language' => 'English'],
             ]);
 
             $product->categories()->attach([$category1->id, $category2->id]);
@@ -742,7 +742,7 @@ describe('CourseController Data Integrity Tests', function (): void {
                 ])
                 ->and($courseData['additional_info'])->toBe(['Certificate included', 'Lifetime access'])
                 ->and($courseData['properties'])->toBe(['hands-on', 'project-based'])
-                ->and($courseData['details'])->toBe(['level' => 'intermediate', 'language' => 'English'])
+                ->and($courseData['details'])->toEqual(['difficulty_level' => 'intermediate', 'language' => 'English'])
                 ->and($courseData['meta_title'])->toBe('Node.js Course - Master Backend Development')
                 ->and($courseData['meta_description'])->toBe('Learn Node.js with hands-on projects')
                 ->and($courseData['meta_keywords'])->toBe('nodejs,backend,javascript,api')

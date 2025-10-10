@@ -20,7 +20,7 @@ final class CategoryQueryService
     {
         $query = ProductQueryService::make()
             ->ofType($type)
-            ->inCategories([$category->id])
+            ->inCategoryIds([$category->id])
             ->availableProducts()
             ->forListing();
 

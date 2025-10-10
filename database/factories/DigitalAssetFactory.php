@@ -34,6 +34,7 @@ final class DigitalAssetFactory extends Factory
             'page_count'              => $this->faker->numberBetween(1, 100),
             'duration_seconds'        => $this->faker->numberBetween(60, 3600),
             'is_attachable_to_course' => true,
+            'difficulty_level'         => $this->faker->randomElement(['beginner', 'intermediate', 'advanced']),
             'status'                  => PublicationStatusEnum::PUBLISHED,
             'keywords'                => implode(',', $this->faker->persianWords(3)),
             'meta_title'              => mb_trim(Str::take($this->faker->persianWords(4, true), 70)),

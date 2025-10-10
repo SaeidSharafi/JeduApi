@@ -42,7 +42,7 @@ final class SeminarFactory extends Factory
             'prerequisites'            => $this->faker->paragraph(),
             'promo_video_external_url' => $this->faker->url(),
             'estimated_duration_desc'  => $this->faker->sentence(4),
-            'level'                    => $this->faker->randomElement(CourseDifficultyLevelEnum::getAllValues()),
+            'difficulty_level'                    => $this->faker->randomElement(CourseDifficultyLevelEnum::getAllValues()),
             'provides_certificate'     => $this->faker->boolean(),
             'faq'                      => [
                 ['question' => $this->faker->sentence(), 'answer' => $this->faker->paragraph()],

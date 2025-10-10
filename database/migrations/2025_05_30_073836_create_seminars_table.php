@@ -31,7 +31,7 @@ return new class extends Migration
             $table->string('promo_video_external_url')->nullable();
 
             $table->string('estimated_duration_desc')->nullable();
-            $table->string('level')->nullable();
+            $table->string('difficulty_level')->nullable();
 
             $table->boolean('provides_certificate')->default(false);
 

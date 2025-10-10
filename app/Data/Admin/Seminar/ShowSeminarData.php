@@ -35,7 +35,7 @@ final class ShowSeminarData extends Data implements ProductableDataContract, Rev
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public PublicationStatusEnum $status,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
-        public CourseDifficultyLevelEnum $level,
+        public CourseDifficultyLevelEnum $difficulty_level,
         public bool $provides_certificate,
         public ?string $description,
         public ?string $curriculum_summary_text,

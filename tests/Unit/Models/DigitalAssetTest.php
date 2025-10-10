@@ -23,6 +23,7 @@ test('to array', function (): void {
             'meta_description'        => $digitalAsset->meta_description,
             'meta_keywords'           => $digitalAsset->meta_keywords,
             'is_attachable_to_course' => $digitalAsset->is_attachable_to_course,
+            'difficulty_level'        => $digitalAsset->difficulty_level->value,
             'status'                  => $digitalAsset->status->value,
             'published_at'            => $digitalAsset->published_at?->utc()->toJSON(),
             'created_by'              => $digitalAsset->created_by,

@@ -23,12 +23,13 @@ final class SearchData extends Data
         public ?array $result_types = null,
         public ?string $productable_type = null,
         public ?bool $has_discount = null,
-        public ?array $category_ids = null,
+        public ?array $category_slugs = null,
         public ?int $price_min = null,
         public ?int $price_max = null,
-        public ?string $level = null,
+        public ?string $difficulty_level = null,
         public ?array $fulfillment_types = null,
-    ) {}
+    ) {
+    }
 
     public static function rules(?ValidationContext $context = null): array
     {
@@ -39,11 +40,11 @@ final class SearchData extends Data
             'result_types.*'      => ['string', Rule::in(['product', 'blog_post'])],
             'productable_type'    => ['sometimes', 'string', Rule::enum(ProductableEnum::class)],
             'has_discount'        => ['sometimes', 'boolean'],
-            'category_ids'        => ['sometimes', 'array'],
-            'category_ids.*'      => ['integer'],
+            'category_slugs'      => ['sometimes', 'array'],
+            'category_slugs.*'    => ['string'],
             'price_min'           => ['sometimes', 'integer', 'min:0'],
             'price_max'           => ['sometimes', 'integer', 'gt:price_min'],
-            'level'               => ['sometimes', 'string'],
+            'difficulty_level'    => ['sometimes', 'string'],
             'fulfillment_types'   => ['sometimes', 'array'],
             'fulfillment_types.*' => ['string'],
         ];
@@ -55,11 +56,11 @@ final class SearchData extends Data
     public function queryParameters(): array
     {
         return [
-            'q' => [
+            'q'            => [
                 'description' => 'The search query',
                 'example'     => 'laptop',
             ],
-            'per_page' => [
+            'per_page'     => [
                 'description' => 'Number of results per page (1-100)',
                 'example'     => 15,
             ],
@@ -67,7 +68,7 @@ final class SearchData extends Data
                 'description' => 'Types of results to include: product, blog_post (returns both if not specified)',
                 'example'     => ['product'],
             ],
-            'filters' => [
+            'filters'      => [
                 'description' => 'Search filters',
                 'example'     => [
                     'productable_type'  => 'course',
@@ -75,7 +76,7 @@ final class SearchData extends Data
                     'category_ids'      => [1, 2, 3],
                     'price_min'         => 100000,
                     'price_max'         => 500000,
-                    'level'             => 'beginner',
+                    'difficulty_level'  => 'beginner',
                     'fulfillment_types' => ['digital', 'physical'],
                 ],
             ],

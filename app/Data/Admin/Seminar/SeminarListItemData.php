@@ -36,7 +36,7 @@ final class SeminarListItemData extends Data implements ProductableDataContract,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public PublicationStatusEnum $status,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
-        public CourseDifficultyLevelEnum $level,
+        public CourseDifficultyLevelEnum $difficulty_level,
         public bool $provides_certificate,
         public int $created_by,
         #[DataCollectionOf(CategoryListItemData::class)]
