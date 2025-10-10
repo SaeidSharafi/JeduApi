@@ -43,9 +43,9 @@ final class ProductFilterData extends Data
     public static function queryParameters(string $prefix = ''): array
     {
         return [
-            $prefix.'category_ids'       => [
-                'description' => 'Filter by category IDs',
-                'example'     => [1, 2, 3],
+            $prefix.'category_slugs'       => [
+                'description' => 'Filter by category slugs',
+                'example'     => ['programming', 'design']
             ],
             $prefix.'fulfillment_types'  => [
                 'description' => 'Filter by fulfillment types (e.g., online, offline)',
@@ -53,8 +53,8 @@ final class ProductFilterData extends Data
                     FulfillmentTypeEnum::ONLINE_SERVICE->value, FulfillmentTypeEnum::OFFLINE_SERVICE->value
                 ],
             ],
-            $prefix.'fulfillment_type.*' => [
-                'description' => 'fulfillment type',
+            $prefix.'fulfillment_types.*' => [
+                'description' => 'Filter by fulfillment types (e.g., online, offline)',
                 'example'     => FulfillmentTypeEnum::ONLINE_SERVICE->value,
             ],
 

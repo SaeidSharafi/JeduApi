@@ -68,17 +68,45 @@ final class SearchData extends Data
                 'description' => 'Types of results to include: product, blog_post (returns both if not specified)',
                 'example'     => ['product'],
             ],
-            'filters'      => [
-                'description' => 'Search filters',
-                'example'     => [
-                    'productable_type'  => 'course',
-                    'has_discount'      => true,
-                    'category_ids'      => [1, 2, 3],
-                    'price_min'         => 100000,
-                    'price_max'         => 500000,
-                    'difficulty_level'  => 'beginner',
-                    'fulfillment_types' => ['digital', 'physical'],
-                ],
+            'result_types.*' => [
+                'description' => 'Types of results to include: product, blog_post (returns both if not specified)',
+                'example'     => 'product',
+            ],
+            'productable_type' => [
+                'description' => 'Filter results by productable type (e.g., course, bundle)',
+                'example'     => ProductableEnum::COURSE->value,
+            ],
+            'has_discount' => [
+                'description' => 'Filter products that have an active discount',
+                'example'     => true,
+            ],
+            'category_slugs' => [
+                'description' => 'Filter products by category slugs',
+                'example'     => ['programming', 'design'],
+            ],
+            'category_slugs.*' => [
+                'description' => 'Filter products by category slugs',
+                'example'     => 'programming',
+            ],
+            'price_min'    => [
+                'description' => 'Minimum price filter',
+                'example'     => 100000,
+            ],
+            'price_max'    => [
+                'description' => 'Maximum price filter',
+                'example'     => 500000,
+            ],
+            'difficulty_level' => [
+                'description' => 'Filter courses by difficulty level (e.g., beginner, intermediate, advanced)',
+                'example'     => 'beginner',
+            ],
+            'fulfillment_types' => [
+                'description' => 'Filter products by fulfillment types (e.g., digital, physical)',
+                'example'     => ['digital', 'physical'],
+            ],
+            'fulfillment_types.*' => [
+                'description' => 'Filter products by fulfillment types (e.g., digital, physical)',
+                'example'     => 'digital',
             ],
         ];
     }
