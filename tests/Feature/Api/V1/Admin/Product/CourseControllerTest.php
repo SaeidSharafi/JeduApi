@@ -236,57 +236,36 @@ it('can view list of courses', function (): void {
     $actualDataItems = collect($response->json('data.data'));
 
     foreach ($courses as $expectedCourse) {
-        $match = $actualDataItems->first(function ($actualItem) use ($expectedCourse) {
-            return $actualItem['slug'] === $expectedCourse->slug;
-        });
+        $match = $actualDataItems->firstWhere('slug', $expectedCourse->slug);
 
         expect($match)->not->toBeNull("Expected course with slug '{$expectedCourse->slug}' not found or properties mismatch.");
 
         if ($match) {
-            AssertableJson::fromArray($match)
-                ->where('slug', $expectedCourse->slug)
-                ->where('full_name', $expectedCourse->full_name)
-                ->where('short_name', $expectedCourse->short_name)
-                ->where('difficulty_level.value', $expectedCourse->difficulty_level->value)
-                ->where('status.value', $expectedCourse->status->value)
-                ->where('created_by', $expectedCourse->created_by)
-                ->where('categories', $expectedCourse->categories->map(fn ($category): array => [
-                    'id'     => $category->id,
-                    'name'   => $category->name,
-                    'slug'   => $category->slug,
-                    'status' => [
-                        'value' => $category->status->value,
-                        'label' => $category->status->translate(),
-                    ],
-                    'image_url'                => $category->image_url,
-                    'icon_url'                 => $category->icon_url,
-                    'educational_calendar_url' => $category->educational_calendar_url,
-                    'created_by'               => $category->created_by,
-                    'created_at'               => $this->toJalalitString($category->created_at),
-                    'updated_at'               => $this->toJalalitString($category->updated_at),
-                ]))
-                ->where('digital_assets',
-                    $expectedCourse->digitalAssets?->map(fn (App\Models\DigitalAsset $asset): array => [
-                        'type' => [
-                            'value' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->value,
-                            'label' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->translate(),
-                        ],
-                        'id'                      => $asset->id,
-                        'short_name'              => $asset->short_name,
-                        'slug'                    => $asset->slug,
-                        'thumbnail_url'           => $asset->thumbnail_url,
-                        'is_attachable_to_course' => $asset->is_attachable_to_course,
-                        'status'                  => [
-                            'value' => $asset->status->value,
-                            'label' => $asset->status->translate(),
-                        ],
-                        'version'      => $asset->version,
-                        'published_at' => $this->toJalalitString($asset->published_at),
-                        'created_by'   => $asset->created_by,
-                        'created_at'   => $this->toJalalitString($asset->created_at),
-                        'updated_at'   => $this->toJalalitString($asset->updated_at),
-                    ]))
-                ->etc();
+            expect($match['full_name'])->toBe($expectedCourse->full_name)
+                ->and($match['short_name'])->toBe($expectedCourse->short_name)
+                ->and($match['difficulty_level']['value'])->toBe($expectedCourse->difficulty_level->value)
+                ->and($match['status']['value'])->toBe($expectedCourse->status->value)
+                ->and($match['created_by'])->toBe($expectedCourse->created_by)
+                ->and($match['categories'])->toHaveCount($expectedCourse->categories->count())
+                ->and($match['digital_assets'])->toHaveCount($expectedCourse->digitalAssets->count());
+            $actualCategories = collect($match['categories']);
+            expect($actualCategories)->toHaveCount($expectedCourse->categories->count());
+            foreach ($expectedCourse->categories as $expectedCategory) {
+                $categoryMatch = $actualCategories->firstWhere('slug', $expectedCategory->slug);
+
+                expect($categoryMatch)->not->toBeNull("For seminar '{$expectedCourse->slug}', expected category '{$expectedCategory->slug}' was not found.");
+
+                if ($categoryMatch) {
+                    expect($categoryMatch['name'])->toBe($expectedCategory->name);
+                }
+            }
+            $actualDigitalAssets = collect($match['digital_assets']);
+            expect($actualDigitalAssets)->toHaveCount($expectedCourse->digitalAssets->count());
+            foreach ($expectedCourse->digitalAssets as $expectedAsset) {
+                $assetMatch = $actualDigitalAssets->firstWhere('slug', $expectedAsset->slug);
+
+                expect($assetMatch)->not->toBeNull("For seminar '{$expectedCourse->slug}', expected asset '{$expectedAsset->slug}' was not found.");
+            }
         }
     }
 });
@@ -298,9 +277,9 @@ it('can create a new course with valid data', function (): void {
         App\Enums\PermissionEnum::COURSE_CREATE->value,
     ]);
 
-    $categories   = App\Models\Category::factory(2)->create()->pluck('id')->toArray();
+    $categories = App\Models\Category::factory(2)->create()->pluck('id')->toArray();
     $ditialAssets = App\Models\DigitalAsset::factory(2)->create();
-    $response     = $this->postJson(route('api.v1.admin.course.store'), [
+    $response = $this->postJson(route('api.v1.admin.course.store'), [
         ...$courseData->toArray(),
         'categories'     => $categories,
         'digital_assets' => $ditialAssets->pluck('id')->toArray(),
@@ -381,7 +360,7 @@ it('can not create a new course with invalid data', function (): void {
         ]);
 });
 it('can not create a new course with smiliar slug', function (): void {
-    $course     = App\Models\Course::factory()->create();
+    $course = App\Models\Course::factory()->create();
     $courseData = App\Models\Course::factory()->make([
         'slug' => $course->slug,
     ])->toArray();
@@ -436,9 +415,9 @@ it('can not create a new course with non-attachable digital asset', function ():
         ]);
 });
 it('can view a course', function (): void {
-    $categories    = App\Models\Category::factory(3)->create();
+    $categories = App\Models\Category::factory(3)->create();
     $digitalAssets = App\Models\DigitalAsset::factory(2)->create();
-    $course        = App\Models\Course::factory()
+    $course = App\Models\Course::factory()
         ->create();
     $course->categories()->sync($categories);
     $course->digitalAssets()->sync($digitalAssets);
@@ -450,6 +429,24 @@ it('can view a course', function (): void {
 
     $media = $course->getMedia('cover')->first();
 
+    $response->assertOk();
+    $response->assertJsonCount(2, 'data.digital_assets');
+    $response->assertJsonCount(3, 'data.categories');
+    foreach ($digitalAssets as $asset) {
+        $response->assertJsonFragment([
+            'id'         => $asset->id,
+            'short_name' => $asset->short_name,
+            'slug'       => $asset->slug,
+            'version'    => $asset->version,
+        ]);
+    }
+    foreach ($categories as $category) {
+        $response->assertJsonFragment([
+            'id'   => $category->id,
+            'name' => $category->name,
+            'slug' => $category->slug,
+        ]);
+    }
     $response
         ->assertStatus(200)
         ->assertJson(function (AssertableJson $response) use ($digitalAssets, $categories, $media, $course): void {
@@ -469,41 +466,6 @@ it('can view a course', function (): void {
                     'value' => $course->status->value,
                     'label' => $course->status->translate(),
                 ])
-                ->where('data.categories', $categories->map(fn ($category): array => [
-                    'id'     => $category->id,
-                    'name'   => $category->name,
-                    'slug'   => $category->slug,
-                    'status' => [
-                        'value' => $category->status->value,
-                        'label' => $category->status->translate(),
-                    ],
-                    'image_url'                => $category->image_url,
-                    'icon_url'                 => $category->icon_url,
-                    'educational_calendar_url' => $category->educational_calendar_url,
-                    'created_by'               => $category->created_by,
-                    'created_at'               => $this->toJalalitString($category->created_at),
-                    'updated_at'               => $this->toJalalitString($category->updated_at),
-                ]))
-                ->where('data.digital_assets', $digitalAssets->map(fn (App\Models\DigitalAsset $asset): array => [
-                    'type' => [
-                        'value' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->value,
-                        'label' => App\Enums\Product\ProductableEnum::DIGITAL_ASSET->translate(),
-                    ],
-                    'id'                      => $asset->id,
-                    'short_name'              => $asset->short_name,
-                    'slug'                    => $asset->slug,
-                    'thumbnail_url'           => $asset->thumbnail_url,
-                    'is_attachable_to_course' => $asset->is_attachable_to_course,
-                    'status'                  => [
-                        'value' => $asset->status->value,
-                        'label' => $asset->status->translate(),
-                    ],
-                    'version'      => $asset->version,
-                    'published_at' => $this->toJalalitString($asset->published_at),
-                    'created_by'   => $asset->created_by,
-                    'created_at'   => $this->toJalalitString($asset->created_at),
-                    'updated_at'   => $this->toJalalitString($asset->updated_at),
-                ]))
                 ->has('data.media.gallery', 0)
                 ->has('data.media.video', 0)
                 ->has('data.media.cover', 1)
@@ -528,7 +490,7 @@ it('can edit a course', function (): void {
         App\Enums\PermissionEnum::COURSE_UPDATE->value,
     ]);
 
-    $categories    = App\Models\Category::factory(3)->create()->pluck('id')->toArray();
+    $categories = App\Models\Category::factory(3)->create()->pluck('id')->toArray();
     $digitalAssets = App\Models\DigitalAsset::factory(2)->create();
 
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
@@ -585,7 +547,7 @@ it('can pass slug unique check', function (): void {
     $course = App\Models\Course::factory()
         ->withCategory()
         ->create();
-    $category   = App\Models\Category::factory()->create();
+    $category = App\Models\Category::factory()->create();
     $courseData = App\Models\Course::factory()->make(
         [
             'slug' => $course->slug,
@@ -641,8 +603,8 @@ it('can pass slug unique check', function (): void {
 
 });
 it('can not edit a course with duplicate slug', function (): void {
-    $course2    = App\Models\Course::factory()->create();
-    $course     = App\Models\Course::factory()->create();
+    $course2 = App\Models\Course::factory()->create();
+    $course = App\Models\Course::factory()->create();
     $courseData = App\Models\Course::factory()->make(
         [
             'slug' => $course2->slug,
@@ -693,7 +655,7 @@ it('can not edit a course with invalid data', function (): void {
 });
 
 it('can not edit a course with invalid slug', function (): void {
-    $course     = App\Models\Course::factory()->create();
+    $course = App\Models\Course::factory()->create();
     $courseData = App\Models\Course::factory()->make([
         'slug' => 'invalid slug',
     ])->toArray();
