@@ -210,6 +210,8 @@ final class GlobalSearchService
         $productFilterData = new ProductFilterData(
             category_ids: $searchData->category_ids,
             type: $searchData->productable_type,
+            fulfillment_types: $searchData->fulfillment_types,
+            level: $searchData->level,
             min_price: $searchData->price_min,
             max_price: $searchData->price_max,
             with_discounts: $searchData->has_discount,
