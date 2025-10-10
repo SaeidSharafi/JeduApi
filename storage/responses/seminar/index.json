@@ -13,7 +13,7 @@
           "value": "archived",
           "label": "آرشیو"
         },
-        "level": {
+        "difficulty_level": {
           "value": "intermediate",
           "label": "متوسط"
         },
@@ -87,7 +87,7 @@
           "value": "published",
           "label": "منتشر شده"
         },
-        "level": {
+        "difficulty_level": {
           "value": "beginner",
           "label": "مبتدی"
         },
@@ -161,7 +161,7 @@
           "value": "published",
           "label": "منتشر شده"
         },
-        "level": {
+        "difficulty_level": {
           "value": "expert",
           "label": "کارشناس"
         },
@@ -235,7 +235,7 @@
           "value": "archived",
           "label": "آرشیو"
         },
-        "level": {
+        "difficulty_level": {
           "value": "intermediate",
           "label": "متوسط"
         },
@@ -309,7 +309,7 @@
           "value": "published",
           "label": "منتشر شده"
         },
-        "level": {
+        "difficulty_level": {
           "value": "advanced",
           "label": "پیشرفته"
         },
@@ -383,7 +383,7 @@
           "value": "draft",
           "label": "پیش‌نویس"
         },
-        "level": {
+        "difficulty_level": {
           "value": "advanced",
           "label": "پیشرفته"
         },
@@ -457,7 +457,7 @@
           "value": "published",
           "label": "منتشر شده"
         },
-        "level": {
+        "difficulty_level": {
           "value": "intermediate",
           "label": "متوسط"
         },
@@ -531,7 +531,7 @@
           "value": "draft",
           "label": "پیش‌نویس"
         },
-        "level": {
+        "difficulty_level": {
           "value": "expert",
           "label": "کارشناس"
         },
@@ -605,7 +605,7 @@
           "value": "draft",
           "label": "پیش‌نویس"
         },
-        "level": {
+        "difficulty_level": {
           "value": "expert",
           "label": "کارشناس"
         },
@@ -679,7 +679,7 @@
           "value": "published",
           "label": "منتشر شده"
         },
-        "level": {
+        "difficulty_level": {
           "value": "beginner",
           "label": "مبتدی"
         },
@@ -753,7 +753,7 @@
           "value": "published",
           "label": "منتشر شده"
         },
-        "level": {
+        "difficulty_level": {
           "value": "intermediate",
           "label": "متوسط"
         },
@@ -827,7 +827,7 @@
           "value": "archived",
           "label": "آرشیو"
         },
-        "level": {
+        "difficulty_level": {
           "value": "beginner",
           "label": "مبتدی"
         },
@@ -901,7 +901,7 @@
           "value": "archived",
           "label": "آرشیو"
         },
-        "level": {
+        "difficulty_level": {
           "value": "advanced",
           "label": "پیشرفته"
         },
@@ -975,7 +975,7 @@
           "value": "draft",
           "label": "پیش‌نویس"
         },
-        "level": {
+        "difficulty_level": {
           "value": "advanced",
           "label": "پیشرفته"
         },
@@ -1049,7 +1049,7 @@
           "value": "archived",
           "label": "آرشیو"
         },
-        "level": {
+        "difficulty_level": {
           "value": "advanced",
           "label": "پیشرفته"
         },
