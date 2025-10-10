@@ -43,11 +43,14 @@ final class ProductListRequestData extends Data
      */
     public function queryParameters(): array
     {
+        $parameters = ProductFilterData::queryParameters('filter.');
+
         return [
             'filter'    => [
                 'description' => 'Filter criteria for courses',
                 'example'     => ['category_id' => 1, 'status' => 'published'],
             ],
+            ...$parameters,
             'sortBy'    => ['description' => 'Field to sort by', 'example' => 'created_at'],
             'sortOrder' => ['description' => 'Sort order (asc or desc)', 'example' => 'desc'],
             'page'      => ['description' => 'Page number for pagination', 'example' => 1],
