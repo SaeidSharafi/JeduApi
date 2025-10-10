@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Data\Shop\Product\Course\CourseListRequestData;
 use App\Data\Shop\Product\Course\ProductFilterData;
 use App\Data\Shop\Product\Course\ProductListRequestData;
 use App\Enums\Content\PublicationStatusEnum;
@@ -68,7 +67,7 @@ describe('ProductQueryService integration', function () {
                 ->create();
         });
         it('fetches products with type course', function () {
-            $retrievedProducts = ProductQueryService::make()->getCourseList(new CourseListRequestData());
+            $retrievedProducts = ProductQueryService::make()->getCourseList(new ProductListRequestData());
             expect($retrievedProducts->count())->toBe(12);
             /** @var Product $product */
             foreach ($retrievedProducts as $product) {
@@ -174,11 +173,11 @@ describe('ProductQueryService integration', function () {
             ]);
             indexProductPrice($otherProduct);
 
-            $request = CourseListRequestData::from([
+            $request = ProductListRequestData::from([
                 'search' => 'Laravel',
                 'filter' => [
                     'categorySlug'     => $targetCategory->slug,
-                    'level'            => CourseDifficultyLevelEnum::BEGINNER->value,
+                    'difficulty_level' => CourseDifficultyLevelEnum::BEGINNER->value,
                     'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
                 ],
                 'per_page' => 10,
@@ -213,7 +212,7 @@ describe('ProductQueryService integration', function () {
             ]);
             indexProductPrice($expensiveProduct);
 
-            $request = CourseListRequestData::from([
+            $request = ProductListRequestData::from([
                 'filter' => [
                     'min_price' => 100_000,
                     'max_price' => 300_000,

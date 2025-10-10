@@ -243,7 +243,7 @@ describe('Search Validation', function () {
             'category_ids'      => [1, 2, 3],
             'price_min'         => 100000,
             'price_max'         => 500000,
-            'level'             => 'beginner',
+            'difficulty_level'  => 'beginner',
             'fulfillment_types' => ['digital'],
             'result_types'      => ['product'],
         ]));
@@ -337,7 +337,6 @@ describe('Suggestion Validation', function () {
     });
 });
 
-
 describe('filters tests', function () {
     it('filters by productable_type=course', function () {
         Product::factory()
@@ -353,8 +352,8 @@ describe('filters tests', function () {
             ->create(['name' => 'Unique XYZ123 Ebook']);
 
         $response = getJson(route('api.v1.shop.search', [
-            'q'                 => 'XYZ123',
-            'productable_type'  => 'course',
+            'q'                => 'XYZ123',
+            'productable_type' => 'course',
         ]));
 
         $response->assertOk();
@@ -367,45 +366,45 @@ describe('filters tests', function () {
     });
 
     it('filters by has_discount=true', function () {
-       $product =  Product::factory()
+        $product = Product::factory()
             ->withDeliveryOptions(1)
             ->withCategory(1)
             ->withCourse()
             ->create([
-                'name'           => 'Discounted Course',
+                'name' => 'Discounted Course',
             ]);
 
         ProductPrice::create([
-            'product_id'     => $product->id,
-            'min_price'      => 150_000,
-            'max_price'      => 150_000,
+            'product_id'         => $product->id,
+            'min_price'          => 150_000,
+            'max_price'          => 150_000,
             'min_original_price' => 200_000,
             'max_original_price' => 200_000,
-            'has_discount'   => true,
+            'has_discount'       => true,
             'has_featured_price' => false,
         ]);
 
-       $nonDiscountedProduct =  Product::factory()
+        $nonDiscountedProduct = Product::factory()
             ->withDeliveryOptions(1)
             ->withCategory(1)
             ->withCourse()
             ->create([
-                'name'           => 'Non-Discounted Course',
+                'name' => 'Non-Discounted Course',
             ]);
 
         ProductPrice::create([
-            'product_id'     => $nonDiscountedProduct->id,
-            'min_price'      => 300_000,
-            'max_price'      => 300_000,
+            'product_id'         => $nonDiscountedProduct->id,
+            'min_price'          => 300_000,
+            'max_price'          => 300_000,
             'min_original_price' => 300_000,
             'max_original_price' => 300_000,
-            'has_discount'   => false,
+            'has_discount'       => false,
             'has_featured_price' => false,
         ]);
 
         $response = getJson(route('api.v1.shop.search', [
-            'q'             => 'Course',
-            'has_discount'  => true,
+            'q'            => 'Course',
+            'has_discount' => true,
         ]));
 
         $response->assertOk();
@@ -418,20 +417,20 @@ describe('filters tests', function () {
     });
 
     it('filters by category_ids', function () {
-        $category1 = \App\Models\Category::factory()->create(['name' => 'Category One']);
-        $category2 = \App\Models\Category::factory()->create(['name' => 'Category Two']);
-        $category3 = \App\Models\Category::factory()->create(['name' => 'Category Three']);
+        $category1 = App\Models\Category::factory()->create(['name' => 'Category One']);
+        $category2 = App\Models\Category::factory()->create(['name' => 'Category Two']);
+        $category3 = App\Models\Category::factory()->create(['name' => 'Category Three']);
         $product1  = Product::factory()
             ->withDeliveryOptions(1)
             ->withCourse()
             ->create(['name' => 'Multi-category Course']);
         $product1->categories()->attach([$category1->id, $category2->id]);
-        $product2  = Product::factory()
+        $product2 = Product::factory()
             ->withDeliveryOptions(1)
             ->withCourse()
             ->create(['name' => 'Single-category Course']);
         $product2->categories()->attach([$category3->id]);
-        $product3  = Product::factory()
+        $product3 = Product::factory()
             ->withDeliveryOptions(1)
             ->withCourse()
             ->create(['name' => 'No-category Course']);
@@ -454,50 +453,49 @@ describe('filters tests', function () {
             ->withCategory(1)
             ->withCourse()
             ->create([
-                'name'  => 'Cheap Course',
+                'name' => 'Cheap Course',
             ]);
         ProductPrice::create([
-            'product_id'     => $cheapProduct->id,
-            'min_price'      => 100_000,
-            'max_price'      => 100_000,
+            'product_id'         => $cheapProduct->id,
+            'min_price'          => 100_000,
+            'max_price'          => 100_000,
             'min_original_price' => 100_000,
             'max_original_price' => 100_000,
-            'has_discount'   => false,
+            'has_discount'       => false,
             'has_featured_price' => false,
         ]);
 
-
-       $affordableProduct = Product::factory()
+        $affordableProduct = Product::factory()
             ->withDeliveryOptions(1)
             ->withCategory(1)
             ->withCourse()
             ->create([
-                'name'  => 'Affordable Course',
+                'name' => 'Affordable Course',
             ]);
         ProductPrice::create([
-            'product_id'     => $affordableProduct->id,
-            'min_price'      => 300_000,
-            'max_price'      => 300_000,
+            'product_id'         => $affordableProduct->id,
+            'min_price'          => 300_000,
+            'max_price'          => 300_000,
             'min_original_price' => 300_000,
             'max_original_price' => 300_000,
-            'has_discount'   => false,
+            'has_discount'       => false,
             'has_featured_price' => false,
         ]);
 
-       $expensiveProduct = Product::factory()
+        $expensiveProduct = Product::factory()
             ->withDeliveryOptions(1)
             ->withCategory(1)
             ->withCourse()
             ->create([
-                'name'  => 'Expensive Course',
+                'name' => 'Expensive Course',
             ]);
         ProductPrice::create([
-            'product_id'     => $expensiveProduct->id,
-            'min_price'      => 600_000,
-            'max_price'      => 600_000,
+            'product_id'         => $expensiveProduct->id,
+            'min_price'          => 600_000,
+            'max_price'          => 600_000,
             'min_original_price' => 600_000,
             'max_original_price' => 600_000,
-            'has_discount'   => false,
+            'has_discount'       => false,
             'has_featured_price' => false,
         ]);
 
@@ -520,7 +518,7 @@ describe('filters tests', function () {
             ->withDeliveryOptions(1)
             ->withCategory(1)
             ->withCourse(Course::factory()->create([
-                'difficulty_level' => CourseDifficultyLevelEnum::BEGINNER
+                'difficulty_level' => CourseDifficultyLevelEnum::BEGINNER,
             ]))
             ->create(['name' => 'Beginner Course']);
 
@@ -528,7 +526,7 @@ describe('filters tests', function () {
             ->withDeliveryOptions(1)
             ->withCategory(1)
             ->withCourse(Course::factory()->create([
-                'difficulty_level' => CourseDifficultyLevelEnum::ADVANCED
+                'difficulty_level' => CourseDifficultyLevelEnum::ADVANCED,
             ]))
             ->create(['name' => 'Advanced Course']);
 

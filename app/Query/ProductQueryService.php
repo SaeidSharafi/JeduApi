@@ -16,7 +16,6 @@ use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 /**
@@ -130,8 +129,8 @@ final class ProductQueryService
             if ($filter->with_discounts) {
                 $this->withDiscounts();
             }
-            if ($filter->level) {
-                $this->byCourseLevel(CourseDifficultyLevelEnum::from($filter->level));
+            if ($filter->difficulty_level) {
+                $this->byCourseLevel(CourseDifficultyLevelEnum::from($filter->difficulty_level));
             }
             if ($filter->fulfillment_types) {
                 $this->byFulfillmentTypes($filter->fulfillment_types);
@@ -204,8 +203,8 @@ final class ProductQueryService
             if ($filter->categorySlug) {
                 $query->where('category_slugs', $filter->categorySlug);
             }
-            if ($filter->level) {
-                $query->where('level', $filter->level);
+            if ($filter->difficulty_level) {
+                $query->where('difficulty_level', $filter->difficulty_level);
             }
             if ($filter->fulfillment_type) {
                 $query->where('fulfillment_types', $filter->fulfillment_type);
@@ -328,10 +327,10 @@ final class ProductQueryService
     /**
      * Filter by course difficulty level. (Applies to 'productable')
      */
-    public function byCourseLevel(CourseDifficultyLevelEnum $level): self
+    public function byCourseLevel(CourseDifficultyLevelEnum $difficulty_level): self
     {
-        return $this->addRelationshipConstraint('productable', function ($q) use ($level) {
-            $q->where('difficulty_level', $level->value);
+        return $this->addRelationshipConstraint('productable', function ($q) use ($difficulty_level) {
+            $q->where('difficulty_level', $difficulty_level->value);
         });
     }
 
@@ -616,6 +615,7 @@ final class ProductQueryService
             $this->appliedJoins[] = 'price_filter';
         }
     }
+
     private function ensureBaseSelects(): void
     {
         if (! $this->selectClauseModified) {

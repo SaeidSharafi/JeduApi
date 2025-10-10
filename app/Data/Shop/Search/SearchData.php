@@ -26,7 +26,7 @@ final class SearchData extends Data
         public ?array $category_ids = null,
         public ?int $price_min = null,
         public ?int $price_max = null,
-        public ?string $level = null,
+        public ?string $difficulty_level = null,
         public ?array $fulfillment_types = null,
     ) {}
 
@@ -43,7 +43,7 @@ final class SearchData extends Data
             'category_ids.*'      => ['integer'],
             'price_min'           => ['sometimes', 'integer', 'min:0'],
             'price_max'           => ['sometimes', 'integer', 'gt:price_min'],
-            'level'               => ['sometimes', 'string'],
+            'difficulty_level'    => ['sometimes', 'string'],
             'fulfillment_types'   => ['sometimes', 'array'],
             'fulfillment_types.*' => ['string'],
         ];
@@ -75,7 +75,7 @@ final class SearchData extends Data
                     'category_ids'      => [1, 2, 3],
                     'price_min'         => 100000,
                     'price_max'         => 500000,
-                    'level'             => 'beginner',
+                    'difficulty_level'  => 'beginner',
                     'fulfillment_types' => ['digital', 'physical'],
                 ],
             ],

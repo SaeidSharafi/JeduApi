@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Content\PublicationStatusEnum;
-use App\Enums\Product\ProductableEnum;
 use App\Enums\Product\RelationTypeEnum;
 use App\Traits\HasCategories;
 use Illuminate\Database\Eloquent\Collection;
@@ -77,8 +76,7 @@ final class Product extends Model
             'fulfillment_types' => $this->productDeliveryOptions->pluck('fulfillment_type')->unique()->values()->all(),
             'category_slugs'    => $this->categories->pluck('slug')->all(),
             'productable_type'  => $this->productable_type,
-            'level'             => $this->productable_type === ProductableEnum::COURSE->value
-                ? $this->productable->difficulty_level?->value : null,
+            'difficulty_level'  => $this->productable->difficulty_level?->value,
 
             'productable_full_name'   => $this->productable?->full_name,
             'productable_short_name'  => $this->productable?->short_name,

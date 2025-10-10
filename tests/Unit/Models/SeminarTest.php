@@ -21,7 +21,7 @@ test('to array', function (): void {
             'prerequisites'            => $seminar->prerequisites,
             'promo_video_external_url' => $seminar->promo_video_external_url,
             'estimated_duration_desc'  => $seminar->estimated_duration_desc,
-            'level'                    => $seminar->level->value,
+            'difficulty_level'         => $seminar->difficulty_level->value,
             'provides_certificate'     => $seminar->provides_certificate,
             'faq'                      => $seminar->faq,
             'keywords'                 => $seminar->keywords,

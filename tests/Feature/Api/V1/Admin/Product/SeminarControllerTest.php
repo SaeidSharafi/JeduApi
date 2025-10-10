@@ -206,7 +206,7 @@ describe('SeminarController', function (): void {
                     ->where('slug', $expectedSeminar->slug)
                     ->where('full_name', $expectedSeminar->full_name)
                     ->where('short_name', $expectedSeminar->short_name)
-                    ->where('level.value', $expectedSeminar->level->value)
+                    ->where('difficulty_level.value', $expectedSeminar->difficulty_level->value)
                     ->where('status.value', $expectedSeminar->status->value)
                     ->where('created_by', $expectedSeminar->created_by)
                     ->where('categories', $expectedSeminar->categories->map(fn ($category): array => [

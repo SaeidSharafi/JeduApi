@@ -265,8 +265,8 @@ describe('ProductQueryService unit tests', function () {
         });
     });
 
-    describe('course level filtering', function () {
-        it('handles course level enum correctly', function () {
+    describe('course difficulty_level filtering', function () {
+        it('handles course difficulty_level enum correctly', function () {
             $result = $this->service->byCourseLevel(CourseDifficultyLevelEnum::BEGINNER);
             expect($result)->toBe($this->service);
         });

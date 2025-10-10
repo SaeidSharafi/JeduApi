@@ -136,8 +136,7 @@ describe('Course Lsiting filters', function (): void {
             ->assertJsonMissing(['slug' => $productNotInCategory->slug]);
 
     });
-    // it has level : filter by level
-    it('filter by level', function (): void {
+    it('filter by difficulty_level', function (): void {
         $product1 = Product::factory()
             ->withDeliveryOptions(1)
             ->withCourse(Course::factory()->create(['difficulty_level' => CourseDifficultyLevelEnum::BEGINNER]))
@@ -150,7 +149,7 @@ describe('Course Lsiting filters', function (): void {
             ->withDeliveryOptions(1)
             ->withCourse(Course::factory()->create(['difficulty_level' => CourseDifficultyLevelEnum::ADVANCED]))
             ->create();
-        $response = $this->getJson(route('api.v1.shop.courses.index', ['filter[level]' => 'beginner']));
+        $response = $this->getJson(route('api.v1.shop.courses.index', ['filter[difficulty_level]' => 'beginner']));
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data.data')
             ->assertJsonFragment(['name' => $product1->name])

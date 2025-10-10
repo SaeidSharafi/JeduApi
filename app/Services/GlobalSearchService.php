@@ -132,7 +132,7 @@ final class GlobalSearchService
                     'include_fields'        => 'id',
                     'sort_by'               => '_text_match:desc,created_at:desc',
                     'filter_by'             => $productFilters,
-                    'facet_by'              => 'productable_type,has_discount,category_slugs,level,fulfillment_types',
+                    'facet_by'              => 'productable_type,has_discount,category_slugs,difficulty_level,fulfillment_types',
                     'max_facet_values'      => 100,
                 ];
             }
@@ -211,7 +211,7 @@ final class GlobalSearchService
             category_ids: $searchData->category_ids,
             type: $searchData->productable_type,
             fulfillment_types: $searchData->fulfillment_types,
-            level: $searchData->level,
+            difficulty_level: $searchData->difficulty_level,
             min_price: $searchData->price_min,
             max_price: $searchData->price_max,
             with_discounts: $searchData->has_discount,
@@ -323,8 +323,8 @@ final class GlobalSearchService
             $baseFilters[] = "price:<={$searchData->price_max}";
         }
 
-        if (! empty($searchData->level)) {
-            $baseFilters[] = "level:={$searchData->level}";
+        if (! empty($searchData->difficulty_level)) {
+            $baseFilters[] = "difficulty_level:={$searchData->difficulty_level}";
         }
 
         if (! empty($searchData->fulfillment_types)) {

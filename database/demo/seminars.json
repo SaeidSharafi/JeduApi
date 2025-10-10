@@ -17,7 +17,7 @@
     "prerequisites": "آشنایی اولیه با مفاهیم ریاضیات و یک زبان برنامه‌نویسی (ترجیحا پایتون) توصیه می‌شود.",
     "promo_video_external_url": "placeholder1.mp4",
     "estimated_duration_desc": "مجموع زمان ویدئوها حدود ۳ ساعت است.",
-    "level": "beginner",
+    "difficulty_level": "beginner",
     "provides_certificate": true,
     "faq": [
       {"question": "آیا این وبینار نیاز به پیش‌نیاز دارد؟", "answer": "بله، آشنایی مقدماتی با برنامه‌نویسی پایتون برای درک بهتر مفاهیم عملی توصیه می‌شود."},
@@ -48,7 +48,7 @@
     "prerequisites": "هیچ پیش‌نیاز علمی خاصی برای شرکت در این سمینار لازم نیست؛ تنها کنجکاوی در مورد فضا کافی است.",
     "promo_video_external_url": "placeholder2.mp4",
     "estimated_duration_desc": "مدت زمان این سمینار ۲ ساعت خواهد بود.",
-    "level": "beginner",
+    "difficulty_level": "beginner",
     "provides_certificate": false,
     "faq": [
       {"question": "آیا این سمینار به زبان فارسی است؟", "answer": "بله، سخنرانی و پرسش و پاسخ به طور کامل به زبان فارسی خواهد بود."},
@@ -79,7 +79,7 @@
     "prerequisites": "برای شرکت در این وبینار به هیچ دانش قبلی در زمینه بازارهای مالی نیاز نیست.",
     "promo_video_external_url": "placeholder3.mp4",
     "estimated_duration_desc": "این وبینار در دو جلسه ۱.۵ ساعته برگزار می‌شود.",
-    "level": "beginner",
+    "difficulty_level": "beginner",
     "provides_certificate": true,
     "faq": [
       {"question": "آیا این وبینار برای افراد حرفه‌ای مناسب است؟", "answer": "تمرکز اصلی این وبینار بر روی مفاهیم پایه و افراد مبتدی است."},
@@ -110,7 +110,7 @@
     "prerequisites": "آشنایی اولیه با تاریخ فلسفه غرب و به‌خصوص پدیدارشناسی هوسرل، برای درک بهتر مطالب سمینار ضروری است.",
     "promo_video_external_url": "placeholder1.mp4",
     "estimated_duration_desc": "سمینار در یک جلسه ۳ ساعته برگزار خواهد شد.",
-    "level": "advanced",
+    "difficulty_level": "advanced",
     "provides_certificate": false,
     "faq": [
       {"question": "آیا نیاز به مطالعه قبلی کتاب «هستی و زمان» است؟", "answer": "بله، توصیه اکید می‌شود که شرکت‌کنندگان پیش از سمینار، حداقل بخش‌هایی از کتاب را مطالعه کرده باشند."},
@@ -141,7 +141,7 @@
     "prerequisites": "آشنایی با اصول اولیه بازاریابی دیجیتال مفید است، اما ضروری نیست.",
     "promo_video_external_url": "placeholder2.mp4",
     "estimated_duration_desc": "کارگاه عملی به مدت ۴ ساعت.",
-    "level": "intermediate",
+    "difficulty_level": "intermediate",
     "provides_certificate": true,
     "faq": [
       {"question": "آیا در این وبینار تمرین عملی هم داریم؟", "answer": "بله، بخش قابل توجهی از وبینار به تمرین‌های عملی و بررسی نمونه‌های واقعی اختصاص دارد."},
@@ -172,7 +172,7 @@
     "prerequisites": "آشنایی با مبانی معماری و شهرسازی برای درک بهتر مفاهیم تخصصی توصیه می‌شود.",
     "promo_video_external_url": "placeholder3.mp4",
     "estimated_duration_desc": "سمینار به مدت ۲.۵ ساعت برگزار خواهد شد.",
-    "level": "intermediate",
+    "difficulty_level": "intermediate",
     "provides_certificate": true,
     "faq": [
       {"question": "آیا این سمینار برای فعالان حوزه ساخت‌وساز مناسب است؟", "answer": "بله، این سمینار می‌تواند دیدگاه‌های جدیدی در زمینه استفاده از مصالح و تکنولوژی‌های نوین ارائه دهد."},
@@ -203,7 +203,7 @@
     "prerequisites": "داشتن دوربین عکاسی (موبایل یا حرفه‌ای) و علاقه به گشت‌وگذار در شهر.",
     "promo_video_external_url": "placeholder1.mp4",
     "estimated_duration_desc": "وبینار در یک جلسه ۳ ساعته ارائه می‌شود.",
-    "level": "beginner",
+    "difficulty_level": "beginner",
     "provides_certificate": false,
     "faq": [
       {"question": "آیا با دوربین موبایل هم می‌توانم شرکت کنم؟", "answer": "بله، تکنیک‌های آموزش داده شده برای عکاسی با هر نوع دوربینی، از جمله موبایل، کاربردی است."},
@@ -234,7 +234,7 @@
     "prerequisites": "هیچ پیش‌نیازی برای شرکت در این سمینار وجود ندارد.",
     "promo_video_external_url": "placeholder2.mp4",
     "estimated_duration_desc": "سمینار در یک جلسه ۲ ساعته برگزار می‌شود.",
-    "level": "beginner",
+    "difficulty_level": "beginner",
     "provides_certificate": true,
     "faq": [
       {"question": "آیا این تکنیک‌ها واقعا کاربردی هستند؟", "answer": "بله، تمام راهکارهای ارائه شده مبتنی بر تحقیقات علمی روانشناسی بوده و کاملاً عملی هستند."},
@@ -265,7 +265,7 @@
     "prerequisites": "هیچ پیش‌نیاز فنی برای شرکت در این وبینار لازم نیست.",
     "promo_video_external_url": "placeholder3.mp4",
     "estimated_duration_desc": "این وبینار در یک جلسه ۲.۵ ساعته برگزار خواهد شد.",
-    "level": "beginner",
+    "difficulty_level": "beginner",
     "provides_certificate": true,
     "faq": [
       {"question": "آیا در این وبینار سیگنال خرید و فروش داده می‌شود؟", "answer": "خیر، این وبینار جنبه آموزشی دارد و هیچ‌گونه مشاوره مالی یا سرمایه‌گذاری ارائه نمی‌دهد."},
@@ -296,7 +296,7 @@
     "prerequisites": "آشنایی کلی با هر دو اثر و علاقه به مباحث نقد ادبی توصیه می‌شود.",
     "promo_video_external_url": "placeholder1.mp4",
     "estimated_duration_desc": "سمینار در یک جلسه ۳ ساعته برگزار خواهد شد.",
-    "level": "advanced",
+    "difficulty_level": "advanced",
     "provides_certificate": false,
     "faq": [
       {"question": "آیا تمرکز سمینار بر روی ادبیات فارسی است یا ایتالیایی؟", "answer": "سمینار رویکردی تطبیقی دارد و هر دو اثر به یک اندازه مورد بررسی قرار می‌گیرند."},
@@ -327,7 +327,7 @@
     "prerequisites": "این وبینار هیچ پیش‌نیاز خاصی ندارد و برای عموم مردم طراحی شده است.",
     "promo_video_external_url": "placeholder2.mp4",
     "estimated_duration_desc": "مدت زمان وبینار ۲ ساعت به همراه پرسش و پاسخ است.",
-    "level": "beginner",
+    "difficulty_level": "beginner",
     "provides_certificate": true,
     "faq": [
       {"question": "آیا در این وبینار رژیم غذایی خاصی ارائه می‌شود؟", "answer": "خیر، این وبینار به آموزش اصول کلی تغذیه می‌پردازد و رژیم فردی ارائه نمی‌دهد."},
@@ -358,7 +358,7 @@
     "prerequisites": "داشتن یک ایده کسب‌وکار (حتی در مرحله اولیه) به درک بهتر مطالب کمک می‌کند.",
     "promo_video_external_url": "placeholder3.mp4",
     "estimated_duration_desc": "این سمینار یک روزه به مدت ۴ ساعت برگزار می‌شود.",
-    "level": "intermediate",
+    "difficulty_level": "intermediate",
     "provides_certificate": true,
     "faq": [
       {"question": "آیا این سمینار برای کسب‌وکارهای سنتی هم مفید است؟", "answer": "بسیاری از مفاهیم مانند مدل کسب‌وکار و بازاریابی برای همه انواع کسب‌وکارها کاربردی است."},
@@ -389,7 +389,7 @@
     "prerequisites": "هیچ پیش‌نیاز فنی لازم نیست؛ تنها علاقه و اشتیاق به داستان‌گویی تصویری کافی است.",
     "promo_video_external_url": "placeholder1.mp4",
     "estimated_duration_desc": "وبینار در دو جلسه ۲ ساعته برگزار می‌شود.",
-    "level": "beginner",
+    "difficulty_level": "beginner",
     "provides_certificate": true,
     "faq": [
       {"question": "آیا برای شرکت در وبینار نیاز به دوربین حرفه‌ای دارم؟", "answer": "خیر، اصول آموزش داده شده با هر وسیله فیلمبرداری، حتی موبایل، قابل اجراست."},
@@ -421,7 +421,7 @@
     "prerequisites": "هیچ پیش‌نیازی لازم نیست. علاقه به موسیقی و سلامت روان کافی است.",
     "promo_video_external_url": "placeholder2.mp4",
     "estimated_duration_desc": "مدت زمان سمینار ۲ ساعت خواهد بود.",
-    "level": "beginner",
+    "difficulty_level": "beginner",
     "provides_certificate": false,
     "faq": [
       {"question": "آیا برای شرکت در سمینار باید دانش موسیقی داشته باشم؟", "answer": "خیر، این سمینار برای شنوندگان موسیقی طراحی شده، نه لزوماً نوازندگان."},
@@ -453,7 +453,7 @@
     "prerequisites": "هیچ پیش‌نیازی برای شرکت در این وبینار وجود ندارد.",
     "promo_video_external_url": "placeholder3.mp4",
     "estimated_duration_desc": "این کارگاه در یک جلسه ۳ ساعته ارائه می‌شود.",
-    "level": "intermediate",
+    "difficulty_level": "intermediate",
     "provides_certificate": true,
     "faq": [
       {"question": "آیا مطالب این وبینار مبتنی بر علم است؟", "answer": "بله، تمام مطالب بر اساس تحقیقات روانشناسی اجتماعی و علوم ارتباطات ارائه می‌شود."},
@@ -485,7 +485,7 @@
     "prerequisites": "آشنایی کلی با تاریخ دوره قاجار برای درک بهتر مباحث مفید خواهد بود.",
     "promo_video_external_url": "placeholder1.mp4",
     "estimated_duration_desc": "سمینار در یک جلسه ۳ ساعته برگزار می‌شود.",
-    "level": "advanced",
+    "difficulty_level": "advanced",
     "provides_certificate": false,
     "faq": [
       {"question": "رویکرد این سمینار به تاریخ چگونه است؟", "answer": "سمینار رویکردی تحلیلی دارد و صرفاً به روایت وقایع نمی‌پردازد."},
@@ -517,7 +517,7 @@
     "prerequisites": "علاقه به خواندن و نوشتن، تنها پیش‌نیاز شرکت در این کارگاه است.",
     "promo_video_external_url": "placeholder2.mp4",
     "estimated_duration_desc": "این کارگاه در دو جلسه ۲ ساعته برگزار می‌شود.",
-    "level": "beginner",
+    "difficulty_level": "beginner",
     "provides_certificate": true,
     "faq": [
       {"question": "آیا باید ایده‌ی داستانی خاصی داشته باشم؟", "answer": "خیر، در کارگاه تمرین‌هایی برای پیدا کردن ایده نیز انجام خواهیم داد."},
@@ -549,7 +549,7 @@
     "prerequisites": "آشنایی با نرم‌افزارهای طراحی گرافیک مانند Adobe Illustrator برای طراحان شرکت‌کننده ضروری است.",
     "promo_video_external_url": "placeholder3.mp4",
     "estimated_duration_desc": "سمینار تخصصی به مدت ۴ ساعت.",
-    "level": "intermediate",
+    "difficulty_level": "intermediate",
     "provides_certificate": true,
     "faq": [
       {"question": "آیا این سمینار برای افراد غیرطراح هم مفید است؟", "answer": "بله، مدیران و کارآفرینان یاد می‌گیرند که چگونه یک پروژه برندینگ را به درستی تعریف و برون‌سپاری کنند."},
@@ -581,7 +581,7 @@
     "prerequisites": "هیچ پیش‌نیازی برای شرکت در این وبینار لازم نیست.",
     "promo_video_external_url": "placeholder1.mp4",
     "estimated_duration_desc": "کارگاه عملی به مدت ۳.۵ ساعت.",
-    "level": "intermediate",
+    "difficulty_level": "intermediate",
     "provides_certificate": true,
     "faq": [
       {"question": "آیا این وبینار به صورت عملی است؟", "answer": "بله، شرکت‌کنندگان فرصت خواهند داشت تا در طول وبینار تمرین کرده و بازخورد دریافت کنند."},
@@ -613,7 +613,7 @@
     "prerequisites": "علاقه به شعر و آشنایی اولیه با چهره‌های شاخص ادبیات معاصر.",
     "promo_video_external_url": "placeholder2.mp4",
     "estimated_duration_desc": "سمینار در دو جلسه ۲ ساعته ارائه خواهد شد.",
-    "level": "intermediate",
+    "difficulty_level": "intermediate",
     "provides_certificate": false,
     "faq": [
       {"question": "آیا در این سمینار شعرخوانی هم انجام می‌شود؟", "answer": "بله، بخش قابل توجهی از سمینار به خوانش و تحلیل نمونه‌های برجسته شعر معاصر اختصاص دارد."},

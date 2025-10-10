@@ -19,7 +19,7 @@ describe('Filter Building', function () {
             'category_ids'      => [1, 2, 3],
             'price_min'         => 100000,
             'price_max'         => 500000,
-            'level'             => 'beginner',
+            'difficulty_level'  => 'beginner',
             'fulfillment_types' => ['digital', 'physical'],
         ]);
 
@@ -31,7 +31,7 @@ describe('Filter Building', function () {
             ->and($result)->toContain('has_discount:=true')
             ->and($result)->toContain('category_ids:=[1,2,3]')
             ->and($result)->toContain('price:[100000..500000]')
-            ->and($result)->toContain('level:=beginner')
+            ->and($result)->toContain('difficulty_level:=beginner')
             ->and($result)->toContain('fulfillment_types:=digital')
             ->and($result)->toContain('fulfillment_types:=physical');
     });

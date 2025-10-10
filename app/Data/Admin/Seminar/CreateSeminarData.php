@@ -26,7 +26,7 @@ final class CreateSeminarData extends Data
         #[WithCast(EnumCast::class)]
         public PublicationStatusEnum $status,
         #[WithCast(EnumCast::class)]
-        public CourseDifficultyLevelEnum $level,
+        public CourseDifficultyLevelEnum $difficulty_level,
         public bool $provides_certificate,
         public ?string $description,
         public ?string $curriculum_summary_text,
@@ -66,7 +66,7 @@ final class CreateSeminarData extends Data
                 }),
             ],
             'status'                   => ['required', Rule::enum(PublicationStatusEnum::class)],
-            'level'                    => ['nullable', Rule::enum(CourseDifficultyLevelEnum::class)],
+            'difficulty_level'         => ['nullable', Rule::enum(CourseDifficultyLevelEnum::class)],
             'provides_certificate'     => ['boolean'],
             'description'              => ['nullable', 'string'],
             'curriculum_summary_text'  => ['nullable', 'string'],
@@ -102,7 +102,7 @@ final class CreateSeminarData extends Data
     public static function attributes(...$args): array
     {
         return [
-            'level'                    => __('validation.attributes.seminar.level'),
+            'difficulty_level'         => __('validation.attributes.seminar.difficulty_level'),
             'provides_certificate'     => __('validation.attributes.seminar.provides_certificate'),
             'outcomes_json'            => __('validation.attributes.seminar.outcomes_json'),
             'target_audience'          => __('validation.attributes.seminar.target_audience'),
@@ -142,7 +142,7 @@ final class CreateSeminarData extends Data
                 'description' => 'Publication status of the course',
                 'example'     => 'published',
             ],
-            'level' => [
+            'difficulty_level' => [
                 'description' => 'Difficulty level of the course',
                 'example'     => CourseDifficultyLevelEnum::BEGINNER->value,
             ],
