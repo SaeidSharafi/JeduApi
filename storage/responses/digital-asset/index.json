@@ -8,6 +8,10 @@
         "short_name": "صوت",
         "slug": "perspiciatis-laboriosam-quo-eos-sed-sunt",
         "is_attachable_to_course": true,
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
+        },
         "status": {
           "value": "draft",
           "label": "پیش‌نویس"
@@ -23,6 +27,10 @@
         "short_name": "قفل",
         "slug": "ut-quo-asperiores-quo-sapiente-autem-aspernatur-aut-exercitationem",
         "is_attachable_to_course": true,
+        "difficulty_level":  {
+          "value":  "beginner",
+          "label":  "مبتدی"
+        },
         "status": {
           "value": "draft",
           "label": "پیش‌نویس"
@@ -38,6 +46,10 @@
         "short_name": "دریاچه",
         "slug": "tempore-voluptas-occaecati-molestias",
         "is_attachable_to_course": true,
+        "difficulty_level":  {
+          "value":  "beginner",
+          "label":  "مبتدی"
+        },
         "status": {
           "value": "draft",
           "label": "پیش‌نویس"
@@ -53,6 +65,10 @@
         "short_name": "پوستر",
         "slug": "totam-repellat-voluptatem-qui-sed-eos-dicta-sunt",
         "is_attachable_to_course": true,
+        "difficulty_level":  {
+          "value":  "beginner",
+          "label":  "مبتدی"
+        },
         "status": {
           "value": "draft",
           "label": "پیش‌نویس"
@@ -68,6 +84,10 @@
         "short_name": "بانک",
         "slug": "facere-reprehenderit-consequatur-beatae-est-et-dolores-aspernatur",
         "is_attachable_to_course": true,
+        "difficulty_level":  {
+          "value":  "beginner",
+          "label":  "مبتدی"
+        },
         "status": {
           "value": "draft",
           "label": "پیش‌نویس"
@@ -83,6 +103,10 @@
         "short_name": "ملک",
         "slug": "delectus-reiciendis-accusantium-ab",
         "is_attachable_to_course": true,
+        "difficulty_level":  {
+          "value":  "beginner",
+          "label":  "مبتدی"
+        },
         "status": {
           "value": "draft",
           "label": "پیش‌نویس"
@@ -98,6 +122,10 @@
         "short_name": "ژاکت",
         "slug": "quibusdam-sapiente-sint-unde-est-quos-dolores",
         "is_attachable_to_course": true,
+        "difficulty_level":  {
+          "value":  "beginner",
+          "label":  "مبتدی"
+        },
         "status": {
           "value": "draft",
           "label": "پیش‌نویس"
@@ -113,6 +141,10 @@
         "short_name": "پوستر",
         "slug": "esse-eius-vel-voluptatem-aliquid-mollitia-sint",
         "is_attachable_to_course": true,
+        "difficulty_level":  {
+          "value":  "beginner",
+          "label":  "مبتدی"
+        },
         "status": {
           "value": "draft",
           "label": "پیش‌نویس"
@@ -128,6 +160,10 @@
         "short_name": "نمک",
         "slug": "voluptas-voluptate-accusantium-dolorum-qui-sint-porro",
         "is_attachable_to_course": true,
+        "difficulty_level":  {
+          "value":  "beginner",
+          "label":  "مبتدی"
+        },
         "status": {
           "value": "draft",
           "label": "پیش‌نویس"
@@ -143,6 +179,10 @@
         "short_name": "هنر",
         "slug": "eaque-eius-et-rerum-explicabo",
         "is_attachable_to_course": true,
+        "difficulty_level":  {
+          "value":  "beginner",
+          "label":  "مبتدی"
+        },
         "status": {
           "value": "draft",
           "label": "پیش‌نویس"
@@ -158,6 +198,10 @@
         "short_name": "ساعت",
         "slug": "sint-inventore-quasi-facilis-consequuntur",
         "is_attachable_to_course": true,
+        "difficulty_level":  {
+          "value":  "beginner",
+          "label":  "مبتدی"
+        },
         "status": {
           "value": "draft",
           "label": "پیش‌نویس"
@@ -173,6 +217,10 @@
         "short_name": "نان",
         "slug": "deserunt-officia-eius-non-distinctio-est-est",
         "is_attachable_to_course": true,
+        "difficulty_level":  {
+          "value":  "beginner",
+          "label":  "مبتدی"
+        },
         "status": {
           "value": "draft",
           "label": "پیش‌نویس"
@@ -188,6 +236,10 @@
         "short_name": "پارو",
         "slug": "saepe-doloribus-in-tenetur-esse-quam-dolor",
         "is_attachable_to_course": true,
+        "difficulty_level":  {
+          "value":  "beginner",
+          "label":  "مبتدی"
+        },
         "status": {
           "value": "draft",
           "label": "پیش‌نویس"
@@ -203,6 +255,10 @@
         "short_name": "تاکسی",
         "slug": "quam-assumenda-doloremque-et-dolore-exercitationem",
         "is_attachable_to_course": true,
+        "difficulty_level":  {
+          "value":  "beginner",
+          "label":  "مبتدی"
+        },
         "status": {
           "value": "draft",
           "label": "پیش‌نویس"
@@ -218,6 +274,10 @@
         "short_name": "بالش",
         "slug": "vero-et-qui-minima-aut-consequuntur-officia-est-impedit",
         "is_attachable_to_course": true,
+        "difficulty_level":  {
+          "value":  "beginner",
+          "label":  "مبتدی"
+        },
         "status": {
           "value": "draft",
           "label": "پیش‌نویس"

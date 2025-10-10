@@ -8,6 +8,10 @@
     "description": "پل ژاکت نمک شیر بالین پارو.",
     "version": "qui",
     "is_attachable_to_course": true,
+    "difficulty_level":  {
+      "value":  "beginner",
+      "label":  "مبتدی"
+    },
     "status": {
       "value": "draft",
       "label": "پیش‌نویس"

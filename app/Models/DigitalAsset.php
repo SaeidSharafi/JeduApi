@@ -35,6 +35,7 @@ final class DigitalAsset extends Model implements ProductableContract, Reviewabl
         'page_count',
         'duration_seconds',
         'is_attachable_to_course',
+        'difficulty_level',
         'status',
         'keywords',
         'meta_title',
