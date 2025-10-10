@@ -200,7 +200,7 @@ return [
                         ['name' => 'has_discount', 'type' => 'bool', 'facet' => true],
                         ['name' => 'category_ids', 'type' => 'int32[]', 'facet' => true, 'optional' => true],
                         ['name' => 'category_slugs', 'type' => 'string[]', 'facet' => true, 'optional' => true],
-                        ['name' => 'level', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'difficulty_level', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'fulfillment_types', 'type' => 'string[]', 'facet' => true, 'optional' => true],
 
                         // --- Sortable Fields ---
