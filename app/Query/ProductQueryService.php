@@ -316,16 +316,6 @@ final class ProductQueryService
     }
 
     /**
-     * Filter by single category slug.
-     */
-    public function inCategory(string $categorySlug): self
-    {
-        return $this->addRelationshipConstraint('categories', function ($q) use ($categorySlug) {
-            $q->where('slug', $categorySlug);
-        });
-    }
-
-    /**
      * Filter by instructor/teacher.
      */
     public function byInstructor(int $instructorId): self
