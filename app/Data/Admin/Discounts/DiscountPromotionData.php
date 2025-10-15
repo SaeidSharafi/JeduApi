@@ -30,8 +30,8 @@ final class DiscountPromotionData extends Data
         public ?int $usage_limit_total,
         public ?int $usage_limit_per_customer,
         public int $total_usage_count,
-        public Verta $created_at,
-        public Verta $updated_at,
+        public ?Verta $created_at,
+        public ?Verta $updated_at,
         #[DataCollectionOf(DiscountPromotionRuleData::class)]
         public ?Collection $rules,
         #[DataCollectionOf(DiscountCouponData::class)]

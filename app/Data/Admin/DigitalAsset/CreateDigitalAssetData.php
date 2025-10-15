@@ -29,6 +29,7 @@ final class CreateDigitalAssetData extends Data
         public string $difficulty_level,
         #[WithCast(EnumCast::class)]
         public PublicationStatusEnum $status,
+        public ?array $faq,
         public ?int $created_by,
         public ?string $keywords,
         public ?string $meta_title,
@@ -41,7 +42,8 @@ final class CreateDigitalAssetData extends Data
         public array $categories,
         public array $attachments,
         public array $media = [],
-    ) {}
+    ) {
+    }
 
     /**
      * @codeCoverageIgnore
@@ -54,9 +56,9 @@ final class CreateDigitalAssetData extends Data
 
         return array_merge(
             [
-                'short_name' => ['required', 'string', 'max:100'],
-                'full_name'  => ['required', 'string', 'max:191'],
-                'slug'       => [
+                'short_name'              => ['required', 'string', 'max:100'],
+                'full_name'               => ['required', 'string', 'max:191'],
+                'slug'                    => [
                     'required',
                     'string',
                     'alpha_dash',
@@ -73,7 +75,7 @@ final class CreateDigitalAssetData extends Data
                 'description'             => ['nullable', 'string'],
                 'version'                 => ['nullable', 'string', 'max:50'],
                 'is_attachable_to_course' => ['nullable', 'boolean'],
-                'difficulty_level' => [
+                'difficulty_level'        => [
                     'required', Rule::enum(CourseDifficultyLevelEnum::class),
                 ],
                 'status'                  => ['required', Rule::enum(PublicationStatusEnum::class)],
@@ -82,6 +84,9 @@ final class CreateDigitalAssetData extends Data
                 'published_at'            => ['nullable', 'jdate:Y-m-d H:i:s'],
                 'page_count'              => ['nullable', 'integer', 'min:0'],
                 'duration_seconds'        => ['nullable', 'integer', 'min:0'],
+                'faq'                     => ['nullable', 'array'],
+                'faq.*.question'          => ['required', 'string', 'max:255'],
+                'faq.*.answer'            => ['required', 'string'],
                 'categories'              => ['required', 'array'],
                 'categories.*'            => ['required', 'integer', 'exists:categories,id'],
                 'attachments'             => ['array'],
@@ -131,23 +136,23 @@ final class CreateDigitalAssetData extends Data
     public function bodyParameters(): array
     {
         return [
-            'short_name' => [
+            'short_name'              => [
                 'description' => 'The short name of the digital asset.',
                 'example'     => 'Digital Asset',
             ],
-            'full_name' => [
+            'full_name'               => [
                 'description' => 'The full name of the digital asset.',
                 'example'     => 'Digital Asset Full Name',
             ],
-            'slug' => [
+            'slug'                    => [
                 'description' => 'A unique slug for the digital asset, used in URLs.',
                 'example'     => 'digital-asset-name',
             ],
-            'description' => [
+            'description'             => [
                 'description' => 'A brief description of the digital asset.',
                 'example'     => 'This is a description of the digital asset.',
             ],
-            'version' => [
+            'version'                 => [
                 'description' => 'The version of the digital asset.',
                 'example'     => '1.0.0',
             ],
@@ -155,82 +160,97 @@ final class CreateDigitalAssetData extends Data
                 'description' => 'Indicates if this asset can be attached to a course.',
                 'example'     => true,
             ],
-            'status' => [
+            'status'                  => [
                 'description' => 'The publication status of the digital asset.',
                 'example'     => PublicationStatusEnum::PUBLISHED->value,
             ],
-            'page_count' => [
+            'page_count'              => [
                 'description' => 'The number of pages in the digital asset, if applicable.',
                 'example'     => 100,
             ],
-            'duration_seconds' => [
+            'duration_seconds'        => [
                 'description' => 'The duration of the digital asset in seconds, if applicable.',
                 'example'     => 3600,
             ],
-            'created_by' => [
+            'created_by'              => [
                 'description' => 'The ID of the staff who created this digital asset.',
                 'example'     => 1,
             ],
-            'published_at' => [
+            'published_at'            => [
                 'description' => 'The date and time when the digital asset was published.',
                 'example'     => '1403-10-01 12:00:00',
             ],
-            'keywords' => [
+            'faq'                     => [
+                'description' => 'Frequently Asked Questions for the course',
+                'example'     => [
+                    ['question' => 'What is the course about?', 'answer' => 'This course covers...'],
+                    ['question' => 'Who is the instructor?', 'answer' => 'The instructor is...'],
+                ],
+            ],
+            'faq.*.question'          => [
+                'description' => 'Question in the FAQ',
+                'example'     => 'What is the course about?',
+            ],
+            'faq.*.answer'            => [
+                'description' => 'Answer to the FAQ question',
+                'example'     => 'This course covers...',
+            ],
+            'keywords'                => [
                 'description' => 'Keywords associated with the digital asset for search optimization.',
                 'example'     => 'keyword1, keyword2',
             ],
-            'meta_title' => [
+            'meta_title'              => [
                 'description' => 'The meta title for the digital asset, used for SEO.',
                 'example'     => 'Digital Asset Meta Title',
             ],
-            'meta_description' => [
+            'meta_description'        => [
                 'description' => 'The meta description for the digital asset, used for SEO.',
                 'example'     => 'This is a meta description for the digital asset.',
             ],
-            'meta_keywords' => [
+            'meta_keywords'           => [
                 'description' => 'Meta keywords for the digital asset, used for SEO.',
                 'example'     => 'meta keyword1, meta keyword2',
             ],
-            'categories' => [
+            'categories'              => [
                 'description' => 'An array of category IDs to which the digital asset belongs.',
                 'example'     => [1, 2, 3],
             ],
-            'categories.*' => [
+            'categories.*'            => [
                 'description' => 'An array of category IDs to which the digital asset belongs.',
                 'example'     => 1,
             ],
-            'attachments.main' => [
+            'attachments.main'        => [
                 'description' => 'The main attachment for the digital asset, typically a file ID.',
                 'example'     => 1,
             ],
-            'attachments.preview' => [
+            'attachments.preview'     => [
                 'description' => 'An optional preview attachment for the digital asset, typically a file ID.',
                 'example'     => 2,
             ],
-            'media' => [
+            'media'                   => [
                 'description' => 'Media of the course',
             ],
-            'media.gallery' => [
+            'media.gallery'           => [
                 'description' => 'media ids for gallery',
                 'example'     => [1, 2, 3],
             ],
-            'media.cover' => [
+            'media.cover'             => [
                 'description' => 'media ids for cover',
                 'example'     => [1],
             ],
-            'media.video' => [
+            'media.video'             => [
                 'description' => 'media ids for video',
                 'example'     => [1],
             ],
-            'media.cover.*' => [
+            'media.cover.*'           => [
                 'description' => 'Array of media ids for cover',
                 'example'     => 1,
             ],
-            'media.gallery.*' => [
+            'media.gallery.*'         => [
                 'description' => 'Array of media ids for gallery',
                 'example'     => 1,
             ],
-            'media.video.*' => [
+            'media.video.*'           => [
                 'description' => 'Array of media ids for video',
                 'example'     => 1,
             ],

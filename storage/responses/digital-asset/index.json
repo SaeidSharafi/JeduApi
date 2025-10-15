@@ -1,351 +1,399 @@
 {
-  "message": "Operation successful.",
+  "message": "عملیات با موفقیت انجام شد.",
   "data": {
     "current_page": 1,
     "data": [
       {
+        "type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
         "id": 1,
-        "short_name": "صوت",
-        "slug": "perspiciatis-laboriosam-quo-eos-sed-sunt",
+        "short_name": "کتاب الگوهای طراحی",
+        "slug": "php-design-patterns-ebook",
+        "thumbnail_url": "main.svg",
         "is_attachable_to_course": true,
         "difficulty_level": {
           "value": "beginner",
           "label": "مبتدی"
         },
         "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
+          "value": "published",
+          "label": "منتشر شده"
         },
-        "version": "et",
-        "published_at": null,
-        "created_by": 1,
-        "created_at": "1404-03-08 08:51:09",
-        "updated_at": "1404-03-08 08:51:09"
+        "version": "1.2.0",
+        "published_at": "1403-06-25 10:00:00",
+        "created_by": 3,
+        "created_at": "1404-07-23 11:10:20",
+        "updated_at": null
       },
       {
+        "type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
         "id": 2,
-        "short_name": "قفل",
-        "slug": "ut-quo-asperiores-quo-sapiente-autem-aspernatur-aut-exercitationem",
+        "short_name": "مجموعه وکتور",
+        "slug": "iranian-vector-collection-for-graphic-design",
+        "thumbnail_url": "main.svg",
         "is_attachable_to_course": true,
-        "difficulty_level":  {
-          "value":  "beginner",
-          "label":  "مبتدی"
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
         },
         "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
+          "value": "published",
+          "label": "منتشر شده"
         },
-        "version": "natus",
-        "published_at": null,
-        "created_by": 1,
-        "created_at": "1404-03-08 08:51:09",
-        "updated_at": "1404-03-08 08:51:09"
+        "version": "2.0",
+        "published_at": "1403-07-29 11:30:00",
+        "created_by": 5,
+        "created_at": "1404-07-23 11:10:20",
+        "updated_at": null
       },
       {
+        "type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
         "id": 3,
-        "short_name": "دریاچه",
-        "slug": "tempore-voluptas-occaecati-molestias",
+        "short_name": "پروژه آماده افترافکت",
+        "slug": "after-effects-neon-logo-reveal-template",
+        "thumbnail_url": "main.svg",
         "is_attachable_to_course": true,
-        "difficulty_level":  {
-          "value":  "beginner",
-          "label":  "مبتدی"
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
         },
         "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
+          "value": "published",
+          "label": "منتشر شده"
         },
-        "version": "expedita",
-        "published_at": "1397-12-26 18:39:35",
-        "created_by": 1,
-        "created_at": "1404-03-08 08:51:09",
-        "updated_at": "1404-03-08 08:51:09"
+        "version": "1.0",
+        "published_at": "1403-08-11 14:00:00",
+        "created_by": 8,
+        "created_at": "1404-07-23 11:10:20",
+        "updated_at": null
       },
       {
+        "type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
         "id": 4,
-        "short_name": "پوستر",
-        "slug": "totam-repellat-voluptatem-qui-sed-eos-dicta-sunt",
+        "short_name": "کتاب آموزش سئو",
+        "slug": "complete-seo-guide-for-beginners-ebook",
+        "thumbnail_url": "preview.svg",
         "is_attachable_to_course": true,
-        "difficulty_level":  {
-          "value":  "beginner",
-          "label":  "مبتدی"
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
         },
         "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
+          "value": "published",
+          "label": "منتشر شده"
         },
-        "version": "consectetur",
-        "published_at": "1388-12-27 12:16:07",
-        "created_by": 1,
-        "created_at": "1404-03-08 08:51:09",
-        "updated_at": "1404-03-08 08:51:09"
+        "version": "2.1",
+        "published_at": "1403-06-04 09:00:00",
+        "created_by": 2,
+        "created_at": "1404-07-23 11:10:20",
+        "updated_at": null
       },
       {
+        "type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
         "id": 5,
-        "short_name": "بانک",
-        "slug": "facere-reprehenderit-consequatur-beatae-est-et-dolores-aspernatur",
+        "short_name": "قالب رزومه",
+        "slug": "creative-resume-templates-psd",
+        "thumbnail_url": "preview.svg",
         "is_attachable_to_course": true,
-        "difficulty_level":  {
-          "value":  "beginner",
-          "label":  "مبتدی"
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
         },
         "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
+          "value": "published",
+          "label": "منتشر شده"
         },
-        "version": "non",
-        "published_at": null,
-        "created_by": 1,
-        "created_at": "1404-03-08 08:51:09",
-        "updated_at": "1404-03-08 08:51:09"
+        "version": "3.0",
+        "published_at": "1403-10-21 18:00:00",
+        "created_by": 7,
+        "created_at": "1404-07-23 11:10:20",
+        "updated_at": null
       },
       {
+        "type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
         "id": 6,
-        "short_name": "ملک",
-        "slug": "delectus-reiciendis-accusantium-ab",
+        "short_name": "موسیقی متن",
+        "slug": "royalty-free-background-music-for-content",
+        "thumbnail_url": "preview.svg",
         "is_attachable_to_course": true,
-        "difficulty_level":  {
-          "value":  "beginner",
-          "label":  "مبتدی"
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
         },
         "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
+          "value": "published",
+          "label": "منتشر شده"
         },
-        "version": "facere",
-        "published_at": "1375-12-21 22:55:17",
-        "created_by": 1,
-        "created_at": "1404-03-08 08:51:09",
-        "updated_at": "1404-03-08 08:51:09"
+        "version": "1.5",
+        "published_at": "1403-11-17 12:00:00",
+        "created_by": 10,
+        "created_at": "1404-07-23 11:10:20",
+        "updated_at": null
       },
       {
+        "type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
         "id": 7,
-        "short_name": "ژاکت",
-        "slug": "quibusdam-sapiente-sint-unde-est-quos-dolores",
+        "short_name": "چک‌لیست بازاریابی",
+        "slug": "digital-marketing-campaign-checklist",
+        "thumbnail_url": "fake-cover.svg",
         "is_attachable_to_course": true,
-        "difficulty_level":  {
-          "value":  "beginner",
-          "label":  "مبتدی"
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
         },
         "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
+          "value": "published",
+          "label": "منتشر شده"
         },
-        "version": "nihil",
-        "published_at": null,
-        "created_by": 1,
-        "created_at": "1404-03-08 08:51:09",
-        "updated_at": "1404-03-08 08:51:09"
+        "version": "1.0",
+        "published_at": "1403-11-03 16:45:00",
+        "created_by": 4,
+        "created_at": "1404-07-23 11:10:20",
+        "updated_at": null
       },
       {
+        "type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
         "id": 8,
-        "short_name": "پوستر",
-        "slug": "esse-eius-vel-voluptatem-aliquid-mollitia-sint",
+        "short_name": "کتاب داستان کوتاه",
+        "slug": "short-stories-from-contemporary-iranian-writers",
+        "thumbnail_url": "fake-cover.svg",
         "is_attachable_to_course": true,
-        "difficulty_level":  {
-          "value":  "beginner",
-          "label":  "مبتدی"
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
         },
         "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
+          "value": "published",
+          "label": "منتشر شده"
         },
-        "version": "reiciendis",
-        "published_at": null,
-        "created_by": 1,
-        "created_at": "1404-03-08 08:51:09",
-        "updated_at": "1404-03-08 08:51:09"
+        "version": "1.0",
+        "published_at": "1403-09-22 19:00:00",
+        "created_by": 9,
+        "created_at": "1404-07-23 11:10:20",
+        "updated_at": null
       },
       {
+        "type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
         "id": 9,
-        "short_name": "نمک",
-        "slug": "voluptas-voluptate-accusantium-dolorum-qui-sint-porro",
+        "short_name": "فونت فارسی",
+        "slug": "persian-handwritten-and-fantasy-fonts-collection",
+        "thumbnail_url": "fake-gallery.svg",
         "is_attachable_to_course": true,
-        "difficulty_level":  {
-          "value":  "beginner",
-          "label":  "مبتدی"
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
         },
         "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
+          "value": "published",
+          "label": "منتشر شده"
         },
-        "version": "ipsam",
-        "published_at": "1387-10-27 05:43:27",
+        "version": "4.2",
+        "published_at": "1403-09-10 13:20:00",
         "created_by": 1,
-        "created_at": "1404-03-08 08:51:09",
-        "updated_at": "1404-03-08 08:51:09"
+        "created_at": "1404-07-23 11:10:20",
+        "updated_at": null
       },
       {
+        "type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
         "id": 10,
-        "short_name": "هنر",
-        "slug": "eaque-eius-et-rerum-explicabo",
+        "short_name": "آموزش اکسل",
+        "slug": "advanced-excel-functions-video-tutorial",
+        "thumbnail_url": "fake-gallery.svg",
         "is_attachable_to_course": true,
-        "difficulty_level":  {
-          "value":  "beginner",
-          "label":  "مبتدی"
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
         },
         "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
+          "value": "published",
+          "label": "منتشر شده"
         },
-        "version": "alias",
-        "published_at": null,
-        "created_by": 1,
-        "created_at": "1404-03-08 08:51:09",
-        "updated_at": "1404-03-08 08:51:09"
+        "version": "1.0",
+        "published_at": "1403-04-28 10:10:00",
+        "created_by": 6,
+        "created_at": "1404-07-23 11:10:20",
+        "updated_at": null
       },
       {
+        "type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
         "id": 11,
-        "short_name": "ساعت",
-        "slug": "sint-inventore-quasi-facilis-consequuntur",
+        "short_name": "کتاب عکاسی",
+        "slug": "composition-in-photography-ebook",
+        "thumbnail_url": "fake-gallery.svg",
         "is_attachable_to_course": true,
-        "difficulty_level":  {
-          "value":  "beginner",
-          "label":  "مبتدی"
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
         },
         "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
+          "value": "published",
+          "label": "منتشر شده"
         },
-        "version": "qui",
-        "published_at": "1401-08-19 16:45:56",
-        "created_by": 1,
-        "created_at": "1404-03-08 08:51:09",
-        "updated_at": "1404-03-08 08:51:09"
+        "version": "1.8",
+        "published_at": "1403-03-31 15:00:00",
+        "created_by": 5,
+        "created_at": "1404-07-23 11:10:20",
+        "updated_at": null
       },
       {
+        "type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
         "id": 12,
-        "short_name": "نان",
-        "slug": "deserunt-officia-eius-non-distinctio-est-est",
+        "short_name": "پلاگین وردپرس",
+        "slug": "professional-contact-form-plugin-for-wordpress",
+        "thumbnail_url": "main.svg",
         "is_attachable_to_course": true,
-        "difficulty_level":  {
-          "value":  "beginner",
-          "label":  "مبتدی"
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
         },
         "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
+          "value": "published",
+          "label": "منتشر شده"
         },
-        "version": "commodi",
-        "published_at": null,
-        "created_by": 1,
-        "created_at": "1404-03-08 08:51:09",
-        "updated_at": "1404-03-08 08:51:09"
+        "version": "3.1.5",
+        "published_at": "1403-11-27 11:00:00",
+        "created_by": 3,
+        "created_at": "1404-07-23 11:10:20",
+        "updated_at": null
       },
       {
+        "type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
         "id": 13,
-        "short_name": "پارو",
-        "slug": "saepe-doloribus-in-tenetur-esse-quam-dolor",
-        "is_attachable_to_course": true,
-        "difficulty_level":  {
-          "value":  "beginner",
-          "label":  "مبتدی"
+        "short_name": "راهنمای سفر",
+        "slug": "iran-northern-cities-travel-guidebook",
+        "thumbnail_url": "main.svg",
+        "is_attachable_to_course": false,
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
         },
         "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
+          "value": "published",
+          "label": "منتشر شده"
         },
-        "version": "facere",
-        "published_at": "1398-03-11 04:10:28",
-        "created_by": 1,
-        "created_at": "1404-03-08 08:51:09",
-        "updated_at": "1404-03-08 08:51:09"
+        "version": "1.0",
+        "published_at": "1403-02-21 08:30:00",
+        "created_by": 9,
+        "created_at": "1404-07-23 11:10:20",
+        "updated_at": null
       },
       {
+        "type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
         "id": 14,
-        "short_name": "تاکسی",
-        "slug": "quam-assumenda-doloremque-et-dolore-exercitationem",
+        "short_name": "اسکریپت پایتون",
+        "slug": "python-scripts-for-daily-task-automation",
+        "thumbnail_url": "preview.svg",
         "is_attachable_to_course": true,
-        "difficulty_level":  {
-          "value":  "beginner",
-          "label":  "مبتدی"
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
         },
         "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
+          "value": "published",
+          "label": "منتشر شده"
         },
-        "version": "consequatur",
-        "published_at": "1366-12-07 22:35:48",
-        "created_by": 1,
-        "created_at": "1404-03-08 08:51:09",
-        "updated_at": "1404-03-08 08:51:09"
+        "version": "2.5",
+        "published_at": "1403-12-11 17:00:00",
+        "created_by": 2,
+        "created_at": "1404-07-23 11:10:20",
+        "updated_at": null
       },
       {
+        "type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
         "id": 15,
-        "short_name": "بالش",
-        "slug": "vero-et-qui-minima-aut-consequuntur-officia-est-impedit",
-        "is_attachable_to_course": true,
-        "difficulty_level":  {
-          "value":  "beginner",
-          "label":  "مبتدی"
+        "short_name": "کتاب آشپزی",
+        "slug": "traditional-iranian-cuisine-cookbook-ebook",
+        "thumbnail_url": "preview.svg",
+        "is_attachable_to_course": false,
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
         },
         "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
+          "value": "published",
+          "label": "منتشر شده"
         },
-        "version": "in",
-        "published_at": null,
-        "created_by": 1,
-        "created_at": "1404-03-08 08:51:09",
-        "updated_at": "1404-03-08 08:51:09"
+        "version": "1.1",
+        "published_at": "1403-01-26 14:20:00",
+        "created_by": 7,
+        "created_at": "1404-07-23 11:10:20",
+        "updated_at": null
       }
     ],
     "first_page_url": "http://jedu.test/api/v1/admin/digital-asset?page=1",
     "from": 1,
-    "last_page": 7,
-    "last_page_url": "http://jedu.test/api/v1/admin/digital-asset?page=7",
+    "last_page": 1,
+    "last_page_url": "http://jedu.test/api/v1/admin/digital-asset?page=1",
     "links": [
       {
         "url": null,
         "label": "&laquo; قبلی",
+        "page": null,
         "active": false
       },
       {
         "url": "http://jedu.test/api/v1/admin/digital-asset?page=1",
         "label": "1",
+        "page": 1,
         "active": true
       },
       {
-        "url": "http://jedu.test/api/v1/admin/digital-asset?page=2",
-        "label": "2",
-        "active": false
-      },
-      {
-        "url": "http://jedu.test/api/v1/admin/digital-asset?page=3",
-        "label": "3",
-        "active": false
-      },
-      {
-        "url": "http://jedu.test/api/v1/admin/digital-asset?page=4",
-        "label": "4",
-        "active": false
-      },
-      {
-        "url": "http://jedu.test/api/v1/admin/digital-asset?page=5",
-        "label": "5",
-        "active": false
-      },
-      {
-        "url": "http://jedu.test/api/v1/admin/digital-asset?page=6",
-        "label": "6",
-        "active": false
-      },
-      {
-        "url": "http://jedu.test/api/v1/admin/digital-asset?page=7",
-        "label": "7",
-        "active": false
-      },
-      {
-        "url": "http://jedu.test/api/v1/admin/digital-asset?page=2",
+        "url": null,
         "label": "بعدی &raquo;",
+        "page": null,
         "active": false
       }
     ],
-    "next_page_url": "http://jedu.test/api/v1/admin/digital-asset?page=2",
+    "next_page_url": null,
     "path": "http://jedu.test/api/v1/admin/digital-asset",
     "per_page": 15,
     "prev_page_url": null,
     "to": 15,
-    "total": 103
+    "total": 15
   },
   "metadata": []
 }

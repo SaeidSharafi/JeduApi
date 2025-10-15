@@ -22,7 +22,7 @@ final class ShowVendorData extends Data
         public ?array $social_links,
         public ?array $theme_options,
         public ?array $media,
-        public Verta $created_at,
+        public ?Verta $created_at,
         public Verta $updated_at
     ) {}
 }

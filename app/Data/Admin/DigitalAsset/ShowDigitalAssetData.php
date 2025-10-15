@@ -36,6 +36,7 @@ final class ShowDigitalAssetData extends Data implements ProductableDataContract
         public CourseDifficultyLevelEnum $difficulty_level,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public PublicationStatusEnum $status,
+        public ?array $faq,
         public ?int $created_by,
         public ?string $keywords,
         public ?string $meta_title,

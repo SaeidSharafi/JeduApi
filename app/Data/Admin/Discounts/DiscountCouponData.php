@@ -16,7 +16,7 @@ final class DiscountCouponData extends Data
         public bool $is_active,
         public ?int $usage_limit,
         public int $usage_count,
-        public Verta $created_at,
-        public Verta $updated_at,
+        public ?Verta $created_at,
+        public ?Verta $updated_at,
     ) {}
 }

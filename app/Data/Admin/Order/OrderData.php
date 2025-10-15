@@ -44,8 +44,8 @@ final class OrderData extends Data implements WalletTransactionSourceableDataCon
         public ?OrderPaymentStatusEnum $payment_status,
         public ?string $applied_coupon_code,
         public ?string $admin_notes,
-        public Verta $created_at,
-        public Verta $updated_at,
+        public ?Verta $created_at,
+        public ?Verta $updated_at,
         #[MapInputName('customer_snapshot_json')]
         public array $customer_snapshot,
         #[DataCollectionOf(OrderItemData::class)]

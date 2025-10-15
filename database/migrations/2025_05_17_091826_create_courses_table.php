@@ -28,6 +28,8 @@ return new class extends Migration
             $table->text('curriculum_summary_text')->nullable(); // e.g., "1 فصل، 20 درس، 4 تمرین"
             $table->json('outcomes_json')->nullable(); // What students will learn
             $table->text('default_teacher_info')->nullable(); // Fallback teacher info
+            $table->boolean('provides_certificate')->default(false);
+            $table->json('faq')->nullable(); // Frequently Asked Questions
             $table->json('additional_info')->nullable(); // For any other structured course-specific info
             $this->addMetaTagColumns($table);
             $table->json('properties')->nullable();

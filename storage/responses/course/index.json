@@ -4,434 +4,643 @@
     "current_page": 1,
     "data": [
       {
+        "type": {
+          "value": "course",
+          "label": "دوره"
+        },
         "id": 1,
-        "slug": "eos-tenetur-natus-eveniet-magni-aperiam",
-        "full_name": "پوستر دیجیتال بانک",
-        "short_name": "پل",
-        "difficulty_level": {
-          "value": "advanced",
-          "label": "پیشرفته"
-        },
-        "additional_info": [],
-        "properties": [],
-        "status": {
-          "value": "published",
-          "label": "منتشر شده"
-        },
-        "categories": [
-          {
-            "id": 73,
-            "name": "رنگ",
-            "slug": "sed-et-laborum-vitae-reiciendis-quas-dolore",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "1404-03-13 16:38:28",
-            "updated_at": "1404-03-13 16:38:29"
-          },
-          {
-            "id": 37,
-            "name": "خط",
-            "slug": "quo-ut-vel-molestiae-accusamus-deserunt",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "1404-03-13 16:38:27",
-            "updated_at": "1404-03-13 16:38:28"
-          },
-          {
-            "id": 48,
-            "name": "پیچ",
-            "slug": "rerum-asperiores-doloribus-possimus-eos",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "1404-03-13 16:38:28",
-            "updated_at": "1404-03-13 16:38:28"
-          }
-        ],
-        "digital_assets": [
-          {
-            "id": 26,
-            "short_name": "باغ",
-            "slug": "soluta-qui-dolores-architecto-odit-modi-non-voluptatibus",
-            "is_attachable_to_course": true,
-            "status": {
-              "value": "draft",
-              "label": "پیش‌نویس"
-            },
-            "version": "dolor",
-            "published_at": "1402-08-02 03:16:33",
-            "created_by": 1,
-            "created_at": "1404-03-13 16:38:29",
-            "updated_at": "1404-03-13 16:38:29"
-          },
-          {
-            "id": 17,
-            "short_name": "فرش",
-            "slug": "quibusdam-quia-fugit-repudiandae-est-sapiente-consectetur-modi-tempora",
-            "is_attachable_to_course": true,
-            "status": {
-              "value": "draft",
-              "label": "پیش‌نویس"
-            },
-            "version": "et",
-            "published_at": "1388-03-29 02:03:31",
-            "created_by": 1,
-            "created_at": "1404-03-13 16:38:29",
-            "updated_at": "1404-03-13 16:38:29"
-          }
-        ],
-        "created_by": 1,
-        "created_at": "1404-03-13 16:38:31",
-        "updated_at": "1404-03-13 16:38:31"
-      },
-      {
-        "id": 2,
-        "slug": "possimus-quo-qui-et",
-        "full_name": "ساز ملک علم",
-        "short_name": "قهوه",
+        "slug": "python-beginners",
+        "full_name": "دوره جامع پایتون از مقدماتی تا پیشرفته",
+        "short_name": "پایتون مقدماتی",
+        "thumbnail_url": "fake-cover.svg",
         "difficulty_level": {
           "value": "beginner",
           "label": "مبتدی"
         },
-        "additional_info": [],
-        "properties": [],
+        "additional_info": null,
+        "properties": null,
         "status": {
           "value": "published",
           "label": "منتشر شده"
         },
         "categories": [
           {
-            "id": 76,
-            "name": "مدرسه",
-            "slug": "nemo-aut-et-omnis-praesentium-iure-qui",
+            "id": 1,
+            "name": "برنامه‌نویسی",
+            "slug": "programming",
             "status": {
               "value": "published",
               "label": "منتشر شده"
             },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "image_url": "placeholder.svg",
+            "icon_url": "icon.svg",
+            "educational_calendar_url": null,
             "created_by": 1,
-            "created_at": "1404-03-13 16:38:28",
-            "updated_at": "1404-03-13 16:38:29"
+            "created_at": "1404-07-23 11:06:14",
+            "updated_at": null
           },
           {
-            "id": 82,
-            "name": "دوربین",
-            "slug": "in-consectetur-et-est-sequi-sit-praesentium",
+            "id": 5,
+            "name": "پایتون",
+            "slug": "python",
             "status": {
               "value": "published",
               "label": "منتشر شده"
             },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "image_url": "placeholder.svg",
+            "icon_url": "icon.svg",
+            "educational_calendar_url": null,
             "created_by": 1,
-            "created_at": "1404-03-13 16:38:28",
-            "updated_at": "1404-03-13 16:38:29"
-          },
-          {
-            "id": 91,
-            "name": "شهر",
-            "slug": "sit-eveniet-atque-aut-expedita-architecto-voluptatum-delectus-porro",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "1404-03-13 16:38:28",
-            "updated_at": "1404-03-13 16:38:29"
+            "created_at": "1404-07-23 11:06:14",
+            "updated_at": null
           }
         ],
-        "digital_assets": [
-          {
-            "id": 63,
-            "short_name": "نور",
-            "slug": "voluptatum-voluptatibus-tempora-eveniet",
-            "is_attachable_to_course": true,
-            "status": {
-              "value": "draft",
-              "label": "پیش‌نویس"
-            },
-            "version": "fuga",
-            "published_at": "1396-12-21 06:53:06",
-            "created_by": 1,
-            "created_at": "1404-03-13 16:38:29",
-            "updated_at": "1404-03-13 16:38:29"
-          },
-          {
-            "id": 3,
-            "short_name": "دانه",
-            "slug": "facilis-sint-ex-consequatur-voluptas-quo",
-            "is_attachable_to_course": true,
-            "status": {
-              "value": "draft",
-              "label": "پیش‌نویس"
-            },
-            "version": "tempore",
-            "published_at": "1375-11-09 18:53:19",
-            "created_by": 1,
-            "created_at": "1404-03-13 16:38:29",
-            "updated_at": "1404-03-13 16:38:29"
-          }
-        ],
-        "created_by": 1,
-        "created_at": "1404-03-13 16:38:31",
-        "updated_at": "1404-03-13 16:38:31"
+        "digital_assets": [],
+        "created_by": 3,
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
       },
       {
-        "id": 3,
-        "slug": "cumque-nesciunt-perferendis-voluptas-rerum-sunt-dolorum-facere",
-        "full_name": "کلمه مجله هنر",
-        "short_name": "محل",
+        "type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "id": 2,
+        "slug": "cinema-directing-workshop",
+        "full_name": "کارگاه عملی کارگردانی سینما با رویکرد داستان‌گویی",
+        "short_name": "کارگردانی سینما",
+        "thumbnail_url": "fake-cover.svg",
         "difficulty_level": {
           "value": "intermediate",
           "label": "متوسط"
         },
-        "additional_info": [],
-        "properties": [],
+        "additional_info": null,
+        "properties": null,
         "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
+          "value": "published",
+          "label": "منتشر شده"
         },
         "categories": [
           {
-            "id": 62,
-            "name": "آشیانه",
-            "slug": "nostrum-omnis-nisi-tempora",
+            "id": 2,
+            "name": "هنر",
+            "slug": "art",
             "status": {
               "value": "published",
               "label": "منتشر شده"
             },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "image_url": "placeholder.svg",
+            "icon_url": "icon.svg",
+            "educational_calendar_url": null,
             "created_by": 1,
-            "created_at": "1404-03-13 16:38:28",
-            "updated_at": "1404-03-13 16:38:29"
-          },
-          {
-            "id": 65,
-            "name": "گوشی",
-            "slug": "aut-minus-quo-expedita-accusamus-ad",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "1404-03-13 16:38:28",
-            "updated_at": "1404-03-13 16:38:29"
-          },
-          {
-            "id": 29,
-            "name": "نقاشی",
-            "slug": "saepe-minima-ipsam-eum-perspiciatis",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "1404-03-13 16:38:27",
-            "updated_at": "1404-03-13 16:38:28"
+            "created_at": "1404-07-23 11:06:14",
+            "updated_at": null
           }
         ],
-        "digital_assets": [
-          {
-            "id": 76,
-            "short_name": "پرنده",
-            "slug": "et-quia-animi-doloremque-sit",
-            "is_attachable_to_course": true,
-            "status": {
-              "value": "draft",
-              "label": "پیش‌نویس"
-            },
-            "version": "culpa",
-            "published_at": "1356-12-03 10:02:44",
-            "created_by": 1,
-            "created_at": "1404-03-13 16:38:30",
-            "updated_at": "1404-03-13 16:38:30"
-          },
-          {
-            "id": 22,
-            "short_name": "نقاشی",
-            "slug": "sit-dolorum-eum-exercitationem",
-            "is_attachable_to_course": true,
-            "status": {
-              "value": "draft",
-              "label": "پیش‌نویس"
-            },
-            "version": "voluptas",
-            "published_at": "1373-07-23 00:07:46",
-            "created_by": 1,
-            "created_at": "1404-03-13 16:38:29",
-            "updated_at": "1404-03-13 16:38:29"
-          }
-        ],
-        "created_by": 1,
-        "created_at": "1404-03-13 16:38:31",
-        "updated_at": "1404-03-13 16:38:31"
+        "digital_assets": [],
+        "created_by": 2,
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
       },
       {
-        "id": 4,
-        "slug": "molestias-vero-et-unde-libero",
-        "full_name": "فرش نور جایزه",
-        "short_name": "باغ",
+        "type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "id": 3,
+        "slug": "miniature-painting-course",
+        "full_name": "دوره آموزش نقاشی مینیاتور و تذهیب",
+        "short_name": "نقاشی مینیاتور",
+        "thumbnail_url": "fake-cover.svg",
         "difficulty_level": {
           "value": "beginner",
           "label": "مبتدی"
         },
-        "additional_info": [],
-        "properties": [],
+        "additional_info": null,
+        "properties": null,
         "status": {
-          "value": "archived",
-          "label": "آرشیو"
+          "value": "published",
+          "label": "منتشر شده"
         },
         "categories": [
           {
-            "id": 43,
-            "name": "پل",
-            "slug": "quas-ea-dolores-tempore",
+            "id": 2,
+            "name": "هنر",
+            "slug": "art",
             "status": {
               "value": "published",
               "label": "منتشر شده"
             },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+            "image_url": "placeholder.svg",
+            "icon_url": "icon.svg",
+            "educational_calendar_url": null,
             "created_by": 1,
-            "created_at": "1404-03-13 16:38:28",
-            "updated_at": "1404-03-13 16:38:28"
-          },
-          {
-            "id": 68,
-            "name": "مربع",
-            "slug": "aspernatur-eos-sint-quidem-officia",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "1404-03-13 16:38:28",
-            "updated_at": "1404-03-13 16:38:29"
-          },
-          {
-            "id": 60,
-            "name": "آب",
-            "slug": "et-ducimus-aliquid-cumque-deleniti",
-            "status": {
-              "value": "published",
-              "label": "منتشر شده"
-            },
-            "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-            "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-            "created_by": 1,
-            "created_at": "1404-03-13 16:38:28",
-            "updated_at": "1404-03-13 16:38:29"
+            "created_at": "1404-07-23 11:06:14",
+            "updated_at": null
           }
         ],
-        "digital_assets": [
+        "digital_assets": [],
+        "created_by": 4,
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
+      },
+      {
+        "type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "id": 4,
+        "slug": "digital-marketing-and-seo",
+        "full_name": "دوره کامل بازاریابی دیجیتال و سئو",
+        "short_name": "بازاریابی دیجیتال",
+        "thumbnail_url": "fake-cover.svg",
+        "difficulty_level": {
+          "value": "intermediate",
+          "label": "متوسط"
+        },
+        "additional_info": null,
+        "properties": null,
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [
           {
-            "id": 72,
-            "short_name": "درخت",
-            "slug": "voluptatem-nisi-iure-incidunt-ut-consequatur-ut-sint",
-            "is_attachable_to_course": true,
+            "id": 3,
+            "name": "کسب و کار",
+            "slug": "business",
             "status": {
-              "value": "draft",
-              "label": "پیش‌نویس"
+              "value": "published",
+              "label": "منتشر شده"
             },
-            "version": "velit",
-            "published_at": "1387-02-09 20:24:29",
+            "image_url": "placeholder.svg",
+            "icon_url": "icon.svg",
+            "educational_calendar_url": null,
             "created_by": 1,
-            "created_at": "1404-03-13 16:38:29",
-            "updated_at": "1404-03-13 16:38:29"
+            "created_at": "1404-07-23 11:06:14",
+            "updated_at": null
           },
           {
-            "id": 24,
-            "short_name": "ماکت",
-            "slug": "aut-quidem-deserunt-aut-maxime-laboriosam",
-            "is_attachable_to_course": true,
+            "id": 12,
+            "name": "بازاریابی دیجیتال",
+            "slug": "digital-marketing",
             "status": {
-              "value": "draft",
-              "label": "پیش‌نویس"
+              "value": "published",
+              "label": "منتشر شده"
             },
-            "version": "aspernatur",
-            "published_at": "1381-09-06 01:52:15",
+            "image_url": "placeholder.svg",
+            "icon_url": "icon.svg",
+            "educational_calendar_url": null,
             "created_by": 1,
-            "created_at": "1404-03-13 16:38:29",
-            "updated_at": "1404-03-13 16:38:29"
+            "created_at": "1404-07-23 11:06:14",
+            "updated_at": null
           }
         ],
+        "digital_assets": [],
+        "created_by": 9,
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
+      },
+      {
+        "type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "id": 5,
+        "slug": "traditional-persian-singing",
+        "full_name": "آموزش ردیف‌های آوازی موسیقی سنتی ایران",
+        "short_name": "آواز سنتی",
+        "thumbnail_url": "fake-cover.svg",
+        "difficulty_level": {
+          "value": "advanced",
+          "label": "پیشرفته"
+        },
+        "additional_info": null,
+        "properties": null,
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [
+          {
+            "id": 2,
+            "name": "هنر",
+            "slug": "art",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "placeholder.svg",
+            "icon_url": "icon.svg",
+            "educational_calendar_url": null,
+            "created_by": 1,
+            "created_at": "1404-07-23 11:06:14",
+            "updated_at": null
+          },
+          {
+            "id": 11,
+            "name": "موسیقی",
+            "slug": "music",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "placeholder.svg",
+            "icon_url": "icon.svg",
+            "educational_calendar_url": null,
+            "created_by": 1,
+            "created_at": "1404-07-23 11:06:14",
+            "updated_at": null
+          }
+        ],
+        "digital_assets": [],
         "created_by": 1,
-        "created_at": "1404-03-13 16:38:31",
-        "updated_at": "1404-03-13 16:38:31"
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
+      },
+      {
+        "type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "id": 6,
+        "slug": "eastern-philosophy",
+        "full_name": "سیر در اندیشه‌های فلسفی شرق: از بودا تا کنفسیوس",
+        "short_name": "فلسفه شرق",
+        "thumbnail_url": "fake-cover.svg",
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
+        },
+        "additional_info": null,
+        "properties": null,
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [],
+        "digital_assets": [],
+        "created_by": 5,
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
+      },
+      {
+        "type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "id": 7,
+        "slug": "graphic-design-visual-identity",
+        "full_name": "دوره جامع طراحی گرافیک و هویت بصری",
+        "short_name": "طراحی گرافیک",
+        "thumbnail_url": "fake-gallery.svg",
+        "difficulty_level": {
+          "value": "intermediate",
+          "label": "متوسط"
+        },
+        "additional_info": null,
+        "properties": null,
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [
+          {
+            "id": 2,
+            "name": "هنر",
+            "slug": "art",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "placeholder.svg",
+            "icon_url": "icon.svg",
+            "educational_calendar_url": null,
+            "created_by": 1,
+            "created_at": "1404-07-23 11:06:14",
+            "updated_at": null
+          }
+        ],
+        "digital_assets": [],
+        "created_by": 7,
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
+      },
+      {
+        "type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "id": 8,
+        "slug": "advanced-mathematics-workshop",
+        "full_name": "کارگاه هندسه دیفرانسیل و توپولوژی",
+        "short_name": "ریاضیات پیشرفته",
+        "thumbnail_url": "fake-gallery.svg",
+        "difficulty_level": {
+          "value": "expert",
+          "label": "کارشناس"
+        },
+        "additional_info": null,
+        "properties": null,
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [],
+        "digital_assets": [],
+        "created_by": 6,
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
+      },
+      {
+        "type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "id": 9,
+        "slug": "advanced-screenwriting-workshop",
+        "full_name": "کارگاه پیشرفته فیلمنامه‌نویسی با اصغر فرهادی",
+        "short_name": "فیلمنامه‌نویسی",
+        "thumbnail_url": "fake-gallery.svg",
+        "difficulty_level": {
+          "value": "advanced",
+          "label": "پیشرفته"
+        },
+        "additional_info": null,
+        "properties": null,
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [
+          {
+            "id": 2,
+            "name": "هنر",
+            "slug": "art",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "placeholder.svg",
+            "icon_url": "icon.svg",
+            "educational_calendar_url": null,
+            "created_by": 1,
+            "created_at": "1404-07-23 11:06:14",
+            "updated_at": null
+          }
+        ],
+        "digital_assets": [],
+        "created_by": 8,
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
+      },
+      {
+        "type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "id": 10,
+        "slug": "kamancheh-fusion-music-workshop",
+        "full_name": "کارگاه کمانچه و موسیقی تلفیقی با کیهان کلهر",
+        "short_name": "موسیقی تلفیقی",
+        "thumbnail_url": "fake-gallery.svg",
+        "difficulty_level": {
+          "value": "advanced",
+          "label": "پیشرفته"
+        },
+        "additional_info": null,
+        "properties": null,
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [
+          {
+            "id": 2,
+            "name": "هنر",
+            "slug": "art",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "placeholder.svg",
+            "icon_url": "icon.svg",
+            "educational_calendar_url": null,
+            "created_by": 1,
+            "created_at": "1404-07-23 11:06:14",
+            "updated_at": null
+          },
+          {
+            "id": 11,
+            "name": "موسیقی",
+            "slug": "music",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "placeholder.svg",
+            "icon_url": "icon.svg",
+            "educational_calendar_url": null,
+            "created_by": 1,
+            "created_at": "1404-07-23 11:06:14",
+            "updated_at": null
+          }
+        ],
+        "digital_assets": [],
+        "created_by": 10,
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
+      },
+      {
+        "type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "id": 11,
+        "slug": "sociology-of-religion",
+        "full_name": "تحلیل جامعه‌شناختی پدیده‌های دینی در ایران معاصر",
+        "short_name": "جامعه‌شناسی دین",
+        "thumbnail_url": "main.svg",
+        "difficulty_level": {
+          "value": "advanced",
+          "label": "پیشرفته"
+        },
+        "additional_info": null,
+        "properties": null,
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [],
+        "digital_assets": [],
+        "created_by": 1,
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
+      },
+      {
+        "type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "id": 12,
+        "slug": "history-of-art",
+        "full_name": "سیر تحول هنر نقاشی از رنسانس تا مدرنیسم",
+        "short_name": "تاریخ هنر",
+        "thumbnail_url": "main.svg",
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
+        },
+        "additional_info": null,
+        "properties": null,
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [
+          {
+            "id": 2,
+            "name": "هنر",
+            "slug": "art",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "placeholder.svg",
+            "icon_url": "icon.svg",
+            "educational_calendar_url": null,
+            "created_by": 1,
+            "created_at": "1404-07-23 11:06:14",
+            "updated_at": null
+          }
+        ],
+        "digital_assets": [],
+        "created_by": 2,
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
+      },
+      {
+        "type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "id": 13,
+        "slug": "spirituality-and-rationality",
+        "full_name": "کارگاه جستجوی معنا در زندگی مدرن",
+        "short_name": "معنویت و عقلانیت",
+        "thumbnail_url": "main.svg",
+        "difficulty_level": {
+          "value": "intermediate",
+          "label": "متوسط"
+        },
+        "additional_info": null,
+        "properties": null,
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [],
+        "digital_assets": [],
+        "created_by": 3,
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
+      },
+      {
+        "type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "id": 14,
+        "slug": "western-philosophy-intro",
+        "full_name": "آشنایی با فلاسفه بزرگ غرب: از سقراط تا نیچه",
+        "short_name": "فلسفه غرب",
+        "thumbnail_url": "main.svg",
+        "difficulty_level": {
+          "value": "beginner",
+          "label": "مبتدی"
+        },
+        "additional_info": null,
+        "properties": null,
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [],
+        "digital_assets": [],
+        "created_by": 4,
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
+      },
+      {
+        "type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "id": 15,
+        "slug": "modern-poetry-workshop",
+        "full_name": "کارگاه سرایش و نقد شعر نو",
+        "short_name": "شعر نو",
+        "thumbnail_url": "preview.svg",
+        "difficulty_level": {
+          "value": "intermediate",
+          "label": "متوسط"
+        },
+        "additional_info": null,
+        "properties": null,
+        "status": {
+          "value": "published",
+          "label": "منتشر شده"
+        },
+        "categories": [
+          {
+            "id": 2,
+            "name": "هنر",
+            "slug": "art",
+            "status": {
+              "value": "published",
+              "label": "منتشر شده"
+            },
+            "image_url": "placeholder.svg",
+            "icon_url": "icon.svg",
+            "educational_calendar_url": null,
+            "created_by": 1,
+            "created_at": "1404-07-23 11:06:14",
+            "updated_at": null
+          }
+        ],
+        "digital_assets": [],
+        "created_by": 5,
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
       }
     ],
     "first_page_url": "http://jedu.test/api/v1/admin/course?page=1",
     "from": 1,
-    "last_page": 7,
-    "last_page_url": "http://jedu.test/api/v1/admin/course?page=7",
+    "last_page": 2,
+    "last_page_url": "http://jedu.test/api/v1/admin/course?page=2",
     "links": [
       {
         "url": null,
         "label": "&laquo; قبلی",
+        "page": null,
         "active": false
       },
       {
         "url": "http://jedu.test/api/v1/admin/course?page=1",
         "label": "1",
+        "page": 1,
         "active": true
       },
       {
         "url": "http://jedu.test/api/v1/admin/course?page=2",
         "label": "2",
-        "active": false
-      },
-      {
-        "url": "http://jedu.test/api/v1/admin/course?page=3",
-        "label": "3",
-        "active": false
-      },
-      {
-        "url": "http://jedu.test/api/v1/admin/course?page=4",
-        "label": "4",
-        "active": false
-      },
-      {
-        "url": "http://jedu.test/api/v1/admin/course?page=5",
-        "label": "5",
-        "active": false
-      },
-      {
-        "url": "http://jedu.test/api/v1/admin/course?page=6",
-        "label": "6",
-        "active": false
-      },
-      {
-        "url": "http://jedu.test/api/v1/admin/course?page=7",
-        "label": "7",
+        "page": 2,
         "active": false
       },
       {
         "url": "http://jedu.test/api/v1/admin/course?page=2",
         "label": "بعدی &raquo;",
+        "page": 2,
         "active": false
       }
     ],
@@ -440,7 +649,7 @@
     "per_page": 15,
     "prev_page_url": null,
     "to": 15,
-    "total": 100
+    "total": 30
   },
   "metadata": []
 }

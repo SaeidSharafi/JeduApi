@@ -40,6 +40,8 @@ final class Course extends Model implements ProductableContract, ReviewableContr
             'curriculum_summary_text',
             'outcomes_json',
             'default_teacher_info',
+            'provides_certificate',
+            'faq',
             'additional_info',
             'meta_title',
             'meta_description',
@@ -73,6 +75,7 @@ final class Course extends Model implements ProductableContract, ReviewableContr
     protected function casts(): array
     {
         return [
+            'faq'                          => 'array',
             'status'                       => PublicationStatusEnum::class,
             'difficulty_level'             => CourseDifficultyLevelEnum::class,
             'outcomes_json'                => 'array',

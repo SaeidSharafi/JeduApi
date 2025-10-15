@@ -1,158 +1,80 @@
 {
-  "message": "Operation successful.",
+  "message": "عملیات با موفقیت انجام شد.",
   "data": {
-    "id": 1,
-    "slug": "ut-neque-est-fuga-et-tempore-id-minima",
-    "full_name": "ملل ثروت پارو",
-    "short_name": "ابزار",
-    "description": "خیابان اسکله نقاشی فرش سایت. ساعت ماکت گوشی دوربین شب ساختار کشاورز. لوازم برنامه آشیانه هتل فرش طبیعت برنامه ژاکت کشاورز. مهد جایزه فیلم عدالت عدد آخر تصویر.",
-    "duration": 32,
-    "difficulty_level": {
-      "value": "advanced",
-      "label": "پیشرفته"
+    "type": {
+      "value": "course",
+      "label": "دوره"
     },
-    "career_prospects_text": "دفترچه شن ملل خط میوه ثروت فرش نور. فرش باغ نان آخر ملت صندلی. کمک دفترچه تصویر قرص آرایش خودرو برق صف. جایزه دکان شهر دوربین اپلیکیشن نقاشی جایزه دریاچه.",
-    "curriculum_summary_text": "الماس شهر فیلم دایره هتل",
+    "id": 1,
+    "slug": "python-beginners",
+    "full_name": "دوره جامع پایتون از مقدماتی تا پیشرفته",
+    "short_name": "پایتون مقدماتی",
+    "description": "در این دوره، زبان برنامه‌نویسی پایتون را از صفر تا صد فرا خواهید گرفت و با مباحث کلیدی مانند متغیرها، حلقه‌ها، توابع و شی‌گرایی آشنا می‌شوید.",
+    "duration": 40,
+    "difficulty_level": {
+      "value": "beginner",
+      "label": "مبتدی"
+    },
+    "career_prospects_text": "پس از اتمام این دوره، می‌توانید به عنوان توسعه‌دهنده جونیور پایتون در شرکت‌های نرم‌افزاری مشغول به کار شوید.",
+    "curriculum_summary_text": "شامل مباحث مقدماتی، ساختارهای داده، برنامه‌نویسی شی‌گرا و کار با فایل‌ها.",
     "outcomes_json": {
-      "outcome1": [
-        "کشاورز صف دایره نان پل شیر.",
-        "لوازم ملک آشیانه الکتریک.",
-        "قلم جام برنامه آب دفترچه پوستر دارو پایه.",
-        "هنر دفتر دریا مشک چرخ.",
-        "ماکت پرنده صندوق گلیم خودرو."
-      ],
-      "outcome2": [
-        "ملک جنگل نان دریاچه روزنامه چای.",
-        "شهر چرخ ثروت ماکت ثروت قلم برنامه دامنه هتل.",
-        "کاغذ اتوبوس میز نقاشی عطر نوازش مهد.",
-        "مجله باغ مربع مهد قضا هنر دانه خط.",
-        "پول برق ملک نمک ساحل ملل آرایش مهد."
+      "outcomes": [
+        "توانایی کدنویسی روان با پایتون",
+        "درک مفاهیم پایه‌ای برنامه‌نویسی",
+        "توانایی حل مسائل الگوریتمی ساده"
       ]
     },
-    "default_teacher_info": "الکتریک محفل لباس اپلیکیشن میوه",
-    "additional_info": [],
-    "meta_title": "چای ابزار شب ساحل",
-    "meta_description": "دکان عدالت آخر آب برف دارو شهر آشیانه. نور رنگ غذا خیابان بدل کنترل شب جایزه خیابان. دریا میوه لوازم",
-    "meta_keywords": "سلول,علم,محفل",
-    "properties": [],
+    "default_teacher_info": "ارائه توسط دکتر مجید سمیعی",
+    "provides_certificate": false,
+    "faq": null,
+    "additional_info": null,
+    "meta_title": "دوره جامع آموزش پایتون مقدماتی",
+    "meta_description": "آموزش کامل پایتون از صفر برای مبتدیان. در این دوره جامع، مفاهیم پایه تا پیشرفته پایتون را به صورت عملی یاد بگیرید.",
+    "meta_keywords": "پایتون, آموزش پایتون, دوره پایتون, برنامه‌نویسی",
+    "properties": null,
     "status": {
-      "value": "draft",
-      "label": "پیش‌نویس"
+      "value": "published",
+      "label": "منتشر شده"
     },
     "categories": [
       {
-        "id": 100,
-        "name": "سلول",
-        "slug": "qui-distinctio-est-odio-aliquam-fugit",
+        "id": 1,
+        "name": "برنامه‌نویسی",
+        "slug": "programming",
         "status": {
           "value": "published",
           "label": "منتشر شده"
         },
-        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "image_url": "placeholder.svg",
+        "icon_url": "icon.svg",
+        "educational_calendar_url": null,
         "created_by": 1,
-        "created_at": "1404-03-08 10:43:25",
-        "updated_at": "1404-03-08 10:43:27"
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
       },
       {
-        "id": 99,
-        "name": "رنگ",
-        "slug": "voluptatem-ipsum-ut-molestiae-eligendi-magni",
+        "id": 5,
+        "name": "پایتون",
+        "slug": "python",
         "status": {
           "value": "published",
           "label": "منتشر شده"
         },
-        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "image_url": "placeholder.svg",
+        "icon_url": "icon.svg",
+        "educational_calendar_url": null,
         "created_by": 1,
-        "created_at": "1404-03-08 10:43:25",
-        "updated_at": "1404-03-08 10:43:27"
-      },
-      {
-        "id": 76,
-        "name": "بالش",
-        "slug": "reprehenderit-quis-ut-sapiente-voluptatem",
-        "status": {
-          "value": "published",
-          "label": "منتشر شده"
-        },
-        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-        "created_by": 1,
-        "created_at": "1404-03-08 10:43:25",
-        "updated_at": "1404-03-08 10:43:27"
+        "created_at": "1404-07-23 11:06:14",
+        "updated_at": null
       }
     ],
-    "digital_assets": [
-      {
-        "id": 100,
-        "short_name": "دیجیتال",
-        "slug": "quisquam-exercitationem-et-ratione-impedit-possimus-enim",
-        "is_attachable_to_course": true,
-        "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
-        },
-        "version": "molestias",
-        "published_at": "1350-07-25 14:33:47",
-        "created_by": 1,
-        "created_at": "1404-03-08 10:43:27",
-        "updated_at": "1404-03-08 10:43:27"
-      },
-      {
-        "id": 52,
-        "short_name": "ملک",
-        "slug": "pariatur-sapiente-voluptas-excepturi-voluptatem",
-        "is_attachable_to_course": true,
-        "status": {
-          "value": "draft",
-          "label": "پیش‌نویس"
-        },
-        "version": "soluta",
-        "published_at": "1377-04-25 05:17:56",
-        "created_by": 1,
-        "created_at": "1404-03-08 10:43:27",
-        "updated_at": "1404-03-08 10:43:27"
-      }
-    ],
+    "digital_assets": [],
     "media": {
-      "gallery": [
-        {
-          "id": 5,
-          "url": "http://jedu.test/storage/fake-media/fake-gallery.svg",
-          "size": 896,
-          "file_name": "fake-gallery",
-          "alt": "",
-          "mime_type": "image/svg+xml",
-          "extension": "svg",
-          "tag": "gallery"
-        }
-      ],
-      "video": [
-        {
-          "id": 2,
-          "url": "http://jedu.test/storage/fake-media/placeholder2.mp4",
-          "size": 9362122,
-          "file_name": "placeholder2",
-          "alt": "",
-          "mime_type": "video/mp4",
-          "extension": "mp4",
-          "tag": "video"
-        }
-      ],
-      "cover": [
-        {
-          "id": 4,
-          "url": "http://jedu.test/storage/fake-media/fake-cover.svg",
-          "size": 894,
-          "file_name": "fake-cover",
-          "alt": "",
-          "mime_type": "image/svg+xml",
-          "extension": "svg",
-          "tag": "cover"
-        }
-      ],
-      "certificate": []
+      "gallery": [],
+      "video": [],
+      "cover": [],
+      "certificate": [],
+      "main": []
     }
   },
   "metadata": []

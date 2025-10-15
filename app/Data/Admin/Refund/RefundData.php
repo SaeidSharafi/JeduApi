@@ -22,8 +22,8 @@ final class RefundData extends Data implements WalletTransactionSourceableDataCo
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public readonly RefundStatusEnum $status,
         public readonly ?string $admin_notes,
-        public Verta $created_at,
-        public Verta $updated_at,
+        public ?Verta $created_at,
+        public ?Verta $updated_at,
     ) {}
 
 }

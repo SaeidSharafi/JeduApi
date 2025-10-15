@@ -267,11 +267,17 @@ final class DemoSeeder extends Seeder
                 }
             }
             unset($value); // Good practice after a loop by reference.
-
+            if (Schema::hasColumn($table, 'created_at') && empty($item['created_at'])) {
+                $item['created_at'] = now();
+            }
+            if (Schema::hasColumn($table, 'created_by') && empty($item['created_by'])) {
+                $item['created_by'] = Staff::first()->id;
+            }
             return $item;
         })->all();
 
         if (!empty($preparedData)) {
+
             DB::table($table)->insert($preparedData);
         }
 
