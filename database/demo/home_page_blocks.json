@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "type": "webinar_banner",
+    "type": "WEBINAR_BANNER",
     "title": "وبینار ویژه: اکتشافات فضایی",
     "location": "hero",
     "content": {
@@ -17,7 +17,7 @@
   },
   {
     "id": 2,
-    "type": "banner",
+    "type": "BANNER",
     "title": "به آکادمی آنلاین ما خوش آمدید",
     "location": "hero",
     "content": {
@@ -35,7 +35,7 @@
   },
   {
     "id": 3,
-    "type": "curated_list",
+    "type": "CURATED_LIST",
     "title": "دوره‌های پیشنهادی برای شما",
     "location": "middle",
     "content": {
@@ -49,7 +49,7 @@
   },
   {
     "id": 4,
-    "type": "main_categories",
+    "type": "MAIN_CATEGORIES",
     "title": "دسته‌بندی‌های محبوب",
     "location": "middle",
     "content": {
@@ -63,7 +63,7 @@
   },
   {
     "id": 5,
-    "type": "dynamic_list",
+    "type": "DYNAMIC_LIST",
     "title": "جدیدترین دوره‌ها",
     "location": "middle",
     "content": {
@@ -80,7 +80,7 @@
   },
   {
     "id": 6,
-    "type": "dynamic_list",
+    "type": "DYNAMIC_LIST",
     "title": "پرفروش‌ترین محصولات",
     "location": "middle",
     "content": {
@@ -97,7 +97,7 @@
   },
   {
     "id": 7,
-    "type": "dynamic_list",
+    "type": "DYNAMIC_LIST",
     "title": "آخرین مقالات وبلاگ",
     "location": "middle",
     "content": {
@@ -114,7 +114,7 @@
   },
   {
     "id": 8,
-    "type": "banner",
+    "type": "BANNER",
     "title": "با اساتید برجسته ایران بیاموزید",
     "location": "full_width",
     "content": {

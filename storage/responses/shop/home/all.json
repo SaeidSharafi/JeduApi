@@ -1,0 +1,1125 @@
+{
+  "message": "This is a mock response showcasing various scenarios for the home page of an online academy. It includes different types of banners, curated lists, main categories, and dynamic lists with detailed product information. this is not a real response.",
+  "data": [
+    {
+      "id": 1,
+      "type": "WEBINAR_BANNER",
+      "title": "وبینار ویژه: اکتشافات فضایی",
+      "location": "hero",
+      "content": {
+        "image_url": "fake-cover.svg",
+        "text": "در این وبینار آنلاین و جذاب، با دکتر فیروز نادری به اعماق کیهان سفر کنید و با جدیدترین یافته‌های تلسکوپ جیمز وب آشنا شوید. فرصت را از دست ندهید.",
+        "product": {
+          "id": 7,
+          "slug": "space-exploration-seminar-summer-1404",
+          "name": "سمینار آنلاین اکتشافات فضایی - تابستان ۱۴۰۴",
+          "price": 750000,
+          "original_price": 750000,
+          "price_range": {
+            "min": 750000,
+            "max": 750000
+          },
+          "has_discount": false,
+          "discount_percent": null,
+          "is_free": false,
+          "is_featured": false,
+          "product_type": {
+            "value": "seminar",
+            "label": "سمینار"
+          },
+          "thumbnail_url": "fake-cover.svg",
+          "teacher_name": "",
+          "reviews_count": 0,
+          "average_rating": 0,
+          "start_date": null,
+          "end_date": null,
+          "location": null,
+          "registration_deadline": null,
+          "price_data": {
+            "min_price": 750000,
+            "min_original_price": 750000,
+            "has_featured_price": false,
+            "has_discount": false,
+            "has_pre_payment": false,
+            "discount_type": null,
+            "discount_percentage": null,
+            "highest_discount_amount": null,
+            "range": {
+              "min": 750000,
+              "max": 750000
+            },
+            "prices": [
+              {
+                "current_price": 750000,
+                "original_price": 750000,
+                "pre_payment_price": null,
+                "featured_price": null,
+                "discount_amount": null,
+                "has_pre_payment_price": false,
+                "has_featured_price": false,
+                "has_discount": false,
+                "discount_type": null,
+                "discount_percentage": null,
+                "range": null,
+                "uuid": "0aede19e-3378-426a-ac5b-f1c20c055d0f"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "BANNER",
+      "title": "به آکادمی آنلاین ما خوش آمدید",
+      "location": "hero",
+      "content": {
+        "image_url": "main.svg",
+        "action": "/",
+        "action_title": "مشاهده دوره‌ها",
+        "content": "مسیر یادگیری خود را با برترین دوره‌های آموزشی در حوزه‌های برنامه‌نویسی، هنر و کسب‌وکار آغاز کنید.",
+        "preset": "default"
+      }
+    },
+    {
+      "id": 3,
+      "type": "CURATED_LIST",
+      "title": "دوره‌های پیشنهادی برای شما",
+      "location": "middle",
+      "content": {
+        "items": [
+          {
+            "slug": "python-course-fall-1403",
+            "name": "دوره پایتون مقدماتی - پاییز ۱۴۰۳",
+            "price": 1200000,
+            "original_price": 1200000,
+            "price_range": {
+              "min": 1200000,
+              "max": 2500000
+            },
+            "has_discount": false,
+            "discount_percent": null,
+            "is_free": false,
+            "is_featured": true,
+            "provides_certificate": true,
+            "product_type": {
+              "value": "course",
+              "label": "دوره"
+            },
+            "thumbnail_url": "fake-cover.svg",
+            "teachers": [
+              "ارائه توسط دکتر مجید سمیعی"
+            ],
+            "reviews_count": 0,
+            "average_rating": 0,
+            "price_data": {
+              "min_price": 1200000,
+              "min_original_price": 1200000,
+              "has_featured_price": false,
+              "has_discount": false,
+              "has_pre_payment": true,
+              "discount_type": null,
+              "discount_percentage": null,
+              "highest_discount_amount": null,
+              "range": {
+                "min": 1200000,
+                "max": 2500000
+              },
+              "prices": [
+                {
+                  "current_price": 1200000,
+                  "original_price": 1200000,
+                  "pre_payment_price": 240000,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": true,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "edcdd184-cda3-4d71-9e78-2215e555bcfa"
+                },
+                {
+                  "current_price": 2500000,
+                  "original_price": 2500000,
+                  "pre_payment_price": 500000,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": true,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "b2733460-8a65-4d02-9261-7bc2f5319e1f"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "digital-marketing-course-spring-1404",
+            "name": "دوره بازاریابی دیجیتال - بهار ۱۴۰۴",
+            "price": 1500000,
+            "original_price": 1500000,
+            "price_range": {
+              "min": 1500000,
+              "max": 4000000
+            },
+            "has_discount": false,
+            "discount_percent": null,
+            "is_free": false,
+            "is_featured": true,
+            "provides_certificate": true,
+            "product_type": {
+              "value": "course",
+              "label": "دوره"
+            },
+            "thumbnail_url": "fake-cover.svg",
+            "teachers": [
+              "ارائه توسط دکتر عبدالکریم سروش"
+            ],
+            "reviews_count": 0,
+            "average_rating": 0,
+            "price_data": {
+              "min_price": 1500000,
+              "min_original_price": 1500000,
+              "has_featured_price": false,
+              "has_discount": false,
+              "has_pre_payment": true,
+              "discount_type": null,
+              "discount_percentage": null,
+              "highest_discount_amount": null,
+              "range": {
+                "min": 1500000,
+                "max": 4000000
+              },
+              "prices": [
+                {
+                  "current_price": 1500000,
+                  "original_price": 1500000,
+                  "pre_payment_price": 300000,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": true,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "847a4f38-e957-46d8-a64d-5efe515a7c2f"
+                },
+                {
+                  "current_price": 4000000,
+                  "original_price": 4000000,
+                  "pre_payment_price": 1000000,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": true,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "0b92d2fd-1c03-4c96-8fbe-567d08b35406"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "graphic-design-course-fall-1403",
+            "name": "دوره طراحی گرافیک - پاییز ۱۴۰۳",
+            "price": 1600000,
+            "original_price": 1600000,
+            "price_range": {
+              "min": 1600000,
+              "max": 3200000
+            },
+            "has_discount": false,
+            "discount_percent": null,
+            "is_free": false,
+            "is_featured": true,
+            "provides_certificate": true,
+            "product_type": {
+              "value": "course",
+              "label": "دوره"
+            },
+            "thumbnail_url": "fake-gallery.svg",
+            "teachers": [
+              "ارائه توسط استاد مرتضی ممیز"
+            ],
+            "reviews_count": 0,
+            "average_rating": 0,
+            "price_data": {
+              "min_price": 1600000,
+              "min_original_price": 1600000,
+              "has_featured_price": false,
+              "has_discount": false,
+              "has_pre_payment": true,
+              "discount_type": null,
+              "discount_percentage": null,
+              "highest_discount_amount": null,
+              "range": {
+                "min": 1600000,
+                "max": 3200000
+              },
+              "prices": [
+                {
+                  "current_price": 1600000,
+                  "original_price": 1600000,
+                  "pre_payment_price": null,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": false,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "8a04a422-bc1c-475d-81fa-bfc3fefee046"
+                },
+                {
+                  "current_price": 3200000,
+                  "original_price": 3200000,
+                  "pre_payment_price": 800000,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": true,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "c2a36c66-6de1-4da1-a3b5-0db01e5d8ae7"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "javascript-react-course-fall-1404",
+            "name": "دوره جاوااسکریپت و React - پاییز ۱۴۰۴",
+            "price": 2100000,
+            "original_price": 2100000,
+            "price_range": {
+              "min": 2100000,
+              "max": 4500000
+            },
+            "has_discount": false,
+            "discount_percent": null,
+            "is_free": false,
+            "is_featured": true,
+            "provides_certificate": true,
+            "product_type": {
+              "value": "course",
+              "label": "دوره"
+            },
+            "thumbnail_url": "preview.svg",
+            "teachers": [
+              "ارائه توسط دکتر مجید سمیعی"
+            ],
+            "reviews_count": 0,
+            "average_rating": 0,
+            "price_data": {
+              "min_price": 2100000,
+              "min_original_price": 2100000,
+              "has_featured_price": false,
+              "has_discount": false,
+              "has_pre_payment": true,
+              "discount_type": null,
+              "discount_percentage": null,
+              "highest_discount_amount": null,
+              "range": {
+                "min": 2100000,
+                "max": 4500000
+              },
+              "prices": [
+                {
+                  "current_price": 2100000,
+                  "original_price": 2100000,
+                  "pre_payment_price": 420000,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": true,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "a8773e01-b0ce-48fe-9b55-9b68cccaa457"
+                },
+                {
+                  "current_price": 4500000,
+                  "original_price": 4500000,
+                  "pre_payment_price": 1200000,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": true,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "31bb0377-ddee-4d5a-ac15-cc4e0af2621a"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "responsive-web-design-course-spring-1404",
+            "name": "دوره طراحی وب ریسپانسیو - بهار ۱۴۰۴",
+            "price": 1250000,
+            "original_price": 1250000,
+            "price_range": {
+              "min": 1250000,
+              "max": 1250000
+            },
+            "has_discount": false,
+            "discount_percent": null,
+            "is_free": false,
+            "is_featured": true,
+            "provides_certificate": true,
+            "product_type": {
+              "value": "course",
+              "label": "دوره"
+            },
+            "thumbnail_url": "preview.svg",
+            "teachers": [
+              "ارائه توسط دکتر مجید سمیعی"
+            ],
+            "reviews_count": 0,
+            "average_rating": 0,
+            "price_data": {
+              "min_price": 1250000,
+              "min_original_price": 1250000,
+              "has_featured_price": false,
+              "has_discount": false,
+              "has_pre_payment": true,
+              "discount_type": null,
+              "discount_percentage": null,
+              "highest_discount_amount": null,
+              "range": {
+                "min": 1250000,
+                "max": 1250000
+              },
+              "prices": [
+                {
+                  "current_price": 1250000,
+                  "original_price": 1250000,
+                  "pre_payment_price": 250000,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": true,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "2eb697ef-4b2c-47c4-b9ba-d16ee3a0df27"
+                }
+              ]
+            }
+          }
+        ],
+        "preset": "default"
+      }
+    },
+    {
+      "id": 4,
+      "type": "MAIN_CATEGORIES",
+      "title": "دسته‌بندی‌های محبوب",
+      "location": "middle",
+      "content": {
+        "items": [
+          {
+            "name": "برنامه‌نویسی",
+            "slug": "programming",
+            "icon_url": "icon.svg",
+            "image_url": "placeholder.svg",
+            "products_count": null
+          },
+          {
+            "name": "هنر",
+            "slug": "art",
+            "icon_url": "icon.svg",
+            "image_url": "placeholder.svg",
+            "products_count": null
+          },
+          {
+            "name": "کسب و کار",
+            "slug": "business",
+            "icon_url": "icon.svg",
+            "image_url": "placeholder.svg",
+            "products_count": null
+          },
+          {
+            "name": "زبان‌های خارجی",
+            "slug": "foreign-languages",
+            "icon_url": "icon.svg",
+            "image_url": "placeholder.svg",
+            "products_count": null
+          }
+        ],
+        "preset": "default"
+      }
+    },
+    {
+      "id": 5,
+      "type": "DYNAMIC_LIST",
+      "title": "جدیدترین دوره‌ها",
+      "location": "middle",
+      "content": {
+        "preset": "default",
+        "items": [
+          {
+            "slug": "film-scoring-workshop-summer-1404",
+            "name": "کارگاه آهنگسازی برای فیلم - تابستان ۱۴۰۴",
+            "price": 2900000,
+            "original_price": 2900000,
+            "price_range": {
+              "min": 2900000,
+              "max": 2900000
+            },
+            "has_discount": false,
+            "discount_percent": null,
+            "is_free": false,
+            "is_featured": false,
+            "provides_certificate": true,
+            "product_type": {
+              "value": "course",
+              "label": "دوره"
+            },
+            "thumbnail_url": "preview.svg",
+            "teachers": [
+              "ارائه توسط استاد حسین علیزاده"
+            ],
+            "reviews_count": 0,
+            "average_rating": 0,
+            "price_data": {
+              "min_price": 2900000,
+              "min_original_price": 2900000,
+              "has_featured_price": false,
+              "has_discount": false,
+              "has_pre_payment": true,
+              "discount_type": null,
+              "discount_percentage": null,
+              "highest_discount_amount": null,
+              "range": {
+                "min": 2900000,
+                "max": 2900000
+              },
+              "prices": [
+                {
+                  "current_price": 2900000,
+                  "original_price": 2900000,
+                  "pre_payment_price": 800000,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": true,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "712581a7-5566-4e05-a57c-5653f794e335"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "responsive-web-design-course-spring-1404",
+            "name": "دوره طراحی وب ریسپانسیو - بهار ۱۴۰۴",
+            "price": 1250000,
+            "original_price": 1250000,
+            "price_range": {
+              "min": 1250000,
+              "max": 1250000
+            },
+            "has_discount": false,
+            "discount_percent": null,
+            "is_free": false,
+            "is_featured": true,
+            "provides_certificate": true,
+            "product_type": {
+              "value": "course",
+              "label": "دوره"
+            },
+            "thumbnail_url": "preview.svg",
+            "teachers": [
+              "ارائه توسط دکتر مجید سمیعی"
+            ],
+            "reviews_count": 0,
+            "average_rating": 0,
+            "price_data": {
+              "min_price": 1250000,
+              "min_original_price": 1250000,
+              "has_featured_price": false,
+              "has_discount": false,
+              "has_pre_payment": true,
+              "discount_type": null,
+              "discount_percentage": null,
+              "highest_discount_amount": null,
+              "range": {
+                "min": 1250000,
+                "max": 1250000
+              },
+              "prices": [
+                {
+                  "current_price": 1250000,
+                  "original_price": 1250000,
+                  "pre_payment_price": 250000,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": true,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "2eb697ef-4b2c-47c4-b9ba-d16ee3a0df27"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "maqami-singing-workshop-winter-1403",
+            "name": "کارگاه آواز مقامی - زمستان ۱۴۰۳",
+            "price": 3200000,
+            "original_price": 3200000,
+            "price_range": {
+              "min": 3200000,
+              "max": 3200000
+            },
+            "has_discount": false,
+            "discount_percent": null,
+            "is_free": false,
+            "is_featured": true,
+            "provides_certificate": true,
+            "product_type": {
+              "value": "course",
+              "label": "دوره"
+            },
+            "thumbnail_url": "main.svg",
+            "teachers": [
+              "ارائه توسط استاد شهرام ناظری"
+            ],
+            "reviews_count": 0,
+            "average_rating": 0,
+            "price_data": {
+              "min_price": 3200000,
+              "min_original_price": 3200000,
+              "has_featured_price": false,
+              "has_discount": false,
+              "has_pre_payment": true,
+              "discount_type": null,
+              "discount_percentage": null,
+              "highest_discount_amount": null,
+              "range": {
+                "min": 3200000,
+                "max": 3200000
+              },
+              "prices": [
+                {
+                  "current_price": 3200000,
+                  "original_price": 3200000,
+                  "pre_payment_price": 800000,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": true,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "34be9893-8d8d-43da-afe4-b0f940140977"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "islamic-jurisprudence-course-fall-1403",
+            "name": "درس‌گفتارهای فقه و حقوق - پاییز ۱۴۰۳",
+            "price": 1150000,
+            "original_price": 1150000,
+            "price_range": {
+              "min": 1150000,
+              "max": 1150000
+            },
+            "has_discount": false,
+            "discount_percent": null,
+            "is_free": false,
+            "is_featured": false,
+            "provides_certificate": true,
+            "product_type": {
+              "value": "course",
+              "label": "دوره"
+            },
+            "thumbnail_url": "main.svg",
+            "teachers": [
+              "ارائه توسط دکتر محسن کدیور"
+            ],
+            "reviews_count": 0,
+            "average_rating": 0,
+            "price_data": {
+              "min_price": 1150000,
+              "min_original_price": 1150000,
+              "has_featured_price": false,
+              "has_discount": false,
+              "has_pre_payment": true,
+              "discount_type": null,
+              "discount_percentage": null,
+              "highest_discount_amount": null,
+              "range": {
+                "min": 1150000,
+                "max": 1150000
+              },
+              "prices": [
+                {
+                  "current_price": 1150000,
+                  "original_price": 1150000,
+                  "pre_payment_price": 230000,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": true,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "3a80d160-4c8d-4e92-936c-71b3b2ab9d4a"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "playwriting-workshop-winter-1404",
+            "name": "کارگاه نمایشنامه‌نویسی - زمستان ۱۴۰۴",
+            "price": 2700000,
+            "original_price": 2700000,
+            "price_range": {
+              "min": 2700000,
+              "max": 2700000
+            },
+            "has_discount": false,
+            "discount_percent": null,
+            "is_free": false,
+            "is_featured": false,
+            "provides_certificate": true,
+            "product_type": {
+              "value": "course",
+              "label": "دوره"
+            },
+            "thumbnail_url": "fake-gallery.svg",
+            "teachers": [
+              "ارائه توسط استاد بهرام بیضایی"
+            ],
+            "reviews_count": 0,
+            "average_rating": 0,
+            "price_data": {
+              "min_price": 2700000,
+              "min_original_price": 2700000,
+              "has_featured_price": false,
+              "has_discount": false,
+              "has_pre_payment": true,
+              "discount_type": null,
+              "discount_percentage": null,
+              "highest_discount_amount": null,
+              "range": {
+                "min": 2700000,
+                "max": 2700000
+              },
+              "prices": [
+                {
+                  "current_price": 2700000,
+                  "original_price": 2700000,
+                  "pre_payment_price": 700000,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": true,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "b987c050-a099-4fdd-85d3-7b65b8c52e3f"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "type": "DYNAMIC_LIST",
+      "title": "پرفروش‌ترین محصولات",
+      "location": "middle",
+      "content": {
+        "preset": "default",
+        "items": [
+          {
+            "slug": "cinema-directing-workshop-winter-1403",
+            "name": "کارگاه کارگردانی سینما - زمستان ۱۴۰۳",
+            "price": 1800000,
+            "original_price": 1800000,
+            "price_range": {
+              "min": 1800000,
+              "max": 1800000
+            },
+            "has_discount": false,
+            "discount_percent": null,
+            "is_free": false,
+            "is_featured": true,
+            "provides_certificate": true,
+            "product_type": {
+              "value": "course",
+              "label": "دوره"
+            },
+            "thumbnail_url": "fake-cover.svg",
+            "teachers": [
+              "ارائه توسط استاد عباس کیارستمی"
+            ],
+            "reviews_count": 0,
+            "average_rating": 0,
+            "price_data": {
+              "min_price": 1800000,
+              "min_original_price": 1800000,
+              "has_featured_price": false,
+              "has_discount": false,
+              "has_pre_payment": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "highest_discount_amount": null,
+              "range": {
+                "min": 1800000,
+                "max": 1800000
+              },
+              "prices": [
+                {
+                  "current_price": 1800000,
+                  "original_price": 1800000,
+                  "pre_payment_price": null,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": false,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "4650b21a-2bb3-42e0-b164-d9c0316bdf31"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "miniature-painting-course-summer-1403",
+            "name": "دوره نقاشی مینیاتور - تابستان ۱۴۰۳",
+            "price": 950000,
+            "original_price": 950000,
+            "price_range": {
+              "min": 950000,
+              "max": 950000
+            },
+            "has_discount": false,
+            "discount_percent": null,
+            "is_free": false,
+            "is_featured": false,
+            "provides_certificate": true,
+            "product_type": {
+              "value": "course",
+              "label": "دوره"
+            },
+            "thumbnail_url": "fake-cover.svg",
+            "teachers": [
+              "ارائه توسط استاد محمود فرشچیان"
+            ],
+            "reviews_count": 0,
+            "average_rating": 0,
+            "price_data": {
+              "min_price": 950000,
+              "min_original_price": 950000,
+              "has_featured_price": false,
+              "has_discount": false,
+              "has_pre_payment": true,
+              "discount_type": null,
+              "discount_percentage": null,
+              "highest_discount_amount": null,
+              "range": {
+                "min": 950000,
+                "max": 950000
+              },
+              "prices": [
+                {
+                  "current_price": 950000,
+                  "original_price": 950000,
+                  "pre_payment_price": 190000,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": true,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "2ce55aaf-3853-492f-843c-564c2841fd74"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "ai-webinar-fall-1403",
+            "name": "وبینار هوش مصنوعی - پاییز ۱۴۰۳",
+            "price": 500000,
+            "original_price": 500000,
+            "price_range": {
+              "min": 500000,
+              "max": 500000
+            },
+            "has_discount": false,
+            "discount_percent": null,
+            "is_free": false,
+            "is_featured": true,
+            "provides_certificate": true,
+            "product_type": {
+              "value": "seminar",
+              "label": "سمینار"
+            },
+            "thumbnail_url": "fake-cover.svg",
+            "teachers": [],
+            "reviews_count": 0,
+            "average_rating": 0,
+            "price_data": {
+              "min_price": 500000,
+              "min_original_price": 500000,
+              "has_featured_price": false,
+              "has_discount": false,
+              "has_pre_payment": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "highest_discount_amount": null,
+              "range": {
+                "min": 500000,
+                "max": 500000
+              },
+              "prices": [
+                {
+                  "current_price": 500000,
+                  "original_price": 500000,
+                  "pre_payment_price": null,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": false,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "d612229c-925e-42af-9c6c-269aa0813cec"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "php-design-patterns-book",
+            "name": "کتاب الگوهای طراحی در PHP",
+            "price": 150000,
+            "original_price": 150000,
+            "price_range": {
+              "min": 150000,
+              "max": 150000
+            },
+            "has_discount": false,
+            "discount_percent": null,
+            "is_free": false,
+            "is_featured": true,
+            "provides_certificate": false,
+            "product_type": {
+              "value": "digital_asset",
+              "label": "فایل"
+            },
+            "thumbnail_url": "main.svg",
+            "teachers": [],
+            "reviews_count": 0,
+            "average_rating": 0,
+            "price_data": {
+              "min_price": 150000,
+              "min_original_price": 150000,
+              "has_featured_price": false,
+              "has_discount": false,
+              "has_pre_payment": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "highest_discount_amount": null,
+              "range": {
+                "min": 150000,
+                "max": 150000
+              },
+              "prices": [
+                {
+                  "current_price": 150000,
+                  "original_price": 150000,
+                  "pre_payment_price": null,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": false,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "7b4f05cd-d728-41d3-bafe-f64e1bcfc8c9"
+                }
+              ]
+            }
+          },
+          {
+            "slug": "python-course-fall-1403",
+            "name": "دوره پایتون مقدماتی - پاییز ۱۴۰۳",
+            "price": 1200000,
+            "original_price": 1200000,
+            "price_range": {
+              "min": 1200000,
+              "max": 2500000
+            },
+            "has_discount": false,
+            "discount_percent": null,
+            "is_free": false,
+            "is_featured": true,
+            "provides_certificate": true,
+            "product_type": {
+              "value": "course",
+              "label": "دوره"
+            },
+            "thumbnail_url": "fake-cover.svg",
+            "teachers": [
+              "ارائه توسط دکتر مجید سمیعی"
+            ],
+            "reviews_count": 0,
+            "average_rating": 0,
+            "price_data": {
+              "min_price": 1200000,
+              "min_original_price": 1200000,
+              "has_featured_price": false,
+              "has_discount": false,
+              "has_pre_payment": true,
+              "discount_type": null,
+              "discount_percentage": null,
+              "highest_discount_amount": null,
+              "range": {
+                "min": 1200000,
+                "max": 2500000
+              },
+              "prices": [
+                {
+                  "current_price": 1200000,
+                  "original_price": 1200000,
+                  "pre_payment_price": 240000,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": true,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "edcdd184-cda3-4d71-9e78-2215e555bcfa"
+                },
+                {
+                  "current_price": 2500000,
+                  "original_price": 2500000,
+                  "pre_payment_price": 500000,
+                  "featured_price": null,
+                  "discount_amount": null,
+                  "has_pre_payment_price": true,
+                  "has_featured_price": false,
+                  "has_discount": false,
+                  "discount_type": null,
+                  "discount_percentage": null,
+                  "range": null,
+                  "uuid": "b2733460-8a65-4d02-9261-7bc2f5319e1f"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "type": "DYNAMIC_LIST",
+      "title": "آخرین مقالات وبلاگ",
+      "location": "middle",
+      "content": {
+        "preset": "default",
+        "items": [
+          {
+            "title": "چگونه یک رزومه تاثیرگذار برای اپلای تحصیلی بنویسیم؟",
+            "slug": "how-to-write-an-impactful-resume-for-university-application",
+            "excerpt": "رزومه شما یکی از مهم‌ترین مدارک در فرآیند اپلای است. یاد بگیرید چگونه یک رزومه آکادمیک قوی و حرفه‌ای آماده کنید تا شانس پذیرش خود را بالا ببرید.",
+            "body": "رزومه (CV) شما، اولین و یکی از مهم‌ترین مدارک در فرآیند اپلای تحصیلی است. این سند باید بتواند توانایی‌های آکادمیک و پژوهشی شما را به بهترین شکل به کمیته پذیرش نشان دهد. یاد بگیرید چگونه یک رزومه آکادمیک قوی، ساختارمند و حرفه‌ای آماده کنید.",
+            "author": {
+              "name": "احمد کریمی"
+            },
+            "reviews_count": 0,
+            "average_rating": 0,
+            "published_at": "1404-01-30 11:20:00",
+            "thumbnail_url": "preview.svg"
+          },
+          {
+            "title": "مصاحبه با آیدین آغداشلو: هنر در دنیای مدرن",
+            "slug": "interview-with-aydin-aghdashloo-art-in-the-modern-world",
+            "excerpt": "در گفتگویی جذاب با استاد آیدین آغداشلو، از نگاه او به هنر معاصر، چالش‌های هنرمندان جوان و جایگاه هنر ایران در جهان پرسیدیم.",
+            "body": "استاد آیدین آغداشلو، نقاش و منتقد هنری برجسته، در این گفتگو از نگاه خود به هنر معاصر، چالش‌های هنرمندان جوان در ایران، و جایگاه هنر ایران در عرصه بین‌المللی می‌گوید. او همچنین به تحلیل تاثیر تکنولوژی بر خلق و دریافت اثر هنری پرداخت.",
+            "author": {
+              "name": "مریم رضایی"
+            },
+            "reviews_count": 0,
+            "average_rating": 0,
+            "published_at": "1404-01-29 15:00:00",
+            "thumbnail_url": "preview.svg"
+          },
+          {
+            "title": "اولین دوره مسابقات برنامه‌نویسی دانشجویی (ACM) در دانشگاه شریف",
+            "slug": "first-acm-programming-contest-at-sharif-university",
+            "excerpt": "ثبت‌نام اولین دوره مسابقات برنامه‌نویسی دانشجویی (ACM) در دانشگاه شریف آغاز شد. به تیم‌های برتر جوایز ارزنده‌ای اهدا خواهد شد.",
+            "body": "دانشکده کامپیوتر دانشگاه صنعتی شریف اعلام کرد که ثبت‌نام برای شرکت در اولین دوره مسابقات برنامه‌نویسی دانشجویی (مدل ACM) آغاز شده است. این مسابقات در دو مرحله آنلاین و حضوری برگزار می‌شود و به تیم‌های برتر جوایز ارزنده‌ای اهدا خواهد شد.",
+            "author": {
+              "name": "سعید شرفی"
+            },
+            "reviews_count": 0,
+            "average_rating": 0,
+            "published_at": "1404-01-28 10:45:00",
+            "thumbnail_url": "main.svg"
+          },
+          {
+            "title": "معرفی دوره: کارگاه شعر و عرفان با دکتر الهی قمشه‌ای",
+            "slug": "course-intro-poetry-and-mysticism-with-dr-ghomshei",
+            "excerpt": "در کارگاه آنلاین «شعر و عرفان» با دکتر الهی قمشه‌ای، به دنیای معنوی حافظ و مولانا سفر کنید. ثبت‌نام دوره جدید آغاز شد.",
+            "body": "سفری به دنیای معنوی و ادبی حافظ، مولانا و عطار در کارگاه جدید و آنلاین «شعر و عرفان» با تدریس دکتر حسین الهی قمشه‌ای. این فرصت بی‌نظیر برای درک عمیق‌تر ادبیات عرفانی ایران را از دست ندهید. ثبت‌نام برای دوره جدید آغاز شده است.",
+            "author": {
+              "name": "مهدی شریفی"
+            },
+            "reviews_count": 0,
+            "average_rating": 0,
+            "published_at": "1404-01-27 17:00:00",
+            "thumbnail_url": "main.svg"
+          }
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "type": "BANNER",
+      "title": "با اساتید برجسته ایران بیاموزید",
+      "location": "full_width",
+      "content": {
+        "image_url": "fake-gallery.svg",
+        "action": "/teachers",
+        "action_title": "مشاهده لیست اساتید",
+        "content": "مجموعه‌ای از برترین اساتید و متخصصان کشور، تجربیات خود را با شما به اشتراک می‌گذارند.",
+        "preset": "default"
+      }
+    }
+  ],
+  "metadata": []
+}
