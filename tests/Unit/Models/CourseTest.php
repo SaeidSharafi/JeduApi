@@ -22,6 +22,8 @@ test('to array', function (): void {
             'curriculum_summary_text'      => $course->curriculum_summary_text,
             'outcomes_json'                => $course->outcomes_json,
             'default_teacher_info'         => $course->default_teacher_info,
+            'provides_certificate'         => $course->provides_certificate,
+            'faq'                          => $course->faq,
             'additional_info'              => $course->additional_info,
             'meta_title'                   => $course->meta_title,
             'meta_description'             => $course->meta_description,

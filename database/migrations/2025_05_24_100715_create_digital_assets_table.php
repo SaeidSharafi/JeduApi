@@ -26,8 +26,10 @@ return new class extends Migration
             $table->unsignedInteger('page_count')->nullable()->comment('For documents like PDFs');
             $table->unsignedInteger('duration_seconds')->nullable()->comment('For audio/video file types');
             $table->boolean('is_attachable_to_course')->default(false);
-            $table->string('difficulty_level')->nullable();
+            $table->string('difficulty_level')->default('beginner');
             $table->string('status')->index()->default(App\Enums\Content\PublicationStatusEnum::DRAFT->value);
+            $table->boolean('provides_certificate')->default(false);
+            $table->json('faq')->nullable(); // Frequently Asked Questions
             $table->text('keywords')->nullable()->comment('Comma-separated keywords');
             $this->addMetaTagColumns($table);
             $table->timestamp('published_at')->nullable();

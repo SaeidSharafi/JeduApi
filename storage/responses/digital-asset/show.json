@@ -1,72 +1,61 @@
 {
-  "message": "Operation successful.",
+  "message": "عملیات با موفقیت انجام شد.",
   "data": {
-    "id": 11,
-    "short_name": "صوت",
-    "full_name": "قفل صوت",
-    "slug": "sint-inventore-quasi-facilis-consequuntur",
-    "description": "پل ژاکت نمک شیر بالین پارو.",
-    "version": "qui",
+    "type": {
+      "value": "digital_asset",
+      "label": "فایل"
+    },
+    "id": 1,
+    "short_name": "کتاب الگوهای طراحی",
+    "full_name": "کتاب جامع الکترونیکی الگوهای طراحی در PHP",
+    "slug": "php-design-patterns-ebook",
+    "description": "مرجعی کامل برای یادگیری الگوهای طراحی (Design Patterns) و پیاده‌سازی آن‌ها در زبان برنامه‌نویسی PHP.",
+    "version": "1.2.0",
     "is_attachable_to_course": true,
-    "difficulty_level":  {
-      "value":  "beginner",
-      "label":  "مبتدی"
+    "difficulty_level": {
+      "value": "beginner",
+      "label": "مبتدی"
     },
     "status": {
-      "value": "draft",
-      "label": "پیش‌نویس"
+      "value": "published",
+      "label": "منتشر شده"
     },
-    "created_by": 1,
-    "keywords": "دانه,ملل,چای",
-    "meta_title": "کنترل لوازم مدرسه دفترچه",
-    "meta_description": "صوت دامنه موج ساختار سلول. دکان شن مجله مجله. صف نوازش کامپیوتر جایزه بلیط دریا هنر. چرخ عدد صندلی ب",
-    "meta_keywords": "دریاچه,بدل,قضا",
-    "published_at": "1401-08-19 16:45:56",
-    "page_count": 30,
-    "duration_seconds": 1500,
-    "created_at": "1404-03-08 08:51:09",
-    "updated_at": "1404-03-08 08:51:09",
+    "faq": null,
+    "created_by": 3,
+    "keywords": "PHP,الگوهای طراحی,برنامه‌نویسی",
+    "meta_title": "کتاب جامع الگوهای طراحی در PHP",
+    "meta_description": "با مطالعه این کتاب، با انواع الگوهای طراحی در PHP آشنا شده و کیفیت کدنویسی خود را به سطح بالاتری ببرید.",
+    "meta_keywords": "PHP,Design Patterns,OOP",
+    "published_at": "1403-06-25 10:00:00",
+    "page_count": 85,
+    "duration_seconds": null,
+    "created_at": "1404-07-23 11:10:20",
+    "updated_at": null,
     "categories": [
       {
-        "id": 87,
-        "name": "ابزار",
-        "slug": "corporis-non-et-sunt-voluptas",
+        "id": 7,
+        "name": "PHP",
+        "slug": "php",
         "status": {
           "value": "published",
           "label": "منتشر شده"
         },
-        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+        "image_url": "placeholder.svg",
+        "icon_url": "icon.svg",
+        "educational_calendar_url": null,
         "created_by": 1,
-        "created_at": "1404-03-08 08:51:08",
-        "updated_at": "1404-03-08 08:51:09"
+        "created_at": "1404-07-23 11:10:19",
+        "updated_at": null
       }
     ],
     "attachments": {
-      "main": [
-        {
-          "id": 8,
-          "url": "https://jedu.test/api/v1/admin/private-file/8/download",
-          "size": 809,
-          "file_name": "main",
-          "alt": "",
-          "mime_type": "image/svg+xml",
-          "extension": "svg",
-          "tag": "main"
-        }
-      ],
-      "preview": [
-        {
-          "id": 9,
-          "url": "https://jedu.test/api/v1/admin/private-file/9/download",
-          "size": 809,
-          "file_name": "preview",
-          "alt": "",
-          "mime_type": "image/svg+xml",
-          "extension": "svg",
-          "tag": "preview"
-        }
-      ]
+      "main": [],
+      "preview": []
+    },
+    "media": {
+      "gallery": [],
+      "video": [],
+      "cover": []
     }
   },
   "metadata": []

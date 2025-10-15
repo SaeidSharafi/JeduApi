@@ -19,6 +19,8 @@ test('to array', function (): void {
             'page_count'              => $digitalAsset->page_count,
             'duration_seconds'        => $digitalAsset->duration_seconds,
             'keywords'                => $digitalAsset->keywords,
+            'provides_certificate'    => $digitalAsset->provides_certificate,
+            'faq'                     => $digitalAsset->faq,
             'meta_title'              => $digitalAsset->meta_title,
             'meta_description'        => $digitalAsset->meta_description,
             'meta_keywords'           => $digitalAsset->meta_keywords,
@@ -37,7 +39,7 @@ test('to array', function (): void {
 
 test('relation categories', function (): void {
     $digitalAsset = App\Models\DigitalAsset::factory()->create();
-    $category     = App\Models\Category::factory()->create();
+    $category = App\Models\Category::factory()->create();
     $digitalAsset->categories()->attach($category->id);
 
     expect($digitalAsset->categories)
@@ -56,7 +58,7 @@ test('relation categories', function (): void {
 
 test('relation courses', function (): void {
     $digitalAsset = App\Models\DigitalAsset::factory()->create();
-    $course       = App\Models\Course::factory()->create();
+    $course = App\Models\Course::factory()->create();
     $digitalAsset->courses()->attach($course->id);
 
     expect($digitalAsset->courses)
@@ -75,8 +77,8 @@ test('relation courses', function (): void {
 
 test('with reviews', function (): void {
     $digitalAsset = App\Models\DigitalAsset::factory()->create();
-    $user1        = App\Models\User::factory()->create();
-    $user2        = App\Models\User::factory()->create();
+    $user1 = App\Models\User::factory()->create();
+    $user2 = App\Models\User::factory()->create();
 
     $review1 = App\Models\Review::factory()->create([
         'user_id'         => $user1->id,

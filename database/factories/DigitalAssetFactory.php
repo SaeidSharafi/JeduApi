@@ -36,6 +36,10 @@ final class DigitalAssetFactory extends Factory
             'is_attachable_to_course' => true,
             'difficulty_level'         => $this->faker->randomElement(['beginner', 'intermediate', 'advanced']),
             'status'                  => PublicationStatusEnum::PUBLISHED,
+            'faq'                      => [
+                ['question' => $this->faker->sentence(), 'answer' => $this->faker->paragraph()],
+                ['question' => $this->faker->sentence(), 'answer' => $this->faker->paragraph()],
+            ],
             'keywords'                => implode(',', $this->faker->persianWords(3)),
             'meta_title'              => mb_trim(Str::take($this->faker->persianWords(4, true), 70)),
             'meta_description'        => mb_trim(Str::take($this->faker->persianParagraph(20, false), 100)),

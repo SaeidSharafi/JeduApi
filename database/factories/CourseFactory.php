@@ -41,6 +41,11 @@ final class CourseFactory extends Factory
                 'outcome2' => $this->faker->persianSentences(5),
             ],
             'default_teacher_info' => $this->faker->persianWords(5, true),
+            'provides_certificate'     => $this->faker->boolean(),
+            'faq'                      => [
+                ['question' => $this->faker->sentence(), 'answer' => $this->faker->paragraph()],
+                ['question' => $this->faker->sentence(), 'answer' => $this->faker->paragraph()],
+            ],
             'additional_info'      => [],
             'meta_title'           => mb_trim(Str::take($this->faker->persianWords(4, true), 70)),
             'meta_description'     => mb_trim(Str::take($this->faker->persianParagraph(20, false), 100)),

@@ -38,6 +38,8 @@ final class ShowCourseData extends Data implements ProductableDataContract, Revi
         public ?string $curriculum_summary_text,
         public ?array $outcomes_json,
         public ?string $default_teacher_info,
+        public bool $provides_certificate,
+        public ?array $faq,
         public ?array $additional_info,
         public ?string $meta_title,
         public ?string $meta_description,

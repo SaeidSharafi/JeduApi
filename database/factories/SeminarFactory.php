@@ -27,14 +27,15 @@ final class SeminarFactory extends Factory
     public function definition(): array
     {
         return [
-            'full_name'               => $this->faker->sentence(3),
-            'short_name'              => $this->faker->sentence(2),
-            'subtitle'                => $this->faker->sentence(6),
-            'slug'                    => $this->faker->slug(),
-            'description'             => $this->faker->paragraph(),
-            'thumbnail_url'           => 'https://placehold.co/300x200.png?text='.urlencode($this->faker->persianWord()),
-            'curriculum_summary_text' => $this->faker->paragraph(),
-            'outcomes_json'           => [
+            'full_name'                => $this->faker->sentence(3),
+            'short_name'               => $this->faker->sentence(2),
+            'subtitle'                 => $this->faker->sentence(6),
+            'slug'                     => $this->faker->slug(),
+            'description'              => $this->faker->paragraph(),
+            'thumbnail_url'            => 'https://placehold.co/300x200.png?text='
+                .urlencode($this->faker->persianWord()),
+            'curriculum_summary_text'  => $this->faker->paragraph(),
+            'outcomes_json'            => [
                 'outcome1' => $this->faker->persianSentences(5),
                 'outcome2' => $this->faker->persianSentences(5),
             ],
@@ -42,18 +43,18 @@ final class SeminarFactory extends Factory
             'prerequisites'            => $this->faker->paragraph(),
             'promo_video_external_url' => $this->faker->url(),
             'estimated_duration_desc'  => $this->faker->sentence(4),
-            'difficulty_level'                    => $this->faker->randomElement(CourseDifficultyLevelEnum::getAllValues()),
+            'difficulty_level'         => $this->faker->randomElement(CourseDifficultyLevelEnum::getAllValues()),
             'provides_certificate'     => $this->faker->boolean(),
             'faq'                      => [
                 ['question' => $this->faker->sentence(), 'answer' => $this->faker->paragraph()],
                 ['question' => $this->faker->sentence(), 'answer' => $this->faker->paragraph()],
             ],
-            'keywords'         => implode(',', $this->faker->words(5)),
-            'status'           => PublicationStatusEnum::PUBLISHED,
-            'created_by'       => Staff::factory(),
-            'meta_title'       => mb_trim(Str::take($this->faker->persianWords(4, true), 70)),
-            'meta_description' => mb_trim(Str::take($this->faker->persianParagraph(20, false), 100)),
-            'meta_keywords'    => mb_trim(Str::take(implode(',', $this->faker->persianWords(3)), 255)),
+            'keywords'                 => implode(',', $this->faker->words(5)),
+            'status'                   => PublicationStatusEnum::PUBLISHED,
+            'created_by'               => Staff::factory(),
+            'meta_title'               => mb_trim(Str::take($this->faker->persianWords(4, true), 70)),
+            'meta_description'         => mb_trim(Str::take($this->faker->persianParagraph(20, false), 100)),
+            'meta_keywords'            => mb_trim(Str::take(implode(',', $this->faker->persianWords(3)), 255)),
         ];
     }
 

@@ -47,6 +47,6 @@ final class CourseListItemData extends Data implements ProductableDataContract, 
         #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
         public Verta $created_at,
         #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
-        public Verta $updated_at,
+        public ?Verta $updated_at = null,
     ) {}
 }
