@@ -4,123 +4,47 @@
     "current_page": 1,
     "data": [
       {
-        "slug": "ut-non-itaque-sapiente-optio",
-        "name": "Furman Murphy",
-        "price": 500000,
-        "original_price": 500000,
+        "slug": "film-scoring-workshop-summer-1404",
+        "name": "کارگاه آهنگسازی برای فیلم - تابستان ۱۴۰۴",
+        "price": 2900000,
+        "original_price": 2900000,
         "price_range": {
-          "min": 500000,
-          "max": 3000000
+          "min": 2900000,
+          "max": 2900000
         },
         "has_discount": false,
         "discount_percent": null,
         "is_free": false,
         "is_featured": false,
+        "provides_certificate": true,
         "product_type": {
           "value": "course",
           "label": "دوره"
         },
-        "thumbnail_url": null,
+        "thumbnail_url": "preview.svg",
         "teachers": [
-          "دامنه علم هتل کشاورز پیچ"
+          "ارائه توسط استاد حسین علیزاده"
         ],
         "reviews_count": 0,
         "average_rating": 0,
         "price_data": {
-          "min_price": 500000,
-          "min_original_price": 500000,
-          "has_featured_price": false,
-          "has_discount": false,
-          "has_pre_payment": false,
-          "discount_type": null,
-          "discount_percentage": null,
-          "range": {
-            "min": 500000,
-            "max": 3000000
-          },
-          "prices": [
-            {
-              "current_price": 1000000,
-              "original_price": 1000000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 3000000,
-              "original_price": 3000000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 500000,
-              "original_price": 500000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            }
-          ]
-        }
-      },
-      {
-        "slug": "rerum-porro-omnis-eum",
-        "name": "Cletus Upton",
-        "price": 500000,
-        "original_price": 500000,
-        "price_range": {
-          "min": 500000,
-          "max": 3000000
-        },
-        "has_discount": false,
-        "discount_percent": null,
-        "is_free": false,
-        "is_featured": false,
-        "product_type": {
-          "value": "course",
-          "label": "دوره"
-        },
-        "thumbnail_url": null,
-        "teachers": [
-          "اسکله برف الماس علم محفل"
-        ],
-        "reviews_count": 0,
-        "average_rating": 0,
-        "price_data": {
-          "min_price": 500000,
-          "min_original_price": 500000,
+          "min_price": 2900000,
+          "min_original_price": 2900000,
           "has_featured_price": false,
           "has_discount": false,
           "has_pre_payment": true,
           "discount_type": null,
           "discount_percentage": null,
+          "highest_discount_amount": null,
           "range": {
-            "min": 500000,
-            "max": 3000000
+            "min": 2900000,
+            "max": 2900000
           },
           "prices": [
             {
-              "current_price": 1000000,
-              "original_price": 1000000,
-              "pre_payment_price": 48000,
+              "current_price": 2900000,
+              "original_price": 2900000,
+              "pre_payment_price": 800000,
               "featured_price": null,
               "discount_amount": null,
               "has_pre_payment_price": true,
@@ -128,90 +52,54 @@
               "has_discount": false,
               "discount_type": null,
               "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 3000000,
-              "original_price": 3000000,
-              "pre_payment_price": 96000,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": true,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 500000,
-              "original_price": 500000,
-              "pre_payment_price": 108000,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": true,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
+              "range": null,
+              "uuid": "3cc5e597-ecff-4051-9bd0-c4c1ccd5a364"
             }
           ]
         }
       },
       {
-        "slug": "sint-libero-accusantium-eum-ea-omnis-qui",
-        "name": "Prof. Sabina Willms",
-        "price": 500000,
-        "original_price": 500000,
+        "slug": "responsive-web-design-course-spring-1404",
+        "name": "دوره طراحی وب ریسپانسیو - بهار ۱۴۰۴",
+        "price": 1250000,
+        "original_price": 1250000,
         "price_range": {
-          "min": 500000,
-          "max": 3000000
+          "min": 1250000,
+          "max": 1250000
         },
         "has_discount": false,
         "discount_percent": null,
         "is_free": false,
-        "is_featured": false,
+        "is_featured": true,
+        "provides_certificate": true,
         "product_type": {
           "value": "course",
           "label": "دوره"
         },
-        "thumbnail_url": null,
+        "thumbnail_url": "preview.svg",
         "teachers": [
-          "عدد خیابان نقاشی دریا صندوق"
+          "ارائه توسط دکتر مجید سمیعی"
         ],
         "reviews_count": 0,
         "average_rating": 0,
         "price_data": {
-          "min_price": 500000,
-          "min_original_price": 500000,
+          "min_price": 1250000,
+          "min_original_price": 1250000,
           "has_featured_price": false,
           "has_discount": false,
           "has_pre_payment": true,
           "discount_type": null,
           "discount_percentage": null,
+          "highest_discount_amount": null,
           "range": {
-            "min": 500000,
-            "max": 3000000
+            "min": 1250000,
+            "max": 1250000
           },
           "prices": [
             {
-              "current_price": 1000000,
-              "original_price": 1000000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 3000000,
-              "original_price": 3000000,
-              "pre_payment_price": 52000,
+              "current_price": 1250000,
+              "original_price": 1250000,
+              "pre_payment_price": 250000,
               "featured_price": null,
               "discount_amount": null,
               "has_pre_payment_price": true,
@@ -219,77 +107,54 @@
               "has_discount": false,
               "discount_type": null,
               "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 500000,
-              "original_price": 500000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
+              "range": null,
+              "uuid": "dfcad282-827e-4afa-9c3f-f6918292600a"
             }
           ]
         }
       },
       {
-        "slug": "velit-sapiente-id-ut-illo-voluptas-dolor",
-        "name": "Erna D'Amore IV",
-        "price": 500000,
-        "original_price": 500000,
+        "slug": "maqami-singing-workshop-winter-1403",
+        "name": "کارگاه آواز مقامی - زمستان ۱۴۰۳",
+        "price": 3200000,
+        "original_price": 3200000,
         "price_range": {
-          "min": 500000,
-          "max": 3000000
+          "min": 3200000,
+          "max": 3200000
         },
         "has_discount": false,
         "discount_percent": null,
         "is_free": false,
-        "is_featured": false,
+        "is_featured": true,
+        "provides_certificate": true,
         "product_type": {
           "value": "course",
           "label": "دوره"
         },
-        "thumbnail_url": null,
+        "thumbnail_url": "main.svg",
         "teachers": [
-          "هنر هنر روزنامه تصویر پل"
+          "ارائه توسط استاد شهرام ناظری"
         ],
         "reviews_count": 0,
         "average_rating": 0,
         "price_data": {
-          "min_price": 500000,
-          "min_original_price": 500000,
+          "min_price": 3200000,
+          "min_original_price": 3200000,
           "has_featured_price": false,
           "has_discount": false,
           "has_pre_payment": true,
           "discount_type": null,
           "discount_percentage": null,
+          "highest_discount_amount": null,
           "range": {
-            "min": 500000,
-            "max": 3000000
+            "min": 3200000,
+            "max": 3200000
           },
           "prices": [
             {
-              "current_price": 1000000,
-              "original_price": 1000000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 3000000,
-              "original_price": 3000000,
-              "pre_payment_price": 133000,
+              "current_price": 3200000,
+              "original_price": 3200000,
+              "pre_payment_price": 800000,
               "featured_price": null,
               "discount_amount": null,
               "has_pre_payment_price": true,
@@ -297,64 +162,54 @@
               "has_discount": false,
               "discount_type": null,
               "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 500000,
-              "original_price": 500000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
+              "range": null,
+              "uuid": "44801f92-d8ed-43a6-ab4a-21a6b840bec6"
             }
           ]
         }
       },
       {
-        "slug": "iste-dolorem-et-dicta-nihil-provident",
-        "name": "Mr. Ray Hermann MD",
-        "price": 500000,
-        "original_price": 500000,
+        "slug": "islamic-jurisprudence-course-fall-1403",
+        "name": "درس‌گفتارهای فقه و حقوق - پاییز ۱۴۰۳",
+        "price": 1150000,
+        "original_price": 1150000,
         "price_range": {
-          "min": 500000,
-          "max": 3000000
+          "min": 1150000,
+          "max": 1150000
         },
         "has_discount": false,
         "discount_percent": null,
         "is_free": false,
         "is_featured": false,
+        "provides_certificate": true,
         "product_type": {
           "value": "course",
           "label": "دوره"
         },
-        "thumbnail_url": null,
+        "thumbnail_url": "main.svg",
         "teachers": [
-          "دارو ملت لیوان دامنه پوستر"
+          "ارائه توسط دکتر محسن کدیور"
         ],
         "reviews_count": 0,
         "average_rating": 0,
         "price_data": {
-          "min_price": 500000,
-          "min_original_price": 500000,
+          "min_price": 1150000,
+          "min_original_price": 1150000,
           "has_featured_price": false,
           "has_discount": false,
           "has_pre_payment": true,
           "discount_type": null,
           "discount_percentage": null,
+          "highest_discount_amount": null,
           "range": {
-            "min": 500000,
-            "max": 3000000
+            "min": 1150000,
+            "max": 1150000
           },
           "prices": [
             {
-              "current_price": 1000000,
-              "original_price": 1000000,
-              "pre_payment_price": 98000,
+              "current_price": 1150000,
+              "original_price": 1150000,
+              "pre_payment_price": 230000,
               "featured_price": null,
               "discount_amount": null,
               "has_pre_payment_price": true,
@@ -362,77 +217,54 @@
               "has_discount": false,
               "discount_type": null,
               "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 3000000,
-              "original_price": 3000000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 500000,
-              "original_price": 500000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
+              "range": null,
+              "uuid": "7150b990-47e2-4b61-ae0b-740b0f10074a"
             }
           ]
         }
       },
       {
-        "slug": "aliquam-accusamus-fugit-dolorem-omnis",
-        "name": "Lori Hessel",
-        "price": 500000,
-        "original_price": 500000,
+        "slug": "playwriting-workshop-winter-1404",
+        "name": "کارگاه نمایشنامه‌نویسی - زمستان ۱۴۰۴",
+        "price": 2700000,
+        "original_price": 2700000,
         "price_range": {
-          "min": 500000,
-          "max": 3000000
+          "min": 2700000,
+          "max": 2700000
         },
         "has_discount": false,
         "discount_percent": null,
         "is_free": false,
         "is_featured": false,
+        "provides_certificate": true,
         "product_type": {
           "value": "course",
           "label": "دوره"
         },
-        "thumbnail_url": null,
+        "thumbnail_url": "fake-gallery.svg",
         "teachers": [
-          "قضا دایره نور دوربین قفل"
+          "ارائه توسط استاد بهرام بیضایی"
         ],
         "reviews_count": 0,
         "average_rating": 0,
         "price_data": {
-          "min_price": 500000,
-          "min_original_price": 500000,
+          "min_price": 2700000,
+          "min_original_price": 2700000,
           "has_featured_price": false,
           "has_discount": false,
           "has_pre_payment": true,
           "discount_type": null,
           "discount_percentage": null,
+          "highest_discount_amount": null,
           "range": {
-            "min": 500000,
-            "max": 3000000
+            "min": 2700000,
+            "max": 2700000
           },
           "prices": [
             {
-              "current_price": 1000000,
-              "original_price": 1000000,
-              "pre_payment_price": 92000,
+              "current_price": 2700000,
+              "original_price": 2700000,
+              "pre_payment_price": 700000,
               "featured_price": null,
               "discount_amount": null,
               "has_pre_payment_price": true,
@@ -440,90 +272,274 @@
               "has_discount": false,
               "discount_type": null,
               "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 3000000,
-              "original_price": 3000000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 500000,
-              "original_price": 500000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
+              "range": null,
+              "uuid": "58fce86e-94c6-42aa-8582-3801dd129cca"
             }
           ]
         }
       },
       {
-        "slug": "totam-possimus-aspernatur-ut-rerum-fugiat",
-        "name": "Torey Pfannerstill",
-        "price": 500000,
-        "original_price": 500000,
+        "slug": "tar-setar-course-fall-1404",
+        "name": "آموزش تار و سه‌تار - پاییز ۱۴۰۴",
+        "price": 2400000,
+        "original_price": 2400000,
         "price_range": {
-          "min": 500000,
+          "min": 2400000,
+          "max": 2400000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": false,
+        "provides_certificate": true,
+        "product_type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "thumbnail_url": "fake-gallery.svg",
+        "teachers": [
+          "ارائه توسط استاد حسین علیزاده"
+        ],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 2400000,
+          "min_original_price": 2400000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": true,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "min": 2400000,
+            "max": 2400000
+          },
+          "prices": [
+            {
+              "current_price": 2400000,
+              "original_price": 2400000,
+              "pre_payment_price": 600000,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": true,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "9f1c4d81-904a-47f3-87dd-c870fe686ca9"
+            }
+          ]
+        }
+      },
+      {
+        "slug": "php-design-patterns-course-spring-1404",
+        "name": "دوره الگوهای طراحی در PHP - بهار ۱۴۰۴",
+        "price": 1800000,
+        "original_price": 1800000,
+        "price_range": {
+          "min": 1800000,
+          "max": 1800000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": true,
+        "provides_certificate": true,
+        "product_type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "thumbnail_url": "fake-cover.svg",
+        "teachers": [
+          "ارائه توسط دکتر مجید سمیعی"
+        ],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 1800000,
+          "min_original_price": 1800000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": true,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "min": 1800000,
+            "max": 1800000
+          },
+          "prices": [
+            {
+              "current_price": 1800000,
+              "original_price": 1800000,
+              "pre_payment_price": 400000,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": true,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "86c4fff3-7125-43d0-bc6a-8e39407efb9c"
+            }
+          ]
+        }
+      },
+      {
+        "slug": "german-language-course-summer-1403",
+        "name": "دوره فشرده زبان آلمانی - تابستان ۱۴۰۳",
+        "price": 1000000,
+        "original_price": 1000000,
+        "price_range": {
+          "min": 1000000,
+          "max": 1000000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": true,
+        "provides_certificate": true,
+        "product_type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "thumbnail_url": "fake-cover.svg",
+        "teachers": [
+          "ارائه توسط دکتر حسین الهی قمشه‌ای"
+        ],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 1000000,
+          "min_original_price": 1000000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": true,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "min": 1000000,
+            "max": 1000000
+          },
+          "prices": [
+            {
+              "current_price": 1000000,
+              "original_price": 1000000,
+              "pre_payment_price": 250000,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": true,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "bea7de1f-6a19-4f49-84cc-2f3e1a848d70"
+            }
+          ]
+        }
+      },
+      {
+        "slug": "personal-finance-course-fall-1403",
+        "name": "دوره مدیریت مالی شخصی - پاییز ۱۴۰۳",
+        "price": 900000,
+        "original_price": 900000,
+        "price_range": {
+          "min": 900000,
+          "max": 900000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": true,
+        "provides_certificate": true,
+        "product_type": {
+          "value": "course",
+          "label": "دوره"
+        },
+        "thumbnail_url": "preview.svg",
+        "teachers": [
+          "ارائه توسط دکتر عبدالکریم سروش"
+        ],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 900000,
+          "min_original_price": 900000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": true,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "min": 900000,
+            "max": 900000
+          },
+          "prices": [
+            {
+              "current_price": 900000,
+              "original_price": 900000,
+              "pre_payment_price": 180000,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": true,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "cbcadcb8-b18e-4432-be81-81038bf6063c"
+            }
+          ]
+        }
+      },
+      {
+        "slug": "portrait-photography-workshop-nowruz-1404",
+        "name": "کارگاه عکاسی پرتره - نوروز ۱۴۰۴",
+        "price": 3000000,
+        "original_price": 3000000,
+        "price_range": {
+          "min": 3000000,
           "max": 3000000
         },
         "has_discount": false,
         "discount_percent": null,
         "is_free": false,
         "is_featured": true,
+        "provides_certificate": true,
         "product_type": {
           "value": "course",
           "label": "دوره"
         },
-        "thumbnail_url": null,
+        "thumbnail_url": "preview.svg",
         "teachers": [
-          "خط مهد نور ملک پایه"
+          "ارائه توسط استاد عباس کیارستمی"
         ],
         "reviews_count": 0,
         "average_rating": 0,
         "price_data": {
-          "min_price": 500000,
-          "min_original_price": 500000,
+          "min_price": 3000000,
+          "min_original_price": 3000000,
           "has_featured_price": false,
           "has_discount": false,
           "has_pre_payment": true,
           "discount_type": null,
           "discount_percentage": null,
+          "highest_discount_amount": null,
           "range": {
-            "min": 500000,
+            "min": 3000000,
             "max": 3000000
           },
           "prices": [
             {
-              "current_price": 1000000,
-              "original_price": 1000000,
-              "pre_payment_price": 95000,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": true,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
               "current_price": 3000000,
               "original_price": 3000000,
-              "pre_payment_price": 88000,
+              "pre_payment_price": 600000,
               "featured_price": null,
               "discount_amount": null,
               "has_pre_payment_price": true,
@@ -531,64 +547,54 @@
               "has_discount": false,
               "discount_type": null,
               "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 500000,
-              "original_price": 500000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
+              "range": null,
+              "uuid": "1a60a083-0ce9-4cb9-8a56-5371137cd81e"
             }
           ]
         }
       },
       {
-        "slug": "sapiente-recusandae-dolorem-quas-nam-vel-distinctio-sed-provident",
-        "name": "Ms. Aaliyah Stracke MD",
-        "price": 500000,
-        "original_price": 500000,
+        "slug": "javascript-react-course-fall-1404",
+        "name": "دوره جاوااسکریپت و React - پاییز ۱۴۰۴",
+        "price": 2100000,
+        "original_price": 2100000,
         "price_range": {
-          "min": 500000,
-          "max": 3000000
+          "min": 2100000,
+          "max": 4500000
         },
         "has_discount": false,
         "discount_percent": null,
         "is_free": false,
         "is_featured": true,
+        "provides_certificate": true,
         "product_type": {
           "value": "course",
           "label": "دوره"
         },
-        "thumbnail_url": null,
+        "thumbnail_url": "preview.svg",
         "teachers": [
-          "دارو گردو پرنده پرنده اپلیکیشن"
+          "ارائه توسط دکتر مجید سمیعی"
         ],
         "reviews_count": 0,
         "average_rating": 0,
         "price_data": {
-          "min_price": 500000,
-          "min_original_price": 500000,
+          "min_price": 2100000,
+          "min_original_price": 2100000,
           "has_featured_price": false,
           "has_discount": false,
           "has_pre_payment": true,
           "discount_type": null,
           "discount_percentage": null,
+          "highest_discount_amount": null,
           "range": {
-            "min": 500000,
-            "max": 3000000
+            "min": 2100000,
+            "max": 4500000
           },
           "prices": [
             {
-              "current_price": 1000000,
-              "original_price": 1000000,
-              "pre_payment_price": 56000,
+              "current_price": 2100000,
+              "original_price": 2100000,
+              "pre_payment_price": 420000,
               "featured_price": null,
               "discount_amount": null,
               "has_pre_payment_price": true,
@@ -596,12 +602,13 @@
               "has_discount": false,
               "discount_type": null,
               "discount_percentage": null,
-              "range": null
+              "range": null,
+              "uuid": "b33a357e-15e4-4bee-a983-a55f7bc57bef"
             },
             {
-              "current_price": 3000000,
-              "original_price": 3000000,
-              "pre_payment_price": 42000,
+              "current_price": 4500000,
+              "original_price": 4500000,
+              "pre_payment_price": 1200000,
               "featured_price": null,
               "discount_amount": null,
               "has_pre_payment_price": true,
@@ -609,64 +616,54 @@
               "has_discount": false,
               "discount_type": null,
               "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 500000,
-              "original_price": 500000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
+              "range": null,
+              "uuid": "389c912f-1fd2-40b0-9775-a366e4a91636"
             }
           ]
         }
       },
       {
-        "slug": "est-molestiae-nemo-quod-cupiditate-odio-voluptatem-sint-odio",
-        "name": "Cara Altenwerth",
-        "price": 500000,
-        "original_price": 500000,
+        "slug": "modern-poetry-workshop-summer-1404",
+        "name": "کارگاه شعر نو - تابستان ۱۴۰۴",
+        "price": 1900000,
+        "original_price": 1900000,
         "price_range": {
-          "min": 500000,
-          "max": 3000000
+          "min": 1900000,
+          "max": 1900000
         },
         "has_discount": false,
         "discount_percent": null,
         "is_free": false,
         "is_featured": false,
+        "provides_certificate": true,
         "product_type": {
           "value": "course",
           "label": "دوره"
         },
-        "thumbnail_url": null,
+        "thumbnail_url": "preview.svg",
         "teachers": [
-          "هتل اپلیکیشن دایره ملل ساز"
+          "ارائه توسط استاد سهراب سپهری"
         ],
         "reviews_count": 0,
         "average_rating": 0,
         "price_data": {
-          "min_price": 500000,
-          "min_original_price": 500000,
+          "min_price": 1900000,
+          "min_original_price": 1900000,
           "has_featured_price": false,
           "has_discount": false,
           "has_pre_payment": true,
           "discount_type": null,
           "discount_percentage": null,
+          "highest_discount_amount": null,
           "range": {
-            "min": 500000,
-            "max": 3000000
+            "min": 1900000,
+            "max": 1900000
           },
           "prices": [
             {
-              "current_price": 1000000,
-              "original_price": 1000000,
-              "pre_payment_price": 38000,
+              "current_price": 1900000,
+              "original_price": 1900000,
+              "pre_payment_price": 500000,
               "featured_price": null,
               "discount_amount": null,
               "has_pre_payment_price": true,
@@ -674,246 +671,54 @@
               "has_discount": false,
               "discount_type": null,
               "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 3000000,
-              "original_price": 3000000,
-              "pre_payment_price": 48000,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": true,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 500000,
-              "original_price": 500000,
-              "pre_payment_price": 54000,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": true,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
+              "range": null,
+              "uuid": "4b1f49fc-a6c7-4407-bf55-a3d56070aced"
             }
           ]
         }
       },
       {
-        "slug": "ullam-animi-mollitia-itaque-veniam-iure",
-        "name": "Wilmer O'Kon",
-        "price": 500000,
-        "original_price": 500000,
+        "slug": "western-philosophy-course-summer-1403",
+        "name": "دوره فلسفه غرب - تابستان ۱۴۰۳",
+        "price": 1400000,
+        "original_price": 1400000,
         "price_range": {
-          "min": 500000,
-          "max": 3000000
-        },
-        "has_discount": false,
-        "discount_percent": null,
-        "is_free": false,
-        "is_featured": true,
-        "product_type": {
-          "value": "course",
-          "label": "دوره"
-        },
-        "thumbnail_url": null,
-        "teachers": [
-          "مدار نور جایزه دریا کامپیوتر"
-        ],
-        "reviews_count": 0,
-        "average_rating": 0,
-        "price_data": {
-          "min_price": 500000,
-          "min_original_price": 500000,
-          "has_featured_price": false,
-          "has_discount": false,
-          "has_pre_payment": true,
-          "discount_type": null,
-          "discount_percentage": null,
-          "range": {
-            "min": 500000,
-            "max": 3000000
-          },
-          "prices": [
-            {
-              "current_price": 1000000,
-              "original_price": 1000000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 3000000,
-              "original_price": 3000000,
-              "pre_payment_price": 63000,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": true,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 500000,
-              "original_price": 500000,
-              "pre_payment_price": 130000,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": true,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            }
-          ]
-        }
-      },
-      {
-        "slug": "in-asperiores-nostrum-architecto-repellat",
-        "name": "Mrs. Abigail Hessel MD",
-        "price": 500000,
-        "original_price": 500000,
-        "price_range": {
-          "min": 500000,
-          "max": 3000000
-        },
-        "has_discount": false,
-        "discount_percent": null,
-        "is_free": false,
-        "is_featured": true,
-        "product_type": {
-          "value": "course",
-          "label": "دوره"
-        },
-        "thumbnail_url": null,
-        "teachers": [
-          "درخت پارو ثروت هنر برق"
-        ],
-        "reviews_count": 0,
-        "average_rating": 0,
-        "price_data": {
-          "min_price": 500000,
-          "min_original_price": 500000,
-          "has_featured_price": false,
-          "has_discount": false,
-          "has_pre_payment": true,
-          "discount_type": null,
-          "discount_percentage": null,
-          "range": {
-            "min": 500000,
-            "max": 3000000
-          },
-          "prices": [
-            {
-              "current_price": 1000000,
-              "original_price": 1000000,
-              "pre_payment_price": 10000,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": true,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 3000000,
-              "original_price": 3000000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 500000,
-              "original_price": 500000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            }
-          ]
-        }
-      },
-      {
-        "slug": "molestiae-omnis-exercitationem-nihil-hic-veniam-dolores",
-        "name": "Tara Ruecker",
-        "price": 500000,
-        "original_price": 500000,
-        "price_range": {
-          "min": 500000,
-          "max": 3000000
+          "min": 1400000,
+          "max": 1400000
         },
         "has_discount": false,
         "discount_percent": null,
         "is_free": false,
         "is_featured": false,
+        "provides_certificate": true,
         "product_type": {
           "value": "course",
           "label": "دوره"
         },
-        "thumbnail_url": null,
+        "thumbnail_url": "main.svg",
         "teachers": [
-          "نمک تصویر تیم دامنه لوازم"
+          "ارائه توسط دکتر رضا داوری اردکانی"
         ],
         "reviews_count": 0,
         "average_rating": 0,
         "price_data": {
-          "min_price": 500000,
-          "min_original_price": 500000,
+          "min_price": 1400000,
+          "min_original_price": 1400000,
           "has_featured_price": false,
           "has_discount": false,
           "has_pre_payment": true,
           "discount_type": null,
           "discount_percentage": null,
+          "highest_discount_amount": null,
           "range": {
-            "min": 500000,
-            "max": 3000000
+            "min": 1400000,
+            "max": 1400000
           },
           "prices": [
             {
-              "current_price": 1000000,
-              "original_price": 1000000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 3000000,
-              "original_price": 3000000,
-              "pre_payment_price": 80000,
+              "current_price": 1400000,
+              "original_price": 1400000,
+              "pre_payment_price": 280000,
               "featured_price": null,
               "discount_amount": null,
               "has_pre_payment_price": true,
@@ -921,64 +726,54 @@
               "has_discount": false,
               "discount_type": null,
               "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 500000,
-              "original_price": 500000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
+              "range": null,
+              "uuid": "55bb1f31-9c63-4831-a10b-daae335620b3"
             }
           ]
         }
       },
       {
-        "slug": "est-natus-adipisci-tempora-facilis-soluta-quam",
-        "name": "Cora Wisozk",
-        "price": 500000,
-        "original_price": 500000,
+        "slug": "spirituality-and-rationality-workshop-winter-1403",
+        "name": "کارگاه معنویت و عقلانیت - زمستان ۱۴۰۳",
+        "price": 2600000,
+        "original_price": 2600000,
         "price_range": {
-          "min": 500000,
-          "max": 3000000
+          "min": 2600000,
+          "max": 2600000
         },
         "has_discount": false,
         "discount_percent": null,
         "is_free": false,
-        "is_featured": true,
+        "is_featured": false,
+        "provides_certificate": true,
         "product_type": {
           "value": "course",
           "label": "دوره"
         },
-        "thumbnail_url": null,
+        "thumbnail_url": "main.svg",
         "teachers": [
-          "مشک جایزه سایت بانک موج"
+          "ارائه توسط دکتر مصطفی ملکیان"
         ],
         "reviews_count": 0,
         "average_rating": 0,
         "price_data": {
-          "min_price": 500000,
-          "min_original_price": 500000,
+          "min_price": 2600000,
+          "min_original_price": 2600000,
           "has_featured_price": false,
           "has_discount": false,
           "has_pre_payment": true,
           "discount_type": null,
           "discount_percentage": null,
+          "highest_discount_amount": null,
           "range": {
-            "min": 500000,
-            "max": 3000000
+            "min": 2600000,
+            "max": 2600000
           },
           "prices": [
             {
-              "current_price": 1000000,
-              "original_price": 1000000,
-              "pre_payment_price": 300000,
+              "current_price": 2600000,
+              "original_price": 2600000,
+              "pre_payment_price": 600000,
               "featured_price": null,
               "discount_amount": null,
               "has_pre_payment_price": true,
@@ -986,77 +781,54 @@
               "has_discount": false,
               "discount_type": null,
               "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 3000000,
-              "original_price": 3000000,
-              "pre_payment_price": 115999,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": true,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 500000,
-              "original_price": 500000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
+              "range": null,
+              "uuid": "2ceb25a5-0543-41be-ac9e-116ea31efa02"
             }
           ]
         }
       },
       {
-        "slug": "omnis-tenetur-ea-quos-veritatis",
-        "name": "Luis Simonis V",
-        "price": 500000,
-        "original_price": 500000,
+        "slug": "history-of-art-course-nowruz-1404",
+        "name": "دوره تاریخ هنر - نوروز ۱۴۰۴",
+        "price": 1700000,
+        "original_price": 1700000,
         "price_range": {
-          "min": 500000,
-          "max": 3000000
+          "min": 1700000,
+          "max": 1700000
         },
         "has_discount": false,
         "discount_percent": null,
         "is_free": false,
-        "is_featured": true,
+        "is_featured": false,
+        "provides_certificate": true,
         "product_type": {
           "value": "course",
           "label": "دوره"
         },
-        "thumbnail_url": null,
+        "thumbnail_url": "main.svg",
         "teachers": [
-          "رنگ پول قرص مدرسه تصویر"
+          "ارائه توسط استاد آیدین آغداشلو"
         ],
         "reviews_count": 0,
         "average_rating": 0,
         "price_data": {
-          "min_price": 500000,
-          "min_original_price": 500000,
+          "min_price": 1700000,
+          "min_original_price": 1700000,
           "has_featured_price": false,
           "has_discount": false,
           "has_pre_payment": true,
           "discount_type": null,
           "discount_percentage": null,
+          "highest_discount_amount": null,
           "range": {
-            "min": 500000,
-            "max": 3000000
+            "min": 1700000,
+            "max": 1700000
           },
           "prices": [
             {
-              "current_price": 1000000,
-              "original_price": 1000000,
-              "pre_payment_price": 130000,
+              "current_price": 1700000,
+              "original_price": 1700000,
+              "pre_payment_price": 400000,
               "featured_price": null,
               "discount_amount": null,
               "has_pre_payment_price": true,
@@ -1064,111 +836,8 @@
               "has_discount": false,
               "discount_type": null,
               "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 3000000,
-              "original_price": 3000000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 500000,
-              "original_price": 500000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            }
-          ]
-        }
-      },
-      {
-        "slug": "dignissimos-accusamus-accusantium-quasi-delectus-ad-cumque",
-        "name": "Dr. Leonie Glover",
-        "price": 500000,
-        "original_price": 500000,
-        "price_range": {
-          "min": 500000,
-          "max": 3000000
-        },
-        "has_discount": false,
-        "discount_percent": null,
-        "is_free": false,
-        "is_featured": true,
-        "product_type": {
-          "value": "course",
-          "label": "دوره"
-        },
-        "thumbnail_url": null,
-        "teachers": [
-          "ملک مربع قفل غذا دانه"
-        ],
-        "reviews_count": 0,
-        "average_rating": 0,
-        "price_data": {
-          "min_price": 500000,
-          "min_original_price": 500000,
-          "has_featured_price": false,
-          "has_discount": false,
-          "has_pre_payment": true,
-          "discount_type": null,
-          "discount_percentage": null,
-          "range": {
-            "min": 500000,
-            "max": 3000000
-          },
-          "prices": [
-            {
-              "current_price": 1000000,
-              "original_price": 1000000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 3000000,
-              "original_price": 3000000,
-              "pre_payment_price": null,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": false,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
-            },
-            {
-              "current_price": 500000,
-              "original_price": 500000,
-              "pre_payment_price": 260000,
-              "featured_price": null,
-              "discount_amount": null,
-              "has_pre_payment_price": true,
-              "has_featured_price": false,
-              "has_discount": false,
-              "discount_type": null,
-              "discount_percentage": null,
-              "range": null
+              "range": null,
+              "uuid": "5d3d32ab-2304-4deb-9c15-11ad7eead9ac"
             }
           ]
         }
@@ -1176,8 +845,8 @@
     ],
     "first_page_url": "http://jedu.test/api/v1/shop/courses?page=1",
     "from": 1,
-    "last_page": 3,
-    "last_page_url": "http://jedu.test/api/v1/shop/courses?page=3",
+    "last_page": 2,
+    "last_page_url": "http://jedu.test/api/v1/shop/courses?page=2",
     "links": [
       {
         "url": null,
@@ -1198,12 +867,6 @@
         "active": false
       },
       {
-        "url": "http://jedu.test/api/v1/shop/courses?page=3",
-        "label": "3",
-        "page": 3,
-        "active": false
-      },
-      {
         "url": "http://jedu.test/api/v1/shop/courses?page=2",
         "label": "بعدی &raquo;",
         "page": 2,
@@ -1215,7 +878,7 @@
     "per_page": 15,
     "prev_page_url": null,
     "to": 15,
-    "total": 36
+    "total": 26
   },
   "metadata": []
 }

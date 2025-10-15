@@ -1,39 +1,56 @@
 {
   "message": "عملیات با موفقیت انجام شد.",
   "data": {
-    "slug": "ut-non-itaque-sapiente-optio",
-    "full_name": "Furman Murphy",
-    "short_name": "Kenya Lesch DVM",
-    "description": "قرص نور دکان مجله آسمان عدد. نور اتوبوس گوشی باغ عطر قلم. ماکت پوشاک آتش باغ ساز. گوشی بالش دریا اتوبوس ماکت مربع نان دانه.",
-    "duration": 30,
-    "difficulty_level": {
-      "value": "expert",
-      "label": "کارشناس"
+    "slug": "film-scoring-workshop-summer-1404",
+    "full_name": "کارگاه آهنگسازی برای فیلم - تابستان ۱۴۰۴",
+    "short_name": "موسیقی فیلم",
+    "price_data": {
+      "min_price": 2900000,
+      "min_original_price": 2900000,
+      "has_featured_price": false,
+      "has_discount": false,
+      "has_pre_payment": true,
+      "discount_type": null,
+      "discount_percentage": null,
+      "highest_discount_amount": null,
+      "range": {
+        "min": 2900000,
+        "max": 2900000
+      },
+      "prices": null
     },
-    "career_prospects_text": "نان جایزه ملت درخت پل برق ساحل شن. صوت کلمه دریاچه مهد آشیانه نقاشی.",
-    "curriculum_summary_text": "خط دامنه بانک کشاورز مدار",
+    "description": "یاد بگیرید چگونه با موسیقی، اتمسفر بسازید، احساسات را تقویت کنید و داستان فیلم را روایت کنید.",
+    "duration": 50,
+    "difficulty_level": {
+      "value": "advanced",
+      "label": "پیشرفته"
+    },
+    "career_prospects_text": "آهنگسازان می‌توانند در پروژه‌های سینمایی، تلویزیونی و بازی‌های ویدیویی فعالیت کنند.",
+    "curriculum_summary_text": "شامل تحلیل موسیقی فیلم‌های بزرگ، تکنیک‌های آهنگسازی بر اساس تصویر و کار با نرم‌افزارهای آهنگسازی.",
     "outcomes_json": {
-      "outcome1": [
-        "الکتریک پرنده سریال ساختار محفل گلیم آسمان.",
-        "سلول هتل آرایش دفتر رنگ آشیانه دیجیتال.",
-        "رنگ لباس دارو پوستر الکتریک بدل ساختار قلم چرخ.",
-        "نان کاغذ برنامه قهوه پرنده آسمان مربع میز.",
-        "کامپیوتر کلید عدد ابزار صندوق."
-      ],
-      "outcome2": [
-        "بالین ساحل نوازش شن آلاچیق آشیانه دارو.",
-        "ملک پوستر نان بانک لباس.",
-        "کاغذ قهوه عطر نان مدرسه.",
-        "باغ کاغذ صوت ساعت محفل دریا فرش.",
-        "بالین جام تاکسی فرش فیلم."
+      "outcomes": [
+        "درک نقش دراماتیک موسیقی در فیلم",
+        "توانایی آهنگسازی برای یک سکانس مشخص",
+        "آشنایی با فرآیند تولید موسیقی فیلم"
       ]
     },
-    "default_teacher_info": "دامنه علم هتل کشاورز پیچ",
-    "additional_info": [],
-    "meta_title": "اتوبوس غذا سلول ملت",
-    "meta_description": "بالین کنترل فرش طبیعت نان دفترچه. صف پوستر برق بدل دارو دکان پول. مربع گردو دانه دریا عدد چرخ. شهر ه",
-    "meta_keywords": "اسکله,ملک,دارو",
-    "properties": [],
+    "default_teacher_info": "ارائه توسط استاد حسین علیزاده",
+    "provides_certificate": true,
+    "faq": [
+      {
+        "question": "آیا برای شرکت در این کارگاه باید به نواختن ساز خاصی مسلط باشم؟",
+        "answer": "خیر، اما تسلط کامل بر تئوری موسیقی، هارمونی و اصول آهنگسازی ضروری است. آشنایی با یک نرم‌افزار آهنگسازی (DAW) نیز الزامی است."
+      },
+      {
+        "question": "آیا کارگاه شامل پروژه‌های عملی است؟",
+        "answer": "بله، شرکت‌کنندگان در طول دوره بر روی سکانس‌های فیلم واقعی کار کرده و برای آن‌ها موسیقی خواهند ساخت."
+      }
+    ],
+    "additional_info": null,
+    "meta_title": "کارگاه آهنگسازی و موسیقی فیلم",
+    "meta_description": "در این کارگاه، هنر و تکنیک آهنگسازی برای فیلم را از تحلیل تا اجرا به صورت عملی یاد بگیرید.",
+    "meta_keywords": "موسیقی فیلم, آهنگسازی, آموزش آهنگسازی, soundtrack",
+    "properties": null,
     "details": [],
     "status": {
       "value": "published",
@@ -41,64 +58,46 @@
     },
     "categories": [
       {
-        "name": "آسمان",
-        "slug": "quidem-et-labore-non-consequatur-sint-dolores-esse",
-        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg"
-      },
-      {
-        "name": "برف",
-        "slug": "hic-quo-voluptatem-autem-labore-qui",
-        "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
-        "image_url": "http://jedu.test/storage/fake-media/placeholder.svg"
+        "name": "موسیقی",
+        "slug": "music",
+        "icon_url": null,
+        "image_url": null,
+        "products_count": null
       }
     ],
-    "digital_assets": [
+    "delivery_options": [
       {
-        "type": {
-          "value": "digital_asset",
-          "label": "فایل"
+        "uuid": "3cc5e597-ecff-4051-9bd0-c4c1ccd5a364",
+        "sku": "offline_service_1054",
+        "name": "دسترسی آنلاین به کارگاه موسیقی فیلم",
+        "price_data": {
+          "current_price": 2900000,
+          "original_price": 2900000,
+          "pre_payment_price": 800000,
+          "featured_price": null,
+          "discount_amount": null,
+          "has_pre_payment_price": true,
+          "has_featured_price": false,
+          "has_discount": false,
+          "discount_type": null,
+          "discount_percentage": null,
+          "range": null,
+          "uuid": "3cc5e597-ecff-4051-9bd0-c4c1ccd5a364"
         },
-        "short_name": "الماس",
-        "slug": "aut-incidunt-ut-voluptas-assumenda-quae-asperiores",
-        "description": "کلمه محل بلیط میز موسیقی فرش.",
-        "version": "excepturi",
-        "keywords": "فرش,کمک,شن",
-        "meta_title": "پایه کشاورز دریاچه شیر",
-        "meta_description": "آسمان شن دامنه جام. دوربین ژاکت قلم قلم دفترچه. آشیانه صوت آخر قفل دارو ساز خودرو پیچ. باغ ساحل ساعت",
-        "meta_keywords": "میوه,بلیط,برف",
-        "page_count": 43,
-        "duration_seconds": 758,
-        "thumbnail_url": null
-      },
-      {
-        "type": {
-          "value": "digital_asset",
-          "label": "فایل"
+        "fulfillment_type": {
+          "value": "offline_service",
+          "label": "سرویس آفلاین"
         },
-        "short_name": "جنگل",
-        "slug": "sunt-est-facilis-in-consequatur-qui-voluptates-assumenda",
-        "description": "گلیم نور دارو شهر الماس دفتر لوازم برق.",
-        "version": "officia",
-        "keywords": "فیلم,ساحل,جنگل",
-        "meta_title": "غذا مربع اتوبوس پرنده",
-        "meta_description": "آخر جام پل برق پول گلیم هنر پارو. ملت موسیقی برق کلید دامنه جایزه. هنر کمک کامپیوتر کلید پول بالش مح",
-        "meta_keywords": "ملک,خودرو,عدالت",
-        "page_count": 78,
-        "duration_seconds": 105,
-        "thumbnail_url": null
+        "delivery_method": {
+          "value": "video_platform_spotplayer",
+          "label": "پلتفرم ویدیویی SpotPlayer"
+        }
       }
     ],
     "media": {
-      "gallery": [
-        "http://jedu.test/storage/fake-media/fake-gallery.svg"
-      ],
-      "video": [
-        "http://jedu.test/storage/fake-media/placeholder2.mp4"
-      ],
-      "cover": [
-        "http://jedu.test/storage/fake-media/fake-cover.svg"
-      ],
+      "gallery": [],
+      "video": [],
+      "cover": [],
       "certificate": [],
       "main": []
     }
