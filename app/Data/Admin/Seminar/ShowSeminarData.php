@@ -56,8 +56,8 @@ final class ShowSeminarData extends Data implements ProductableDataContract, Rev
         public ?DataCollection $digital_assets,
         public array $media,
         #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
-        public Verta $created_at,
+        public ?Verta $created_at,
         #[WithTransformer(\Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer::class, 'Y-m-d H:i:s')]
-        public Verta $updated_at,
+        public ?Verta $updated_at,
     ) {}
 }

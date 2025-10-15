@@ -26,7 +26,7 @@ final class WalletCampaignData extends Data implements WalletTransactionSourceab
         public ?Verta $starts_at,
         public ?Verta $ends_at,
         public ?array $metadata,
-        public Verta $created_at,
+        public ?Verta $created_at,
         public ?Verta $updated_at,
         // Computed fields
         public ?int $remaining_usage_count,

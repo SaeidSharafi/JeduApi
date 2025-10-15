@@ -37,8 +37,8 @@ final class OrderListItemData extends Data implements WalletTransactionSourceabl
         public OrderStatusEnum $status,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public OrderPaymentStatusEnum $payment_status,
-        public Verta $created_at,
-        public Verta $updated_at,
+        public ?Verta $created_at,
+        public ?Verta $updated_at,
         #[DataCollectionOf(PaymentData::class)]
         public Collection $payments,
         #[DataCollectionOf(OrderItemListItemData::class)]

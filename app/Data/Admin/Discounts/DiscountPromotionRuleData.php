@@ -15,7 +15,7 @@ final class DiscountPromotionRuleData extends Data
         public string $type,
         public string $handler,
         public array $configuration,
-        public Verta $created_at,
-        public Verta $updated_at,
+        public ?Verta $created_at,
+        public ?Verta $updated_at,
     ) {}
 }
