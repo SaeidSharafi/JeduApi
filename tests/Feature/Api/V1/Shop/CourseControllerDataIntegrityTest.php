@@ -693,7 +693,7 @@ describe('CourseController Data Integrity Tests', function (): void {
                         'slug',
                         'full_name',
                         'short_name',
-                        'priceData',
+                        'price_data',
                         'description',
                         'duration',
                         'difficulty_level',
@@ -753,13 +753,13 @@ describe('CourseController Data Integrity Tests', function (): void {
             // Verify categories
             $categoryNames = collect($courseData['categories'])->pluck('name')->toArray();
             expect($categoryNames)->toContain('Programming', 'Backend')
-                ->and($courseData['priceData']['min_price'])->toBe(600000) // Video option with promotion
-                ->and($courseData['priceData']['min_original_price'])->toBe(800000) // Video option original
-                ->and($courseData['priceData']['has_featured_price'])->toBeTrue() // Online option has featured
-                ->and($courseData['priceData']['has_discount'])->toBeTrue() // Promotions available
-                ->and($courseData['priceData']['has_pre_payment'])->toBeTrue() // Some options have prepayment
-                ->and($courseData['priceData']['discount_type'])->toBe('promotion')
-                ->and($courseData['priceData']['discount_percentage'])->toBe(25.0)
+                ->and($courseData['price_data']['min_price'])->toBe(600000) // Video option with promotion
+                ->and($courseData['price_data']['min_original_price'])->toBe(800000) // Video option original
+                ->and($courseData['price_data']['has_featured_price'])->toBeTrue() // Online option has featured
+                ->and($courseData['price_data']['has_discount'])->toBeTrue() // Promotions available
+                ->and($courseData['price_data']['has_pre_payment'])->toBeTrue() // Some options have prepayment
+                ->and($courseData['price_data']['discount_type'])->toBe('promotion')
+                ->and($courseData['price_data']['discount_percentage'])->toBe(25.0)
                 ->and($courseData['delivery_options'])->toHaveCount(3);
 
             $deliveryOptions = collect($courseData['delivery_options'])->keyBy('sku');
@@ -923,17 +923,17 @@ describe('CourseController Data Integrity Tests', function (): void {
             $detailData     = $detailResponse->json('data');
 
             // Verify pricing consistency
-            expect($listData['price'])->toBe($detailData['priceData']['min_price'])
-                ->and($listData['original_price'])->toBe($detailData['priceData']['min_original_price'])
-                ->and($listData['has_discount'])->toBe($detailData['priceData']['has_discount'])
-                ->and($listData['discount_percent'])->toBe($detailData['priceData']['discount_percentage'])
-                ->and($listData['price_range'])->toBe($detailData['priceData']['range']);
+            expect($listData['price'])->toBe($detailData['price_data']['min_price'])
+                ->and($listData['original_price'])->toBe($detailData['price_data']['min_original_price'])
+                ->and($listData['has_discount'])->toBe($detailData['price_data']['has_discount'])
+                ->and($listData['discount_percent'])->toBe($detailData['price_data']['discount_percentage'])
+                ->and($listData['price_range'])->toBe($detailData['price_data']['range']);
 
             // Verify price_data consistency
-            expect($listData['price_data']['min_price'])->toBe($detailData['priceData']['min_price'])
-                ->and($listData['price_data']['min_original_price'])->toBe($detailData['priceData']['min_original_price'])
-                ->and($listData['price_data']['has_discount'])->toBe($detailData['priceData']['has_discount'])
-                ->and($listData['price_data']['discount_type'])->toBe($detailData['priceData']['discount_type']);
+            expect($listData['price_data']['min_price'])->toBe($detailData['price_data']['min_price'])
+                ->and($listData['price_data']['min_original_price'])->toBe($detailData['price_data']['min_original_price'])
+                ->and($listData['price_data']['has_discount'])->toBe($detailData['price_data']['has_discount'])
+                ->and($listData['price_data']['discount_type'])->toBe($detailData['price_data']['discount_type']);
         });
 
         it('maintains data integrity with concurrent price updates', function (): void {
@@ -980,7 +980,7 @@ describe('CourseController Data Integrity Tests', function (): void {
             $firstResponseData = $responses[0]->json('data');
             foreach ($responses as $response) {
                 $responseData = $response->json('data');
-                expect($responseData['priceData']['min_price'])->toBe($firstResponseData['priceData']['min_price'])
+                expect($responseData['price_data']['min_price'])->toBe($firstResponseData['price_data']['min_price'])
                     ->and($responseData['slug'])->toBe($firstResponseData['slug']);
 
                 // Handle null delivery_options gracefully

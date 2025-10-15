@@ -73,9 +73,49 @@ describe('Course API', function (): void {
                 'data' => [
                     'slug',
                     'full_name',
+                    'short_name',
+                    'price_data',
                     'description',
-                    'categories',
-                    'delivery_options',
+                    'duration',
+                    'difficulty_level',
+                    'career_prospects_text',
+                    'curriculum_summary_text',
+                    'outcomes_json',
+                    'default_teacher_info',
+                    'provides_certificate',
+                    'faq' => [
+                        '*' => [
+                            'question',
+                            'answer',
+                        ],
+                    ],
+                    'additional_info',
+                    'meta_title',
+                    'meta_description',
+                    'meta_keywords',
+                    'properties',
+                    'details',
+                    'status',
+                    'categories' => [
+                        '*' => [
+                            'name',
+                            'slug',
+                            'icon_url',
+                            'image_url',
+                            'products_count',
+                        ],
+                    ],
+                    'delivery_options' => [
+                        '*' => [
+                            'uuid',
+                            'sku',
+                            'name',
+                            'price_data',
+                            'fulfillment_type',
+                            'delivery_method',
+                        ],
+                    ],
+                    'media',
                 ],
             ]);
 
@@ -117,8 +157,8 @@ describe('Course Lsiting filters', function (): void {
     });
     // it has category slug : filter by category
     it('filter by category', function (): void {
-        $category          = Category::factory()->create(['name' => 'Programming', 'slug' => 'programming']);
-        $otherCategory     = Category::factory()->create(['name' => 'Design', 'slug' => 'design']);
+        $category = Category::factory()->create(['name' => 'Programming', 'slug' => 'programming']);
+        $otherCategory = Category::factory()->create(['name' => 'Design', 'slug' => 'design']);
         $productInCategory = Product::factory()
             ->withDeliveryOptions(1)
             ->withCourse()

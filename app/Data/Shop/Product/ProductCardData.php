@@ -23,6 +23,7 @@ final class ProductCardData extends Data
         public ?float $discount_percent,
         public bool $is_free,
         public bool $is_featured,
+        public bool $provides_certificate,
         #[WithTransformer(TranslatableEnumData::class)]
         public ProductableEnum $product_type,
         public ?string $thumbnail_url,
@@ -49,6 +50,7 @@ final class ProductCardData extends Data
             discount_percent: $priceData->discount_percentage,
             is_free: ($priceData?->min_price ?? 0) <= 0,
             is_featured: $product->is_featured,
+            provides_certificate: $product->productable->provides_certificate ?? false,
             product_type: ProductableEnum::from($product->productable_type),
             thumbnail_url: $product->productable->thumbnail_url ?? null,
             teachers: $teachers,
