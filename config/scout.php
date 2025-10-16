@@ -213,6 +213,10 @@ return [
                         ['name' => 'productable_status', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'has_published_delivery_option', 'type' => 'bool', 'facet' => true],
                         ['name' => 'is_term_active', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'is_available_now', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'earliest_registration_start_ts', 'type' => 'int64', 'sort' => true, 'optional' => true],
+                        ['name' => 'latest_registration_end_ts', 'type' => 'int64', 'sort' => true, 'optional' => true],
+                        ['name' => 'earliest_availability_start_ts', 'type' => 'int64', 'sort' => true, 'optional' => true],
                         [
                             'name'  => 'embedding',
                             'type'  => 'float[]',
