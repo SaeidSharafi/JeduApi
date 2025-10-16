@@ -1,0 +1,104 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "slug": "idea-to-startup-seminar-summer-1403",
+    "full_name": "سمینار از ایده تا استارتاپ - تابستان ۱۴۰۳",
+    "short_name": "سمینار کارآفرینی",
+    "subtitle": "گام به گام از اعتبارسنجی ایده تا جذب سرمایه و رشد کسب‌وکار",
+    "price_data": {
+      "min_price": 950000,
+      "min_original_price": 950000,
+      "has_featured_price": false,
+      "has_discount": false,
+      "has_pre_payment": false,
+      "discount_type": null,
+      "discount_percentage": null,
+      "highest_discount_amount": null,
+      "range": {
+        "min": 950000,
+        "max": 950000
+      },
+      "prices": null
+    },
+    "description": "مراحل راه‌اندازی یک کسب‌وکار موفق را از زبان کارآفرینان برتر بشنوید.",
+    "difficulty_level": {
+      "value": "intermediate",
+      "label": "متوسط"
+    },
+    "curriculum_summary_text": "این سمینار به موضوعاتی چون توسعه مدل کسب‌وکار، ساخت کمینه محصول پذیرفتنی (MVP)، استراتژی‌های بازاریابی اولیه و اصول ارائه به سرمایه‌گذار (Pitch Deck) می‌پردازد.",
+    "outcomes_json": {
+      "outcome1": "آشنایی با مراحل کلیدی راه‌اندازی یک استارتاپ.",
+      "outcome2": "یادگیری اصول اولیه برای اعتبارسنجی ایده و جذب سرمایه‌گذار."
+    },
+    "target_audience": "افراد صاحب ایده، دانشجویان علاقه‌مند به کارآفرینی، و بنیان‌گذاران استارتاپ‌های نوپا.",
+    "prerequisites": "داشتن یک ایده کسب‌وکار (حتی در مرحله اولیه) به درک بهتر مطالب کمک می‌کند.",
+    "promo_video_external_url": "placeholder3.mp4",
+    "estimated_duration_desc": "این سمینار یک روزه به مدت ۴ ساعت برگزار می‌شود.",
+    "provides_certificate": true,
+    "faq": [
+      {
+        "question": "آیا این سمینار برای کسب‌وکارهای سنتی هم مفید است؟",
+        "answer": "بسیاری از مفاهیم مانند مدل کسب‌وکار و بازاریابی برای همه انواع کسب‌وکارها کاربردی است."
+      },
+      {
+        "question": "آیا امکان شبکه‌سازی با دیگر کارآفرینان وجود دارد؟",
+        "answer": "بله، زمان‌هایی برای شبکه‌سازی و معرفی شرکت‌کنندگان در نظر گرفته شده است."
+      }
+    ],
+    "keywords": "startup,entrepreneur,business,idea,investment",
+    "meta_title": "سمینار کارآفرینی: نقشه راه از ایده تا استارتاپ",
+    "meta_description": "در سمینار از ایده تا استارتاپ، مراحل کلیدی راه‌اندازی یک کسب‌وکار موفق را از اعتبارسنجی ایده تا جذب سرمایه از زبان کارآفرینان برتر بیاموزید.",
+    "meta_keywords": "کارآفرینی,استارتاپ,مدل کسب و کار,جذب سرمایه",
+    "details": [],
+    "status": {
+      "value": "published",
+      "label": "منتشر شده"
+    },
+    "categories": [
+      {
+        "name": "بازاریابی دیجیتال",
+        "slug": "digital-marketing",
+        "icon_url": null,
+        "image_url": null,
+        "products_count": null
+      }
+    ],
+    "delivery_options": [
+      {
+        "uuid": "49e273aa-9e7f-4be7-9d0f-1650bdd434af",
+        "sku": "online_service_1051",
+        "name": "شرکت در سمینار آنلاین کارآفرینی",
+        "price_data": {
+          "current_price": 950000,
+          "original_price": 950000,
+          "pre_payment_price": null,
+          "featured_price": null,
+          "discount_amount": null,
+          "has_pre_payment_price": false,
+          "has_featured_price": false,
+          "has_discount": false,
+          "discount_type": null,
+          "discount_percentage": null,
+          "range": null,
+          "uuid": "49e273aa-9e7f-4be7-9d0f-1650bdd434af"
+        },
+        "fulfillment_type": {
+          "value": "online_service",
+          "label": "سرویس آنلاین"
+        },
+        "delivery_method": {
+          "value": "live_session_skyroom",
+          "label": "جلسه زنده با Skyroom"
+        }
+      }
+    ],
+    "media": {
+      "gallery": [],
+      "video": [],
+      "cover": [],
+      "certificate": [],
+      "main": []
+    }
+  },
+  "metadata": []
+}

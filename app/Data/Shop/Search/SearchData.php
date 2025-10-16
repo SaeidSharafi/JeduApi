@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Search;
 
+use App\Data\Shop\Product\Course\ProductFilterData;
 use App\Enums\Product\ProductableEnum;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
@@ -22,31 +23,22 @@ final class SearchData extends Data
         public ?int $per_page = 15,
         public ?array $result_types = null,
         public ?string $productable_type = null,
-        public ?bool $has_discount = null,
-        public ?array $category_slugs = null,
-        public ?int $price_min = null,
-        public ?int $price_max = null,
-        public ?string $difficulty_level = null,
-        public ?array $fulfillment_types = null,
-    ) {
-    }
+        public ?ProductFilterData $filter = null,
+    ) {}
 
     public static function rules(?ValidationContext $context = null): array
     {
+        $filters = ProductFilterData::rules($context, 'filter.');
+
         return [
-            'q'                   => ['required', 'string', 'max:255'],
-            'per_page'            => ['sometimes', 'integer', 'min:1', 'max:100'],
-            'result_types'        => ['sometimes', 'array'],
-            'result_types.*'      => ['string', Rule::in(['product', 'blog_post'])],
-            'productable_type'    => ['sometimes', 'string', Rule::enum(ProductableEnum::class)],
-            'has_discount'        => ['sometimes', 'boolean'],
-            'category_slugs'      => ['sometimes', 'array'],
-            'category_slugs.*'    => ['string'],
-            'price_min'           => ['sometimes', 'integer', 'min:0'],
-            'price_max'           => ['sometimes', 'integer', 'gt:price_min'],
-            'difficulty_level'    => ['sometimes', 'string'],
-            'fulfillment_types'   => ['sometimes', 'array'],
-            'fulfillment_types.*' => ['string'],
+            'q'                => ['required', 'string', 'max:255'],
+            'per_page'         => ['sometimes', 'integer', 'min:1', 'max:100'],
+            'result_types'     => ['sometimes', 'array'],
+            'result_types.*'   => ['string', Rule::in(['product', 'blog_post'])],
+            'productable_type' => ['sometimes', 'string', Rule::enum(ProductableEnum::class)],
+            'filter'           => ['sometimes', 'array'],
+            'filter.*'         => ['sometimes'],
+            ...$filters,
         ];
     }
 
@@ -55,12 +47,14 @@ final class SearchData extends Data
      */
     public function queryParameters(): array
     {
+        $parameters = ProductFilterData::queryParameters('filter.');
+
         return [
-            'q'            => [
+            'q' => [
                 'description' => 'The search query',
                 'example'     => 'laptop',
             ],
-            'per_page'     => [
+            'per_page' => [
                 'description' => 'Number of results per page (1-100)',
                 'example'     => 15,
             ],
@@ -76,38 +70,11 @@ final class SearchData extends Data
                 'description' => 'Filter results by productable type (e.g., course, bundle)',
                 'example'     => ProductableEnum::COURSE->value,
             ],
-            'has_discount' => [
-                'description' => 'Filter products that have an active discount',
-                'example'     => true,
+            'filter' => [
+                'description' => 'Filter criteria for courses',
+                'example'     => ['category_id' => 1, 'status' => 'published'],
             ],
-            'category_slugs' => [
-                'description' => 'Filter products by category slugs',
-                'example'     => ['programming', 'design'],
-            ],
-            'category_slugs.*' => [
-                'description' => 'Filter products by category slugs',
-                'example'     => 'programming',
-            ],
-            'price_min'    => [
-                'description' => 'Minimum price filter',
-                'example'     => 100000,
-            ],
-            'price_max'    => [
-                'description' => 'Maximum price filter',
-                'example'     => 500000,
-            ],
-            'difficulty_level' => [
-                'description' => 'Filter courses by difficulty level (e.g., beginner, intermediate, advanced)',
-                'example'     => 'beginner',
-            ],
-            'fulfillment_types' => [
-                'description' => 'Filter products by fulfillment types (e.g., digital, physical)',
-                'example'     => ['digital', 'physical'],
-            ],
-            'fulfillment_types.*' => [
-                'description' => 'Filter products by fulfillment types (e.g., digital, physical)',
-                'example'     => 'digital',
-            ],
+            ...$parameters,
         ];
     }
 }

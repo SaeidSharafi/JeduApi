@@ -1,0 +1,97 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "slug": "wordpress-professional-contact-form-plugin",
+    "full_name": "پلاگین حرفه‌ای ساخت فرم تماس",
+    "short_name": "پلاگین وردپرس",
+    "price_data": {
+      "min_price": 500000,
+      "min_original_price": 500000,
+      "has_featured_price": false,
+      "has_discount": false,
+      "has_pre_payment": false,
+      "discount_type": null,
+      "discount_percentage": null,
+      "highest_discount_amount": null,
+      "range": {
+        "min": 500000,
+        "max": 500000
+      },
+      "prices": null
+    },
+    "description": "یک پلاگین قدرتمند و با تنظیمات کامل برای ایجاد فرم‌های تماس سفارشی، زیبا و امن در وب‌سایت وردپرسی شما.",
+    "version": "3.1.5",
+    "page_count": null,
+    "duration_seconds": null,
+    "difficulty_level": {
+      "value": "beginner",
+      "label": "مبتدی"
+    },
+    "provides_certificate": false,
+    "faq": [
+      {
+        "question": "آیا این پلاگین با ویرایشگرهای صفحه‌ساز مانند المنتور سازگار است؟",
+        "answer": "بله، این پلاگین به صورت کامل با اکثر صفحه‌سازهای محبوب وردپرس از جمله المنتور، ویژوال کامپوزر و دیوی سازگاری دارد و می‌توانید فرم‌ها را به راحتی در صفحات خود قرار دهید."
+      },
+      {
+        "question": "آیا این پلاگین از زبان فارسی پشتیبانی می‌کند؟",
+        "answer": "بله، پنل مدیریت و تمامی بخش‌های این پلاگین به صورت کامل به زبان فارسی ترجمه شده است."
+      }
+    ],
+    "keywords": "وردپرس,پلاگین,فرم تماس",
+    "meta_title": "پلاگین حرفه‌ای ساخت فرم تماس وردپرس",
+    "meta_description": "با این افزونه، فرم‌های تماس پیشرفته با قابلیت‌های متنوع مانند آپلود فایل و منطق شرطی برای سایت وردپرسی خود بسازید.",
+    "meta_keywords": "وردپرس,افزونه وردپرس,فرم ساز",
+    "details": [],
+    "status": {
+      "value": "published",
+      "label": "منتشر شده"
+    },
+    "categories": [
+      {
+        "name": "طراحی وب",
+        "slug": "web-design",
+        "icon_url": null,
+        "image_url": null,
+        "products_count": null
+      }
+    ],
+    "delivery_options": [
+      {
+        "uuid": "ea9ed6de-e2e7-4c94-ade2-11f0912366e9",
+        "sku": "digital_1053",
+        "name": "دانلود پلاگین وردپرس",
+        "price_data": {
+          "current_price": 500000,
+          "original_price": 500000,
+          "pre_payment_price": null,
+          "featured_price": null,
+          "discount_amount": null,
+          "has_pre_payment_price": false,
+          "has_featured_price": false,
+          "has_discount": false,
+          "discount_type": null,
+          "discount_percentage": null,
+          "range": null,
+          "uuid": "ea9ed6de-e2e7-4c94-ade2-11f0912366e9"
+        },
+        "fulfillment_type": {
+          "value": "digital",
+          "label": "دیجیتال"
+        },
+        "delivery_method": {
+          "value": "direct_download",
+          "label": "دانلود مستقیم"
+        }
+      }
+    ],
+    "media": {
+      "gallery": [],
+      "video": [],
+      "cover": [],
+      "certificate": [],
+      "main": []
+    }
+  },
+  "metadata": []
+}

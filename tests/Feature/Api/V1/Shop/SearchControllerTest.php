@@ -180,32 +180,32 @@ describe('Search Validation', function () {
 
     it('rejects non-array category_slugs parameter', function () {
         $response = getJson(route('api.v1.shop.search', [
-            'q'            => 'test',
-            'category_slugs' => 'not-an-array',
+            'q'      => 'test',
+            'filter' => ['category_slugs' => 'not-an-array'],
         ]));
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['category_slugs']);
+            ->assertJsonValidationErrors(['filter.category_slugs']);
     });
 
     it('rejects non-integer price_min parameter', function () {
         $response = getJson(route('api.v1.shop.search', [
-            'q'         => 'test',
-            'price_min' => 'not-a-number',
+            'q'      => 'test',
+            'filter' => ['min_price' => 'not-a-number'],
         ]));
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['price_min']);
+            ->assertJsonValidationErrors(['filter.min_price']);
     });
 
     it('rejects negative price_min parameter', function () {
         $response = getJson(route('api.v1.shop.search', [
-            'q'         => 'test',
-            'price_min' => -100,
+            'q'      => 'test',
+            'filter' => ['min_price' => -100],
         ]));
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['price_min']);
+            ->assertJsonValidationErrors(['filter.min_price']);
     });
 
     it('rejects invalid result_types values', function () {
@@ -236,16 +236,18 @@ describe('Search Validation', function () {
 
     it('accepts valid search with all filter parameters', function () {
         $response = getJson(route('api.v1.shop.search', [
-            'q'                 => 'test',
-            'per_page'          => 10,
-            'productable_type'  => 'course',
-            'has_discount'      => true,
-            'category_slugs'      => ['art', 'programming'],
-            'price_min'         => 100000,
-            'price_max'         => 500000,
-            'difficulty_level'  => 'beginner',
-            'fulfillment_types' => ['digital'],
-            'result_types'      => ['product'],
+            'q'                => 'test',
+            'per_page'         => 10,
+            'productable_type' => 'course',
+            'filter'           => [
+                'with_discounts'    => true,
+                'category_slugs'    => ['art', 'programming'],
+                'min_price'         => 100000,
+                'max_price'         => 500000,
+                'difficulty_level'  => 'beginner',
+                'fulfillment_types' => ['digital'],
+            ],
+            'result_types' => ['product'],
         ]));
 
         expect($response->status())->toBeIn([200, 500]);
@@ -403,8 +405,8 @@ describe('filters tests', function () {
         ]);
 
         $response = getJson(route('api.v1.shop.search', [
-            'q'            => 'Course',
-            'has_discount' => true,
+            'q'      => 'Course',
+            'filter' => ['with_discounts' => true],
         ]));
 
         $response->assertOk();
@@ -436,8 +438,8 @@ describe('filters tests', function () {
             ->create(['name' => 'No-category Course']);
         // Filter by category1 and category3
         $response = getJson(route('api.v1.shop.search', [
-            'q'            => 'Course',
-            'category_slugs' => [$category1->slug, $category3->slug],
+            'q'      => 'Course',
+            'filter' => ['category_slugs' => [$category1->slug, $category3->slug]],
         ]));
         $response->assertOk();
         $json = $response->json();
@@ -500,9 +502,8 @@ describe('filters tests', function () {
         ]);
 
         $response = getJson(route('api.v1.shop.search', [
-            'q'         => 'Course',
-            'price_min' => 200_000,
-            'price_max' => 500_000,
+            'q'      => 'Course',
+            'filter' => ['min_price' => 200_000, 'max_price' => 500_000],
         ]));
 
         $response->assertOk();
@@ -531,8 +532,8 @@ describe('filters tests', function () {
             ->create(['name' => 'Advanced Course']);
 
         $response = getJson(route('api.v1.shop.search', [
-            'q'     => 'Course',
-            'difficulty_level' => 'beginner',
+            'q'      => 'Course',
+            'filter' => ['difficulty_level' => 'beginner'],
         ]));
 
         $response->assertOk();
@@ -559,8 +560,8 @@ describe('filters tests', function () {
             ->withCourse()
             ->create(['name' => 'Physical Course']);
         $response = getJson(route('api.v1.shop.search', [
-            'q'                 => 'Course',
-            'fulfillment_types' => ['digital'],
+            'q'      => 'Course',
+            'filter' => ['fulfillment_types' => ['digital']],
         ]));
         $response->assertOk();
         $json = $response->json();

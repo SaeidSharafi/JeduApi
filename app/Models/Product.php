@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\RelationTypeEnum;
+use App\Enums\TermStatusEnum;
 use App\Traits\HasCategories;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -47,11 +48,25 @@ final class Product extends Model
     public function toSearchableArray(): array
     {
         // Calculate static availability flags
-        $hasPublishedDeliveryOption = $this->productDeliveryOptions
-            ->where('status', PublicationStatusEnum::PUBLISHED)
-            ->isNotEmpty();
+        $publishedOptions = $this->productDeliveryOptions
+            ->where('status', PublicationStatusEnum::PUBLISHED);
+        $now            = now();
+        $isAvailableNow = $publishedOptions->contains(function ($option) use ($now) {
+            $inRegDate = (is_null($option->registration_start_date) || $now->gte($option->registration_start_date)) && (is_null($option->registration_end_date) || $now->lte($option->registration_end_date));
 
-        $isTermActive = is_null($this->term) || $this->term->status === \App\Enums\TermStatusEnum::ACTIVE;
+            $inAvailDate = (is_null($option->available_from) || $now->gte($option->available_from)) && (is_null($option->available_to) || $now->lte($option->available_to));
+
+            return $inRegDate && $inAvailDate;
+        });
+
+        $earliestRegistrationStart = $publishedOptions->pluck('registration_start_date')->filter()->min();
+        $latestRegistrationEnd     = $publishedOptions->pluck('registration_end_date')->filter()->max();
+        $earliestAvailabilityStart = $publishedOptions->pluck('available_from')->filter()->min();
+        $latestAvailabilityEnd     = $publishedOptions->pluck('available_to')->filter()->max();
+
+        $hasPublishedDeliveryOption = $publishedOptions->isNotEmpty();
+
+        $isTermActive = is_null($this->term) || $this->term->status === TermStatusEnum::ACTIVE;
 
         $searchableData = [
             'id'                => (string) $this->id,
@@ -69,6 +84,13 @@ final class Product extends Model
             'productable_status'            => $this->productable?->status->value,
             'has_published_delivery_option' => $hasPublishedDeliveryOption,
             'is_term_active'                => $isTermActive,
+
+            'is_available_now' => $isAvailableNow,
+
+            'earliest_registration_start_ts' => $earliestRegistrationStart?->timestamp,
+            'latest_registration_end_ts'     => $latestRegistrationEnd?->timestamp,
+            'earliest_availability_start_ts' => $earliestAvailabilityStart?->timestamp,
+            'latest_availability_end_ts'     => $latestAvailabilityEnd?->timestamp,
 
             'price'             => $this->productPrice?->min_price    ?? ($this->price_data_cache['min_price'] ?? 0),
             'has_discount'      => $this->productPrice?->has_discount ?? ($this->price_data_cache['has_discount'] ?? false),
@@ -104,7 +126,7 @@ final class Product extends Model
     {
         return $this->status === PublicationStatusEnum::PUBLISHED
             && $this->is_visible
-            && (! $this->term || $this->term->status === \App\Enums\TermStatusEnum::ACTIVE)
+            && (! $this->term || $this->term->status === TermStatusEnum::ACTIVE)
             && $this->productable?->status === PublicationStatusEnum::PUBLISHED
             && $this->productDeliveryOptions()
                 ->where('status', PublicationStatusEnum::PUBLISHED)

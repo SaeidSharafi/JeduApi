@@ -1,0 +1,675 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "slug": "wordpress-professional-contact-form-plugin",
+        "name": "پلاگین حرفه‌ای ساخت فرم تماس",
+        "price": 500000,
+        "original_price": 500000,
+        "price_range": {
+          "min": 500000,
+          "max": 500000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": true,
+        "provides_certificate": false,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "main.svg",
+        "teachers": [],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 500000,
+          "min_original_price": 500000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": false,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "min": 500000,
+            "max": 500000
+          },
+          "prices": [
+            {
+              "current_price": 500000,
+              "original_price": 500000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "ea9ed6de-e2e7-4c94-ade2-11f0912366e9"
+            }
+          ]
+        }
+      },
+      {
+        "slug": "photography-composition-ebook",
+        "name": "کتاب الکترونیکی ترکیب‌بندی در عکاسی",
+        "price": 160000,
+        "original_price": 160000,
+        "price_range": {
+          "min": 160000,
+          "max": 160000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": true,
+        "provides_certificate": false,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "fake-gallery.svg",
+        "teachers": [],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 160000,
+          "min_original_price": 160000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": false,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "min": 160000,
+            "max": 160000
+          },
+          "prices": [
+            {
+              "current_price": 160000,
+              "original_price": 160000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "a05ebc59-4292-48a6-959c-70a07cc5be1d"
+            }
+          ]
+        }
+      },
+      {
+        "slug": "advanced-excel-functions-video",
+        "name": "فایل ویدیویی آموزش توابع پیشرفته اکسل",
+        "price": 220000,
+        "original_price": 220000,
+        "price_range": {
+          "min": 220000,
+          "max": 220000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": true,
+        "provides_certificate": false,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "fake-gallery.svg",
+        "teachers": [],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 220000,
+          "min_original_price": 220000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": false,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "min": 220000,
+            "max": 220000
+          },
+          "prices": [
+            {
+              "current_price": 220000,
+              "original_price": 220000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "abb9efd0-d6e8-4a93-b6bf-d02602015f5f"
+            }
+          ]
+        }
+      },
+      {
+        "slug": "persian-handwritten-fonts-collection",
+        "name": "مجموعه فونت‌های دست‌نویس فارسی",
+        "price": 350000,
+        "original_price": 350000,
+        "price_range": {
+          "min": 350000,
+          "max": 350000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": false,
+        "provides_certificate": false,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "fake-gallery.svg",
+        "teachers": [],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 350000,
+          "min_original_price": 350000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": false,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "min": 350000,
+            "max": 350000
+          },
+          "prices": [
+            {
+              "current_price": 350000,
+              "original_price": 350000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "41f25215-e4cb-40cc-a665-ee5b422d5dc0"
+            }
+          ]
+        }
+      },
+      {
+        "slug": "contemporary-short-stories-collection",
+        "name": "مجموعه داستان‌های کوتاه معاصر",
+        "price": 120000,
+        "original_price": 120000,
+        "price_range": {
+          "min": 120000,
+          "max": 120000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": false,
+        "provides_certificate": false,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "fake-cover.svg",
+        "teachers": [],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 120000,
+          "min_original_price": 120000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": false,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "min": 120000,
+            "max": 120000
+          },
+          "prices": [
+            {
+              "current_price": 120000,
+              "original_price": 120000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "c7edf107-ba40-4bdc-aa97-7a329b817355"
+            }
+          ]
+        }
+      },
+      {
+        "slug": "digital-marketing-campaigns-checklist",
+        "name": "چک‌لیست کمپین‌های بازاریابی دیجیتال",
+        "price": 50000,
+        "original_price": 50000,
+        "price_range": {
+          "min": 50000,
+          "max": 50000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": false,
+        "provides_certificate": false,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "fake-cover.svg",
+        "teachers": [],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 50000,
+          "min_original_price": 50000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": false,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "min": 50000,
+            "max": 50000
+          },
+          "prices": [
+            {
+              "current_price": 50000,
+              "original_price": 50000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "06a7f0d5-b4be-4028-86be-a924279779d2"
+            }
+          ]
+        }
+      },
+      {
+        "slug": "background-music-for-content-creation",
+        "name": "مجموعه موسیقی متن برای تولید محتوا",
+        "price": 400000,
+        "original_price": 400000,
+        "price_range": {
+          "min": 400000,
+          "max": 400000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": false,
+        "provides_certificate": false,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "preview.svg",
+        "teachers": [],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 400000,
+          "min_original_price": 400000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": false,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "min": 400000,
+            "max": 400000
+          },
+          "prices": [
+            {
+              "current_price": 400000,
+              "original_price": 400000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "4bd9c4e3-1238-4615-a0e5-518217b09170"
+            }
+          ]
+        }
+      },
+      {
+        "slug": "creative-resume-templates",
+        "name": "مجموعه قالب‌های رزومه خلاقانه",
+        "price": 200000,
+        "original_price": 200000,
+        "price_range": {
+          "min": 200000,
+          "max": 200000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": false,
+        "provides_certificate": false,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "preview.svg",
+        "teachers": [],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 200000,
+          "min_original_price": 200000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": false,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "min": 200000,
+            "max": 200000
+          },
+          "prices": [
+            {
+              "current_price": 200000,
+              "original_price": 200000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "a1f75cca-ec39-4eb3-ba49-45f9aa9e02ce"
+            }
+          ]
+        }
+      },
+      {
+        "slug": "seo-guide-ebook",
+        "name": "کتاب الکترونیکی راهنمای کامل سئو",
+        "price": 180000,
+        "original_price": 180000,
+        "price_range": {
+          "min": 180000,
+          "max": 180000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": true,
+        "provides_certificate": false,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "preview.svg",
+        "teachers": [],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 180000,
+          "min_original_price": 180000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": false,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "min": 180000,
+            "max": 180000
+          },
+          "prices": [
+            {
+              "current_price": 180000,
+              "original_price": 180000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "1967963a-2cf1-4663-8920-5da0dfc45467"
+            }
+          ]
+        }
+      },
+      {
+        "slug": "after-effects-logo-reveal-template",
+        "name": "پروژه آماده نمایش لوگو در افترافکت",
+        "price": 300000,
+        "original_price": 300000,
+        "price_range": {
+          "min": 300000,
+          "max": 300000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": false,
+        "provides_certificate": false,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "main.svg",
+        "teachers": [],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 300000,
+          "min_original_price": 300000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": false,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "min": 300000,
+            "max": 300000
+          },
+          "prices": [
+            {
+              "current_price": 300000,
+              "original_price": 300000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "fc8e51be-8e94-4d98-8ea1-a3983a950c11"
+            }
+          ]
+        }
+      },
+      {
+        "slug": "iranian-vectors-for-design",
+        "name": "مجموعه وکتورهای ایرانی برای طراحی",
+        "price": 250000,
+        "original_price": 250000,
+        "price_range": {
+          "min": 250000,
+          "max": 250000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": false,
+        "provides_certificate": false,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "main.svg",
+        "teachers": [],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 250000,
+          "min_original_price": 250000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": false,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "min": 250000,
+            "max": 250000
+          },
+          "prices": [
+            {
+              "current_price": 250000,
+              "original_price": 250000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "4a22ac5b-b682-4924-a26d-a8481ff9ba30"
+            }
+          ]
+        }
+      },
+      {
+        "slug": "php-design-patterns-book",
+        "name": "کتاب الگوهای طراحی در PHP",
+        "price": 150000,
+        "original_price": 150000,
+        "price_range": {
+          "min": 150000,
+          "max": 150000
+        },
+        "has_discount": false,
+        "discount_percent": null,
+        "is_free": false,
+        "is_featured": true,
+        "provides_certificate": false,
+        "product_type": {
+          "value": "digital_asset",
+          "label": "فایل"
+        },
+        "thumbnail_url": "main.svg",
+        "teachers": [],
+        "reviews_count": 0,
+        "average_rating": 0,
+        "price_data": {
+          "min_price": 150000,
+          "min_original_price": 150000,
+          "has_featured_price": false,
+          "has_discount": false,
+          "has_pre_payment": false,
+          "discount_type": null,
+          "discount_percentage": null,
+          "highest_discount_amount": null,
+          "range": {
+            "min": 150000,
+            "max": 150000
+          },
+          "prices": [
+            {
+              "current_price": 150000,
+              "original_price": 150000,
+              "pre_payment_price": null,
+              "featured_price": null,
+              "discount_amount": null,
+              "has_pre_payment_price": false,
+              "has_featured_price": false,
+              "has_discount": false,
+              "discount_type": null,
+              "discount_percentage": null,
+              "range": null,
+              "uuid": "7b4f05cd-d728-41d3-bafe-f64e1bcfc8c9"
+            }
+          ]
+        }
+      }
+    ],
+    "first_page_url": "http://jedu.test/api/v1/shop/digital-assets?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "http://jedu.test/api/v1/shop/digital-assets?page=1",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; قبلی",
+        "page": null,
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/shop/digital-assets?page=1",
+        "label": "1",
+        "page": 1,
+        "active": true
+      },
+      {
+        "url": null,
+        "label": "بعدی &raquo;",
+        "page": null,
+        "active": false
+      }
+    ],
+    "next_page_url": null,
+    "path": "http://jedu.test/api/v1/shop/digital-assets",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 12,
+    "total": 12
+  },
+  "metadata": []
+}

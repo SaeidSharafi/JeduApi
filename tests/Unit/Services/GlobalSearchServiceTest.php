@@ -13,14 +13,16 @@ describe('Filter Building', function () {
         $method->setAccessible(true);
 
         $searchData = SearchData::from([
-            'q'                 => 'test',
-            'productable_type'  => 'course',
-            'has_discount'      => true,
-            'category_slugs'      => ["art", "science", "math"],
-            'price_min'         => 100000,
-            'price_max'         => 500000,
-            'difficulty_level'  => 'beginner',
-            'fulfillment_types' => ['digital', 'physical'],
+            'q'                => 'test',
+            'productable_type' => 'course',
+            'filter'           => [
+                'with_discounts'    => true,
+                'category_slugs'    => ['art', 'science', 'math'],
+                'min_price'         => 100000,
+                'max_price'         => 500000,
+                'difficulty_level'  => 'beginner',
+                'fulfillment_types' => ['digital', 'physical'],
+            ],
         ]);
 
         $result = $method->invoke($service, $searchData);
@@ -42,7 +44,7 @@ describe('Filter Building', function () {
         $method     = $reflection->getMethod('buildProductFilters');
         $method->setAccessible(true);
 
-        $result = $method->invoke($service, SearchData::from(['q' => 'test', 'has_discount' => false]));
+        $result = $method->invoke($service, SearchData::from(['q' => 'test', 'filter' => ['with_discounts' => false]]));
 
         expect($result)->toContain('has_discount:=false');
     });
@@ -53,7 +55,7 @@ describe('Filter Building', function () {
         $method     = $reflection->getMethod('buildProductFilters');
         $method->setAccessible(true);
 
-        $result = $method->invoke($service, SearchData::from(['q' => 'test', 'price_min' => 100000]));
+        $result = $method->invoke($service, SearchData::from(['q' => 'test', 'filter' => ['min_price' => 100000]]));
 
         expect($result)->toContain('price:>=100000');
     });
@@ -64,7 +66,7 @@ describe('Filter Building', function () {
         $method     = $reflection->getMethod('buildProductFilters');
         $method->setAccessible(true);
 
-        $result = $method->invoke($service, SearchData::from(['q' => 'test', 'price_max' => 500000]));
+        $result = $method->invoke($service, SearchData::from(['q' => 'test', 'filter' => ['max_price' => 500000]]));
 
         expect($result)->toContain('price:<=500000');
     });

@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Product;
 
-use App\Data\Shop\Product\Course\CourseDetailData;
 use App\Data\Shop\Product\Course\ProductListRequestData;
+use App\Data\Shop\Product\DigitalAssetDetailData;
 use App\Data\Shop\Product\ProductCardData;
+use App\Data\Shop\Product\SeminarDetailData;
 use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
@@ -14,31 +15,30 @@ use App\Query\ProductQueryService;
 use App\Services\ProductPriceService;
 
 /**
- * @group Shop - Products - Courses
+ * @group Shop - Products - Digital Assets
  *
- * APIs for retrieving courses in the shop.
+ * APIs for retrieving digital asset in the shop.
  */
-final class CourseController extends Controller
+final class DigitalAssetController extends Controller
 {
     public function __construct(
         private ProductPriceService $priceService,
     ) {}
 
     /**
-     * Course List
+     * Digital Assets List
      *
-     * Retrieve a paginated list of active product of course type with optional filtering and sorting.
+     * Retrieve a paginated list of active product of digital asset type with optional filtering and sorting.
      *
      * @ignoreQueryParam type
      *
-     * @responseFile responses/shop/products/courses/index.json
+     * @responseFile responses/shop/products/digital-assets/index.json
      */
     public function index(ProductListRequestData $requestData)
     {
-        $requestData->type = ProductableEnum::COURSE->value;
+        $requestData->type = ProductableEnum::DIGITAL_ASSET->value;
         $courses           = ProductQueryService::make()
-            ->ofType(ProductableEnum::COURSE)
-            ->getCourseList($requestData)
+            ->getDigitalAssetList($requestData)
             ->through(function (Product $product) {
                 $priceData = $this->priceService->getPriceDataForProduct($product);
 
@@ -49,18 +49,17 @@ final class CourseController extends Controller
     }
 
     /**
-     * Course Detail
+     * Digital Asset Detail
      *
-     * Retrieve detailed information about a specific product of course type by its slug.
+     * Retrieve detailed information about a specific product of digital asset type by its slug.
      *
-     * @responseFile  200 responses/shop/products/courses/show.json
+     * @responseFile  200 responses/shop/products/digital-assets/show.json
      * @responseFile  404 responses/404.json
      */
     public function show(Product $product)
     {
-        // Load the product with all required relations for detail view
         $product = ProductQueryService::make()
-            ->ofType(ProductableEnum::COURSE)
+            ->ofType(ProductableEnum::DIGITAL_ASSET)
             ->availableProducts()
             ->forDetail()
             ->getQuery()
@@ -69,6 +68,6 @@ final class CourseController extends Controller
 
         $priceData = $this->priceService->getPriceDataForProduct($product);
 
-        return response()->success(CourseDetailData::fromModel($product, $priceData));
+        return response()->success(DigitalAssetDetailData::fromModel($product, $priceData));
     }
 }
