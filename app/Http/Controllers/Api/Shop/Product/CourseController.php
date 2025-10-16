@@ -30,13 +30,13 @@ final class CourseController extends Controller
      * Retrieve a paginated list of active product of course type with optional filtering and sorting.
      *
      * @ignoreQueryParam type
+     *
      * @responseFile responses/shop/products/courses/index.json
      */
     public function index(ProductListRequestData $requestData)
     {
         $requestData->type = ProductableEnum::COURSE->value;
-        $courses = ProductQueryService::make()
-            ->availableProducts()
+        $courses           = ProductQueryService::make()
             ->ofType(ProductableEnum::COURSE)
             ->getCourseList($requestData)
             ->through(function (Product $product) {
