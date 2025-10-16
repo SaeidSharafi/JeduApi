@@ -23,6 +23,7 @@ use App\Models\Seminar;
 use App\Models\Term;
 use App\Query\ProductQueryService;
 use App\Services\ProductPriceService;
+use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Tests\Support\TypesenseTestHelper;
 
@@ -174,8 +175,8 @@ describe('ProductQueryService integration', function () {
             indexProductPrice($otherProduct);
 
             $request = ProductListRequestData::from([
-                'q'        => 'Laravel',
-                'filter'   => [
+                'q'      => 'Laravel',
+                'filter' => [
                     'categorySlug'     => $targetCategory->slug,
                     'difficulty_level' => CourseDifficultyLevelEnum::BEGINNER->value,
                     'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
@@ -304,7 +305,7 @@ describe('ProductQueryService integration', function () {
             indexProductPrice($seminarProduct);
 
             $request = ProductListRequestData::from([
-                'type'         => ProductableEnum::SEMINAR->value,
+                'type'   => ProductableEnum::SEMINAR->value,
                 'filter' => [
                     'category_ids' => [$seminarCategory->id],
                 ],
@@ -829,15 +830,497 @@ describe('ProductQueryService integration', function () {
                 ->create(['name' => 'Product B']);
             $productB->categories()->sync([$categoryB->id]);
 
-
-
-
             $results = ProductQueryService::make()
                 ->availableProducts()
                 ->inCategoryIds([$categoryA->id])
                 ->get();
             expect($results)->toHaveCount(1)
                 ->and($results->first()->is($productA->fresh()))->toBeTrue();
+        });
+
+        it('filters products by featured flag', function () {
+            $featuredProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Featured Product', 'is_featured' => true]);
+            ProductDeliveryOption::factory()->for($featuredProduct)->create([
+                'price'            => 100,
+                'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($featuredProduct);
+
+            $regularProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Regular Product', 'is_featured' => false]);
+            ProductDeliveryOption::factory()->for($regularProduct)->create([
+                'price'            => 100,
+                'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($regularProduct);
+
+            $results = ProductQueryService::make()
+                ->availableProducts()
+                ->featured()
+                ->get();
+
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->is($featuredProduct->fresh()))->toBeTrue();
+        });
+
+        it('filters products by availability now - active registration and content', function () {
+            $now = now();
+
+            // Product with all windows open
+            $activeProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Active Product']);
+            ProductDeliveryOption::factory()->for($activeProduct)->create([
+                'price'                   => 100,
+                'registration_start_date' => $now->clone()->subDays(5),
+                'registration_end_date'   => $now->clone()->addDays(5),
+                'available_from'          => $now->clone()->subDays(3),
+                'available_to'            => $now->clone()->addDays(10),
+                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($activeProduct);
+
+            // Product with registration window closed
+            $closedRegProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Closed Registration']);
+            ProductDeliveryOption::factory()->for($closedRegProduct)->create([
+                'price'                   => 100,
+                'registration_start_date' => $now->clone()->subDays(10),
+                'registration_end_date'   => $now->clone()->subDays(1),
+                'available_from'          => $now->clone()->subDays(3),
+                'available_to'            => $now->clone()->addDays(10),
+                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($closedRegProduct);
+
+            // Product with content not yet available
+            $futureContentProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Future Content']);
+            ProductDeliveryOption::factory()->for($futureContentProduct)->create([
+                'price'                   => 100,
+                'registration_start_date' => $now->clone()->subDays(5),
+                'registration_end_date'   => $now->clone()->addDays(5),
+                'available_from'          => $now->clone()->addDays(1),
+                'available_to'            => $now->clone()->addDays(10),
+                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($futureContentProduct);
+
+            $results = ProductQueryService::make()
+                ->availableNow()
+                ->get();
+
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->is($activeProduct->fresh()))->toBeTrue();
+        });
+
+        it('filters products by registration window', function () {
+            $targetDate = Carbon::now();
+
+            // Product with registration starting before target date
+            $earlyRegProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Early Registration']);
+            ProductDeliveryOption::factory()->for($earlyRegProduct)->create([
+                'price'                   => 100,
+                'registration_start_date' => $targetDate->clone()->subDays(10),
+                'registration_end_date'   => $targetDate->clone()->addDays(10),
+                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($earlyRegProduct);
+
+            // Product with registration starting after target date
+            $lateRegProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Late Registration']);
+            ProductDeliveryOption::factory()->for($lateRegProduct)->create([
+                'price'                   => 100,
+                'registration_start_date' => $targetDate->clone()->addDays(15),
+                'registration_end_date'   => $targetDate->clone()->addDays(25),
+                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($lateRegProduct);
+
+            // Only get products that START registration on or after target date
+            $results = ProductQueryService::make()
+                ->registrationWindow(from: $targetDate->addDays(11))
+                ->get();
+
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->is($lateRegProduct->fresh()))->toBeTrue();
+        });
+
+        it('filters products by registration window - end date constraint', function () {
+            $toDate = Carbon::now();
+
+            // Product with registration ending before target date - NO OVERLAP
+            $earlyEndProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Early End']);
+            ProductDeliveryOption::factory()->for($earlyEndProduct)->create([
+                'price'                   => 100,
+                'registration_start_date' => $toDate->clone()->subDays(20),
+                'registration_end_date'   => $toDate->clone()->subDays(5),
+                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($earlyEndProduct);
+
+            // Product with registration overlapping target date - OVERLAPS
+            $overlappingProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Overlapping']);
+            ProductDeliveryOption::factory()->for($overlappingProduct)->create([
+                'price'                   => 100,
+                'registration_start_date' => $toDate->clone()->subDays(10),
+                'registration_end_date'   => $toDate->clone()->addDays(10),
+                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($overlappingProduct);
+
+            // Product with registration starting after target date - NO OVERLAP
+            $futureProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Future Registration']);
+            ProductDeliveryOption::factory()->for($futureProduct)->create([
+                'price'                   => 100,
+                'registration_start_date' => $toDate->clone()->addDays(5),
+                'registration_end_date'   => $toDate->clone()->addDays(20),
+                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($futureProduct);
+
+            // Get products that overlap with window ending at target date
+            // Overlap logic: registration_start_date <= toDate AND registration_end_date >= unbounded start
+            $results = ProductQueryService::make()
+                ->registrationWindow(to: $toDate)
+                ->get();
+
+            expect($results)->toHaveCount(2)
+                ->and($results->pluck('name')->toArray())->toContain('Early End', 'Overlapping')
+                ->and($results->pluck('name')->toArray())->not()->toContain('Future Registration');
+        });
+
+        it('filters products by registration window - both from and to dates', function () {
+            $fromDate = Carbon::now();
+            $toDate   = $fromDate->clone()->addDays(30);
+
+            // Product fully contained within the target range
+            $inRangeProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'In Range']);
+            ProductDeliveryOption::factory()->for($inRangeProduct)->create([
+                'price'                   => 100,
+                'registration_start_date' => $fromDate->clone()->addDays(5),
+                'registration_end_date'   => $toDate->clone()->subDays(5),
+                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($inRangeProduct);
+
+            // Product that overlaps the range (extends beyond boundaries)
+            $overlappingProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Overlapping']);
+            ProductDeliveryOption::factory()->for($overlappingProduct)->create([
+                'price'                   => 100,
+                'registration_start_date' => $fromDate->clone()->subDays(10),
+                'registration_end_date'   => $toDate->clone()->addDays(10),
+                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($overlappingProduct);
+
+            // Product that does not overlap at all
+            $outsideProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Outside Range']);
+            ProductDeliveryOption::factory()->for($outsideProduct)->create([
+                'price'                   => 100,
+                'registration_start_date' => $toDate->clone()->addDays(5),
+                'registration_end_date'   => $toDate->clone()->addDays(20),
+                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($outsideProduct);
+
+            // Get products that overlap with the specified window
+            $results = ProductQueryService::make()
+                ->registrationWindow(from: $fromDate, to: $toDate)
+                ->get();
+
+            expect($results)->toHaveCount(2)
+                ->and($results->pluck('name')->toArray())->toContain('In Range', 'Overlapping')
+                ->and($results->pluck('name')->toArray())->not()->toContain('Outside Range');
+        });
+
+        it('filters products by availability window', function () {
+            $targetDate = Carbon::now();
+
+            // Product available before target date
+            $earlyAvailProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Early Available']);
+            ProductDeliveryOption::factory()->for($earlyAvailProduct)->create([
+                'price'            => 100,
+                'available_from'   => $targetDate->clone()->subDays(20),
+                'available_to'     => $targetDate->clone()->subDays(5),
+                'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($earlyAvailProduct);
+
+            // Product available after target date
+            $laterAvailProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Later Available']);
+            ProductDeliveryOption::factory()->for($laterAvailProduct)->create([
+                'price'            => 100,
+                'available_from'   => $targetDate->clone()->addDays(5),
+                'available_to'     => $targetDate->clone()->addDays(20),
+                'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($laterAvailProduct);
+
+            // Only get products available on or after target date
+            $results = ProductQueryService::make()
+                ->availabilityWindow(from: $targetDate)
+                ->get();
+
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->is($laterAvailProduct->fresh()))->toBeTrue();
+        });
+
+        it('filters products by availability window - end date constraint', function () {
+            $toDate = Carbon::now();
+
+            // Product available ending before target date - NO OVERLAP
+            $earlyEndAvailProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Early End Available']);
+            ProductDeliveryOption::factory()->for($earlyEndAvailProduct)->create([
+                'price'            => 100,
+                'available_from'   => $toDate->clone()->subDays(20),
+                'available_to'     => $toDate->clone()->subDays(5),
+                'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($earlyEndAvailProduct);
+
+            // Product available overlapping with target date - OVERLAPS
+            $lateEndAvailProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Late End Available']);
+            ProductDeliveryOption::factory()->for($lateEndAvailProduct)->create([
+                'price'            => 100,
+                'available_from'   => $toDate->clone()->subDays(10),
+                'available_to'     => $toDate->clone()->addDays(10),
+                'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($lateEndAvailProduct);
+
+            // Product available starting after target date - NO OVERLAP
+            $futureAvailProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Future Available']);
+            ProductDeliveryOption::factory()->for($futureAvailProduct)->create([
+                'price'            => 100,
+                'available_from'   => $toDate->clone()->addDays(5),
+                'available_to'     => $toDate->clone()->addDays(20),
+                'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($futureAvailProduct);
+
+            // Get products that overlap with window ending at target date
+            // Overlap logic: available_from <= toDate AND available_to >= unbounded start
+            $results = ProductQueryService::make()
+                ->availabilityWindow(to: $toDate)
+                ->get();
+
+            expect($results)->toHaveCount(2)
+                ->and($results->pluck('name')->toArray())->toContain('Early End Available', 'Late End Available')
+                ->and($results->pluck('name')->toArray())->not()->toContain('Future Available');
+        });
+
+        it('filters products by availability window - both from and to dates', function () {
+            $fromDate = Carbon::now();
+            $toDate   = $fromDate->clone()->addDays(30);
+
+            // Product fully contained within the target range
+            $inRangeProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'In Range']);
+            ProductDeliveryOption::factory()->for($inRangeProduct)->create([
+                'price'            => 100,
+                'available_from'   => $fromDate->clone()->addDays(5),
+                'available_to'     => $toDate->clone()->subDays(5),
+                'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($inRangeProduct);
+
+            // Product that overlaps the range (extends beyond boundaries)
+            $overlappingProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Overlapping']);
+            ProductDeliveryOption::factory()->for($overlappingProduct)->create([
+                'price'            => 100,
+                'available_from'   => $fromDate->clone()->subDays(10),
+                'available_to'     => $toDate->clone()->addDays(10),
+                'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($overlappingProduct);
+
+            // Product that does not overlap at all
+            $outsideProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Outside Range']);
+            ProductDeliveryOption::factory()->for($outsideProduct)->create([
+                'price'            => 100,
+                'available_from'   => $toDate->clone()->addDays(5),
+                'available_to'     => $toDate->clone()->addDays(20),
+                'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($outsideProduct);
+
+            // Get products that overlap with the specified window
+            $results = ProductQueryService::make()
+                ->availabilityWindow(from: $fromDate, to: $toDate)
+                ->get();
+
+            expect($results)->toHaveCount(2)
+                ->and($results->pluck('name')->toArray())->toContain('In Range', 'Overlapping')
+                ->and($results->pluck('name')->toArray())->not()->toContain('Outside Range');
+        });
+
+        it('handles null dates in availability and registration windows', function () {
+            $targetDate = Carbon::now();
+
+            // Product with null registration dates (always open)
+            $openRegProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Open Registration']);
+            ProductDeliveryOption::factory()->for($openRegProduct)->create([
+                'price'                   => 100,
+                'registration_start_date' => null,
+                'registration_end_date'   => null,
+                'available_from'          => null,
+                'available_to'            => null,
+                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($openRegProduct);
+
+            $results = ProductQueryService::make()
+                ->availableNow()
+                ->get();
+
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->is($openRegProduct->fresh()))->toBeTrue();
+        });
+
+        it('filters with course difficulty level', function () {
+            $beginnerCourse = Course::factory()->create([
+                'difficulty_level' => CourseDifficultyLevelEnum::BEGINNER->value,
+                'status'           => PublicationStatusEnum::PUBLISHED->value,
+            ]);
+            $beginnerProduct = Product::factory()
+                ->withCourse($beginnerCourse)
+                ->create(['name' => 'Beginner Course']);
+            ProductDeliveryOption::factory()->for($beginnerProduct)->create([
+                'price'            => 50,
+                'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($beginnerProduct);
+
+            $advancedCourse = Course::factory()->create([
+                'difficulty_level' => CourseDifficultyLevelEnum::ADVANCED->value,
+                'status'           => PublicationStatusEnum::PUBLISHED->value,
+            ]);
+            $advancedProduct = Product::factory()
+                ->withCourse($advancedCourse)
+                ->create(['name' => 'Advanced Course']);
+            ProductDeliveryOption::factory()->for($advancedProduct)->create([
+                'price'            => 200,
+                'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($advancedProduct);
+
+            $results = ProductQueryService::make()
+                ->availableProducts()
+                ->byCourseLevel(CourseDifficultyLevelEnum::ADVANCED)
+                ->get();
+
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->is($advancedProduct->fresh()))->toBeTrue();
+        });
+
+        it('filters by fulfillment types', function () {
+            $onlineProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Online Course']);
+            ProductDeliveryOption::factory()->for($onlineProduct)->create([
+                'price'            => 100,
+                'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($onlineProduct);
+
+            $digitalProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Digital Asset']);
+            ProductDeliveryOption::factory()->for($digitalProduct)->create([
+                'price'            => 50,
+                'fulfillment_type' => FulfillmentTypeEnum::DIGITAL->value,
+            ]);
+            indexProductPrice($digitalProduct);
+
+            $results = ProductQueryService::make()
+                ->availableProducts()
+                ->byFulfillmentTypes([FulfillmentTypeEnum::DIGITAL->value])
+                ->get();
+
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->is($digitalProduct->fresh()))->toBeTrue();
+        });
+
+        it('combines multiple filters - difficulty, fulfillment, and category', function () {
+            $category = Category::factory()->create(['slug' => 'advanced-digital']);
+
+            $advancedCourse = Course::factory()->create([
+                'difficulty_level' => CourseDifficultyLevelEnum::ADVANCED->value,
+                'status'           => PublicationStatusEnum::PUBLISHED->value,
+            ]);
+            $advancedProduct = Product::factory()
+                ->withCourse($advancedCourse)
+                ->create(['name' => 'Advanced Digital Course']);
+            $advancedProduct->categories()->sync([$category->id]);
+            ProductDeliveryOption::factory()->for($advancedProduct)->create([
+                'price'            => 200,
+                'fulfillment_type' => FulfillmentTypeEnum::DIGITAL->value,
+            ]);
+            indexProductPrice($advancedProduct);
+
+            // Beginner course - should be excluded
+            $beginnerCourse = Course::factory()->create([
+                'difficulty_level' => CourseDifficultyLevelEnum::BEGINNER->value,
+                'status'           => PublicationStatusEnum::PUBLISHED->value,
+            ]);
+            $beginnerProduct = Product::factory()
+                ->withCourse($beginnerCourse)
+                ->create(['name' => 'Beginner Digital Course']);
+            $beginnerProduct->categories()->sync([$category->id]);
+            ProductDeliveryOption::factory()->for($beginnerProduct)->create([
+                'price'            => 50,
+                'fulfillment_type' => FulfillmentTypeEnum::DIGITAL->value,
+            ]);
+            indexProductPrice($beginnerProduct);
+
+            $results = ProductQueryService::make()
+                ->availableProducts()
+                ->inCategories([$category->slug])
+                ->byCourseLevel(CourseDifficultyLevelEnum::ADVANCED)
+                ->byFulfillmentTypes([FulfillmentTypeEnum::DIGITAL->value])
+                ->get();
+
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->is($advancedProduct->fresh()))->toBeTrue();
         });
 
     });
@@ -908,9 +1391,16 @@ describe('ProductQueryService - globalSearch', function () {
 
         $filterData = new ProductFilterData(
             category_slugs: null,
+            fulfillment_types: [],
+            difficulty_level: null,
             min_price: null,
             max_price: null,
             with_discounts: null,
+            is_available_now: null,
+            registration_starts_after: null,
+            registration_ends_before: null,
+            available_from: null,
+            available_to: null,
         );
 
         $requestData = new ProductListRequestData(

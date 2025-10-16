@@ -115,6 +115,14 @@ describe('ProductQueryService unit tests', function () {
             $result = $this->service->search('   ');
             expect($result)->toBe($this->service);
         });
+        it('handles from & to being null in registrationWindow', function () {
+            $result = $this->service->registrationWindow(null, null);
+            expect($result)->toBe($this->service);
+        });
+        it('handles from & to being null in availabilityWindow', function () {
+            $result = $this->service->availabilityWindow(null, null);
+            expect($result)->toBe($this->service);
+        });
     });
 
     describe('price range filtering', function () {
@@ -165,12 +173,12 @@ describe('ProductQueryService unit tests', function () {
         });
 
         it('handles single category slug correctly', function () {
-            $result = $this->service->inCategories(["art"]);
+            $result = $this->service->inCategories(['art']);
             expect($result)->toBe($this->service);
         });
 
         it('handles multiple categories slug correctly', function () {
-            $result = $this->service->inCategories(["art", "science", "history"]);
+            $result = $this->service->inCategories(['art', 'science', 'history']);
             expect($result)->toBe($this->service);
         });
 

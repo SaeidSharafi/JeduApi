@@ -11,11 +11,13 @@ use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\TermStatusEnum;
 use App\Models\Product;
+use Carbon\Carbon;
 use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
 /**
@@ -138,6 +140,23 @@ final class ProductQueryService
             if ($filter->fulfillment_types) {
                 $this->byFulfillmentTypes($filter->fulfillment_types);
             }
+            if ($filter->is_available_now) {
+                $this->availableNow();
+            }
+
+            if ($filter->registration_starts_after || $filter->registration_ends_before) {
+                $this->registrationWindow(
+                    $filter->registration_starts_after,
+                    $filter->registration_ends_before
+                );
+            }
+
+            if ($filter->available_from || $filter->available_to) {
+                $this->availabilityWindow(
+                    $filter->available_from,
+                    $filter->available_to
+                );
+            }
 
         }
         $isDefaultOrder = $requestData->sortBy === 'created_at' && $requestData->sortOrder === 'desc';
@@ -162,7 +181,7 @@ final class ProductQueryService
             try {
                 return $this->globalSearchProductsScout($requestData);
             } catch (Exception $e) {
-                \Illuminate\Support\Facades\Log::warning('Typesense product search failed, falling back to database', [
+                Log::warning('Typesense product search failed, falling back to database', [
                     'query' => $requestData->q,
                     'error' => $e->getMessage(),
                 ]);
@@ -183,36 +202,49 @@ final class ProductQueryService
             return $this->globalSearchProductsDatabase($requestData);
         }
 
-        $query = Product::search($requestData->q)
+        // Build the search query with the search term if provided
+        $searchTerm = $requestData->q ?: '*';
+        $query      = Product::search($searchTerm)
             ->options([
                 'query_by' => 'embedding',
             ]);
 
+        // Apply core availability filters (matching globalSearchProductsDatabase)
         $query->where('status', PublicationStatusEnum::PUBLISHED->value);
         $query->where('is_visible', true);
         $query->where('productable_status', PublicationStatusEnum::PUBLISHED->value);
         $query->where('has_published_delivery_option', true);
         $query->where('is_term_active', true);
 
-        // This is a static filter for this method
-        $query->where('productable_type', ProductableEnum::COURSE->value);
+        // Apply product type filter if specified, otherwise search across all types
+        if ($requestData->type) {
+            $query->where('productable_type', ProductableEnum::from($requestData->type)->value);
+        }
 
         if ($requestData->filter) {
             $filter = $requestData->filter;
 
-            if ($filter->categorySlug) {
-                $query->where('category_slugs', $filter->categorySlug);
+            // Category filter: use category_slugs (array)
+            if ($filter->category_slugs && ! empty($filter->category_slugs)) {
+                foreach ($filter->category_slugs as $slug) {
+                    $query->where('category_slugs', $slug);
+                }
             }
+
+            // Difficulty level filter
             if ($filter->difficulty_level) {
                 $query->where('difficulty_level', $filter->difficulty_level);
             }
-            if ($filter->fulfillment_type) {
-                $query->where('fulfillment_types', $filter->fulfillment_type);
+
+            // Fulfillment types filter: use fulfillment_types (array)
+            if ($filter->fulfillment_types && ! empty($filter->fulfillment_types)) {
+                foreach ($filter->fulfillment_types as $type) {
+                    $query->where('fulfillment_types', $type);
+                }
             }
+
+            // Price range filter using Typesense filter_by options
             if ($filter->min_price || $filter->max_price) {
-                // Build a Typesense filter string for ranges
-                $priceFilters = [];
-                // Price filters need to be applied via options() for Typesense
                 if ($filter->min_price && $filter->max_price) {
                     $query->options(['filter_by' => "price:[{$filter->min_price}..{$filter->max_price}]"]);
                 } elseif ($filter->min_price) {
@@ -221,10 +253,46 @@ final class ProductQueryService
                     $query->options(['filter_by' => "price:<={$filter->max_price}"]);
                 }
             }
+
+            // Discount filter
+            if ($filter->with_discounts) {
+                $query->where('has_discount', true);
+            }
+
+            // Available now filter: check if all date windows allow current date
+            if ($filter->is_available_now) {
+                $now = now()->timestamp;
+                $query->where('earliest_registration_start_ts', ['<=', $now]);
+                $query->where('latest_registration_end_ts', ['>=', $now]);
+                $query->where('earliest_availability_start_ts', ['<=', $now]);
+                $query->where('latest_availability_end_ts', ['>=', $now]);
+            }
+
+            // Registration window filters
+            if ($filter->registration_starts_after) {
+                $timestamp = $filter->registration_starts_after->timestamp;
+                $query->where('latest_registration_end_ts', ['>=', $timestamp]);
+            }
+
+            if ($filter->registration_ends_before) {
+                $timestamp = $filter->registration_ends_before->timestamp;
+                $query->where('earliest_registration_start_ts', ['<=', $timestamp]);
+            }
+
+            // Availability window filters
+            if ($filter->available_from) {
+                $timestamp = $filter->available_from->timestamp;
+                $query->where('latest_availability_end_ts', ['>=', $timestamp]);
+            }
+
+            if ($filter->available_to) {
+                $timestamp = $filter->available_to->timestamp;
+                $query->where('earliest_availability_start_ts', ['<=', $timestamp]);
+            }
         }
 
         // Apply Sorting
-        if (in_array($requestData->sortBy, ['created_at', 'updated_at', 'price', 'name'])) {
+        if (in_array($requestData->sortBy, self::allowedSortFields)) {
             $query->orderBy($requestData->sortBy, $requestData->sortOrder);
         }
 
@@ -252,6 +320,106 @@ final class ProductQueryService
         $this->applyAvailabilityFilters();
 
         return $this;
+    }
+
+    /**
+     * Filter products to only those that are available for purchase/enrollment right now.
+     */
+    public function availableNow(): self
+    {
+        $now = now();
+
+        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($now) {
+            // Check registration window is active
+            $q->where(function ($subQuery) use ($now) {
+                $subQuery->whereNull('registration_start_date')
+                    ->orWhere('registration_start_date', '<=', $now->startOfDay());
+            })->where(function ($subQuery) use ($now) {
+                $subQuery->whereNull('registration_end_date')
+                    ->orWhere('registration_end_date', '>=', $now->endOfDay());
+            });
+
+            // Check availability window is active
+            $q->where(function ($subQuery) use ($now) {
+                $subQuery->whereNull('available_from')
+                    ->orWhere('available_from', '<=', $now->startOfDay());
+            })->where(function ($subQuery) use ($now) {
+                $subQuery->whereNull('available_to')
+                    ->orWhere('available_to', '>=', $now->endOfDay());
+            });
+        });
+    }
+
+    /**
+     * Filter products based on their registration window.
+     *
+     * @param  Carbon|string|null  $from  Find products where registration starts on or after this date.
+     * @param  Carbon|string|null  $to  Find products where registration ends on or before this date.
+     */
+    /**
+     * Filter products based on their registration window.
+     * Returns products that overlap with the specified date range or have no date restrictions.
+     *
+     * @param  Carbon|string|null  $from  Find products with registration starting on or after this date.
+     * @param  Carbon|string|null  $to  Find products with registration ending on or before this date.
+     */
+    public function registrationWindow(Carbon|string|null $from = null, Carbon|string|null $to = null): self
+    {
+        if (! $from && ! $to) {
+            return $this;
+        }
+
+        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($from, $to) {
+            // Check for overlap: registration_start_date <= to AND registration_end_date >= from
+            // Also include products with NULL dates (no restrictions)
+            $q->where(function ($subQ) use ($from, $to) {
+                $subQ->whereNull('registration_start_date')
+                    ->orWhereNull('registration_end_date')
+                    ->orWhere(function ($dateQ) use ($from, $to) {
+                        if ($from && $to) {
+                            $dateQ->where('registration_start_date', '<=', $to->endOfDay())
+                                ->where('registration_end_date', '>=', $from->startOfDay());
+                        } elseif ($from) {
+                            $dateQ->where('registration_end_date', '>=', $from->startOfDay());
+                        } elseif ($to) {
+                            $dateQ->where('registration_start_date', '<=', $to->endOfDay());
+                        }
+                    });
+            });
+        });
+    }
+
+    /**
+     * Filter products based on their content availability window.
+     * Returns products that overlap with the specified date range or have no date restrictions.
+     *
+     * @param  Carbon|string|null  $from  Find products available on or after this date.
+     * @param  Carbon|string|null  $to  Find products available on or before this date.
+     */
+    public function availabilityWindow(Carbon|string|null $from = null, Carbon|string|null $to = null): self
+    {
+        if (! $from && ! $to) {
+            return $this;
+        }
+
+        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($from, $to) {
+            // Check for overlap: available_from <= to AND available_to >= from
+            // Also include products with NULL dates (no restrictions)
+            $q->where(function ($subQ) use ($from, $to) {
+                $subQ->whereNull('available_from')
+                    ->orWhereNull('available_to')
+                    ->orWhere(function ($dateQ) use ($from, $to) {
+                        if ($from && $to) {
+                            $dateQ->where('available_from', '<=', $to->endOfDay())
+                                ->where('available_to', '>=', $from->startOfDay());
+                        } elseif ($from) {
+                            $dateQ->where('available_to', '>=', $from->startOfDay());
+                        } elseif ($to) {
+                            $dateQ->where('available_from', '<=', $to->endOfDay());
+                        }
+                    });
+            });
+        });
     }
 
     /**
