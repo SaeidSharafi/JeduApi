@@ -7,6 +7,7 @@ use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
 use App\Models\Category;
 use App\Models\Course;
+use App\Models\DigitalAsset;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\ProductDeliveryOptionDiscountPrice;
@@ -66,6 +67,10 @@ describe('Product Listing Filters - :dataset', function (): void {
                 'short_name'  => 'Laravel for Beginners',
                 'description' => 'Learn Laravel from scratch',
             ]),
+            'withDigitalAsset' => DigitalAsset::factory()->create([
+                'short_name'  => 'Laravel for Beginners',
+                'description' => 'Learn Laravel from scratch',
+            ])
         };
         Product::factory()->withDeliveryOptions(1)->$factoryMethod($productableFactory)->create(['name' => 'Laravel for Beginners']);
 
@@ -78,6 +83,10 @@ describe('Product Listing Filters - :dataset', function (): void {
                 'short_name'  => 'Advanced PHP',
                 'description' => 'Deep dive into PHP programming',
             ]),
+            'withDigitalAsset' => DigitalAsset::factory()->create([
+                'short_name'  => 'Advanced PHP',
+                'description' => 'Deep dive into PHP programming',
+            ])
         };
         Product::factory()->withDeliveryOptions(1)->$factoryMethod($productableFactory)->create(['name' => 'Advanced PHP']);
 
@@ -90,6 +99,10 @@ describe('Product Listing Filters - :dataset', function (): void {
                 'short_name'  => 'JavaScript Basics',
                 'description' => 'Introduction to JavaScript',
             ]),
+            'withDigitalAsset' => DigitalAsset::factory()->create([
+                'short_name'  => 'JavaScript Basics',
+                'description' => 'Introduction to JavaScript',
+            ])
         };
         Product::factory()->withDeliveryOptions(1)->$factoryMethod($productableFactory)->create(['name' => 'JavaScript Basics']);
 
@@ -137,6 +150,9 @@ describe('Product Listing Filters - :dataset', function (): void {
                     'withSeminar' => Seminar::factory()->create([
                         'difficulty_level' => CourseDifficultyLevelEnum::BEGINNER,
                     ]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create([
+                        'difficulty_level' => CourseDifficultyLevelEnum::BEGINNER,
+                    ]),
                 }
             )
             ->create();
@@ -151,6 +167,9 @@ describe('Product Listing Filters - :dataset', function (): void {
                     'withSeminar' => Seminar::factory()->create([
                         'difficulty_level' => CourseDifficultyLevelEnum::INTERMEDIATE,
                     ]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create([
+                        'difficulty_level' => CourseDifficultyLevelEnum::INTERMEDIATE,
+                    ]),
                 }
             )
             ->create();
@@ -163,6 +182,9 @@ describe('Product Listing Filters - :dataset', function (): void {
                         'difficulty_level' => CourseDifficultyLevelEnum::ADVANCED,
                     ]),
                     'withSeminar' => Seminar::factory()->create([
+                        'difficulty_level' => CourseDifficultyLevelEnum::ADVANCED,
+                    ]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create([
                         'difficulty_level' => CourseDifficultyLevelEnum::ADVANCED,
                     ]),
                 }
@@ -187,6 +209,7 @@ describe('Product Listing Filters - :dataset', function (): void {
                 match ($factoryMethod) {
                     'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
             ->create(['name' => 'Affordable Product']);
@@ -203,6 +226,7 @@ describe('Product Listing Filters - :dataset', function (): void {
                 match ($factoryMethod) {
                     'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
             ->create(['name' => 'Premium Product']);
@@ -233,6 +257,7 @@ describe('Product Listing Filters - :dataset', function (): void {
                 match ($factoryMethod) {
                     'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
             ->create(['name' => 'Online Product']);
@@ -249,6 +274,7 @@ describe('Product Listing Filters - :dataset', function (): void {
                 match ($factoryMethod) {
                     'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
             ->create(['name' => 'Digital Product']);
@@ -278,6 +304,7 @@ describe('Product Listing Filters - :dataset', function (): void {
                 match ($factoryMethod) {
                     'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
             ->create(['name' => 'Discounted Product']);
@@ -299,6 +326,7 @@ describe('Product Listing Filters - :dataset', function (): void {
                 match ($factoryMethod) {
                     'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
             ->create(['name' => 'Regular Product']);
@@ -340,6 +368,11 @@ describe('Product Listing Filters - :dataset', function (): void {
                         'difficulty_level' => CourseDifficultyLevelEnum::BEGINNER,
                         'status'           => PublicationStatusEnum::PUBLISHED,
                     ]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create([
+                        'short_name'       => 'Laravel Bootcamp',
+                        'difficulty_level' => CourseDifficultyLevelEnum::BEGINNER,
+                        'status'           => PublicationStatusEnum::PUBLISHED,
+                    ]),
                 }
             )
             ->create(['name' => 'Laravel Bootcamp Special']);
@@ -362,6 +395,11 @@ describe('Product Listing Filters - :dataset', function (): void {
                         'status'           => PublicationStatusEnum::PUBLISHED,
                     ]),
                     'withSeminar' => Seminar::factory()->create([
+                        'short_name'       => 'Symfony Mastery',
+                        'difficulty_level' => CourseDifficultyLevelEnum::ADVANCED,
+                        'status'           => PublicationStatusEnum::PUBLISHED,
+                    ]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create([
                         'short_name'       => 'Symfony Mastery',
                         'difficulty_level' => CourseDifficultyLevelEnum::ADVANCED,
                         'status'           => PublicationStatusEnum::PUBLISHED,
@@ -402,6 +440,7 @@ describe('Product Listing Filters - :dataset', function (): void {
                 match ($factoryMethod) {
                     'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
             ->create(['name' => 'Available Now Product']);
@@ -423,6 +462,7 @@ describe('Product Listing Filters - :dataset', function (): void {
                 match ($factoryMethod) {
                     'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
             ->create(['name' => 'Past Registration Product']);
@@ -460,6 +500,7 @@ describe('Product Listing Filters - :dataset', function (): void {
                 match ($factoryMethod) {
                     'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
             ->create(['name' => 'Future Registration Product']);
@@ -481,6 +522,7 @@ describe('Product Listing Filters - :dataset', function (): void {
                 match ($factoryMethod) {
                     'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
             ->create(['name' => 'Past Registration Start Product']);
@@ -519,6 +561,7 @@ describe('Product Listing Filters - :dataset', function (): void {
                 match ($factoryMethod) {
                     'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
             ->create(['name' => 'Window Available Product']);
@@ -541,6 +584,7 @@ describe('Product Listing Filters - :dataset', function (): void {
                 match ($factoryMethod) {
                     'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
             ->create(['name' => 'Outside Window Product']);

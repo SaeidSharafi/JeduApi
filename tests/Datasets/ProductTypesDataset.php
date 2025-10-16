@@ -9,5 +9,5 @@ declare(strict_types=1);
 dataset('product_types', [
     'course'  => ['withCourse', 'courses'],
     'seminar' => ['withSeminar', 'seminars'],
-    // 'digital_asset' => ['withDigitalAsset', 'digital-assets'],
+     'digital_asset' => ['withDigitalAsset', 'digital-assets'],
 ]);
