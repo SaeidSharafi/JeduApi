@@ -207,13 +207,19 @@ final class GlobalSearchService
         }
 
         // Search products using ProductQueryService with database
-        $productFilterData = new ProductFilterData(
-            category_slugs: $searchData->category_slugs,
-            fulfillment_types: $searchData->fulfillment_types,
-            difficulty_level: $searchData->difficulty_level,
-            min_price: $searchData->price_min,
-            max_price: $searchData->price_max,
-            with_discounts: $searchData->has_discount,
+        // Use the filter data directly from SearchData or create a default empty filter
+        $productFilterData = $searchData->filter ?? new ProductFilterData(
+            category_slugs: null,
+            fulfillment_types: null,
+            difficulty_level: null,
+            min_price: null,
+            max_price: null,
+            with_discounts: null,
+            is_available_now: null,
+            registration_starts_after: null,
+            registration_ends_before: null,
+            available_from: null,
+            available_to: null,
         );
 
         $productRequestData = new ProductListRequestData(
@@ -305,31 +311,34 @@ final class GlobalSearchService
             $baseFilters[] = "productable_type:={$searchData->productable_type}";
         }
 
-        if ($searchData->has_discount !== null) {
-            $value         = $searchData->has_discount ? 'true' : 'false';
-            $baseFilters[] = "has_discount:={$value}";
-        }
+        // Use filter data if available
+        if ($searchData->filter) {
+            if ($searchData->filter->with_discounts !== null) {
+                $value         = $searchData->filter->with_discounts ? 'true' : 'false';
+                $baseFilters[] = "has_discount:={$value}";
+            }
 
-        if (! empty($searchData->category_slugs)) {
-            $slugs           = implode(',', $searchData->category_slugs);
-            $baseFilters[] = "category_slugs:=[{$slugs}]";
-        }
+            if (! empty($searchData->filter->category_slugs)) {
+                $slugs         = implode(',', $searchData->filter->category_slugs);
+                $baseFilters[] = "category_slugs:=[{$slugs}]";
+            }
 
-        if ($searchData->price_min !== null && $searchData->price_max !== null) {
-            $baseFilters[] = "price:[{$searchData->price_min}..{$searchData->price_max}]";
-        } elseif ($searchData->price_min !== null) {
-            $baseFilters[] = "price:>={$searchData->price_min}";
-        } elseif ($searchData->price_max !== null) {
-            $baseFilters[] = "price:<={$searchData->price_max}";
-        }
+            if ($searchData->filter->min_price !== null && $searchData->filter->max_price !== null) {
+                $baseFilters[] = "price:[{$searchData->filter->min_price}..{$searchData->filter->max_price}]";
+            } elseif ($searchData->filter->min_price !== null) {
+                $baseFilters[] = "price:>={$searchData->filter->min_price}";
+            } elseif ($searchData->filter->max_price !== null) {
+                $baseFilters[] = "price:<={$searchData->filter->max_price}";
+            }
 
-        if (! empty($searchData->difficulty_level)) {
-            $baseFilters[] = "difficulty_level:={$searchData->difficulty_level}";
-        }
+            if (! empty($searchData->filter->difficulty_level)) {
+                $baseFilters[] = "difficulty_level:={$searchData->filter->difficulty_level}";
+            }
 
-        if (! empty($searchData->fulfillment_types)) {
-            $types         = array_map(fn ($type) => "fulfillment_types:={$type}", $searchData->fulfillment_types);
-            $baseFilters[] = '('.implode(' || ', $types).')';
+            if (! empty($searchData->filter->fulfillment_types)) {
+                $types         = array_map(fn ($type) => "fulfillment_types:={$type}", $searchData->filter->fulfillment_types);
+                $baseFilters[] = '('.implode(' || ', $types).')';
+            }
         }
 
         return implode(' && ', $baseFilters);
