@@ -4,34 +4,33 @@ declare(strict_types=1);
 
 namespace App\Observers;
 
+use App\Services\CacheInvalidationService;
 use Illuminate\Database\Eloquent\Model;
-use SmartCache\Facades\SmartCache;
+use JetBrains\PhpStorm\NoReturn;
 
 final class InvalidationObserver
 {
+    public function __construct(
+        private readonly CacheInvalidationService $invalidationService,
+    ) {}
+
     public function saved(Model $model): void
     {
-        $this->clearCacheForModel($model);
+        $this->invalidateCacheForModel($model);
     }
 
     public function deleted(Model $model): void
     {
-        $this->clearCacheForModel($model);
+        $this->invalidateCacheForModel($model);
     }
 
-    private function clearCacheForModel(Model $model): void
+    private function invalidateCacheForModel(Model $model): void
     {
-        // Get the class of the model that changed (e.g., "App\Models\Product")
-        $modelClass = get_class($model);
+        $modelClass         = get_class($model);
+        $invalidationConfig = config('cache_invalidation.map.'.$modelClass);
 
-        // Look up this class in our config map
-        $keysToClear = config('cache_invalidation.map.'.$modelClass);
-
-        // If it's in our map, clear all associated cache keys
-        if ($keysToClear && is_array($keysToClear)) {
-            foreach ($keysToClear as $key) {
-                SmartCache::forget($key->key());
-            }
+        if ($invalidationConfig && is_array($invalidationConfig)) {
+            $this->invalidationService->invalidateForModel($model, $invalidationConfig);
         }
     }
 }

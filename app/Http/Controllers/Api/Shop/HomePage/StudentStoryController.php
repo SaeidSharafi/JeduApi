@@ -9,7 +9,7 @@ use App\Data\Shop\HomePage\StudentStoryData;
 use App\Enums\System\CacheKeysEnum;
 use App\Http\Controllers\Controller;
 use App\Models\StudentStory;
-use SmartCache\Facades\SmartCache;
+use App\Services\SWRCacheService;
 
 /**
  * @group Shop - Home Page
@@ -48,7 +48,7 @@ final class StudentStoryController extends Controller
      */
     public function __invoke(): ApiResponseInterface
     {
-        $stories = SmartCache::remember(CacheKeysEnum::StudentStory->value, CacheKeysEnum::StudentStory->ttl(),
+        $stories = SWRCacheService::rememberHomepageContent(CacheKeysEnum::StudentStory->value,
             function () {
                 $stories = StudentStory::query()
                     ->withMedia('avatar')
@@ -56,7 +56,7 @@ final class StudentStoryController extends Controller
                     ->orderBy('display_order')
                     ->get();
 
-                return $stories->map(fn ($story): \App\Data\Shop\HomePage\StudentStoryData => StudentStoryData::fromModel($story));
+                return $stories->map(fn ($story): StudentStoryData => StudentStoryData::fromModel($story));
             });
 
         return response()->success($stories);

@@ -9,8 +9,8 @@ use App\Data\Shop\HomePage\PartnerData;
 use App\Enums\Content\PartnerShowInEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Partner;
+use App\Services\SWRCacheService;
 use Illuminate\Http\Request;
-use SmartCache\Facades\SmartCache;
 
 /**
  * @group Shop - Home Page
@@ -47,7 +47,7 @@ final class PartnerController extends Controller
     {
         $showIn   = $request->query('show_in');
         $cacheKey = PartnerShowInEnum::getCacheKey($showIn);
-        $partners = SmartCache::remember($cacheKey->value, $cacheKey->ttl(),
+        $partners = SWRCacheService::rememberHomepageContent($cacheKey->value,
             function () use ($showIn) {
                 $partners = Partner::query()
                     ->active()
