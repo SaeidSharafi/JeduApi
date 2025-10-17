@@ -18,7 +18,7 @@ final class SetGoodForStartData extends Data
 
     public static function rules(?ValidationContext $context = null): array
     {
-        $category = request()->route()->parameter('category');
+        $category = request()?->route()?->parameter('category');
 
         return [
             'course_ids' => ['required', 'array', 'min:1'],
@@ -32,7 +32,7 @@ final class SetGoodForStartData extends Data
                 Rule::exists('categorizables', 'categorizable_id')->where(function ($query) use (
                     $category
                 ): void {
-                    $query->where('category_id', $category->id)
+                    $query->where('category_id', $category?->id)
                         ->where('categorizable_type', MorphTypeEnum::COURSE);
                 }),
             ],
