@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\Shop\Product\CategoryDigitalAssetController;
 use App\Http\Controllers\Api\Shop\Product\CategorySeminarController;
 use App\Http\Controllers\Api\Shop\Product\CourseController;
 use App\Http\Controllers\Api\Shop\Product\DigitalAssetController;
+use App\Http\Controllers\Api\Shop\Product\GoodForStartCoursesController;
 use App\Http\Controllers\Api\Shop\Product\SeminarController;
 use App\Http\Controllers\Api\Shop\SearchController;
 use App\Http\Controllers\Api\Shop\Settings\FooterController;
@@ -41,6 +42,8 @@ Route::get('category/{category:slug}', [CategoryController::class, 'show'])->nam
 Route::get('category/{category:slug}/courses', CategoryCourseController::class)->name('categories.courses');
 Route::get('category/{category:slug}/seminars', CategorySeminarController::class)->name('categories.seminars');
 Route::get('category/{category:slug}/digital-assets', CategoryDigitalAssetController::class)->name('categories.digital-assets');
+Route::get('good-for-start/category/{category:slug}/courses', GoodForStartCoursesController::class)
+    ->name('categories.courses.good-for-start');
 Route::get('courses', [CourseController::class, 'index'])->name('courses.index');
 Route::get('course/{product:slug}', [CourseController::class, 'show'])
     ->name('courses.show');

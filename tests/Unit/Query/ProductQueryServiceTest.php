@@ -123,6 +123,10 @@ describe('ProductQueryService unit tests', function () {
             $result = $this->service->availabilityWindow(null, null);
             expect($result)->toBe($this->service);
         });
+        it('handles empty category slug in goodForStart', function () {
+            $result = $this->service->goodForStart([]);
+            expect($result)->toBe($this->service);
+        });
     });
 
     describe('price range filtering', function () {

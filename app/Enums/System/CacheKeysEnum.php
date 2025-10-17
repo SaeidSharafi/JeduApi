@@ -15,6 +15,7 @@ enum CacheKeysEnum: string
     case PartnersInHome   = 'shop.homepage.partners';
     case PartnersInCourse = 'shop.course.partners';
     case Partners         = 'shop.partners';
+    case GoodForStart    = 'shop.category.{slug}.good-for-start.courses';
     case Settings         = 'settings.all';
 
     /**
@@ -50,6 +51,7 @@ enum CacheKeysEnum: string
             self::UserProfile     => 86400,
             self::StudentStory, self::Slider,
             self::PartnersInHome, self::PartnersInCourse, self::Partners => 7200,
+            self::GoodForStart    => 1800,
             default => 0, // Default to no expiration (forever)
         };
     }

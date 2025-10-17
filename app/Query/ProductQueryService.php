@@ -482,6 +482,20 @@ final class ProductQueryService
             $q->whereIn('categories.id', $categoryIds);
         });
     }
+    public function goodForStart(array $categorySlugs): self
+    {
+        if (empty($categorySlugs)) {
+            return $this;
+        }
+
+        return $this->addRelationshipConstraint('productable', function (Builder $productableQuery) use ($categorySlugs) {
+            $productableQuery->whereHas('categories', function (Builder $categoryQuery) use ($categorySlugs) {
+                $categoryQuery
+                    ->whereIn('categories.slug', $categorySlugs)
+                    ->where('categorizables.good_for_start', true);
+            });
+        });
+    }
 
     /**
      * Filter by instructor/teacher.

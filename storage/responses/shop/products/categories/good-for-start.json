@@ -1,0 +1,75 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "slug": "python-course-fall-1403",
+      "name": "دوره پایتون مقدماتی - پاییز ۱۴۰۳",
+      "price": 1200000,
+      "original_price": 1200000,
+      "price_range": {
+        "min": 1200000,
+        "max": 2500000
+      },
+      "has_discount": false,
+      "discount_percent": null,
+      "is_free": false,
+      "is_featured": true,
+      "provides_certificate": true,
+      "product_type": {
+        "value": "course",
+        "label": "دوره"
+      },
+      "thumbnail_url": "fake-cover.svg",
+      "teachers": [
+        "ارائه توسط دکتر مجید سمیعی"
+      ],
+      "reviews_count": 0,
+      "average_rating": 0,
+      "price_data": {
+        "min_price": 1200000,
+        "min_original_price": 1200000,
+        "has_featured_price": false,
+        "has_discount": false,
+        "has_pre_payment": true,
+        "discount_type": null,
+        "discount_percentage": null,
+        "highest_discount_amount": null,
+        "range": {
+          "min": 1200000,
+          "max": 2500000
+        },
+        "prices": [
+          {
+            "current_price": 1200000,
+            "original_price": 1200000,
+            "pre_payment_price": 240000,
+            "featured_price": null,
+            "discount_amount": null,
+            "has_pre_payment_price": true,
+            "has_featured_price": false,
+            "has_discount": false,
+            "discount_type": null,
+            "discount_percentage": null,
+            "range": null,
+            "uuid": "edcdd184-cda3-4d71-9e78-2215e555bcfa"
+          },
+          {
+            "current_price": 2500000,
+            "original_price": 2500000,
+            "pre_payment_price": 500000,
+            "featured_price": null,
+            "discount_amount": null,
+            "has_pre_payment_price": true,
+            "has_featured_price": false,
+            "has_discount": false,
+            "discount_type": null,
+            "discount_percentage": null,
+            "range": null,
+            "uuid": "b2733460-8a65-4d02-9261-7bc2f5319e1f"
+          }
+        ]
+      }
+    }
+  ],
+  "metadata": []
+}
