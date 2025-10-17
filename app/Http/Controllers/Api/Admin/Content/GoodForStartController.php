@@ -23,7 +23,7 @@ final class GoodForStartController extends Controller
      *
      * only items with course type can be set as good_for_start
      */
-    public function set(Category $category, SetGoodForStartData $data, SetGoodForStartAction $action): ApiResponseInterface
+    public function __invoke(SetGoodForStartData $data, Category $category, SetGoodForStartAction $action): ApiResponseInterface
     {
         Gate::authorize('update', $category);
         $updated = $action->handle($category, $data);
