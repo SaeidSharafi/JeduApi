@@ -22,6 +22,17 @@ return [
      * This map connects models to the cache keys they should invalidate on change.
      * When any model on the left is updated, created, or deleted,
      * every cache key in the array on the right will be cleared.
+     *
+     * Supported formats:
+     * 1. CacheKeysEnum instances: Simple cache key enums with optional parameters
+     * 2. String literals: Direct cache keys (e.g., 'my_cache_key')
+     * 3. Pattern-based: ['type' => 'pattern', 'value' => 'shop.category.*.good-for-start.*']
+     * 4. Tags (Redis): ['type' => 'tag', 'value' => 'products'] or ['type' => 'tag', 'value' => ['products', 'pricing']]
+     *
+     * Examples:
+     * - CacheKeysEnum::HomePageContent  // Simple enum
+     * - 'exact_cache_key'              // Direct string key
+     * - ['type' => 'pattern', 'value' => 'search:*']  // Wildcard patterns (Database/File drivers)
      */
     'map' => [
         HomePageBlock::class => [
@@ -29,30 +40,54 @@ return [
         ],
         Product::class => [
             CacheKeysEnum::HomePageContent,
+            // Clear all good-for-start course caches when a product changes
+            ['type' => 'pattern', 'value' => 'shop.category.*.good-for-start.courses*'],
+            // Clear search results when product data changes
+            ['type' => 'pattern', 'value' => 'search:*'],
+            // Clear search suggestions (SWR caches)
+            ['type' => 'pattern', 'value' => 'search:suggest:*'],
         ],
         ProductDeliveryOption::class => [
             CacheKeysEnum::HomePageContent,
+            ['type' => 'pattern', 'value' => 'shop.category.*.good-for-start.courses*'],
+            ['type' => 'pattern', 'value' => 'search:suggest:*'],
         ],
         ProductDeliveryOptionDiscountPrice::class => [
             CacheKeysEnum::HomePageContent,
+            ['type' => 'pattern', 'value' => 'search:*'],
+            ['type' => 'pattern', 'value' => 'search:suggest:*'],
         ],
         Course::class => [
             CacheKeysEnum::HomePageContent,
+            ['type' => 'pattern', 'value' => 'shop.category.*.good-for-start.courses*'],
+            ['type' => 'pattern', 'value' => 'search:*'],
+            ['type' => 'pattern', 'value' => 'search:suggest:*'],
         ],
         Seminar::class => [
             CacheKeysEnum::HomePageContent,
+            ['type' => 'pattern', 'value' => 'search:*'],
+            ['type' => 'pattern', 'value' => 'search:suggest:*'],
         ],
         Category::class => [
             CacheKeysEnum::HomePageContent,
+            // Clear category-specific good-for-start caches
+            ['type' => 'pattern', 'value' => 'shop.category.*.good-for-start.courses*'],
+            ['type' => 'pattern', 'value' => 'search:suggest:*'],
         ],
         DiscountPromotion::class => [
             CacheKeysEnum::HomePageContent,
+            ['type' => 'pattern', 'value' => 'search:*'],
+            ['type' => 'pattern', 'value' => 'search:suggest:*'],
         ],
         Review::class => [
             CacheKeysEnum::HomePageContent,
+            ['type' => 'pattern', 'value' => 'search:*'],
+            ['type' => 'pattern', 'value' => 'search:suggest:*'],
         ],
         BlogPost::class => [
             CacheKeysEnum::HomePageContent,
+            ['type' => 'pattern', 'value' => 'search:*'],
+            ['type' => 'pattern', 'value' => 'search:suggest:*'],
         ],
         StudentStory::class => [
             CacheKeysEnum::StudentStory,
@@ -68,11 +103,9 @@ return [
         App\Models\Setting::class => [
             CacheKeysEnum::Settings,
         ],
-        // You can add other cache keys here too!
-        // For example, if you have a separate cache for just categories:
-        // Category::class => [
-        //     CacheKeysEnum::HomePageContent,
-        //     'categories:all_for_menu',
-        // ],
+        \App\Models\Categorizable::class => [
+            CacheKeysEnum::HomePageContent,
+            ['type' => 'pattern', 'value' => 'shop.category.*.good-for-start.courses*']
+        ]
     ],
 ];

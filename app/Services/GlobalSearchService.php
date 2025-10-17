@@ -17,7 +17,6 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Laravel\Scout\EngineManager;
-use SmartCache\Facades\SmartCache;
 
 final class GlobalSearchService
 {
@@ -73,7 +72,7 @@ final class GlobalSearchService
 
         $cacheKey = 'search:suggest:'.md5($query.$limit);
 
-        return SmartCache::remember($cacheKey, now()->addHour(), function () use ($query, $limit) {
+        return SWRCacheService::rememberSearchSuggestions($cacheKey, function () use ($query, $limit) {
             try {
                 $results = Product::search($query)
                     ->where('status', PublicationStatusEnum::PUBLISHED->value)
@@ -109,7 +108,7 @@ final class GlobalSearchService
         $page     = LengthAwarePaginator::resolveCurrentPage();
         $cacheKey = 'search:'.md5($searchData->q.json_encode($searchData->toArray()).$searchData->per_page.$page);
 
-        return SmartCache::remember($cacheKey, now()->addMinutes(10), function () use ($searchData, $page) {
+        return SWRCacheService::remember($cacheKey, function () use ($searchData, $page) {
             $productFilters = $this->buildProductFilters($searchData);
             $blogFilters    = $this->buildBlogFilters($searchData);
 
