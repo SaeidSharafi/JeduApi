@@ -49,12 +49,12 @@
   - `relatedProductsOfType()` - related products filtered by RELATED type
   - `crossSellProducts()` - related products filtered by CROSS_SELL type
   - `upsellProducts()` - related products filtered by UPSELL type
-- **Traits:** Uses `HasCategories` and `HasFactory` for taxonomy tagging and database seeding support
-- **Special Features:** Publication-aware scopes (`active*` helpers) combine status, visibility, and availability checks; SmartCache-backed price snapshots in `price_data_cache`; enum-backed casting for `status` with JSON casting on cached fields; supports product relationships (related, cross-sell, upsell) via pivot table with `relation_type` column
+- **Traits:** Uses `HasCategories`, `HasFactory`, and `Searchable` for taxonomy tagging, database seeding, and Scout/Typesense indexing
+- **Special Features:** Publication-aware scopes (`active*` helpers) combine status, visibility, and availability checks; SmartCache-backed price snapshots in `price_data_cache`; enum-backed casting for `status` with JSON casting on cached fields; supports product relationships (related, cross-sell, upsell) via pivot table with `relation_type` column; search index payload captures availability windows, discount flags, and scores for Typesense and PGroonga powered relevance ordering
 
 ### Course (`app/Models/Course.php`)
 - **Purpose:** Educational course definitions and blueprints
-- **Key Fields:** `slug`, `thumbnail_url`, `full_name`, `short_name`, `description`, `duration`, `difficulty_level`, `career_prospects_text`, `curriculum_summary_text`, `outcomes_json`, `default_teacher_info`, `additional_info`, `properties`, review aggregates (`review_count`, `average_rating`), `meta_title`, `meta_description`, `meta_keywords`, `status`
+- **Key Fields:** `slug`, `thumbnail_url`, `full_name`, `short_name`, `description`, `duration`, `difficulty_level`, `career_prospects_text`, `curriculum_summary_text`, `outcomes_json`, `default_teacher_info`, `provides_certificate`, `faq`, `additional_info`, `properties`, review aggregates (`review_count`, `average_rating`), `meta_title`, `meta_description`, `meta_keywords`, `status`
 - **Relationships:** 
   - Polymorphic relationship as `productable` to Product
   - `hasMany(Review::class, 'reviewable_id')` - reviews (polymorphic)
@@ -62,27 +62,27 @@
   - `morphToMany(BlogPost::class, 'productable', 'blog_post_productables')` - blogPosts
   - `morphToMany(Category::class, 'categorizable', 'categorizables')` - categories
 - **Traits:** Uses `HasMedia`, `HasReview`, `IsProductable`, and `Mediable` to centralize media handling, review aggregation (auto-maintained `review_count`/`average_rating`), and polymorphic product binding
-- **Special Features:** Implements `ProductableContract` and `ReviewableContract`; participates in review aggregation events to keep cached review metrics synchronized; enum-backed casting for publication status and difficulty level
+- **Special Features:** Implements `ProductableContract` and `ReviewableContract`; participates in review aggregation events to keep cached review metrics synchronized; enum-backed casting for publication status and difficulty level; exposes course FAQs and certificate availability for storefront detail payloads
 
 ### Seminar (`app/Models/Seminar.php`)
 - **Purpose:** One-off educational events
-- **Key Fields:** `full_name`, `short_name`, `subtitle`, `slug`, `thumbnail_url`, `description`, `curriculum_summary_text`, `outcomes_json`, `target_audience`, `prerequisites`, `promo_video_external_url`, `estimated_duration_desc`, `level`, `provides_certificate`, `faq`, `keywords`, review aggregates (`review_count`, `average_rating`), `meta_title`, `meta_description`, `meta_keywords`, `status`
+- **Key Fields:** `full_name`, `short_name`, `subtitle`, `slug`, `thumbnail_url`, `description`, `curriculum_summary_text`, `outcomes_json`, `target_audience`, `prerequisites`, `promo_video_external_url`, `estimated_duration_desc`, `difficulty_level`, `provides_certificate`, `faq`, `keywords`, review aggregates (`review_count`, `average_rating`), `meta_title`, `meta_description`, `meta_keywords`, `status`
 - **Relationships:** 
   - Polymorphic relationship as `productable` to Product
   - `hasMany(Review::class, 'reviewable_id')` - reviews (polymorphic)
   - `morphToMany(BlogPost::class, 'productable', 'blog_post_productables')` - blogPosts
 - **Traits:** Combines `HasAssets`, `HasAuditor`, `HasCategories`, `HasMedia`, `HasReview`, `IsProductable`, and `Mediable` to manage attached resources, audit data, categories, and review aggregates
-- **Special Features:** Curriculum structure replaced `learning_objectives` with `curriculum_summary_text` (text summary) and `outcomes_json` (structured learning outcomes array) for better content organization
+- **Special Features:** Curriculum structure replaced `learning_objectives` with `curriculum_summary_text` (text summary) and `outcomes_json` (structured learning outcomes array) for better content organization; difficulty level now aligns with `CourseDifficultyLevelEnum` for catalog-wide filtering
 
 ### DigitalAsset (`app/Models/DigitalAsset.php`)
 - **Purpose:** Standalone digital products (PDFs, videos, etc.)
-- **Key Fields:** `short_name`, `full_name`, `slug`, `thumbnail_url`, `description`, `version`, `page_count`, `duration_seconds`, `is_attachable_to_course`, review aggregates (`review_count`, `average_rating`), `keywords`, `meta_title`, `meta_description`, `meta_keywords`, `published_at`, `status`
+- **Key Fields:** `short_name`, `full_name`, `slug`, `thumbnail_url`, `description`, `version`, `page_count`, `duration_seconds`, `is_attachable_to_course`, `difficulty_level`, `provides_certificate`, `faq`, review aggregates (`review_count`, `average_rating`), `keywords`, `meta_title`, `meta_description`, `meta_keywords`, `published_at`, `status`
 - **Relationships:** 
   - Polymorphic relationship as `productable` to Product
   - `morphToMany(Category::class, 'categorizable', 'categorizables')` - categories
   - `morphedByMany(Course::class, 'assetable')` - courses
 - **Traits:** Uses `HasMedia`, `HasReview`, `IsProductable`, and `Mediable` for media, review aggregation, and polymorphic bindings
-- **Special Features:** Name split into `short_name` (max 100 chars) and `full_name` (max 191 chars) for display flexibility
+- **Special Features:** Name split into `short_name` (max 100 chars) and `full_name` (max 191 chars) for display flexibility; difficulty level, FAQs, and certificate availability mirror course semantics for unified storefront filtering
 
 ### ProductDeliveryOption (`app/Models/ProductDeliveryOption.php`)
 - **Purpose:** Specific purchase/delivery methods per product with pricing
@@ -302,5 +302,5 @@
   - `morphToMany(DigitalAsset::class, 'productable', 'blog_post_productables')` - digitalAssets
   - `morphTo()` - mainProductable (single featured productable)
   - `morphMany(Review::class, 'reviewable')` - reviews
-- **Traits:** Uses `HasMedia` trait for standardized media management with tagged media support
+- **Traits:** Uses `HasMedia`, `HasReview`, and `Searchable` traits for standardized media management, review aggregation, and Scout/Typesense indexing
 - **Special Features:** Publication workflow with DRAFT/PUBLISHED/SCHEDULED/ARCHIVED statuses, automated read time calculation, featured content system, polymorphic relationships to educational content, automatic cover image URL generation from media

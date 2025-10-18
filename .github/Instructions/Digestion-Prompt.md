@@ -1,50 +1,55 @@
 #codebase
 
-Your task is to update my existing "Codebase Digest" files to reflect recent changes in the codebase. The digest files are located in the docs folder (#file:DIGEST_API_INTERFACES.md #file:DIGEST_CORE_LOGIC.md #file:DIGEST_DATA_MODELS.md #file:DIGEST_CORE_LOGIC.md ).
 
-I need you to perform a `git diff` to find all the code changes between these two commits, you can use the `GitKraken` MCP server or any other git diff tool you prefer.:
-- **Previous State Commit:** `62f7320f`
-- **Current State Commit:** `f8a3d0ba`
+Hello. You are about to act as an automated "Codebase Digest Agent". Your goal is to update my project's documentation based on a range of commits. You will operate in a strict, step-by-step loop that you manage yourself.
 
-Based on the diff, I need you to update these files:
-- `CODEBASE_DIGEST.md`
-- `DIGEST_DATA_MODELS.md`
-- `DIGEST_CORE_LOGIC.md`
-- `DIGEST_API_INTERFACES.md`
+**Your Core Instructions:**
 
-Please follow these precise instructions for the update:
+1.  You will process a list of pull requests one by one.
 
-1.  **Analyze the `git diff`:** Identify all added, modified, and deleted files in the `app/`, `routes/`, and `database/migrations/` directories.
+2.  After every single action you take (like fetching a diff, or updating a file), you MUST end your response by stating your **Current State** and your **Next Action**. This is the most important rule.
 
-2.  **Modify `DIGEST_DATA_MODELS.md`:**
-    - If you find a new migration, **add** a new model entry or **update** the `Key Fields` on an existing entry.
-    - If you find changes to Eloquent relationships in an `app/Models/` file, **modify** the `Relationships` section for that model.
+3.  I will not prompt you for each step. You will follow the plan laid out below, prompting yourself with the "Next Action" from your previous response. I will only intervene if you make a mistake or get stuck.
 
-3.  **Modify `DIGEST_CORE_LOGIC.md`:**
-    - If you find a new Action/Service class, **add** a new entry for it, documenting its purpose and public methods.
-    - If an existing Action/Service was changed, **update** its method list or summaries.
-    - If a class was deleted, **remove** its entry.
 
-4.  **Modify `DIGEST_API_INTERFACES.md`:**
-    - If you find changes in the route files, **add, remove, or update** the corresponding route entries under the correct controller.
-    - If a controller was changed to use a new DTO or call a different service, **update** the `Request DTO`, `Response DTO`, or `Delegates to` lines for that route.
+----------
 
-5. **Modify `DIGEST_SCHEMA.md`:**
-    - If you find changes in the database schema (new tables, modified columns, deleted tables), **update** the relevant sections to reflect these changes.
+### **The Master Plan**
 
-New Features
+**Phase 1: Initialization**
 
-Admin can manage product relationships (related, cross-sell, upsell): list, filter by type, bulk attach/sync, and delete.
-New product select-options endpoint for dropdowns with id, title, subtitle, and type; supports search, limit, and type filters.
-Improvements
+1.  Identify the pull requests to be processed between commits `f8a3d0ba` and `d815bb7b`. Use the @terminal to run the gh command to get a list of PR numbers and titles.
 
-Refined product search matching for more accurate select-option results.
-Database
+2.  Present this list to me in a checklist format, which will serve as our **State Tracker**.
 
-Added related_products table with relation type, timestamps, indexes, and uniqueness constraints.
-Tests
 
-Comprehensive API and unit tests covering permissions, validations, syncing, filtering, and deletion.
-Localization
+**Phase 2: The Processing Loop**  
+You will now loop through each PR from the State Tracker. For each PR:
 
-Added validation messages for related-product errors.
+1.  **Announce:** State which PR you are now processing (e.g., "Processing PR #42...").
+
+2.  **Get Diff:** Use the @terminal to get the git diff for that specific PR number.
+
+3.  **Update DIGEST_DATA_MODELS.md:** Analyze the diff for changes in database/migrations/ or app/Models/. Propose the necessary changes for the @workspace /file:docs/DIGEST_DATA_MODELS.md file. If there are no changes, state that and move on.
+
+4.  **Update DIGEST_CORE_LOGIC.md:** Analyze the diff for changes in app/Actions/ or app/Services/. Propose changes for the @workspace /file:docs/DIGEST_CORE_LOGIC.md file.
+
+5.  **Update DIGEST_API_INTERFACES.md:** Analyze the diff for changes in routes/ or app/Http/Controllers/. Propose changes for the @workspace /file:docs/DIGEST_API_INTERFACES.md file.
+
+6.  **Update State:** Mark the current PR as complete in the State Tracker.
+
+
+**Phase 3: Finalization**
+
+1.  Once all PRs in the State Tracker are complete, announce that the loop has finished.
+
+2.  Perform a final review of all the proposed changes.
+
+3.  Generate a high-level summary of all changes and propose adding it to the main @workspace /file:docs/CODEBASE_DIGEST.md file.
+
+4.  Announce that the task is complete.
+
+
+----------
+
+To begin, please start with **Phase 1, Step 1**. I am ready.
