@@ -362,36 +362,55 @@
   - Delivery: VID/DL (Video platform/Direct download)
 - **Dependencies:** Integrated into `CreateProductDeliveryOptionAction` for automatic SKU assignment
 
-### ProductQueryService (`app/Services/Shop/ProductQueryService.php`)
-- **Purpose:** Fluent query builder for complex product filtering, sorting, and pagination across shop endpoints
-- **Public Methods:**
-  - `availableProducts(): self`: Filters to published products with active productables and available delivery options
-  - `ofType(ProductableEnum $type): self`: Filters by productable type (Course, Seminar, DigitalAsset)
-  - `ofTypes(array $types): self`: Filters by multiple productable types
-  - `search(?string $term): self`: Full-text search across product name, short_name, short_description and productable fields (short_name, full_name, description); uses `whereLike()` for optimized pattern matching
-  - `inCategory(string $slug): self`: Filters by category slug
-  - `inCategories(array $categoryIds): self`: Filters by multiple category IDs
-  - `byCourseLevel(CourseDifficultyLevelEnum $level): self`: Filters courses by difficulty level
-  - `withDiscounts(): self`: Joins with product_prices to filter products having active discounts
-  - `priceRange(?int $min, ?int $max): self`: Filters by price range using price index
-  - `featured(): self`: Filters to featured products
-  - `popular(): self`: Sorts by order count descending
-  - `sortBy(string $field, string $direction = 'asc'): self`: Applies sorting (name, short_name, price, created_at, updated_at)
-  - `forListing(): self`: Eager loads common relations (productable, vendor, categories) for list views
-  - `withPrices(): self`: Joins product_prices table for efficient price filtering
-  - `limit(int $limit): self`: Applies query limit
-  - `get(): Collection`: Executes query and returns collection
-  - `first(): ?Product`: Returns first result
-  - `paginate(int $perPage = 15): LengthAwarePaginator`: Returns paginated results
-  - `getQuery(): Builder`: Returns underlying Eloquent builder
-- **Pattern:** Service pattern with deferred constraint application for optimized query building
-- **Allowed Sort Fields:** created_at, updated_at, name, short_name, price
+### ProductQueryService (`app/Query/ProductQueryService.php`)
+- **Purpose:** Central query layer for all shop product listings with smart Typesense → database fallback and score-aware ordering
+- **Key Capabilities:**
+  - `getCourseList()`, `getSeminarList()`, `getDigitalAssetList()`: Shared pagination pipelines driven by `ProductListRequestData`
+  - `globalSearch(ProductListRequestData $requestData)`: Uses Scout/Typesense multi-field search when available, automatically falling back to SQL full-text and ordered scoring
+  - `globalSearchProductsDatabase()` / `globalSearchProductsScout()`: Driver-specific search implementations used by the primary entry point
+  - `availableProducts()`: Ensures published product, productable, delivery options, and active term status
+  - `availableNow()`: Filters to delivery options currently within registration and availability windows
+  - `registrationWindow()` / `availabilityWindow()`: Overlap-aware date filtering for storefront scheduling needs
+  - `inCategories()` / `inCategoryIds()`: Deferred category constraints using collected relationship callbacks
+  - `goodForStart(array $categorySlugs)`: Limits to course productables flagged as `good_for_start` within the pivot table
+  - `byCourseLevel()` / `byFulfillmentTypes()`: Filters using enums for consistent DTO integration
+  - `withDiscounts()` / `priceRange()`: Joins the price index when required without duplicating joins
+  - `sortBy()` & `query->orderByScore()`: Supports deterministic ordering with optional PGroonga scoring metadata
+  - Terminal methods (`paginate`, `get`, `first`, `getQuery`) execute after deferred relationship constraints are applied
+- **Pattern:** Maintains the deferred constraint collector ensuring `whereHas`/`whereHasMorph` consolidation, preventing redundant joins and enabling reusable query presets.
 
-### CategoryQueryService (`app/Services/Shop/CategoryQueryService.php`)
-- **Purpose:** Specialized query service for category filtering and product retrieval by category
+### CategoryQueryService (`app/Query/CategoryQueryService.php`)
+- **Purpose:** Category-focussed product loader that reuses the shared query engine and hydrates pricing in bulk
 - **Public Methods:**
-  - `getProductsByType(Category $category, ProductableEnum $type, int $perPage = 15): LengthAwarePaginator`: Returns paginated products of specific type within a category, using `ProductQueryService` internally for consistent filtering/sorting
-- **Integration:** Used by category detail endpoints to provide type-filtered product listings
+  - `getProductsForCategory(Category $category, ProductableEnum $type, int $limit, bool $paginate = false)`: Returns limited or paginated product card DTO collections for a category/type combination, reusing `ProductQueryService` filters and `ProductPriceService` batch hydration
+- **Integration:** Backing service for category detail endpoints and curated block hydration (e.g., "good for start" lists)
+
+### GlobalSearchService (`app/Services/GlobalSearchService.php`)
+- **Purpose:** Multi-model search façade that unifies products and blog posts with Scout, Typesense, and SQL fallbacks
+- **Public Methods:**
+  - `search(SearchData $searchData): LengthAwarePaginator`: Performs union searches with optional Typesense multi-search, hydrates models in the returned order, and logs analytics
+  - `suggest(string $query, int $limit = 5): array`: Returns SWR-cached autosuggest strings leveraging Typesense when available
+- **Implementation Notes:** Automatically builds faceted filters from `ProductFilterData`, respects `result_types`, and streams results through DTO transformers in controllers
+
+### SWRCacheService (`app/Services/SWRCacheService.php`)
+- **Purpose:** Provides Stale-While-Revalidate caching helpers on top of SmartCache
+- **Public Methods:**
+  - `remember(string $key, Closure $callback, int $freshSeconds = 300, int $staleSeconds = 900)`: Core SWR wrapper returning fresh or stale payloads while refreshing asynchronously
+  - `rememberHomepageContent(string $key, Closure $callback)`: Preset for homepage fragments (5 min fresh / 15 min stale)
+  - `rememberSearchSuggestions(string $key, Closure $callback)`: Preset for search autocomplete (1 hour fresh / 4 hours stale)
+  - `rememberTrendingContent(string $key, Closure $callback)`: Preset for trending widgets (10 min fresh / 30 min stale)
+- **Usage:** Powers search suggestions and homepage listings to balance freshness with perceived performance
+
+### CacheInvalidationService (`app/Services/CacheInvalidationService.php`)
+- **Purpose:** Central cache eviction utility invoked by `InvalidationObserver`
+- **Public Method:**
+  - `invalidateForModel(string|Model $model, array $invalidationConfig): void`: Iterates configured keys/patterns, calling `SmartCache::forget()` and `SmartCache::flushPatterns()` with exception-safe logging
+- **Configuration:** Consumes `config/cache_invalidation.php` entries that can mix `CacheKeysEnum` values, literal keys, and wildcard patterns
+
+### PgroongaService (`app/Services/PgroongaService.php`)
+- **Purpose:** Lightweight helper to detect PGroonga availability on PostgreSQL connections
+- **Public Method:**
+  - `isPgroongaEnabled(): bool`: Cached probe that inspects `pg_extension` and gracefully handles connection failures, allowing search macros to choose the correct strategy
 
 ### SettingsService (`app/Services/SettingsService.php`)
 - **Purpose:** SmartCache-backed facade over `Setting` models powering CMS content payloads
@@ -404,8 +423,8 @@
 
 ### InvalidationObserver (`app/Observers/InvalidationObserver.php`)
 - **Purpose:** Global Eloquent observer that translates model save/delete events into cache invalidations.
-- **Mechanism:** Reads `config/cache_invalidation.php` to map model classes (Product, Slider, Partner, HomePageBlock, Setting, etc.) to `CacheKeysEnum` instances, calling `SmartCache::forget()` for each affected key.
-- **Usage:** Registered for multiple CMS/content models to keep SmartCache payloads (home page content, partner lists, settings) fresh without manual cache calls.
+- **Mechanism:** Reads `config/cache_invalidation.php` to map model classes (Product, Slider, Partner, HomePageBlock, Setting, etc.) to lists of `CacheKeysEnum`, literal keys, or wildcard patterns and delegates eviction to `CacheInvalidationService` (`SmartCache::forget` + `flushPatterns`).
+- **Usage:** Registered for multiple CMS/content models to keep SmartCache payloads (home page content, partner lists, settings, good-for-start lists) fresh without manual cache calls.
 
 ### Review Aggregation Pipeline
 - **Event:** `ReviewableAggregatesChanged` (`app/Events/ReviewableAggregatesChanged.php`) carries the reviewable ID/type whenever reviews change.
@@ -417,6 +436,15 @@
 - **Listener:** `QueueProductPriceCacheUpdate` (`app/Listeners/QueueProductPriceCacheUpdate.php`) asynchronously dispatches `UpdateProductPriceCacheJob` with the affected product ID.
 - **Job:** `UpdateProductPriceCacheJob` (`app/Jobs/UpdateProductPriceCacheJob.php`) recalculates price data via `ProductPriceService`, persists it to `price_data_cache`, and clears related SmartCache keys per the invalidation map.
 - **Result:** Ensures shop endpoints read precomputed pricing snapshots while remaining consistent after admin edits.
+
+### FullTextSearchProvider (`app/Providers/FullTextSearchProvider.php`)
+- **Purpose:** Registers database-agnostic full-text search macros for Eloquent builders.
+- **Macros:**
+  - `fullTextSearch(array|string $columns, string $value, ?string $scoreAs = null)`: Chooses PGroonga, native PostgreSQL, MySQL MATCH AGAINST, or LIKE fallbacks, optionally selecting a score column
+  - `orFullTextSearch(...)`: Convenience wrapper for grouped OR full-text clauses
+  - `orderByScore(string $column = 'score', string $direction = 'desc')`: Adds score ordering when PGroonga is active
+  - `selectScore(string $column = 'score', string $table = '')`: Appends score selection for PGroonga-powered queries
+- **Dependency:** Uses `PgroongaService::isPgroongaEnabled()` to determine when advanced scoring is available; defaults to no-op ordering otherwise.
 
 ### Payment Services (`app/Services/Payment/`)
 

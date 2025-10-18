@@ -60,7 +60,7 @@
 - `__invoke(Category $category)`: **Route:** `GET /api/v1/admin/category/{category}/items` - **Delegates to:** Category product listing - **Response DTO:** ProductData collection
 
 ### GoodForStartController (`app/Http/Controllers/Api/Admin/Content/GoodForStartController.php`)
-- `set(Category $category)`: **Route:** `POST /api/v1/admin/category/{category}/good-for-start` - **Delegates to:** SetGoodForStartAction - **Response DTO:** CategoryData
+- `__invoke(SetGoodForStartData $request, Category $category, SetGoodForStartAction $action)`: **Route:** `POST /api/v1/admin/category/{category}/good-for-start` - **Request DTO:** SetGoodForStartData - **Delegates to:** SetGoodForStartAction - **Response:** success message with updated item count
 
 ### CourseController (`app/Http/Controllers/Api/Admin/Product/CourseController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/course` - **Delegates to:** Course listing - **Response DTO:** CourseData collection
@@ -386,34 +386,45 @@
 #### StudentStoryController (`app/Http/Controllers/Api/Shop/HomePage/StudentStoryController.php`)
 - `__invoke()`: **Route:** `GET /api/v1/shop/student-stories` - **Response DTO:** StudentStoryData collection sorted by display order and cached by SmartCache
 
-### Shop Public Course Endpoints (`/api/v1/shop/courses/*`)
+### Shop Public Product & Search Endpoints (`/api/v1/shop/*`)
 **Authentication:** Unauthenticated public access
 
-#### CourseListController (`app/Http/Controllers/Api/Shop/Course/CourseListController.php`)
-- `__invoke(CourseListRequestData $request, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/courses` - **Request DTO:** CourseListRequestData (includes CourseFilterData with search, fulfillment_type, categorySlug, level, price range, with_discounts filters; plus sortBy, sortOrder, pagination) - **Response DTO:** Paginated collection of ProductCardData with precomputed pricing via ProductPriceService
-- **Query Parameters:** `filter[search]`, `filter[fulfillment_type]`, `filter[categorySlug]`, `filter[level]`, `filter[min_price]`, `filter[max_price]`, `filter[with_discounts]`, `sortBy`, `sortOrder`, `page`, `per_page`
-- **Delegates to:** ProductQueryService for unified filtering, sorting (created_at, updated_at, name, price), and pagination
+#### CourseController (`app/Http/Controllers/Api/Shop/Product/CourseController.php`)
+- `index(ProductListRequestData $request)`: **Route:** `GET /api/v1/shop/courses` - **Request DTO:** ProductListRequestData (supports `filter[category_slugs][]`, `filter[fulfillment_types][]`, `filter[difficulty_level]`, price range, discount flag, availability windows, search `q`, sort, pagination) - **Delegates to:** `ProductQueryService::getCourseList()` with `ProductPriceService` hydration - **Response DTO:** Paginated `ProductCardData`
+- `show(Product $product)`: **Route:** `GET /api/v1/shop/course/{product:slug}` - **Delegates to:** `ProductQueryService` detail pipeline and `ProductPriceService` for pricing snapshot - **Response DTO:** `CourseDetailData`
 
-#### CourseDetailController (`app/Http/Controllers/Api/Shop/Course/CourseDetailController.php`)
-- `__invoke(string $slug, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/courses/{slug}` - **Response DTO:** CourseDetailData including product details, pricing, delivery options (filtered to published/available), categories, and media
-- **Delegates to:** Product resolution by slug, ProductPriceService for comprehensive pricing data, CourseDetailData::fromModel() for structured response
+#### SeminarController (`app/Http/Controllers/Api/Shop/Product/SeminarController.php`)
+- `index(ProductListRequestData $request)`: **Route:** `GET /api/v1/shop/seminars` - **Request DTO:** ProductListRequestData (same filtering/sorting contract) - **Delegates to:** `ProductQueryService::getSeminarList()` with price hydration - **Response DTO:** Paginated `ProductCardData`
+- `show(Product $product)`: **Route:** `GET /api/v1/shop/seminar/{product:slug}` - **Delegates to:** `ProductQueryService` detail pipeline + `ProductPriceService` - **Response DTO:** `SeminarDetailData`
+
+#### DigitalAssetController (`app/Http/Controllers/Api/Shop/Product/DigitalAssetController.php`)
+- `index(ProductListRequestData $request)`: **Route:** `GET /api/v1/shop/digital-assets` - **Request DTO:** ProductListRequestData - **Delegates to:** `ProductQueryService::getDigitalAssetList()` with price hydration - **Response DTO:** Paginated `ProductCardData`
+- `show(Product $product)`: **Route:** `GET /api/v1/shop/digital-asset/{product:slug}` - **Delegates to:** `ProductQueryService` detail pipeline + `ProductPriceService` - **Response DTO:** `DigitalAssetDetailData`
+
+#### GoodForStartCoursesController (`app/Http/Controllers/Api/Shop/Product/GoodForStartCoursesController.php`)
+- `__invoke(Category $category, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/good-for-start/category/{category:slug}/courses` - **Query Param:** `limit` (default 10) - **Delegates to:** Cached `ProductQueryService::goodForStart()` lookup within SmartCache using `CacheKeysEnum::GoodForStart` - **Response DTO:** `ProductCardData` collection
+
+#### SearchController (`app/Http/Controllers/Api/Shop/SearchController.php`)
+- `__invoke(SearchData $request, GlobalSearchService $service, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/search` - **Request DTO:** SearchData (query, per_page, result_types, productable_type, filter.*) - **Delegates to:** `GlobalSearchService::search()` with Typesense/PGroonga fallback; maps products to `ProductCardData` and blog posts to `BlogPostCardData` (each tagged with `type`)
+
+#### SuggestSearchController (`app/Http/Controllers/Api/Shop/SuggestSearchController.php`)
+- `__invoke(SearchSuggestRequestData $request, GlobalSearchService $service)`: **Route:** `GET /api/v1/shop/search/suggest` - **Request DTO:** SearchSuggestRequestData (`q`, optional `limit`) - **Delegates to:** `GlobalSearchService::suggest()` using SWR cache & Typesense autocomplete - **Response:** Array of suggestion strings
 
 ### Shop Public Category Endpoints (`/api/v1/shop/categories/*`)
 **Authentication:** Unauthenticated public access
 
-#### CategoryListController (`app/Http/Controllers/Api/Shop/Category/CategoryListController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/shop/categories` - **Response DTO:** CategoryCardData collection with product counts per category, includes icon_url and image_url, cached via SmartCache
-- **Special Features:** Returns categories with `products_count` aggregation for each type (courses, seminars, digital_assets)
+#### CategoryController (`app/Http/Controllers/Api/Shop/Product/CategoryController.php`)
+- `index()`: **Route:** `GET /api/v1/shop/categories` - **Response DTO:** `CategoryCardData` collection with aggregated product counts computed via `ProductQueryService`
+- `show(PaginationRequestData $request, Category $category, CategoryQueryService $service)`: **Route:** `GET /api/v1/shop/category/{category:slug}` - **Request DTO:** PaginationRequestData (`per_page`) - **Delegates to:** `CategoryQueryService::getProductsForCategory()` for each productable type - **Response DTO:** `CategoryDetailData` containing embedded course/seminar/digital asset collections
 
-#### CategoryDetailController (`app/Http/Controllers/Api/Shop/Category/CategoryDetailController.php`)
-- `__invoke(string $slug, CategoryQueryService $categoryQuery, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/categories/{slug}` - **Response DTO:** CategoryDetailData with category metadata plus structured product listings (courses, seminars, digital_assets collections)
-- **Delegates to:** CategoryQueryService::getProductsByType() for paginated type-specific product lists, ProductPriceService for batch pricing
-- **Response Structure:** Returns category details with separate arrays for courses (ProductCardData[]), seminars (ProductCardData[]), digital_assets (ProductCardData[])
+#### CategoryCourseController (`app/Http/Controllers/Api/Shop/Product/CategoryCourseController.php`)
+- `__invoke(PaginationRequestData $request, Category $category, CategoryQueryService $service)`: **Route:** `GET /api/v1/shop/category/{category:slug}/courses` - **Delegates to:** `CategoryQueryService::getProductsForCategory()` with pagination flag - **Response DTO:** Paginated `ProductCardData`
 
-#### CategoryProductsController (`app/Http/Controllers/Api/Shop/Category/CategoryProductsController.php`)
-- `__invoke(string $slug, string $type, PaginationRequestData $pagination, CategoryQueryService $categoryQuery, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/categories/{slug}/products/{type}` - **Request DTO:** PaginationRequestData (page, per_page) - **Response DTO:** Paginated ProductCardData collection
-- **Path Parameters:** `type` must be one of: courses, seminars, digital-assets
-- **Delegates to:** CategoryQueryService for type-filtered, paginated product retrieval with pricing
+#### CategorySeminarController (`app/Http/Controllers/Api/Shop/Product/CategorySeminarController.php`)
+- `__invoke(PaginationRequestData $request, Category $category, CategoryQueryService $service)`: **Route:** `GET /api/v1/shop/category/{category:slug}/seminars` - **Delegates to:** `CategoryQueryService::getProductsForCategory()` - **Response DTO:** Paginated `ProductCardData`
+
+#### CategoryDigitalAssetController (`app/Http/Controllers/Api/Shop/Product/CategoryDigitalAssetController.php`)
+- `__invoke(PaginationRequestData $request, Category $category, CategoryQueryService $service)`: **Route:** `GET /api/v1/shop/category/{category:slug}/digital-assets` - **Delegates to:** `CategoryQueryService::getProductsForCategory()` - **Response DTO:** Paginated `ProductCardData`
 
 #### HeaderController (`app/Http/Controllers/Api/Shop/Settings/HeaderController.php`)
 - `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/header` - **Response DTO:** HeaderData derived from SettingsService payload

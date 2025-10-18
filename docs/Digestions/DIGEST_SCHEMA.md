@@ -104,7 +104,7 @@
   - description (VARCHAR, nullable)
   - image_url (VARCHAR, nullable)
   - icon_url (VARCHAR, nullable)
-  - educational_calendar_url (VARCHAR, default '0' per migration)
+  - educational_calendar_url (VARCHAR, nullable)
   - color_scheme (VARCHAR, nullable)
   - meta_title (VARCHAR(70), nullable)
   - meta_description (VARCHAR(160), nullable)
@@ -116,8 +116,6 @@
 - Indexes: PK(id), UNIQUE(name), UNIQUE(slug), INDEX(status)
 
 ### Tables: `courses`, `seminars`, `digital_assets`
-- Purpose: Productable entities.
-- Common columns:
   - id (BIGINT, PK)
   - slug (VARCHAR unique) [courses, seminars, digital_assets]
   - status (VARCHAR, default draft, indexed)
@@ -126,20 +124,22 @@
   - created_by (BIGINT nullable) FK -> staff(id) SET NULL
   - review_count (INT default 0), average_rating (DECIMAL(3,2) default 0.0)
   - created_at/updated_at (TIMESTAMPS)
-- courses specific:
   - short_name (VARCHAR nullable), thumbnail_url (VARCHAR nullable), sample_certificate_image_url (VARCHAR nullable)
   - duration (INT nullable), difficulty_level (VARCHAR), career_prospects_text (TEXT nullable)
   - curriculum_summary_text (TEXT nullable), outcomes_json (JSON nullable)
-  - default_teacher_info (TEXT nullable), additional_info (JSON nullable), properties (JSON nullable)
-- seminars specific:
+  - default_teacher_info (TEXT nullable), provides_certificate (BOOLEAN default false), faq (JSON nullable)
+  - additional_info (JSON nullable), properties (JSON nullable)
+ - Indexes:
+   - INDEX(status)
+   - FULLTEXT (slug, name, description) where supported
   - short_name (VARCHAR not null per migration), subtitle (VARCHAR nullable), slug (unique)
   - description (TEXT not null), thumbnail_url (VARCHAR nullable)
   - curriculum_summary_text (TEXT nullable), outcomes_json (JSON nullable) [replaces learning_objectives]
   - target_audience (TEXT nullable), prerequisites (TEXT nullable)
-  - promo_video_external_url (VARCHAR nullable), estimated_duration_desc (VARCHAR nullable), level (VARCHAR nullable)
+  - promo_video_external_url (VARCHAR nullable), estimated_duration_desc (VARCHAR nullable), difficulty_level (VARCHAR nullable)
   - provides_certificate (BOOLEAN default false)
   - faq (JSON nullable), keywords (TEXT nullable)
-- digital_assets specific:
+  - Indexes: FULLTEXT (full_name, short_name, slug, description, keywords) plus optional PGroonga index when using PostgreSQL
   - short_name (VARCHAR(100) not null), full_name (VARCHAR(191) not null) [replaces name]
   - slug (unique), description (TEXT nullable)
   - thumbnail_url (VARCHAR nullable), version (VARCHAR(50) nullable)

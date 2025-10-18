@@ -19,8 +19,9 @@
   - `laravel/sanctum`: Dual-guard authentication system (v4.0)
 - **Service Layer Architecture:**
   - `SkuGeneratorService`: Automatic SKU generation with pattern-based formatting for product delivery options
-  - `ProductQueryService`: Fluent query builder for product filtering, search, and sorting with price range support
-  - `CategoryQueryService`: Category-based product retrieval with type filtering
+  - `ProductQueryService` (`App\Query\ProductQueryService`): Unified product query engine with Typesense-to-database fallback, availability window filters, and deferred relationship constraints for score-aware ordering
+  - `CategoryQueryService` (`App\Query\CategoryQueryService`): Category-based product retrieval that reuses the central query engine and batch pricing hydration
+  - `GlobalSearchService`: Multi-collection search across products and blog posts with Scout/Typesense integration, union hydration, and automatic SWR-cached suggestions
 
 ## 3. Architectural Principles & Patterns (Mandatory for New Code)
 - **API Contract:** All API requests and responses MUST use `spatie/laravel-data` DTOs in `app/Data/`. These DTOs are the definitive contract for all API interactions
@@ -57,9 +58,9 @@
 - **Profile Management:** Customer account management and profile updates
 - **Course Access:** Enrollment-based access to purchased content
 - **Review System:** Customer review submission for products and courses
-- **Home Page Content:** Dynamic home page block hydration with curated, dynamic, banner, and webinar layouts powered by cached pricing data and block-specific hydration actions
+- **Home Page Content:** Dynamic home page block hydration with curated, dynamic, banner, and webinar layouts powered by cached pricing data, block-specific hydration actions, and SWR caching profiles
 - **Public CMS Pages:** Read-only endpoints for header, footer, about us, collaboration, contact page, partner listings, sliders, and student stories derived from admin-managed settings
-- **Public Course Catalog:** Browse courses with filtering by fulfillment type, category, level, price range, and discount availability
+- **Public Course Catalog:** Browse courses, seminars, and digital assets with filtering by fulfillment type, category slug, difficulty level, price range, availability windows, and discount flags driven by the shared product query engine
 - **Course Details:** Detailed course information pages with curriculum, pricing options, and teacher information
 - **Category Browsing:** Hierarchical category listing and detail pages with product counts
 - **Category Products:** Browse products within categories by type (course, seminar, digital asset) with pagination
@@ -72,7 +73,8 @@
 - **API Documentation:** Comprehensive endpoint coverage with DTOs
 - **Select Options:** Dropdown data provision for admin interface
 - **Content Automation:** Scheduled blog post publication with automated workflow management
-- **Smart Cache Invalidation:** Event-driven cache invalidation map with `InvalidationObserver`, `CacheKeysEnum`, and `SettingsService` to keep storefront content fresh
+- **Smart Cache Invalidation:** Event-driven cache invalidation map with `InvalidationObserver`, `CacheInvalidationService`, `CacheKeysEnum`, and `SettingsService` to keep storefront content fresh
+- **Unified Search & Discovery:** Typesense-powered search with PGroonga-backed database fallback, multi-model result hydration, and SWR-cached autosuggest responses
 - **Review Aggregation:** Background listener recomputes `review_count` and `average_rating` whenever reviews change for reviewable models
 - **Price Indexing System:** Denormalized product_prices table for fast price queries with discount and featured price calculations
   - **Automated Updates:** `UpdateProductPricingJob` for batch updates, `CheckExpiredFeaturedPricesCommand` for scheduled expiry checks
