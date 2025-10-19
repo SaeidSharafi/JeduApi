@@ -6,6 +6,8 @@ namespace App\Http\Controllers\Api\Shop\HomePage;
 
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\HomePage\StudentStoryData;
+use App\Data\Shop\StudentStoryRequestData;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\System\CacheKeysEnum;
 use App\Http\Controllers\Controller;
 use App\Models\StudentStory;
@@ -25,38 +27,51 @@ final class StudentStoryController extends Controller
      *
      * @response {
      *  "message": "عملیات با موفقیت انجام شد.",
-     *  "data": [
-     *      {
-     *          "student_name": "فراگیر یک",
-     *          "avatar_url": "http://jedu.test/storage/fake-media/placeholder1.jpg",
-     *          "course_name": "دوره حسابداری",
-     *          "course_url": "http://rempel.com/sunt-nihil-accusantium-harum-mollitia",
-     *          "story_text": "داستان فراگیر یک",
-     *          "display_order": 0
-     *      },
-     *      {
-     *          "student_name": "فراگیر دو",
-     *          "avatar_url": "http://jedu.test/storage/fake-media/placeholder2.jpg",
-     *          "course_name": "دوره حسابداری",
-     *          "course_url": "http://rempel.com/sunt-nihil-accusantium-harum-mollitia",
-     *          "story_text": "داستان فراگیر دو",
-     *          "display_order": 0
-     *      }
-     *  ],
-     *  "metadata": []
+     *  {
+     * "message": "عملیات با موفقیت انجام شد.",
+     * "data": [
+     * {
+     * "student_name": "محمد صالحی",
+     * "avatar_url": "fake-avatar-6.svg",
+     * "course_name": "دوره آموزش نقاشی مینیاتور و تذهیب",
+     * "course_url": "/courses/miniature-painting-course",
+     * "story_text": "آشنایی با هنر اصیل ایرانی و یادگیری تکنیک‌های مینیاتور برای من یک سفر معنوی بود. این دوره به من کمک کرد تا با صبر و دقت، آثاری خلق کنم که به آن‌ها افتخار می‌کنم.",
+     * "display_order": 6
+     * }
+     * ],
+     * "metadata": []
      * }
      */
-    public function __invoke(): ApiResponseInterface
+    public function __invoke(StudentStoryRequestData $data): ApiResponseInterface
     {
-        $stories = SWRCacheService::rememberHomepageContent(CacheKeysEnum::StudentStory->value,
-            function () {
+        $cacheKey = CacheKeysEnum::StudentStory->value.':'.md5(serialize($data->toArray()));
+
+        $stories = SWRCacheService::rememberHomepageContent($cacheKey,
+            function () use ($data) {
                 $stories = StudentStory::query()
-                    ->withMedia('avatar')
                     ->visible()
+                    ->when($data->featured_only, fn($query) => $query->featured())
+                    ->when($data->category_slug,
+                        fn($query, $slug) => $query->whereHas('categories', fn($q) => $q->where('slug', $slug)))
+                    ->when($data->course_slug, function ($query, $slug) {
+                        $query->whereHas('courses', function ($q) use ($slug) {
+                            $q->where('slug', $slug)
+                                ->orWhereHas('products', function ($q2) use ($slug) {
+                                    $q2->where('slug', $slug);
+                                });
+                        });
+                    })
                     ->orderBy('display_order')
                     ->get();
 
-                return $stories->map(fn ($story): StudentStoryData => StudentStoryData::fromModel($story));
+                if ($stories->isEmpty() && ($data->category_slug || $data->course_slug)) {
+                    $stories = StudentStory::query()
+                        ->visible()
+                        ->featured()
+                        ->orderBy('display_order')
+                        ->get();
+                }
+                return StudentStoryData::collect($stories);
             });
 
         return response()->success($stories);

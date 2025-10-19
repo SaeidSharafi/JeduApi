@@ -34,6 +34,12 @@ final class StudentStory extends Model
     {
         return $query->where('is_visible', true);
     }
+    #[Scope]
+    public function featured(Builder $query): Builder
+    {
+        return $query->where('is_featured', true);
+    }
+
 
     protected function casts(): array
     {

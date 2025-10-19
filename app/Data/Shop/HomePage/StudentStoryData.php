@@ -17,12 +17,4 @@ final class StudentStoryData extends Data
         public string $story_text,
         public int $display_order = 0
     ) {}
-
-    public static function fromModel(StudentStory $story): self
-    {
-        return self::from([
-            ...$story->toArray(),
-            'avatar_url' => $story->firstMedia('avatar')?->getUrl(),
-        ]);
-    }
 }
