@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\Shop\Product\CategorySeminarController;
 use App\Http\Controllers\Api\Shop\Product\CourseController;
 use App\Http\Controllers\Api\Shop\Product\DigitalAssetController;
 use App\Http\Controllers\Api\Shop\Product\GoodForStartCoursesController;
+use App\Http\Controllers\Api\Shop\Product\RelatedProductController;
 use App\Http\Controllers\Api\Shop\Product\SeminarController;
 use App\Http\Controllers\Api\Shop\ProductTeacherController;
 use App\Http\Controllers\Api\Shop\SearchController;
@@ -62,3 +63,6 @@ Route::get('search/suggest', SuggestSearchController::class)->name('search.sugge
 Route::get('teachers/{teacher:uuid}', [TeacherController::class, 'show'])->name('teachers.show');
 //Route::get('teachers', [TeacherController::class, 'index'])->name('teachers.index');
 Route::get('product/{product:slug}/teachers', ProductTeacherController::class)->name('product.teachers');
+
+Route::get('product/{product:slug}/related/{relation_type}', RelatedProductController::class)
+    ->name('product.related');
