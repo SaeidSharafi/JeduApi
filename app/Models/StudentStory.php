@@ -4,24 +4,30 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Traits\HasCategories;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Plank\Mediable\Mediable;
 
 final class StudentStory extends Model
 {
-    use HasFactory, Mediable;
+    use HasFactory, Mediable, HasCategories;
 
-    protected $fillable = [
-        'student_name',
-        'course_name',
-        'course_url',
-        'story_text',
-        'is_visible',
-        'display_order',
-    ];
+    protected $fillable
+        = [
+            'student_name',
+            'course_name',
+            'avatar_url',
+            'course_url',
+            'story_text',
+            'is_visible',
+            'is_featured',
+            'display_order',
+        ];
 
     #[Scope]
     public function visible(Builder $query): Builder
@@ -36,11 +42,8 @@ final class StudentStory extends Model
             'updated_at' => 'datetime',
         ];
     }
-
-    protected function avatarUrl(): \Illuminate\Database\Eloquent\Casts\Attribute
+    public function courses(): BelongsToMany
     {
-        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: function () {
-            return $this->firstMedia('avatar')?->getUrl();
-        });
+        return $this->belongsToMany(Course::class);
     }
 }

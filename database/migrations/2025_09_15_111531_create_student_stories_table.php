@@ -18,8 +18,10 @@ return new class extends Migration
             $table->string('student_name');
             $table->string('course_name');
             $table->string('course_url');
+            $table->string('avatar_url')->nullable();
             $table->text('story_text');
             $table->boolean('is_visible')->default(true);
+            $table->boolean('is_featured')->default(false);
             $table->integer('display_order')->default(0);
             $table->timestamps();
         });
