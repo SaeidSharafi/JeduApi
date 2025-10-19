@@ -169,9 +169,12 @@
 - **Special Features:** Unique constraint on (`product_id`, `related_product_id`, `relation_type`) prevents duplicates; indexed on `product_id` and `relation_type` for efficient queries; supports bulk attach/sync operations through `CreateRelatedProductAction`
 
 ### Teacher (`app/Models/Teacher.php`)
-- **Purpose:** Instructor profiles
-- **Key Fields:** Instructor metadata and qualifications
-- **Relationships:** `belongsTo(User::class)` - user
+- **Purpose:** Instructor profiles with rich metadata and portfolio
+- **Key Fields:** `uuid` (UUID v7 auto-generated), `first_name`, `last_name`, `bio`, `avatar_url`, `rate`, `email`, `phone`, `gender`, `social_links` (JSON)
+- **Relationships:** 
+  - `belongsToMany(ProductDeliveryOption::class)` - productDeliveryOptions (pivot: product_delivery_option_teacher)
+  - `belongsTo(User::class)` - user
+- **Special Features:** UUID auto-generation on create via boot method, avatar support for profile images, structured social media links in JSON format, rate field for pricing/expertise level, enum-backed gender casting
 
 ### Vendor (`app/Models/Vendor.php`)
 - **Purpose:** Internal departments/external entities

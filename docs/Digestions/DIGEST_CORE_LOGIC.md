@@ -139,9 +139,12 @@
 - **DeleteUserAction**: Handles customer account deactivation
 
 #### Teacher Actions (`app/Actions/Admin/Teacher/`)
-- **CreateTeacherAction**: Sets up instructor profiles
-- **UpdateTeacherAction**: Updates instructor information and qualifications
-- **DeleteTeacherAction**: Removes instructor access
+- **CreateTeacherAction** (`app/Actions/Admin/Teacher/CreateTeacherAction.php`)
+  - `handle(CreateTeacherData $data): Teacher`: Creates new instructor profiles with UUID auto-generation, avatar support, and social media links
+- **UpdateTeacherAction** (`app/Actions/Admin/Teacher/UpdateTeacherAction.php`)
+  - `handle(UpdateTeacherData $data, Teacher $teacher): Teacher`: Updates instructor information including bio, avatar, rate, and social links
+- **DeleteTeacherAction** (`app/Actions/Admin/Teacher/DeleteTeacherAction.php`)
+  - `handle(Teacher $teacher): void`: Removes instructor profiles
 
 #### Vendor Actions (`app/Actions/Admin/Vendor/`)
 - **CreateVendorAction**: Creates new vendor/department records
@@ -239,6 +242,8 @@
   - `handle(CreateCollaborationRequestData $data): void`: Stores collaboration enquiries, optionally persisting private attachments via `UploadFileAction`.
 - **StoreContactUsRequestAction** (`app/Actions/Shop/Forms/StoreContactUsRequestAction.php`)
   - `handle(ContactUsRequestData $data): void`: Persists contact form submissions for staff follow-up.
+- **StoreAdviceRequestAction** (`app/Actions/Shop/Forms/StoreAdviceRequestAction.php`)
+  - `handle(AdviceRequestCreateData $data): void`: Records phone numbers from users requesting educational consultation callbacks.
 
 ### Auth Actions (`app/Actions/Auth/`)
 - **GenerateOtpAction** (`app/Actions/Auth/GenerateOtpAction.php`)

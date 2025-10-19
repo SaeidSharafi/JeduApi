@@ -426,6 +426,12 @@
 #### CategoryDigitalAssetController (`app/Http/Controllers/Api/Shop/Product/CategoryDigitalAssetController.php`)
 - `__invoke(PaginationRequestData $request, Category $category, CategoryQueryService $service)`: **Route:** `GET /api/v1/shop/category/{category:slug}/digital-assets` - **Delegates to:** `CategoryQueryService::getProductsForCategory()` - **Response DTO:** Paginated `ProductCardData`
 
+#### TeacherController (`app/Http/Controllers/Api/Shop/TeacherController.php`)
+- `show(Teacher $teacher)`: **Route:** `GET /api/v1/shop/teachers/{teacher:uuid}` - **URL Param:** `uuid` - **Response DTO:** `TeacherDetailData` with full instructor profile
+
+#### ProductTeacherController (`app/Http/Controllers/Api/Shop/ProductTeacherController.php`)
+- `__invoke(Product $product)`: **Route:** `GET /api/v1/shop/product/{product:slug}/teachers` - **URL Param:** `product:slug` - **Response DTO:** `TeacherDetailData` collection of unique teachers across all delivery options for the product
+
 #### HeaderController (`app/Http/Controllers/Api/Shop/Settings/HeaderController.php`)
 - `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/header` - **Response DTO:** HeaderData derived from SettingsService payload
 
@@ -449,6 +455,9 @@
 
 #### CollaborationRequestController (`app/Http/Controllers/Api/Shop/Forms/CollaborationRequestController.php`)
 - `__invoke(CreateCollaborationRequestData $data, CreateCollaborationRequestAction $action)`: **Route:** `POST /api/v1/shop/collaboration` - **Request DTO:** CreateCollaborationRequestData - **Response:** `201 Created` acknowledgement on submission (subject to throttle)
+
+#### AdviceRequestController (`app/Http/Controllers/Api/Shop/AdviceRequestController.php`)
+- `__invoke(AdviceRequestCreateData $data, StoreAdviceRequestAction $action)`: **Route:** `POST /api/v1/shop/advice-requests` - **Request DTO:** AdviceRequestCreateData (phone number required) - **Delegates to:** `StoreAdviceRequestAction` - **Response:** `201 Created` with success message (subject to throttle)
 
 ### Admin Auth Endpoints (`/api/v1/admin/auth/*`)
 

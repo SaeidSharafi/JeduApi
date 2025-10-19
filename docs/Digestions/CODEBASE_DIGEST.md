@@ -58,12 +58,14 @@
 - **Profile Management:** Customer account management and profile updates
 - **Course Access:** Enrollment-based access to purchased content
 - **Review System:** Customer review submission for products and courses
+- **Teacher Profiles:** View detailed instructor profiles with avatar, bio, rate, and social media links; browse teachers associated with specific products
 - **Home Page Content:** Dynamic home page block hydration with curated, dynamic, banner, and webinar layouts powered by cached pricing data, block-specific hydration actions, and SWR caching profiles
 - **Public CMS Pages:** Read-only endpoints for header, footer, about us, collaboration, contact page, partner listings, sliders, and student stories derived from admin-managed settings
 - **Public Course Catalog:** Browse courses, seminars, and digital assets with filtering by fulfillment type, category slug, difficulty level, price range, availability windows, and discount flags driven by the shared product query engine
 - **Course Details:** Detailed course information pages with curriculum, pricing options, and teacher information
 - **Category Browsing:** Hierarchical category listing and detail pages with product counts
 - **Category Products:** Browse products within categories by type (course, seminar, digital asset) with pagination
+- **Consultation Requests:** Request educational consultation via phone number submission with rate-limited form handling
 
 ### System Features
 - **Multi-tenancy Support:** Vendor-based product organization
@@ -91,12 +93,12 @@
 - **Compliance Reporting:** Automated compliance report generation
 
 ## 6. Data Model Completeness
-**37 Models Total:** User, Staff, AdminActionLog, Order, OrderItem, Product (polymorphic to Course/Seminar/DigitalAsset), ProductDeliveryOption, ProductDeliveryOptionDiscountPrice, ProductPrice (pricing index), Enrollment, Payment, Refund, Review, Category, Categorizable, Teacher, Vendor, Term, DiscountPromotion, DiscountPromotionRule, DiscountCoupon, Wallet, WalletTransaction, WalletCampaign, Setting, HomePageBlock, Slider, StudentStory, CollaborationCarousel, CollaborationRequest, ContactUsRequest, SmsLog, BlogCategory, BlogPost
+**38 Models Total:** User, Staff, AdminActionLog, Order, OrderItem, Product (polymorphic to Course/Seminar/DigitalAsset), ProductDeliveryOption, ProductDeliveryOptionDiscountPrice, ProductPrice (pricing index), Enrollment, Payment, Refund, Review, Category, Categorizable, Teacher, Vendor, Term, DiscountPromotion, DiscountPromotionRule, DiscountCoupon, Wallet, WalletTransaction, WalletCampaign, Setting, HomePageBlock, Slider, StudentStory, CollaborationCarousel, CollaborationRequest, ContactUsRequest, AdviceRequest, SmsLog, BlogCategory, BlogPost
 
 ## 7. Business Logic Coverage
 **100+ Action Classes** organized by domain after the content and form refactor:
-- **Admin Actions:** Complete CRUD operations for all entities plus new helpers such as `GetThumbnailUrlAction` and `UpdateSliderStatusAction`, aligning with the Content namespace split and review aggregation workflows; includes `CreateRelatedProductAction` and `DeleteRelatedProductAction` for managing product merchandising relationships
-- **Shop Actions:** Customer-facing operations now include `GetHomePageBlocksListAction`, `GetHomePageBlockAction`, attachment-aware collaboration/contact form submissions, and shared file upload handling
+- **Admin Actions:** Complete CRUD operations for all entities plus new helpers such as `GetThumbnailUrlAction` and `UpdateSliderStatusAction`, aligning with the Content namespace split and review aggregation workflows; includes `CreateRelatedProductAction` and `DeleteRelatedProductAction` for managing product merchandising relationships; enhanced `CreateTeacherAction` and `UpdateTeacherAction` supporting UUID auto-generation, avatar uploads, and social media links
+- **Shop Actions:** Customer-facing operations now include `GetHomePageBlocksListAction`, `GetHomePageBlockAction`, attachment-aware collaboration/contact form submissions, shared file upload handling, and `StoreAdviceRequestAction` for consultation request submissions
 - **Auth Actions:** Comprehensive authentication system with OTP and password support
 - **Wallet Actions:** Credit management and transaction processing
 
@@ -120,15 +122,18 @@
 **225+ Endpoints** across all domains:
 - **Admin API:** Complete platform management with 165+ endpoints including the new Content module for CMS settings, slider status toggles, and product relationship management (related, cross-sell, upsell)
 - **Customer API:** Profile and course access management
-- **Shop Public API:** Modular endpoints for home page blocks, sliders, partners, header/footer, CMS pages, and rate-limited contact/collaboration form submissions
+- **Shop Public API:** Modular endpoints for home page blocks, sliders, partners, header/footer, CMS pages, teacher profiles, and rate-limited contact/collaboration/advice request form submissions
 - **Course Catalog API:** Public course listing with advanced filtering (search, category, level, price range, discounts) and detailed course pages
 - **Category API:** Category listing, detail pages, and category-based product browsing by type with pagination
+- **Teacher API:** Teacher profile display and product-specific teacher listings
 - **Authentication:** Dual system for both admin and customer interfaces
 - **File Management:** Secure media and private file handling
 - **Select Options:** Dropdown data for admin interface including dedicated product select-options endpoint with search, type filtering, and configurable limits
 - **Blog Management:** Full CRUD operations for blog categories and posts with publication workflow
 
 ## 9. Digest Index
-- **[Data Models & Relationships](./DIGEST_DATA_MODELS.md)** - Complete coverage of all 36 models with relationships including new blog system
-- **[Core Business Logic (Actions/Services)](./DIGEST_CORE_LOGIC.md)** - Complete coverage of 96+ Action classes, comprehensive services, and console commands
-- **[API Interfaces & Endpoints](./DIGEST_API_INTERFACES.md)** - Complete coverage of 210+ API endpoints organized by domain including blog management
+- **[Data Models & Relationships](./DIGEST_DATA_MODELS.md)** - Complete coverage of all 38 models with relationships including teacher profiles and advice request system
+- **[Core Business Logic (Actions/Services)](./DIGEST_CORE_LOGIC.md)** - Complete coverage of 100+ Action classes, comprehensive services, and console commands
+- **[API Interfaces & Endpoints](./DIGEST_API_INTERFACES.md)** - Complete coverage of 220+ API endpoints organized by domain including teacher and advice request endpoints
+
+```

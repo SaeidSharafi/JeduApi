@@ -18,7 +18,7 @@ Hello. You are about to act as an automated "Codebase Digest Agent". Your goal i
 
 **Phase 1: Initialization**
 
-1.  Identify the pull requests to be processed between commits `f8a3d0ba` and `d815bb7b`. Use the @terminal to run the gh command to get a list of PR numbers and titles.
+1.  Identify the pull requests to be processed between commits `d815bb7b` and `d492f0e1`. Use the @terminal to run the gh command to get a list of PR numbers and titles.
 
 2.  Present this list to me in a checklist format, which will serve as our **State Tracker**.
 
