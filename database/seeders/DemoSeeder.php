@@ -17,6 +17,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Seminar;
 use App\Models\Slider;
 use App\Models\Staff;
+use App\Models\StudentStory;
 use App\Models\Teacher;
 use App\Models\Term;
 use App\Models\User;
@@ -122,6 +123,7 @@ final class DemoSeeder extends Seeder
         $this->seedModel(BlogPost::class, 'blog_posts.json');
         $this->seedModel(Slider::class, 'sliders.json');
         $this->seedModel(HomePageBlock::class, 'home_page_blocks.json');
+        $this->seedModel(StudentStory::class, 'student_stories.json');
 
         $this->command->info('Farsi demo data seeding complete.');
 
@@ -258,6 +260,7 @@ final class DemoSeeder extends Seeder
             // The temporary key is no longer needed in the final data
             unset($item['category_ids']);
             unset($item['teacher_ids']);
+            unset($item['course_ids']);
 
             // Robustly encode ANY remaining array values to JSON strings.
             // This permanently solves the "Array to string conversion" error.
@@ -301,6 +304,25 @@ final class DemoSeeder extends Seeder
 
             if (!empty($pdoTeacherLinks)) {
                 DB::table('product_delivery_option_teacher')->insert($pdoTeacherLinks);
+            }
+        }
+        if ($modelClass === StudentStory::class) {
+            // For StudentStory, we also need to handle the pivot table for courses
+            $storyCourseLinks = $collection->flatMap(function (array $item) {
+                if (!isset($item['course_ids']) || !is_array($item['course_ids'])) {
+                    return []; // If no course_ids, return an empty set for this item.
+                }
+
+                return collect($item['course_ids'])->map(function ($courseId) use ($item) {
+                    return [
+                        'student_story_id' => $item['id'],
+                        'course_id'        => $courseId,
+                    ];
+                });
+            })->all();
+
+            if (!empty($storyCourseLinks)) {
+                DB::table('course_student_story')->insert($storyCourseLinks);
             }
         }
 
