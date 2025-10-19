@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\Shop\Blog\BlogCategoryController;
+use App\Http\Controllers\Api\Shop\Blog\BlogPostController;
 use App\Http\Controllers\Api\Shop\CMS\AboutUsController;
 use App\Http\Controllers\Api\Shop\CMS\CollaborationPageController;
 use App\Http\Controllers\Api\Shop\CMS\ContactPageController;
@@ -61,8 +63,15 @@ Route::get('search', SearchController::class)->name('search');
 Route::get('search/suggest', SuggestSearchController::class)->name('search.suggest');
 
 Route::get('teachers/{teacher:uuid}', [TeacherController::class, 'show'])->name('teachers.show');
-//Route::get('teachers', [TeacherController::class, 'index'])->name('teachers.index');
+// Route::get('teachers', [TeacherController::class, 'index'])->name('teachers.index');
 Route::get('product/{product:slug}/teachers', ProductTeacherController::class)->name('product.teachers');
 
 Route::get('product/{product:slug}/related/{relation_type}', RelatedProductController::class)
     ->name('product.related');
+
+// Blog Routes
+Route::get('blog/posts', [BlogPostController::class, 'index'])->name('blog.posts.index');
+Route::get('blog/post/{slug}', [BlogPostController::class, 'show'])->name('blog.posts.show');
+Route::get('blog/categories', [BlogCategoryController::class, 'index'])->name('blog.categories.index');
+Route::get('blog/category/{slug}', [BlogCategoryController::class, 'show'])->name('blog.categories.show');
+Route::get('blog/category/{slug}/posts', [BlogCategoryController::class, 'posts'])->name('blog.categories.posts');

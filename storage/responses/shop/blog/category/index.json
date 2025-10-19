@@ -1,0 +1,34 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "name": "Programming",
+      "slug": "programming",
+      "description": "Programming tutorials and guides for developers",
+      "icon": "code",
+      "posts_count": 25
+    },
+    {
+      "name": "Laravel",
+      "slug": "laravel",
+      "description": "Laravel framework tutorials and best practices",
+      "icon": "laravel",
+      "posts_count": 15
+    },
+    {
+      "name": "PHP",
+      "slug": "php",
+      "description": "PHP programming language tutorials",
+      "icon": "php",
+      "posts_count": 18
+    },
+    {
+      "name": "Web Development",
+      "slug": "web-development",
+      "description": "Web development tutorials and resources",
+      "icon": "web",
+      "posts_count": 32
+    }
+  ],
+  "metadata": []
+}

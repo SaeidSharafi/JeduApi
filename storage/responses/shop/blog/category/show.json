@@ -1,0 +1,14 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "name": "Programming",
+    "slug": "programming",
+    "description": "Programming tutorials and guides for developers of all skill levels",
+    "icon": "code",
+    "posts_count": 25,
+    "meta_title": "Programming Tutorials - Learn to Code",
+    "meta_description": "Comprehensive programming tutorials covering various languages and frameworks.",
+    "meta_keywords": "programming, coding, tutorials, development"
+  },
+  "metadata": []
+}

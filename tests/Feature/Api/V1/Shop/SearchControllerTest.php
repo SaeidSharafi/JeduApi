@@ -101,7 +101,6 @@ describe('Response Transformation', function () {
             'title',
             'slug',
             'excerpt',
-            'body',
             'author',
             'reviews_count',
             'average_rating',
