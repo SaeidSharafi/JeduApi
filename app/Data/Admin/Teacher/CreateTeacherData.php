@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Teacher;
 
+use App\Data\Admin\Settings\SocialMediaLinkData;
 use App\Enums\User\GenderEnum;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
@@ -30,11 +31,11 @@ final class CreateTeacherData extends Data
     public static function rules(?ValidationContext $context = null): array
     {
         return [
-            'first_name'     => ['required', 'string', 'max:255'],
-            'last_name'      => ['required', 'string', 'max:255'],
-            'bio'            => ['required', 'string', 'max:1000'],
-            'rate'           => ['required', 'numeric', 'min:0', 'max:5', 'nullable'],
-            'email'          => [
+            'first_name'              => ['required', 'string', 'max:255'],
+            'last_name'               => ['required', 'string', 'max:255'],
+            'bio'                     => ['required', 'string', 'max:1000'],
+            'rate'                    => ['required', 'numeric', 'min:0', 'max:5', 'nullable'],
+            'email'                   => [
                 'required', 'string', 'email', 'max:255',
                 Rule::unique('teachers', 'email')->where(function (Builder $query) {
                     $teacher = request()->route()->parameter('teacher');
@@ -45,7 +46,7 @@ final class CreateTeacherData extends Data
                     return $query;
                 }),
             ],
-            'phone'          => [
+            'phone'                   => [
                 'required', 'string', 'max:20', 'nullable',
                 Rule::unique('teachers', 'phone')->where(function (Builder $query) {
                     $teacher = request()->route()->parameter('teacher');
@@ -56,13 +57,14 @@ final class CreateTeacherData extends Data
                     return $query;
                 }),
             ],
-            'gender'         => ['required', Rule::enum(GenderEnum::class)],
-            'birth_date'     => ['nullable', 'jdate:Y-m-d'],
-            'social_links'   => ['nullable', 'array'],
-            'social_links.*' => ['nullable', 'url'],
-            'user_id'        => ['required', 'exists:users,id', 'integer'],
-            'media'          => ['present', 'array:avatar'],
-            'media.avatar'   => ['nullable', 'integer', 'exists:media,id'],
+            'gender'                  => ['required', Rule::enum(GenderEnum::class)],
+            'birth_date'              => ['nullable', 'jdate:Y-m-d'],
+            'social_links'            => ['nullable', 'array'],
+            'social_links.*.platform' => ['required', 'string', 'max:50'],
+            'social_links.*.link'     => ['required', 'url', 'max:255'],
+            'user_id'                 => ['required', 'exists:users,id', 'integer'],
+            'media'                   => ['present', 'array:avatar'],
+            'media.avatar'            => ['nullable', 'integer', 'exists:media,id'],
         ];
     }
 

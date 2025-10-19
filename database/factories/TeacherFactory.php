@@ -32,9 +32,18 @@ final class TeacherFactory extends Factory
             'gender'       => $this->faker->randomElement(GenderEnum::getAllValues()),
             'birth_date'   => $this->faker->date(),
             'social_links' => [
-                'facebook' => $this->faker->url(),
-                'twitter'  => $this->faker->url(),
-                'linkedin' => $this->faker->url(),
+                [
+                    'platform' => 'facebook',
+                    'link'     => $this->faker->url(),
+                ],
+                [
+                    'platform' => 'twitter',
+                    'link'     => $this->faker->url(),
+                ],
+                [
+                    'platform' => 'linkedin',
+                    'link'     => $this->faker->url(),
+                ]
             ],
             'user_id' => \App\Models\User::factory(),
         ];
