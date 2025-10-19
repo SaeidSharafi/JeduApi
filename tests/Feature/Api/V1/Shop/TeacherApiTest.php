@@ -41,3 +41,26 @@ describe('Shop TeacherController', function (): void {
         $response->assertNotFound();
     });
 });
+describe('Shop ProductTeacherController', function (): void {
+    it('returns teachers associated with a product', function (): void {
+        $teacher1 = \App\Models\Teacher::factory()->create();
+        $teacher2 = \App\Models\Teacher::factory()->create();
+
+
+        $product = \App\Models\Product::factory()
+            ->withCourse()
+            ->create();
+
+        $pdo = \App\Models\ProductDeliveryOption::factory()
+            ->for($product)
+            ->create();
+        $pdo->teachers()->attach([$teacher1->id, $teacher2->id]);
+
+        $response = $this->getJson(route('api.v1.shop.product.teachers', ['product' => $product->slug]));
+
+        $response->assertOk();
+        $response->assertJsonCount(2, 'data');
+        $response->assertJsonFragment(['uuid' => $teacher1->uuid]);
+        $response->assertJsonFragment(['uuid' => $teacher2->uuid]);
+    });
+});

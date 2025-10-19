@@ -1,0 +1,72 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "uuid": "6b853859-7b28-441f-a9d1-c70eb4bed1c9",
+      "first_name": "عباس",
+      "last_name": "کیارستمی",
+      "bio": "کارگردان و فیلم‌نامه‌نویس شهیر بین‌المللی، مدرس دوره‌های کارگردانی و سینمای مفهومی.",
+      "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg",
+      "rate": 4.8,
+      "gender": {
+        "value": "male",
+        "label": "مرد"
+      },
+      "social_links": [
+        {
+          "platform": "imdb",
+          "url": "https://www.imdb.com/name/nm0001424/"
+        },
+        {
+          "platform": "website",
+          "url": null
+        }
+      ]
+    },
+    {
+      "uuid": "5ae59760-3990-4be6-a6f7-05f988dcac9e",
+      "first_name": "اصغر",
+      "last_name": "فرهادی",
+      "bio": "کارگردان و فیلم‌نامه‌نویس برنده اسکار، مدرس دوره‌های فیلم‌نامه‌نویسی و کارگردانی سینما.",
+      "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg",
+      "rate": 4.9,
+      "gender": {
+        "value": "male",
+        "label": "مرد"
+      },
+      "social_links": [
+        {
+          "platform": "imdb",
+          "url": "https://www.imdb.com/name/nm1410815/"
+        },
+        {
+          "platform": "website",
+          "url": null
+        }
+      ]
+    },
+    {
+      "uuid": "dae8da28-a851-42da-a589-3bdd2fc9f972",
+      "first_name": "بهرام",
+      "last_name": "بیضایی",
+      "bio": "نمایشنامه‌نویس و کارگردان تئاتر و سینما، مدرس کارگاه‌های تخصصی نمایشنامه‌نویسی.",
+      "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg",
+      "rate": 4.7,
+      "gender": {
+        "value": "male",
+        "label": "مرد"
+      },
+      "social_links": [
+        {
+          "platform": "imdb",
+          "url": "https://www.imdb.com/name/nm0067285/"
+        },
+        {
+          "platform": "website",
+          "url": null
+        }
+      ]
+    }
+  ],
+  "metadata": []
+}
