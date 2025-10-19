@@ -9,11 +9,18 @@
     "phone": "9100000001",
     "gender": "male",
     "birth_date": "1940-09-23",
-    "social_links": {
-      "linkedin": "https://ir.linkedin.com/in/mohammad-reza-shajarian",
-      "website": "https://shajarian.com"
-    },
-    "user_id": 1
+    "social_links": [
+      {
+        "platform": "linkedin",
+        "url": "https://ir.linkedin.com/in/mohammad-reza-shajarian"
+      },
+      {
+        "platform": "website",
+        "url": "https://shajarian.com"
+      }
+    ],
+    "user_id": 1,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 2,
@@ -25,27 +32,41 @@
     "phone": "9100000002",
     "gender": "male",
     "birth_date": "1940-06-22",
-    "social_links": {
-      "imdb": "https://www.imdb.com/name/nm0001424/",
-      "website": null
-    },
-    "user_id": 2
+    "social_links": [
+      {
+        "platform": "imdb",
+        "url": "https://www.imdb.com/name/nm0001424/"
+      },
+      {
+        "platform": "website",
+        "url": null
+      }
+    ],
+    "user_id": 2,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 3,
     "first_name": "مجید",
     "last_name": "سمیعی",
     "bio": "جراح مغز و اعصاب و متخصص علوم شناختی، ارائه‌دهنده کارگاه‌های پیشرفته در حوزه مغز و شناخت.",
-    "rate": 5.0,
+    "rate": 5,
     "email": "m.samii@jedushop.com",
     "phone": "9100000003",
     "gender": "male",
     "birth_date": "1937-06-19",
-    "social_links": {
-      "linkedin": "https://ir.linkedin.com/in/madjid-samii",
-      "website": "https://professorsamii.com"
-    },
-    "user_id": 3
+    "social_links": [
+      {
+        "platform": "linkedin",
+        "url": "https://ir.linkedin.com/in/madjid-samii"
+      },
+      {
+        "platform": "website",
+        "url": "https://professorsamii.com"
+      }
+    ],
+    "user_id": 3,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 4,
@@ -57,11 +78,18 @@
     "phone": "9100000004",
     "gender": "male",
     "birth_date": "1930-01-24",
-    "social_links": {
-      "linkedin": null,
-      "website": "https://farshchianart.com"
-    },
-    "user_id": 4
+    "social_links": [
+      {
+        "platform": "linkedin",
+        "url": null
+      },
+      {
+        "platform": "website",
+        "url": "https://farshchianart.com"
+      }
+    ],
+    "user_id": 4,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 5,
@@ -73,11 +101,18 @@
     "phone": "9100000005",
     "gender": "male",
     "birth_date": "1940-01-04",
-    "social_links": {
-      "linkedin": null,
-      "website": "https://drelahighomshei.com"
-    },
-    "user_id": 5
+    "social_links": [
+      {
+        "platform": "linkedin",
+        "url": null
+      },
+      {
+        "platform": "website",
+        "url": "https://drelahighomshei.com"
+      }
+    ],
+    "user_id": 5,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 6,
@@ -89,27 +124,41 @@
     "phone": "9100000006",
     "gender": "male",
     "birth_date": "1938-12-26",
-    "social_links": {
-      "imdb": "https://www.imdb.com/name/nm0067285/",
-      "website": null
-    },
-    "user_id": 6
+    "social_links": [
+      {
+        "platform": "imdb",
+        "url": "https://www.imdb.com/name/nm0067285/"
+      },
+      {
+        "platform": "website",
+        "url": null
+      }
+    ],
+    "user_id": 6,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 7,
     "first_name": "مریم",
     "last_name": "میرزاخانی",
     "bio": "نابغه ریاضی و استاد دانشگاه استنفورد، ارائه‌دهنده دوره‌های پیشرفته هندسه و توپولوژی.",
-    "rate": 5.0,
+    "rate": 5,
     "email": "m.mirzakhani@jedushop.com",
     "phone": "9100000007",
     "gender": "female",
     "birth_date": "1977-05-12",
-    "social_links": {
-      "linkedin": null,
-      "website": "https://stanford.edu/~mmir"
-    },
-    "user_id": 7
+    "social_links": [
+      {
+        "platform": "linkedin",
+        "url": null
+      },
+      {
+        "platform": "website",
+        "url": "https://stanford.edu/~mmir"
+      }
+    ],
+    "user_id": 7,
+    "avatar_url": "https://static.vecteezy.com/system/resources/previews/014/194/218/non_2x/avatar-of-a-woman-in-a-business-suit-in-a-circle-vector.jpg"
   },
   {
     "id": 8,
@@ -121,11 +170,18 @@
     "phone": "9100000008",
     "gender": "male",
     "birth_date": "1972-05-07",
-    "social_links": {
-      "imdb": "https://www.imdb.com/name/nm1410815/",
-      "website": null
-    },
-    "user_id": 8
+    "social_links": [
+      {
+        "platform": "imdb",
+        "url": "https://www.imdb.com/name/nm1410815/"
+      },
+      {
+        "platform": "website",
+        "url": null
+      }
+    ],
+    "user_id": 8,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 9,
@@ -137,11 +193,18 @@
     "phone": "9100000009",
     "gender": "male",
     "birth_date": "1945-12-16",
-    "social_links": {
-      "linkedin": null,
-      "website": "https://drsoroush.com"
-    },
-    "user_id": 9
+    "social_links": [
+      {
+        "platform": "linkedin",
+        "url": null
+      },
+      {
+        "platform": "website",
+        "url": "https://drsoroush.com"
+      }
+    ],
+    "user_id": 9,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 10,
@@ -153,11 +216,18 @@
     "phone": "9100000010",
     "gender": "male",
     "birth_date": "1951-08-23",
-    "social_links": {
-      "linkedin": null,
-      "website": "https://hosseinalizadeh.net"
-    },
-    "user_id": 10
+    "social_links": [
+      {
+        "platform": "linkedin",
+        "url": null
+      },
+      {
+        "platform": "website",
+        "url": "https://hosseinalizadeh.net"
+      }
+    ],
+    "user_id": 10,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 11,
@@ -169,11 +239,18 @@
     "phone": "9100000011",
     "gender": "male",
     "birth_date": "1933-11-23",
-    "social_links": {
-      "linkedin": null,
-      "website": "https://shariati.com"
-    },
-    "user_id": 11
+    "social_links": [
+      {
+        "platform": "linkedin",
+        "url": null
+      },
+      {
+        "platform": "website",
+        "url": "https://shariati.com"
+      }
+    ],
+    "user_id": 11,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 12,
@@ -185,27 +262,41 @@
     "phone": "9100000012",
     "gender": "male",
     "birth_date": "1936-08-26",
-    "social_links": {
-      "linkedin": null,
-      "website": "https://momayez.ir"
-    },
-    "user_id": 12
+    "social_links": [
+      {
+        "platform": "linkedin",
+        "url": null
+      },
+      {
+        "platform": "website",
+        "url": "https://momayez.ir"
+      }
+    ],
+    "user_id": 12,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 13,
     "first_name": "فیروز",
     "last_name": "نادری",
     "bio": "دانشمند برجسته ناسا و مدیر سابق اکتشافات منظومه شمسی، ارائه‌دهنده وبینارهای نجوم و فضا.",
-    "rate": 5.0,
+    "rate": 5,
     "email": "f.naderi@jedushop.com",
     "phone": "9100000013",
     "gender": "male",
     "birth_date": "1946-03-25",
-    "social_links": {
-      "linkedin": "https://www.linkedin.com/in/firouz-naderi-9b222910/",
-      "website": "https://solarsystem.nasa.gov/people/2391/firouz-naderi/"
-    },
-    "user_id": 13
+    "social_links": [
+      {
+        "platform": "linkedin",
+        "url": "https://www.linkedin.com/in/firouz-naderi-9b222910/"
+      },
+      {
+        "platform": "website",
+        "url": "https://solarsystem.nasa.gov/people/2391/firouz-naderi/"
+      }
+    ],
+    "user_id": 13,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 14,
@@ -217,11 +308,18 @@
     "phone": "9100000014",
     "gender": "male",
     "birth_date": "1940-10-30",
-    "social_links": {
-      "instagram": "https://www.instagram.com/aghdashloo/",
-      "website": null
-    },
-    "user_id": 14
+    "social_links": [
+      {
+        "platform": "instagram",
+        "url": "https://www.instagram.com/aghdashloo/"
+      },
+      {
+        "platform": "website",
+        "url": null
+      }
+    ],
+    "user_id": 14,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 15,
@@ -233,11 +331,18 @@
     "phone": "9100000015",
     "gender": "male",
     "birth_date": "1956-06-01",
-    "social_links": {
-      "linkedin": null,
-      "website": "https://mostafamalekian.com"
-    },
-    "user_id": 15
+    "social_links": [
+      {
+        "platform": "linkedin",
+        "url": null
+      },
+      {
+        "platform": "website",
+        "url": "https://mostafamalekian.com"
+      }
+    ],
+    "user_id": 15,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 16,
@@ -249,11 +354,18 @@
     "phone": "9100000016",
     "gender": "male",
     "birth_date": "1963-11-24",
-    "social_links": {
-      "instagram": "https://www.instagram.com/kayhan_kalhor/",
-      "website": "https://kayhankalhor.net"
-    },
-    "user_id": 16
+    "social_links": [
+      {
+        "platform": "instagram",
+        "url": "https://www.instagram.com/kayhan_kalhor/"
+      },
+      {
+        "platform": "website",
+        "url": "https://kayhankalhor.net"
+      }
+    ],
+    "user_id": 16,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 17,
@@ -265,11 +377,18 @@
     "phone": "9100000017",
     "gender": "male",
     "birth_date": "1933-07-06",
-    "social_links": {
-      "linkedin": null,
-      "website": "https://davariardakani.ir"
-    },
-    "user_id": 17
+    "social_links": [
+      {
+        "platform": "linkedin",
+        "url": null
+      },
+      {
+        "platform": "website",
+        "url": "https://davariardakani.ir"
+      }
+    ],
+    "user_id": 17,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 18,
@@ -281,11 +400,18 @@
     "phone": "9100000018",
     "gender": "male",
     "birth_date": "1950-02-18",
-    "social_links": {
-      "instagram": "https://www.instagram.com/shahram_nazeri_official/",
-      "website": null
-    },
-    "user_id": 18
+    "social_links": [
+      {
+        "platform": "instagram",
+        "url": "https://www.instagram.com/shahram_nazeri_official/"
+      },
+      {
+        "platform": "website",
+        "url": null
+      }
+    ],
+    "user_id": 18,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 19,
@@ -297,11 +423,18 @@
     "phone": "9100000019",
     "gender": "male",
     "birth_date": "1959-06-07",
-    "social_links": {
-      "linkedin": "https://www.linkedin.com/in/mohsen-kadivar-3a2b1b1a/",
-      "website": "https://kadivar.com"
-    },
-    "user_id": 19
+    "social_links": [
+      {
+        "platform": "linkedin",
+        "url": "https://www.linkedin.com/in/mohsen-kadivar-3a2b1b1a/"
+      },
+      {
+        "platform": "website",
+        "url": "https://kadivar.com"
+      }
+    ],
+    "user_id": 19,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   },
   {
     "id": 20,
@@ -313,10 +446,17 @@
     "phone": "9100000020",
     "gender": "male",
     "birth_date": "1928-10-07",
-    "social_links": {
-      "linkedin": null,
-      "website": null
-    },
-    "user_id": 20
+    "social_links": [
+      {
+        "platform": "linkedin",
+        "url": null
+      },
+      {
+        "platform": "website",
+        "url": null
+      }
+    ],
+    "user_id": 20,
+    "avatar_url": "https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg"
   }
 ]
