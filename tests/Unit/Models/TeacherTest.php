@@ -9,6 +9,7 @@ test('to array', function (): void {
     expect($array)->toBeArray()
         ->and($array)->toHaveKeys([
             'id',
+            'uuid',
             'first_name',
             'last_name',
             'bio',

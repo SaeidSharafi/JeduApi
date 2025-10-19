@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str;
 use Plank\Mediable\Mediable;
 
 final class Teacher extends Model
@@ -20,6 +21,7 @@ final class Teacher extends Model
 
     protected $fillable
         = [
+            'uuid',
             'first_name',
             'last_name',
             'bio',
@@ -43,6 +45,17 @@ final class Teacher extends Model
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(ProductDeliveryOption::class);
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        self::creating(function ($model) {
+            if (! $model->uuid) {
+                $model->uuid = Str::uuid7();
+            }
+        });
     }
 
     protected function casts(): array
