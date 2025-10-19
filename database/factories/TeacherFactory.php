@@ -25,6 +25,7 @@ final class TeacherFactory extends Factory
             'first_name'   => $this->faker->firstName(),
             'last_name'    => $this->faker->lastName(),
             'bio'          => $this->faker->persianParagraph(),
+            'avatar_url'   => $this->faker->imageUrl(300, 300, 'people'),
             'rate'         => $this->faker->randomFloat(2, 0, 5),
             'email'        => $this->faker->unique()->safeEmail(),
             'phone'        => $this->faker->mobile,

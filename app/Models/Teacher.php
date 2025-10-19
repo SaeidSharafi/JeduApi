@@ -25,6 +25,7 @@ final class Teacher extends Model
             'first_name',
             'last_name',
             'bio',
+            'avatar_url',
             'rate',
             'email',
             'phone',

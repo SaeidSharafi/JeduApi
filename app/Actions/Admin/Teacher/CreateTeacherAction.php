@@ -7,6 +7,7 @@ namespace App\Actions\Admin\Teacher;
 use App\Data\Admin\Teacher\CreateTeacherData;
 use App\Models\Teacher;
 use Illuminate\Support\Facades\DB;
+use Plank\Mediable\Media;
 
 final readonly class CreateTeacherAction
 {
@@ -16,12 +17,18 @@ final readonly class CreateTeacherAction
     public function handle(CreateTeacherData $data): void
     {
         DB::transaction(function () use ($data): void {
-            $media   = $data->media ?? [];
-            $teacher = Teacher::query()->create($data->except('media')->toArray());
-
-            foreach ($media as $tag => $mediaIds) {
-                $teacher->attachMedia($mediaIds, $tag);
+            $avatarMedia = null;
+            $teacherData = $data->except('media')->toArray();
+            if ($mediaId = data_get($data->media, 'avatar')) {
+                $avatarMedia = Media::find($mediaId);
+                $teacherData['avatar_url'] = $avatarMedia?->getUrl();
             }
+            $teacher = Teacher::query()->create($teacherData);
+
+            if ($avatarMedia) {
+                $teacher->attachMedia($avatarMedia, 'avatar');
+            }
+
         });
     }
 }

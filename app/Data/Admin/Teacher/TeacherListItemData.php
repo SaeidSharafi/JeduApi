@@ -20,6 +20,7 @@ final class TeacherListItemData extends Data
         public int $id,
         public string $first_name,
         public string $last_name,
+        public string $avatar_url,
         public float $rate,
         public string $email,
         public string $phone,
