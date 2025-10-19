@@ -60,7 +60,7 @@ final class ProductDeliveryOptionUpdateData extends Data
         ];
 
         // Get the existing delivery option to determine its delivery method for details validation
-        $deliveryOption  = request()->route()->parameter('delivery_option');
+        $deliveryOption  = request()->route()?->parameter('delivery_option');
         $deliveryMethod  = $deliveryOption?->delivery_method?->value  ?? $context->payload['delivery_method'] ?? null;
         $fulfillmentType = $deliveryOption?->fulfillment_type?->value ?? $context->payload['fulfillment_type'] ?? null;
 

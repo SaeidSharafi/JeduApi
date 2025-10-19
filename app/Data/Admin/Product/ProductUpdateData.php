@@ -36,8 +36,8 @@ final class ProductUpdateData extends Data
                 'string',
                 Rule::enum(PublicationStatusEnum::class),
                 new PublishedProductExistRule(
-                    (request()->route()->parameter('product') instanceof Product)
-                        ? request()->route()->parameter('product')
+                    (request()->route()?->parameter('product') instanceof Product)
+                        ? request()->route()?->parameter('product')
                         : null
                 ),
             ],

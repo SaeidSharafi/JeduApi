@@ -42,7 +42,7 @@ final class UserCreateData extends Data
             'phone' => [
                 'required', 'string', 'max:15',
                 Rule::unique('users', 'phone')->ignore(
-                    request()->route()->parameter('user')
+                    request()->route()?->parameter('user')
                 ),
             ],
             'first_name' => ['required', 'string', 'max:100'],
@@ -50,7 +50,7 @@ final class UserCreateData extends Data
             'email'      => [
                 'nullable', 'email', 'max:255',
                 Rule::unique('users', 'email')->ignore(
-                    request()->route()->parameter('user')
+                    request()->route()?->parameter('user')
                 ),
             ],
             'phone2'           => ['nullable', 'string', 'max:15'],
