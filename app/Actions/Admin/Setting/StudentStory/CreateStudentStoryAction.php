@@ -15,14 +15,15 @@ final class CreateStudentStoryAction
     {
         return DB::transaction(function () use ($data): StudentStory {
             $avatarMedia = Media::find($data->avatar);
+            $storyData = $data->except('avatar','categories', 'courses')->toArray();
+            if ($avatarMedia){
+                $storyData['avatar_url'] = $avatarMedia->getUrl();
+            }
+            $story = StudentStory::query()->create($storyData);
 
-            $story = StudentStory::query()->create(
-                $data->except('avatar')->toArray()
-            );
-
-            // Use 'avatar' as the collection tag for the media
             $story->syncMedia($avatarMedia, 'avatar');
-
+            $story->courses()->sync($data->courses);
+            $story->categories()->sync($data->categories);
             $story->refresh();
 
             return $story;

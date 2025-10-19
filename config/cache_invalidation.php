@@ -90,7 +90,7 @@ return [
             ['type' => 'pattern', 'value' => 'search:suggest:*'],
         ],
         StudentStory::class => [
-            CacheKeysEnum::StudentStory,
+            ['type' => 'pattern', 'value' => CacheKeysEnum::StudentStory->value.'*'],
         ],
         Slider::class => [
             CacheKeysEnum::Slider,

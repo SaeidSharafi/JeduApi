@@ -16,6 +16,9 @@ final class StudentStoryCreateData extends Data
         public string $story_text,
         public ?int $avatar,
         public bool $is_visible,
+        public bool $is_featured = false,
+        public array $categories = [],
+        public array $courses = [],
         public int $display_order = 0
     ) {}
 
@@ -28,6 +31,11 @@ final class StudentStoryCreateData extends Data
             'story_text'    => ['required', 'string'],
             'avatar'        => ['nullable', 'integer', 'exists:media,id'],
             'is_visible'    => ['required', 'boolean'],
+            'is_featured'   => ['required', 'boolean'],
+            'categories'    => ['sometimes', 'array'],
+            'categories.*'  => ['integer', 'exists:categories,id'],
+            'courses'       => ['sometimes', 'array'],
+            'courses.*'     => ['integer', 'exists:courses,id'],
             'display_order' => ['nullable', 'integer', 'min:0'],
         ];
     }
@@ -63,6 +71,26 @@ final class StudentStoryCreateData extends Data
             'is_visible' => [
                 'description' => 'Whether the story is visible.',
                 'example'     => true,
+            ],
+            'is_featured' => [
+                'description' => 'Whether the story is featured.',
+                'example'     => false,
+            ],
+            'categories' => [
+                'description' => 'Array of category IDs associated with the story.',
+                'example'     => [1, 2, 3],
+            ],
+            'categories.*' => [
+                'description' => 'Individual category ID.',
+                'example'     => 1,
+            ],
+            'courses' => [
+                'description' => 'Array of course IDs associated with the story.',
+                'example'     => [10, 20],
+            ],
+            'courses.*' => [
+                'description' => 'Individual course ID.',
+                'example'     => 10,
             ],
             'display_order' => [
                 'description' => 'Order for displaying the story.',

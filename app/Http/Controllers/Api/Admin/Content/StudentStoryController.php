@@ -31,6 +31,9 @@ final class StudentStoryController extends Controller
      * @queryParam filter[student_name] string Filter by student name. Example: John Doe
      * @queryParam filter[course_name] string Filter by course name. Example: Laravel Basics
      * @queryParam filter[is_visible] boolean Filter by visibility. Example: 1
+     * @queryParam filter[is_featured] boolean Filter by featured status. Example: 1
+     * @queryParam filter[course_id] integer Filter by course ID. Example: 5
+     * @queryParam filter[category_id] integer Filter by category ID. Example: 3
      * @queryParam sort string Sort by fields. Allowed values: student_name, course_name, display_order, created_at.
      *     Example: -created_at
      * @queryParam per_page integer Number of items per page. Example: 15
@@ -47,15 +50,23 @@ final class StudentStoryController extends Controller
             ->allowedFilters(
                 'student_name',
                 'course_name',
-                AllowedFilter::exact('is_visible')
+                AllowedFilter::exact('is_visible'),
+                AllowedFilter::exact('is_featured'),
+                AllowedFilter::callback('course_id', function ($query, $value) {
+                    $query->whereHas('courses', function ($q) use ($value) {
+                        $q->where('courses.id', $value);
+                    });
+                }),
+                AllowedFilter::callback('category_id', function ($query, $value) {
+                    $query->whereHas('categories', function ($q) use ($value) {
+                        $q->where('categories.id', $value);
+                    });
+                }),
             )
             ->allowedSorts(['student_name', 'course_name', 'display_order', 'created_at'])
             ->defaultSort('display_order')
-            ->with('media')
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
-
-        $stories->load('media');
 
         return response()->success(StudentStoryListItemData::collect($stories));
     }

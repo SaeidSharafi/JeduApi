@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 use App\Enums\PermissionEnum;
+use App\Enums\System\MorphTypeEnum;
 use App\Models\StudentStory;
 
 uses(Tests\AuthTestTrait::class);
@@ -16,18 +17,24 @@ describe('StudentStoryController', function (): void {
     });
     it('list and fitler stories', function (): void {
         $this->authorized_user([PermissionEnum::STUDENT_STORY_VIEW_ANY]);
-
-        // Create some student stories
-        StudentStory::factory()->create([
+        $category = App\Models\Category::factory()->create();
+        $otherCategory = App\Models\Category::factory()->create();
+        $course = App\Models\Course::factory()->create();
+        $otherCourse = App\Models\Course::factory()->create();
+        $storyOne = StudentStory::factory()->create([
             'student_name' => 'John Doe',
             'course_name'  => 'Laravel Basics',
             'is_visible'   => true,
         ]);
-        StudentStory::factory()->create([
+        $storyTwo = StudentStory::factory()->create([
             'student_name' => 'Jane Smith',
             'course_name'  => 'Vue.js Essentials',
             'is_visible'   => false,
         ]);
+        $storyOne->categories()->attach($category->id);
+        $storyOne->courses()->attach($course->id);
+        $storyTwo->categories()->attach($otherCategory->id);
+        $storyTwo->courses()->attach($otherCourse->id);
 
         // Test listing all stories
         $response = $this->getJson('/api/v1/admin/settings/student-stories');
@@ -42,6 +49,18 @@ describe('StudentStoryController', function (): void {
 
         // Test filtering by visibility
         $response = $this->getJson('/api/v1/admin/settings/student-stories?filter[is_visible]=1');
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'data.data');
+        $response->assertJsonFragment(['student_name' => 'John Doe']);
+
+        // Test filtering by course ID
+        $response = $this->getJson("/api/v1/admin/settings/student-stories?filter[course_id]={$course->id}");
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'data.data');
+        $response->assertJsonFragment(['student_name' => 'John Doe']);
+
+        // Test filtering by category ID
+        $response = $this->getJson("/api/v1/admin/settings/student-stories?filter[category_id]={$category->id}");
         $response->assertStatus(200);
         $response->assertJsonCount(1, 'data.data');
         $response->assertJsonFragment(['student_name' => 'John Doe']);
@@ -72,6 +91,9 @@ describe('StudentStoryController', function (): void {
 
     it('creates a new story', function (): void {
         $this->authorized_user([PermissionEnum::STUDENT_STORY_CREATE]);
+        $category = App\Models\Category::factory()->create();
+        $otherCategory = App\Models\Category::factory()->create();
+        $course = App\Models\Course::factory()->create();
 
         $postData = [
             'student_name' => 'Alice Johnson',
@@ -80,21 +102,34 @@ describe('StudentStoryController', function (): void {
             'story_text'   => 'This course was amazing!',
             'is_visible'   => true,
             'avatar'       => $this->avatar->id,
+            'categories'   => [$category->id, $otherCategory->id],
+            'courses'      => [$course->id],
         ];
 
         $response = $this->postJson('/api/v1/admin/settings/student-stories', $postData);
         $response->assertStatus(201);
-
+        $responseData = $response->json('data');
         $this->assertDatabaseHas('student_stories', [
             'student_name' => 'Alice Johnson',
             'course_name'  => 'React for Beginners',
             'story_text'   => 'This course was amazing!',
             'is_visible'   => true,
         ]);
+        $this->assertDatabaseHas('course_student_story', [
+            'course_id' => $course->id,
+            'student_story_id' => $responseData['id'],
+        ]);
+        $this->assertDatabaseHas('categorizables', [
+            'category_id' => $category->id,
+            'categorizable_id' => $responseData['id'],
+            'categorizable_type' => MorphTypeEnum::STUDENT_STORY->value,
+        ]);
 
         $story = StudentStory::where('student_name', 'Alice Johnson')->first();
         expect($story)->not->toBeNull()
-            ->and($story->avatar_url)->toBe($this->avatar->getUrl());
+            ->and($story->avatar_url)->toBe($this->avatar->getUrl())
+            ->and($story->categories->pluck('id')->toArray())->toEqualCanonicalizing([$category->id, $otherCategory->id])
+            ->and($story->courses->pluck('id')->toArray())->toEqualCanonicalizing([$course->id]);
     });
     it('creates a new story without avatar', function (): void {
         $this->authorized_user([PermissionEnum::STUDENT_STORY_CREATE]);
@@ -127,12 +162,19 @@ describe('StudentStoryController', function (): void {
 
     it('updates an existing story', function (): void {
         $this->authorized_user([PermissionEnum::STUDENT_STORY_UPDATE]);
-
+        $oldCategory = App\Models\Category::factory()->create();
+        $newCategory = App\Models\Category::factory()->create();
+        $oldCourse = App\Models\Course::factory()->create();
+        $newCourse = App\Models\Course::factory()->create();
         $story = StudentStory::factory()->create([
             'student_name' => 'Bob Brown',
             'course_name'  => 'Django Fundamentals',
             'is_visible'   => false,
         ])->fresh();
+
+        $story->attachMedia($this->avatar, 'avatar');
+        $story->categories()->attach($oldCategory->id);
+        $story->courses()->attach($oldCourse->id);
 
         $avatar = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('avatar.jpg'))
             ->toDisk('public')
@@ -145,6 +187,8 @@ describe('StudentStoryController', function (): void {
             'story_text'   => 'Learned a lot!',
             'is_visible'   => true,
             'avatar'       => $avatar->id,
+            'categories'   => [$newCategory->id],
+            'courses'      => [$newCourse->id],
         ];
 
         $response = $this->putJson("/api/v1/admin/settings/student-stories/{$story->id}", $updateData);
@@ -158,11 +202,24 @@ describe('StudentStoryController', function (): void {
             'is_visible'   => true,
         ]);
 
+        $this->assertDatabaseHas('course_student_story', [
+            'course_id' => $newCourse->id,
+            'student_story_id' => $story->id,
+        ]);
+        $this->assertDatabaseHas('categorizables', [
+            'category_id' => $newCategory->id,
+            'categorizable_id' => $story->id,
+            'categorizable_type' => MorphTypeEnum::STUDENT_STORY->value,
+        ]);
+
         $updatedStory = StudentStory::find($story->id);
         $storyAvatar  = $updatedStory->firstMedia('avatar');
         expect($updatedStory)->not->toBeNull()
             ->and($storyAvatar->id)->toEqual($avatar->id)
-            ->and($storyAvatar->getUrl())->toBe($avatar->getUrl());
+            ->and($storyAvatar->getUrl())->toBe($avatar->getUrl())
+            ->and($updatedStory->categories->pluck('id')->toArray())->toEqualCanonicalizing([$newCategory->id])
+            ->and($updatedStory->courses->pluck('id')->toArray())->toEqualCanonicalizing([$newCourse->id])
+        ;
     });
 
     it('updates an existing story and set avatar to null', function (): void {
@@ -197,7 +254,8 @@ describe('StudentStoryController', function (): void {
         $updatedStory = StudentStory::find($story->id);
         $storyAvatar  = $updatedStory->firstMedia('avatar');
         expect($updatedStory)->not->toBeNull()
-            ->and($storyAvatar)->toBeNull();
+            ->and($storyAvatar)->toBeNull()
+            ->and($updatedStory->avatar_url)->toBeNull();
     });
 
     it('deletes a story', function (): void {
