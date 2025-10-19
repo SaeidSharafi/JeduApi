@@ -25,15 +25,25 @@ final class TeacherFactory extends Factory
             'first_name'   => $this->faker->firstName(),
             'last_name'    => $this->faker->lastName(),
             'bio'          => $this->faker->persianParagraph(),
+            'avatar_url'   => $this->faker->imageUrl(300, 300, 'people'),
             'rate'         => $this->faker->randomFloat(2, 0, 5),
             'email'        => $this->faker->unique()->safeEmail(),
             'phone'        => $this->faker->mobile,
             'gender'       => $this->faker->randomElement(GenderEnum::getAllValues()),
             'birth_date'   => $this->faker->date(),
             'social_links' => [
-                'facebook' => $this->faker->url(),
-                'twitter'  => $this->faker->url(),
-                'linkedin' => $this->faker->url(),
+                [
+                    'platform' => 'facebook',
+                    'link'     => $this->faker->url(),
+                ],
+                [
+                    'platform' => 'twitter',
+                    'link'     => $this->faker->url(),
+                ],
+                [
+                    'platform' => 'linkedin',
+                    'link'     => $this->faker->url(),
+                ]
             ],
             'user_id' => \App\Models\User::factory(),
         ];

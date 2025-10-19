@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace App\Data\Admin\Teacher;
+namespace App\Data\Shop\Teacher;
 
-use App\Data\Admin\User\ShowUserData;
 use App\Data\Transformer\AdvancedDateTimeInterfaceTransformer;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\User\GenderEnum;
@@ -14,21 +13,17 @@ use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
-final class TeacherListItemData extends Data
+final class TeacherDetailData extends Data
 {
     public function __construct(
-        public int $id,
+        public string $uuid,
         public string $first_name,
         public string $last_name,
+        public string $bio,
         public string $avatar_url,
         public float $rate,
-        public string $email,
-        public string $phone,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public GenderEnum $gender,
-        #[WithTransformer(AdvancedDateTimeInterfaceTransformer::class, format: 'Y-m-d')]
-        public ?Verta $birth_date,
         public ?array $social_links,
-        public ?ShowUserData $user
     ) {}
 }

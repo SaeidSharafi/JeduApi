@@ -9,7 +9,7 @@ uses(Tests\AuthTestTrait::class);
 beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
-    $this->profile = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('profile.jpg'))
+    $this->avatar = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('avatar.jpg'))
         ->toDisk('public')
         ->upload();
 });
@@ -76,25 +76,28 @@ describe('TeacherController Test', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_CREATE]);
         $data          = App\Models\Teacher::factory()->make();
         $data['media'] = [
-            'profile' => $this->profile->id,
+            'avatar' => $this->avatar->id,
         ];
         $data['birth_date'] = verta($data->birth_date)->format('Y-m-d');
         $response           = $this->postJson(route('api.v1.admin.teacher.store'), $data->toArray());
         $response->assertCreated();
-        $this->assertDatabaseHas('teachers', ['email' => $data->email]);
+        $this->assertDatabaseHas('teachers', [
+            'email' => $data->email,
+            'avatar_url' => $this->avatar->getUrl(),
+        ]);
     });
 
     it('should show a teacher', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_VIEW]);
         $teacher = App\Models\Teacher::factory()->create();
-        $teacher->attachMedia($this->profile->id, 'profile');
+        $teacher->attachMedia($this->avatar->id, 'avatar');
         $response = $this->getJson(route('api.v1.admin.teacher.show', ['teacher' => $teacher]));
         $response->assertOk();
         $response->assertJsonFragment(['email' => $teacher->email]);
         $response
             ->assertJson(function (AssertableJson $json): void {
-                $json->has('data.media.profile')
-                    ->where('data.media.profile.0.id', $this->profile->id)
+                $json->has('data.media.avatar')
+                    ->where('data.media.avatar.0.id', $this->avatar->id)
                     ->etc();
             });
     });
@@ -104,32 +107,57 @@ describe('TeacherController Test', function (): void {
         $teacher       = App\Models\Teacher::factory()->create();
         $data          = App\Models\Teacher::factory()->make();
         $data['media'] = [
-            'profile' => $this->profile->id,
+            'avatar' => $this->avatar->id,
         ];
         $data['birth_date'] = verta($data->birth_date)->format('Y-m-d');
         $response           = $this->putJson(route('api.v1.admin.teacher.update', ['teacher' => $teacher]), $data->toArray());
         $response->assertOk();
-        $this->assertDatabaseHas('teachers', ['id' => $teacher->id, 'email' => $data->email]);
+        $this->assertDatabaseHas('teachers', [
+            'id' => $teacher->id,
+            'email' => $data->email,
+            'avatar_url' => $this->avatar->getUrl(),
+        ]);
         $this->assertDatabaseHas('mediables', [
             'mediable_id'   => $teacher->id,
             'mediable_type' => \App\Enums\System\MorphTypeEnum::TEACHER->value,
-            'media_id'      => $this->profile->id,
+            'media_id'      => $this->avatar->id,
         ]);
     });
-
+    it('should remove teacher avatar if it\'s null', function (): void {
+        $this->authorized_user([App\Enums\PermissionEnum::TEACHER_UPDATE]);
+        $teacher       = App\Models\Teacher::factory()->create();
+        $teacher->attachMedia($this->avatar->id, 'avatar');
+        $data          = App\Models\Teacher::factory()->make();
+        $data['media'] = [
+            'avatar' => null,
+        ];
+        $data['birth_date'] = verta($data->birth_date)->format('Y-m-d');
+        $response           = $this->putJson(route('api.v1.admin.teacher.update', ['teacher' => $teacher]), $data->toArray());
+        $response->assertOk();
+        $this->assertDatabaseHas('teachers', [
+            'id' => $teacher->id,
+            'email' => $data->email,
+            'avatar_url' => null,
+        ]);
+        $this->assertDatabaseMissing('mediables', [
+            'mediable_id'   => $teacher->id,
+            'mediable_type' => \App\Enums\System\MorphTypeEnum::TEACHER->value,
+            'media_id'      => $this->avatar->id,
+        ]);
+    });
     it('should delete a teacher', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_DELETE]);
         $teacher = App\Models\Teacher::factory()->create();
-        $teacher->attachMedia($this->profile->id, 'profile');
+        $teacher->attachMedia($this->avatar->id, 'avatar');
         $response = $this->deleteJson(route('api.v1.admin.teacher.destroy', ['teacher' => $teacher]));
         $response->assertNoContent();
         $this->assertDatabaseMissing('teachers', ['id' => $teacher->id]);
         $this->assertDatabaseMissing('mediables', [
             'mediable_id'   => $teacher->id,
             'mediable_type' => \App\Enums\System\MorphTypeEnum::TEACHER->value,
-            'media_id'      => $this->profile->id,
+            'media_id'      => $this->avatar->id,
         ]);
-        $this->assertDatabaseMissing('media', ['id' => $this->profile->id]);
+        $this->assertDatabaseMissing('media', ['id' => $this->avatar->id]);
 
     });
     it('should not delete a teacher with related data', function (): void {

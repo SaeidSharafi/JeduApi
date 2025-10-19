@@ -244,8 +244,7 @@ final class DemoSeeder extends Seeder
                 ];
             });
         })->all();
-
-        $preparedData = $collection->map(function (array $item) use ($modifier, $table) {
+        $preparedData = $collection->map(function (array $item) use ($modifier, $table, &$teacherIds) {
             // Apply the initial custom modifier first (e.g., for hashing passwords)
             if ($modifier) {
                 $item = $modifier($item);
@@ -258,6 +257,7 @@ final class DemoSeeder extends Seeder
 
             // The temporary key is no longer needed in the final data
             unset($item['category_ids']);
+            unset($item['teacher_ids']);
 
             // Robustly encode ANY remaining array values to JSON strings.
             // This permanently solves the "Array to string conversion" error.
@@ -284,6 +284,25 @@ final class DemoSeeder extends Seeder
         if (!empty($categorizables)) {
             DB::table('categorizables')->insert($categorizables);
         }
+        if ($modelClass === ProductDeliveryOption::class) {
+            // For ProductDeliveryOption, we also need to handle the pivot table for teachers
+            $pdoTeacherLinks = $collection->flatMap(function (array $item) {
+                if (!isset($item['teacher_ids']) || !is_array($item['teacher_ids'])) {
+                    return []; // If no teacher_ids, return an empty set for this item.
+                }
+
+                return collect($item['teacher_ids'])->map(function ($teacherId) use ($item) {
+                    return [
+                        'product_delivery_option_id' => $item['id'],
+                        'teacher_id'                 => $teacherId,
+                    ];
+                });
+            })->all();
+
+            if (!empty($pdoTeacherLinks)) {
+                DB::table('product_delivery_option_teacher')->insert($pdoTeacherLinks);
+            }
+        }
 
         $this->command->line("  <info>Seeded:</info>  {$jsonFile}");
     }
@@ -300,6 +319,7 @@ final class DemoSeeder extends Seeder
             'courses', 'categories', 'teachers', 'terms', 'vendors', 'staff', 'users',
             // Add pivot tables or others that need clearing
             'categorizables', 'mediables', 'enrollments', 'order_items', 'orders',
+            'product_delivery_option_teacher',
         ];
 
         foreach ($tables as $table) {

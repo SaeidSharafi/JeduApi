@@ -3,12 +3,13 @@
 declare(strict_types=1);
 
 use App\Models\ProductDeliveryOption;
+use App\Models\Teacher;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 uses(Tests\AuthTestTrait::class);
 describe('User with permissions', function (): void {
     beforeEach(function (): void {
-        $this->product    = App\Models\Product::factory()->create();
+        $this->product = App\Models\Product::factory()->create();
         $this->simpleData = ProductDeliveryOption::factory()
             ->make(
                 [
@@ -21,7 +22,7 @@ describe('User with permissions', function (): void {
             'course_idnumber' => 'course-id-123',
             'activity_id'     => null,
         ];
-        $this->teachers               = App\Models\Teacher::factory()->count(3)->create();
+        $this->teachers = App\Models\Teacher::factory()->count(3)->create();
         $this->simpleData['teachers'] = $this->teachers->pluck('id')->toArray();
     });
     it('should return a list of delivery options for a product', function (): void {
@@ -34,19 +35,35 @@ describe('User with permissions', function (): void {
             ->count(3)
             ->create(['product_id' => $product->id]);
         $deliveryOptions = ProductDeliveryOption::query()
-            ->with('teachers', fn ($q) => $q->orderBy('id'))
+            ->with('teachers', fn($q) => $q->orderBy('id'))
             ->get();
         $response = $this->getJson(route('api.v1.admin.delivery-option.index', ['product' => $product->id]));
         $response->assertOk()
             ->assertJsonCount(3, 'data');
         $actualDataItems = collect($response->json('data'));
-
         foreach ($deliveryOptions as $expectedDeliveryOption) {
             $match = $actualDataItems->first(function ($actualItem) use ($expectedDeliveryOption) {
                 return $actualItem['id'] === $expectedDeliveryOption->id;
             });
             expect($match)->not->toBeNull("Expected PDO with id '{$expectedDeliveryOption->id}' not found or properties mismatch.");
 
+            $teachers = data_get($match, 'teachers');
+            expect(count($teachers))->toBe($expectedDeliveryOption->teachers->count());
+            foreach ($teachers as $teacherData) {
+                $expectedTeacher = $expectedDeliveryOption->teachers->firstWhere('id', $teacherData['id']);
+                expect($teacherData['id'])->toBe($expectedTeacher->id)
+                    ->and($teacherData['first_name'])->toBe($expectedTeacher->first_name)
+                    ->and($teacherData['last_name'])->toBe($expectedTeacher->last_name)
+                    ->and($teacherData['avatar_url'])->toBe($expectedTeacher->avatar_url)
+                    ->and((float) $teacherData['rate'])->toBe((float) $expectedTeacher->rate)
+                    ->and($teacherData['email'])->toBe($expectedTeacher->email)
+                    ->and($teacherData['phone'])->toBe($expectedTeacher->phone)
+                    ->and($teacherData['gender']['value'])->toBe($expectedTeacher->gender->value)
+                    ->and($teacherData['gender']['label'])->toBe($expectedTeacher->gender->translate())
+                    ->and($teacherData['birth_date'])->toBe($this->toJalalitString($expectedTeacher->birth_date, 'Y-m-d'))
+                    ->and($teacherData['social_links'])->toBe($expectedTeacher->social_links)
+                    ->and($teacherData['user'])->toBe(null);
+            }
             if ($match) {
                 AssertableJson::fromArray($match)
                     ->where('sku', $expectedDeliveryOption->sku)
@@ -70,22 +87,6 @@ describe('User with permissions', function (): void {
                         $this->toJalalitString($expectedDeliveryOption->featured_price_end_date))
                     ->where('created_at', $this->toJalalitString($expectedDeliveryOption->created_at))
                     ->where('updated_at', $this->toJalalitString($expectedDeliveryOption->updated_at))
-                    ->where('teachers',
-                        $expectedDeliveryOption->teachers?->map(fn (App\Models\Teacher $teacher): array => [
-                            'id'         => $teacher->id,
-                            'first_name' => $teacher->first_name,
-                            'last_name'  => $teacher->last_name,
-                            'rate'       => (float) $teacher->rate,
-                            'email'      => $teacher->email,
-                            'phone'      => $teacher->phone,
-                            'gender'     => [
-                                'value' => $teacher->gender->value,
-                                'label' => $teacher->gender->translate(),
-                            ],
-                            'birth_date'   => $this->toJalalitString($teacher->birth_date, 'Y-m-d'),
-                            'social_links' => $teacher->social_links,
-                            'user'         => null,
-                        ]))
                     ->etc();
             }
         }
@@ -165,6 +166,24 @@ describe('User with permissions', function (): void {
             ['product' => $deliveryOption->product_id, 'delivery_option' => $deliveryOption->id]));
 
         $response->assertOk();
+        $teachers = $response->json('data.teachers');
+        expect(count($teachers))->toBe(3);
+        foreach ($teachers as $teacherData) {
+            $expectedTeacher = $deliveryOption->teachers->firstWhere('id', $teacherData['id']);
+            expect($teacherData['id'])->toBe($expectedTeacher->id)
+                ->and($teacherData['first_name'])->toBe($expectedTeacher->first_name)
+                ->and($teacherData['last_name'])->toBe($expectedTeacher->last_name)
+                ->and((float) $teacherData['rate'])->toBe((float) $expectedTeacher->rate)
+                ->and($teacherData['avatar_url'])->toBe($expectedTeacher->avatar_url)
+                ->and($teacherData['email'])->toBe($expectedTeacher->email)
+                ->and($teacherData['phone'])->toBe($expectedTeacher->phone)
+                ->and($teacherData['gender']['value'])->toBe($expectedTeacher->gender->value)
+                ->and($teacherData['gender']['label'])->toBe($expectedTeacher->gender->translate())
+                ->and($teacherData['birth_date'])->toBe($this->toJalalitString($expectedTeacher->birth_date, 'Y-m-d'))
+                ->and($teacherData['social_links'])->toBe($expectedTeacher->social_links)
+                ->and($teacherData['user'])->toBe(null);
+        }
+
         $response->assertJson(function (AssertableJson $json) use ($deliveryOption): void {
             $json->where('data.sku', $deliveryOption->sku)
                 ->where('data.id', $deliveryOption->id)
@@ -187,22 +206,6 @@ describe('User with permissions', function (): void {
                     $this->toJalalitString($deliveryOption->featured_price_end_date))
                 ->where('data.created_at', $this->toJalalitString($deliveryOption->created_at))
                 ->where('data.updated_at', $this->toJalalitString($deliveryOption->updated_at))
-                ->where('data.teachers',
-                    $deliveryOption->teachers?->map(fn (App\Models\Teacher $teacher): array => [
-                        'id'         => $teacher->id,
-                        'first_name' => $teacher->first_name,
-                        'last_name'  => $teacher->last_name,
-                        'rate'       => $teacher->rate,
-                        'email'      => $teacher->email,
-                        'phone'      => $teacher->phone,
-                        'gender'     => [
-                            'value' => $teacher->gender->value,
-                            'label' => $teacher->gender->translate(),
-                        ],
-                        'birth_date'   => $this->toJalalitString($teacher->birth_date, 'Y-m-d'),
-                        'social_links' => $teacher->social_links,
-                        'user'         => null,
-                    ]))
                 ->etc();
         });
     });
@@ -217,13 +220,13 @@ describe('User with permissions', function (): void {
                 'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE,
             ]
         )->fresh();
-        $data            = $deliveryOption->toArray();
-        $data['name']    = $this->simpleData['name'];
+        $data = $deliveryOption->toArray();
+        $data['name'] = $this->simpleData['name'];
         $data['details'] = [
             'course_idnumber' => 'course-id-123',
             'activity_id'     => null,
         ];
-        $newTeachers      = App\Models\Teacher::factory(2)->create();
+        $newTeachers = App\Models\Teacher::factory(2)->create();
         $data['teachers'] = $newTeachers->pluck('id')->toArray();
 
         $response = $this->putJson(route('api.v1.admin.delivery-option.update',
@@ -265,7 +268,7 @@ describe('User with permissions', function (): void {
 });
 describe('User without permissions', function (): void {
     beforeEach(function (): void {
-        $this->product    = App\Models\Product::factory()->create();
+        $this->product = App\Models\Product::factory()->create();
         $this->simpleData = ProductDeliveryOption::factory()
             ->make(
                 [
@@ -278,7 +281,7 @@ describe('User without permissions', function (): void {
             'course_idnumber' => 'course-id-123',
             'activity_id'     => null,
         ];
-        $this->teachers               = App\Models\Teacher::factory()->count(3)->create();
+        $this->teachers = App\Models\Teacher::factory()->count(3)->create();
         $this->simpleData['teachers'] = $this->teachers->pluck('id')->toArray();
         $this->unauthorized_user();
     });
@@ -292,7 +295,7 @@ describe('User without permissions', function (): void {
     });
     it('should return 403 if user does not have permission to create delivery options', function (): void {
 
-        $product  = App\Models\Product::factory()->create();
+        $product = App\Models\Product::factory()->create();
         $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]),
             $this->simpleData);
 
@@ -330,7 +333,7 @@ describe('validation', function (): void {
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,
         ]);
         $product = App\Models\Product::factory()->create();
-        $data    = ProductDeliveryOption::factory()
+        $data = ProductDeliveryOption::factory()
             ->make(['product_id' => $product->id, 'name' => null])->toArray();
 
         $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
@@ -343,7 +346,7 @@ describe('validation', function (): void {
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,
         ]);
         $product = App\Models\Product::factory()->create();
-        $data    = ProductDeliveryOption::factory()
+        $data = ProductDeliveryOption::factory()
             ->make([
                 'product_id'       => $product->id,
                 'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::OFFLINE_SERVICE->value,
@@ -363,7 +366,7 @@ describe('validation', function (): void {
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,
         ]);
         $product = App\Models\Product::factory()->create();
-        $data    = ProductDeliveryOption::factory()
+        $data = ProductDeliveryOption::factory()
             ->make([
                 'product_id'       => $product->id,
                 'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::DIGITAL->value,
@@ -377,7 +380,7 @@ describe('validation', function (): void {
             ->assertJsonValidationErrors(['details.max_downloads']);
 
         $data['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value;
-        $data['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE->value;
+        $data['delivery_method'] = App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE->value;
 
         $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
 
@@ -385,7 +388,7 @@ describe('validation', function (): void {
             ->assertJsonValidationErrors(['details.course_idnumber']);
 
         $data['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value;
-        $data['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_BBB->value;
+        $data['delivery_method'] = App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_BBB->value;
 
         $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
 
@@ -393,21 +396,21 @@ describe('validation', function (): void {
             ->assertJsonValidationErrors(['details']);
 
         $data['delivery_method'] = App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value;
-        $response                = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
+        $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['details.meeting_name_identifier']);
 
         $data['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::OFFLINE_SERVICE->value;
-        $data['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value;
-        $response                 = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
+        $data['delivery_method'] = App\Enums\Product\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value;
+        $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['details.course_id']);
 
         $data['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::IN_PERSON_SERVICE->value;
-        $data['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::IN_PERSON->value;
-        $response                 = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
+        $data['delivery_method'] = App\Enums\Product\DeliveryMethodEnum::IN_PERSON->value;
+        $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(
