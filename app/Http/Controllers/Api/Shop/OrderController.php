@@ -7,8 +7,6 @@ namespace App\Http\Controllers\Api\Shop;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Order\OrderData;
 use App\Http\Controllers\Controller;
-use App\Models\Order;
-use App\Policies\Shop\CustomerOrderPolicy as CustomerOrderPolicy;
 use Illuminate\Support\Facades\Auth;
 use Spatie\LaravelData\DataCollection;
 
@@ -19,7 +17,7 @@ use Spatie\LaravelData\DataCollection;
  */
 final class OrderController extends Controller
 {
-    public function __construct(private readonly CustomerOrderPolicy $orderPolicy) {}
+    public function __construct() {}
 
     /**
      * List authenticated user's orders.
