@@ -12,6 +12,10 @@
         "sku": "PYT-F25-LIVE"
       }
     ],
-    "total_items_count": 1
+    "total_items_count": 1,
+    "applied_coupon_code": null,
+    "subtotal": 100000,
+    "discount_amount": 0,
+    "grand_total": 100000
   }
 }

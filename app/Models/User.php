@@ -74,6 +74,11 @@ final class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(Wallet::class);
     }
 
+    public function cart(): HasOne
+    {
+        return $this->hasOne(Cart::class);
+    }
+
     public function profileCompleted(): bool
     {
         return $this->first_name    !== null

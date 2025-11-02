@@ -86,4 +86,6 @@ Route::middleware(['identify.cart'])
         Route::post('items', [CartController::class, 'store'])->name('items.store');
         Route::put('items/{cartItem}', [CartController::class, 'update'])->name('items.update');
         Route::delete('items/{cartItem}', [CartController::class, 'destroy'])->name('items.destroy');
+        Route::post('coupon', [CartController::class, 'applyCoupon'])->name('coupon.apply');
+        Route::delete('coupon', [CartController::class, 'removeCoupon'])->name('coupon.remove');
     });

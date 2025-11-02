@@ -19,6 +19,10 @@
         "sku": "DS-W26-SELF"
       }
     ],
-    "total_items_count": 2
+    "total_items_count": 2,
+    "applied_coupon_code": "SAVE10",
+    "subtotal": 150000,
+    "discount_amount": 15000,
+    "grand_total": 135000
   }
 }

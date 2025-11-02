@@ -16,14 +16,22 @@ final class CartData extends Data
         #[DataCollectionOf(CartItemData::class)]
         public DataCollection $items,
         public int $total_items_count,
+        public ?string $applied_coupon_code,
+        public int $subtotal,
+        public int $discount_amount,
+        public int $grand_total,
     ) {}
 
-    public static function fromModel(Cart $cart): self
+    public static function fromModel(Cart $cart, int $subtotal = 0, int $discountAmount = 0, int $grandTotal = 0): self
     {
         return new self(
             id: $cart->id,
             items: CartItemData::collect($cart->items, DataCollection::class),
             total_items_count: $cart->items->count(),
+            applied_coupon_code: $cart->applied_coupon_code,
+            subtotal: $subtotal,
+            discount_amount: $discountAmount,
+            grand_total: $grandTotal,
         );
     }
 }

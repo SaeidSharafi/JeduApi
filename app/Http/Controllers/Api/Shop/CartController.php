@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop;
 
 use App\Data\Shop\Cart\AddCartItemData;
+use App\Data\Shop\Cart\ApplyCouponData;
 use App\Data\Shop\Cart\UpdateCartItemData;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiSuccessResponse;
@@ -69,5 +70,29 @@ final class CartController extends Controller
         $this->cartService->removeItem($cartItem->id);
 
         return response()->noContent();
+    }
+
+    /**
+     * Apply a coupon code to the cart.
+     *
+     * @responseFile storage/responses/shop/cart/show.json
+     */
+    public function applyCoupon(ApplyCouponData $data): ApiSuccessResponse
+    {
+        $cartData = $this->cartService->applyCoupon($data);
+
+        return response()->success($cartData);
+    }
+
+    /**
+     * Remove the applied coupon from the cart.
+     *
+     * @responseFile storage/responses/shop/cart/show.json
+     */
+    public function removeCoupon(): ApiSuccessResponse
+    {
+        $cartData = $this->cartService->removeCoupon();
+
+        return response()->success($cartData);
     }
 }
