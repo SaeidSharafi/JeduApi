@@ -93,5 +93,5 @@ Route::middleware(['identify.cart'])
 
 // Checkout Route (requires authentication)
 Route::post('checkout', CheckoutController::class)
-    ->middleware(['identify.cart'])
+    ->middleware(['identify.cart', 'throttle:5,1'])
     ->name('checkout');

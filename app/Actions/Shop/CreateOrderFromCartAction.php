@@ -51,21 +51,24 @@ final readonly class CreateOrderFromCartAction
                 ]);
             }
 
-            // Step 2: Validate availability and capacity for each item
+            // Step 2: Check velocity limit (max 5 orders in the last hour)
+            $this->validateOrderVelocity();
+
+            // Step 3: Validate availability and capacity for each item
             $this->validateCartItems($cart);
 
-            // Step 3: Build OrderCreateData from cart
+            // Step 4: Build OrderCreateData from cart
             $orderCreateData = $this->buildOrderCreateData($cart);
 
-            // Step 4: Execute the existing CreateOrderAction
+            // Step 5: Execute the existing CreateOrderAction
             $order = $this->createOrderAction->handle($orderCreateData);
 
-            // Step 5: Process payment if wallet method is selected
+            // Step 6: Process payment if wallet method is selected
             if ($checkoutData->payment_method === 'wallet') {
                 $this->processWalletPayment($order);
             }
 
-            // Step 6: Delete the cart after successful checkout
+            // Step 7: Delete the cart after successful checkout
             $this->cartService->deleteCart();
 
             return $order->fresh(['items.productDeliveryOption.product', 'customer', 'payments']);
@@ -133,6 +136,31 @@ final readonly class CreateOrderFromCartAction
 
         // Finalize the order using OrderStatusService
         $this->orderStatusService->handlePaymentCompletion($order);
+    }
+
+    /**
+     * Validate that the user hasn't exceeded the order velocity limit.
+     *
+     * @throws ValidationException
+     */
+    private function validateOrderVelocity(): void
+    {
+        $user = Auth::guard('user')->user();
+
+        if (! $user) {
+            return;
+        }
+
+        // Check how many orders the user has created in the last hour
+        $ordersInLastHour = Order::where('customer_id', $user->id)
+            ->where('created_at', '>=', now()->subHour())
+            ->count();
+
+        if ($ordersInLastHour >= 5) {
+            throw ValidationException::withMessages([
+                'velocity' => ['You have exceeded the order creation limit. Please try again later.'],
+            ]);
+        }
     }
 
     /**

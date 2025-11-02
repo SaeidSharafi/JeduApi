@@ -470,3 +470,165 @@ test('checkout with bank_transfer creates pending order without payment', functi
         'user_id' => $this->user->id,
     ]);
 });
+
+test('checkout endpoint enforces rate limit of 5 requests per minute', function (): void {
+    // Arrange: Create test user
+    $user = User::factory()->create();
+    $this->actingAs($user, 'user');
+
+    // Create delivery option
+    $vendor = Vendor::factory()->create();
+    $term   = Term::factory()->create();
+    $course = Course::factory()->create([
+        'status' => PublicationStatusEnum::PUBLISHED,
+    ]);
+
+    $product = Product::factory()->create([
+        'vendor_id'        => $vendor->id,
+        'term_id'          => $term->id,
+        'productable_id'   => $course->id,
+        'productable_type' => MorphTypeEnum::COURSE->value,
+        'status'           => PublicationStatusEnum::PUBLISHED,
+        'is_visible'       => true,
+    ]);
+
+    $deliveryOption = ProductDeliveryOption::factory()->create([
+        'product_id' => $product->id,
+        'price'      => 500000,
+        'uuid'       => Str::uuid()->toString(),
+        'status'     => PublicationStatusEnum::PUBLISHED,
+    ]);
+
+    // Add item to cart
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $deliveryOption->uuid,
+        'quantity'                     => 1,
+    ])->assertOk();
+
+    // Act: Hit the checkout endpoint 6 times
+    $responses = [];
+    for ($i = 0; $i < 6; $i++) {
+        $responses[] = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'bank_transfer',
+        ]);
+    }
+
+    // Assert: The 6th request should be rate limited
+    $lastResponse = end($responses);
+    $lastResponse->assertStatus(429); // Too Many Requests
+});
+
+test('user cannot create more than 5 orders in one hour', function (): void {
+    // Arrange: Create test user
+    $user = User::factory()->create();
+
+    // Create 5 orders for the user manually
+    for ($i = 0; $i < 5; $i++) {
+        Order::factory()->create([
+            'customer_id' => $user->id,
+            'created_at'  => now()->subMinutes(30), // Within the last hour
+        ]);
+    }
+
+    // Create delivery option
+    $vendor = Vendor::factory()->create();
+    $term   = Term::factory()->create();
+    $course = Course::factory()->create([
+        'status' => PublicationStatusEnum::PUBLISHED,
+    ]);
+
+    $product = Product::factory()->create([
+        'vendor_id'        => $vendor->id,
+        'term_id'          => $term->id,
+        'productable_id'   => $course->id,
+        'productable_type' => MorphTypeEnum::COURSE->value,
+        'status'           => PublicationStatusEnum::PUBLISHED,
+        'is_visible'       => true,
+    ]);
+
+    $deliveryOption = ProductDeliveryOption::factory()->create([
+        'product_id' => $product->id,
+        'price'      => 500000,
+        'uuid'       => Str::uuid()->toString(),
+        'status'     => PublicationStatusEnum::PUBLISHED,
+    ]);
+
+    // Add item to cart
+    $this->actingAs($user, 'user');
+
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $deliveryOption->uuid,
+        'quantity'                     => 1,
+    ])->assertOk();
+
+    // Act: Attempt to checkout (6th order)
+    $response = postJson(route('api.v1.shop.checkout'), [
+        'payment_method' => 'bank_transfer',
+    ]);
+
+    // Assert: Validation error due to velocity check
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['velocity']);
+
+    // Assert: No new order was created
+    $orderCount = Order::where('customer_id', $user->id)->count();
+    expect($orderCount)->toBe(5); // Still only 5 orders
+});
+
+test('velocity check only counts orders from the last hour', function (): void {
+    // Arrange: Create test user
+    $user = User::factory()->create();
+
+    // Create 5 orders for the user that are older than 1 hour
+    for ($i = 0; $i < 5; $i++) {
+        Order::factory()->create([
+            'customer_id' => $user->id,
+            'created_at'  => now()->subHours(2), // More than 1 hour ago
+        ]);
+    }
+
+    // Create delivery option
+    $vendor = Vendor::factory()->create();
+    $term   = Term::factory()->create();
+    $course = Course::factory()->create([
+        'status' => PublicationStatusEnum::PUBLISHED,
+    ]);
+
+    $product = Product::factory()->create([
+        'vendor_id'        => $vendor->id,
+        'term_id'          => $term->id,
+        'productable_id'   => $course->id,
+        'productable_type' => MorphTypeEnum::COURSE->value,
+        'status'           => PublicationStatusEnum::PUBLISHED,
+        'is_visible'       => true,
+    ]);
+
+    $deliveryOption = ProductDeliveryOption::factory()->create([
+        'product_id' => $product->id,
+        'price'      => 500000,
+        'uuid'       => Str::uuid()->toString(),
+        'status'     => PublicationStatusEnum::PUBLISHED,
+    ]);
+
+    // Add item to cart
+    $this->actingAs($user, 'user');
+
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $deliveryOption->uuid,
+        'quantity'                     => 1,
+    ])->assertOk();
+
+    // Act: Checkout (should succeed since old orders don't count)
+    $response = postJson(route('api.v1.shop.checkout'), [
+        'payment_method' => 'bank_transfer',
+    ]);
+
+    // Assert: Order created successfully
+    $response->assertCreated();
+
+    // Assert: New order exists
+    $recentOrderCount = Order::where('customer_id', $user->id)
+        ->where('created_at', '>=', now()->subHour())
+        ->count();
+    expect($recentOrderCount)->toBe(1); // Only the new order is recent
+});
