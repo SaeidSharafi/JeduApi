@@ -5,13 +5,22 @@ declare(strict_types=1);
 namespace App\Actions\Shop;
 
 use App\Actions\Admin\Order\CreateOrderAction;
+use App\Actions\Wallet\RecordWalletTransactionAction;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
+use App\Data\Admin\Wallet\RecordTransactionData;
+use App\Data\Shop\Cart\CheckoutData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Enums\Payment\PaymentMethodEnum;
+use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\Wallet\TransactionSourceEnum;
+use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Services\CartService;
+use App\Services\OrderStatusService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -20,17 +29,19 @@ final readonly class CreateOrderFromCartAction
 {
     public function __construct(
         private CartService $cartService,
-        private CreateOrderAction $createOrderAction
+        private CreateOrderAction $createOrderAction,
+        private RecordWalletTransactionAction $recordWalletTransaction,
+        private OrderStatusService $orderStatusService
     ) {}
 
     /**
-     * Convert a cart into a pending order.
+     * Convert a cart into a pending order and optionally process payment.
      *
      * @throws ValidationException
      */
-    public function handle(): Order
+    public function handle(CheckoutData $checkoutData): Order
     {
-        return DB::transaction(function (): Order {
+        return DB::transaction(function () use ($checkoutData): Order {
             // Step 1: Get the cart model directly
             $cart = $this->cartService->findOrCreateCart();
 
@@ -47,8 +58,81 @@ final readonly class CreateOrderFromCartAction
             $orderCreateData = $this->buildOrderCreateData($cart);
 
             // Step 4: Execute the existing CreateOrderAction
-            return $this->createOrderAction->handle($orderCreateData);
+            $order = $this->createOrderAction->handle($orderCreateData);
+
+            // Step 5: Process payment if wallet method is selected
+            if ($checkoutData->payment_method === 'wallet') {
+                $this->processWalletPayment($order);
+            }
+
+            // Step 6: Delete the cart after successful checkout
+            $this->cartService->deleteCart();
+
+            return $order->fresh(['items.productDeliveryOption.product', 'customer', 'payments']);
         });
+    }
+
+    /**
+     * Process wallet payment for the order.
+     *
+     * @throws ValidationException
+     */
+    private function processWalletPayment(Order $order): void
+    {
+        $user = Auth::guard('user')->user();
+
+        if (! $user || ! $user->wallet) {
+            throw ValidationException::withMessages([
+                'wallet' => ['Wallet not found for the current user.'],
+            ]);
+        }
+
+        // Check if user has sufficient balance (including gift balance)
+        $availableBalance = $user->wallet->balance + $user->wallet->gift_balance;
+        if ($availableBalance < $order->grand_total) {
+            throw ValidationException::withMessages([
+                'wallet' => [
+                    sprintf(
+                        'Insufficient wallet balance. You have %s, but need %s.',
+                        number_format($availableBalance),
+                        number_format($order->grand_total)
+                    ),
+                ],
+            ]);
+        }
+
+        // Record wallet transaction (debit)
+        $this->recordWalletTransaction->execute(
+            new RecordTransactionData(
+                user_id: $user->id,
+                type: TransactionTypeEnum::PAYMENT,
+                amount: $order->grand_total,
+                source_type: TransactionSourceEnum::ORDER,
+                source_id: $order->id,
+                description: "Payment for order #{$order->increment_id}",
+                metadata: [
+                    'order_id'       => $order->id,
+                    'order_number'   => $order->increment_id,
+                    'payment_method' => 'wallet',
+                ]
+            )
+        );
+
+        // Create payment record
+        Payment::create([
+            'order_id'    => $order->id,
+            'customer_id' => $user->id,
+            'method'      => PaymentMethodEnum::WALLET->value,
+            'amount'      => $order->grand_total,
+            'status'      => PaymentStatusEnum::COMPLETED,
+            'data'        => [
+                'wallet_payment' => true,
+                'user_id'        => $user->id,
+            ],
+        ]);
+
+        // Finalize the order using OrderStatusService
+        $this->orderStatusService->handlePaymentCompletion($order);
     }
 
     /**

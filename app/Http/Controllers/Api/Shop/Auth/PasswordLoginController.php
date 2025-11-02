@@ -5,18 +5,22 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\Auth;
 
 use App\Actions\Auth\PasswordLoginAction;
+use App\Actions\Shop\MergeGuestCartAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Customer\CustomerData;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
+use Log;
 
 final class PasswordLoginController extends Controller
 {
     public function __construct(
-        protected PasswordLoginAction $action
+        protected PasswordLoginAction $action,
+        protected MergeGuestCartAction $mergeGuestCartAction
     ) {}
 
     /**
@@ -98,6 +102,21 @@ final class PasswordLoginController extends Controller
                 $type,
                 $request->password
             );
+
+            // Merge guest cart if guest token is provided
+            $guestToken = $request->header('X-Guest-Token');
+            if ($guestToken && $user) {
+                try {
+                    $this->mergeGuestCartAction->handle($guestToken, $user->id);
+                } catch (Exception $e) {
+                    // Log error but don't fail the login
+                    Log::warning('Failed to merge guest cart after password login', [
+                        'user_id'     => $user->id,
+                        'guest_token' => $guestToken,
+                        'error'       => $e->getMessage(),
+                    ]);
+                }
+            }
 
             return response()->success([
                 'token'      => $token->plainTextToken,

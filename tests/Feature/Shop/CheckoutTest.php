@@ -75,7 +75,9 @@ describe('Checkout Success', function (): void {
         ])->assertOk();
 
         // Act: Checkout
-        $response = postJson(route('api.v1.shop.checkout'));
+        $response = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'bank_transfer',
+        ]);
 
         // Assert: Order created successfully
         $response->assertCreated()
@@ -129,7 +131,9 @@ describe('Checkout Success', function (): void {
         $this->actingAs($this->user, 'user');
 
         // Act: Attempt checkout
-        $response = postJson(route('api.v1.shop.checkout'));
+        $response = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'bank_transfer',
+        ]);
 
         // Assert: Validation error
         $response->assertStatus(422)
@@ -180,7 +184,9 @@ describe('Checkout Validation', function (): void {
         ])->assertOk();
 
         // Act: Attempt checkout
-        $response = postJson(route('api.v1.shop.checkout'));
+        $response = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'bank_transfer',
+        ]);
 
         // Assert: Validation error
         $response->assertStatus(422)
@@ -229,7 +235,9 @@ describe('Checkout Validation', function (): void {
         ])->assertOk();
 
         // Act: Attempt checkout
-        $response = postJson(route('api.v1.shop.checkout'));
+        $response = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'bank_transfer',
+        ]);
 
         // Assert: Validation error
         $response->assertStatus(422)
@@ -269,7 +277,9 @@ describe('Checkout Validation', function (): void {
         ])->assertOk();
 
         // Act: Attempt checkout
-        $response = postJson(route('api.v1.shop.checkout'));
+        $response = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'bank_transfer',
+        ]);
 
         // Assert: Validation error
         $response->assertStatus(422)
@@ -286,7 +296,9 @@ describe('Checkout Validation', function (): void {
         $guestToken = $response->headers->get('X-Guest-Token');
 
         // Act: Attempt checkout as guest
-        $response = postJson(route('api.v1.shop.checkout'), [], [
+        $response = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'wallet',
+        ], [
             'X-Guest-Token' => $guestToken,
         ]);
 
@@ -294,4 +306,167 @@ describe('Checkout Validation', function (): void {
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['user']);
     });
+});
+
+test('user can checkout with wallet payment and order is completed', function (): void {
+    // Arrange: Update wallet with sufficient balance (wallet is auto-created with user)
+    $wallet = $this->user->wallet;
+    $wallet->update([
+        'balance'      => 1000000, // 1,000,000 IRR
+        'gift_balance' => 0,
+    ]);
+
+    // Add item to cart
+    $this->actingAs($this->user, 'user');
+
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $this->deliveryOption->uuid,
+        'quantity'                     => 1,
+    ])->assertOk();
+
+    // Act: Checkout with wallet payment
+    $response = postJson(route('api.v1.shop.checkout'), [
+        'payment_method' => 'wallet',
+    ]);
+
+    // Assert: Order created successfully
+    $response->assertCreated();
+
+    $orderId = $response->json('data.id');
+
+    // Assert: Order status is COMPLETED (not pending)
+    assertDatabaseHas(Order::class, [
+        'id'          => $orderId,
+        'customer_id' => $this->user->id,
+        'status'      => OrderStatusEnum::COMPLETED->value,
+    ]);
+
+    // Assert: Payment record created
+    assertDatabaseHas('payments', [
+        'order_id' => $orderId,
+        'method'   => 'wallet',
+        'amount'   => 500000, // Price of delivery option
+        'status'   => 'completed',
+    ]);
+
+    // Assert: Wallet transaction recorded
+    assertDatabaseHas('wallet_transactions', [
+        'user_id'     => $this->user->id,
+        'type'        => 'payment',
+        'amount'      => -500000, // Negative for debit
+        'source_type' => 'order',
+        'source_id'   => $orderId,
+    ]);
+
+    // Assert: Wallet balance decreased
+    $wallet->refresh();
+    expect($wallet->balance)->toBe(500000); // 1,000,000 - 500,000
+
+    // Assert: Cart is deleted after checkout
+    $this->assertDatabaseMissing('carts', [
+        'user_id' => $this->user->id,
+    ]);
+});
+
+test('checkout fails with insufficient wallet balance', function (): void {
+    // Arrange: Update wallet with insufficient balance
+    $this->user->wallet->update([
+        'balance'      => 100000, // Only 100,000 IRR
+        'gift_balance' => 0,
+    ]);
+
+    // Add item to cart
+    $this->actingAs($this->user, 'user');
+
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $this->deliveryOption->uuid,
+        'quantity'                     => 1, // Costs 500,000
+    ])->assertOk();
+
+    // Act: Attempt checkout with wallet payment
+    $response = postJson(route('api.v1.shop.checkout'), [
+        'payment_method' => 'wallet',
+    ]);
+
+    // Assert: Validation error
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['wallet']);
+
+    // Assert: No order was created
+    $this->assertDatabaseMissing(Order::class, [
+        'customer_id' => $this->user->id,
+    ]);
+});
+
+test('wallet payment uses only regular balance (not gift balance)', function (): void {
+    // Arrange: Set wallet with sufficient regular balance
+    // Note: Gift balance is separate and not used for order payments
+    $this->user->wallet->update([
+        'balance'      => 500000, // 500,000 IRR regular balance (sufficient)
+        'gift_balance' => 300000, // 300,000 IRR gift balance (not used for payments)
+    ]);
+
+    // Add item to cart
+    $this->actingAs($this->user, 'user');
+
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $this->deliveryOption->uuid,
+        'quantity'                     => 1, // Costs 500,000
+    ])->assertOk();
+
+    // Act: Checkout with wallet payment
+    $response = postJson(route('api.v1.shop.checkout'), [
+        'payment_method' => 'wallet',
+    ]);
+
+    // Assert: Order created successfully
+    $response->assertCreated();
+
+    // Assert: Payment completed
+    $orderId = $response->json('data.id');
+    assertDatabaseHas('payments', [
+        'order_id' => $orderId,
+        'status'   => 'completed',
+    ]);
+
+    // Assert: Only regular balance decreased, gift balance unchanged
+    $this->user->wallet->refresh();
+    expect($this->user->wallet->balance)->toBe(0); // 500,000 - 500,000
+    expect($this->user->wallet->gift_balance)->toBe(300000); // Unchanged
+});
+
+test('checkout with bank_transfer creates pending order without payment', function (): void {
+    // Arrange: Add item to cart
+    $this->actingAs($this->user, 'user');
+
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $this->deliveryOption->uuid,
+        'quantity'                     => 1,
+    ])->assertOk();
+
+    // Act: Checkout with bank_transfer
+    $response = postJson(route('api.v1.shop.checkout'), [
+        'payment_method' => 'bank_transfer',
+    ]);
+
+    // Assert: Order created successfully
+    $response->assertCreated();
+
+    $orderId = $response->json('data.id');
+
+    // Assert: Order status is PENDING (not completed)
+    assertDatabaseHas(Order::class, [
+        'id'     => $orderId,
+        'status' => OrderStatusEnum::PENDING->value,
+    ]);
+
+    // Assert: No payment record created yet
+    $this->assertDatabaseMissing('payments', [
+        'order_id' => $orderId,
+    ]);
+
+    // Assert: Cart is still deleted after checkout
+    $this->assertDatabaseMissing('carts', [
+        'user_id' => $this->user->id,
+    ]);
 });
