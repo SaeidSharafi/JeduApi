@@ -8,7 +8,72 @@ use App\Models\ProductDeliveryOption;
 use App\Models\User;
 
 use function Pest\Laravel\postJson;
+it('do nothing if X-Guest-Token is not UUID', function () {
+    $user     = User::factory()->create(['password' => bcrypt('password')]);
+    $userCart = Cart::factory()->create(['user_id' => $user->id]);
 
+    $deliveryOption = ProductDeliveryOption::factory()->create();
+    CartItem::factory()->create([
+        'cart_id'                    => $userCart->id,
+        'product_delivery_option_id' => $deliveryOption->id,
+        'quantity'                   => 2,
+    ]);
+
+    // Act: Login without guest token
+    $response = postJson(route('api.v1.auth.password-login'), [
+        'identifier' => $user->email,
+        'password'   => 'password',
+    ], [
+        'X-Guest-Token' => 'not-a-uuid',
+    ]);
+
+    // Assert: Login successful
+    $response->assertOk();
+
+    // Assert: User cart remains unchanged
+    $userCart->refresh();
+    expect($userCart->items)->toHaveCount(1);
+
+    $this->assertDatabaseHas('cart_items', [
+        'cart_id'                    => $userCart->id,
+        'product_delivery_option_id' => $deliveryOption->id,
+        'quantity'                   => 2,
+    ]);
+});
+it('do nothing if there is no guest cart or cart is empty', function () {
+    // Arrange: Create a user with an existing cart
+    $user     = User::factory()->create(['password' => bcrypt('password')]);
+    $userCart = Cart::factory()->create(['user_id' => $user->id]);
+
+    $deliveryOption = ProductDeliveryOption::factory()->create();
+    CartItem::factory()->create([
+        'cart_id'                    => $userCart->id,
+        'product_delivery_option_id' => $deliveryOption->id,
+        'quantity'                   => 2,
+    ]);
+
+    // Act: Login without guest token
+    $response = postJson(route('api.v1.auth.password-login'), [
+        'identifier' => $user->email,
+        'password'   => 'password',
+    ], [
+        'X-Guest-Token' => \Illuminate\Support\Str::uuid7(),
+    ]);
+
+    // Assert: Login successful
+    $response->assertOk();
+
+    // Assert: User cart remains unchanged
+    $userCart->refresh();
+    expect($userCart->items)->toHaveCount(1);
+
+    $this->assertDatabaseHas('cart_items', [
+        'cart_id'                    => $userCart->id,
+        'product_delivery_option_id' => $deliveryOption->id,
+        'quantity'                   => 2,
+    ]);
+
+});
 it('merges guest cart into user cart on password login', function () {
     // Arrange: Create a user with an existing cart
     $user     = User::factory()->create(['password' => bcrypt('password')]);

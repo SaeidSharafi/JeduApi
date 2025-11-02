@@ -19,6 +19,7 @@ use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\User;
 use App\Services\CartService;
 use App\Services\OrderStatusService;
 use Illuminate\Support\Facades\Auth;
@@ -39,9 +40,9 @@ final readonly class CreateOrderFromCartAction
      *
      * @throws ValidationException
      */
-    public function handle(CheckoutData $checkoutData): Order
+    public function handle(CheckoutData $checkoutData, User $user): Order
     {
-        return DB::transaction(function () use ($checkoutData): Order {
+        return DB::transaction(function () use ($checkoutData, $user): Order  {
             // Step 1: Get the cart model directly
             $cart = $this->cartService->findOrCreateCart();
 
@@ -52,20 +53,20 @@ final readonly class CreateOrderFromCartAction
             }
 
             // Step 2: Check velocity limit (max 5 orders in the last hour)
-            $this->validateOrderVelocity();
+            $this->validateOrderVelocity($user);
 
             // Step 3: Validate availability and capacity for each item
             $this->validateCartItems($cart);
 
             // Step 4: Build OrderCreateData from cart
-            $orderCreateData = $this->buildOrderCreateData($cart);
+            $orderCreateData = $this->buildOrderCreateData($cart, $user);
 
             // Step 5: Execute the existing CreateOrderAction
             $order = $this->createOrderAction->handle($orderCreateData);
 
             // Step 6: Process payment if wallet method is selected
             if ($checkoutData->payment_method === 'wallet') {
-                $this->processWalletPayment($order);
+                $this->processWalletPayment($order, $user);
             }
 
             // Step 7: Delete the cart after successful checkout
@@ -80,15 +81,15 @@ final readonly class CreateOrderFromCartAction
      *
      * @throws ValidationException
      */
-    private function processWalletPayment(Order $order): void
+    private function processWalletPayment(Order $order, User $user): void
     {
-        $user = Auth::guard('user')->user();
-
-        if (! $user || ! $user->wallet) {
+        //@codeCoverageIgnoreStart
+        if (! $user->wallet) {
             throw ValidationException::withMessages([
                 'wallet' => ['Wallet not found for the current user.'],
             ]);
         }
+        //@codeCoverageIgnoreEnd
 
         // Check if user has sufficient balance (including gift balance)
         $availableBalance = $user->wallet->balance + $user->wallet->gift_balance;
@@ -143,14 +144,8 @@ final readonly class CreateOrderFromCartAction
      *
      * @throws ValidationException
      */
-    private function validateOrderVelocity(): void
+    private function validateOrderVelocity(User $user): void
     {
-        $user = Auth::guard('user')->user();
-
-        if (! $user) {
-            return;
-        }
-
         // Check how many orders the user has created in the last hour
         $ordersInLastHour = Order::where('customer_id', $user->id)
             ->where('created_at', '>=', now()->subHour())
@@ -176,11 +171,14 @@ final readonly class CreateOrderFromCartAction
             $deliveryOption = $cartItem->productDeliveryOption;
             $deliveryOption->load('product');
 
+            // its impossible to have cart item without delivery option, but just in case
+            // @codeCoverageIgnoreStart
             if (! $deliveryOption) {
                 $errors["items.{$index}"] = ['Product delivery option not found.'];
 
                 continue;
             }
+            // @codeCoverageIgnoreEnd
 
             // Check if product is published and visible
             if ($deliveryOption->product->status !== PublicationStatusEnum::PUBLISHED || ! $deliveryOption->product->is_visible) {
@@ -223,16 +221,8 @@ final readonly class CreateOrderFromCartAction
     /**
      * Build OrderCreateData from Cart model.
      */
-    private function buildOrderCreateData($cart): OrderCreateData
+    private function buildOrderCreateData($cart, User $user): OrderCreateData
     {
-        $user = Auth::guard('user')->user();
-
-        if (! $user) {
-            throw ValidationException::withMessages([
-                'user' => ['You must be logged in to complete checkout.'],
-            ]);
-        }
-
         // Convert cart items to order items
         $orderItems = [];
         foreach ($cart->items as $cartItem) {

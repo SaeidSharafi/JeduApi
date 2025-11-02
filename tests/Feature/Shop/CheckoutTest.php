@@ -258,6 +258,47 @@ describe('Checkout Validation', function (): void {
             'productable_id'   => $course->id,
             'productable_type' => MorphTypeEnum::COURSE->value,
             'status'           => PublicationStatusEnum::DRAFT, // Not published
+            'is_visible'       => true,
+        ]);
+
+        $unpublishedOption = ProductDeliveryOption::factory()->create([
+            'product_id' => $product->id,
+            'price'      => 200000,
+            'uuid'       => Str::uuid()->toString(),
+            'status'     => PublicationStatusEnum::PUBLISHED,
+        ]);
+
+        // Add unpublished product to cart
+        $this->actingAs($this->user, 'user');
+
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $unpublishedOption->uuid,
+            'quantity'                     => 1,
+        ])->assertOk();
+
+        // Act: Attempt checkout
+        $response = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'bank_transfer',
+        ]);
+
+        // Assert: Validation error
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['items.0']);
+    });
+    test('checkout fails when product is not visible', function (): void {
+        // Arrange: Create unpublished product
+        $vendor = Vendor::factory()->create();
+        $term   = Term::factory()->create();
+        $course = Course::factory()->create([
+            'status' => PublicationStatusEnum::PUBLISHED,
+        ]);
+
+        $product = Product::factory()->create([
+            'vendor_id'        => $vendor->id,
+            'term_id'          => $term->id,
+            'productable_id'   => $course->id,
+            'productable_type' => MorphTypeEnum::COURSE->value,
+            'status'           => PublicationStatusEnum::PUBLISHED, // Not published
             'is_visible'       => false,
         ]);
 
@@ -285,7 +326,47 @@ describe('Checkout Validation', function (): void {
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['items.0']);
     });
+    test('checkout fails when product delivery option is not published', function (): void {
+        // Arrange: Create unpublished product
+        $vendor = Vendor::factory()->create();
+        $term   = Term::factory()->create();
+        $course = Course::factory()->create([
+            'status' => PublicationStatusEnum::PUBLISHED,
+        ]);
 
+        $product = Product::factory()->create([
+            'vendor_id'        => $vendor->id,
+            'term_id'          => $term->id,
+            'productable_id'   => $course->id,
+            'productable_type' => MorphTypeEnum::COURSE->value,
+            'status'           => PublicationStatusEnum::PUBLISHED, // Not published
+            'is_visible'       => true,
+        ]);
+
+        $unpublishedOption = ProductDeliveryOption::factory()->create([
+            'product_id' => $product->id,
+            'price'      => 200000,
+            'uuid'       => Str::uuid()->toString(),
+            'status'     => PublicationStatusEnum::DRAFT,
+        ]);
+
+        // Add unpublished product to cart
+        $this->actingAs($this->user, 'user');
+
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $unpublishedOption->uuid,
+            'quantity'                     => 1,
+        ])->assertOk();
+
+        // Act: Attempt checkout
+        $response = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'bank_transfer',
+        ]);
+
+        // Assert: Validation error
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['items.0']);
+    });
     test('guest user cannot checkout without authentication', function (): void {
         // Arrange: Add item to guest cart
         $response = postJson(route('api.v1.shop.cart.items.store'), [
@@ -304,7 +385,7 @@ describe('Checkout Validation', function (): void {
 
         // Assert: Validation error (user must be logged in)
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['user']);
+            ->assertJsonValidationErrors(['auth']);
     });
 });
 

@@ -25,10 +25,13 @@ class MergeGuestCartAfterLogin
     public function handle(CustomerAuthenticatedEvent $event): void
     {
         $guestToken = $event->request->header('X-Guest-Token');
+
         if ($guestToken && $event->user) {
             try {
                 $this->cartService->mergeGuestCart($guestToken, $event->user->id);
-            } catch (Exception $e) {
+            }
+            //@codeCoverageIgnoreStart
+            catch (Exception $e) {
                 // Log error but don't fail the login
                 Log::warning('Failed to merge guest cart after login', [
                     'user_id'     => $event->user->id,
@@ -36,6 +39,7 @@ class MergeGuestCartAfterLogin
                     'error'       => $e->getMessage(),
                 ]);
             }
+            //@codeCoverageIgnoreEnd
         }
     }
 }

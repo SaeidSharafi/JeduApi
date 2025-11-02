@@ -9,6 +9,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Cart\CheckoutData;
 use App\Data\Shop\Order\OrderData;
 use App\Http\Controllers\Controller;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @group Checkout
@@ -30,7 +31,12 @@ final class CheckoutController extends Controller
      */
     public function __invoke(CheckoutData $data, CreateOrderFromCartAction $action): ApiResponseInterface
     {
-        $order = $action->handle($data);
+        if (!auth('user')->check()){
+            throw ValidationException::withMessages([
+                'auth' => ['User must be authenticated to perform checkout.'],
+            ]);
+        }
+        $order = $action->handle($data, auth()->user());
 
         return response()->created(OrderData::from($order));
     }

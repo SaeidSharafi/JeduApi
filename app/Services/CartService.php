@@ -18,6 +18,7 @@ use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\OrderCalculationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 final readonly class CartService
@@ -212,6 +213,10 @@ final readonly class CartService
      */
     public function mergeGuestCart(string $guestToken, int $userId): void
     {
+        if (!Str::isUuid($guestToken)){
+            // Invalid guest token format
+            return;
+        }
         // Find the guest cart
         $guestCart = Cart::query()
             ->where('guest_token', $guestToken)
