@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Api\Shop\Auth;
 
 use App\Actions\Auth\AuthenticateUserAction;
 use App\Actions\Auth\VerifyOtpAction;
-use App\Actions\Shop\MergeGuestCartAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Customer\CustomerData;
 use App\Enums\System\OtpType;
@@ -14,15 +13,11 @@ use App\Exceptions\InvalidOtpCode;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyOtpRequest;
-use Exception;
-use Log;
-
 final class OtpAuthenticationController extends Controller
 {
     public function __construct(
         protected VerifyOtpAction $verifyOtpAction,
         protected AuthenticateUserAction $authenticateUser,
-        protected MergeGuestCartAction $mergeGuestCartAction
     ) {}
 
     /**
@@ -90,21 +85,6 @@ final class OtpAuthenticationController extends Controller
                 (int) $request->otp_code,
                 OtpType::from($request->otp_type));
             $token = $this->authenticateUser->execute($user);
-
-            // Merge guest cart if guest token is provided
-            $guestToken = $request->header('X-Guest-Token');
-            if ($guestToken && $user) {
-                try {
-                    $this->mergeGuestCartAction->handle($guestToken, $user->id);
-                } catch (Exception $e) {
-                    // Log error but don't fail the login
-                    Log::warning('Failed to merge guest cart after OTP login', [
-                        'user_id'     => $user->id,
-                        'guest_token' => $guestToken,
-                        'error'       => $e->getMessage(),
-                    ]);
-                }
-            }
         } catch (UserNotFoundException) {
             return response()->notFound(__('messages.auth.login.not_found'));
         } catch (InvalidOtpCode $e) {

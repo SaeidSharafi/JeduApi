@@ -64,8 +64,10 @@ final readonly class CartService
             return $cart;
         }
 
+        //@codeCoverageIgnoreStart
         // This should never happen if middleware is working correctly
         abort(500, 'Cart identifier not found in request');
+        //@codeCoverageIgnoreEnd
     }
 
     /**
