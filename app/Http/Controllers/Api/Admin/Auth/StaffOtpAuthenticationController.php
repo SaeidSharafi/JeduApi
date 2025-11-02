@@ -57,7 +57,7 @@ final class StaffOtpAuthenticationController extends Controller
                 OtpType::from($request->otp_type),
                 guard: 'staff'
             );
-            $token = $this->authenticateUser->execute($user);
+            $token = $this->authenticateUser->execute($user, 'staff');
         } catch (UserNotFoundException) {
             return response()->notFound(__('messages.auth.login.not_found'));
         } catch (InvalidOtpCode $e) {
