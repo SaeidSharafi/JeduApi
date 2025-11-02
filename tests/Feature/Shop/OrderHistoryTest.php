@@ -35,7 +35,7 @@ describe('Order History - Authorization', function (): void {
         $this->customer($this->userB);
         $response = getJson(route('api.v1.shop.orders.show', ['order' => $orderForUserA->increment_id]));
 
-        $response->assertForbidden();
+        $response->assertNotFound();
     });
 
     test('user can view their own order via show endpoint', function (): void {
