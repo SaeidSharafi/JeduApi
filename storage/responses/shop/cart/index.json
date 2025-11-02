@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "message": "Cart retrieved successfully",
+  "data": {
+    "id": 1,
+    "items": [
+      {
+        "id": 1,
+        "product_delivery_option_uuid": "01932e8f-4c3d-7b4e-9f3a-8c5e2d1b4a6f",
+        "quantity": 2,
+        "product_name": "Introduction to Python Programming - Live Online",
+        "sku": "PYT-F25-LIVE"
+      },
+      {
+        "id": 2,
+        "product_delivery_option_uuid": "01932e8f-5d2a-7a3b-8e4c-7d6f3a2e1c5b",
+        "quantity": 1,
+        "product_name": "Data Science Bootcamp - Self-Paced",
+        "sku": "DS-W26-SELF"
+      }
+    ],
+    "total_items_count": 2
+  }
+}

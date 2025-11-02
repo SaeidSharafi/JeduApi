@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\Shop\Blog\BlogCategoryController;
 use App\Http\Controllers\Api\Shop\Blog\BlogPostController;
+use App\Http\Controllers\Api\Shop\CartController;
 use App\Http\Controllers\Api\Shop\CMS\AboutUsController;
 use App\Http\Controllers\Api\Shop\CMS\CollaborationPageController;
 use App\Http\Controllers\Api\Shop\CMS\ContactPageController;
@@ -75,3 +76,14 @@ Route::get('blog/post/{slug}', [BlogPostController::class, 'show'])->name('blog.
 Route::get('blog/categories', [BlogCategoryController::class, 'index'])->name('blog.categories.index');
 Route::get('blog/category/{slug}', [BlogCategoryController::class, 'show'])->name('blog.categories.show');
 Route::get('blog/category/{slug}/posts', [BlogCategoryController::class, 'posts'])->name('blog.categories.posts');
+
+// Cart Routes (supports both guest and authenticated users)
+Route::middleware(['identify.cart'])
+    ->prefix('cart')
+    ->name('cart.')
+    ->group(function (): void {
+        Route::get('/', [CartController::class, 'index'])->name('index');
+        Route::post('items', [CartController::class, 'store'])->name('items.store');
+        Route::put('items/{cartItem}', [CartController::class, 'update'])->name('items.update');
+        Route::delete('items/{cartItem}', [CartController::class, 'destroy'])->name('items.destroy');
+    });

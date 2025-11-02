@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "message": "Cart updated successfully",
+  "data": {
+    "id": 1,
+    "items": [
+      {
+        "id": 1,
+        "product_delivery_option_uuid": "01932e8f-4c3d-7b4e-9f3a-8c5e2d1b4a6f",
+        "quantity": 2,
+        "product_name": "Introduction to Python Programming - Live Online",
+        "sku": "PYT-F25-LIVE"
+      }
+    ],
+    "total_items_count": 1
+  }
+}

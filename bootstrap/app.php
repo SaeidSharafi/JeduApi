@@ -73,7 +73,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Register custom middleware aliases
         $middleware->alias([
-            'admin.audit' => App\Http\Middleware\AdminAuditMiddleware::class,
+            'admin.audit'   => App\Http\Middleware\AdminAuditMiddleware::class,
+            'identify.cart' => App\Http\Middleware\IdentifyCart::class,
         ]);
 
     })
