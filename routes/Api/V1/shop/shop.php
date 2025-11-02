@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\Shop\Blog\BlogCategoryController;
 use App\Http\Controllers\Api\Shop\Blog\BlogPostController;
 use App\Http\Controllers\Api\Shop\CartController;
+use App\Http\Controllers\Api\Shop\CheckoutController;
 use App\Http\Controllers\Api\Shop\CMS\AboutUsController;
 use App\Http\Controllers\Api\Shop\CMS\CollaborationPageController;
 use App\Http\Controllers\Api\Shop\CMS\ContactPageController;
@@ -89,3 +90,8 @@ Route::middleware(['identify.cart'])
         Route::post('coupon', [CartController::class, 'applyCoupon'])->name('coupon.apply');
         Route::delete('coupon', [CartController::class, 'removeCoupon'])->name('coupon.remove');
     });
+
+// Checkout Route (requires authentication)
+Route::post('checkout', CheckoutController::class)
+    ->middleware(['identify.cart'])
+    ->name('checkout');
