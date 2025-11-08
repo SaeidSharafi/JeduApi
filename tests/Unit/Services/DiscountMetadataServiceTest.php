@@ -252,12 +252,12 @@ describe('DiscountMetadataService', function (): void {
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
         Lang::shouldReceive('has')->with('discount.name.special_key')->andReturn(true);
         Lang::shouldReceive('get')->with('discount.name.special_key', [], null)->andReturn('Localized Name');
-        if (! function_exists('__')) {
-            function __($key): string
-            {
-                return 'Localized Name';
-            }
-        }
+        //if (! function_exists('__')) {
+        //    function __($key): string
+        //    {
+        //        return 'Localized Name';
+        //    }
+        //}
         $result = $this->service->generateNameFromKey('special_key');
         expect($result)->toBe('Localized Name');
         Lang::shouldReceive('has')->with('discount.name.fallback_key')->andReturn(false);
@@ -273,12 +273,12 @@ describe('DiscountMetadataService', function (): void {
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
         Lang::shouldReceive('has')->with('discount.description.special_key')->andReturn(true);
         Lang::shouldReceive('get')->with('discount.description.special_key', [], null)->andReturn('Localized Desc');
-        if (! function_exists('__')) {
-            function __($key): string
-            {
-                return 'Localized Desc';
-            }
-        }
+        //if (! function_exists('__')) {
+        //    function __($key): string
+        //    {
+        //        return 'Localized Desc';
+        //    }
+        //}
         $result = $this->service->generateDescription('SomeHandlerClass', 'special_key');
         expect($result)->toBe('Localized Desc');
         Lang::shouldReceive('has')->with('discount.description.fallback_key')->andReturn(false);
