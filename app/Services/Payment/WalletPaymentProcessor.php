@@ -7,6 +7,7 @@ namespace App\Services\Payment;
 use App\Actions\Wallet\RecordWalletTransactionAction;
 use App\Contracts\Payment\PaymentProcessorContract;
 use App\Data\Admin\Payment\PaymentCreateData;
+use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Data\Admin\Wallet\RecordTransactionData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
@@ -17,6 +18,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Staff;
 use App\Models\User;
+use BadMethodCallException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Validation\ValidationException;
 
@@ -31,12 +33,17 @@ final class WalletPaymentProcessor implements PaymentProcessorContract
         return $paymentMethod === PaymentMethodEnum::WALLET;
     }
 
+    public function requiresRedirect(): bool
+    {
+        return false; // Single-step payment
+    }
+
     public function process(
         Order $order,
         PaymentCreateData $paymentData,
         Authenticatable $adminUser,
         int $amountToPay
-    ): Payment {
+    ): PaymentProcessResultData {
 
         $user = User::query()->with('wallet')->findOrFail($order->customer_id);
 
@@ -57,7 +64,7 @@ final class WalletPaymentProcessor implements PaymentProcessorContract
             amount: $amountToPay * -1,
             source_type: TransactionSourceEnum::ORDER,
             source_id: $order->id,
-            description: $walletData->description ?? __('messages.wallet.payment_for_order', ['order_id' => $order->increment_id]),
+            description: $paymentData->admin_notes ?? __('messages.wallet.payment_for_order', ['order_id' => $order->increment_id]),
             metadata: ['order_id' => $order->id]
         );
 
@@ -77,6 +84,12 @@ final class WalletPaymentProcessor implements PaymentProcessorContract
         // Dispatch completion event for wallet payments (they're always completed)
         PaymentCompletedEvent::dispatch($payment);
 
-        return $payment;
+        return PaymentProcessResultData::completed($payment);
+    }
+
+    public function verify(Payment $payment, array $callbackData): Payment
+    {
+        // Not needed for single-step payments
+        throw new BadMethodCallException('Wallet payments do not require verification');
     }
 }

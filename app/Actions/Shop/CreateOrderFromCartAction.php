@@ -11,18 +11,17 @@ use App\Data\Admin\Order\OrderItemCreateData;
 use App\Data\Admin\Wallet\RecordTransactionData;
 use App\Data\Shop\Cart\CheckoutData;
 use App\Enums\Content\PublicationStatusEnum;
-use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
+use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
 use App\Services\CartService;
 use App\Services\OrderStatusService;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -42,7 +41,7 @@ final readonly class CreateOrderFromCartAction
      */
     public function handle(CheckoutData $checkoutData, User $user): Order
     {
-        return DB::transaction(function () use ($checkoutData, $user): Order  {
+        return DB::transaction(function () use ($checkoutData, $user): Order {
             // Step 1: Get the cart model directly
             $cart = $this->cartService->findOrCreateCart();
 
@@ -83,24 +82,23 @@ final readonly class CreateOrderFromCartAction
      */
     private function processWalletPayment(Order $order, User $user): void
     {
-        //@codeCoverageIgnoreStart
+        // @codeCoverageIgnoreStart
         if (! $user->wallet) {
             throw ValidationException::withMessages([
                 'wallet' => ['Wallet not found for the current user.'],
             ]);
         }
-        //@codeCoverageIgnoreEnd
+        // @codeCoverageIgnoreEnd
 
         // Check if user has sufficient balance (including gift balance)
         $availableBalance = $user->wallet->balance + $user->wallet->gift_balance;
         if ($availableBalance < $order->grand_total) {
             throw ValidationException::withMessages([
                 'wallet' => [
-                    sprintf(
-                        'Insufficient wallet balance. You have %s, but need %s.',
-                        number_format($availableBalance),
-                        number_format($order->grand_total)
-                    ),
+                    __('validation.custom.checkout.insufficient_wallet_balance', [
+                        'available_balance' => number_format($availableBalance),
+                        'required_amount'   => number_format($order->grand_total),
+                    ]),
                 ],
             ]);
         }
@@ -153,7 +151,7 @@ final readonly class CreateOrderFromCartAction
 
         if ($ordersInLastHour >= 5) {
             throw ValidationException::withMessages([
-                'velocity' => ['You have exceeded the order creation limit. Please try again later.'],
+                'velocity' => [__('validation.custom.checkout.order_velocity_exceeded')],
             ]);
         }
     }
@@ -174,7 +172,7 @@ final readonly class CreateOrderFromCartAction
             // its impossible to have cart item without delivery option, but just in case
             // @codeCoverageIgnoreStart
             if (! $deliveryOption) {
-                $errors["items.{$index}"] = ['Product delivery option not found.'];
+                $errors["items.{$index}"] = [__('validation.custom.checkout.product_delivery_option_not_found')];
 
                 continue;
             }
@@ -200,7 +198,7 @@ final readonly class CreateOrderFromCartAction
                 $availableCapacity = $deliveryOption->capacity - $enrolledCount;
 
                 if ($availableCapacity <= 0) {
-                    $errors["items.{$index}"] = ["The delivery option for '{$deliveryOption->product->name}' is sold out."];
+                    $errors["items.{$index}"] = [__('validation.custom.checkout.product_delivery_option_sold_out', ['product_name' => $deliveryOption->product->name])];
 
                     continue;
                 }
@@ -225,10 +223,11 @@ final readonly class CreateOrderFromCartAction
     {
         // Convert cart items to order items
         $orderItems = [];
+        /* @var  $cartItem CartItem */
         foreach ($cart->items as $cartItem) {
             $orderItems[] = new OrderItemCreateData(
                 product_delivery_option_id: $cartItem->product_delivery_option_id,
-                payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                payment_type: $cartItem->payment_type->value,
                 qty_ordered: $cartItem->quantity
             );
         }

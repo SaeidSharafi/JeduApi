@@ -29,7 +29,8 @@
         "spatie/laravel-permission": "^6.18",
         "spatie/laravel-query-builder": "^6.3",
         "spatie/laravel-webhook-client": "^3.4",
-        "typesense/typesense-php": "^5.1"
+        "typesense/typesense-php": "^5.1",
+      "ext-soap": "*"
     },
     "require-dev": {
         "driftingly/rector-laravel": "^2.0",

@@ -20,11 +20,11 @@ describe('CreatePaymentAction', function (): void {
         Event::fake([PaymentCompletedEvent::class]);
         $this->adminUser = App\Models\Staff::factory()->create();
         $this->prodcut   = App\Models\Product::factory()
-            ->create(['status' => \App\Enums\Content\PublicationStatusEnum::PUBLISHED]);
+            ->create(['status' => App\Enums\Content\PublicationStatusEnum::PUBLISHED]);
         $this->prodcutDeliveryOption = App\Models\ProductDeliveryOption::factory()->create([
             'product_id' => $this->prodcut->id,
             'price'      => 50000,
-            'status'     => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+            'status'     => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
 
     });
@@ -55,10 +55,12 @@ describe('CreatePaymentAction', function (): void {
             admin_notes: 'Initial payment'
         );
 
-        $payment = (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->adminUser);
+        $result = (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->adminUser);
 
-        expect($payment->amount)->toBe(50000);
-        $this->assertDatabaseHas('payments', ['id' => $payment->id, 'order_id' => $order->id, 'amount' => 50000]);
+        expect($result)->not->toBeNull();
+        expect($result->payment->amount)->toBe(50000);
+        expect($result->requiresRedirect())->toBeFalse();
+        $this->assertDatabaseHas('payments', ['id' => $result->payment->id, 'order_id' => $order->id, 'amount' => 50000]);
         Event::assertDispatched(PaymentCompletedEvent::class);
     });
 
@@ -96,10 +98,12 @@ describe('CreatePaymentAction', function (): void {
             admin_notes: 'Final payment'
         );
 
-        $payment = (app(CreatePaymentAction::class))->handle($order->fresh(), $paymentData, $this->adminUser);
+        $result = (app(CreatePaymentAction::class))->handle($order->fresh(), $paymentData, $this->adminUser);
 
-        expect($payment->amount)->toBe(80000);
-        expect($payment->data['transaction_date'])->toBe(today()->format('Y-m-d'));
+        expect($result)->not->toBeNull();
+        expect($result->payment->amount)->toBe(80000);
+        expect($result->payment->data['transaction_date'])->toBe(today()->format('Y-m-d'));
+        expect($result->requiresRedirect())->toBeFalse();
         Event::assertDispatched(PaymentCompletedEvent::class);
     });
 
@@ -109,10 +113,12 @@ describe('CreatePaymentAction', function (): void {
 
         $paymentData = new PaymentCreateData(method: 'bank_transfer', status: 'completed', data: null,
             admin_notes: 'Free');
-        $payment = (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->adminUser);
+        $result = (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->adminUser);
 
-        expect($payment->amount)->toBe(0);
-        expect($payment->method)->toBe(PaymentMethodEnum::NO_PAYMENT->value);
+        expect($result)->not->toBeNull();
+        expect($result->payment->amount)->toBe(0);
+        expect($result->payment->method)->toBe(PaymentMethodEnum::NO_PAYMENT);
+        expect($result->requiresRedirect())->toBeFalse();
         Event::assertDispatched(PaymentCompletedEvent::class);
     });
 
@@ -163,7 +169,7 @@ describe('CreatePaymentAction', function (): void {
             ->toThrow(ValidationException::class);
     });
 
-    it('returns null for a free order that already has a completion payment', function (): void {
+    it('returns the existing payment for a free order that already has a completion payment', function (): void {
         // Arrange: A free order that already has a zero-dollar completed payment
         $items = [
             [
@@ -177,7 +183,7 @@ describe('CreatePaymentAction', function (): void {
         $order = Order::factory()
             ->withCalculatedTotals($items)
             ->create();
-        $order->payments()->create([
+        $existingPayment = $order->payments()->create([
             'amount'      => 0,
             'status'      => 'completed',
             'method'      => PaymentMethodEnum::BANK_TRANSFER,
@@ -190,8 +196,10 @@ describe('CreatePaymentAction', function (): void {
         // Act
         $result = (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->adminUser);
 
-        // Assert
-        expect($result)->toBeNull();
+        // Assert: Returns the existing completed payment, doesn't create a duplicate
+        expect($result)->not->toBeNull();
+        expect($result->payment->id)->toBe($existingPayment->id);
+        expect($result->requiresRedirect())->toBeFalse();
         Event::assertNotDispatched(PaymentCompletedEvent::class);
     });
 

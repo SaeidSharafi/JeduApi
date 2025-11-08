@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('cart_id')->constrained('carts')->cascadeOnDelete();
             $table->foreignId('product_delivery_option_id')->constrained('product_delivery_options')->cascadeOnDelete();
+            $table->string('payment_type')->index();
             $table->unsignedInteger('quantity')->default(1);
             $table->timestamps();
 

@@ -8,7 +8,6 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Order\OrderData;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Spatie\LaravelData\DataCollection;
 
 /**
  * @group Order History
@@ -29,25 +28,15 @@ final class OrderController extends Controller
      */
     public function index(): ApiResponseInterface
     {
-        $user = Auth::guard('user')->user();
+        $user   = Auth::guard('user')->user();
         $orders = $user
             ->orders()
             ->with(['items.productDeliveryOption.product', 'payments'])
             ->latest()
-            ->paginate(15);
+            ->paginate(request()->integer('per_page', 15))
+            ->withQueryString();
 
-        $orderData = OrderData::collect($orders->items(), DataCollection::class);
-        $orderData->wrap('items');
-
-        return response()->success([
-            'orders' => $orderData->toArray(),
-            'meta'   => [
-                'current_page' => $orders->currentPage(),
-                'last_page'    => $orders->lastPage(),
-                'per_page'     => $orders->perPage(),
-                'total'        => $orders->total(),
-            ],
-        ]);
+        return response()->success(OrderData::collect($orders));
     }
 
     /**
@@ -60,7 +49,7 @@ final class OrderController extends Controller
      */
     public function show(string $incrementId): ApiResponseInterface
     {
-        $user = Auth::guard('user')->user();
+        $user  = Auth::guard('user')->user();
         $order = $user->orders()
             ->where('increment_id', $incrementId)
             ->with(['items.productDeliveryOption.product', 'payments'])

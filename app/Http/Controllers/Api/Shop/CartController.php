@@ -11,7 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiSuccessResponse;
 use App\Models\CartItem;
 use App\Services\CartService;
-use Illuminate\Http\Response;
+use Illuminate\Http\JsonResponse;
 
 /**
  * @group Shop - Cart
@@ -65,11 +65,11 @@ final class CartController extends Controller
     /**
      * Remove an item from the cart.
      */
-    public function destroy(CartItem $cartItem): Response
+    public function destroy(CartItem $cartItem): JsonResponse
     {
         $this->cartService->removeItem($cartItem->id);
 
-        return response()->noContent();
+        return response()->noContentJson();
     }
 
     /**

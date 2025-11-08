@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Order\OrderItemPaymentTypeEnum;
 use Database\Factories\CartItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,6 +18,7 @@ final class CartItem extends Model
     protected $fillable = [
         'cart_id',
         'product_delivery_option_id',
+        'payment_type',
         'quantity',
     ];
 
@@ -39,7 +41,8 @@ final class CartItem extends Model
     protected function casts(): array
     {
         return [
-            'quantity' => 'integer',
+            'quantity'     => 'integer',
+            'payment_type' => OrderItemPaymentTypeEnum::class,
         ];
     }
 }

@@ -31,9 +31,9 @@ final class CheckoutController extends Controller
      */
     public function __invoke(CheckoutData $data, CreateOrderFromCartAction $action): ApiResponseInterface
     {
-        if (!auth('user')->check()){
+        if (! auth('user')->check()) {
             throw ValidationException::withMessages([
-                'auth' => ['User must be authenticated to perform checkout.'],
+                'auth' => [__('validation.custom.checkout.user_not_authenticated')],
             ]);
         }
         $order = $action->handle($data, auth()->user());

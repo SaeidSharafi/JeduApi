@@ -10,7 +10,6 @@ use App\Data\Shop\Cart\AddCartItemData;
 use App\Data\Shop\Cart\ApplyCouponData;
 use App\Data\Shop\Cart\CartData;
 use App\Data\Shop\Cart\UpdateCartItemData;
-use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Models\Cart;
 use App\Models\CartItem;
@@ -65,10 +64,10 @@ final readonly class CartService
             return $cart;
         }
 
-        //@codeCoverageIgnoreStart
+        // @codeCoverageIgnoreStart
         // This should never happen if middleware is working correctly
         abort(500, 'Cart identifier not found in request');
-        //@codeCoverageIgnoreEnd
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -107,6 +106,7 @@ final readonly class CartService
             // Create new cart item
             $cart->items()->create([
                 'product_delivery_option_id' => $deliveryOption->id,
+                'payment_type'               => $data->payment_type->value,
                 'quantity'                   => $data->quantity,
             ]);
         }
@@ -213,7 +213,7 @@ final readonly class CartService
      */
     public function mergeGuestCart(string $guestToken, int $userId): void
     {
-        if (!Str::isUuid($guestToken)){
+        if (! Str::isUuid($guestToken)) {
             // Invalid guest token format
             return;
         }
@@ -301,9 +301,9 @@ final readonly class CartService
         }
 
         // Convert cart to OrderCreateData for calculation
-        $items = $cart->items->map(fn ($item) => new OrderItemCreateData(
+        $items = $cart->items->map(fn (CartItem $item) => new OrderItemCreateData(
             product_delivery_option_id: $item->product_delivery_option_id,
-            payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+            payment_type: $item->payment_type->value,
             qty_ordered: $item->quantity
         ))->all();
 

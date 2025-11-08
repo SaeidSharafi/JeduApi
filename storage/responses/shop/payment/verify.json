@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "message": "Payment verified successfully",
+  "data": {
+    "id": 1,
+    "uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "order_id": 123,
+    "customer_id": 45,
+    "amount": 50000,
+    "method": "online_gateway",
+    "status": "completed",
+    "data": {
+      "gateway": "mellat",
+      "transaction_id": "123456789",
+      "initiated_at": "2025-11-08T16:30:00Z",
+      "callback_received_at": "2025-11-08T16:35:00Z",
+      "verified_at": "2025-11-08T16:35:05Z",
+      "settled_at": "2025-11-08T16:35:08Z",
+      "callback_data": {
+        "RefId": "123456789",
+        "ResCode": "0",
+        "SaleOrderId": "12345",
+        "SaleReferenceId": "987654321"
+      }
+    },
+    "created_at": "2025-11-08T16:30:00Z",
+    "updated_at": "2025-11-08T16:35:08Z"
+  }
+}

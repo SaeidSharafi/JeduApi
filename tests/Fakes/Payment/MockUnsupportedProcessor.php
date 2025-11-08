@@ -6,9 +6,11 @@ namespace Tests\Fakes\Payment;
 
 use App\Contracts\Payment\PaymentProcessorContract;
 use App\Data\Admin\Payment\PaymentCreateData;
+use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Models\Order;
 use App\Models\Payment;
+use BadMethodCallException;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 final class MockUnsupportedProcessor implements PaymentProcessorContract
@@ -18,8 +20,19 @@ final class MockUnsupportedProcessor implements PaymentProcessorContract
         return false; // Never handles any method
     }
 
-    public function process(Order $order, PaymentCreateData $paymentData, Authenticatable $adminUser, int $amountToPay): Payment
+    public function process(Order $order, PaymentCreateData $paymentData, Authenticatable $adminUser, int $amountToPay): PaymentProcessResultData
     {
-        return new Payment();
+        return PaymentProcessResultData::completed(new Payment());
+    }
+
+    public function requiresRedirect(): bool
+    {
+        return false;
+    }
+
+    public function verify(Payment $payment, array $callbackData): Payment
+    {
+        throw new BadMethodCallException('MockUnsupportedProcessor does not support verification.');
     }
 }
+

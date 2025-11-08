@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Payment;
 
 use App\Data\Admin\Payment\PaymentCreateData;
+use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\PaymentCompletedEvent;
@@ -21,15 +22,25 @@ final readonly class CreatePaymentAction
         private PaymentProcessorFactory $processorFactory,
     ) {}
 
-    public function handle(Order $order, PaymentCreateData $data, Staff $admin): ?Payment
+    /**
+     * Initiate a payment for an order.
+     *
+     * Returns a PaymentProcessResultData which may contain:
+     * - For single-step payments: completed payment with no redirect
+     * - For multi-step payments: pending payment with redirect URL
+     */
+    public function handle(Order $order, PaymentCreateData $data, Staff $admin): ?PaymentProcessResultData
     {
-        return DB::transaction(function () use ($order, $data, $admin): ?Payment {
+        return DB::transaction(function () use ($order, $data, $admin): ?PaymentProcessResultData {
             $order = Order::lockForUpdate()->findOrFail($order->id);
 
             // Check if order is free
             if ($order->grand_total <= 0) {
                 if ($order->payments()->where('status', 'completed')->exists()) {
-                    return null;
+                    // Return already completed free payment
+                    $existingPayment = $order->payments()->where('status', 'completed')->first();
+
+                    return PaymentProcessResultData::completed($existingPayment);
                 }
 
                 return $this->createFreeOrderPayment($order, $data, $admin);
@@ -46,7 +57,7 @@ final readonly class CreatePaymentAction
         });
     }
 
-    private function createFreeOrderPayment(Order $order, PaymentCreateData $data, Staff $admin): Payment
+    private function createFreeOrderPayment(Order $order, PaymentCreateData $data, Staff $admin): PaymentProcessResultData
     {
         $payment = Payment::create([
             'order_id'    => $order->id,
@@ -60,7 +71,7 @@ final readonly class CreatePaymentAction
 
         PaymentCompletedEvent::dispatch($payment);
 
-        return $payment;
+        return PaymentProcessResultData::completed($payment);
     }
 
     private function validateOrderState(Order $order): void

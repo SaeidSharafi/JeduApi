@@ -75,16 +75,13 @@ final class OrderStatusService
      */
     private function completeOrderItemAfterPayment(OrderItem $item): void
     {
-        // Determine the new status for the item.
-        // Rule: An item is COMPLETED if its initial required payment has been made.
         $newStatus = OrderItemStatusEnum::COMPLETED;
 
         if ($item->status !== $newStatus) {
             $item->status = $newStatus;
-            $item->saveQuietly(); // Use saveQuietly to prevent firing observers if you have them.
+            $item->saveQuietly();
         }
 
-        // Now, update the enrollment based on the item's new status.
         $this->updateEnrollmentStatus($item);
     }
 
