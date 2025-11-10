@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\Shop\Sale\OrderController;
+use App\Http\Controllers\Api\Shop\Sale\RetryPaymentController;
 
 Route::middleware(['auth:user'])
     ->prefix('shop')
@@ -26,5 +27,9 @@ Route::middleware(['auth:user'])
 
             Route::get('/{order:increment_id}', [OrderController::class, 'show'])
                 ->name('show');
+
+            Route::post('/{order:increment_id}/retry-payment', RetryPaymentController::class)
+                ->middleware('throttle:10,1')
+                ->name('retry-payment');
         });
     });
