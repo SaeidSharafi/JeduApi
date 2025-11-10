@@ -64,8 +64,43 @@ final class Enrollment extends Model
     protected static function boot(): void
     {
         parent::boot();
+
         self::creating(function ($model): void {
             $model->uuid = (string) Str::uuid7();
+        });
+
+        // Dispatch event when enrollment is created
+        self::created(function (Enrollment $enrollment): void {
+            \App\Events\EnrollmentStatusChanged::dispatch(
+                $enrollment,
+                null, // No old status on creation
+                $enrollment->enrollment_status
+            );
+        });
+
+        // Dispatch event when enrollment status is updated
+        self::updating(function (Enrollment $enrollment): void {
+            if ($enrollment->isDirty('enrollment_status')) {
+                $oldStatusValue = $enrollment->getOriginal('enrollment_status');
+                $oldStatus      = is_string($oldStatusValue)
+                    ? EnrollmentStatusEnum::from($oldStatusValue)
+                    : $oldStatusValue;
+
+                \App\Events\EnrollmentStatusChanged::dispatch(
+                    $enrollment,
+                    $oldStatus,
+                    $enrollment->enrollment_status
+                );
+            }
+        });
+
+        // Dispatch event when enrollment is deleted (treat as cancelled)
+        self::deleting(function (Enrollment $enrollment): void {
+            \App\Events\EnrollmentStatusChanged::dispatch(
+                $enrollment,
+                $enrollment->enrollment_status,
+                EnrollmentStatusEnum::CANCELLED
+            );
         });
     }
 

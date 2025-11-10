@@ -19,6 +19,7 @@ test('to array', function (): void {
             'delivery_method'           => $productDeliveryOption->delivery_method->value,
             'price'                     => $productDeliveryOption->price,
             'capacity'                  => $productDeliveryOption->capacity,
+            'enrolled_count'            => $productDeliveryOption->enrolled_count,
             'status'                    => $productDeliveryOption->status->value,
             'is_prepayment_available'   => $productDeliveryOption->is_prepayment_available,
             'prepayment_amount'         => $productDeliveryOption->prepayment_amount,

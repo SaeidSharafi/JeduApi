@@ -169,8 +169,7 @@ final readonly class CreateOrderAction
             ]);
         }
         if ($deliveryOption->capacity !== null) {
-            $enrolledCount = $deliveryOption->enrollments()
-                ->where('enrollment_status', '!=', EnrollmentStatusEnum::CANCELLED)->count();
+            $enrolledCount = $deliveryOption->enrolled_count;
             if (($enrolledCount + $itemData->qty_ordered) > $deliveryOption->capacity) {
                 $available = $deliveryOption->capacity - $enrolledCount;
                 throw ValidationException::withMessages([

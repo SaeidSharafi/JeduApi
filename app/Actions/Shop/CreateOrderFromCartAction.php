@@ -194,7 +194,7 @@ final readonly class CreateOrderFromCartAction
 
             // Check capacity if applicable
             if ($deliveryOption->capacity !== null) {
-                $enrolledCount     = $deliveryOption->enrollments()->count();
+                $enrolledCount     = $deliveryOption->enrolled_count;
                 $availableCapacity = $deliveryOption->capacity - $enrolledCount;
 
                 if ($availableCapacity <= 0) {

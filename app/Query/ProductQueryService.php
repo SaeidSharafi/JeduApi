@@ -7,7 +7,6 @@ namespace App\Query;
 use App\Data\Shop\Product\Course\ProductListRequestData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\CourseDifficultyLevelEnum;
-use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Enums\TermStatusEnum;
 use App\Models\Product;
@@ -482,6 +481,7 @@ final class ProductQueryService
             $q->whereIn('categories.id', $categoryIds);
         });
     }
+
     public function goodForStart(array $categorySlugs): self
     {
         if (empty($categorySlugs)) {
@@ -713,10 +713,8 @@ final class ProductQueryService
             $q->where('status', PublicationStatusEnum::PUBLISHED);
             if (! $this->includeFullProducts) {
                 $q->where(function ($capacityQuery) {
-                    $capacityQuery->where('capacity', 0)
-                        ->orWhereRaw('capacity > (SELECT COUNT(*) FROM enrollments WHERE product_delivery_option_id = product_delivery_options.id AND enrollment_status IN (?, ?))',
-                            [EnrollmentStatusEnum::ACTIVE->value, EnrollmentStatusEnum::PENDING_PROVISIONING->value]
-                        );
+                    $capacityQuery->whereNull('capacity')
+                        ->orWhereColumn('capacity', '>', 'enrolled_count');
                 });
             }
         });
