@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Services\Payment\BankTransferPaymentProcessor;
+use App\Services\Payment\MellatGatewayPaymentProcessor;
 use App\Services\Payment\PaymentProcessorFactory;
 use App\Services\Payment\WalletPaymentProcessor;
 use Illuminate\Support\ServiceProvider;
@@ -25,6 +26,7 @@ final class PaymentServiceProvider extends ServiceProvider
         $this->app->tag([
             WalletPaymentProcessor::class,
             BankTransferPaymentProcessor::class,
+            MellatGatewayPaymentProcessor::class
         ], self::PAYMENT_PROCESSOR_TAG);
 
         $this->app->singleton(function ($app): PaymentProcessorFactory {
