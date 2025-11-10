@@ -29,7 +29,6 @@ use SoapFault;
  */
 final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 {
-    private string $serverUrl = 'https://bpm.shaparak.ir/pgwchannel/services/pgw?wsdl';
 
     public function canHandle(PaymentMethodEnum $paymentMethod): bool
     {
@@ -72,12 +71,9 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
             'ref_id'       => $refId,
         ]);
 
-        // Step 3: Return redirect URL to gateway
-        $gatewayUrl = config('payments.mellat.gateway_url');
-
         return PaymentProcessResultData::pendingWithRedirect(
             payment: $payment,
-            redirectUrl: $gatewayUrl,
+            redirectUrl: $this->getGateWayUrl(),
             redirectData: [
                 'RefId' => $refId,
             ],
@@ -240,7 +236,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         ];
 
         try {
-            $soap     = new SoapClient($this->serverUrl);
+            $soap     = new SoapClient($this->getWsdlUrl());
             $response = $soap->bpPayRequest($params);
         } catch (SoapFault $e) {
             throw new CustomValidationException(__('validation.custom.checkout.payment.gateway_connection_error'));
@@ -268,7 +264,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         $config = $this->getConfig();
 
         try {
-            $soap     = new SoapClient($this->serverUrl);
+            $soap     = new SoapClient($this->getWsdlUrl());
             $response = $soap->bpVerifyRequest([
                 'terminalId'      => $config['terminalId'],
                 'userName'        => $config['username'],
@@ -291,7 +287,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         $config = $this->getConfig();
 
         try {
-            $soap     = new SoapClient($this->serverUrl);
+            $soap     = new SoapClient($this->getWsdlUrl());
             $response = $soap->bpSettleRequest([
                 'terminalId'      => $config['terminalId'],
                 'userName'        => $config['username'],
@@ -364,5 +360,19 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         ];
 
         return $errors[$code] ?? "Unknown error (Code: $code)";
+    }
+
+    private function getWsdlUrl(): string
+    {
+        $isTest = config('payments.mellat.test_mode', true);
+
+        return $isTest ? config('payments.mellat.test_server_url') : config('payments.mellat.server_url');
+    }
+
+    private function getGateWayUrl(): string
+    {
+        $isTest = config('payments.mellat.test_mode', true);
+
+        return $isTest ? config('payments.mellat.test_gateway_url') : config('payments.mellat.gateway_url');
     }
 }
