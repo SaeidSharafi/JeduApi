@@ -6,6 +6,9 @@ use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\System\MorphTypeEnum;
 use App\Models\Course;
+use App\Models\DiscountCoupon;
+use App\Models\DiscountPromotion;
+use App\Models\DiscountPromotionRule;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -18,10 +21,10 @@ use Illuminate\Support\Str;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\postJson;
 
-uses(\Tests\AuthTestTrait::class);
+uses(Tests\AuthTestTrait::class);
 beforeEach(function (): void {
     $vendor = Vendor::factory()->create();
-    $term = Term::factory()->create();
+    $term   = Term::factory()->create();
     $course = Course::factory()->create([
         'status' => PublicationStatusEnum::PUBLISHED,
     ]);
@@ -73,15 +76,20 @@ describe('Checkout Success', function (): void {
             ->assertJsonStructure([
                 'message',
                 'data' => [
-                    'id',
-                    'increment_id',
-                    'status',
-                    'total_qty_ordered',
-                    'total_item_count',
-                    'subtotal',
-                    'discount_amount',
-                    'grand_total',
-                    'items',
+                    'order' => [
+                        'id',
+                        'increment_id',
+                        'status',
+                        'total_qty_ordered',
+                        'total_item_count',
+                        'subtotal',
+                        'discount_amount',
+                        'grand_total',
+                        'items',
+                    ],
+                    'redirect_url',
+                    'redirect_data',
+                    'redirect_method',
                 ],
             ]);
 
@@ -92,7 +100,7 @@ describe('Checkout Success', function (): void {
             'total_qty_ordered' => 2,
         ]);
 
-        $orderId = $response->json('data.id');
+        $orderId = $response->json('data.order.id');
         assertDatabaseHas(OrderItem::class, [
             'order_id'                   => $orderId,
             'product_delivery_option_id' => $this->deliveryOption->id,
@@ -127,7 +135,7 @@ describe('Checkout Success', function (): void {
 describe('Checkout Validation', function (): void {
     test('checkout fails when delivery option has zero capacity', function (): void {
         $vendor = Vendor::factory()->create();
-        $term = Term::factory()->create();
+        $term   = Term::factory()->create();
         $course = Course::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
@@ -152,6 +160,7 @@ describe('Checkout Validation', function (): void {
             App\Models\Enrollment::factory()->create([
                 'product_delivery_option_id' => $soldOutOption->id,
                 'customer_id'                => User::factory()->create()->id,
+                'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE,
             ]);
         }
 
@@ -172,7 +181,7 @@ describe('Checkout Validation', function (): void {
 
     test('checkout fails when quantity exceeds available capacity', function (): void {
         $vendor = Vendor::factory()->create();
-        $term = Term::factory()->create();
+        $term   = Term::factory()->create();
         $course = Course::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
@@ -197,6 +206,7 @@ describe('Checkout Validation', function (): void {
             App\Models\Enrollment::factory()->create([
                 'product_delivery_option_id' => $limitedOption->id,
                 'customer_id'                => User::factory()->create()->id,
+                'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE,
             ]);
         }
 
@@ -217,7 +227,7 @@ describe('Checkout Validation', function (): void {
 
     test('checkout fails when product is not published', function (): void {
         $vendor = Vendor::factory()->create();
-        $term = Term::factory()->create();
+        $term   = Term::factory()->create();
         $course = Course::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
@@ -253,7 +263,7 @@ describe('Checkout Validation', function (): void {
     });
     test('checkout fails when product is not visible', function (): void {
         $vendor = Vendor::factory()->create();
-        $term = Term::factory()->create();
+        $term   = Term::factory()->create();
         $course = Course::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
@@ -289,7 +299,7 @@ describe('Checkout Validation', function (): void {
     });
     test('checkout fails when product delivery option is not published', function (): void {
         $vendor = Vendor::factory()->create();
-        $term = Term::factory()->create();
+        $term   = Term::factory()->create();
         $course = Course::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
@@ -360,7 +370,7 @@ test('user can checkout with wallet payment and order is completed', function ()
 
     $response->assertCreated();
 
-    $orderId = $response->json('data.id');
+    $orderId = $response->json('data.order.id');
 
     assertDatabaseHas(Order::class, [
         'id'          => $orderId,
@@ -405,7 +415,7 @@ test('checkout fails with insufficient wallet balance', function (): void {
     ]);
 
     $response->assertStatus(422)
-        ->assertJsonValidationErrors(['wallet']);
+        ->assertJsonValidationErrors(['wallet_data.amount']);
 
     $this->assertDatabaseMissing(Order::class, [
         'customer_id' => $this->user->id,
@@ -429,7 +439,7 @@ test('wallet payment uses only regular balance (not gift balance)', function ():
 
     $response->assertCreated();
 
-    $orderId = $response->json('data.id');
+    $orderId = $response->json('data.order.id');
     assertDatabaseHas('payments', [
         'order_id' => $orderId,
         'status'   => 'completed',
@@ -454,15 +464,18 @@ test('checkout with bank_transfer creates pending order without payment', functi
 
     $response->assertCreated();
 
-    $orderId = $response->json('data.id');
+    $orderId = $response->json('data.order.id');
 
     assertDatabaseHas(Order::class, [
         'id'     => $orderId,
         'status' => OrderStatusEnum::PENDING->value,
     ]);
 
-    $this->assertDatabaseMissing('payments', [
+    // With the new payment processor architecture, bank_transfer creates a PENDING payment
+    assertDatabaseHas('payments', [
         'order_id' => $orderId,
+        'method'   => 'bank_transfer',
+        'status'   => 'pending',
     ]);
 
     $this->assertDatabaseMissing('carts', [
@@ -475,7 +488,7 @@ test('checkout endpoint enforces rate limit of 5 requests per minute', function 
     $this->customer($user);
 
     $vendor = Vendor::factory()->create();
-    $term = Term::factory()->create();
+    $term   = Term::factory()->create();
     $course = Course::factory()->create([
         'status' => PublicationStatusEnum::PUBLISHED,
     ]);
@@ -523,7 +536,7 @@ test('user cannot create more than 5 orders in one hour', function (): void {
     }
 
     $vendor = Vendor::factory()->create();
-    $term = Term::factory()->create();
+    $term   = Term::factory()->create();
     $course = Course::factory()->create([
         'status' => PublicationStatusEnum::PUBLISHED,
     ]);
@@ -573,7 +586,7 @@ test('velocity check only counts orders from the last hour', function (): void {
     }
 
     $vendor = Vendor::factory()->create();
-    $term = Term::factory()->create();
+    $term   = Term::factory()->create();
     $course = Course::factory()->create([
         'status' => PublicationStatusEnum::PUBLISHED,
     ]);
@@ -611,4 +624,246 @@ test('velocity check only counts orders from the last hour', function (): void {
         ->where('created_at', '>=', now()->subHour())
         ->count();
     expect($recentOrderCount)->toBe(1);
+});
+
+test('free order (with 100% discount) is auto-completed with NO_PAYMENT', function (): void {
+    $this->customer();
+
+    // Create a 100% discount promotion
+    $promotion = DiscountPromotion::factory()->create([
+        'name'      => '100% Off Everything',
+        'type'      => App\Enums\Order\DiscountTypeEnum::CART_CHECKOUT,
+        'is_active' => true,
+        'starts_at' => now()->subDay(),
+        'ends_at'   => now()->addDay(),
+        'priority'  => 1,
+    ]);
+
+    DiscountPromotionRule::create([
+        'discount_promotion_id' => $promotion->id,
+        'type'                  => 'action',
+        'handler'               => 'apply_percentage_off',
+        'configuration'         => ['percentage' => 100],
+    ]);
+
+    $coupon = DiscountCoupon::factory()->create([
+        'discount_promotion_id' => $promotion->id,
+        'code'                  => 'FREE100',
+        'is_active'             => true,
+    ]);
+
+    // Add item to cart
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $this->deliveryOption->uuid,
+        'quantity'                     => 1,
+    ])->assertOk();
+
+    // Apply 100% coupon
+    postJson(route('api.v1.shop.cart.coupon.apply'), [
+        'coupon_code' => 'FREE100',
+    ])->assertOk();
+
+    // Checkout without payment_method (optional for free orders)
+    $response = postJson(route('api.v1.shop.checkout'));
+
+    $response->assertCreated();
+
+    $orderId = $response->json('data.order.id');
+
+    // Order should be completed
+    assertDatabaseHas(Order::class, [
+        'id'          => $orderId,
+        'customer_id' => $this->user->id,
+        'status'      => OrderStatusEnum::COMPLETED->value,
+        'grand_total' => 0,
+    ]);
+
+    // Payment should use NO_PAYMENT method
+    assertDatabaseHas('payments', [
+        'order_id' => $orderId,
+        'method'   => 'no_payment',
+        'amount'   => 0,
+        'status'   => 'completed',
+    ]);
+
+    // Enrollment should be created
+    assertDatabaseHas('enrollments', [
+        'order_id'                   => $orderId,
+        'customer_id'                => $this->user->id,
+        'product_delivery_option_id' => $this->deliveryOption->id,
+    ]);
+});
+
+describe('Duplicate Purchase Prevention', function (): void {
+    test('checkout fails when user already has active enrollment for product', function (): void {
+        $user = User::factory()->create();
+        $this->customer($user);
+
+        // Create an active enrollment for the user
+        App\Models\Enrollment::factory()->create([
+            'customer_id'                => $user->id,
+            'product_delivery_option_id' => $this->deliveryOption->id,
+            'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        ]);
+
+        // Try to add the same product to cart and checkout
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $this->deliveryOption->uuid,
+            'quantity'                     => 1,
+        ])->assertOk();
+
+        $response = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'bank_transfer',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['items']);
+
+        expect($response->json('errors.items.0'))->toContain('already purchased');
+    });
+
+    test('checkout fails when user has pending provisioning enrollment', function (): void {
+        $user = User::factory()->create();
+        $this->customer($user);
+
+        // Create a pending enrollment
+        App\Models\Enrollment::factory()->create([
+            'customer_id'                => $user->id,
+            'product_delivery_option_id' => $this->deliveryOption->id,
+            'enrollment_status'          => App\Enums\EnrollmentStatusEnum::PENDING_PROVISIONING,
+        ]);
+
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $this->deliveryOption->uuid,
+            'quantity'                     => 1,
+        ])->assertOk();
+
+        $response = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'bank_transfer',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['items']);
+    });
+
+    test('checkout succeeds when user has cancelled enrollment (refunded)', function (): void {
+        $user = User::factory()->create();
+        $this->customer($user);
+
+        // User previously had access but got a refund
+        App\Models\Enrollment::factory()->create([
+            'customer_id'                => $user->id,
+            'product_delivery_option_id' => $this->deliveryOption->id,
+            'enrollment_status'          => App\Enums\EnrollmentStatusEnum::CANCELLED,
+        ]);
+
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $this->deliveryOption->uuid,
+            'quantity'                     => 1,
+        ])->assertOk();
+
+        $response = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'bank_transfer',
+        ]);
+
+        $response->assertCreated();
+    });
+
+    test('checkout succeeds when user has expired enrollment', function (): void {
+        $user = User::factory()->create();
+        $this->customer($user);
+
+        // User's access has expired
+        App\Models\Enrollment::factory()->create([
+            'customer_id'                => $user->id,
+            'product_delivery_option_id' => $this->deliveryOption->id,
+            'enrollment_status'          => App\Enums\EnrollmentStatusEnum::EXPIRED,
+        ]);
+
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $this->deliveryOption->uuid,
+            'quantity'                     => 1,
+        ])->assertOk();
+
+        $response = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'bank_transfer',
+        ]);
+
+        $response->assertCreated();
+    });
+
+    test('checkout fails with multiple duplicate products in cart', function (): void {
+        $user   = User::factory()->create();
+        $vendor = Vendor::factory()->create();
+        $term   = Term::factory()->create();
+        $this->customer($user);
+
+        // Create two different products that the user already owns
+        $course1  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $product1 = Product::factory()->create([
+            'vendor_id'        => $vendor->id,
+            'term_id'          => $term->id,
+            'productable_id'   => $course1->id,
+            'productable_type' => MorphTypeEnum::COURSE->value,
+            'status'           => PublicationStatusEnum::PUBLISHED,
+            'is_visible'       => true,
+            'name'             => 'Course A',
+        ]);
+        $deliveryOption1 = ProductDeliveryOption::factory()->create([
+            'product_id' => $product1->id,
+            'status'     => PublicationStatusEnum::PUBLISHED,
+            'name'       => 'Course A - Online',
+        ]);
+
+        $course2  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $product2 = Product::factory()->create([
+            'vendor_id'        => $vendor->id,
+            'term_id'          => $term->id,
+            'productable_id'   => $course2->id,
+            'productable_type' => MorphTypeEnum::COURSE->value,
+            'status'           => PublicationStatusEnum::PUBLISHED,
+            'is_visible'       => true,
+            'name'             => 'Course B',
+        ]);
+        $deliveryOption2 = ProductDeliveryOption::factory()->create([
+            'product_id' => $product2->id,
+            'status'     => PublicationStatusEnum::PUBLISHED,
+            'name'       => 'Course B - Online',
+        ]);
+
+        // User already owns both
+        App\Models\Enrollment::factory()->create([
+            'customer_id'                => $user->id,
+            'product_delivery_option_id' => $deliveryOption1->id,
+            'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        ]);
+        App\Models\Enrollment::factory()->create([
+            'customer_id'                => $user->id,
+            'product_delivery_option_id' => $deliveryOption2->id,
+            'enrollment_status'          => App\Enums\EnrollmentStatusEnum::ACTIVE,
+        ]);
+
+        // Add both to cart
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $deliveryOption1->uuid,
+            'quantity'                     => 1,
+        ])->assertOk();
+
+        postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $deliveryOption2->uuid,
+            'quantity'                     => 1,
+        ])->assertOk();
+
+        $response = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'bank_transfer',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['items']);
+
+        // Error message should mention both products
+        $errorMessage = $response->json('errors.items.0');
+        expect($errorMessage)->toContain('Course A');
+        expect($errorMessage)->toContain('Course B');
+    });
 });

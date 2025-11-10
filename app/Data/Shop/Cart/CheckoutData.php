@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Cart;
 
-use Spatie\LaravelData\Attributes\Validation\In;
-use Spatie\LaravelData\Attributes\Validation\Required;
+use App\Enums\Payment\PaymentMethodEnum;
+use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 final class CheckoutData extends Data
 {
     public function __construct(
-        #[Required]
-        #[In(['wallet', 'bank_transfer'])]
-        public string $payment_method,
+        public ?string $payment_method = null,
     ) {}
 
     /**
@@ -23,7 +21,7 @@ final class CheckoutData extends Data
     public static function rules(?ValidationContext $context = null): array
     {
         return [
-            'payment_method' => ['required', 'string', 'in:wallet,bank_transfer'],
+            'payment_method' => ['nullable', 'string', Rule::enum(PaymentMethodEnum::class)],
         ];
     }
 
@@ -36,7 +34,7 @@ final class CheckoutData extends Data
     {
         return [
             'payment_method' => [
-                'description' => 'The payment method to use for checkout. Use "wallet" for immediate payment from user wallet balance, or "bank_transfer" to create a pending order awaiting bank transfer.',
+                'description' => 'The payment method to use for checkout. Optional for free orders (will auto-use NO_PAYMENT). Required for paid orders. Options: "wallet" for immediate payment, "bank_transfer" for pending order, or "online_gateway" for redirect to payment gateway.',
                 'example'     => 'wallet',
             ],
         ];

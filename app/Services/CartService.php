@@ -317,7 +317,7 @@ final readonly class CartService
         $context = $this->orderCalculationService->calculate($orderData);
 
         // Extract totals from context
-        $subtotal       = $context->items->sum(fn ($item) => $item->price * $item->qty);
+        $subtotal       = $context->items->sum('total');
         $discountAmount = $context->items->sum('discount_amount');
         $grandTotal     = $subtotal - $discountAmount;
 

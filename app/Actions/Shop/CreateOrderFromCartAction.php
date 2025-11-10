@@ -5,23 +5,24 @@ declare(strict_types=1);
 namespace App\Actions\Shop;
 
 use App\Actions\Admin\Order\CreateOrderAction;
-use App\Actions\Wallet\RecordWalletTransactionAction;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
-use App\Data\Admin\Wallet\RecordTransactionData;
+use App\Data\Admin\Payment\PaymentCreateData;
+use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Data\Shop\Cart\CheckoutData;
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
-use App\Enums\Wallet\TransactionSourceEnum;
-use App\Enums\Wallet\TransactionTypeEnum;
+use App\Events\PaymentCompletedEvent;
 use App\Models\CartItem;
+use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
 use App\Services\CartService;
-use App\Services\OrderStatusService;
+use App\Services\Payment\PaymentProcessorFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -30,18 +31,22 @@ final readonly class CreateOrderFromCartAction
     public function __construct(
         private CartService $cartService,
         private CreateOrderAction $createOrderAction,
-        private RecordWalletTransactionAction $recordWalletTransaction,
-        private OrderStatusService $orderStatusService
+        private PaymentProcessorFactory $processorFactory,
     ) {}
 
     /**
-     * Convert a cart into a pending order and optionally process payment.
+     * Convert a cart into an order and process payment.
+     *
+     * Returns PaymentProcessResultData which may contain:
+     * - For free orders: completed payment with NO_PAYMENT
+     * - For single-step payments (wallet): completed payment with no redirect
+     * - For multi-step payments (online gateway): pending payment with redirect URL
      *
      * @throws ValidationException
      */
-    public function handle(CheckoutData $checkoutData, User $user): Order
+    public function handle(CheckoutData $checkoutData, User $user): PaymentProcessResultData
     {
-        return DB::transaction(function () use ($checkoutData, $user): Order {
+        return DB::transaction(function () use ($checkoutData, $user): PaymentProcessResultData {
             // Step 1: Get the cart model directly
             $cart = $this->cartService->findOrCreateCart();
 
@@ -57,84 +62,79 @@ final readonly class CreateOrderFromCartAction
             // Step 3: Validate availability and capacity for each item
             $this->validateCartItems($cart);
 
-            // Step 4: Build OrderCreateData from cart
+            // Step 4: Validate that the user doesn't already own these products
+            $this->validateNoDuplicatePurchases($user, $cart);
+
+            // Step 5: Build OrderCreateData from cart
             $orderCreateData = $this->buildOrderCreateData($cart, $user);
 
-            // Step 5: Execute the existing CreateOrderAction
+            // Step 6: Execute the existing CreateOrderAction
             $order = $this->createOrderAction->handle($orderCreateData);
 
-            // Step 6: Process payment if wallet method is selected
-            if ($checkoutData->payment_method === 'wallet') {
-                $this->processWalletPayment($order, $user);
-            }
+            // Step 7: Process payment based on order total
+            $result = $this->processPayment($order, $checkoutData, $user);
 
-            // Step 7: Delete the cart after successful checkout
+            // Step 8: Delete the cart after successful checkout
             $this->cartService->deleteCart();
 
-            return $order->fresh(['items.productDeliveryOption.product', 'customer', 'payments']);
+            return $result;
         });
     }
 
     /**
-     * Process wallet payment for the order.
+     * Process payment for the order based on the grand total and payment method.
      *
      * @throws ValidationException
      */
-    private function processWalletPayment(Order $order, User $user): void
+    private function processPayment(Order $order, CheckoutData $checkoutData, User $user): PaymentProcessResultData
     {
-        // @codeCoverageIgnoreStart
-        if (! $user->wallet) {
-            throw ValidationException::withMessages([
-                'wallet' => ['Wallet not found for the current user.'],
-            ]);
+        // Handle free orders automatically with NO_PAYMENT
+        if ($order->grand_total <= 0) {
+            return $this->createFreeOrderPayment($order, $user);
         }
-        // @codeCoverageIgnoreEnd
 
-        // Check if user has sufficient balance (including gift balance)
-        $availableBalance = $user->wallet->balance + $user->wallet->gift_balance;
-        if ($availableBalance < $order->grand_total) {
+        // For paid orders, payment_method is required
+        if (empty($checkoutData->payment_method)) {
             throw ValidationException::withMessages([
-                'wallet' => [
-                    __('validation.custom.checkout.insufficient_wallet_balance', [
-                        'available_balance' => number_format($availableBalance),
-                        'required_amount'   => number_format($order->grand_total),
-                    ]),
-                ],
+                'payment_method' => ['Payment method is required for paid orders.'],
             ]);
         }
 
-        // Record wallet transaction (debit)
-        $this->recordWalletTransaction->execute(
-            new RecordTransactionData(
-                user_id: $user->id,
-                type: TransactionTypeEnum::PAYMENT,
-                amount: $order->grand_total,
-                source_type: TransactionSourceEnum::ORDER,
-                source_id: $order->id,
-                description: "Payment for order #{$order->increment_id}",
-                metadata: [
-                    'order_id'       => $order->id,
-                    'order_number'   => $order->increment_id,
-                    'payment_method' => 'wallet',
-                ]
-            )
+        $paymentMethod = PaymentMethodEnum::from($checkoutData->payment_method);
+
+        // Get the appropriate payment processor
+        $processor = $this->processorFactory->make($paymentMethod);
+
+        // Create PaymentCreateData for the processor
+        $paymentData = new PaymentCreateData(
+            method: $paymentMethod->value,
+            status: PaymentStatusEnum::PENDING->value,
+            data: null,
+            admin_notes: null
         );
 
-        // Create payment record
-        Payment::create([
+        // Process the payment
+        return $processor->process($order, $paymentData, $user, $order->grand_total);
+    }
+
+    /**
+     * Create a NO_PAYMENT record for free orders.
+     */
+    private function createFreeOrderPayment(Order $order, User $user): PaymentProcessResultData
+    {
+        $payment = Payment::create([
             'order_id'    => $order->id,
             'customer_id' => $user->id,
-            'method'      => PaymentMethodEnum::WALLET->value,
-            'amount'      => $order->grand_total,
-            'status'      => PaymentStatusEnum::COMPLETED,
-            'data'        => [
-                'wallet_payment' => true,
-                'user_id'        => $user->id,
-            ],
+            'amount'      => 0,
+            'method'      => PaymentMethodEnum::NO_PAYMENT->value,
+            'status'      => PaymentStatusEnum::COMPLETED->value,
+            'admin_notes' => 'Free order automatically completed.',
         ]);
 
-        // Finalize the order using OrderStatusService
-        $this->orderStatusService->handlePaymentCompletion($order);
+        // Dispatch event to trigger enrollments
+        PaymentCompletedEvent::dispatch($payment);
+
+        return PaymentProcessResultData::completed($payment);
     }
 
     /**
@@ -213,6 +213,64 @@ final readonly class CreateOrderFromCartAction
 
         if (! empty($errors)) {
             throw ValidationException::withMessages($errors);
+        }
+    }
+
+    /**
+     * Validate that the customer does not already own (have active or pending enrollment for) any cart items.
+     * This prevents duplicate purchases of the same underlying Productable (Course/Seminar/DigitalAsset),
+     * regardless of which ProductDeliveryOption or Product it's wrapped in.
+     *
+     * @throws ValidationException
+     */
+    private function validateNoDuplicatePurchases(User $user, $cart): void
+    {
+        // Get all productable_id and productable_type pairs from cart items
+        $cartProductables = $cart->items->map(function ($cartItem) {
+            $product = $cartItem->productDeliveryOption->product;
+
+            return [
+                'productable_id'   => $product->productable_id,
+                'productable_type' => $product->productable_type,
+                'product_name'     => $product->name,
+            ];
+        });
+
+        // Check if user has any active/pending enrollments for these Productables
+        $existingEnrollments = Enrollment::query()
+            ->where('customer_id', $user->id)
+            ->whereIn('enrollment_status', [
+                EnrollmentStatusEnum::PENDING_PROVISIONING,
+                EnrollmentStatusEnum::ACTIVE,
+            ])
+            ->whereHas('productDeliveryOption.product', function ($query) use ($cartProductables): void {
+                $query->where(function ($q) use ($cartProductables): void {
+                    foreach ($cartProductables as $productable) {
+                        $q->orWhere(function ($sq) use ($productable): void {
+                            $sq->where('productable_id', $productable['productable_id'])
+                                ->where('productable_type', $productable['productable_type']);
+                        });
+                    }
+                });
+            })
+            ->with('productDeliveryOption.product.productable')
+            ->get();
+
+        if ($existingEnrollments->isNotEmpty()) {
+            // Get the productable names (Course name, Seminar name, etc.)
+            $purchasedProductNames = $existingEnrollments
+                ->map(function (Enrollment $e) {
+                    $product = $e->productDeliveryOption->product;
+
+                    return $product->productable->title ?? $product->name;
+                })
+                ->unique()
+                ->implode(', ');
+
+            throw ValidationException::withMessages([
+                'items' => __('messages.order.items_already_purchased_or_active',
+                    ['products' => $purchasedProductNames]),
+            ]);
         }
     }
 

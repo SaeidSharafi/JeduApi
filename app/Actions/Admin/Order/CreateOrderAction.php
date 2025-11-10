@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Order;
 
-use App\Data\Admin\Discounts\CalculatedOrderItemData;
 use App\Data\Admin\Discounts\OrderContextData;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
@@ -82,7 +81,7 @@ final readonly class CreateOrderAction
                     'tax_amount'        => 0, // Placeholder
                 ]);
             }
-            $grandTotal = $orderItemsData->sum('total');
+            $grandTotal = $context->calculateGrandTotal();
             $order      = Order::create([
                 'increment_id'           => Order::generateIncrementId(),
                 'status'                 => $data->status, // This can be an initial status from the form
@@ -95,11 +94,11 @@ final readonly class CreateOrderAction
                 'total_item_count'       => $context->items->count(),
                 'total_qty_ordered'      => $context->items->sum('qty'),
 
-                // --- TOTALS CALCULATED FROM CONTEXT ---
-                'grand_total'            => $grandTotal, // The final, authoritative bill amount.
+                // --- TOTALS CALCULATED FROM CONTEXT (SINGLE SOURCE OF TRUTH) ---
+                'grand_total'            => $grandTotal, // The final, authoritative bill amount from context
                 'full_value_grand_total' => $context->subtotal_all_items,
-                'subtotal'               => $this->calculateSubtotalFromContext($context),
-                'discount_amount'        => $this->calculateTotalDiscountFromContext($context),
+                'subtotal'               => $context->calculateSubtotal(),
+                'discount_amount'        => $context->calculateTotalDiscount(),
                 'tax_amount'             => 0, // Placeholder
 
                 // --- AUDIT TRAIL FOR CART DISCOUNTS ---
@@ -233,15 +232,5 @@ final readonly class CreateOrderAction
                     ['products' => $purchasedProductNames]),
             ]);
         }
-    }
-
-    private function calculateTotalDiscountFromContext(OrderContextData $context): int
-    {
-        return $context->items->sum('discount_amount');
-    }
-
-    private function calculateSubtotalFromContext(OrderContextData $context): int
-    {
-        return $context->items->sum(fn (CalculatedOrderItemData $i): int => $i->price * $i->qty);
     }
 }
