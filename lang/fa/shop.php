@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 return [
-    'teahcer_titles' => [
+    // Profile incomplete. Please complete your profile to proceed.
+    'profile_incomplete_message' => 'پروفایل شما ناقص است. لطفاً برای ادامه، پروفایل خود را تکمیل کنید.',
+    'teahcer_titles'             => [
         'sir'   => 'جناب آقای',
         'madam' => 'سرکار خانم',
     ],
@@ -30,7 +32,7 @@ return [
             'product_already_in_cart'       => 'این محصول قبلاً به سبد خرید شما اضافه شده است.',
             'multiple_quantity_not_allowed' => 'برای این محصول نمی‌توانید بیش از یک عدد سفارش دهید.',
             'pre_payment_not_available'     => 'گزینه پیش‌پرداخت برای این محصول در دسترس نیست.',
-            'coupon_does_not_exist'          => 'کوپن تخفیف وارد شده معتبر نیست.',
+            'coupon_does_not_exist'         => 'کوپن تخفیف وارد شده معتبر نیست.',
         ],
     ],
 ];
