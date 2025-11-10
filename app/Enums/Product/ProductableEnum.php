@@ -45,4 +45,14 @@ enum ProductableEnum: string
             self::DIGITAL_ASSET => DigitalAsset::class,
         };
     }
+
+    // allow more than 1 quantity
+    public function allowsMultipleQuantity(): bool
+    {
+        return match ($this) {
+            self::COURSE        => false,
+            self::SEMINAR       => false,
+            self::DIGITAL_ASSET => false,
+        };
+    }
 }

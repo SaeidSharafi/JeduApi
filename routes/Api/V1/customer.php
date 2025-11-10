@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Api\Shop\OrderController;
+use App\Http\Controllers\Api\Shop\Sale\OrderController;
 
 Route::middleware(['auth:user'])
     ->prefix('shop')

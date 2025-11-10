@@ -34,7 +34,6 @@ describe('index', function (): void {
         $this->customer($user);
 
         $cart = Cart::factory()->create(['user_id' => $user->id]);
-        // Create 2 items with different delivery options to avoid unique constraint violation
         CartItem::factory()->create([
             'cart_id'                    => $cart->id,
             'product_delivery_option_id' => ProductDeliveryOption::factory(),
@@ -56,28 +55,28 @@ describe('index', function (): void {
 
 describe('store', function (): void {
     it('should add item to cart for authenticated user', function (): void {
-        $user           = User::factory()->create();
+        $user = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
         $response = postJson(route('api.v1.shop.cart.items.store'), [
             'product_delivery_option_uuid' => $deliveryOption->uuid,
-            'quantity'                     => 2,
+            'quantity'                     => 1,
         ]);
 
         $response->assertOk();
         $response->assertJsonPath('data.total_items_count', 1);
-        $response->assertJsonPath('data.items.0.quantity', 2);
+        $response->assertJsonPath('data.items.0.quantity', 1);
 
         $this->assertDatabaseHas('carts', ['user_id' => $user->id]);
         $this->assertDatabaseHas('cart_items', [
             'product_delivery_option_id' => $deliveryOption->id,
-            'quantity'                   => 2,
+            'quantity'                   => 1,
         ]);
     });
 
-    it('should increment quantity if item already exists in cart', function (): void {
-        $user           = User::factory()->create();
+    it('should throw validation error when adding existing item to cart', function (): void {
+        $user = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
@@ -90,12 +89,11 @@ describe('store', function (): void {
 
         $response = postJson(route('api.v1.shop.cart.items.store'), [
             'product_delivery_option_uuid' => $deliveryOption->uuid,
-            'quantity'                     => 2,
+            'quantity'                     => 1,
         ]);
 
-        $response->assertOk();
-        $response->assertJsonPath('data.total_items_count', 1);
-        $response->assertJsonPath('data.items.0.quantity', 3);
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors('product_delivery_option_uuid');
     });
 
     it('should fail with invalid UUID', function (): void {
@@ -125,7 +123,7 @@ describe('store', function (): void {
     });
 
     it('should fail with invalid quantity', function (): void {
-        $user           = User::factory()->create();
+        $user = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
@@ -139,7 +137,7 @@ describe('store', function (): void {
     });
 
     it('should fail with quantity exceeding maximum', function (): void {
-        $user           = User::factory()->create();
+        $user = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
@@ -155,57 +153,78 @@ describe('store', function (): void {
 
 describe('update', function (): void {
     it('should update cart item quantity for authenticated user', function (): void {
-        $user           = User::factory()->create();
+        $user = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
-        $cart     = Cart::factory()->create(['user_id' => $user->id]);
+        $cart = Cart::factory()->create(['user_id' => $user->id]);
         $cartItem = CartItem::factory()->create([
             'cart_id'                    => $cart->id,
             'product_delivery_option_id' => $deliveryOption->id,
-            'quantity'                   => 2,
+            'quantity'                   => 0, // we set this to 0 since we do not have any product that accept multiple quantities
         ]);
 
         $response = putJson(route('api.v1.shop.cart.items.update', $cartItem), [
-            'quantity' => 5,
+            'quantity' => 1,
         ]);
 
         $response->assertOk();
-        $response->assertJsonPath('data.items.0.quantity', 5);
+        $response->assertJsonPath('data.items.0.quantity', 1);
 
         $this->assertDatabaseHas('cart_items', [
             'id'       => $cartItem->id,
-            'quantity' => 5,
+            'quantity' => 1,
         ]);
     });
 
     it('should fail to update another user\'s cart item', function (): void {
-        $user           = User::factory()->create();
+        $user = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
-        $otherUser     = User::factory()->create();
-        $otherCart     = Cart::factory()->create(['user_id' => $otherUser->id]);
+        $otherUser = User::factory()->create();
+        $otherCart = Cart::factory()->create(['user_id' => $otherUser->id]);
         $otherCartItem = CartItem::factory()->create([
             'cart_id'                    => $otherCart->id,
             'product_delivery_option_id' => $deliveryOption->id,
         ]);
 
         $response = putJson(route('api.v1.shop.cart.items.update', $otherCartItem), [
-            'quantity' => 5,
+            'quantity' => 1,
         ]);
 
         $response->assertNotFound();
     });
+
+    it('should prevent setting more than 1 quantity for item that does not support it', function (): void {
+        $user = User::factory()->create();
+        $deliveryOption = ProductDeliveryOption::factory()->create();
+        $this->customer($user);
+
+        $cart = Cart::factory()->create(['user_id' => $user->id]);
+        $cartItem = CartItem::factory()->create([
+            'cart_id'                    => $cart->id,
+            'product_delivery_option_id' => $deliveryOption->id,
+            'quantity'                   => 1,
+        ]);
+
+        $response = putJson(route('api.v1.shop.cart.items.update', $cartItem), [
+            'quantity' => 2,
+        ]);
+
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['product_delivery_option_uuid']);
+    });
+
 });
 
 describe('destroy', function (): void {
     it('should remove item from cart for authenticated user', function (): void {
-        $user           = User::factory()->create();
+        $user = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
-        $cart     = Cart::factory()->create(['user_id' => $user->id]);
+        $cart = Cart::factory()->create(['user_id' => $user->id]);
         $cartItem = CartItem::factory()->create([
             'cart_id'                    => $cart->id,
             'product_delivery_option_id' => $deliveryOption->id,
@@ -219,12 +238,12 @@ describe('destroy', function (): void {
     });
 
     it('should fail to delete another user\'s cart item', function (): void {
-        $user           = User::factory()->create();
+        $user = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
-        $otherUser     = User::factory()->create();
-        $otherCart     = Cart::factory()->create(['user_id' => $otherUser->id]);
+        $otherUser = User::factory()->create();
+        $otherCart = Cart::factory()->create(['user_id' => $otherUser->id]);
         $otherCartItem = CartItem::factory()->create([
             'cart_id'                    => $otherCart->id,
             'product_delivery_option_id' => $deliveryOption->id,
@@ -235,8 +254,6 @@ describe('destroy', function (): void {
         $response->assertNotFound();
     });
 });
-
-// ===== Guest User Tests =====
 
 describe('CartController - Guest Users', function (): void {
     describe('index', function (): void {
@@ -253,7 +270,6 @@ describe('CartController - Guest Users', function (): void {
             $guestToken = Str::uuid()->toString();
 
             $cart = Cart::factory()->create(['guest_token' => $guestToken]);
-            // Create 2 items with different delivery options to avoid unique constraint violation
             CartItem::factory()->create([
                 'cart_id'                    => $cart->id,
                 'product_delivery_option_id' => ProductDeliveryOption::factory(),
@@ -290,24 +306,24 @@ describe('CartController - Guest Users', function (): void {
     describe('store', function (): void {
         it('should add item to cart for guest user', function (): void {
             $deliveryOption = ProductDeliveryOption::factory()->create();
-            $guestToken     = Str::uuid()->toString();
+            $guestToken = Str::uuid()->toString();
 
             $response = postJson(route('api.v1.shop.cart.items.store'), [
                 'product_delivery_option_uuid' => $deliveryOption->uuid,
-                'quantity'                     => 2,
+                'quantity'                     => 1,
             ], [
                 'X-Guest-Token' => $guestToken,
             ]);
 
             $response->assertOk();
             $response->assertJsonPath('data.total_items_count', 1);
-            $response->assertJsonPath('data.items.0.quantity', 2);
+            $response->assertJsonPath('data.items.0.quantity', 1);
             $response->assertHeader('X-Guest-Token', $guestToken);
 
             $this->assertDatabaseHas('carts', ['guest_token' => $guestToken]);
             $this->assertDatabaseHas('cart_items', [
                 'product_delivery_option_id' => $deliveryOption->id,
-                'quantity'                   => 2,
+                'quantity'                   => 1,
             ]);
         });
 
@@ -332,32 +348,32 @@ describe('CartController - Guest Users', function (): void {
     describe('update', function (): void {
         it('should update cart item quantity for guest user', function (): void {
             $deliveryOption = ProductDeliveryOption::factory()->create();
-            $guestToken     = Str::uuid()->toString();
+            $guestToken = Str::uuid()->toString();
 
-            $cart     = Cart::factory()->create(['guest_token' => $guestToken]);
+            $cart = Cart::factory()->create(['guest_token' => $guestToken]);
             $cartItem = CartItem::factory()->create([
                 'cart_id'                    => $cart->id,
                 'product_delivery_option_id' => $deliveryOption->id,
-                'quantity'                   => 2,
+                'quantity'                   => 0,
             ]);
 
             $response = putJson(route('api.v1.shop.cart.items.update', $cartItem), [
-                'quantity' => 5,
+                'quantity' => 1,
             ], [
                 'X-Guest-Token' => $guestToken,
             ]);
 
             $response->assertOk();
-            $response->assertJsonPath('data.items.0.quantity', 5);
+            $response->assertJsonPath('data.items.0.quantity', 1);
             $response->assertHeader('X-Guest-Token', $guestToken);
         });
 
         it('should fail to update another guest\'s cart item', function (): void {
             $deliveryOption = ProductDeliveryOption::factory()->create();
-            $guestToken     = Str::uuid()->toString();
+            $guestToken = Str::uuid()->toString();
 
-            $otherToken    = Str::uuid()->toString();
-            $otherCart     = Cart::factory()->create(['guest_token' => $otherToken]);
+            $otherToken = Str::uuid()->toString();
+            $otherCart = Cart::factory()->create(['guest_token' => $otherToken]);
             $otherCartItem = CartItem::factory()->create([
                 'cart_id'                    => $otherCart->id,
                 'product_delivery_option_id' => $deliveryOption->id,
@@ -376,9 +392,9 @@ describe('CartController - Guest Users', function (): void {
     describe('destroy', function (): void {
         it('should remove item from cart for guest user', function (): void {
             $deliveryOption = ProductDeliveryOption::factory()->create();
-            $guestToken     = Str::uuid()->toString();
+            $guestToken = Str::uuid()->toString();
 
-            $cart     = Cart::factory()->create(['guest_token' => $guestToken]);
+            $cart = Cart::factory()->create(['guest_token' => $guestToken]);
             $cartItem = CartItem::factory()->create([
                 'cart_id'                    => $cart->id,
                 'product_delivery_option_id' => $deliveryOption->id,

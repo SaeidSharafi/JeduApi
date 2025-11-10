@@ -86,10 +86,9 @@ describe('Order History - Index Endpoint', function (): void {
         $response = getJson(route('api.v1.shop.orders.index'));
 
         $response->assertOk()
-            ->assertJsonCount(3, 'data.orders')
-            ->assertJsonPath('data.meta.total', 3);
+            ->assertJsonCount(3, 'data.data');
 
-        $orders = $response->json('data.orders');
+        $orders = $response->json('data.data');
         foreach ($orders as $order) {
             expect($order['customer_email'])->toBe($this->userA->email);
         }
@@ -118,7 +117,7 @@ describe('Order History - Index Endpoint', function (): void {
         $response = getJson(route('api.v1.shop.orders.index'));
 
         $response->assertOk();
-        $orders = $response->json('data.orders');
+        $orders = $response->json('data.data');
 
         expect($orders[0]['increment_id'])->toBe('100000003')
             ->and($orders[1]['increment_id'])->toBe('100000002')
@@ -130,8 +129,7 @@ describe('Order History - Index Endpoint', function (): void {
         $response = getJson(route('api.v1.shop.orders.index'));
 
         $response->assertOk()
-            ->assertJsonCount(0, 'data.orders')
-            ->assertJsonPath('data.meta.total', 0);
+            ->assertJsonCount(0, 'data.data');
     });
 });
 

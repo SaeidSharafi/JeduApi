@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Cart;
 
+use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Models\CartItem;
 use Spatie\LaravelData\Data;
 
@@ -13,6 +14,7 @@ final class CartItemData extends Data
         public int $id,
         public string $product_delivery_option_uuid,
         public int $quantity,
+        public OrderItemPaymentTypeEnum $payment_type,
         public string $product_name,
         public string $sku,
     ) {}
@@ -26,6 +28,7 @@ final class CartItemData extends Data
             id: $cartItem->id,
             product_delivery_option_uuid: $deliveryOption->uuid,
             quantity: $cartItem->quantity,
+            payment_type: $cartItem->payment_type,
             product_name: $product->name ?? $deliveryOption->name ?? 'Product',
             sku: $deliveryOption->sku,
         );

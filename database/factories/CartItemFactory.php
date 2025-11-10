@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Models\Cart;
 use App\Models\ProductDeliveryOption;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -23,6 +24,7 @@ final class CartItemFactory extends Factory
         return [
             'cart_id'                    => Cart::factory(),
             'product_delivery_option_id' => ProductDeliveryOption::factory(),
+            'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT,
             'quantity'                   => $this->faker->numberBetween(1, 5),
         ];
     }

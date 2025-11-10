@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api\Shop;
+namespace App\Http\Controllers\Api\Shop\Sale;
 
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Order\OrderData;

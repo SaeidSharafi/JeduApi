@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Discounts;
 
-use App\Data\Admin\Order\OrderCreateData;
 use App\Models\DiscountPromotion;
 
 final class PromotionFinder
@@ -12,7 +11,7 @@ final class PromotionFinder
     /**
      * Finds the single, active and valid promotion for a given order creation request.
      */
-    public function findApplicablePromotion(OrderCreateData $data): ?DiscountPromotion
+    public function findApplicablePromotion(?string $appliedCouponCode = null, ?int $promotionId = null): ?DiscountPromotion
     {
         // This is the exact same query logic from the old service.
         $query = DiscountPromotion::query()
@@ -25,12 +24,12 @@ final class PromotionFinder
             })
             ->with('rules');
 
-        if ($data->applied_coupon_code) {
-            return $query->whereHas('coupons', fn ($q) => $q->where('code', $data->applied_coupon_code))->first();
+        if ($appliedCouponCode) {
+            return $query->whereHas('coupons', fn ($q) => $q->where('code', $appliedCouponCode))->first();
         }
 
-        if ($data->promotion_id) {
-            return $query->find($data->promotion_id);
+        if ($promotionId) {
+            return $query->find($promotionId);
         }
 
         return null;

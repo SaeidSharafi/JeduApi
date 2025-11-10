@@ -35,7 +35,7 @@ final class OrderCalculationService
         $context = $this->buildInitialContext($data);
 
         // 2. Find the promotion that should be applied (if any).
-        $promotion = $this->promotionFinder->findApplicablePromotion($data);
+        $promotion = $this->promotionFinder->findApplicablePromotion($data->applied_coupon_code, $data->promotion_id);
 
         if ($promotion && $promotion->type === DiscountTypeEnum::CART_CHECKOUT && $this->allConditionsPass($promotion, $context)) {
             $context->evaluating_promotion = $promotion;

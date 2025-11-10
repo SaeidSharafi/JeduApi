@@ -10,11 +10,14 @@ use App\Data\Shop\Cart\AddCartItemData;
 use App\Data\Shop\Cart\ApplyCouponData;
 use App\Data\Shop\Cart\CartData;
 use App\Data\Shop\Cart\UpdateCartItemData;
+use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\OrderCalculationService;
+use App\Services\Discounts\PromotionFinder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -87,28 +90,27 @@ final readonly class CartService
     {
         $cart = $this->findOrCreateCart();
 
-        // Resolve UUID to internal ID
         $deliveryOption = ProductDeliveryOption::query()
+            ->with('product')
             ->where('uuid', $data->product_delivery_option_uuid)
             ->firstOrFail();
 
-        // Check if the item already exists in the cart
         $existingItem = $cart->items()
             ->where('product_delivery_option_id', $deliveryOption->id)
             ->first();
-
+        $this->validateQuantity($deliveryOption, $data->quantity, $existingItem);
+        $this->validatePaymentType($deliveryOption, $data->payment_type);
         if ($existingItem) {
-            // Update quantity if item already exists
             $existingItem->update([
                 'quantity' => $existingItem->quantity + $data->quantity,
             ]);
         } else {
-            // Create new cart item
             $cart->items()->create([
                 'product_delivery_option_id' => $deliveryOption->id,
                 'payment_type'               => $data->payment_type->value,
                 'quantity'                   => $data->quantity,
             ]);
+
         }
 
         // Reload cart with relationships
@@ -128,7 +130,8 @@ final readonly class CartService
             ->where('id', $cartItemId)
             ->where('cart_id', $cart->id)
             ->firstOrFail();
-
+        $deliveryOption = $cartItem->productDeliveryOption()->with('product')->firstOrFail();
+        $this->validateQuantity($deliveryOption, $data->quantity, $cartItem);
         $cartItem->update([
             'quantity' => $data->quantity,
         ]);
@@ -166,15 +169,11 @@ final readonly class CartService
     {
         $cart = $this->findOrCreateCart();
 
-        // Validate coupon exists and is active
-        $coupon = \App\Models\DiscountCoupon::query()
-            ->where('code', $data->coupon_code)
-            ->where('is_active', true)
-            ->first();
+        $promotion = app(PromotionFinder::class)->findApplicablePromotion($data->coupon_code);
 
-        if (! $coupon) {
+        if (! $promotion) {
             throw ValidationException::withMessages([
-                'coupon_code' => __('validation.exists', ['attribute' => 'coupon code']),
+                'coupon_code' => __('shop.cart.errors.coupon_does_not_exist'),
             ]);
         }
 
@@ -323,5 +322,39 @@ final readonly class CartService
         $grandTotal     = $subtotal - $discountAmount;
 
         return CartData::fromModel($cart, $subtotal, $discountAmount, $grandTotal);
+    }
+
+    private function validateQuantity(ProductDeliveryOption $deliveryOption, int $quantity = 1, ?CartItem $exsitingItem = null): void
+    {
+
+        $allowMultiple = ProductableEnum::tryFrom($deliveryOption->product->productable_type)?->allowsMultipleQuantity();
+
+        if ($allowMultiple) {
+            return;
+        }
+        if ($exsitingItem && $exsitingItem->quantity >= 1) {
+            throw ValidationException::withMessages([
+                'product_delivery_option_uuid' => __('shop.cart.errors.product_already_in_cart'),
+            ]);
+        }
+
+        $existingQty = $exsitingItem ? $exsitingItem->quantity : 0;
+        if ($existingQty + $quantity > 1) {
+            throw ValidationException::withMessages([
+                'quantity' => __('shop.cart.errors.multiple_quantity_not_allowed'),
+            ]);
+        }
+    }
+
+    private function validatePaymentType(ProductDeliveryOption $deliveryOption, OrderItemPaymentTypeEnum $paymentType): void
+    {
+        $allowPrePayment = $deliveryOption->is_prepayment_available ?? false;
+
+        if (! $allowPrePayment && $paymentType === OrderItemPaymentTypeEnum::PRE_PAYMENT) {
+            throw ValidationException::withMessages([
+                'payment_type' => __('shop.cart.errors.pre_payment_not_available'),
+            ]);
+        }
+
     }
 }

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\Shop\Blog\BlogCategoryController;
 use App\Http\Controllers\Api\Shop\Blog\BlogPostController;
-use App\Http\Controllers\Api\Shop\CartController;
-use App\Http\Controllers\Api\Shop\CheckoutController;
 use App\Http\Controllers\Api\Shop\CMS\AboutUsController;
 use App\Http\Controllers\Api\Shop\CMS\CollaborationPageController;
 use App\Http\Controllers\Api\Shop\CMS\ContactPageController;
@@ -23,6 +21,8 @@ use App\Http\Controllers\Api\Shop\Product\GoodForStartCoursesController;
 use App\Http\Controllers\Api\Shop\Product\RelatedProductController;
 use App\Http\Controllers\Api\Shop\Product\SeminarController;
 use App\Http\Controllers\Api\Shop\ProductTeacherController;
+use App\Http\Controllers\Api\Shop\Sale\CartController;
+use App\Http\Controllers\Api\Shop\Sale\CheckoutController;
 use App\Http\Controllers\Api\Shop\SearchController;
 use App\Http\Controllers\Api\Shop\Settings\FooterController;
 use App\Http\Controllers\Api\Shop\Settings\HeaderController;
