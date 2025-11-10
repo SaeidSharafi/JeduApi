@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->uuid('guest_token')->nullable()->unique();
+            $table->string('applied_coupon_code')->nullable();
             $table->timestamps();
 
             $table->index('user_id');
