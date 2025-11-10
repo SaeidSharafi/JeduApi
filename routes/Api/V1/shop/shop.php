@@ -93,7 +93,7 @@ Route::middleware(['identify.cart'])
 
 // Checkout Route (requires authentication)
 Route::post('checkout', CheckoutController::class)
-    ->middleware(['identify.cart', 'throttle:5,1'])
+    ->middleware(['identify.cart', 'throttle:5,1', 'profile.check'])
     ->name('checkout');
 
 // Payment Gateway Callback Route (public - no auth required)
