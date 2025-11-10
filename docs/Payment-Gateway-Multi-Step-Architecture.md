@@ -234,6 +234,7 @@ final class WalletPaymentProcessor implements PaymentProcessorContract
 ```
 
 ### Multi-Step Processor Example (MellatGatewayPaymentProcessor)
+
 ```php
 <?php
 
@@ -257,7 +258,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 {
     public function canHandle(PaymentMethodEnum $paymentMethod): bool
     {
-        return $paymentMethod === PaymentMethodEnum::ONLINE_GATEWAY;
+        return $paymentMethod === PaymentMethodEnum::MELLAT_GATEWAY;
     }
 
     public function requiresRedirect(): bool
@@ -279,7 +280,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
             'customer_id' => $order->customer_id,
             'created_by'  => $adminUser instanceof Staff ? $adminUser->id : null,
             'amount'      => $amountToPay,
-            'method'      => PaymentMethodEnum::ONLINE_GATEWAY,
+            'method'      => PaymentMethodEnum::MELLAT_GATEWAY,
             'status'      => PaymentStatusEnum::PENDING, // CRITICAL: Must be PENDING
             'admin_notes' => $paymentData->admin_notes,
             'data'        => [

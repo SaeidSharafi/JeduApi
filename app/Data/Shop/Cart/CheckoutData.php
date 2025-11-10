@@ -34,7 +34,7 @@ final class CheckoutData extends Data
     {
         return [
             'payment_method' => [
-                'description' => 'The payment method to use for checkout. Optional for free orders (will auto-use NO_PAYMENT). Required for paid orders. Options: "wallet" for immediate payment, "bank_transfer" for pending order, or "online_gateway" for redirect to payment gateway.',
+                'description' => 'The payment method to use for checkout. Optional for free orders (will auto-use NO_PAYMENT). Required for paid orders. Options: "wallet" for immediate payment, "bank_transfer" for pending order, or "mellat_gateway" for redirect to payment gateway.',
                 'example'     => 'wallet',
             ],
         ];

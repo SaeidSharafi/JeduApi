@@ -34,7 +34,7 @@ final class CheckoutController extends Controller
      * Upon successful checkout, the user's cart is automatically deleted.
      *
      * **Multi-Step Payment Gateways:**
-     * When using payment methods that require redirect (e.g., online_gateway), the response will include:
+     * When using payment methods that require redirect (e.g., mellat_gateway), the response will include:
      * - `redirect_url`: The URL to redirect the customer to for payment
      * - `redirect_method`: HTTP method to use (GET or POST)
      * - `redirect_data`: Optional form data to submit (for POST redirects)

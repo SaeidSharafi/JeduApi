@@ -19,7 +19,7 @@ it('returns order payments list', function (): void {
             'customer_id' => $this->customer->id,
             'created_by'  => $this->user->id,
             'amount'      => 1000,
-            'method'      => PaymentMethodEnum::ONLINE_GATEWAY,
+            'method'      => PaymentMethodEnum::MELLAT_GATEWAY,
             'status'      => PaymentStatusEnum::COMPLETED,
             'admin_notes' => 'Test payment',
         ]);
@@ -46,8 +46,8 @@ it('returns order payments list', function (): void {
         'created_by'  => $this->user->id,
         'amount'      => $payment->amount,
         'method'      => [
-            'label' => PaymentMethodEnum::ONLINE_GATEWAY->translate(),
-            'value' => PaymentMethodEnum::ONLINE_GATEWAY->value,
+            'label' => PaymentMethodEnum::MELLAT_GATEWAY->translate(),
+            'value' => PaymentMethodEnum::MELLAT_GATEWAY->value,
         ],
         'status'      => [
             'label' => PaymentStatusEnum::COMPLETED->translate(),
@@ -64,7 +64,7 @@ it('returns order payment detail', function (): void {
         'customer_id' => $this->customer->id,
         'created_by'  => $this->user->id,
         'amount'      => 1000,
-        'method'      => PaymentMethodEnum::ONLINE_GATEWAY,
+        'method'      => PaymentMethodEnum::MELLAT_GATEWAY,
         'status'      => PaymentStatusEnum::COMPLETED,
         'admin_notes' => 'Test payment',
     ]);
@@ -86,8 +86,8 @@ it('returns order payment detail', function (): void {
             'created_by'  => $this->user->id,
             'amount'      => $payment->amount,
             'method'      => [
-                'label' => PaymentMethodEnum::ONLINE_GATEWAY->translate(),
-                'value' => PaymentMethodEnum::ONLINE_GATEWAY->value,
+                'label' => PaymentMethodEnum::MELLAT_GATEWAY->translate(),
+                'value' => PaymentMethodEnum::MELLAT_GATEWAY->value,
             ],
             'status'      => [
                 'label' => PaymentStatusEnum::COMPLETED->translate(),
@@ -331,7 +331,7 @@ it('can update payment data', function (): void {
         'customer_id' => $this->customer->id,
         'created_by'  => null,
         'amount'      => 1000,
-        'method'      => PaymentMethodEnum::ONLINE_GATEWAY,
+        'method'      => PaymentMethodEnum::MELLAT_GATEWAY,
         'status'      => PaymentStatusEnum::PENDING,
         'admin_notes' => 'Initial payment',
     ]);
@@ -363,7 +363,7 @@ it('can update payment data', function (): void {
         'customer_id' => $this->customer->id,
         'created_by'  => null,
         'amount'      => 1000,
-        'method'      => PaymentMethodEnum::ONLINE_GATEWAY->value,
+        'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
         'status'      => PaymentStatusEnum::COMPLETED->value,
         'admin_notes' => 'Updated payment',
     ]);
@@ -374,7 +374,7 @@ it('can not change completed payment status', function (): void {
         'customer_id' => $this->customer->id,
         'created_by'  => null,
         'amount'      => 1000,
-        'method'      => PaymentMethodEnum::ONLINE_GATEWAY,
+        'method'      => PaymentMethodEnum::MELLAT_GATEWAY,
         'status'      => PaymentStatusEnum::COMPLETED,
         'admin_notes' => 'Initial payment',
     ]);
@@ -397,7 +397,7 @@ it('can not change completed payment status', function (): void {
         'customer_id' => $this->customer->id,
         'created_by'  => null,
         'amount'      => 1000,
-        'method'      => PaymentMethodEnum::ONLINE_GATEWAY->value,
+        'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
         'status'      => PaymentStatusEnum::COMPLETED->value,
         'admin_notes' => 'Initial payment',
     ]);
@@ -446,7 +446,7 @@ it('can delete payment', function (): void {
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
         'amount'      => 3000,
-        'method'      => PaymentMethodEnum::ONLINE_GATEWAY,
+        'method'      => PaymentMethodEnum::MELLAT_GATEWAY,
         'status'      => PaymentStatusEnum::PENDING,
         'admin_notes' => 'Initial payment',
     ]);
@@ -466,7 +466,7 @@ it('can delete payment', function (): void {
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
         'amount'      => 300,
-        'method'      => PaymentMethodEnum::ONLINE_GATEWAY->value,
+        'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
         'status'      => PaymentStatusEnum::COMPLETED->value,
         'admin_notes' => 'Initial payment',
     ]);
@@ -521,7 +521,7 @@ it('can not delete completed payment', function (): void {
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
         'amount'      => 3000,
-        'method'      => PaymentMethodEnum::ONLINE_GATEWAY,
+        'method'      => PaymentMethodEnum::MELLAT_GATEWAY,
         'status'      => PaymentStatusEnum::COMPLETED,
         'admin_notes' => 'Initial payment',
     ]);
@@ -544,7 +544,7 @@ it('can not delete completed payment', function (): void {
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
         'amount'      => 3000,
-        'method'      => PaymentMethodEnum::ONLINE_GATEWAY->value,
+        'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
         'status'      => PaymentStatusEnum::COMPLETED->value,
         'admin_notes' => 'Initial payment',
     ]);

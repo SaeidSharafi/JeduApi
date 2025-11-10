@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\PermissionEnum;
 use App\Models\Order;
@@ -50,7 +51,7 @@ describe('OrderController', function (): void {
         ]);
         $partialOrder->payments()->create([
             'amount'      => 20000,
-            'method'      => 'online_gateway',
+            'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
             'status'      => PaymentStatusEnum::FAILED->value,
             'admin_notes' => 'payment failed',
             'created_by'  => null,
@@ -336,7 +337,7 @@ describe('OrderController', function (): void {
             );
             $order->payments()->create([
                 'amount'      => 1000,
-                'method'      => 'online_gateway',
+                'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
                 'status'      => PaymentStatusEnum::COMPLETED->value,
                 'admin_notes' => 'Test payment',
                 'created_by'  => null,

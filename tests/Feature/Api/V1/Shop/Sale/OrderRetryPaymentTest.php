@@ -30,7 +30,7 @@ describe('Retry Order Payment', function (): void {
             'order_id'    => $order->id,
             'customer_id' => $user->id,
             'amount'      => 500000,
-            'method'      => PaymentMethodEnum::ONLINE_GATEWAY,
+            'method'      => PaymentMethodEnum::MELLAT_GATEWAY,
             'status'      => PaymentStatusEnum::FAILED,
         ]);
 
@@ -72,7 +72,7 @@ describe('Retry Order Payment', function (): void {
         // Act: Retry with gateway (requires redirect)
         $response = $this->customer($user)
             ->postJson(route('api.v1.shop.orders.retry-payment', $order->increment_id), [
-                'payment_method' => PaymentMethodEnum::ONLINE_GATEWAY->value,
+                'payment_method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
             ]);
 
         // Assert: Redirect URL provided

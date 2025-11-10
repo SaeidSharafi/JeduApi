@@ -100,7 +100,7 @@ return [
     ],
     'PaymentMethodEnum' => [
         'bank_transfer'  => 'انتقال بانکی',
-        'online_gateway' => 'درگاه آنلاین',
+        'mellat_gateway' => 'درگاه ملت',
     ],
     'PaymentStatusEnum' => [
         'pending'   => 'در انتظار',

@@ -105,7 +105,7 @@ return [
     ],
     'PaymentMethodEnum' => [
         'bank_transfer'  => 'Bank Transfer',
-        'online_gateway' => 'Online Gateway',
+        'mellat_gateway' => 'Mellat Gateway',
     ],
     'PaymentStatusEnum' => [
         'pending'   => 'Pending',
