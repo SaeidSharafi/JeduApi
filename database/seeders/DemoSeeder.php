@@ -52,9 +52,9 @@ final class DemoSeeder extends Seeder
         $this->command->info('Starting Farsi demo data seeding...');
 
         $this->truncateTables();
-        $this->seedModel(User::class, 'users.json', fn($data) => [...$data, 'password' => Hash::make('password')]);
+        $this->seedModel(User::class, 'users.json', fn ($data) => [...$data, 'password' => Hash::make('password')]);
         $this->seedModel(Staff::class, 'staff.json',
-            fn($data) => [...$data, 'password' => Hash::make($data['password'])]);
+            fn ($data) => [...$data, 'password' => Hash::make($data['password'])]);
         $this->seedModel(Vendor::class, 'vendors.json', function ($data) {
             // Check if the keys exist to avoid errors with partially filled data
             if (isset($data['social_links'])) {
@@ -222,7 +222,7 @@ final class DemoSeeder extends Seeder
     {
         $this->command->info('inserting '.$jsonFile.'...');
         $path = $this->demoDataPath.'/'.$jsonFile;
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             $this->command->error("File not found: {$path}");
 
             return;
@@ -230,9 +230,9 @@ final class DemoSeeder extends Seeder
         $model = new $modelClass();
         $table = $model->getTable();
 
-        $collection = collect(json_decode(File::get($path), true));
+        $collection     = collect(json_decode(File::get($path), true));
         $categorizables = $collection->flatMap(function (array $item) use ($modelClass) {
-            if (!isset($item['category_ids']) || !is_array($item['category_ids'])) {
+            if (! isset($item['category_ids']) || ! is_array($item['category_ids'])) {
                 return []; // If no category_ids, return an empty set for this item.
             }
 
@@ -276,21 +276,23 @@ final class DemoSeeder extends Seeder
             if (Schema::hasColumn($table, 'created_by') && empty($item['created_by'])) {
                 $item['created_by'] = Staff::first()->id;
             }
+
             return $item;
         })->all();
 
-        if (!empty($preparedData)) {
+        if (! empty($preparedData)) {
 
             DB::table($table)->insert($preparedData);
+            $this->resetSequence($table, $model->getKeyName());
         }
 
-        if (!empty($categorizables)) {
+        if (! empty($categorizables)) {
             DB::table('categorizables')->insert($categorizables);
         }
         if ($modelClass === ProductDeliveryOption::class) {
             // For ProductDeliveryOption, we also need to handle the pivot table for teachers
             $pdoTeacherLinks = $collection->flatMap(function (array $item) {
-                if (!isset($item['teacher_ids']) || !is_array($item['teacher_ids'])) {
+                if (! isset($item['teacher_ids']) || ! is_array($item['teacher_ids'])) {
                     return []; // If no teacher_ids, return an empty set for this item.
                 }
 
@@ -302,14 +304,14 @@ final class DemoSeeder extends Seeder
                 });
             })->all();
 
-            if (!empty($pdoTeacherLinks)) {
+            if (! empty($pdoTeacherLinks)) {
                 DB::table('product_delivery_option_teacher')->insert($pdoTeacherLinks);
             }
         }
         if ($modelClass === StudentStory::class) {
             // For StudentStory, we also need to handle the pivot table for courses
             $storyCourseLinks = $collection->flatMap(function (array $item) {
-                if (!isset($item['course_ids']) || !is_array($item['course_ids'])) {
+                if (! isset($item['course_ids']) || ! is_array($item['course_ids'])) {
                     return []; // If no course_ids, return an empty set for this item.
                 }
 
@@ -321,12 +323,34 @@ final class DemoSeeder extends Seeder
                 });
             })->all();
 
-            if (!empty($storyCourseLinks)) {
+            if (! empty($storyCourseLinks)) {
                 DB::table('course_student_story')->insert($storyCourseLinks);
             }
         }
 
         $this->command->line("  <info>Seeded:</info>  {$jsonFile}");
+    }
+
+    /**
+     * Resets the auto-increment sequence for a given table in PostgreSQL.
+     */
+    private function resetSequence(string $table, string $primaryKey = 'id'): void
+    {
+        if (DB::connection()->getDriverName() !== 'pgsql') {
+            return; // Only run this for PostgreSQL
+        }
+
+        // Find the name of the sequence for the table's primary key
+        $sequenceName = DB::select("SELECT pg_get_serial_sequence('{$table}', '{$primaryKey}') as name;")[0]->name;
+
+        if ($sequenceName) {
+            // Get the maximum ID from the table
+            $maxId = DB::table($table)->max($primaryKey);
+            if ($maxId) {
+                // Reset the sequence to the max ID + 1, so the next insert will work correctly.
+                DB::statement("SELECT setval('{$sequenceName}', ?, true)", [$maxId]);
+            }
+        }
     }
 
     private function truncateTables(): void
