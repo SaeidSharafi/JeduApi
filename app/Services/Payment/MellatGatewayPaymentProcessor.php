@@ -99,8 +99,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
             $saleOrderId     = $callbackData['SaleOrderId']     ?? null;
             $saleReferenceId = $callbackData['SaleReferenceId'] ?? null;
 
-            // Validate callback data
-            if (! $refId || ! $resCode) {
+            if ($refId === null || $refId === '' || $resCode === null || $resCode === '') {
                 throw new MellatException('Invalid callback data from Mellat');
             }
 
