@@ -5,11 +5,14 @@ declare(strict_types=1);
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Enums\Payment\PaymentMethodEnum;
+use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\System\MorphTypeEnum;
 use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\Term;
@@ -67,9 +70,10 @@ it('cancels abandoned orders older than timeout threshold', function (): void {
 
     // Run the command
     artisan('orders:cancel-abandoned --timeout=30')
-        ->assertExitCode(0)->expectsOutputToContain('Checking for abandoned orders')
+        ->assertExitCode(0)
+        ->expectsOutputToContain('Checking for abandoned orders')
         ->expectsOutput('Found 1 abandoned order(s).')
-        ->expectsOutput("✓ Cancelled order #{$order->increment_id}")
+        ->expectsOutput("✓ Cancelled order #{$order->increment_id} (ID: {$order->id})")
         ->expectsOutput('Successfully cancelled 1 out of 1 abandoned order(s).')
         ->assertExitCode(0);
 
@@ -112,12 +116,19 @@ it('does not cancel orders with completed payment', function (): void {
     Order::factory()->create([
         'customer_id' => $user->id,
         'status'      => OrderStatusEnum::PENDING,
-        // 'payment_status' field removed - calculated accessorPAID, // Payment received!
     ]);
-
+    Payment::factory()
+        ->create([
+            'order_id'    => Order::latest()->first()->id,
+            'customer_id' => $user->id,
+            'amount'      => 100,
+            'method'      => PaymentMethodEnum::BANK_TRANSFER,
+            'status'      => PaymentStatusEnum::COMPLETED->value,
+        ]);
     Carbon::setTestNow();
 
     artisan('orders:cancel-abandoned --timeout=30')
+        ->expectsOutputToContain('Checking for abandoned orders')
         ->expectsOutput('No abandoned orders found.')
         ->assertExitCode(0);
 });
@@ -144,6 +155,7 @@ it('does not cancel orders that are already completed or cancelled', function ()
     Carbon::setTestNow();
 
     artisan('orders:cancel-abandoned --timeout=30')
+        ->expectsOutputToContain('Checking for abandoned orders')
         ->expectsOutput('No abandoned orders found.')
         ->assertExitCode(0);
 });
