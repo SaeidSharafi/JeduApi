@@ -43,7 +43,7 @@ final class RetryPaymentController extends Controller
         $result = $action->handle(
             order: $order,
             paymentMethod: $data->payment_method,
-            amountToPay: $data->amount
+            amountToPay: $order->grand_total
         );
 
         // Return response based on payment type
