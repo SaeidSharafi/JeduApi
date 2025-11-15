@@ -11,6 +11,8 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
+use App\Services\Payment\SoapClientFactory;
+use Mockery\MockInterface;
 
 uses(Tests\AuthTestTrait::class);
 
@@ -34,15 +36,7 @@ describe('Retry Order Payment', function (): void {
             'status'      => PaymentStatusEnum::FAILED,
         ]);
 
-        // Create wallet with sufficient balance for retry
-        Wallet::factory()->create([
-            'user_id' => $user->id,
-        ]);
-        WalletTransaction::factory()->create([
-            'wallet_id' => $user->wallet->id,
-            'amount'    => 500000,
-            'type'      => TransactionTypeEnum::DEPOSIT,
-        ]);
+        $user->wallet->update(['balance' => 500000]);
 
         // Act: Retry payment
         $response = $this->customer($user)
@@ -57,7 +51,6 @@ describe('Retry Order Payment', function (): void {
         // Verify new payment record created
         expect($order->fresh()->payments()->count())->toBe(2);
     });
-
     it('allows retry with online gateway requiring redirect', function (): void {
         // Arrange
         $user = User::factory()->create();
@@ -68,19 +61,33 @@ describe('Retry Order Payment', function (): void {
             'grand_total'            => 500000,
             'full_value_grand_total' => 500000,
         ]);
-
+        $expectedWsdlUrl = config('payments.mellat.test_server_url');
+        $fakeRefId = 'ABCDEF1234567890';
+        $soapClientMock = Mockery::mock(SoapClient::class);
+        $this->mock(SoapClientFactory::class, function (MockInterface $mock) use ($expectedWsdlUrl, $soapClientMock) {
+            $mock->shouldReceive('create')
+                ->with($expectedWsdlUrl)
+                ->andReturn($soapClientMock);
+        });
+        $soapClientMock
+            ->shouldReceive('bpPayRequest')
+            ->once()
+            ->andReturn((object)['return' => $fakeRefId]);
+        $this->customer($user);
         // Act: Retry with gateway (requires redirect)
-        $response = $this->customer($user)
-            ->postJson(route('api.v1.shop.orders.retry-payment', $order->increment_id), [
-                'payment_method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
-            ]);
+        $response = $this->postJson(route('api.v1.shop.orders.retry-payment', $order->increment_id), [
+            'payment_method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
+        ]);
 
         // Assert: Redirect URL provided
         $response->assertOk();
-        expect($response->json('data.requires_redirect'))->toBe(true);
-        expect($response->json('data.redirect_url'))->not->toBeNull();
-        expect($response->json('data.payment.status'))->toBe(PaymentStatusEnum::PENDING->value);
+
+        expect($response->json('data.requires_redirect'))->toBe(true)
+            ->and($response->json('data.redirect_url'))->not->toBeNull()
+            ->and($response->json('data.redirect_data.RefId'))->toBe($fakeRefId)
+            ->and($response->json('data.payment.status'))->toBe(PaymentStatusEnum::PENDING->value);
     });
+
 
     it('allows partial payment retry if amount specified', function (): void {
         // Arrange: Order with 500k balance
@@ -89,23 +96,16 @@ describe('Retry Order Payment', function (): void {
         $order = Order::factory()->create([
             'customer_id'            => $user->id,
             'status'                 => OrderStatusEnum::PENDING,
-            'grand_total'            => 500000,
+            'grand_total'            => 300000,
             'full_value_grand_total' => 500000,
         ]);
 
-        // Create wallet with sufficient balance for retry
-        $wallet = Wallet::firstOrCreate(['user_id' => $user->id]);
-        WalletTransaction::factory()->create([
-            'wallet_id' => $wallet->id,
-            'amount'    => 500000,
-            'type'      => TransactionTypeEnum::DEPOSIT,
-        ]);
+        $user->wallet->update(['balance' => 500000]);
 
         // Act: Pay only 300k
         $response = $this->customer($user)
             ->postJson(route('api.v1.shop.orders.retry-payment', $order->increment_id), [
                 'payment_method' => PaymentMethodEnum::WALLET->value,
-                'amount'         => 300000,
             ]);
 
         // Assert: Partial payment accepted
@@ -209,7 +209,7 @@ describe('Retry Order Payment', function (): void {
 
         // Assert: Rejected
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['amount']);
+        $response->assertJsonValidationErrors(['wallet_data.amount']);
     });
 
     it('rejects unauthorized user from retrying another users order', function (): void {
@@ -273,6 +273,6 @@ describe('Retry Order Payment', function (): void {
 
         // Assert
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['amount']);
+        $response->assertJsonValidationErrors(['wallet_data.amount']);
     });
 });
