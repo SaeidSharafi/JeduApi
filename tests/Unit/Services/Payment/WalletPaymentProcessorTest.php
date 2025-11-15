@@ -1,0 +1,103 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Actions\Wallet\RecordWalletTransactionAction;
+use App\Data\Admin\Payment\PaymentCreateData;
+use App\Enums\Payment\PaymentMethodEnum;
+use App\Enums\Payment\PaymentStatusEnum;
+use App\Events\PaymentCompletedEvent;
+use App\Models\Order;
+use App\Models\Payment;
+use App\Models\User;
+use App\Models\WalletTransaction;
+use App\Services\Payment\WalletPaymentProcessor;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Validation\ValidationException;
+
+describe('WalletPaymentProcessor', function (): void {
+    it('accepts wallet payments and does not require redirect', function (): void {
+        $processor = new WalletPaymentProcessor(Mockery::mock(RecordWalletTransactionAction::class));
+
+        expect($processor->canHandle(PaymentMethodEnum::WALLET))->toBeTrue()
+            ->and($processor->canHandle(PaymentMethodEnum::BANK_TRANSFER))->toBeFalse()
+            ->and($processor->requiresRedirect())->toBeFalse();
+    });
+
+    it('records wallet debit and completes payment when balance is sufficient', function (): void {
+        Event::fake([PaymentCompletedEvent::class]);
+
+        $user = User::factory()->create();
+        $user->wallet->update(['balance' => 1_000_000]);
+
+        $order = Order::factory()->create([
+            'customer_id'            => $user->id,
+            'customer_email'         => $user->email,
+            'customer_phone'         => $user->phone,
+            'customer_first_name'    => $user->first_name,
+            'customer_last_name'     => $user->last_name,
+            'customer_snapshot_json' => $user->toArray(),
+        ]);
+
+        $amount      = 450_000;
+        $processor   = new WalletPaymentProcessor(app(RecordWalletTransactionAction::class));
+        $paymentData = new PaymentCreateData(
+            method: PaymentMethodEnum::WALLET->value,
+            status: PaymentStatusEnum::COMPLETED->value,
+            data: null,
+            admin_notes: 'Wallet checkout',
+        );
+
+        $result = $processor->process($order, $paymentData, $user, $amount);
+
+        expect($result->payment->status)->toBe(PaymentStatusEnum::COMPLETED)
+            ->and($result->payment->amount)->toBe($amount)
+            ->and($result->payment->method)->toBe(PaymentMethodEnum::WALLET);
+
+        expect($user->wallet->fresh()->balance)->toBe(1_000_000 - $amount)
+            ->and(WalletTransaction::where('user_id', $user->id)->count())->toBe(1);
+
+        Event::assertDispatched(PaymentCompletedEvent::class, function (PaymentCompletedEvent $event) use ($result): bool {
+            return $event->payment->is($result->payment);
+        });
+    });
+
+    it('fails when wallet balance is insufficient', function (): void {
+        Event::fake([PaymentCompletedEvent::class]);
+
+        $user = User::factory()->create();
+        $user->wallet->update(['balance' => 10_000]);
+
+        $order = Order::factory()->create([
+            'customer_id'            => $user->id,
+            'customer_email'         => $user->email,
+            'customer_phone'         => $user->phone,
+            'customer_first_name'    => $user->first_name,
+            'customer_last_name'     => $user->last_name,
+            'customer_snapshot_json' => $user->toArray(),
+        ]);
+
+        $processor   = new WalletPaymentProcessor(app(RecordWalletTransactionAction::class));
+        $paymentData = new PaymentCreateData(
+            method: PaymentMethodEnum::WALLET->value,
+            status: PaymentStatusEnum::COMPLETED->value,
+            data: null,
+            admin_notes: 'Wallet checkout',
+        );
+
+        $processor->process($order, $paymentData, $user, 50_000);
+    })->throws(ValidationException::class);
+
+    it('throws bad method call when verify is invoked', function (): void {
+        $payment = Payment::factory()->create([
+            'method' => PaymentMethodEnum::WALLET->value,
+            'status' => PaymentStatusEnum::PENDING->value,
+            'data'   => [],
+        ]);
+
+        $processor = new WalletPaymentProcessor(Mockery::mock(RecordWalletTransactionAction::class));
+
+        expect(fn () => $processor->verify($payment, []))
+            ->toThrow(BadMethodCallException::class);
+    });
+});
