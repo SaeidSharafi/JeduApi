@@ -75,7 +75,8 @@ final class ProductDeliveryOption extends Model
     public function getTeachersName(): array
     {
         return $this->teachers->map(function ($teacher) {
-            $title = $teacher->gender === GenderEnum::FEMALE ? __('shop.teahcer_titles.sir') : __('shop.teahcer_titles.madam');
+            $title = $teacher->gender === GenderEnum::FEMALE ? __('shop.teahcer_titles.sir')
+                : __('shop.teahcer_titles.madam');
 
             return $title.' '.$teacher->first_name.' '.$teacher->last_name;
         })->toArray();
@@ -135,10 +136,10 @@ final class ProductDeliveryOption extends Model
     protected function availableWithCapacity($query)
     {
         return $query->available() // Use the query builder method, not scope method directly
-            ->where(function (Builder $q): void {
-                $q->whereNull('capacity')
-                    ->orWhereColumn('capacity', '>', 'enrolled_count');
-            });
+        ->where(function (Builder $q): void {
+            $q->whereNull('capacity')
+                ->orWhereColumn('capacity', '>', 'enrolled_count');
+        });
     }
 
     #[Scope]
@@ -172,14 +173,21 @@ final class ProductDeliveryOption extends Model
 
     protected function discountPrice(): Attribute
     {
-        if ($this->relationLoaded('productDeliveryOptionDiscountPrice')) {
-            return Attribute::make(
-                get: fn ($value, array $attributes) => $this->productDeliveryOptionDiscountPrice?->discounted_price ?? $this->price,
-            );
-        }
-
         return Attribute::make(
-            get: fn ($value, array $attributes) => $this->price,
+            get: function ($value, array $attributes) {
+                $discountRecord = $this->productDeliveryOptionDiscountPrice;
+
+                if (!$discountRecord) {
+                    return $this->price;
+                }
+                $now = now();
+                $starts = $discountRecord->starts_at;
+                $ends = $discountRecord->ends_at;
+
+                $isAfterStart = is_null($starts) || $now->greaterThanOrEqualTo($starts);
+                $isBeforeEnd = is_null($ends) || $now->lessThanOrEqualTo($ends);
+                return ($isAfterStart && $isBeforeEnd) ? $discountRecord->discounted_price : $this->price;
+            }
         );
     }
 
