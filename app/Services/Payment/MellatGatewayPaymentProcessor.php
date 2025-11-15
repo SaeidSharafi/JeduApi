@@ -30,6 +30,9 @@ use SoapFault;
 final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 {
 
+    public function __construct(public readonly SoapClientFactory $soapClientFactory)
+    {}
+
     public function canHandle(PaymentMethodEnum $paymentMethod): bool
     {
         return $paymentMethod === PaymentMethodEnum::MELLAT_GATEWAY;
@@ -236,7 +239,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         ];
 
         try {
-            $soap     = new SoapClient($this->getWsdlUrl());
+            $soap = $this->soapClientFactory->create($this->getWsdlUrl());
             $response = $soap->bpPayRequest($params);
         } catch (SoapFault $e) {
             throw new CustomValidationException(__('validation.custom.checkout.payment.gateway_connection_error'));
@@ -264,7 +267,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         $config = $this->getConfig();
 
         try {
-            $soap     = new SoapClient($this->getWsdlUrl());
+            $soap = $this->soapClientFactory->create($this->getWsdlUrl());
             $response = $soap->bpVerifyRequest([
                 'terminalId'      => $config['terminalId'],
                 'userName'        => $config['username'],
@@ -287,7 +290,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         $config = $this->getConfig();
 
         try {
-            $soap     = new SoapClient($this->getWsdlUrl());
+            $soap = $this->soapClientFactory->create($this->getWsdlUrl());
             $response = $soap->bpSettleRequest([
                 'terminalId'      => $config['terminalId'],
                 'userName'        => $config['username'],
