@@ -14,6 +14,7 @@ use App\Events\OrderCreatedEvent;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\ProductDeliveryOption;
+use App\Models\User;
 use App\Services\Discounts\OrderCalculationService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +25,8 @@ use Illuminate\Validation\ValidationException;
 final readonly class CreateOrderAction
 {
     public function __construct(
-        private OrderCalculationService $orderCalculationService
+        private OrderCalculationService $orderCalculationService,
+        private ValidateNoDuplicatePurchasesAction $validateNoDuplicatePurchases,
     ) {}
 
     /**
@@ -36,7 +38,11 @@ final readonly class CreateOrderAction
     {
         $context                  = $this->orderCalculationService->calculate($data);
         $initialDeliveryOptionIds = $context->items->pluck('product_delivery_option.id');
-        $this->validateNoDuplicatePurchases($context->customer->id, $initialDeliveryOptionIds);
+        $deliveryOptions       = ProductDeliveryOption::query()
+            ->whereIn('id', $initialDeliveryOptionIds)
+            ->with('product')
+            ->get();
+        $this->validateNoDuplicatePurchases->handle($context->customer, $deliveryOptions);
 
         $order = DB::transaction(function () use ($data, $context): Order {
             $originalInputItems = collect($data->items)->keyBy('product_delivery_option_id');
@@ -196,40 +202,6 @@ final readonly class CreateOrderAction
                 "items.{$key}" => __('messages.order.prepayment_not_available', [
                     'product' => $deliveryOption->name,
                 ]),
-            ]);
-        }
-    }
-
-    /**
-     * Validates that the customer does not already have an active or pending enrollment
-     * for the given delivery options. This prevents accidental duplicate purchases while
-     * still allowing for legitimate re-purchases later.
-     *
-     * @param  Collection<int, int>  $deliveryOptionIds
-     *
-     * @throws ValidationException
-     */
-    private function validateNoDuplicatePurchases(int $customerId, Collection $deliveryOptionIds): void
-    {
-        $existingEnrollments = Enrollment::query()
-            ->where('customer_id', $customerId)
-            ->whereIn('product_delivery_option_id', $deliveryOptionIds)
-            ->whereIn('enrollment_status', [
-                EnrollmentStatusEnum::PENDING_PROVISIONING,
-                EnrollmentStatusEnum::ACTIVE,
-            ])
-            ->with('productDeliveryOption.product') // Load for better error message
-            ->get();
-
-        if ($existingEnrollments->isNotEmpty()) {
-            $purchasedProductNames = $existingEnrollments
-                ->map(fn (Enrollment $e) => $e->productDeliveryOption->name)
-                ->unique()
-                ->implode(', ');
-
-            throw ValidationException::withMessages([
-                'items' => __('messages.order.items_already_purchased_or_active',
-                    ['products' => $purchasedProductNames]),
             ]);
         }
     }

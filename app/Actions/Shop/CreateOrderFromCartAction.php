@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Shop;
 
 use App\Actions\Admin\Order\CreateOrderAction;
+use App\Actions\Admin\Order\ValidateNoDuplicatePurchasesAction;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
 use App\Data\Admin\Payment\PaymentCreateData;
@@ -32,6 +33,7 @@ final readonly class CreateOrderFromCartAction
         private CartService $cartService,
         private CreateOrderAction $createOrderAction,
         private PaymentProcessorFactory $processorFactory,
+        private ValidateNoDuplicatePurchasesAction $validateNoDuplicatePurchases,
     ) {}
 
     /**
@@ -63,8 +65,8 @@ final readonly class CreateOrderFromCartAction
             $this->validateCartItems($cart);
 
             // Step 4: Validate that the user doesn't already own these products
-            $this->validateNoDuplicatePurchases($user, $cart);
-
+            $deliveryOptions = $cart->items->pluck('productDeliveryOption');
+            $this->validateNoDuplicatePurchases->handle($user, $deliveryOptions);
             // Step 5: Build OrderCreateData from cart
             $orderCreateData = $this->buildOrderCreateData($cart, $user);
 
@@ -213,64 +215,6 @@ final readonly class CreateOrderFromCartAction
 
         if (! empty($errors)) {
             throw ValidationException::withMessages($errors);
-        }
-    }
-
-    /**
-     * Validate that the customer does not already own (have active or pending enrollment for) any cart items.
-     * This prevents duplicate purchases of the same underlying Productable (Course/Seminar/DigitalAsset),
-     * regardless of which ProductDeliveryOption or Product it's wrapped in.
-     *
-     * @throws ValidationException
-     */
-    private function validateNoDuplicatePurchases(User $user, $cart): void
-    {
-        // Get all productable_id and productable_type pairs from cart items
-        $cartProductables = $cart->items->map(function ($cartItem) {
-            $product = $cartItem->productDeliveryOption->product;
-
-            return [
-                'productable_id'   => $product->productable_id,
-                'productable_type' => $product->productable_type,
-                'product_name'     => $product->name,
-            ];
-        });
-
-        // Check if user has any active/pending enrollments for these Productables
-        $existingEnrollments = Enrollment::query()
-            ->where('customer_id', $user->id)
-            ->whereIn('enrollment_status', [
-                EnrollmentStatusEnum::PENDING_PROVISIONING,
-                EnrollmentStatusEnum::ACTIVE,
-            ])
-            ->whereHas('productDeliveryOption.product', function ($query) use ($cartProductables): void {
-                $query->where(function ($q) use ($cartProductables): void {
-                    foreach ($cartProductables as $productable) {
-                        $q->orWhere(function ($sq) use ($productable): void {
-                            $sq->where('productable_id', $productable['productable_id'])
-                                ->where('productable_type', $productable['productable_type']);
-                        });
-                    }
-                });
-            })
-            ->with('productDeliveryOption.product.productable')
-            ->get();
-
-        if ($existingEnrollments->isNotEmpty()) {
-            // Get the productable names (Course name, Seminar name, etc.)
-            $purchasedProductNames = $existingEnrollments
-                ->map(function (Enrollment $e) {
-                    $product = $e->productDeliveryOption->product;
-
-                    return $product->productable->title ?? $product->name;
-                })
-                ->unique()
-                ->implode(', ');
-
-            throw ValidationException::withMessages([
-                'items' => __('messages.order.items_already_purchased_or_active',
-                    ['products' => $purchasedProductNames]),
-            ]);
         }
     }
 
