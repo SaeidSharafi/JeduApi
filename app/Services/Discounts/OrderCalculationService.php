@@ -53,7 +53,7 @@ final class OrderCalculationService
      */
     private function buildInitialContext(OrderCreateData $data): OrderContextData
     {
-        $customer = User::findOrFail($data->customer_id);
+        $customer = User::find($data->customer_id);
         $pdoIds   = collect($data->items)->pluck('product_delivery_option_id')->all();
 
         $deliveryOptions = ProductDeliveryOption::query()

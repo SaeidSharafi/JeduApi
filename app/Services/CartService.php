@@ -288,18 +288,6 @@ final readonly class CartService
         // Get the user ID - for guest carts, we'll use a temporary user concept
         $userId = $cart->user_id ?? Auth::guard('user')->id();
 
-        // If no user (guest cart), we can't apply user-specific discounts
-        // We'll use a minimal approach - calculate without user-specific promotions
-        if (! $userId) {
-            // For guest carts, calculate subtotal without discounts
-            $subtotal = $cart->items->sum(function ($item) {
-                return $item->productDeliveryOption->price * $item->quantity;
-            });
-
-            return CartData::fromModel($cart, $subtotal, 0, $subtotal);
-        }
-
-        // Convert cart to OrderCreateData for calculation
         $items = $cart->items->map(fn (CartItem $item) => new OrderItemCreateData(
             product_delivery_option_id: $item->product_delivery_option_id,
             payment_type: $item->payment_type->value,

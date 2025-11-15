@@ -137,6 +137,7 @@ describe('Cart Discount Integration', function (): void {
         ]);
 
         $data = $response->json('data');
+
         expect($data['subtotal'])->toBe(100000)
             ->and($data['discount_amount'])->toBe(0)
             ->and($data['grand_total'])->toBe(100000);

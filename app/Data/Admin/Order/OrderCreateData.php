@@ -15,7 +15,7 @@ final class OrderCreateData extends Data
 {
     public function __construct(
         public string $status,
-        public int $customer_id,
+        public ?int $customer_id,
         #[DataCollectionOf(OrderItemCreateData::class)]
         public array $items,
         public ?string $applied_coupon_code = null,

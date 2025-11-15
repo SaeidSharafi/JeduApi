@@ -13,7 +13,7 @@ use Spatie\LaravelData\DataCollection;
 final class OrderContextData extends Data
 {
     public function __construct(
-        public User $customer,
+        public ?User $customer,
 
         /** @var DataCollection<CalculatedOrderItemData> */
         #[DataCollectionOf(CalculatedOrderItemData::class)]
