@@ -331,7 +331,17 @@ final readonly class ProductPriceService
      */
     private function getDiscountPrice(ProductDeliveryOption $option): ?int
     {
-        // the productDeliveryOptionDiscountPrice should be loaded via eager loading
-        return $option->productDeliveryOptionDiscountPrice?->discounted_price;
+        $discountRecord = $option->productDeliveryOptionDiscountPrice;
+        if (!$discountRecord){
+            return null;
+        }
+        $now    = now();
+        $starts = $discountRecord->starts_at;
+        $ends   = $discountRecord->ends_at;
+
+        $isAfterStart = is_null($starts) || $now->greaterThanOrEqualTo($starts);
+        $isBeforeEnd  = is_null($ends)   || $now->lessThanOrEqualTo($ends);
+
+        return ($isAfterStart && $isBeforeEnd) ? $discountRecord->discounted_price : null;
     }
 }

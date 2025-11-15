@@ -160,6 +160,8 @@ final class ProductDiscountIndexer
                         'product_delivery_option_id' => $productDeliveryOption->id,
                         'discount_promotion_id'      => $bestPromotion->id,
                         'discounted_price'           => $finalDiscountedPrice,
+                        'starts_at'                  => $bestPromotion->starts_at,
+                        'ends_at'                    => $bestPromotion->ends_at,
                         'created_at'                 => now(),
                         'updated_at'                 => now(),
                     ];
@@ -168,11 +170,10 @@ final class ProductDiscountIndexer
         }
 
         if (! empty($recordsToUpsert)) {
-            // Use upsert to handle existing records
             ProductDeliveryOptionDiscountPrice::upsert(
                 $recordsToUpsert,
-                ['product_delivery_option_id'], // unique key
-                ['discount_promotion_id', 'discounted_price', 'updated_at'] // columns to update
+                ['product_delivery_option_id'],
+                ['discount_promotion_id', 'discounted_price', 'starts_at', 'ends_at', 'updated_at']
             );
         }
 
@@ -214,9 +215,9 @@ final class ProductDiscountIndexer
         return DiscountPromotion::query()
             ->where('type', DiscountTypeEnum::PRODUCT_SPECIFIC)
             ->where('is_active', true)
-            ->where(function ($q): void {
-                $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
-            })
+            //->where(function ($q): void {
+            //    $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
+            //})
             ->where(function ($q): void {
                 $q->whereNull('ends_at')->orWhere('ends_at', '>=', now());
             })

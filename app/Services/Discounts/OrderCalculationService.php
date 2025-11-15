@@ -51,7 +51,7 @@ final class OrderCalculationService
     /**
      * Assembles the initial OrderContextData from the raw request data.
      */
-    private function buildInitialContext(OrderCreateData $data): OrderContextData
+    private function buildInitialContext(OrderCreateData $data, bool $useFreshData = false): OrderContextData
     {
         $customer = User::find($data->customer_id);
         $pdoIds   = collect($data->items)->pluck('product_delivery_option_id')->all();

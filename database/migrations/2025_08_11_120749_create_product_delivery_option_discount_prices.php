@@ -27,6 +27,8 @@ return new class extends Migration
 
             // The final calculated price after the 'product_specific' discount has been applied.
             $table->unsignedBigInteger('discounted_price');
+            $table->dateTime('starts_at')->nullable();
+            $table->dateTime('ends_at')->nullable();
 
             $table->timestamps();
         });
