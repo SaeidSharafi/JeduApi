@@ -149,6 +149,20 @@ describe('store', function (): void {
         $response->assertUnprocessable();
         $response->assertJsonValidationErrors(['quantity']);
     });
+
+    it('should reject adding more than one quantity per item even when validation passes', function (): void {
+        $user = User::factory()->create();
+        $deliveryOption = ProductDeliveryOption::factory()->create();
+        $this->customer($user);
+
+        $response = postJson(route('api.v1.shop.cart.items.store'), [
+            'product_delivery_option_uuid' => $deliveryOption->uuid,
+            'quantity'                     => 2,
+        ]);
+
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['quantity']);
+    });
 });
 
 describe('update', function (): void {
