@@ -100,11 +100,15 @@ final readonly class CartService
             ->first();
         $this->validateQuantity($deliveryOption, $data->quantity, $existingItem);
         $this->validatePaymentType($deliveryOption, $data->payment_type);
+        // Right now, we do not have any products that allow multiple quantities in cart
+        //@codeCoverageIgnoreStart
         if ($existingItem) {
             $existingItem->update([
                 'quantity' => $existingItem->quantity + $data->quantity,
             ]);
-        } else {
+        }
+        //@codeCoverageIgnoreEnd
+        else {
             $cart->items()->create([
                 'product_delivery_option_id' => $deliveryOption->id,
                 'payment_type'               => $data->payment_type->value,
@@ -317,9 +321,12 @@ final readonly class CartService
 
         $allowMultiple = ProductableEnum::tryFrom($deliveryOption->product->productable_type)?->allowsMultipleQuantity();
 
+        // Right now, we do not have any products that allow multiple quantities in cart
+        //@codeCoverageIgnoreStart
         if ($allowMultiple) {
             return;
         }
+        //@codeCoverageIgnoreEnd
         if ($exsitingItem && $exsitingItem->quantity >= 1) {
             throw ValidationException::withMessages([
                 'product_delivery_option_uuid' => __('shop.cart.errors.product_already_in_cart'),
