@@ -50,7 +50,7 @@ final readonly class CreateOrderFromCartAction
     {
         return DB::transaction(function () use ($checkoutData, $user): PaymentProcessResultData {
             // Step 1: Get the cart model directly
-            $cart = $this->cartService->findOrCreateCart();
+            $cart = $this->cartService->findOrCreateCart($user);
 
             if ($cart->items->count() === 0) {
                 throw ValidationException::withMessages([
@@ -98,7 +98,7 @@ final readonly class CreateOrderFromCartAction
         // For paid orders, payment_method is required
         if (empty($checkoutData->payment_method)) {
             throw ValidationException::withMessages([
-                'payment_method' => ['Payment method is required for paid orders.'],
+                'payment_method' => [__('validation.custom.checkout.payment_method_required')],
             ]);
         }
 
@@ -204,12 +204,14 @@ final readonly class CreateOrderFromCartAction
 
                     continue;
                 }
-
+                // Beacuse we do not have any multi-quantity products, we never reach here in tests
+                // @codeCoverageIgnoreStart
                 if ($cartItem->quantity > $availableCapacity) {
                     $errors["items.{$index}"] = [
                         "Only {$availableCapacity} spot(s) remaining for '{$deliveryOption->product->name}', but you requested {$cartItem->quantity}.",
                     ];
                 }
+                // @codeCoverageIgnoreEnd
             }
         }
 

@@ -10,15 +10,16 @@ use App\Data\Shop\Cart\AddCartItemData;
 use App\Data\Shop\Cart\ApplyCouponData;
 use App\Data\Shop\Cart\CartData;
 use App\Data\Shop\Cart\UpdateCartItemData;
+use App\Contracts\CartIdentifier;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\ProductDeliveryOption;
+use App\Models\User;
 use App\Services\Discounts\OrderCalculationService;
 use App\Services\Discounts\PromotionFinder;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -26,7 +27,7 @@ use Illuminate\Validation\ValidationException;
 final readonly class CartService
 {
     public function __construct(
-        private Request $request,
+        private CartIdentifier $identifier,
         private OrderCalculationService $orderCalculationService
     ) {}
 
@@ -34,27 +35,36 @@ final readonly class CartService
      * Find or create cart based on authenticated user or guest token.
      * This is the primary method for cart identification.
      */
-    public function findOrCreateCart(): Cart
+    public function findOrCreateCart(?User $user = null): Cart
     {
-        $userId     = $this->request->get('cart_user_id');
-        $guestToken = $this->request->get('cart_guest_token');
-
         $query = Cart::query()->with(['items.productDeliveryOption.product']);
 
-        // Try to find by user_id first (authenticated user)
-        if ($userId) {
-            $cart = $query->where('user_id', $userId)->first();
+        if ($user) {
+            $cart = $query->where('user_id', $user->id)->first();
 
             if (! $cart) {
                 // Create new cart for authenticated user
+                $cart = Cart::create(['user_id' => $user->id]);
+                $cart->load(['items.productDeliveryOption.product']);
+            }
+
+            return $cart;
+        }
+        // If no explicit user provided, attempt to resolve authenticated user via identifier
+        if ($this->identifier->userId() !== null) {
+            $userId = (int) $this->identifier->userId();
+
+            $cart = $query->where('user_id', $userId)->first();
+
+            if (! $cart) {
                 $cart = Cart::create(['user_id' => $userId]);
                 $cart->load(['items.productDeliveryOption.product']);
             }
 
             return $cart;
         }
-
-        // Fall back to guest_token (guest user)
+        // Guest user path: obtain or mint a guest token via the identifier
+        $guestToken = $this->identifier->guestToken() ?? $this->identifier->ensureGuestToken();
         if ($guestToken) {
             $cart = $query->where('guest_token', $guestToken)->first();
 

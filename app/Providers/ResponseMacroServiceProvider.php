@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Contracts\ApiResponseInterface;
+use App\Contracts\CartIdentifier;
 use App\Http\Responses\ApiErrorResponse;
 use App\Http\Responses\ApiFailResponse;
 use App\Http\Responses\ApiSuccessResponse;
@@ -23,6 +24,21 @@ final class ResponseMacroServiceProvider extends ServiceProvider
     {
         $responseFactory = Response::getFacadeRoot();
 
+        $guestHeaders = static function (): array {
+            /** @var CartIdentifier $identifier */
+            $identifier = app(CartIdentifier::class);
+
+            // Authenticated users don't need a guest token header
+            if ($identifier->userId() !== null) {
+                return [];
+            }
+
+            // Ensure a token exists for guests so the client can persist it
+            $token = $identifier->guestToken() ?? $identifier->ensureGuestToken();
+
+            return $token ? ['X-Guest-Token' => $token] : [];
+        };
+
         /**
          * Standard success response (200 OK)
          *
@@ -31,12 +47,12 @@ final class ResponseMacroServiceProvider extends ServiceProvider
          * @return JsonResponse
          */
         $responseFactory->macro('success',
-            function (mixed $data = null, ?string $message = null): ApiResponseInterface {
+            function (mixed $data = null, ?string $message = null) use ($guestHeaders): ApiResponseInterface {
                 if (! $message) {
                     $message = __('messages.success');
                 }
 
-                return new ApiSuccessResponse($message, $data);
+                return new ApiSuccessResponse($message, $data, HttpStatus::HTTP_OK, [], $guestHeaders());
             });
 
         /**
@@ -48,7 +64,7 @@ final class ResponseMacroServiceProvider extends ServiceProvider
          * @return JsonResponse
          */
         $responseFactory->macro('created',
-            function (mixed $data = null, ?string $message = null, null|object|string $model = null): ApiResponseInterface {
+            function (mixed $data = null, ?string $message = null, null|object|string $model = null) use ($guestHeaders): ApiResponseInterface {
                 if (! $message && ! $model) {
                     $message = __('messages.created', ['model' => null]);
                 }
@@ -56,7 +72,7 @@ final class ResponseMacroServiceProvider extends ServiceProvider
                     $message = __('messages.created', ['model' => get_model_label($model)]);
                 }
 
-                return new ApiSuccessResponse($message, $data, HttpStatus::HTTP_CREATED);
+                return new ApiSuccessResponse($message, $data, HttpStatus::HTTP_CREATED, [], $guestHeaders());
             });
 
         /**
@@ -68,7 +84,7 @@ final class ResponseMacroServiceProvider extends ServiceProvider
          * @return JsonResponse
          */
         $responseFactory->macro('updated',
-            function (mixed $data = null, ?string $message = null, null|object|string $model = null): ApiResponseInterface {
+            function (mixed $data = null, ?string $message = null, null|object|string $model = null) use ($guestHeaders): ApiResponseInterface {
                 if (! $message && ! $model) {
                     $message = __('messages.updated', ['model' => null]);
                 }
@@ -76,7 +92,7 @@ final class ResponseMacroServiceProvider extends ServiceProvider
                     $message = __('messages.updated', ['model' => get_model_label($model)]);
                 }
 
-                return new ApiSuccessResponse($message, $data);
+                return new ApiSuccessResponse($message, $data, HttpStatus::HTTP_OK, [], $guestHeaders());
             });
 
         /**
@@ -85,9 +101,9 @@ final class ResponseMacroServiceProvider extends ServiceProvider
          *
          * @return JsonResponse
          */
-        $responseFactory->macro('noContentJson', function () use ($responseFactory): JsonResponse {
+        $responseFactory->macro('noContentJson', function () use ($responseFactory, $guestHeaders): JsonResponse {
             // Strictly, 204 should have NO body, json(null) ensures correct Content-Type header if needed
-            return $responseFactory->json(null, HttpStatus::HTTP_NO_CONTENT);
+            return $responseFactory->json(null, HttpStatus::HTTP_NO_CONTENT, $guestHeaders());
         });
 
         // --- CLIENT ERROR RESPONSES ---

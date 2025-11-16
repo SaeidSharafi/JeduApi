@@ -79,7 +79,7 @@ Route::get('blog/category/{slug}', [BlogCategoryController::class, 'show'])->nam
 Route::get('blog/category/{slug}/posts', [BlogCategoryController::class, 'posts'])->name('blog.categories.posts');
 
 // Cart Routes (supports both guest and authenticated users)
-Route::middleware(['identify.cart'])
+Route::middleware([])
     ->prefix('cart')
     ->name('cart.')
     ->group(function (): void {
@@ -93,7 +93,7 @@ Route::middleware(['identify.cart'])
 
 // Checkout Route (requires authentication)
 Route::post('checkout', CheckoutController::class)
-    ->middleware(['identify.cart', 'throttle:5,1', 'profile.check'])
+    ->middleware(['throttle:5,1', 'profile.check'])
     ->name('checkout');
 
 // Payment Gateway Callback Route (public - no auth required)

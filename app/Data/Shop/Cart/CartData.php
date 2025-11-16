@@ -20,6 +20,7 @@ final class CartData extends Data
         public int $subtotal,
         public int $discount_amount,
         public int $grand_total,
+        public ?string $guest_token = null,
     ) {}
 
     public static function fromModel(Cart $cart, int $subtotal = 0, int $discountAmount = 0, int $grandTotal = 0): self
@@ -32,6 +33,7 @@ final class CartData extends Data
             subtotal: $subtotal,
             discount_amount: $discountAmount,
             grand_total: $grandTotal,
+            guest_token: $cart->guest_token,
         );
     }
 }
