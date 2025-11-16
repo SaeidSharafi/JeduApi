@@ -36,12 +36,7 @@ final readonly class VerifyPaymentAction
                 ]);
             }
 
-            // Get the processor
-            $paymentMethod = is_string($payment->method)
-                ? \App\Enums\Payment\PaymentMethodEnum::from($payment->method)
-                : $payment->method;
-
-            $processor = $this->processorFactory->make($paymentMethod);
+            $processor = $this->processorFactory->make($payment->method);
 
             // Verify the payment
             return $processor->verify($payment, $data->gateway_response);
