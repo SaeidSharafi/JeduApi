@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\System\MorphTypeEnum;
 use App\Models\Course;
 use App\Models\DiscountCoupon;
@@ -693,7 +694,44 @@ test('free order (with 100% discount) is auto-completed with NO_PAYMENT', functi
         'product_delivery_option_id' => $this->deliveryOption->id,
     ]);
 });
+test('checkout returns multi-step payment data for external processors', function (): void {
+    $this->customer();
 
+    postJson(route('api.v1.shop.cart.items.store'), [
+        'product_delivery_option_uuid' => $this->deliveryOption->uuid,
+        'quantity'                     => 1,
+    ])->assertOk();
+    $this->instance(\App\Services\Payment\MellatGatewayPaymentProcessor::class, new \Tests\Fakes\Payment\MockMultiStepProcessor());
+    $response = postJson(route('api.v1.shop.checkout'), [
+        'payment_method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
+    ]);
+
+    $response->assertCreated()
+        ->assertJsonStructure([
+            'message',
+            'data' => [
+                'order' => [
+                    'id',
+                    'increment_id',
+                    'status',
+                    'total_qty_ordered',
+                    'total_item_count',
+                    'subtotal',
+                    'discount_amount',
+                    'grand_total',
+                    'items',
+                ],
+                'redirect_url',
+                'redirect_data',
+                'redirect_method',
+            ],
+        ]);
+
+    $data = $response->json('data');
+    expect($data['redirect_url'])->toBeString()
+        ->and($data['redirect_method'])->toBe('POST')
+        ->and($data['redirect_data'])->toBeArray();
+});
 describe('Duplicate Purchase Prevention', function (): void {
     test('checkout fails when user already has active enrollment for product', function (): void {
         $user = User::factory()->create();
