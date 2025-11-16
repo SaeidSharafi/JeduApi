@@ -57,13 +57,6 @@ final class PaymentController extends Controller
 
         $result = $action->handle($order, $data, $admin);
 
-        // Handle null result (free order already paid)
-        if ($result === null) {
-            return response()->success([
-                'message' => 'Order is already fully paid.',
-            ]);
-        }
-
         // Return different response based on whether redirect is required
         return response()->created([
             'payment'           => PaymentData::from($result->payment),
