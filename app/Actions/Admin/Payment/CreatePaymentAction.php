@@ -29,9 +29,9 @@ final readonly class CreatePaymentAction
      * - For single-step payments: completed payment with no redirect
      * - For multi-step payments: pending payment with redirect URL
      */
-    public function handle(Order $order, PaymentCreateData $data, Staff $admin): ?PaymentProcessResultData
+    public function handle(Order $order, PaymentCreateData $data, Staff $admin): PaymentProcessResultData
     {
-        return DB::transaction(function () use ($order, $data, $admin): ?PaymentProcessResultData {
+        return DB::transaction(function () use ($order, $data, $admin): PaymentProcessResultData {
             $order = Order::lockForUpdate()->findOrFail($order->id);
 
             // Check if order is free
