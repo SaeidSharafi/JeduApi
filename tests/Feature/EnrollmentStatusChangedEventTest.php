@@ -38,7 +38,22 @@ it('dispatches event when enrollment status is updated', function (): void {
         return $event->enrollment->id === $enrollment->id;
     });
 });
+it('dispatches event when enrollment is deleted', function (): void {
+    $deliveryOption = ProductDeliveryOption::factory()->create(['capacity' => 10, 'enrolled_count' => 1]);
 
+    $enrollment = Enrollment::factory()->create([
+        'product_delivery_option_id' => $deliveryOption->id,
+        'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
+    ]);
+
+    Event::fake([EnrollmentStatusChanged::class]);
+
+    $enrollment->delete();
+
+    Event::assertDispatched(EnrollmentStatusChanged::class, function ($event) use ($enrollment) {
+        return $event->enrollment->id === $enrollment->id;
+    });
+});
 it('increments enrolled_count when enrollment is created with ACTIVE status', function (): void {
     $deliveryOption = ProductDeliveryOption::factory()->make(['capacity' => 10, 'enrolled_count' => 0]);
     $deliveryOption->save(); // This will trigger boot and generate UUID
