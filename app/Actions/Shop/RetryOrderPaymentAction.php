@@ -49,13 +49,13 @@ final readonly class RetryOrderPaymentAction
 
             if ($amountToPay <= 0) {
                 throw ValidationException::withMessages([
-                    'amount' => 'No outstanding balance to pay on this order.',
+                    'amount' => __('validation.custom.checkout.no_outstanding_balance'),
                 ]);
             }
 
             if ($amountToPay > $order->balance_due) {
                 throw ValidationException::withMessages([
-                    'amount' => "Payment amount cannot exceed order balance due ({$order->balance_due} IRR).",
+                    'amount' => __('validation.custom.checkout.payment_exceeds_balance_due', ['balance_due' => $order->balance_due]),
                 ]);
             }
 
@@ -91,22 +91,14 @@ final readonly class RetryOrderPaymentAction
         // Order must be in PENDING status
         if ($order->status !== OrderStatusEnum::PENDING) {
             throw ValidationException::withMessages([
-                'order' => "Cannot retry payment for orders with status '{$order->status->value}'. Only PENDING orders can be retried.",
-            ]);
-        }
-
-        // Order must belong to authenticated user
-        $user = Auth::guard('user')->user();
-        if ($order->customer_id !== $user->id) {
-            throw ValidationException::withMessages([
-                'order' => 'You are not authorized to retry payment for this order.',
+                'order' => __('validation.custom.checkout.order_not_eligible_for_payment_retry', ['order_status' => $order->status->translate()]),
             ]);
         }
 
         // Order must have outstanding balance
         if ($order->balance_due <= 0) {
             throw ValidationException::withMessages([
-                'order' => 'This order has been fully paid.',
+                'order' => __('validation.custom.checkout.order_fully_paid'),
             ]);
         }
     }

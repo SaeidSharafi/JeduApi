@@ -219,6 +219,16 @@ return [
             'order_velocity_exceeded'           => 'شما محدودیت ایجاد سفارش را رد کرده اید. لطفا بعدا دوباره امتحان کنید.',
             // Insufficient wallet balance. You have %s, but need %s.
             'insufficient_wallet_balance' => 'موجودی کیف پول شما کافی نیست. شما :available_balance دارید، اما به :required_amount نیاز دارید.',
+            //No outstanding balance to pay on this order.
+            'no_outstanding_balance'      => 'هیچ مانده بدهی برای پرداخت در این سفارش وجود ندارد.',
+            //Payment amount cannot exceed order balance due ({$order->balance_due} IRR).
+            'payment_exceeds_balance_due' => 'مبلغ پرداخت نمی تواند از مانده بدهی سفارش بیشتر باشد (:balance_due ریال).',
+            //"Cannot retry payment for orders with status '{$order->status->value}'. Only PENDING orders can be retried."
+            'order_not_eligible_for_payment_retry' => "نمی‌توان پرداخت را برای سفارش‌هایی با وضعیت ':order_status' دوباره امتحان کرد. تنها سفارش‌های در حالت معلق (PENDING) می‌توانند دوباره امتحان شوند.",
+            //'You are not authorized to retry payment for this order.'
+            'unauthorized_payment_retry'          => 'شما مجاز به تلاش مجدد برای پرداخت این سفارش نیستید.',
+            //This order has been fully paid.
+            'order_fully_paid'                   => 'این سفارش به طور کامل پرداخت شده است.',
         ],
     ],
 
