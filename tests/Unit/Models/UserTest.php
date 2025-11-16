@@ -58,3 +58,11 @@ it('return enrollments relationship', function (): void {
     $user->load('enrollments');
     expect($user->enrollments->first()->toArray())->toEqual($enrollment->toArray());
 });
+it('return cart relationship', function (): void {
+    $user = User::factory()->create();
+    $cart = App\Models\Cart::factory()->create([
+        'user_id' => $user->id,
+    ])->fresh();
+    $user->load('cart');
+    expect($user->cart->toArray())->toEqual($cart->toArray());
+});

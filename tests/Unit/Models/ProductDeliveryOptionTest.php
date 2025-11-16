@@ -76,6 +76,17 @@ test('relation discount prices', function (): void {
         ->and($deliveryOption->productDeliveryOptionDiscountPrice->discounted_price)
         ->toEqual(5000);
 });
+test('relation enrollments', function (): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create();
+    $enrollments    = App\Models\Enrollment::factory()->count(2)->create([
+        'product_delivery_option_id' => $deliveryOption->id,
+    ]);
+    $deliveryOption->load('enrollments');
+    expect($deliveryOption->enrollments)
+        ->toHaveCount(2)
+        ->and($deliveryOption->enrollments->first())
+        ->toBeInstanceOf(App\Models\Enrollment::class);
+});
 test('scope available', function (): void {
     $availableOption = App\Models\ProductDeliveryOption::factory()->create([
         'status'         => PublicationStatusEnum::PUBLISHED,
