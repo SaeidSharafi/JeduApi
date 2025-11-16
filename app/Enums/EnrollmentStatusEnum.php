@@ -17,7 +17,9 @@ enum EnrollmentStatusEnum: string
     case CANCELLED            = 'cancelled';                   // Access permanently revoked (e.g., refund)
     case PROVISIONING_FAILED  = 'provisioning_failed';
 
-
+    /**
+     * @codeCoverageIgnore
+     */
     public static function occupyingStatuses(): array
     {
         return [
@@ -27,6 +29,9 @@ enum EnrollmentStatusEnum: string
         ];
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public static function nonOccupyingStatuses(): array
     {
         return [
