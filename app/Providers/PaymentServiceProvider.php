@@ -22,6 +22,7 @@ final class PaymentServiceProvider extends ServiceProvider
         // 1. Register each individual processor as a singleton
         $this->app->singleton(WalletPaymentProcessor::class);
         $this->app->singleton(BankTransferPaymentProcessor::class);
+        $this->app->singleton(MellatGatewayPaymentProcessor::class);
 
         $this->app->tag([
             WalletPaymentProcessor::class,
