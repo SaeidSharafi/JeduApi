@@ -11,8 +11,7 @@ final class ProfileCheckMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        $user = $request->user();
-
+        $user = auth('user')->user();
         if ($user && ! $user->profileCompleted()) {
             return response()->json([
                 'message'    => __('shop.profile_incomplete_message'),
