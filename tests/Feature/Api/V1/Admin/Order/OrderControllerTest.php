@@ -144,7 +144,7 @@ describe('OrderController', function (): void {
             $this->assertDatabaseHas('enrollments', [
                 'order_id'          => $response->json('data.id'),
                 'customer_id'       => $user->id,
-                'enrollment_status' => App\Enums\EnrollmentStatusEnum::PENDING_PROVISIONING,
+                'enrollment_status' => App\Enums\EnrollmentStatusEnum::AWAITING_PAYMENT,
             ]);
 
         });

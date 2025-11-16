@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\EnrollmentStatusEnum;
+use App\Events\EnrollmentStatusChanged;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -69,38 +70,14 @@ final class Enrollment extends Model
             $model->uuid = (string) Str::uuid7();
         });
 
-        // Dispatch event when enrollment is created
-        self::created(function (Enrollment $enrollment): void {
-            \App\Events\EnrollmentStatusChanged::dispatch(
-                $enrollment,
-                null, // No old status on creation
-                $enrollment->enrollment_status
+        self::saved(function (Enrollment $enrollment): void {
+            EnrollmentStatusChanged::dispatch(
+                $enrollment
             );
         });
 
-        // Dispatch event when enrollment status is updated
-        self::updating(function (Enrollment $enrollment): void {
-            if ($enrollment->isDirty('enrollment_status')) {
-                $oldStatusValue = $enrollment->getOriginal('enrollment_status');
-                $oldStatus      = is_string($oldStatusValue)
-                    ? EnrollmentStatusEnum::from($oldStatusValue)
-                    : $oldStatusValue;
-
-                \App\Events\EnrollmentStatusChanged::dispatch(
-                    $enrollment,
-                    $oldStatus,
-                    $enrollment->enrollment_status
-                );
-            }
-        });
-
-        // Dispatch event when enrollment is deleted (treat as cancelled)
         self::deleting(function (Enrollment $enrollment): void {
-            \App\Events\EnrollmentStatusChanged::dispatch(
-                $enrollment,
-                $enrollment->enrollment_status,
-                EnrollmentStatusEnum::CANCELLED
-            );
+            EnrollmentStatusChanged::dispatch($enrollment);
         });
     }
 

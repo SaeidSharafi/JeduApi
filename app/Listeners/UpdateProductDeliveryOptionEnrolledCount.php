@@ -6,9 +6,16 @@ namespace App\Listeners;
 
 use App\Enums\EnrollmentStatusEnum;
 use App\Events\EnrollmentStatusChanged;
+use App\Models\Enrollment;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 
-final class UpdateProductDeliveryOptionEnrolledCount
+final class UpdateProductDeliveryOptionEnrolledCount implements ShouldQueue
 {
+    use InteractsWithQueue;
+
+    public bool $afterCommit = true;
+
     /**
      * Handle the event.
      *
@@ -23,39 +30,27 @@ final class UpdateProductDeliveryOptionEnrolledCount
      * - SUSPENDED: Temporary block by admin, seat still reserved
      *
      * Non-occupying statuses (do not count towards capacity):
+     * - AWAITING_PAYMENT: Order created, not paid yet
      * - CANCELLED: Access permanently revoked, seat freed
      * - EXPIRED: Access period ended, seat freed
      * - PROVISIONING_FAILED: Setup failed, seat freed
      */
     public function handle(EnrollmentStatusChanged $event): void
     {
-        $deliveryOption = $event->enrollment->productDeliveryOption;
+        $deliveryOption = $event->enrollment->productDeliveryOption?->fresh();
 
         if (! $deliveryOption) {
-            return; // Safety check
+            return;
         }
 
-        $oldStatus = $event->oldStatus;
-        $newStatus = $event->newStatus;
+        $occupying = array_map(static fn (EnrollmentStatusEnum $e): string => $e->value, EnrollmentStatusEnum::occupyingStatuses());
 
-        // Define statuses that "occupy" a seat
-        $occupyingStatuses = [
-            EnrollmentStatusEnum::ACTIVE,
-            EnrollmentStatusEnum::PENDING_PROVISIONING,
-            EnrollmentStatusEnum::SUSPENDED, // Temporary block, but seat is still reserved
-        ];
+        $count = Enrollment::query()
+            ->where('product_delivery_option_id', $deliveryOption->id)
+            ->whereIn('enrollment_status', EnrollmentStatusEnum::occupyingStatuses())
+            ->count();
 
-        $wasOccupying = $oldStatus && in_array($oldStatus, $occupyingStatuses, true);
-        $isOccupying  = in_array($newStatus, $occupyingStatuses, true);
-
-        // Determine if we need to increment or decrement
-        if (! $wasOccupying && $isOccupying) {
-            // Status changed to occupying (e.g., created as ACTIVE, or CANCELLED -> ACTIVE)
-            $deliveryOption->increment('enrolled_count');
-        } elseif ($wasOccupying && ! $isOccupying) {
-            // Status changed from occupying to non-occupying (e.g., ACTIVE -> CANCELLED)
-            $deliveryOption->decrement('enrolled_count');
-        }
-        // If both were occupying or both were non-occupying, no change needed
+        $deliveryOption->enrolled_count = $count;
+        $deliveryOption->saveQuietly();
     }
 }

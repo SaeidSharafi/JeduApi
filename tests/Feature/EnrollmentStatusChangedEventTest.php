@@ -17,9 +17,7 @@ it('dispatches event when enrollment is created', function (): void {
     ]);
 
     Event::assertDispatched(EnrollmentStatusChanged::class, function ($event) use ($enrollment) {
-        return $event->enrollment->id === $enrollment->id
-            && $event->oldStatus      === null
-            && $event->newStatus      === EnrollmentStatusEnum::ACTIVE;
+        return $event->enrollment->id === $enrollment->id;
     });
 });
 
@@ -37,26 +35,8 @@ it('dispatches event when enrollment status is updated', function (): void {
     $enrollment->save();
 
     Event::assertDispatched(EnrollmentStatusChanged::class, function ($event) use ($enrollment) {
-        return $event->enrollment->id === $enrollment->id
-            && $event->oldStatus      === EnrollmentStatusEnum::ACTIVE
-            && $event->newStatus      === EnrollmentStatusEnum::CANCELLED;
+        return $event->enrollment->id === $enrollment->id;
     });
-});
-
-it('does not dispatch event when other fields are updated', function (): void {
-    $deliveryOption = ProductDeliveryOption::factory()->create(['capacity' => 10, 'enrolled_count' => 1]);
-
-    $enrollment = Enrollment::factory()->create([
-        'product_delivery_option_id' => $deliveryOption->id,
-        'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
-    ]);
-
-    Event::fake([EnrollmentStatusChanged::class]);
-
-    $enrollment->notes = 'Updated notes';
-    $enrollment->save();
-
-    Event::assertNotDispatched(EnrollmentStatusChanged::class);
 });
 
 it('increments enrolled_count when enrollment is created with ACTIVE status', function (): void {

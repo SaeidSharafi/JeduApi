@@ -128,7 +128,7 @@ final readonly class CreateOrderAction
                     'order_item_id'              => $item->id,
                     'customer_id'                => $context->customer->id,
                     'product_delivery_option_id' => $item->product_delivery_option_id,
-                    'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING,
+                    'enrollment_status'          => EnrollmentStatusEnum::AWAITING_PAYMENT,
                 ]);
             });
 

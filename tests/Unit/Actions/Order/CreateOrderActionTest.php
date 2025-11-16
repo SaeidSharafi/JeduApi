@@ -117,13 +117,13 @@ describe('CreateOrderAction', function (): void {
             'order_id'                   => $order->id,
             'customer_id'                => $user->id,
             'product_delivery_option_id' => $deliveryOption1->id,
-            'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
+            'enrollment_status'          => EnrollmentStatusEnum::AWAITING_PAYMENT->value,
         ]);
         \Pest\Laravel\assertDatabaseHas('enrollments', [
             'order_id'                   => $order->id,
             'customer_id'                => $user->id,
             'product_delivery_option_id' => $deliveryOption2->id,
-            'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
+            'enrollment_status'          => EnrollmentStatusEnum::AWAITING_PAYMENT->value,
         ]);
 
         Event::assertDispatched(OrderCreatedEvent::class, fn ($event): bool => $event->order->id === $order->id);

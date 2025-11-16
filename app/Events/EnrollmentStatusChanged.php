@@ -17,12 +17,8 @@ final class EnrollmentStatusChanged
      * Create a new event instance.
      *
      * @param  Enrollment  $enrollment  The enrollment that changed
-     * @param  EnrollmentStatusEnum|null  $oldStatus  The previous status (null if newly created)
-     * @param  EnrollmentStatusEnum  $newStatus  The new status
      */
     public function __construct(
         public Enrollment $enrollment,
-        public ?EnrollmentStatusEnum $oldStatus,
-        public EnrollmentStatusEnum $newStatus,
     ) {}
 }

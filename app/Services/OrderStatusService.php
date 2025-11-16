@@ -42,14 +42,14 @@ final class OrderStatusService
             // If the item is refunded or cancelled, the student loses access.
             OrderItemStatusEnum::REFUNDED, OrderItemStatusEnum::CANCELLED => EnrollmentStatusEnum::CANCELLED,
             // If the item is completed, the student gets access.
-            OrderItemStatusEnum::COMPLETED => EnrollmentStatusEnum::ACTIVE,
+            OrderItemStatusEnum::COMPLETED => EnrollmentStatusEnum::PENDING_PROVISIONING,
             // Otherwise, no change.
             default => $item->enrollment->enrollment_status,
         };
 
         if ($item->enrollment->enrollment_status !== $newStatus) {
             $item->enrollment->enrollment_status = $newStatus;
-            if ($newStatus === EnrollmentStatusEnum::ACTIVE && is_null($item->enrollment->access_start_date)) {
+            if ($newStatus === EnrollmentStatusEnum::PENDING_PROVISIONING && is_null($item->enrollment->access_start_date)) {
                 $item->enrollment->access_start_date = now();
             }
             $item->enrollment->saveQuietly();
