@@ -229,6 +229,8 @@ return [
             'unauthorized_payment_retry'          => 'شما مجاز به تلاش مجدد برای پرداخت این سفارش نیستید.',
             //This order has been fully paid.
             'order_fully_paid'                   => 'این سفارش به طور کامل پرداخت شده است.',
+            //'Payment method is required for paid orders.'
+            'payment_method_required' => 'روش پرداخت الزامی است.',
         ],
     ],
 
