@@ -18,6 +18,8 @@ use Illuminate\Http\JsonResponse;
  *
  * APIs for managing shopping cart.
  *
+ * pass X-Guest-Token header for guest carts.
+ *
  * @authenticated user
  */
 final class CartController extends Controller
