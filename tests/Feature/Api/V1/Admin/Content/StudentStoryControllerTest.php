@@ -5,7 +5,7 @@ use App\Enums\PermissionEnum;
 use App\Enums\System\MorphTypeEnum;
 use App\Models\StudentStory;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 
 describe('StudentStoryController', function (): void {
     beforeEach(function (): void {

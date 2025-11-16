@@ -11,7 +11,7 @@ use App\Models\Course;
 use App\Models\Review;
 use App\Models\User;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('ReviewController', function (): void {
     it('filters reviews', function ($filters, $expectedCount): void {
         $this->authorized_user([PermissionEnum::REVIEW_VIEW_ANY]);

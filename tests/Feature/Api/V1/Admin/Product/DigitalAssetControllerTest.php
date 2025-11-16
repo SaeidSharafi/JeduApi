@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Enums\System\MorphTypeEnum;
 use App\Models\DigitalAsset;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');

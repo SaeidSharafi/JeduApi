@@ -9,7 +9,7 @@ use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\PermissionEnum;
 use App\Models\Order;
 use App\Models\Payment;
-use Tests\AuthTestTrait;
+use Tests\Support\Traits\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 

@@ -9,7 +9,7 @@ use App\Models\User;
 use App\Models\WalletCampaign;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Event;
-use Tests\AuthTestTrait;
+use Tests\Support\Traits\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 

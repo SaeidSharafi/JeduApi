@@ -7,7 +7,7 @@ use App\Models\Course;
 use App\Models\DigitalAsset;
 use App\Models\Seminar;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('Admin Producatable Select Option API', function (): void {
     beforeEach(function (): void {
         $this->authorized_user();

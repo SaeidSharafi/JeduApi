@@ -13,7 +13,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\ProductDeliveryOptionDiscountPrice;
 use App\Models\Seminar;
 use Hekmatinasser\Verta\Verta;
-use Tests\Traits\ProductTestTrait;
+use Tests\Support\Traits\ProductTestTrait;
 
 describe('Product Listing API - :dataset', function (): void {
     uses(ProductTestTrait::class);

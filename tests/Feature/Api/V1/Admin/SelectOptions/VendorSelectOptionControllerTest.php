@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Vendor;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('Admin Vendor Select Option API', function (): void {
     it('returns filtered vendor select options', function (): void {
         $this->authorized_user();

@@ -6,7 +6,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Bus;
 use Plank\Mediable\Media;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
     Storage::fake('public');
     Bus::fake();

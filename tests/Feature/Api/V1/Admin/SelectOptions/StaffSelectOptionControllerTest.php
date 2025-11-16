@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('Admin Staff Select Option API', function (): void {
 
     it('returns filtered staff select options', function (): void {

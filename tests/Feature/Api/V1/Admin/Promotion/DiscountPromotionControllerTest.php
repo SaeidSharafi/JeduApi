@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Jobs\Discounts\RegeneratePromotionDiscountPricesJob;
 use App\Models\DiscountPromotion;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 
 describe('DiscountPromotionController', function (): void {
     beforeEach(function (): void {

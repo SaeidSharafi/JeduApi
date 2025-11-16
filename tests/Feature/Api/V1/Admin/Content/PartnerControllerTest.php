@@ -7,7 +7,7 @@ use App\Enums\PermissionEnum;
 use App\Models\Partner;
 use Plank\Mediable\Media;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');

@@ -6,7 +6,7 @@ use App\Enums\Order\RefundStatusEnum;
 use App\Models\Order;
 use App\Models\Refund;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('RefundUpdateStatusController', function (): void {
     it('should update the status of a refund', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::REFUND_UPDATE_STATUS]);

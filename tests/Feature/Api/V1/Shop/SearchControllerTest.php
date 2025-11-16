@@ -9,7 +9,7 @@ use App\Models\Blog\BlogPost;
 use App\Models\Course;
 use App\Models\Product;
 use App\Models\ProductPrice;
-use Tests\Support\TypesenseTestHelper;
+use Tests\Support\Helpers\TypesenseTestHelper;
 
 use function Pest\Laravel\getJson;
 

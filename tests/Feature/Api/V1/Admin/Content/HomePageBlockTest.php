@@ -9,7 +9,7 @@ use App\Enums\PermissionEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Models\HomePageBlock;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');

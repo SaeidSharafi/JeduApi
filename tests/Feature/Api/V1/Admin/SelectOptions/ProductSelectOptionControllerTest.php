@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Enums\Product\ProductableEnum;
 use App\Models\Product;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('Admin Product Select Option API', function (): void {
     beforeEach(function (): void {
         $this->authorized_user();

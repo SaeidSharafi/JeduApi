@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
 use App\Models\Product;
-use Tests\Traits\ProductTestTrait;
+use Tests\Support\Traits\ProductTestTrait;
 
 describe('Seminar API', function (): void {
     uses(ProductTestTrait::class);

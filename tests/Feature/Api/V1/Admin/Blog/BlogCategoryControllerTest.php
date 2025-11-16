@@ -7,7 +7,7 @@ use App\Models\Blog\BlogCategory;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 
 beforeEach(function (): void {
     $this->staff = App\Models\Staff::factory()->create();

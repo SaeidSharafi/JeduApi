@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('Admin Term Select Option API', function (): void {
     it('returns filtered term select options', function (): void {
         $this->authorized_user();

@@ -7,7 +7,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
     $this->customer();
 });

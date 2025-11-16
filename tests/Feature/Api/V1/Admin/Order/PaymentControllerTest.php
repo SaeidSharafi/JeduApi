@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 
 beforeEach(function (): void {
     $this->customer = App\Models\User::factory()->create();

@@ -16,7 +16,7 @@ use Illuminate\Support\Str;
 
 use function Pest\Laravel\getJson;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
     $this->userA = User::factory()->create(['email' => 'user-a@example.com']);
     $this->userB = User::factory()->create(['email' => 'user-b@example.com']);

@@ -12,7 +12,7 @@ use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\ProductDeliveryOptionDiscountPrice;
 use Hekmatinasser\Verta\Verta;
-use Tests\Traits\ProductTestTrait;
+use Tests\Support\Traits\ProductTestTrait;
 
 describe('Course API', function (): void {
     uses(ProductTestTrait::class);

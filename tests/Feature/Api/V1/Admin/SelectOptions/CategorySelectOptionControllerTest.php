@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('Admin Category Select Option API', function (): void {
     it('returns filtered category select options', function (): void {
         $this->authorized_user();

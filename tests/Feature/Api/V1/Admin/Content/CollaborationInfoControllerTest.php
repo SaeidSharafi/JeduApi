@@ -3,7 +3,7 @@
 use App\Enums\PermissionEnum;
 use Illuminate\Http\UploadedFile;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 
 it('can get collaboration settings', function () {
     $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY]);

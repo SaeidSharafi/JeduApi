@@ -13,7 +13,7 @@ use App\Models\DiscountPromotionRule;
 use App\Models\ProductDeliveryOption;
 use App\Models\ProductDeliveryOptionDiscountPrice;
 use App\Models\User;
-use Tests\AuthTestTrait;
+use Tests\Support\Traits\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 
