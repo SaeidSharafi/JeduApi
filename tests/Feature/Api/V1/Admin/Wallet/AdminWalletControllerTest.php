@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
 use App\Models\User;
-use Tests\AuthTestTrait;
+use Tests\Support\Traits\AuthTestTrait;
 
 use function Pest\Laravel\getJson;
 

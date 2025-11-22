@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Enums\TermStatusEnum;
 use App\Models\Term;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 
 describe('TermController List Filters', function (): void {
     it('should filter by name', function (): void {

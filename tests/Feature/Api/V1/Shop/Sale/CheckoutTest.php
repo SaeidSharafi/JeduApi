@@ -22,7 +22,7 @@ use Illuminate\Support\Str;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\postJson;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
     $vendor = Vendor::factory()->create();
     $term   = Term::factory()->create();
@@ -701,7 +701,7 @@ test('checkout returns multi-step payment data for external processors', functio
         'product_delivery_option_uuid' => $this->deliveryOption->uuid,
         'quantity'                     => 1,
     ])->assertOk();
-    $this->instance(\App\Services\Payment\MellatGatewayPaymentProcessor::class, new \Tests\Fakes\Payment\MockMultiStepProcessor());
+    $this->instance(\App\Services\Payment\MellatGatewayPaymentProcessor::class, new \Tests\Support\Fakes\Payment\MockMultiStepProcessor());
     $response = postJson(route('api.v1.shop.checkout'), [
         'payment_method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
     ]);

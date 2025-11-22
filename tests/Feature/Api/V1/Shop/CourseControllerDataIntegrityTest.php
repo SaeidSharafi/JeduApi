@@ -17,7 +17,7 @@ use App\Models\ProductDeliveryOptionDiscountPrice;
 use App\Models\Teacher;
 use App\Models\Term;
 use App\Models\Vendor;
-use Tests\AuthTestTrait;
+use Tests\Support\Traits\AuthTestTrait;
 
 use function Pest\Laravel\getJson;
 

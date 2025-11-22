@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 it('can list roles', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::ROLE_VIEW_ANY->value]);
     $this

@@ -6,7 +6,7 @@ use App\Actions\Admin\Role\OutputPermissionsAction;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Spatie\Permission\Models\Permission;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 
 describe('permissions listing', function (): void {
     it('should return permissions list for authenticated staff', function (): void {

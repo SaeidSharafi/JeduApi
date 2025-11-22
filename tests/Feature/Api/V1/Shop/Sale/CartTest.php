@@ -9,7 +9,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\User;
 use Illuminate\Support\Str;
 
-use Tests\AuthTestTrait;
+use Tests\Support\Traits\AuthTestTrait;
 use function Pest\Laravel\assertDatabaseCount;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\deleteJson;

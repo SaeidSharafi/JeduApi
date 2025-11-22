@@ -8,7 +8,7 @@ use App\Models\Staff;
 use App\Models\User;
 use App\Models\WalletCampaign;
 use Carbon\Carbon;
-use Tests\AuthTestTrait;
+use Tests\Support\Traits\AuthTestTrait;
 
 use function Pest\Laravel\postJson;
 

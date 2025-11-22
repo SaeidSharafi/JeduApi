@@ -7,7 +7,7 @@ use App\Enums\User\CivilIdTypeEnum;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('list filters', function (): void {
     it('should return by name', function (): void {
         $this->authorized_user([PermissionEnum::USER_VIEW_ANY]);

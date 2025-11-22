@@ -18,7 +18,7 @@ beforeEach(function (): void {
     $this->trackingCode   = 'test-tracking';
     $waitingTime          = 120;
     $fakeGenerator        = $this->app->make(App\Contracts\OtpGeneratorInterface::class);
-    if ($fakeGenerator instanceof Tests\Fakes\FakeOtpGenerator) {
+    if ($fakeGenerator instanceof Tests\Support\Fakes\FakeOtpGenerator) {
         $fakeGenerator->setNextOtpCode($this->otpCode)
             ->setNextTrackingCode($this->trackingCode);
     }

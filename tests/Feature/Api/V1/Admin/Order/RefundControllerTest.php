@@ -12,7 +12,7 @@ use App\Models\Refund;
 
 use function Pest\Laravel\assertDatabaseHas;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('RefundController', function (): void {
 
     it('should return a list of refunds', function (): void {

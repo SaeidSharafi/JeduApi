@@ -8,7 +8,7 @@ use App\Enums\WalletCampaign\CampaignTypeEnum;
 use App\Models\Staff;
 use App\Models\WalletCampaign;
 use App\Models\WalletTransaction;
-use Tests\AuthTestTrait;
+use Tests\Support\Traits\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 

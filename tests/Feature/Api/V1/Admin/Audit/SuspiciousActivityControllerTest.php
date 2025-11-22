@@ -9,7 +9,7 @@ use App\Models\User;
 use App\Models\WalletTransaction;
 use Carbon\Carbon;
 use Hekmatinasser\Verta\Facades\Verta;
-use Tests\AuthTestTrait;
+use Tests\Support\Traits\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 

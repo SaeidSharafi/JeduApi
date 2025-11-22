@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 
 describe('DiscountInfoController', function (): void {
     beforeEach(function (): void {

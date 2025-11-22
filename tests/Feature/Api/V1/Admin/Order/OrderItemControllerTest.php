@@ -10,7 +10,7 @@ use App\Models\Vendor;
 
 use function Pest\Laravel\getJson;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 
 describe('Admin OrderItemController', function (): void {
     beforeEach(function (): void {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Product;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('list filters', function (): void {
     it('should filter by name', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW_ANY]);

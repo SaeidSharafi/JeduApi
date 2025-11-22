@@ -7,7 +7,7 @@ use App\Models\Category;
 use App\Models\Course;
 use App\Models\Product;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 
 describe('GoodForStartController', function (): void {
     it('sets good for start for valid course items in category', function (): void {

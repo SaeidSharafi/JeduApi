@@ -7,7 +7,7 @@ use Illuminate\Testing\Fluent\AssertableJson;
 
 use function Pest\Laravel\assertDatabaseHas;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 
 beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();

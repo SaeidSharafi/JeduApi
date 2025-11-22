@@ -6,7 +6,7 @@ use App\Enums\PermissionEnum;
 use App\Models\AdminActionLog;
 use App\Models\Staff;
 use App\Models\User;
-use Tests\AuthTestTrait;
+use Tests\Support\Traits\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 

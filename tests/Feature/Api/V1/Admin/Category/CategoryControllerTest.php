@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 it('can get list of categories', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::CATEGORY_VIEW_ANY->value]);
     App\Models\Course::factory()->count(10)->create();

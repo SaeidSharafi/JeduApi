@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 it('show profile', function (): void {
     $user     = App\Models\User::factory()->create();
     $response = $this->customer($user)

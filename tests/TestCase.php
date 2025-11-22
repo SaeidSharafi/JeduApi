@@ -7,6 +7,7 @@ use App\Http\Middleware\AdminAuditMiddleware;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Tests\Support\Traits\DateUtilTestTrait;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -21,7 +22,7 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
         $this->withoutMiddleware(AdminAuditMiddleware::class);
         $this->app->singleton(function ($app): OtpGeneratorInterface {
-            return new \Tests\Fakes\FakeOtpGenerator();
+            return new \Tests\Support\Fakes\FakeOtpGenerator();
         });
 
     }

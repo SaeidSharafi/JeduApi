@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Teacher;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('Admin Teacher Select Option API', function (): void {
     it('returns filtered teacher select options', function (): void {
         $this->authorized_user();

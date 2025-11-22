@@ -6,7 +6,7 @@ use App\Enums\AdviceRequestStatusEnum;
 use App\Enums\PermissionEnum;
 use App\Models\AdviceRequest;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('AdviceRequestController', function (): void {
     it('list requests and filter them', function (): void {
         $this->authorized_user([PermissionEnum::ADVICE_REQUEST_VIEW_ANY]);

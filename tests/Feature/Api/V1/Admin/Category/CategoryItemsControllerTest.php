@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\System\MorphTypeEnum;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('CategoryItemsController', function (): void {
     it('list and filter items', function (): void {
         $category     = App\Models\Category::factory()->create();

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Testing\Fluent\AssertableJson;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 
 beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();

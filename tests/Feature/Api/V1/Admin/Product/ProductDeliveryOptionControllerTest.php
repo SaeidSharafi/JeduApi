@@ -6,7 +6,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Teacher;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('User with permissions', function (): void {
     beforeEach(function (): void {
         $this->product = App\Models\Product::factory()->create();

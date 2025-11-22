@@ -14,7 +14,7 @@ use App\Models\WalletTransaction;
 use App\Services\Payment\SoapClientFactory;
 use Mockery\MockInterface;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 
 describe('Retry Order Payment', function (): void {
     it('allows retry payment on pending order with failed payment', function (): void {

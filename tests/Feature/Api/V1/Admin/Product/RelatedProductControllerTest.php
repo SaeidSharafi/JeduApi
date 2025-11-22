@@ -6,7 +6,7 @@ use App\Enums\Product\RelationTypeEnum;
 use App\Models\Product;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 
 describe('User with permissions - Related Products Management', function (): void {
     beforeEach(function (): void {

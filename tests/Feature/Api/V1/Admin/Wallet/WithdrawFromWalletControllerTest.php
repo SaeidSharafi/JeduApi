@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\User;
-use Tests\AuthTestTrait;
+use Tests\Support\Traits\AuthTestTrait;
 
 uses(AuthTestTrait::class);
 

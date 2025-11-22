@@ -7,7 +7,7 @@ use App\Enums\Product\ProductableEnum;
 use App\Enums\System\MorphTypeEnum;
 use Illuminate\Support\Str;
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('BlogPostController List & Filter', function (): void {
     it('should list posts', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::BLOG_POST_VIEW_ANY]);

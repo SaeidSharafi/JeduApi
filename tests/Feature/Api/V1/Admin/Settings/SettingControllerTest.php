@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-uses(Tests\AuthTestTrait::class);
+uses(Tests\Support\Traits\AuthTestTrait::class);
 
 it('can get list of settings', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::SETTING_VIEW_ANY->value]);
