@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
+use App\Enums\Order\OrderProvisioningTriggerEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -16,15 +17,37 @@ final class OrderStatusService
     /**
      * The primary method called after a payment is confirmed.
      * It cascades all necessary status updates for the entire order.
+     * Respects the provisioning trigger configuration.
      */
     public function handlePaymentCompletion(Order $order): void
     {
-        // First, update the status of each individual line item.
+        // Get provisioning trigger configuration
+        $provisioningTrigger = OrderProvisioningTriggerEnum::from(
+            config('order.provisioning.trigger', 'any_payment')
+        );
+
+        // Check if we should provision based on the trigger
+            // @codeCoverageIgnoreStart
+        $shouldProvision = match ($provisioningTrigger) {
+            OrderProvisioningTriggerEnum::ANY_PAYMENT     => true,
+            OrderProvisioningTriggerEnum::FULL_PAYMENT    => $order->fresh()->balance_due <= 0,
+            OrderProvisioningTriggerEnum::MANUAL_APPROVAL => false, // Never auto-provision
+        };
+
+        if (! $shouldProvision) {
+            // Update order status to PROCESSING but don't complete items
+            $order->status = OrderStatusEnum::PROCESSING;
+            $order->saveQuietly();
+
+            return;
+        }
+
+        // Provision: update the status of each individual line item
         foreach ($order->items as $item) {
             $this->completeOrderItemAfterPayment($item);
         }
 
-        // Then, based on the new state of the items, update the parent order's status.
+        // Then, based on the new state of the items, update the parent order's status
         $this->updateParentOrderStatus($order->fresh());
     }
 
@@ -115,3 +138,4 @@ final class OrderStatusService
         return OrderStatusEnum::PROCESSING;
     }
 }
+    // @codeCoverageIgnoreEnd

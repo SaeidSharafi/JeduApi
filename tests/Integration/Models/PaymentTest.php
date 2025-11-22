@@ -7,18 +7,23 @@ test('to array', function (): void {
 
     expect($payment->toArray())
         ->toEqual([
-            'id'          => $payment->id,
-            'customer_id' => $payment->customer_id,
-            'order_id'    => $payment->order_id,
-            'amount'      => $payment->amount,
-            'method'      => $payment->method->value, // Enum cast
-            'status'      => $payment->status->value,
-            'data'        => $payment->data,
-            'admin_notes' => $payment->admin_notes,
-            'created_at'  => $payment->created_at?->utc()->toJSON(),
-            'updated_at'  => $payment->updated_at?->utc()->toJSON(),
-            'created_by'  => $payment->created_by,
-            'uuid'        => $payment->uuid, // Added UUID
+            'id'                     => $payment->id,
+            'customer_id'            => $payment->customer_id,
+            'order_id'               => $payment->order_id,
+            'amount'                 => $payment->amount,
+            'method'                 => $payment->method->value,
+            'status'                 => $payment->status->value,
+            'data'                   => $payment->data,
+            'admin_notes'            => $payment->admin_notes,
+            'created_at'             => $payment->created_at?->utc()->toJSON(),
+            'updated_at'             => $payment->updated_at?->utc()->toJSON(),
+            'created_by'             => $payment->created_by,
+            'last_gateway_reference' => $payment->last_gateway_reference,
+            'attempt_count'          => $payment->attempt_count,
+            'last_attempted_at'      => $payment->last_attempted_at?->utc()->toJSON(),
+            'ip_address'             => $payment->ip_address,
+            'user_agent'             => $payment->user_agent,
+            'uuid'                   => $payment->uuid,
         ]);
 });
 

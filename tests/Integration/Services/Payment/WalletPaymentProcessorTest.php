@@ -13,11 +13,13 @@ use App\Models\User;
 use App\Models\WalletTransaction;
 use App\Services\Payment\WalletPaymentProcessor;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Validation\ValidationException;
 
 describe('WalletPaymentProcessor', function (): void {
     it('accepts wallet payments and does not require redirect', function (): void {
-        $processor = new WalletPaymentProcessor(Mockery::mock(RecordWalletTransactionAction::class));
+        $processor = new WalletPaymentProcessor(
+            Mockery::mock(RecordWalletTransactionAction::class),
+            Mockery::mock(App\Services\PaymentTransactionReferenceService::class)
+        );
 
         expect($processor->canHandle(PaymentMethodEnum::WALLET))->toBeTrue()
             ->and($processor->canHandle(PaymentMethodEnum::BANK_TRANSFER))->toBeFalse()
@@ -39,11 +41,13 @@ describe('WalletPaymentProcessor', function (): void {
             'customer_snapshot_json' => $user->toArray(),
         ]);
 
-        $amount      = 450_000;
-        $processor   = new WalletPaymentProcessor(app(RecordWalletTransactionAction::class));
+        $amount    = 450_000;
+        $processor = new WalletPaymentProcessor(
+            app(RecordWalletTransactionAction::class),
+            app(App\Services\PaymentTransactionReferenceService::class)
+        );
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::WALLET->value,
-            status: PaymentStatusEnum::COMPLETED->value,
             data: null,
             admin_notes: 'Wallet checkout',
         );
@@ -77,16 +81,18 @@ describe('WalletPaymentProcessor', function (): void {
             'customer_snapshot_json' => $user->toArray(),
         ]);
 
-        $processor   = new WalletPaymentProcessor(app(RecordWalletTransactionAction::class));
+        $processor = new WalletPaymentProcessor(
+            app(RecordWalletTransactionAction::class),
+            app(App\Services\PaymentTransactionReferenceService::class)
+        );
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::WALLET->value,
-            status: PaymentStatusEnum::COMPLETED->value,
             data: null,
             admin_notes: 'Wallet checkout',
         );
 
         $processor->process($order, $paymentData, $user, 50_000);
-    })->throws(ValidationException::class);
+    })->throws(App\Exceptions\Payment\InsufficientWalletBalanceException::class);
 
     it('throws bad method call when verify is invoked', function (): void {
         $payment = Payment::factory()->create([
@@ -95,7 +101,10 @@ describe('WalletPaymentProcessor', function (): void {
             'data'   => [],
         ]);
 
-        $processor = new WalletPaymentProcessor(Mockery::mock(RecordWalletTransactionAction::class));
+        $processor = new WalletPaymentProcessor(
+            Mockery::mock(RecordWalletTransactionAction::class),
+            Mockery::mock(App\Services\PaymentTransactionReferenceService::class)
+        );
 
         expect(fn () => $processor->verify($payment, []))
             ->toThrow(BadMethodCallException::class);

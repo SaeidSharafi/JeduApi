@@ -13,7 +13,6 @@ final class PaymentCreateData extends Data
 {
     public function __construct(
         public string $method,
-        public string $status,
         public ?BankTransferPaymentData $data,
         public ?string $admin_notes,
 
@@ -25,7 +24,6 @@ final class PaymentCreateData extends Data
 
         return [
             'method'      => ['required', Rule::enum(PaymentMethodEnum::class)],
-            'status'      => ['required', 'string'],
             'admin_notes' => ['nullable', 'string', 'max:1000'],
             'data'        => ['nullable', 'array'],
             // Bank transfer validation
@@ -47,10 +45,6 @@ final class PaymentCreateData extends Data
             'method' => [
                 'description' => 'Payment method used for the transaction',
                 'example'     => 'credit_card',
-            ],
-            'status' => [
-                'description' => 'Current status of the payment',
-                'example'     => 'pending',
             ],
             'data' => [
                 'description' => 'Additional data related to the payment, such as transaction ID or gateway response',

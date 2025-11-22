@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Shop\Order;
 
 use App\Contracts\WalletTransactionSourceableDataContract;
+use App\Data\Shop\Payment\PaymentData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Order\OrderPaymentStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
@@ -43,5 +44,7 @@ final class OrderData extends Data implements WalletTransactionSourceableDataCon
         public ?Verta $updated_at,
         #[DataCollectionOf(OrderItemData::class)]
         public Collection $items,
+        #[DataCollectionOf(PaymentData::class)]
+        public ?Collection $payments = null,
     ) {}
 }

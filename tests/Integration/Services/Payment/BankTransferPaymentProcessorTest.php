@@ -39,7 +39,6 @@ describe('BankTransferPaymentProcessor', function (): void {
         $processor   = new BankTransferPaymentProcessor();
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::BANK_TRANSFER->value,
-            status: PaymentStatusEnum::COMPLETED->value,
             data: null,
             admin_notes: null,
         );
@@ -63,7 +62,6 @@ describe('BankTransferPaymentProcessor', function (): void {
         $processor   = new BankTransferPaymentProcessor();
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::BANK_TRANSFER->value,
-            status: PaymentStatusEnum::COMPLETED->value,
             data: null,
             admin_notes: 'Retry payment',
         );
@@ -71,11 +69,11 @@ describe('BankTransferPaymentProcessor', function (): void {
         $amount = 200_000;
         $result = $processor->process($order, $paymentData, $user, $amount);
 
-        expect($result->payment->status)->toBe(PaymentStatusEnum::PENDING)
+        expect($result->payment->status)->toBe(PaymentStatusEnum::COMPLETED)
             ->and($result->payment->amount)->toBe($amount)
             ->and($result->requiresRedirect())->toBeFalse();
 
-        Event::assertNothingDispatched();
+        Event::assertDispatched(PaymentCompletedEvent::class);
     });
 
     it('dispatches completion event when staff completes transfer', function (): void {
@@ -95,7 +93,6 @@ describe('BankTransferPaymentProcessor', function (): void {
         $processor   = new BankTransferPaymentProcessor();
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::BANK_TRANSFER->value,
-            status: PaymentStatusEnum::COMPLETED->value,
             data: new BankTransferPaymentData(
                 transaction_id: 'TRX-123456',
                 transaction_date: '1403-01-01',

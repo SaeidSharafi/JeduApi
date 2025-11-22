@@ -12,13 +12,11 @@ use App\Data\Admin\Payment\PaymentCreateData;
 use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Data\Shop\Cart\CheckoutData;
 use App\Enums\Content\PublicationStatusEnum;
-use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\PaymentCompletedEvent;
 use App\Models\CartItem;
-use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
@@ -110,7 +108,6 @@ final readonly class CreateOrderFromCartAction
         // Create PaymentCreateData for the processor
         $paymentData = new PaymentCreateData(
             method: $paymentMethod->value,
-            status: PaymentStatusEnum::PENDING->value,
             data: null,
             admin_notes: null
         );

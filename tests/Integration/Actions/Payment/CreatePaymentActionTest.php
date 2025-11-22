@@ -47,7 +47,6 @@ describe('CreatePaymentAction', function (): void {
 
         $paymentData = new PaymentCreateData(
             method: 'bank_transfer',
-            status: PaymentStatusEnum::COMPLETED->value,
             data: new BankTransferPaymentData(
                 transaction_id: '123',
                 transaction_date: now()->format('Y-m-d'),
@@ -89,7 +88,6 @@ describe('CreatePaymentAction', function (): void {
 
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::BANK_TRANSFER->value,
-            status: PaymentStatusEnum::COMPLETED->value,
             data: new BankTransferPaymentData(
                 transaction_id: '456',
                 transaction_date: today()->format('Y-m-d'),
@@ -111,7 +109,7 @@ describe('CreatePaymentAction', function (): void {
     it('creates a zero-dollar payment for free orders to trigger fulfillment', function (): void {
         $order = Order::factory()->create(['grand_total' => 0]);
 
-        $paymentData = new PaymentCreateData(method: 'bank_transfer', status: 'completed', data: null,
+        $paymentData = new PaymentCreateData(method: 'bank_transfer', data: null,
             admin_notes: 'Free');
         $result = (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->adminUser);
 
@@ -138,7 +136,6 @@ describe('CreatePaymentAction', function (): void {
         );
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::BANK_TRANSFER->value,
-            status: PaymentStatusEnum::COMPLETED->value,
             data: $data,
             admin_notes: 'Overpayment attempt'
         );
@@ -160,7 +157,7 @@ describe('CreatePaymentAction', function (): void {
         ]);
 
         // BankTransferPaymentData is missing required fields
-        $paymentData = new PaymentCreateData(method: 'bank_transfer', status: 'completed',
+        $paymentData = new PaymentCreateData(method: 'bank_transfer',
             data: new BankTransferPaymentData(transaction_id: null, transaction_date: null, sender_name: null,
                 notes: null),
             admin_notes: null);
@@ -190,7 +187,7 @@ describe('CreatePaymentAction', function (): void {
             'customer_id' => $order->customer_id,
         ]);
 
-        $paymentData = new PaymentCreateData(method: 'bank_transfer', status: 'completed', data: null,
+        $paymentData = new PaymentCreateData(method: 'bank_transfer', data: null,
             admin_notes: null);
 
         // Act
@@ -226,7 +223,7 @@ describe('CreatePaymentAction', function (): void {
         ]);
 
         // BankTransferPaymentData is missing required fields
-        $paymentData = new PaymentCreateData(method: 'bank_transfer', status: 'completed',
+        $paymentData = new PaymentCreateData(method: 'bank_transfer',
             data: new BankTransferPaymentData(transaction_id: null, transaction_date: null, sender_name: null,
                 notes: null),
             admin_notes: null);

@@ -25,7 +25,7 @@ use function Pest\Laravel\postJson;
 uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
     $vendor = Vendor::factory()->create();
-    $term   = Term::factory()->create();
+    $term = Term::factory()->create();
     $course = Course::factory()->create([
         'status' => PublicationStatusEnum::PUBLISHED,
     ]);
@@ -72,7 +72,6 @@ describe('Checkout Success', function (): void {
         $response = postJson(route('api.v1.shop.checkout'), [
             'payment_method' => 'bank_transfer',
         ]);
-
         $response->assertCreated()
             ->assertJsonStructure([
                 'message',
@@ -87,6 +86,17 @@ describe('Checkout Success', function (): void {
                         'discount_amount',
                         'grand_total',
                         'items',
+                        'payments' => [
+                            '*' => [
+                                'id',
+                                'amount',
+                                'method',
+                                'status',
+                                'last_gateway_reference',
+                                'attempt_count',
+                                'transactions',
+                            ]
+                        ]
                     ],
                     'redirect_url',
                     'redirect_data',
@@ -96,7 +106,7 @@ describe('Checkout Success', function (): void {
 
         assertDatabaseHas(Order::class, [
             'customer_id'       => $this->user->id,
-            'status'            => OrderStatusEnum::PENDING->value,
+            'status'            => OrderStatusEnum::COMPLETED->value,
             'total_item_count'  => 2,
             'total_qty_ordered' => 2,
         ]);
@@ -136,7 +146,7 @@ describe('Checkout Success', function (): void {
 describe('Checkout Validation', function (): void {
     test('checkout fails when delivery option has zero capacity', function (): void {
         $vendor = Vendor::factory()->create();
-        $term   = Term::factory()->create();
+        $term = Term::factory()->create();
         $course = Course::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
@@ -182,7 +192,7 @@ describe('Checkout Validation', function (): void {
 
     test('checkout fails when quantity exceeds available capacity', function (): void {
         $vendor = Vendor::factory()->create();
-        $term   = Term::factory()->create();
+        $term = Term::factory()->create();
         $course = Course::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
@@ -228,7 +238,7 @@ describe('Checkout Validation', function (): void {
 
     test('checkout fails when product is not published', function (): void {
         $vendor = Vendor::factory()->create();
-        $term   = Term::factory()->create();
+        $term = Term::factory()->create();
         $course = Course::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
@@ -264,7 +274,7 @@ describe('Checkout Validation', function (): void {
     });
     test('checkout fails when product is not visible', function (): void {
         $vendor = Vendor::factory()->create();
-        $term   = Term::factory()->create();
+        $term = Term::factory()->create();
         $course = Course::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
@@ -300,7 +310,7 @@ describe('Checkout Validation', function (): void {
     });
     test('checkout fails when product delivery option is not published', function (): void {
         $vendor = Vendor::factory()->create();
-        $term   = Term::factory()->create();
+        $term = Term::factory()->create();
         $course = Course::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
@@ -370,7 +380,48 @@ test('user can checkout with wallet payment and order is completed', function ()
     ]);
 
     $response->assertCreated();
-
+    $response->assertJsonStructure(
+        [
+            'message',
+            'data' => [
+                'order' => [
+                    'id',
+                    'increment_id',
+                    'status',
+                    'total_qty_ordered',
+                    'total_item_count',
+                    'subtotal',
+                    'discount_amount',
+                    'grand_total',
+                    'items',
+                    'payments' => [
+                        '*' => [
+                            'id',
+                            'amount',
+                            'method',
+                            'status',
+                            'last_gateway_reference',
+                            'attempt_count',
+                            'transactions' => [
+                                '*' => [
+                                    'transaction_reference',
+                                    'attempt_number',
+                                    'status',
+                                    'gateway_request',
+                                    'gateway_response',
+                                    'initiated_at',
+                                    'completed_at',
+                                    'error_code',
+                                    'error_message',
+                                    'ip_address',
+                                ],
+                            ],
+                        ]
+                    ]
+                ],
+            ],
+        ]
+    );
     $orderId = $response->json('data.order.id');
 
     assertDatabaseHas(Order::class, [
@@ -416,7 +467,8 @@ test('checkout fails with insufficient wallet balance', function (): void {
     ]);
 
     $response->assertStatus(422)
-        ->assertJsonValidationErrors(['wallet_data.amount']);
+        ->assertJsonPath('errors.wallet_balance.0.error_code', 'INSUFFICIENT_WALLET_BALANCE')
+        ->assertJsonPath('errors.wallet_balance.0.redirect_suggestion', 'wallet-topup');
 
     $this->assertDatabaseMissing(Order::class, [
         'customer_id' => $this->user->id,
@@ -469,14 +521,14 @@ test('checkout with bank_transfer creates pending order without payment', functi
 
     assertDatabaseHas(Order::class, [
         'id'     => $orderId,
-        'status' => OrderStatusEnum::PENDING->value,
+        'status' => OrderStatusEnum::COMPLETED->value,
     ]);
 
-    // With the new payment processor architecture, bank_transfer creates a PENDING payment
+    // With the new payment processor architecture, bank_transfer creates a COMPLETED payment immediately
     assertDatabaseHas('payments', [
         'order_id' => $orderId,
         'method'   => 'bank_transfer',
-        'status'   => 'pending',
+        'status'   => 'completed',
     ]);
 
     $this->assertDatabaseMissing('carts', [
@@ -489,7 +541,7 @@ test('checkout endpoint enforces rate limit of 5 requests per minute', function 
     $this->customer($user);
 
     $vendor = Vendor::factory()->create();
-    $term   = Term::factory()->create();
+    $term = Term::factory()->create();
     $course = Course::factory()->create([
         'status' => PublicationStatusEnum::PUBLISHED,
     ]);
@@ -537,7 +589,7 @@ test('user cannot create more than 5 orders in one hour', function (): void {
     }
 
     $vendor = Vendor::factory()->create();
-    $term   = Term::factory()->create();
+    $term = Term::factory()->create();
     $course = Course::factory()->create([
         'status' => PublicationStatusEnum::PUBLISHED,
     ]);
@@ -587,7 +639,7 @@ test('velocity check only counts orders from the last hour', function (): void {
     }
 
     $vendor = Vendor::factory()->create();
-    $term   = Term::factory()->create();
+    $term = Term::factory()->create();
     $course = Course::factory()->create([
         'status' => PublicationStatusEnum::PUBLISHED,
     ]);
@@ -701,7 +753,8 @@ test('checkout returns multi-step payment data for external processors', functio
         'product_delivery_option_uuid' => $this->deliveryOption->uuid,
         'quantity'                     => 1,
     ])->assertOk();
-    $this->instance(\App\Services\Payment\MellatGatewayPaymentProcessor::class, new \Tests\Support\Fakes\Payment\MockMultiStepProcessor());
+    $this->instance(App\Services\Payment\MellatGatewayPaymentProcessor::class,
+        new Tests\Support\Fakes\Payment\MockMultiStepProcessor());
     $response = postJson(route('api.v1.shop.checkout'), [
         'payment_method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
     ]);
@@ -831,13 +884,13 @@ describe('Duplicate Purchase Prevention', function (): void {
     });
 
     test('checkout fails with multiple duplicate products in cart', function (): void {
-        $user   = User::factory()->create();
+        $user = User::factory()->create();
         $vendor = Vendor::factory()->create();
-        $term   = Term::factory()->create();
+        $term = Term::factory()->create();
         $this->customer($user);
 
         // Create two different products that the user already owns
-        $course1  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $course1 = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         $product1 = Product::factory()->create([
             'vendor_id'        => $vendor->id,
             'term_id'          => $term->id,
@@ -853,7 +906,7 @@ describe('Duplicate Purchase Prevention', function (): void {
             'name'       => 'Course A - Online',
         ]);
 
-        $course2  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $course2 = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         $product2 = Product::factory()->create([
             'vendor_id'        => $vendor->id,
             'term_id'          => $term->id,

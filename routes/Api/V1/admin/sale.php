@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\Admin\Order\ApproveOrderController;
 use App\Http\Controllers\Api\Admin\Order\NextPaymentDetailsController;
 use App\Http\Controllers\Api\Admin\Order\OrderCalculationController;
 use App\Http\Controllers\Api\Admin\Order\OrderController;
@@ -22,6 +23,8 @@ use App\Http\Controllers\Api\Admin\Wallet\WithdrawFromWalletController;
 Route::apiResource('order', OrderController::class);
 Route::post('order/preview', OrderCalculationController::class)
     ->name('order.preview');
+Route::post('order/{order}/approve', ApproveOrderController::class)
+    ->name('order.approve');
 Route::apiResource('order/{order}/order-item', OrderItemController::class)
     ->only(['index', 'show']);
 
@@ -29,7 +32,7 @@ Route::apiResource('order/{order}/payment', PaymentController::class);
 Route::get('order/{order}/next-payment-details', NextPaymentDetailsController::class)
     ->name('next-payment-details');
 
-Route::apiResource('/order-item/{orderItem}/refund', \App\Http\Controllers\Api\Admin\Order\RefundController::class);
+Route::apiResource('/order-item/{orderItem}/refund', App\Http\Controllers\Api\Admin\Order\RefundController::class);
 Route::put('refund/{refund}/status', RefundUpdateStatusController::class)
     ->name('refund.status');
 

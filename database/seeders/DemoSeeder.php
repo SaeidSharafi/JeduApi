@@ -365,7 +365,7 @@ final class DemoSeeder extends Seeder
             'courses', 'categories', 'teachers', 'terms', 'vendors', 'staff', 'users',
             // Add pivot tables or others that need clearing
             'categorizables', 'mediables', 'enrollments', 'order_items', 'orders',
-            'product_delivery_option_teacher',
+            'product_delivery_option_teacher', 'payment_transactions',
         ];
 
         foreach ($tables as $table) {

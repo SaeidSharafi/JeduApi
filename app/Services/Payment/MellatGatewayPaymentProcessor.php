@@ -9,16 +9,17 @@ use App\Data\Admin\Payment\PaymentCreateData;
 use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\Payment\PaymentTransactionStatusEnum;
 use App\Events\PaymentCompletedEvent;
 use App\Exceptions\CustomValidationException;
 use App\Exceptions\Gateway\MellatException;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Staff;
+use App\Services\PaymentTransactionReferenceService;
 use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Log;
-use SoapClient;
 use SoapFault;
 
 /**
@@ -29,9 +30,10 @@ use SoapFault;
  */
 final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 {
-
-    public function __construct(public readonly SoapClientFactory $soapClientFactory)
-    {}
+    public function __construct(
+        public readonly SoapClientFactory $soapClientFactory,
+        public readonly PaymentTransactionReferenceService $referenceService
+    ) {}
 
     public function canHandle(PaymentMethodEnum $paymentMethod): bool
     {
@@ -49,29 +51,67 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         Authenticatable $adminUser,
         int $amountToPay
     ): PaymentProcessResultData {
-        // Step 1: Send payment request to Mellat Gateway
-        $refId = $this->sendPayRequest($amountToPay, $order, $paymentData);
+        // Step 1: Generate unique transaction reference
+        $transactionReference = $this->referenceService->generate();
 
-        // Step 2: Create PENDING payment record
+        // Step 2: Get request metadata
+        $ipAddress = request()->ip();
+        $userAgent = request()->userAgent();
+
+        // Step 3: Calculate attempt number
+        $attemptNumber = $order->payments()
+            ->where('method', PaymentMethodEnum::MELLAT_GATEWAY)
+            ->count() + 1;
+
+        // Step 4: Prepare gateway request data
+        $gatewayRequest = [
+            'terminalId'     => config('payments.mellat.terminal_id'),
+            'userName'       => config('payments.mellat.username'),
+            'userPassword'   => config('payments.mellat.password'),
+            'orderId'        => $transactionReference, // Use transaction reference instead of order increment_id
+            'amount'         => $amountToPay,
+            'localDate'      => date('Ymd'),
+            'localTime'      => date('His'),
+            'additionalData' => '',
+            'callBackUrl'    => config('payments.mellat.callback_url'),
+            'payerId'        => 0,
+        ];
+
+        // Step 5: Send payment request to Mellat Gateway
+        $refId = $this->sendPayRequest($gatewayRequest);
+
+        // Step 6: Create PENDING payment record
         $payment = $order->payments()->create([
-            'customer_id' => $order->customer_id,
-            'created_by'  => $adminUser instanceof Staff ? $adminUser->id : null,
-            'amount'      => $amountToPay,
-            'method'      => PaymentMethodEnum::MELLAT_GATEWAY,
-            'status'      => PaymentStatusEnum::PENDING, // CRITICAL: Must be PENDING
-            'admin_notes' => $paymentData->admin_notes,
-            'data'        => [
-                'gateway'        => 'mellat',
-                'transaction_id' => $refId,
-                'initiated_at'   => now()->toISOString(),
-            ],
+            'customer_id'       => $order->customer_id,
+            'created_by'        => $adminUser instanceof Staff ? $adminUser->id : null,
+            'amount'            => $amountToPay,
+            'method'            => PaymentMethodEnum::MELLAT_GATEWAY,
+            'status'            => PaymentStatusEnum::PENDING,
+            'admin_notes'       => $paymentData->admin_notes,
+            'attempt_count'     => $attemptNumber,
+            'last_attempted_at' => now(),
+            'ip_address'        => $ipAddress,
+            'user_agent'        => $userAgent,
+        ]);
+
+        // Step 7: Create transaction record
+        $payment->transactions()->create([
+            'transaction_reference' => $transactionReference,
+            'attempt_number'        => $attemptNumber,
+            'status'                => PaymentTransactionStatusEnum::INITIATED,
+            'gateway_request'       => $gatewayRequest,
+            'gateway_response'      => ['RefId' => $refId],
+            'initiated_at'          => now(),
+            'ip_address'            => $ipAddress,
+            'user_agent'            => $userAgent,
         ]);
 
         Log::info('Mellat payment initiated', [
-            'payment_id'   => $payment->id,
-            'payment_uuid' => $payment->uuid,
-            'order_id'     => $order->increment_id,
-            'ref_id'       => $refId,
+            'payment_id'      => $payment->id,
+            'payment_uuid'    => $payment->uuid,
+            'order_id'        => $order->increment_id,
+            'transaction_ref' => $transactionReference,
+            'ref_id'          => $refId,
         ]);
 
         return PaymentProcessResultData::pendingWithRedirect(
@@ -86,11 +126,19 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 
     public function verify(Payment $payment, array $callbackData): Payment
     {
-        // Step 4: Verify the callback from Mellat
+        // Step 1: Verify the callback from Mellat
         Log::info('Verifying Mellat payment', [
             'payment_id'    => $payment->id,
             'callback_data' => $callbackData,
         ]);
+
+        // Step 2: Get the latest transaction for this payment
+        $latestTransaction = $payment->transactions()->latest()->first();
+
+        if (! $latestTransaction) {
+            Log::error('No transaction found for payment', ['payment_id' => $payment->id]);
+            throw new Exception('No transaction found for payment');
+        }
 
         try {
             // Extract data from callback
@@ -106,18 +154,25 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
             // Check if transaction was successful
             if ($resCode !== '0') {
                 // Payment failed
+                $errorMessage = $this->getMellatErrorMessage($resCode);
+
+                $latestTransaction->update([
+                    'status'           => PaymentTransactionStatusEnum::FAILED,
+                    'gateway_response' => $callbackData,
+                    'completed_at'     => now(),
+                    'error_code'       => $resCode,
+                    'error_message'    => $errorMessage,
+                ]);
+
                 $payment->update([
-                    'status' => PaymentStatusEnum::FAILED,
-                    'data'   => array_merge($payment->data ?? [], [
-                        'callback_received_at' => now()->toISOString(),
-                        'callback_data'        => $callbackData,
-                        'failure_reason'       => $this->getMellatErrorMessage($resCode),
-                    ]),
+                    'status'            => PaymentStatusEnum::FAILED,
+                    'last_attempted_at' => now(),
                 ]);
 
                 Log::warning('Mellat payment failed', [
-                    'payment_id' => $payment->id,
-                    'res_code'   => $resCode,
+                    'payment_id'      => $payment->id,
+                    'transaction_ref' => $latestTransaction->transaction_reference,
+                    'res_code'        => $resCode,
                 ]);
 
                 return $payment;
@@ -128,18 +183,22 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 
             if ($verifyResult !== true) {
                 // Verification failed
+                $latestTransaction->update([
+                    'status'           => PaymentTransactionStatusEnum::FAILED,
+                    'gateway_response' => array_merge($callbackData, ['verification_failed' => true]),
+                    'completed_at'     => now(),
+                    'error_message'    => 'Gateway verification failed',
+                ]);
+
                 $payment->update([
-                    'status' => PaymentStatusEnum::FAILED,
-                    'data'   => array_merge($payment->data ?? [], [
-                        'callback_received_at' => now()->toISOString(),
-                        'verification_failed'  => true,
-                        'callback_data'        => $callbackData,
-                    ]),
+                    'status'            => PaymentStatusEnum::FAILED,
+                    'last_attempted_at' => now(),
                 ]);
 
                 Log::error('Mellat verification failed', [
-                    'payment_id' => $payment->id,
-                    'ref_id'     => $refId,
+                    'payment_id'      => $payment->id,
+                    'transaction_ref' => $latestTransaction->transaction_reference,
+                    'ref_id'          => $refId,
                 ]);
 
                 return $payment;
@@ -150,95 +209,90 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 
             if ($settleResult !== true) {
                 // Settlement failed - this is critical, payment was verified but not settled
-                $payment->update([
-                    'status' => PaymentStatusEnum::FAILED,
-                    'data'   => array_merge($payment->data ?? [], [
-                        'callback_received_at' => now()->toISOString(),
+                $latestTransaction->update([
+                    'status'           => PaymentTransactionStatusEnum::FAILED,
+                    'gateway_response' => array_merge($callbackData, [
                         'verification_success' => true,
                         'settlement_failed'    => true,
-                        'callback_data'        => $callbackData,
                     ]),
+                    'completed_at'  => now(),
+                    'error_message' => 'Settlement failed after successful verification',
+                ]);
+
+                $payment->update([
+                    'status'            => PaymentStatusEnum::FAILED,
+                    'last_attempted_at' => now(),
                 ]);
 
                 Log::critical('Mellat settlement failed after successful verification', [
-                    'payment_id' => $payment->id,
-                    'ref_id'     => $refId,
+                    'payment_id'      => $payment->id,
+                    'transaction_ref' => $latestTransaction->transaction_reference,
+                    'ref_id'          => $refId,
                 ]);
 
                 return $payment;
             }
 
             // SUCCESS! Payment verified and settled
-            $payment->update([
-                'status' => PaymentStatusEnum::COMPLETED,
-                'data'   => array_merge($payment->data ?? [], [
-                    'callback_received_at' => now()->toISOString(),
-                    'verified_at'          => now()->toISOString(),
-                    'settled_at'           => now()->toISOString(),
-                    'callback_data'        => $callbackData,
+            $latestTransaction->update([
+                'status'           => PaymentTransactionStatusEnum::COMPLETED,
+                'gateway_response' => array_merge($callbackData, [
+                    'verified_at' => now()->toISOString(),
+                    'settled_at'  => now()->toISOString(),
                 ]),
+                'completed_at' => now(),
+            ]);
+
+            $payment->update([
+                'status'                 => PaymentStatusEnum::COMPLETED,
+                'last_gateway_reference' => $saleReferenceId,
+                'last_attempted_at'      => now(),
             ]);
 
             // Dispatch completion event ONLY after successful verification
             PaymentCompletedEvent::dispatch($payment);
 
             Log::info('Mellat payment completed successfully', [
-                'payment_id' => $payment->id,
-                'ref_id'     => $refId,
+                'payment_id'      => $payment->id,
+                'transaction_ref' => $latestTransaction->transaction_reference,
+                'ref_id'          => $refId,
+                'sale_ref_id'     => $saleReferenceId,
             ]);
 
             return $payment;
 
         } catch (Exception $e) {
             Log::error('Error verifying Mellat payment', [
-                'payment_id' => $payment->id,
-                'error'      => $e->getMessage(),
+                'payment_id'      => $payment->id,
+                'transaction_ref' => $latestTransaction->transaction_reference ?? null,
+                'error'           => $e->getMessage(),
             ]);
 
+            if ($latestTransaction) {
+                $latestTransaction->update([
+                    'status'           => PaymentTransactionStatusEnum::FAILED,
+                    'gateway_response' => $callbackData,
+                    'completed_at'     => now(),
+                    'error_message'    => $e->getMessage(),
+                ]);
+            }
+
             $payment->update([
-                'status' => PaymentStatusEnum::FAILED,
-                'data'   => array_merge($payment->data ?? [], [
-                    'verification_error' => $e->getMessage(),
-                    'callback_data'      => $callbackData,
-                ]),
+                'status'            => PaymentStatusEnum::FAILED,
+                'last_attempted_at' => now(),
             ]);
 
             throw $e;
         }
     }
 
-    private function getConfig(): array
-    {
-        return [
-            'terminalId'  => config('payments.mellat.terminal_id'),
-            'username'    => config('payments.mellat.username'),
-            'password'    => config('payments.mellat.password'),
-            'callbackUrl' => config('payments.mellat.callback_url'),
-        ];
-    }
-
     /**
      * get RefId from Mellat Gateway
      */
-    private function sendPayRequest(int $amountToPay, Order $order, PaymentCreateData $paymentData): string
+    private function sendPayRequest(array $params): string
     {
-        $config = $this->getConfig();
-
-        $params = [
-            'terminalId'     => $config['terminalId'],
-            'userName'       => $config['username'],
-            'userPassword'   => $config['password'],
-            'orderId'        => $order->increment_id,
-            'amount'         => $amountToPay,
-            'localDate'      => date('Ymd'),
-            'localTime'      => date('His'),
-            'additionalData' => '',
-            'callBackUrl'    => $config['callbackUrl'],
-            'payerId'        => 0,
-        ];
-
         try {
-            $soap = $this->soapClientFactory->create($this->getWsdlUrl());
+            $soap     = $this->soapClientFactory->create($this->getWsdlUrl());
             $response = $soap->bpPayRequest($params);
         } catch (SoapFault $e) {
             throw new CustomValidationException(__('validation.custom.checkout.payment.gateway_connection_error'));
@@ -263,14 +317,12 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 
     private function verifyWithMellat(string $refId, string $saleOrderId, string $saleReferenceId): bool
     {
-        $config = $this->getConfig();
-
         try {
-            $soap = $this->soapClientFactory->create($this->getWsdlUrl());
+            $soap     = $this->soapClientFactory->create($this->getWsdlUrl());
             $response = $soap->bpVerifyRequest([
-                'terminalId'      => $config['terminalId'],
-                'userName'        => $config['username'],
-                'userPassword'    => $config['password'],
+                'terminalId'      => config('payments.mellat.terminal_id'),
+                'userName'        => config('payments.mellat.username'),
+                'userPassword'    => config('payments.mellat.password'),
                 'orderId'         => $saleOrderId,
                 'orderIdLong'     => $saleOrderId,
                 'saleOrderId'     => $saleOrderId,
@@ -286,14 +338,12 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 
     private function settleWithMellat(string $refId, string $saleOrderId, string $saleReferenceId): bool
     {
-        $config = $this->getConfig();
-
         try {
-            $soap = $this->soapClientFactory->create($this->getWsdlUrl());
+            $soap     = $this->soapClientFactory->create($this->getWsdlUrl());
             $response = $soap->bpSettleRequest([
-                'terminalId'      => $config['terminalId'],
-                'userName'        => $config['username'],
-                'userPassword'    => $config['password'],
+                'terminalId'      => config('payments.mellat.terminal_id'),
+                'userName'        => config('payments.mellat.username'),
+                'userPassword'    => config('payments.mellat.password'),
                 'orderId'         => $saleOrderId,
                 'orderIdLong'     => $saleOrderId,
                 'saleOrderId'     => $saleOrderId,

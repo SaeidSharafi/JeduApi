@@ -43,10 +43,8 @@ final class BankTransferPaymentProcessor implements PaymentProcessorContract
             $this->validateBankTransferDetails($paymentData);
         }
 
-        // Determine status: PENDING for customer checkout, or use provided status for admin
-        $status = $adminUser instanceof Staff
-            ? $paymentData->status
-            : PaymentStatusEnum::PENDING->value;
+        // For admin-created bank transfers, mark as COMPLETED immediately (admin confirms payment)
+        $status = PaymentStatusEnum::COMPLETED->value;
 
         // Create payment record
         $payment = $order->payments()->create([
@@ -59,10 +57,8 @@ final class BankTransferPaymentProcessor implements PaymentProcessorContract
             'data'        => $paymentData->data?->toArray(),
         ]);
 
-        // Dispatch completion event if payment is completed
-        if ($payment->status === PaymentStatusEnum::COMPLETED) {
-            PaymentCompletedEvent::dispatch($payment);
-        }
+        // Dispatch completion event (completed immediately for bank transfer)
+        PaymentCompletedEvent::dispatch($payment);
 
         return PaymentProcessResultData::completed($payment);
     }

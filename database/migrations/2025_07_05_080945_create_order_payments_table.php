@@ -20,8 +20,16 @@ return new class extends Migration
             $table->string('status')->index()
                 ->default(App\Enums\Payment\PaymentStatusEnum::PENDING->value)
                 ->comment('pending, completed, failed');
-            $table->jsonb('data')->nullable()
-                ->comment('Additional data related to the payment, e.g., transaction ID, gateway response, etc.');
+            $table->string('last_gateway_reference')->nullable()
+                ->comment('Last gateway reference ID (e.g., Mellat SaleReferenceId for bank lookups)');
+            $table->integer('attempt_count')->default(1)
+                ->comment('Number of payment attempts made');
+            $table->timestamp('last_attempted_at')->nullable()
+                ->comment('Timestamp of the most recent payment attempt');
+            $table->string('ip_address')->nullable()
+                ->comment('Customer IP address at payment initiation');
+            $table->string('user_agent')->nullable()
+                ->comment('Customer user agent string at payment initiation');
             $table->text('admin_notes')->nullable();
             $table->foreignId('created_by')
                 ->nullable()

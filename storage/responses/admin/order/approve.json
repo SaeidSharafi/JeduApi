@@ -1,0 +1,68 @@
+{
+  "success": true,
+  "message": "Order approved successfully",
+  "data": {
+    "id": 123,
+    "increment_id": "100000001",
+    "status": {
+      "value": "completed",
+      "label": "enums.OrderStatusEnum.completed"
+    },
+    "customer_email": "customer@example.com",
+    "customer_phone": "09123456789",
+    "customer_first_name": "John",
+    "customer_last_name": "Doe",
+    "total_qty_ordered": 2,
+    "total_item_count": 2,
+    "subtotal": 1000000,
+    "discount_amount": 100000,
+    "tax_amount": 0,
+    "grand_total": 900000,
+    "full_value_grand_total": 900000,
+    "total_paid": 900000,
+    "balance_due": 0,
+    "currency_code": "IRR",
+    "payment_status": {
+      "value": "paid",
+      "label": "enums.OrderPaymentStatusEnum.paid"
+    },
+    "overall_payment_status": {
+      "value": "paid",
+      "label": "enums.OrderPaymentStatusEnum.paid"
+    },
+    "applied_coupon_code": null,
+    "admin_notes": null,
+    "items": [
+      {
+        "id": 1,
+        "product_delivery_option_id": 5,
+        "name": "Advanced Python Course",
+        "sku": "PY-ADV-001",
+        "price": 500000,
+        "qty_ordered": 1,
+        "total": 500000,
+        "discount_amount": 50000,
+        "status": {
+          "value": "completed",
+          "label": "enums.OrderItemStatusEnum.completed"
+        }
+      }
+    ],
+    "payments": [
+      {
+        "id": 1,
+        "amount": 900000,
+        "method": {
+          "value": "wallet",
+          "label": "enums.PaymentMethodEnum.wallet"
+        },
+        "status": {
+          "value": "completed",
+          "label": "enums.PaymentStatusEnum.completed"
+        }
+      }
+    ],
+    "created_at": "2025-11-22T10:30:00Z",
+    "updated_at": "2025-11-22T10:35:00Z"
+  }
+}

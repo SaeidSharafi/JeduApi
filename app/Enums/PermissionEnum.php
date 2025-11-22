@@ -68,6 +68,7 @@ enum PermissionEnum: string
     case HOME_PAGE_BLOCK_UPDATE           = 'home_page_block.update';
     case HOME_PAGE_BLOCK_VIEW             = 'home_page_block.view';
     case HOME_PAGE_BLOCK_VIEW_ANY         = 'home_page_block.view_any';
+    case ORDER_APPROVE                    = 'order.approve';
     case ORDER_CREATE                     = 'order.create';
     case ORDER_DELETE                     = 'order.delete';
     case ORDER_UPDATE                     = 'order.update';

@@ -11,10 +11,12 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class Payment extends Model implements WalletTransactionSourceableContract
 {
     use HasAuditor;
+
     /** @use HasFactory<\Database\Factories\PaymentFactory> */
     use HasFactory;
 
@@ -27,9 +29,14 @@ final class Payment extends Model implements WalletTransactionSourceableContract
             'amount',
             'method',
             'status',
-            'data',
             'admin_notes',
+            'data',
             'created_by',
+            'last_gateway_reference',
+            'attempt_count',
+            'last_attempted_at',
+            'ip_address',
+            'user_agent',
         ];
 
     /**
@@ -50,15 +57,22 @@ final class Payment extends Model implements WalletTransactionSourceableContract
         return $this->belongsTo(User::class, 'customer_id');
     }
 
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(PaymentTransaction::class);
+    }
+
     protected function casts(): array
     {
         return [
-            'amount'     => 'integer',
-            'method'     => \App\Enums\Payment\PaymentMethodEnum::class,
-            'status'     => PaymentStatusEnum::class,
-            'data'       => 'array',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
+            'amount'            => 'integer',
+            'method'            => \App\Enums\Payment\PaymentMethodEnum::class,
+            'status'            => PaymentStatusEnum::class,
+            'data'              => 'array',
+            'attempt_count'     => 'integer',
+            'last_attempted_at' => 'datetime',
+            'created_at'        => 'datetime',
+            'updated_at'        => 'datetime',
         ];
     }
 }
