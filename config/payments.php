@@ -23,4 +23,22 @@ return [
         'test_server_url'  => env('MELLAT_TEST_SERVER_URL', 'https://sandbox.banktest.ir/mellat/bpm.shaparak.ir/pgwchannel/services/pgw?wsdl'),
         'test_gateway_url' => env('MELLAT_TEST_GATEWAY_URL', 'https://sandbox.banktest.ir/mellat/bpm.shaparak.ir/pgwchannel/startpay.mellat'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Payment Transaction Reference Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for generating unique transaction references.
+    | Transaction references are numeric-only sequential IDs.
+    |
+    */
+
+    'transaction_reference' => [
+        /*
+         | Starting number for the first payment transaction
+         | Starts at 200M to differentiate from order increment_ids (100M)
+         */
+        'start_from' => (int) env('PAYMENT_TRANSACTION_START', 200000001),
+    ],
 ];

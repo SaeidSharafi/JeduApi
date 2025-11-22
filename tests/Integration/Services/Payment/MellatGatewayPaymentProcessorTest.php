@@ -33,7 +33,7 @@ beforeEach(function (): void {
 describe('MellatGatewayPaymentProcessor', function (): void {
     it('reports its supported payment method and redirect behavior', function (): void {
         $factory   = Mockery::mock(SoapClientFactory::class);
-        $processor = new MellatGatewayPaymentProcessor($factory);
+        $processor = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
 
         expect($processor->canHandle(PaymentMethodEnum::MELLAT_GATEWAY))->toBeTrue()
             ->and($processor->canHandle(PaymentMethodEnum::BANK_TRANSFER))->toBeFalse()
@@ -62,15 +62,15 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         $amount = 520_000;
         $soapClient->shouldReceive('bpPayRequest')
             ->once()
-            ->with(Mockery::on(function (array $payload) use ($amount, $order): bool {
-                return $payload['amount'] === $amount && (string) $payload['orderId'] === (string) $order->increment_id;
+            ->with(Mockery::on(function (array $payload) use ($amount): bool {
+                // orderId now uses generated transaction reference, so we only assert amount
+                return $payload['amount'] === $amount && isset($payload['orderId']);
             }))
             ->andReturn((object) ['return' => $refId]);
 
-        $processor   = new MellatGatewayPaymentProcessor($factory);
+        $processor   = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::MELLAT_GATEWAY->value,
-            status: PaymentStatusEnum::PENDING->value,
             data: null,
             admin_notes: 'Online payment',
         );
@@ -81,7 +81,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->and($result->redirect_url)->toBe('https://mellat.test/redirect')
             ->and($result->redirect_data)->toBe(['RefId' => $refId])
             ->and($result->payment->status)->toBe(PaymentStatusEnum::PENDING)
-            ->and($result->payment->data['transaction_id'])->toBe($refId);
+            ->and($result->payment->transactions()->count())->toBe(1);
     });
 
     it('throws validation exception when Mellat gateway cannot be reached', function (): void {
@@ -105,10 +105,9 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->once()
             ->andReturn($soapClient);
 
-        $processor   = new MellatGatewayPaymentProcessor($factory);
+        $processor   = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::MELLAT_GATEWAY->value,
-            status: PaymentStatusEnum::PENDING->value,
             data: null,
             admin_notes: 'Online payment',
         );
@@ -132,17 +131,16 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         $soapClient = Mockery::mock(SoapClient::class);
         $soapClient->shouldReceive('bpPayRequest')
             ->once()
-           ->andReturn((object) ['invalid' => 'INVALID_RESPONSE']);
+            ->andReturn((object) ['invalid' => 'INVALID_RESPONSE']);
 
         $factory = Mockery::mock(SoapClientFactory::class);
         $factory->shouldReceive('create')
             ->once()
             ->andReturn($soapClient);
 
-        $processor   = new MellatGatewayPaymentProcessor($factory);
+        $processor   = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::MELLAT_GATEWAY->value,
-            status: PaymentStatusEnum::PENDING->value,
             data: null,
             admin_notes: 'Online payment',
         );
@@ -174,10 +172,9 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->once()
             ->andReturn($soapClient);
 
-        $processor   = new MellatGatewayPaymentProcessor($factory);
+        $processor   = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::MELLAT_GATEWAY->value,
-            status: PaymentStatusEnum::PENDING->value,
             data: null,
             admin_notes: null,
         );
@@ -201,13 +198,22 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             'customer_snapshot_json' => $user->toArray(),
         ]);
 
-        $payment = Payment::factory()->create([
+        $transactionRef = 'TXN-SUCCESS-123';
+        $payment        = Payment::factory()->create([
             'order_id'    => $order->id,
             'customer_id' => $order->customer_id,
             'amount'      => 520_000,
             'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
             'status'      => PaymentStatusEnum::PENDING->value,
             'data'        => [],
+        ]);
+        $payment->transactions()->create([
+            'transaction_reference' => $transactionRef,
+            'attempt_number'        => 1,
+            'status'                => \App\Enums\Payment\PaymentTransactionStatusEnum::INITIATED->value,
+            'gateway_request'       => ['orderId' => $transactionRef],
+            'gateway_response'      => ['RefId' => 'REF123456789'],
+            'initiated_at'          => now(),
         ]);
 
         $verifyClient = Mockery::mock(SoapClient::class);
@@ -218,33 +224,71 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->with('https://mellat.test/wsdl')
             ->andReturn($verifyClient, $settleClient);
 
+        // Verify request should use transaction reference as orderId
         $verifyClient->shouldReceive('bpVerifyRequest')
             ->once()
-            ->andReturn((object) ['return' => '0']);
-        $settleClient->shouldReceive('bpSettleRequest')
-            ->once()
+            ->with(Mockery::on(function ($params) use ($transactionRef) {
+                return $params['orderId']         === $transactionRef
+                    && $params['saleOrderId']     === $transactionRef
+                    && $params['saleReferenceId'] === 'SALE-REF-123';
+            }))
             ->andReturn((object) ['return' => '0']);
 
-        $processor    = new MellatGatewayPaymentProcessor($factory);
+        $settleClient->shouldReceive('bpSettleRequest')
+            ->once()
+            ->with(Mockery::on(function ($params) use ($transactionRef) {
+                return $params['orderId']         === $transactionRef
+                    && $params['saleOrderId']     === $transactionRef
+                    && $params['saleReferenceId'] === 'SALE-REF-123';
+            }))
+            ->andReturn((object) ['return' => '0']);
+
+        $processor    = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
         $callbackData = [
             'RefId'           => 'REF123456789',
             'ResCode'         => '0',
-            'SaleOrderId'     => (string) $order->increment_id,
-            'SaleReferenceId' => 'SALE-REF',
+            'SaleOrderId'     => $transactionRef,
+            'SaleReferenceId' => 'SALE-REF-123',
         ];
 
         $pendingPayment = Payment::query()->findOrFail($payment->id);
         $updatedPayment = $processor->verify($pendingPayment, $callbackData);
 
         expect($updatedPayment->status)->toBe(PaymentStatusEnum::COMPLETED)
-            ->and($updatedPayment->data['callback_data'])->toBe($callbackData);
+            ->and($updatedPayment->last_gateway_reference)->toBe('SALE-REF-123');
+
+        // Verify transaction was updated
+        $transaction = $payment->transactions()->latest()->first();
+        expect($transaction->status->value)->toBe(\App\Enums\Payment\PaymentTransactionStatusEnum::COMPLETED->value)
+            ->and($transaction->completed_at)->not->toBeNull();
 
         Event::assertDispatched(PaymentCompletedEvent::class, function (PaymentCompletedEvent $event) use ($updatedPayment): bool {
             return $event->payment->is($updatedPayment);
         });
     });
 
-    it('treats settlement code 45 as success', function (): void {
+    it('throws exception when no transaction found for payment', function (): void {
+        $payment = Payment::factory()->create([
+            'method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
+            'status' => PaymentStatusEnum::PENDING->value,
+            'data'   => [],
+        ]);
+        // Don't create any transaction - this should trigger the error
+
+        $processor = new MellatGatewayPaymentProcessor(
+            Mockery::mock(SoapClientFactory::class),
+            app(\App\Services\PaymentTransactionReferenceService::class)
+        );
+
+        expect(fn () => $processor->verify($payment, [
+            'RefId'           => 'REF123',
+            'ResCode'         => '0',
+            'SaleOrderId'     => 'TXN-123',
+            'SaleReferenceId' => 'SALE-REF',
+        ]))->toThrow(\Exception::class, 'No transaction found for payment');
+    });
+
+    it('treats settlement code 45 (already settled) as success', function (): void {
         Event::fake([PaymentCompletedEvent::class]);
 
         $user  = User::factory()->create();
@@ -257,13 +301,22 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             'customer_snapshot_json' => $user->toArray(),
         ]);
 
-        $payment = Payment::factory()->create([
+        $transactionRef = 'TXN-ALREADY-SETTLED';
+        $payment        = Payment::factory()->create([
             'order_id'    => $order->id,
             'customer_id' => $order->customer_id,
             'amount'      => 520_000,
             'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
             'status'      => PaymentStatusEnum::PENDING->value,
             'data'        => [],
+        ]);
+        $payment->transactions()->create([
+            'transaction_reference' => $transactionRef,
+            'attempt_number'        => 1,
+            'status'                => \App\Enums\Payment\PaymentTransactionStatusEnum::INITIATED->value,
+            'gateway_request'       => ['orderId' => $transactionRef],
+            'gateway_response'      => [],
+            'initiated_at'          => now(),
         ]);
 
         $verifyClient = Mockery::mock(SoapClient::class);
@@ -279,20 +332,22 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->andReturn((object) ['return' => '0']);
         $settleClient->shouldReceive('bpSettleRequest')
             ->once()
-            ->andReturn((object) ['return' => '45']);
+            ->andReturn((object) ['return' => '45']); // 45 = Transaction already settled
 
-        $processor    = new MellatGatewayPaymentProcessor($factory);
+        $processor    = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
         $callbackData = [
             'RefId'           => 'REF123456789',
             'ResCode'         => '0',
-            'SaleOrderId'     => (string) $order->increment_id,
-            'SaleReferenceId' => 'SALE-REF',
+            'SaleOrderId'     => $transactionRef,
+            'SaleReferenceId' => 'SALE-REF-456',
         ];
 
         $pendingPayment = Payment::query()->findOrFail($payment->id);
         $updatedPayment = $processor->verify($pendingPayment, $callbackData);
 
-        expect($updatedPayment->status)->toBe(PaymentStatusEnum::COMPLETED);
+        expect($updatedPayment->status)->toBe(PaymentStatusEnum::COMPLETED)
+            ->and($updatedPayment->last_gateway_reference)->toBe('SALE-REF-456');
+
         Event::assertDispatched(PaymentCompletedEvent::class, function (PaymentCompletedEvent $event) use ($updatedPayment): bool {
             return $event->payment->is($updatedPayment);
         });
@@ -306,11 +361,19 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             'status' => PaymentStatusEnum::PENDING->value,
             'data'   => [],
         ]);
+        $payment->transactions()->create([
+            'transaction_reference' => 'TXN-FAIL',
+            'attempt_number'        => 1,
+            'status'                => \App\Enums\Payment\PaymentTransactionStatusEnum::INITIATED->value,
+            'gateway_request'       => ['dummy' => true],
+            'gateway_response'      => [],
+            'initiated_at'          => now(),
+        ]);
 
         $factory = Mockery::mock(SoapClientFactory::class);
         $factory->shouldNotReceive('create');
 
-        $processor    = new MellatGatewayPaymentProcessor($factory);
+        $processor    = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
         $callbackData = [
             'RefId'   => 'REF-FAIL',
             'ResCode' => '12',
@@ -323,22 +386,34 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         Event::assertNothingDispatched();
     });
 
-    it('marks payment as failed when callback data is missing', function (): void {
+    it('marks payment as failed when callback data is missing required fields', function (): void {
         $payment = Payment::factory()->create([
             'method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
             'status' => PaymentStatusEnum::PENDING->value,
             'data'   => [],
         ]);
+        $payment->transactions()->create([
+            'transaction_reference' => 'TXN-MISSING',
+            'attempt_number'        => 1,
+            'status'                => \App\Enums\Payment\PaymentTransactionStatusEnum::INITIATED->value,
+            'gateway_request'       => ['dummy' => true],
+            'gateway_response'      => [],
+            'initiated_at'          => now(),
+        ]);
 
-        $processor = new MellatGatewayPaymentProcessor(Mockery::mock(SoapClientFactory::class));
+        $processor = new MellatGatewayPaymentProcessor(Mockery::mock(SoapClientFactory::class), app(\App\Services\PaymentTransactionReferenceService::class));
 
+        // Missing RefId and ResCode
         expect(fn () => $processor->verify($payment, []))
             ->toThrow(MellatException::class);
 
         $payment->refresh();
-        expect($payment->status)->toBe(PaymentStatusEnum::FAILED)
-            ->and($payment->data)->toHaveKey('verification_error')
-            ->and($payment->data['verification_error'])->toBeString();
+        expect($payment->status)->toBe(PaymentStatusEnum::FAILED);
+
+        $transaction = $payment->transactions()->latest()->first();
+        expect($transaction->status->value)->toBe(\App\Enums\Payment\PaymentTransactionStatusEnum::FAILED->value)
+            ->and($transaction->completed_at)->not->toBeNull()
+            ->and($transaction->error_message)->not->toBeNull();
     });
 
     it('marks payment as failed when settlement is unsuccessful', function (): void {
@@ -348,6 +423,15 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             'method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
             'status' => PaymentStatusEnum::PENDING->value,
             'data'   => [],
+        ]);
+        $transactionRef = 'TXN-SETTLE-FAIL';
+        $payment->transactions()->create([
+            'transaction_reference' => $transactionRef,
+            'attempt_number'        => 1,
+            'status'                => \App\Enums\Payment\PaymentTransactionStatusEnum::INITIATED->value,
+            'gateway_request'       => ['orderId' => $transactionRef],
+            'gateway_response'      => [],
+            'initiated_at'          => now(),
         ]);
 
         $verifyClient = Mockery::mock(SoapClient::class);
@@ -363,21 +447,25 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->andReturn((object) ['return' => '0']);
         $settleClient->shouldReceive('bpSettleRequest')
             ->once()
-            ->andReturn((object) ['return' => '1']);
+            ->andReturn((object) ['return' => '1']); // Error code 1
 
-        $processor    = new MellatGatewayPaymentProcessor($factory);
+        $processor    = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
         $callbackData = [
             'RefId'           => 'REF123',
             'ResCode'         => '0',
-            'SaleOrderId'     => 'SALE-ORDER',
+            'SaleOrderId'     => $transactionRef,
             'SaleReferenceId' => 'SALE-REF',
         ];
 
         $pendingPayment = Payment::query()->findOrFail($payment->id);
         $updatedPayment = $processor->verify($pendingPayment, $callbackData);
 
-        expect($updatedPayment->status)->toBe(PaymentStatusEnum::FAILED)
-            ->and($updatedPayment->data['settlement_failed'])->toBeTrue();
+        expect($updatedPayment->status)->toBe(PaymentStatusEnum::FAILED);
+
+        // Check transaction record for failure details
+        $transaction = $payment->transactions()->latest()->first();
+        expect($transaction->status->value)->toBe(\App\Enums\Payment\PaymentTransactionStatusEnum::FAILED->value)
+            ->and($transaction->error_message)->toContain('Settlement failed');
 
         Event::assertNothingDispatched();
     });
@@ -390,40 +478,14 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             'status' => PaymentStatusEnum::PENDING->value,
             'data'   => [],
         ]);
-
-        $verifyClient = Mockery::mock(SoapClient::class);
-        $factory      = Mockery::mock(SoapClientFactory::class);
-        $factory->shouldReceive('create')
-            ->once()
-            ->with('https://mellat.test/wsdl')
-            ->andReturn($verifyClient);
-
-        $verifyClient->shouldReceive('bpVerifyRequest')
-            ->once()
-            ->andReturn((object) ['return' => '1']);
-
-        $processor    = new MellatGatewayPaymentProcessor($factory);
-        $callbackData = [
-            'RefId'           => 'REF123',
-            'ResCode'         => '0',
-            'SaleOrderId'     => 'ORDER-1',
-            'SaleReferenceId' => 'SALE-REF',
-        ];
-
-        $pendingPayment = Payment::query()->findOrFail($payment->id);
-        $updatedPayment = $processor->verify($pendingPayment, $callbackData);
-
-        expect($updatedPayment->status)->toBe(PaymentStatusEnum::FAILED)
-            ->and($updatedPayment->data['verification_failed'])->toBeTrue();
-
-        Event::assertNothingDispatched();
-    });
-
-    it('rethrows Mellat exception when verification SOAP call fails', function (): void {
-        $payment = Payment::factory()->create([
-            'method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
-            'status' => PaymentStatusEnum::PENDING->value,
-            'data'   => [],
+        $transactionRef = 'TXN-VERIFY-NEG';
+        $payment->transactions()->create([
+            'transaction_reference' => $transactionRef,
+            'attempt_number'        => 1,
+            'status'                => \App\Enums\Payment\PaymentTransactionStatusEnum::INITIATED->value,
+            'gateway_request'       => ['orderId' => $transactionRef],
+            'gateway_response'      => [],
+            'initiated_at'          => now(),
         ]);
 
         $verifyClient = Mockery::mock(SoapClient::class);
@@ -435,21 +497,71 @@ describe('MellatGatewayPaymentProcessor', function (): void {
 
         $verifyClient->shouldReceive('bpVerifyRequest')
             ->once()
-            ->andThrow(new SoapFault('Server', 'fail'));
+            ->andReturn((object) ['return' => '1']); // Verification failed
 
-        $processor = new MellatGatewayPaymentProcessor($factory);
+        $processor    = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
+        $callbackData = [
+            'RefId'           => 'REF123',
+            'ResCode'         => '0',
+            'SaleOrderId'     => $transactionRef,
+            'SaleReferenceId' => 'SALE-REF',
+        ];
+
+        $pendingPayment = Payment::query()->findOrFail($payment->id);
+        $updatedPayment = $processor->verify($pendingPayment, $callbackData);
+
+        expect($updatedPayment->status)->toBe(PaymentStatusEnum::FAILED);
+
+        // Check transaction record for failure details
+        $transaction = $payment->transactions()->latest()->first();
+        expect($transaction->status->value)->toBe(\App\Enums\Payment\PaymentTransactionStatusEnum::FAILED->value)
+            ->and($transaction->error_message)->toContain('Gateway verification failed');
+
+        Event::assertNothingDispatched();
+    });
+
+    it('rethrows Mellat exception when verification SOAP call fails', function (): void {
+        $payment = Payment::factory()->create([
+            'method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
+            'status' => PaymentStatusEnum::PENDING->value,
+            'data'   => [],
+        ]);
+        $transactionRef = 'TXN-VERIFY-ERR';
+        $payment->transactions()->create([
+            'transaction_reference' => $transactionRef,
+            'attempt_number'        => 1,
+            'status'                => \App\Enums\Payment\PaymentTransactionStatusEnum::INITIATED->value,
+            'gateway_request'       => ['orderId' => $transactionRef],
+            'gateway_response'      => [],
+            'initiated_at'          => now(),
+        ]);
+
+        $verifyClient = Mockery::mock(SoapClient::class);
+        $factory      = Mockery::mock(SoapClientFactory::class);
+        $factory->shouldReceive('create')
+            ->once()
+            ->with('https://mellat.test/wsdl')
+            ->andReturn($verifyClient);
+
+        $verifyClient->shouldReceive('bpVerifyRequest')
+            ->once()
+            ->andThrow(new SoapFault('Server', 'Connection timeout'));
+
+        $processor = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
 
         expect(fn () => $processor->verify($payment, [
             'RefId'           => 'REF123',
             'ResCode'         => '0',
-            'SaleOrderId'     => 'ORDER',
+            'SaleOrderId'     => $transactionRef,
             'SaleReferenceId' => 'SALE-REF',
         ]))->toThrow(MellatException::class);
 
         $payment->refresh();
-        expect($payment->status)->toBe(PaymentStatusEnum::FAILED)
-            ->and($payment->data)->toHaveKey('verification_error')
-            ->and($payment->data['verification_error'])->toBeString();
+        expect($payment->status)->toBe(PaymentStatusEnum::FAILED);
+
+        $transaction = $payment->transactions()->latest()->first();
+        expect($transaction->status->value)->toBe(\App\Enums\Payment\PaymentTransactionStatusEnum::FAILED->value)
+            ->and($transaction->error_message)->not->toBeNull();
     });
 
     it('rethrows Mellat exception when settlement SOAP call fails', function (): void {
@@ -457,6 +569,15 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             'method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
             'status' => PaymentStatusEnum::PENDING->value,
             'data'   => [],
+        ]);
+        $transactionRef = 'TXN-SETTLE-ERR';
+        $payment->transactions()->create([
+            'transaction_reference' => $transactionRef,
+            'attempt_number'        => 1,
+            'status'                => \App\Enums\Payment\PaymentTransactionStatusEnum::INITIATED->value,
+            'gateway_request'       => ['orderId' => $transactionRef],
+            'gateway_response'      => [],
+            'initiated_at'          => now(),
         ]);
 
         $verifyClient = Mockery::mock(SoapClient::class);
@@ -472,20 +593,22 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->andReturn((object) ['return' => '0']);
         $settleClient->shouldReceive('bpSettleRequest')
             ->once()
-            ->andThrow(new SoapFault('Server', 'fail'));
+            ->andThrow(new SoapFault('Server', 'Settlement service unavailable'));
 
-        $processor = new MellatGatewayPaymentProcessor($factory);
+        $processor = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
 
         expect(fn () => $processor->verify($payment, [
             'RefId'           => 'REF123',
             'ResCode'         => '0',
-            'SaleOrderId'     => 'ORDER',
+            'SaleOrderId'     => $transactionRef,
             'SaleReferenceId' => 'SALE-REF',
         ]))->toThrow(MellatException::class);
 
         $payment->refresh();
-        expect($payment->status)->toBe(PaymentStatusEnum::FAILED)
-            ->and($payment->data)->toHaveKey('verification_error')
-            ->and($payment->data['verification_error'])->toBeString();
+        expect($payment->status)->toBe(PaymentStatusEnum::FAILED);
+
+        $transaction = $payment->transactions()->latest()->first();
+        expect($transaction->status->value)->toBe(\App\Enums\Payment\PaymentTransactionStatusEnum::FAILED->value)
+            ->and($transaction->error_message)->not->toBeNull();
     });
 });

@@ -37,4 +37,24 @@ return [
          */
         'start_from' => (int) env('ORDER_INCREMENT_START', 100000001),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Order Provisioning Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Controls when orders are marked as completed and enrollment provisioning occurs.
+    | Supported triggers:
+    |   - 'any_payment': Provision immediately after any successful payment (default)
+    |   - 'full_payment': Provision only when order is fully paid (balance_due = 0)
+    |   - 'manual_approval': Provision only after staff manually approves the order
+    |
+    */
+
+    'provisioning' => [
+        /*
+         | Trigger point for order completion and enrollment provisioning
+         */
+        'trigger' => env('ORDER_PROVISIONING_TRIGGER', 'any_payment'),
+    ],
 ];

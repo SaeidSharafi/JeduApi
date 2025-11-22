@@ -52,7 +52,6 @@ it('can create a wallet payment successfully', function (): void {
 
     $paymentData = new PaymentCreateData(
         method: PaymentMethodEnum::WALLET->value,
-        status: PaymentStatusEnum::COMPLETED->value,
         data: null,
         admin_notes: 'Wallet payment test'
     );
@@ -112,13 +111,12 @@ it('fails when wallet has insufficient balance', function (): void {
 
     $paymentData = new PaymentCreateData(
         method: PaymentMethodEnum::WALLET->value,
-        status: PaymentStatusEnum::COMPLETED->value,
         data: null,
         admin_notes: 'Wallet payment test'
     );
 
     expect(fn () => (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->user))
-        ->toThrow(Illuminate\Validation\ValidationException::class);
+        ->toThrow(App\Exceptions\Payment\InsufficientWalletBalanceException::class);
 
     // Verify wallet balance unchanged
     $this->customer->wallet->refresh();
@@ -150,7 +148,6 @@ it('can process pre-payment wallet payment', function (): void {
 
     $paymentData = new PaymentCreateData(
         method: PaymentMethodEnum::WALLET->value,
-        status: PaymentStatusEnum::COMPLETED->value,
         data: null,
         admin_notes: 'Partial wallet payment'
     );
@@ -192,20 +189,16 @@ it('processes wallet payment with localized messages', function (): void {
 
     $paymentData = new PaymentCreateData(
         method: PaymentMethodEnum::WALLET->value,
-        status: PaymentStatusEnum::COMPLETED->value,
         data: null,
         admin_notes: 'Test'
     );
 
     try {
         (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->user);
-    } catch (Illuminate\Validation\ValidationException $e) {
-        $errors = $e->errors();
-
-        expect($errors)->toHaveKey('wallet_data.amount')
-            ->and($errors['wallet_data.amount'][0])->toContain(__('validation.custom.insufficient_balance_with_info', [
-                'available' => number_format(30000),
-                'required'  => number_format(50000),
-            ]));
+    } catch (App\Exceptions\Payment\InsufficientWalletBalanceException $e) {
+        expect($e->getAvailableBalance())
+            ->toBe(30000)
+            ->and($e->getRequiredBalance())->toBe(50000)
+            ->and($e->getShortfall())->toBe(20000);
     }
 });

@@ -33,6 +33,11 @@ final class OrderPolicy
         return $user->can(PermissionEnum::ORDER_UPDATE->value);
     }
 
+    public function approve(Staff $user, Order $order): bool
+    {
+        return $user->can(PermissionEnum::ORDER_APPROVE->value);
+    }
+
     public function delete(Staff $user, Order $order): bool
     {
         return $user->can(PermissionEnum::ORDER_DELETE->value);

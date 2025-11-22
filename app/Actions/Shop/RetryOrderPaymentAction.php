@@ -62,7 +62,6 @@ final readonly class RetryOrderPaymentAction
             // Build payment data
             $paymentData = new PaymentCreateData(
                 method: $paymentMethod->value,
-                status: 'pending', // Payment starts as pending
                 data: null, // No additional data needed for retry
                 admin_notes: 'Payment retry by customer',
             );

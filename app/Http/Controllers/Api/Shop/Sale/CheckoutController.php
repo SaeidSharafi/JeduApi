@@ -9,6 +9,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Cart\CheckoutData;
 use App\Data\Shop\Cart\CheckoutResponseData;
 use App\Data\Shop\Order\OrderData;
+use App\Exceptions\Payment\InsufficientWalletBalanceException;
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\ValidationException;
 
@@ -49,10 +50,23 @@ final class CheckoutController extends Controller
             ]);
         }
 
-        $result = $action->handle($data, auth()->user());
+        try {
+            $result = $action->handle($data, auth()->user());
+        } catch (InsufficientWalletBalanceException $e) {
+            // Map domain exception to standard validation error structure (422)
+            return response()->validationErrors([
+                'wallet_balance' => [[
+                    'error_code'          => 'INSUFFICIENT_WALLET_BALANCE',
+                    'available_balance'   => $e->availableBalance,
+                    'required_balance'    => $e->requiredBalance,
+                    'shortfall'           => $e->shortfall,
+                    'redirect_suggestion' => 'wallet-topup',
+                ]],
+            ]);
+        }
 
         // Build response with order data and optional redirect information
-        $order     = $result->payment->order->fresh(['items.productDeliveryOption.product', 'customer', 'payments']);
+        $order     = $result->payment->order->fresh(['items.productDeliveryOption.product', 'customer', 'payments.transactions']);
         $orderData = OrderData::from($order);
 
         if ($result->redirect_url) {

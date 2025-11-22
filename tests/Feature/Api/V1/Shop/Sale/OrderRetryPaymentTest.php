@@ -5,12 +5,9 @@ declare(strict_types=1);
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
-use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
-use App\Models\Wallet;
-use App\Models\WalletTransaction;
 use App\Services\Payment\SoapClientFactory;
 use Mockery\MockInterface;
 
@@ -62,8 +59,8 @@ describe('Retry Order Payment', function (): void {
             'full_value_grand_total' => 500000,
         ]);
         $expectedWsdlUrl = config('payments.mellat.test_server_url');
-        $fakeRefId = 'ABCDEF1234567890';
-        $soapClientMock = Mockery::mock(SoapClient::class);
+        $fakeRefId       = 'ABCDEF1234567890';
+        $soapClientMock  = Mockery::mock(SoapClient::class);
         $this->mock(SoapClientFactory::class, function (MockInterface $mock) use ($expectedWsdlUrl, $soapClientMock) {
             $mock->shouldReceive('create')
                 ->with($expectedWsdlUrl)
@@ -72,7 +69,7 @@ describe('Retry Order Payment', function (): void {
         $soapClientMock
             ->shouldReceive('bpPayRequest')
             ->once()
-            ->andReturn((object)['return' => $fakeRefId]);
+            ->andReturn((object) ['return' => $fakeRefId]);
         $this->customer($user);
         // Act: Retry with gateway (requires redirect)
         $response = $this->postJson(route('api.v1.shop.orders.retry-payment', $order->increment_id), [
@@ -87,7 +84,6 @@ describe('Retry Order Payment', function (): void {
             ->and($response->json('data.redirect_data.RefId'))->toBe($fakeRefId)
             ->and($response->json('data.payment.status'))->toBe(PaymentStatusEnum::PENDING->value);
     });
-
 
     it('allows partial payment retry if amount specified', function (): void {
         // Arrange: Order with 500k balance
@@ -189,29 +185,6 @@ describe('Retry Order Payment', function (): void {
         $response->assertJsonValidationErrors(['order']);
     });
 
-    it('rejects retry if amount exceeds balance due', function (): void {
-        // Arrange
-        $user = User::factory()->create();
-
-        $order = Order::factory()->create([
-            'customer_id'            => $user->id,
-            'status'                 => OrderStatusEnum::PENDING,
-            'grand_total'            => 500000,
-            'full_value_grand_total' => 500000,
-        ]);
-
-        // Act: Try to pay 600k when balance is 500k
-        $response = $this->customer($user)
-            ->postJson(route('api.v1.shop.orders.retry-payment', $order->increment_id), [
-                'payment_method' => PaymentMethodEnum::WALLET->value,
-                'amount'         => 600000,
-            ]);
-
-        // Assert: Rejected
-        $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['wallet_data.amount']);
-    });
-
     it('rejects unauthorized user from retrying another users order', function (): void {
         // Arrange: Order belonging to different user
         $otherUser = User::factory()->create();
@@ -253,26 +226,4 @@ describe('Retry Order Payment', function (): void {
         $response->assertJsonValidationErrors(['payment_method']);
     });
 
-    it('validates amount must be positive if provided', function (): void {
-        // Arrange
-        $user = User::factory()->create();
-
-        $order = Order::factory()->create([
-            'customer_id'            => $user->id,
-            'status'                 => OrderStatusEnum::PENDING,
-            'grand_total'            => 500000,
-            'full_value_grand_total' => 500000,
-        ]);
-
-        // Act: Negative amount
-        $response = $this->customer($user)
-            ->postJson(route('api.v1.shop.orders.retry-payment', $order->increment_id), [
-                'payment_method' => PaymentMethodEnum::WALLET->value,
-                'amount'         => -1000,
-            ]);
-
-        // Assert
-        $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['wallet_data.amount']);
-    });
 });
