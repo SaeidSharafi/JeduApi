@@ -45,6 +45,7 @@
 - **Content Management:** Categories with hierarchy, media management, and "good for start" recommendations
 - **Product Relationships:** Comprehensive related product management with support for related (similar/alternative), cross-sell (frequently bought together), and upsell (premium alternatives) relationships; includes list, filter by type, bulk attach/sync, and delete operations with validation to prevent self-referencing
 - **Site CMS:** Modular `App\Http\Controllers\Api\Admin\Content\*` controllers covering header, footer, about us, collaboration content, partners, sliders (with publication status toggles), and homepage blocks backed by reusable DTOs
+- **Student Story CMS:** Admin `StudentStoryController` now accepts featured flags plus `categories[]`/`courses[]` associations, while list endpoints expose `filter[course_id]` and `filter[category_id]` for precise moderation of curated testimonials
 - **Blog System:** Complete blog management with hierarchical categories, publication workflow, content relationships to educational materials, and automated scheduling
 - **Settings Management:** Settings index endpoint plus SmartCache-backed SettingsService with eviction observer to keep responses consistent across the admin and shop surfaces
 - **Form Intake:** Admin review workflows for advice requests alongside new collaboration/contact form submissions with attachment handling
@@ -66,6 +67,10 @@
 - **Category Browsing:** Hierarchical category listing and detail pages with product counts
 - **Category Products:** Browse products within categories by type (course, seminar, digital asset) with pagination
 - **Consultation Requests:** Request educational consultation via phone number submission with rate-limited form handling
+- **Cart & Checkout:** Persistent carts for guests and authenticated users (coupon support, capacity validation) feed the checkout pipeline that converts carts into orders and launches wallet, bank-transfer, or Mellat gateway processors with retry + callback verification endpoints
+- **Blog & Editorial Content:** Public `/api/v1/shop/blog/*` endpoints provide paginated blog post listings, slug detail retrieval, and category feeds with filtering by featured flag, category slug, and sort order for customer discovery
+- **Related Product Recommendations:** `/api/v1/shop/product/{slug}/related/{relation_type}` serves related, cross-sell, and upsell suggestions using `ProductQueryService` + `ProductPriceService` hydration for consistent card responses
+- **Student Story Filtering:** Home page student stories now accept `course_slug`, `category_slug`, and `featured_only` filters (with featured fallback) so the storefront can highlight context-aware testimonials without recomputing data client-side
 
 ### System Features
 - **Multi-tenancy Support:** Vendor-based product organization

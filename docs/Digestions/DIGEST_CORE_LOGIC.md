@@ -45,11 +45,8 @@
 - **Usage:** Intended for scheduled task (e.g., daily at midnight) to automatically update pricing when featured prices expireses that need lightweight thumbnail references without hydrating full media relations.
 
 #### Order Actions (`app/Actions/Admin/Order/`)
-- **CreateOrderAction** (`app/Actions/Admin/Order/CreateOrderAction.php`)
-  - `handle(OrderCreateData $data): Order`: Creates order bills with discount calculations, handles concurrency with pessimistic locking, validates duplicate purchases, creates enrolments
-- **UpdateOrderAction** (`app/Actions/Admin/Order/UpdateOrderAction.php`)
+  - `handle(OrderCreateData $data): Order`: Delegates all totals to `OrderCalculationService`, locks delivery options while validating requested payment types/quantities against live capacity (`enrolled_count`), snapshots product data per item, seeds enrollments in `AWAITING_PAYMENT`, and increments promotion usage counts when coupon-driven contexts are present
   - `handle(OrderUpdateData $data, Order $order): Order`: Updates existing order details and status
-- **DeleteOrderAction** (`app/Actions/Admin/Order/DeleteOrderAction.php`)
   - `handle(Order $order): void`: Handles order deletion and cleanup
 
 #### Payment Actions (`app/Actions/Admin/Payment/`)
@@ -245,6 +242,14 @@
 - **StoreAdviceRequestAction** (`app/Actions/Shop/Forms/StoreAdviceRequestAction.php`)
   - `handle(AdviceRequestCreateData $data): void`: Records phone numbers from users requesting educational consultation callbacks.
 
+#### Checkout & Payment Actions (`app/Actions/Shop/*`)
+- **CreateOrderFromCartAction** (`app/Actions/Shop/CreateOrderFromCartAction.php`)
+  - `handle(CheckoutData $checkoutData, User $user): PaymentProcessResultData`: Wraps the entire checkout pipeline—loads/validates the active cart (capacity, publication, duplicate ownership, order velocity), converts it into `OrderCreateData`, reuses `CreateOrderAction`, and then dispatches the selected payment processor. Returns redirect info for multi-step gateways or finalizes wallet/no-payment flows before clearing the cart.
+- **RetryOrderPaymentAction** (`app/Actions/Shop/RetryOrderPaymentAction.php`)
+  - `handle(Order $order, PaymentMethodEnum $method, ?int $amount = null): PaymentProcessResultData`: Allows customers to retry failed/pending orders, validating outstanding balance and order status before reissuing a processor-specific payment request (partial amounts supported via `amount`).
+- **VerifyPaymentAction** (`app/Actions/Shop/Payment/VerifyPaymentAction.php`)
+  - `handle(GatewayCallbackData $data): Payment`: Locks the pending payment by UUID, resolves the correct processor via `PaymentProcessorFactory`, and delegates gateway-specific verification/settlement workflows (Mellat, etc.), surfacing validation errors if the payment is no longer pending.
+
 ### Auth Actions (`app/Actions/Auth/`)
 - **GenerateOtpAction** (`app/Actions/Auth/GenerateOtpAction.php`)
   - `handle(string $identifier): string`: Creates time-limited verification codes
@@ -270,13 +275,50 @@
 
 ## Services Pattern (`app/Services/`)
 
+### PaymentProcessorFactory (`app/Services/Payment/PaymentProcessorFactory.php`)
+- **Purpose:** Resolves the appropriate `PaymentProcessorContract` implementation for a requested `PaymentMethodEnum`
+- **Mechanism:** Receives the tagged processor list from `PaymentServiceProvider`, iterates over `canHandle()` implementations, and surfaces meaningful exceptions when no processor supports the requested method
+
+### WalletPaymentProcessor (`app/Services/Payment/WalletPaymentProcessor.php`)
+- **Purpose:** Handles immediate wallet debits without redirects
+- **Workflow:** Validates sufficient balance, records a debit using `RecordWalletTransactionAction`, persists a completed `Payment`, and dispatches `PaymentCompletedEvent`. `verify()` is unsupported and throws by design.
+
+### BankTransferPaymentProcessor (`app/Services/Payment/BankTransferPaymentProcessor.php`)
+- **Purpose:** Supports both staff-recorded confirmations and customer-initiated bank transfers
+- **Workflow:**
+  - Staff flows require `BankTransferPaymentData` metadata and immediately complete the payment + dispatch completion events
+  - Customer flows create a pending payment awaiting offline review; validation errors raise `ValidationException`
+- **Redirect:** Not required; entirely manual/async.
+
+### MellatGatewayPaymentProcessor (`app/Services/Payment/MellatGatewayPaymentProcessor.php`)
+- **Purpose:** Implements the multi-step Mellat (بانک ملت) online gateway
+- **Process:**
+  - `process()` loads gateway credentials from config, initializes a SOAP client via `SoapClientFactory`, calls `bpPayRequest`, and returns `PaymentProcessResultData::pendingWithRedirect()` containing the target URL + RefId payload
+  - `verify()` locks the pending payment, performs `bpVerifyRequest` and `bpSettleRequest`, maps Mellat response codes to domain exceptions, and only dispatches `PaymentCompletedEvent` when both verification and settlement succeed; failures update the payment with diagnostic metadata
+
+### SoapClientFactory (`app/Services/Payment/SoapClientFactory.php`)
+- **Purpose:** Minimal helper that instantiates `SoapClient` instances from remote or local WSDL endpoints; wrapped to simplify mocking in unit tests
+
 ### OrderStatusService (`app/Services/OrderStatusService.php`)
 - **Purpose:** Centralized order and enrolment status management
 - **Public Methods:**
   - `handlePaymentCompletion(Order $order): void`: Cascades status updates after payment confirmation, updates order items and parent order status
-  - `updateEnrollmentStatus(OrderItem $item): void`: Updates enrolment access based on order item status changes
+  - `updateEnrollmentStatus(OrderItem $item): void`: Updates enrolment access based on order item status changes (completed items now move enrolments into `PENDING_PROVISIONING` before provisioning pipelines take over)
   - `completeOrderItemAfterPayment(OrderItem $item): void`: Internal method for item-level status updates
   - `updateParentOrderStatus(Order $order): void`: Updates parent order status based on item statuses
+
+### CartService (`app/Services/CartService.php`)
+- **Purpose:** Single façade for cart lifecycle management across authenticated and guest flows
+- **Key Capabilities:**
+  - `findOrCreateCart(?User $user = null): Cart`: Resolves carts via the `CartIdentifier` contract (user or guest token) and eagerly loads delivery options/products
+  - `addItem`, `updateItem`, `removeItem`: Validate capacity/payment type constraints before mutating cart rows
+  - `applyCoupon(ApplyCouponData $data): CartData`: Validates coupon codes via `PromotionFinder`, tracks them on the cart, and recalculates totals through `OrderCalculationService`
+  - `buildCartDataWithTotals(Cart $cart): CartData`: Hydrates DTOs with current pricing/discount context for API responses
+- **Special Notes:** Enforces an order velocity limit (5 orders/hour) during checkout and delegates cart persistence cleanup post-successful conversion
+
+### RequestCartIdentifier (`app/Services/Cart/RequestCartIdentifier.php`)
+- **Purpose:** HTTP-scoped implementation of `CartIdentifier` that decides whether to use an authenticated user ID or a persistent guest token (via `X-Guest-Token` header)
+- **Responsibilities:** Captures guard state at instantiation, exposes `userId()`, `guestToken()`, and `ensureGuestToken()` helpers used by `CartService` and middleware to keep carts consistent across sessions
 
 ### Discount Services (`app/Services/Discounts/`)
 
@@ -402,6 +444,7 @@
 - **Public Methods:**
   - `remember(string $key, Closure $callback, int $freshSeconds = 300, int $staleSeconds = 900)`: Core SWR wrapper returning fresh or stale payloads while refreshing asynchronously
   - `rememberHomepageContent(string $key, Closure $callback)`: Preset for homepage fragments (5 min fresh / 15 min stale)
+  - `rememberHomepageContent(string $key, Closure $callback)`: Preset for homepage fragments (5 min fresh / 15 min stale); keys can now encode filter hashes (e.g., student story course/category slug combos) with wildcard invalidation support to keep variant caches consistent.
   - `rememberSearchSuggestions(string $key, Closure $callback)`: Preset for search autocomplete (1 hour fresh / 4 hours stale)
   - `rememberTrendingContent(string $key, Closure $callback)`: Preset for trending widgets (10 min fresh / 30 min stale)
 - **Usage:** Powers search suggestions and homepage listings to balance freshness with perceived performance
@@ -410,7 +453,7 @@
 - **Purpose:** Central cache eviction utility invoked by `InvalidationObserver`
 - **Public Method:**
   - `invalidateForModel(string|Model $model, array $invalidationConfig): void`: Iterates configured keys/patterns, calling `SmartCache::forget()` and `SmartCache::flushPatterns()` with exception-safe logging
-- **Configuration:** Consumes `config/cache_invalidation.php` entries that can mix `CacheKeysEnum` values, literal keys, and wildcard patterns
+- **Configuration:** Consumes `config/cache_invalidation.php` entries that can mix `CacheKeysEnum` values, literal keys, and wildcard patterns (e.g., StudentStory now flushes `student_stories:*` variants whenever testimonials change)
 
 ### PgroongaService (`app/Services/PgroongaService.php`)
 - **Purpose:** Lightweight helper to detect PGroonga availability on PostgreSQL connections

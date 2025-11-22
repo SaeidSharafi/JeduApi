@@ -8,6 +8,8 @@
   - `hasMany(Enrollment::class, 'customer_id')` - enrollments
   - `hasOne(Wallet::class)` - wallet
   - `hasMany(Review::class)` - reviews
+  - `hasOne(Cart::class)` - cart
+  - `hasMany(Order::class, 'customer_id')` - orders
 - **Guard:** `user` (Sanctum authentication)
 
 ### Staff (`app/Models/Staff.php`)
@@ -34,7 +36,7 @@
   - `hasMany(Payment::class)` - payments
   - `hasMany(Enrollment::class, 'order_id')` - enrollments
   - `belongsTo(User::class, 'customer_id')` - customer
-- **Special Features:** Auto-incrementing order numbers, payment status calculations
+- **Special Features:** Auto-incrementing order numbers generated via `OrderIncrementIdService` (transaction-safe), payment status calculations
 
 ### Product (`app/Models/Product.php`)
 - **Purpose:** Sellable instances of educational content with polymorphic relationships
@@ -86,22 +88,35 @@
 
 ### ProductDeliveryOption (`app/Models/ProductDeliveryOption.php`)
 - **Purpose:** Specific purchase/delivery methods per product with pricing
-- **Key Fields:** `uuid` (UUID v7 auto-generated), `sku` (optional, auto-generated if not provided), `name`, `price`, `capacity`, `status`, `fulfillment_type`, `delivery_method`, `is_prepayment_available`, `prepayment_amount`, `is_featured`, `featured_price`, `featured_price_start_date`, `featured_price_end_date`, `registration_start_date`, `registration_end_date`, `available_from`, `available_to`, `details_json`
+- **Key Fields:** `uuid` (UUID v7 auto-generated), `sku` (optional, auto-generated if not provided), `name`, `price`, `capacity`, `enrolled_count`, `status`, `fulfillment_type`, `delivery_method`, `is_prepayment_available`, `prepayment_amount`, `is_featured`, `featured_price`, `featured_price_start_date`, `featured_price_end_date`, `registration_start_date`, `registration_end_date`, `available_from`, `available_to`, `details_json`
 - **Relationships:**
   - `belongsTo(Product::class)` - product
   - `hasMany(ProductDeliveryOptionDiscountPrice::class)` - discountPrices
   - `belongsToMany(Teacher::class, 'product_delivery_option_teacher')` - teachers
   - `hasMany(Enrollment::class, 'product_delivery_option_id')` - enrollments
   - `hasMany(OrderItem::class)` - orderItems
-- **Special Features:** UUID for external references, SKU auto-generation via `SkuGeneratorService` when not provided, capacity tracking with `withCapacityInfo()` and `availableWithCapacity()` scopes for enrollment limits
+- **Special Features:** UUID for external references, SKU auto-generation via `SkuGeneratorService` when not provided, capacity tracking backed by the persisted `enrolled_count` column (no more runtime `withCount`), and a `discountPrice` accessor that evaluates active discount windows using `starts_at`/`ends_at` timestamps on `ProductDeliveryOptionDiscountPrice`
+
+### Cart (`app/Models/Cart.php`)
+- **Purpose:** Persistent shopping carts for both authenticated customers and guest sessions
+- **Key Fields:** `user_id` (nullable), `guest_token` (UUID), `applied_coupon_code`
+- **Relationships:**
+  - `belongsTo(User::class)` - user
+  - `hasMany(CartItem::class)` - items
+- **Special Features:** Supports guest checkout via `guest_token`, enables post-login cart merges, and stores coupon context at the cart level
+
+### CartItem (`app/Models/CartItem.php`)
+- **Purpose:** Itemized cart entries representing specific `ProductDeliveryOption` selections
+- **Key Fields:** `cart_id`, `product_delivery_option_id`, `payment_type`, `quantity`
+- **Relationships:**
+  - `belongsTo(Cart::class)` - cart
+  - `belongsTo(ProductDeliveryOption::class)` - productDeliveryOption
+- **Special Features:** Casts `payment_type` to `OrderItemPaymentTypeEnum`, enforces uniqueness per cart/delivery option, and tracks multi-seat `quantity`
 
 ### ProductDeliveryOptionDiscountPrice (`app/Models/ProductDeliveryOptionDiscountPrice.php`)
-- **Purpose:** Discount pricing records for specific delivery options
-- **Key Fields:** `product_delivery_option_id`, `discount_promotion_id`, `discounted_price`, discount metadata
-- **Relationships:**
+ - **Key Fields:** `product_delivery_option_id`, `discount_promotion_id`, `discounted_price`, `starts_at`, `ends_at`, discount metadata
   - `belongsTo(ProductDeliveryOption::class)` - productDeliveryOption
   - `belongsTo(DiscountPromotion::class)` - discountPromotion
-- **Traits:** Uses `HasFactory` trait for test data generation
 
 ### OrderItem (`app/Models/OrderItem.php`)
 - **Purpose:** Individual line items within orders
@@ -121,14 +136,15 @@
   - `belongsTo(OrderItem::class)` - orderItem
   - `belongsTo(ProductDeliveryOption::class, 'product_delivery_option_id')` - productDeliveryOption
   - `hasOneThrough(Product::class, ProductDeliveryOption::class)` - product
-- **Special Features:** UUID (`uuid7`) generation on create for external references, enum-backed `enrollment_status`, date casting for access window, and JSON provisioning payloads
+- **Special Features:** UUID (`uuid7`) generation on create for external references, enum-backed `enrollment_status`, date casting for access window, JSON provisioning payloads, and dispatches `EnrollmentStatusChanged` on save/delete to keep projections synchronized
 
 ### Payment (`app/Models/Payment.php`)
 - **Purpose:** Financial transaction handling
-- **Key Fields:** `order_id`, `amount`, `status`, payment gateway details
+- **Key Fields:** `uuid`, `order_id`, `amount`, `method`, `status`, payment gateway details
 - **Relationships:** 
   - `belongsTo(Order::class)` - order
   - `hasMany(Refund::class)` - refunds
+- **Special Features:** Uses `HasUuids` for globally unique references and enum-casts `method` to `PaymentMethodEnum` for processor routing
 
 ### Refund (`app/Models/Refund.php`)
 - **Purpose:** Refund transaction records
@@ -258,9 +274,18 @@
 
 ### StudentStory (`app/Models/StudentStory.php`)
 - **Purpose:** Success stories and testimonials showcased on the storefront
-- **Key Fields:** `student_name`, `course_name`, `course_url`, `story_text`, `is_visible`, `display_order`
-- **Relationships:** Media attachments (avatar) via Mediable with accessor exposing `avatar_url`
-- **Special Features:** `visible()` scope limits listings to published stories; maintains ordered display via `display_order`
+- **Key Fields:** `student_name`, `course_name`, `course_url`, `story_text`, `avatar_url`, `is_visible`, `is_featured`, `display_order`
+- **Relationships:**
+  - Media attachments (avatar) via Mediable; `avatar_url` now persisted rather than computed on the fly
+  - `belongsToMany(Category::class)` via `HasCategories`
+  - `belongsToMany(Course::class, 'course_student_story')` - courses featured in the testimonial
+- **Special Features:** `visible()` and new `featured()` scopes drive storefront filtering; ordered display via `display_order`; category/course pivots enable admin/shop filtering; seeded demo data ships via `database/demo/student_stories.json`.
+
+### course_student_story (Pivot)
+- **Purpose:** Associates curated StudentStory testimonials with one or more Courses for filtering in admin/shop surfaces
+- **Key Fields:** `course_id`, `student_story_id`
+- **Constraints:** Composite primary key with cascading deletes to keep links in sync when either side is removed
+- **Usage:** Powers admin filters (`filter[course_id]`) and shop queries (`course_slug`) when retrieving relevant testimonials.
 
 ### CollaborationRequest (`app/Models/CollaborationRequest.php`)
 - **Purpose:** Incoming collaboration and partnership requests submitted from the shop
@@ -287,16 +312,16 @@
 
 ### BlogCategory (`app/Models/Blog/BlogCategory.php`)
 - **Purpose:** Hierarchical blog content organization
-- **Key Fields:** `name`, `slug`, `description`, `parent_id`, `icon`
+- **Key Fields:** `name`, `slug`, `description`, `parent_id`, `icon`, `meta_title`, `meta_description`, `meta_keywords`
 - **Relationships:**
   - `belongsTo(self::class, 'parent_id')` - parent (self-referencing hierarchy)
   - `hasMany(self::class, 'parent_id')` - children (self-referencing hierarchy)
   - `belongsToMany(BlogPost::class, 'blog_post_category')` - posts
-- **Special Features:** Media attachments for icons, hierarchical structure similar to Category model
+- **Special Features:** Media attachments for icons, SEO metadata fields for shop detail payloads, hierarchical structure similar to Category model, and published post counts sourced from the pivot.
 
 ### BlogPost (`app/Models/Blog/BlogPost.php`)
 - **Purpose:** Blog content management with publication workflow and content relationships
-- **Key Fields:** `title`, `slug`, `body`, `excerpt`, `author_id`, `status`, `published_at`, `read_time_minutes`, `is_featured`, `main_productable_id`, `main_productable_type`, `cover_image_url`
+- **Key Fields:** `title`, `slug`, `body`, `excerpt`, `author_id`, `status`, `published_at`, `read_time_minutes`, `is_featured`, `thumbnail_url`, `main_productable_id`, `main_productable_type`, `meta_title`, `meta_description`, `meta_keywords`
 - **Relationships:**
   - `belongsTo(Staff::class, 'author_id')` - author
   - `belongsToMany(BlogCategory::class, 'blog_post_category')` - categories
@@ -306,4 +331,4 @@
   - `morphTo()` - mainProductable (single featured productable)
   - `morphMany(Review::class, 'reviewable')` - reviews
 - **Traits:** Uses `HasMedia`, `HasReview`, and `Searchable` traits for standardized media management, review aggregation, and Scout/Typesense indexing
-- **Special Features:** Publication workflow with DRAFT/PUBLISHED/SCHEDULED/ARCHIVED statuses, automated read time calculation, featured content system, polymorphic relationships to educational content, automatic cover image URL generation from media
+- **Special Features:** Publication workflow with DRAFT/PUBLISHED/SCHEDULED/ARCHIVED statuses, automated read time calculation, featured content system, polymorphic relationships to educational content, automatic cover image URL generation from media, and enriched storefront payloads supplying author data, active categories, SEO metadata, and media collections.

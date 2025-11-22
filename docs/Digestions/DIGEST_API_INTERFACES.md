@@ -265,11 +265,11 @@
 - `destroy(HomePageBlock $homePageBlock)`: **Route:** `DELETE /api/v1/admin/settings/home-page-block/{home_page_block}` - **Delegates to:** Home page block deletion
 
 #### StudentStoryController (`app/Http/Controllers/Api/Admin/Content/StudentStoryController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/settings/student-stories` - **Response DTO:** StudentStoryData collection
-- `store(StudentStoryCreateData $request)`: **Route:** `POST /api/v1/admin/settings/student-stories` - **Request DTO:** StudentStoryCreateData - **Response DTO:** StudentStoryData
-- `show(StudentStory $studentStory)`: **Route:** `GET /api/v1/admin/settings/student-stories/{student_story}` - **Response DTO:** StudentStoryData
-- `update(StudentStoryUpdateData $request, StudentStory $studentStory)`: **Route:** `PUT /api/v1/admin/settings/student-stories/{student_story}` - **Response DTO:** StudentStoryData
-- `destroy(StudentStory $studentStory)`: **Route:** `DELETE /api/v1/admin/settings/student-stories/{student_story}` - **Delegates to:** Student story deletion
+- `index()`: **Route:** `GET /api/v1/admin/settings/student-stories` - **Filters:** `filter[student_name]`, `filter[course_name]`, exact `filter[is_visible]`, `filter[is_featured]`, plus callback filters `filter[course_id]`/`filter[category_id]` that leverage the new course + category pivots. Sortable by `student_name`, `course_name`, `display_order`, `created_at`. **Response DTO:** Paginated `StudentStoryListItemData`.
+- `store(StudentStoryCreateData $request)`: **Route:** `POST /api/v1/admin/settings/student-stories` - **Request DTO:** StudentStoryCreateData (now accepts `is_featured`, `categories[]`, `courses[]`, optional `avatar` media id) - **Response DTO:** `StudentStoryData` including attached categories/courses collections.
+- `show(StudentStory $studentStory)`: **Route:** `GET /api/v1/admin/settings/student-stories/{student_story}` - Loads media + relationships before returning `StudentStoryData` with avatar, categories, courses and feature flag.
+- `update(StudentStoryUpdateData $request, StudentStory $studentStory)`: **Route:** `PUT /api/v1/admin/settings/student-stories/{student_story}` - Mirrors `store()` contract for updating associations and feature status - **Response DTO:** `StudentStoryData`.
+- `destroy(StudentStory $studentStory)`: **Route:** `DELETE /api/v1/admin/settings/student-stories/{student_story}` - **Response:** 204 No Content.
 
 ### Review Management Controllers
 
@@ -370,6 +370,24 @@
 - `index()`: **Route:** `GET /api/v1/shop/my-courses` - **Delegates to:** User enrolment listing - **Response DTO:** EnrolmentData collection
 - `show(Enrolment $enrolment)`: **Route:** `GET /api/v1/shop/my-courses/{enrolment:uuid}` - **Delegates to:** Enrolment details with access validation - **Response DTO:** EnrolmentData
 
+#### CartController (`app/Http/Controllers/Api/Shop/Sale/CartController.php`)
+- `index()`: **Route:** `GET /api/v1/shop/cart` - **Guards:** Supports authenticated users or guests (via `X-Guest-Token`) - **Response DTO:** `CartData`
+- `store(AddCartItemData $request)`: **Route:** `POST /api/v1/shop/cart/items` - Adds a delivery option to the cart after validating capacity/payment type - **Response DTO:** `CartData`
+- `update(UpdateCartItemData $request, CartItem $cartItem)`: **Route:** `PUT /api/v1/shop/cart/items/{cartItem}` - Updates quantity for an existing cart item - **Response DTO:** `CartData`
+- `destroy(CartItem $cartItem)`: **Route:** `DELETE /api/v1/shop/cart/items/{cartItem}` - Removes an item - **Response:** `204 No Content`
+- `applyCoupon(ApplyCouponData $request)`: **Route:** `POST /api/v1/shop/cart/coupon` - Applies a coupon using PromotionFinder - **Response DTO:** `CartData`
+- `removeCoupon()`: **Route:** `DELETE /api/v1/shop/cart/coupon` - Clears any applied coupon - **Response DTO:** `CartData`
+
+#### CheckoutController (`app/Http/Controllers/Api/Shop/Sale/CheckoutController.php`)
+- `__invoke(CheckoutData $request, CreateOrderFromCartAction $action)`: **Route:** `POST /api/v1/shop/checkout` (requires `auth:user`, `profile.check`) - Converts the current cart into an order, runs `CreateOrderFromCartAction`, and returns `CheckoutResponseData` that either embeds a completed `OrderData` payload or redirect instructions for multi-step gateways (Mellat, etc.). Free orders auto-complete with `NO_PAYMENT`.
+
+#### OrderController (`app/Http/Controllers/Api/Shop/Sale/OrderController.php`)
+- `index()`: **Route:** `GET /api/v1/shop/orders` - Lists authenticated user orders (with items + payments eager loaded) - **Response DTO:** `OrderData` paginator
+- `show(string $incrementId)`: **Route:** `GET /api/v1/shop/orders/{order:increment_id}` - Returns a single order with nested items/payments - **Response DTO:** `OrderData`
+
+#### RetryPaymentController (`app/Http/Controllers/Api/Shop/Sale/RetryPaymentController.php`)
+- `__invoke(string $incrementId, RetryOrderPaymentData $request)`: **Route:** `POST /api/v1/shop/orders/{order:increment_id}/retry-payment` (throttled) - Revalidates eligibility and triggers `RetryOrderPaymentAction`, responding with either redirect metadata (pending gateway payment) or immediate success payload.
+
 ### Shop Public Endpoints (`/api/v1/shop/*`)
 **Authentication:** Unauthenticated public access
 
@@ -384,7 +402,10 @@
 - `__invoke(Request $request)`: **Route:** `GET /api/v1/shop/partners` - **Query Params:** `show_in=home|course` - **Response DTO:** PartnerData collection filtered by display location and cached per `PartnerShowInEnum`
 
 #### StudentStoryController (`app/Http/Controllers/Api/Shop/HomePage/StudentStoryController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/shop/student-stories` - **Response DTO:** StudentStoryData collection sorted by display order and cached by SmartCache
+- `__invoke(StudentStoryRequestData $request)`: **Route:** `GET /api/v1/shop/student-stories` - **Query Params:** `course_slug`, `category_slug`, `featured_only`, optional `limit`. Filters visible stories by requested course/category (matching both direct course relations and linked products) and falls back to featured stories when a requested slug yields no records. **Response DTO:** `StudentStoryData` collection ordered by `display_order` and cached per-parameter via `SWRCacheService` with wildcard invalidation support.
+
+#### GatewayCallbackController (`app/Http/Controllers/Api/Shop/Payment/GatewayCallbackController.php`)
+- `__invoke(Request $request, VerifyPaymentAction $action)`: **Route:** `POST /api/v1/shop/payment/gateway/callback` - Accepts Mellat/other gateway callbacks without auth, logs payloads, wraps them in `GatewayCallbackData`, and delegates to `VerifyPaymentAction`. Redirects customers to `shop.payment.*` web routes depending on resulting `PaymentStatusEnum`.
 
 ### Shop Public Product & Search Endpoints (`/api/v1/shop/*`)
 **Authentication:** Unauthenticated public access
@@ -410,6 +431,15 @@
 #### SuggestSearchController (`app/Http/Controllers/Api/Shop/SuggestSearchController.php`)
 - `__invoke(SearchSuggestRequestData $request, GlobalSearchService $service)`: **Route:** `GET /api/v1/shop/search/suggest` - **Request DTO:** SearchSuggestRequestData (`q`, optional `limit`) - **Delegates to:** `GlobalSearchService::suggest()` using SWR cache & Typesense autocomplete - **Response:** Array of suggestion strings
 
+#### BlogPostController (`app/Http/Controllers/Api/Shop/Blog/BlogPostController.php`)
+- `index(BlogPostListRequestData $request)`: **Route:** `GET /api/v1/shop/blog/posts` - **Request DTO:** BlogPostListRequestData (supports `is_featured`, `category_slug`, `sortBy=published_at|created_at`, `sortOrder`, pagination controls) - **Response DTO:** Paginated `BlogPostCardData` containing author summary, rating aggregates, Jalali `published_at`, thumbnail URL, featured flag, and attached categories. Only posts with `status=PUBLISHED` and `published_at <= now()` surface and the endpoint supports category slug filtering through `whereHas`.
+- `show(string $slug)`: **Route:** `GET /api/v1/shop/blog/post/{slug}` - **Response DTO:** `BlogPostDetailData` enriched with author data, media collections (cover/gallery/video tags), category cards, SEO metadata, and review aggregates. Returns 404 if the slug belongs to unpublished, scheduled, or missing posts.
+
+#### BlogCategoryController (`app/Http/Controllers/Api/Shop/Blog/BlogCategoryController.php`)
+- `index()`: **Route:** `GET /api/v1/shop/blog/categories` - **Response DTO:** `BlogCategoryCardData` collection ordered by name with `posts_count` reflecting currently published posts.
+- `show(string $slug)`: **Route:** `GET /api/v1/shop/blog/category/{slug}` - **Response DTO:** `BlogCategoryDetailData` (extends card payload with SEO metadata) and 404s when slug is unknown.
+- `posts(string $slug, BlogPostListRequestData $request)`: **Route:** `GET /api/v1/shop/blog/category/{slug}/posts` - **Request DTO:** BlogPostListRequestData (same sorting/filtering contract as the global blog post list plus optional featured-only filter) - **Response DTO:** Paginated `BlogPostCardData` for the requested category; respects `is_featured`, `sortBy`, `sortOrder`, and pagination inputs while excluding unpublished/future posts.
+
 ### Shop Public Category Endpoints (`/api/v1/shop/categories/*`)
 **Authentication:** Unauthenticated public access
 
@@ -431,6 +461,9 @@
 
 #### ProductTeacherController (`app/Http/Controllers/Api/Shop/ProductTeacherController.php`)
 - `__invoke(Product $product)`: **Route:** `GET /api/v1/shop/product/{product:slug}/teachers` - **URL Param:** `product:slug` - **Response DTO:** `TeacherDetailData` collection of unique teachers across all delivery options for the product
+
+#### RelatedProductController (`app/Http/Controllers/Api/Shop/Product/RelatedProductController.php`)
+- `__invoke(Product $product, RelationTypeEnum $relation_type)`: **Route:** `GET /api/v1/shop/product/{product:slug}/related/{relation_type}` - **URL Params:** `product:slug`, `relation_type` (`related|cross_sell|upsell`) - **Response DTO:** Array of `ProductCardData` items resolved via `ProductQueryService::availableProducts()->forListing()` plus `ProductPriceService` hydration. Returns an empty array when no relations match and automatically excludes unpublished/unavailable related products.
 
 #### HeaderController (`app/Http/Controllers/Api/Shop/Settings/HeaderController.php`)
 - `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/header` - **Response DTO:** HeaderData derived from SettingsService payload
