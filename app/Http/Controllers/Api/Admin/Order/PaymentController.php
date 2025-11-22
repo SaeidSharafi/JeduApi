@@ -42,24 +42,29 @@ final class PaymentController extends Controller
     /**
      * Store a newly created payment for an order.
      *
+     * For single-step payments (Wallet, Bank Transfer), the payment is completed immediately.
+     * For multi-step payments (Online Gateway), returns redirect information for customer.
      *
-     *
-     * @responseFile 201 responses/payment/show.json
-     *
-     * @response 400 scenario="amount to pay is zero" {
-     *    "message": "The amount to pay is zero.",
-     *    "errors": null,
-     *    "metadata" => []
-     * }
-     *
+     * @responseFile 201 responses/admin/payment/process-result.json
      * @responseFile 403 responses/403.json
      */
     public function store(PaymentCreateData $data, Order $order, CreatePaymentAction $action): ApiResponseInterface
     {
         Gate::authorize('create', Order::class);
-        $payment = $action->handle($order, $data, auth('staff')->user());
 
-        return response()->created(PaymentData::from($payment));
+        /** @var \App\Models\Staff $admin */
+        $admin = auth()->user();
+
+        $result = $action->handle($order, $data, $admin);
+
+        // Return different response based on whether redirect is required
+        return response()->created([
+            'payment'           => PaymentData::from($result->payment),
+            'requires_redirect' => $result->requiresRedirect(),
+            'redirect_url'      => $result->redirect_url,
+            'redirect_data'     => $result->redirect_data,
+            'redirect_method'   => $result->redirect_method,
+        ]);
     }
 
     /**

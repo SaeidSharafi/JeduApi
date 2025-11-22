@@ -21,6 +21,8 @@ use App\Http\Controllers\Api\Shop\Product\GoodForStartCoursesController;
 use App\Http\Controllers\Api\Shop\Product\RelatedProductController;
 use App\Http\Controllers\Api\Shop\Product\SeminarController;
 use App\Http\Controllers\Api\Shop\ProductTeacherController;
+use App\Http\Controllers\Api\Shop\Sale\CartController;
+use App\Http\Controllers\Api\Shop\Sale\CheckoutController;
 use App\Http\Controllers\Api\Shop\SearchController;
 use App\Http\Controllers\Api\Shop\Settings\FooterController;
 use App\Http\Controllers\Api\Shop\Settings\HeaderController;
@@ -75,3 +77,25 @@ Route::get('blog/post/{slug}', [BlogPostController::class, 'show'])->name('blog.
 Route::get('blog/categories', [BlogCategoryController::class, 'index'])->name('blog.categories.index');
 Route::get('blog/category/{slug}', [BlogCategoryController::class, 'show'])->name('blog.categories.show');
 Route::get('blog/category/{slug}/posts', [BlogCategoryController::class, 'posts'])->name('blog.categories.posts');
+
+// Cart Routes (supports both guest and authenticated users)
+Route::middleware([])
+    ->prefix('cart')
+    ->name('cart.')
+    ->group(function (): void {
+        Route::get('/', [CartController::class, 'index'])->name('index');
+        Route::post('items', [CartController::class, 'store'])->name('items.store');
+        Route::put('items/{cartItem}', [CartController::class, 'update'])->name('items.update');
+        Route::delete('items/{cartItem}', [CartController::class, 'destroy'])->name('items.destroy');
+        Route::post('coupon', [CartController::class, 'applyCoupon'])->name('coupon.apply');
+        Route::delete('coupon', [CartController::class, 'removeCoupon'])->name('coupon.remove');
+    });
+
+// Checkout Route (requires authentication)
+Route::post('checkout', CheckoutController::class)
+    ->middleware(['throttle:5,1', 'profile.check'])
+    ->name('checkout');
+
+// Payment Gateway Callback Route (public - no auth required)
+Route::post('payment/gateway/callback', App\Http\Controllers\Api\Shop\Payment\GatewayCallbackController::class)
+    ->name('payment.gateway.callback');

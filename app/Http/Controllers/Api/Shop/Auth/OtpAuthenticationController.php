@@ -13,7 +13,6 @@ use App\Exceptions\InvalidOtpCode;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyOtpRequest;
-
 final class OtpAuthenticationController extends Controller
 {
     public function __construct(

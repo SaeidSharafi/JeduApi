@@ -6,6 +6,7 @@ use App\Contracts\Payment\PaymentProcessorContract;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Providers\PaymentServiceProvider;
 use App\Services\Payment\BankTransferPaymentProcessor;
+use App\Services\Payment\MellatGatewayPaymentProcessor;
 use App\Services\Payment\PaymentProcessorFactory;
 use App\Services\Payment\WalletPaymentProcessor;
 
@@ -38,7 +39,7 @@ describe('PaymentServiceProvider', function (): void {
         $taggedProcessors = $this->app->tagged(PaymentServiceProvider::PAYMENT_PROCESSOR_TAG);
         $processors       = iterator_to_array($taggedProcessors);
 
-        expect($processors)->toHaveCount(2);
+        expect($processors)->toHaveCount(3);
 
         $processorClasses = array_map(fn ($processor): string|false => get_class($processor), $processors);
 
@@ -113,10 +114,11 @@ describe('PaymentProcessorFactory Integration', function (): void {
         expect($processor)->toBeInstanceOf(BankTransferPaymentProcessor::class)
             ->and($processor->canHandle(PaymentMethodEnum::BANK_TRANSFER))->toBeTrue();
     });
+    it('returns correct processor for MELLAT_GATEWAY payment method', function (): void {
+        $processor = $this->factory->make(PaymentMethodEnum::MELLAT_GATEWAY);
 
-    it('throws exception for unsupported payment method', function (): void {
-        expect(fn () => $this->factory->make(PaymentMethodEnum::ONLINE_GATEWAY))
-            ->toThrow(InvalidArgumentException::class, 'No payment processor found for method: online_gateway');
+        expect($processor)->toBeInstanceOf(MellatGatewayPaymentProcessor::class)
+            ->and($processor->canHandle(PaymentMethodEnum::MELLAT_GATEWAY))->toBeTrue();
     });
 
     it('throws exception for cash on delivery method', function (): void {
@@ -157,14 +159,14 @@ describe('PaymentProcessorFactory Integration', function (): void {
         // Test wallet processor
         expect($walletProcessor->canHandle(PaymentMethodEnum::WALLET))->toBeTrue()
             ->and($walletProcessor->canHandle(PaymentMethodEnum::BANK_TRANSFER))->toBeFalse()
-            ->and($walletProcessor->canHandle(PaymentMethodEnum::ONLINE_GATEWAY))->toBeFalse()
+            ->and($walletProcessor->canHandle(PaymentMethodEnum::MELLAT_GATEWAY))->toBeFalse()
             ->and($walletProcessor->canHandle(PaymentMethodEnum::CASH_ON_DELIVERY))->toBeFalse()
             ->and($walletProcessor->canHandle(PaymentMethodEnum::NO_PAYMENT))->toBeFalse();
 
         // Test bank transfer processor
         expect($bankTransferProcessor->canHandle(PaymentMethodEnum::BANK_TRANSFER))->toBeTrue()
             ->and($bankTransferProcessor->canHandle(PaymentMethodEnum::WALLET))->toBeFalse()
-            ->and($bankTransferProcessor->canHandle(PaymentMethodEnum::ONLINE_GATEWAY))->toBeFalse()
+            ->and($bankTransferProcessor->canHandle(PaymentMethodEnum::MELLAT_GATEWAY))->toBeFalse()
             ->and($bankTransferProcessor->canHandle(PaymentMethodEnum::CASH_ON_DELIVERY))->toBeFalse()
             ->and($bankTransferProcessor->canHandle(PaymentMethodEnum::NO_PAYMENT))->toBeFalse();
     });
@@ -182,7 +184,6 @@ describe('PaymentProcessorFactory Integration', function (): void {
 
     it('verifies error message format for unsupported methods', function (): void {
         $unsupportedMethods = [
-            PaymentMethodEnum::ONLINE_GATEWAY,
             PaymentMethodEnum::CASH_ON_DELIVERY,
             PaymentMethodEnum::NO_PAYMENT,
         ];

@@ -1,0 +1,103 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "data": [
+      {
+        "id": 2,
+        "increment_id": "100000002",
+        "status": {
+          "value": "completed",
+          "label": "enums.OrderStatusEnum.completed"
+        },
+        "customer_email": "customer@example.com",
+        "customer_phone": "09123456789",
+        "customer_first_name": "John",
+        "customer_last_name": "Doe",
+        "total_qty_ordered": 1,
+        "total_item_count": 1,
+        "subtotal": 500000,
+        "discount_amount": 0,
+        "tax_amount": 0,
+        "grand_total": 500000,
+        "total_paid": 500000,
+        "balance_due": 0,
+        "currency_code": "IRR",
+        "payment_status": {
+          "value": "paid",
+          "label": "enums.OrderPaymentStatusEnum.paid"
+        },
+        "applied_coupon_code": null,
+        "created_at": "1404-04-14 14:13:28",
+        "updated_at": "1404-04-14 14:15:10",
+        "items": []
+      },
+      {
+        "id": 1,
+        "increment_id": "100000001",
+        "status": {
+          "value": "pending",
+          "label": "enums.OrderStatusEnum.pending"
+        },
+        "customer_email": "customer@example.com",
+        "customer_phone": "09123456789",
+        "customer_first_name": "John",
+        "customer_last_name": "Doe",
+        "total_qty_ordered": 2,
+        "total_item_count": 2,
+        "subtotal": 1000000,
+        "discount_amount": 100000,
+        "tax_amount": 0,
+        "grand_total": 900000,
+        "total_paid": 0,
+        "balance_due": 900000,
+        "currency_code": "IRR",
+        "payment_status": {
+          "value": "pending",
+          "label": "enums.OrderPaymentStatusEnum.pending"
+        },
+        "applied_coupon_code": "SAVE10",
+        "created_at": "1404-04-13 10:05:15",
+        "updated_at": "1404-04-13 10:05:15",
+        "items": []
+      }
+    ],
+    "first_page_url": "http://jedu.test/api/v1/shop/orders?page=1",
+    "from": 1,
+    "last_page": 2,
+    "last_page_url": "http://jedu.test/api/v1/shop/orders?page=2",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; قبلی",
+        "page": null,
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/shop/orders?page=1",
+        "label": "1",
+        "page": 1,
+        "active": true
+      },
+      {
+        "url": "http://jedu.test/api/v1/shop/orders?page=2",
+        "label": "2",
+        "page": 2,
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/shop/orders?page=2",
+        "label": "بعدی &raquo;",
+        "page": 2,
+        "active": false
+      }
+    ],
+    "next_page_url": "http://jedu.test/api/v1/shop/orders?page=2",
+    "path": "http://jedu.test/api/v1/shop/orders",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 15,
+    "total": 26
+  },
+  "metadata": []
+}
+

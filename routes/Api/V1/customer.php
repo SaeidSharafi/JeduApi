@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\Shop\Sale\OrderController;
+use App\Http\Controllers\Api\Shop\Sale\RetryPaymentController;
+
 Route::middleware(['auth:user'])
     ->prefix('shop')
     ->name('shop.')
@@ -16,5 +19,17 @@ Route::middleware(['auth:user'])
             Route::get('/{enrollment:uuid}',
                 [App\Http\Controllers\Api\Shop\MyCourses\EnrollmentController::class, 'show'])
                 ->name('show');
+        });
+
+        Route::prefix('orders')->name('orders.')->group(function (): void {
+            Route::get('/', [OrderController::class, 'index'])
+                ->name('index');
+
+            Route::get('/{order:increment_id}', [OrderController::class, 'show'])
+                ->name('show');
+
+            Route::post('/{order:increment_id}/retry-payment', RetryPaymentController::class)
+                ->middleware('throttle:10,1')
+                ->name('retry-payment');
         });
     });

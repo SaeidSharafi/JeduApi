@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Content\PublicationStatusEnum;
-use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\User\GenderEnum;
@@ -33,6 +32,7 @@ final class ProductDeliveryOption extends Model
             'delivery_method',
             'price',
             'capacity',
+            'enrolled_count',
             'status',
             'is_prepayment_available',
             'prepayment_amount',
@@ -75,7 +75,8 @@ final class ProductDeliveryOption extends Model
     public function getTeachersName(): array
     {
         return $this->teachers->map(function ($teacher) {
-            $title = $teacher->gender === GenderEnum::FEMALE ? __('shop.teahcer_titles.sir') : __('shop.teahcer_titles.madam');
+            $title = $teacher->gender === GenderEnum::FEMALE ? __('shop.teahcer_titles.sir')
+                : __('shop.teahcer_titles.madam');
 
             return $title.' '.$teacher->first_name.' '.$teacher->last_name;
         })->toArray();
@@ -135,27 +136,18 @@ final class ProductDeliveryOption extends Model
     protected function availableWithCapacity($query)
     {
         return $query->available() // Use the query builder method, not scope method directly
-            ->where(function (Builder $q): void {
-                $q->whereNull('capacity')
-                    ->orWhereRaw('
-                      capacity > (
-                          SELECT COUNT(*)
-                          FROM enrollments
-                          WHERE product_delivery_option_id = product_delivery_options.id
-                          AND enrollment_status != ?
-                      )
-                  ', [EnrollmentStatusEnum::CANCELLED->value]);
-            });
+        ->where(function (Builder $q): void {
+            $q->whereNull('capacity')
+                ->orWhereColumn('capacity', '>', 'enrolled_count');
+        });
     }
 
     #[Scope]
     protected function withCapacityInfo($query)
     {
-        return $query->withCount([
-            'enrollments as enrolled_count' => function ($q): void {
-                $q->where('enrollment_status', '!=', EnrollmentStatusEnum::CANCELLED);
-            },
-        ]);
+        // enrolled_count is now a database column, no need for withCount
+        // This scope is kept for backward compatibility but does nothing now
+        return $query;
     }
 
     #[Scope]
@@ -181,14 +173,21 @@ final class ProductDeliveryOption extends Model
 
     protected function discountPrice(): Attribute
     {
-        if ($this->relationLoaded('productDeliveryOptionDiscountPrice')) {
-            return Attribute::make(
-                get: fn ($value, array $attributes) => $this->productDeliveryOptionDiscountPrice?->discounted_price ?? $this->price,
-            );
-        }
-
         return Attribute::make(
-            get: fn ($value, array $attributes) => $this->price,
+            get: function ($value, array $attributes) {
+                $discountRecord = $this->productDeliveryOptionDiscountPrice;
+
+                if (!$discountRecord) {
+                    return $this->price;
+                }
+                $now = now();
+                $starts = $discountRecord->starts_at;
+                $ends = $discountRecord->ends_at;
+
+                $isAfterStart = is_null($starts) || $now->greaterThanOrEqualTo($starts);
+                $isBeforeEnd = is_null($ends) || $now->lessThanOrEqualTo($ends);
+                return ($isAfterStart && $isBeforeEnd) ? $discountRecord->discounted_price : $this->price;
+            }
         );
     }
 

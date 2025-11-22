@@ -15,7 +15,7 @@ describe('GetNextPaymentDetailsAction', function (): void {
         $order = Order::factory()->create(['grand_total' => 10000]);
         $order->payments()->create([
             'customer_id' => $order->customer_id,
-            'method'      => PaymentMethodEnum::ONLINE_GATEWAY->value,
+            'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
             'amount'      => 10000,
             'status'      => 'completed',
         ]);
@@ -170,7 +170,7 @@ describe('GetNextPaymentDetailsAction', function (): void {
 
         $order->payments()->create([
             'customer_id' => $order->customer_id,
-            'method'      => PaymentMethodEnum::ONLINE_GATEWAY->value,
+            'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
             'amount'      => 20000,
             'status'      => App\Enums\Payment\PaymentStatusEnum::COMPLETED,
         ]);

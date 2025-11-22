@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Contracts\WalletTransactionSourceableContract;
 use App\Enums\Order\OrderPaymentStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Services\OrderIncrementIdService;
 use App\Traits\HasAuditor;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -50,18 +51,13 @@ final class Order extends Model implements WalletTransactionSourceableContract
 
     /**
      * Generate a unique, sequential increment ID for a new order.
+     *
+     * Uses OrderIncrementIdService for configurable pattern generation
+     * with proper transaction locking to prevent race conditions.
      */
     public static function generateIncrementId(): string
     {
-        // Lock the table for writing to prevent race conditions.
-        $lastOrder = self::query()->latest('id')->lockForUpdate()->first();
-
-        if (! $lastOrder) {
-            // Starting number for the first order
-            return '100000001';
-        }
-
-        return (string) (((int) $lastOrder->increment_id) + 1);
+        return app(OrderIncrementIdService::class)->generate();
     }
 
     public function items(): HasMany

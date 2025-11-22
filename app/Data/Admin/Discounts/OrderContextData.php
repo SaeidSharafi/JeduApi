@@ -13,7 +13,7 @@ use Spatie\LaravelData\DataCollection;
 final class OrderContextData extends Data
 {
     public function __construct(
-        public User $customer,
+        public ?User $customer,
 
         /** @var DataCollection<CalculatedOrderItemData> */
         #[DataCollectionOf(CalculatedOrderItemData::class)]
@@ -46,4 +46,39 @@ final class OrderContextData extends Data
         public ?DiscountPromotion $evaluating_promotion = null,
         public ?string $triggered_by_coupon_code = null,
     ) {}
+
+    /**
+     * Calculate the grand total (what the customer must pay).
+     * This is the SINGLE SOURCE OF TRUTH for the order's billable amount.
+     *
+     * For pre_payment items: total = prepayment_amount * qty
+     * For full_payment items: total = (price - discount) * qty
+     *
+     * @return int The final amount to be billed
+     */
+    public function calculateGrandTotal(): int
+    {
+        return $this->items->sum('total');
+    }
+
+    /**
+     * Calculate the subtotal (sum of all item prices before discounts).
+     * This represents the original value before any discounts are applied.
+     *
+     * @return int The sum of (price * quantity) for all items
+     */
+    public function calculateSubtotal(): int
+    {
+        return $this->items->sum(fn (CalculatedOrderItemData $item): int => $item->price * $item->qty);
+    }
+
+    /**
+     * Calculate the total discount amount applied across all items.
+     *
+     * @return int The sum of all discount_amount fields
+     */
+    public function calculateTotalDiscount(): int
+    {
+        return $this->items->sum('discount_amount');
+    }
 }

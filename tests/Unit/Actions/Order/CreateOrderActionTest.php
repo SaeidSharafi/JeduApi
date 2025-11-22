@@ -117,13 +117,13 @@ describe('CreateOrderAction', function (): void {
             'order_id'                   => $order->id,
             'customer_id'                => $user->id,
             'product_delivery_option_id' => $deliveryOption1->id,
-            'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
+            'enrollment_status'          => EnrollmentStatusEnum::AWAITING_PAYMENT->value,
         ]);
         \Pest\Laravel\assertDatabaseHas('enrollments', [
             'order_id'                   => $order->id,
             'customer_id'                => $user->id,
             'product_delivery_option_id' => $deliveryOption2->id,
-            'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
+            'enrollment_status'          => EnrollmentStatusEnum::AWAITING_PAYMENT->value,
         ]);
 
         Event::assertDispatched(OrderCreatedEvent::class, fn ($event): bool => $event->order->id === $order->id);
@@ -192,7 +192,7 @@ describe('CreateOrderAction', function (): void {
 
         expect(fn () => (app()->make(CreateOrderAction::class))->handle($data))
             ->toThrow(ValidationException::class, __('messages.order.items_already_purchased_or_active', [
-                'products' => $deliveryOption->name,
+                'products' => $deliveryOption->product->name,
             ]));
     });
 
@@ -261,9 +261,17 @@ describe('CreateOrderAction', function (): void {
         $data = new OrderCreateData(status: 'pending', customer_id: $user->id, items: $items, applied_coupon_code: null,
             admin_notes: null);
 
-        // Assert that the exception message contains both product names
-        expect(fn () => (app()->make(CreateOrderAction::class))->handle($data))
-            ->toThrow(ValidationException::class, 'Course A, Course B');
+        expect(fn() => (app()->make(CreateOrderAction::class))->handle($data))
+            ->toThrow(ValidationException::class, __('messages.order.items_already_purchased_or_active',
+                    [
+                        'products' =>
+                            collect([
+                                $deliveryOption1->product->name,
+                                $deliveryOption2->product->name,
+                            ])->sort()->join(', ')
+                    ]
+                )
+            );
     });
 
     it('throws ValidationException if a delivery option deosn\'t allow more than 1 quantity', function (): void {

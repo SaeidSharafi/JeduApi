@@ -19,7 +19,7 @@ it('finds an active promotion by coupon code', function (): void {
     );
 
     // Act
-    $found = app(PromotionFinder::class)->findApplicablePromotion($data);
+    $found = app(PromotionFinder::class)->findApplicablePromotion($data->applied_coupon_code);
 
     // Assert
     expect($found)->not->toBeNull()
@@ -35,7 +35,7 @@ it('does not find an inactive promotion', function (): void {
         items: [],
         applied_coupon_code: 'INACTIVE');
 
-    $found = app(PromotionFinder::class)->findApplicablePromotion($data);
+    $found = app(PromotionFinder::class)->findApplicablePromotion($data->applied_coupon_code);
 
     expect($found)->toBeNull();
 });
@@ -47,7 +47,7 @@ it('does not find an expired promotion', function (): void {
         customer_id: App\Models\User::factory()->create()->id,
         items: [], applied_coupon_code: 'EXPIRED');
 
-    $found = app(PromotionFinder::class)->findApplicablePromotion($data);
+    $found = app(PromotionFinder::class)->findApplicablePromotion($data->applied_coupon_code);
 
     expect($found)->toBeNull();
 });
@@ -60,7 +60,7 @@ it('finds an active promotion by ID', function (): void {
         items: [], applied_coupon_code: null, promotion_id: $promotion->id
     );
 
-    $found = app(PromotionFinder::class)->findApplicablePromotion($data);
+    $found = app(PromotionFinder::class)->findApplicablePromotion(promotionId: $promotion->id);
 
     expect($found)->not->toBeNull()
         ->and($found->id)->toBe($promotion->id);

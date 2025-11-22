@@ -11,13 +11,14 @@ test('to array', function (): void {
             'customer_id' => $payment->customer_id,
             'order_id'    => $payment->order_id,
             'amount'      => $payment->amount,
-            'method'      => $payment->method,
+            'method'      => $payment->method->value, // Enum cast
             'status'      => $payment->status->value,
             'data'        => $payment->data,
             'admin_notes' => $payment->admin_notes,
             'created_at'  => $payment->created_at?->utc()->toJSON(),
             'updated_at'  => $payment->updated_at?->utc()->toJSON(),
             'created_by'  => $payment->created_by,
+            'uuid'        => $payment->uuid, // Added UUID
         ]);
 });
 

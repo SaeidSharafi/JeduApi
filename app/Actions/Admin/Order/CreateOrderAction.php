@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Order;
 
-use App\Data\Admin\Discounts\CalculatedOrderItemData;
 use App\Data\Admin\Discounts\OrderContextData;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
@@ -15,6 +14,7 @@ use App\Events\OrderCreatedEvent;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\ProductDeliveryOption;
+use App\Models\User;
 use App\Services\Discounts\OrderCalculationService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +25,8 @@ use Illuminate\Validation\ValidationException;
 final readonly class CreateOrderAction
 {
     public function __construct(
-        private OrderCalculationService $orderCalculationService
+        private OrderCalculationService $orderCalculationService,
+        private ValidateNoDuplicatePurchasesAction $validateNoDuplicatePurchases,
     ) {}
 
     /**
@@ -37,7 +38,11 @@ final readonly class CreateOrderAction
     {
         $context                  = $this->orderCalculationService->calculate($data);
         $initialDeliveryOptionIds = $context->items->pluck('product_delivery_option.id');
-        $this->validateNoDuplicatePurchases($context->customer->id, $initialDeliveryOptionIds);
+        $deliveryOptions       = ProductDeliveryOption::query()
+            ->whereIn('id', $initialDeliveryOptionIds)
+            ->with('product')
+            ->get();
+        $this->validateNoDuplicatePurchases->handle($context->customer, $deliveryOptions);
 
         $order = DB::transaction(function () use ($data, $context): Order {
             $originalInputItems = collect($data->items)->keyBy('product_delivery_option_id');
@@ -82,7 +87,7 @@ final readonly class CreateOrderAction
                     'tax_amount'        => 0, // Placeholder
                 ]);
             }
-            $grandTotal = $orderItemsData->sum('total');
+            $grandTotal = $context->calculateGrandTotal();
             $order      = Order::create([
                 'increment_id'           => Order::generateIncrementId(),
                 'status'                 => $data->status, // This can be an initial status from the form
@@ -95,11 +100,11 @@ final readonly class CreateOrderAction
                 'total_item_count'       => $context->items->count(),
                 'total_qty_ordered'      => $context->items->sum('qty'),
 
-                // --- TOTALS CALCULATED FROM CONTEXT ---
-                'grand_total'            => $grandTotal, // The final, authoritative bill amount.
+                // --- TOTALS CALCULATED FROM CONTEXT (SINGLE SOURCE OF TRUTH) ---
+                'grand_total'            => $grandTotal, // The final, authoritative bill amount from context
                 'full_value_grand_total' => $context->subtotal_all_items,
-                'subtotal'               => $this->calculateSubtotalFromContext($context),
-                'discount_amount'        => $this->calculateTotalDiscountFromContext($context),
+                'subtotal'               => $context->calculateSubtotal(),
+                'discount_amount'        => $context->calculateTotalDiscount(),
                 'tax_amount'             => 0, // Placeholder
 
                 // --- AUDIT TRAIL FOR CART DISCOUNTS ---
@@ -123,7 +128,7 @@ final readonly class CreateOrderAction
                     'order_item_id'              => $item->id,
                     'customer_id'                => $context->customer->id,
                     'product_delivery_option_id' => $item->product_delivery_option_id,
-                    'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING,
+                    'enrollment_status'          => EnrollmentStatusEnum::AWAITING_PAYMENT,
                 ]);
             });
 
@@ -169,8 +174,7 @@ final readonly class CreateOrderAction
             ]);
         }
         if ($deliveryOption->capacity !== null) {
-            $enrolledCount = $deliveryOption->enrollments()
-                ->where('enrollment_status', '!=', EnrollmentStatusEnum::CANCELLED)->count();
+            $enrolledCount = $deliveryOption->enrolled_count;
             if (($enrolledCount + $itemData->qty_ordered) > $deliveryOption->capacity) {
                 $available = $deliveryOption->capacity - $enrolledCount;
                 throw ValidationException::withMessages([
@@ -200,49 +204,5 @@ final readonly class CreateOrderAction
                 ]),
             ]);
         }
-    }
-
-    /**
-     * Validates that the customer does not already have an active or pending enrollment
-     * for the given delivery options. This prevents accidental duplicate purchases while
-     * still allowing for legitimate re-purchases later.
-     *
-     * @param  Collection<int, int>  $deliveryOptionIds
-     *
-     * @throws ValidationException
-     */
-    private function validateNoDuplicatePurchases(int $customerId, Collection $deliveryOptionIds): void
-    {
-        $existingEnrollments = Enrollment::query()
-            ->where('customer_id', $customerId)
-            ->whereIn('product_delivery_option_id', $deliveryOptionIds)
-            ->whereIn('enrollment_status', [
-                EnrollmentStatusEnum::PENDING_PROVISIONING,
-                EnrollmentStatusEnum::ACTIVE,
-            ])
-            ->with('productDeliveryOption.product') // Load for better error message
-            ->get();
-
-        if ($existingEnrollments->isNotEmpty()) {
-            $purchasedProductNames = $existingEnrollments
-                ->map(fn (Enrollment $e) => $e->productDeliveryOption->name)
-                ->unique()
-                ->implode(', ');
-
-            throw ValidationException::withMessages([
-                'items' => __('messages.order.items_already_purchased_or_active',
-                    ['products' => $purchasedProductNames]),
-            ]);
-        }
-    }
-
-    private function calculateTotalDiscountFromContext(OrderContextData $context): int
-    {
-        return $context->items->sum('discount_amount');
-    }
-
-    private function calculateSubtotalFromContext(OrderContextData $context): int
-    {
-        return $context->items->sum(fn (CalculatedOrderItemData $i): int => $i->price * $i->qty);
     }
 }

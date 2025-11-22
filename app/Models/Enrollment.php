@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\EnrollmentStatusEnum;
+use App\Events\EnrollmentStatusChanged;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -64,8 +65,19 @@ final class Enrollment extends Model
     protected static function boot(): void
     {
         parent::boot();
+
         self::creating(function ($model): void {
             $model->uuid = (string) Str::uuid7();
+        });
+
+        self::saved(function (Enrollment $enrollment): void {
+            EnrollmentStatusChanged::dispatch(
+                $enrollment
+            );
+        });
+
+        self::deleting(function (Enrollment $enrollment): void {
+            EnrollmentStatusChanged::dispatch($enrollment);
         });
     }
 

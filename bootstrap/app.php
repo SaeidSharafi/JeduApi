@@ -33,6 +33,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('prices:index-all')
             ->twiceDailyAt(2, 14, 3)
             ->withoutOverlapping();
+
+        // Cancel abandoned pending orders (runs every 10 minutes, cancels orders older than 30 minutes)
+        $schedule->command('orders:cancel-abandoned --timeout=30')
+            ->everyTenMinutes()
+            ->withoutOverlapping();
     })
     ->withRouting(
         commands: __DIR__.'/../routes/console.php',
@@ -73,7 +78,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Register custom middleware aliases
         $middleware->alias([
-            'admin.audit' => App\Http\Middleware\AdminAuditMiddleware::class,
+            'admin.audit'   => App\Http\Middleware\AdminAuditMiddleware::class,
+            'profile.check' => App\Http\Middleware\ProfileCheckMiddleware::class,
         ]);
 
     })

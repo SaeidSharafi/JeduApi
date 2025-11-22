@@ -19,6 +19,7 @@ test('to array', function (): void {
             'delivery_method'           => $productDeliveryOption->delivery_method->value,
             'price'                     => $productDeliveryOption->price,
             'capacity'                  => $productDeliveryOption->capacity,
+            'enrolled_count'            => $productDeliveryOption->enrolled_count,
             'status'                    => $productDeliveryOption->status->value,
             'is_prepayment_available'   => $productDeliveryOption->is_prepayment_available,
             'prepayment_amount'         => $productDeliveryOption->prepayment_amount,
@@ -74,6 +75,17 @@ test('relation discount prices', function (): void {
         ->toBeInstanceOf(App\Models\ProductDeliveryOptionDiscountPrice::class)
         ->and($deliveryOption->productDeliveryOptionDiscountPrice->discounted_price)
         ->toEqual(5000);
+});
+test('relation enrollments', function (): void {
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create();
+    $enrollments    = App\Models\Enrollment::factory()->count(2)->create([
+        'product_delivery_option_id' => $deliveryOption->id,
+    ]);
+    $deliveryOption->load('enrollments');
+    expect($deliveryOption->enrollments)
+        ->toHaveCount(2)
+        ->and($deliveryOption->enrollments->first())
+        ->toBeInstanceOf(App\Models\Enrollment::class);
 });
 test('scope available', function (): void {
     $availableOption = App\Models\ProductDeliveryOption::factory()->create([

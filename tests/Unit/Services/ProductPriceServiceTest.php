@@ -254,8 +254,12 @@ describe('ProductPriceService: Updating Data', function (): void {
             'featured_price'            => 18000,
             'featured_price_start_date' => Carbon::yesterday(),
             'featured_price_end_date'   => Carbon::tomorrow(),
-        ])->has(ProductDeliveryOptionDiscountPrice::factory(['discounted_price' => 15000]))->create();
-
+        ])->has(ProductDeliveryOptionDiscountPrice::factory([
+            'discounted_price' => 15000,
+            'starts_at'      => Carbon::yesterday(),
+            'ends_at'        => Carbon::tomorrow(),
+        ]))->create();
+        $deliveryOption->load('productDeliveryOptionDiscountPrice');
         expect($this->priceService->getCurrentPriceForOption($deliveryOption))->toBe(15000);
     });
 

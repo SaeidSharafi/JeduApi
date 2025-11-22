@@ -103,7 +103,7 @@ final readonly class ProductPriceService
     {
         $standardPrice   = $option->price;
         $featuredPrice   = $this->getActiveFeaturedPrice($option);
-        $discountPrice   = $this->getDiscountPrice($option); // From catalog-style rules
+        $discountPrice   = $option->discount_price;
         $prePaymentPrice = $option->is_prepayment_available ? $option->prepayment_amount : null;
 
         // 2. Determine the final effective price using the "Best Price Wins" model
@@ -326,12 +326,22 @@ final readonly class ProductPriceService
         return ($isAfterStart && $isBeforeEnd) ? $option->featured_price : null;
     }
 
-    /**
-     * Get cached product-specific discount price.
-     */
-    private function getDiscountPrice(ProductDeliveryOption $option): ?int
-    {
-        // the productDeliveryOptionDiscountPrice should be loaded via eager loading
-        return $option->productDeliveryOptionDiscountPrice?->discounted_price;
-    }
+    ///**
+    // * Get cached product-specific discount price.
+    // */
+    //private function getDiscountPrice(ProductDeliveryOption $option): ?int
+    //{
+    //    $discountRecord = $option->productDeliveryOptionDiscountPrice;
+    //    if (!$discountRecord){
+    //        return $option->price;
+    //    }
+    //    $now    = now();
+    //    $starts = $discountRecord->starts_at;
+    //    $ends   = $discountRecord->ends_at;
+    //
+    //    $isAfterStart = is_null($starts) || $now->greaterThanOrEqualTo($starts);
+    //    $isBeforeEnd  = is_null($ends)   || $now->lessThanOrEqualTo($ends);
+    //
+    //    return ($isAfterStart && $isBeforeEnd) ? $discountRecord->discounted_price : $option->price;
+    //}
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Listeners;
 
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Events\EnrollmentStatusChanged;
 use App\Events\PaymentCompletedEvent;
 use App\Listeners\ProvisionPaidResourcesListener;
 use App\Models\Enrollment;
@@ -12,6 +13,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\ProductDeliveryOption;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 
 describe('ProvisionPaidResourcesListener', function (): void {
@@ -23,6 +25,9 @@ describe('ProvisionPaidResourcesListener', function (): void {
     });
 
     it('executes all delivery method checks without error', function (): void {
+        Event::fake([
+            EnrollmentStatusChanged::class,
+        ]);
         $order   = Order::factory()->create();
         $payment = Payment::factory()->for($order)->create(['status' => 'completed']);
 

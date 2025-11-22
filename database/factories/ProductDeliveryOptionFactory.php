@@ -49,6 +49,7 @@ final class ProductDeliveryOptionFactory extends Factory
             'delivery_method'           => $pdoType,
             'price'                     => $price,
             'capacity'                  => random_int(1, 100),
+            'enrolled_count'            => 0,
             'status'                    => PublicationStatusEnum::PUBLISHED->value,
             'is_prepayment_available'   => $prepaymentAvailable,
             'prepayment_amount'         => $prepaymentAvailable ? $prepaymentAmount : 0,
@@ -64,7 +65,7 @@ final class ProductDeliveryOptionFactory extends Factory
 
     public function withTeachers(int $maxTeachers = 3, $fixedAmount = false): static
     {
-        return $this->afterCreating(function (ProductDeliveryOption $deliveryOption,) use ($maxTeachers, $fixedAmount) {
+        return $this->afterCreating(function (ProductDeliveryOption $deliveryOption) use ($maxTeachers, $fixedAmount) {
             if (Teacher::count() < 10) {
                 Teacher::factory(15)->create();
             }

@@ -60,8 +60,8 @@ describe('PaymentProcessorFactory', function (): void {
     });
 
     it('throws exception when no processor can handle the method', function (): void {
-        expect(fn () => $this->factory->make(PaymentMethodEnum::ONLINE_GATEWAY))
-            ->toThrow(InvalidArgumentException::class, 'No payment processor found for method: online_gateway');
+        expect(fn () => $this->factory->make(PaymentMethodEnum::MELLAT_GATEWAY))
+            ->toThrow(InvalidArgumentException::class, 'No payment processor found for method: mellat_gateway');
     });
 
     it('returns first matching processor when multiple processors can handle same method', function (): void {
@@ -106,7 +106,7 @@ describe('PaymentProcessorFactory', function (): void {
 
     it('provides meaningful error messages for all unsupported methods', function (): void {
         $unsupportedMethods = [
-            ['method' => PaymentMethodEnum::ONLINE_GATEWAY, 'expected' => 'online_gateway'],
+            ['method' => PaymentMethodEnum::MELLAT_GATEWAY, 'expected' => 'mellat_gateway'],
             ['method' => PaymentMethodEnum::CASH_ON_DELIVERY, 'expected' => 'cash_on_delivery'],
             ['method' => PaymentMethodEnum::NO_PAYMENT, 'expected' => 'no_payment'],
         ];
@@ -153,13 +153,13 @@ describe('PaymentProcessorFactory', function (): void {
         // Test that processors correctly identify their supported methods
         expect($this->walletProcessor->canHandle(PaymentMethodEnum::WALLET))->toBeTrue()
             ->and($this->walletProcessor->canHandle(PaymentMethodEnum::BANK_TRANSFER))->toBeFalse()
-            ->and($this->walletProcessor->canHandle(PaymentMethodEnum::ONLINE_GATEWAY))->toBeFalse()
+            ->and($this->walletProcessor->canHandle(PaymentMethodEnum::MELLAT_GATEWAY))->toBeFalse()
             ->and($this->walletProcessor->canHandle(PaymentMethodEnum::CASH_ON_DELIVERY))->toBeFalse()
             ->and($this->walletProcessor->canHandle(PaymentMethodEnum::NO_PAYMENT))->toBeFalse();
 
         expect($this->bankTransferProcessor->canHandle(PaymentMethodEnum::BANK_TRANSFER))->toBeTrue()
             ->and($this->bankTransferProcessor->canHandle(PaymentMethodEnum::WALLET))->toBeFalse()
-            ->and($this->bankTransferProcessor->canHandle(PaymentMethodEnum::ONLINE_GATEWAY))->toBeFalse()
+            ->and($this->bankTransferProcessor->canHandle(PaymentMethodEnum::MELLAT_GATEWAY))->toBeFalse()
             ->and($this->bankTransferProcessor->canHandle(PaymentMethodEnum::CASH_ON_DELIVERY))->toBeFalse()
             ->and($this->bankTransferProcessor->canHandle(PaymentMethodEnum::NO_PAYMENT))->toBeFalse();
     });

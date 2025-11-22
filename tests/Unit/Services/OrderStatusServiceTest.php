@@ -121,16 +121,16 @@ describe('OrderStatusService', function (): void {
         expect($order->status)->toBe(OrderStatusEnum::CANCELLED);
     });
     // --- Testing updateEnrollmentStatus ---
-    it('updates enrollment to ACTIVE when item becomes COMPLETED', function () use ($createMockItem): void {
-        $item = $createMockItem(OrderItemStatusEnum::COMPLETED, EnrollmentStatusEnum::PENDING_PROVISIONING);
+    it('updates enrollment to PENDING_PROVISIONING when item becomes COMPLETED', function () use ($createMockItem): void {
+        $item = $createMockItem(OrderItemStatusEnum::COMPLETED, EnrollmentStatusEnum::AWAITING_PAYMENT);
 
         // Expect the enrollment's save method to be called
         $item->enrollment->shouldReceive('saveQuietly')->once();
 
         (new OrderStatusService())->updateEnrollmentStatus($item);
 
-        expect($item->enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::ACTIVE);
-        expect($item->enrollment->access_start_date)->not->toBeNull();
+        expect($item->enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::PENDING_PROVISIONING)
+            ->and($item->enrollment->access_start_date)->not->toBeNull();
     });
 
     it('updates enrollment to CANCELLED when item becomes REFUNDED', function () use ($createMockItem): void {
@@ -162,14 +162,14 @@ describe('OrderStatusService', function (): void {
             'status'       => OrderItemStatusEnum::PENDING,
             'payment_type' => OrderItemPaymentTypeEnum::PRE_PAYMENT,
         ]);
-        Enrollment::factory()->for($item1)->create(['enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING]);
+        Enrollment::factory()->for($item1)->create(['enrollment_status' => EnrollmentStatusEnum::AWAITING_PAYMENT]);
 
         // Item 2: Full payment, should become COMPLETED, enrollment ACTIVE
         $item2 = OrderItem::factory()->for($order)->create([
             'status'       => OrderItemStatusEnum::PENDING,
             'payment_type' => OrderItemPaymentTypeEnum::FULL_PAYMENT,
         ]);
-        Enrollment::factory()->for($item2)->create(['enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING]);
+        Enrollment::factory()->for($item2)->create(['enrollment_status' => EnrollmentStatusEnum::AWAITING_PAYMENT]);
 
         // --- Act ---
         (new OrderStatusService())->handlePaymentCompletion($order->fresh());
@@ -180,8 +180,8 @@ describe('OrderStatusService', function (): void {
         $this->assertDatabaseHas('order_items', ['id' => $item2->id, 'status' => OrderItemStatusEnum::COMPLETED->value]);
 
         // Both enrollments are now ACTIVE
-        $this->assertDatabaseHas('enrollments', ['id' => $item1->enrollment->id, 'enrollment_status' => EnrollmentStatusEnum::ACTIVE->value]);
-        $this->assertDatabaseHas('enrollments', ['id' => $item2->enrollment->id, 'enrollment_status' => EnrollmentStatusEnum::ACTIVE->value]);
+        $this->assertDatabaseHas('enrollments', ['id' => $item1->enrollment->id, 'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING->value]);
+        $this->assertDatabaseHas('enrollments', ['id' => $item2->enrollment->id, 'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING->value]);
 
         // The parent order is now COMPLETED because all its items are
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => OrderStatusEnum::COMPLETED->value]);

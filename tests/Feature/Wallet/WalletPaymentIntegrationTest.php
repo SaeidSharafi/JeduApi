@@ -59,10 +59,10 @@ it('can create a wallet payment successfully', function (): void {
 
     Event::fake();
 
-    $payment = (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->user);
+    $payment = (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->user)->payment;
 
     expect($payment->amount)->toBe(50000)
-        ->and($payment->method)->toBe(PaymentMethodEnum::WALLET->value)
+        ->and($payment->method)->toBe(PaymentMethodEnum::WALLET)
         ->and($payment->status)->toBe(PaymentStatusEnum::COMPLETED);
 
     $this->assertDatabaseHas('payments', [
@@ -155,7 +155,7 @@ it('can process pre-payment wallet payment', function (): void {
         admin_notes: 'Partial wallet payment'
     );
 
-    $payment = (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->user);
+    $payment = (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->user)->payment;
 
     expect($payment->amount)->toBe(20000);
 

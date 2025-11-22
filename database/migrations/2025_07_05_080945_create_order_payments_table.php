@@ -12,10 +12,11 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
+            $table->uuid()->unique();
             $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
             $table->foreignId('customer_id')->constrained('users')->restrictOnDelete();
             $table->unsignedBigInteger('amount');
-            $table->string('method')->comment('e.g., online_gateway, bank_transfer, admin_credit');
+            $table->string('method')->comment('e.g., mellat_gateway, bank_transfer, admin_credit');
             $table->string('status')->index()
                 ->default(App\Enums\Payment\PaymentStatusEnum::PENDING->value)
                 ->comment('pending, completed, failed');

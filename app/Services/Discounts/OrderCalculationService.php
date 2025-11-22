@@ -35,7 +35,7 @@ final class OrderCalculationService
         $context = $this->buildInitialContext($data);
 
         // 2. Find the promotion that should be applied (if any).
-        $promotion = $this->promotionFinder->findApplicablePromotion($data);
+        $promotion = $this->promotionFinder->findApplicablePromotion($data->applied_coupon_code, $data->promotion_id);
 
         if ($promotion && $promotion->type === DiscountTypeEnum::CART_CHECKOUT && $this->allConditionsPass($promotion, $context)) {
             $context->evaluating_promotion = $promotion;
@@ -51,9 +51,9 @@ final class OrderCalculationService
     /**
      * Assembles the initial OrderContextData from the raw request data.
      */
-    private function buildInitialContext(OrderCreateData $data): OrderContextData
+    private function buildInitialContext(OrderCreateData $data, bool $useFreshData = false): OrderContextData
     {
-        $customer = User::findOrFail($data->customer_id);
+        $customer = User::find($data->customer_id);
         $pdoIds   = collect($data->items)->pluck('product_delivery_option_id')->all();
 
         $deliveryOptions = ProductDeliveryOption::query()

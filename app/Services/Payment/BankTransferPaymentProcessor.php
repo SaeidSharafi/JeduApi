@@ -6,12 +6,14 @@ namespace App\Services\Payment;
 
 use App\Contracts\Payment\PaymentProcessorContract;
 use App\Data\Admin\Payment\PaymentCreateData;
+use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\PaymentCompletedEvent;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Staff;
+use BadMethodCallException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -24,15 +26,27 @@ final class BankTransferPaymentProcessor implements PaymentProcessorContract
         return $paymentMethod === PaymentMethodEnum::BANK_TRANSFER;
     }
 
+    public function requiresRedirect(): bool
+    {
+        return false; // Single-step payment
+    }
+
     public function process(
         Order $order,
         PaymentCreateData $paymentData,
         Authenticatable $adminUser,
         int $amountToPay
-    ): Payment {
-        if ($amountToPay > 0) {
+    ): PaymentProcessResultData {
+        // Only validate bank transfer details if initiated by admin/staff
+        // Customer-initiated payments (checkout) are created as PENDING without details
+        if ($amountToPay > 0 && $adminUser instanceof Staff) {
             $this->validateBankTransferDetails($paymentData);
         }
+
+        // Determine status: PENDING for customer checkout, or use provided status for admin
+        $status = $adminUser instanceof Staff
+            ? $paymentData->status
+            : PaymentStatusEnum::PENDING->value;
 
         // Create payment record
         $payment = $order->payments()->create([
@@ -40,7 +54,7 @@ final class BankTransferPaymentProcessor implements PaymentProcessorContract
             'created_by'  => $adminUser instanceof Staff ? $adminUser->id : null,
             'amount'      => $amountToPay,
             'method'      => $paymentData->method,
-            'status'      => $paymentData->status,
+            'status'      => $status,
             'admin_notes' => $paymentData->admin_notes,
             'data'        => $paymentData->data?->toArray(),
         ]);
@@ -50,7 +64,13 @@ final class BankTransferPaymentProcessor implements PaymentProcessorContract
             PaymentCompletedEvent::dispatch($payment);
         }
 
-        return $payment;
+        return PaymentProcessResultData::completed($payment);
+    }
+
+    public function verify(Payment $payment, array $callbackData): Payment
+    {
+        // Not needed for single-step payments
+        throw new BadMethodCallException('Bank transfer payments do not require verification');
     }
 
     /**
