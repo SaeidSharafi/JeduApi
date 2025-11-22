@@ -49,10 +49,9 @@ it('cancels enrollments when order is cancelled', function (): void {
     $orderItem = App\Models\OrderItem::factory()->for($order)->withEnrollment()->create([
         'payment_type' => App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT,
     ]);
-
+    $orderItem->enrollment->enrollment_status = EnrollmentStatusEnum::ACTIVE;
+    $orderItem->enrollment->save();
     $enrollment = $orderItem->enrollment;
-    expect($enrollment)->not->toBeNull();
-    expect($enrollment->enrollment_status)->not->toBe(EnrollmentStatusEnum::CANCELLED);
 
     $response = postJson(route('api.v1.shop.orders.cancel', $order->increment_id));
     $response->assertOk();
