@@ -299,6 +299,23 @@
 - **Relationships:** `belongsTo(Staff::class, 'handled_by_id')` - handler
 - **Special Features:** Enum-backed `status` with timestamps for handling workflow
 
+---
+
+## Recent Model Behavior Notes
+
+### ProductDeliveryOption Capacity
+- Capacity is enforced at checkout time; `enrolled_count` is used against `capacity` when creating orders.
+
+### DiscountPromotion & DiscountCoupon Counters
+- `DiscountPromotion.total_usage_count` and `DiscountCoupon.usage_count` increment only on successful checkout when the promotion/coupon is applied.
+
+### Payment Verification State
+- Payment verification is idempotent; only `PENDING` payments transition to `COMPLETED`. Re-verification attempts on non-pending payments are rejected.
+
+### Order & OrderItem Discount Snapshots
+- `Order.applied_cart_discounts_json` captures cart-level discounts at checkout.
+- `OrderItem.applied_discount_details_json` captures item-level discount details at checkout.
+
 ### ContactUsRequest (`app/Models/ContactUsRequest.php`)
 - **Purpose:** Customer contact form submissions captured from the shop CMS
 - **Key Fields:** `full_name`, `phone`, `subject`, `email`, `message`

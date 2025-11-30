@@ -558,6 +558,14 @@
   - comment (TEXT)
   - status (VARCHAR default pending, indexed)
   - is_featured (BOOLEAN)
+
+  ---
+
+  ## Behavior Clarifications
+  - Capacity checks occur at checkout time using `product_delivery_options.capacity` against `enrolled_count`.
+  - Discount counters: `discount_promotions.total_usage_count` and `discount_coupons.usage_count` increment only on successful checkout.
+  - Payments: `payments.status` transitions from `PENDING` to `COMPLETED` via gateway verification; re-verification on non-pending payments is rejected.
+  - Orders: `orders.applied_cart_discounts_json` and `order_items.applied_discount_details_json` store immutable snapshots of applied discounts at checkout.
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: INDEX(user_id, reviewable_type, reviewable_id), INDEX(status, is_featured), INDEX(reviewable_type, reviewable_id, status, is_featured), INDEX(reviewable_type, reviewable_id, status)
 
