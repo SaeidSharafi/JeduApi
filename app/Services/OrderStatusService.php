@@ -75,7 +75,7 @@ final class OrderStatusService
             if ($newStatus === EnrollmentStatusEnum::PENDING_PROVISIONING && is_null($item->enrollment->access_start_date)) {
                 $item->enrollment->access_start_date = now();
             }
-            $item->enrollment->saveQuietly();
+            $item->enrollment->save();
         }
     }
 

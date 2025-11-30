@@ -53,12 +53,13 @@ final class CancelOrderByCustomerAction
             $order->save();
 
             // Cancel any enrollments (if they exist, though they shouldn't for unpaid orders)
+            // Use each() instead of update() to fire model events for enrolled_count tracking
             $order->enrollments()
                 ->where('enrollment_status', '!=', EnrollmentStatusEnum::CANCELLED)
-                ->update([
-                    'enrollment_status' => EnrollmentStatusEnum::CANCELLED,
-                    'updated_at'        => now(),
-                ]);
+                ->each(function ($enrollment) {
+                    $enrollment->enrollment_status = EnrollmentStatusEnum::CANCELLED;
+                    $enrollment->save();
+                });
 
             // Reload relationships for the response
             $order->load([
