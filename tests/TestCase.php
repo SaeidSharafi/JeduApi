@@ -13,6 +13,7 @@ abstract class TestCase extends BaseTestCase
 {
     //use CreatesApplication;
     use RefreshDatabase;
+    use \Tests\Support\Traits\AuthTestTrait;
     use DateUtilTestTrait;
 
     protected $seed = true;

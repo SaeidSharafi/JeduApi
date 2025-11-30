@@ -124,8 +124,8 @@ describe('OrderStatusService', function (): void {
     it('updates enrollment to PENDING_PROVISIONING when item becomes COMPLETED', function () use ($createMockItem): void {
         $item = $createMockItem(OrderItemStatusEnum::COMPLETED, EnrollmentStatusEnum::AWAITING_PAYMENT);
 
-        // Expect the enrollment's save method to be called
-        $item->enrollment->shouldReceive('saveQuietly')->once();
+        // Expect the enrollment's save method to be called (changed from saveQuietly to allow event firing)
+        $item->enrollment->shouldReceive('save')->once();
 
         (new OrderStatusService())->updateEnrollmentStatus($item);
 
@@ -135,7 +135,7 @@ describe('OrderStatusService', function (): void {
 
     it('updates enrollment to CANCELLED when item becomes REFUNDED', function () use ($createMockItem): void {
         $item = $createMockItem(OrderItemStatusEnum::REFUNDED, EnrollmentStatusEnum::ACTIVE);
-        $item->enrollment->shouldReceive('saveQuietly')->once();
+        $item->enrollment->shouldReceive('save')->once();
 
         (new OrderStatusService())->updateEnrollmentStatus($item);
 
@@ -144,7 +144,7 @@ describe('OrderStatusService', function (): void {
 
     it('deos not cahnge enrollment status when item is PEDNING', function () use ($createMockItem): void {
         $item = $createMockItem(OrderItemStatusEnum::PENDING, EnrollmentStatusEnum::ACTIVE);
-        $item->enrollment->shouldNotReceive('saveQuietly');
+        $item->enrollment->shouldNotReceive('save');
 
         (new OrderStatusService())->updateEnrollmentStatus($item);
 

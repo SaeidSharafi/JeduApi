@@ -191,6 +191,27 @@ final readonly class CreateOrderFromCartAction
                 continue;
             }
 
+            // Check registration window (Gap #3 fix)
+            $now = now();
+            if ($deliveryOption->registration_start_date && $now->lt($deliveryOption->registration_start_date)) {
+                $errors["items.{$index}"] = ["Registration for '{$deliveryOption->product->name}' has not started yet."];
+                continue;
+            }
+            if ($deliveryOption->registration_end_date && $now->gt($deliveryOption->registration_end_date)) {
+                $errors["items.{$index}"] = ["Registration period for '{$deliveryOption->product->name}' has ended."];
+                continue;
+            }
+
+            // Check content availability window (Gap #4 fix)
+            if ($deliveryOption->available_from && $now->lt($deliveryOption->available_from)) {
+                $errors["items.{$index}"] = ["'{$deliveryOption->product->name}' is not yet available for purchase."];
+                continue;
+            }
+            if ($deliveryOption->available_to && $now->gt($deliveryOption->available_to)) {
+                $errors["items.{$index}"] = ["'{$deliveryOption->product->name}' is no longer available for purchase."];
+                continue;
+            }
+
             // Check capacity if applicable
             if ($deliveryOption->capacity !== null) {
                 $enrolledCount     = $deliveryOption->enrolled_count;

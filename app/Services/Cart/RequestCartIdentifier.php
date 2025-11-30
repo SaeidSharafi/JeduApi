@@ -11,44 +11,45 @@ use Illuminate\Support\Str;
 
 final class RequestCartIdentifier implements CartIdentifier
 {
-    private ?int $resolvedUserId = null;
     private ?string $resolvedGuestToken = null;
 
     public function __construct(
         private readonly Request $request,
         private readonly Guard $auth
-    ) {
-        $this->boot();
-    }
-
-    private function boot(): void
-    {
-        if ($this->auth->check()) {
-            $this->resolvedUserId    = (int) $this->auth->id();
-            $this->resolvedGuestToken = null;
-            return;
-        }
-
-        // Prefer header for headless APIs
-        $incoming = (string) ($this->request->headers->get('X-Guest-Token') ?? '');
-        if ($incoming !== '' && Str::isUuid($incoming)) {
-            $this->resolvedGuestToken = $incoming;
-        }
-    }
+    ) {}
 
     public function userId(): ?int
     {
-        return $this->resolvedUserId;
+        if ($this->auth->check()) {
+            return (int) $this->auth->id();
+        }
+        
+        return null;
     }
 
     public function guestToken(): ?string
     {
-        return $this->resolvedGuestToken;
+        if ($this->auth->check()) {
+            return null;
+        }
+        
+        if ($this->resolvedGuestToken) {
+            return $this->resolvedGuestToken;
+        }
+        
+        // Prefer header for headless APIs
+        $incoming = (string) ($this->request->headers->get('X-Guest-Token') ?? '');
+        if ($incoming !== '' && Str::isUuid($incoming)) {
+            $this->resolvedGuestToken = $incoming;
+            return $this->resolvedGuestToken;
+        }
+        
+        return null;
     }
 
     public function isGuest(): bool
     {
-        return $this->resolvedUserId === null;
+        return ! $this->auth->check();
     }
 
     public function ensureGuestToken(): string

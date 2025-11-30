@@ -25,6 +25,11 @@ final class PromotionFinder
             ->where(function ($q): void {
                 $q->whereNull('ends_at')->orWhere('ends_at', '>=', now());
             })
+            // Enforce total usage limit if set (Gap #2 fix)
+            ->where(function ($q): void {
+                $q->whereNull('usage_limit_total')
+                    ->orWhereColumn('total_usage_count', '<', 'usage_limit_total');
+            })
             ->with('rules');
 
         if ($appliedCouponCode) {

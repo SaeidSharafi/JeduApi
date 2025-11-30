@@ -173,6 +173,31 @@ final readonly class CreateOrderAction
                     ['product' => $deliveryOption->name]),
             ]);
         }
+
+        // Check registration window (Gap #3 fix)
+        $now = now();
+        if ($deliveryOption->registration_start_date && $now->lt($deliveryOption->registration_start_date)) {
+            throw ValidationException::withMessages([
+                "items.{$key}" => "Registration for '{$deliveryOption->name}' has not started yet.",
+            ]);
+        }
+        if ($deliveryOption->registration_end_date && $now->gt($deliveryOption->registration_end_date)) {
+            throw ValidationException::withMessages([
+                "items.{$key}" => "Registration period for '{$deliveryOption->name}' has ended.",
+            ]);
+        }
+
+        // Check content availability window (Gap #4 fix)
+        if ($deliveryOption->available_from && $now->lt($deliveryOption->available_from)) {
+            throw ValidationException::withMessages([
+                "items.{$key}" => "'{$deliveryOption->name}' is not yet available for purchase.",
+            ]);
+        }
+        if ($deliveryOption->available_to && $now->gt($deliveryOption->available_to)) {
+            throw ValidationException::withMessages([
+                "items.{$key}" => "'{$deliveryOption->name}' is no longer available for purchase.",
+            ]);
+        }
         if ($deliveryOption->capacity !== null) {
             $enrolledCount = $deliveryOption->enrolled_count;
             if (($enrolledCount + $itemData->qty_ordered) > $deliveryOption->capacity) {
