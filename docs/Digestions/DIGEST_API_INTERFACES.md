@@ -129,6 +129,11 @@
 - `update(OrderUpdateData $request, Order $order)`: **Route:** `PUT /api/v1/admin/order/{order}` - **Request DTO:** OrderUpdateData - **Response DTO:** OrderData
 - `destroy(Order $order)`: **Route:** `DELETE /api/v1/admin/order/{order}` - **Delegates to:** Order deletion
 
+#### Validation Error Keys (Clarifications)
+- Checkout validation errors for cart items use literal keys like `items.0`.
+- Wallet insufficient balance error key is `wallet_balance`.
+- Gateway verify on non-pending payments returns a validation error keyed `payment`.
+
 ### OrderCalculationController (`app/Http/Controllers/Api/Admin/OrderCalculationController.php`)
 - `__invoke(OrderCreateData $request)`: **Route:** `POST /api/v1/admin/order/preview` - **Request DTO:** OrderCreateData - **Delegates to:** OrderCalculationService::calculate() - **Response DTO:** OrderContextData
 

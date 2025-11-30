@@ -398,6 +398,31 @@
   - `storeProductPriceData(int $productId, ProductPriceData $priceData): void`: Caches price calculations
 - **Pattern:** Singleton service registered in AppServiceProvider for request lifecycle management
 
+---
+
+## Recent Behavior Clarifications
+
+### Gateway Verification Idempotency
+- Verification proceeds only when `Payment.status` is `PENDING`.
+- Duplicate callbacks against non-pending payments raise a validation error keyed `payment` and do not create additional enrollments/payments.
+
+### Capacity & Concurrency at Checkout
+- Capacity is enforced at checkout time; cart additions do not reserve capacity.
+- In last-spot race scenarios, the first successful checkout wins; subsequent checkouts receive validation errors on `items.0`.
+
+### Duplicate Ownership Across Options
+- Ownership is defined by `(productable_type, productable_id)` and prevents repurchase of the same underlying productable via different delivery options.
+
+### Discounts Evaluation & Counters
+- Promotions/coupons are evaluated at checkout time; expired promotions at checkout are ignored even if applied earlier.
+- `DiscountPromotion.total_usage_count` and `DiscountCoupon.usage_count` increment only on successful checkout.
+
+### Wallet Insufficient Balance Flow
+- Wallet checkout with insufficient funds returns a `wallet_balance` validation error; after top-up, retry completes normally.
+
+### Discount Snapshots on Orders
+- `Order.applied_cart_discounts_json` and `OrderItem.applied_discount_details_json` persist the applied discounts as immutable snapshots of checkout state.
+
 ### SkuGeneratorService (`app/Services/SkuGeneratorService.php`)
 - **Purpose:** Automatic SKU generation for product delivery options based on product type, term, and delivery method
 - **Public Methods:**
