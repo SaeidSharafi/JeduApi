@@ -191,6 +191,17 @@ final readonly class CreateOrderFromCartAction
                 continue;
             }
 
+            // Check registration window (Gap #3 fix)
+            $now = now();
+            if ($deliveryOption->registration_start_date && $now->lt($deliveryOption->registration_start_date)) {
+                $errors["items.{$index}"] = ["Registration for '{$deliveryOption->product->name}' has not started yet."];
+                continue;
+            }
+            if ($deliveryOption->registration_end_date && $now->gt($deliveryOption->registration_end_date)) {
+                $errors["items.{$index}"] = ["Registration period for '{$deliveryOption->product->name}' has ended."];
+                continue;
+            }
+
             // Check capacity if applicable
             if ($deliveryOption->capacity !== null) {
                 $enrolledCount     = $deliveryOption->enrolled_count;
