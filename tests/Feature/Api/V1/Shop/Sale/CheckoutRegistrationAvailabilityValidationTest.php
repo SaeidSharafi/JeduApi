@@ -11,6 +11,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Term;
 use App\Models\User;
 use App\Models\Vendor;
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 
 use function Pest\Laravel\postJson;
@@ -20,9 +21,9 @@ uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('Checkout registration & availability window validation', function (): void {
     /** Helper to build product + option with overrides */
     $makeOption = function (array $overrides = []): ProductDeliveryOption {
-        $vendor = Vendor::factory()->create();
-        $term   = Term::factory()->create();
-        $course = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $vendor  = Vendor::factory()->create();
+        $term    = Term::factory()->create();
+        $course  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         $product = Product::factory()->create([
             'vendor_id'        => $vendor->id,
             'term_id'          => $term->id,
@@ -33,38 +34,42 @@ describe('Checkout registration & availability window validation', function (): 
         ]);
 
         return ProductDeliveryOption::factory()->create(array_merge([
-            'product_id'             => $product->id,
-            'price'                  => 100000,
-            'capacity'               => 5,
-            'uuid'                   => Str::uuid()->toString(),
-            'status'                 => PublicationStatusEnum::PUBLISHED,
-            'registration_start_date'=> null,
-            'registration_end_date'  => null,
-            'available_from'         => null,
-            'available_to'           => null,
+            'product_id'              => $product->id,
+            'price'                   => 100000,
+            'capacity'                => 5,
+            'uuid'                    => Str::uuid()->toString(),
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'registration_start_date' => null,
+            'registration_end_date'   => null,
+            'available_from'          => null,
+            'available_to'            => null,
         ], $overrides));
     };
 
     it('fails when registration has not started yet', function () use ($makeOption): void {
-        $option = $makeOption(['registration_start_date' => now()->addHour()]);
+        $option   = $makeOption(['registration_start_date' => Carbon::parse('2026-01-01 12:00:00')]);
         $customer = User::factory()->create();
         $customer->wallet->update(['balance' => 500000]);
         $this->customer($customer);
 
         postJson(route('api.v1.shop.cart.items.store'), [
             'product_delivery_option_uuid' => $option->uuid,
-            'quantity' => 1,
+            'quantity'                     => 1,
         ])->assertOk();
 
         $response = postJson(route('api.v1.shop.checkout'), ['payment_method' => PaymentMethodEnum::WALLET->value]);
         $response->assertStatus(422)
-            ->assertJsonPath('errors.items.0.0', "Registration for '{$option->product->name}' has not started yet.");
+            ->assertJson([
+                'errors' => [
+                    'items.0' => ["Registration for '{$option->product->name}' has not started yet."],
+                ],
+            ]);
     });
 
     it('fails when registration period has ended', function () use ($makeOption): void {
         $option = $makeOption([
-            'registration_start_date' => now()->subDays(2),
-            'registration_end_date'   => now()->subDay(),
+            'registration_start_date' => Carbon::parse('2025-01-01'),
+            'registration_end_date'   => Carbon::parse('2025-06-01'),
         ]);
         $customer = User::factory()->create();
         $customer->wallet->update(['balance' => 500000]);
@@ -72,34 +77,42 @@ describe('Checkout registration & availability window validation', function (): 
 
         postJson(route('api.v1.shop.cart.items.store'), [
             'product_delivery_option_uuid' => $option->uuid,
-            'quantity' => 1,
+            'quantity'                     => 1,
         ])->assertOk();
 
         $response = postJson(route('api.v1.shop.checkout'), ['payment_method' => PaymentMethodEnum::WALLET->value]);
         $response->assertStatus(422)
-            ->assertJsonPath('errors.items.0.0', "Registration period for '{$option->product->name}' has ended.");
+            ->assertJson([
+                'errors' => [
+                    'items.0' => ["Registration period for '{$option->product->name}' has ended."],
+                ],
+            ]);
     });
 
     it('fails when product not yet available (available_from future)', function () use ($makeOption): void {
-        $option = $makeOption(['available_from' => now()->addHour()]);
+        $option   = $makeOption(['available_from' => Carbon::parse('2026-01-01 12:00:00')]);
         $customer = User::factory()->create();
         $customer->wallet->update(['balance' => 500000]);
         $this->customer($customer);
 
         postJson(route('api.v1.shop.cart.items.store'), [
             'product_delivery_option_uuid' => $option->uuid,
-            'quantity' => 1,
+            'quantity'                     => 1,
         ])->assertOk();
 
         $response = postJson(route('api.v1.shop.checkout'), ['payment_method' => PaymentMethodEnum::WALLET->value]);
         $response->assertStatus(422)
-            ->assertJsonPath('errors.items.0.0', "'{$option->product->name}' is not yet available for purchase.");
+            ->assertJson([
+                'errors' => [
+                    'items.0' => ["'{$option->product->name}' is not yet available for purchase."],
+                ],
+            ]);
     });
 
     it('fails when product availability has ended (available_to past)', function () use ($makeOption): void {
         $option = $makeOption([
-            'available_from' => now()->subDays(2),
-            'available_to'   => now()->subDay(),
+            'available_from' => Carbon::parse('2025-01-01'),
+            'available_to'   => Carbon::parse('2025-06-01'),
         ]);
         $customer = User::factory()->create();
         $customer->wallet->update(['balance' => 500000]);
@@ -107,27 +120,31 @@ describe('Checkout registration & availability window validation', function (): 
 
         postJson(route('api.v1.shop.cart.items.store'), [
             'product_delivery_option_uuid' => $option->uuid,
-            'quantity' => 1,
+            'quantity'                     => 1,
         ])->assertOk();
 
         $response = postJson(route('api.v1.shop.checkout'), ['payment_method' => PaymentMethodEnum::WALLET->value]);
         $response->assertStatus(422)
-            ->assertJsonPath('errors.items.0.0', "'{$option->product->name}' is no longer available for purchase.");
+            ->assertJson([
+                'errors' => [
+                    'items.0' => ["'{$option->product->name}' is no longer available for purchase."],
+                ],
+            ]);
     });
 
     it('succeeds when within both registration and availability windows', function () use ($makeOption): void {
         $option = $makeOption([
-            'registration_start_date' => now()->subHour(),
-            'registration_end_date'   => now()->addHour(),
-            'available_from'          => now()->subHour(),
-            'available_to'            => now()->addHour(),
+            'registration_start_date' => Carbon::parse('2025-01-01'),
+            'registration_end_date'   => Carbon::parse('2026-12-31'),
+            'available_from'          => Carbon::parse('2025-01-01'),
+            'available_to'            => Carbon::parse('2026-12-31'),
         ]);
         $customer = User::factory()->create();
         $customer->wallet->update(['balance' => 500000]);
         $this->customer($customer);
         postJson(route('api.v1.shop.cart.items.store'), [
             'product_delivery_option_uuid' => $option->uuid,
-            'quantity' => 1,
+            'quantity'                     => 1,
         ])->assertOk();
         postJson(route('api.v1.shop.checkout'), ['payment_method' => PaymentMethodEnum::WALLET->value])
             ->assertCreated();
