@@ -12,8 +12,8 @@ it('returns user id for authenticated users and no guest token', function (): vo
     $request = Request::create('/test', 'GET');
 
     $guard = m::mock(Guard::class);
-    $guard->expects('check')->andReturn(true);
-    $guard->expects('id')->andReturn(42);
+    $guard->allows('check')->andReturn(true);
+    $guard->allows('id')->andReturn(42);
 
     $identifier = new RequestCartIdentifier($request, $guard);
 
@@ -27,7 +27,7 @@ it('uses existing valid header token and does not mint a new one', function (): 
     $request  = Request::create('/test', 'GET', server: ['HTTP_X_GUEST_TOKEN' => $existing]);
 
     $guard = m::mock(Guard::class);
-    $guard->expects('check')->andReturn(false);
+    $guard->allows('check')->andReturn(false);
 
     $identifier = new RequestCartIdentifier($request, $guard);
 
@@ -44,7 +44,7 @@ it('mints a guest token when absent or invalid', function (): void {
     $request = Request::create('/test', 'GET', server: ['HTTP_X_GUEST_TOKEN' => 'invalid-token']);
 
     $guard = m::mock(Guard::class);
-    $guard->expects('check')->andReturn(false);
+    $guard->allows('check')->andReturn(false);
 
     $identifier = new RequestCartIdentifier($request, $guard);
 

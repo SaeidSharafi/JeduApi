@@ -35,7 +35,9 @@ final class AppServiceProvider extends ServiceProvider
             return new RequestDataCacheService();
         });
 
-        $this->app->singleton(CartIdentifier::class, RequestCartIdentifier::class);
+        // Scoped: singleton per request, but fresh for each request
+        // This ensures auth state is checked dynamically but token minting is stable within a request
+        $this->app->scoped(CartIdentifier::class, RequestCartIdentifier::class);
     }
 
     /**
