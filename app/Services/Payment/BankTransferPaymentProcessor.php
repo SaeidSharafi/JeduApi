@@ -32,10 +32,10 @@ final class BankTransferPaymentProcessor implements PaymentProcessorContract
     }
 
     public function process(
-        Order $order,
         PaymentCreateData $paymentData,
         Authenticatable $adminUser,
-        int $amountToPay
+        int $amountToPay,
+        ?Order $order = null
     ): PaymentProcessResultData {
         // Only validate bank transfer details if initiated by admin/staff
         // Customer-initiated payments (checkout) are created as PENDING without details

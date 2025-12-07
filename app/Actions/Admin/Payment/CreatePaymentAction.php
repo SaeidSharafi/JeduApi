@@ -53,7 +53,7 @@ final readonly class CreatePaymentAction
 
             $processor = $this->processorFactory->make(PaymentMethodEnum::from($data->method));
 
-            return $processor->process($order, $data, $admin, $amount);
+            return $processor->process($data, $admin, $amount, $order);
         });
     }
 

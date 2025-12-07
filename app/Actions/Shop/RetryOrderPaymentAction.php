@@ -70,10 +70,10 @@ final readonly class RetryOrderPaymentAction
             $processor = $this->processorFactory->make($paymentMethod);
 
             $result = $processor->process(
-                order: $order,
                 paymentData: $paymentData,
                 adminUser: Auth::guard('user')->user(),
-                amountToPay: $amountToPay
+                amountToPay: $amountToPay,
+                order: $order
             );
 
             return $result;

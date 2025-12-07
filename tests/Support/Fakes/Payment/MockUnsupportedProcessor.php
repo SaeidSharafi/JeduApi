@@ -20,7 +20,7 @@ final class MockUnsupportedProcessor implements PaymentProcessorContract
         return false; // Never handles any method
     }
 
-    public function process(Order $order, PaymentCreateData $paymentData, Authenticatable $adminUser, int $amountToPay): PaymentProcessResultData
+    public function process(PaymentCreateData $paymentData, Authenticatable $adminUser, int $amountToPay, ?Order $order): PaymentProcessResultData
     {
         return PaymentProcessResultData::completed(new Payment());
     }

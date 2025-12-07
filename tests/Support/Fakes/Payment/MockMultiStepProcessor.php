@@ -22,7 +22,7 @@ final class MockMultiStepProcessor implements PaymentProcessorContract
         return $paymentMethod === PaymentMethodEnum::MELLAT_GATEWAY;
     }
 
-    public function process(Order $order, PaymentCreateData $paymentData, Authenticatable $adminUser, int $amountToPay): PaymentProcessResultData
+    public function process(PaymentCreateData $paymentData, Authenticatable $adminUser, int $amountToPay, ?Order $order): PaymentProcessResultData
     {
         $fakeRefId = 'FAKE_REF_' . Str::random(10);
 

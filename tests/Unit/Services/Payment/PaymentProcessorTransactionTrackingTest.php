@@ -36,7 +36,7 @@ it('creates a payment transaction record when processing wallet payment', functi
     );
 
     $processor = app(WalletPaymentProcessor::class);
-    $result    = $processor->process($order, $paymentData, $user, 500000);
+    $result    = $processor->process($paymentData, $user, 500000, $order);
 
     expect($result->payment)->toBeInstanceOf(Payment::class);
 
@@ -83,7 +83,7 @@ it('increments attempt number for subsequent transaction attempts', function ():
     );
 
     $processor = app(WalletPaymentProcessor::class);
-    $result    = $processor->process($order, $paymentData, $user, 500000);
+    $result    = $processor->process($paymentData, $user, 500000, $order);
 
     // Verify new transaction has incremented attempt number
     $latestTransaction = PaymentTransaction::where('payment_id', $result->payment->id)
@@ -112,7 +112,7 @@ it('stores gateway metadata in transaction record', function (): void {
     );
 
     $processor = app(WalletPaymentProcessor::class);
-    $result    = $processor->process($order, $paymentData, $user, 500000);
+    $result    = $processor->process($paymentData, $user, 500000, $order);
 
     $transaction = PaymentTransaction::where('payment_id', $result->payment->id)->first();
 
@@ -140,7 +140,7 @@ it('updates payment with last_gateway_reference after transaction', function ():
     );
 
     $processor = app(WalletPaymentProcessor::class);
-    $result    = $processor->process($order, $paymentData, $user, 500000);
+    $result    = $processor->process($paymentData, $user, 500000, $order);
 
     $payment = $result->payment;
     expect($payment->last_gateway_reference)->toBe('200000001');
@@ -165,9 +165,9 @@ it('generates unique transaction references for concurrent payments', function (
 
     $processor = app(WalletPaymentProcessor::class);
 
-    $result1 = $processor->process($order1, $paymentData, $user, 100000);
-    $result2 = $processor->process($order2, $paymentData, $user, 100000);
-    $result3 = $processor->process($order3, $paymentData, $user, 100000);
+    $result1 = $processor->process($paymentData, $user, 100000, $order1);
+    $result2 = $processor->process($paymentData, $user, 100000, $order2);
+    $result3 = $processor->process($paymentData, $user, 100000, $order3);
 
     $transaction1 = PaymentTransaction::where('payment_id', $result1->payment->id)->first();
     $transaction2 = PaymentTransaction::where('payment_id', $result2->payment->id)->first();

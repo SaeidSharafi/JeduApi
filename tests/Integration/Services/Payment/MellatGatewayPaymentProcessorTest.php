@@ -75,7 +75,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             admin_notes: 'Online payment',
         );
 
-        $result = $processor->process($order, $paymentData, $user, $amount);
+        $result = $processor->process($paymentData, $user, $amount, $order);
 
         expect($result->requiresRedirect())->toBeTrue()
             ->and($result->redirect_url)->toBe('https://mellat.test/redirect')
@@ -112,7 +112,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             admin_notes: 'Online payment',
         );
 
-        expect(fn () => $processor->process($order, $paymentData, $user, 120_000))
+        expect(fn () => $processor->process($paymentData, $user, 120_000, $order))
             ->toThrow(CustomValidationException::class);
 
         expect($order->payments()->count())->toBe(0);
@@ -145,7 +145,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             admin_notes: 'Online payment',
         );
 
-        expect(fn () => $processor->process($order, $paymentData, $user, 120_000))
+        expect(fn () => $processor->process($paymentData, $user, 120_000, $order))
             ->toThrow(MellatException::class);
 
         expect($order->payments()->count())->toBe(0);
@@ -179,7 +179,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             admin_notes: null,
         );
 
-        expect(fn () => $processor->process($order, $paymentData, $user, 90_000))
+        expect(fn () => $processor->process($paymentData, $user, 90_000, $order))
             ->toThrow(MellatException::class, '12');
 
         expect($order->payments()->count())->toBe(0);

@@ -10,6 +10,7 @@ test('to array', function (): void {
             'id'                     => $payment->id,
             'customer_id'            => $payment->customer_id,
             'order_id'               => $payment->order_id,
+            'payment_type'           => $payment->payment_type->value,
             'amount'                 => $payment->amount,
             'method'                 => $payment->method->value,
             'status'                 => $payment->status->value,

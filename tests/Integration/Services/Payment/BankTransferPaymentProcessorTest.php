@@ -43,7 +43,7 @@ describe('BankTransferPaymentProcessor', function (): void {
             admin_notes: null,
         );
 
-        $processor->process($order, $paymentData, $staff, 100_000);
+        $processor->process($paymentData, $staff, 100_000, $order);
     })->throws(ValidationException::class);
 
     it('creates pending payment for customer initiated transfer', function (): void {
@@ -67,7 +67,7 @@ describe('BankTransferPaymentProcessor', function (): void {
         );
 
         $amount = 200_000;
-        $result = $processor->process($order, $paymentData, $user, $amount);
+        $result = $processor->process($paymentData, $user, $amount, $order);
 
         expect($result->payment->status)->toBe(PaymentStatusEnum::COMPLETED)
             ->and($result->payment->amount)->toBe($amount)
@@ -102,7 +102,7 @@ describe('BankTransferPaymentProcessor', function (): void {
             admin_notes: 'Marked as paid',
         );
 
-        $result = $processor->process($order, $paymentData, $staff, 350_000);
+        $result = $processor->process($paymentData, $staff, 350_000, $order);
 
         expect($result->payment->status)->toBe(PaymentStatusEnum::COMPLETED)
             ->and($result->payment->method)->toBe(PaymentMethodEnum::BANK_TRANSFER);

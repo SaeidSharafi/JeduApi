@@ -62,7 +62,7 @@ it('creates payment transaction record when initiating Mellat gateway payment', 
         ->andReturn((object) ['return' => '1234567890']);
 
     // Act
-    $result = $this->processor->process($order, $paymentData, $admin, 1000000);
+    $result = $this->processor->process($paymentData, $admin, 1000000, $order);
 
     // Assert
     expect($result->payment)->toBeInstanceOf(Payment::class);
@@ -117,7 +117,7 @@ it('increments attempt number for subsequent Mellat payment attempts', function 
         ->andReturn((object) ['return' => '9876543210']);
 
     // Act
-    $result = $this->processor->process($order, $paymentData, $admin, 500000);
+    $result = $this->processor->process($paymentData, $admin, 500000, $order);
 
     // Assert
     $transaction = PaymentTransaction::where('payment_id', $result->payment->id)->first();
@@ -321,8 +321,8 @@ it('generates unique transaction references for multiple Mellat payments', funct
         );
 
     // Act
-    $result1 = $this->processor->process($order, $paymentData, $admin, 1000000);
-    $result2 = $this->processor->process($order, $paymentData, $admin, 1000000);
+    $result1 = $this->processor->process($paymentData, $admin, 1000000, $order);
+    $result2 = $this->processor->process($paymentData, $admin, 1000000, $order);
 
     // Assert
     $transaction1 = PaymentTransaction::where('payment_id', $result1->payment->id)->first();

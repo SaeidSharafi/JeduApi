@@ -19,10 +19,10 @@ interface PaymentProcessorContract
      * @return PaymentProcessResultData Contains payment record and optional redirect URL
      */
     public function process(
-        Order $order,
         PaymentCreateData $paymentData,
         Authenticatable $adminUser,
-        int $amountToPay
+        int $amountToPay,
+        ?Order $order
     ): PaymentProcessResultData;
 
     /**

@@ -113,7 +113,7 @@ final readonly class CreateOrderFromCartAction
         );
 
         // Process the payment
-        return $processor->process($order, $paymentData, $user, $order->grand_total);
+        return $processor->process($paymentData, $user, $order->grand_total, $order);
     }
 
     /**

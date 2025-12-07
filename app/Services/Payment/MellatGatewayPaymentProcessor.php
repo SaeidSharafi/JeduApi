@@ -46,10 +46,10 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
     }
 
     public function process(
-        Order $order,
         PaymentCreateData $paymentData,
         Authenticatable $adminUser,
-        int $amountToPay
+        int $amountToPay,
+        ?Order $order = null
     ): PaymentProcessResultData {
         // Step 1: Generate unique transaction reference
         $transactionReference = $this->referenceService->generate();

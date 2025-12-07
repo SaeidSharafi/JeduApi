@@ -20,7 +20,7 @@ final class MockBankTransferProcessor implements PaymentProcessorContract
         return $paymentMethod === PaymentMethodEnum::BANK_TRANSFER;
     }
 
-    public function process(Order $order, PaymentCreateData $paymentData, Authenticatable $adminUser, int $amountToPay): PaymentProcessResultData
+    public function process(PaymentCreateData $paymentData, Authenticatable $adminUser, int $amountToPay, ?Order $order): PaymentProcessResultData
     {
         return PaymentProcessResultData::completed(new Payment());
     }

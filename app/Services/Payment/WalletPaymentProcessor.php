@@ -42,10 +42,10 @@ final class WalletPaymentProcessor implements PaymentProcessorContract
     }
 
     public function process(
-        Order $order,
         PaymentCreateData $paymentData,
         Authenticatable $adminUser,
-        int $amountToPay
+        int $amountToPay,
+        ?Order $order
     ): PaymentProcessResultData {
 
         $user = User::query()->with('wallet')->findOrFail($order->customer_id);

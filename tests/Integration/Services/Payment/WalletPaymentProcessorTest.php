@@ -52,7 +52,7 @@ describe('WalletPaymentProcessor', function (): void {
             admin_notes: 'Wallet checkout',
         );
 
-        $result = $processor->process($order, $paymentData, $user, $amount);
+        $result = $processor->process($paymentData, $user, $amount, $order);
 
         expect($result->payment->status)->toBe(PaymentStatusEnum::COMPLETED)
             ->and($result->payment->amount)->toBe($amount)
@@ -91,7 +91,7 @@ describe('WalletPaymentProcessor', function (): void {
             admin_notes: 'Wallet checkout',
         );
 
-        $processor->process($order, $paymentData, $user, 50_000);
+        $processor->process($paymentData, $user, 50_000, $order);
     })->throws(App\Exceptions\Payment\InsufficientWalletBalanceException::class);
 
     it('throws bad method call when verify is invoked', function (): void {

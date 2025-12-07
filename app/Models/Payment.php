@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Contracts\WalletTransactionSourceableContract;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\Payment\PaymentTypeEnum;
 use App\Traits\HasAuditor;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -65,6 +66,7 @@ final class Payment extends Model implements WalletTransactionSourceableContract
     protected function casts(): array
     {
         return [
+            'payment_type'      => PaymentTypeEnum::class,
             'amount'            => 'integer',
             'method'            => \App\Enums\Payment\PaymentMethodEnum::class,
             'status'            => PaymentStatusEnum::class,
