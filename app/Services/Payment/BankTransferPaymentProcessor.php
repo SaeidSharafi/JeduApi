@@ -33,13 +33,13 @@ final class BankTransferPaymentProcessor implements PaymentProcessorContract
 
     public function process(
         PaymentCreateData $paymentData,
-        Authenticatable $adminUser,
+        Authenticatable $user,
         int $amountToPay,
         ?Order $order = null
     ): PaymentProcessResultData {
         // Only validate bank transfer details if initiated by admin/staff
         // Customer-initiated payments (checkout) are created as PENDING without details
-        if ($amountToPay > 0 && $adminUser instanceof Staff) {
+        if ($amountToPay > 0 && $user instanceof Staff) {
             $this->validateBankTransferDetails($paymentData);
         }
 
@@ -49,7 +49,7 @@ final class BankTransferPaymentProcessor implements PaymentProcessorContract
         // Create payment record
         $payment = $order->payments()->create([
             'customer_id' => $order->customer_id,
-            'created_by'  => $adminUser instanceof Staff ? $adminUser->id : null,
+            'created_by'  => $user instanceof Staff ? $user->id : null,
             'amount'      => $amountToPay,
             'method'      => $paymentData->method,
             'status'      => $status,

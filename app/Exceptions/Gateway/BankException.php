@@ -9,7 +9,7 @@ use Exception;
 /**
  * This exception when throws, user try to submit a payment request who submitted before
  */
-final class BankException extends Exception
+abstract class BankException extends Exception
 {
     protected $code = -100;
 

@@ -71,7 +71,7 @@ final readonly class RetryOrderPaymentAction
 
             $result = $processor->process(
                 paymentData: $paymentData,
-                adminUser: Auth::guard('user')->user(),
+                user: Auth::guard('user')->user(),
                 amountToPay: $amountToPay,
                 order: $order
             );

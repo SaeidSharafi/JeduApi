@@ -6,7 +6,9 @@ namespace App\Http\Controllers\Api\Shop\Payment;
 
 use App\Actions\Shop\Payment\VerifyPaymentAction;
 use App\Data\Shop\Payment\GatewayCallbackData;
+use App\Data\Shop\Payment\PaymentCompletionResponseData;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\Payment\PaymentTypeEnum;
 use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Http\Request;
@@ -25,8 +27,10 @@ final class GatewayCallbackController extends Controller
      * This endpoint receives the callback from the payment gateway after
      * the customer completes (or cancels) their payment.
      *
-     * @responseFile 200 storage/responses/shop/payment/verify.json
-     * @responseFile 422 storage/responses/422.json
+     * Supports both order payments and wallet top-ups with a unified response structure.
+     *
+     * @responseFile 200 storage/responses/shop/payment/callback-success.json
+     * @responseFile 422 storage/responses/shop/payment/callback-failed.json
      */
     public function __invoke(Request $request, VerifyPaymentAction $action)
     {
@@ -35,32 +39,66 @@ final class GatewayCallbackController extends Controller
             'ip'   => $request->ip(),
         ]);
 
-        // Build callback data
-        $callbackData = new GatewayCallbackData(
-            payment_uuid: $request->input('payment_uuid'),
-            gateway_response: $request->all()
-        );
-
         try {
+            // Build callback data
+            $callbackData = new GatewayCallbackData(
+                transaction_refrence: $request->input('SaleOrderId'),
+                gateway_response: $request->all()
+            );
+
+            // Verify the payment
             $payment = $action->handle($callbackData);
 
-            // Redirect customer based on payment status
-            if ($payment->status === PaymentStatusEnum::COMPLETED) {
-                return redirect()->route('shop.payment.success', ['payment' => $payment->uuid])
-                    ->with('success', 'Payment completed successfully');
+            // Check if payment was completed successfully
+            if ($payment->status !== PaymentStatusEnum::COMPLETED) {
+                return response()->validationErrors([
+                    'payment' => [[
+                        'error_code' => 'PAYMENT_VERIFICATION_FAILED',
+                        'message'    => 'Payment verification failed or was cancelled.',
+                    ]],
+                ]);
             }
 
-            return redirect()->route('shop.payment.failed', ['payment' => $payment->uuid])
-                ->with('error', 'Payment failed. Please try again.');
+            // Build response based on payment type
+            if ($payment->payment_type === PaymentTypeEnum::ORDER) {
+                // Order payment - load order with relationships
+                $order = $payment->order->fresh([
+                    'items.productDeliveryOption.product',
+                    'customer',
+                    'payments.transactions',
+                ]);
 
+                $responseData = PaymentCompletionResponseData::forOrder($payment, $order);
+            } else {
+                // Wallet topup - load the wallet transaction that was created
+                $walletTransaction = $payment->walletTransactions()
+                    ->with(['wallet', 'user'])
+                    ->latest()
+                    ->firstOrFail();
+
+                $responseData = PaymentCompletionResponseData::forWalletTopup(
+                    $payment,
+                    $walletTransaction
+                );
+            }
+
+            return response()->success($responseData, 'Payment completed successfully');
         } catch (Exception $e) {
-            Log::error('Gateway callback error', [
+            Log::error('Payment verification error', [
                 'error'   => $e->getMessage(),
                 'request' => $request->all(),
             ]);
 
-            return redirect()->route('shop.payment.error')
-                ->with('error', 'An error occurred while processing your payment.');
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while processing your payment.',
+                'errors'  => [
+                    'payment' => [[
+                        'error_code' => 'PAYMENT_PROCESSING_ERROR',
+                        'message'    => $e->getMessage(),
+                    ]],
+                ],
+            ], 500);
         }
     }
 }

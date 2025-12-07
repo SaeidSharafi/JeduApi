@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Enums\Payment\PaymentTypeEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Events\PaymentCompletedEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,6 +18,10 @@ final class ProvisionPaidResourcesListener implements ShouldQueue
 
     public function handle(PaymentCompletedEvent $event): void
     {
+        if ($event->payment->payment_type !== PaymentTypeEnum::ORDER) {
+            return;
+        }
+
         $order = $event->payment->order()->with([
             'customer',
             'items' => fn ($q) => $q->with('enrollment', 'productDeliveryOption'),

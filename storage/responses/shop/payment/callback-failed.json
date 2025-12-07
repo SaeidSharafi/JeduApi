@@ -1,0 +1,11 @@
+{
+  "message": "Payment verification failed",
+  "errors": {
+    "payment": [
+      {
+        "error_code": "PAYMENT_VERIFICATION_FAILED",
+        "message": "Payment verification failed or was cancelled."
+      }
+    ]
+  }
+}

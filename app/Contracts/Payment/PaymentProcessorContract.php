@@ -20,7 +20,7 @@ interface PaymentProcessorContract
      */
     public function process(
         PaymentCreateData $paymentData,
-        Authenticatable $adminUser,
+        Authenticatable $user,
         int $amountToPay,
         ?Order $order
     ): PaymentProcessResultData;

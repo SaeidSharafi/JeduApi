@@ -11,7 +11,7 @@ final class GatewayCallbackData extends Data
 {
     public function __construct(
         #[Required]
-        public readonly string $payment_uuid,
+        public readonly string $transaction_refrence,
 
         #[Required]
         public readonly array $gateway_response,

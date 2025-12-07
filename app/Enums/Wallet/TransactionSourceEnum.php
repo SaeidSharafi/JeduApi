@@ -11,6 +11,7 @@ enum TransactionSourceEnum: string
     use AdvanceEnum;
 
     case ORDER     = 'order';
+    case PAYMENT   = 'payment';
     case STAFF     = 'staff';
     case PROMOTION = 'promotion';
     case CAMPAIGN  = 'campaign';

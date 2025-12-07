@@ -7,6 +7,7 @@ namespace App\Actions\Shop\Payment;
 use App\Data\Shop\Payment\GatewayCallbackData;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Payment;
+use App\Models\PaymentTransaction;
 use App\Services\Payment\PaymentProcessorFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -23,9 +24,11 @@ final readonly class VerifyPaymentAction
     public function handle(GatewayCallbackData $data): Payment
     {
         return DB::transaction(function () use ($data): Payment {
-            // Find payment by UUID
+            $transaction = PaymentTransaction::query()
+                ->where('transaction_reference', $data->transaction_refrence)
+                ->firstOrFail();
             $payment = Payment::query()
-                ->where('uuid', $data->payment_uuid)
+                ->where('id', $transaction->payment_id)
                 ->lockForUpdate()
                 ->firstOrFail();
 

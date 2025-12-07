@@ -67,7 +67,7 @@ describe('Gateway Payment Complex Scenarios', function (): void {
 
             // Simulate first gateway callback (verify success)
             $callbackData = new GatewayCallbackData(
-                payment_uuid: $payment->uuid,
+                transaction_refrence: $payment->uuid,
                 gateway_response: ['ResCode' => '0', 'RefId' => '123456']
             );
 

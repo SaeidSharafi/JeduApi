@@ -20,7 +20,7 @@ final class MockWalletProcessor implements PaymentProcessorContract
         return $paymentMethod === PaymentMethodEnum::WALLET;
     }
 
-    public function process(PaymentCreateData $paymentData, Authenticatable $adminUser, int $amountToPay, ?Order $order): PaymentProcessResultData
+    public function process(PaymentCreateData $paymentData, Authenticatable $user, int $amountToPay, ?Order $order): PaymentProcessResultData
     {
         return PaymentProcessResultData::completed(new Payment());
     }
@@ -35,4 +35,3 @@ final class MockWalletProcessor implements PaymentProcessorContract
         throw new BadMethodCallException('MockWalletProcessor does not support verification.');
     }
 }
-

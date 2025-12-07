@@ -8,10 +8,11 @@ use App\Data\Shop\Payment\GatewayCallbackData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Payment;
+use App\Models\PaymentTransaction;
 use App\Services\Payment\PaymentProcessorFactory;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Mockery as m;
 
 it('verifies pending payments via the resolved processor and returns the updated payment', function (): void {
@@ -19,7 +20,10 @@ it('verifies pending payments via the resolved processor and returns the updated
         'status' => PaymentStatusEnum::PENDING,
         'method' => PaymentMethodEnum::MELLAT_GATEWAY,
     ]);
-
+    PaymentTransaction::factory()->create([
+        'payment_id'            => $payment->id,
+        'transaction_reference' => '000000012345',
+    ]);
     $callbackPayload = ['SaleReferenceId' => '987654'];
 
     $processor = m::mock(PaymentProcessorContract::class);
@@ -40,7 +44,7 @@ it('verifies pending payments via the resolved processor and returns the updated
     $action = new VerifyPaymentAction($factory);
 
     $result = $action->handle(new GatewayCallbackData(
-        payment_uuid: $payment->uuid,
+        transaction_refrence: '000000012345',
         gateway_response: $callbackPayload
     ));
 
@@ -52,14 +56,17 @@ it('throws validation exception when the payment is no longer pending', function
         'status' => PaymentStatusEnum::COMPLETED,
         'method' => PaymentMethodEnum::MELLAT_GATEWAY,
     ]);
-
+    PaymentTransaction::factory()->create([
+        'payment_id'            => $payment->id,
+        'transaction_reference' => '000000012345',
+    ]);
     $factory = m::mock(PaymentProcessorFactory::class);
     $factory->shouldNotReceive('make');
 
     $action = new VerifyPaymentAction($factory);
 
     expect(fn () => $action->handle(new GatewayCallbackData(
-        payment_uuid: $payment->uuid,
+        transaction_refrence: '000000012345',
         gateway_response: ['SaleReferenceId' => '987654'],
     )))->toThrow(ValidationException::class, "Payment {$payment->uuid} is not in pending state.");
 });
@@ -71,7 +78,7 @@ it('throws model not found exception when the payment uuid is invalid', function
     $action = new VerifyPaymentAction($factory);
 
     expect(fn () => $action->handle(new GatewayCallbackData(
-        payment_uuid: (string) Str::uuid(),
+        transaction_refrence: (string) Str::uuid(),
         gateway_response: ['SaleReferenceId' => 'missing'],
     )))->toThrow(ModelNotFoundException::class);
 });

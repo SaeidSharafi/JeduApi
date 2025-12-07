@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\Shop\Sale\CancelOrderController;
 use App\Http\Controllers\Api\Shop\Sale\OrderController;
 use App\Http\Controllers\Api\Shop\Sale\RetryPaymentController;
+use App\Http\Controllers\Api\Shop\Wallet\WalletTopupController;
 
 Route::middleware(['auth:user'])
     ->prefix('shop')
@@ -35,5 +36,9 @@ Route::middleware(['auth:user'])
             Route::post('/{order:increment_id}/retry-payment', RetryPaymentController::class)
                 ->middleware('throttle:10,1')
                 ->name('retry-payment');
+        });
+
+        Route::prefix('wallet')->name('wallet.')->group(function () {
+            Route::post('topup', WalletTopupController::class)->name('topup');
         });
     });

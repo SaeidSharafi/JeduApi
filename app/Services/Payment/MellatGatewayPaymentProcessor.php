@@ -10,6 +10,7 @@ use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Payment\PaymentTransactionStatusEnum;
+use App\Enums\Payment\PaymentTypeEnum;
 use App\Events\PaymentCompletedEvent;
 use App\Exceptions\CustomValidationException;
 use App\Exceptions\Gateway\MellatException;
@@ -47,23 +48,27 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 
     public function process(
         PaymentCreateData $paymentData,
-        Authenticatable $adminUser,
+        Authenticatable $user,
         int $amountToPay,
         ?Order $order = null
     ): PaymentProcessResultData {
-        // Step 1: Generate unique transaction reference
         $transactionReference = $this->referenceService->generate();
 
-        // Step 2: Get request metadata
         $ipAddress = request()->ip();
         $userAgent = request()->userAgent();
 
-        // Step 3: Calculate attempt number
-        $attemptNumber = $order->payments()
+        if (! $order?->customer_id && $user instanceof Staff) {
+            throw new Exception('Order customer ID is required for Mellat payments initiated by staff.');
+        }
+
+        $customerId  = $order?->customer_id ?? $user->id;
+        $paymentType = $order ? PaymentTypeEnum::ORDER : PaymentTypeEnum::WALLET_TOPUP;
+
+        $attemptNumber = Payment::where('customer_id', $customerId)
+            ->when($order, fn ($q) => $q->where('order_id', $order->id))
             ->where('method', PaymentMethodEnum::MELLAT_GATEWAY)
             ->count() + 1;
 
-        // Step 4: Prepare gateway request data
         $gatewayRequest = [
             'terminalId'     => config('payments.mellat.terminal_id'),
             'userName'       => config('payments.mellat.username'),
@@ -72,18 +77,17 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
             'amount'         => $amountToPay,
             'localDate'      => date('Ymd'),
             'localTime'      => date('His'),
-            'additionalData' => '',
+            'additionalData' => $order ? "Order #{$order->increment_id}" : 'Wallet Topup',
             'callBackUrl'    => config('payments.mellat.callback_url'),
             'payerId'        => 0,
         ];
 
-        // Step 5: Send payment request to Mellat Gateway
         $refId = $this->sendPayRequest($gatewayRequest);
 
-        // Step 6: Create PENDING payment record
-        $payment = $order->payments()->create([
-            'customer_id'       => $order->customer_id,
-            'created_by'        => $adminUser instanceof Staff ? $adminUser->id : null,
+        $payment = Payment::create([
+            'order_id'          => $order?->id,
+            'payment_type'      => $paymentType->value,
+            'customer_id'       => $customerId,
             'amount'            => $amountToPay,
             'method'            => PaymentMethodEnum::MELLAT_GATEWAY,
             'status'            => PaymentStatusEnum::PENDING,
@@ -93,7 +97,6 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
             'ip_address'        => $ipAddress,
             'user_agent'        => $userAgent,
         ]);
-
         // Step 7: Create transaction record
         $payment->transactions()->create([
             'transaction_reference' => $transactionReference,
@@ -109,7 +112,8 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         Log::info('Mellat payment initiated', [
             'payment_id'      => $payment->id,
             'payment_uuid'    => $payment->uuid,
-            'order_id'        => $order->increment_id,
+            'order_id'        => $order?->increment_id,
+            'payment_type'    => $paymentType->value,
             'transaction_ref' => $transactionReference,
             'ref_id'          => $refId,
         ]);
@@ -206,7 +210,6 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 
             // Call bpSettleRequest to settle the transaction
             $settleResult = $this->settleWithMellat($refId, $saleOrderId, $saleReferenceId);
-
             if ($settleResult !== true) {
                 // Settlement failed - this is critical, payment was verified but not settled
                 $latestTransaction->update([
@@ -345,7 +348,6 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
                 'userName'        => config('payments.mellat.username'),
                 'userPassword'    => config('payments.mellat.password'),
                 'orderId'         => $saleOrderId,
-                'orderIdLong'     => $saleOrderId,
                 'saleOrderId'     => $saleOrderId,
                 'saleReferenceId' => $saleReferenceId,
             ]);

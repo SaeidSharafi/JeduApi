@@ -20,7 +20,7 @@ final class MockUnsupportedProcessor implements PaymentProcessorContract
         return false; // Never handles any method
     }
 
-    public function process(PaymentCreateData $paymentData, Authenticatable $adminUser, int $amountToPay, ?Order $order): PaymentProcessResultData
+    public function process(PaymentCreateData $paymentData, Authenticatable $user, int $amountToPay, ?Order $order): PaymentProcessResultData
     {
         return PaymentProcessResultData::completed(new Payment());
     }
@@ -35,4 +35,3 @@ final class MockUnsupportedProcessor implements PaymentProcessorContract
         throw new BadMethodCallException('MockUnsupportedProcessor does not support verification.');
     }
 }
-

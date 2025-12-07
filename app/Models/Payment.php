@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 final class Payment extends Model implements WalletTransactionSourceableContract
 {
@@ -25,6 +26,7 @@ final class Payment extends Model implements WalletTransactionSourceableContract
 
     protected $fillable
         = [
+            'payment_type',
             'order_id',
             'customer_id',
             'amount',
@@ -61,6 +63,11 @@ final class Payment extends Model implements WalletTransactionSourceableContract
     public function transactions(): HasMany
     {
         return $this->hasMany(PaymentTransaction::class);
+    }
+
+    public function walletTransactions(): MorphMany
+    {
+        return $this->morphMany(WalletTransaction::class, 'source');
     }
 
     protected function casts(): array

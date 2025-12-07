@@ -23,6 +23,7 @@ use App\Models\User;
 use App\Services\PaymentTransactionReferenceService;
 use BadMethodCallException;
 use Illuminate\Contracts\Auth\Authenticatable;
+use InvalidArgumentException;
 
 final class WalletPaymentProcessor implements PaymentProcessorContract
 {
@@ -43,10 +44,16 @@ final class WalletPaymentProcessor implements PaymentProcessorContract
 
     public function process(
         PaymentCreateData $paymentData,
-        Authenticatable $adminUser,
+        Authenticatable $user,
         int $amountToPay,
         ?Order $order
     ): PaymentProcessResultData {
+
+        if ($order === null) {
+            throw new InvalidArgumentException(
+                'Wallet payment processor requires an order. Cannot use wallet to top up wallet.'
+            );
+        }
 
         $user = User::query()->with('wallet')->findOrFail($order->customer_id);
 
@@ -89,7 +96,7 @@ final class WalletPaymentProcessor implements PaymentProcessorContract
         // Create payment record
         $payment = $order->payments()->create([
             'customer_id'       => $order->customer_id,
-            'created_by'        => $adminUser instanceof Staff ? $adminUser->id : null,
+            'created_by'        => $user instanceof Staff ? $user->id : null,
             'amount'            => (int) round($amountToPay),
             'method'            => PaymentMethodEnum::WALLET->value,
             'status'            => PaymentStatusEnum::COMPLETED->value,

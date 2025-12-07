@@ -13,6 +13,7 @@ use App\Models\DigitalAsset;
 use App\Models\HomePageBlock;
 use App\Models\Order;
 use App\Models\Partner;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Refund;
 use App\Models\Seminar;
@@ -41,6 +42,7 @@ enum MorphTypeEnum: string
     case VENDOR          = 'vendor';
     case PRODUCT         = 'product';
     case ORDER           = 'order';
+    case PAYMENT         = 'payment';
     case REFUND          = 'refund';
     case CAMPAIGN        = 'campaign';
     case SLIDER          = 'slider';
@@ -124,6 +126,7 @@ enum MorphTypeEnum: string
             self::VENDOR                => Vendor::class,
             self::PRODUCT               => Product::class,
             self::ORDER                 => Order::class,
+            self::PAYMENT               => Payment::class,
             self::REFUND                => Refund::class,
             self::CAMPAIGN              => WalletCampaign::class,
             self::SLIDER                => Slider::class,
