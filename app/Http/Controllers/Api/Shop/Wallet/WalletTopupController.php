@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\Wallet;
 
 use App\Data\Admin\Payment\PaymentCreateData;
-use App\Data\Shop\Payment\PaymentData;
+use App\Data\Shop\Payment\PaymentResponseData;
 use App\Data\Shop\Wallet\WalletTopupRequestData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Http\Controllers\Controller;
@@ -65,14 +65,11 @@ final class WalletTopupController extends Controller
             order: null,  // ✅ No order for wallet topup
         );
 
-        return response()->created([
-            'payment'           => PaymentData::from($result->payment),
-            'requires_redirect' => $result->requiresRedirect(),
-            'redirect_url'      => $result->redirect_url,
-            'redirect_data'     => $result->redirect_data,
-            'message'           => $result->requiresRedirect()
+        return response()->created(PaymentResponseData::fromResult(
+            result: $result,
+            message: $result->requiresRedirect()
                 ? 'Please complete payment on the gateway page.'
                 : 'Payment is pending admin verification.',
-        ]);
+        ));
     }
 }

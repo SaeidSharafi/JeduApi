@@ -84,6 +84,8 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 
         $refId = $this->sendPayRequest($gatewayRequest);
 
+        $refId = str_replace('0,', '', $refId);
+
         $payment = Payment::create([
             'order_id'          => $order?->id,
             'payment_type'      => $paymentType->value,

@@ -82,7 +82,7 @@ describe('Retry Order Payment', function (): void {
         expect($response->json('data.requires_redirect'))->toBe(true)
             ->and($response->json('data.redirect_url'))->not->toBeNull()
             ->and($response->json('data.redirect_data.RefId'))->toBe($fakeRefId)
-            ->and($response->json('data.payment.status'))->toBe(PaymentStatusEnum::PENDING->value);
+            ->and($response->json('data.payment.status.value'))->toBe(PaymentStatusEnum::PENDING->value);
     });
 
     it('allows partial payment retry if amount specified', function (): void {

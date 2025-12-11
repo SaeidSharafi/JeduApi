@@ -1,0 +1,19 @@
+{
+  "message": "Success",
+  "data": {
+    "payment": {
+      "id": 42,
+      "amount": 250000,
+      "method": "bank_transfer",
+      "status": "pending",
+      "last_gateway_reference": null,
+      "attempt_count": 1,
+      "transactions": []
+    },
+    "requires_redirect": false,
+    "redirect_url": null,
+    "redirect_data": null,
+    "redirect_method": "GET",
+    "message": "Payment is pending admin verification."
+  }
+}

@@ -76,6 +76,7 @@
         }
       ]
     },
+    "requires_redirect": false,
     "redirect_url": null,
     "redirect_data": null,
     "redirect_method": "GET"

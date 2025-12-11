@@ -1,29 +1,41 @@
 {
-  "message": "Payment initiated. Please complete payment at the gateway.",
+  "message": "Success",
   "data": {
-    "message": "Payment initiated. Please complete payment at the gateway.",
     "payment": {
       "id": 5,
-      "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "order_id": 123,
-      "customer_id": 45,
       "amount": 500000,
-      "method": "online_gateway",
+      "method": "mellat_gateway",
       "status": "pending",
-      "admin_notes": "Payment retry by customer",
-      "data": {
-        "gateway": "mellat",
-        "transaction_id": "987654321",
-        "initiated_at": "2025-11-10T10:30:00Z"
-      },
-      "created_at": "2025-11-10T10:30:00Z",
-      "updated_at": "2025-11-10T10:30:00Z"
+      "last_gateway_reference": "987654321",
+      "attempt_count": 1,
+      "transactions": [
+        {
+          "transaction_reference": "987654321",
+          "attempt_number": 1,
+          "status": {
+            "value": "initiated",
+            "label": "enums.PaymentTransactionStatusEnum.initiated"
+          },
+          "gateway_request": {
+            "amount": 500000,
+            "order_id": 123,
+            "callback": "https://example.com/payment/callback"
+          },
+          "gateway_response": null,
+          "initiated_at": "2025-11-10T10:30:00Z",
+          "completed_at": null,
+          "error_code": null,
+          "error_message": null,
+          "ip_address": "192.168.1.10"
+        }
+      ]
     },
     "requires_redirect": true,
     "redirect_url": "https://bpm.shaparak.ir/pgwchannel/startpay.mellat",
     "redirect_data": {
       "RefId": "987654321"
     },
-    "redirect_method": "POST"
+    "redirect_method": "POST",
+    "message": "Payment initiated. Please complete payment at the gateway."
   }
 }

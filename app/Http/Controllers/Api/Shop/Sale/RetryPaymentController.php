@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\Shop\Sale;
 use App\Actions\Shop\RetryOrderPaymentAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Order\RetryOrderPaymentData;
+use App\Data\Shop\Payment\PaymentResponseData;
 use App\Exceptions\Payment\InsufficientWalletBalanceException;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -47,23 +48,13 @@ final class RetryPaymentController extends Controller
                 amountToPay: $order->grand_total
             );
 
-            // Return response based on payment type
-            if ($result->requiresRedirect()) {
-                return response()->success([
-                    'message'           => 'Payment initiated. Please complete payment at the gateway.',
-                    'payment'           => $result->payment,
-                    'requires_redirect' => true,
-                    'redirect_url'      => $result->redirect_url,
-                    'redirect_data'     => $result->redirect_data,
-                    'redirect_method'   => $result->redirect_method,
-                ]);
-            }
+            $message = $result->requiresRedirect()
+                ? 'Payment initiated. Please complete payment at the gateway.'
+                : 'Payment completed successfully.';
 
-            return response()->success([
-                'message'           => 'Payment completed successfully.',
-                'payment'           => $result->payment,
-                'requires_redirect' => false,
-            ]);
+            return response()->success(
+                PaymentResponseData::fromResult($result, $message)
+            );
         } catch (InsufficientWalletBalanceException $e) {
             // Return structured error for frontend to redirect to wallet top-up
             return response()->error(

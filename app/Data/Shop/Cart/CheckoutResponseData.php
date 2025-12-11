@@ -12,6 +12,7 @@ final class CheckoutResponseData extends Data
 {
     public function __construct(
         public readonly OrderData $order,
+        public readonly bool $requires_redirect,
         public readonly ?string $redirect_url = null,
         public readonly ?array $redirect_data = null,
         #[In(['GET', 'POST'])]
@@ -25,6 +26,7 @@ final class CheckoutResponseData extends Data
     {
         return new self(
             order: $order,
+            requires_redirect: false,
             redirect_url: null,
             redirect_data: null,
             redirect_method: 'GET'
@@ -42,6 +44,7 @@ final class CheckoutResponseData extends Data
     ): self {
         return new self(
             order: $order,
+            requires_redirect: true,
             redirect_url: $redirectUrl,
             redirect_data: $redirectData,
             redirect_method: $method
