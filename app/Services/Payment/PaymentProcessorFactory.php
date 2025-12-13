@@ -6,7 +6,7 @@ namespace App\Services\Payment;
 
 use App\Contracts\Payment\PaymentProcessorContract;
 use App\Enums\Payment\PaymentMethodEnum;
-use InvalidArgumentException;
+use App\Exceptions\Gateway\PaymentMethodNotFoundException;
 
 final readonly class PaymentProcessorFactory
 {
@@ -34,6 +34,6 @@ final readonly class PaymentProcessorFactory
             }
         }
 
-        throw new InvalidArgumentException("No payment processor found for method: {$method->value}");
+        throw new PaymentMethodNotFoundException("No payment processor found for method: {$method->value}");
     }
 }

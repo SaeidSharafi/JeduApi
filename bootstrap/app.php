@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Exceptions\Gateway\PaymentMethodNotFoundException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -89,7 +90,13 @@ return Application::configure(basePath: dirname(__DIR__))
                 || $request->is('api/*')
                 || str_starts_with($request->path(), 'api/');
         };
-
+        $exceptions->renderable(function (PaymentMethodNotFoundException $e, $request) use ($isApiRequest): void {
+            if ($isApiRequest($request)) {
+                throw ValidationException::withMessages([
+                    __('messages.payment.method_not_available'),
+                ]);
+            }
+        });
         $exceptions->renderable(function (App\Exceptions\InvalidJalaliDateException $e, $request) use ($isApiRequest): void {
             // Check if the request expects a JSON response (typical for APIs)
             if ($isApiRequest($request)) {
