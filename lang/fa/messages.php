@@ -34,7 +34,15 @@ return [
     'file_uploaded'          => 'فایل با موفقیت بارگذاری شد.',
     'file_deleted'           => 'فایل با موفقیت حذف شد.',
     'file_not_found'         => 'فایل مورد نظر یافت نشد.',
-    'models'                 => [
+    'payment'                => [
+        'complete_on_gateway'        => 'لطفاً پرداخت را در صفحه درگاه تکمیل کنید.',
+        'pending_admin_verification' => 'پرداخت شما در انتظار تأیید ادمین است.',
+        'processing_error'           => 'خطایی در پردازش پرداخت رخ داد. لطفاً دوباره تلاش کنید.',
+        'verification_failed'        => 'تأیید پرداخت ناموفق بود. لطفاً دوباره تلاش کنید یا با پشتیبانی تماس بگیرید.',
+        'verification_success'       => 'پرداخت با موفقیت انجام شد.',
+        'method_not_available'       => 'روش پرداخت انتخاب‌شده در دسترس نیست.',
+    ],
+    'models' => [
         'seminar'            => 'سمینار',
         'staff'              => 'مدیر',
         'user'               => 'کاربر',
@@ -141,6 +149,10 @@ return [
         'not_found' => 'دوره مورد نظر یافت نشد.',
     ],
     'wallet' => [
+        'insufficient_balance'   => 'موجودی کیف پول شما به میزان :shortfall کافی نیست. لطفاً کیف پول را شارژ کنید.',
+        'topup_successful'       => 'شارژ کیف پول با موفقیت انجام شد.',
+        'topup_pending'          => 'شارژ کیف پول شما در انتظار تأیید ادمین است.',
+        'invalid_method'         => 'امکان شارژ کیف پول با خود کیف پول وجود ندارد. لطفاً روش دیگری را انتخاب کنید.',
         'deposit_description'    => 'واریز به کیف پول توسط ادمین',
         'withdrawal_description' => 'برداشت از کیف پول توسط ادمین',
         'adjustment_description' => 'تعدیل کیف پول - دلیل: :reason',

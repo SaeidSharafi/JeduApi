@@ -34,7 +34,28 @@ return [
     'file_uploaded'          => 'File uploaded successfully.',
     'file_deleted'           => 'File deleted successfully.',
     'file_not_found'         => 'The requested file was not found.',
-    'models'                 => [
+    'payment'                => [
+        'complete_on_gateway'        => 'Please complete payment on the gateway page.',
+        'pending_admin_verification' => 'Your payment is pending admin verification.',
+        'processing_error'           => 'An error occurred while processing your payment. Please try again.',
+        'verification_failed'        => 'Payment verification failed. Please try again or contact support.',
+        'verification_success'       => 'Payment completed successfully.',
+        'method_not_available'       => 'The selected payment method is not available.',
+    ],
+    'wallet' => [
+        'insufficient_balance'   => 'Your wallet balance is insufficient by :shortfall. Please top up your wallet.',
+        'topup_successful'       => 'Wallet top-up completed successfully.',
+        'topup_pending'          => 'Your wallet top-up is pending admin verification.',
+        'invalid_method'         => 'Cannot use wallet to top up wallet. Please select another payment method.',
+        'deposit_description'    => 'Wallet deposit by admin',
+        'withdrawal_description' => 'Wallet withdrawal by admin',
+        'adjustment_description' => 'Wallet adjustment - reason: :reason',
+        'deposit_success'        => 'Wallet deposit completed successfully.',
+        'withdrawal_success'     => 'Wallet withdrawal completed successfully.',
+        'adjustment_success'     => 'Wallet adjustment completed successfully.',
+        'balance_retrieved'      => 'Wallet balance retrieved successfully.',
+    ],
+    'models' => [
         'seminar'       => 'Seminar',
         'staff'         => 'Staff',
         'user'          => 'User',
@@ -51,6 +72,7 @@ return [
         'model_has_relationship_data'                       => 'The selected record has related data (:related_model) and cannot be deleted.',
         'model_has_relationship_data_without_related_model' => 'The selected record has related data and cannot be deleted.',
     ],
+
     'order' => [
         'items_already_purchased'             => 'You have already purchased the following items: :products.',
         'item_already_purchased'              => 'You have already purchased this item.',

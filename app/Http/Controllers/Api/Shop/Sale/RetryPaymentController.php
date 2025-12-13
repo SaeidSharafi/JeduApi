@@ -49,8 +49,8 @@ final class RetryPaymentController extends Controller
             );
 
             $message = $result->requiresRedirect()
-                ? 'Payment initiated. Please complete payment at the gateway.'
-                : 'Payment completed successfully.';
+                ? __('messages.payment.complete_on_gateway')
+                : __('messages.payment.verification_success');
 
             return response()->success(
                 PaymentResponseData::fromResult($result, $message)
@@ -58,7 +58,7 @@ final class RetryPaymentController extends Controller
         } catch (InsufficientWalletBalanceException $e) {
             // Return structured error for frontend to redirect to wallet top-up
             return response()->error(
-                'Insufficient wallet balance',
+                __('messages.wallet.insufficient_balance', ['shortfall' => $e->shortfall]),
                 422,
                 [
                     'error_code'          => 'INSUFFICIENT_WALLET_BALANCE',

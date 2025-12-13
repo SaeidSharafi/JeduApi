@@ -54,7 +54,7 @@ final class GatewayCallbackController extends Controller
                 return response()->validationErrors([
                     'payment' => [[
                         'error_code' => 'PAYMENT_VERIFICATION_FAILED',
-                        'message'    => 'Payment verification failed or was cancelled.',
+                        'message'    => __('messages.payment.verification_failed'),
                     ]],
                 ]);
             }
@@ -91,7 +91,7 @@ final class GatewayCallbackController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while processing your payment.',
+                'message' => __('messages.payment.processing_error'),
                 'errors'  => [
                     'payment' => [[
                         'error_code' => 'PAYMENT_PROCESSING_ERROR',

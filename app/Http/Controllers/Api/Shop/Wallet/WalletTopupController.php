@@ -46,7 +46,7 @@ final class WalletTopupController extends Controller
 
         if ($paymentMethod === PaymentMethodEnum::WALLET) {
             throw ValidationException::withMessages([
-                'payment_method' => ['Cannot use wallet to top up wallet. Please use a different payment method.'],
+                'payment_method' => [__('messages.wallet.invalid_method')],
             ]);
         }
 
@@ -68,8 +68,8 @@ final class WalletTopupController extends Controller
         return response()->created(PaymentResponseData::fromResult(
             result: $result,
             message: $result->requiresRedirect()
-                ? 'Please complete payment on the gateway page.'
-                : 'Payment is pending admin verification.',
+                ? __('messages.payment.complete_on_gateway')
+                : __('messages.wallet.topup_pending'),
         ));
     }
 }
