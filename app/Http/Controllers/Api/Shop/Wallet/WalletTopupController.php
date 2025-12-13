@@ -13,6 +13,13 @@ use App\Services\Payment\PaymentProcessorFactory;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * @group Shop - Wallet
+ *
+ * APIs for managing user wallet top-ups.
+ *
+ * @authenticated
+ */
 final class WalletTopupController extends Controller
 {
     /**
