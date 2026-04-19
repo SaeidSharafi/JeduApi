@@ -48,7 +48,7 @@ describe('Admin create order registration & availability validation', function (
     };
 
     it('fails before registration start', function () use ($makeOption): void {
-        $option = $makeOption(['registration_start_date' => Carbon::parse('2026-01-01 12:00:00')]);
+        $option = $makeOption(['registration_start_date' => now()->addDay()]);
         $option->load('product');
         $customer = User::factory()->create();
         $this->authorized_user([PermissionEnum::ORDER_CREATE]);
@@ -74,8 +74,8 @@ describe('Admin create order registration & availability validation', function (
 
     it('fails after registration end', function () use ($makeOption): void {
         $option = $makeOption([
-            'registration_start_date' => Carbon::parse('2025-01-01'),
-            'registration_end_date'   => Carbon::parse('2025-06-01'),
+            'registration_start_date' => now()->subWeek(),
+            'registration_end_date'   => now()->subDay(),
         ]);
         $option->load('product');
         $customer = User::factory()->create();
@@ -101,7 +101,7 @@ describe('Admin create order registration & availability validation', function (
     });
 
     it('fails before availability start', function () use ($makeOption): void {
-        $option = $makeOption(['available_from' => Carbon::parse('2026-01-01 12:00:00')]);
+        $option = $makeOption(['available_from' => now()->addDay()]);
         $option->load('product');
         $customer = User::factory()->create();
         $this->authorized_user([PermissionEnum::ORDER_CREATE]);
@@ -126,8 +126,8 @@ describe('Admin create order registration & availability validation', function (
 
     it('fails after availability end', function () use ($makeOption): void {
         $option = $makeOption([
-            'available_from' => Carbon::parse('2025-01-01'),
-            'available_to'   => Carbon::parse('2025-06-01'),
+            'available_from' => now()->subWeek(),
+            'available_to'   => now()->subDay(),
         ]);
         $option->load('product');
         $customer = User::factory()->create();
@@ -153,10 +153,10 @@ describe('Admin create order registration & availability validation', function (
 
     it('succeeds within valid windows', function () use ($makeOption): void {
         $option = $makeOption([
-            'registration_start_date' => Carbon::parse('2025-01-01'),
-            'registration_end_date'   => Carbon::parse('2026-12-31'),
-            'available_from'          => Carbon::parse('2025-01-01'),
-            'available_to'            => Carbon::parse('2026-12-31'),
+            'registration_start_date' => now()->subWeek(),
+            'registration_end_date'   => now()->addDay(),
+            'available_from'          => now()->subWeek(),
+            'available_to'            => now()->addDay(),
         ]);
         $customer = User::factory()->create();
         $this->authorized_user([PermissionEnum::ORDER_CREATE]);

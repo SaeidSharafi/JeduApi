@@ -47,7 +47,7 @@ describe('Checkout registration & availability window validation', function (): 
     };
 
     it('fails when registration has not started yet', function () use ($makeOption): void {
-        $option   = $makeOption(['registration_start_date' => Carbon::parse('2026-01-01 12:00:00')]);
+        $option   = $makeOption(['registration_start_date' => now()->addDay()]);
         $customer = User::factory()->create();
         $customer->wallet->update(['balance' => 500000]);
         $this->customer($customer);
@@ -68,8 +68,8 @@ describe('Checkout registration & availability window validation', function (): 
 
     it('fails when registration period has ended', function () use ($makeOption): void {
         $option = $makeOption([
-            'registration_start_date' => Carbon::parse('2025-01-01'),
-            'registration_end_date'   => Carbon::parse('2025-06-01'),
+            'registration_start_date' => now()->subWeek(),
+            'registration_end_date'   => now()->subDay(),
         ]);
         $customer = User::factory()->create();
         $customer->wallet->update(['balance' => 500000]);
@@ -90,7 +90,7 @@ describe('Checkout registration & availability window validation', function (): 
     });
 
     it('fails when product not yet available (available_from future)', function () use ($makeOption): void {
-        $option   = $makeOption(['available_from' => Carbon::parse('2026-01-01 12:00:00')]);
+        $option   = $makeOption(['available_from' => now()->addDay()]);
         $customer = User::factory()->create();
         $customer->wallet->update(['balance' => 500000]);
         $this->customer($customer);
@@ -111,8 +111,8 @@ describe('Checkout registration & availability window validation', function (): 
 
     it('fails when product availability has ended (available_to past)', function () use ($makeOption): void {
         $option = $makeOption([
-            'available_from' => Carbon::parse('2025-01-01'),
-            'available_to'   => Carbon::parse('2025-06-01'),
+            'available_from' => now()->subWeek(),
+            'available_to'   => now()->subDay(),
         ]);
         $customer = User::factory()->create();
         $customer->wallet->update(['balance' => 500000]);
@@ -134,10 +134,10 @@ describe('Checkout registration & availability window validation', function (): 
 
     it('succeeds when within both registration and availability windows', function () use ($makeOption): void {
         $option = $makeOption([
-            'registration_start_date' => Carbon::parse('2025-01-01'),
-            'registration_end_date'   => Carbon::parse('2026-12-31'),
-            'available_from'          => Carbon::parse('2025-01-01'),
-            'available_to'            => Carbon::parse('2026-12-31'),
+            'registration_start_date' => now()->subWeek(),
+            'registration_end_date'   => now()->addDay(),
+            'available_from'          => now()->subWeek(),
+            'available_to'            => now()->addDay(),
         ]);
         $customer = User::factory()->create();
         $customer->wallet->update(['balance' => 500000]);
