@@ -28,7 +28,7 @@ final class FooterData extends Data
     {
         return [
             'logo'                  => null,
-            'logo_url'              => null,
+            'logo_url'              => 'https://jedu.ir/images/logo-text.png',
             'logo_alt'              => 'جهاددانشگاهی قزوین',
             'caption'               => 'شریک شما در آموزش مدرن',
             'support_link'          => '/contact-us',
@@ -43,8 +43,8 @@ final class FooterData extends Data
             ],
             'social_media_links' => ContactInfoData::getDefaults()['social_media_links'],
             'certifications'     => [
-                ['name' => 'اینماد', 'image' => null, 'html' => ''],
-                ['name' => 'ساماندهی', 'image' => null, 'html' => ''],
+                ['name' => 'اینماد', 'image' => 'https://jedu.ir/enamd.png', 'html' => ''],
+                ['name' => 'ساماندهی', 'image' => 'https://jedu.ir/enamd.png', 'html' => ''],
             ],
         ];
     }
