@@ -52,7 +52,7 @@ return [
     'type' => 'external_static',
 
     // See https://scribe.knuckles.wtf/laravel/reference/config#theme for supported options
-    'theme' => 'scalar',
+    'theme' => 'scalarv2',
 
     'static' => [
         // HTML documentation, assets and Postman collection will be generated to this folder.
