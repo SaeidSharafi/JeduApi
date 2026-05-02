@@ -261,6 +261,7 @@ final class DemoSeeder extends Seeder
             unset($item['category_ids']);
             unset($item['teacher_ids']);
             unset($item['course_ids']);
+            unset($item['related_productables']);
 
             // Robustly encode ANY remaining array values to JSON strings.
             // This permanently solves the "Array to string conversion" error.
@@ -288,6 +289,23 @@ final class DemoSeeder extends Seeder
 
         if (! empty($categorizables)) {
             DB::table('categorizables')->insert($categorizables);
+        }
+        if ($modelClass === BlogPost::class) {
+            $realtedProductables = $collection->flatMap(function (array $item) {
+                if (! isset($item['related_productables']) || ! is_array($item['related_productables'])) {
+                    return []; // If no related_productables, return an empty set for this item.
+                }
+
+                return collect($item['related_productables'])->map(function ($related) use ($item) {
+                    return [
+                        'blog_post_id'     => $item['id'],
+                        'productable_id'   => $related['id'],
+                        'productable_type' => $related['type'],
+                    ];
+                });
+            })->all();
+
+            DB::table('blog_post_productables')->insert($realtedProductables);
         }
         if ($modelClass === ProductDeliveryOption::class) {
             // For ProductDeliveryOption, we also need to handle the pivot table for teachers
