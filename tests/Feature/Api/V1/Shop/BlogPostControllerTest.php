@@ -11,6 +11,8 @@ use function Pest\Laravel\getJson;
 
 describe('BlogPostController', function () {
     it('can get list of published blog posts', function () {
+        Storage::fake('public');
+        $this->fakeMedia();
         // Arrange - Create published and unpublished posts
         $publishedPosts = BlogPost::factory()
             ->count(3)
@@ -18,6 +20,7 @@ describe('BlogPostController', function () {
                 'status'       => PublicationStatusEnum::PUBLISHED,
                 'published_at' => now()->subDay(),
             ])
+            ->withMedia()
             ->create();
 
         // Create unpublished posts that should not appear
@@ -57,6 +60,7 @@ describe('BlogPostController', function () {
                         'read_time_minutes',
                         'is_featured',
                         'categories',
+                        'media'
                     ],
                 ],
                 'current_page',
@@ -64,9 +68,11 @@ describe('BlogPostController', function () {
                 'total',
             ],
         ]);
-
         // Only published posts should appear
-        expect($response->json('data.total'))->toBe(3);
+        expect($response->json('data.total'))->toBe(3)
+            ->and($response->json('data.data.0.media'))->toHaveCount(1)
+            ->and($response->json('data.data.0.media.cover'))->toHaveCount(1)
+        ;
     });
 
     it('can filter blog posts by featured status', function () {

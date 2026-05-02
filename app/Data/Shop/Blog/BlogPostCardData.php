@@ -28,6 +28,27 @@ final class BlogPostCardData extends Data
         public bool $is_featured = false,
         #[DataCollectionOf(BlogCategoryCardData::class)]
         public ?Collection $categories = null,
+        public array $media = [],
     ) {
+    }
+
+    public static function fromModel(BlogPost $post): self
+    {
+        return new self(
+            title: $post->title,
+            slug: $post->slug,
+            excerpt: $post->excerpt,
+            author: $post->author ? AuthorData::from(['name' => $post->author->name]) : null,
+            reviews_count: $post->review_count,
+            average_rating: (float) $post->average_rating,
+            published_at: $post->published_at ? Verta::instance($post->published_at) : null,
+            thumbnail_url: $post->thumbnail_url,
+            read_time_minutes: $post->read_time_minutes,
+            is_featured: $post->is_featured,
+            categories: $post->relationLoaded('categories')
+                ? $post->categories->map(fn ($category) => BlogCategoryCardData::fromModel($category))
+                : null,
+            media: $post->getAllMedia(urlOnly: true, onlyTags: ['cover']),
+        );
     }
 }

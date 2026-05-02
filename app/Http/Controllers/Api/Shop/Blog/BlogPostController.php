@@ -42,6 +42,7 @@ final class BlogPostController extends Controller
             })
             ->orderBy($requestData->sortBy, $requestData->sortOrder)
             ->with(['author', 'categories'])
+            ->withMediaAndVariants(['cover'])
             ->paginate(
                 perPage: $requestData->per_page,
                 page: $requestData->page
