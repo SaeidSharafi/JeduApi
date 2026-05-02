@@ -8,6 +8,7 @@ use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Tests\Support\Traits\DateUtilTestTrait;
+use Tests\Support\Traits\FakeMediaTrait;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -15,6 +16,7 @@ abstract class TestCase extends BaseTestCase
     use RefreshDatabase;
     use \Tests\Support\Traits\AuthTestTrait;
     use DateUtilTestTrait;
+    use FakeMediaTrait;
 
     protected $seed = true;
     protected $seeder = PermissionsSeeder::class;
