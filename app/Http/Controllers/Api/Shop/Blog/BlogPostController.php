@@ -7,10 +7,15 @@ namespace App\Http\Controllers\Api\Shop\Blog;
 use App\Data\Shop\Blog\BlogPostCardData;
 use App\Data\Shop\Blog\BlogPostDetailData;
 use App\Data\Shop\Blog\BlogPostListRequestData;
+use App\Data\Shop\Product\ProductCardData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Blog\BlogPost;
+use App\Models\Product;
+use App\Query\ProductQueryService;
+use App\Services\ProductPriceService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * @group Shop - Blog - Posts
@@ -53,7 +58,6 @@ final class BlogPostController extends Controller
             )
             ->withQueryString();
 
-
         $data = BlogPostCardData::collect($posts);
 
         return response()->success($data);
@@ -67,17 +71,40 @@ final class BlogPostController extends Controller
      * @responseFile 200 storage/responses/shop/blog/post/show.json
      * @responseFile 404 storage/responses/404.json
      */
-    public function show(string $slug)
+    public function show(string $slug, ProductPriceService $productPriceService)
     {
         $post = BlogPost::query()
             ->where('slug', $slug)
             ->where('status', PublicationStatusEnum::PUBLISHED)
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
-            ->with(['author', 'categories'])
+            ->with(['author', 'categories', 'courses:id', 'seminars:id', 'digitalAssets:id'])
             ->withProductableMedia()
             ->firstOrFail();
+        $relatedProductableIds = $post->related_productables->groupBy('pivot.productable_type')
+            ->map(fn($group) => $group->pluck('id')->all())
+            ->all();
 
-        return response()->success(BlogPostDetailData::fromModel($post));
+        $relatedProducts = ProductQueryService::make()
+            ->availableProducts()
+            ->forListing()
+            ->getQuery()
+            ->where(function (Builder $query) use ($relatedProductableIds) {
+                $query->where(fn(Builder $query) => $query->where('productable_type', 'course')
+                    ->whereIn('productable_id', $relatedProductableIds['course'] ?? []))
+                    ->orWhere(fn(Builder $query) => $query->where('productable_type', 'seminar')
+                        ->whereIn('productable_id', $relatedProductableIds['seminar'] ?? []))
+                    ->orWhere(fn(Builder $query) => $query->where('productable_type', 'digital_asset')
+                        ->whereIn('productable_id', $relatedProductableIds['digital_asset'] ?? []));
+            })
+            ->limit(10)
+            ->get()
+            ->map(function (Product $product) use ($productPriceService) {
+                $priceData = $productPriceService->getPriceDataForProduct($product);
+
+                return ProductCardData::fromModel($product, $priceData);
+            })
+            ->all();
+        return response()->success(BlogPostDetailData::fromModel($post, $relatedProducts));
     }
 }

@@ -35,6 +35,64 @@
                 "posts_count": 15
             }
         ],
+        "related_products": [
+            {
+                "slug": "ai-webinar-fall-1403",
+                "name": "وبینار هوش مصنوعی - پاییز ۱۴۰۳",
+                "price": 500000,
+                "original_price": 500000,
+                "price_range": {
+                    "min": 500000,
+                    "max": 500000
+                },
+                "has_discount": false,
+                "discount_percent": null,
+                "is_free": false,
+                "is_featured": true,
+                "provides_certificate": true,
+                "product_type": {
+                    "value": "seminar",
+                    "label": "سمینار"
+                },
+                "thumbnail_url": "fake-cover.svg",
+                "teachers": [
+                    "سرکار خانم فیروز نادری",
+                    "سرکار خانم مجید سمیعی"
+                ],
+                "reviews_count": 0,
+                "average_rating": 0,
+                "price_data": {
+                    "min_price": 500000,
+                    "min_original_price": 500000,
+                    "has_featured_price": false,
+                    "has_discount": false,
+                    "has_pre_payment": false,
+                    "discount_type": null,
+                    "discount_percentage": null,
+                    "highest_discount_amount": null,
+                    "range": {
+                        "min": 500000,
+                        "max": 500000
+                    },
+                    "prices": [
+                        {
+                            "current_price": 500000,
+                            "original_price": 500000,
+                            "pre_payment_price": null,
+                            "featured_price": null,
+                            "discount_amount": null,
+                            "has_pre_payment_price": false,
+                            "has_featured_price": false,
+                            "has_discount": false,
+                            "discount_type": null,
+                            "discount_percentage": null,
+                            "range": null,
+                            "uuid": "00b9f801-b423-48c5-a4dc-eb5358706ced"
+                        }
+                    ]
+                }
+            }
+        ],
         "media": {
             "cover": [
                 "https://example.com/media/cover-image.jpg"

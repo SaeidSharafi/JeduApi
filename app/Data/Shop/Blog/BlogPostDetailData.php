@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Blog;
 
+use App\Data\Shop\Product\ProductCardData;
 use App\Models\Blog\BlogPost;
 use Hekmatinasser\Verta\Verta;
+use Illuminate\Support\Collection;
 use Plank\Mediable\Media;
 use Spatie\LaravelData\Data;
 
@@ -28,13 +30,14 @@ final class BlogPostDetailData extends Data
         public int $read_time_minutes = 0,
         public bool $is_featured = false,
         public array $categories = [],
+        public array $related_products = [],
         public array $media = [],
         public ?string $meta_title = null,
         public ?string $meta_description = null,
         public ?string $meta_keywords = null,
     ) {}
 
-    public static function fromModel(BlogPost $post): self
+    public static function fromModel(BlogPost $post, array $relatedProducts = []): self
     {
         return new self(
             title: $post->title,
@@ -49,6 +52,7 @@ final class BlogPostDetailData extends Data
             read_time_minutes: $post->read_time_minutes,
             is_featured: $post->is_featured,
             categories: $post->categories->map(fn ($category) => BlogCategoryCardData::fromModel($category))->all(),
+            related_products: $relatedProducts,
             media: $post->getAllMedia(),
             meta_title: $post->meta_title,
             meta_description: $post->meta_description,

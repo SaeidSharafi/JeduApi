@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\Content\PublicationStatusEnum;
 use App\Models\Blog\BlogCategory;
 use App\Models\Blog\BlogPost;
+use App\Models\Product;
 use App\Models\Review;
 use App\Models\Staff;
 
@@ -72,8 +73,7 @@ describe('BlogPostController', function () {
         // Only published posts should appear
         expect($response->json('data.total'))->toBe(3)
             ->and($response->json('data.data.0.media'))->toHaveCount(1)
-            ->and($response->json('data.data.0.media.cover'))->toHaveCount(1)
-        ;
+            ->and($response->json('data.data.0.media.cover'))->toHaveCount(1);
     });
 
     it('can filter blog posts by featured status', function () {
@@ -113,7 +113,7 @@ describe('BlogPostController', function () {
     it('can filter blog posts by category slug', function () {
         // Arrange
         $category = BlogCategory::factory()->create(['slug' => 'programming']);
-        $posts    = BlogPost::factory()
+        $posts = BlogPost::factory()
             ->count(3)
             ->state([
                 'status'       => PublicationStatusEnum::PUBLISHED,
@@ -176,22 +176,22 @@ describe('BlogPostController', function () {
         // Arrange
         $firstPost = BlogPost::factory()
             ->state([
-                'status'       => PublicationStatusEnum::PUBLISHED,
-                'published_at' => now()->subDays(5),
+                'status'         => PublicationStatusEnum::PUBLISHED,
+                'published_at'   => now()->subDays(5),
                 'average_rating' => 5
             ])
             ->create();
         $lastPost = BlogPost::factory()
             ->state([
-                'status'       => PublicationStatusEnum::PUBLISHED,
-                'published_at' => now()->subDay(),
+                'status'         => PublicationStatusEnum::PUBLISHED,
+                'published_at'   => now()->subDay(),
                 'average_rating' => 3
             ])
             ->create();
         $secondPost = BlogPost::factory()
             ->state([
-                'status'       => PublicationStatusEnum::PUBLISHED,
-                'published_at' => now()->subDay(),
+                'status'         => PublicationStatusEnum::PUBLISHED,
+                'published_at'   => now()->subDay(),
                 'average_rating' => 4
             ])
             ->create();
@@ -201,7 +201,6 @@ describe('BlogPostController', function () {
             'sortBy'    => 'popularity',
             'sortOrder' => 'asc',
         ]));
-
 
         // Assert
         $response->assertOk();
@@ -268,14 +267,24 @@ describe('BlogPostController', function () {
     it('can get a single published blog post by slug', function () {
         // Arrange
         $category = BlogCategory::factory()->create();
-        $staff    = Staff::factory()->create(['name' => 'John Doe']);
-        $post     = BlogPost::factory()
+        $staff = Staff::factory()->create(['name' => 'John Doe']);
+        $post = BlogPost::factory()
             ->state([
                 'status'       => PublicationStatusEnum::PUBLISHED,
                 'published_at' => now()->subDay(),
                 'author_id'    => $staff->id,
             ])
             ->create();
+        $products = Product::factory()
+            ->withDeliveryOptions(1)
+            ->count(5)
+            ->create();
+
+        $products = $products
+            ->map(fn(Product $product) => ['type' => $product->productable_type, 'id' => $product->productable_id])
+            ->toArray();
+
+        $post->syncRelatedProductables($products);
 
         $post->categories()->attach($category);
 
@@ -290,7 +299,7 @@ describe('BlogPostController', function () {
                 'slug',
                 'body',
                 'excerpt',
-                'author' => [
+                'author'     => [
                     'name',
                 ],
                 'reviews_count',
@@ -307,6 +316,16 @@ describe('BlogPostController', function () {
                         'description',
                         'icon',
                         'posts_count',
+                    ],
+                ],
+                'related_products' => [
+                    '*' => [
+                        'name',
+                        'slug',
+                        'thumbnail_url',
+                        'price',
+                        'original_price',
+                        'is_featured',
                     ],
                 ],
                 'media',
