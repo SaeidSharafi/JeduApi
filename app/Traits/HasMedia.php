@@ -20,15 +20,15 @@ trait HasMedia
         return $query;
     }
 
-    public function getAllMedia(bool $urlOnly = false): array
+    public function getAllMedia(bool $urlOnly = false, array $onlyTags=[]): array
     {
-        $tags = array_diff(MediaTagEnum::cases(), $this->exceptTags);
-
+        $tags = $onlyTags ?: array_diff(MediaTagEnum::cases(), $this->exceptTags);
         if ($this->relationLoaded('media')) {
             $media = [];
             foreach ($tags as $tag) {
-                $media[$tag->value] = $this->getMedia($tag)
-                    ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tag->value))
+                $tagValue = $tag instanceof MediaTagEnum ? $tag->value : $tag;
+                $media[$tagValue] = $this->getMedia($tagValue)
+                    ->map(fn (Media $m): MediaData => MediaData::fromModel($m, $tagValue))
                     ->when(
                         $urlOnly,
                         static fn ($items) => $items->map(static fn (MediaData $d) => $d->url)
