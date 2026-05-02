@@ -29,6 +29,7 @@ final class CategoryController extends Controller
     public function index()
     {
         $categories = Category::query()
+            ->with('children')
             ->withCount([
                 'products' => function ($query) {
                     return ProductQueryService::make()

@@ -79,6 +79,28 @@ test('relation categorizable', function (): void {
     expect($category->categorizable)
         ->toHaveCount(2);
 });
+test('relation parent', function (): void {
+    $category = Category::factory()->create();
+    $child    = Category::factory()->create(['parent_id' => $category->id]);
+
+    expect($child->parent)
+        ->toBeInstanceOf(Category::class)
+        ->and($child->parent->id)
+        ->toEqual($category->id);
+});
+
+test('relation children', function (): void {
+    $category = Category::factory()->create();
+    $child    = Category::factory()->create(['parent_id' => $category->id]);
+
+    expect($category->children)
+        ->toHaveCount(1)
+        ->and($category->children->first())
+        ->toBeInstanceOf(Category::class)
+        ->and($category->children->first()->id)
+        ->toEqual($child->id);
+});
+
 test('relation product', function (): void {
     $category = Category::factory()->create();
     $product  = App\Models\Product::factory()->create()->fresh();

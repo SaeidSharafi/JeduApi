@@ -2,36 +2,42 @@
 
 declare(strict_types=1);
 
+use App\Models\Category;
 use App\Models\Product;
 
 describe('CategoryController', function () {
 
     it('get list of categories', function () {
+        $parentCategory = Category::factory()->create();
+        Category::factory()->create(['parent_id' => $parentCategory->id]);
+        Category::factory()->create(['parent_id' => $parentCategory->id]);
         $response = $this->getJson(route('api.v1.shop.categories.index'));
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
                 '*' => [
-                    'id',
                     'name',
                     'slug',
-                    'description',
-                    'educational_calendar_url',
-                    'color_scheme',
                     'icon_url',
                     'image_url',
-                    'meta_title',
-                    'meta_description',
-                    'meta_keywords',
                     'products_count',
+                    'children' => [
+                        '*' => [
+                            'name',
+                            'slug',
+                            'icon_url',
+                            'image_url',
+                            'products_count',
+                        ],
+                    ],
                 ],
             ],
         ]);
     });
 
     it('get single category details', function () {
-        $category        = App\Models\Category::factory()->create();
-        $anotherCategory = App\Models\Category::factory()->create();
+        $category        = Category::factory()->create();
+        $anotherCategory = Category::factory()->create();
 
         $courses = Product::factory()
             ->withCourse()
@@ -154,7 +160,7 @@ describe('CategoryController', function () {
     });
 
     it('get single category details for courses', function () {
-        $category = App\Models\Category::factory()->create();
+        $category = Category::factory()->create();
 
         $courses = Product::factory()
             ->withCourse()
@@ -216,7 +222,7 @@ describe('CategoryController', function () {
     });
 
     it('get single category details for seminars', function () {
-        $category = App\Models\Category::factory()->create();
+        $category = Category::factory()->create();
 
         $seminars = Product::factory()
             ->withSeminar()
@@ -277,7 +283,7 @@ describe('CategoryController', function () {
         }
     });
     it('get single category details for digital assets', function () {
-        $category = App\Models\Category::factory()->create();
+        $category = Category::factory()->create();
         $assets   = Product::factory()
             ->withDigitalAsset()
             ->withDeliveryOptions(1)

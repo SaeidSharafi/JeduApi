@@ -6,7 +6,16 @@
       "slug": "iste-voluptas-veniam-omnis-qui",
       "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
       "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
-      "products_count": 2
+      "products_count": 2,
+      children: [
+        {
+          "name": "تخت",
+          "slug": "et-ipsa-ipsa-omnis-quia",
+          "icon_url": "http://jedu.test/storage/fake-media/icon.svg",
+          "image_url": "http://jedu.test/storage/fake-media/placeholder.svg",
+          "products_count": 3
+        }
+      ]
     },
     {
       "name": "صندلی",

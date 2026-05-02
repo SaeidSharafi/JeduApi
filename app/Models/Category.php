@@ -7,6 +7,7 @@ namespace App\Models;
 use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Plank\Mediable\Mediable;
@@ -70,6 +71,22 @@ final class Category extends Model
     public function products(): MorphToMany
     {
         return $this->morphedByMany(Product::class, 'categorizable');
+    }
+
+    /**
+     * @return BelongsTo<Category>
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * @return HasMany<Category>
+     */
+    public function children(): HasMany
+    {
+        return $this->hasMany(Category::class, 'parent_id');
     }
 
     protected function casts(): array
