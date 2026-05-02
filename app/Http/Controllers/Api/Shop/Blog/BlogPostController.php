@@ -40,7 +40,11 @@ final class BlogPostController extends Controller
                     $q2->where('slug', $requestData->category_slug);
                 });
             })
-            ->orderBy($requestData->sortBy, $requestData->sortOrder)
+            ->when($requestData->sortBy === 'popularity', function ($q) {
+                $q->orderByDesc('average_rating');
+            }, function ($q) use ($requestData) {
+                $q->orderBy($requestData->sortBy, $requestData->sortOrder);
+            })
             ->with(['author', 'categories'])
             ->withMediaAndVariants(['cover'])
             ->paginate(

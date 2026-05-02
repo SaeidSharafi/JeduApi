@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\Content\PublicationStatusEnum;
 use App\Models\Blog\BlogCategory;
 use App\Models\Blog\BlogPost;
+use App\Models\Review;
 use App\Models\Staff;
 
 use function Pest\Laravel\getJson;
@@ -169,6 +170,45 @@ describe('BlogPostController', function () {
         $posts = $response->json('data.data');
         expect($posts[0]['slug'])->toBe($newPost->slug);
         expect($posts[1]['slug'])->toBe($oldPost->slug);
+    });
+
+    it('can sort blog posts by populraity', function () {
+        // Arrange
+        $firstPost = BlogPost::factory()
+            ->state([
+                'status'       => PublicationStatusEnum::PUBLISHED,
+                'published_at' => now()->subDays(5),
+                'average_rating' => 5
+            ])
+            ->create();
+        $lastPost = BlogPost::factory()
+            ->state([
+                'status'       => PublicationStatusEnum::PUBLISHED,
+                'published_at' => now()->subDay(),
+                'average_rating' => 3
+            ])
+            ->create();
+        $secondPost = BlogPost::factory()
+            ->state([
+                'status'       => PublicationStatusEnum::PUBLISHED,
+                'published_at' => now()->subDay(),
+                'average_rating' => 4
+            ])
+            ->create();
+
+        // Act - Sort descending (newest first)
+        $response = getJson(route('api.v1.shop.blog.posts.index', [
+            'sortBy'    => 'popularity',
+            'sortOrder' => 'asc',
+        ]));
+
+
+        // Assert
+        $response->assertOk();
+        $posts = $response->json('data.data');
+        expect($posts[0]['slug'])->toBe($firstPost->slug)
+            ->and($posts[1]['slug'])->toBe($secondPost->slug)
+            ->and($posts[2]['slug'])->toBe($lastPost->slug);
     });
 
     it('can sort blog posts by created_at ascending', function () {

@@ -24,7 +24,7 @@ final class BlogPostListRequestData extends Data
         return [
             'is_featured'   => ['sometimes', 'boolean'],
             'category_slug' => ['sometimes', 'string', 'exists:blog_categories,slug'],
-            'sortBy'        => ['sometimes', 'string', Rule::in(['created_at', 'published_at'])],
+            'sortBy'        => ['sometimes', 'string', Rule::in(['created_at', 'published_at', 'popularity'])],
             'sortOrder'     => ['sometimes', 'string', 'in:asc,desc'],
             'page'          => ['sometimes', 'integer', 'min:1'],
             'per_page'      => ['sometimes', 'integer', 'min:1', 'max:100'],
@@ -46,11 +46,11 @@ final class BlogPostListRequestData extends Data
                 'example'     => 'programming',
             ],
             'sortBy' => [
-                'description' => 'Field to sort by (created_at or published_at)',
+                'description' => 'Field to sort by (created_at, published_at, or popularity)',
                 'example'     => 'published_at',
             ],
             'sortOrder' => [
-                'description' => 'Sort order (asc or desc)',
+                'description' => 'Sort order (asc or desc), defaults to desc, ignored if sortBy is popularity',
                 'example'     => 'desc',
             ],
             'page' => [
