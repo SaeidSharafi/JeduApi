@@ -20,6 +20,7 @@ final readonly class GetHomePageBlocksListAction
             ->map(function (HomePageBlock $block) {
                 return new HomePageBlockListData(
                     id: $block->id,
+                    type: $block->type,
                     location: $block->location,
                     order: $block->order,
                     preset: $block->content['preset'] ?? null

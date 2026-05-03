@@ -4,46 +4,55 @@
     {
       "id": 7,
       "location": "hero",
+      "type": "MAIN_CATEGORIES",
       "preset": null
     },
     {
       "id": 1,
       "location": "hero",
+      "type":  "BANNER",
       "preset": "default"
     },
     {
       "id": 8,
       "location": "hero",
+      "type":  "CURATED_LIST",
       "preset": null
     },
     {
       "id": 9,
       "location": "hero",
+      "type":  "WEBINAR_BANNER",
       "preset": "default"
     },
     {
       "id": 2,
       "location": "middle",
+      "type":  "CURATED_LIST",
       "preset": "default"
     },
     {
       "id": 3,
       "location": "middle",
+      "type":  "CURATED_LIST",
       "preset": "default"
     },
     {
       "id": 4,
       "location": "middle",
+      "type":  "CURATED_LIST",
       "preset": "default"
     },
     {
       "id": 5,
       "location": "middle",
+      "type":  "DYNAMIC_LIST",
       "preset": "default"
     },
     {
       "id": 6,
       "location": "middle",
+      "type":  "DYNAMIC_LIST",
       "preset": "default"
     }
   ],

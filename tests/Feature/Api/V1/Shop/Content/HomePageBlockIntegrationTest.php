@@ -74,6 +74,7 @@ describe('HomePageContentController', function (): void {
             'data' => [
                 '*' => [
                     'id',
+                    'type',
                     'location',
                     'order',
                     'preset',
