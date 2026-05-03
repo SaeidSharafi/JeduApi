@@ -19,7 +19,12 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['dev-jedu.encel.ir', 'test-jedu.encel.ir', 'localhost:3000', 'api.jedu.ir'],
+    'allowed_origins' =>[
+        'https://dev-jedu.encel.ir',
+        'https://test-jedu.encel.ir',
+        'http://localhost:3000',
+        'https://api.jedu.ir'
+    ],
 
     'allowed_origins_patterns' => [],
 
