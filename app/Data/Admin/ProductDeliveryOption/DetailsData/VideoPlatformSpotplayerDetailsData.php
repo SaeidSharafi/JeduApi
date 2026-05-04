@@ -10,6 +10,6 @@ use Spatie\LaravelData\Data;
 final class VideoPlatformSpotplayerDetailsData extends Data implements DeliveryOptionDetailDataContract
 {
     public function __construct(
-        public string $course_id,
+        public string $spot_id,
     ) {}
 }

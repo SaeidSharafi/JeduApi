@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
@@ -40,6 +41,18 @@ final class ProductDeliveryOptionFactory extends Factory
         $price               = $this->faker->randomElement($prices);
         $prepaymentAmount    = (int) floor($this->faker->randomElement($prices) * (random_int(10, 30) / 100));
         $prepaymentAvailable = $this->faker->boolean();
+        $detials             = match ($pdoType) {
+            DeliveryMethodEnum::LMS_MOODLE => [
+                'moodle_course_id'      => $this->faker->randomNumber(),
+                'activity_id'           => null,
+                'enrollment_start_date' => Carbon::now()->addDays(5),
+                'enrollment_end_date'   => Carbon::now()->addDays(30),
+            ],
+            DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER => [
+                'spot_id' => 'SPOT-'.$this->faker->unique()->randomNumber(),
+            ],
+            default => [],
+        };
 
         return [
             'product_id'                => Product::factory(),
@@ -53,7 +66,7 @@ final class ProductDeliveryOptionFactory extends Factory
             'status'                    => PublicationStatusEnum::PUBLISHED->value,
             'is_prepayment_available'   => $prepaymentAvailable,
             'prepayment_amount'         => $prepaymentAvailable ? $prepaymentAmount : 0,
-            'details_json'              => [],
+            'details_json'              => $detials,
             'is_featured'               => false,
             'featured_price'            => 0,
             'featured_price_start_date' => null,

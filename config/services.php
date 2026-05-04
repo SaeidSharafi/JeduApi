@@ -47,4 +47,37 @@ return [
         'use_fake_email' => env('EMAIL_USE_FAKE_EMAIL', false),
     ],
 
+    'ims' => [
+        'base_url'             => env('IMS_BASE_URL'),
+        'api_key'              => env('IMS_API_KEY'),
+        'api_key_header'       => env('IMS_API_KEY_HEADER', 'X-API-KEY'),
+        'enrollments_endpoint' => env('IMS_ENROLLMENTS_ENDPOINT', '/api/enrollments'),
+        'timeout'              => (int) env('IMS_TIMEOUT', 15),
+    ],
+
+    'moodle' => [
+        'base_url'                      => env('MOODLE_BASE_URL'),
+        'token'                         => env('MOODLE_TOKEN'),
+        'auth_userkey_token'            => env('MOODLE_AUTH_USERKEY_TOKEN'),
+        'default_role_id'               => (int) env('MOODLE_DEFAULT_ROLE_ID', 5),
+        'default_login_redirect_script' => env('MOODLE_LOGIN_REDIRECT_SCRIPT', '/my/'),
+        'timeout'                       => (int) env('MOODLE_TIMEOUT', 15),
+    ],
+
+    'spotplayer' => [
+        'endpoint' => env('SPOTPLAYER_ENDPOINT', 'https://panel.spotplayer.ir/license/edit/'),
+        'api_key'  => env('SPOTPLAYER_API_KEY'),
+        'sandbox'  => (bool) env('SPOTPLAYER_SANDBOX', false),
+        'timeout'  => (int) env('SPOTPLAYER_TIMEOUT', 15),
+    ],
+
+    'bbb' => [
+        'base_url'                   => env('BBB_BASE_URL'),
+        'secret'                     => env('BBB_SECRET'),
+        'api_path'                   => env('BBB_API_PATH', '/bigbluebutton/api'),
+        'default_attendee_password'  => env('BBB_DEFAULT_ATTENDEE_PASSWORD', 'ap'),
+        'default_moderator_password' => env('BBB_DEFAULT_MODERATOR_PASSWORD', 'mp'),
+        'timeout'                    => (int) env('BBB_TIMEOUT', 15),
+    ],
+
 ];

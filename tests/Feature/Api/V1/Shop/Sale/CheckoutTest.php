@@ -6,6 +6,10 @@ use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\System\MorphTypeEnum;
+use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Models\Course;
 use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
@@ -24,8 +28,14 @@ use function Pest\Laravel\postJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
+    Queue::fake([
+        ProvisionImsEnrollmentJob::class,
+        ProvisionMoodleEnrollmentJob::class,
+        ProvisionSpotPlayerEnrollmentJob::class,
+        ProvisionBbbEnrollmentJob::class,
+    ]);
     $vendor = Vendor::factory()->create();
-    $term = Term::factory()->create();
+    $term   = Term::factory()->create();
     $course = Course::factory()->create([
         'status' => PublicationStatusEnum::PUBLISHED,
     ]);
@@ -95,8 +105,8 @@ describe('Checkout Success', function (): void {
                                 'last_gateway_reference',
                                 'attempt_count',
                                 'transactions',
-                            ]
-                        ]
+                            ],
+                        ],
                     ],
                     'redirect_url',
                     'redirect_data',
@@ -146,7 +156,7 @@ describe('Checkout Success', function (): void {
 describe('Checkout Validation', function (): void {
     test('checkout fails when delivery option has zero capacity', function (): void {
         $vendor = Vendor::factory()->create();
-        $term = Term::factory()->create();
+        $term   = Term::factory()->create();
         $course = Course::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
@@ -192,7 +202,7 @@ describe('Checkout Validation', function (): void {
 
     test('checkout fails when quantity exceeds available capacity', function (): void {
         $vendor = Vendor::factory()->create();
-        $term = Term::factory()->create();
+        $term   = Term::factory()->create();
         $course = Course::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
@@ -238,7 +248,7 @@ describe('Checkout Validation', function (): void {
 
     test('checkout fails when product is not published', function (): void {
         $vendor = Vendor::factory()->create();
-        $term = Term::factory()->create();
+        $term   = Term::factory()->create();
         $course = Course::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
@@ -274,7 +284,7 @@ describe('Checkout Validation', function (): void {
     });
     test('checkout fails when product is not visible', function (): void {
         $vendor = Vendor::factory()->create();
-        $term = Term::factory()->create();
+        $term   = Term::factory()->create();
         $course = Course::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
@@ -310,7 +320,7 @@ describe('Checkout Validation', function (): void {
     });
     test('checkout fails when product delivery option is not published', function (): void {
         $vendor = Vendor::factory()->create();
-        $term = Term::factory()->create();
+        $term   = Term::factory()->create();
         $course = Course::factory()->create([
             'status' => PublicationStatusEnum::PUBLISHED,
         ]);
@@ -416,8 +426,8 @@ test('user can checkout with wallet payment and order is completed', function ()
                                     'ip_address',
                                 ],
                             ],
-                        ]
-                    ]
+                        ],
+                    ],
                 ],
             ],
         ]
@@ -541,7 +551,7 @@ test('checkout endpoint enforces rate limit of 5 requests per minute', function 
     $this->customer($user);
 
     $vendor = Vendor::factory()->create();
-    $term = Term::factory()->create();
+    $term   = Term::factory()->create();
     $course = Course::factory()->create([
         'status' => PublicationStatusEnum::PUBLISHED,
     ]);
@@ -589,7 +599,7 @@ test('user cannot create more than 5 orders in one hour', function (): void {
     }
 
     $vendor = Vendor::factory()->create();
-    $term = Term::factory()->create();
+    $term   = Term::factory()->create();
     $course = Course::factory()->create([
         'status' => PublicationStatusEnum::PUBLISHED,
     ]);
@@ -639,7 +649,7 @@ test('velocity check only counts orders from the last hour', function (): void {
     }
 
     $vendor = Vendor::factory()->create();
-    $term = Term::factory()->create();
+    $term   = Term::factory()->create();
     $course = Course::factory()->create([
         'status' => PublicationStatusEnum::PUBLISHED,
     ]);
@@ -863,7 +873,6 @@ describe('Duplicate Purchase Prevention', function (): void {
     test('checkout succeeds when user has expired enrollment', function (): void {
         $user = User::factory()->create();
         $this->customer($user);
-
         // User's access has expired
         App\Models\Enrollment::factory()->create([
             'customer_id'                => $user->id,
@@ -884,13 +893,13 @@ describe('Duplicate Purchase Prevention', function (): void {
     });
 
     test('checkout fails with multiple duplicate products in cart', function (): void {
-        $user = User::factory()->create();
+        $user   = User::factory()->create();
         $vendor = Vendor::factory()->create();
-        $term = Term::factory()->create();
+        $term   = Term::factory()->create();
         $this->customer($user);
 
         // Create two different products that the user already owns
-        $course1 = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $course1  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         $product1 = Product::factory()->create([
             'vendor_id'        => $vendor->id,
             'term_id'          => $term->id,
@@ -906,7 +915,7 @@ describe('Duplicate Purchase Prevention', function (): void {
             'name'       => 'Course A - Online',
         ]);
 
-        $course2 = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $course2  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
         $product2 = Product::factory()->create([
             'vendor_id'        => $vendor->id,
             'term_id'          => $term->id,

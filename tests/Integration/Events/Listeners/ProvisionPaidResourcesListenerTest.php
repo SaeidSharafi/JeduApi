@@ -7,6 +7,10 @@ namespace Tests\Unit\Listeners;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Events\EnrollmentStatusChanged;
 use App\Events\PaymentCompletedEvent;
+use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Listeners\ProvisionPaidResourcesListener;
 use App\Models\Enrollment;
 use App\Models\Order;
@@ -19,12 +23,15 @@ use Illuminate\Support\Facades\Queue;
 describe('ProvisionPaidResourcesListener', function (): void {
 
     beforeEach(function (): void {
-        // This listener is queued, but since it dispatches no jobs yet,
-        // faking the queue is good practice for the future.
-        Queue::fake();
+        Queue::fake([
+            ProvisionImsEnrollmentJob::class,
+            ProvisionMoodleEnrollmentJob::class,
+            ProvisionSpotPlayerEnrollmentJob::class,
+            ProvisionBbbEnrollmentJob::class,
+        ]);
     });
 
-    it('executes all delivery method checks without error', function (): void {
+    it('dispatches provisioning jobs based on delivery method', function (): void {
         Event::fake([
             EnrollmentStatusChanged::class,
         ]);
@@ -32,35 +39,68 @@ describe('ProvisionPaidResourcesListener', function (): void {
         $payment = Payment::factory()->for($order)->create(['status' => 'completed']);
 
         $inPersonItem = OrderItem::factory()->for($order)->create([
-            'product_delivery_option_id' => ProductDeliveryOption::factory()->create(['delivery_method' => DeliveryMethodEnum::IN_PERSON])->id,
+            'product_delivery_option_id' => ProductDeliveryOption::factory()
+                ->create(['delivery_method' => DeliveryMethodEnum::IN_PERSON])->id,
+        ]);
+        $inPersonItem->productDeliveryOption()->update([
+            'details_json' => ['ims_course_code' => 'IMS-IN-PERSON'],
         ]);
         Enrollment::factory()->for($inPersonItem)->create();
 
         $moodleItem = OrderItem::factory()->for($order)->create([
-            'product_delivery_option_id' => ProductDeliveryOption::factory()->create(['delivery_method' => DeliveryMethodEnum::LMS_MOODLE])->id,
+            'product_delivery_option_id' => ProductDeliveryOption::factory()
+                ->create([
+                    'delivery_method' => DeliveryMethodEnum::LMS_MOODLE,
+                    'details_json'    => [
+                        'moodle_course_id' => 123,
+                        'ims_course_code'  => 'IMS-MOODLE',
+                    ],
+                ])->id,
         ]);
         Enrollment::factory()->for($moodleItem)->create();
 
         $spotplayerItem = OrderItem::factory()->for($order)->create([
-            'product_delivery_option_id' => ProductDeliveryOption::factory()->create(['delivery_method' => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER])->id,
+            'product_delivery_option_id' => ProductDeliveryOption::factory()
+                ->create([
+                    'delivery_method' => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
+                    'details_json'    => [
+                        'spot_id'         => 'SPOT-1',
+                        'ims_course_code' => 'IMS-SPOT',
+                    ],
+                ])->id,
         ]);
         Enrollment::factory()->for($spotplayerItem)->create();
 
         $downloadItem = OrderItem::factory()->for($order)->create([
-            'product_delivery_option_id' => ProductDeliveryOption::factory()->create(['delivery_method' => DeliveryMethodEnum::DIRECT_DOWNLOAD])->id,
+            'product_delivery_option_id' => ProductDeliveryOption::factory()
+                ->create([
+                    'delivery_method' => DeliveryMethodEnum::DIRECT_DOWNLOAD,
+                    'details_json'    => ['ims_course_code' => 'IMS-DOWNLOAD'],
+                ])->id,
         ]);
         Enrollment::factory()->for($downloadItem)->create();
 
-        OrderItem::factory()->for($order)->create();
+        $bbbItem = OrderItem::factory()->for($order)->create([
+            'product_delivery_option_id' => ProductDeliveryOption::factory()
+                ->create([
+                    'delivery_method' => DeliveryMethodEnum::LIVE_SESSION_BBB,
+                    'details_json'    => [
+                        'meeting_id'      => 'BBB-1',
+                        'ims_course_code' => 'IMS-BBB',
+                    ],
+                ])->id,
+        ]);
+        Enrollment::factory()->for($bbbItem)->create();
 
+        OrderItem::factory()->for($order)->create();
         $event = new PaymentCompletedEvent($payment);
+
         (new ProvisionPaidResourcesListener())->handle($event);
 
-        // Since the listener currently has no actions (no job dispatching, no status changes),
-        // the only meaningful assertion is that it ran without throwing an exception.
-        // We also assert no jobs were pushed, which is correct for the current code.
-        $this->assertTrue(true);
-        Queue::assertNothingPushed();
+        Queue::assertPushed(ProvisionImsEnrollmentJob::class, 5);
+        Queue::assertPushed(ProvisionMoodleEnrollmentJob::class, 1);
+        Queue::assertPushed(ProvisionSpotPlayerEnrollmentJob::class, 1);
+        Queue::assertPushed(ProvisionBbbEnrollmentJob::class, 1);
     });
 
     it('handles an order with no items gracefully', function (): void {

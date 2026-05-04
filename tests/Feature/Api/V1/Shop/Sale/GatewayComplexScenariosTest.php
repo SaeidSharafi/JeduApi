@@ -7,6 +7,10 @@ use App\Data\Shop\Payment\GatewayCallbackData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\System\MorphTypeEnum;
+use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Models\Course;
 use App\Models\Order;
 use App\Models\Payment;
@@ -15,13 +19,21 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Term;
 use App\Models\User;
 use App\Models\Vendor;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\postJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
-
+beforeEach(function (): void {
+    Queue::fake([
+        ProvisionImsEnrollmentJob::class,
+        ProvisionMoodleEnrollmentJob::class,
+        ProvisionSpotPlayerEnrollmentJob::class,
+        ProvisionBbbEnrollmentJob::class,
+    ]);
+});
 describe('Gateway Payment Complex Scenarios', function (): void {
 
     test('idempotent gateway verify: duplicate callback is no-op', function (): void {

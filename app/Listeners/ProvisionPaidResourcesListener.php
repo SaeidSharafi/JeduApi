@@ -6,14 +6,16 @@ namespace App\Listeners;
 
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Events\PaymentCompletedEvent;
+use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
 final class ProvisionPaidResourcesListener implements ShouldQueue
 {
     use InteractsWithQueue;
-
-    public function __construct() {}
 
     public function handle(PaymentCompletedEvent $event): void
     {
@@ -27,36 +29,26 @@ final class ProvisionPaidResourcesListener implements ShouldQueue
         }
 
         foreach ($order->items as $item) {
+            if (! $item->enrollment || ! $item->productDeliveryOption) {
+                continue;
+            }
 
-            if ($item->enrollment) {
-                $deliveryMethod = $item->enrollment->productDeliveryOption->delivery_method;
-                if ($deliveryMethod === DeliveryMethodEnum::IN_PERSON) {
-                    /**
-                     * TODO: Implement the job to provision In person details.
-                     * This could involve calling an API to create a user, enrol them in a course,
-                     */
-                }
-                // Dispatch specific jobs based on the product's delivery method.
-                if ($deliveryMethod === DeliveryMethodEnum::LMS_MOODLE) {
-                    /**
-                     * TODO: Implement the job to provision access to Moodle LMS.
-                     * This could involve calling an API to create a user, enrol them in a course,
-                     */
-                }
+            if (isset($item->productDeliveryOption->details_json['ims_course_code'])) {
+                ProvisionImsEnrollmentJob::dispatch($item->enrollment->id, $event->payment->id);
+            }
 
-                if ($deliveryMethod === DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER) {
-                    /**
-                     * TODO: Implement the job to provision access to SpotPlayer.
-                     */
-                }
+            $deliveryMethod = $item->productDeliveryOption->delivery_method;
+            if ($deliveryMethod === DeliveryMethodEnum::LMS_MOODLE) {
+                ProvisionMoodleEnrollmentJob::dispatch($item->enrollment->id);
+            }
 
-                if ($deliveryMethod === DeliveryMethodEnum::DIRECT_DOWNLOAD) {
-                    /**
-                     * TODO: Implement the job to provision direct download access.
-                     */
-                }
+            if ($deliveryMethod === DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER) {
+                ProvisionSpotPlayerEnrollmentJob::dispatch($item->enrollment->id);
+            }
+
+            if ($deliveryMethod === DeliveryMethodEnum::LIVE_SESSION_BBB) {
+                ProvisionBbbEnrollmentJob::dispatch($item->enrollment->id);
             }
         }
-
     }
 }

@@ -5,19 +5,31 @@ declare(strict_types=1);
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\System\MorphTypeEnum;
+use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Models\Course;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\Term;
 use App\Models\User;
 use App\Models\Vendor;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
 use function Pest\Laravel\postJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
+beforeEach(function (): void {
+    Queue::fake([
+        ProvisionImsEnrollmentJob::class,
+        ProvisionMoodleEnrollmentJob::class,
+        ProvisionSpotPlayerEnrollmentJob::class,
+        ProvisionBbbEnrollmentJob::class,
+    ]);
+});
 describe('Checkout registration & availability window validation', function (): void {
     /** Helper to build product + option with overrides */
     $makeOption = function (array $overrides = []): ProductDeliveryOption {

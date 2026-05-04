@@ -68,6 +68,12 @@ final class LiveSessionBbbDetailsData extends Data implements DeliveryOptionDeta
         public ?string $default_presentation_url,
 
         #[Nullable, StringType, Max(2000)]
-        public ?string $admin_notes
+        public ?string $admin_notes,
+
+        #[Nullable, BooleanType]
+        public ?bool $auto_create_meeting,
+
+        #[Nullable, StringType, Max(255)]
+        public ?string $meeting_id,
     ) {}
 }

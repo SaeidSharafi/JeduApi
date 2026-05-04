@@ -6,6 +6,10 @@ use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\DiscountTypeEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\System\MorphTypeEnum;
+use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Models\Course;
 use App\Models\DiscountCoupon;
 use App\Models\DiscountPromotion;
@@ -17,13 +21,21 @@ use App\Models\Term;
 use App\Models\User;
 use App\Models\Vendor;
 use App\Models\Wallet;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\postJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
-
+beforeEach(function (): void {
+    Queue::fake([
+        ProvisionImsEnrollmentJob::class,
+        ProvisionMoodleEnrollmentJob::class,
+        ProvisionSpotPlayerEnrollmentJob::class,
+        ProvisionBbbEnrollmentJob::class,
+    ]);
+});
 describe('Complex Multi-Step Checkout Scenarios', function (): void {
 
     test('coupon usage limit enforced: exhaustion prevents further use', function (): void {

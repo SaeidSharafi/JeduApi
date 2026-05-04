@@ -12,20 +12,6 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Symfony\Component\HttpFoundation\Response as HttpStatus; // Required for request() helper
 
-if (! function_exists('get_model_label')) {
-    function get_model_label(object|string $class): string
-    {
-        if (is_object($class) || class_exists($class)) {
-            return __('messages.models.'.mb_strtolower(class_basename($class)));
-        }
-        if (is_string($class)) {
-            return __('messages.models.'.mb_strtolower($class));
-        }
-
-        return '';
-    }
-}
-
 // A dummy model for testing purposes
 if (! class_exists('App\Models\TestDummyModel')) {
     class_alias(stdClass::class, 'App\Models\TestDummyModel');

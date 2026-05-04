@@ -78,6 +78,7 @@ final class ProductDeliveryOptionCreateData extends Data
             'available_to'              => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('available_from').',Y-m-d'],
             'teachers'                  => ['required', 'array'],
             'teachers.*'                => ['required', 'integer', 'exists:teachers,id'],
+            'details.ims_course_code'   => ['nullable', 'string'],
         ];
 
         $detailsRulesAction      = app(GetDeliveryDetailsValidationRulesAction::class);
@@ -187,14 +188,20 @@ final class ProductDeliveryOptionCreateData extends Data
                 'description' => 'Dynamic details object that varies based on delivery_method. See delivery method specific examples below.',
                 'required'    => true,
                 'example'     => [
-                    'course_idnumber'       => 'COURSE-001',
-                    'activity_id'             => 1,
+                    'moodle_course_id'      => 120,
+                    'ims_course_code'       => 'COURSE-001',
+                    'activity_id'           => 1,
                     'enrollment_start_date' => '1404-06-15 09:00:00',
                     'enrollment_end_date'   => '1404-12-31 23:59:59',
                 ],
             ],
-            'details.course_idnumber' => [
-                'description' => 'For `lms_moodle`. Course ID number in Moodle (required)',
+            'details.moodle_course_id' => [
+                'description' => 'For `lms_moodle`. Moodle course ID (required)',
+                'required'    => false,
+                'example'     => 120,
+            ],
+            'details.ims_course_code' => [
+                'description' => 'For integrations that require IMS. Course code in IMS (optional based on flow)',
                 'required'    => false,
                 'example'     => 'COURSE-001',
             ],
@@ -243,10 +250,20 @@ final class ProductDeliveryOptionCreateData extends Data
                 'required'    => false,
                 'example'     => 'Please bring your own laptop',
             ],
-            'details.course_id' => [
-                'description' => 'For `video_platform_spotplayer`. Course ID in SpotPlayer (required)',
+            'details.spot_id' => [
+                'description' => 'For `video_platform_spotplayer`. Spot ID in SpotPlayer (required)',
                 'required'    => false,
                 'example'     => 'SP-COURSE-001',
+            ],
+            'details.auto_create_meeting' => [
+                'description' => 'For `live_session_bbb`. Auto create BBB meeting during provisioning',
+                'required'    => false,
+                'example'     => true,
+            ],
+            'details.meeting_id' => [
+                'description' => 'For `live_session_bbb`. BBB meeting identifier',
+                'required'    => false,
+                'example'     => 'bbb-meeting-001',
             ],
             'details.moderator_password' => [
                 'description' => 'For `live_session_bbb`. Moderator password for BigBlueButton session',

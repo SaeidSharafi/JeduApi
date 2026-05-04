@@ -13,7 +13,7 @@ use Spatie\LaravelData\Data;
 final class LmsMoodleDetailsData extends Data implements DeliveryOptionDetailDataContract
 {
     public function __construct(
-        public string $course_idnumber,
+        public int $moodle_course_id,
         public ?int $activity_id,
         #[WithCast(AdvancedDateTimeInterfaceCast::class)]
         public ?Verta $enrollment_start_date,
