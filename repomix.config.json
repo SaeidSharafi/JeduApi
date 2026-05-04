@@ -1,0 +1,22 @@
+{
+  "output": {
+    "filePath": "codebase_summary.md",
+    "style": "markdown"
+  },
+  "include": [
+    "app/**/*.php",
+    "routes/**/*.php",
+    "config/**/*.php",
+    "database/migrations/**/*.php",
+    "database/seeders/**/*.php",
+    "resources/views/**/*.blade.php"
+  ],
+  "exclude": [
+    "vendor/**",
+    "storage/**",
+    "bootstrap/cache/**",
+    "public/**",
+    "tests/**",
+    "node_modules/**"
+  ]
+}
