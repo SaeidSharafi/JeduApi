@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Jobs\Provisioning;
 
+use App\Enums\System\SettingKeyEnum;
 use App\Jobs\Provisioning\Concerns\HandlesProvisioningStatus;
 use App\Models\Enrollment;
+use App\Models\Setting;
 use App\Services\Integrations\SpotPlayerService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -27,8 +29,16 @@ final class ProvisionSpotPlayerEnrollmentJob implements ShouldQueue
 
     public function __construct(public readonly int $enrollmentId) {}
 
-    public function handle(SpotPlayerService $spotPlayerService): void
+    public function handle(SpotPlayerService $service): void
     {
+        $config = Setting::getValue(SettingKeyEnum::SPOT_PLAYER);
+
+        if (! ($config['enabled'] ?? false)) {
+            return;
+        }
+        if (empty($config['endpoint']) || empty($config['api_key'])) {
+            throw new RuntimeException('SpotPlayer configuration is missing endpoint or api_key.');
+        }
         $enrollment = $this->findEnrollment();
         if (! $enrollment) {
             return;
@@ -40,7 +50,8 @@ final class ProvisionSpotPlayerEnrollmentJob implements ShouldQueue
             throw new RuntimeException('SpotPlayer spot_id is missing from delivery option details.');
         }
 
-        $result = $spotPlayerService->issueLicense($spotId, $enrollment->customer);
+        $service->setConfig($config);
+        $result = $service->issueLicense($spotId, $enrollment->customer);
 
         $this->markProvisioningSuccess($enrollment, 'spotplayer', [
             'spot_id'      => $spotId,

@@ -10,20 +10,39 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
-final readonly class MoodleService
+final class MoodleService
 {
-    public function findOrCreateUser(User $user): int
+    private string $baseUrl;
+
+    private string $token;
+
+    private bool $configured = false;
+
+    public function setConfig(array $config): void
     {
-        $email    = $user->email ?? sprintf('user-%d@jedushop.local', $user->id);
-        $username = $user->phone ?: $email;
+        $this->baseUrl    = $config['base_url'];
+        $this->token      = $config['token'];
+        $this->configured = true;
+    }
+
+    /**
+     * @return array{0:int,1:string}
+     */
+    public function findOrCreateUser(User $user): array
+    {
+        $email    = $user->email ?? sprintf('user-%d@jedu.ir', $user->phone);
+        $username = $user->civil_id;
+        if (! is_string($username) || $username === '') {
+            throw new ExternalProvisioningException('Moodle username source missing.');
+        }
 
         $lookup = $this->call('core_user_get_users_by_field', [
-            'field'     => 'email',
-            'values[0]' => $email,
+            'field'     => 'username',
+            'values[0]' => $username,
         ]);
 
         if (is_array($lookup) && isset($lookup[0]['id'])) {
-            return (int) $lookup[0]['id'];
+            return [(int) $lookup[0]['id'], $username];
         }
 
         $created = $this->call('core_user_create_users', [
@@ -40,13 +59,13 @@ final readonly class MoodleService
             throw new ExternalProvisioningException('Moodle user creation failed.');
         }
 
-        return (int) $created[0]['id'];
+        return [(int) $created[0]['id'], $username];
     }
 
-    public function enrollUser(int $moodleUserId, int $moodleCourseId, ?int $startTime = null, ?int $endTime = null): void
+    public function enrollUser(int $moodleUserId, int $moodleCourseId, ?int $startTime = null, ?int $endTime = null, int $roleId = 5): void
     {
         $params = [
-            'enrolments[0][roleid]'   => (int) config('services.moodle.default_role_id', 5),
+            'enrolments[0][roleid]'   => $roleId,
             'enrolments[0][userid]'   => $moodleUserId,
             'enrolments[0][courseid]' => $moodleCourseId,
         ];
@@ -62,18 +81,20 @@ final readonly class MoodleService
         $this->call('enrol_manual_enrol_users', $params);
     }
 
-    public function createUserKey(int $moodleUserId): string
+    public function createUserKey(string $username, string $authUserkeyToken): string
     {
-        $result = $this->call('auth_userkey_create_user_key', [
-            'userid' => $moodleUserId,
-        ], (string) config('services.moodle.auth_userkey_token'));
+        $result = $this->call('auth_userkey_request_login_url', [
+            'user' => [
+                'username' => $username,
+            ],
+        ], $authUserkeyToken);
 
-        $key = data_get($result, 'key');
-        if (! is_string($key) || $key === '') {
+        $loginUrl = data_get($result, 'loginurl');
+        if (! is_string($loginUrl) || $loginUrl === '') {
             throw new ExternalProvisioningException('Moodle auth_userkey creation failed.');
         }
 
-        return $key;
+        return $loginUrl;
     }
 
     /**
@@ -81,9 +102,11 @@ final readonly class MoodleService
      */
     private function call(string $function, array $params, ?string $token = null): mixed
     {
+        $this->assertConfigured();
+
         $response = $this->request()->post('/webservice/rest/server.php', array_merge(
             [
-                'wstoken'            => $token ?: (string) config('services.moodle.token'),
+                'wstoken'            => $token ?: $this->token,
                 'wsfunction'         => $function,
                 'moodlewsrestformat' => 'json',
             ],
@@ -105,8 +128,15 @@ final readonly class MoodleService
 
     private function request(): PendingRequest
     {
-        return Http::baseUrl((string) config('services.moodle.base_url'))
+        return Http::baseUrl($this->baseUrl)
             ->timeout((int) config('services.moodle.timeout', 15))
             ->asForm();
+    }
+
+    private function assertConfigured(): void
+    {
+        if (! $this->configured) {
+            throw new ExternalProvisioningException('Moodle service configuration is missing.');
+        }
     }
 }

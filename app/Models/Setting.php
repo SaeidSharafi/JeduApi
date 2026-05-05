@@ -70,13 +70,13 @@ final class Setting extends Model
         $singularMediaKeys = ['image', 'icon', 'logo', 'file', 'media'];
 
         // 2. Suffixes for a single media ID. Matches 'image_id', 'background_id', etc.
-        $singularMediaSuffixes = ['_id', '_icon', '_image'];
+        $singularMediaSuffixes = ['_image_id', '_icon', '_image'];
 
         // 3. Exact key names for an array of media IDs.
         $pluralMediaKeys = ['images', 'icons', 'gallery', 'files'];
 
         // 4. Suffixes for an array of media IDs. Matches 'image_ids', 'gallery_images', etc.
-        $pluralMediaSuffixes = ['_ids', '_images'];
+        $pluralMediaSuffixes = ['_image_ids', '_images'];
 
         $imageIds = [];
 
@@ -102,7 +102,6 @@ final class Setting extends Model
                 }
             }
         }
-
         if (empty($imageIds)) {
             return $settingData;
         }

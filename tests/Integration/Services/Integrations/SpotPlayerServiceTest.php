@@ -9,12 +9,11 @@ use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
     Http::preventStrayRequests();
-
-    config([
-        'services.spotplayer.endpoint' => 'https://spotplayer.test/license',
-        'services.spotplayer.api_key'  => 'spot-key',
-        'services.spotplayer.timeout'  => 15,
-        'services.spotplayer.sandbox'  => false,
+    $this->service = new SpotPlayerService();
+    $this->service->setConfig([
+        'endpoint' => 'https://spotplayer.test/license',
+        'api_key'  => 'spot-key',
+        'sandbox'  => false,
     ]);
 });
 
@@ -29,9 +28,7 @@ it('issues license from root level response fields', function (): void {
         ], 200),
     ]);
 
-    $service = app(SpotPlayerService::class);
-
-    $result = $service->issueLicense('SPOT-1', $user);
+    $result = $this->service->issueLicense('SPOT-1', $user);
 
     expect($result['license_key'])->toBe('LIC-100')
         ->and($result['player_url'])->toBe('https://player.example/100')
@@ -51,9 +48,7 @@ it('issues license from nested data response fields', function (): void {
         ], 200),
     ]);
 
-    $service = app(SpotPlayerService::class);
-
-    $result = $service->issueLicense('SPOT-2', $user);
+    $result = $this->service->issueLicense('SPOT-2', $user);
 
     expect($result['license_key'])->toBe('LIC-200')
         ->and($result['player_url'])->toBe('https://player.example/200');
@@ -66,9 +61,7 @@ it('throws when spotplayer request fails', function (): void {
         'https://spotplayer.test/*' => Http::response([], 500),
     ]);
 
-    $service = app(SpotPlayerService::class);
-
-    expect(fn () => $service->issueLicense('SPOT-3', $user))
+    expect(fn () => $this->service->issueLicense('SPOT-3', $user))
         ->toThrow(ExternalProvisioningException::class, 'SpotPlayer provisioning request failed.');
 });
 
@@ -79,9 +72,7 @@ it('throws when spotplayer returns non array response', function (): void {
         'https://spotplayer.test/*' => Http::response('ok', 200),
     ]);
 
-    $service = app(SpotPlayerService::class);
-
-    expect(fn () => $service->issueLicense('SPOT-4', $user))
+    expect(fn () => $this->service->issueLicense('SPOT-4', $user))
         ->toThrow(ExternalProvisioningException::class, 'SpotPlayer invalid response format.');
 });
 
@@ -95,9 +86,7 @@ it('throws when spotplayer returns status false', function (): void {
         ], 200),
     ]);
 
-    $service = app(SpotPlayerService::class);
-
-    expect(fn () => $service->issueLicense('SPOT-5', $user))
+    expect(fn () => $this->service->issueLicense('SPOT-5', $user))
         ->toThrow(ExternalProvisioningException::class, 'license limit reached');
 });
 
@@ -110,8 +99,14 @@ it('throws when spotplayer returns explicit error field', function (): void {
         ], 200),
     ]);
 
-    $service = app(SpotPlayerService::class);
-
-    expect(fn () => $service->issueLicense('SPOT-6', $user))
+    expect(fn () => $this->service->issueLicense('SPOT-6', $user))
         ->toThrow(ExternalProvisioningException::class, 'invalid api key');
+});
+
+it('throws when service used before configuration', function (): void {
+    $service = new SpotPlayerService();
+    $user    = User::factory()->create();
+
+    expect(fn () => $service->issueLicense('SPOT-7', $user))
+        ->toThrow(ExternalProvisioningException::class, 'SpotPlayer service configuration is missing.');
 });

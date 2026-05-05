@@ -4,14 +4,54 @@ declare(strict_types=1);
 
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\System\SettingKeyEnum;
 use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
+use App\Models\Setting;
 use App\Models\User;
 use App\Services\Integrations\MoodleService;
 
+beforeEach(function () {
+    $this->config = [
+        'enabled'                       => true,
+        'base_url'                      => 'https://moodle.test',
+        'token'                         => 'moodle-token-abc',
+        'auth_userkey_token'            => 'moodle-auth-userkey-token-xyz',
+        'default_role_id'               => 5,
+        'default_login_redirect_script' => '/my/',
+    ];
+    Setting::setValue(SettingKeyEnum::MOODLE, $this->config, 'json', 'integrations');
+});
+
+it('returns when moodle integration is disabled', function (): void {
+    Setting::setValue(SettingKeyEnum::MOODLE, array_merge($this->config, ['enabled' => false]), 'json', 'integrations');
+
+    $service = $this->mock(MoodleService::class);
+    $service->shouldReceive('setConfig')->never();
+    $service->shouldNotReceive('findOrCreateUser');
+    $service->shouldNotReceive('enrollUser');
+    $service->shouldNotReceive('createUserKey');
+
+    $enrollment = createMoodleEnrollmentForJob();
+
+    $job = new ProvisionMoodleEnrollmentJob($enrollment->id);
+    $job->handle($service);
+
+    expect(true)->toBeTrue();
+});
+
+it('throws when moodle configuration is missing base_url or token', function (): void {
+    Setting::setValue(SettingKeyEnum::MOODLE, array_merge($this->config, ['base_url' => '']), 'json', 'integrations');
+
+    $service = $this->mock(MoodleService::class);
+    $job = new ProvisionMoodleEnrollmentJob(1);
+
+    expect(fn () => $job->handle($service))
+        ->toThrow(RuntimeException::class, 'Moodle configuration is missing base_url or token.');
+});
 it('returns when enrollment does not exist', function (): void {
     $service = $this->mock(MoodleService::class);
     $service->shouldNotReceive('findOrCreateUser');
@@ -36,10 +76,6 @@ it('throws when moodle course id is missing', function (): void {
 });
 
 it('provisions moodle enrollment with parsed start and end dates', function (): void {
-    config([
-        'services.moodle.default_login_redirect_script' => '/custom-login/',
-    ]);
-
     $enrollment = createMoodleEnrollmentForJob([
         'moodle_course_id'      => 123,
         'enrollment_start_date' => '2026-01-02 10:11:12',
@@ -47,20 +83,20 @@ it('provisions moodle enrollment with parsed start and end dates', function (): 
     ]);
 
     $service = $this->mock(MoodleService::class);
+    $service->shouldReceive('setConfig')
+        ->once()
+        ->with($this->config);
     $service->shouldReceive('findOrCreateUser')
         ->once()
         ->with(
 
             Mockery::on(fn ($user): bool => $user instanceof User && $user->is($enrollment->customer))
         )
-        ->andReturn(987);
+        ->andReturn([987, 'user1']);
     $service->shouldReceive('enrollUser')
         ->once()
-        ->with(987, 123, strtotime('2026-01-02 10:11:12'), strtotime('2026-02-03 11:12:13'));
-    $service->shouldReceive('createUserKey')
-        ->once()
-        ->with(987)
-        ->andReturn('user-key-xyz');
+        ->with(987, 123, strtotime('2026-01-02 10:11:12'), strtotime('2026-02-03 11:12:13'), 5);
+    $service->shouldNotReceive('createUserKey');
 
     $job = new ProvisionMoodleEnrollmentJob($enrollment->id);
     $job->handle($service);
@@ -70,8 +106,7 @@ it('provisions moodle enrollment with parsed start and end dates', function (): 
     expect(data_get($enrollment->provisioning_data, 'providers.moodle.status'))->toBe('success')
         ->and(data_get($enrollment->provisioning_data, 'providers.moodle.data.moodle_user_id'))->toBe(987)
         ->and(data_get($enrollment->provisioning_data, 'providers.moodle.data.moodle_course_id'))->toBe(123)
-        ->and(data_get($enrollment->provisioning_data, 'providers.moodle.data.auth_userkey'))->toBe('user-key-xyz')
-        ->and(data_get($enrollment->provisioning_data, 'providers.moodle.data.login_path'))->toBe('/custom-login/')
+        ->and(data_get($enrollment->provisioning_data, 'providers.moodle.data.login_path'))->toBe('/my/')
         ->and($enrollment->enrollment_status)->not->toBe(EnrollmentStatusEnum::ACTIVE);
 });
 
@@ -83,11 +118,13 @@ it('passes null timestamps when enrollment dates are invalid', function (): void
     ]);
 
     $service = $this->mock(MoodleService::class);
-    $service->shouldReceive('findOrCreateUser')->once()->andReturn(988);
+    $service->shouldReceive('setConfig')
+        ->with($this->config);
+    $service->shouldReceive('findOrCreateUser')->once()->andReturn([988,'user1']);
     $service->shouldReceive('enrollUser')
         ->once()
-        ->with(988, 124, null, null);
-    $service->shouldReceive('createUserKey')->once()->andReturn('user-key-null-time');
+        ->with(988, 124, null, null,5);
+    $service->shouldNotReceive('createUserKey');
 
     $job = new ProvisionMoodleEnrollmentJob($enrollment->id);
     $job->handle($service);

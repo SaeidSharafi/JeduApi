@@ -4,16 +4,62 @@ declare(strict_types=1);
 
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\System\SettingKeyEnum;
 use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
+use App\Models\Setting;
 use App\Models\User;
 use App\Services\Integrations\SpotPlayerService;
 
+beforeEach(function (): void {
+    Setting::setValue(SettingKeyEnum::SPOT_PLAYER, [
+        'enabled'  => true,
+        'endpoint' => 'https://spotplayer.example/license',
+        'api_key'  => 'spot-api-key',
+        'sandbox'  => true,
+    ], 'json', 'integrations');
+});
+it('returns when spotplayer integration is disabled', function (): void {
+    Setting::setValue(SettingKeyEnum::SPOT_PLAYER, [
+        'enabled'  => false,
+        'endpoint' => 'https://spotplayer.example/license',
+        'api_key'  => 'spot-api-key',
+        'sandbox'  => true,
+    ], 'json', 'integrations');
+
+    $service = $this->mock(SpotPlayerService::class);
+    $service->shouldReceive('setConfig')->never();
+    $service->shouldNotReceive('issueLicense');
+
+    $enrollment = createSpotPlayerEnrollmentForJob();
+
+    $job = new ProvisionSpotPlayerEnrollmentJob($enrollment->id);
+    $job->handle($service);
+
+    expect(true)->toBeTrue();
+});
+
+it('throws when spotplayer configuration is missing endpoint or api_key', function (): void {
+    Setting::setValue(SettingKeyEnum::SPOT_PLAYER, [
+        'enabled'  => true,
+        'endpoint' => '',
+        'api_key'  => '',
+        'sandbox'  => true,
+    ], 'json', 'integrations');
+
+    $service = $this->mock(SpotPlayerService::class);
+    $job = new ProvisionSpotPlayerEnrollmentJob(1);
+
+    expect(fn () => $job->handle($service))
+        ->toThrow(RuntimeException::class, 'SpotPlayer configuration is missing endpoint or api_key.');
+});
+
 it('returns when enrollment does not exist', function (): void {
     $service = $this->mock(SpotPlayerService::class);
+    $service->shouldReceive('setConfig')->never();
     $service->shouldNotReceive('issueLicense');
 
     $job = new ProvisionSpotPlayerEnrollmentJob(999999);
@@ -41,6 +87,13 @@ it('provisions spotplayer enrollment and saves provisioning data', function (): 
     ]);
 
     $service = $this->mock(SpotPlayerService::class);
+    $service->shouldReceive('setConfig')
+        ->once()
+        ->with(Mockery::subset([
+            'endpoint' => 'https://spotplayer.example/license',
+            'api_key'  => 'spot-api-key',
+            'sandbox'  => true,
+        ]));
     $service->shouldReceive('issueLicense')
         ->once()
         ->with('SPOT-COURSE-99', Mockery::on(fn ($user): bool => $user instanceof User && $user->is($enrollment->customer)))

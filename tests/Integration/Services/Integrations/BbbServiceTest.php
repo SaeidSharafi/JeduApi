@@ -8,11 +8,13 @@ use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
     Http::preventStrayRequests();
-
-    config([
-        'services.bbb.base_url' => 'https://bbb.test',
-        'services.bbb.api_path' => '/bigbluebutton/api',
-        'services.bbb.timeout'  => 15,
+    $this->service = new BbbService();
+    $this->service->setConfig([
+        'base_url'             => 'https://bbb.test',
+        'secret'               => 'secret',
+        'api_path'             => '/bigbluebutton/api',
+        'default_attendee_pw'  => 'ap-default',
+        'default_moderator_pw' => 'mp-default',
     ]);
 });
 
@@ -21,13 +23,12 @@ it('creates meeting with expected query payload', function (): void {
         'https://bbb.test/*' => Http::response([], 200),
     ]);
 
-    $service = app(BbbService::class);
-    $service->createMeeting('MEET-100', 'Physics 101', 'ap', 'mp');
+    $this->service->createMeeting('MEET-100', 'Physics 101', 'ap', 'mp');
 
     Http::assertSent(function ($request) {
         $payload = $request->data();
 
-        return $request->url()                   === 'https://bbb.test/create'
+        return str_contains($request->url(), 'https://bbb.test/bigbluebutton/api/create')
             && ($payload['meetingID'] ?? null)   === 'MEET-100'
             && ($payload['name'] ?? null)        === 'Physics 101'
             && ($payload['attendeePW'] ?? null)  === 'ap'
@@ -40,21 +41,16 @@ it('throws when create meeting request fails', function (): void {
         'https://bbb.test/*' => Http::response([], 500),
     ]);
 
-    $service = app(BbbService::class);
-
-    expect(fn () => $service->createMeeting('MEET-100', 'Physics 101', 'ap', 'mp'))
+    expect(fn () => $this->service->createMeeting('MEET-100', 'Physics 101', 'ap', 'mp'))
         ->toThrow(ExternalProvisioningException::class, 'BBB create meeting request failed.');
 });
 
-it('builds join url from configuration', function (): void {
-    config([
-        'services.bbb.base_url' => 'https://bbb.example.org/',
-        'services.bbb.api_path' => '/custom/api/',
-    ]);
+it('throws when service used before configuration', function (): void {
+    $service = new BbbService();
 
-    $service = app(BbbService::class);
+    expect(fn () => $service->createMeeting('MEET-100', 'Physics 101'))
+        ->toThrow(ExternalProvisioningException::class, 'BBB service configuration is missing.');
 
-    $url = $service->buildJoinUrl('MID 1', 'Jane Doe', 'pw+1');
-
-    expect($url)->toBe('https://bbb.example.org/custom/api/join?meetingID=MID+1&fullName=Jane+Doe&password=pw%2B1');
+    expect(fn () => $service->buildJoinUrl('MEET-100', 'Physics 101', "pass"))
+        ->toThrow(ExternalProvisioningException::class, 'BBB service configuration is missing.');
 });

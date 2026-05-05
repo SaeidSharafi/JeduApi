@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Jobs\Provisioning;
 
+use App\Enums\System\SettingKeyEnum;
 use App\Jobs\Provisioning\Concerns\HandlesProvisioningStatus;
 use App\Models\Enrollment;
+use App\Models\Setting;
 use App\Services\Integrations\BbbService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -29,6 +31,16 @@ final class ProvisionBbbEnrollmentJob implements ShouldQueue
 
     public function handle(BbbService $bbbService): void
     {
+        $config = Setting::getValue(SettingKeyEnum::BIG_BLUE_BUTTON);
+
+        if (! ($config['enabled'] ?? false)) {
+            return;
+        }
+
+        if (empty($config['base_url']) || empty($config['secret'])) {
+            throw new RuntimeException('BBB configuration is missing base_url or secret.');
+        }
+
         $enrollment = $this->findEnrollment();
         if (! $enrollment) {
             return;
@@ -36,29 +48,32 @@ final class ProvisionBbbEnrollmentJob implements ShouldQueue
 
         $details   = $enrollment->productDeliveryOption?->details_json ?? [];
         $meetingId = data_get($details, 'meeting_id');
+
         if (! is_string($meetingId) || $meetingId === '') {
             throw new RuntimeException('BBB meeting_id is missing from delivery option details.');
         }
 
-        $autoCreateMeeting = (bool) data_get($details, 'auto_create_meeting', false);
-        $attendeePassword  = (string) (data_get($details, 'attendee_password') ?: config('services.bbb.default_attendee_password', 'ap'));
-        $moderatorPassword = (string) (data_get($details, 'moderator_password') ?: config('services.bbb.default_moderator_password', 'mp'));
+        $bbbService->setConfig($config);
 
-        if ($autoCreateMeeting) {
+        $autoCreate        = (bool) data_get($details, 'auto_create_meeting', false);
+        $attendeePassword  = data_get($details, 'attendee_password');
+        $moderatorPassword = data_get($details, 'moderator_password');
+
+        if ($autoCreate) {
             $bbbService->createMeeting(
-                $meetingId,
-                $enrollment->productDeliveryOption?->name ?? ('meeting-'.$meetingId),
-                $attendeePassword,
-                $moderatorPassword,
+                meetingId: $meetingId,
+                name: $enrollment->productDeliveryOption?->name ?? "meeting-{$meetingId}",
+                attendeePw: $attendeePassword,
+                moderatorPw: $moderatorPassword,
             );
         }
 
-        $fullName = trim(($enrollment->customer->first_name ?? '').' '.($enrollment->customer->last_name ?? ''));
-        $joinUrl  = $bbbService->buildJoinUrl($meetingId, $fullName ?: 'Student', $attendeePassword);
+        $fullName = trim(($enrollment->customer->first_name ?? '').' '.($enrollment->customer->last_name ?? '')) ?: 'Student';
+        $joinUrl  = $bbbService->buildJoinUrl($meetingId, $fullName, $attendeePassword);
 
         $this->markProvisioningSuccess($enrollment, 'bbb', [
             'meeting_id'          => $meetingId,
-            'auto_create_meeting' => $autoCreateMeeting,
+            'auto_create_meeting' => $autoCreate,
             'attendee_join_url'   => $joinUrl,
         ]);
     }
@@ -73,9 +88,6 @@ final class ProvisionBbbEnrollmentJob implements ShouldQueue
         $this->markProvisioningFailure($enrollment, 'bbb', $exception->getMessage());
     }
 
-    /**
-     * @return array<int, int>
-     */
     public function backoff(): array
     {
         return [60, 180, 600];

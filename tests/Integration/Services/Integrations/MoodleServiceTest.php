@@ -9,13 +9,10 @@ use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
     Http::preventStrayRequests();
-
-    config([
-        'services.moodle.base_url'           => 'https://moodle.test',
-        'services.moodle.token'              => 'moodle-token',
-        'services.moodle.auth_userkey_token' => 'moodle-key-token',
-        'services.moodle.default_role_id'    => 5,
-        'services.moodle.timeout'            => 15,
+    $this->moodleService = new MoodleService();
+    $this->moodleService->setConfig([
+        'base_url' => 'https://moodle.test',
+        'token'    => 'moodle-token',
     ]);
 });
 
@@ -30,9 +27,7 @@ it('returns existing moodle user id when found by email', function (): void {
         ], 200),
     ]);
 
-    $service = app(MoodleService::class);
-
-    $id = $service->findOrCreateUser($user);
+    [$id] = $this->moodleService->findOrCreateUser($user);
 
     expect($id)->toBe(11);
 
@@ -48,19 +43,25 @@ it('creates moodle user when lookup is empty', function (): void {
         'https://moodle.test/*' => Http::sequence()
             ->push([], 200)
             ->push([
-                ['id' => 22],
+                ['id' => 22, 'username' => 'student2'],
             ], 200),
     ]);
 
-    $service = app(MoodleService::class);
-
-    $id = $service->findOrCreateUser($user);
+    [$id,$username] = $this->moodleService->findOrCreateUser($user);
 
     expect($id)->toBe(22);
 
     Http::assertSentCount(2);
 });
+it('throws when username does not exist on user model', function (): void {
+    $user = User::factory()->create([
+        'civil_id' => null,
+    ]);
 
+    expect(fn () => $this->moodleService->findOrCreateUser($user))
+        ->toThrow(ExternalProvisioningException::class, 'Moodle username source missing.');
+
+});
 it('throws when moodle user creation response missing id', function (): void {
     $user = User::factory()->create();
 
@@ -70,9 +71,7 @@ it('throws when moodle user creation response missing id', function (): void {
             ->push([], 200),
     ]);
 
-    $service = app(MoodleService::class);
-
-    expect(fn () => $service->findOrCreateUser($user))
+    expect(fn () => $this->moodleService->findOrCreateUser($user))
         ->toThrow(ExternalProvisioningException::class, 'Moodle user creation failed.');
 });
 
@@ -81,8 +80,7 @@ it('enrolls user with optional start and end times', function (): void {
         'https://moodle.test/*' => Http::response([], 200),
     ]);
 
-    $service = app(MoodleService::class);
-    $service->enrollUser(55, 101, 1700000000, 1700003600);
+    $this->moodleService->enrollUser(55, 101, 1700000000, 1700003600);
 
     Http::assertSent(function ($request) {
         $payload = $request->data();
@@ -99,20 +97,18 @@ it('enrolls user with optional start and end times', function (): void {
 it('creates moodle user key', function (): void {
     Http::fake([
         'https://moodle.test/*' => Http::response([
-            'key' => 'auth-key-123',
+            'loginurl' => 'https://moodle.test?key=testkey',
         ], 200),
     ]);
 
-    $service = app(MoodleService::class);
+    $url = $this->moodleService->createUserKey('1122334', 'AUTH_USER_KEY');
 
-    $key = $service->createUserKey(77);
-
-    expect($key)->toBe('auth-key-123');
+    expect($url)->toBe('https://moodle.test?key=testkey');
 
     Http::assertSent(function ($request) {
-        return $request['wstoken']    === 'moodle-key-token'
-            && $request['wsfunction'] === 'auth_userkey_create_user_key'
-            && $request['userid']     === 77;
+        return $request['wstoken']          === 'AUTH_USER_KEY'
+            && $request['wsfunction']       === 'auth_userkey_request_login_url'
+            && $request['user']['username'] === '1122334';
     });
 });
 
@@ -121,9 +117,7 @@ it('throws when user key missing from moodle response', function (): void {
         'https://moodle.test/*' => Http::response([], 200),
     ]);
 
-    $service = app(MoodleService::class);
-
-    expect(fn () => $service->createUserKey(77))
+    expect(fn () => $this->moodleService->createUserKey('1122334', 'AUTH_USER_KEY'))
         ->toThrow(ExternalProvisioningException::class, 'Moodle auth_userkey creation failed.');
 });
 
@@ -132,22 +126,23 @@ it('throws when moodle request returns failed status', function (): void {
         'https://moodle.test/*' => Http::response([], 500),
     ]);
 
-    $service = app(MoodleService::class);
-
-    expect(fn () => $service->enrollUser(1, 2))
+    expect(fn () => $this->moodleService->enrollUser(1, 2))
         ->toThrow(ExternalProvisioningException::class, 'Moodle request failed for enrol_manual_enrol_users.');
 });
-
-it('throws moodle exception message when api returns exception payload', function (): void {
+it('throws when response contains exception', function (): void {
     Http::fake([
         'https://moodle.test/*' => Http::response([
-            'exception' => 'required_param_missing_exception',
-            'message'   => 'Missing required key',
+            'exception' => 'Exception',
+            'message' => 'Something went wrong',
         ], 200),
     ]);
 
-    $service = app(MoodleService::class);
+    expect(fn () => $this->moodleService->createUserKey('1122334', 'AUTH_USER_KEY'))
+        ->toThrow(ExternalProvisioningException::class, 'Something went wrong');
+});
+it('throws when service used before configuration', function (): void {
+    $service = new MoodleService();
 
     expect(fn () => $service->enrollUser(1, 2))
-        ->toThrow(ExternalProvisioningException::class, 'Missing required key');
+        ->toThrow(ExternalProvisioningException::class, 'Moodle service configuration is missing.');
 });

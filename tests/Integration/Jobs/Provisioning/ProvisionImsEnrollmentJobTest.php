@@ -5,26 +5,56 @@ declare(strict_types=1);
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\System\SettingKeyEnum;
 use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\ProductDeliveryOption;
+use App\Models\Setting;
 use App\Models\User;
 use App\Services\Integrations\ImsService;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
     Http::preventStrayRequests();
+    $this->config = [
+        'enabled'              => true,
+        'base_url'             => 'https://ims.test',
+        'enrollments_endpoint' => '/api/v1/enrol',
+        'api_key'              => 'ims-test-key',
+        'api_key_header'       => 'X-API-KEY',
+        'timeout'              => 15,
+    ];
+    Setting::setValue(SettingKeyEnum::IMS, $this->config, 'json', 'integrations');
 
-    config([
-        'services.ims.base_url'             => 'https://ims.test',
-        'services.ims.enrollments_endpoint' => '/api/v1/enrol',
-        'services.ims.api_key'              => 'ims-test-key',
-        'services.ims.api_key_header'       => 'X-API-KEY',
-        'services.ims.timeout'              => 15,
-    ]);
+});
+
+it('returns when IMS integration is disabled', function (): void {
+    Setting::setValue(SettingKeyEnum::IMS, array_merge($this->config, ['enabled' => false]), 'json', 'integrations');
+
+    $service = $this->mock(ImsService::class);
+    $service->shouldReceive('setConfig')->never();
+    $service->shouldNotReceive('provisionEnrollment');
+
+    $enrollment = createEnrollmentAndPaymentForImsJob()[0];
+
+    $job = new ProvisionImsEnrollmentJob($enrollment->id);
+    $job->handle($service);
+
+    expect(true)->toBeTrue();
+});
+
+
+it('throws when IMS configuration is missing base_url or api_key', function (): void {
+    Setting::setValue(SettingKeyEnum::IMS, array_merge($this->config, ['base_url' => '']), 'json', 'integrations');
+
+    $service = $this->mock(ImsService::class);
+    $job     = new ProvisionImsEnrollmentJob(1);
+
+    expect(fn () => $job->handle($service))
+        ->toThrow(RuntimeException::class, 'IMS is enabled but configuration is missing.');
 });
 
 it('sends configured IMS bank account number in payload', function (): void {
@@ -136,7 +166,6 @@ it('throws when no completed payment exists while resolving amount', function ()
         ->toThrow(RuntimeException::class, 'Completed payment is required for IMS provisioning.');
 });
 
-
 it('throws when enrollment has no order while resolving amount', function (): void {
     $enrollment = new Enrollment();
 
@@ -148,8 +177,8 @@ it('throws when enrollment has no order while resolving amount', function (): vo
 
 it('throws when payment order id does not match enrollment order id', function (): void {
     [$enrollment] = createEnrollmentAndPaymentForImsJob(createCompletedPayment: false);
-    $payment = Payment::factory()->create([]);
-    $job = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
+    $payment      = Payment::factory()->create([]);
+    $job          = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
 
     expect(fn () => invokeProvisionImsPrivate($job, 'resolvePaymentOrFail', $enrollment))
         ->toThrow(RuntimeException::class, 'Payment does not belong to enrollment order.');
@@ -157,14 +186,13 @@ it('throws when payment order id does not match enrollment order id', function (
 
 it('throws when payment status is not completed', function (): void {
     [$enrollment, $payment] = createEnrollmentAndPaymentForImsJob();
-    $payment->status = PaymentStatusEnum::PENDING;
+    $payment->status        = PaymentStatusEnum::PENDING;
     $payment->save();
     $job = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
 
     expect(fn () => invokeProvisionImsPrivate($job, 'resolvePaymentOrFail', $enrollment))
         ->toThrow(RuntimeException::class, 'Payment must be completed before IMS provisioning');
 });
-
 
 it('throws during handle when no completed payment exists and does not call IMS', function (): void {
     Http::fake();
@@ -178,7 +206,6 @@ it('throws during handle when no completed payment exists and does not call IMS'
 
     Http::assertNothingSent();
 });
-
 
 it('resolves payment date to null when no payment exists', function (): void {
     [$enrollment] = createEnrollmentAndPaymentForImsJob(createCompletedPayment: false);

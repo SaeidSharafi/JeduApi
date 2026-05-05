@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Data\Admin\Settings\ContactInfoData;
 use App\Data\Admin\Settings\FooterData;
 use App\Data\Admin\Settings\HeaderData;
+use App\Enums\System\SettingKeyEnum;
 use App\Models\Setting;
 use Illuminate\Database\Seeder;
 
@@ -18,15 +19,15 @@ final class SettingsSeeder extends Seeder
     public function run(): void
     {
         // Contact Info Settings
-        Setting::setValue('contact_info', ContactInfoData::getDefaults(), 'json', 'contact');
+        Setting::setValue(SettingKeyEnum::CONTACT_INFO, ContactInfoData::getDefaults(), 'json', 'contact');
 
-        Setting::setValue('header', HeaderData::getDefaults(), 'json', 'header');
+        Setting::setValue(SettingKeyEnum::HEADER, HeaderData::getDefaults(), 'json', 'header');
 
         // Footer Settings (placeholder)
-        Setting::setValue('footer', FooterData::getDefaults(), 'json', 'footer');
+        Setting::setValue(SettingKeyEnum::FOOTER, FooterData::getDefaults(), 'json', 'footer');
 
         // About Us Settings (placeholder)
-        Setting::setValue('about_us', [
+        Setting::setValue(SettingKeyEnum::ABOUT_US, [
             'title'      => 'درباره جدویار',
             'main_block' => [
                 'title'   => 'جدویار، مرکز آموزش‌های تخصصی و مهارتی',
@@ -90,15 +91,15 @@ final class SettingsSeeder extends Seeder
         ], 'json', 'about');
 
         // Rules Settings (placeholder)
-        Setting::setValue('rules', [
+        Setting::setValue(SettingKeyEnum::RULES, [
             'text' => '<h1>قوانین و مقررات</h1><p>این بخش شامل قوانین و مقررات استفاده از سایت است.</p>',
         ], 'json', 'rules');
 
         // Sliders Settings (placeholder)
-        Setting::setValue('sliders', [], 'json', 'homepage');
+        Setting::setValue(SettingKeyEnum::SLIDERS, [], 'json', 'homepage');
 
         // Home Page Settings (placeholder)
-        Setting::setValue('home_page_blocks', [
+        Setting::setValue(SettingKeyEnum::HOME_PAGE_BLOCKS, [
             'main_categories'          => [],
             'banners'                  => [],
             'curated_lists'            => [],
@@ -107,5 +108,50 @@ final class SettingsSeeder extends Seeder
             'most_participant_courses' => [],
             'roadmaps'                 => [],
         ], 'json', 'homepage');
+
+        Setting::setValue(SettingKeyEnum::IMS, [
+            'base_url'           => config('services.ims.base_url'),
+            'api_key'            => config('services.ims.api_key'),
+            'enabled'            => false,
+            'create_studets'     => true,
+            'update_studets'     => true,
+            'create_enrollments' => true,
+            'update_enrollments' => true,
+        ], 'json', 'integrations');
+
+        Setting::setValue(SettingKeyEnum::MOODLE, [
+            'base_url'                      => config('services.moodle.base_url'),
+            'token'                         => config('services.moodle.token'),
+            'auth_userkey_token'            => config('services.moodle.auth_userkey_token'),
+            'default_role_id'               => config('services.moodle.default_role_id'),
+            'default_login_redirect_script' => config('services.moodle.default_login_redirect_script'),
+            'enabled'                       => false,
+            'create_studets'                => true,
+            'update_studets'                => true,
+            'create_enrollments'            => true,
+            'update_enrollments'            => true,
+        ], 'json', 'integrations');
+
+        Setting::setValue(SettingKeyEnum::BIG_BLUE_BUTTON, [
+            'enabled'                    => false,
+            'base_url'                   => config('services.bbb.base_url'),
+            'secret'                     => config('services.bbb.secret'),
+            'api_path'                   => config('services.bbb.api_path'),
+            'default_attendee_password'  => config('services.bbb.default_attendee_password'),
+            'default_moderator_password' => config('services.bbb.default_moderator_password'),
+        ], 'json', 'integrations');
+
+        // 'spotplayer' => [
+        //        'endpoint' => env('SPOTPLAYER_ENDPOINT', 'https://panel.spotplayer.ir/license/edit/'),
+        //        'api_key'  => env('SPOTPLAYER_API_KEY'),
+        //        'sandbox'  => (bool) env('SPOTPLAYER_SANDBOX', false),
+        //        'timeout'  => (int) env('SPOTPLAYER_TIMEOUT', 15),
+        //    ],
+
+        Setting::setValue(SettingKeyEnum::SPOT_PLAYER, [
+            'endpoint' => config('services.spotplayer.base_url'),
+            'api_key'  => config('services.spotplayer.api_key'),
+            'sandbox'  => config('services.spotplayer.sandbox'),
+        ]);
     }
 }

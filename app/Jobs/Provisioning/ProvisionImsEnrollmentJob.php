@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace App\Jobs\Provisioning;
 
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\System\SettingKeyEnum;
 use App\Jobs\Provisioning\Concerns\HandlesProvisioningStatus;
 use App\Models\Enrollment;
 use App\Models\Payment;
+use App\Models\Setting;
 use App\Services\Integrations\ImsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Carbon;
 use RuntimeException;
 use Throwable;
 
@@ -32,8 +35,18 @@ final class ProvisionImsEnrollmentJob implements ShouldQueue
         public readonly ?int $paymentId = null,
     ) {}
 
-    public function handle(ImsService $imsService): void
+    public function handle(ImsService $service): void
     {
+        $imsConfig = Setting::getValue(SettingKeyEnum::IMS);
+
+        if (! ($imsConfig['enabled'] ?? false)) {
+            return;
+        }
+
+        if (empty($imsConfig['base_url']) || empty($imsConfig['api_key'])) {
+            throw new RuntimeException('IMS is enabled but configuration is missing.');
+        }
+
         $enrollment = $this->findEnrollment();
         if (! $enrollment) {
             return;
@@ -47,11 +60,11 @@ final class ProvisionImsEnrollmentJob implements ShouldQueue
             throw new RuntimeException('IMS course code is missing from delivery option details.');
         }
 
-        $customer        = $enrollment->customer;
-        $orderItem       = $enrollment->orderItem;
-        $discountAmount  = $orderItem?->discount_amount ?? 0;
-        $orderItemAmount = $orderItem?->total;
-        $paymentAmount   = $this->resolvePaymentAmount($enrollment) > 0 ? $orderItemAmount : 0;
+        $customer          = $enrollment->customer;
+        $orderItem         = $enrollment->orderItem;
+        $discountAmount    = $orderItem?->discount_amount ?? 0;
+        $orderItemAmount   = $orderItem?->total;
+        $paymentAmount     = $this->resolvePaymentAmount($enrollment) > 0 ? $orderItemAmount : 0;
         $paymentDate       = $this->resolvePaymentDate($enrollment);
         $paymentDateString = $paymentDate?->toDateString();
 
@@ -87,7 +100,8 @@ final class ProvisionImsEnrollmentJob implements ShouldQueue
             ],
         ];
 
-        $result = $imsService->provisionEnrollment($payload);
+        $service->setConfig($imsConfig);
+        $result = $service->provisionEnrollment($payload);
 
         $externalEnrollmentId = data_get($result, 'data.enrollment_id');
         $externalEnrollmentId = is_scalar($externalEnrollmentId) ? (string) $externalEnrollmentId : null;
@@ -177,7 +191,7 @@ final class ProvisionImsEnrollmentJob implements ShouldQueue
         return is_scalar($reference) ? (string) $reference : null;
     }
 
-    private function resolvePaymentDate(Enrollment $enrollment): ?\Illuminate\Support\Carbon
+    private function resolvePaymentDate(Enrollment $enrollment): ?Carbon
     {
         $payment = $this->resolvePayment($enrollment);
         if (! $payment) {
@@ -187,13 +201,13 @@ final class ProvisionImsEnrollmentJob implements ShouldQueue
         $dataDate = data_get($payment->data, 'transaction_date');
         if (is_string($dataDate) && $dataDate !== '') {
             try {
-                return \Illuminate\Support\Carbon::parse($dataDate);
+                return Carbon::parse($dataDate);
             } catch (Throwable) {
                 // Fallback to created_at when custom date cannot be parsed.
             }
         }
 
-        return $payment->created_at ? \Illuminate\Support\Carbon::parse($payment->created_at) : null;
+        return $payment->created_at ? Carbon::parse($payment->created_at) : null;
     }
 
     private function resolveImsBankAccountNumber(Enrollment $enrollment): ?string

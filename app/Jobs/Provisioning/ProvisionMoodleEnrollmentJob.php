@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Jobs\Provisioning;
 
+use App\Enums\System\SettingKeyEnum;
 use App\Jobs\Provisioning\Concerns\HandlesProvisioningStatus;
 use App\Models\Enrollment;
+use App\Models\Setting;
 use App\Services\Integrations\MoodleService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -29,6 +31,14 @@ final class ProvisionMoodleEnrollmentJob implements ShouldQueue
 
     public function handle(MoodleService $moodleService): void
     {
+        $config = Setting::getValue(SettingKeyEnum::MOODLE);
+
+        if (! ($config['enabled'] ?? false)) {
+            return;
+        }
+        if (empty($config['base_url']) || empty($config['token'])) {
+            throw new RuntimeException('Moodle configuration is missing base_url or token.');
+        }
         $enrollment = $this->findEnrollment();
         if (! $enrollment) {
             return;
@@ -36,25 +46,26 @@ final class ProvisionMoodleEnrollmentJob implements ShouldQueue
 
         $details  = $enrollment->productDeliveryOption?->details_json ?? [];
         $courseId = data_get($details, 'moodle_course_id');
-        if (! is_int($courseId)) {
+        if (! is_numeric($courseId)) {
             throw new RuntimeException('Moodle course id is missing from delivery option details.');
         }
+        $courseId = (int) $courseId;
 
-        $moodleUserId = $moodleService->findOrCreateUser($enrollment->customer);
-        $startDate    = data_get($details, 'enrollment_start_date');
-        $endDate      = data_get($details, 'enrollment_end_date');
+        $moodleService->setConfig($config);
+        [$moodleUserId, $moodleUsername] = $moodleService->findOrCreateUser($enrollment->customer);
+        $startDate                       = data_get($details, 'enrollment_start_date');
+        $endDate                         = data_get($details, 'enrollment_end_date');
 
         $startTime = is_string($startDate) && strtotime($startDate) !== false ? strtotime($startDate) : null;
         $endTime   = is_string($endDate)   && strtotime($endDate)   !== false ? strtotime($endDate) : null;
 
-        $moodleService->enrollUser($moodleUserId, $courseId, $startTime, $endTime);
-        $userKey = $moodleService->createUserKey($moodleUserId);
+        $moodleService->enrollUser($moodleUserId, $courseId, $startTime, $endTime, $config['default_role_id']);
 
         $this->markProvisioningSuccess($enrollment, 'moodle', [
             'moodle_user_id'   => $moodleUserId,
+            'moodle_user_name' => $moodleUsername,
             'moodle_course_id' => $courseId,
-            'auth_userkey'     => $userKey,
-            'login_path'       => (string) config('services.moodle.default_login_redirect_script', '/my/'),
+            'login_path'       => $config['default_login_redirect_script'] ?? '/my',
         ]);
     }
 

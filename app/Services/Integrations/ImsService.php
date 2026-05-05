@@ -5,16 +5,33 @@ declare(strict_types=1);
 namespace App\Services\Integrations;
 
 use App\Exceptions\Integrations\ExternalProvisioningException;
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 
-final readonly class ImsService
+final class ImsService
 {
+    private string $baseUrl;
+
+    private string $apiKey;
+
+    private bool $configured = false;
+
+    public function setConfig(array $config): void
+    {
+        $this->baseUrl    = $config['base_url'];
+        $this->apiKey     = $config['api_key'];
+        $this->configured = true;
+    }
+
     public function provisionEnrollment(array $payload): array
     {
-        $response = $this->request()
-            ->post(config('services.ims.enrollments_endpoint'), $payload);
+        $this->assertConfigured();
+
+        $response = Http::baseUrl($this->baseUrl)
+            ->timeout(15)
+            ->acceptJson()
+            ->withHeaders(['X-API-KEY' => $this->apiKey])
+            ->post('/api/v1/enrol', $payload);
 
         if ($response->failed()) {
             throw new ExternalProvisioningException('IMS provisioning request failed.');
@@ -36,14 +53,10 @@ final readonly class ImsService
         return is_array($responseData) ? $responseData : [];
     }
 
-    private function request(): PendingRequest
+    private function assertConfigured(): void
     {
-        return Http::baseUrl((string) config('services.ims.base_url'))
-            ->timeout((int) config('services.ims.timeout', 15))
-            ->acceptJson()
-            ->contentType('application/json')
-            ->withHeaders([
-                (string) config('services.ims.api_key_header', 'X-API-KEY') => (string) config('services.ims.api_key'),
-            ]);
+        if (! $this->configured) {
+            throw new ExternalProvisioningException('IMS service configuration is missing.');
+        }
     }
 }

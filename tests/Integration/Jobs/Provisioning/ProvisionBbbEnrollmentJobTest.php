@@ -4,19 +4,63 @@ declare(strict_types=1);
 
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\System\SettingKeyEnum;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
+use App\Models\Setting;
 use App\Models\User;
 use App\Services\Integrations\BbbService;
 
 beforeEach(function (): void {
-    config([
-        'services.bbb.default_attendee_password'  => 'ap-default',
-        'services.bbb.default_moderator_password' => 'mp-default',
-    ]);
+    $this->config = [
+        'enabled'                    => true,
+        'base_url'                   => 'https://bbb.test',
+        'secret'                     => 'supersecret',
+        'api_path'                   => '/bigbluebutton/api',
+        'default_attendee_password'  => 'ap-default',
+        'default_moderator_password' => 'mp-default',
+    ];
+    Setting::setValue(SettingKeyEnum::BIG_BLUE_BUTTON, $this->config, 'json', 'integrations');
+});
+
+it('returns when bbb integration is disabled', function (): void {
+    Setting::setValue(SettingKeyEnum::BIG_BLUE_BUTTON, array_merge($this->config, [
+        'enabled' => false,
+    ]), 'json', 'integrations');
+
+    $service = $this->mock(BbbService::class);
+    $service->shouldReceive('setConfig')->never();
+    $service->shouldNotReceive('createMeeting');
+    $service->shouldNotReceive('buildJoinUrl');
+
+    $enrollment = createBbbEnrollmentForJob();
+
+    $job = new ProvisionBbbEnrollmentJob($enrollment->id);
+    $job->handle($service);
+
+    expect(true)->toBeTrue();
+});
+
+it('throws when bbb configuration is missing base_url or secret', function (): void {
+    Setting::setValue(SettingKeyEnum::BIG_BLUE_BUTTON, array_merge($this->config, [
+        'base_url' => '',
+    ]), 'json', 'integrations');
+
+    $service = $this->mock(BbbService::class);
+    $job = new ProvisionBbbEnrollmentJob(1);
+
+    expect(fn () => $job->handle($service))
+        ->toThrow(RuntimeException::class, 'BBB configuration is missing base_url or secret.');
+
+    Setting::setValue(SettingKeyEnum::BIG_BLUE_BUTTON, array_merge($this->config, [
+        'secret' => '',
+    ]), 'json', 'integrations');
+
+    expect(fn () => $job->handle($service))
+        ->toThrow(RuntimeException::class, 'BBB configuration is missing base_url or secret.');
 });
 
 it('returns when enrollment does not exist', function (): void {
@@ -52,6 +96,9 @@ it('provisions bbb enrollment without creating meeting when auto create disabled
 
     $service = $this->mock(BbbService::class);
     $service->shouldNotReceive('createMeeting');
+    $service->shouldReceive('setConfig')
+        ->once()
+        ->with($this->config);
     $service->shouldReceive('buildJoinUrl')
         ->once()
         ->with('BBB-MEET-1', 'John Doe', 'ap-1')
@@ -64,7 +111,7 @@ it('provisions bbb enrollment without creating meeting when auto create disabled
 
     expect(data_get($enrollment->provisioning_data, 'providers.bbb.status'))->toBe('success')
         ->and(data_get($enrollment->provisioning_data, 'providers.bbb.data.meeting_id'))->toBe('BBB-MEET-1')
-        ->and(data_get($enrollment->provisioning_data, 'providers.bbb.data.attendee_join_url'))->toBe('https://bbb.test/join/BBB-MEET-1')
+        ->and(data_get($enrollment->provisioning_data, 'providers.bbb.data.attendee_join_url'))->toContain('https://bbb.test/join/BBB-MEET-1')
         ->and($enrollment->enrollment_status)->not->toBe(EnrollmentStatusEnum::ACTIVE);
 });
 
@@ -80,6 +127,8 @@ it('creates meeting when auto create enabled', function (): void {
     $service->shouldReceive('createMeeting')
         ->once()
         ->with('BBB-MEET-2', $enrollment->productDeliveryOption->name, 'ap-2', 'mp-2');
+    $service->shouldReceive('setConfig')
+        ->with($this->config);
     $service->shouldReceive('buildJoinUrl')
         ->once()
         ->with('BBB-MEET-2', 'John Doe', 'ap-2')

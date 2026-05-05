@@ -8,13 +8,10 @@ use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
     Http::preventStrayRequests();
-
-    config([
-        'services.ims.base_url'             => 'https://ims.test',
-        'services.ims.enrollments_endpoint' => '/api/v1/enrol',
-        'services.ims.api_key'              => 'ims-key',
-        'services.ims.api_key_header'       => 'X-API-KEY',
-        'services.ims.timeout'              => 15,
+    $this->imsService = new ImsService();
+    $this->imsService->setConfig([
+        'base_url' => 'https://ims.test',
+        'api_key'  => 'ims-key',
     ]);
 });
 
@@ -27,14 +24,12 @@ it('provisions enrollment when ims returns successful response', function (): vo
         ], 200),
     ]);
 
-    $service = app(ImsService::class);
-
     $payload = [
         'student'       => ['external_user_id' => 'u-1'],
         'registrations' => [['course_code' => 'IMS-1']],
     ];
 
-    $response = $service->provisionEnrollment($payload);
+    $response = $this->imsService->provisionEnrollment($payload);
 
     expect($response['status'])->toBeTrue()
         ->and($response['message'])->toBe('ok')
@@ -52,9 +47,7 @@ it('throws when ims request fails with non success status', function (): void {
         'https://ims.test/*' => Http::response([], 500),
     ]);
 
-    $service = app(ImsService::class);
-
-    expect(fn () => $service->provisionEnrollment(['registrations' => []]))
+    expect(fn () => $this->imsService->provisionEnrollment(['registrations' => []]))
         ->toThrow(ExternalProvisioningException::class, 'IMS provisioning request failed.');
 });
 
@@ -67,9 +60,7 @@ it('throws ims business errors from response errors array', function (): void {
         ], 200),
     ]);
 
-    $service = app(ImsService::class);
-
-    expect(fn () => $service->provisionEnrollment(['registrations' => []]))
+    expect(fn () => $this->imsService->provisionEnrollment(['registrations' => []]))
         ->toThrow(ExternalProvisioningException::class, 'invalid national code; course full');
 });
 
@@ -82,8 +73,13 @@ it('uses default ims error message when errors array empty', function (): void {
         ], 200),
     ]);
 
-    $service = app(ImsService::class);
+    expect(fn () => $this->imsService->provisionEnrollment(['registrations' => []]))
+        ->toThrow(ExternalProvisioningException::class, 'IMS provisioning response was not successful.');
+});
+
+it('throws when service used before configuration', function (): void {
+    $service = new ImsService();
 
     expect(fn () => $service->provisionEnrollment(['registrations' => []]))
-        ->toThrow(ExternalProvisioningException::class, 'IMS provisioning response was not successful.');
+        ->toThrow(ExternalProvisioningException::class, 'IMS service configuration is missing.');
 });
