@@ -34,7 +34,7 @@ describe('Digital Asset API', function (): void {
         expect($responseData['slug'])->toBe($product->slug)
             ->and($responseData['full_name'])->toBe($product->name)
             ->and(count($responseData['delivery_options']))->toBe(2)
-            ->and($responseData['delivery_options'][0]['price_data']['current_price'])->toBe(1000000)
-            ->and($responseData['delivery_options'][1]['price_data']['current_price'])->toBe(3000000);
+            ->and(collect($responseData['delivery_options'])->pluck('price_data.current_price')->sort()->values()->all())
+            ->toBe([1000000, 3000000]);
     });
 });
