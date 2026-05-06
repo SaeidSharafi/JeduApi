@@ -9,7 +9,6 @@ use App\Data\Shop\Teacher\TeacherListData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Product\ProductableEnum;
 use App\Models\Product;
-use App\Models\ProductDeliveryOption;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
@@ -51,47 +50,48 @@ final class ProductCardData extends Data
         ProductPriceData $priceData,
         bool $withFullPriceData = true
     ): self {
-        $teachers = $product->productDeliveryOptions
-            ->flatMap(fn ($option) => $option->teachers)
-            ->unique('id')
-            ->map(fn ($teacher) => TeacherListData::from($teacher))
-            ->values()
-            ->all();
-        if (! $teachers) {
-            $teachers = isset($product->productable?->default_teacher_info)
-                ? [$product->productable?->default_teacher_info] : [];
-        }
+        $teachers              = [];
         $availableFrom         = null;
         $availableTo           = null;
         $registrationStartDate = null;
         $registrationEndDate   = null;
+        $teacherMap            = [];
 
-        // extract the earliest available_from and latest available_to from the product delivery options
-        $product->productDeliveryOptions
-            ->each(function (ProductDeliveryOption $productDeliveryOption) use (
-                &$registrationEndDate,
-                &$registrationStartDate,
-                &$availableTo,
-                &$availableFrom
-            ) {
-                if ($productDeliveryOption->available_from) {
-                    $availableFrom = is_null($availableFrom) ? $productDeliveryOption->available_from
-                        : min($availableFrom, $productDeliveryOption->available_from);
+        // single pass: collect date boundaries + unique teachers
+        foreach ($product->productDeliveryOptions as $option) {
+            if ($option->available_from) {
+                $availableFrom = is_null($availableFrom)
+                    ? $option->available_from
+                    : min($availableFrom, $option->available_from);
+            }
+            if ($option->available_to) {
+                $availableTo = is_null($availableTo)
+                    ? $option->available_to
+                    : max($availableTo, $option->available_to);
+            }
+            if ($option->registration_start_date) {
+                $registrationStartDate = is_null($registrationStartDate)
+                    ? $option->registration_start_date
+                    : min($registrationStartDate, $option->registration_start_date);
+            }
+            if ($option->registration_end_date) {
+                $registrationEndDate = is_null($registrationEndDate)
+                    ? $option->registration_end_date
+                    : max($registrationEndDate, $option->registration_end_date);
+            }
+            foreach ($option->teachers as $teacher) {
+                $key = is_array($teacher) ? $teacher['id'] : $teacher->id;
+                if (! isset($teacherMap[$key])) {
+                    $teacherMap[$key] = TeacherListData::from($teacher);
                 }
-                if ($productDeliveryOption->available_to) {
-                    $availableTo = is_null($availableTo) ? $productDeliveryOption->available_to
-                        : max($availableTo, $productDeliveryOption->available_to);
-                }
-                if ($productDeliveryOption->registration_start_date) {
-                    $registrationStartDate = is_null($registrationStartDate)
-                        ? $productDeliveryOption->registration_start_date
-                        : min($registrationStartDate, $productDeliveryOption->registration_start_date);
-                }
-                if ($productDeliveryOption->registration_end_date) {
-                    $registrationEndDate = is_null($registrationEndDate) ? $productDeliveryOption->registration_end_date
-                        : max($registrationEndDate, $productDeliveryOption->registration_end_date);
-                }
-            });
+            }
+        }
+
+        $teachers = array_values($teacherMap);
+        if (! $teachers) {
+            $teachers = isset($product->productable?->default_teacher_info)
+                ? [$product->productable?->default_teacher_info] : [];
+        }
 
         return new self(
             slug: $product->slug,

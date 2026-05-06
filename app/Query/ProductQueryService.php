@@ -16,6 +16,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
@@ -28,7 +29,7 @@ use InvalidArgumentException;
  */
 final class ProductQueryService
 {
-    public const array allowedSortFields = ['created_at', 'updated_at', 'name', 'short_name', 'price'];
+    public const array allowedSortFields = ['created_at', 'updated_at', 'name', 'short_name', 'price', 'capacity_utilization'];
 
     private Builder $query;
 
@@ -114,6 +115,7 @@ final class ProductQueryService
     {
         // Keeps the default of all productableTypes
         $this->availableProducts()->forListing();
+        $capacityThreshold = $requestData->filter?->capacity_threshold ?? 0.8;
 
         if ($requestData->q) {
             $this->search($requestData->q);
@@ -132,6 +134,9 @@ final class ProductQueryService
             }
             if ($filter->with_discounts) {
                 $this->withDiscounts();
+            }
+            if ($filter->near_capacity_only) {
+                $this->nearingCapacity($capacityThreshold);
             }
             if ($filter->difficulty_level) {
                 $this->byCourseLevel(CourseDifficultyLevelEnum::from($filter->difficulty_level));
@@ -158,6 +163,12 @@ final class ProductQueryService
             }
 
         }
+        if ($requestData->sortBy === 'capacity_utilization') {
+            return $this
+                ->sortByCapacityUtilization($capacityThreshold)
+                ->paginate($requestData->per_page);
+        }
+
         $isDefaultOrder = $requestData->sortBy === 'created_at' && $requestData->sortOrder === 'desc';
 
         return $this
@@ -197,6 +208,10 @@ final class ProductQueryService
      */
     public function globalSearchProductsScout(ProductListRequestData $requestData): LengthAwarePaginator
     {
+        if ($requestData->sortBy === 'capacity_utilization' || $requestData->filter?->near_capacity_only || $requestData->filter?->capacity_threshold) {
+            return $this->globalSearchProductsDatabase($requestData);
+        }
+
         if (config('scout.driver') !== 'typesense') {
             return $this->globalSearchProductsDatabase($requestData);
         }
@@ -432,6 +447,20 @@ final class ProductQueryService
     }
 
     /**
+     * Filter to products that have at least one delivery option near capacity.
+     */
+    public function nearingCapacity(float $threshold = 0.8): self
+    {
+        $threshold = max(0.0, min(1.0, $threshold));
+
+        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($threshold) {
+            $q->whereNotNull('capacity')
+                ->where('capacity', '>', 0)
+                ->whereRaw('((enrolled_count * 1.0) / NULLIF(capacity, 0)) >= ?', [$threshold]);
+        });
+    }
+
+    /**
      * Filter by product type. Overwrites existing productableTypes.
      */
     public function ofType(ProductableEnum $type): self
@@ -607,6 +636,8 @@ final class ProductQueryService
         if ($field === 'price') {
             $this->applyPriceJoinOnce();
             $this->query->orderBy('product_prices.min_price', $direction);
+        } elseif ($field === 'capacity_utilization') {
+            $this->sortByCapacityUtilization();
         } else {
             $this->query->orderBy("products.{$field}", $direction);
         }
@@ -803,6 +834,38 @@ final class ProductQueryService
             $this->query->select('products.*');
             $this->selectClauseModified = true;
         }
+    }
+
+    /**
+     * Sort products by how close they are to capacity.
+     * Near-capacity products are prioritized, then higher utilization comes first.
+     *
+     * Uses a LEFT JOIN LATERAL to compute both the threshold flag and max ratio
+     * in a single PDO scan per product, instead of two correlated subqueries.
+     */
+    private function sortByCapacityUtilization(float $threshold = 0.8): self
+    {
+        $threshold       = max(0.0, min(1.0, $threshold));
+        $publishedStatus = PublicationStatusEnum::PUBLISHED->value;
+
+        $this->ensureBaseSelects();
+
+        $this->query->leftJoinLateral(
+            DB::table('product_delivery_options AS pdo_lat')
+                ->selectRaw('COALESCE(MAX((pdo_lat.enrolled_count * 1.0) / NULLIF(pdo_lat.capacity, 0)), 0) AS max_ratio')
+                ->selectRaw('COALESCE(MAX(CASE WHEN ((pdo_lat.enrolled_count * 1.0) / NULLIF(pdo_lat.capacity, 0)) >= ? THEN 1 ELSE 0 END), 0) AS near_capacity_flag', [$threshold])
+                ->whereColumn('pdo_lat.product_id', 'products.id')
+                ->where('pdo_lat.status', $publishedStatus)
+                ->whereNotNull('pdo_lat.capacity')
+                ->where('pdo_lat.capacity', '>', 0),
+            'pdo_cap_stats'
+        );
+
+        $this->query
+            ->orderByRaw('pdo_cap_stats.near_capacity_flag DESC')
+            ->orderByRaw('pdo_cap_stats.max_ratio DESC');
+
+        return $this;
     }
 
     /**

@@ -7,7 +7,6 @@ namespace App\Models;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
-use App\Enums\User\GenderEnum;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -175,7 +174,7 @@ final class ProductDeliveryOption extends Model
                 $ends   = $discountRecord->ends_at;
 
                 $isAfterStart = is_null($starts) || $now->greaterThanOrEqualTo($starts);
-                $isBeforeEnd  = is_null($ends)    || $now->lessThanOrEqualTo($ends);
+                $isBeforeEnd  = is_null($ends)   || $now->lessThanOrEqualTo($ends);
 
                 return ($isAfterStart && $isBeforeEnd) ? $discountRecord->discounted_price : $this->price;
             }
@@ -195,6 +194,8 @@ final class ProductDeliveryOption extends Model
             'featured_price_end_date'   => 'datetime',
             'available_from'            => 'datetime',
             'available_to'              => 'datetime',
+            'registration_start_date'   => 'datetime',
+            'registration_end_date'     => 'datetime',
             'created_at'                => 'datetime',
             'updated_at'                => 'datetime',
         ];

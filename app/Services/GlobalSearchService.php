@@ -215,6 +215,8 @@ final class GlobalSearchService
             max_price: null,
             with_discounts: null,
             is_available_now: null,
+            near_capacity_only: null,
+            capacity_threshold: null,
             registration_starts_after: null,
             registration_ends_before: null,
             available_from: null,
@@ -278,7 +280,7 @@ final class GlobalSearchService
                     'categories:id,name,slug',
                     'productDeliveryOptions' => function ($q) {
                         $q->where('status', PublicationStatusEnum::PUBLISHED)
-                            ->with(['productDeliveryOptionDiscountPrice', 'teachers:id,first_name,last_name,gender']);
+                            ->with(['productDeliveryOptionDiscountPrice', 'teachers:id,first_name,last_name,gender,uuid,avatar_url,rate']);
                     },
                     'productable',
                 ])

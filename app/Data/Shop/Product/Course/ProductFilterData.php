@@ -23,6 +23,8 @@ final class ProductFilterData extends Data
         public ?int $max_price,
         public ?bool $with_discounts,
         public ?bool $is_available_now,
+        public ?bool $near_capacity_only,
+        public ?float $capacity_threshold,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
         public ?Carbon $registration_starts_after,
         #[WithCast(CarbonFromJalaliString::class, format: 'Y-m-d')]
@@ -45,6 +47,8 @@ final class ProductFilterData extends Data
             $prefix.'min_price'           => ['sometimes', 'integer', 'min:0'],
             $prefix.'max_price'           => ['sometimes', 'integer', "gt:{$prefix}min_price"],
             $prefix.'with_discounts'      => ['sometimes', 'boolean'],
+            $prefix.'near_capacity_only'  => ['sometimes', 'boolean'],
+            $prefix.'capacity_threshold'  => ['sometimes', 'numeric', 'min:0', 'max:1'],
         ];
     }
 
@@ -85,6 +89,14 @@ final class ProductFilterData extends Data
             $prefix.'with_discounts' => [
                 'description' => 'When true, only include products that currently have an active discount.',
                 'example'     => true,
+            ],
+            $prefix.'near_capacity_only' => [
+                'description' => 'When true, only include products with at least one delivery option at or above the capacity threshold.',
+                'example'     => true,
+            ],
+            $prefix.'capacity_threshold' => [
+                'description' => 'Capacity ratio threshold from 0 to 1. Example: 0.8 means 80% filled.',
+                'example'     => 0.8,
             ],
         ];
     }
