@@ -72,16 +72,6 @@ final class ProductDeliveryOption extends Model
         return $this->hasOne(ProductDeliveryOptionDiscountPrice::class, 'product_delivery_option_id');
     }
 
-    public function getTeachersName(): array
-    {
-        return $this->teachers->map(function ($teacher) {
-            $title = $teacher->gender === GenderEnum::FEMALE ? __('shop.teahcer_titles.sir')
-                : __('shop.teahcer_titles.madam');
-
-            return $title.' '.$teacher->first_name.' '.$teacher->last_name;
-        })->toArray();
-    }
-
     protected static function boot()
     {
         parent::boot();
@@ -136,10 +126,10 @@ final class ProductDeliveryOption extends Model
     protected function availableWithCapacity($query)
     {
         return $query->available() // Use the query builder method, not scope method directly
-        ->where(function (Builder $q): void {
-            $q->whereNull('capacity')
-                ->orWhereColumn('capacity', '>', 'enrolled_count');
-        });
+            ->where(function (Builder $q): void {
+                $q->whereNull('capacity')
+                    ->orWhereColumn('capacity', '>', 'enrolled_count');
+            });
     }
 
     #[Scope]
@@ -177,15 +167,16 @@ final class ProductDeliveryOption extends Model
             get: function ($value, array $attributes) {
                 $discountRecord = $this->productDeliveryOptionDiscountPrice;
 
-                if (!$discountRecord) {
+                if (! $discountRecord) {
                     return $this->price;
                 }
-                $now = now();
+                $now    = now();
                 $starts = $discountRecord->starts_at;
-                $ends = $discountRecord->ends_at;
+                $ends   = $discountRecord->ends_at;
 
                 $isAfterStart = is_null($starts) || $now->greaterThanOrEqualTo($starts);
-                $isBeforeEnd = is_null($ends) || $now->lessThanOrEqualTo($ends);
+                $isBeforeEnd  = is_null($ends)    || $now->lessThanOrEqualTo($ends);
+
                 return ($isAfterStart && $isBeforeEnd) ? $discountRecord->discounted_price : $this->price;
             }
         );
@@ -202,6 +193,8 @@ final class ProductDeliveryOption extends Model
             'delivery_method'           => DeliveryMethodEnum::class,
             'featured_price_start_date' => 'datetime',
             'featured_price_end_date'   => 'datetime',
+            'available_from'            => 'datetime',
+            'available_to'              => 'datetime',
             'created_at'                => 'datetime',
             'updated_at'                => 'datetime',
         ];
