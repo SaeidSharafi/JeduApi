@@ -168,6 +168,17 @@ describe('ProductQueryService unit tests', function () {
                 }
             }
         });
+
+        it('sortBy capacity_utilization returns self and adds lateral join', function () {
+            $result = $this->service->sortBy('capacity_utilization');
+
+            expect($result)->toBe($this->service);
+
+            $sql = $this->service->getQuery()->toRawSql();
+            expect($sql)->toContain('pdo_cap_stats')
+                ->and($sql)->toContain('near_capacity_flag')
+                ->and($sql)->toContain('max_ratio');
+        });
     });
 
     describe('category filtering', function () {

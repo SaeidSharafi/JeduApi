@@ -207,8 +207,8 @@ describe('Product Listing Filters - :dataset', function (): void {
             ->withDeliveryOptions(1)
             ->$factoryMethod(
                 match ($factoryMethod) {
-                    'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
-                    'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
@@ -224,8 +224,8 @@ describe('Product Listing Filters - :dataset', function (): void {
             ->withDeliveryOptions(1)
             ->$factoryMethod(
                 match ($factoryMethod) {
-                    'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
-                    'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
@@ -255,8 +255,8 @@ describe('Product Listing Filters - :dataset', function (): void {
             ->withDeliveryOptions(1)
             ->$factoryMethod(
                 match ($factoryMethod) {
-                    'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
-                    'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
@@ -272,8 +272,8 @@ describe('Product Listing Filters - :dataset', function (): void {
             ->withDeliveryOptions(1)
             ->$factoryMethod(
                 match ($factoryMethod) {
-                    'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
-                    'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
@@ -302,8 +302,8 @@ describe('Product Listing Filters - :dataset', function (): void {
             ->withDeliveryOptions(1)
             ->$factoryMethod(
                 match ($factoryMethod) {
-                    'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
-                    'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
@@ -324,8 +324,8 @@ describe('Product Listing Filters - :dataset', function (): void {
             ->withDeliveryOptions(1)
             ->$factoryMethod(
                 match ($factoryMethod) {
-                    'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
-                    'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
@@ -438,8 +438,8 @@ describe('Product Listing Filters - :dataset', function (): void {
             ->withDeliveryOptions(1)
             ->$factoryMethod(
                 match ($factoryMethod) {
-                    'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
-                    'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
@@ -460,8 +460,8 @@ describe('Product Listing Filters - :dataset', function (): void {
             ->withDeliveryOptions(1)
             ->$factoryMethod(
                 match ($factoryMethod) {
-                    'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
-                    'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
@@ -498,8 +498,8 @@ describe('Product Listing Filters - :dataset', function (): void {
             ->withDeliveryOptions(1)
             ->$factoryMethod(
                 match ($factoryMethod) {
-                    'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
-                    'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
@@ -520,8 +520,8 @@ describe('Product Listing Filters - :dataset', function (): void {
             ->withDeliveryOptions(1)
             ->$factoryMethod(
                 match ($factoryMethod) {
-                    'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
-                    'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
@@ -559,8 +559,8 @@ describe('Product Listing Filters - :dataset', function (): void {
             ->withDeliveryOptions(1)
             ->$factoryMethod(
                 match ($factoryMethod) {
-                    'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
-                    'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
@@ -582,8 +582,8 @@ describe('Product Listing Filters - :dataset', function (): void {
             ->withDeliveryOptions(1)
             ->$factoryMethod(
                 match ($factoryMethod) {
-                    'withCourse'  => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
-                    'withSeminar' => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                     'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
                 }
             )
@@ -609,5 +609,131 @@ describe('Product Listing Filters - :dataset', function (): void {
             ->assertJsonCount(1, 'data.data')
             ->assertJsonFragment(['name' => 'Window Available Product'])
             ->assertJsonMissing(['name' => 'Outside Window Product']);
+    })->with('product_types');
+
+    it('sort by capacity utilization prioritizes near-capacity products', function (string $factoryMethod, string $routePrefix): void {
+        $highUtilizationProduct = Product::factory()
+            ->withDeliveryOptions(1)
+            ->$factoryMethod(
+                match ($factoryMethod) {
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                }
+            )
+            ->create(['name' => 'High Utilization Product']);
+        ProductDeliveryOption::where('product_id', $highUtilizationProduct->id)->update([
+            'status'         => PublicationStatusEnum::PUBLISHED->value,
+            'capacity'       => 30,
+            'enrolled_count' => 27,
+        ]);
+
+        $mediumUtilizationProduct = Product::factory()
+            ->withDeliveryOptions(1)
+            ->$factoryMethod(
+                match ($factoryMethod) {
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                }
+            )
+            ->create(['name' => 'Medium Utilization Product']);
+        ProductDeliveryOption::where('product_id', $mediumUtilizationProduct->id)->update([
+            'status'         => PublicationStatusEnum::PUBLISHED->value,
+            'capacity'       => 30,
+            'enrolled_count' => 24,
+        ]);
+
+        $lowUtilizationProduct = Product::factory()
+            ->withDeliveryOptions(1)
+            ->$factoryMethod(
+                match ($factoryMethod) {
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                }
+            )
+            ->create(['name' => 'Low Utilization Product']);
+        ProductDeliveryOption::where('product_id', $lowUtilizationProduct->id)->update([
+            'status'         => PublicationStatusEnum::PUBLISHED->value,
+            'capacity'       => 30,
+            'enrolled_count' => 6,
+        ]);
+
+        $response = $this->getJson(route("api.v1.shop.{$routePrefix}.index", [
+            'sortBy'    => 'capacity_utilization',
+            'sortOrder' => 'desc',
+            'filter'    => [
+                'capacity_threshold' => 0.8,
+            ],
+        ]));
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.data.0.slug', $highUtilizationProduct->slug)
+            ->assertJsonPath('data.data.1.slug', $mediumUtilizationProduct->slug)
+            ->assertJsonPath('data.data.2.slug', $lowUtilizationProduct->slug);
+    })->with('product_types');
+
+    it('filter by near capacity only', function (string $factoryMethod, string $routePrefix): void {
+        $nearCapacityProduct = Product::factory()
+            ->withDeliveryOptions(1)
+            ->$factoryMethod(
+                match ($factoryMethod) {
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                }
+            )
+            ->create(['name' => 'Near Capacity Product']);
+        ProductDeliveryOption::where('product_id', $nearCapacityProduct->id)->update([
+            'status'         => PublicationStatusEnum::PUBLISHED->value,
+            'capacity'       => 30,
+            'enrolled_count' => 25,
+        ]);
+
+        $belowThresholdProduct = Product::factory()
+            ->withDeliveryOptions(1)
+            ->$factoryMethod(
+                match ($factoryMethod) {
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                }
+            )
+            ->create(['name' => 'Below Threshold Product']);
+        ProductDeliveryOption::where('product_id', $belowThresholdProduct->id)->update([
+            'status'         => PublicationStatusEnum::PUBLISHED->value,
+            'capacity'       => 30,
+            'enrolled_count' => 20,
+        ]);
+
+        $withoutCapacityProduct = Product::factory()
+            ->withDeliveryOptions(1)
+            ->$factoryMethod(
+                match ($factoryMethod) {
+                    'withCourse'       => Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withSeminar'      => Seminar::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                    'withDigitalAsset' => DigitalAsset::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]),
+                }
+            )
+            ->create(['name' => 'Without Capacity Product']);
+        ProductDeliveryOption::where('product_id', $withoutCapacityProduct->id)->update([
+            'status'         => PublicationStatusEnum::PUBLISHED->value,
+            'capacity'       => null,
+            'enrolled_count' => 20,
+        ]);
+
+        $response = $this->getJson(route("api.v1.shop.{$routePrefix}.index", [
+            'filter' => [
+                'near_capacity_only' => 1,
+                'capacity_threshold' => 0.8,
+            ],
+        ]));
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data.data')
+            ->assertJsonFragment(['slug' => $nearCapacityProduct->slug])
+            ->assertJsonMissing(['slug' => $belowThresholdProduct->slug])
+            ->assertJsonMissing(['slug' => $withoutCapacityProduct->slug]);
     })->with('product_types');
 });

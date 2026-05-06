@@ -1397,6 +1397,8 @@ describe('ProductQueryService - globalSearch', function () {
             max_price: null,
             with_discounts: null,
             is_available_now: null,
+            near_capacity_only: null,
+            capacity_threshold: null,
             registration_starts_after: null,
             registration_ends_before: null,
             available_from: null,
