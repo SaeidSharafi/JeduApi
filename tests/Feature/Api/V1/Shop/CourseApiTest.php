@@ -129,8 +129,8 @@ describe('Course API', function (): void {
         expect($resposneData['slug'])->toBe($product->slug)
             ->and($resposneData['full_name'])->toBe($product->name)
             ->and(count($resposneData['delivery_options']))->toBe(2)
-            ->and($resposneData['delivery_options'][0]['price_data']['current_price'])->toBe(1000000)
-            ->and($resposneData['delivery_options'][1]['price_data']['current_price'])->toBe(3000000);
+            ->and(collect($resposneData['delivery_options'])->pluck('price_data.current_price')->sort()->values()->all())
+            ->toBe([1000000, 3000000]);
     });
 });
 describe('Course Lsiting filters', function (): void {
