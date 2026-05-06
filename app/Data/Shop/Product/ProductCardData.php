@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Data\Shop\Product;
 
 use App\Data\Shop\ProductPriceData;
+use App\Data\Shop\Teacher\TeacherDetailData;
+use App\Data\Shop\Teacher\TeacherListData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Product\ProductableEnum;
 use App\Models\Product;
@@ -35,7 +37,12 @@ final class ProductCardData extends Data
 
     public static function fromModel(Product $product, ProductPriceData $priceData, bool $withFullPriceData = true): self
     {
-        $teachers = $product->productDeliveryOptions->flatMap(fn ($option) => $option->getTeachersName())->unique()->values()->toArray();
+        $teachers = $product->productDeliveryOptions
+            ->flatMap(fn ($option) => $option->teachers)
+            ->unique('id')
+            ->map(fn ($teacher) => TeacherListData::from($teacher))
+            ->values()
+            ->all();
         if (! $teachers) {
             $teachers = isset($product->productable?->default_teacher_info) ? [$product->productable?->default_teacher_info] : [];
         }

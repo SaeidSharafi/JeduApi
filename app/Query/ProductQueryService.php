@@ -303,7 +303,7 @@ final class ProductQueryService
                     'productable:id,thumbnail_url,default_teacher_info',
                     'productDeliveryOptions' => function ($q) {
                         $q->where('status', PublicationStatusEnum::PUBLISHED)
-                            ->with(['productDeliveryOptionDiscountPrice', 'teachers:id,first_name,last_name,gender']);
+                            ->with(['productDeliveryOptionDiscountPrice', 'teachers:id,first_name,last_name,gender,uuid,avatar_url,rate']);
                     },
                 ]);
             })
@@ -667,7 +667,7 @@ final class ProductQueryService
             'categories:id,name,slug',
             'productDeliveryOptions' => function ($q) {
                 $q->where('status', PublicationStatusEnum::PUBLISHED)
-                    ->with(['productDeliveryOptionDiscountPrice', 'teachers:id,first_name,last_name,gender']);
+                    ->with(['productDeliveryOptionDiscountPrice', 'teachers:id,first_name,last_name,gender,uuid,avatar_url,rate']);
             },
             'productable',
         ]);
@@ -682,7 +682,7 @@ final class ProductQueryService
             'categories:id,name,slug',
             'productDeliveryOptions' => function ($q) {
                 $q->where('status', PublicationStatusEnum::PUBLISHED)
-                    ->with(['productDeliveryOptionDiscountPrice', 'teachers:id,first_name,last_name,gender']);
+                    ->with(['productDeliveryOptionDiscountPrice', 'teachers:id,first_name,last_name,gender,uuid,avatar_url,rate']);
             },
             'productableWithAllRelations',
         ]);

@@ -5,15 +5,16 @@ declare(strict_types=1);
 use App\Data\Shop\Product\ProductCardData;
 use App\Data\Shop\ProductPriceData;
 use App\Enums\Product\ProductableEnum;
+use App\Enums\User\GenderEnum;
 use App\Models\Product;
 
 describe('ProductCardData', function () {
     it('can be created from a Product model', function () {
         // Mock a Product model (you can use a factory or create a mock manually)
-        $product                   = new Product();
-        $product->slug             = 'example-product';
-        $product->name             = 'Example Product';
-        $product->is_featured      = true;
+        $product = new Product();
+        $product->slug = 'example-product';
+        $product->name = 'Example Product';
+        $product->is_featured = true;
         $product->productable_type = ProductableEnum::COURSE->value;
         $product->price_data_cache = [
             'min_price'           => 100,
@@ -22,21 +23,40 @@ describe('ProductCardData', function () {
             'has_discount'        => true,
             'discount_percentage' => 33.33,
         ];
-        $product->reviews_count  = 10;
+        $product->reviews_count = 10;
         $product->average_rating = 4.5;
 
         // Mock the productable relationship
-        $course = new class
-        {
+        $course = new class {
             public $thumbnail_url = 'http://example.com/thumbnail.jpg';
 
             public $default_teacher_info = ['John Doe'];
         };
         $product->setRelation('productable', $course);
 
-        // Mock the productDeliveryOptions relationship
-        $deliveryOption = new class
-        {
+        $teacherData
+            = // Mock the productDeliveryOptions relationship
+        $deliveryOption = new class {
+            public $teachers
+                = [
+                    [
+                        'id'           => 1,
+                        'first_name'   => 'John',
+                        'last_name'    => 'Doe',
+                        'bio'          => 'Experienced teacher in various subjects.',
+                        'gender'       => 'male',
+                        'uuid'         => 'uuid',
+                        'avatar_url'   => 'http://example.com/avatar.jpg',
+                        'rate'         => 4.5,
+                        'dummy_column' => 'dummy_column',
+                    ]
+                ];
+
+            public function teachers()
+            {
+                return collect($this->teachers);
+            }
+
             public function getTeachersName()
             {
                 return collect(['Jane Smith']);
@@ -45,7 +65,7 @@ describe('ProductCardData', function () {
         $product->setRelation('productDeliveryOptions', collect([$deliveryOption]));
 
         // Create ProductCardData from the model
-        $priceData       = ProductPriceData::from($product->price_data_cache);
+        $priceData = ProductPriceData::from($product->price_data_cache);
         $productCardData = ProductCardData::fromModel($product, $priceData);
 
         // Assertions
@@ -61,7 +81,15 @@ describe('ProductCardData', function () {
             ->and($productCardData->product_type)->toBeInstanceOf(ProductableEnum::class)
             ->and($productCardData->product_type->value)->toBe(ProductableEnum::COURSE->value)
             ->and($productCardData->thumbnail_url)->toBe('http://example.com/thumbnail.jpg')
-            ->and($productCardData->teachers)->toBe(['Jane Smith'])
+            ->and($productCardData->teachers[0]->first_name)->toBe('John')
+            ->and($productCardData->teachers[0]->last_name)->toBe('Doe')
+            ->and($productCardData->teachers[0]->gender)->toBe(GenderEnum::MALE)
+            ->and($productCardData->teachers[0]->uuid)->toBe('uuid')
+            ->and($productCardData->teachers[0]->avatar_url)->toBe('http://example.com/avatar.jpg')
+            ->and($productCardData->teachers[0]->rate)->toBe(4.5)
+            ->and(isset($productCardData->teachers[0]->id))->toBeFalse()
+            ->and(isset($productCardData->teachers[0]->bio))->toBeFalse()
+            ->and(isset($productCardData->teachers[0]->dummy_column))->toBeFalse()
             ->and($productCardData->reviews_count)->toBe(10)
             ->and($productCardData->average_rating)->toBe(4.5)
             ->and($productCardData->price_data)->toBe($priceData);
@@ -69,10 +97,10 @@ describe('ProductCardData', function () {
 
     it('fallback to default teacher if no teachers from delivery options', function () {
         // Mock a Product model (you can use a factory or create a mock manually)
-        $product                   = new Product();
-        $product->slug             = 'example-product';
-        $product->name             = 'Example Product';
-        $product->is_featured      = true;
+        $product = new Product();
+        $product->slug = 'example-product';
+        $product->name = 'Example Product';
+        $product->is_featured = true;
         $product->productable_type = ProductableEnum::COURSE->value;
         $product->price_data_cache = [
             'min_price'           => 100,
@@ -81,12 +109,11 @@ describe('ProductCardData', function () {
             'has_discount'        => true,
             'discount_percentage' => 33.33,
         ];
-        $product->reviews_count  = 10;
+        $product->reviews_count = 10;
         $product->average_rating = 4.5;
 
         // Mock the productable relationship
-        $course = new class
-        {
+        $course = new class {
             public $thumbnail_url = 'http://example.com/thumbnail.jpg';
 
             public $default_teacher_info = 'John Doe';
@@ -94,9 +121,10 @@ describe('ProductCardData', function () {
         $product->setRelation('productable', $course);
 
         // Mock the productDeliveryOptions relationship with no teachers
-        $deliveryOption = new class
-        {
-            public function getTeachersName()
+        $deliveryOption = new class {
+            public $teachers = null;
+
+            public function teachers()
             {
                 return collect([]);
             }
@@ -104,7 +132,7 @@ describe('ProductCardData', function () {
         $product->setRelation('productDeliveryOptions', collect([$deliveryOption]));
 
         // Create ProductCardData from the model
-        $priceData       = ProductPriceData::from($product->price_data_cache);
+        $priceData = ProductPriceData::from($product->price_data_cache);
         $productCardData = ProductCardData::fromModel($product, $priceData);
 
         // Assertions
