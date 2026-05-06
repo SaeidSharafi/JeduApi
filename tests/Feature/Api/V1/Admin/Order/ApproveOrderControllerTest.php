@@ -32,6 +32,7 @@ it('approves an order with full payment successfully', function (): void {
         'order_id' => $order->id,
         'price'    => 1000000,
         'total'    => 1000000,
+        'status'   => \App\Enums\Order\OrderItemStatusEnum::PENDING,
     ]);
 
     Payment::factory()->create([
@@ -61,6 +62,7 @@ it('approves an order with full payment successfully', function (): void {
             'order_id' => $order->id,
             'price'    => 1000000,
             'total'    => 1000000,
+            'status'   => \App\Enums\Order\OrderItemStatusEnum::PENDING,
         ]);
 
         Payment::factory()->create([
@@ -91,6 +93,7 @@ it('approves an order with full payment successfully', function (): void {
             'total'             => 1000000,
             'payment_type'      => 'pre_payment',
             'prepayment_amount' => 300000,
+            'status'            => \App\Enums\Order\OrderItemStatusEnum::PENDING,
         ]);
 
         Payment::factory()->create([
