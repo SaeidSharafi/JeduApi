@@ -23,7 +23,12 @@ return [
         'https://dev-jedu.encel.ir',
         'https://test-jedu.encel.ir',
         'http://localhost:3000',
-        'https://api.jedu.ir'
+        'https://api.jedu.ir',
+        'https://dev-jedu.encel.ir',
+        'https://dev-admin-jedu.encel.ir',
+        'https://test-jedu.encel.ir',
+        'https://test-admin-jedu.encel.ir',
+        'http://localhost:3000',
     ],
 
     'allowed_origins_patterns' => [],
