@@ -25,6 +25,8 @@
         "teachers": [],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": null,
+        "delivery_type": null,
         "price_data": {
           "min_price": 500000,
           "min_original_price": 500000,
@@ -78,6 +80,8 @@
         "teachers": [],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": null,
+        "delivery_type": null,
         "price_data": {
           "min_price": 160000,
           "min_original_price": 160000,
@@ -131,6 +135,8 @@
         "teachers": [],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": null,
+        "delivery_type": null,
         "price_data": {
           "min_price": 220000,
           "min_original_price": 220000,
@@ -184,6 +190,8 @@
         "teachers": [],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": null,
+        "delivery_type": null,
         "price_data": {
           "min_price": 350000,
           "min_original_price": 350000,
@@ -237,6 +245,8 @@
         "teachers": [],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": null,
+        "delivery_type": null,
         "price_data": {
           "min_price": 120000,
           "min_original_price": 120000,
@@ -290,6 +300,8 @@
         "teachers": [],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": null,
+        "delivery_type": null,
         "price_data": {
           "min_price": 50000,
           "min_original_price": 50000,
@@ -343,6 +355,8 @@
         "teachers": [],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": null,
+        "delivery_type": null,
         "price_data": {
           "min_price": 400000,
           "min_original_price": 400000,
@@ -396,6 +410,8 @@
         "teachers": [],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": null,
+        "delivery_type": null,
         "price_data": {
           "min_price": 200000,
           "min_original_price": 200000,
@@ -449,6 +465,8 @@
         "teachers": [],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": null,
+        "delivery_type": null,
         "price_data": {
           "min_price": 180000,
           "min_original_price": 180000,
@@ -502,6 +520,8 @@
         "teachers": [],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": null,
+        "delivery_type": null,
         "price_data": {
           "min_price": 300000,
           "min_original_price": 300000,
@@ -555,6 +575,8 @@
         "teachers": [],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": null,
+        "delivery_type": null,
         "price_data": {
           "min_price": 250000,
           "min_original_price": 250000,
@@ -608,6 +630,8 @@
         "teachers": [],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": null,
+        "delivery_type": null,
         "price_data": {
           "min_price": 150000,
           "min_original_price": 150000,

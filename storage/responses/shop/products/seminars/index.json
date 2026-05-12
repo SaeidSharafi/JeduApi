@@ -27,6 +27,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": {
           "min_price": 2900000,
           "min_original_price": 2900000,
@@ -82,6 +90,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": {
           "min_price": 1250000,
           "min_original_price": 1250000,
@@ -137,6 +153,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": {
           "min_price": 3200000,
           "min_original_price": 3200000,
@@ -192,6 +216,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": {
           "min_price": 1150000,
           "min_original_price": 1150000,
@@ -247,6 +279,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": {
           "min_price": 2700000,
           "min_original_price": 2700000,
@@ -302,6 +342,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": {
           "min_price": 2400000,
           "min_original_price": 2400000,
@@ -357,6 +405,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": {
           "min_price": 1800000,
           "min_original_price": 1800000,
@@ -412,6 +468,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": {
           "min_price": 1000000,
           "min_original_price": 1000000,
@@ -467,6 +531,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": {
           "min_price": 900000,
           "min_original_price": 900000,
@@ -522,6 +594,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": {
           "min_price": 3000000,
           "min_original_price": 3000000,
@@ -577,6 +657,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": {
           "min_price": 2100000,
           "min_original_price": 2100000,
@@ -646,6 +734,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": {
           "min_price": 1900000,
           "min_original_price": 1900000,
@@ -701,6 +797,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": {
           "min_price": 1400000,
           "min_original_price": 1400000,
@@ -756,6 +860,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": {
           "min_price": 2600000,
           "min_original_price": 2600000,
@@ -811,6 +923,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": {
           "min_price": 1700000,
           "min_original_price": 1700000,

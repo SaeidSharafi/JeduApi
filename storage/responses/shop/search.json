@@ -24,6 +24,14 @@
         "teachers": [],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": null,
         "type": "product"
       },
@@ -50,6 +58,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": null,
         "type": "product"
       },
@@ -74,6 +90,14 @@
         "teachers": [],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": null,
         "type": "product"
       },
@@ -100,6 +124,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": null,
         "type": "product"
       },
@@ -126,6 +158,14 @@
         ],
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "price_data": null,
         "type": "product"
       },
@@ -138,6 +178,14 @@
         "author": null,
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "published_at": "1403-12-23 10:00:00",
         "thumbnail_url": "fake-gallery.svg",
         "type": "blog_post"
@@ -151,6 +199,14 @@
         "author": null,
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "published_at": "1404-01-17 10:00:00",
         "thumbnail_url": "fake-gallery.svg",
         "type": "blog_post"
@@ -164,6 +220,14 @@
         "author": null,
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "published_at": "1404-01-26 13:00:00",
         "thumbnail_url": "fake-gallery.svg",
         "type": "blog_post"
@@ -177,6 +241,14 @@
         "author": null,
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "published_at": "1404-01-23 11:00:00",
         "thumbnail_url": "fake-cover.svg",
         "type": "blog_post"
@@ -190,6 +262,14 @@
         "author": null,
         "reviews_count": 0,
         "average_rating": 0,
+        "registration_status": {
+          "value": "in_progress",
+          "label": "در حال ثبت‌نام"
+        },
+        "delivery_type": {
+          "value": "online",
+          "label": "آنلاین"
+        },
         "published_at": "1404-01-12 11:45:00",
         "thumbnail_url": "main.svg",
         "type": "blog_post"

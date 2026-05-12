@@ -119,4 +119,13 @@ return [
         '>=' => 'بزرگتر یا مساوی',
         '<>' => 'نا برابر',
     ],
+    'ProductRegistrationStatusEnum' => [
+      'in_progress' => 'در حال ثبت‌نام',
+      'finished' => 'برگزار شده',
+    ],
+    'ProductDeliveryStatusEnum' => [
+        'online' => 'آنلاین',
+        'in_person' => 'حضوری',
+        'combined' => 'ترکیبی',
+    ]
 ];

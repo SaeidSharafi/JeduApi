@@ -7,9 +7,14 @@ namespace App\Data\Shop\Product;
 use App\Data\Shop\ProductPriceData;
 use App\Data\Shop\Teacher\TeacherListData;
 use App\Data\Transformer\TranslatableEnumData;
+use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\Product\ProductableEnum;
+use App\Enums\Product\ProductDeliveryStatusEnum;
+use App\Enums\Product\ProductRegistrationStatusEnum;
 use App\Models\Product;
+use Carbon\CarbonImmutable;
 use Hekmatinasser\Verta\Verta;
+use Illuminate\Support\Carbon;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Transformers\DateTimeInterfaceTransformer;
@@ -42,6 +47,10 @@ final class ProductCardData extends Data
         public ?array $teachers,
         public ?int $reviews_count,
         public ?float $average_rating,
+        #[WithTransformer(TranslatableEnumData::class)]
+        public ?ProductRegistrationStatusEnum $registration_status,
+        #[WithTransformer(TranslatableEnumData::class)]
+        public ?ProductDeliveryStatusEnum $delivery_type,
         public ?ProductPriceData $price_data = null,
     ) {}
 
@@ -56,9 +65,13 @@ final class ProductCardData extends Data
         $registrationStartDate = null;
         $registrationEndDate   = null;
         $teacherMap            = [];
+        $registrationStatus    = null;
+        $fulfillmentTypes = [];
+
 
         // single pass: collect date boundaries + unique teachers
         foreach ($product->productDeliveryOptions as $option) {
+            $fulfillmentTypes[] = $option?->fulfillment_type?->value;
             if ($option->available_from) {
                 $availableFrom = is_null($availableFrom)
                     ? $option->available_from
@@ -86,13 +99,25 @@ final class ProductCardData extends Data
                 }
             }
         }
-
+        if (self::isInProgress($registrationStartDate,$registrationEndDate)){
+            $registrationStatus = ProductRegistrationStatusEnum::IN_PROGRESS;
+        }
+        if ($availableTo && now()->isAfter($availableTo)) {
+            $registrationStatus = ProductRegistrationStatusEnum::FINISHED;
+        }
         $teachers = array_values($teacherMap);
         if (! $teachers) {
             $teachers = isset($product->productable?->default_teacher_info)
                 ? [$product->productable?->default_teacher_info] : [];
         }
-
+        $fulfillmentTypes = array_unique($fulfillmentTypes);
+        $deliveryStatus = match (true){
+            count($fulfillmentTypes) > 1 =>  ProductDeliveryStatusEnum::COMBINED,
+            in_array(FulfillmentTypeEnum::ONLINE_SERVICE->value, $fulfillmentTypes),
+            in_array(FulfillmentTypeEnum::OFFLINE_SERVICE->value, $fulfillmentTypes) =>  ProductDeliveryStatusEnum::ONLINE,
+            in_array(FulfillmentTypeEnum::IN_PERSON_SERVICE->value, $fulfillmentTypes) =>  ProductDeliveryStatusEnum::IN_PERSON,
+            default => null,
+        };
         return new self(
             slug: $product->slug,
             name: $product->name,
@@ -114,7 +139,28 @@ final class ProductCardData extends Data
             teachers: $teachers,
             reviews_count: $product->reviews_count   ?? 0,
             average_rating: $product->average_rating ?? 0.0,
+            registration_status: $registrationStatus,
+            delivery_type: $deliveryStatus,
             price_data: $withFullPriceData ? $priceData : null,
         );
+    }
+
+    private static function isInProgress(null|Carbon|CarbonImmutable $registrationStartDate,null|Carbon|CarbonImmutable $registrationEndDate):bool
+    {
+        if(is_null($registrationStartDate) && is_null($registrationEndDate)){
+            return true;
+        }
+
+        if(is_null($registrationStartDate) && $registrationEndDate && now()->lessThanOrEqualTo($registrationEndDate)){
+            return true;
+        }
+        if($registrationStartDate && now()->greaterThanOrEqualTo($registrationStartDate) && is_null($registrationEndDate)){
+            return true;
+        }
+        if($registrationStartDate && now()->greaterThanOrEqualTo($registrationStartDate) && $registrationEndDate && now()->lessThanOrEqualTo($registrationEndDate)){
+            return true;
+        }
+
+        return false;
     }
 }
