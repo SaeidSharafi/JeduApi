@@ -19,7 +19,7 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 final class SearchData extends Data
 {
     public function __construct(
-        public string $q,
+        public ?string $q,
         public ?int $per_page = 15,
         public ?array $result_types = null,
         public ?string $productable_type = null,
@@ -31,7 +31,7 @@ final class SearchData extends Data
         $filters = ProductFilterData::rules($context, 'filter.');
 
         return [
-            'q'                => ['required', 'string', 'max:255'],
+            'q'                => ['sometimes', 'string', 'max:255'],
             'per_page'         => ['sometimes', 'integer', 'min:1', 'max:100'],
             'result_types'     => ['sometimes', 'array'],
             'result_types.*'   => ['string', Rule::in(['product', 'blog_post'])],

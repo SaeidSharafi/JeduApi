@@ -7,6 +7,7 @@ use App\Data\Shop\Product\Course\ProductListRequestData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\Product\AvailabilityStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
 use App\Enums\Product\ProductableEnum;
@@ -917,6 +918,70 @@ describe('ProductQueryService integration', function () {
 
             expect($results)->toHaveCount(1)
                 ->and($results->first()->is($activeProduct->fresh()))->toBeTrue();
+        });
+
+        it('filters products by availability status', function () {
+            $now = now();
+
+            // Past
+            $pastProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Active Product']);
+            ProductDeliveryOption::factory()->for($pastProduct)->create([
+                'price'                   => 100,
+                'available_from'          => $now->clone()->subDays(3),
+                'available_to'            => $now->clone()->subDays(1),
+                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($pastProduct);
+
+            // Ongoing
+            $ongoingProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Closed Registration']);
+            ProductDeliveryOption::factory()->for($ongoingProduct)->create([
+                'price'                   => 100,
+                'available_from'          => $now->clone()->subDays(3),
+                'available_to'            => $now->clone()->addDays(1),
+                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($ongoingProduct);
+
+            // Upcoming
+            $futureContentProduct = Product::factory()
+                ->withCourse(Course::factory()->create())
+                ->create(['name' => 'Future Content']);
+            ProductDeliveryOption::factory()->for($futureContentProduct)->create([
+                'price'                   => 100,
+                'available_from'          => $now->clone()->addDays(2),
+                'available_to'            => $now->clone()->addDays(10),
+                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+            ]);
+            indexProductPrice($futureContentProduct);
+
+            $results = ProductQueryService::make()
+                ->availabilityStatus(AvailabilityStatusEnum::PAST)
+                ->getQuery()
+                ->get();
+
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->is($pastProduct->fresh()))->toBeTrue();
+
+            $results = ProductQueryService::make()
+                ->availabilityStatus(AvailabilityStatusEnum::ONGOING)
+                ->getQuery()
+                ->get();
+
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->is($ongoingProduct->fresh()))->toBeTrue();
+
+            $results = ProductQueryService::make()
+                ->availabilityStatus(AvailabilityStatusEnum::UPCOMING)
+                ->getQuery()
+                ->get();
+
+            expect($results)->toHaveCount(1)
+                ->and($results->first()->is($futureContentProduct->fresh()))->toBeTrue();
         });
 
         it('filters products by registration window', function () {

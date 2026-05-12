@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\CourseDifficultyLevelEnum;
+use App\Enums\Product\AvailabilityStatusEnum;
 use App\Enums\Product\FulfillmentTypeEnum;
 use App\Models\Blog\BlogPost;
 use App\Models\Course;
@@ -163,13 +164,6 @@ describe('Response Transformation', function () {
 // =============================================================================
 
 describe('Search Validation', function () {
-    it('requires search query parameter', function () {
-        $response = getJson(route('api.v1.shop.search'));
-
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['q']);
-    });
-
     it('rejects per_page parameter over maximum', function () {
         $response = getJson(route('api.v1.shop.search', ['q' => 'test', 'per_page' => 101]));
 
@@ -339,6 +333,17 @@ describe('Suggestion Validation', function () {
 });
 
 describe('filters tests', function () {
+    it('returns all products without filter or query', function () {
+        Product::factory()
+            ->withDeliveryOptions(1)
+            ->withCategory(1)
+            ->withCourse()
+            ->count(10)
+            ->create();
+        $response = getJson(route('api.v1.shop.search'));
+        $response->assertOk();
+        $response->assertJsonCount(10, 'data.data');
+    });
     it('filters by productable_type=course', function () {
         Product::factory()
             ->withDeliveryOptions(1)
@@ -567,6 +572,46 @@ describe('filters tests', function () {
         expect($json['data']['total'])->toBe(1);
         if (! empty($json['data']['data'])) {
             expect($json['data']['data'][0]['name'])->toBe('Digital Course');
+        }
+    });
+    it('filters by availabilty status', function () {
+        $now = now();
+        $pastProduct = Product::factory()
+            ->withDeliveryOptions(realData: [
+                [
+                    'price'                   => 100,
+                    'available_from'          => $now->clone()->subDays(3),
+                    'available_to'            => $now->clone()->subDays(1),
+                    'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+                ],
+            ])
+            ->withCategory(1)
+            ->withCourse(Course::factory()->create())
+            ->create(['name' => 'Active Product']);
+
+        // Upcoming
+        $futureContentProduct = Product::factory()
+            ->withDeliveryOptions(realData: [
+                [
+                    'price'                   => 100,
+                    'available_from'          => $now->clone()->addDays(2),
+                    'available_to'            => $now->clone()->addDays(10),
+                    'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+                ],
+            ])
+            ->withCategory(1)
+            ->withCourse(Course::factory()->create())
+            ->create(['name' => 'Future Content']);
+
+
+        $response = getJson(route('api.v1.shop.search', [
+            'filter' => ['availability_status' => AvailabilityStatusEnum::PAST->value],
+        ]));
+        $response->assertOk();
+        $json = $response->json();
+        expect($json['data']['total'])->toBe(1);
+        if (! empty($json['data']['data'])) {
+            expect($json['data']['data'][0]['name'])->toBe('Active Product');
         }
     });
 });
