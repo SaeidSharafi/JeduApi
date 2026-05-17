@@ -11,9 +11,9 @@
     "access_end_date": "2025-04-22",
     "external_enrollment_id": null,
     "provisioning_data": {
-      "platform": "spotplayer",
-      "playlist_id": "sp_pl_001",
-      "access_granted": true
+      "_id": "5dcab540796f5d4d48a6570f",
+      "key": "00015dcab540796f5d4d48a6570fb7bb74943c36c5e588c0267f9476ff7fe84846070ac971cd311716c6db6a6d603dae09b51395700894cd11c6dd10b71ae24625d1395595eb798844d7d5aec12c", // License Key
+      "url": "/5e0796ae55fb7a18e83b3554/91d0726373dd525f9d3f57f688299a00/"
     },
     "notes": null,
     "created_at": "2024-10-22 10:00:00",
@@ -31,9 +31,9 @@
     "access_end_date": "2025-04-22",
     "external_enrollment_id": null,
     "provisioning_data": {
-      "platform": "spotplayer",
-      "playlist_id": "sp_pl_002",
-      "access_granted": true
+      "_id": "5dcab540796f5d4d48a6570f",
+      "key": "00015dcab540796f5d4d48a6570fb7bb74943c36c5e588c0267f9476ff7fe84846070ac971cd311716c6db6a6d603dae09b51395700894cd11c6dd10b71ae24625d1395595eb798844d7d5aec12c", // License Key
+      "url": "/5e0796ae55fb7a18e83b3554/91d0726373dd525f9d3f57f688299a00/"
     },
     "notes": null,
     "created_at": "2024-10-22 10:00:00",
@@ -51,9 +51,9 @@
     "access_end_date": "2025-01-16",
     "external_enrollment_id": null,
     "provisioning_data": {
-      "platform": "spotplayer",
-      "playlist_id": "sp_pl_003",
-      "access_granted": true
+      "_id": "5dcab540796f5d4d48a6570f",
+      "key": "00015dcab540796f5d4d48a6570fb7bb74943c36c5e588c0267f9476ff7fe84846070ac971cd311716c6db6a6d603dae09b51395700894cd11c6dd10b71ae24625d1395595eb798844d7d5aec12c", // License Key
+      "url": "/5e0796ae55fb7a18e83b3554/91d0726373dd525f9d3f57f688299a00/"
     },
     "notes": null,
     "created_at": "2024-10-16 10:00:00",
