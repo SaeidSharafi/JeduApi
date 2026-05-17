@@ -26,6 +26,11 @@
       "featured_price": 629,
       "featured_price_start_date": "1404-03-26 11:11:54",
       "featured_price_end_date": "1404-03-27 11:11:54",
+      "registration_start_date": null,
+      "registration_end_date": null,
+      "available_from": null,
+      "available_to": null,
+      "access_days": null,
       "teachers": [
         {
           "id": 6,
@@ -93,6 +98,11 @@
       "featured_price": 70332821,
       "featured_price_start_date": "1404-03-26 11:11:54",
       "featured_price_end_date": "1404-03-27 11:11:54",
+      "registration_start_date": null,
+      "registration_end_date": null,
+      "available_from": null,
+      "available_to": null,
+      "access_days": null,
       "teachers": [
         {
           "id": 8,
@@ -160,6 +170,11 @@
       "featured_price": 22765,
       "featured_price_start_date": "1404-03-26 11:11:54",
       "featured_price_end_date": "1404-03-27 11:11:54",
+      "registration_start_date": null,
+      "registration_end_date": null,
+      "available_from": null,
+      "available_to": null,
+      "access_days": 14,
       "teachers": [
         {
           "id": 10,

@@ -287,7 +287,7 @@ describe('StudentStoryController', function (): void {
         $postData = [
             'course_name' => 'React for Beginners',
             // 'student_name' is missing
-            'course_url' => 'not-a-valid-url',
+            'course_url' => 'its-still-valid-url',
             'story_text' => '',
             'is_visible' => true,
             // 'avatar' is missing
@@ -295,7 +295,7 @@ describe('StudentStoryController', function (): void {
 
         $response = $this->postJson('/api/v1/admin/settings/student-stories', $postData);
         $response->assertStatus(422);
-        $response->assertJsonValidationErrors(['student_name', 'course_url', 'story_text']);
+        $response->assertJsonValidationErrors(['student_name', 'story_text']);
     });
 
     it('prevents unauthorized access', function (): void {

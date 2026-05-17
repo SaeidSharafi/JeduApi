@@ -71,6 +71,11 @@ final class ProductDeliveryOptionFactory extends Factory
             'featured_price'            => 0,
             'featured_price_start_date' => null,
             'featured_price_end_date'   => null,
+            'registration_start_date'   => null,
+            'registration_end_date'   => null,
+            'available_from'   => null,
+            'available_to'   => null,
+            'access_days'               => null,
             'created_at'                => Carbon::now(),
             'updated_at'                => Carbon::now(),
         ];

@@ -34,6 +34,7 @@ test('to array', function (): void {
             'registration_end_date'                  => $productDeliveryOption->registration_end_date?->format('Y-m-d'),
             'available_from'                         => $productDeliveryOption->available_from?->format('Y-m-d'),
             'available_to'                           => $productDeliveryOption->available_to?->format('Y-m-d'),
+            'access_days'                            => $productDeliveryOption->access_days,
             'created_at'                             => $productDeliveryOption->created_at?->utc()?->toJSON(),
             'updated_at'                             => $productDeliveryOption->updated_at?->utc()?->toJSON(),
             'allow_multiple_quantity'                => $productDeliveryOption->allow_multiple_quantity,

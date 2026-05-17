@@ -44,6 +44,7 @@ final class ProductDeliveryOption extends Model
             'registration_end_date',
             'available_from',
             'available_to',
+            'access_days',
         ];
 
     protected $with

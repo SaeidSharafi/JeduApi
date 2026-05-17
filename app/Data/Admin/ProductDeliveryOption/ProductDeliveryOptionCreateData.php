@@ -45,6 +45,7 @@ final class ProductDeliveryOptionCreateData extends Data
         public ?Carbon $available_from,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
         public ?Carbon $available_to,
+        public ?int $access_days,
         public ?string $sku = null,
     ) {}
 
@@ -76,6 +77,7 @@ final class ProductDeliveryOptionCreateData extends Data
             'registration_end_date'     => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('registration_start_date').',Y-m-d'],
             'available_from'            => ['nullable', 'jdate:Y-m-d'],
             'available_to'              => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('available_from').',Y-m-d'],
+            'access_days'               => ['nullable', 'integer', 'min:1'],
             'teachers'                  => ['required', 'array'],
             'teachers.*'                => ['required', 'integer', 'exists:teachers,id'],
             'details.ims_course_code'   => ['nullable', 'string'],
@@ -107,7 +109,11 @@ final class ProductDeliveryOptionCreateData extends Data
             'is_featured'               => __('validation.attributes.product_delivery_option.is_featured'),
             'featured_price'            => __('validation.attributes.product_delivery_option.featured_price'),
             'featured_price_start_date' => __('validation.attributes.product_delivery_option.featured_price_start_date'),
-            'featured_price_end_date'   => __('validation.attributes.product_delivery_option.featured_price_end_date'),
+            'registration_start_date'   => __('validation.attributes.product_delivery_option.registration_start_date'),
+            'registration_end_date'     => __('validation.attributes.product_delivery_option.registration_end_date'),
+            'available_from'            => __('validation.attributes.product_delivery_option.available_from'),
+            'available_to'              => __('validation.attributes.product_delivery_option.available_to'),
+            'access_days'               => __('validation.attributes.product_delivery_option.access_days'),
             'teachers'                  => __('validation.attributes.product_delivery_option.teachers'),
             'teachers.*'                => __('validation.attributes.product_delivery_option.teacher_id'),
         ];
@@ -404,6 +410,11 @@ final class ProductDeliveryOptionCreateData extends Data
                 'description' => 'End date for availability of this delivery option',
                 'required'    => false,
                 'example'     => '1404-12-31',
+            ],
+            'access_days' => [
+                'description' => 'Number of days the product access remains valid after enrolment. After this period, the enrolment expires automatically.',
+                'required'    => false,
+                'example'     => 14,
             ],
             'teachers' => [
                 'description' => 'List of teacher IDs associated with this delivery option',

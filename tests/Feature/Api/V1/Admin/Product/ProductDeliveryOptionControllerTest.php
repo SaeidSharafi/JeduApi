@@ -19,6 +19,7 @@ describe('User with permissions', function (): void {
                     'details_json'     => [
                         'lm',
                     ],
+                    'access_days'       => 12,
                 ]
             )->toArray();
         $this->simpleData['details'] = [
@@ -89,6 +90,16 @@ describe('User with permissions', function (): void {
                         $this->toJalalitString($expectedDeliveryOption->featured_price_start_date))
                     ->where('featured_price_end_date',
                         $this->toJalalitString($expectedDeliveryOption->featured_price_end_date))
+                    ->where('registration_start_date',
+                        $this->toJalalitString($expectedDeliveryOption->registration_start_date))
+                    ->where('registration_end_date',
+                        $this->toJalalitString($expectedDeliveryOption->registration_end_date))
+                    ->where('available_from',
+                        $this->toJalalitString($expectedDeliveryOption->available_from))
+                    ->where('available_to',
+                        $this->toJalalitString($expectedDeliveryOption->available_to))
+                    ->where('access_days',
+                        $this->toJalalitString($expectedDeliveryOption->access_days))
                     ->where('created_at', $this->toJalalitString($expectedDeliveryOption->created_at))
                     ->where('updated_at', $this->toJalalitString($expectedDeliveryOption->updated_at))
                     ->etc();
@@ -208,6 +219,16 @@ describe('User with permissions', function (): void {
                     $this->toJalalitString($deliveryOption->featured_price_start_date))
                 ->where('data.featured_price_end_date',
                     $this->toJalalitString($deliveryOption->featured_price_end_date))
+                ->where('data.registration_start_date',
+                    $this->toJalalitString($deliveryOption->registration_start_date))
+                ->where('data.registration_end_date',
+                    $this->toJalalitString($deliveryOption->registration_end_date))
+                ->where('data.available_from',
+                    $this->toJalalitString($deliveryOption->available_from))
+                ->where('data.available_to',
+                    $this->toJalalitString($deliveryOption->available_to))
+                ->where('data.access_days',
+                    $this->toJalalitString($deliveryOption->access_days))
                 ->where('data.created_at', $this->toJalalitString($deliveryOption->created_at))
                 ->where('data.updated_at', $this->toJalalitString($deliveryOption->updated_at))
                 ->etc();
@@ -248,6 +269,7 @@ describe('User with permissions', function (): void {
             'delivery_method'  => $deliveryOption->delivery_method,
             'price'            => $deliveryOption->price,
             'capacity'         => $deliveryOption->capacity,
+            'access_days'         => $deliveryOption->access_days,
         ]);
         $this->assertDatabaseHas('product_delivery_option_teacher', [
             'product_delivery_option_id' => $deliveryOption->id,

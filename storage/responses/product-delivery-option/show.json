@@ -25,6 +25,11 @@
     "featured_price": 629,
     "featured_price_start_date": "1404-03-26 11:11:54",
     "featured_price_end_date": "1404-03-27 11:11:54",
+    "registration_start_date": "1404-03-27 11:11:54",
+    "registration_end_date": "1404-03-27 11:11:54",
+    "available_from": "1404-03-27 11:11:54",
+    "available_to": "1404-03-27 11:11:54",
+    "access_days": 14,
     "teachers": [
       {
         "id": 6,

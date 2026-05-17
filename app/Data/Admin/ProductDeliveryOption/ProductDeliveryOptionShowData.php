@@ -44,6 +44,11 @@ final class ProductDeliveryOptionShowData extends Data
         public ?int $featured_price,
         public ?Verta $featured_price_start_date,
         public ?Verta $featured_price_end_date,
+        public ?Verta $registration_start_date,
+        public ?Verta $registration_end_date,
+        public ?Verta $available_from,
+        public ?Verta $available_to,
+        public ?int $access_days,
         #[DataCollectionOf(TeacherListItemData::class)]
         public ?DataCollection $teachers,
         public ?ProductData $product,
