@@ -1,0 +1,110 @@
+[
+  {
+    "id": 1,
+    "key": "about_us",
+    "value": {"title": "درباره جِدو", "description": "جِدو یک پلتفرم آموزشی آنلاین است که با هدف ارائه آموزش‌های با کیفیت در حوزه‌های فناوری، هنر، علوم انسانی و کسب‌وکار فعالیت می‌کند. ما به شما کمک می‌کنیم تا مهارت‌های خود را ارتقا دهید و در مسیر یادگیری همراه شما هستیم.", "mission": "توانمندسازی افراد از طریق آموزش دست‌رس‌پذیر و با کیفیت", "vision": "پیشرو در آموزش آنلاین ایران با رویکردی نوآورانه و کاربرمحور"},
+    "type": "json",
+    "group": "content",
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  },
+  {
+    "id": 2,
+    "key": "contact_info",
+    "value": {"address": "تهران، خیابان ولیعصر، نبش خیابان پاکستان، ساختمان جِدو", "phones": ["021-12345678", "021-87654321"], "email": "info@jedushop.com", "working_hours": "شنبه تا چهارشنبه ۹ صبح تا ۶ عصر"},
+    "type": "json",
+    "group": "content",
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  },
+  {
+    "id": 3,
+    "key": "collaboration",
+    "value": {"title": "همکاری با جِدو", "description": "ما همواره استقبال می‌کنیم از همکاری با اساتید، مدرسان و سازمان‌های آموزشی. اگر شما هم دغدغه آموزش دارید، با ما تماس بگیرید.", "benefits": ["دسترسی به جامعه بزرگ مخاطبان", "پلتفرم قدرتمند آموزشی", "پشتیبانی فنی و محتوایی", "تسهیلات مالی ویژه"]},
+    "type": "json",
+    "group": "content",
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  },
+  {
+    "id": 4,
+    "key": "header",
+    "value": {"logo_alt": "جِدو شاپ", "show_search": true, "show_cart": true, "show_wallet": true, "menu_items": [{"title": "دوره‌ها", "link": "/courses"}, {"title": "وبینارها", "link": "/seminars"}, {"title": "مقالات", "link": "/blog"}, {"title": "درباره ما", "link": "/about"}]},
+    "type": "json",
+    "group": "appearance",
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  },
+  {
+    "id": 5,
+    "key": "footer",
+    "value": {"description": "جِدو، سکوی پرتاب شما به دنیای مهارت‌های نوین", "copyright": "تمامی حقوق مادی و معنوی این سایت متعلق به جِدو می‌باشد.", "social_links": [{"platform": "instagram", "url": "https://instagram.com/jedushop"}, {"platform": "telegram", "url": "https://t.me/jedushop"}, {"platform": "linkedin", "url": "https://linkedin.com/company/jedushop"}]},
+    "type": "json",
+    "group": "appearance",
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  },
+  {
+    "id": 6,
+    "key": "rules",
+    "value": {"title": "قوانین و مقررات", "sections": [{"title": "ثبت‌نام", "body": "کاربران موظفند اطلاعات صحیح و کامل در هنگام ثبت‌نام ارائه دهند."}, {"title": "حضور در کلاس‌ها", "body": "حضور به موقع در کلاس‌های آنلاین الزامی است."}, {"title": "انصراف و بازگشت وجه", "body": "تا ۷ روز پس از ثبت‌نام امکان انصراف با کسر ۱۰٪ کارمزد وجود دارد."}]},
+    "type": "json",
+    "group": "legal",
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  },
+  {
+    "id": 7,
+    "key": "sliders",
+    "value": {"autoplay": true, "autoplay_speed": 5000, "show_dots": true, "show_arrows": true},
+    "type": "json",
+    "group": "appearance",
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  },
+  {
+    "id": 8,
+    "key": "home_page_blocks",
+    "value": {"show_categories": true, "show_featured_courses": true, "show_popular_seminars": true, "show_blog": true, "show_testimonials": true, "show_partners": true},
+    "type": "json",
+    "group": "appearance",
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  },
+  {
+    "id": 9,
+    "key": "ims",
+    "value": {"enabled": false, "url": null, "api_key": null},
+    "type": "json",
+    "group": "integrations",
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  },
+  {
+    "id": 10,
+    "key": "moodle",
+    "value": {"enabled": false, "url": null, "token": null},
+    "type": "json",
+    "group": "integrations",
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  },
+  {
+    "id": 11,
+    "key": "big_blue_button",
+    "value": {"enabled": true, "url": "https://bbb.jedushop.com/bigbluebutton/api", "secret": "***"},
+    "type": "json",
+    "group": "integrations",
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  },
+  {
+    "id": 12,
+    "key": "spot_player",
+    "value": {"enabled": true, "api_url": "https://api.spotplayer.ir/v1", "api_key": "***"},
+    "type": "json",
+    "group": "integrations",
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  }
+]

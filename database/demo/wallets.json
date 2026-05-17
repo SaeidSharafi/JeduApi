@@ -1,0 +1,502 @@
+[
+    {
+        "id": 1,
+        "user_id": 1,
+        "balance": 5000000,
+        "gift_balance": 200000,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 2,
+        "user_id": 2,
+        "balance": 1200000,
+        "gift_balance": 200000,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 3,
+        "user_id": 3,
+        "balance": 3500000,
+        "gift_balance": 200000,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 4,
+        "user_id": 4,
+        "balance": 800000,
+        "gift_balance": 200000,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 5,
+        "user_id": 5,
+        "balance": 2000000,
+        "gift_balance": 200000,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 6,
+        "user_id": 6,
+        "balance": 1500000,
+        "gift_balance": 200000,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 7,
+        "user_id": 7,
+        "balance": 0,
+        "gift_balance": 200000,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 8,
+        "user_id": 8,
+        "balance": 4500000,
+        "gift_balance": 200000,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 9,
+        "user_id": 9,
+        "balance": 1000000,
+        "gift_balance": 200000,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 10,
+        "user_id": 10,
+        "balance": 2500000,
+        "gift_balance": 200000,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 11,
+        "user_id": 11,
+        "balance": 5000000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 12,
+        "user_id": 12,
+        "balance": 1200000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 13,
+        "user_id": 13,
+        "balance": 3500000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 14,
+        "user_id": 14,
+        "balance": 800000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 15,
+        "user_id": 15,
+        "balance": 2000000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 16,
+        "user_id": 16,
+        "balance": 1500000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 17,
+        "user_id": 17,
+        "balance": 0,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 18,
+        "user_id": 18,
+        "balance": 4500000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 19,
+        "user_id": 19,
+        "balance": 1000000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 20,
+        "user_id": 20,
+        "balance": 2500000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 21,
+        "user_id": 21,
+        "balance": 5000000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 22,
+        "user_id": 22,
+        "balance": 1200000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 23,
+        "user_id": 23,
+        "balance": 3500000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 24,
+        "user_id": 24,
+        "balance": 800000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 25,
+        "user_id": 25,
+        "balance": 2000000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 26,
+        "user_id": 26,
+        "balance": 1500000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 27,
+        "user_id": 27,
+        "balance": 0,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 28,
+        "user_id": 28,
+        "balance": 4500000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 29,
+        "user_id": 29,
+        "balance": 1000000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 30,
+        "user_id": 30,
+        "balance": 2500000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 31,
+        "user_id": 31,
+        "balance": 5000000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 32,
+        "user_id": 32,
+        "balance": 1200000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 33,
+        "user_id": 33,
+        "balance": 3500000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 34,
+        "user_id": 34,
+        "balance": 800000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 35,
+        "user_id": 35,
+        "balance": 2000000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 36,
+        "user_id": 36,
+        "balance": 1500000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 37,
+        "user_id": 37,
+        "balance": 0,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 38,
+        "user_id": 38,
+        "balance": 4500000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 39,
+        "user_id": 39,
+        "balance": 1000000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 40,
+        "user_id": 40,
+        "balance": 2500000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 41,
+        "user_id": 41,
+        "balance": 5000000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 42,
+        "user_id": 42,
+        "balance": 1200000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 43,
+        "user_id": 43,
+        "balance": 3500000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 44,
+        "user_id": 44,
+        "balance": 800000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 45,
+        "user_id": 45,
+        "balance": 2000000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 46,
+        "user_id": 46,
+        "balance": 1500000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 47,
+        "user_id": 47,
+        "balance": 0,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 48,
+        "user_id": 48,
+        "balance": 4500000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 49,
+        "user_id": 50,
+        "balance": 1000000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    },
+    {
+        "id": 50,
+        "user_id": 51,
+        "balance": 2500000,
+        "gift_balance": 0,
+        "status": "active",
+        "created_by": 1,
+        "created_at": "2024-09-01 10:00:00",
+        "updated_at": "2024-10-21 15:30:00"
+    }
+]

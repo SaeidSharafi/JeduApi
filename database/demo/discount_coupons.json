@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "discount_promotion_id": 1,
+    "code": "TERM15",
+    "usage_limit": 100,
+    "usage_count": 5,
+    "is_active": true,
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  },
+  {
+    "id": 2,
+    "discount_promotion_id": 2,
+    "code": "STUDENT500",
+    "usage_limit": 200,
+    "usage_count": 12,
+    "is_active": true,
+    "created_at": "2024-10-01 08:00:00",
+    "updated_at": "2024-10-01 08:00:00"
+  },
+  {
+    "id": 3,
+    "discount_promotion_id": 1,
+    "code": "WELCOME10",
+    "usage_limit": null,
+    "usage_count": 45,
+    "is_active": true,
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  }
+]

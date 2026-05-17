@@ -1,0 +1,48 @@
+[
+  {
+    "id": 1,
+    "discount_promotion_id": 1,
+    "type": "condition",
+    "handler": "cart_total_minimum",
+    "configuration": {
+      "min_cart_total": 500000,
+      "operator": "gte"
+    },
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  },
+  {
+    "id": 2,
+    "discount_promotion_id": 1,
+    "type": "action",
+    "handler": "percentage_discount",
+    "configuration": {
+      "discount_percentage": 15,
+      "max_discount_amount": 5000000
+    },
+    "created_at": "2024-09-01 08:00:00",
+    "updated_at": "2024-09-01 08:00:00"
+  },
+  {
+    "id": 3,
+    "discount_promotion_id": 2,
+    "type": "condition",
+    "handler": "user_education_status",
+    "configuration": {
+      "allowed_statuses": ["STUDENT"]
+    },
+    "created_at": "2024-10-01 08:00:00",
+    "updated_at": "2024-10-01 08:00:00"
+  },
+  {
+    "id": 4,
+    "discount_promotion_id": 2,
+    "type": "action",
+    "handler": "fixed_amount_discount",
+    "configuration": {
+      "discount_amount": 500000
+    },
+    "created_at": "2024-10-01 08:00:00",
+    "updated_at": "2024-10-01 08:00:00"
+  }
+]
