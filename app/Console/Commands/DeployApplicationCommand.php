@@ -16,7 +16,10 @@ final class DeployApplicationCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:deploy-application {--hamgit : Use Hamgit repo}'; // Changed from app:deploy-application-command
+    protected $signature = 'app:deploy-application 
+    {--hamgit : Use Hamgit repo}
+    {--skip-dep : Skip installing dependencies}';
+
 
     /**
      * The console command description.
@@ -73,7 +76,7 @@ final class DeployApplicationCommand extends Command
                 return Command::FAILURE;
             }
 
-            if (app()->environment() !== 'local') {
+            if (app()->environment() !== 'local' && !$this->option('skip-dep')) {
                 $noDev = app()->isProduction() ? '--no-dev' : '';
                 $this->line('Composer: Installing dependencies...');
                 Log::channel('deployment')->info('Composer: Installing dependencies...');
