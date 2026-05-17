@@ -27,7 +27,7 @@ final class StudentStoryCreateData extends Data
         return [
             'student_name'  => ['required', 'string', 'max:255'],
             'course_name'   => ['required', 'string', 'max:255'],
-            'course_url'    => ['required', 'url', 'max:255'],
+            'course_url'    => ['required', 'string', 'max:255'],
             'story_text'    => ['required', 'string'],
             'avatar'        => ['nullable', 'integer', 'exists:media,id'],
             'is_visible'    => ['required', 'boolean'],
