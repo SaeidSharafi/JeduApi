@@ -16,7 +16,7 @@ final class DeployApplicationCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:deploy-application'; // Changed from app:deploy-application-command
+    protected $signature = 'app:deploy-application {--hamgit : Use Hamgit repo}'; // Changed from app:deploy-application-command
 
     /**
      * The console command description.
@@ -39,8 +39,8 @@ final class DeployApplicationCommand extends Command
         $expectedRepo  = 'SaeidSharafi/JeduApi'; // Your GitHub Owner/Repo
         $phpExecutable = '/usr/bin/php8.4'; // Or your PHP path from config
         $artisanScript = "{$phpExecutable} {$projectPath}/artisan"; // Use a variable
-
-        if (empty($gitUsername) || empty($gitPat)) {
+        $useHamgit     = $this->option('hamgit');
+        if (! $useHamgit && (empty($gitUsername) || empty($gitPat))) {
             $this->error('✘ Git username or PAT not configured in .env (GIT_DEPLOY_USERNAME, GIT_DEPLOY_PAT).');
             Log::channel('deployment')->error('✘ Git username or PAT not configured.');
 
@@ -48,7 +48,9 @@ final class DeployApplicationCommand extends Command
         }
 
         // Construct the remote URL with credentials
-        $remoteUrlWithCreds = "https://{$gitUsername}:{$gitPat}@github.com/{$expectedRepo}.git";
+        $remoteUrlWithCreds = $this->option('hamgit')
+            ? 'hamgit'
+            : "https://{$gitUsername}:{$gitPat}@github.com/{$expectedRepo}.git";
 
         try {
             // --- Git Operations ---
@@ -75,7 +77,8 @@ final class DeployApplicationCommand extends Command
                 $noDev = app()->isProduction() ? '--no-dev' : '';
                 $this->line('Composer: Installing dependencies...');
                 Log::channel('deployment')->info('Composer: Installing dependencies...');
-                $composerCommand = "{$phpExecutable} /usr/local/bin/composer install --no-interaction {$noDev} --prefer-dist --optimize-autoloader";
+                $composerCommand
+                    = "{$phpExecutable} /usr/local/bin/composer install --no-interaction {$noDev} --prefer-dist --optimize-autoloader";
                 if (! $this->runProcess($composerCommand, $projectPath)) {
                     return Command::FAILURE;
                 }
