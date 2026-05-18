@@ -1,0 +1,19 @@
+{
+    "agents": [
+        "copilot",
+        "opencode"
+    ],
+    "guidelines": true,
+    "herd_mcp": false,
+    "mcp": true,
+    "packages": [
+        "laravel/scout",
+        "laravel/horizon"
+    ],
+    "sail": true,
+    "skills": [
+        "pest-testing",
+        "configuring-horizon",
+        "scout-development"
+    ]
+}

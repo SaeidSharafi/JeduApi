@@ -34,12 +34,13 @@
         "typesense/typesense-php": "^5.1"
     },
     "require-dev": {
+        "ext-curl": "*",
         "driftingly/rector-laravel": "^2.0",
         "fakerphp/faker": "^1.23",
         "knuckleswtf/scribe": "^5.1",
         "laradumps/laradumps": "^4.0",
         "larastan/larastan": "^3.3",
-        "laravel/boost": "^1.2",
+        "laravel/boost": "^2.1",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.22",
         "laravel/sail": "^1.41",
@@ -51,8 +52,7 @@
         "pestphp/pest-plugin-laravel": "^4.0",
         "pestphp/pest-plugin-stressless": "^4.0",
         "pestphp/pest-plugin-type-coverage": "^4.0",
-        "rector/rector": "^2.0.14",
-      "ext-curl": "*"
+        "rector/rector": "^2.0.14"
     },
     "autoload": {
         "psr-4": {
