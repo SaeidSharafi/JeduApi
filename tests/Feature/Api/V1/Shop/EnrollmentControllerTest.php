@@ -3,8 +3,6 @@
 declare(strict_types=1);
 
 use App\Enums\Product\DeliveryMethodEnum;
-use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\ProductDeliveryOption;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
@@ -15,12 +13,12 @@ it('should filter by fulfillment type', function (): void {
     createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, 2);
     createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
     $this->getJson(route('api.v1.shop.my-courses.index', [
-        'filter' => ['fulfillment_type' => \App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value],
+        'filter' => ['fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value],
     ]))
         ->assertOk()
         ->assertJsonCount(1, 'data.data')
         ->assertJsonPath('data.data.0.product.fulfillment_type.value',
-            \App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value);
+            App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value);
 });
 it('should filter by product name', function (): void {
     $product = App\Models\Product::factory()->create([
@@ -93,39 +91,3 @@ it('does not show other users enrollment details', function (): void {
     $response->assertJsonFragment(['message' => __('messages.enrollments.not_found')]);
 
 });
-function createEnrollment(
-    App\Models\User|Illuminate\Contracts\Auth\Authenticatable $customer,
-    DeliveryMethodEnum $deliveryMethod,
-    int $count = 1,
-    ?ProductDeliveryOption $deliveryOption = null,
-): App\Models\Enrollment {
-    $order = Order::factory()->create(
-        [
-            'customer_id'            => $customer->id,
-            'customer_email'         => $customer->email,
-            'customer_phone'         => $customer->phone,
-            'customer_first_name'    => $customer->first_name,
-            'customer_last_name'     => $customer->last_name,
-            'customer_snapshot_json' => $customer->toArray(),
-        ]
-    );
-
-    $product = $deliveryOption
-        ?: ProductDeliveryOption::factory()->create([
-            'delivery_method'  => $deliveryMethod->value,
-            'fulfillment_type' => $deliveryMethod->getFulfillmentType(),
-        ]);
-
-    $order_item = OrderItem::factory()
-        ->withEnrollment()
-        ->count($count)
-        ->create([
-            'order_id'                   => $order->id,
-            'product_delivery_option_id' => $product->id,
-            'name'                       => $product->name,
-            'sku'                        => $product->sku,
-            'product_data_snapshot_json' => $product->product->toArray(),
-        ])->fresh();
-
-    return $order_item->first()->enrollment;
-}

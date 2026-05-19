@@ -49,3 +49,5 @@ expect()->extend('toBeEmptyCollection',
 | global functions to help you to reduce the number of lines of code in your test files.
 |
 */
+
+require_once __DIR__.'/Support/Helpers/EnrollmentHelpers.php';

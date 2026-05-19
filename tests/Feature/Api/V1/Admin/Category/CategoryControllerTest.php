@@ -151,6 +151,7 @@ it('can update category', function (): void {
 
 it('can delete category', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::CATEGORY_DELETE->value]);
+    Storage::fake('public');
     $icon = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('icon.jpg'))
         ->toDisk('public')
         ->upload();

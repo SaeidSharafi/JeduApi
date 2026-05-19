@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\MyCourses;
 
+use App\Actions\Shop\MyCourses\GetEnrollmentDetailAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\MyCourses\EnrollmentData;
 use App\Http\Controllers\Controller;
@@ -51,11 +52,11 @@ final class EnrollmentController extends Controller
     /**
      * Show a specific enrollment.
      *
-     * @responseFile 200 responses/shop/enrollments/show.json
+     * @responseFile 200 storage/responses/shop/enrollments/show.json
      *
      * @response 404 {"message": "Enrollment not found."}
      */
-    public function show(Enrollment $enrollment): ApiResponseInterface
+    public function show(Enrollment $enrollment, GetEnrollmentDetailAction $action): ApiResponseInterface
     {
         if (auth()->user()->id !== $enrollment->customer_id) {
             return response()->notFound(__('messages.enrollments.not_found'));
@@ -66,6 +67,6 @@ final class EnrollmentController extends Controller
             'orderItem.vendor',
         ]);
 
-        return response()->success(EnrollmentData::from($enrollment));
+        return response()->success($action->handle($enrollment));
     }
 }

@@ -20,7 +20,18 @@ Route::middleware(['auth:user'])
             Route::get('/{enrollment:uuid}',
                 [App\Http\Controllers\Api\Shop\MyCourses\EnrollmentController::class, 'show'])
                 ->name('show');
+
+            Route::post('/{enrollment:uuid}/moodle/sso',
+                App\Http\Controllers\Api\Shop\MyCourses\MoodleSsoController::class)
+                ->name('moodle.sso');
         });
+
+        Route::get('/my-digital-assets', App\Http\Controllers\Api\Shop\MyCourses\DigitalAssetEnrollmentController::class)
+            ->name('my-digital-assets.index');
+
+        Route::get('/my-digital-assets/{enrollment:uuid}/download/{digitalAsset}',
+            App\Http\Controllers\Api\Shop\MyCourses\DigitalAssetDownloadController::class)
+            ->name('my-digital-assets.download');
 
         Route::prefix('orders')->name('orders.')->group(function (): void {
             Route::get('/', [OrderController::class, 'index'])

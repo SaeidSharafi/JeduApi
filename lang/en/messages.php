@@ -120,7 +120,12 @@ return [
         ],
     ],
     'enrollments' => [
-        'not_found' => 'Enrollment not found.',
+        'not_found'                      => 'Enrollment not found.',
+        'not_moodle'                     => 'This enrollment is not a Moodle LMS enrollment.',
+        'moodle_provisioning_incomplete' => 'Moodle provisioning is incomplete for this enrollment.',
+        'moodle_not_configured'          => 'Moodle is not configured.',
+        'moodle_auth_userkey_missing'    => 'Moodle auth_userkey token is not configured.',
+        'moodle_service_error'           => 'Failed to generate Moodle SSO URL. Please try again later.',
     ],
 
     // Wallet Campaign Messages
