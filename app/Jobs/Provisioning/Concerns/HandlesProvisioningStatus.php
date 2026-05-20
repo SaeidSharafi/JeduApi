@@ -6,7 +6,9 @@ namespace App\Jobs\Provisioning\Concerns;
 
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\System\SettingKeyEnum;
 use App\Models\Enrollment;
+use App\Models\Setting;
 
 trait HandlesProvisioningStatus
 {
@@ -65,7 +67,8 @@ trait HandlesProvisioningStatus
      */
     private function requiredProviders(Enrollment $enrollment): array
     {
-        $providers      = ['ims'];
+        $isImsActive = data_get(Setting::getValue(SettingKeyEnum::IMS),'enabled',false);
+        $providers      = $isImsActive ? ['ims'] : [];
         $deliveryMethod = $enrollment->productDeliveryOption?->delivery_method;
 
         if ($deliveryMethod === DeliveryMethodEnum::LMS_MOODLE) {

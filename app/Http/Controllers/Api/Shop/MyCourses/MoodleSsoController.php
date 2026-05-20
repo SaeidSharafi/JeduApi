@@ -28,6 +28,8 @@ final class MoodleSsoController extends Controller
      *
      * @responseFile storage/responses/shop/enrollments/moodle-sso.json
      *
+     * @queryParam wantsurl string Optional URL to redirect to after Moodle SSO login. Example: "https://lms.example.com/course/view.php?id=2"
+     *
      * @response 404 {"message": "Enrollment not found."}
      * @response 422 {"message": "This enrollment is not a Moodle LMS enrollment."}
      * @response 422 {"message": "Moodle provisioning is incomplete for this enrollment."}
@@ -37,7 +39,7 @@ final class MoodleSsoController extends Controller
     public function __invoke(Enrollment $enrollment, MoodleService $moodleService): ApiResponseInterface
     {
         $user = auth()->user();
-
+        $wantsurl = request()->get('wantsurl');
         if ($enrollment->customer_id !== $user->id) {
             return response()->notFound(__('messages.enrollments.not_found'));
         }
@@ -54,7 +56,7 @@ final class MoodleSsoController extends Controller
             return response()->validationError(__('messages.enrollments.moodle_provisioning_incomplete'));
         }
 
-        $config = Setting::getValue(SettingKeyEnum::MOODLE);
+        $config = Setting::getValue(SettingKeyEnum::MOODLE, config('services.moodle'));
 
         if (! is_array($config) || ! ($config['enabled'] ?? false) || empty($config['base_url']) || empty($config['token'])) {
             return response()->validationError(__('messages.enrollments.moodle_not_configured'));
@@ -75,6 +77,6 @@ final class MoodleSsoController extends Controller
             return response()->validationError(__('messages.enrollments.moodle_service_error'));
         }
 
-        return response()->success(new MoodleSsoUrlData(url: $url));
+        return response()->success(new MoodleSsoUrlData(url: $url, wantsurl: $wantsurl));
     }
 }

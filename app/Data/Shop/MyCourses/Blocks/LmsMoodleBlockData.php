@@ -9,7 +9,10 @@ use Spatie\LaravelData\Data;
 final class LmsMoodleBlockData extends Data
 {
     public function __construct(
+        public bool $visible,
+        public string $name,
         public ?string $course_url,
-        public array $quizzes,
+        public bool $completed,
+        public array $activities,
     ) {}
 }

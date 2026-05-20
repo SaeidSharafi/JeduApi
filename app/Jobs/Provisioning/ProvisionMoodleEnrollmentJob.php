@@ -58,14 +58,15 @@ final class ProvisionMoodleEnrollmentJob implements ShouldQueue
 
         $startTime = is_string($startDate) && strtotime($startDate) !== false ? strtotime($startDate) : null;
         $endTime   = is_string($endDate)   && strtotime($endDate)   !== false ? strtotime($endDate) : null;
-
-        $moodleService->enrollUser($moodleUserId, $courseId, $startTime, $endTime, $config['default_role_id']);
+        $courseInfo = $moodleService->getCourse($courseId);
+        $moodleService->enrollUser($moodleUserId, $courseId, $startTime, $endTime, data_get($config,'default_role_id', config('services.moodle.default_role_id')));
 
         $this->markProvisioningSuccess($enrollment, 'moodle', [
             'moodle_user_id'   => $moodleUserId,
             'moodle_user_name' => $moodleUsername,
             'moodle_course_id' => $courseId,
             'login_path'       => $config['default_login_redirect_script'] ?? '/my',
+            'course_info'      => $courseInfo,
         ]);
     }
 

@@ -12,5 +12,3 @@ parameters:
     excludePaths:
         - 'app/Data/'
         - 'app/Scribe/'
-        - 'app/Providers/ScribeServiceProvider.php'
-

@@ -34,6 +34,7 @@ return [
     'file_uploaded'          => 'File uploaded successfully.',
     'file_deleted'           => 'File deleted successfully.',
     'file_not_found'         => 'The requested file was not found.',
+    'something_went_wrong'   => 'Something went wrong. Please try again later.',
     'models'                 => [
         'seminar'       => 'Seminar',
         'staff'         => 'Staff',
