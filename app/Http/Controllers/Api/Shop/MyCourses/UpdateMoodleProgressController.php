@@ -71,9 +71,7 @@ class UpdateMoodleProgressController extends Controller
                         $activity->completed = $activityStatuses[$activity->cid]['state'] ?? false;
                     }
 
-                    $provisioningData = $enrollment->provisioning_data;
-                    $provisioningData['providers']['moodle']['data']['course_info'] = $data;
-                    $enrollment->update(['provisioning_data' => $provisioningData]);
+                    $enrollment->update(['provisioning_data->moodle->data->course_info' => $data]);
 
                     return $data;
 
