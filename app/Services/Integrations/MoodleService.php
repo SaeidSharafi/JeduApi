@@ -25,8 +25,8 @@ final class MoodleService
 
     public function setConfig(array $config): void
     {
-        $this->baseUrl = $config['base_url'];
-        $this->token = $config['token'];
+        $this->baseUrl    = $config['base_url'];
+        $this->token      = $config['token'];
         $this->configured = true;
     }
 
@@ -35,9 +35,9 @@ final class MoodleService
      */
     public function findOrCreateUser(User $user): array
     {
-        $email = $user->email ?? sprintf('user-%d@jedu.ir', $user->phone);
+        $email    = $user->email ?? sprintf('user-%d@jedu.ir', $user->phone);
         $username = $user->civil_id;
-        if (!is_string($username) || $username === '') {
+        if (! is_string($username) || $username === '') {
             throw new ExternalProvisioningException('Moodle username source missing.');
         }
 
@@ -60,7 +60,7 @@ final class MoodleService
             'users[0][idnumber]'  => $user->civil_id,
         ]);
 
-        if (!is_array($created) || !isset($created[0]['id'])) {
+        if (! is_array($created) || ! isset($created[0]['id'])) {
             throw new ExternalProvisioningException('Moodle user creation failed.');
         }
 
@@ -73,9 +73,17 @@ final class MoodleService
             'courseid' => $moodleCourseId,
             'userid'   => $moodleUserId,
         ];
-        $response = $this->call('core_completion_get_course_completion_status', $params);
-        $completionStatus = data_get($response, 'completionstatus');
-        return data_get($response, 'completionstatus.completed', false);
+        try {
+            $response = $this->call('core_completion_get_course_completion_status', $params);
+
+            return data_get($response, 'completionstatus.completed', false);
+        } catch (ExternalProvisioningException $exception) {
+            // If completion isn't enabled or configured, it's technically not "completed"
+            if ($exception->getMoodleErrorCode() === 'nocriteriaset') {
+                return false;
+            }
+            throw $exception;
+        }
     }
 
     public function getActivityCompletionStatus(int $moodleCourseId, int $moodleUserId): array
@@ -84,18 +92,59 @@ final class MoodleService
             'courseid' => $moodleCourseId,
             'userid'   => $moodleUserId,
         ];
-        $response = $this->call('core_completion_get_activities_completion_status', $params);
-        $completionStatuses = data_get($response, 'statuses',[]);
+        try {
+            $response = $this->call('core_completion_get_activities_completion_status', $params);
+        } catch (ExternalProvisioningException $exception) {
+            // Return empty array if tracking isn't set up
+            if ($exception->getMoodleErrorCode() === 'nocriteriaset') {
+                return [];
+            }
+            throw $exception;
+        }
+        $completionStatuses         = data_get($response, 'statuses', []);
         $activityCompletionStatuses = [];
         foreach ($completionStatuses as $status) {
             $activityCompletionStatuses[$status['cmid']] = [
                 'hascompletion' => $status['hascompletion'],
-                'cmid' => $status['cmid'],
-                'state' => $status['state'],
-                'timecompleted' => $status['timecompleted'] ? Carbon::createFromTimestamp($status['timecompleted'])->toDateTimeString() : null,
+                'cmid'          => $status['cmid'],
+                'state'         => $status['state'],
+                'timecompleted' => $status['timecompleted'] ? Carbon::createFromTimestamp($status['timecompleted'])
+                    ->toDateTimeString() : null,
             ];
         }
+
         return $activityCompletionStatuses;
+    }
+
+    /**
+     * @return array{course_grade: string|null, activities: array<int, string>}
+     */
+    public function getGrades(int $moodleCourseId, int $moodleUserId): array
+    {
+        $params = [
+            'courseid' => $moodleCourseId,
+            'userid'   => $moodleUserId,
+        ];
+
+        $response   = $this->call('gradereport_user_get_grade_items', $params);
+        $userGrades = data_get($response, 'usergrades.0.gradeitems', []);
+
+        $result = [
+            'course_grade' => null,
+            'activities'   => [],
+        ];
+
+        foreach ($userGrades as $item) {
+            // Course Total Grade
+            if ($item['itemtype'] === 'course') {
+                $result['course_grade'] = $item['gradeformatted'];
+            } // Individual Activity Grade (Quiz, Assignment, etc.)
+            elseif ($item['itemtype'] === 'mod' && ! empty($item['cmid'])) {
+                $result['activities'][$item['cmid']] = $item['gradeformatted'];
+            }
+        }
+
+        return $result;
     }
 
     public function getCourse(int $moodleCourseId): LmsMoodleBlockData
@@ -105,19 +154,19 @@ final class MoodleService
         ];
 
         $response = $this->call('core_course_get_contents', $params);
-        if (!$response || !is_array($response)){
+        if (! $response || ! is_array($response)) {
             throw new ExternalProvisioningException('Moodle course not found.');
         }
-        $response = reset($response);
-        $modules = [];
-        $config = Setting::getValue(SettingKeyEnum::MOODLE);
+        $response      = reset($response);
+        $modules       = [];
+        $config        = Setting::getValue(SettingKeyEnum::MOODLE);
         $moodleBaseUrl = config('services.moodle.base_url', '');
         $moodleBaseUrl = mb_rtrim(data_get($config, 'base_url', $moodleBaseUrl), '/');
         foreach ($response['modules'] as $module) {
             if ($module['visible'] !== 1) {
                 continue;
             }
-            $modules[] = new  MoodleActivityData(
+            $modules[] = new MoodleActivityData(
                 url: $moodleBaseUrl.'/mod/'.$module['modname'].'/view.php?id='.$module['id'],
                 cid: $module['id'],
                 name: $module['name'],
@@ -125,8 +174,9 @@ final class MoodleService
                 state: 0
             );
         }
+
         return new LmsMoodleBlockData(
-            visible: !!$response['visible'],
+            visible: (bool) $response['visible'],
             name: $response['name'],
             course_url: $moodleBaseUrl.'/course/view.php?id='.$response['id'],
             completed: false,
@@ -167,7 +217,7 @@ final class MoodleService
         ], $authUserkeyToken);
 
         $loginUrl = data_get($result, 'loginurl');
-        if (!is_string($loginUrl) || $loginUrl === '') {
+        if (! is_string($loginUrl) || $loginUrl === '') {
             throw new ExternalProvisioningException('Moodle auth_userkey creation failed.');
         }
 
@@ -212,7 +262,7 @@ final class MoodleService
 
     private function assertConfigured(): void
     {
-        if (!$this->configured) {
+        if (! $this->configured) {
             throw new ExternalProvisioningException('Moodle service configuration is missing.');
         }
     }

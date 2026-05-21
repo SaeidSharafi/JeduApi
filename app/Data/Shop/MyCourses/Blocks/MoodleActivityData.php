@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Data\Shop\MyCourses\Blocks;
 
 use Spatie\LaravelData\Data;
 
-class MoodleActivityData extends Data
+final class MoodleActivityData extends Data
 {
     public function __construct(
         public string $url,
@@ -12,8 +14,7 @@ class MoodleActivityData extends Data
         public string $name,
         public string $type,
         public int $state,
+        public ?string $grade = null,
         public ?string $timecompleted = null,
-    )
-    {
-    }
+    ) {}
 }

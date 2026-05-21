@@ -13,6 +13,7 @@ final class LmsMoodleBlockData extends Data
         public string $name,
         public ?string $course_url,
         public bool $completed,
-        public array $activities,
+        public ?string $course_grade = null,
+        public array $activities = [],
     ) {}
 }
