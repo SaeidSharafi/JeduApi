@@ -10,6 +10,7 @@ beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
     Storage::fake('local');
+    Storage::disk('local')->makeDirectory('forms');
     $this->cover = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('cover.jpg'))
         ->toDisk('public')
         ->upload();

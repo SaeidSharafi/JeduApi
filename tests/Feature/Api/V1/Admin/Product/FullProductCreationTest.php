@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
@@ -14,8 +16,9 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Seminar;
 use App\Models\Teacher;
 use App\Models\Term;
-use App\Models\Vendor;
 use App\Models\User;
+use App\Models\Vendor;
+
 use function Pest\Laravel\assertDatabaseCount;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\getJson;
@@ -25,6 +28,7 @@ beforeEach(function (): void {
     Illuminate\Http\UploadedFile::fake();
     Storage::fake('public');
     Storage::fake('local');
+    Storage::disk('local')->makeDirectory('forms');
     config()->set('services.moodle.base_url', 'https://lms.example.com');
     $this->pdf = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()
         ->create('attachment.pdf', 100, 'application/pdf'))
@@ -52,9 +56,9 @@ test('product createion with all combinations',
             'name' => 'Category 1',
             'slug' => 'category-1',
         ]);
-        $category = Category::first();
+        $category        = Category::first();
         $ditialAssetData = DigitalAsset::factory()->make();
-        $response = postJson(route('api.v1.admin.digital-asset.store'),
+        $response        = postJson(route('api.v1.admin.digital-asset.store'),
             [
                 ...$ditialAssetData->toArray(),
                 'slug'         => 'digital-asset-1',
@@ -64,7 +68,7 @@ test('product createion with all combinations',
                 'attachments'  => [
                     'main' => $this->pdf->id,
                 ],
-                'media'        => [
+                'media' => [
                     'gallery'     => [$this->gallery->id],
                     'thumbnail'   => [],
                     'cover'       => [$this->cover->id],
@@ -78,12 +82,12 @@ test('product createion with all combinations',
             'full_name' => 'Digital Asset 1',
             'slug'      => 'digital-asset-1',
         ]);
-        $ditialAsset = DigitalAsset::first();
+        $ditialAsset     = DigitalAsset::first();
         $productabelData = createProdutable($productableType);
-        $route = match ($productableType) {
-            ProductableEnum::COURSE => 'api.v1.admin.course.store',
+        $route           = match ($productableType) {
+            ProductableEnum::COURSE        => 'api.v1.admin.course.store',
             ProductableEnum::DIGITAL_ASSET => 'api.v1.admin.digital-asset.store',
-            ProductableEnum::SEMINAR => 'api.v1.admin.seminar.store',
+            ProductableEnum::SEMINAR       => 'api.v1.admin.seminar.store',
         };
         $productabelData = [
             ...$productabelData,
@@ -104,9 +108,9 @@ test('product createion with all combinations',
         $response = $this->postJson(route($route), $productabelData);
         $response->assertCreated();
         $table = match ($productableType) {
-            ProductableEnum::COURSE => 'courses',
+            ProductableEnum::COURSE        => 'courses',
             ProductableEnum::DIGITAL_ASSET => 'digital_assets',
-            ProductableEnum::SEMINAR => 'seminars',
+            ProductableEnum::SEMINAR       => 'seminars',
         };
         assertDatabaseCount($table, $productableType === ProductableEnum::DIGITAL_ASSET ? 2 : 1);
         assertDatabaseHas($table, [
@@ -114,10 +118,10 @@ test('product createion with all combinations',
             'slug'      => $productabelData['slug'],
         ]);
 
-        $productable = \Illuminate\Support\Facades\DB::table($table)->first();
-        $vendor = Vendor::factory()->create();
-        $term = Term::factory()->create();
-        $response = postJson(route('api.v1.admin.product.store'), [
+        $productable = Illuminate\Support\Facades\DB::table($table)->first();
+        $vendor      = Vendor::factory()->create();
+        $term        = Term::factory()->create();
+        $response    = postJson(route('api.v1.admin.product.store'), [
             'force_create'     => false,
             'name'             => 'Product 1',
             'status'           => PublicationStatusEnum::PUBLISHED->value,
@@ -129,7 +133,7 @@ test('product createion with all combinations',
             'categories'       => [$category->id],
             'productable_type' => $productableType->value,
             'productable_id'   => $productable->id,
-            'details_json'     => []
+            'details_json'     => [],
         ]);
         $response->assertCreated();
 
@@ -140,7 +144,7 @@ test('product createion with all combinations',
             'productable_type' => $productableType->value,
             'productable_id'   => $productable->id,
         ]);
-        $product = Product::first();
+        $product  = Product::first();
         $response = postJson(route('api.v1.admin.delivery-option.store', $product->id), [
             'name'                    => 'Delivery Option 1',
             'is_prepayment_available' => false,
@@ -155,7 +159,7 @@ test('product createion with all combinations',
             'duration'                => 60,
             'teachers'                => [
                 Teacher::factory()->create()->id,
-            ]
+            ],
         ]);
         $response->assertCreated();
         assertDatabaseCount('product_delivery_options', 1);
@@ -178,7 +182,7 @@ test('product createion with all combinations',
             ],
         ];
         $customer = User::factory()->create();
-        $order = Order::factory()
+        $order    = Order::factory()
             ->withCalculatedTotals($items)
             ->create(['customer_id' => $customer->id])
             ->fresh();
@@ -205,7 +209,7 @@ test('product createion with all combinations',
                 'external_enrollment_id',
                 'notes',
                 'product',
-                'teachers'          => [
+                'teachers' => [
                     '*' => [
                         'uuid',
                         'first_name',
@@ -215,22 +219,22 @@ test('product createion with all combinations',
                         'rate',
                         'gender',
                         'social_links',
-                    ]
+                    ],
                 ],
-                'review_info'       => [
+                'review_info' => [
                     'has_reviewed',
                     'review',
                 ],
-                'certificate_info'  => [
+                'certificate_info' => [
                     'is_available',
-                    'certificate_url'
+                    'certificate_url',
                 ],
-                'survey_block'      => [
+                'survey_block' => [
                     'url',
                     'message',
                 ],
                 'delivery_block',
-            ]
+            ],
         ]);
 
         $responseData = $response->json('data');
@@ -245,7 +249,7 @@ function getDeliveryBlock(
     string $deliveryMethod,
     Enrollment $enrollment,
     DigitalAsset $digitalAsset
-): array {
+): ?array {
     $moodleBaseUrl = mb_rtrim(config('services.moodle.base_url', ''), '/');
 
     return match ($deliveryMethod) {
@@ -263,13 +267,10 @@ function getDeliveryBlock(
             'start_date'      => verta()->addDays(7)->formatDate(),
             'past_recordings' => [],
         ],
-        'lms_moodle' => [
-            'course_url' => $moodleBaseUrl.'/course/view.php?id='.$data['moodle_course_id'],
-            'quizzes'    => [],
-        ],
+        'lms_moodle'                => null,
         'video_platform_spotplayer' => [
-            'license_key' => "XYZ",
-            'player_url'  => "spotplayer.example.com/player/12345",
+            'license_key' => 'XYZ',
+            'player_url'  => 'spotplayer.example.com/player/12345',
         ],
         'in_person' => [
             'address' => $data['address'],
@@ -288,17 +289,18 @@ function getProvisioningData(
         'lms_moodle' => [
             'moodle' => [
                 'data' => [
-                    'moodle_course_id' => $data['moodle_course_id']
-                ]
+                    'moodle_course_id' => $data['moodle_course_id'],
+                    'moodle_user_id'   => 123,
+                ],
             ],
         ],
         'video_platform_spotplayer' => [
             'spotplayer' => [
                 'data' => [
-                    'license_key' => "XYZ",
-                    'player_url'  => "spotplayer.example.com/player/12345",
+                    'license_key' => 'XYZ',
+                    'player_url'  => 'spotplayer.example.com/player/12345',
                 ],
-            ]
+            ],
         ],
         default => [],
     };
@@ -309,21 +311,21 @@ function createProdutable(ProductableEnum $productableType): array
     return match ($productableType) {
         ProductableEnum::DIGITAL_ASSET => array_merge(DigitalAsset::factory()->make()->toArray(),
             ['published_at' => '1403-01-01 00:00:00']),
-        ProductableEnum::COURSE => Course::factory()->make()->toArray(),
+        ProductableEnum::COURSE  => Course::factory()->make()->toArray(),
         ProductableEnum::SEMINAR => Seminar::factory()->make()->toArray(),
     };
 }
 
 dataset('valid product', [
-    //[
+    // [
     //    ProductableEnum::DIGITAL_ASSET,
     //    'digital',
     //    'direct_download',
     //    [
     //        'max_downloads' => 5,
     //    ],
-    //],
-    //[
+    // ],
+    // [
     //    ProductableEnum::SEMINAR,
     //    'online_service',
     //    'live_session_bbb',
@@ -334,8 +336,8 @@ dataset('valid product', [
     //        'start_time'       => now()->addDays(7)->toDateTimeString(),
     //        'end_time'         => now()->addDays(7)->addHour()->toDateTimeString(),
     //    ],
-    //],
-    //[
+    // ],
+    // [
     //    ProductableEnum::SEMINAR,
     //    'online_service',
     //    'live_session_skyroom',
@@ -346,7 +348,7 @@ dataset('valid product', [
     //        'start_time'       => now()->addDays(7)->toDateTimeString(),
     //        'end_time'         => now()->addDays(7)->addHour()->toDateTimeString(),
     //    ],
-    //],
+    // ],
     [
         ProductableEnum::COURSE,
         'online_service',
@@ -355,7 +357,7 @@ dataset('valid product', [
             'moodle_course_id' => '12345',
         ],
     ],
-    //[
+    // [
     //    ProductableEnum::COURSE,
     //    'offline_service',
     //    'video_platform_spotplayer',
@@ -363,8 +365,8 @@ dataset('valid product', [
     //        'spot_id'  => '12345',
     //        'access_key' => 'access_key',
     //    ],
-    //],
-    //[
+    // ],
+    // [
     //    ProductableEnum::COURSE,
     //    'in_person_service',
     //    'in_person',
@@ -372,7 +374,7 @@ dataset('valid product', [
     //        'address' => '123 Main St, Anytown, USA',
     //        'map_url' => 'https://maps.google.com/?q=123+Main+St,+Anytown,+USA',
     //    ],
-    //],
+    // ],
 ]);
 
 dataset('valid product only requried', [

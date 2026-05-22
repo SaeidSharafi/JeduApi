@@ -7,8 +7,11 @@ namespace App\Http\Controllers\Api\Shop\MyCourses;
 use App\Actions\Shop\MyCourses\GetEnrollmentDetailAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\MyCourses\EnrollmentData;
+use App\Enums\Product\DeliveryMethodEnum;
 use App\Http\Controllers\Controller;
+use App\Jobs\Provisioning\SyncMoodleProgressJob;
 use App\Models\Enrollment;
+use Illuminate\Support\Facades\RateLimiter;
 
 /**
  * @group Shop - Student Dash - My Courses
@@ -71,6 +74,40 @@ final class EnrollmentController extends Controller
             'orderItem.vendor',
         ]);
 
+        $this->triggerMoodleSwr($enrollment);
+
         return response()->success($action->handle($enrollment));
+    }
+
+    private function triggerMoodleSwr(Enrollment $enrollment): void
+    {
+        $deliveryOption = $enrollment->productDeliveryOption;
+
+        if ($deliveryOption?->delivery_method !== DeliveryMethodEnum::LMS_MOODLE) {
+            return;
+        }
+
+        $rawCourseId = data_get($deliveryOption->details_json, 'moodle_course_id');
+        $rawUserId   = data_get($enrollment->provisioning_data, 'providers.moodle.data.moodle_user_id');
+
+        if (! is_numeric($rawCourseId) || ! is_numeric($rawUserId)) {
+            return;
+        }
+
+        $moodleCourseId = (int) $rawCourseId;
+        $moodleUserId   = (int) $rawUserId;
+
+        if ($moodleCourseId <= 0 || $moodleUserId <= 0) {
+            return;
+        }
+
+        $throttleKey = "throttle:moodle-sync:{$enrollment->id}:{$moodleCourseId}:{$moodleUserId}";
+
+        RateLimiter::attempt(
+            $throttleKey,
+            maxAttempts: 1,
+            callback: fn () => dispatch(new SyncMoodleProgressJob($enrollment->id, $moodleCourseId, $moodleUserId)),
+            decaySeconds: 300 // 5 minutes
+        );
     }
 }

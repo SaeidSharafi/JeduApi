@@ -13,6 +13,7 @@ if (! function_exists('createEnrollment')) {
         DeliveryMethodEnum $deliveryMethod,
         int $count = 1,
         ?ProductDeliveryOption $deliveryOption = null,
+        bool $provisioning = false,
     ): App\Models\Enrollment {
         $order = Order::factory()->create(
             [
@@ -32,7 +33,7 @@ if (! function_exists('createEnrollment')) {
             ]);
 
         $order_item = OrderItem::factory()
-            ->withEnrollment()
+            ->withEnrollment($provisioning)
             ->count($count)
             ->create([
                 'order_id'                   => $order->id,

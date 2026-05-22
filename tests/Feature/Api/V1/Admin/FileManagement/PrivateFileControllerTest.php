@@ -8,6 +8,7 @@ use Plank\Mediable\Media;
 uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
     Storage::fake('local');
+    Storage::disk('local')->makeDirectory('forms');
 });
 describe('Admin Private File', function (): void {
     it('can upload a private file and returns correct structure', function (): void {

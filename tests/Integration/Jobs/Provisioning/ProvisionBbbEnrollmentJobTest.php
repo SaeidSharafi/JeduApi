@@ -50,7 +50,7 @@ it('throws when bbb configuration is missing base_url or secret', function (): v
     ]), 'json', 'integrations');
 
     $service = $this->mock(BbbService::class);
-    $job = new ProvisionBbbEnrollmentJob(1);
+    $job     = new ProvisionBbbEnrollmentJob(1);
 
     expect(fn () => $job->handle($service))
         ->toThrow(RuntimeException::class, 'BBB configuration is missing base_url or secret.');
@@ -112,7 +112,7 @@ it('provisions bbb enrollment without creating meeting when auto create disabled
     expect(data_get($enrollment->provisioning_data, 'providers.bbb.status'))->toBe('success')
         ->and(data_get($enrollment->provisioning_data, 'providers.bbb.data.meeting_id'))->toBe('BBB-MEET-1')
         ->and(data_get($enrollment->provisioning_data, 'providers.bbb.data.attendee_join_url'))->toContain('https://bbb.test/join/BBB-MEET-1')
-        ->and($enrollment->enrollment_status)->not->toBe(EnrollmentStatusEnum::ACTIVE);
+        ->and($enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::ACTIVE);
 });
 
 it('creates meeting when auto create enabled', function (): void {

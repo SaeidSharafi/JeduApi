@@ -51,7 +51,7 @@ it('throws when spotplayer configuration is missing endpoint or api_key', functi
     ], 'json', 'integrations');
 
     $service = $this->mock(SpotPlayerService::class);
-    $job = new ProvisionSpotPlayerEnrollmentJob(1);
+    $job     = new ProvisionSpotPlayerEnrollmentJob(1);
 
     expect(fn () => $job->handle($service))
         ->toThrow(RuntimeException::class, 'SpotPlayer configuration is missing endpoint or api_key.');
@@ -112,7 +112,7 @@ it('provisions spotplayer enrollment and saves provisioning data', function (): 
         ->and(data_get($enrollment->provisioning_data, 'providers.spotplayer.data.spot_id'))->toBe('SPOT-COURSE-99')
         ->and(data_get($enrollment->provisioning_data, 'providers.spotplayer.data.license_key'))->toBe('LIC-99')
         ->and(data_get($enrollment->provisioning_data, 'providers.spotplayer.data.player_url'))->toBe('https://player.example/99')
-        ->and($enrollment->enrollment_status)->not->toBe(EnrollmentStatusEnum::ACTIVE);
+        ->and($enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::ACTIVE);
 });
 
 it('marks provisioning failure on failed callback', function (): void {

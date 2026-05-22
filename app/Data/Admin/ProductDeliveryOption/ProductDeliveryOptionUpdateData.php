@@ -6,7 +6,9 @@ namespace App\Data\Admin\ProductDeliveryOption;
 
 use App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction;
 use App\Data\Transformer\CarbonFromJalaliString;
+use App\Enums\Content\PublicationStatusEnum;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
@@ -22,15 +24,15 @@ final class ProductDeliveryOptionUpdateData extends Data
         #[MapInputName('details')]
         public array $details_json,
         public array $teachers,
-        public ?int $capacity = null,
-        public bool $is_prepayment_available = false,
-        public ?int $prepayment_amount = null,
-        public bool $is_featured = false,
-        public ?int $featured_price = null,
+        public ?int $capacity,
+        public bool $is_prepayment_available,
+        public ?int $prepayment_amount,
+        public bool $is_featured,
+        public ?int $featured_price,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]
-        public ?Carbon $featured_price_start_date = null,
+        public ?Carbon $featured_price_start_date,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]
-        public ?Carbon $featured_price_end_date = null,
+        public ?Carbon $featured_price_end_date,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
         public ?Carbon $registration_start_date,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
@@ -64,17 +66,17 @@ final class ProductDeliveryOptionUpdateData extends Data
             'featured_price_end_date'   => [
                 'nullable', 'jdate:Y-m-d H:i:s', 'jdate_after:'.request('featured_price_start_date').',Y-m-d H:i:s',
             ],
-            'registration_start_date'   => ['nullable', 'jdate:Y-m-d'],
-            'registration_end_date'     => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('registration_start_date').',Y-m-d'],
-            'available_from'            => ['nullable', 'jdate:Y-m-d'],
-            'available_to'              => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('available_from').',Y-m-d'],
-            'access_days'               => ['nullable', 'integer', 'min:1'],
+            'registration_start_date' => ['nullable', 'jdate:Y-m-d'],
+            'registration_end_date'   => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('registration_start_date').',Y-m-d'],
+            'available_from'          => ['nullable', 'jdate:Y-m-d'],
+            'available_to'            => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('available_from').',Y-m-d'],
+            'access_days'             => ['nullable', 'integer', 'min:1'],
             'teachers'                => ['required', 'array'],
             'teachers.*'              => ['required', 'integer', 'exists:teachers,id'],
             'details.ims_course_code' => ['nullable', 'string'],
-            'details.sart_date'         => ['nullable', 'jdate:Y-m-d',],
-            'details.schedule_days'     => ['nullable', 'array'],
-            'details.duration'          => ['sometimes', 'integer', 'min:1'],
+            'details.sart_date'       => ['nullable', 'jdate:Y-m-d'],
+            'details.schedule_days'   => ['nullable', 'array'],
+            'details.duration'        => ['sometimes', 'integer', 'min:1'],
         ];
 
         // Get the existing delivery option to determine its delivery method for details validation
@@ -242,7 +244,7 @@ final class ProductDeliveryOptionUpdateData extends Data
             'details.schedule_days' => [
                 'description' => 'Days of the week when the course sessions are held (e.g., ["sat", "sun"])',
                 'required'    => false,
-                'example'     => ["sat", "sun"],
+                'example'     => ['sat', 'sun'],
             ],
             'details.duration' => [
                 'description' => 'Duration of the course or session in hours',

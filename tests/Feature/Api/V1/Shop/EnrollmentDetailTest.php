@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Jobs\Provisioning\SyncMoodleProgressJob;
 use App\Models\Course;
 use App\Models\Enrollment;
 
@@ -45,14 +46,21 @@ it('show returns bbb delivery block for live_session_bbb enrollment', function (
 });
 
 it('show returns moodle delivery block for lms_moodle enrollment', function (): void {
-    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, provisioning: true);
 
     $response = $this->getJson(route('api.v1.shop.my-courses.show', ['enrollment' => $enrollment->uuid]));
 
     $response->assertOk();
     $block = $response->json('data.delivery_block');
-    expect($block)->toHaveKey('course_url')
-        ->and($block)->toHaveKey('quizzes');
+    expect($block)
+        ->toHaveKey('course_url')
+        ->and($block)->toHaveKey('visible')
+        ->and($block)->toHaveKey('name')
+        ->and($block)->toHaveKey('completed')
+        ->and($block)->toHaveKey('course_grade')
+        ->and($block)->toHaveKey('activities')
+        ->and($block['activities'])->toBeArray()
+    ;
 });
 
 it('show returns spotplayer delivery block for video_platform_spotplayer enrollment', function (): void {
@@ -73,9 +81,8 @@ it('show returns in_person delivery block for in_person enrollment', function ()
 
     $response->assertOk();
     $block = $response->json('data.delivery_block');
-    expect($block)->toHaveKey('location')
-        ->and($block)->toHaveKey('map_url')
-        ->and($block)->toHaveKey('schedule');
+    expect($block)->toHaveKey('address')
+        ->and($block)->toHaveKey('map_url');
 });
 
 it('show returns direct_download delivery block for direct_download enrollment', function (): void {
@@ -99,7 +106,8 @@ it('certificate_info is null when productable does not provide certificate', fun
     $response = $this->getJson(route('api.v1.shop.my-courses.show', ['enrollment' => $enrollment->uuid]));
 
     $response->assertOk();
-    expect($response->json('data.certificate_info'))->toBeNull();
+    expect($response->json('data.certificate_info.is_available'))->toBeFalse()
+        ->and($response->json('data.certificate_info.certificate_url'))->toBeNull();
 });
 
 it('certificate_info is_available false when survey_completed_at is null', function (): void {
@@ -124,6 +132,138 @@ it('certificate_info is_available true when survey_completed_at is set', functio
 
     $response->assertOk();
     expect($response->json('data.certificate_info.is_available'))->toBeTrue();
+});
+
+// ─── SWR dispatch ────────────────────────────────────────────────────────────
+
+it('show dispatches SyncMoodleProgressJob (rate-limited) for provisioned moodle enrollment', function (): void {
+    Illuminate\Support\Facades\Queue::fake();
+
+    $moodleCourseId = 999;
+    $moodleUserId   = 888;
+
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE->value,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'details_json'     => ['moodle_course_id' => $moodleCourseId],
+    ]);
+
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'provisioning_data' => [
+            'providers' => [
+                'moodle' => [
+                    'data' => [
+                        'moodle_user_id' => $moodleUserId,
+                        'course_info'    => [
+                            'visible'    => true,
+                            'name'       => 'Test Course',
+                            'course_url' => null,
+                            'completed'  => false,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.my-courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk();
+
+    Illuminate\Support\Facades\Queue::assertPushed(SyncMoodleProgressJob::class);
+});
+
+it('show does not dispatch SWR job for non-moodle enrollment', function (): void {
+    Illuminate\Support\Facades\Queue::fake();
+
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON);
+
+    $this->getJson(route('api.v1.shop.my-courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk();
+
+    Illuminate\Support\Facades\Queue::assertNotPushed(SyncMoodleProgressJob::class);
+});
+
+it('show does not dispatch SWR job for moodle enrollment without provisioning data', function (): void {
+    Illuminate\Support\Facades\Queue::fake();
+
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE->value,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'details_json'     => ['moodle_course_id' => 777],
+    ]);
+
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    // Has course_info so show doesn't 500, but moodle_user_id is absent so SWR is skipped
+    $enrollment->forceFill([
+        'provisioning_data' => [
+            'providers' => [
+                'moodle' => [
+                    'data' => [
+                        'course_info' => [
+                            'visible'    => true,
+                            'name'       => 'Test Course',
+                            'course_url' => null,
+                            'completed'  => false,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.my-courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk();
+
+    Illuminate\Support\Facades\Queue::assertNotPushed(SyncMoodleProgressJob::class);
+});
+
+it('show does not dispatch SyncMoodleProgressJob twice within decay window', function (): void {
+    Illuminate\Support\Facades\Queue::fake();
+
+    $moodleCourseId = 999;
+    $moodleUserId   = 888;
+
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::LMS_MOODLE->value,
+        'fulfillment_type' => DeliveryMethodEnum::LMS_MOODLE->getFulfillmentType(),
+        'details_json'     => ['moodle_course_id' => $moodleCourseId],
+    ]);
+
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'provisioning_data' => [
+            'providers' => [
+                'moodle' => [
+                    'data' => [
+                        'moodle_user_id' => $moodleUserId,
+                        'course_info'    => [
+                            'visible'    => true,
+                            'name'       => 'Test Course',
+                            'course_url' => null,
+                            'completed'  => false,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ])->saveQuietly();
+
+    $url = route('api.v1.shop.my-courses.show', ['enrollment' => $enrollment->uuid]);
+
+    $this->getJson($url)->assertOk();
+    $this->getJson($url)->assertOk();
+
+    Illuminate\Support\Facades\Queue::assertPushed(SyncMoodleProgressJob::class, 1);
+});
+
+// ─── Removed route ───────────────────────────────────────────────────────────
+
+it('moodle update patch route returns 404', function (): void {
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
+
+    $this->patchJson("/api/v1/shop/my-courses/{$enrollment->uuid}/moodle/update")
+        ->assertNotFound();
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

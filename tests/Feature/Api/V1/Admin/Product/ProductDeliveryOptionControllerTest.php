@@ -19,7 +19,7 @@ describe('User with permissions', function (): void {
                     'details_json'     => [
                         'lm',
                     ],
-                    'access_days'       => 12,
+                    'access_days' => 12,
                 ]
             )->toArray();
         $this->simpleData['details'] = [
@@ -269,7 +269,7 @@ describe('User with permissions', function (): void {
             'delivery_method'  => $deliveryOption->delivery_method,
             'price'            => $deliveryOption->price,
             'capacity'         => $deliveryOption->capacity,
-            'access_days'         => $deliveryOption->access_days,
+            'access_days'      => $deliveryOption->access_days,
         ]);
         $this->assertDatabaseHas('product_delivery_option_teacher', [
             'product_delivery_option_id' => $deliveryOption->id,
@@ -446,9 +446,7 @@ describe('validation', function (): void {
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(
                 [
-                    'details.location',
-                    'details.duration',
-                    'details.schedule',
+                    'details.address',
                 ]);
     });
 });

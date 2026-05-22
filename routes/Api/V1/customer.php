@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Api\Shop\MyCourses\UpdateMoodleProgressController;
 use App\Http\Controllers\Api\Shop\Sale\CancelOrderController;
 use App\Http\Controllers\Api\Shop\Sale\OrderController;
 use App\Http\Controllers\Api\Shop\Sale\RetryPaymentController;
@@ -21,13 +20,9 @@ Route::middleware(['auth:user'])
             Route::get('/{enrollment:uuid}',
                 [App\Http\Controllers\Api\Shop\MyCourses\EnrollmentController::class, 'show'])
                 ->name('show');
-            Route::patch('/{enrollment:uuid}/moodle/update', UpdateMoodleProgressController::class)
-                ->name('moodle.update');
-
             Route::post('/{enrollment:uuid}/moodle/sso',
                 App\Http\Controllers\Api\Shop\MyCourses\MoodleSsoController::class)
                 ->name('moodle.sso');
-
 
         });
 

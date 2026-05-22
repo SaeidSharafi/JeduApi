@@ -29,9 +29,7 @@ use Throwable;
 
 final readonly class GetEnrollmentDetailAction
 {
-    public function __construct(private BbbService $bbbService)
-    {
-    }
+    public function __construct(private BbbService $bbbService) {}
 
     public function handle(Enrollment $enrollment): EnrollmentDetailData
     {
@@ -42,13 +40,13 @@ final readonly class GetEnrollmentDetailAction
             'customer',
         ]);
 
-        $deliveryOption = $enrollment->productDeliveryOption;
-        $product = ProductDeliveryOptionCardData::fromModel($deliveryOption);
-        $teachers = $this->buildTeachers($enrollment);
-        $reviewInfo = $this->buildReviewInfo($enrollment);
+        $deliveryOption  = $enrollment->productDeliveryOption;
+        $product         = ProductDeliveryOptionCardData::fromModel($deliveryOption);
+        $teachers        = $this->buildTeachers($enrollment);
+        $reviewInfo      = $this->buildReviewInfo($enrollment);
         $certificateInfo = $this->buildCertificateInfo($enrollment);
-        $surveyBlock = $this->buildSurveyBlock($enrollment);
-        $deliveryBlock = $this->buildDeliveryBlock($enrollment);
+        $surveyBlock     = $this->buildSurveyBlock($enrollment);
+        $deliveryBlock   = $this->buildDeliveryBlock($enrollment);
 
         return new EnrollmentDetailData(
             uuid: $enrollment->uuid,
@@ -75,11 +73,11 @@ final readonly class GetEnrollmentDetailAction
     {
         $teachers = $enrollment->productDeliveryOption->teachers ?? collect();
 
-        $items = $teachers->map(fn($teacher): TeacherDetailData => new TeacherDetailData(
+        $items = $teachers->map(fn ($teacher): TeacherDetailData => new TeacherDetailData(
             uuid: $teacher->uuid,
             first_name: $teacher->first_name,
             last_name: $teacher->last_name,
-            bio: $teacher->bio ?? '',
+            bio: $teacher->bio               ?? '',
             avatar_url: $teacher->avatar_url ?? '',
             rate: (float) ($teacher->rate ?? 0),
             gender: $teacher->gender ?? GenderEnum::MALE,
@@ -119,7 +117,7 @@ final readonly class GetEnrollmentDetailAction
 
         $providesCertificate = (bool) ($productable->provides_certificate ?? false);
 
-        if (!$providesCertificate) {
+        if (! $providesCertificate) {
             return new EnrollmentCertificateInfoData(
                 is_available: false,
                 certificate_url: null, // TODO: generate certificate URL when certificate generation is implemented
@@ -148,30 +146,30 @@ final readonly class GetEnrollmentDetailAction
     ): LiveSessionBbbBlockData|LiveSessionSkyroomBlockData|LmsMoodleBlockData|VideoPlatformSpotplayerBlockData|InPersonBlockData|DigitalAssetBlockData|null {
         $deliveryOption = $enrollment->productDeliveryOption;
         $deliveryMethod = $deliveryOption->delivery_method;
-        $details = $deliveryOption->details_json ?? [];
-        $provisioning = $enrollment->provisioning_data['providers'] ?? [];
+        $details        = $deliveryOption->details_json               ?? [];
+        $provisioning   = $enrollment->provisioning_data['providers'] ?? [];
 
         return match ($deliveryMethod) {
-            DeliveryMethodEnum::LIVE_SESSION_BBB => $this->buildBbbBlock($enrollment, $details, $provisioning),
-            DeliveryMethodEnum::LIVE_SESSION_SKYROOM => $this->buildSkyroomBlock(),
-            DeliveryMethodEnum::LMS_MOODLE => $this->buildMoodleBlock($provisioning),
+            DeliveryMethodEnum::LIVE_SESSION_BBB          => $this->buildBbbBlock($enrollment, $details, $provisioning),
+            DeliveryMethodEnum::LIVE_SESSION_SKYROOM      => $this->buildSkyroomBlock(),
+            DeliveryMethodEnum::LMS_MOODLE                => $this->buildMoodleBlock($provisioning),
             DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER => $this->buildSpotplayerBlock($provisioning),
-            DeliveryMethodEnum::IN_PERSON => $this->buildInPersonBlock($details),
-            DeliveryMethodEnum::DIRECT_DOWNLOAD => $this->buildDirectDownloadBlock($enrollment),
+            DeliveryMethodEnum::IN_PERSON                 => $this->buildInPersonBlock($details),
+            DeliveryMethodEnum::DIRECT_DOWNLOAD           => $this->buildDirectDownloadBlock($enrollment),
         };
     }
 
     private function buildBbbBlock(Enrollment $enrollment, array $details, array $provisioning): LiveSessionBbbBlockData
     {
         $meetingId = data_get($details, 'meeting_id');
-        $joinUrl = null;
+        $joinUrl   = null;
 
         if (is_string($meetingId) && $meetingId !== '') {
             try {
                 $bbbConfig = \App\Models\Setting::getValue(\App\Enums\System\SettingKeyEnum::BIG_BLUE_BUTTON);
 
-                if (($bbbConfig['enabled'] ?? false) && !empty($bbbConfig['base_url'])
-                    && !empty($bbbConfig['secret'])
+                if (($bbbConfig['enabled'] ?? false) && ! empty($bbbConfig['base_url'])
+                                                     && ! empty($bbbConfig['secret'])
                 ) {
                     $this->bbbService->setConfig($bbbConfig);
 
@@ -179,7 +177,7 @@ final readonly class GetEnrollmentDetailAction
                     $fullName = mb_trim(($customer->first_name ?? '').' '.($customer->last_name ?? '')) ?: 'Student';
 
                     $attendeePassword = data_get($details, 'attendee_password');
-                    $joinUrl = $this->bbbService->buildJoinUrl($meetingId, $fullName, $attendeePassword);
+                    $joinUrl          = $this->bbbService->buildJoinUrl($meetingId, $fullName, $attendeePassword);
                 }
             } catch (Throwable) {
                 // BBB config missing or service unavailable; join_url stays null
@@ -206,19 +204,23 @@ final readonly class GetEnrollmentDetailAction
         );
     }
 
-    private function buildMoodleBlock(array $provisioning): LmsMoodleBlockData
+    private function buildMoodleBlock(array $provisioning): ?LmsMoodleBlockData
     {
         $moodleData = $provisioning['moodle']['data'] ?? [];
         $courseInfo = data_get($moodleData, 'course_info');
 
-        return  LmsMoodleBlockData::from($courseInfo);
+        if (! is_array($courseInfo) || empty($courseInfo)) {
+            return null;
+        }
+
+        return LmsMoodleBlockData::from($courseInfo);
     }
 
     private function buildSpotplayerBlock(array $provisioning): VideoPlatformSpotplayerBlockData
     {
-        $spotData = $provisioning['spotplayer']['data'] ?? [];
+        $spotData   = $provisioning['spotplayer']['data'] ?? [];
         $licenseKey = data_get($spotData, 'license_key');
-        $playerUrl = data_get($spotData, 'player_url');
+        $playerUrl  = data_get($spotData, 'player_url');
 
         return new VideoPlatformSpotplayerBlockData(
             license_key: is_string($licenseKey) ? $licenseKey : null,
@@ -229,7 +231,7 @@ final readonly class GetEnrollmentDetailAction
     private function buildInPersonBlock(array $details): InPersonBlockData
     {
         $location = data_get($details, 'address');
-        $mapUrl = data_get($details, 'map_url') ?? data_get($details, 'additional_info');
+        $mapUrl   = data_get($details, 'map_url') ?? data_get($details, 'additional_info');
 
         return new InPersonBlockData(
             address: is_string($location) ? $location : null,
@@ -253,7 +255,7 @@ final readonly class GetEnrollmentDetailAction
         // Deduplicate by id
         $assets = $assets->unique('id')->values();
 
-        $files = $assets->map(fn(DigitalAsset $asset): DigitalAssetFileData => new DigitalAssetFileData(
+        $files = $assets->map(fn (DigitalAsset $asset): DigitalAssetFileData => new DigitalAssetFileData(
             id: $asset->id,
             short_name: $asset->short_name,
             full_name: $asset->full_name,
