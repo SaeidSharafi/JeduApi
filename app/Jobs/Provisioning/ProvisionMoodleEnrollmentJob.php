@@ -7,8 +7,8 @@ namespace App\Jobs\Provisioning;
 use App\Enums\System\SettingKeyEnum;
 use App\Jobs\Provisioning\Concerns\HandlesProvisioningStatus;
 use App\Models\Enrollment;
-use App\Models\Setting;
 use App\Services\Integrations\MoodleService;
+use App\Services\SettingsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -29,9 +29,9 @@ final class ProvisionMoodleEnrollmentJob implements ShouldQueue
 
     public function __construct(public readonly int $enrollmentId) {}
 
-    public function handle(MoodleService $moodleService): void
+    public function handle(MoodleService $moodleService, SettingsService $settings): void
     {
-        $config = Setting::getValue(SettingKeyEnum::MOODLE);
+        $config = $settings->get(SettingKeyEnum::MOODLE);
 
         if (! ($config['enabled'] ?? false)) {
             return;
@@ -51,7 +51,6 @@ final class ProvisionMoodleEnrollmentJob implements ShouldQueue
         }
         $courseId = (int) $courseId;
 
-        $moodleService->setConfig($config);
         [$moodleUserId, $moodleUsername] = $moodleService->findOrCreateUser($enrollment->customer);
         $startDate                       = data_get($details, 'enrollment_start_date');
         $endDate                         = data_get($details, 'enrollment_end_date');
@@ -59,7 +58,8 @@ final class ProvisionMoodleEnrollmentJob implements ShouldQueue
         $startTime  = is_string($startDate) && strtotime($startDate) !== false ? strtotime($startDate) : null;
         $endTime    = is_string($endDate)   && strtotime($endDate)   !== false ? strtotime($endDate) : null;
         $courseInfo = $moodleService->getCourse($courseId);
-        $moodleService->enrollUser($moodleUserId, $courseId, $startTime, $endTime, data_get($config, 'default_role_id', config('services.moodle.default_role_id')));
+        $roleId     = (int) ($config['default_role_id'] ?? 5);
+        $moodleService->enrollUser($moodleUserId, $courseId, $startTime, $endTime, $roleId);
 
         $this->markProvisioningSuccess($enrollment, 'moodle', [
             'moodle_user_id'   => $moodleUserId,

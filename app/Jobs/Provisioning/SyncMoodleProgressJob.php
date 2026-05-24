@@ -7,8 +7,8 @@ namespace App\Jobs\Provisioning;
 use App\Data\Shop\MyCourses\Blocks\LmsMoodleBlockData;
 use App\Enums\System\SettingKeyEnum;
 use App\Models\Enrollment;
-use App\Models\Setting;
 use App\Services\Integrations\MoodleService;
+use App\Services\SettingsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -33,14 +33,14 @@ final class SyncMoodleProgressJob implements ShouldQueue
         private readonly int $moodleUserId
     ) {}
 
-    public function handle(MoodleService $moodleService): void
+    public function handle(MoodleService $moodleService, SettingsService $settings): void
     {
         $enrollment = Enrollment::find($this->enrollmentId);
         if (! $enrollment) {
             return;
         }
 
-        $config = Setting::getValue(SettingKeyEnum::MOODLE, config('services.moodle'));
+        $config = $settings->get(SettingKeyEnum::MOODLE, config('services.moodle'));
 
         if (! is_array($config) || ! isset($config['base_url'], $config['token']) || ! is_string($config['base_url']) || ! is_string($config['token'])) {
             return;
@@ -49,8 +49,6 @@ final class SyncMoodleProgressJob implements ShouldQueue
         if ($config['base_url'] === '' || $config['token'] === '') {
             return;
         }
-
-        $moodleService->setConfig($config);
 
         $courseInfo       = $moodleService->getCourse($this->moodleCourseId);
         $isCompleted      = $moodleService->isCourseCompleted($this->moodleCourseId, $this->moodleUserId);

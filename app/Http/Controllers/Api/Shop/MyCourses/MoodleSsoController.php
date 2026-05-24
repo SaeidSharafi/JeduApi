@@ -7,11 +7,10 @@ namespace App\Http\Controllers\Api\Shop\MyCourses;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\MyCourses\MoodleSsoUrlData;
 use App\Enums\Product\DeliveryMethodEnum;
-use App\Enums\System\SettingKeyEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
-use App\Models\Setting;
 use App\Services\Integrations\MoodleService;
+use App\Services\SettingsService;
 use Throwable;
 
 /**
@@ -36,9 +35,9 @@ final class MoodleSsoController extends Controller
      * @response 422 {"message": "Moodle is not configured."}
      * @response 422 {"message": "Moodle auth_userkey token is not configured."}
      */
-    public function __invoke(Enrollment $enrollment, MoodleService $moodleService): ApiResponseInterface
+    public function __invoke(Enrollment $enrollment, MoodleService $moodleService, SettingsService $settings): ApiResponseInterface
     {
-        $user = auth()->user();
+        $user     = auth()->user();
         $wantsurl = request()->get('wantsurl');
         if ($enrollment->customer_id !== $user->id) {
             return response()->notFound(__('messages.enrollments.not_found'));
@@ -56,21 +55,8 @@ final class MoodleSsoController extends Controller
             return response()->validationError(__('messages.enrollments.moodle_provisioning_incomplete'));
         }
 
-        $config = Setting::getValue(SettingKeyEnum::MOODLE, config('services.moodle'));
-
-        if (! is_array($config) || ! ($config['enabled'] ?? false) || empty($config['base_url']) || empty($config['token'])) {
-            return response()->validationError(__('messages.enrollments.moodle_not_configured'));
-        }
-
-        $authUserkeyToken = $config['auth_userkey_token'] ?? null;
-
-        if (! is_string($authUserkeyToken) || $authUserkeyToken === '') {
-            return response()->validationError(__('messages.enrollments.moodle_auth_userkey_missing'));
-        }
-
         try {
-            $moodleService->setConfig($config);
-            $url = $moodleService->createUserKey($moodleUsername, $authUserkeyToken);
+            $url = $moodleService->createUserKey($moodleUsername);
         } catch (Throwable $e) {
             report($e);
 

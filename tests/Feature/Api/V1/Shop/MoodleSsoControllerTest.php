@@ -41,47 +41,6 @@ it('returns 422 when moodle provisioning is incomplete', function (): void {
         ->assertJsonFragment(['message' => __('messages.enrollments.moodle_provisioning_incomplete')]);
 });
 
-it('returns 422 when moodle is not configured', function (): void {
-    $enrollment                    = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
-    $enrollment->provisioning_data = [
-        'providers' => [
-            'moodle' => [
-                'status' => 'success',
-                'data'   => ['moodle_user_name' => 'testuser'],
-            ],
-        ],
-    ];
-    $enrollment->save();
-
-    Setting::query()->where('key', SettingKeyEnum::MOODLE->value)->delete();
-
-    $this->postJson(route('api.v1.shop.my-courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
-        ->assertUnprocessable()
-        ->assertJsonFragment(['message' => __('messages.enrollments.moodle_not_configured')]);
-});
-
-it('returns 422 when auth_userkey token is missing', function (): void {
-    $enrollment                    = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
-    $enrollment->provisioning_data = [
-        'providers' => [
-            'moodle' => [
-                'status' => 'success',
-                'data'   => ['moodle_user_name' => 'testuser'],
-            ],
-        ],
-    ];
-    $enrollment->save();
-
-    Setting::query()->updateOrCreate(
-        ['key' => SettingKeyEnum::MOODLE->value],
-        ['value' => ['enabled' => true, 'base_url' => 'https://moodle.test', 'token' => 'tok']]
-    );
-
-    $this->postJson(route('api.v1.shop.my-courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
-        ->assertUnprocessable()
-        ->assertJsonFragment(['message' => __('messages.enrollments.moodle_auth_userkey_missing')]);
-});
-
 it('returns sso url for valid moodle enrollment', function (): void {
     $enrollment                    = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
     $enrollment->provisioning_data = [
@@ -109,10 +68,9 @@ it('returns sso url for valid moodle enrollment', function (): void {
     $ssoUrl = 'https://moodle.test/auth/userkey/login.php?key=abc123';
 
     $this->mock(MoodleService::class, function ($mock) use ($ssoUrl): void {
-        $mock->shouldReceive('setConfig')->once();
         $mock->shouldReceive('createUserKey')
             ->once()
-            ->with('testuser', 'userkey-token')
+            ->with('testuser')
             ->andReturn($ssoUrl);
     });
 

@@ -23,13 +23,14 @@ use App\Models\DigitalAsset;
 use App\Models\Enrollment;
 use App\Models\Review;
 use App\Services\Integrations\BbbService;
+use App\Services\SettingsService;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\DataCollection;
 use Throwable;
 
 final readonly class GetEnrollmentDetailAction
 {
-    public function __construct(private BbbService $bbbService) {}
+    public function __construct(private BbbService $bbbService, private SettingsService $settings) {}
 
     public function handle(Enrollment $enrollment): EnrollmentDetailData
     {
@@ -166,7 +167,7 @@ final readonly class GetEnrollmentDetailAction
 
         if (is_string($meetingId) && $meetingId !== '') {
             try {
-                $bbbConfig = \App\Models\Setting::getValue(\App\Enums\System\SettingKeyEnum::BIG_BLUE_BUTTON);
+                $bbbConfig = $this->settings->get(\App\Enums\System\SettingKeyEnum::BIG_BLUE_BUTTON);
 
                 if (($bbbConfig['enabled'] ?? false) && ! empty($bbbConfig['base_url'])
                                                      && ! empty($bbbConfig['secret'])

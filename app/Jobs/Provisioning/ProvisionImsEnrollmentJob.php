@@ -9,8 +9,8 @@ use App\Enums\System\SettingKeyEnum;
 use App\Jobs\Provisioning\Concerns\HandlesProvisioningStatus;
 use App\Models\Enrollment;
 use App\Models\Payment;
-use App\Models\Setting;
 use App\Services\Integrations\ImsService;
+use App\Services\SettingsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -35,9 +35,9 @@ final class ProvisionImsEnrollmentJob implements ShouldQueue
         public readonly ?int $paymentId = null,
     ) {}
 
-    public function handle(ImsService $service): void
+    public function handle(ImsService $service, SettingsService $settings): void
     {
-        $imsConfig = Setting::getValue(SettingKeyEnum::IMS);
+        $imsConfig = $settings->get(SettingKeyEnum::IMS);
 
         if (! ($imsConfig['enabled'] ?? false)) {
             return;

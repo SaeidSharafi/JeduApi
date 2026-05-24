@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
     Http::preventStrayRequests();
-    $this->imsService = new ImsService();
+    $this->imsService = app(ImsService::class);
     $this->imsService->setConfig([
         'base_url' => 'https://ims.test',
         'api_key'  => 'ims-key',
@@ -78,7 +78,7 @@ it('uses default ims error message when errors array empty', function (): void {
 });
 
 it('throws when service used before configuration', function (): void {
-    $service = new ImsService();
+    $service = app(ImsService::class);
 
     expect(fn () => $service->provisionEnrollment(['registrations' => []]))
         ->toThrow(ExternalProvisioningException::class, 'IMS service configuration is missing.');

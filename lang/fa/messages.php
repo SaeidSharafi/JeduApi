@@ -101,6 +101,7 @@ return [
         'payment_method_unavailable'          => 'روش پرداخت در حال حاضر در دسترس نیست.',
         'payment_method_error'                => 'خطایی در روش پرداخت رخ داده است. لطفاً دوباره تلاش کنید.',
         'payment_method_not_allowed'          => 'روش پرداخت انتخاب شده برای این سفارش مجاز نیست.',
+        'order_number'                        => 'سفارش :order_id',
         'payment'                             => [
             'delete_completed_payment_error'        => 'نمی‌توان پرداخت تکمیل شده را حذف کرد.',
             'update_completed_payment_status_error' => 'نمی‌توان وضعیت پرداخت تکمیل شده را به‌روزرسانی کرد.',

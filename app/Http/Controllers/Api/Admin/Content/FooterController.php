@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin\Content;
 
+use App\Actions\Admin\Settings\UpdateFooterSettingAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Settings\FooterCreateData;
 use App\Data\Admin\Settings\FooterData;
 use App\Enums\System\SettingKeyEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Services\SettingsService;
 use Illuminate\Support\Facades\Gate;
-use Plank\Mediable\Media;
 
 /**
  * @group Admin - Settings Management
@@ -25,13 +26,13 @@ final class FooterController extends Controller
      *
      * @responseFile 200 responses/settings/footer.json
      */
-    public function show(): ApiResponseInterface
+    public function show(SettingsService $settingsService): ApiResponseInterface
     {
         Gate::authorize('viewAny', Setting::class);
 
-        $footer = Setting::getValue(SettingKeyEnum::FOOTER, FooterData::getDefaults());
-
-        return response()->success(FooterData::from($footer));
+        return response()->success(
+            FooterData::from($settingsService->get(SettingKeyEnum::FOOTER, FooterData::getDefaults()))
+        );
     }
 
     /**
@@ -40,24 +41,12 @@ final class FooterController extends Controller
      * @responseFile 200 responses/settings/footer.json
      * @responseFile 422 responses/422.json
      */
-    public function update(FooterCreateData $data): ApiResponseInterface
+    public function update(FooterCreateData $data, UpdateFooterSettingAction $action): ApiResponseInterface
     {
         Gate::authorize('update', Setting::class);
 
-        $logo      = null;
-        $validated = $data->toArray();
-        if ($data->logo !== null) {
-            $logo = Media::find($data->logo);
-        }
-        $validated['logo_url'] = $logo?->getUrl() ?? null;
-        $validated['logo_alt'] = $logo?->alt      ?? null;
-
-        $setting = Setting::setValue(SettingKeyEnum::FOOTER, $validated, 'json', 'site');
-        $setting->syncMedia($logo, 'logo');
-        $footer = Setting::getValue(SettingKeyEnum::FOOTER);
-
         return response()->success(
-            FooterData::from($footer),
+            $action->handle($data),
             __('messages.updated', ['model' => __('messages.models.footer')])
         );
     }

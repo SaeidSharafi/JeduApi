@@ -8,7 +8,7 @@ use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\System\SettingKeyEnum;
 use App\Models\Enrollment;
-use App\Models\Setting;
+use App\Services\SettingsService;
 
 trait HandlesProvisioningStatus
 {
@@ -67,7 +67,7 @@ trait HandlesProvisioningStatus
      */
     private function requiredProviders(Enrollment $enrollment): array
     {
-        $isImsActive = data_get(Setting::getValue(SettingKeyEnum::IMS),'enabled',false);
+        $isImsActive    = data_get(app(SettingsService::class)->get(SettingKeyEnum::IMS), 'enabled', false);
         $providers      = $isImsActive ? ['ims'] : [];
         $deliveryMethod = $enrollment->productDeliveryOption?->delivery_method;
 

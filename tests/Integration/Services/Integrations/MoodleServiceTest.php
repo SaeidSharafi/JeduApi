@@ -2,18 +2,26 @@
 
 declare(strict_types=1);
 
+use App\Enums\System\SettingKeyEnum;
 use App\Exceptions\Integrations\ExternalProvisioningException;
 use App\Models\User;
 use App\Services\Integrations\MoodleService;
+use App\Services\SettingsService;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
     Http::preventStrayRequests();
-    $this->moodleService = new MoodleService();
-    $this->moodleService->setConfig([
-        'base_url' => 'https://moodle.test',
-        'token'    => 'moodle-token',
-    ]);
+
+    $settings = $this->mock(SettingsService::class);
+    $settings->shouldReceive('get')
+        ->with(SettingKeyEnum::MOODLE, Mockery::any())
+        ->andReturn([
+            'base_url'           => 'https://moodle.test',
+            'token'              => 'moodle-token',
+            'auth_userkey_token' => 'AUTH_USER_KEY',
+        ]);
+
+    $this->moodleService = app(MoodleService::class);
 });
 
 it('returns existing moodle user id when found by email', function (): void {
@@ -133,7 +141,7 @@ it('throws when response contains exception', function (): void {
     Http::fake([
         'https://moodle.test/*' => Http::response([
             'exception' => 'Exception',
-            'message' => 'Something went wrong',
+            'message'   => 'Something went wrong',
         ], 200),
     ]);
 
@@ -141,7 +149,12 @@ it('throws when response contains exception', function (): void {
         ->toThrow(ExternalProvisioningException::class, 'Something went wrong');
 });
 it('throws when service used before configuration', function (): void {
-    $service = new MoodleService();
+    $settings = $this->mock(SettingsService::class);
+    $settings->shouldReceive('get')
+        ->with(SettingKeyEnum::MOODLE, Mockery::any())
+        ->andReturn(['base_url' => '', 'token' => '']);
+
+    $service = app(MoodleService::class);
 
     expect(fn () => $service->enrollUser(1, 2))
         ->toThrow(ExternalProvisioningException::class, 'Moodle service configuration is missing.');

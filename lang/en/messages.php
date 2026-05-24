@@ -87,6 +87,7 @@ return [
         'payment_method_unavailable'          => 'The payment method is currently unavailable.',
         'payment_method_error'                => 'An error occurred with the payment method. Please try again.',
         'payment_method_not_allowed'          => 'The selected payment method is not allowed for this order.',
+        'order_number'                        => 'Order :order_id',
         'payment'                             => [
             'delete_completed_payment_error'        => 'Cannot delete a completed payment.',
             'update_completed_payment_status_error' => 'Cannot update a completed payment status.',

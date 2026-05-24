@@ -18,4 +18,20 @@ enum SettingKeyEnum: string
     case MOODLE           = 'moodle';
     case BIG_BLUE_BUTTON  = 'big_blue_button';
     case SPOT_PLAYER      = 'spot_player';
+
+    /**
+     * Secret sub-fields that must be encrypted at rest for each integration key.
+     *
+     * @return list<string>
+     */
+    public function secretFields(): array
+    {
+        return match ($this) {
+            self::IMS             => ['api_key'],
+            self::MOODLE          => ['token', 'auth_userkey_token'],
+            self::BIG_BLUE_BUTTON => ['secret', 'default_attendee_password', 'default_moderator_password'],
+            self::SPOT_PLAYER     => ['api_key'],
+            default               => [],
+        };
+    }
 }

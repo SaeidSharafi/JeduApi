@@ -27,6 +27,77 @@ final class SettingFactory extends Factory
     }
 
     /**
+     * Create an IMS integration setting with a plaintext api_key.
+     */
+    public function ims(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'key'   => 'ims',
+            'value' => [
+                'enabled'  => false,
+                'base_url' => 'https://ims.example.com',
+                'api_key'  => 'super-secret-ims-key',
+            ],
+            'type'  => 'json',
+            'group' => 'integrations',
+        ]);
+    }
+
+    /**
+     * Create a Moodle integration setting with plaintext secrets.
+     */
+    public function moodle(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'key'   => 'moodle',
+            'value' => [
+                'enabled'            => false,
+                'base_url'           => 'https://moodle.example.com',
+                'token'              => 'moodle-token-secret',
+                'auth_userkey_token' => 'moodle-userkey-secret',
+            ],
+            'type'  => 'json',
+            'group' => 'integrations',
+        ]);
+    }
+
+    /**
+     * Create a BigBlueButton integration setting with plaintext secrets.
+     */
+    public function bigBlueButton(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'key'   => 'big_blue_button',
+            'value' => [
+                'enabled'                    => false,
+                'base_url'                   => 'https://bbb.example.com',
+                'secret'                     => 'bbb-shared-secret',
+                'default_attendee_password'  => 'attendee-pass',
+                'default_moderator_password' => 'moderator-pass',
+            ],
+            'type'  => 'json',
+            'group' => 'integrations',
+        ]);
+    }
+
+    /**
+     * Create a SpotPlayer integration setting with a plaintext api_key.
+     */
+    public function spotPlayer(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'key'   => 'spot_player',
+            'value' => [
+                'endpoint' => 'https://panel.spotplayer.ir/license/edit/',
+                'api_key'  => 'spotplayer-api-key-secret',
+                'sandbox'  => false,
+            ],
+            'type'  => 'json',
+            'group' => 'integrations',
+        ]);
+    }
+
+    /**
      * Create a contact_info setting.
      */
     public function contactInfo(): static

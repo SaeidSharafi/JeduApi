@@ -4,45 +4,38 @@ declare(strict_types=1);
 
 namespace App\Services\Integrations;
 
+use AllowDynamicProperties;
+use App\Enums\System\SettingKeyEnum;
 use App\Exceptions\Integrations\ExternalProvisioningException;
 use App\Models\User;
+use App\Services\SettingsService;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 
+#[AllowDynamicProperties]
 final class SpotPlayerService
 {
-    private string $endpoint;
-
     private string $apiKey;
+
+    private string $endpoint;
 
     private bool $sandbox;
 
-    private bool $configured;
-
-    public function __construct(string $endpoint = '', string $apiKey = '', bool $sandbox = false)
+    public function __construct(private readonly SettingsService $settings)
     {
-        $this->endpoint   = $endpoint;
-        $this->apiKey     = $apiKey;
-        $this->sandbox    = $sandbox;
-        $this->configured = $endpoint !== '' && $apiKey !== '';
-    }
-
-    public function setConfig(array $config): void
-    {
-        $this->endpoint   = $config['endpoint'];
-        $this->apiKey     = $config['api_key'];
-        $this->sandbox    = (bool) ($config['sandbox'] ?? false);
-        $this->configured = true;
+        $this->resolveConfig();
     }
 
     public function issueLicense(string $spotId, User $user): array
     {
-        $this->assertConfigured();
+        if ($this->endpoint === '' || $this->apiKey === '') {
+            throw new ExternalProvisioningException('SpotPlayer service configuration is missing.');
+        }
 
-        $response = $this->request()->post('', [
+        $response = $this->request($this->endpoint, $this->apiKey)->post('', [
             'spot_id'       => $spotId,
             'mobile'        => $user->phone,
-            'name'          => trim(($user->first_name ?? '').' '.($user->last_name ?? '')),
+            'name'          => mb_trim(($user->first_name ?? '').' '.($user->last_name ?? '')),
             'email'         => $user->email,
             'national_code' => $user->civil_id,
             'sandbox'       => $this->sandbox,
@@ -69,20 +62,22 @@ final class SpotPlayerService
         ];
     }
 
-    private function request(): PendingRequest
+    private function request(string $endpoint, string $apiKey): PendingRequest
     {
-        return Http::baseUrl($this->endpoint)
+        return Http::baseUrl($endpoint)
             ->timeout((int) config('services.spotplayer.timeout', 15))
             ->acceptJson()
             ->withHeaders([
-                'x-api-key' => $this->apiKey,
+                'x-api-key' => $apiKey,
             ]);
     }
 
-    private function assertConfigured(): void
+    private function resolveConfig(): void
     {
-        if (! $this->configured) {
-            throw new ExternalProvisioningException('SpotPlayer service configuration is missing.');
-        }
+        $config         = $this->settings->get(SettingKeyEnum::SPOT_PLAYER, config('services.spotplayer'));
+        $this->endpoint = (string) data_get($config, 'endpoint', '');
+        $this->apiKey   = (string) data_get($config, 'api_key', '');
+        $this->sandbox  = (bool) data_get($config, 'sandbox', false);
+
     }
 }

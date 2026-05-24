@@ -9,6 +9,7 @@ use App\Data\Admin\Settings\ContactInfoData;
 use App\Enums\System\SettingKeyEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Services\SettingsService;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -23,13 +24,13 @@ final class ContactInfoController extends Controller
      *
      * @responseFile 200 responses/settings/contact-info.json
      */
-    public function show(): ApiResponseInterface
+    public function show(SettingsService $settingsService): ApiResponseInterface
     {
         Gate::authorize('viewAny', Setting::class);
 
-        $contactInfo = Setting::getValue(SettingKeyEnum::CONTACT_INFO, ContactInfoData::getDefaults());
-
-        return response()->success(ContactInfoData::from($contactInfo));
+        return response()->success(
+            ContactInfoData::from($settingsService->get(SettingKeyEnum::CONTACT_INFO, ContactInfoData::getDefaults()))
+        );
     }
 
     /**
@@ -38,14 +39,14 @@ final class ContactInfoController extends Controller
      * @responseFile 200 responses/settings/contact-info.json
      * @responseFile 422 responses/422.json
      */
-    public function update(ContactInfoData $data): ApiResponseInterface
+    public function update(ContactInfoData $data, SettingsService $settingsService): ApiResponseInterface
     {
         Gate::authorize('update', Setting::class);
 
-        Setting::setValue(SettingKeyEnum::CONTACT_INFO, $data->toArray(), 'json', 'cms');
-        $contactInfo = Setting::getValue(SettingKeyEnum::CONTACT_INFO);
+        $settingsService->set(SettingKeyEnum::CONTACT_INFO, $data->toArray(), 'json', 'cms');
+
         return response()->success(
-            ContactInfoData::from($contactInfo),
+            ContactInfoData::from($settingsService->get(SettingKeyEnum::CONTACT_INFO, ContactInfoData::getDefaults())),
             __('messages.updated', ['model' => __('messages.models.contact_info')])
         );
     }
