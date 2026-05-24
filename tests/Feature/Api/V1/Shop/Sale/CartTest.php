@@ -8,14 +8,13 @@ use App\Models\DiscountPromotionRule;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
 use Illuminate\Support\Str;
-
 use Tests\Support\Traits\AuthTestTrait;
+
 use function Pest\Laravel\assertDatabaseCount;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
-use function Pest\Laravel\putJson;
 
 uses(AuthTestTrait::class);
 beforeEach(function (): void {

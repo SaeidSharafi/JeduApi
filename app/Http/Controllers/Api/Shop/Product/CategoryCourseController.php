@@ -23,6 +23,7 @@ final class CategoryCourseController extends Controller
      * Retrieve a paginated list of courses associated with a specific product category.
      *
      * @urlParam category_slug string required The slug of the category. Example: programming
+     *
      * @queryParam per_page int Optional number of items per page. Default is 15. Example: 15
      * @queryParam page int Optional page number for pagination. Default is 1. Example: 1
      *

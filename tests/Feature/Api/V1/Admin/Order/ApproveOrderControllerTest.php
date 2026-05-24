@@ -32,7 +32,7 @@ it('approves an order with full payment successfully', function (): void {
         'order_id' => $order->id,
         'price'    => 1000000,
         'total'    => 1000000,
-        'status'   => \App\Enums\Order\OrderItemStatusEnum::PENDING,
+        'status'   => App\Enums\Order\OrderItemStatusEnum::PENDING,
     ]);
 
     Payment::factory()->create([
@@ -48,69 +48,67 @@ it('approves an order with full payment successfully', function (): void {
     $order->refresh();
     expect($order->status)->toBe(OrderStatusEnum::COMPLETED);
 });
-    it('fails to approve order with insufficient payment', function (): void {
-        $this->authorized_user([PermissionEnum::ORDER_APPROVE]);
+it('fails to approve order with insufficient payment', function (): void {
+    $this->authorized_user([PermissionEnum::ORDER_APPROVE]);
 
-        $order = Order::factory()->create([
-            'customer_id'            => $this->customer->id,
-            'status'                 => OrderStatusEnum::PENDING,
-            'grand_total'            => 1000000,
-            'full_value_grand_total' => 1000000,
-        ]);
+    $order = Order::factory()->create([
+        'customer_id'            => $this->customer->id,
+        'status'                 => OrderStatusEnum::PENDING,
+        'grand_total'            => 1000000,
+        'full_value_grand_total' => 1000000,
+    ]);
 
-        OrderItem::factory()->create([
-            'order_id' => $order->id,
-            'price'    => 1000000,
-            'total'    => 1000000,
-            'status'   => \App\Enums\Order\OrderItemStatusEnum::PENDING,
-        ]);
+    OrderItem::factory()->create([
+        'order_id' => $order->id,
+        'price'    => 1000000,
+        'total'    => 1000000,
+        'status'   => App\Enums\Order\OrderItemStatusEnum::PENDING,
+    ]);
 
-        Payment::factory()->create([
-            'order_id'    => $order->id,
-            'customer_id' => $this->customer->id,
-            'amount'      => 500000,
-            'status'      => PaymentStatusEnum::COMPLETED,
-        ]);
+    Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $this->customer->id,
+        'amount'      => 500000,
+        'status'      => PaymentStatusEnum::COMPLETED,
+    ]);
 
-        $response = postJson("/api/v1/admin/order/{$order->id}/approve");
+    $response = postJson("/api/v1/admin/order/{$order->id}/approve");
 
-        $response->assertStatus(422);
-    });
+    $response->assertStatus(422);
+});
 
-    it('approves an order with pre_payment items when prepayment amount is paid', function (): void {
-        $this->authorized_user([PermissionEnum::ORDER_APPROVE]);
+it('approves an order with pre_payment items when prepayment amount is paid', function (): void {
+    $this->authorized_user([PermissionEnum::ORDER_APPROVE]);
 
-        $order = Order::factory()->create([
-            'customer_id'            => $this->customer->id,
-            'status'                 => OrderStatusEnum::PENDING,
-            'grand_total'            => 1000000,
-            'full_value_grand_total' => 1000000,
-        ]);
+    $order = Order::factory()->create([
+        'customer_id'            => $this->customer->id,
+        'status'                 => OrderStatusEnum::PENDING,
+        'grand_total'            => 1000000,
+        'full_value_grand_total' => 1000000,
+    ]);
 
-        OrderItem::factory()->create([
-            'order_id'          => $order->id,
-            'price'             => 1000000,
-            'total'             => 1000000,
-            'payment_type'      => 'pre_payment',
-            'prepayment_amount' => 300000,
-            'status'            => \App\Enums\Order\OrderItemStatusEnum::PENDING,
-        ]);
+    OrderItem::factory()->create([
+        'order_id'          => $order->id,
+        'price'             => 1000000,
+        'total'             => 1000000,
+        'payment_type'      => 'pre_payment',
+        'prepayment_amount' => 300000,
+        'status'            => App\Enums\Order\OrderItemStatusEnum::PENDING,
+    ]);
 
-        Payment::factory()->create([
-            'order_id'    => $order->id,
-            'customer_id' => $this->customer->id,
-            'amount'      => 300000,
-            'status'      => PaymentStatusEnum::COMPLETED,
-        ]);
+    Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $this->customer->id,
+        'amount'      => 300000,
+        'status'      => PaymentStatusEnum::COMPLETED,
+    ]);
 
-        $response = postJson("/api/v1/admin/order/{$order->id}/approve");
+    $response = postJson("/api/v1/admin/order/{$order->id}/approve");
 
-        $response->assertOk();
-        $order->refresh();
-        expect($order->status)->toBe(OrderStatusEnum::COMPLETED);
-    });
-
-
+    $response->assertOk();
+    $order->refresh();
+    expect($order->status)->toBe(OrderStatusEnum::COMPLETED);
+});
 
 it('fails to approve an already completed order', function (): void {
     $this->authorized_user([PermissionEnum::ORDER_APPROVE]);

@@ -28,6 +28,7 @@ final class CollaborationPageController extends Controller
     public function __invoke(SettingsService $service): ApiResponseInterface
     {
         $contactPage = $service->get(SettingKeyEnum::COLLABORATION, AdminCollaborationPageData::getDefaults());
+
         return response()->success(CollaborationPageData::fromSetting($contactPage));
     }
 }

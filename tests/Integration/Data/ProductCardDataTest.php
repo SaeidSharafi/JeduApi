@@ -12,24 +12,25 @@ use App\Models\Product;
 describe('ProductCardData', function () {
     it('can be created from a Product model', function () {
         // Mock a Product model (you can use a factory or create a mock manually)
-        $product = new Product();
-        $product->slug = 'example-product';
-        $product->name = 'Example Product';
+        $product                    = new Product();
+        $product->slug              = 'example-product';
+        $product->name              = 'Example Product';
         $product->short_description = 'Example short description';
-        $product->is_featured = true;
-        $product->productable_type = ProductableEnum::COURSE->value;
-        $product->price_data_cache = [
+        $product->is_featured       = true;
+        $product->productable_type  = ProductableEnum::COURSE->value;
+        $product->price_data_cache  = [
             'min_price'           => 100,
             'min_original_price'  => 150,
             'range'               => [100, 200],
             'has_discount'        => true,
             'discount_percentage' => 33.33,
         ];
-        $product->reviews_count = 10;
+        $product->reviews_count  = 10;
         $product->average_rating = 4.5;
 
         // Mock the productable relationship
-        $course = new class {
+        $course = new class
+        {
             public $thumbnail_url = 'http://example.com/thumbnail.jpg';
 
             public $default_teacher_info = ['John Doe'];
@@ -38,28 +39,28 @@ describe('ProductCardData', function () {
 
         $teacherData
             = [
-            'id'           => 1,
-            'first_name'   => 'John',
-            'last_name'    => 'Doe',
-            'bio'          => 'Experienced teacher in various subjects.',
-            'gender'       => 'male',
-            'uuid'         => 'uuid',
-            'avatar_url'   => 'http://example.com/avatar.jpg',
-            'rate'         => 4.5,
-            'dummy_column' => 'dummy_column',
-        ];
+                'id'           => 1,
+                'first_name'   => 'John',
+                'last_name'    => 'Doe',
+                'bio'          => 'Experienced teacher in various subjects.',
+                'gender'       => 'male',
+                'uuid'         => 'uuid',
+                'avatar_url'   => 'http://example.com/avatar.jpg',
+                'rate'         => 4.5,
+                'dummy_column' => 'dummy_column',
+            ];
 
-        $deliveryOption = new \App\Models\ProductDeliveryOption([
-            'available_from' => '2023-01-05',
-            'available_to' => '2023-01-10',
+        $deliveryOption = new App\Models\ProductDeliveryOption([
+            'available_from'          => '2023-01-05',
+            'available_to'            => '2023-01-10',
             'registration_start_date' => '2023-01-01',
-            'registration_end_date' => '2023-01-05',
+            'registration_end_date'   => '2023-01-05',
         ]);
         $deliveryOption->setRelation('teachers', collect([$teacherData]));
         $product->setRelation('productDeliveryOptions', collect([$deliveryOption]));
 
         // Create ProductCardData from the model
-        $priceData = ProductPriceData::from($product->price_data_cache);
+        $priceData       = ProductPriceData::from($product->price_data_cache);
         $productCardData = ProductCardData::fromModel($product, $priceData);
 
         // Assertions
@@ -95,10 +96,10 @@ describe('ProductCardData', function () {
 
     it('fallback to default teacher if no teachers from delivery options', function () {
         // Mock a Product model (you can use a factory or create a mock manually)
-        $product = new Product();
-        $product->slug = 'example-product';
-        $product->name = 'Example Product';
-        $product->is_featured = true;
+        $product                   = new Product();
+        $product->slug             = 'example-product';
+        $product->name             = 'Example Product';
+        $product->is_featured      = true;
         $product->productable_type = ProductableEnum::COURSE->value;
         $product->price_data_cache = [
             'min_price'           => 100,
@@ -107,11 +108,12 @@ describe('ProductCardData', function () {
             'has_discount'        => true,
             'discount_percentage' => 33.33,
         ];
-        $product->reviews_count = 10;
+        $product->reviews_count  = 10;
         $product->average_rating = 4.5;
 
         // Mock the productable relationship
-        $course = new class {
+        $course = new class
+        {
             public $thumbnail_url = 'http://example.com/thumbnail.jpg';
 
             public $default_teacher_info = 'John Doe';
@@ -119,12 +121,12 @@ describe('ProductCardData', function () {
         $product->setRelation('productable', $course);
 
         // Mock the productDeliveryOptions relationship with no teachers
-        $deliveryOption =new \App\Models\ProductDeliveryOption();
+        $deliveryOption = new App\Models\ProductDeliveryOption();
 
         $product->setRelation('productDeliveryOptions', collect([$deliveryOption]));
 
         // Create ProductCardData from the model
-        $priceData = ProductPriceData::from($product->price_data_cache);
+        $priceData       = ProductPriceData::from($product->price_data_cache);
         $productCardData = ProductCardData::fromModel($product, $priceData);
 
         // Assertions
@@ -133,10 +135,10 @@ describe('ProductCardData', function () {
 
     it('get  earliest available_from and latest available_to dates (same for registration dates)', function () {
         // Mock a Product model (you can use a factory or create a mock manually)
-        $product = new Product();
-        $product->slug = 'example-product';
-        $product->name = 'Example Product';
-        $product->is_featured = true;
+        $product                   = new Product();
+        $product->slug             = 'example-product';
+        $product->name             = 'Example Product';
+        $product->is_featured      = true;
         $product->productable_type = ProductableEnum::COURSE->value;
         $product->price_data_cache = [
             'min_price'           => 100,
@@ -145,36 +147,37 @@ describe('ProductCardData', function () {
             'has_discount'        => true,
             'discount_percentage' => 33.33,
         ];
-        $product->reviews_count = 10;
+        $product->reviews_count  = 10;
         $product->average_rating = 4.5;
 
-        $course = new class {
+        $course = new class
+        {
             public $thumbnail_url = 'http://example.com/thumbnail.jpg';
 
             public $default_teacher_info = 'John Doe';
         };
         $product->setRelation('productable', $course);
 
-        $deliveryOption1 =new \App\Models\ProductDeliveryOption(
+        $deliveryOption1 = new App\Models\ProductDeliveryOption(
             [
-                'available_from' => '2023-01-05',
-                'available_to' => '2023-01-10',
+                'available_from'          => '2023-01-05',
+                'available_to'            => '2023-01-10',
                 'registration_start_date' => '2023-01-01',
-                'registration_end_date' => '2023-01-05',
+                'registration_end_date'   => '2023-01-05',
             ]
         );
 
-        $deliveryOption2 =new \App\Models\ProductDeliveryOption(
+        $deliveryOption2 = new App\Models\ProductDeliveryOption(
             [
-                'available_from' => '2023-01-12',
-                'available_to' => '2023-01-16',
+                'available_from'          => '2023-01-12',
+                'available_to'            => '2023-01-16',
                 'registration_start_date' => '2023-01-07',
-                'registration_end_date' => '2023-01-11',
+                'registration_end_date'   => '2023-01-11',
             ]
         );
         $product->setRelation('productDeliveryOptions', collect([$deliveryOption1, $deliveryOption2]));
 
-        $priceData = ProductPriceData::from($product->price_data_cache);
+        $priceData       = ProductPriceData::from($product->price_data_cache);
         $productCardData = ProductCardData::fromModel($product, $priceData);
 
         expect($productCardData->available_from)->toEqual(new Verta('2023-01-05'))
@@ -183,27 +186,28 @@ describe('ProductCardData', function () {
             ->and($productCardData->registration_end_date)->toEqual(new Verta('2023-01-11'));
     });
     it('get registrationStatus correctly [FINISHED]', function () {
-        $product = new Product();
-        $product->slug = 'example-product';
-        $product->name = 'Example Product';
-        $product->is_featured = true;
+        $product                   = new Product();
+        $product->slug             = 'example-product';
+        $product->name             = 'Example Product';
+        $product->is_featured      = true;
         $product->productable_type = ProductableEnum::COURSE->value;
-        $product->reviews_count = 10;
-        $product->average_rating = 4.5;
+        $product->reviews_count    = 10;
+        $product->average_rating   = 4.5;
 
-        $course = new class {
+        $course = new class
+        {
             public $thumbnail_url = 'http://example.com/thumbnail.jpg';
 
             public $default_teacher_info = 'John Doe';
         };
         $product->setRelation('productable', $course);
 
-        $deliveryOption1 =new \App\Models\ProductDeliveryOption(
+        $deliveryOption1 = new App\Models\ProductDeliveryOption(
             [
-                'available_from' => '2023-01-05',
-                'available_to' => '2023-01-10',
+                'available_from'          => '2023-01-05',
+                'available_to'            => '2023-01-10',
                 'registration_start_date' => now()->format('Y-m-d'),
-                'registration_end_date' => now()->addDays(3)->format('Y-m-d'),
+                'registration_end_date'   => now()->addDays(3)->format('Y-m-d'),
             ]
         );
 
@@ -214,25 +218,26 @@ describe('ProductCardData', function () {
     });
 
     it('get registrationStatus correctly [IN PROGRESS]', function () {
-        $product = new Product();
-        $product->slug = 'example-product';
-        $product->name = 'Example Product';
-        $product->is_featured = true;
+        $product                   = new Product();
+        $product->slug             = 'example-product';
+        $product->name             = 'Example Product';
+        $product->is_featured      = true;
         $product->productable_type = ProductableEnum::COURSE->value;
-        $product->reviews_count = 10;
-        $product->average_rating = 4.5;
+        $product->reviews_count    = 10;
+        $product->average_rating   = 4.5;
 
-        $course = new class {
+        $course = new class
+        {
             public $thumbnail_url = 'http://example.com/thumbnail.jpg';
 
             public $default_teacher_info = 'John Doe';
         };
         $product->setRelation('productable', $course);
 
-        $deliveryOption1 =new \App\Models\ProductDeliveryOption(
+        $deliveryOption1 = new App\Models\ProductDeliveryOption(
             [
                 'registration_start_date' => null,
-                'registration_end_date' => null,
+                'registration_end_date'   => null,
             ]
         );
         $product->setRelation('productDeliveryOptions', collect([$deliveryOption1]));
@@ -240,10 +245,10 @@ describe('ProductCardData', function () {
         $productCardData = ProductCardData::fromModel($product, ProductPriceData::make([]));
         expect($productCardData->registration_status)->toEqual(ProductRegistrationStatusEnum::IN_PROGRESS);
 
-        $deliveryOption1 =new \App\Models\ProductDeliveryOption(
+        $deliveryOption1 = new App\Models\ProductDeliveryOption(
             [
                 'registration_start_date' => null,
-                'registration_end_date' => now()->addDays(3)->format('Y-m-d'),
+                'registration_end_date'   => now()->addDays(3)->format('Y-m-d'),
             ]
         );
         $product->setRelation('productDeliveryOptions', collect([$deliveryOption1]));
@@ -251,10 +256,10 @@ describe('ProductCardData', function () {
         $productCardData = ProductCardData::fromModel($product, ProductPriceData::make([]));
         expect($productCardData->registration_status)->toEqual(ProductRegistrationStatusEnum::IN_PROGRESS);
 
-        $deliveryOption1 =new \App\Models\ProductDeliveryOption(
+        $deliveryOption1 = new App\Models\ProductDeliveryOption(
             [
                 'registration_start_date' => now()->startOfDay()->format('Y-m-d'),
-                'registration_end_date' => null,
+                'registration_end_date'   => null,
             ]
         );
         $product->setRelation('productDeliveryOptions', collect([$deliveryOption1]));
@@ -262,10 +267,10 @@ describe('ProductCardData', function () {
         $productCardData = ProductCardData::fromModel($product, ProductPriceData::make([]));
         expect($productCardData->registration_status)->toEqual(ProductRegistrationStatusEnum::IN_PROGRESS);
 
-        $deliveryOption1 =new \App\Models\ProductDeliveryOption(
+        $deliveryOption1 = new App\Models\ProductDeliveryOption(
             [
                 'registration_start_date' => now()->startOfDay()->format('Y-m-d'),
-                'registration_end_date' => now()->addDays(3)->format('Y-m-d'),
+                'registration_end_date'   => now()->addDays(3)->format('Y-m-d'),
             ]
         );
         $product->setRelation('productDeliveryOptions', collect([$deliveryOption1]));

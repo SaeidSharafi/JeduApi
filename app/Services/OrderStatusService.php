@@ -27,7 +27,7 @@ final class OrderStatusService
         );
 
         // Check if we should provision based on the trigger
-            // @codeCoverageIgnoreStart
+        // @codeCoverageIgnoreStart
         $shouldProvision = match ($provisioningTrigger) {
             OrderProvisioningTriggerEnum::ANY_PAYMENT     => true,
             OrderProvisioningTriggerEnum::FULL_PAYMENT    => $order->fresh()->balance_due <= 0,
@@ -138,4 +138,4 @@ final class OrderStatusService
         return OrderStatusEnum::PROCESSING;
     }
 }
-    // @codeCoverageIgnoreEnd
+// @codeCoverageIgnoreEnd

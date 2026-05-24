@@ -28,6 +28,7 @@ final class ContactPageController extends Controller
     public function __invoke(SettingsService $service): ApiResponseInterface
     {
         $contactPage = $service->get(SettingKeyEnum::CONTACT_INFO, ContactInfoData::getDefaults());
+
         return response()->success(ContactPageData::fromSetting($contactPage));
     }
 }

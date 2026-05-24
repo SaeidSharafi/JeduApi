@@ -575,14 +575,14 @@ describe('filters tests', function () {
         }
     });
     it('filters by availabilty status', function () {
-        $now = now();
+        $now         = now();
         $pastProduct = Product::factory()
             ->withDeliveryOptions(realData: [
                 [
-                    'price'                   => 100,
-                    'available_from'          => $now->clone()->subDays(3),
-                    'available_to'            => $now->clone()->subDays(1),
-                    'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+                    'price'            => 100,
+                    'available_from'   => $now->clone()->subDays(3),
+                    'available_to'     => $now->clone()->subDays(1),
+                    'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
                 ],
             ])
             ->withCategory(1)
@@ -593,16 +593,15 @@ describe('filters tests', function () {
         $futureContentProduct = Product::factory()
             ->withDeliveryOptions(realData: [
                 [
-                    'price'                   => 100,
-                    'available_from'          => $now->clone()->addDays(2),
-                    'available_to'            => $now->clone()->addDays(10),
-                    'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+                    'price'            => 100,
+                    'available_from'   => $now->clone()->addDays(2),
+                    'available_to'     => $now->clone()->addDays(10),
+                    'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
                 ],
             ])
             ->withCategory(1)
             ->withCourse(Course::factory()->create())
             ->create(['name' => 'Future Content']);
-
 
         $response = getJson(route('api.v1.shop.search', [
             'filter' => ['availability_status' => AvailabilityStatusEnum::PAST->value],

@@ -14,7 +14,7 @@ final class DeleteRelatedProductAction
     {
         DB::table('related_products')
             ->where('product_id', $product->id)
-            ->when($relatedProduct,fn($q) => $q->where('related_product_id', $relatedProduct->id))
+            ->when($relatedProduct, fn ($q) => $q->where('related_product_id', $relatedProduct->id))
             ->where('relation_type', $relationType->value)
             ->delete();
     }

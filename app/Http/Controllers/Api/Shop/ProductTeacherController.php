@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Shop;
 
 use App\Data\Shop\Teacher\TeacherDetailData;
@@ -11,13 +13,15 @@ use App\Models\Product;
  *
  * APIs for viewing teachers associated with a product.
  */
-class ProductTeacherController extends Controller
+final class ProductTeacherController extends Controller
 {
     /**
      * Retrieve the list of teachers associated with a specific product.
      *
      * This is called when viewing a product's details to show its teachers.
+     *
      * @urlParam product_slug string required The slug of the product. Example: advanced-javascript-course
+     *
      * @responseFile storage/responses/shop/products/teachers.json
      */
     public function __invoke(Product $product)
@@ -26,11 +30,12 @@ class ProductTeacherController extends Controller
         $product->load('productDeliveryOptions.teachers');
         $teachers = [];
         $product->productDeliveryOptions->each(function ($deliveryOption) use (&$teachers) {
-           $deliveryOption->teachers->each(function ($teacher) use (&$teachers) {
-               $teachers[$teacher->id] = $teacher;
-           });
+            $deliveryOption->teachers->each(function ($teacher) use (&$teachers) {
+                $teachers[$teacher->id] = $teacher;
+            });
 
         });
+
         return response()->success(TeacherDetailData::collect(array_values($teachers)));
     }
 }

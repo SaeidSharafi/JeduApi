@@ -23,6 +23,7 @@ final class CreateCollaborationRequestData extends Data
     public static function rules(?ValidationContext $context = null): array
     {
         $maxFileSize = config('mediable.customer_max_size') / 1024; // in KB
+
         return [
             'full_name'  => ['required', 'string', 'max:255'],
             'phone'      => ['required', new IranMobilePhoneRule()],
@@ -35,7 +36,6 @@ final class CreateCollaborationRequestData extends Data
 
     /**
      * @codeCoverageIgnore
-     *
      */
     public static function bodyParameters(): array
     {

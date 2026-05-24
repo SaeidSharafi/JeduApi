@@ -10,12 +10,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Plank\Mediable\Mediable;
 
 final class StudentStory extends Model
 {
-    use HasFactory, Mediable, HasCategories;
+    use HasCategories, HasFactory, Mediable;
 
     protected $fillable
         = [
@@ -34,12 +33,17 @@ final class StudentStory extends Model
     {
         return $query->where('is_visible', true);
     }
+
     #[Scope]
     public function featured(Builder $query): Builder
     {
         return $query->where('is_featured', true);
     }
 
+    public function courses(): BelongsToMany
+    {
+        return $this->belongsToMany(Course::class);
+    }
 
     protected function casts(): array
     {
@@ -47,9 +51,5 @@ final class StudentStory extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
-    }
-    public function courses(): BelongsToMany
-    {
-        return $this->belongsToMany(Course::class);
     }
 }

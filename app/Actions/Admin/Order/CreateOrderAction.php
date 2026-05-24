@@ -38,7 +38,7 @@ final readonly class CreateOrderAction
     {
         $context                  = $this->orderCalculationService->calculate($data);
         $initialDeliveryOptionIds = $context->items->pluck('product_delivery_option.id');
-        $deliveryOptions       = ProductDeliveryOption::query()
+        $deliveryOptions          = ProductDeliveryOption::query()
             ->whereIn('id', $initialDeliveryOptionIds)
             ->with('product')
             ->get();

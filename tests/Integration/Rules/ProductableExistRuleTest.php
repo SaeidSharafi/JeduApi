@@ -11,7 +11,7 @@ describe('ProductableExistRule', function (): void {
         $course    = App\Models\Course::factory()->create()->fresh();
         $validator = Validator::make(
             [
-                'status'           => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+                'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
                 'force_create'     => false,
                 'productable_id'   => $course->id,
                 'productable_type' => null,
@@ -24,7 +24,7 @@ describe('ProductableExistRule', function (): void {
 
         $validator = Validator::make(
             [
-                'status'           => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+                'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
                 'force_create'     => false,
                 'productable_id'   => $course->id,
                 'productable_type' => 'invalid_type',
@@ -41,15 +41,15 @@ describe('ProductableExistRule', function (): void {
         $course  = App\Models\Course::factory()->create()->fresh();
         $product = App\Models\Product::factory()->create([
             'productable_id'   => $course->id,
-            'productable_type' => \App\Enums\Product\ProductableEnum::COURSE->value,
-            'status'           => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+            'productable_type' => App\Enums\Product\ProductableEnum::COURSE->value,
+            'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
         ]);
         $validator = Validator::make(
             [
-                'status'           => \App\Enums\Content\PublicationStatusEnum::DRAFT->value,
+                'status'           => App\Enums\Content\PublicationStatusEnum::DRAFT->value,
                 'force_create'     => true,
                 'productable_id'   => $course->id,
-                'productable_type' => \App\Enums\Product\ProductableEnum::COURSE->value,
+                'productable_type' => App\Enums\Product\ProductableEnum::COURSE->value,
             ],
             [
                 'productable_id' => [$rule],
@@ -62,15 +62,15 @@ describe('ProductableExistRule', function (): void {
         $course  = App\Models\Course::factory()->create()->fresh();
         $product = App\Models\Product::factory()->create([
             'productable_id'   => $course->id,
-            'productable_type' => \App\Enums\Product\ProductableEnum::COURSE->value,
-            'status'           => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+            'productable_type' => App\Enums\Product\ProductableEnum::COURSE->value,
+            'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
         ]);
         $validator = Validator::make(
             [
-                'status'           => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+                'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
                 'force_create'     => true,
                 'productable_id'   => $course->id,
-                'productable_type' => \App\Enums\Product\ProductableEnum::COURSE->value,
+                'productable_type' => App\Enums\Product\ProductableEnum::COURSE->value,
             ],
             [
                 'productable_id' => [$rule],
@@ -84,15 +84,15 @@ describe('ProductableExistRule', function (): void {
         $course  = App\Models\Course::factory()->create()->fresh();
         $product = App\Models\Product::factory()->create([
             'productable_id'   => $course->id,
-            'productable_type' => \App\Enums\Product\ProductableEnum::COURSE->value,
-            'status'           => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+            'productable_type' => App\Enums\Product\ProductableEnum::COURSE->value,
+            'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
         ]);
         $validator = Validator::make(
             [
-                'status'           => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+                'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
                 'force_create'     => false,
                 'productable_id'   => $course->id,
-                'productable_type' => \App\Enums\Product\ProductableEnum::COURSE->value,
+                'productable_type' => App\Enums\Product\ProductableEnum::COURSE->value,
             ],
             [
                 'productable_id' => [$rule],
@@ -106,15 +106,15 @@ describe('ProductableExistRule', function (): void {
         $course  = App\Models\Course::factory()->create()->fresh();
         $product = App\Models\Product::factory()->create([
             'productable_id'   => $course->id,
-            'productable_type' => \App\Enums\Product\ProductableEnum::COURSE->value,
-            'status'           => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+            'productable_type' => App\Enums\Product\ProductableEnum::COURSE->value,
+            'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
         ]);
         $validator = Validator::make(
             [
-                'status'           => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+                'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
                 'force_create'     => false,
                 'productable_id'   => 9999,
-                'productable_type' => \App\Enums\Product\ProductableEnum::COURSE->value,
+                'productable_type' => App\Enums\Product\ProductableEnum::COURSE->value,
             ],
             [
                 'productable_id' => [$rule],

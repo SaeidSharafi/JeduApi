@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Payment;
 
 use SoapClient;
-class SoapClientFactory
+
+final class SoapClientFactory
 {
     public function create(string $url): SoapClient
     {

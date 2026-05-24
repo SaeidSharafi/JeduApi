@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\Product;
@@ -8,10 +10,10 @@ use App\Models\Seminar;
 describe('GoodForStartCoursesController', function () {
     it('returns a list of good-for-start courses for a given category', function () {
         $category = Category::factory()->create(['slug' => 'programming']);
-        $course1 = Course::factory()->create();
-        $course2 = Course::factory()->create();
-        $seminar = Seminar::factory()->create();
-        $p1 = Product::factory()
+        $course1  = Course::factory()->create();
+        $course2  = Course::factory()->create();
+        $seminar  = Seminar::factory()->create();
+        $p1       = Product::factory()
             ->withCourse($course1)
             ->withDeliveryOptions(1)
             ->create();
@@ -62,14 +64,12 @@ describe('GoodForStartCoursesController', function () {
             ->create();
         $response = $this->getJson("/api/v1/shop/good-for-start/category/{$category->slug}/courses");
 
-
         $response->assertStatus(200);
 
         $responseData = $response->json('data');
         expect(count($responseData))->toBe(10);
 
         $response = $this->getJson("/api/v1/shop/good-for-start/category/{$category->slug}/courses?limit=3");
-
 
         $response->assertStatus(200);
 

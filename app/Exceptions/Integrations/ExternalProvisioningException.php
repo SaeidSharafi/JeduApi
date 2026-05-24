@@ -6,13 +6,14 @@ namespace App\Exceptions\Integrations;
 
 use JetBrains\PhpStorm\Pure;
 use RuntimeException;
+use Throwable;
 
-final class ExternalProvisioningException extends RuntimeException {
-
+final class ExternalProvisioningException extends RuntimeException
+{
     public array $metaData;
 
     #[Pure]
-    public function __construct(string $message = "", int $code = 0, ?\Throwable $previous = null, ?array $metaData = [])
+    public function __construct(string $message = '', int $code = 0, ?Throwable $previous = null, ?array $metaData = [])
     {
         $this->metaData = $metaData;
         parent::__construct($message, $code, $previous);
@@ -22,6 +23,4 @@ final class ExternalProvisioningException extends RuntimeException {
     {
         return data_get($this->metaData, 'errorcode', '');
     }
-
-
 }

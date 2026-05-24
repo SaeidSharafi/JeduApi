@@ -6,6 +6,7 @@ use App\Data\Admin\MediaData;
 use App\Enums\System\SettingKeyEnum;
 use App\Models\Setting;
 use Illuminate\Http\UploadedFile;
+
 use function Pest\Laravel\getJson;
 
 it('returns about us data for shop (public)', function () {
@@ -17,20 +18,20 @@ it('returns about us data for shop (public)', function () {
         'data' => [
             'title',
             'main_block' => [
-                'title', 'content', 'icon_url', 'subtitle'
+                'title', 'content', 'icon_url', 'subtitle',
             ],
             'images',
             'active_course_groups_block' => [
-                'title', 'content', 'icon_url', 'subtitle'
+                'title', 'content', 'icon_url', 'subtitle',
             ],
             'capabilities_block' => [
-                'title', 'content', 'icon_url', 'subtitle'
+                'title', 'content', 'icon_url', 'subtitle',
             ],
             'about_online_course_block_1' => [
-                'title', 'content', 'icon_url', 'subtitle'
+                'title', 'content', 'icon_url', 'subtitle',
             ],
             'about_online_course_block_2' => [
-                'title', 'content', 'icon_url', 'subtitle'
+                'title', 'content', 'icon_url', 'subtitle',
             ],
         ],
         'metadata',
@@ -38,27 +39,27 @@ it('returns about us data for shop (public)', function () {
 });
 it('returns about us data with correct media', function () {
     Storage::fake('public');
-    $image1 = \MediaUploader::fromSource(UploadedFile::fake()->image('image1.jpg'))
+    $image1 = MediaUploader::fromSource(UploadedFile::fake()->image('image1.jpg'))
         ->toDisk('public')
         ->upload();
-    $image2 = \MediaUploader::fromSource(UploadedFile::fake()->image('image2.jpg'))
+    $image2 = MediaUploader::fromSource(UploadedFile::fake()->image('image2.jpg'))
         ->toDisk('public')
         ->upload();
 
     $aboutusData = [
-        'title'                       => 'Test About Us',
-        'main_block'                  => [
+        'title'      => 'Test About Us',
+        'main_block' => [
             'title'   => 'Main Block Title',
             'content' => 'Main Block Content',
             'icon'    => MediaData::from($image1),
         ],
-        'images'                      => [MediaData::from($image1), MediaData::from($image2)],
-        'active_course_groups_block'  => [
+        'images'                     => [MediaData::from($image1), MediaData::from($image2)],
+        'active_course_groups_block' => [
             'title'   => 'Active Course Groups Title',
             'content' => 'Active Course Groups Content',
             'icon'    => null,
         ],
-        'capabilities_block'          => [
+        'capabilities_block' => [
             'title'   => 'Capabilities Title',
             'content' => 'Capabilities Content',
             'icon'    => MediaData::from($image1),

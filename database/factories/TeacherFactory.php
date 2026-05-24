@@ -43,7 +43,7 @@ final class TeacherFactory extends Factory
                 [
                     'platform' => 'linkedin',
                     'link'     => $this->faker->url(),
-                ]
+                ],
             ],
             'user_id' => \App\Models\User::factory(),
         ];

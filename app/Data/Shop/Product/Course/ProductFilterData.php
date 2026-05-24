@@ -41,12 +41,12 @@ final class ProductFilterData extends Data
     public static function rules(?ValidationContext $context = null, string $prefix = ''): array
     {
         return [
-            $prefix.'category_slugs'            => ['sometimes', 'array'],
-            $prefix.'category_slugs.*'          => ['string'],
-            $prefix.'fulfillment_types'         => ['sometimes', 'array'],
-            $prefix.'fulfillment_types.*'       => ['string', Rule::enum(FulfillmentTypeEnum::class)],
-            $prefix.'difficulty_level'          => [
-                'sometimes', 'string', Rule::enum(CourseDifficultyLevelEnum::class)
+            $prefix.'category_slugs'      => ['sometimes', 'array'],
+            $prefix.'category_slugs.*'    => ['string'],
+            $prefix.'fulfillment_types'   => ['sometimes', 'array'],
+            $prefix.'fulfillment_types.*' => ['string', Rule::enum(FulfillmentTypeEnum::class)],
+            $prefix.'difficulty_level'    => [
+                'sometimes', 'string', Rule::enum(CourseDifficultyLevelEnum::class),
             ],
             $prefix.'availability_status'       => ['sometimes', 'string', Rule::enum(AvailabilityStatusEnum::class)],
             $prefix.'min_price'                 => ['sometimes', 'integer', 'min:0'],
@@ -67,11 +67,11 @@ final class ProductFilterData extends Data
     public static function queryParameters(string $prefix = ''): array
     {
         return [
-            $prefix.'category_slugs'      => [
+            $prefix.'category_slugs' => [
                 'description' => 'Filter by category slugs',
                 'example'     => ['programming', 'design'],
             ],
-            $prefix.'fulfillment_types'   => [
+            $prefix.'fulfillment_types' => [
                 'description' => 'Filter by fulfillment types (e.g., online, offline)',
                 'example'     => [
                     FulfillmentTypeEnum::ONLINE_SERVICE->value, FulfillmentTypeEnum::OFFLINE_SERVICE->value,
@@ -82,48 +82,48 @@ final class ProductFilterData extends Data
                 'example'     => FulfillmentTypeEnum::ONLINE_SERVICE->value,
             ],
 
-            $prefix.'difficulty_level'    => [
+            $prefix.'difficulty_level' => [
                 'description' => 'Filter by course difficulty level (e.g., beginner, intermediate, advanced)',
                 'example'     => CourseDifficultyLevelEnum::BEGINNER->value,
 
             ],
-            $prefix . 'availability_status' => [
+            $prefix.'availability_status' => [
                 'description' => 'Filter by the temporal state of the product (e.g., past, upcoming, ongoing). Note: This parameter overrides `available_from` and `available_to` if provided.',
                 'example'     => AvailabilityStatusEnum::PAST->value,
             ],
-            $prefix.'min_price'           => [
+            $prefix.'min_price' => [
                 'description' => 'Only include products with a minimum price greater than or equal to this amount.',
                 'example'     => 100_000,
             ],
-            $prefix.'max_price'           => [
+            $prefix.'max_price' => [
                 'description' => 'Only include products with a maximum price less than or equal to this amount.',
                 'example'     => 500_000,
             ],
-            $prefix.'with_discounts'      => [
+            $prefix.'with_discounts' => [
                 'description' => 'When true, only include products that currently have an active discount.',
                 'example'     => true,
             ],
-            $prefix.'near_capacity_only'  => [
+            $prefix.'near_capacity_only' => [
                 'description' => 'When true, only include products with at least one delivery option at or above the capacity threshold.',
                 'example'     => true,
             ],
-            $prefix.'capacity_threshold'  => [
+            $prefix.'capacity_threshold' => [
                 'description' => 'Capacity ratio threshold from 0 to 1. Example: 0.8 means 80% filled.',
                 'example'     => 0.8,
             ],
-            $prefix . 'registration_starts_after' => [
+            $prefix.'registration_starts_after' => [
                 'description' => 'Filter products where registration opens on or after this date.',
                 'example'     => '1404-01-01',
             ],
-            $prefix . 'registration_ends_before' => [
+            $prefix.'registration_ends_before' => [
                 'description' => 'Filter products where registration closes on or before this date.',
                 'example'     => '1404-02-01',
             ],
-            $prefix . 'available_from' => [
+            $prefix.'available_from' => [
                 'description' => 'Filter products that become accessible to users starting from this date.',
                 'example'     => '1404-01-01',
             ],
-            $prefix . 'available_to' => [
+            $prefix.'available_to' => [
                 'description' => 'Filter products that stop being accessible to users after this date.',
                 'example'     => '1404-02-01',
             ],

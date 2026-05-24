@@ -86,7 +86,7 @@ final class ProductDeliveryOptionCreateData extends Data
             'teachers'                  => ['required', 'array'],
             'teachers.*'                => ['required', 'integer', 'exists:teachers,id'],
             'details.ims_course_code'   => ['nullable', 'string'],
-            'details.sart_date'         => ['nullable', 'jdate:Y-m-d',],
+            'details.sart_date'         => ['nullable', 'jdate:Y-m-d'],
             'details.schedule_days'     => ['nullable', 'array'],
             'details.duration'          => ['sometimes', 'integer', 'min:1'],
         ];
@@ -103,8 +103,7 @@ final class ProductDeliveryOptionCreateData extends Data
 
     public static function withValidator(Validator $validator): void
     {
-        $validator->after(function ($validator) {
-        });
+        $validator->after(function ($validator) {});
     }
 
     public static function attributes(...$args): array
@@ -279,7 +278,7 @@ final class ProductDeliveryOptionCreateData extends Data
             'details.schedule_days' => [
                 'description' => 'Days of the week when the course sessions are held (e.g., ["sat", "sun"])',
                 'required'    => false,
-                'example'     => ["sat", "sun"],
+                'example'     => ['sat', 'sun'],
             ],
             'details.duration' => [
                 'description' => 'Duration of the course or session in hours',

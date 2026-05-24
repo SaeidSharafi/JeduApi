@@ -12,9 +12,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
-use SmartCache\Facades\SmartCache;
 
 final class UpdateProductPricingJob implements ShouldQueue
 {
@@ -22,8 +20,7 @@ final class UpdateProductPricingJob implements ShouldQueue
 
     public function __construct(
         public array $productIds,
-    ) {
-    }
+    ) {}
 
     public function handle(ProductPriceService $priceService): void
     {
@@ -33,7 +30,7 @@ final class UpdateProductPricingJob implements ShouldQueue
 
         $products = Product::whereIn('id', $this->productIds)
             ->with([
-                'productDeliveryOptions' => fn($q) => $q->where('status', 'published'),
+                'productDeliveryOptions' => fn ($q) => $q->where('status', 'published'),
                 'productDeliveryOptions.productDeliveryOptionDiscountPrice',
             ])
             ->get();

@@ -27,7 +27,7 @@ final class PaymentServiceProvider extends ServiceProvider
         $this->app->tag([
             WalletPaymentProcessor::class,
             BankTransferPaymentProcessor::class,
-            MellatGatewayPaymentProcessor::class
+            MellatGatewayPaymentProcessor::class,
         ], self::PAYMENT_PROCESSOR_TAG);
 
         $this->app->singleton(function ($app): PaymentProcessorFactory {

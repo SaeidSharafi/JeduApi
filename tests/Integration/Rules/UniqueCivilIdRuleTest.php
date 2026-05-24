@@ -33,7 +33,7 @@ it('ignore checks if civil_id is empty', function (): void {
     $rule      = new App\Rules\UniqueCivilIdRule();
     $validator = Validator::make(
         [
-            'civil_id_type' => \App\Enums\User\CivilIdTypeEnum::PASSPORT->value,
+            'civil_id_type' => App\Enums\User\CivilIdTypeEnum::PASSPORT->value,
             'civil_id'      => null,
         ],
         [
@@ -48,7 +48,7 @@ it('use the given UserId in contructor', function (): void {
     $rule      = new App\Rules\UniqueCivilIdRule($user->id);
     $validator = Validator::make(
         [
-            'civil_id_type' => \App\Enums\User\CivilIdTypeEnum::PASSPORT->value,
+            'civil_id_type' => App\Enums\User\CivilIdTypeEnum::PASSPORT->value,
             'civil_id'      => 'X123456789',
         ],
         [
@@ -60,13 +60,13 @@ it('use the given UserId in contructor', function (): void {
 
 it('faill the validtion if the civil id exist', function (): void {
     $user = App\Models\User::factory()->create([
-        'civil_id_type' => \App\Enums\User\CivilIdTypeEnum::PASSPORT->value,
+        'civil_id_type' => App\Enums\User\CivilIdTypeEnum::PASSPORT->value,
         'civil_id'      => 'X123456789',
     ])->fresh();
     $rule      = new App\Rules\UniqueCivilIdRule();
     $validator = Validator::make(
         [
-            'civil_id_type' => \App\Enums\User\CivilIdTypeEnum::PASSPORT->value,
+            'civil_id_type' => App\Enums\User\CivilIdTypeEnum::PASSPORT->value,
             'civil_id'      => 'X123456789',
         ],
         [

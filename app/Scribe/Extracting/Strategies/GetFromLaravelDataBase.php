@@ -9,7 +9,6 @@ use Knuckles\Camel\Extraction\ExtractedEndpointData;
 use Knuckles\Scribe\Extracting\ParsesValidationRules;
 use Knuckles\Scribe\Extracting\Strategies\Strategy;
 use Knuckles\Scribe\Tools\ConsoleOutputUtils as c;
-use League\CommonMark\Parser\Block\DocumentBlockParser;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunctionAbstract;
@@ -130,12 +129,13 @@ abstract class GetFromLaravelDataBase extends Strategy
             $this->getCustomParameterData($laravelData)
         );
 
-        $ignoredProperties = $this->getIgnoredProperties($method);
+        $ignoredProperties  = $this->getIgnoredProperties($method);
         $filteredParameters = array_filter(
             $parametersFromLaravelData,
             fn ($parameterName) => ! in_array($parameterName, $ignoredProperties, true),
             ARRAY_FILTER_USE_KEY
         );
+
         return $this->normaliseArrayAndObjectParameters($filteredParameters);
     }
 
@@ -145,7 +145,7 @@ abstract class GetFromLaravelDataBase extends Strategy
     private function getIgnoredProperties(ReflectionFunctionAbstract $method): array
     {
         $docComment = $method->getDocComment();
-        if (!$docComment) {
+        if (! $docComment) {
             return [];
         }
 
@@ -163,7 +163,7 @@ abstract class GetFromLaravelDataBase extends Strategy
             // Split the string by commas to handle multiple parameters on one line.
             $propertiesOnThisLine = explode(',', $paramsString);
             foreach ($propertiesOnThisLine as $property) {
-                $trimmedProperty = trim($property);
+                $trimmedProperty = mb_trim($property);
                 if ($trimmedProperty) { // Ensure we don't add empty strings
                     $ignoredProperties[] = $trimmedProperty;
                 }

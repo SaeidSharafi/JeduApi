@@ -82,7 +82,7 @@ describe('TeacherController Test', function (): void {
         $response           = $this->postJson(route('api.v1.admin.teacher.store'), $data->toArray());
         $response->assertCreated();
         $this->assertDatabaseHas('teachers', [
-            'email' => $data->email,
+            'email'      => $data->email,
             'avatar_url' => $this->avatar->getUrl(),
         ]);
     });
@@ -113,19 +113,19 @@ describe('TeacherController Test', function (): void {
         $response           = $this->putJson(route('api.v1.admin.teacher.update', ['teacher' => $teacher]), $data->toArray());
         $response->assertOk();
         $this->assertDatabaseHas('teachers', [
-            'id' => $teacher->id,
-            'email' => $data->email,
+            'id'         => $teacher->id,
+            'email'      => $data->email,
             'avatar_url' => $this->avatar->getUrl(),
         ]);
         $this->assertDatabaseHas('mediables', [
             'mediable_id'   => $teacher->id,
-            'mediable_type' => \App\Enums\System\MorphTypeEnum::TEACHER->value,
+            'mediable_type' => App\Enums\System\MorphTypeEnum::TEACHER->value,
             'media_id'      => $this->avatar->id,
         ]);
     });
     it('should remove teacher avatar if it\'s null', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_UPDATE]);
-        $teacher       = App\Models\Teacher::factory()->create();
+        $teacher = App\Models\Teacher::factory()->create();
         $teacher->attachMedia($this->avatar->id, 'avatar');
         $data          = App\Models\Teacher::factory()->make();
         $data['media'] = [
@@ -135,13 +135,13 @@ describe('TeacherController Test', function (): void {
         $response           = $this->putJson(route('api.v1.admin.teacher.update', ['teacher' => $teacher]), $data->toArray());
         $response->assertOk();
         $this->assertDatabaseHas('teachers', [
-            'id' => $teacher->id,
-            'email' => $data->email,
+            'id'         => $teacher->id,
+            'email'      => $data->email,
             'avatar_url' => null,
         ]);
         $this->assertDatabaseMissing('mediables', [
             'mediable_id'   => $teacher->id,
-            'mediable_type' => \App\Enums\System\MorphTypeEnum::TEACHER->value,
+            'mediable_type' => App\Enums\System\MorphTypeEnum::TEACHER->value,
             'media_id'      => $this->avatar->id,
         ]);
     });
@@ -154,7 +154,7 @@ describe('TeacherController Test', function (): void {
         $this->assertDatabaseMissing('teachers', ['id' => $teacher->id]);
         $this->assertDatabaseMissing('mediables', [
             'mediable_id'   => $teacher->id,
-            'mediable_type' => \App\Enums\System\MorphTypeEnum::TEACHER->value,
+            'mediable_type' => App\Enums\System\MorphTypeEnum::TEACHER->value,
             'media_id'      => $this->avatar->id,
         ]);
         $this->assertDatabaseMissing('media', ['id' => $this->avatar->id]);

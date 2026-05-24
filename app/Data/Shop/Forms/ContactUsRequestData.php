@@ -36,23 +36,23 @@ final class ContactUsRequestData extends Data
         return [
             'full_name' => [
                 'description' => 'Full name of the user.',
-                'example' => 'John Doe',
+                'example'     => 'John Doe',
             ],
             'phone' => [
                 'description' => 'Phone number of the user.',
-                'example' => '+1234567890',
+                'example'     => '+1234567890',
             ],
             'subject' => [
                 'description' => 'Subject of the message.',
-                'example' => 'Inquiry about courses',
+                'example'     => 'Inquiry about courses',
             ],
             'email' => [
                 'description' => 'Email address of the user.',
-                'example' => 'john@example.com',
+                'example'     => 'john@example.com',
             ],
             'message' => [
                 'description' => 'Message content.',
-                'example' => 'I would like to know more about your courses.',
+                'example'     => 'I would like to know more about your courses.',
             ],
         ];
     }

@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Blog;
 
-use App\Data\Shop\Product\ProductCardData;
 use App\Models\Blog\BlogPost;
 use Hekmatinasser\Verta\Verta;
-use Illuminate\Support\Collection;
-use Plank\Mediable\Media;
 use Spatie\LaravelData\Data;
 
 final class BlogPostDetailData extends Data

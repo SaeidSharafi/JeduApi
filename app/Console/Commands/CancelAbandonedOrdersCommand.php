@@ -102,12 +102,12 @@ final class CancelAbandonedOrdersCommand extends Command
 
                 $this->info("✓ Cancelled order #{$order->increment_id} (ID: {$order->id})");
                 $cancelledCount++;
-           }
-            //@codeCoverageIgnoreStart
+            }
+            // @codeCoverageIgnoreStart
             catch (Exception $e) {
                 $this->error("✗ Failed to cancel order #{$order->increment_id}: ".$e->getMessage());
             }
-            //@codeCoverageIgnoreEnd
+            // @codeCoverageIgnoreEnd
         }
 
         $this->info("Successfully cancelled {$cancelledCount} out of {$abandonedOrders->count()} abandoned order(s).");

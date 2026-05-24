@@ -35,4 +35,3 @@ final class MockWalletProcessor implements PaymentProcessorContract
         throw new BadMethodCallException('MockWalletProcessor does not support verification.');
     }
 }
-

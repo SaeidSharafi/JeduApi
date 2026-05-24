@@ -28,6 +28,7 @@ final class AboutUsController extends Controller
     public function __invoke(SettingsService $service): ApiResponseInterface
     {
         $aboutUs = $service->get(SettingKeyEnum::ABOUT_US, AdminAboutUsData::getDefaults());
+
         return response()->success(AboutUsData::fromSetting($aboutUs));
     }
 }

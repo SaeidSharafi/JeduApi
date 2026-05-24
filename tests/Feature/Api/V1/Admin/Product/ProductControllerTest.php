@@ -14,7 +14,7 @@ describe('list filters', function (): void {
             'short_name'  => 'Test Short Name',
             'is_visible'  => true,
             'is_featured' => false,
-            'status'      => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+            'status'      => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
         $response = $this->getJson(route('api.v1.admin.product.index', [
             'filter'  => ['name' => 'Test Product'],
@@ -33,7 +33,7 @@ describe('list filters', function (): void {
             'short_name'  => 'Test Short Name',
             'is_visible'  => true,
             'is_featured' => false,
-            'status'      => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+            'status'      => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
         $response = $this->getJson(route('api.v1.admin.product.index', [
             'filter'  => ['short_name' => 'Test Short Name'],
@@ -56,7 +56,7 @@ describe('list filters', function (): void {
             'short_name'  => 'Visible Short Name',
             'is_visible'  => true,
             'is_featured' => false,
-            'status'      => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+            'status'      => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
         $response = $this->getJson(route('api.v1.admin.product.index', [
             'filter'  => ['is_visible' => true],
@@ -79,7 +79,7 @@ describe('list filters', function (): void {
             'short_name'  => 'Featured Short Name',
             'is_visible'  => true,
             'is_featured' => true,
-            'status'      => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+            'status'      => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
         $response = $this->getJson(route('api.v1.admin.product.index', [
             'filter'  => ['is_featured' => true],
@@ -93,25 +93,25 @@ describe('list filters', function (): void {
     it('should filter by status', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW_ANY]);
         Product::factory()->count(10)->create([
-            'status' => \App\Enums\Content\PublicationStatusEnum::DRAFT,
+            'status' => App\Enums\Content\PublicationStatusEnum::DRAFT,
         ]);
         Product::factory()->create([
             'name'        => 'Published Product',
             'short_name'  => 'Published Short Name',
             'is_visible'  => true,
             'is_featured' => false,
-            'status'      => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+            'status'      => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
         $response = $this->getJson(route('api.v1.admin.product.index', [
-            'filter'  => ['status' => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value],
+            'filter'  => ['status' => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value],
             'perPage' => 10,
         ]));
         $response->assertOk()
             ->assertJsonCount(1, 'data.data')
             ->assertJsonFragment([
                 'status' => [
-                    'value' => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
-                    'label' => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->translate(),
+                    'value' => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+                    'label' => App\Enums\Content\PublicationStatusEnum::PUBLISHED->translate(),
                 ],
             ]);
     });
@@ -125,12 +125,12 @@ describe('Controller Tests', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW_ANY]);
         Product::factory()->count(10)->create(
             [
-                'status' => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+                'status' => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             ]
         );
         Product::factory()->count(10)->create(
             [
-                'status' => \App\Enums\Content\PublicationStatusEnum::DRAFT,
+                'status' => App\Enums\Content\PublicationStatusEnum::DRAFT,
             ]
         );
         $response = $this->getJson(route('api.v1.admin.product.index'));
@@ -170,7 +170,7 @@ describe('Controller Tests', function (): void {
             'short_name'  => 'Updated Short Name',
             'is_visible'  => true,
             'is_featured' => false,
-            'status'      => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+            'status'      => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             'categories'  => [$this->category->id],
         ];
         $response = $this->putJson(route('api.v1.admin.product.update', ['product' => $product->id]), $data);
@@ -227,7 +227,7 @@ describe('Controller Tests', function (): void {
             'short_name'  => 'Unauthorized Short Name',
             'is_visible'  => true,
             'is_featured' => false,
-            'status'      => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+            'status'      => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             'categories'  => [$this->category->id],
         ];
         $response = $this->putJson(route('api.v1.admin.product.update', ['product' => $product->id]), $data);
@@ -265,7 +265,7 @@ describe('Controller Tests', function (): void {
             'short_name'   => 'Invalid Short Name',
             'is_visible'   => true,
             'is_featured'  => false,
-            'status'       => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+            'status'       => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             'categories'   => [$this->category->id],
         ];
         $response = $this->postJson(route('api.v1.admin.product.store'), $data);
@@ -281,7 +281,7 @@ describe('Controller Tests', function (): void {
             'short_name'  => 'Invalid Short Name',
             'is_visible'  => true,
             'is_featured' => false,
-            'status'      => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+            'status'      => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             'categories'  => [$this->category->id],
         ];
         $response = $this->putJson(route('api.v1.admin.product.update', ['product' => $product->id]), $data);
@@ -299,15 +299,15 @@ describe('Product Creation tests', function (): void {
             $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_CREATE]);
             $course          = App\Models\Course::factory()->create()->fresh();
             $existingProduct = Product::factory()->create([
-                'status'           => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
-                'productable_type' => \App\Enums\Product\ProductableEnum::COURSE->value,
+                'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+                'productable_type' => App\Enums\Product\ProductableEnum::COURSE->value,
                 'productable_id'   => $course->id,
             ]);
             $data = Product::factory()->make([
                 'productable_type' => $existingProduct->productable_type,
                 'productable_id'   => $existingProduct->productable_id,
             ])->toArray();
-            $data['status']       = \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value;
+            $data['status']       = App\Enums\Content\PublicationStatusEnum::PUBLISHED->value;
             $data['force_create'] = false;
             $data['categories']   = [$this->category->id];
             $response             = $this->postJson(route('api.v1.admin.product.store'), $data);
@@ -320,15 +320,15 @@ describe('Product Creation tests', function (): void {
             $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_CREATE]);
             $course          = App\Models\Course::factory()->create()->fresh();
             $existingProduct = Product::factory()->create([
-                'status'           => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
-                'productable_type' => \App\Enums\Product\ProductableEnum::COURSE->value,
+                'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+                'productable_type' => App\Enums\Product\ProductableEnum::COURSE->value,
                 'productable_id'   => $course->id,
             ]);
             $data = Product::factory()->make([
                 'productable_type' => $existingProduct->productable_type,
                 'productable_id'   => $existingProduct->productable_id,
             ])->toArray();
-            $data['status']       = \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value;
+            $data['status']       = App\Enums\Content\PublicationStatusEnum::PUBLISHED->value;
             $data['force_create'] = true;
             $data['categories']   = [$this->category->id];
             $response             = $this->postJson(route('api.v1.admin.product.store'), $data);
@@ -336,12 +336,12 @@ describe('Product Creation tests', function (): void {
                 ->assertJsonFragment(['name' => $data['name']]);
             \Pest\Laravel\assertDatabaseHas('products', [
                 'id'     => $existingProduct->id,
-                'status' => \App\Enums\Content\PublicationStatusEnum::ARCHIVED->value,
+                'status' => App\Enums\Content\PublicationStatusEnum::ARCHIVED->value,
             ]);
             \Pest\Laravel\assertDatabaseHas('products', [
                 'productable_type' => $existingProduct->productable_type,
                 'productable_id'   => $existingProduct->productable_id,
-                'status'           => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+                'status'           => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
             ]);
         });
 });
@@ -350,7 +350,7 @@ describe('Archive Product Tests', function (): void {
     it('should archive a product', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_UPDATE]);
         $product = Product::factory()->create([
-            'status' => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+            'status' => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ])->fresh();
         $response = $this->postJson(route('api.v1.admin.product.archive', ['product' => $product->id]));
         $response->assertOk()
@@ -358,19 +358,19 @@ describe('Archive Product Tests', function (): void {
             ->assertJsonFragment(['data' => null]);
         $this->assertDatabaseHas('products', [
             'id'     => $product->id,
-            'status' => \App\Enums\Content\PublicationStatusEnum::ARCHIVED->value,
+            'status' => App\Enums\Content\PublicationStatusEnum::ARCHIVED->value,
         ]);
     });
     it('should not archive a product if unauthorized', function (): void {
         $this->unauthorized_user();
         $product = Product::factory()->create([
-            'status' => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+            'status' => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ])->fresh();
         $response = $this->postJson(route('api.v1.admin.product.archive', ['product' => $product->id]));
         $response->assertForbidden();
         $this->assertDatabaseHas('products', [
             'id'     => $product->id,
-            'status' => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+            'status' => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
         ]);
     });
     it('should not archive a product if it does not exist', function (): void {

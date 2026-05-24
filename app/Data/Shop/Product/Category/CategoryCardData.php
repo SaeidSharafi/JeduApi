@@ -16,7 +16,7 @@ final class CategoryCardData extends Data
         public ?string $icon_url = null,
         public ?string $image_url = null,
         public ?int $products_count = null,
-        #[DataCollectionOf(CategoryCardData::class)]
+        #[DataCollectionOf(self::class)]
         public ?Collection $children = null,
     ) {}
 }

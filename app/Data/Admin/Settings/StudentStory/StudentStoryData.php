@@ -28,16 +28,15 @@ final class StudentStoryData extends Data
         #[DataCollectionOf(CourseListItemData::class)]
         public ?Collection $courses = null,
         public int $display_order = 0
-    ) {
-    }
+    ) {}
 
     public static function fromModel(StudentStory $story): self
     {
         return self::from([
             ...$story->toArray(),
-            'avatar' => $story->firstMedia('avatar'),
+            'avatar'     => $story->firstMedia('avatar'),
             'categories' => $story->categories,
-            'courses' => $story->courses,
+            'courses'    => $story->courses,
         ]);
     }
 }

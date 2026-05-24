@@ -15,8 +15,8 @@ final class CreateStudentStoryAction
     {
         return DB::transaction(function () use ($data): StudentStory {
             $avatarMedia = Media::find($data->avatar);
-            $storyData = $data->except('avatar','categories', 'courses')->toArray();
-            if ($avatarMedia){
+            $storyData   = $data->except('avatar', 'categories', 'courses')->toArray();
+            if ($avatarMedia) {
                 $storyData['avatar_url'] = $avatarMedia->getUrl();
             }
             $story = StudentStory::query()->create($storyData);

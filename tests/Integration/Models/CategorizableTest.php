@@ -17,7 +17,7 @@ test('to Array', function (): void {
             'id'                 => $categorizbale->id,
             'category_id'        => $category->id,
             'categorizable_id'   => $product->id,
-            'categorizable_type' => \App\Enums\System\MorphTypeEnum::PRODUCT->value,
+            'categorizable_type' => App\Enums\System\MorphTypeEnum::PRODUCT->value,
             'good_for_start'     => false,
         ]);
 });

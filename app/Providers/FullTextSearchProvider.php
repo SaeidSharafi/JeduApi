@@ -146,6 +146,7 @@ final class FullTextSearchProvider extends ServiceProvider
 
             if ($dbDriver === 'pgsql' && PgroongaService::isPgroongaEnabled()) {
                 $table = $table ? "{$table}." : '';
+
                 return $this->addSelect(DB::raw("pgroonga_score({$table}tableoid, {$table}ctid) as {$scoreColumn}"));
             }
 

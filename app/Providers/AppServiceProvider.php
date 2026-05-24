@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\OtpGeneratorInterface;
 use App\Contracts\CartIdentifier;
+use App\Contracts\OtpGeneratorInterface;
 use App\Enums\System\MorphTypeEnum;
+use App\Services\Cart\RequestCartIdentifier;
 use App\Services\DefaultOtpGenerator;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\DiscountMetadataService;
-use App\Services\Cart\RequestCartIdentifier;
 use App\Services\RequestDataCacheService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;

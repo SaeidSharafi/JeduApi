@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Models\Category;
-use Illuminate\Testing\Fluent\AssertableJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
@@ -246,17 +245,17 @@ describe('SeminarController', function (): void {
         $response->assertJsonCount(3, 'data.categories');
         foreach ($digitalAssets as $asset) {
             $response->assertJsonFragment([
-                'id'           => $asset->id,
-                'short_name'   => $asset->short_name,
-                'slug'         => $asset->slug,
-                'version'      => $asset->version,
+                'id'         => $asset->id,
+                'short_name' => $asset->short_name,
+                'slug'       => $asset->slug,
+                'version'    => $asset->version,
             ]);
         }
         foreach ($categories as $category) {
             $response->assertJsonFragment([
-                'id'    => $category->id,
-                'name'  => $category->name,
-                'slug'  => $category->slug,
+                'id'   => $category->id,
+                'name' => $category->name,
+                'slug' => $category->slug,
             ]);
         }
     });

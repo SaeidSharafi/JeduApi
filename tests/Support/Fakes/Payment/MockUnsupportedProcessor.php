@@ -35,4 +35,3 @@ final class MockUnsupportedProcessor implements PaymentProcessorContract
         throw new BadMethodCallException('MockUnsupportedProcessor does not support verification.');
     }
 }
-

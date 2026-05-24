@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Data\Admin\Product;
 
 use App\Enums\Product\RelationTypeEnum;
-use Spatie\LaravelData\Attributes\Validation\Enum;
-use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Data;
 
 final class RelatedProductSyncData extends Data
@@ -15,8 +13,7 @@ final class RelatedProductSyncData extends Data
         /** @var array<int> */
         public array $product_ids,
         public RelationTypeEnum $relation_type
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -32,6 +29,7 @@ final class RelatedProductSyncData extends Data
 
     /**
      * @codeCoverageIgnore
+     *
      * @return array<string, mixed>
      */
     public static function bodyParameters(): array
@@ -39,13 +37,12 @@ final class RelatedProductSyncData extends Data
         return [
             'product_ids' => [
                 'description' => 'Array of product IDs to relate to the main product.',
-                'example' => [2, 3, 4],
+                'example'     => [2, 3, 4],
             ],
             'relation_type' => [
                 'description' => 'Type of relation. Possible values: related, cross_sell, upsell.',
-                'example' => 'related',
+                'example'     => 'related',
             ],
         ];
     }
-
 }

@@ -6,16 +6,9 @@ use App\Actions\Shop\RetryOrderPaymentAction;
 use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
-use App\Enums\Payment\PaymentStatusEnum;
-use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\Order;
-use App\Models\Payment;
 use App\Models\User;
-use App\Models\Wallet;
-use App\Models\WalletTransaction;
-use App\Services\Payment\SoapClientFactory;
 use Illuminate\Validation\ValidationException;
-use Mockery\MockInterface;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
@@ -55,4 +48,3 @@ describe('Retry Order Payment', function (): void {
             ->toThrow(ValidationException::class, __('validation.custom.checkout.payment_exceeds_balance_due', ['balance_due' => $order->balance_due]));
     });
 });
-

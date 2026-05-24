@@ -59,8 +59,7 @@ it('show returns moodle delivery block for lms_moodle enrollment', function (): 
         ->and($block)->toHaveKey('completed')
         ->and($block)->toHaveKey('course_grade')
         ->and($block)->toHaveKey('activities')
-        ->and($block['activities'])->toBeArray()
-    ;
+        ->and($block['activities'])->toBeArray();
 });
 
 it('show returns spotplayer delivery block for video_platform_spotplayer enrollment', function (): void {

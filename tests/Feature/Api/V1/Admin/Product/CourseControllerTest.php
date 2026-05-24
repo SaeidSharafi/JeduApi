@@ -277,9 +277,9 @@ it('can create a new course with valid data', function (): void {
         App\Enums\PermissionEnum::COURSE_CREATE->value,
     ]);
 
-    $categories = App\Models\Category::factory(2)->create()->pluck('id')->toArray();
+    $categories   = App\Models\Category::factory(2)->create()->pluck('id')->toArray();
     $ditialAssets = App\Models\DigitalAsset::factory(2)->create();
-    $response = $this->postJson(route('api.v1.admin.course.store'), [
+    $response     = $this->postJson(route('api.v1.admin.course.store'), [
         ...$courseData->toArray(),
         'categories'     => $categories,
         'digital_assets' => $ditialAssets->pluck('id')->toArray(),
@@ -360,7 +360,7 @@ it('can not create a new course with invalid data', function (): void {
         ]);
 });
 it('can not create a new course with smiliar slug', function (): void {
-    $course = App\Models\Course::factory()->create();
+    $course     = App\Models\Course::factory()->create();
     $courseData = App\Models\Course::factory()->make([
         'slug' => $course->slug,
     ])->toArray();
@@ -415,9 +415,9 @@ it('can not create a new course with non-attachable digital asset', function ():
         ]);
 });
 it('can view a course', function (): void {
-    $categories = App\Models\Category::factory(3)->create();
+    $categories    = App\Models\Category::factory(3)->create();
     $digitalAssets = App\Models\DigitalAsset::factory(2)->create();
-    $course = App\Models\Course::factory()
+    $course        = App\Models\Course::factory()
         ->create();
     $course->categories()->sync($categories);
     $course->digitalAssets()->sync($digitalAssets);
@@ -449,7 +449,7 @@ it('can view a course', function (): void {
     }
     $response
         ->assertStatus(200)
-        ->assertJson(function (AssertableJson $response) use ($digitalAssets, $categories, $media, $course): void {
+        ->assertJson(function (AssertableJson $response) use ($media, $course): void {
             $response
                 ->where('data.id', $course->id)
                 ->where('data.slug', $course->slug)
@@ -490,7 +490,7 @@ it('can edit a course', function (): void {
         App\Enums\PermissionEnum::COURSE_UPDATE->value,
     ]);
 
-    $categories = App\Models\Category::factory(3)->create()->pluck('id')->toArray();
+    $categories    = App\Models\Category::factory(3)->create()->pluck('id')->toArray();
     $digitalAssets = App\Models\DigitalAsset::factory(2)->create();
 
     $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
@@ -547,7 +547,7 @@ it('can pass slug unique check', function (): void {
     $course = App\Models\Course::factory()
         ->withCategory()
         ->create();
-    $category = App\Models\Category::factory()->create();
+    $category   = App\Models\Category::factory()->create();
     $courseData = App\Models\Course::factory()->make(
         [
             'slug' => $course->slug,
@@ -603,8 +603,8 @@ it('can pass slug unique check', function (): void {
 
 });
 it('can not edit a course with duplicate slug', function (): void {
-    $course2 = App\Models\Course::factory()->create();
-    $course = App\Models\Course::factory()->create();
+    $course2    = App\Models\Course::factory()->create();
+    $course     = App\Models\Course::factory()->create();
     $courseData = App\Models\Course::factory()->make(
         [
             'slug' => $course2->slug,
@@ -655,7 +655,7 @@ it('can not edit a course with invalid data', function (): void {
 });
 
 it('can not edit a course with invalid slug', function (): void {
-    $course = App\Models\Course::factory()->create();
+    $course     = App\Models\Course::factory()->create();
     $courseData = App\Models\Course::factory()->make([
         'slug' => 'invalid slug',
     ])->toArray();

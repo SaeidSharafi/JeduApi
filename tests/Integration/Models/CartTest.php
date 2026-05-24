@@ -1,6 +1,8 @@
 <?php
+
+declare(strict_types=1);
 test('to array', function () {
-    $cart = \App\Models\Cart::factory()->create()->fresh();
+    $cart  = App\Models\Cart::factory()->create()->fresh();
     $array = $cart->toArray();
     expect($array)->toHaveKeys([
         'id',
@@ -13,19 +15,18 @@ test('to array', function () {
 });
 
 test('relationships', function () {
-    $user = \App\Models\User::factory()->create()->fresh();
-    $cart = \App\Models\Cart::factory()->create(
+    $user = App\Models\User::factory()->create()->fresh();
+    $cart = App\Models\Cart::factory()->create(
         [
             'user_id' => $user->id,
         ]
     )->fresh();
 
     expect($cart->user)
-        ->toBeInstanceOf(\App\Models\User::class)
+        ->toBeInstanceOf(App\Models\User::class)
         ->and($cart->user->id)->toEqual($user->id);
-    ;
 
     // Test items relationship
     $items = $cart->items;
-    expect($items)->toBeInstanceOf(\Illuminate\Database\Eloquent\Collection::class);
+    expect($items)->toBeInstanceOf(Illuminate\Database\Eloquent\Collection::class);
 });

@@ -29,23 +29,23 @@ final class OrderItemFactory extends Factory
             'product_delivery_option_id' => $productDeliveryOptionFactory,
             'qty_ordered'                => 1,
             'payment_type'               => $this->faker->randomElement(OrderItemPaymentTypeEnum::getAllValues()),
-            'name'                       => fn(array $attributes
+            'name'                       => fn (array $attributes
             ) => ProductDeliveryOption::find($attributes['product_delivery_option_id'])->name,
-            'sku'                        => fn(array $attributes
+            'sku' => fn (array $attributes
             ) => ProductDeliveryOption::find($attributes['product_delivery_option_id'])->sku,
-            'product_data_snapshot_json' => fn(array $attributes
+            'product_data_snapshot_json' => fn (array $attributes
             ) => ProductDeliveryOption::find($attributes['product_delivery_option_id'])->product->toArray(),
-            'vendor_id'                  => Vendor::factory(),
-            'price'                      => 0,
-            'discount_amount'            => 0,
-            'tax_amount'                 => 0,
-            'total'                      => 0,
-            'prepayment_amount'          => 0,
-            'total_refunded'             => 0,
-            'qty_refunded'               => 0,
-            'status'                     => $this->faker->randomElement(OrderItemStatusEnum::getAllValues()),
-            'created_at'                 => Carbon::now(),
-            'updated_at'                 => Carbon::now(),
+            'vendor_id'         => Vendor::factory(),
+            'price'             => 0,
+            'discount_amount'   => 0,
+            'tax_amount'        => 0,
+            'total'             => 0,
+            'prepayment_amount' => 0,
+            'total_refunded'    => 0,
+            'qty_refunded'      => 0,
+            'status'            => $this->faker->randomElement(OrderItemStatusEnum::getAllValues()),
+            'created_at'        => Carbon::now(),
+            'updated_at'        => Carbon::now(),
         ];
     }
 
@@ -54,7 +54,7 @@ final class OrderItemFactory extends Factory
         return $this->state(function (array $attributes) {
             $productDeliveryOption = ProductDeliveryOption::query()
                 ->where('status', PublicationStatusEnum::PUBLISHED)
-                ->inRandomOrder()->first() ?? ProductDeliveryOption::factory()->create();
+                ->inRandomOrder()->first()             ?? ProductDeliveryOption::factory()->create();
             $vendor = Vendor::inRandomOrder()->first() ?? Vendor::factory()->create();
 
             return [
@@ -68,7 +68,7 @@ final class OrderItemFactory extends Factory
                 'payment_type'               => $productDeliveryOption->is_prepayment_available
                     ? OrderItemPaymentTypeEnum::PRE_PAYMENT
                     : OrderItemPaymentTypeEnum::FULL_PAYMENT,
-                'total'                      => $productDeliveryOption->is_prepayment_available
+                'total' => $productDeliveryOption->is_prepayment_available
                     ? $productDeliveryOption->prepayment_amount
                     : $productDeliveryOption->price,
             ];
@@ -81,7 +81,7 @@ final class OrderItemFactory extends Factory
      */
     public function withEnrollment(bool $provision = false): self
     {
-        if (!$provision) {
+        if (! $provision) {
             return $this->has(
                 Enrollment::factory()->state(function (array $attributes, OrderItem $orderItem) {
                     return [
@@ -118,39 +118,38 @@ final class OrderItemFactory extends Factory
                                             'name'  => 'moodle-quiz',
                                             'type'  => 'quiz',
                                             'state' => 0,
-                                        ]
-                                    ]
-                                ]
+                                        ],
+                                    ],
+                                ],
                             ],
-                        ]
+                        ],
                     ],
                     DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER => [
                         'spotplayer' => [
                             'status'         => 'success',
                             'provisioned_at' => now()->toDateTimeString(),
                             'data'           => [
-                                'spot_id'      => "SPOT_ID",
+                                'spot_id'      => 'SPOT_ID',
                                 'license_key'  => 'LICENSE_KEY',
                                 'player_url'   => 'https://app.spotplayer.ir/SPOT_ID/STRING/',
                                 'raw_response' => [
-                                    "_id" => "SPOT_ID",
-                                    "key" => "LICENSE_KEY",
-                                    "url" => "/SPOT_ID/STRING/"
-                                ]
-                            ]
-                        ]
+                                    '_id' => 'SPOT_ID',
+                                    'key' => 'LICENSE_KEY',
+                                    'url' => '/SPOT_ID/STRING/',
+                                ],
+                            ],
+                        ],
                     ],
                     DeliveryMethodEnum::LIVE_SESSION_BBB => [
-                        'bbb' =>
-                            [
-                                'status'         => 'success',
-                                'provisioned_at' => now()->toDateTimeString(),
-                                'data'           => [
-                                    'meeting_id'          => 'MEETING_ID',
-                                    'auto_create_meeting' => false,
-                                    'attendee_join_url'   => 'https://lsm.example.com/meeting/attendee/join/',
-                                ]
-                            ]
+                        'bbb' => [
+                            'status'         => 'success',
+                            'provisioned_at' => now()->toDateTimeString(),
+                            'data'           => [
+                                'meeting_id'          => 'MEETING_ID',
+                                'auto_create_meeting' => false,
+                                'attendee_join_url'   => 'https://lsm.example.com/meeting/attendee/join/',
+                            ],
+                        ],
                     ],
                 };
                 if (isset($item->productDeliveryOption->details_json['ims_course_code'])) {
@@ -162,15 +161,16 @@ final class OrderItemFactory extends Factory
                             'resonse'     => [
                                 'status'  => 200,
                                 'message' => 'Enrollment successful',
-                            ]
-                        ]
+                            ],
+                        ],
                     ];
                 }
+
                 return [
                     'order_id'                   => $orderItem->order_id,
                     'customer_id'                => $orderItem->order->customer_id,
                     'product_delivery_option_id' => $orderItem->product_delivery_option_id,
-                    'provisioning_data'          => $provisionData
+                    'provisioning_data'          => $provisionData,
                 ];
             }),
             'enrollment'

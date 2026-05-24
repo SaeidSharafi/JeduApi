@@ -261,16 +261,15 @@ describe('CreateOrderAction', function (): void {
         $data = new OrderCreateData(status: 'pending', customer_id: $user->id, items: $items, applied_coupon_code: null,
             admin_notes: null);
 
-        expect(fn() => (app()->make(CreateOrderAction::class))->handle($data))
+        expect(fn () => (app()->make(CreateOrderAction::class))->handle($data))
             ->toThrow(ValidationException::class, __('messages.order.items_already_purchased_or_active',
-                    [
-                        'products' =>
-                            collect([
-                                $deliveryOption1->product->name,
-                                $deliveryOption2->product->name,
-                            ])->sort()->join(', ')
-                    ]
-                )
+                [
+                    'products' => collect([
+                        $deliveryOption1->product->name,
+                        $deliveryOption2->product->name,
+                    ])->sort()->join(', '),
+                ]
+            )
             );
     });
 

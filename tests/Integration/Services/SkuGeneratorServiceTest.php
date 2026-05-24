@@ -104,14 +104,14 @@ describe('SkuGeneratorService', function (): void {
 
     })->with([
         ['F1402', ['academic_year' => '1402-1403', 'start_date' => '2025-09-23', 'end_date' => '2025-12-20']],
-        ['W1402', ['academic_year' => '1402-1403', 'start_date' => '2025-01-10', 'end_date' => '2025-05-20']],
+        ['W1402', ['academic_year'  => '1402-1403', 'start_date' => '2025-01-10', 'end_date' => '2025-05-20']],
         ['SU1403', ['academic_year' => '1403-1404', 'start_date' => '2025-07-23', 'end_date' => '2025-08-20']],
-        ['S1403', ['academic_year' => '1403-1404', 'start_date' => '2025-03-26', 'end_date' => '2025-05-20']],
-        ['X0000', ['academic_year' => null, 'start_date' => null, 'end_date' => null]],
-        ['X0000', ['academic_year' => '', 'start_date' => null, 'end_date' => null]],
-        ['X0000', ['academic_year' => 'invalid-year', 'start_date' => null, 'end_date' => null]],
-        ['F1402', ['academic_year' => '1402-1403', 'start_date' => '2023-09-23', 'end_date' => null]],
-        ['X1402', ['academic_year' => '1402-1403', 'start_date' => null, 'end_date' => null]],
+        ['S1403', ['academic_year'  => '1403-1404', 'start_date' => '2025-03-26', 'end_date' => '2025-05-20']],
+        ['X0000', ['academic_year'  => null, 'start_date' => null, 'end_date' => null]],
+        ['X0000', ['academic_year'  => '', 'start_date' => null, 'end_date' => null]],
+        ['X0000', ['academic_year'  => 'invalid-year', 'start_date' => null, 'end_date' => null]],
+        ['F1402', ['academic_year'  => '1402-1403', 'start_date' => '2023-09-23', 'end_date' => null]],
+        ['X1402', ['academic_year'  => '1402-1403', 'start_date' => null, 'end_date' => null]],
     ]);
 
     it('correct code for delivery and fulfillment type', function (array $codes, FulfillmentTypeEnum $ftype, DeliveryMethodEnum $dmethod): void {

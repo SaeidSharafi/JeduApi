@@ -43,15 +43,14 @@ describe('Shop TeacherController', function (): void {
 });
 describe('Shop ProductTeacherController', function (): void {
     it('returns teachers associated with a product', function (): void {
-        $teacher1 = \App\Models\Teacher::factory()->create();
-        $teacher2 = \App\Models\Teacher::factory()->create();
+        $teacher1 = Teacher::factory()->create();
+        $teacher2 = Teacher::factory()->create();
 
-
-        $product = \App\Models\Product::factory()
+        $product = App\Models\Product::factory()
             ->withCourse()
             ->create();
 
-        $pdo = \App\Models\ProductDeliveryOption::factory()
+        $pdo = App\Models\ProductDeliveryOption::factory()
             ->for($product)
             ->create();
         $pdo->teachers()->attach([$teacher1->id, $teacher2->id]);

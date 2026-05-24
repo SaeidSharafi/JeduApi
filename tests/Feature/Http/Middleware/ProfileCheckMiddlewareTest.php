@@ -21,7 +21,6 @@ beforeEach(function (): void {
 
 describe('ProfileCheckMiddleware', function (): void {
 
-
     it('prevent users with incompelte profile to checkout', function (): void {
         $user = User::create([
             'phone' => '09120000000',
@@ -38,9 +37,7 @@ describe('ProfileCheckMiddleware', function (): void {
             ->and($json)->toHaveKey('message')
             ->and($json)->toHaveKey('error_code')
             ->and($json['error_code'])->toBe('PROFILE_INCOMPLETE')
-            ->and($json['message'])->toBe(__('shop.profile_incomplete_message'))
-
-        ;
+            ->and($json['message'])->toBe(__('shop.profile_incomplete_message'));
 
     });
 
@@ -60,4 +57,3 @@ describe('ProfileCheckMiddleware', function (): void {
             ->and($response->getContent())->toBe('Success');
     });
 });
-

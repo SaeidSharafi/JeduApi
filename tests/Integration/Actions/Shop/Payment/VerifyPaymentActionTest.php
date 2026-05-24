@@ -10,8 +10,8 @@ use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Payment;
 use App\Services\Payment\PaymentProcessorFactory;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Mockery as m;
 
 it('verifies pending payments via the resolved processor and returns the updated payment', function (): void {

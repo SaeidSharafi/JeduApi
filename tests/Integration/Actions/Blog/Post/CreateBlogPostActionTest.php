@@ -38,30 +38,30 @@ describe('CreateBlogPostAction', function (): void {
     it('creates a blog post with all fields', function (): void {
         $data = BlogPostCreateData::from(
             [
-                "title"                => 'New Blog Post',
-                "slug"                 => 'new-blog-post',
-                "body"                 => '<p>This is the body of the blog post. It has some content to read.</p>',
-                "excerpt"              => 'This is a short excerpt.',
-                "status"               => 'published',
-                "author_id"            => $this->staff->id,
-                "published_at"         => verta()->format('Y-m-d H:i:s'),
-                "is_featured"          => true,
-                "main_productable"     => ['type' => 'course', 'id' => $this->productable1->id],
-                "category_ids"         => [$this->category1->id, $this->category2->id],
-                "related_productables" => [
+                'title'                => 'New Blog Post',
+                'slug'                 => 'new-blog-post',
+                'body'                 => '<p>This is the body of the blog post. It has some content to read.</p>',
+                'excerpt'              => 'This is a short excerpt.',
+                'status'               => 'published',
+                'author_id'            => $this->staff->id,
+                'published_at'         => verta()->format('Y-m-d H:i:s'),
+                'is_featured'          => true,
+                'main_productable'     => ['type' => 'course', 'id' => $this->productable1->id],
+                'category_ids'         => [$this->category1->id, $this->category2->id],
+                'related_productables' => [
                     ['type' => 'seminar', 'id' => $this->productable2->id],
                 ],
-                "meta_title"           => Illuminate\Support\Str::random(70),
-                "meta_description"     => Illuminate\Support\Str::random(100),
-                "meta_keywords"        => Illuminate\Support\Str::random(50),
-                "media"                => [
+                'meta_title'       => Illuminate\Support\Str::random(70),
+                'meta_description' => Illuminate\Support\Str::random(100),
+                'meta_keywords'    => Illuminate\Support\Str::random(50),
+                'media'            => [
                     'cover' => [$this->media->id],
                 ],
             ]
         );
 
         $action = new CreateBlogPostAction();
-        $post = $action->handle($data);
+        $post   = $action->handle($data);
         $post->loadRelatedproductables();
         expect($post)->toBeInstanceOf(BlogPost::class)
             ->and($post->title)->toBe('New Blog Post')
@@ -69,7 +69,7 @@ describe('CreateBlogPostAction', function (): void {
             ->and($post->body)->toBe('<p>This is the body of the blog post. It has some content to read.</p>')
             ->and($post->excerpt)->toBe('This is a short excerpt.')
             ->and($post->author_id)->toBe($this->staff->id)
-            ->and($post->status)->toBe(\App\Enums\Content\PublicationStatusEnum::PUBLISHED)
+            ->and($post->status)->toBe(App\Enums\Content\PublicationStatusEnum::PUBLISHED)
             ->and($post->is_featured)->toBeTrue()
             ->and($post->read_time_minutes)->toBe(1) // Assuming ~200 words per minute
             ->and($post->firstMedia('cover')->getUrl())->toBe($this->media->getUrl())
@@ -102,7 +102,7 @@ describe('CreateBlogPostAction', function (): void {
         );
 
         $action = new CreateBlogPostAction();
-        $post = $action->handle($data);
+        $post   = $action->handle($data);
 
         expect($post)->toBeInstanceOf(BlogPost::class)
             ->and($post->title)->toBe('Minimal Blog Post')
@@ -110,7 +110,7 @@ describe('CreateBlogPostAction', function (): void {
             ->and($post->body)->toBe('<p>Short body.</p>')
             ->and($post->excerpt)->toBe('Excerpt')
             ->and($post->author_id)->toBe($this->staff->id)
-            ->and($post->status)->toBe(\App\Enums\Content\PublicationStatusEnum::DRAFT)
+            ->and($post->status)->toBe(App\Enums\Content\PublicationStatusEnum::DRAFT)
             ->and($post->is_featured)->toBeFalse()
             ->and($post->read_time_minutes)->toBe(1) // Minimum read time
             ->and($post->firstMedia('main'))->toBeNull()
@@ -122,29 +122,29 @@ describe('CreateBlogPostAction', function (): void {
 
     it('creates a blog post and calculates read time correctly', function (): void {
         $longBody = '<p>'.str_repeat('This is a test sentence. ', 100).'</p>'; // ~500 words
-        $data = BlogPostCreateData::from(
+        $data     = BlogPostCreateData::from(
             [
-                "title"                => 'Long Read Blog Post',
-                "slug"                 => null,
-                "body"                 => $longBody,
-                "excerpt"              => 'Long read excerpt',
-                "status"               => 'published',
-                "author_id"            => $this->staff->id,
-                "published_at"         => now(),
-                "is_featured"          => false,
-                "main_productable"     => null,
-                "category_ids"         => [],
-                "related_productables" => [],
-                "meta_title"           => Illuminate\Support\Str::random(70),
-                "meta_description"     => Illuminate\Support\Str::random(100),
-                "media"                => [
+                'title'                => 'Long Read Blog Post',
+                'slug'                 => null,
+                'body'                 => $longBody,
+                'excerpt'              => 'Long read excerpt',
+                'status'               => 'published',
+                'author_id'            => $this->staff->id,
+                'published_at'         => now(),
+                'is_featured'          => false,
+                'main_productable'     => null,
+                'category_ids'         => [],
+                'related_productables' => [],
+                'meta_title'           => Illuminate\Support\Str::random(70),
+                'meta_description'     => Illuminate\Support\Str::random(100),
+                'media'                => [
                     'cover' => [$this->media->id],
                 ],
             ]
         );
 
         $action = new CreateBlogPostAction();
-        $post = $action->handle($data);
+        $post   = $action->handle($data);
 
         expect($post)->toBeInstanceOf(BlogPost::class)
             ->and($post->read_time_minutes)->toBe(3); // 500 words / 200 wpm = 2.5, rounded up to 3

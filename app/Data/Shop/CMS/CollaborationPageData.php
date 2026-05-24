@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\CMS;
 
-use App\Data\Admin\MediaData;
-use App\Data\ArticleSectionData;
 use Spatie\LaravelData\Data;
 
 final class CollaborationPageData extends Data
@@ -15,18 +13,17 @@ final class CollaborationPageData extends Data
         public string $content,
         public ?string $image,
 
-    ) {
-    }
+    ) {}
 
     /**
      * Get default about us data for seeding.
      */
-    public static function fromSetting(array $setting): CollaborationPageData
+    public static function fromSetting(array $setting): self
     {
         return new self(
-            title: data_get($setting,'title'),
-            content: data_get($setting,'content'),
-            image: data_get($setting,'image.url'),
+            title: data_get($setting, 'title'),
+            content: data_get($setting, 'content'),
+            image: data_get($setting, 'image.url'),
         );
     }
 }

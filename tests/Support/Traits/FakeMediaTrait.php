@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Support\Traits;
 
+use Exception;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\Storage;
 use Plank\Mediable\Facades\MediaUploader;
@@ -26,7 +29,7 @@ trait FakeMediaTrait
             Storage::disk('public')->putFileAs('fake-media', new File($iconPath), 'icon.svg');
             Storage::disk('public')->putFileAs('fake-media', new File($palceHolderPath), 'main.svg');
             Storage::disk('public')->putFileAs('fake-media', new File($palceHolderPath), 'preview.svg');
-        }catch (\Exception $e) {
+        } catch (Exception $e) {
             // ignore the exception
         }
 

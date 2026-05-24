@@ -177,11 +177,11 @@ final class AdminAuditMiddleware
 
         // Standard CRUD operations
         return match ($method) {
-            'POST' => str_contains($routeName, 'bulk') ? 'bulk_create' : 'create',
+            'POST'         => str_contains($routeName, 'bulk') ? 'bulk_create' : 'create',
             'PUT', 'PATCH' => 'update',
-            'DELETE' => 'delete',
-            'GET'    => 'view',
-            default  => mb_strtolower($method),
+            'DELETE'       => 'delete',
+            'GET'          => 'view',
+            default        => mb_strtolower($method),
         };
     }
 
