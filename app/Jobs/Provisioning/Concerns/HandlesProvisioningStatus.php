@@ -45,7 +45,7 @@ trait HandlesProvisioningStatus
         $enrollment->save();
     }
 
-    private function markProvisioningFailure(Enrollment $enrollment, string $provider, string $error): void
+    private function markProvisioningFailure(Enrollment $enrollment, string $provider, string $error, array $metadata = []): void
     {
         $provisioningData = $enrollment->provisioning_data ?? [];
         $providersData    = $provisioningData['providers'] ?? [];
@@ -54,6 +54,7 @@ trait HandlesProvisioningStatus
             'status'     => 'failed',
             'failed_at'  => now()->toDateTimeString(),
             'last_error' => $error,
+            'metadata'   => $metadata,
         ];
 
         $provisioningData['providers'] = $providersData;

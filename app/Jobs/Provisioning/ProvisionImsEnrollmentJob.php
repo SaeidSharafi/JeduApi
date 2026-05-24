@@ -6,7 +6,10 @@ namespace App\Jobs\Provisioning;
 
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\System\SettingKeyEnum;
+use App\Enums\User\GenderEnum;
+use App\Exceptions\Integrations\ExternalProvisioningException;
 use App\Jobs\Provisioning\Concerns\HandlesProvisioningStatus;
+use App\Models\AdminActionLog;
 use App\Models\Enrollment;
 use App\Models\Payment;
 use App\Services\Integrations\ImsService;
@@ -17,6 +20,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Throwable;
 
@@ -67,48 +71,50 @@ final class ProvisionImsEnrollmentJob implements ShouldQueue
         $paymentAmount     = $this->resolvePaymentAmount($enrollment) > 0 ? $orderItemAmount : 0;
         $paymentDate       = $this->resolvePaymentDate($enrollment);
         $paymentDateString = $paymentDate?->toDateString();
-
-        $payload = [
-            'student' => [
-                'external_user_id' => (string) $customer->uuid,
-                'first_name'       => $customer->first_name,
-                'last_name'        => $customer->last_name,
-                'phone'            => $customer->phone,
-                'email'            => $customer->email,
-                'national_code'    => $customer->civil_id,
-                'father_name'      => $customer->father_name,
-                'gender'           => $customer->gender?->value,
-                'field_of_study'   => $customer->field_of_study,
-                'date_of_birth'    => $customer->date_of_birth?->format('Y-m-d'),
-            ],
-            'registrations' => [
-                [
-                    'course_code'        => $imsCourseCode,
-                    'enrollment_uuid'    => $enrollment->uuid,
-                    'order_increment_id' => $enrollment->order?->increment_id,
-                    'payment'            => [
-                        'amount'              => $paymentAmount,
-                        'discount_type'       => $discountAmount > 0 ? 'manual' : 'none',
-                        'discount_amount'     => $discountAmount,
-                        'discount_code'       => $enrollment->order?->applied_coupon_code,
-                        'bill'                => $this->resolvePaymentBill($enrollment),
-                        'date'                => $paymentDateString,
-                        'bank_account_number' => $this->resolveImsBankAccountNumber($enrollment),
-                    ],
-                    'note' => $enrollment->notes,
-                ],
-            ],
+        $student           = [
+            'external_user_id' => (string) $customer->uuid,
+            'first_name'       => $customer->first_name,
+            'last_name'        => $customer->last_name,
+            'phone'            => $customer->phone,
+            'email'            => $customer->email,
+            'national_code'    => $customer->civil_id,
+            'father_name'      => $customer->father_name,
+            'gender'           => $customer->gender === GenderEnum::MALE ? 1 : 0,
+            'field_of_study'   => $customer->field_of_study,
+            'education_level'  => $customer->education_level?->value,
+            'education_status' => $customer->education_status?->value,
+            'date_of_birth'    => $customer->date_of_birth?->format('Y-m-d'),
+            'update_student'   => false,
         ];
 
-        $service->setConfig($imsConfig);
-        $result = $service->provisionEnrollment($payload);
+        $enrolment = [
+            'national_code' => $customer->civil_id,
+            'course_code'   => $imsCourseCode,
+            'payment'       => [
+                'amount'              => $paymentAmount,
+                'discount_type'       => $discountAmount > 0 ? 'manual' : 'none',
+                'discount_amount'     => $discountAmount,
+                'discount_code'       => $enrollment->order?->applied_coupon_code,
+                'tracking_code'       => $this->resolvePaymentBill($enrollment),
+                'date'                => $paymentDateString,
+                'bank_account_number' => $this->resolveImsBankAccountNumber($enrollment),
+            ],
+            'note' => __('messages.online_enrolment').PHP_EOL.
+                __('messages.order.order_number', ['order_id' => $enrollment->order?->increment_id])
+                .PHP_EOL.
+                $enrollment->notes,
+        ];
 
-        $externalEnrollmentId = data_get($result, 'data.enrollment_id');
+        $student              = $service->storeSetudent($student);
+        $enrolment            = $service->storeEnrolment($customer, $enrolment);
+        $externalEnrollmentId = data_get($enrolment, 'data.enrollment_id');
         $externalEnrollmentId = is_scalar($externalEnrollmentId) ? (string) $externalEnrollmentId : null;
 
         $this->markProvisioningSuccess($enrollment, 'ims', [
-            'course_code' => $imsCourseCode,
-            'response'    => $result,
+            'course_code'   => $imsCourseCode,
+            'enrollment_id' => $externalEnrollmentId,
+            'student_id'    => data_get($student, 'data.student_id'),
+            'created_at'    => data_get($enrolment, 'data.created_at'),
         ], $externalEnrollmentId);
     }
 
@@ -119,7 +125,40 @@ final class ProvisionImsEnrollmentJob implements ShouldQueue
             return;
         }
 
-        $this->markProvisioningFailure($enrollment, 'ims', $exception->getMessage());
+        $metaData = $exception instanceof ExternalProvisioningException
+            ? $exception->metaData
+            : [];
+
+        $this->markProvisioningFailure($enrollment, 'ims', $exception->getMessage(), $metaData);
+
+        Log::error('IMS provisioning failed', [
+            'enrollment_id'     => $this->enrollmentId,
+            'payment_id'        => $this->paymentId,
+            'http_status'       => $metaData['http_status']       ?? null,
+            'endpoint'          => $metaData['endpoint']          ?? null,
+            'validation_errors' => $metaData['validation_errors'] ?? [],
+            'exception_class'   => get_class($exception),
+            'job_attempts'      => $this->attempts(),
+        ]);
+
+        AdminActionLog::create([
+            'admin_id'        => null,
+            'action_type'     => 'ims_provisioning_failed',
+            'resource_type'   => Enrollment::class,
+            'resource_id'     => $enrollment->id,
+            'route_name'      => 'system:ims_provisioning',
+            'http_method'     => 'QUEUE',
+            'response_status' => $metaData['http_status'] ?? 0,
+            'ip_address'      => '127.0.0.1',
+            'risk_level'      => 'high',
+            'metadata'        => [
+                'endpoint'          => $metaData['endpoint']          ?? null,
+                'validation_errors' => $metaData['validation_errors'] ?? [],
+                'error_message'     => 'IMS validation failed',
+                'raw_body_snippet'  => $metaData['raw_body_snippet'] ?? null,
+                'job_attempts'      => $this->attempts(),
+            ],
+        ]);
     }
 
     /**
@@ -188,7 +227,7 @@ final class ProvisionImsEnrollmentJob implements ShouldQueue
         $reference = $payment->last_gateway_reference
             ?? data_get($payment->data, 'transaction_id');
 
-        return is_scalar($reference) ? (string) $reference : null;
+        return is_scalar($reference) ? (string) $reference : ($enrollment->order?->increment_id);
     }
 
     private function resolvePaymentDate(Enrollment $enrollment): ?Carbon

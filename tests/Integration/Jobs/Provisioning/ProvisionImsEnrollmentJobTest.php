@@ -6,7 +6,9 @@ use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\System\SettingKeyEnum;
+use App\Exceptions\Integrations\ExternalProvisioningException;
 use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
+use App\Models\AdminActionLog;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -17,6 +19,7 @@ use App\Models\User;
 use App\Services\Integrations\ImsService;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 beforeEach(function (): void {
     Http::preventStrayRequests();
@@ -37,6 +40,7 @@ it('returns when IMS integration is disabled', function (): void {
 
     $service = $this->mock(ImsService::class);
     $service->shouldReceive('setConfig')->never();
+    $service->shouldNotReceive('storeSetudent');
     $service->shouldNotReceive('storeEnrolment');
 
     $enrollment = createEnrollmentAndPaymentForImsJob()[0];
@@ -77,7 +81,8 @@ it('sends configured IMS bank account number in payload', function (): void {
     $job->handle(app(ImsService::class), app(SettingsService::class));
 
     Http::assertSent(function ($request) {
-        return $request['registrations'][0]['payment']['bank_account_number'] === 'IMS-ACC-001';
+        return str_contains($request->url(), '/api/v2/enrolment/')
+            && ($request['payment']['bank_account_number'] ?? null) === 'IMS-ACC-001';
     });
 });
 
@@ -105,8 +110,9 @@ it('sends null IMS bank account number when gateway config is missing', function
     $job->handle(app(ImsService::class), app(SettingsService::class));
 
     Http::assertSent(function ($request) {
-        return array_key_exists('bank_account_number', $request['registrations'][0]['payment'])
-            && $request['registrations'][0]['payment']['bank_account_number'] === null;
+        return str_contains($request->url(), '/api/v2/enrolment/')
+            && array_key_exists('bank_account_number', $request['payment'])
+            && $request['payment']['bank_account_number'] === null;
     });
 });
 
@@ -247,7 +253,8 @@ it('uses explicit payment id to resolve bill from transaction id fallback', func
     $job->handle(app(ImsService::class), app(SettingsService::class));
 
     Http::assertSent(function ($request) {
-        return $request['registrations'][0]['payment']['bill'] === 'TX-777';
+        return str_contains($request->url(), '/api/v2/enrolment/')
+            && ($request['payment']['tracking_code'] ?? null) === 'TX-777';
     });
 });
 
@@ -273,7 +280,8 @@ it('falls back to payment created at when transaction date is invalid', function
     $expectedDate = $payment->created_at?->toDateString();
 
     Http::assertSent(function ($request) use ($expectedDate) {
-        return $request['registrations'][0]['payment']['date'] === $expectedDate;
+        return str_contains($request->url(), '/api/v2/enrolment/')
+            && ($request['payment']['date'] ?? null) === $expectedDate;
     });
 });
 
@@ -298,7 +306,8 @@ it('sends bank transfer ims account number when payment method is bank transfer'
     $job->handle(app(ImsService::class), app(SettingsService::class));
 
     Http::assertSent(function ($request) {
-        return $request['registrations'][0]['payment']['bank_account_number'] === 'IMS-ACC-BANK';
+        return str_contains($request->url(), '/api/v2/enrolment/')
+            && ($request['payment']['bank_account_number'] ?? null) === 'IMS-ACC-BANK';
     });
 });
 
@@ -323,7 +332,8 @@ it('sends wallet ims account number when payment method is wallet', function ():
     $job->handle(app(ImsService::class), app(SettingsService::class));
 
     Http::assertSent(function ($request) {
-        return $request['registrations'][0]['payment']['bank_account_number'] === 'IMS-ACC-WALLET';
+        return str_contains($request->url(), '/api/v2/enrolment/')
+            && ($request['payment']['bank_account_number'] ?? null) === 'IMS-ACC-WALLET';
     });
 });
 
@@ -337,7 +347,8 @@ it('marks provisioning failure on failed callback', function (): void {
 
     expect($enrollment->enrollment_status)->toBe(App\Enums\EnrollmentStatusEnum::PROVISIONING_FAILED)
         ->and(data_get($enrollment->provisioning_data, 'providers.ims.status'))->toBe('failed')
-        ->and(data_get($enrollment->provisioning_data, 'providers.ims.last_error'))->toBe('ims failed hard');
+        ->and(data_get($enrollment->provisioning_data, 'providers.ims.last_error'))->toBe('ims failed hard')
+        ->and(data_get($enrollment->provisioning_data, 'providers.ims.metadata'))->toBeArray();
 });
 
 it('returns from failed callback when enrollment does not exist', function (): void {
@@ -347,6 +358,131 @@ it('returns from failed callback when enrollment does not exist', function (): v
 
     // No exception thrown; no enrollment to mutate — assert job completes cleanly
     expect(Enrollment::find(999999))->toBeNull();
+});
+
+it('stores ims metadata on provisioning failure', function (): void {
+    [$enrollment] = createEnrollmentAndPaymentForImsJob();
+
+    $exception = new ExternalProvisioningException('ims validation failed', 0, null, [
+        'http_status'       => 422,
+        'endpoint'          => '/api/v2/student',
+        'validation_errors' => ['field' => ['error']],
+        'raw_body_snippet'  => '{"errors":{"field":["error"]}}',
+    ]);
+
+    $job = new ProvisionImsEnrollmentJob($enrollment->id);
+    $job->failed($exception);
+
+    $enrollment->refresh();
+
+    expect(data_get($enrollment->provisioning_data, 'providers.ims.metadata.http_status'))->toBe(422);
+    expect(data_get($enrollment->provisioning_data, 'providers.ims.metadata.endpoint'))->toBe('/api/v2/student');
+    expect(data_get($enrollment->provisioning_data, 'providers.ims.metadata.validation_errors'))->toBeArray();
+    expect(data_get($enrollment->provisioning_data, 'providers.ims.status'))->toBe('failed');
+});
+
+it('creates AdminActionLog entry on ims provisioning failure', function (): void {
+    [$enrollment] = createEnrollmentAndPaymentForImsJob();
+
+    $job = new ProvisionImsEnrollmentJob($enrollment->id);
+    $job->failed(new RuntimeException('ims failed'));
+
+    $log = AdminActionLog::where('action_type', 'ims_provisioning_failed')
+        ->where('resource_id', $enrollment->id)
+        ->first();
+
+    expect($log)->not->toBeNull();
+    expect($log->admin_id)->toBeNull();
+    expect($log->route_name)->toBe('system:ims_provisioning');
+    expect($log->http_method)->toBe('QUEUE');
+    expect($log->ip_address)->toBe('127.0.0.1');
+    expect($log->risk_level)->toBe('high');
+});
+
+it('AdminActionLog error_message is static generic not raw exception text', function (): void {
+    [$enrollment] = createEnrollmentAndPaymentForImsJob();
+
+    $exception = new ExternalProvisioningException('user submitted PII data: test@example.com', 0, null, [
+        'http_status'       => 422,
+        'endpoint'          => '/api/v2/student',
+        'validation_errors' => [],
+        'raw_body_snippet'  => '{"errors":{"national_code":["exists"]}}',
+    ]);
+
+    $job = new ProvisionImsEnrollmentJob($enrollment->id);
+    $job->failed($exception);
+
+    $log = AdminActionLog::where('action_type', 'ims_provisioning_failed')
+        ->where('resource_id', $enrollment->id)
+        ->first();
+
+    expect(data_get($log->metadata, 'error_message'))->toBe('IMS validation failed');
+    expect(data_get($log->metadata, 'error_message'))->not->toContain('test@example.com');
+});
+
+it('stores raw_body_snippet in AdminActionLog when exception has metadata', function (): void {
+    [$enrollment] = createEnrollmentAndPaymentForImsJob();
+
+    $exception = new ExternalProvisioningException('error', 0, null, [
+        'http_status'       => 422,
+        'endpoint'          => '/api/v2/student',
+        'validation_errors' => [],
+        'raw_body_snippet'  => '{"errors":{"field":["msg"]}}',
+    ]);
+
+    $job = new ProvisionImsEnrollmentJob($enrollment->id);
+    $job->failed($exception);
+
+    $log = AdminActionLog::where('action_type', 'ims_provisioning_failed')
+        ->where('resource_id', $enrollment->id)
+        ->first();
+
+    expect(data_get($log->metadata, 'raw_body_snippet'))->toBe('{"errors":{"field":["msg"]}}');
+});
+
+it('sets raw_body_snippet to null in AdminActionLog when plain RuntimeException', function (): void {
+    [$enrollment] = createEnrollmentAndPaymentForImsJob();
+
+    $job = new ProvisionImsEnrollmentJob($enrollment->id);
+    $job->failed(new RuntimeException('generic failure'));
+
+    $log = AdminActionLog::where('action_type', 'ims_provisioning_failed')
+        ->where('resource_id', $enrollment->id)
+        ->first();
+
+    expect(data_get($log->metadata, 'raw_body_snippet'))->toBeNull();
+});
+
+it('logs error with enrollment context on failure', function (): void {
+    Log::spy();
+
+    [$enrollment] = createEnrollmentAndPaymentForImsJob();
+
+    $job = new ProvisionImsEnrollmentJob($enrollment->id);
+    $job->failed(new RuntimeException('test error'));
+
+    Log::shouldHaveReceived('error')
+        ->withArgs(fn ($message, $context) => $message === 'IMS provisioning failed'
+            && ($context['enrollment_id'] ?? null)     === $enrollment->id
+        );
+});
+
+it('stores sanitized raw_body_snippet in provisioning_data metadata from ExternalProvisioningException', function (): void {
+    [$enrollment] = createEnrollmentAndPaymentForImsJob();
+
+    $exception = new ExternalProvisioningException('error', 0, null, [
+        'http_status'       => 422,
+        'endpoint'          => '/api/v2/student',
+        'validation_errors' => [],
+        'raw_body_snippet'  => '{"errors":{"field":["msg"]}}',
+    ]);
+
+    $job = new ProvisionImsEnrollmentJob($enrollment->id);
+    $job->failed($exception);
+
+    $enrollment->refresh();
+    $snippet = data_get($enrollment->provisioning_data, 'providers.ims.metadata.raw_body_snippet');
+    expect($snippet)->toBe('{"errors":{"field":["msg"]}}');
 });
 
 it('returns configured backoff values', function (): void {
