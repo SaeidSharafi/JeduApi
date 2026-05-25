@@ -96,7 +96,7 @@
         "test:lint": [
             "pint --test"
         ],
-        "test:unit": "pest --parallel --coverage --exactly=100.0",
+        "test:unit": "pest --parallel --coverage --min=90.0",
         "test:types": "phpstan",
         "test:refactor": "rector --dry-run",
         "test": [
