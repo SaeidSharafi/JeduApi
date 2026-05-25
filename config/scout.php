@@ -229,7 +229,7 @@ return [
                                     'productable_description',
                                 ],
                                 'model_config' => [
-                                    'model_name' => 'ts/distiluse-base-multilingual-cased-v2',
+                                    'model_name' => 'multilingual-e5-small',
                                 ],
                             ],
                         ],
@@ -264,7 +264,7 @@ return [
                                     'excerpt',
                                 ],
                                 'model_config' => [
-                                    'model_name' => 'ts/distiluse-base-multilingual-cased-v2',
+                                    'model_name' => 'multilingual-e5-small',
                                 ],
                             ],
                         ],
