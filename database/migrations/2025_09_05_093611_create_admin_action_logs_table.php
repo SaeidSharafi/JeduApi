@@ -16,8 +16,8 @@ return new class extends Migration
         Schema::create('admin_action_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('admin_id')
-                ->constrained('staff')
                 ->nullable()
+                ->constrained('staff')
                 ->nullOnDelete()
                 ->comment('Reference to the staff member who performed the action');
             $table->string('action_type', 50)
