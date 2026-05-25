@@ -20,7 +20,7 @@ final readonly class CreateTeacherAction
             $avatarMedia = null;
             $teacherData = $data->except('media')->toArray();
             if ($mediaId = data_get($data->media, 'avatar')) {
-                $avatarMedia = Media::find($mediaId);
+                $avatarMedia               = Media::find($mediaId);
                 $teacherData['avatar_url'] = $avatarMedia?->getUrl();
             }
             $teacher = Teacher::query()->create($teacherData);

@@ -17,11 +17,11 @@ final readonly class UpdateTeacherAction
     public function handle(CreateTeacherData $data, Teacher $teacher): void
     {
         DB::transaction(function () use ($data, $teacher): void {
-            $teacherData = $data->except('media')->toArray();
-            $avatarMedia = null;
-            $teacherData['avatar_url']  = null;
+            $teacherData               = $data->except('media')->toArray();
+            $avatarMedia               = null;
+            $teacherData['avatar_url'] = null;
             if ($mediaId = data_get($data->media, 'avatar')) {
-                $avatarMedia = Media::find($mediaId);
+                $avatarMedia               = Media::find($mediaId);
                 $teacherData['avatar_url'] = $avatarMedia?->getUrl();
             }
             $teacher->update($teacherData);

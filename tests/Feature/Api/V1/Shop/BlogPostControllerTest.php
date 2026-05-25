@@ -6,7 +6,6 @@ use App\Enums\Content\PublicationStatusEnum;
 use App\Models\Blog\BlogCategory;
 use App\Models\Blog\BlogPost;
 use App\Models\Product;
-use App\Models\Review;
 use App\Models\Staff;
 
 use function Pest\Laravel\getJson;
@@ -62,7 +61,7 @@ describe('BlogPostController', function () {
                         'read_time_minutes',
                         'is_featured',
                         'categories',
-                        'media'
+                        'media',
                     ],
                 ],
                 'current_page',
@@ -113,7 +112,7 @@ describe('BlogPostController', function () {
     it('can filter blog posts by category slug', function () {
         // Arrange
         $category = BlogCategory::factory()->create(['slug' => 'programming']);
-        $posts = BlogPost::factory()
+        $posts    = BlogPost::factory()
             ->count(3)
             ->state([
                 'status'       => PublicationStatusEnum::PUBLISHED,
@@ -178,21 +177,21 @@ describe('BlogPostController', function () {
             ->state([
                 'status'         => PublicationStatusEnum::PUBLISHED,
                 'published_at'   => now()->subDays(5),
-                'average_rating' => 5
+                'average_rating' => 5,
             ])
             ->create();
         $lastPost = BlogPost::factory()
             ->state([
                 'status'         => PublicationStatusEnum::PUBLISHED,
                 'published_at'   => now()->subDay(),
-                'average_rating' => 3
+                'average_rating' => 3,
             ])
             ->create();
         $secondPost = BlogPost::factory()
             ->state([
                 'status'         => PublicationStatusEnum::PUBLISHED,
                 'published_at'   => now()->subDay(),
-                'average_rating' => 4
+                'average_rating' => 4,
             ])
             ->create();
 
@@ -267,8 +266,8 @@ describe('BlogPostController', function () {
     it('can get a single published blog post by slug', function () {
         // Arrange
         $category = BlogCategory::factory()->create();
-        $staff = Staff::factory()->create(['name' => 'John Doe']);
-        $post = BlogPost::factory()
+        $staff    = Staff::factory()->create(['name' => 'John Doe']);
+        $post     = BlogPost::factory()
             ->state([
                 'status'       => PublicationStatusEnum::PUBLISHED,
                 'published_at' => now()->subDay(),
@@ -281,7 +280,7 @@ describe('BlogPostController', function () {
             ->create();
 
         $products = $products
-            ->map(fn(Product $product) => ['type' => $product->productable_type, 'id' => $product->productable_id])
+            ->map(fn (Product $product) => ['type' => $product->productable_type, 'id' => $product->productable_id])
             ->toArray();
 
         $post->syncRelatedProductables($products);
@@ -299,7 +298,7 @@ describe('BlogPostController', function () {
                 'slug',
                 'body',
                 'excerpt',
-                'author'     => [
+                'author' => [
                     'name',
                 ],
                 'reviews_count',

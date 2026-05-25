@@ -215,9 +215,9 @@ final class ProductDiscountIndexer
         return DiscountPromotion::query()
             ->where('type', DiscountTypeEnum::PRODUCT_SPECIFIC)
             ->where('is_active', true)
-            //->where(function ($q): void {
+            // ->where(function ($q): void {
             //    $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
-            //})
+            // })
             ->where(function ($q): void {
                 $q->whereNull('ends_at')->orWhere('ends_at', '>=', now());
             })

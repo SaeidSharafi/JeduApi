@@ -13,6 +13,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\Integrations\BbbService;
+use App\Services\SettingsService;
 
 beforeEach(function (): void {
     $this->config = [
@@ -32,16 +33,17 @@ it('returns when bbb integration is disabled', function (): void {
     ]), 'json', 'integrations');
 
     $service = $this->mock(BbbService::class);
-    $service->shouldReceive('setConfig')->never();
     $service->shouldNotReceive('createMeeting');
     $service->shouldNotReceive('buildJoinUrl');
 
     $enrollment = createBbbEnrollmentForJob();
 
     $job = new ProvisionBbbEnrollmentJob($enrollment->id);
-    $job->handle($service);
+    $job->handle($service, app(SettingsService::class));
 
-    expect(true)->toBeTrue();
+    $enrollment->refresh();
+    expect($enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::PENDING_PROVISIONING)
+        ->and($enrollment->provisioning_data)->not->toHaveKey('providers.bbb');
 });
 
 it('throws when bbb configuration is missing base_url or secret', function (): void {
@@ -50,16 +52,16 @@ it('throws when bbb configuration is missing base_url or secret', function (): v
     ]), 'json', 'integrations');
 
     $service = $this->mock(BbbService::class);
-    $job = new ProvisionBbbEnrollmentJob(1);
+    $job     = new ProvisionBbbEnrollmentJob(1);
 
-    expect(fn () => $job->handle($service))
+    expect(fn () => $job->handle($service, app(SettingsService::class)))
         ->toThrow(RuntimeException::class, 'BBB configuration is missing base_url or secret.');
 
     Setting::setValue(SettingKeyEnum::BIG_BLUE_BUTTON, array_merge($this->config, [
         'secret' => '',
     ]), 'json', 'integrations');
 
-    expect(fn () => $job->handle($service))
+    expect(fn () => $job->handle($service, app(SettingsService::class)))
         ->toThrow(RuntimeException::class, 'BBB configuration is missing base_url or secret.');
 });
 
@@ -69,9 +71,10 @@ it('returns when enrollment does not exist', function (): void {
     $service->shouldNotReceive('buildJoinUrl');
 
     $job = new ProvisionBbbEnrollmentJob(999999);
-    $job->handle($service);
+    $job->handle($service, app(SettingsService::class));
 
-    expect(true)->toBeTrue();
+    // No exception thrown; no enrollment to mutate — assert job completes cleanly
+    expect(Enrollment::find(999999))->toBeNull();
 });
 
 it('throws when bbb meeting id is missing', function (): void {
@@ -83,7 +86,7 @@ it('throws when bbb meeting id is missing', function (): void {
 
     $job = new ProvisionBbbEnrollmentJob($enrollment->id);
 
-    expect(fn () => $job->handle($service))
+    expect(fn () => $job->handle($service, app(SettingsService::class)))
         ->toThrow(RuntimeException::class, 'BBB meeting_id is missing from delivery option details.');
 });
 
@@ -96,23 +99,20 @@ it('provisions bbb enrollment without creating meeting when auto create disabled
 
     $service = $this->mock(BbbService::class);
     $service->shouldNotReceive('createMeeting');
-    $service->shouldReceive('setConfig')
-        ->once()
-        ->with($this->config);
     $service->shouldReceive('buildJoinUrl')
         ->once()
         ->with('BBB-MEET-1', 'John Doe', 'ap-1')
         ->andReturn('https://bbb.test/join/BBB-MEET-1');
 
     $job = new ProvisionBbbEnrollmentJob($enrollment->id);
-    $job->handle($service);
+    $job->handle($service, app(SettingsService::class));
 
     $enrollment->refresh();
 
     expect(data_get($enrollment->provisioning_data, 'providers.bbb.status'))->toBe('success')
         ->and(data_get($enrollment->provisioning_data, 'providers.bbb.data.meeting_id'))->toBe('BBB-MEET-1')
         ->and(data_get($enrollment->provisioning_data, 'providers.bbb.data.attendee_join_url'))->toContain('https://bbb.test/join/BBB-MEET-1')
-        ->and($enrollment->enrollment_status)->not->toBe(EnrollmentStatusEnum::ACTIVE);
+        ->and($enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::ACTIVE);
 });
 
 it('creates meeting when auto create enabled', function (): void {
@@ -127,15 +127,13 @@ it('creates meeting when auto create enabled', function (): void {
     $service->shouldReceive('createMeeting')
         ->once()
         ->with('BBB-MEET-2', $enrollment->productDeliveryOption->name, 'ap-2', 'mp-2');
-    $service->shouldReceive('setConfig')
-        ->with($this->config);
     $service->shouldReceive('buildJoinUrl')
         ->once()
         ->with('BBB-MEET-2', 'John Doe', 'ap-2')
         ->andReturn('https://bbb.test/join/BBB-MEET-2');
 
     $job = new ProvisionBbbEnrollmentJob($enrollment->id);
-    $job->handle($service);
+    $job->handle($service, app(SettingsService::class));
 
     $enrollment->refresh();
 
@@ -162,7 +160,8 @@ it('returns from failed callback when enrollment does not exist', function (): v
 
     $job->failed(new RuntimeException('bbb failed hard'));
 
-    expect(true)->toBeTrue();
+    // No exception thrown; no enrollment to mutate — assert job completes cleanly
+    expect(Enrollment::find(999999))->toBeNull();
 });
 
 it('returns configured backoff values', function (): void {

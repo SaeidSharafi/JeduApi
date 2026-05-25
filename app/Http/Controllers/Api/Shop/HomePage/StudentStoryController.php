@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Api\Shop\HomePage;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\HomePage\StudentStoryData;
 use App\Data\Shop\StudentStoryRequestData;
-use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\System\CacheKeysEnum;
 use App\Http\Controllers\Controller;
 use App\Models\StudentStory;
@@ -50,9 +49,9 @@ final class StudentStoryController extends Controller
             function () use ($data) {
                 $stories = StudentStory::query()
                     ->visible()
-                    ->when($data->featured_only, fn($query) => $query->featured())
+                    ->when($data->featured_only, fn ($query) => $query->featured())
                     ->when($data->category_slug,
-                        fn($query, $slug) => $query->whereHas('categories', fn($q) => $q->where('slug', $slug)))
+                        fn ($query, $slug) => $query->whereHas('categories', fn ($q) => $q->where('slug', $slug)))
                     ->when($data->course_slug, function ($query, $slug) {
                         $query->whereHas('courses', function ($q) use ($slug) {
                             $q->where('slug', $slug)
@@ -71,6 +70,7 @@ final class StudentStoryController extends Controller
                         ->orderBy('display_order')
                         ->get();
                 }
+
                 return StudentStoryData::collect($stories);
             });
 

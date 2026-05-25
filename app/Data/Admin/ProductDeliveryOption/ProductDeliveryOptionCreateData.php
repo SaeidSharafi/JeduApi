@@ -12,6 +12,7 @@ use App\Enums\Product\FulfillmentTypeEnum;
 use App\Rules\ProductDeliveryOptionCheckRule;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
@@ -47,7 +48,11 @@ final class ProductDeliveryOptionCreateData extends Data
         public ?Carbon $available_to,
         public ?int $access_days,
         public ?string $sku = null,
-    ) {}
+    ) {
+        if (isset($this->details_json['sart_date']) && is_string($this->details_json['sart_date'])) {
+            $this->details_json['sart_date'] = verta($this->details_json['sart_date'])->toCarbon()->format('Y-m-d');
+        }
+    }
 
     /**
      * Define the validation rules for the data.
@@ -66,7 +71,7 @@ final class ProductDeliveryOptionCreateData extends Data
             'price'                     => ['required', 'integer', 'min:0'],
             'capacity'                  => ['nullable', 'integer', 'min:0'],
             'status'                    => ['required', 'string', Rule::enum(PublicationStatusEnum::class)],
-            'is_prepayment_available'   => ['boolean'],
+            'is_prepayment_available'   => ['required', 'boolean'],
             'prepayment_amount'         => ['nullable', 'integer', 'min:0'],
             'details'                   => ['present', 'array'],
             'is_featured'               => ['required', 'boolean'],
@@ -81,6 +86,9 @@ final class ProductDeliveryOptionCreateData extends Data
             'teachers'                  => ['required', 'array'],
             'teachers.*'                => ['required', 'integer', 'exists:teachers,id'],
             'details.ims_course_code'   => ['nullable', 'string'],
+            'details.sart_date'         => ['nullable', 'jdate:Y-m-d'],
+            'details.schedule_days'     => ['nullable', 'array'],
+            'details.duration'          => ['sometimes', 'integer', 'min:1'],
         ];
 
         $detailsRulesAction      = app(GetDeliveryDetailsValidationRulesAction::class);
@@ -91,6 +99,11 @@ final class ProductDeliveryOptionCreateData extends Data
         );
 
         return array_merge($baseRules, $conditionalDetailsRules);
+    }
+
+    public static function withValidator(Validator $validator): void
+    {
+        $validator->after(function ($validator) {});
     }
 
     public static function attributes(...$args): array
@@ -109,6 +122,7 @@ final class ProductDeliveryOptionCreateData extends Data
             'is_featured'               => __('validation.attributes.product_delivery_option.is_featured'),
             'featured_price'            => __('validation.attributes.product_delivery_option.featured_price'),
             'featured_price_start_date' => __('validation.attributes.product_delivery_option.featured_price_start_date'),
+            'featured_price_end_date'   => __('validation.attributes.product_delivery_option.featured_price_end_date'),
             'registration_start_date'   => __('validation.attributes.product_delivery_option.registration_start_date'),
             'registration_end_date'     => __('validation.attributes.product_delivery_option.registration_end_date'),
             'available_from'            => __('validation.attributes.product_delivery_option.available_from'),
@@ -190,6 +204,51 @@ final class ProductDeliveryOptionCreateData extends Data
                 'required'    => false,
                 'example'     => 1000000,
             ],
+            'is_featured' => [
+                'description' => 'Whether this delivery option is featured',
+                'required'    => true,
+                'example'     => false,
+            ],
+            'featured_price' => [
+                'description' => 'Featured price for the delivery option',
+                'required'    => false,
+                'example'     => 4500000,
+            ],
+            'featured_price_start_date' => [
+                'description' => 'Start date for featured pricing',
+                'required'    => false,
+                'example'     => '1404-06-15 00:00:00',
+            ],
+            'featured_price_end_date' => [
+                'description' => 'End date for featured pricing',
+                'required'    => false,
+                'example'     => '1404-07-15 23:59:59',
+            ],
+            'registration_start_date' => [
+                'description' => 'Start date for registration for this delivery option',
+                'required'    => false,
+                'example'     => '1404-06-01',
+            ],
+            'registration_end_date' => [
+                'description' => 'End date for registration for this delivery option',
+                'required'    => false,
+                'example'     => '1404-06-30',
+            ],
+            'available_from' => [
+                'description' => 'Start date for availability of this delivery option',
+                'required'    => false,
+                'example'     => '1404-06-01',
+            ],
+            'available_to' => [
+                'description' => 'End date for availability of this delivery option',
+                'required'    => false,
+                'example'     => '1404-12-31',
+            ],
+            'access_days' => [
+                'description' => 'Number of days the product access remains valid after enrolment. After this period, the enrolment expires automatically.',
+                'required'    => false,
+                'example'     => 14,
+            ],
             'details' => [
                 'description' => 'Dynamic details object that varies based on delivery_method. See delivery method specific examples below.',
                 'required'    => true,
@@ -202,7 +261,7 @@ final class ProductDeliveryOptionCreateData extends Data
                 ],
             ],
             'details.moodle_course_id' => [
-                'description' => 'For `lms_moodle`. Moodle course ID (required)',
+                'description' => 'Moodle course ID (required)',
                 'required'    => false,
                 'example'     => 120,
             ],
@@ -211,8 +270,23 @@ final class ProductDeliveryOptionCreateData extends Data
                 'required'    => false,
                 'example'     => 'COURSE-001',
             ],
+            'details.start_date' => [
+                'description' => 'Start date for the course or session. this is only informational and the actual availability is determined by the registration and availability date fields. (optional, but if provided should be a valid date)',
+                'required'    => false,
+                'example'     => '2',
+            ],
+            'details.schedule_days' => [
+                'description' => 'Days of the week when the course sessions are held (e.g., ["sat", "sun"])',
+                'required'    => false,
+                'example'     => ['sat', 'sun'],
+            ],
+            'details.duration' => [
+                'description' => 'Duration of the course or session in hours',
+                'required'    => false,
+                'example'     => '2',
+            ],
             'details.activity_id' => [
-                'description' => 'For `lms_moodle`. Activity ID in Moodle (required)',
+                'description' => 'For `lms_moodle`. Activity ID in Moodle',
                 'required'    => false,
                 'example'     => 1,
             ],
@@ -236,15 +310,15 @@ final class ProductDeliveryOptionCreateData extends Data
                 'required'    => false,
                 'example'     => '1404-12-31 23:59:59',
             ],
-            'details.location' => [
-                'description' => 'For `in_person`. Physical location for in-person sessions (required)',
+            'details.address' => [
+                'description' => 'For `in_person`. Physical addres for in-person sessions (required)',
                 'required'    => false,
                 'example'     => 'Room 101, Main Building',
             ],
-            'details.duration' => [
-                'description' => 'For `in_person`. Duration of in-person session (required)',
+            'details.map_url' => [
+                'description' => 'For `in_person`. URL for the map location of the in-person session (optional but recommended)',
                 'required'    => false,
-                'example'     => '2 hours',
+                'example'     => 'https://maps.google.com/?q=Room+101,+Main+Building',
             ],
             'details.schedule' => [
                 'description' => 'For `in_person`. Schedule for in-person session (required)',
@@ -260,6 +334,11 @@ final class ProductDeliveryOptionCreateData extends Data
                 'description' => 'For `video_platform_spotplayer`. Spot ID in SpotPlayer (required)',
                 'required'    => false,
                 'example'     => 'SP-COURSE-001',
+            ],
+            'details.updated_at' => [
+                'description' => 'For `video_platform_spotplayer`. Last updated timestamp for the SpotPlayer content',
+                'required'    => false,
+                'example'     => '1405-01-01',
             ],
             'details.auto_create_meeting' => [
                 'description' => 'For `live_session_bbb`. Auto create BBB meeting during provisioning',
@@ -370,51 +449,6 @@ final class ProductDeliveryOptionCreateData extends Data
                 'description' => 'For `live_session_bbb` or `live_session_skyroom`. Whether to automatically start recording the session',
                 'required'    => false,
                 'example'     => true,
-            ],
-            'is_featured' => [
-                'description' => 'Whether this delivery option is featured',
-                'required'    => true,
-                'example'     => false,
-            ],
-            'featured_price' => [
-                'description' => 'Featured price for the delivery option',
-                'required'    => false,
-                'example'     => 4500000,
-            ],
-            'featured_price_start_date' => [
-                'description' => 'Start date for featured pricing',
-                'required'    => false,
-                'example'     => '1404-06-15 00:00:00',
-            ],
-            'featured_price_end_date' => [
-                'description' => 'End date for featured pricing',
-                'required'    => false,
-                'example'     => '1404-07-15 23:59:59',
-            ],
-            'registration_start_date' => [
-                'description' => 'Start date for registration for this delivery option',
-                'required'    => false,
-                'example'     => '1404-06-01',
-            ],
-            'registration_end_date' => [
-                'description' => 'End date for registration for this delivery option',
-                'required'    => false,
-                'example'     => '1404-06-30',
-            ],
-            'available_from' => [
-                'description' => 'Start date for availability of this delivery option',
-                'required'    => false,
-                'example'     => '1404-06-01',
-            ],
-            'available_to' => [
-                'description' => 'End date for availability of this delivery option',
-                'required'    => false,
-                'example'     => '1404-12-31',
-            ],
-            'access_days' => [
-                'description' => 'Number of days the product access remains valid after enrolment. After this period, the enrolment expires automatically.',
-                'required'    => false,
-                'example'     => 14,
             ],
             'teachers' => [
                 'description' => 'List of teacher IDs associated with this delivery option',

@@ -34,7 +34,7 @@ final class PromotionFinder
 
         if ($appliedCouponCode) {
             return $query
-                ->whereHas('coupons', fn($q) => $q
+                ->whereHas('coupons', fn ($q) => $q
                     ->where('code', $appliedCouponCode)
                     ->where('is_active', true)
                     ->where(function (Builder $q2): void {

@@ -13,6 +13,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\Integrations\SpotPlayerService;
+use App\Services\SettingsService;
 
 beforeEach(function (): void {
     Setting::setValue(SettingKeyEnum::SPOT_PLAYER, [
@@ -31,15 +32,16 @@ it('returns when spotplayer integration is disabled', function (): void {
     ], 'json', 'integrations');
 
     $service = $this->mock(SpotPlayerService::class);
-    $service->shouldReceive('setConfig')->never();
     $service->shouldNotReceive('issueLicense');
 
     $enrollment = createSpotPlayerEnrollmentForJob();
 
     $job = new ProvisionSpotPlayerEnrollmentJob($enrollment->id);
-    $job->handle($service);
+    $job->handle($service, app(SettingsService::class));
 
-    expect(true)->toBeTrue();
+    $enrollment->refresh();
+    expect($enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::PENDING_PROVISIONING)
+        ->and($enrollment->provisioning_data)->not->toHaveKey('providers.spotplayer');
 });
 
 it('throws when spotplayer configuration is missing endpoint or api_key', function (): void {
@@ -51,21 +53,21 @@ it('throws when spotplayer configuration is missing endpoint or api_key', functi
     ], 'json', 'integrations');
 
     $service = $this->mock(SpotPlayerService::class);
-    $job = new ProvisionSpotPlayerEnrollmentJob(1);
+    $job     = new ProvisionSpotPlayerEnrollmentJob(1);
 
-    expect(fn () => $job->handle($service))
+    expect(fn () => $job->handle($service, app(SettingsService::class)))
         ->toThrow(RuntimeException::class, 'SpotPlayer configuration is missing endpoint or api_key.');
 });
 
 it('returns when enrollment does not exist', function (): void {
     $service = $this->mock(SpotPlayerService::class);
-    $service->shouldReceive('setConfig')->never();
     $service->shouldNotReceive('issueLicense');
 
     $job = new ProvisionSpotPlayerEnrollmentJob(999999);
-    $job->handle($service);
+    $job->handle($service, app(SettingsService::class));
 
-    expect(true)->toBeTrue();
+    // No exception thrown; no enrollment to mutate — assert job completes cleanly
+    expect(Enrollment::find(999999))->toBeNull();
 });
 
 it('throws when spotplayer course id is missing', function (): void {
@@ -77,7 +79,7 @@ it('throws when spotplayer course id is missing', function (): void {
 
     $job = new ProvisionSpotPlayerEnrollmentJob($enrollment->id);
 
-    expect(fn () => $job->handle($service))
+    expect(fn () => $job->handle($service, app(SettingsService::class)))
         ->toThrow(RuntimeException::class, 'SpotPlayer spot_id is missing from delivery option details.');
 });
 
@@ -87,13 +89,6 @@ it('provisions spotplayer enrollment and saves provisioning data', function (): 
     ]);
 
     $service = $this->mock(SpotPlayerService::class);
-    $service->shouldReceive('setConfig')
-        ->once()
-        ->with(Mockery::subset([
-            'endpoint' => 'https://spotplayer.example/license',
-            'api_key'  => 'spot-api-key',
-            'sandbox'  => true,
-        ]));
     $service->shouldReceive('issueLicense')
         ->once()
         ->with('SPOT-COURSE-99', Mockery::on(fn ($user): bool => $user instanceof User && $user->is($enrollment->customer)))
@@ -104,7 +99,7 @@ it('provisions spotplayer enrollment and saves provisioning data', function (): 
         ]);
 
     $job = new ProvisionSpotPlayerEnrollmentJob($enrollment->id);
-    $job->handle($service);
+    $job->handle($service, app(SettingsService::class));
 
     $enrollment->refresh();
 
@@ -112,7 +107,7 @@ it('provisions spotplayer enrollment and saves provisioning data', function (): 
         ->and(data_get($enrollment->provisioning_data, 'providers.spotplayer.data.spot_id'))->toBe('SPOT-COURSE-99')
         ->and(data_get($enrollment->provisioning_data, 'providers.spotplayer.data.license_key'))->toBe('LIC-99')
         ->and(data_get($enrollment->provisioning_data, 'providers.spotplayer.data.player_url'))->toBe('https://player.example/99')
-        ->and($enrollment->enrollment_status)->not->toBe(EnrollmentStatusEnum::ACTIVE);
+        ->and($enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::ACTIVE);
 });
 
 it('marks provisioning failure on failed callback', function (): void {
@@ -133,7 +128,8 @@ it('returns from failed callback when enrollment does not exist', function (): v
 
     $job->failed(new RuntimeException('spotplayer failed hard'));
 
-    expect(true)->toBeTrue();
+    // No exception thrown; no enrollment to mutate — assert job completes cleanly
+    expect(Enrollment::find(999999))->toBeNull();
 });
 
 it('returns configured backoff values', function (): void {

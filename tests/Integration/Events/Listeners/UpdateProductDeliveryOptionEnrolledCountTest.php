@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\EnrollmentStatusEnum;
 use App\Events\EnrollmentStatusChanged;
 use App\Listeners\UpdateProductDeliveryOptionEnrolledCount;
 use App\Models\Enrollment;
 use Illuminate\Support\Facades\Event;
+
 it('increment enrolled_count when status changes to ACTIVE', function () {
     Event::fake([
-        EnrollmentStatusChanged::class
+        EnrollmentStatusChanged::class,
     ]);
     $enrolment = Enrollment::factory()->create(
         ['enrollment_status' => EnrollmentStatusEnum::ACTIVE]
@@ -143,7 +146,7 @@ it('handle missing productDeliveryOption gracefully', function () {
 
     $enrollment->productDeliveryOption->delete();
 
-    $event = new EnrollmentStatusChanged($enrollment);
+    $event    = new EnrollmentStatusChanged($enrollment);
     $listener = new UpdateProductDeliveryOptionEnrolledCount();
 
     $listener->handle($event);

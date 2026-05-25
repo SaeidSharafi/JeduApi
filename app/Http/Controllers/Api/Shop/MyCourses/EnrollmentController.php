@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\MyCourses;
 
+use App\Actions\Shop\MyCourses\GetEnrollmentDetailAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\MyCourses\EnrollmentData;
+use App\Enums\Product\DeliveryMethodEnum;
 use App\Http\Controllers\Controller;
+use App\Jobs\Provisioning\SyncMoodleProgressJob;
 use App\Models\Enrollment;
+use Illuminate\Support\Facades\RateLimiter;
 
 /**
  * @group Shop - Student Dash - My Courses
@@ -17,6 +21,10 @@ use App\Models\Enrollment;
 final class EnrollmentController extends Controller
 {
     /**
+     * Get a paginated list of the authenticated user's enrollments.
+     *
+     * List enrollments for the authenticated user, with optional filtering by fulfillment type and product name.
+     *
      * @queryParam filter[fulfillment_type] string Filter by fulfillment type. Example: digital
      * @queryParam filter[name] string Filter by product name. Example: Course Name
      * @queryParam per_page integer Number of results per page. Example: 15
@@ -51,11 +59,11 @@ final class EnrollmentController extends Controller
     /**
      * Show a specific enrollment.
      *
-     * @responseFile 200 responses/shop/enrollments/show.json
+     * @responseFile 200 storage/responses/shop/enrollments/show.json
      *
      * @response 404 {"message": "Enrollment not found."}
      */
-    public function show(Enrollment $enrollment): ApiResponseInterface
+    public function show(Enrollment $enrollment, GetEnrollmentDetailAction $action): ApiResponseInterface
     {
         if (auth()->user()->id !== $enrollment->customer_id) {
             return response()->notFound(__('messages.enrollments.not_found'));
@@ -66,6 +74,40 @@ final class EnrollmentController extends Controller
             'orderItem.vendor',
         ]);
 
-        return response()->success(EnrollmentData::from($enrollment));
+        $this->triggerMoodleSwr($enrollment);
+
+        return response()->success($action->handle($enrollment));
+    }
+
+    private function triggerMoodleSwr(Enrollment $enrollment): void
+    {
+        $deliveryOption = $enrollment->productDeliveryOption;
+
+        if ($deliveryOption?->delivery_method !== DeliveryMethodEnum::LMS_MOODLE) {
+            return;
+        }
+
+        $rawCourseId = data_get($deliveryOption->details_json, 'moodle_course_id');
+        $rawUserId   = data_get($enrollment->provisioning_data, 'providers.moodle.data.moodle_user_id');
+
+        if (! is_numeric($rawCourseId) || ! is_numeric($rawUserId)) {
+            return;
+        }
+
+        $moodleCourseId = (int) $rawCourseId;
+        $moodleUserId   = (int) $rawUserId;
+
+        if ($moodleCourseId <= 0 || $moodleUserId <= 0) {
+            return;
+        }
+
+        $throttleKey = "throttle:moodle-sync:{$enrollment->id}:{$moodleCourseId}:{$moodleUserId}";
+
+        RateLimiter::attempt(
+            $throttleKey,
+            maxAttempts: 1,
+            callback: fn () => dispatch(new SyncMoodleProgressJob($enrollment->id, $moodleCourseId, $moodleUserId)),
+            decaySeconds: 300 // 5 minutes
+        );
     }
 }

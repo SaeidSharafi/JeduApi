@@ -31,7 +31,7 @@ final class StudentStoryCreateData extends Data
             'story_text'    => ['required', 'string'],
             'avatar'        => ['nullable', 'integer', 'exists:media,id'],
             'is_visible'    => ['required', 'boolean'],
-            'is_featured'   => ['required', 'boolean'],
+            'is_featured'   => ['nullable', 'boolean'],
             'categories'    => ['sometimes', 'array'],
             'categories.*'  => ['integer', 'exists:categories,id'],
             'courses'       => ['sometimes', 'array'],

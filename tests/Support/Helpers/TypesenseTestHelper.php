@@ -7,7 +7,6 @@ namespace Tests\Support\Helpers;
 use App\Models\Blog\BlogPost;
 use App\Models\Product;
 use Exception;
-use Illuminate\Support\Facades\Artisan;
 
 final class TypesenseTestHelper
 {
@@ -46,6 +45,7 @@ final class TypesenseTestHelper
             }
 
             $data = json_decode((string) $response, true);
+
             return isset($data['ok']) && $data['ok'] === true;
 
         } catch (Exception $e) {

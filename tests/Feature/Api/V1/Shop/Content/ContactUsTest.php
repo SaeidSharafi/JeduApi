@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use App\Models\ContactUsRequest;
-use Illuminate\Support\Facades\RateLimiter;
+
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
 
-describe('ContactPageController', function (){
+describe('ContactPageController', function () {
     it('shows contact page settings', function () {
         $response = getJson(route('api.v1.shop.contactpage.show'));
         $response->assertOk();
@@ -30,10 +30,10 @@ describe('ContactUsRequestController', function () {
         // Arrange
         $payload = [
             'full_name' => 'John Doe',
-            'phone' => '+1234567890',
-            'subject' => 'Inquiry',
-            'email' => 'john@example.com',
-            'message' => 'Hello, I am interested in your courses.',
+            'phone'     => '+1234567890',
+            'subject'   => 'Inquiry',
+            'email'     => 'john@example.com',
+            'message'   => 'Hello, I am interested in your courses.',
         ];
 
         // Act
@@ -48,10 +48,10 @@ describe('ContactUsRequestController', function () {
     it('throttles contact us requests', function () {
         $payload = [
             'full_name' => 'Jane Doe',
-            'phone' => '+1234567891',
-            'subject' => 'Spam',
-            'email' => 'jane@example.com',
-            'message' => 'Spam message.',
+            'phone'     => '+1234567891',
+            'subject'   => 'Spam',
+            'email'     => 'jane@example.com',
+            'message'   => 'Spam message.',
         ];
 
         for ($i = 0; $i < 10; $i++) {
@@ -62,4 +62,3 @@ describe('ContactUsRequestController', function () {
     });
 
 });
-

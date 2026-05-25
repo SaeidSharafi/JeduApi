@@ -8,6 +8,7 @@ use App\Models\ProductDeliveryOption;
 use App\Models\User;
 
 use function Pest\Laravel\postJson;
+
 it('do nothing if X-Guest-Token is not UUID', function () {
     $user     = User::factory()->create(['password' => bcrypt('password')]);
     $userCart = Cart::factory()->create(['user_id' => $user->id]);
@@ -57,7 +58,7 @@ it('do nothing if there is no guest cart or cart is empty', function () {
         'identifier' => $user->email,
         'password'   => 'password',
     ], [
-        'X-Guest-Token' => \Illuminate\Support\Str::uuid7(),
+        'X-Guest-Token' => Illuminate\Support\Str::uuid7(),
     ]);
 
     // Assert: Login successful

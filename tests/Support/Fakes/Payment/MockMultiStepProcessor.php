@@ -11,7 +11,6 @@ use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Order;
 use App\Models\Payment;
-use BadMethodCallException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Str;
 
@@ -24,7 +23,7 @@ final class MockMultiStepProcessor implements PaymentProcessorContract
 
     public function process(Order $order, PaymentCreateData $paymentData, Authenticatable $adminUser, int $amountToPay): PaymentProcessResultData
     {
-        $fakeRefId = 'FAKE_REF_' . Str::random(10);
+        $fakeRefId = 'FAKE_REF_'.Str::random(10);
 
         $payment = $order->payments()->create([
             'customer_id' => $order->customer_id,
@@ -60,4 +59,3 @@ final class MockMultiStepProcessor implements PaymentProcessorContract
         return $payment;
     }
 }
-

@@ -14,7 +14,7 @@ it('returns collection of HomePageBlockListData for active blocks only', functio
         'order'     => 2,
     ]);
 
-    $activeBlock2 = HomePageBlock::factory()->curatedList([], \App\Enums\Content\HomePageBlockTypeEnum::CURATED_LIST)->create([
+    $activeBlock2 = HomePageBlock::factory()->curatedList([], App\Enums\Content\HomePageBlockTypeEnum::CURATED_LIST)->create([
         'location'  => 'main_content',
         'is_active' => true,
         'order'     => 1,
@@ -42,7 +42,7 @@ it('returns collection of HomePageBlockListData for active blocks only', functio
 it('extracts preset from block content', function (): void {
     $block = HomePageBlock::factory()->curatedList(
         [],
-        \App\Enums\Content\HomePageBlockTypeEnum::CURATED_LIST
+        App\Enums\Content\HomePageBlockTypeEnum::CURATED_LIST
     )->create([
         'is_active' => true,
         'content'   => [

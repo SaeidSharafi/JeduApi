@@ -71,7 +71,7 @@ it('can create a slider', function (): void {
         'title'   => 'New Slider',
         'caption' => 'New Caption',
         'image'   => $this->image1->id,
-        'status'  => \App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
+        'status'  => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value,
         'link'    => '/new',
         'order'   => 2,
     ];
@@ -114,7 +114,7 @@ it('can update a slider', function (): void {
     $data = [
         'title'   => 'Updated Slider',
         'caption' => 'Updated Caption',
-        'status'  => \App\Enums\Content\PublicationStatusEnum::DRAFT->value,
+        'status'  => App\Enums\Content\PublicationStatusEnum::DRAFT->value,
         'image'   => $this->image2->id,
         'link'    => '/updated',
         'order'   => 3,
@@ -185,11 +185,11 @@ it('update slider status', function (): void {
         'image_alt' => 'Status Alt',
         'link'      => '/status',
         'order'     => 1,
-        'status'    => \App\Enums\Content\PublicationStatusEnum::PUBLISHED,
+        'status'    => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
     ]);
     $slider->attachMedia($this->image1, 'image');
     $data = [
-        'status' => \App\Enums\Content\PublicationStatusEnum::DRAFT->value,
+        'status' => App\Enums\Content\PublicationStatusEnum::DRAFT->value,
     ];
     $response = $this->patchJson(route('api.v1.admin.settings.slider.status', $slider), $data);
     $response->assertStatus(200)
@@ -199,5 +199,5 @@ it('update slider status', function (): void {
             'metadata',
         ]);
     $slider->refresh();
-    expect($slider->status)->toBe(\App\Enums\Content\PublicationStatusEnum::DRAFT);
+    expect($slider->status)->toBe(App\Enums\Content\PublicationStatusEnum::DRAFT);
 });

@@ -196,6 +196,7 @@
   - registration_end_date (DATE nullable)
   - available_from (DATE nullable)
   - available_to (DATE nullable)
+  - access_days (INT unsigned nullable, default null) — Number of days user has access to content after enrollment; null means unlimited
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: UNIQUE(sku), INDEX(status)
 

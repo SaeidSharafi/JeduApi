@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Shop\Forms;
 
 use App\Actions\Shop\Forms\CreateCollaborationRequestAction;
@@ -11,9 +13,8 @@ use App\Http\Controllers\Controller;
  *
  * API for handling form submissions
  */
-class CollaborationRequestController extends Controller
+final class CollaborationRequestController extends Controller
 {
-
     /**
      * Submit Collaboration Request
      *
@@ -33,6 +34,7 @@ class CollaborationRequestController extends Controller
     public function __invoke(CreateCollaborationRequestData $data, CreateCollaborationRequestAction $action)
     {
         $action->handle($data);
-        return response()->created(null, __('shop.responses.forms.collaboration_request_submitted') );
+
+        return response()->created(null, __('shop.responses.forms.collaboration_request_submitted'));
     }
 }

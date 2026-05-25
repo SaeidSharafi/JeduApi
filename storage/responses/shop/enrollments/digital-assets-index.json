@@ -1,0 +1,120 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "uuid": "019803f5-0dc3-7346-a108-cd51e023d3c7",
+        "enrollment_status": {
+          "value": "provisioning_failed",
+          "label": "enums.EnrolmentStatusEnum.provisioning_failed"
+        },
+        "access_start_date": "1398-05-12 15:26:51",
+        "access_end_date": "1399-01-07 15:26:51",
+        "external_enrollment_id": "891341940",
+        "notes": "iste",
+        "provisioning_data": [],
+        "is_virtual": false,
+        "product": {
+          "id": 49,
+          "productable_id": 90,
+          "name": "Kailyn Nienow DVM",
+          "short_name": "Elisa Von",
+          "short_description": "Sapiente quaerat dolores totam et. Consequatur est aut aut eveniet perferendis.",
+          "vendor": {
+            "id": 3,
+            "name": "Moore and Sons"
+          },
+          "term": {
+            "id": 4,
+            "name": "Spring 2006"
+          },
+          "price": 6668,
+          "fullfilment_type": {
+            "value": "digital",
+            "label": "دیجیتال"
+          },
+          "delivery_method": {
+            "value": "direct_download",
+            "label": "دانلود مستقیم"
+          },
+          "status": "draft",
+          "productable_type": "digital_asset",
+          "cover": {
+            "url": "http://jedu.test/storage/fake-media/fake-cover.svg",
+            "thumbnail": null,
+            "alt": ""
+          }
+        }
+      },
+      {
+        "uuid": "019803f5-0dca-7167-a654-dbfe3f58da42",
+        "enrollment_status": {
+          "value": "expired",
+          "label": "enums.EnrolmentStatusEnum.expired"
+        },
+        "access_start_date": "1392-08-07 14:26:51",
+        "access_end_date": "1393-05-28 15:26:51",
+        "external_enrollment_id": "28257414",
+        "notes": "non",
+        "provisioning_data": [],
+        "is_virtual": false,
+        "product": {
+          "id": 15,
+          "productable_id": 84,
+          "name": "Benedict Feeney II",
+          "short_name": "Dayne Spinka",
+          "short_description": "Et dicta velit laudantium eos odit. Dolores doloremque dolorem occaecati harum eveniet. Quia et aut incidunt esse blanditiis necessitatibus.",
+          "vendor": {
+            "id": 2,
+            "name": "Padberg and Sons"
+          },
+          "term": {
+            "id": 9,
+            "name": "Spring 1970"
+          },
+          "price": 415370,
+          "fullfilment_type": {
+            "value": "digital",
+            "label": "دیجیتال"
+          },
+          "delivery_method": {
+            "value": "direct_download",
+            "label": "دانلود مستقیم"
+          },
+          "status": "archived",
+          "productable_type": "digital_asset",
+          "cover": null
+        }
+      }
+    ],
+    "first_page_url": "http://jedu.test/api/v1/shop/my-digital-assets?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "http://jedu.test/api/v1/shop/my-digital-assets?page=1",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; قبلی",
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/shop/my-digital-assets?page=1",
+        "label": "1",
+        "active": true
+      },
+      {
+        "url": null,
+        "label": "بعدی &raquo;",
+        "active": false
+      }
+    ],
+    "next_page_url": null,
+    "path": "http://jedu.test/api/v1/shop/my-digital-assets",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 2,
+    "total": 2
+  },
+  "metadata": []
+}

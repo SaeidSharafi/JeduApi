@@ -6,7 +6,9 @@ namespace App\Jobs\Provisioning\Concerns;
 
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Enums\System\SettingKeyEnum;
 use App\Models\Enrollment;
+use App\Services\SettingsService;
 
 trait HandlesProvisioningStatus
 {
@@ -43,7 +45,7 @@ trait HandlesProvisioningStatus
         $enrollment->save();
     }
 
-    private function markProvisioningFailure(Enrollment $enrollment, string $provider, string $error): void
+    private function markProvisioningFailure(Enrollment $enrollment, string $provider, string $error, array $metadata = []): void
     {
         $provisioningData = $enrollment->provisioning_data ?? [];
         $providersData    = $provisioningData['providers'] ?? [];
@@ -52,6 +54,7 @@ trait HandlesProvisioningStatus
             'status'     => 'failed',
             'failed_at'  => now()->toDateTimeString(),
             'last_error' => $error,
+            'metadata'   => $metadata,
         ];
 
         $provisioningData['providers'] = $providersData;
@@ -65,7 +68,8 @@ trait HandlesProvisioningStatus
      */
     private function requiredProviders(Enrollment $enrollment): array
     {
-        $providers      = ['ims'];
+        $isImsActive    = data_get(app(SettingsService::class)->get(SettingKeyEnum::IMS), 'enabled', false);
+        $providers      = $isImsActive ? ['ims'] : [];
         $deliveryMethod = $enrollment->productDeliveryOption?->delivery_method;
 
         if ($deliveryMethod === DeliveryMethodEnum::LMS_MOODLE) {

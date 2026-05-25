@@ -2,19 +2,26 @@
 
 declare(strict_types=1);
 
+use App\Enums\System\SettingKeyEnum;
 use App\Exceptions\Integrations\ExternalProvisioningException;
 use App\Models\User;
 use App\Services\Integrations\SpotPlayerService;
+use App\Services\SettingsService;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
     Http::preventStrayRequests();
-    $this->service = new SpotPlayerService();
-    $this->service->setConfig([
-        'endpoint' => 'https://spotplayer.test/license',
-        'api_key'  => 'spot-key',
-        'sandbox'  => false,
-    ]);
+
+    $settings = $this->mock(SettingsService::class);
+    $settings->shouldReceive('get')
+        ->with(SettingKeyEnum::SPOT_PLAYER, Mockery::any())
+        ->andReturn([
+            'endpoint' => 'https://spotplayer.test/license',
+            'api_key'  => 'spot-key',
+            'sandbox'  => false,
+        ]);
+
+    $this->service = app(SpotPlayerService::class);
 });
 
 it('issues license from root level response fields', function (): void {
@@ -104,7 +111,12 @@ it('throws when spotplayer returns explicit error field', function (): void {
 });
 
 it('throws when service used before configuration', function (): void {
-    $service = new SpotPlayerService();
+    $settings = $this->mock(SettingsService::class);
+    $settings->shouldReceive('get')
+        ->with(SettingKeyEnum::SPOT_PLAYER, Mockery::any())
+        ->andReturn(['endpoint' => '', 'api_key' => '']);
+
+    $service = app(SpotPlayerService::class);
     $user    = User::factory()->create();
 
     expect(fn () => $service->issueLicense('SPOT-7', $user))

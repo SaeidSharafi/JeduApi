@@ -36,26 +36,26 @@ describe('UpdateBlogPostAction', function (): void {
 
     it('updates a blog post', function (): void {
         $relatedProductable = Course::factory()->create();
-        $data = BlogPostUpdateData::from(
+        $data               = BlogPostUpdateData::from(
             [
-                "title"                =>  'Updated Title',
-                "slug"                 =>  'updated-title',
-                "body"                 =>  str_repeat('This is the updated body content. ', 50), // 50 repetitions to increase word count
-                "excerpt"              =>  'Updated excerpt.',
-                "status"               =>  'published',
-                "author_id"            =>  $this->staff->id,
-                "published_at"         =>  now(),
-                "is_featured"          =>  true,
-                "main_productable"     =>  ['id' => $relatedProductable->id, 'type' => 'course'],
-                "category_ids"         =>  [$this->category2->id],
-                "related_productables" =>  [['id' => $relatedProductable->id, 'type' => 'course']],
-                "media"                => [
+                'title'                => 'Updated Title',
+                'slug'                 => 'updated-title',
+                'body'                 => str_repeat('This is the updated body content. ', 50), // 50 repetitions to increase word count
+                'excerpt'              => 'Updated excerpt.',
+                'status'               => 'published',
+                'author_id'            => $this->staff->id,
+                'published_at'         => now(),
+                'is_featured'          => true,
+                'main_productable'     => ['id' => $relatedProductable->id, 'type' => 'course'],
+                'category_ids'         => [$this->category2->id],
+                'related_productables' => [['id' => $relatedProductable->id, 'type' => 'course']],
+                'media'                => [
                     'cover' => [$this->media2->id],
                 ],
             ]
         );
 
-        $action = new UpdateBlogPostAction();
+        $action      = new UpdateBlogPostAction();
         $updatedPost = $action->handle($this->post, $data);
         $updatedPost->loadRelatedproductables();
         expect($updatedPost)->toBeInstanceOf(App\Models\Blog\BlogPost::class)
@@ -64,7 +64,7 @@ describe('UpdateBlogPostAction', function (): void {
             ->and($updatedPost->body)->toBe(str_repeat('This is the updated body content. ', 50))
             ->and($updatedPost->excerpt)->toBe('Updated excerpt.')
             ->and($updatedPost->author_id)->toBe($this->staff->id)
-            ->and($updatedPost->status)->toBe(\App\Enums\Content\PublicationStatusEnum::PUBLISHED)
+            ->and($updatedPost->status)->toBe(App\Enums\Content\PublicationStatusEnum::PUBLISHED)
             ->and($updatedPost->is_featured)->toBeTrue()
             ->and($updatedPost->firstMedia('cover')->getUrl())->toBe($this->media2->getUrl())
             ->and($updatedPost->categories->pluck('id')->toArray())->toBe([$this->category2->id])
@@ -77,24 +77,24 @@ describe('UpdateBlogPostAction', function (): void {
     it('updates a blog post and removing media', function (): void {
         $data = BlogPostUpdateData::from(
             [
-                "title"                => 'Updated Title No Slug Change',
-                "slug"                 => null,
-                "body"                 => 'Updated body content without slug change.',
-                "excerpt"              => 'Updated excerpt without slug change.',
-                "status"               => 'published',
-                "author_id"            => $this->staff->id,
-                "published_at"         => verta()->format('Y-m-d H:i:s'),
-                "is_featured"          => true,
-                "main_productable"     => null,
-                "category_ids"         => [$this->category2->id],
-                "related_productables" => [],
-                "media"                => [
+                'title'                => 'Updated Title No Slug Change',
+                'slug'                 => null,
+                'body'                 => 'Updated body content without slug change.',
+                'excerpt'              => 'Updated excerpt without slug change.',
+                'status'               => 'published',
+                'author_id'            => $this->staff->id,
+                'published_at'         => verta()->format('Y-m-d H:i:s'),
+                'is_featured'          => true,
+                'main_productable'     => null,
+                'category_ids'         => [$this->category2->id],
+                'related_productables' => [],
+                'media'                => [
                     'cover' => [$this->media->id],
                 ],
             ]
         );
 
-        $action = new UpdateBlogPostAction();
+        $action      = new UpdateBlogPostAction();
         $updatedPost = $action->handle($this->post, $data);
         $updatedPost->loadRelatedproductables();
         expect($updatedPost)->toBeInstanceOf(App\Models\Blog\BlogPost::class)
@@ -103,7 +103,7 @@ describe('UpdateBlogPostAction', function (): void {
             ->and($updatedPost->body)->toBe('Updated body content without slug change.')
             ->and($updatedPost->excerpt)->toBe('Updated excerpt without slug change.')
             ->and($updatedPost->author_id)->toBe($this->staff->id)
-            ->and($updatedPost->status)->toBe(\App\Enums\Content\PublicationStatusEnum::PUBLISHED)
+            ->and($updatedPost->status)->toBe(App\Enums\Content\PublicationStatusEnum::PUBLISHED)
             ->and($updatedPost->is_featured)->toBeTrue()
             ->and($updatedPost->firstMedia('cover')->getUrl())->toBe($this->media->getUrl())
             ->and($updatedPost->firstMedia('video'))->toBeNull()

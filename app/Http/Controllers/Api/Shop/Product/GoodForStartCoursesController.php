@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Shop\Product;
 
 use App\Data\Shop\Product\ProductCardData;
@@ -17,7 +19,7 @@ use SmartCache\Facades\SmartCache;
  *
  * APIs for retrieving good-for-start courses in a specific category.
  */
-class GoodForStartCoursesController extends Controller
+final class GoodForStartCoursesController extends Controller
 {
     /**
      * Good For Start Courses

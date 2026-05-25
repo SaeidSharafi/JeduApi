@@ -10,6 +10,7 @@ use App\Data\Admin\Settings\CollaborationPageData;
 use App\Enums\System\SettingKeyEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Services\SettingsService;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -24,14 +25,13 @@ final class CollaborationInfoController extends Controller
      *
      * @responseFile 200 responses/settings/collaboration.json
      */
-    public function show(): ApiResponseInterface
+    public function show(SettingsService $settingsService): ApiResponseInterface
     {
         Gate::authorize('viewAny', Setting::class);
 
-        $collaboration           = Setting::getValue(SettingKeyEnum::COLLABORATION, CollaborationPageData::getDefaults());
-        $collaboration['images'] = Setting::witImages($collaboration);
-
-        return response()->success(CollaborationPageData::from($collaboration));
+        return response()->success(
+            CollaborationPageData::from($settingsService->get(SettingKeyEnum::COLLABORATION, CollaborationPageData::getDefaults()))
+        );
     }
 
     /**
@@ -40,15 +40,14 @@ final class CollaborationInfoController extends Controller
      * @responseFile 200 responses/settings/collaboration.json
      * @responseFile 422 responses/422.json
      */
-    public function update(CollaborationPageCreateData $data): ApiResponseInterface
+    public function update(CollaborationPageCreateData $data, SettingsService $settingsService): ApiResponseInterface
     {
         Gate::authorize('update', Setting::class);
 
-        Setting::setValue(SettingKeyEnum::COLLABORATION, $data->toArray(), 'json', 'cms');
-        $collaboration = Setting::getValue(SettingKeyEnum::COLLABORATION);
+        $settingsService->set(SettingKeyEnum::COLLABORATION, $data->toArray(), 'json', 'cms');
 
         return response()->success(
-            CollaborationPageData::from($collaboration),
+            CollaborationPageData::from($settingsService->get(SettingKeyEnum::COLLABORATION, CollaborationPageData::getDefaults())),
             __('messages.updated', ['model' => __('messages.models.about_us')])
         );
     }

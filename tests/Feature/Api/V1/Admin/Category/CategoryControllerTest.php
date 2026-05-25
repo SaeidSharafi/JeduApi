@@ -116,7 +116,7 @@ it('can update category', function (): void {
     $response = $this->putJson(route('api.v1.admin.category.update', ['category' => $category->id]), [
         'name'             => 'Updated Category',
         'slug'             => 'updated-category',
-        'status'           => \App\Enums\Content\PublicationStatusEnum::DRAFT,
+        'status'           => App\Enums\Content\PublicationStatusEnum::DRAFT,
         'parent_id'        => null,
         'description'      => 'Updated description',
         'color_scheme'     => '#000000',
@@ -136,7 +136,7 @@ it('can update category', function (): void {
     $this->assertDatabaseHas('categories', [
         'name'                     => 'Updated Category',
         'slug'                     => 'updated-category',
-        'status'                   => \App\Enums\Content\PublicationStatusEnum::DRAFT->value,
+        'status'                   => App\Enums\Content\PublicationStatusEnum::DRAFT->value,
         'image_url'                => $image->getUrl(),
         'icon_url'                 => $icon->getUrl(),
         'educational_calendar_url' => $educationalCalendar->getUrl(),
@@ -151,6 +151,7 @@ it('can update category', function (): void {
 
 it('can delete category', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::CATEGORY_DELETE->value]);
+    Storage::fake('public');
     $icon = MediaUploader::fromSource(Illuminate\Http\UploadedFile::fake()->image('icon.jpg'))
         ->toDisk('public')
         ->upload();
@@ -203,7 +204,7 @@ it('can not access category without auth', function (): void {
     $response = $this->postJson(route('api.v1.admin.category.store'), [
         'name'             => 'Test Category',
         'slug'             => 'test-category',
-        'status'           => \App\Enums\Content\PublicationStatusEnum::DRAFT,
+        'status'           => App\Enums\Content\PublicationStatusEnum::DRAFT,
         'parent_id'        => null,
         'description'      => 'Test description',
         'color_scheme'     => '#000000',
@@ -217,7 +218,7 @@ it('can not access category without auth', function (): void {
     $response = $this->putJson(route('api.v1.admin.category.update', ['category' => $category->id]), [
         'name'             => 'Updated Category',
         'slug'             => 'updated-category',
-        'status'           => \App\Enums\Content\PublicationStatusEnum::DRAFT,
+        'status'           => App\Enums\Content\PublicationStatusEnum::DRAFT,
         'parent_id'        => null,
         'description'      => 'Updated description',
         'color_scheme'     => '#000000',

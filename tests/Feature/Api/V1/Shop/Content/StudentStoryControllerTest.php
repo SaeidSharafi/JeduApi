@@ -63,7 +63,7 @@ describe('StudentStoryController', function (): void {
         $courseSlug = 'example-course-slug';
 
         $storyInCourse->courses()->attach(
-            \App\Models\Course::factory()->create(['slug' => $courseSlug])->id
+            App\Models\Course::factory()->create(['slug' => $courseSlug])->id
         );
 
         $response = $this->getJson(route('api.v1.shop.student-stories.index', [
@@ -89,7 +89,7 @@ describe('StudentStoryController', function (): void {
         $categorySlug = 'example-category-slug';
 
         $storyInCategory->categories()->attach(
-            \App\Models\Category::factory()->create(['slug' => $categorySlug])->id
+            App\Models\Category::factory()->create(['slug' => $categorySlug])->id
         );
 
         $response = $this->getJson(route('api.v1.shop.student-stories.index', [

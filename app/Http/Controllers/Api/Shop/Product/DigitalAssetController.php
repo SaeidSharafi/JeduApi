@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Api\Shop\Product;
 use App\Data\Shop\Product\Course\ProductListRequestData;
 use App\Data\Shop\Product\DigitalAssetDetailData;
 use App\Data\Shop\Product\ProductCardData;
-use App\Data\Shop\Product\SeminarDetailData;
 use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Product;

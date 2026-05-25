@@ -48,11 +48,9 @@ return [
     ],
 
     'ims' => [
-        'base_url'             => env('IMS_BASE_URL'),
-        'api_key'              => env('IMS_API_KEY'),
-        'api_key_header'       => env('IMS_API_KEY_HEADER', 'X-API-KEY'),
-        'enrollments_endpoint' => env('IMS_ENROLLMENTS_ENDPOINT', '/api/enrollments'),
-        'timeout'              => (int) env('IMS_TIMEOUT', 15),
+        'base_url' => env('IMS_BASE_URL'),
+        'api_key'  => env('IMS_API_KEY'),
+        'timeout'  => (int) env('IMS_TIMEOUT', 15),
     ],
 
     'moodle' => [

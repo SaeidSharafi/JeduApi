@@ -29,8 +29,7 @@ final class BlogPostCardData extends Data
         #[DataCollectionOf(BlogCategoryCardData::class)]
         public ?Collection $categories = null,
         public array $media = [],
-    ) {
-    }
+    ) {}
 
     public static function fromModel(BlogPost $post): self
     {

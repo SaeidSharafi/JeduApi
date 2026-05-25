@@ -49,7 +49,7 @@ describe('Admin OrderItemController', function (): void {
             'data' => [
                 'id', 'Order_id', 'product_delivery_option_id', 'discount_amount', 'qty_ordered', 'tax_amount',
                 'name', 'sku', 'price', 'total', 'payment_type' => ['value', 'label'], 'prepayment_amount',
-                'qty_refunded', 'total_refunded', 'status' => ['value', 'label'], 'vendor', 'product_snapshot',
+                'qty_refunded', 'total_refunded', 'status'      => ['value', 'label'], 'vendor', 'product_snapshot',
             ],
             'metadata',
         ]);
@@ -79,7 +79,7 @@ describe('Admin OrderItemController', function (): void {
             'data' => [
                 ['id', 'Order_id', 'product_delivery_option_id', 'discount_amount', 'qty_ordered', 'tax_amount',
                     'name', 'sku', 'price', 'total', 'payment_type' => ['value', 'label'], 'prepayment_amount',
-                    'qty_refunded', 'total_refunded', 'status' => ['value', 'label'], 'vendor', 'product_snapshot'],
+                    'qty_refunded', 'total_refunded', 'status'      => ['value', 'label'], 'vendor', 'product_snapshot'],
             ],
             'metadata',
         ]);

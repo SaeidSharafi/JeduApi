@@ -120,12 +120,21 @@ return [
         '<>' => 'نا برابر',
     ],
     'ProductRegistrationStatusEnum' => [
-      'in_progress' => 'در حال ثبت‌نام',
-      'finished' => 'برگزار شده',
+        'in_progress' => 'در حال ثبت‌نام',
+        'finished'    => 'برگزار شده',
     ],
     'ProductDeliveryStatusEnum' => [
-        'online' => 'آنلاین',
+        'online'    => 'آنلاین',
         'in_person' => 'حضوری',
-        'combined' => 'ترکیبی',
-    ]
+        'combined'  => 'ترکیبی',
+    ],
+    'EnrollmentStatusEnum' => [
+        'awaiting_payment'     => 'در انتظار پرداخت',
+        'pending_provisioning' => 'در حال آماده‌سازی دسترسی',
+        'active'               => 'فعال',
+        'suspended'            => 'معلق',
+        'expired'              => 'منقضی شده',
+        'cancelled'            => 'لغو شده',
+        'provisioning_failed'  => 'خطا در آماده‌سازی دسترسی',
+    ],
 ];

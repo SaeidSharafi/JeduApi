@@ -12,7 +12,6 @@ use App\Enums\Product\ProductableEnum;
 use App\Enums\TermStatusEnum;
 use App\Models\Product;
 use Carbon\Carbon;
-use Carbon\CarbonImmutable;
 use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -33,7 +32,7 @@ final class ProductQueryService
 {
     public const array allowedSortFields
         = [
-            'created_at', 'updated_at', 'name', 'short_name', 'price', 'capacity_utilization'
+            'created_at', 'updated_at', 'name', 'short_name', 'price', 'capacity_utilization',
         ];
 
     private Builder $query;
@@ -163,7 +162,7 @@ final class ProductQueryService
                 $this->availabilityStatus(AvailabilityStatusEnum::from($filter->availability_status));
             }
 
-            if (!$filter->availability_status && ($filter->available_from || $filter->available_to)) {
+            if (! $filter->availability_status && ($filter->available_from || $filter->available_to)) {
                 $this->availabilityWindow(
                     $filter->available_from,
                     $filter->available_to
@@ -181,8 +180,8 @@ final class ProductQueryService
 
         return $this
             ->when($isDefaultOrder && $requestData->q,
-                fn($q) => $q->query->orderByScore(),
-                fn($q) => $q->sortBy($requestData->sortBy, $requestData->sortOrder)
+                fn ($q) => $q->query->orderByScore(),
+                fn ($q) => $q->sortBy($requestData->sortBy, $requestData->sortOrder)
             )
             ->paginate($requestData->per_page);
     }
@@ -217,7 +216,7 @@ final class ProductQueryService
     public function globalSearchProductsScout(ProductListRequestData $requestData): LengthAwarePaginator
     {
         if ($requestData->sortBy === 'capacity_utilization' || $requestData->filter?->near_capacity_only
-            || $requestData->filter?->capacity_threshold
+                                                            || $requestData->filter?->capacity_threshold
         ) {
             return $this->globalSearchProductsDatabase($requestData);
         }
@@ -228,7 +227,7 @@ final class ProductQueryService
 
         // Build the search query with the search term if provided
         $searchTerm = $requestData->q ?: '*';
-        $query = Product::search($searchTerm)
+        $query      = Product::search($searchTerm)
             ->options([
                 'query_by' => 'embedding',
             ]);
@@ -249,7 +248,7 @@ final class ProductQueryService
             $filter = $requestData->filter;
 
             // Category filter: use category_slugs (array)
-            if ($filter->category_slugs && !empty($filter->category_slugs)) {
+            if ($filter->category_slugs && ! empty($filter->category_slugs)) {
                 foreach ($filter->category_slugs as $slug) {
                     $query->where('category_slugs', $slug);
                 }
@@ -261,7 +260,7 @@ final class ProductQueryService
             }
 
             // Fulfillment types filter: use fulfillment_types (array)
-            if ($filter->fulfillment_types && !empty($filter->fulfillment_types)) {
+            if ($filter->fulfillment_types && ! empty($filter->fulfillment_types)) {
                 foreach ($filter->fulfillment_types as $type) {
                     $query->where('fulfillment_types', $type);
                 }
@@ -306,20 +305,20 @@ final class ProductQueryService
             if ($filter->availability_status) {
                 $startOfDayTs = now()->startOfDay()->timestamp;
                 match ($filter->availability_status) {
-                    AvailabilityStatusEnum::PAST->value => $query->where('latest_availability_end_ts', ['<', $startOfDayTs]),
+                    AvailabilityStatusEnum::PAST->value     => $query->where('latest_availability_end_ts', ['<', $startOfDayTs]),
                     AvailabilityStatusEnum::UPCOMING->value => $query->where('earliest_availability_start_ts', ['>', $startOfDayTs]),
-                    AvailabilityStatusEnum::ONGOING->value => $query
+                    AvailabilityStatusEnum::ONGOING->value  => $query
                         ->where('earliest_availability_start_ts', ['<=', $startOfDayTs])
                         ->where('latest_availability_end_ts', ['>=', $startOfDayTs]),
                 };
             }
             // Availability window filters
-            if (!$filter->availability_status && $filter->available_from) {
+            if (! $filter->availability_status && $filter->available_from) {
                 $timestamp = $filter->available_from->timestamp;
                 $query->where('latest_availability_end_ts', ['>=', $timestamp]);
             }
 
-            if (!$filter->availability_status && $filter->available_to) {
+            if (! $filter->availability_status && $filter->available_to) {
                 $timestamp = $filter->available_to->timestamp;
                 $query->where('earliest_availability_start_ts', ['<=', $timestamp]);
             }
@@ -340,7 +339,7 @@ final class ProductQueryService
                         $q->where('status', PublicationStatusEnum::PUBLISHED)
                             ->with([
                                 'productDeliveryOptionDiscountPrice',
-                                'teachers:id,first_name,last_name,gender,uuid,avatar_url,rate'
+                                'teachers:id,first_name,last_name,gender,uuid,avatar_url,rate',
                             ]);
                     },
                 ]);
@@ -402,7 +401,7 @@ final class ProductQueryService
      */
     public function registrationWindow(Carbon|string|null $from = null, Carbon|string|null $to = null): self
     {
-        if (!$from && !$to) {
+        if (! $from && ! $to) {
             return $this;
         }
 
@@ -430,9 +429,9 @@ final class ProductQueryService
     {
         return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($availabilityStatus) {
             match ($availabilityStatus) {
-                AvailabilityStatusEnum::PAST => $q->where('available_to', '<', now()->startOfDay()),
+                AvailabilityStatusEnum::PAST     => $q->where('available_to', '<', now()->startOfDay()),
                 AvailabilityStatusEnum::UPCOMING => $q->where('available_from', '>', now()->startOfDay()),
-                AvailabilityStatusEnum::ONGOING => $q
+                AvailabilityStatusEnum::ONGOING  => $q
                     ->where('available_from', '<=', now()->startOfDay())
                     ->where(function ($q) {
                         $q->where('available_to', '>=', now()->startOfDay())
@@ -516,7 +515,7 @@ final class ProductQueryService
      */
     public function ofTypes(array $types): self
     {
-        $this->productableTypes = array_map(fn($type) => $type->value, $types);
+        $this->productableTypes = array_map(fn ($type) => $type->value, $types);
 
         return $this;
     }
@@ -669,7 +668,7 @@ final class ProductQueryService
     public function sortBy(string $field, string $direction = 'desc'): self
     {
 
-        if (!in_array($field, self::allowedSortFields) || !in_array($direction, ['asc', 'desc'])) {
+        if (! in_array($field, self::allowedSortFields) || ! in_array($direction, ['asc', 'desc'])) {
             return $this;
         }
 
@@ -740,7 +739,7 @@ final class ProductQueryService
                 $q->where('status', PublicationStatusEnum::PUBLISHED)
                     ->with([
                         'productDeliveryOptionDiscountPrice',
-                        'teachers:id,first_name,last_name,gender,uuid,avatar_url,rate'
+                        'teachers:id,first_name,last_name,gender,uuid,avatar_url,rate',
                     ]);
             },
             'productable',
@@ -758,7 +757,7 @@ final class ProductQueryService
                 $q->where('status', PublicationStatusEnum::PUBLISHED)
                     ->with([
                         'productDeliveryOptionDiscountPrice',
-                        'teachers:id,first_name,last_name,gender,uuid,avatar_url,rate'
+                        'teachers:id,first_name,last_name,gender,uuid,avatar_url,rate',
                     ]);
             },
             'productableWithAllRelations',
@@ -788,7 +787,7 @@ final class ProductQueryService
         // Filter by available delivery options
         $this->addRelationshipConstraint('productDeliveryOptions', function ($q) {
             $q->where('status', PublicationStatusEnum::PUBLISHED);
-            if (!$this->includeFullProducts) {
+            if (! $this->includeFullProducts) {
                 $q->where(function ($capacityQuery) {
                     $capacityQuery->whereNull('capacity')
                         ->orWhereColumn('capacity', '>', 'enrolled_count');
@@ -805,7 +804,7 @@ final class ProductQueryService
         if ($this->checkTermStatus) {
             $this->query->where(function ($q) {
                 $q->whereNull('term_id')
-                    ->orWhereHas('term', fn($termQuery) => $termQuery->where('status', TermStatusEnum::ACTIVE));
+                    ->orWhereHas('term', fn ($termQuery) => $termQuery->where('status', TermStatusEnum::ACTIVE));
             });
         }
     }
@@ -854,7 +853,7 @@ final class ProductQueryService
      */
     private function applyPriceJoinOnce(): void
     {
-        if (!in_array('price_filter', $this->appliedJoins)) {
+        if (! in_array('price_filter', $this->appliedJoins)) {
             $this->ensureBaseSelects();
 
             $this->query->addSelect([
@@ -876,7 +875,7 @@ final class ProductQueryService
 
     private function ensureBaseSelects(): void
     {
-        if (!$this->selectClauseModified) {
+        if (! $this->selectClauseModified) {
             $this->query->select('products.*');
             $this->selectClauseModified = true;
         }
@@ -891,7 +890,7 @@ final class ProductQueryService
      */
     private function sortByCapacityUtilization(float $threshold = 0.8): self
     {
-        $threshold = max(0.0, min(1.0, $threshold));
+        $threshold       = max(0.0, min(1.0, $threshold));
         $publishedStatus = PublicationStatusEnum::PUBLISHED->value;
 
         $this->ensureBaseSelects();
@@ -924,8 +923,8 @@ final class ProductQueryService
 
         if ($available === null) {
             $available = config('scout.driver') === 'typesense'
-                && !empty(config('scout.typesense.client-settings.api_key'))
-                && !app()->runningUnitTests();
+                && ! empty(config('scout.typesense.client-settings.api_key'))
+                && ! app()->runningUnitTests();
         }
 
         return $available;

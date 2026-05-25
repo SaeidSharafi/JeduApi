@@ -12,7 +12,7 @@ beforeEach(function (): void {
 });
 it('returns order payments list', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_VIEW->value]);
-    $order = App\Models\Order::factory()->create();
+    $order   = App\Models\Order::factory()->create();
     $payment = App\Models\Payment::factory()
         ->create([
             'order_id'    => $order->id,
@@ -49,7 +49,7 @@ it('returns order payments list', function (): void {
             'label' => PaymentMethodEnum::MELLAT_GATEWAY->translate(),
             'value' => PaymentMethodEnum::MELLAT_GATEWAY->value,
         ],
-        'status'      => [
+        'status' => [
             'label' => PaymentStatusEnum::COMPLETED->translate(),
             'value' => PaymentStatusEnum::COMPLETED->value,
         ],
@@ -58,7 +58,7 @@ it('returns order payments list', function (): void {
 });
 it('returns order payment detail', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_VIEW->value]);
-    $order = App\Models\Order::factory()->create();
+    $order   = App\Models\Order::factory()->create();
     $payment = App\Models\Payment::factory()->create([
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
@@ -89,7 +89,7 @@ it('returns order payment detail', function (): void {
                 'label' => PaymentMethodEnum::MELLAT_GATEWAY->translate(),
                 'value' => PaymentMethodEnum::MELLAT_GATEWAY->value,
             ],
-            'status'      => [
+            'status' => [
                 'label' => PaymentStatusEnum::COMPLETED->translate(),
                 'value' => PaymentStatusEnum::COMPLETED->value,
             ],
@@ -227,9 +227,9 @@ it('create partiall payment successfully', function (): void {
             ]
         );
     $data = [
-        'method'      => PaymentMethodEnum::BANK_TRANSFER,
-        'status'      => PaymentStatusEnum::COMPLETED,
-        'data'        => [
+        'method' => PaymentMethodEnum::BANK_TRANSFER,
+        'status' => PaymentStatusEnum::COMPLETED,
+        'data'   => [
             'transaction_id'   => '123456789',
             'transaction_date' => verta()->format('Y-m-d'),
             'sender_name'      => 'Test Sender',

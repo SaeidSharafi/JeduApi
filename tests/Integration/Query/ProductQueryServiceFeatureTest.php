@@ -928,10 +928,10 @@ describe('ProductQueryService integration', function () {
                 ->withCourse(Course::factory()->create())
                 ->create(['name' => 'Active Product']);
             ProductDeliveryOption::factory()->for($pastProduct)->create([
-                'price'                   => 100,
-                'available_from'          => $now->clone()->subDays(3),
-                'available_to'            => $now->clone()->subDays(1),
-                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+                'price'            => 100,
+                'available_from'   => $now->clone()->subDays(3),
+                'available_to'     => $now->clone()->subDays(1),
+                'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
             ]);
             indexProductPrice($pastProduct);
 
@@ -940,10 +940,10 @@ describe('ProductQueryService integration', function () {
                 ->withCourse(Course::factory()->create())
                 ->create(['name' => 'Closed Registration']);
             ProductDeliveryOption::factory()->for($ongoingProduct)->create([
-                'price'                   => 100,
-                'available_from'          => $now->clone()->subDays(3),
-                'available_to'            => $now->clone()->addDays(1),
-                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+                'price'            => 100,
+                'available_from'   => $now->clone()->subDays(3),
+                'available_to'     => $now->clone()->addDays(1),
+                'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
             ]);
             indexProductPrice($ongoingProduct);
 
@@ -952,10 +952,10 @@ describe('ProductQueryService integration', function () {
                 ->withCourse(Course::factory()->create())
                 ->create(['name' => 'Future Content']);
             ProductDeliveryOption::factory()->for($futureContentProduct)->create([
-                'price'                   => 100,
-                'available_from'          => $now->clone()->addDays(2),
-                'available_to'            => $now->clone()->addDays(10),
-                'fulfillment_type'        => FulfillmentTypeEnum::ONLINE_SERVICE->value,
+                'price'            => 100,
+                'available_from'   => $now->clone()->addDays(2),
+                'available_to'     => $now->clone()->addDays(10),
+                'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
             ]);
             indexProductPrice($futureContentProduct);
 

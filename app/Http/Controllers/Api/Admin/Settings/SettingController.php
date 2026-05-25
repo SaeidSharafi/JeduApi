@@ -27,7 +27,7 @@ final class SettingController extends Controller
         Gate::authorize('viewAny', Setting::class);
 
         $settings = Setting::all()
-            ->map(fn (Setting $setting): SettingData => SettingData::from($setting))
+            ->map(fn (Setting $setting): SettingData => SettingData::fromModel($setting))
             ->groupBy('group');
 
         return response()->success($settings);

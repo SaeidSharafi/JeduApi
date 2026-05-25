@@ -288,7 +288,7 @@ describe('AdminAuditMiddleware', function (): void {
             $this->middleware->handle($request, $this->next);
 
             $this->assertDatabaseHas('admin_action_logs', [
-                'risk_level'   => $expectedRiskLevel,
+                'risk_level'           => $expectedRiskLevel,
                 'request_data->amount' => $amount,
             ]);
         })->with([

@@ -78,7 +78,7 @@ final class Category extends Model
      */
     public function parent(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(self::class);
     }
 
     /**
@@ -86,7 +86,7 @@ final class Category extends Model
      */
     public function children(): HasMany
     {
-        return $this->hasMany(Category::class, 'parent_id');
+        return $this->hasMany(self::class, 'parent_id');
     }
 
     protected function casts(): array

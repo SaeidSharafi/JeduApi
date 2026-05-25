@@ -55,7 +55,7 @@ describe('index', function (): void {
 
 describe('store', function (): void {
     it('should add item to cart for authenticated user', function (): void {
-        $user = User::factory()->create();
+        $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
@@ -76,7 +76,7 @@ describe('store', function (): void {
     });
 
     it('should throw validation error when adding existing item to cart', function (): void {
-        $user = User::factory()->create();
+        $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
@@ -123,7 +123,7 @@ describe('store', function (): void {
     });
 
     it('should fail with invalid quantity', function (): void {
-        $user = User::factory()->create();
+        $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
@@ -137,7 +137,7 @@ describe('store', function (): void {
     });
 
     it('should fail with quantity exceeding maximum', function (): void {
-        $user = User::factory()->create();
+        $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
@@ -151,7 +151,7 @@ describe('store', function (): void {
     });
 
     it('should reject adding more than one quantity per item even when validation passes', function (): void {
-        $user = User::factory()->create();
+        $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
@@ -167,11 +167,11 @@ describe('store', function (): void {
 
 describe('update', function (): void {
     it('should update cart item quantity for authenticated user', function (): void {
-        $user = User::factory()->create();
+        $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
-        $cart = Cart::factory()->create(['user_id' => $user->id]);
+        $cart     = Cart::factory()->create(['user_id' => $user->id]);
         $cartItem = CartItem::factory()->create([
             'cart_id'                    => $cart->id,
             'product_delivery_option_id' => $deliveryOption->id,
@@ -192,12 +192,12 @@ describe('update', function (): void {
     });
 
     it('should fail to update another user\'s cart item', function (): void {
-        $user = User::factory()->create();
+        $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
-        $otherUser = User::factory()->create();
-        $otherCart = Cart::factory()->create(['user_id' => $otherUser->id]);
+        $otherUser     = User::factory()->create();
+        $otherCart     = Cart::factory()->create(['user_id' => $otherUser->id]);
         $otherCartItem = CartItem::factory()->create([
             'cart_id'                    => $otherCart->id,
             'product_delivery_option_id' => $deliveryOption->id,
@@ -211,11 +211,11 @@ describe('update', function (): void {
     });
 
     it('should prevent setting more than 1 quantity for item that does not support it', function (): void {
-        $user = User::factory()->create();
+        $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
-        $cart = Cart::factory()->create(['user_id' => $user->id]);
+        $cart     = Cart::factory()->create(['user_id' => $user->id]);
         $cartItem = CartItem::factory()->create([
             'cart_id'                    => $cart->id,
             'product_delivery_option_id' => $deliveryOption->id,
@@ -234,11 +234,11 @@ describe('update', function (): void {
 
 describe('destroy', function (): void {
     it('should remove item from cart for authenticated user', function (): void {
-        $user = User::factory()->create();
+        $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
-        $cart = Cart::factory()->create(['user_id' => $user->id]);
+        $cart     = Cart::factory()->create(['user_id' => $user->id]);
         $cartItem = CartItem::factory()->create([
             'cart_id'                    => $cart->id,
             'product_delivery_option_id' => $deliveryOption->id,
@@ -252,12 +252,12 @@ describe('destroy', function (): void {
     });
 
     it('should fail to delete another user\'s cart item', function (): void {
-        $user = User::factory()->create();
+        $user           = User::factory()->create();
         $deliveryOption = ProductDeliveryOption::factory()->create();
         $this->customer($user);
 
-        $otherUser = User::factory()->create();
-        $otherCart = Cart::factory()->create(['user_id' => $otherUser->id]);
+        $otherUser     = User::factory()->create();
+        $otherCart     = Cart::factory()->create(['user_id' => $otherUser->id]);
         $otherCartItem = CartItem::factory()->create([
             'cart_id'                    => $otherCart->id,
             'product_delivery_option_id' => $deliveryOption->id,
@@ -320,7 +320,7 @@ describe('CartController - Guest Users', function (): void {
     describe('store', function (): void {
         it('should add item to cart for guest user', function (): void {
             $deliveryOption = ProductDeliveryOption::factory()->create();
-            $guestToken = Str::uuid()->toString();
+            $guestToken     = Str::uuid()->toString();
 
             $response = postJson(route('api.v1.shop.cart.items.store'), [
                 'product_delivery_option_uuid' => $deliveryOption->uuid,
@@ -362,9 +362,9 @@ describe('CartController - Guest Users', function (): void {
     describe('update', function (): void {
         it('should update cart item quantity for guest user', function (): void {
             $deliveryOption = ProductDeliveryOption::factory()->create();
-            $guestToken = Str::uuid()->toString();
+            $guestToken     = Str::uuid()->toString();
 
-            $cart = Cart::factory()->create(['guest_token' => $guestToken]);
+            $cart     = Cart::factory()->create(['guest_token' => $guestToken]);
             $cartItem = CartItem::factory()->create([
                 'cart_id'                    => $cart->id,
                 'product_delivery_option_id' => $deliveryOption->id,
@@ -384,10 +384,10 @@ describe('CartController - Guest Users', function (): void {
 
         it('should fail to update another guest\'s cart item', function (): void {
             $deliveryOption = ProductDeliveryOption::factory()->create();
-            $guestToken = Str::uuid()->toString();
+            $guestToken     = Str::uuid()->toString();
 
-            $otherToken = Str::uuid()->toString();
-            $otherCart = Cart::factory()->create(['guest_token' => $otherToken]);
+            $otherToken    = Str::uuid()->toString();
+            $otherCart     = Cart::factory()->create(['guest_token' => $otherToken]);
             $otherCartItem = CartItem::factory()->create([
                 'cart_id'                    => $otherCart->id,
                 'product_delivery_option_id' => $deliveryOption->id,
@@ -406,9 +406,9 @@ describe('CartController - Guest Users', function (): void {
     describe('destroy', function (): void {
         it('should remove item from cart for guest user', function (): void {
             $deliveryOption = ProductDeliveryOption::factory()->create();
-            $guestToken = Str::uuid()->toString();
+            $guestToken     = Str::uuid()->toString();
 
-            $cart = Cart::factory()->create(['guest_token' => $guestToken]);
+            $cart     = Cart::factory()->create(['guest_token' => $guestToken]);
             $cartItem = CartItem::factory()->create([
                 'cart_id'                    => $cart->id,
                 'product_delivery_option_id' => $deliveryOption->id,

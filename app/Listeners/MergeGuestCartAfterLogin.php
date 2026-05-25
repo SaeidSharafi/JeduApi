@@ -1,21 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Listeners;
 
 use App\Events\CustomerAuthenticatedEvent;
 use App\Services\CartService;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 
-class MergeGuestCartAfterLogin
+final class MergeGuestCartAfterLogin
 {
     /**
      * Create the event listener.
      */
     public function __construct(
         private readonly CartService $cartService
-    )
-    {
+    ) {
         //
     }
 
@@ -30,7 +29,7 @@ class MergeGuestCartAfterLogin
             try {
                 $this->cartService->mergeGuestCart($guestToken, $event->user->id);
             }
-            //@codeCoverageIgnoreStart
+            // @codeCoverageIgnoreStart
             catch (Exception $e) {
                 // Log error but don't fail the login
                 Log::warning('Failed to merge guest cart after login', [
@@ -39,7 +38,7 @@ class MergeGuestCartAfterLogin
                     'error'       => $e->getMessage(),
                 ]);
             }
-            //@codeCoverageIgnoreEnd
+            // @codeCoverageIgnoreEnd
         }
     }
 }

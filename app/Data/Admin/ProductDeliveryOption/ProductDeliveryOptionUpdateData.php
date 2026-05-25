@@ -6,7 +6,9 @@ namespace App\Data\Admin\ProductDeliveryOption;
 
 use App\Actions\Admin\ProductDeliveryOption\GetDeliveryDetailsValidationRulesAction;
 use App\Data\Transformer\CarbonFromJalaliString;
+use App\Enums\Content\PublicationStatusEnum;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
@@ -22,15 +24,15 @@ final class ProductDeliveryOptionUpdateData extends Data
         #[MapInputName('details')]
         public array $details_json,
         public array $teachers,
-        public ?int $capacity = null,
-        public bool $is_prepayment_available = false,
-        public ?int $prepayment_amount = null,
-        public bool $is_featured = false,
-        public ?int $featured_price = null,
+        public ?int $capacity,
+        public bool $is_prepayment_available,
+        public ?int $prepayment_amount,
+        public bool $is_featured,
+        public ?int $featured_price,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]
-        public ?Carbon $featured_price_start_date = null,
+        public ?Carbon $featured_price_start_date,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]
-        public ?Carbon $featured_price_end_date = null,
+        public ?Carbon $featured_price_end_date,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
         public ?Carbon $registration_start_date,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
@@ -54,7 +56,7 @@ final class ProductDeliveryOptionUpdateData extends Data
             'sku'                       => ['required', 'alpha_dash', 'max:255'],
             'price'                     => ['required', 'integer', 'min:0'],
             'capacity'                  => ['nullable', 'integer', 'min:0'],
-            'status'                    => ['required', 'string', 'in:draft,published,archived'],
+            'status'                    => ['required', 'string', Rule::enum(PublicationStatusEnum::class)],
             'is_prepayment_available'   => ['boolean'],
             'prepayment_amount'         => ['nullable', 'integer', 'min:0'],
             'details'                   => ['present', 'array'],
@@ -64,14 +66,17 @@ final class ProductDeliveryOptionUpdateData extends Data
             'featured_price_end_date'   => [
                 'nullable', 'jdate:Y-m-d H:i:s', 'jdate_after:'.request('featured_price_start_date').',Y-m-d H:i:s',
             ],
-            'registration_start_date'   => ['nullable', 'jdate:Y-m-d'],
-            'registration_end_date'     => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('registration_start_date').',Y-m-d'],
-            'available_from'            => ['nullable', 'jdate:Y-m-d'],
-            'available_to'              => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('available_from').',Y-m-d'],
-            'access_days'               => ['nullable', 'integer', 'min:1'],
+            'registration_start_date' => ['nullable', 'jdate:Y-m-d'],
+            'registration_end_date'   => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('registration_start_date').',Y-m-d'],
+            'available_from'          => ['nullable', 'jdate:Y-m-d'],
+            'available_to'            => ['nullable', 'jdate:Y-m-d', 'jdate_after:'.request('available_from').',Y-m-d'],
+            'access_days'             => ['nullable', 'integer', 'min:1'],
             'teachers'                => ['required', 'array'],
             'teachers.*'              => ['required', 'integer', 'exists:teachers,id'],
             'details.ims_course_code' => ['nullable', 'string'],
+            'details.sart_date'       => ['nullable', 'jdate:Y-m-d'],
+            'details.schedule_days'   => ['nullable', 'array'],
+            'details.duration'        => ['sometimes', 'integer', 'min:1'],
         ];
 
         // Get the existing delivery option to determine its delivery method for details validation
@@ -127,11 +132,6 @@ final class ProductDeliveryOptionUpdateData extends Data
      *
      * @return array<string, array<string, mixed>>
      */
-    /**
-     * @codeCoverageIgnore
-     *
-     * @return array<string, array<string, mixed>>
-     */
     public function bodyParameters(): array
     {
         return [
@@ -170,6 +170,51 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'required'    => false,
                 'example'     => 1000000,
             ],
+            'is_featured' => [
+                'description' => 'Whether this delivery option is featured',
+                'required'    => true,
+                'example'     => false,
+            ],
+            'featured_price' => [
+                'description' => 'Featured price for the delivery option',
+                'required'    => false,
+                'example'     => 4500000,
+            ],
+            'featured_price_start_date' => [
+                'description' => 'Start date for featured pricing',
+                'required'    => false,
+                'example'     => '1404-06-15 00:00:00',
+            ],
+            'featured_price_end_date' => [
+                'description' => 'End date for featured pricing',
+                'required'    => false,
+                'example'     => '1404-07-15 23:59:59',
+            ],
+            'registration_start_date' => [
+                'description' => 'Start date for registration for this delivery option',
+                'required'    => false,
+                'example'     => '1404-06-01',
+            ],
+            'registration_end_date' => [
+                'description' => 'End date for registration for this delivery option',
+                'required'    => false,
+                'example'     => '1404-06-30',
+            ],
+            'available_from' => [
+                'description' => 'Start date for availability of this delivery option',
+                'required'    => false,
+                'example'     => '1404-06-01',
+            ],
+            'available_to' => [
+                'description' => 'End date for availability of this delivery option',
+                'required'    => false,
+                'example'     => '1404-12-31',
+            ],
+            'access_days' => [
+                'description' => 'Number of days the product access remains valid after enrolment. After this period, the enrolment expires automatically.',
+                'required'    => false,
+                'example'     => 14,
+            ],
             'details' => [
                 'description' => 'Dynamic details object that varies based on delivery_method. See delivery method specific examples below.',
                 'required'    => true,
@@ -177,12 +222,12 @@ final class ProductDeliveryOptionUpdateData extends Data
                     'moodle_course_id'      => 120,
                     'ims_course_code'       => 'COURSE-001',
                     'activity_id'           => 1,
-                    'enrollment_start_date' => '2025-06-15 09:00:00',
-                    'enrollment_end_date'   => '2025-12-31 23:59:59',
+                    'enrollment_start_date' => '1404-06-15 09:00:00',
+                    'enrollment_end_date'   => '1404-12-31 23:59:59',
                 ],
             ],
             'details.moodle_course_id' => [
-                'description' => 'For `lms_moodle`. Moodle course ID (required)',
+                'description' => 'Moodle course ID (required)',
                 'required'    => false,
                 'example'     => 120,
             ],
@@ -191,20 +236,35 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'required'    => false,
                 'example'     => 'COURSE-001',
             ],
+            'details.start_date' => [
+                'description' => 'Start date for the course or session. this is only informational and the actual availability is determined by the registration and availability date fields. (optional, but if provided should be a valid date)',
+                'required'    => false,
+                'example'     => '2',
+            ],
+            'details.schedule_days' => [
+                'description' => 'Days of the week when the course sessions are held (e.g., ["sat", "sun"])',
+                'required'    => false,
+                'example'     => ['sat', 'sun'],
+            ],
+            'details.duration' => [
+                'description' => 'Duration of the course or session in hours',
+                'required'    => false,
+                'example'     => '2',
+            ],
             'details.activity_id' => [
-                'description' => 'For `lms_moodle`. Activity ID in Moodle (required)',
+                'description' => 'For `lms_moodle`. Activity ID in Moodle',
                 'required'    => false,
                 'example'     => 1,
             ],
             'details.enrollment_start_date' => [
                 'description' => 'For `lms_moodle`. Enrollment start date for Moodle course',
                 'required'    => false,
-                'example'     => '2025-06-15 09:00:00',
+                'example'     => '1404-06-15 09:00:00',
             ],
             'details.enrollment_end_date' => [
                 'description' => 'For `lms_moodle`. Enrollment end date for Moodle course',
                 'required'    => false,
-                'example'     => '2025-12-31 23:59:59',
+                'example'     => '1404-12-31 23:59:59',
             ],
             'details.max_downloads' => [
                 'description' => 'For `direct_download`. Maximum number of downloads allowed (required)',
@@ -214,17 +274,12 @@ final class ProductDeliveryOptionUpdateData extends Data
             'details.expiration_date' => [
                 'description' => 'When delivery_method is direct_download. Download expiration date',
                 'required'    => false,
-                'example'     => '2025-12-31 23:59:59',
+                'example'     => '1404-12-31 23:59:59',
             ],
             'details.location' => [
                 'description' => 'For `in_person`. Physical location for in-person sessions (required)',
                 'required'    => false,
                 'example'     => 'Room 101, Main Building',
-            ],
-            'details.duration' => [
-                'description' => 'For `in_person`. Duration of in-person session (required)',
-                'required'    => false,
-                'example'     => '2 hours',
             ],
             'details.schedule' => [
                 'description' => 'For `in_person`. Schedule for in-person session (required)',
@@ -240,6 +295,11 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'description' => 'For `video_platform_spotplayer`. Spot ID in SpotPlayer (required)',
                 'required'    => false,
                 'example'     => 'SP-COURSE-001',
+            ],
+            'details.updated_at' => [
+                'description' => 'For `video_platform_spotplayer`. Last updated timestamp for the SpotPlayer content',
+                'required'    => false,
+                'example'     => '1405-01-01',
             ],
             'details.auto_create_meeting' => [
                 'description' => 'For `live_session_bbb`. Auto create BBB meeting during provisioning',
@@ -350,51 +410,6 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'description' => 'For `live_session_bbb` or `live_session_skyroom`. Whether to automatically start recording the session',
                 'required'    => false,
                 'example'     => true,
-            ],
-            'is_featured' => [
-                'description' => 'Whether this delivery option is featured',
-                'required'    => true,
-                'example'     => false,
-            ],
-            'featured_price' => [
-                'description' => 'Featured price for the delivery option in the smallest currency unit',
-                'required'    => false,
-                'example'     => 4500000,
-            ],
-            'featured_price_start_date' => [
-                'description' => 'Start date for featured pricing',
-                'required'    => false,
-                'example'     => '2025-06-15 00:00:00',
-            ],
-            'featured_price_end_date' => [
-                'description' => 'End date for featured pricing',
-                'required'    => false,
-                'example'     => '2025-07-15 23:59:59',
-            ],
-            'registration_start_date' => [
-                'description' => 'Start date for registration for this delivery option',
-                'required'    => false,
-                'example'     => '1404-06-01',
-            ],
-            'registration_end_date' => [
-                'description' => 'End date for registration for this delivery option',
-                'required'    => false,
-                'example'     => '1404-06-30',
-            ],
-            'available_from' => [
-                'description' => 'Start date for availability of this delivery option',
-                'required'    => false,
-                'example'     => '1404-06-01',
-            ],
-            'available_to' => [
-                'description' => 'End date for availability of this delivery option',
-                'required'    => false,
-                'example'     => '1404-12-31',
-            ],
-            'access_days' => [
-                'description' => 'Number of days the product access remains valid after enrolment. After this period, the enrolment expires automatically.',
-                'required'    => false,
-                'example'     => 14,
             ],
             'teachers' => [
                 'description' => 'List of teacher IDs associated with this delivery option',

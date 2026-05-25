@@ -14,8 +14,7 @@ final class CollaborationPageData extends Data
         public string $content,
         public ?MediaData $image = null,
 
-    ) {
-    }
+    ) {}
 
     /**
      * Get default about us data for seeding.
@@ -24,7 +23,7 @@ final class CollaborationPageData extends Data
     {
         return [
             'title'   => 'فرصت همکاری',
-            'content' => <<<HTML
+            'content' => <<<'HTML'
                             <h3>فرصت همکاری با موسسه آموزشی جهاد دانشگاهی استان قزوین</h3>
                             <p>
                             در جهاد دانشگاهی استان قزوین، ما باور داریم که آموزش با کیفیت، نتیجه همکاری با اساتید توانمند و پرانگیزه است. اگر شما نیز به تدریس علاقه‌مندید، تخصص خود را به اشتراک بگذارید و به خانواده آموزشی ما بپیوندید.

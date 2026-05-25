@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Settings;
 
-use App\Data\Admin\MediaData;
 use Spatie\LaravelData\Data;
 
 final class CollaborationPageCreateData extends Data
@@ -14,8 +13,7 @@ final class CollaborationPageCreateData extends Data
         public string $content,
         public ?int $image,
 
-    ) {
-    }
+    ) {}
 
     public static function rules(): array
     {
@@ -29,19 +27,18 @@ final class CollaborationPageCreateData extends Data
     /**
      * @codeCoverageIgnore
      */
-
     public static function bodyParameters(): array
     {
         return [
-            'title'   => [
+            'title' => [
                 'description' => 'The title of the collaboration page.',
                 'example'     => 'فرصت همکاری',
             ],
             'content' => [
                 'description' => 'The HTML content of the collaboration page.',
-                'example'     => '<h3>فرصت همکاری با موسسه آموزشی جهاد دانشگاهی استان قزوین</h3>'
+                'example'     => '<h3>فرصت همکاری با موسسه آموزشی جهاد دانشگاهی استان قزوین</h3>',
             ],
-            'image'   => [
+            'image' => [
                 'description' => 'The ID of the image (media) associated with the collaboration page.',
                 'example'     => 5,
             ],

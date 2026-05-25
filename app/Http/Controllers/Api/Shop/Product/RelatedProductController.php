@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Shop\Product;
 
 use App\Data\Shop\Product\ProductCardData;
-use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\RelationTypeEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
@@ -13,14 +14,12 @@ use App\Services\ProductPriceService;
 /**
  * @group Shop - Product
  */
-class RelatedProductController extends Controller
+final class RelatedProductController extends Controller
 {
     public function __construct(
         private readonly ProductQueryService $productQueryService,
         private readonly ProductPriceService $priceService,
-    )
-    {
-    }
+    ) {}
 
     /**
      * Get related products for a given product and relation type.
@@ -37,7 +36,7 @@ class RelatedProductController extends Controller
             ->wherePivot('relation_type', $relation_type->value)
             ->get(['related_product_id']);
 
-        if ($relatedProducts->isEmpty()){
+        if ($relatedProducts->isEmpty()) {
             return response()->success([]);
         }
 

@@ -609,7 +609,7 @@ final readonly class CreatePaymentAction
 
             $processor = $this->processorFactory->make(PaymentMethodEnum::from($data->method));
 
-            return $processor->process($order, $data, $admin, $amount);
+            return $processor->process($data, $admin, $amount, $order);
         });
     }
 
@@ -664,6 +664,7 @@ final readonly class CreatePaymentAction
 ## 5. New Callback Handling
 
 ### VerifyPaymentAction
+
 ```php
 <?php
 
@@ -691,7 +692,7 @@ final readonly class VerifyPaymentAction
         return DB::transaction(function () use ($data): Payment {
             // Find payment by UUID
             $payment = Payment::query()
-                ->where('uuid', $data->payment_uuid)
+                ->where('uuid', $data->transaction_refrence)
                 ->lockForUpdate()
                 ->firstOrFail();
 
@@ -713,6 +714,7 @@ final readonly class VerifyPaymentAction
 ```
 
 ### GatewayCallbackController (Shop API)
+
 ```php
 <?php
 
@@ -751,7 +753,8 @@ final class GatewayCallbackController extends Controller
 
         // Build callback data
         $callbackData = new GatewayCallbackData(
-            payment_uuid: $request->input('payment_uuid'),
+        // Correct the typo transaction_refrence to transaction_reference
+            transaction_refrence: $request->input('payment_uuid'),
             gateway_response: $request->all()
         );
 

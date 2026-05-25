@@ -53,17 +53,14 @@ it('return InPersonDetailsData if delivery_method is IN_PERSON', function (): vo
     $properties['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::PHYSICAL;
     $properties['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::IN_PERSON;
     $details                        = [
-        'location'        => 'Test Location',
-        'duration'        => '20 Minute',
-        'schedule'        => 'Sun-Mon',
+        'address'         => 'Test Location',
+        'map_url'         => null,
         'additional_info' => null,
     ];
     $delivery_option = $caster->cast($this->mockProperty, $details, $properties, $this->mockContext);
     expect($delivery_option)
         ->toBeInstanceOf(App\Data\Admin\ProductDeliveryOption\DetailsData\InPersonDetailsData::class)
-        ->and($delivery_option->location)->toBe('Test Location')
-        ->and($delivery_option->duration)->toBe('20 Minute')
-        ->and($delivery_option->schedule)->toBe('Sun-Mon');
+        ->and($delivery_option->address)->toBe('Test Location');
 });
 it('return LmsMoodleDetailsData if delivery_method is LMS_MOODLE', function (): void {
     $caster                         = new App\Data\Casts\DeliveryOptionDetailCast();
@@ -154,6 +151,7 @@ it('return VideoPlatformSpotplayerDetailsData if delivery_method is VIDEO_PLATFO
     expect($delivery_option)
         ->toBeInstanceOf(VideoPlatformSpotplayerDetailsData::class)
         ->and($delivery_option->toArray())->toBe(array_merge($details, [
-            'spot_id' => 'spot123',
+            'spot_id'    => 'spot123',
+            'updated_at' => null,
         ]));
 });

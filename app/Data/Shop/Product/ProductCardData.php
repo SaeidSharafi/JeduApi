@@ -66,8 +66,7 @@ final class ProductCardData extends Data
         $registrationEndDate   = null;
         $teacherMap            = [];
         $registrationStatus    = null;
-        $fulfillmentTypes = [];
-
+        $fulfillmentTypes      = [];
 
         // single pass: collect date boundaries + unique teachers
         foreach ($product->productDeliveryOptions as $option) {
@@ -99,7 +98,7 @@ final class ProductCardData extends Data
                 }
             }
         }
-        if (self::isInProgress($registrationStartDate,$registrationEndDate)){
+        if (self::isInProgress($registrationStartDate, $registrationEndDate)) {
             $registrationStatus = ProductRegistrationStatusEnum::IN_PROGRESS;
         }
         if ($availableTo && now()->isAfter($availableTo)) {
@@ -111,13 +110,14 @@ final class ProductCardData extends Data
                 ? [$product->productable?->default_teacher_info] : [];
         }
         $fulfillmentTypes = array_unique($fulfillmentTypes);
-        $deliveryStatus = match (true){
-            count($fulfillmentTypes) > 1 =>  ProductDeliveryStatusEnum::COMBINED,
+        $deliveryStatus   = match (true) {
+            count($fulfillmentTypes) > 1 => ProductDeliveryStatusEnum::COMBINED,
             in_array(FulfillmentTypeEnum::ONLINE_SERVICE->value, $fulfillmentTypes),
-            in_array(FulfillmentTypeEnum::OFFLINE_SERVICE->value, $fulfillmentTypes) =>  ProductDeliveryStatusEnum::ONLINE,
-            in_array(FulfillmentTypeEnum::IN_PERSON_SERVICE->value, $fulfillmentTypes) =>  ProductDeliveryStatusEnum::IN_PERSON,
-            default => null,
+            in_array(FulfillmentTypeEnum::OFFLINE_SERVICE->value, $fulfillmentTypes)   => ProductDeliveryStatusEnum::ONLINE,
+            in_array(FulfillmentTypeEnum::IN_PERSON_SERVICE->value, $fulfillmentTypes) => ProductDeliveryStatusEnum::IN_PERSON,
+            default                                                                    => null,
         };
+
         return new self(
             slug: $product->slug,
             name: $product->name,
@@ -145,19 +145,19 @@ final class ProductCardData extends Data
         );
     }
 
-    private static function isInProgress(null|Carbon|CarbonImmutable $registrationStartDate,null|Carbon|CarbonImmutable $registrationEndDate):bool
+    private static function isInProgress(null|Carbon|CarbonImmutable $registrationStartDate, null|Carbon|CarbonImmutable $registrationEndDate): bool
     {
-        if(is_null($registrationStartDate) && is_null($registrationEndDate)){
+        if (is_null($registrationStartDate) && is_null($registrationEndDate)) {
             return true;
         }
 
-        if(is_null($registrationStartDate) && $registrationEndDate && now()->lessThanOrEqualTo($registrationEndDate)){
+        if (is_null($registrationStartDate) && $registrationEndDate && now()->lessThanOrEqualTo($registrationEndDate)) {
             return true;
         }
-        if($registrationStartDate && now()->greaterThanOrEqualTo($registrationStartDate) && is_null($registrationEndDate)){
+        if ($registrationStartDate && now()->greaterThanOrEqualTo($registrationStartDate) && is_null($registrationEndDate)) {
             return true;
         }
-        if($registrationStartDate && now()->greaterThanOrEqualTo($registrationStartDate) && $registrationEndDate && now()->lessThanOrEqualTo($registrationEndDate)){
+        if ($registrationStartDate && now()->greaterThanOrEqualTo($registrationStartDate) && $registrationEndDate && now()->lessThanOrEqualTo($registrationEndDate)) {
             return true;
         }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Http\UploadedFile;
 
 describe('CollaborationPageController', function () {
@@ -22,10 +24,10 @@ describe('CollaborationPageController', function () {
 describe('CollaborationRequestController', function () {
 
     it('should submit collaboration request', function () {
-        Storage::fake();
+        Storage::fake('local');
         $document = UploadedFile::fake()->create('attachment.pdf', 100, 'application/pdf');
         $postData = [
-            'full_name'       => 'John Doe',
+            'full_name'  => 'John Doe',
             'email'      => 'email@example.com',
             'phone'      => '09123456789',
             'message'    => 'I would like to collaborate.',
@@ -34,7 +36,7 @@ describe('CollaborationRequestController', function () {
         $response = $this->postJson(route('api.v1.shop.collaboration.store'), $postData);
         $response->assertCreated();
         $response->assertJson([
-            'message'  => __("shop.responses.forms.collaboration_request_submitted"),
+            'message'  => __('shop.responses.forms.collaboration_request_submitted'),
             'data'     => null,
             'metadata' => [],
         ]);
@@ -48,11 +50,11 @@ describe('CollaborationRequestController', function () {
         ]);
         $this->assertDatabaseHas('media', [
             'filename' => 'attachment',
-            'disk'      => 'local',
+            'disk'     => 'local',
         ]);
         $this->assertDatabaseHas('mediables', [
-            'mediable_type' => \App\Enums\System\MorphTypeEnum::COLLABORATION_REQUEST->value,
-            'mediable_id'  =>\App\Models\CollaborationRequest::first()->id,
+            'mediable_type' => App\Enums\System\MorphTypeEnum::COLLABORATION_REQUEST->value,
+            'mediable_id'   => App\Models\CollaborationRequest::first()->id,
         ]);
 
     });

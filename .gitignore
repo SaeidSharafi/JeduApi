@@ -30,3 +30,5 @@ scribe_testing.sqlite
 laradumps.yaml
 /storage/tests
 /.scannerwork/
+/.weave/plans
+/.weave/runtime

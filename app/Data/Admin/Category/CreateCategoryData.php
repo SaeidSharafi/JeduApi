@@ -58,7 +58,7 @@ final class CreateCategoryData extends Data
                 'color_scheme'               => ['nullable', 'string'],
                 'properties'                 => ['nullable', 'array'],
                 'additional_info'            => ['nullable', 'array'],
-                'media'                      => ['required', 'array'],
+                'media'                      => ['nullable', 'array'],
                 'media.icon'                 => ['nullable', 'integer', 'exists:media,id'],
                 'media.image'                => ['nullable', 'integer', 'exists:media,id'],
                 'media.educational_calendar' => ['nullable', 'integer', 'exists:media,id'],

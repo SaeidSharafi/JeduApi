@@ -34,18 +34,18 @@ final class DigitalAssetFactory extends Factory
             'page_count'              => $this->faker->numberBetween(1, 100),
             'duration_seconds'        => $this->faker->numberBetween(60, 3600),
             'is_attachable_to_course' => true,
-            'difficulty_level'         => $this->faker->randomElement(['beginner', 'intermediate', 'advanced']),
+            'difficulty_level'        => $this->faker->randomElement(['beginner', 'intermediate', 'advanced']),
             'status'                  => PublicationStatusEnum::PUBLISHED,
-            'faq'                      => [
+            'faq'                     => [
                 ['question' => $this->faker->sentence(), 'answer' => $this->faker->paragraph()],
                 ['question' => $this->faker->sentence(), 'answer' => $this->faker->paragraph()],
             ],
-            'keywords'                => implode(',', $this->faker->persianWords(3)),
-            'meta_title'              => mb_trim(Str::take($this->faker->persianWords(4, true), 70)),
-            'meta_description'        => mb_trim(Str::take($this->faker->persianParagraph(20, false), 100)),
-            'meta_keywords'           => mb_trim(Str::take(implode(',', $this->faker->persianWords(3)), 255)),
-            'published_at'            => $this->faker->dateTime()?->format('Y-m-d H:i:s'),
-            'created_by'              => Staff::factory(),
+            'keywords'         => implode(',', $this->faker->persianWords(3)),
+            'meta_title'       => mb_trim(Str::take($this->faker->persianWords(4, true), 70)),
+            'meta_description' => mb_trim(Str::take($this->faker->persianParagraph(20, false), 100)),
+            'meta_keywords'    => mb_trim(Str::take(implode(',', $this->faker->persianWords(3)), 255)),
+            'published_at'     => $this->faker->dateTime()?->format('Y-m-d H:i:s'),
+            'created_by'       => Staff::factory(),
         ];
     }
 

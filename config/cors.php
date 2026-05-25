@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -19,7 +21,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' =>[
+    'allowed_origins' => [
         'https://dev-jedu.encel.ir',
         'https://test-jedu.encel.ir',
         'http://localhost:3000',

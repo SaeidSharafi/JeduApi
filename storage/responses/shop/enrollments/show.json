@@ -3,21 +3,19 @@
   "data": {
     "uuid": "019803f5-0dbc-7325-aa7e-852eed356839",
     "enrollment_status": {
-      "value": "expired",
-      "label": "enums.EnrolmentStatusEnum.expired"
+      "value": "active",
+      "label": "فعال"
     },
-    "access_start_date": null,
-    "access_end_date": null,
+    "access_start_date": "1403-01-01",
+    "access_end_date": "1403-12-29",
     "external_enrollment_id": "65526150",
     "notes": "maiores",
-    "provisioning_data": [],
-    "is_virtual": true,
     "product": {
       "id": 107,
       "productable_id": 102,
       "name": "Kaylah Oberbrunner PhD",
       "short_name": "Myron O'Hara",
-      "short_description": "Eum enim fugit numquam qui aspernatur. Quo aut a reprehenderit dolores perspiciatis repellat. Id aliquid perspiciatis qui aut vero. Accusamus et voluptas illo. Est nobis et laboriosam.",
+      "short_description": "Eum enim fugit numquam qui aspernatur.",
       "vendor": {
         "id": 11,
         "name": "Hettinger, Carroll and Davis"
@@ -28,16 +26,51 @@
       },
       "price": 8060485,
       "fullfilment_type": {
-        "value": "offline_service",
-        "label": "سرویس آفلاین"
+        "value": "digital",
+        "label": "دیجیتال"
       },
       "delivery_method": {
-        "value": "video_platform_spotplayer",
-        "label": "پلتفرم ویدیویی SpotPlayer"
+        "value": "digital_asset",
+        "label": "دارایی دیجیتال"
       },
-      "status": "archived",
+      "status": "active",
       "productable_type": "digital_asset",
       "cover": null
+    },
+    "teachers": [
+      {
+        "uuid": "019803f5-aaaa-bbbb-cccc-111111111111",
+        "first_name": "علی",
+        "last_name": "محمدی",
+        "bio": "مدرس ارشد دوره‌های برنامه‌نویسی",
+        "avatar_url": "http://jedu.test/storage/fake-media/fake-avatar.svg",
+        "rate": 4.7,
+        "gender": {
+          "value": "male",
+          "label": "مرد"
+        },
+        "social_links": null
+      }
+    ],
+    "review_info": {
+      "has_reviewed": false,
+      "review": null
+    },
+    "certificate_info": {
+      "is_available": false,
+      "certificate_url": null
+    },
+    "survey_block": null,
+    "delivery_block": {
+      "files": [
+        {
+          "id": 1,
+          "short_name": "فصل اول",
+          "full_name": "فصل اول - مقدمه",
+          "thumbnail_url": null,
+          "download_url": "http://jedu.test/api/v1/shop/enrollments/019803f5-0dbc-7325-aa7e-852eed356839/download/1"
+        }
+      ]
     }
   },
   "metadata": []

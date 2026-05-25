@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Order;
 
+use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
-use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Models\Order;
 use App\Services\OrderStatusService;
 use Illuminate\Support\Facades\DB;
@@ -70,12 +70,12 @@ final readonly class ApproveOrderAction
         }
 
         $requiredPayment = 0;
-            foreach ($order->items as $item) {
-                if ($item->payment_type === OrderItemPaymentTypeEnum::PRE_PAYMENT && $item->prepayment_amount > 0) {
-                    $requiredPayment += $item->prepayment_amount;
-                } else {
-                    $requiredPayment += $item->total;
-                }
+        foreach ($order->items as $item) {
+            if ($item->payment_type === OrderItemPaymentTypeEnum::PRE_PAYMENT && $item->prepayment_amount > 0) {
+                $requiredPayment += $item->prepayment_amount;
+            } else {
+                $requiredPayment += $item->total;
+            }
         }
 
         if ($order->total_paid < $requiredPayment) {

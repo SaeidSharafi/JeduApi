@@ -14,7 +14,6 @@ use App\Models\Blog\BlogPost;
 use App\Models\Product;
 use App\Query\ProductQueryService;
 use App\Services\ProductPriceService;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -82,7 +81,7 @@ final class BlogPostController extends Controller
             ->withProductableMedia()
             ->firstOrFail();
         $relatedProductableIds = $post->related_productables->groupBy('pivot.productable_type')
-            ->map(fn($group) => $group->pluck('id')->all())
+            ->map(fn ($group) => $group->pluck('id')->all())
             ->all();
 
         $relatedProducts = ProductQueryService::make()
@@ -90,11 +89,11 @@ final class BlogPostController extends Controller
             ->forListing()
             ->getQuery()
             ->where(function (Builder $query) use ($relatedProductableIds) {
-                $query->where(fn(Builder $query) => $query->where('productable_type', 'course')
+                $query->where(fn (Builder $query) => $query->where('productable_type', 'course')
                     ->whereIn('productable_id', $relatedProductableIds['course'] ?? []))
-                    ->orWhere(fn(Builder $query) => $query->where('productable_type', 'seminar')
+                    ->orWhere(fn (Builder $query) => $query->where('productable_type', 'seminar')
                         ->whereIn('productable_id', $relatedProductableIds['seminar'] ?? []))
-                    ->orWhere(fn(Builder $query) => $query->where('productable_type', 'digital_asset')
+                    ->orWhere(fn (Builder $query) => $query->where('productable_type', 'digital_asset')
                         ->whereIn('productable_id', $relatedProductableIds['digital_asset'] ?? []));
             })
             ->limit(10)
@@ -105,6 +104,7 @@ final class BlogPostController extends Controller
                 return ProductCardData::fromModel($product, $priceData);
             })
             ->all();
+
         return response()->success(BlogPostDetailData::fromModel($post, $relatedProducts));
     }
 }

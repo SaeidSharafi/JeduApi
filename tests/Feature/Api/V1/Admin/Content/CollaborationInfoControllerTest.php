@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\PermissionEnum;
 use Illuminate\Http\UploadedFile;
 
@@ -24,7 +26,7 @@ it('can get collaboration settings', function () {
 
 it('can update collaboration settings', function () {
     $this->authorized_user([PermissionEnum::SETTING_UPDATE]);
-    Storage::fake();
+    Storage::fake('public');
     $image = MediaUploader::fromSource(UploadedFile::fake()->image('image.jpg'))
         ->toDisk('public')
         ->upload();

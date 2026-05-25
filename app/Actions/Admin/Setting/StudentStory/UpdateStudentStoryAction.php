@@ -15,10 +15,10 @@ final class UpdateStudentStoryAction
     {
         return DB::transaction(function () use ($story, $data): StudentStory {
 
-            $storyData = $data->except('avatar','categories', 'courses')->toArray();
+            $storyData               = $data->except('avatar', 'categories', 'courses')->toArray();
             $storyData['avatar_url'] = null;
-            if (data_get($data, 'avatar')){
-                $avatarMedia = Media::find($data->avatar);
+            if (data_get($data, 'avatar')) {
+                $avatarMedia             = Media::find($data->avatar);
                 $storyData['avatar_url'] = $avatarMedia->getUrl();
             }
             $story->update($storyData);

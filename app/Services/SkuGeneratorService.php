@@ -78,11 +78,11 @@ final class SkuGeneratorService
 
         $month  = $term->start_date ? verta($term->start_date)->month : null;
         $season = match ($month) {
-            1, 2, 3 => 'S',  // Spring
-            4, 5, 6 => 'SU',  // Summer
-            7, 8, 9 => 'F',  // Fall
+            1, 2, 3    => 'S',  // Spring
+            4, 5, 6    => 'SU',  // Summer
+            7, 8, 9    => 'F',  // Fall
             10, 11, 12 => 'W', // Winter
-            default => 'X', // Unknown
+            default    => 'X', // Unknown
         };
 
         $year = $term->academic_year ? mb_substr($term->academic_year, 0, 4) : '0000';

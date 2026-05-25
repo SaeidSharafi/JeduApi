@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\ProductDeliveryOption;

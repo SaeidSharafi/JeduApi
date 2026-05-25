@@ -38,6 +38,7 @@ final class HomePageContentController extends Controller
      *
      * Retrieves the full formatted content for a specific home page block.
      * This allows the frontend to load individual blocks on demand.
+     *
      * @responseFile 200 responses/shop/home/all.json
      * @responseFile status=200 scenario="banner" responses/shop/home/show-banner.json
      * @responseFile status=200 scenario="webinar-banner" responses/shop/home/show-webinar-banner.json

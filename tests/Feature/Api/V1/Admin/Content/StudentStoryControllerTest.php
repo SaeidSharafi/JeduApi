@@ -17,11 +17,11 @@ describe('StudentStoryController', function (): void {
     });
     it('list and fitler stories', function (): void {
         $this->authorized_user([PermissionEnum::STUDENT_STORY_VIEW_ANY]);
-        $category = App\Models\Category::factory()->create();
+        $category      = App\Models\Category::factory()->create();
         $otherCategory = App\Models\Category::factory()->create();
-        $course = App\Models\Course::factory()->create();
-        $otherCourse = App\Models\Course::factory()->create();
-        $storyOne = StudentStory::factory()->create([
+        $course        = App\Models\Course::factory()->create();
+        $otherCourse   = App\Models\Course::factory()->create();
+        $storyOne      = StudentStory::factory()->create([
             'student_name' => 'John Doe',
             'course_name'  => 'Laravel Basics',
             'is_visible'   => true,
@@ -91,9 +91,9 @@ describe('StudentStoryController', function (): void {
 
     it('creates a new story', function (): void {
         $this->authorized_user([PermissionEnum::STUDENT_STORY_CREATE]);
-        $category = App\Models\Category::factory()->create();
+        $category      = App\Models\Category::factory()->create();
         $otherCategory = App\Models\Category::factory()->create();
-        $course = App\Models\Course::factory()->create();
+        $course        = App\Models\Course::factory()->create();
 
         $postData = [
             'student_name' => 'Alice Johnson',
@@ -116,12 +116,12 @@ describe('StudentStoryController', function (): void {
             'is_visible'   => true,
         ]);
         $this->assertDatabaseHas('course_student_story', [
-            'course_id' => $course->id,
+            'course_id'        => $course->id,
             'student_story_id' => $responseData['id'],
         ]);
         $this->assertDatabaseHas('categorizables', [
-            'category_id' => $category->id,
-            'categorizable_id' => $responseData['id'],
+            'category_id'        => $category->id,
+            'categorizable_id'   => $responseData['id'],
             'categorizable_type' => MorphTypeEnum::STUDENT_STORY->value,
         ]);
 
@@ -164,9 +164,9 @@ describe('StudentStoryController', function (): void {
         $this->authorized_user([PermissionEnum::STUDENT_STORY_UPDATE]);
         $oldCategory = App\Models\Category::factory()->create();
         $newCategory = App\Models\Category::factory()->create();
-        $oldCourse = App\Models\Course::factory()->create();
-        $newCourse = App\Models\Course::factory()->create();
-        $story = StudentStory::factory()->create([
+        $oldCourse   = App\Models\Course::factory()->create();
+        $newCourse   = App\Models\Course::factory()->create();
+        $story       = StudentStory::factory()->create([
             'student_name' => 'Bob Brown',
             'course_name'  => 'Django Fundamentals',
             'is_visible'   => false,
@@ -203,12 +203,12 @@ describe('StudentStoryController', function (): void {
         ]);
 
         $this->assertDatabaseHas('course_student_story', [
-            'course_id' => $newCourse->id,
+            'course_id'        => $newCourse->id,
             'student_story_id' => $story->id,
         ]);
         $this->assertDatabaseHas('categorizables', [
-            'category_id' => $newCategory->id,
-            'categorizable_id' => $story->id,
+            'category_id'        => $newCategory->id,
+            'categorizable_id'   => $story->id,
             'categorizable_type' => MorphTypeEnum::STUDENT_STORY->value,
         ]);
 
@@ -218,8 +218,7 @@ describe('StudentStoryController', function (): void {
             ->and($storyAvatar->id)->toEqual($avatar->id)
             ->and($storyAvatar->getUrl())->toBe($avatar->getUrl())
             ->and($updatedStory->categories->pluck('id')->toArray())->toEqualCanonicalizing([$newCategory->id])
-            ->and($updatedStory->courses->pluck('id')->toArray())->toEqualCanonicalizing([$newCourse->id])
-        ;
+            ->and($updatedStory->courses->pluck('id')->toArray())->toEqualCanonicalizing([$newCourse->id]);
     });
 
     it('updates an existing story and set avatar to null', function (): void {

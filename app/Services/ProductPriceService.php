@@ -326,11 +326,11 @@ final readonly class ProductPriceService
         return ($isAfterStart && $isBeforeEnd) ? $option->featured_price : null;
     }
 
-    ///**
+    // /**
     // * Get cached product-specific discount price.
     // */
-    //private function getDiscountPrice(ProductDeliveryOption $option): ?int
-    //{
+    // private function getDiscountPrice(ProductDeliveryOption $option): ?int
+    // {
     //    $discountRecord = $option->productDeliveryOptionDiscountPrice;
     //    if (!$discountRecord){
     //        return $option->price;
@@ -343,5 +343,5 @@ final readonly class ProductPriceService
     //    $isBeforeEnd  = is_null($ends)   || $now->lessThanOrEqualTo($ends);
     //
     //    return ($isAfterStart && $isBeforeEnd) ? $discountRecord->discounted_price : $option->price;
-    //}
+    // }
 }

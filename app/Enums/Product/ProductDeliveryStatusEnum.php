@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums\Product;
 
 use App\Traits\AdvanceEnum;
@@ -8,7 +10,7 @@ enum ProductDeliveryStatusEnum: string
 {
     use AdvanceEnum;
 
-    case ONLINE = 'online';
+    case ONLINE    = 'online';
     case IN_PERSON = 'in_person';
-    case COMBINED = 'combined';
+    case COMBINED  = 'combined';
 }

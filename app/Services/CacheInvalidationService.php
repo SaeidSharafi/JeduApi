@@ -42,7 +42,7 @@ final class CacheInvalidationService
         // Separate direct keys from patterns for batch processing
         $directKeys = [];
         $patterns   = [];
-        $class = is_string($model) ? $model : get_class($model);
+        $class      = is_string($model) ? $model : get_class($model);
         foreach ($invalidationConfig as $config) {
             // CacheKeysEnum instance - convert to string value
             if ($config instanceof CacheKeysEnum) {
@@ -76,8 +76,7 @@ final class CacheInvalidationService
         if (! empty($patterns)) {
             try {
                 SmartCache::flushPatterns($patterns);
-            }
-            catch (Exception $e) {
+            } catch (Exception $e) {
                 Log::debug(
                     "Cache invalidation failed for patterns on {$class}",
                     ['patterns' => $patterns, 'error' => $e->getMessage()]

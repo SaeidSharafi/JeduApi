@@ -23,7 +23,6 @@ trait ValidatesMetaTags
      *
      * @return array<string, array<string, mixed>>
      */
-
     protected static function metaTagBodyParameters(): array
     {
         return [

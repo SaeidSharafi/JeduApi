@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\OtpGeneratorInterface;
 use App\Contracts\CartIdentifier;
+use App\Contracts\OtpGeneratorInterface;
+use App\Providers\DemoServiceProvider;
 use App\Enums\System\MorphTypeEnum;
+use App\Services\Cart\RequestCartIdentifier;
 use App\Services\DefaultOtpGenerator;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\DiscountMetadataService;
-use App\Services\Cart\RequestCartIdentifier;
 use App\Services\RequestDataCacheService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -27,6 +28,10 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        if ($this->app->isLocal()) {
+            $this->app->register(DemoServiceProvider::class);
+        }
+
         $this->app->singleton(OtpGeneratorInterface::class, DefaultOtpGenerator::class);
         $this->app->singleton(DiscountHandlerRegistry::class);
         $this->app->singleton(DiscountMetadataService::class);

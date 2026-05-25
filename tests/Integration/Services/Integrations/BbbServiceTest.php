@@ -2,20 +2,27 @@
 
 declare(strict_types=1);
 
+use App\Enums\System\SettingKeyEnum;
 use App\Exceptions\Integrations\ExternalProvisioningException;
 use App\Services\Integrations\BbbService;
+use App\Services\SettingsService;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
     Http::preventStrayRequests();
-    $this->service = new BbbService();
-    $this->service->setConfig([
-        'base_url'             => 'https://bbb.test',
-        'secret'               => 'secret',
-        'api_path'             => '/bigbluebutton/api',
-        'default_attendee_pw'  => 'ap-default',
-        'default_moderator_pw' => 'mp-default',
-    ]);
+
+    $settings = $this->mock(SettingsService::class);
+    $settings->shouldReceive('get')
+        ->with(SettingKeyEnum::BIG_BLUE_BUTTON)
+        ->andReturn([
+            'base_url'             => 'https://bbb.test',
+            'secret'               => 'secret',
+            'api_path'             => '/bigbluebutton/api',
+            'default_attendee_pw'  => 'ap-default',
+            'default_moderator_pw' => 'mp-default',
+        ]);
+
+    $this->service = app(BbbService::class);
 });
 
 it('creates meeting with expected query payload', function (): void {
@@ -46,11 +53,16 @@ it('throws when create meeting request fails', function (): void {
 });
 
 it('throws when service used before configuration', function (): void {
-    $service = new BbbService();
+    $settings = $this->mock(SettingsService::class);
+    $settings->shouldReceive('get')
+        ->with(SettingKeyEnum::BIG_BLUE_BUTTON)
+        ->andReturn(['base_url' => '', 'secret' => '']);
+
+    $service = app(BbbService::class);
 
     expect(fn () => $service->createMeeting('MEET-100', 'Physics 101'))
         ->toThrow(ExternalProvisioningException::class, 'BBB service configuration is missing.');
 
-    expect(fn () => $service->buildJoinUrl('MEET-100', 'Physics 101', "pass"))
+    expect(fn () => $service->buildJoinUrl('MEET-100', 'Physics 101', 'pass'))
         ->toThrow(ExternalProvisioningException::class, 'BBB service configuration is missing.');
 });

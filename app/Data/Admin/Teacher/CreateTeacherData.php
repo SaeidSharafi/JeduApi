@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Teacher;
 
-use App\Data\Admin\Settings\SocialMediaLinkData;
 use App\Enums\User\GenderEnum;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Validation\Rule;
@@ -25,17 +24,16 @@ final class CreateTeacherData extends Data
         public ?array $social_links,
         public int $user_id,
         public array $media,
-    ) {
-    }
+    ) {}
 
     public static function rules(?ValidationContext $context = null): array
     {
         return [
-            'first_name'              => ['required', 'string', 'max:255'],
-            'last_name'               => ['required', 'string', 'max:255'],
-            'bio'                     => ['required', 'string', 'max:1000'],
-            'rate'                    => ['required', 'numeric', 'min:0', 'max:5', 'nullable'],
-            'email'                   => [
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name'  => ['required', 'string', 'max:255'],
+            'bio'        => ['required', 'string', 'max:1000'],
+            'rate'       => ['required', 'numeric', 'min:0', 'max:5', 'nullable'],
+            'email'      => [
                 'required', 'string', 'email', 'max:255',
                 Rule::unique('teachers', 'email')->where(function (Builder $query) {
                     $teacher = request()->route()->parameter('teacher');
@@ -46,7 +44,7 @@ final class CreateTeacherData extends Data
                     return $query;
                 }),
             ],
-            'phone'                   => [
+            'phone' => [
                 'required', 'string', 'max:20', 'nullable',
                 Rule::unique('teachers', 'phone')->where(function (Builder $query) {
                     $teacher = request()->route()->parameter('teacher');
@@ -101,35 +99,35 @@ final class CreateTeacherData extends Data
     public function bodyParameters(): array
     {
         return [
-            'first_name'   => [
+            'first_name' => [
                 'description' => __('validation.attributes.first_name'),
                 'example'     => 'John',
             ],
-            'last_name'    => [
+            'last_name' => [
                 'description' => __('validation.attributes.last_name'),
                 'example'     => 'Doe',
             ],
-            'bio'          => [
+            'bio' => [
                 'description' => __('validation.attributes.teacher.bio'),
                 'example'     => 'An experienced teacher with a passion for education.',
             ],
-            'rate'         => [
+            'rate' => [
                 'description' => __('validation.attributes.teacher.rate'),
                 'example'     => 4.5,
             ],
-            'email'        => [
+            'email' => [
                 'description' => __('validation.attributes.email'),
                 'example'     => 'teacher@example.com',
             ],
-            'phone'        => [
+            'phone' => [
                 'description' => __('validation.attributes.phone'),
                 'example'     => '+1234567890',
             ],
-            'gender'       => [
+            'gender' => [
                 'description' => __('validation.attributes.gender'),
                 'example'     => 'male',
             ],
-            'birth_date'   => [
+            'birth_date' => [
                 'description' => __('validation.attributes.birth_date'),
                 'example'     => '1990-01-01',
             ],
@@ -140,11 +138,11 @@ final class CreateTeacherData extends Data
                     'twitter'  => 'https://www.twitter.com/teacher',
                 ],
             ],
-            'user_id'      => [
+            'user_id' => [
                 'description' => __('validation.attributes.user_id').' ('.__('doc.teacher.user_id').')',
                 'example'     => 1,
             ],
-            'media'        => [
+            'media' => [
                 'description' => __('validation.attributes.media.self'),
                 'example'     => [
                     'profile' => 1,

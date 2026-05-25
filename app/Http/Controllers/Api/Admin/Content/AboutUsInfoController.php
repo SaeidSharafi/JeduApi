@@ -10,6 +10,7 @@ use App\Data\Admin\Settings\AboutUsData;
 use App\Enums\System\SettingKeyEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Services\SettingsService;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -24,12 +25,10 @@ final class AboutUsInfoController extends Controller
      *
      * @responseFile 200 responses/settings/about-us.json
      */
-    public function show(): ApiResponseInterface
+    public function show(SettingsService $settingsService): ApiResponseInterface
     {
         Gate::authorize('viewAny', Setting::class);
-
-        $aboutUs           = Setting::getValue(SettingKeyEnum::ABOUT_US, AboutUsData::getDefaults());
-        $aboutUs['images'] = Setting::witImages($aboutUs);
+        $aboutUs = $settingsService->get(SettingKeyEnum::ABOUT_US, AboutUsData::getDefaults());
 
         return response()->success(AboutUsData::from($aboutUs));
     }
@@ -40,12 +39,12 @@ final class AboutUsInfoController extends Controller
      * @responseFile 200 responses/settings/about-us.json
      * @responseFile 422 responses/422.json
      */
-    public function update(AboutUsCreateData $data): ApiResponseInterface
+    public function update(AboutUsCreateData $data, SettingsService $settingsService): ApiResponseInterface
     {
         Gate::authorize('update', Setting::class);
 
-        Setting::setValue(SettingKeyEnum::ABOUT_US, $data->toArray(), 'json', 'cms');
-        $aboutUs = Setting::getValue(SettingKeyEnum::ABOUT_US);
+        $settingsService->set(SettingKeyEnum::ABOUT_US, $data->toArray(), 'json', 'cms');
+        $aboutUs = $settingsService->get(SettingKeyEnum::ABOUT_US, AboutUsData::getDefaults());
 
         return response()->success(
             AboutUsData::from($aboutUs),

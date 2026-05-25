@@ -95,7 +95,7 @@ final class RelatedProductController extends Controller
             return response()->validationError(__('validation.custom.product.related_product_type_invalid'));
         }
 
-        $action->handle($product, $relationType,$relatedProduct);
+        $action->handle($product, $relationType, $relatedProduct);
 
         return response()->noContentJson();
     }

@@ -6,7 +6,6 @@ namespace App\Observers;
 
 use App\Services\CacheInvalidationService;
 use Illuminate\Database\Eloquent\Model;
-use JetBrains\PhpStorm\NoReturn;
 
 final class InvalidationObserver
 {

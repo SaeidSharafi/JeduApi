@@ -53,7 +53,7 @@ enum DeliveryMethodEnum: string
             self::LMS_MOODLE,
             self::LIVE_SESSION_BBB,
             self::VIDEO_PLATFORM_SPOTPLAYER,
-            self::LIVE_SESSION_SKYROOM => true,
+            self::LIVE_SESSION_SKYROOM             => true,
             self::DIRECT_DOWNLOAD, self::IN_PERSON => false,
         };
     }

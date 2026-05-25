@@ -34,6 +34,7 @@ return [
     'file_uploaded'          => 'File uploaded successfully.',
     'file_deleted'           => 'File deleted successfully.',
     'file_not_found'         => 'The requested file was not found.',
+    'something_went_wrong'   => 'Something went wrong. Please try again later.',
     'models'                 => [
         'seminar'       => 'Seminar',
         'staff'         => 'Staff',
@@ -86,6 +87,7 @@ return [
         'payment_method_unavailable'          => 'The payment method is currently unavailable.',
         'payment_method_error'                => 'An error occurred with the payment method. Please try again.',
         'payment_method_not_allowed'          => 'The selected payment method is not allowed for this order.',
+        'order_number'                        => 'Order :order_id',
         'payment'                             => [
             'delete_completed_payment_error'        => 'Cannot delete a completed payment.',
             'update_completed_payment_status_error' => 'Cannot update a completed payment status.',
@@ -120,7 +122,12 @@ return [
         ],
     ],
     'enrollments' => [
-        'not_found' => 'Enrollment not found.',
+        'not_found'                      => 'Enrollment not found.',
+        'not_moodle'                     => 'This enrollment is not a Moodle LMS enrollment.',
+        'moodle_provisioning_incomplete' => 'Moodle provisioning is incomplete for this enrollment.',
+        'moodle_not_configured'          => 'Moodle is not configured.',
+        'moodle_auth_userkey_missing'    => 'Moodle auth_userkey token is not configured.',
+        'moodle_service_error'           => 'Failed to generate Moodle SSO URL. Please try again later.',
     ],
 
     // Wallet Campaign Messages

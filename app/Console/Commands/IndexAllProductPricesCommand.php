@@ -22,7 +22,7 @@ final class IndexAllProductPricesCommand extends Command
 
     public function handle(): int
     {
-        $lock = Cache::lock('price-indexing', 1800 );
+        $lock = Cache::lock('price-indexing', 1800);
 
         if (! $lock->get()) {
             $this->warn('Another price indexing operation is already running. Skipping.');

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Actions\Admin\Order;
 
 use App\Enums\EnrollmentStatusEnum;
@@ -9,14 +11,13 @@ use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
-class ValidateNoDuplicatePurchasesAction
+final class ValidateNoDuplicatePurchasesAction
 {
     /**
      * Validates that the customer does not already have an active or pending enrollment
      * for the given delivery options. This prevents accidental duplicate purchases while
      * still allowing for legitimate re-purchases later.
      *
-     * @param  User  $customer
      * @param  Collection<int, ProductDeliveryOption>  $deliveryOptions
      *
      * @throws ValidationException
@@ -73,4 +74,3 @@ class ValidateNoDuplicatePurchasesAction
         }
     }
 }
-

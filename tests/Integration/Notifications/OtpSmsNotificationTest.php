@@ -31,7 +31,7 @@ describe('OTP SMS Notification', function (): void {
             identifier: '09321456987',
             guard: 'user',
             code: '123456',
-            type: \App\Enums\System\OtpType::SIGNIN,
+            type: App\Enums\System\OtpType::SIGNIN,
             trackingCode: 'test-tracking',
             params: []
         );
@@ -51,7 +51,7 @@ describe('OTP SMS Notification', function (): void {
             identifier: '09321456987',
             guard: 'user',
             code: '123456',
-            type: \App\Enums\System\OtpType::SIGNIN,
+            type: App\Enums\System\OtpType::SIGNIN,
             trackingCode: 'test-tracking',
             params: []
         );

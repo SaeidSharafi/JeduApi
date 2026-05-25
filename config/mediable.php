@@ -40,7 +40,7 @@ return [
     /*
      * The maximum file size in bytes for a single uploaded file
      */
-    'max_size' => 1024 * 1024 * 10,
+    'max_size'          => 1024 * 1024 * 10,
     'customer_max_size' => 1024 * 1024 * 2, // 5MB
     /*
      * What to do if a duplicate file is uploaded.

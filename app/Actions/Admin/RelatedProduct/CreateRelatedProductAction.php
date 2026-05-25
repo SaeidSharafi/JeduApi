@@ -11,9 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 final readonly class CreateRelatedProductAction
 {
-    public function __construct(private DeleteRelatedProductAction $deleteAction)
-    {
-    }
+    public function __construct(private DeleteRelatedProductAction $deleteAction) {}
 
     public function handle(Product $product, RelatedProductSyncData $data): void
     {

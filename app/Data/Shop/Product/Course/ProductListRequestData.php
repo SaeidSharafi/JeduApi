@@ -21,18 +21,17 @@ final class ProductListRequestData extends Data
 
         public ?int $page = null,
         public ?int $per_page = 15,
-    ) {
-    }
+    ) {}
 
     public static function rules(?ValidationContext $context = null): array
     {
         $filters = ProductFilterData::rules($context, 'filter.');
 
         return [
-            'q'         => ['sometimes', 'string', 'max:255'],
-            'type'      => ['sometimes', 'string', Rule::enum(ProductableEnum::class)],
-            'filter'    => ['sometimes', 'array'],
-            'filter.*'  => ['sometimes'],
+            'q'        => ['sometimes', 'string', 'max:255'],
+            'type'     => ['sometimes', 'string', Rule::enum(ProductableEnum::class)],
+            'filter'   => ['sometimes', 'array'],
+            'filter.*' => ['sometimes'],
             ...$filters,
             'sortBy'    => ['sometimes', 'string', Rule::in(ProductQueryService::allowedSortFields)],
             'sortOrder' => ['sometimes', 'string', 'in:asc,desc'],
@@ -49,12 +48,12 @@ final class ProductListRequestData extends Data
         $parameters = ProductFilterData::queryParameters('filter.');
 
         return [
-            'q'         => ['description' => 'Search query string', 'example' => 'laravel'],
-            'type'      => [
+            'q'    => ['description' => 'Search query string', 'example' => 'laravel'],
+            'type' => [
                 'description' => 'Filter by product type (e.g., course, ebook)',
                 'example'     => ProductableEnum::COURSE->value,
             ],
-            'filter'    => [
+            'filter' => [
                 'description' => 'Filter criteria for courses',
                 'example'     => ['category_id' => 1, 'status' => 'published'],
             ],

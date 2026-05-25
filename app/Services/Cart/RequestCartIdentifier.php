@@ -23,7 +23,7 @@ final class RequestCartIdentifier implements CartIdentifier
         if ($this->auth->check()) {
             return (int) $this->auth->id();
         }
-        
+
         return null;
     }
 
@@ -32,18 +32,19 @@ final class RequestCartIdentifier implements CartIdentifier
         if ($this->auth->check()) {
             return null;
         }
-        
+
         if ($this->resolvedGuestToken) {
             return $this->resolvedGuestToken;
         }
-        
+
         // Prefer header for headless APIs
         $incoming = (string) ($this->request->headers->get('X-Guest-Token') ?? '');
         if ($incoming !== '' && Str::isUuid($incoming)) {
             $this->resolvedGuestToken = $incoming;
+
             return $this->resolvedGuestToken;
         }
-        
+
         return null;
     }
 

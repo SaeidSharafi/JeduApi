@@ -15,6 +15,7 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Services\Payment\MellatGatewayPaymentProcessor;
 use App\Services\Payment\SoapClientFactory;
+use Exception;
 use Illuminate\Support\Facades\Event;
 use Mockery;
 use SoapClient;
@@ -285,7 +286,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             'ResCode'         => '0',
             'SaleOrderId'     => 'TXN-123',
             'SaleReferenceId' => 'SALE-REF',
-        ]))->toThrow(\Exception::class, 'No transaction found for payment');
+        ]))->toThrow(Exception::class, 'No transaction found for payment');
     });
 
     it('treats settlement code 45 (already settled) as success', function (): void {
