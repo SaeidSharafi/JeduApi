@@ -88,7 +88,7 @@
 
 ### ProductDeliveryOption (`app/Models/ProductDeliveryOption.php`)
 - **Purpose:** Specific purchase/delivery methods per product with pricing
-- **Key Fields:** `uuid` (UUID v7 auto-generated), `sku` (optional, auto-generated if not provided), `name`, `price`, `capacity`, `enrolled_count`, `status`, `fulfillment_type`, `delivery_method`, `is_prepayment_available`, `prepayment_amount`, `is_featured`, `featured_price`, `featured_price_start_date`, `featured_price_end_date`, `registration_start_date`, `registration_end_date`, `available_from`, `available_to`, `details_json`
+- **Key Fields:** `uuid` (UUID v7 auto-generated), `sku` (optional, auto-generated if not provided), `name`, `price`, `capacity`, `enrolled_count`, `status`, `fulfillment_type`, `delivery_method`, `is_prepayment_available`, `prepayment_amount`, `is_featured`, `featured_price`, `featured_price_start_date`, `featured_price_end_date`, `registration_start_date`, `registration_end_date`, `available_from`, `available_to`, `access_days` (number of days user has access after enrollment), `details_json`
 - **Relationships:**
   - `belongsTo(Product::class)` - product
   - `hasMany(ProductDeliveryOptionDiscountPrice::class)` - discountPrices
@@ -129,7 +129,7 @@
 
 ### Enrollment (`app/Models/Enrollment.php`)
 - **Purpose:** Student access records linking customers to purchased delivery options
-- **Key Fields:** `uuid`, `order_id`, `order_item_id`, `customer_id`, `product_delivery_option_id`, `enrollment_status`, `access_start_date`, `access_end_date`, `external_enrollment_id`, `provisioning_data`
+- **Key Fields:** `uuid`, `order_id`, `order_item_id`, `customer_id`, `product_delivery_option_id`, `enrollment_status`, `access_start_date`, `access_end_date`, `external_enrollment_id`, `provisioning_data` (JSONB — stores per-provider provisioning state for IMS, Moodle, SpotPlayer, BBB)
 - **Relationships:**
   - `belongsTo(User::class, 'customer_id')` - customer
   - `belongsTo(Order::class)` - order
@@ -139,12 +139,21 @@
 - **Special Features:** UUID (`uuid7`) generation on create for external references, enum-backed `enrollment_status`, date casting for access window, JSON provisioning payloads, and dispatches `EnrollmentStatusChanged` on save/delete to keep projections synchronized
 
 ### Payment (`app/Models/Payment.php`)
-- **Purpose:** Financial transaction handling
-- **Key Fields:** `uuid`, `order_id`, `amount`, `method`, `status`, payment gateway details
+- **Purpose:** Financial transaction handling with multi-attempt transaction tracking
+- **Key Fields:** `uuid`, `order_id`, `customer_id`, `amount`, `method`, `status`, `admin_notes`, `data`, `created_by`, `last_gateway_reference` (latest gateway ref), `attempt_count` (sequential attempt counter), `last_attempted_at`, `ip_address`, `user_agent`
 - **Relationships:** 
   - `belongsTo(Order::class)` - order
+  - `belongsTo(User::class, 'customer_id')` - customer
   - `hasMany(Refund::class)` - refunds
-- **Special Features:** Uses `HasUuids` for globally unique references and enum-casts `method` to `PaymentMethodEnum` for processor routing
+  - `hasMany(PaymentTransaction::class)` - transactions (per-attempt gateway tracking)
+- **Special Features:** Uses `HasUuids` for globally unique references, enum-casts `method` to `PaymentMethodEnum` for processor routing, tracks payment attempts with `attempt_count`/`last_attempted_at`, stores last successful gateway reference for reconciliation, captures client IP/user agent for audit
+
+### PaymentTransaction (`app/Models/PaymentTransaction.php`)
+- **Purpose:** Per-attempt gateway transaction records for payment audit trail
+- **Key Fields:** `payment_id`, `transaction_reference` (unique numeric ref starting at 200M), `attempt_number` (sequential per payment), `status` (PaymentTransactionStatusEnum: initiated/completed/failed), `gateway_request` (JSON — full request to gateway), `gateway_response` (JSON — full response from gateway), `initiated_at`, `completed_at`, `error_code`, `error_message`, `ip_address`, `user_agent`
+- **Relationships:**
+  - `belongsTo(Payment::class)` - payment
+- **Special Features:** Sequential transaction references via `PaymentTransactionReferenceService` with row-locking for concurrency; full gateway request/response capture for debugging; lifecycle tracking with `initiated_at`/`completed_at` timestamps; error codes and messages for failure analysis
 
 ### Refund (`app/Models/Refund.php`)
 - **Purpose:** Refund transaction records
@@ -162,13 +171,17 @@
 - **Special Features:** Rating system, featured reviews, approval workflow
 
 ### Category (`app/Models/Category.php`)
-- **Purpose:** Hierarchical product organization
-- **Key Fields:** `name`, `parent_id`, hierarchical structure, `is_good_for_start`
+- **Purpose:** Hierarchical product organization with parent-child nesting
+- **Key Fields:** `name`, `slug`, `parent_id`, `status`, `description`, `image_url`, `icon_url`, `educational_calendar_url`, `color_scheme`, `meta_title`, `meta_description`, `meta_keywords`, `properties`, `additional_info`, `is_good_for_start`
 - **Relationships:** 
-  - Self-referencing hierarchy
-  - Many-to-many with categorizable models
-  - Media attachments for icons and images
-- **Special Features:** "Good for Start" flagging, media management
+  - `belongsTo(self::class, 'parent_id')` - parent (self-referencing hierarchy)
+  - `hasMany(self::class, 'parent_id')` - children (self-referencing hierarchy)
+  - `morphToMany(Course::class, 'categorizable')` - courses
+  - `morphToMany(DigitalAsset::class, 'categorizable')` - digitalAssets
+  - `morphToMany(Seminar::class, 'categorizable')` - seminars
+  - `morphToMany(Product::class, 'categorizable')` - products
+  - `hasMany(Categorizable::class)` - categorizable pivot
+- **Special Features:** "Good for Start" flagging, media management, parent-child relationship exposed in shop API via `CategoryCardData::$children`
 
 ### Categorizable (`app/Models/Categorizable.php`)
 - **Purpose:** Pivot model for polymorphic category relationships
@@ -249,10 +262,10 @@
 - **Relationships:** Campaign management for bulk wallet operations
 
 ### Setting (`app/Models/Setting.php`)
-- **Purpose:** Application configuration registry powering CMS and storefront content
-- **Key Fields:** `key`, `value` (JSON payload), `type`, `group`
+- **Purpose:** Application configuration registry powering CMS, storefront content, and integration credentials
+- **Key Fields:** `key`, `value` (JSON payload — includes encrypted secrets for integration configs), `type`, `group`
 - **Relationships:** Self-contained configuration system with media attachments via Mediable
-- **Special Features:** `witImages()` helper resolves stored media IDs into `MediaData` DTOs; integrates with SettingsService and SmartCache invalidation to serve hydrated settings payloads
+- **Special Features:** `witImages()` helper resolves stored media IDs into `MediaData` DTOs; integrates with SettingsService and SmartCache invalidation; supports encrypted secret fields via `SettingKeyEnum::secretFields()`; secrets redacted from API responses via `SettingSecretRedactor`; SKIP_MEDIA optimization skips `witImages()` for integration keys (IMS, Moodle, BBB, SpotPlayer) to avoid unnecessary media queries
 
 ### HomePageBlock (`app/Models/HomePageBlock.php`)
 - **Purpose:** Dynamic homepage block definitions rendered on the shop front
@@ -274,7 +287,7 @@
 
 ### StudentStory (`app/Models/StudentStory.php`)
 - **Purpose:** Success stories and testimonials showcased on the storefront
-- **Key Fields:** `student_name`, `course_name`, `course_url`, `story_text`, `avatar_url`, `is_visible`, `is_featured`, `display_order`
+- **Key Fields:** `student_name`, `course_name`, `course_url` (validated as string, accepts relative paths like `/course-url`), `story_text`, `avatar_url`, `is_visible`, `is_featured`, `display_order`
 - **Relationships:**
   - Media attachments (avatar) via Mediable; `avatar_url` now persisted rather than computed on the fly
   - `belongsToMany(Category::class)` via `HasCategories`
@@ -301,7 +314,39 @@
 
 ---
 
+### New Product-Related Enums
+
+#### AvailabilityStatusEnum (`app/Enums/Product/AvailabilityStatusEnum.php`)
+- **Values:** `PAST`, `UPCOMING`, `ONGOING`
+- **Purpose:** Temporal state filter for product availability windows, used in `ProductQueryService::availabilityStatus()` for efficient filtering
+
+#### ProductRegistrationStatusEnum (`app/Enums/Product/ProductRegistrationStatusEnum.php`)
+- **Values:** `IN_PROGRESS`, `FINISHED`
+- **Purpose:** Derived status in `ProductCardData` indicating whether registration is open for a product based on registration/availability dates aggregation
+
+#### ProductDeliveryStatusEnum (`app/Enums/Product/ProductDeliveryStatusEnum.php`)
+- **Values:** `ONLINE`, `IN_PERSON`, `COMBINED`
+- **Purpose:** Derived delivery type in `ProductCardData` based on fulfillment types across delivery options
+
+#### DeliveryMethodEnum (`app/Enums/Product/DeliveryMethodEnum.php`)
+- **Values:** `LMS_MOODLE`, `VIDEO_PLATFORM_SPOTPLAYER`, `LIVE_SESSION_BBB`, `LIVE_SESSION_SKYROOM`, `DIRECT_DOWNLOAD`, `IN_PERSON`
+- **Purpose:** Maps product delivery methods to external integration providers for provisioning routing
+
+#### FulfillmentTypeEnum (`app/Enums/Product/FulfillmentTypeEnum.php`)
+- **Values:** `ONLINE_SERVICE`, `OFFLINE_SERVICE`, `DIGITAL`, etc.
+- **Purpose:** Groups delivery methods into fulfillment categories for filtering and provisioning
+
 ## Recent Model Behavior Notes
+
+### Order Provisioning Configuration
+- `config/order.php` controls increment ID pattern (simple/dated/prefixed) and provisioning trigger (`any_payment`/`full_payment`/`manual_approval`).
+- `config/payments.php` centralizes Mellat, bank transfer, and wallet gateway configurations plus transaction reference starting point (default: 200000001).
+
+### Payment Transaction Tracking
+- All payment processors now create `PaymentTransaction` records for every gateway interaction.
+- Transaction references are numeric-only sequential IDs beginning at 200000001 (configurable via `PAYMENT_TRANSACTION_START` env).
+- Mellat gateway uses transaction reference (not order increment_id) as `orderId` in gateway requests.
+- Wallet payments create immediate COMPLETED transaction records with wallet metadata.
 
 ### ProductDeliveryOption Capacity
 - Capacity is enforced at checkout time; `enrolled_count` is used against `capacity` when creating orders.
@@ -311,6 +356,11 @@
 
 ### Payment Verification State
 - Payment verification is idempotent; only `PENDING` payments transition to `COMPLETED`. Re-verification attempts on non-pending payments are rejected.
+- Verification now tracks full lifecycle via `PaymentTransaction` (INITIATED → COMPLETED/FAILED) with complete gateway request/response capture.
+
+### Order & Enrollment Provisioning Triggers
+- `config('order.provisioning.trigger')` controls auto-provisioning: `any_payment` (default), `full_payment`, or `manual_approval`.
+- `manual_approval` requires staff to call `POST /api/v1/admin/order/{order}/approve` via `ApproveOrderAction`.
 
 ### Order & OrderItem Discount Snapshots
 - `Order.applied_cart_discounts_json` captures cart-level discounts at checkout.

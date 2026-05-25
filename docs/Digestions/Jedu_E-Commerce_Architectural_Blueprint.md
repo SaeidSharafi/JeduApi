@@ -59,6 +59,9 @@ This engine orchestrates the journey from purchase to access with a focus on int
 -   **Transactional Integrity (Order & OrderItem):**  
     An Order is the master receipt. Crucially, its OrderItems contain **JSON snapshots** of the product and customer data at the moment of purchase. This provides immutable, historical integrity. If a product's price changes a month later, the order record remains an accurate source of truth for what was sold, at what price, and to whom. This is vital for financial reporting and dispute resolution.
 
+-   **Payment Integrity (Per-Attempt Tracking):**
+    Every payment attempt is recorded as an immutable **PaymentTransaction** with full gateway request/response capture. The system generates unique sequential references with row-level locking for concurrency safety. This provides a complete audit trail for every gateway interaction, essential for debugging payment failures and reconciling with bank reports.
+
 -   **Fulfillment & Access Provisioning (Enrolment):**  
     The Enrolment is the bridge between a financial transaction and content access. The process is fully automated and driven by the OrderStatusService:
 
@@ -66,7 +69,29 @@ This engine orchestrates the journey from purchase to access with a focus on int
 
     2.  This automatically creates an **Enrolment** record, linking the User to their purchased ProductDeliveryOption.
 
-    3.  This record is the system's "proof of access." Its creation cleanly separates the e-commerce logic from subsequent fulfillment actions, such as triggering an API call to Moodle to create the user's account.
+    3.  The system then dispatches **provisioning jobs** based on the delivery method of the purchased option. Each integration provider has its own dedicated, queued job with automatic retries (3 attempts with exponential backoff: 60s, 180s, 600s). The Enrolment stores per-provider provisioning state in a `provisioning_data` JSONB field, enabling idempotent retries and progress tracking.
+
+-   **Provisioning Triggers (Configurable Orchestration):**  
+    Not all orders provision immediately. The system supports three trigger modes per product:
+
+    -   **`any_payment`**: Provision as soon as any payment is received (partial or full).
+    -   **`full_payment`**: Provision only when the full amount is paid.
+    -   **`manual_approval`**: A staff member must explicitly approve the order before provisioning begins. This is used for offline payments (bank transfers) where the funds must be verified manually.
+
+    This flexibility allows the business to handle high-trust purchases (credit card → provision immediately) alongside low-trust ones (bank transfer → provision after verification).
+
+-   **Current Integration Providers:**
+    The provisioning system supports four external services, each with a dedicated service class and queued job:
+
+    1.  **IMS (Internal Management System):** REST API for creating student and enrollment records. Logs failures to AdminActionLog for manual review. PII (email, phone) is redacted in logs.
+
+    2.  **Moodle (LMS):** Web Services API for user creation, manual enrollment, course completion checks, grade retrieval, and SSO login URL generation. A separate `SyncMoodleProgressJob` updates enrollment data with Moodle progress when a customer views their course details.
+
+    3.  **SpotPlayer (Video Platform):** License issuance API — generates a license key and player URL for the user.
+
+    4.  **BigBlueButton (Live Sessions):** Meeting creation and join URL generation using SHA1 checksum authentication.
+
+    All services resolve credentials through the SettingsService, allowing configuration via the admin panel without code changes.
 
 
 ----------
@@ -132,7 +157,19 @@ The Admin Interface is built for granular control and total accountability.
     3.  **Pattern Risk:** Detecting anomalies like a high frequency of round-number transactions.
 
     4.  **Admin Activity Risk:** Monitoring the frequency of high-stakes admin operations.  
-        The system can then generate compliance reports that provide not just data, but an overall risk score and actionable recommendations like "Conduct immediate audit".
+    The system can then generate compliance reports that provide not just data, but an overall risk score and actionable recommendations like "Conduct immediate audit".
+
+-   **Secrets Management (Encrypted at Rest, Redacted in Transit):**  
+    Integration credentials (API keys, tokens, passwords for IMS, Moodle, SpotPlayer, BBB) are sensitive data requiring special handling. The SettingsService handles this with three layers of protection:
+
+    1.  **Encryption at Rest:** Secret field values are automatically encrypted via Laravel's `Crypt::encryptString()` when saved through the admin panel. A dedicated `settings:encrypt-secrets` command migrates any legacy plaintext values.
+    
+    2.  **Transparent Decryption on Read:** When the provisioning system reads these settings, they are automatically decrypted. Legacy plaintext values (from before the encryption feature existed) continue to work without migration — the system gracefully falls back.
+    
+    3.  **Redaction in API Responses:** When sending settings to the admin frontend for display, all secret field values are replaced with `***REDACTED***`. This prevents accidental exposure in browser dev tools or audit logs. The redaction is also applied to AdminActionLog entries for integration setting changes.
+
+    This means an administrator can update integration credentials through the admin panel, see only redacted values in the UI, yet the provisioning system can read the real values under the hood — all without any manual key management.
+
 
 
 ----------

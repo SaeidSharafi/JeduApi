@@ -23,6 +23,12 @@
 - **Functionality:** Publishes blog posts with SCHEDULED status where `published_at` date has passed, updating status to PUBLISHED
 - **Usage:** Intended for cron job scheduling to automate content publication workflow
 
+#### CheckStuckPaymentsCommand (`app/Console/Commands/CheckStuckPaymentsCommand.php`)
+- **Purpose:** Detects payments stuck in PENDING state with initiated but uncompleted transactions beyond threshold
+- **Signature:** `payments:check-stuck {--threshold=30}`
+- **Functionality:** Queries payments where latest transaction is `INITIATED` longer than threshold minutes ago without `completed_at`. Logs warnings with payment ID, order info, transaction reference, and stuck duration for manual review.
+- **Usage:** Intended for cron scheduling (e.g., every 15 minutes) to alert support of abandoned gateway payments.
+
 #### IndexAllProductPricesCommand (`app/Console/Commands/IndexAllProductPricesCommand.php`)
 - **Purpose:** Batch re-index or initialize pricing index for products
 - **Signature:** `prices:index-all {--queue=default} {--sync} {--missing-only}`
@@ -45,9 +51,11 @@
 - **Usage:** Intended for scheduled task (e.g., daily at midnight) to automatically update pricing when featured prices expireses that need lightweight thumbnail references without hydrating full media relations.
 
 #### Order Actions (`app/Actions/Admin/Order/`)
-  - `handle(OrderCreateData $data): Order`: Delegates all totals to `OrderCalculationService`, locks delivery options while validating requested payment types/quantities against live capacity (`enrolled_count`), snapshots product data per item, seeds enrollments in `AWAITING_PAYMENT`, and increments promotion usage counts when coupon-driven contexts are present
+  - `handle(OrderCreateData $data): Order`: Delegates all totals to `OrderCalculationService`, locks delivery options while validating requested payment types/quantities against live capacity (`enrolled_count`), **validates registration window (`registration_start_date`/`registration_end_date`) and availability window (`available_from`/`available_to`)**, snapshots product data per item, seeds enrollments in `AWAITING_PAYMENT`, and increments promotion usage counts when coupon-driven contexts are present
   - `handle(OrderUpdateData $data, Order $order): Order`: Updates existing order details and status
   - `handle(Order $order): void`: Handles order deletion and cleanup
+- **ApproveOrderAction** (`app/Actions/Admin/Order/ApproveOrderAction.php`)
+  - `handle(Order $order): Order`: Manually approves order for fulfillment/provisioning. Validates: order not already completed/cancelled/refunded, sufficient payment coverage (considering prepayment amounts per item). Transactionally marks order as COMPLETED, completes each item, triggers enrollment provisioning via `OrderStatusService`. Permission-gated via `OrderPolicy::approve()` using `PermissionEnum::ORDER_APPROVE`.
 
 #### Payment Actions (`app/Actions/Admin/Payment/`)
 - **CreatePaymentAction** (`app/Actions/Admin/Payment/CreatePaymentAction.php`)
@@ -244,11 +252,13 @@
 
 #### Checkout & Payment Actions (`app/Actions/Shop/*`)
 - **CreateOrderFromCartAction** (`app/Actions/Shop/CreateOrderFromCartAction.php`)
-  - `handle(CheckoutData $checkoutData, User $user): PaymentProcessResultData`: Wraps the entire checkout pipeline—loads/validates the active cart (capacity, publication, duplicate ownership, order velocity), converts it into `OrderCreateData`, reuses `CreateOrderAction`, and then dispatches the selected payment processor. Returns redirect info for multi-step gateways or finalizes wallet/no-payment flows before clearing the cart.
+  - `handle(CheckoutData $checkoutData, User $user): PaymentProcessResultData`: Wraps the entire checkout pipeline—loads/validates the active cart (capacity, **registration window, availability window**, publication, duplicate ownership, order velocity), converts it into `OrderCreateData`, reuses `CreateOrderAction`, and then dispatches the selected payment processor. Returns redirect info for multi-step gateways or finalizes wallet/no-payment flows before clearing the cart.
 - **RetryOrderPaymentAction** (`app/Actions/Shop/RetryOrderPaymentAction.php`)
   - `handle(Order $order, PaymentMethodEnum $method, ?int $amount = null): PaymentProcessResultData`: Allows customers to retry failed/pending orders, validating outstanding balance and order status before reissuing a processor-specific payment request (partial amounts supported via `amount`).
 - **VerifyPaymentAction** (`app/Actions/Shop/Payment/VerifyPaymentAction.php`)
   - `handle(GatewayCallbackData $data): Payment`: Locks the pending payment by UUID, resolves the correct processor via `PaymentProcessorFactory`, and delegates gateway-specific verification/settlement workflows (Mellat, etc.), surfacing validation errors if the payment is no longer pending.
+- **CancelOrderByCustomerAction** (`app/Actions/Shop/Order/CancelOrderByCustomerAction.php`)
+  - `execute(Order $order, int $userId): Order`: Allows customers to cancel their own pending orders. Validates: order belongs to user, order is PENDING, no completed payments exist. Transactionally sets order to CANCELLED, cancels associated enrollments (fires model events for `enrolled_count` tracking via `each()` + `save()`).
 
 ### Auth Actions (`app/Actions/Auth/`)
 - **GenerateOtpAction** (`app/Actions/Auth/GenerateOtpAction.php`)
@@ -281,7 +291,7 @@
 
 ### WalletPaymentProcessor (`app/Services/Payment/WalletPaymentProcessor.php`)
 - **Purpose:** Handles immediate wallet debits without redirects
-- **Workflow:** Validates sufficient balance, records a debit using `RecordWalletTransactionAction`, persists a completed `Payment`, and dispatches `PaymentCompletedEvent`. `verify()` is unsupported and throws by design.
+- **Workflow:** Injects `PaymentTransactionReferenceService`. Generates transaction reference, validates sufficient balance (throws `InsufficientWalletBalanceException` with available/required/shortfall details on failure), records debit via `RecordWalletTransactionAction`, creates Payment + PaymentTransaction (COMPLETED) with wallet metadata (wallet_id, available_balance, new_balance), sets `last_gateway_reference`/`attempt_count`/`last_attempted_at` on Payment, and dispatches `PaymentCompletedEvent`. `verify()` is unsupported and throws by design.
 
 ### BankTransferPaymentProcessor (`app/Services/Payment/BankTransferPaymentProcessor.php`)
 - **Purpose:** Supports both staff-recorded confirmations and customer-initiated bank transfers
@@ -291,21 +301,25 @@
 - **Redirect:** Not required; entirely manual/async.
 
 ### MellatGatewayPaymentProcessor (`app/Services/Payment/MellatGatewayPaymentProcessor.php`)
-- **Purpose:** Implements the multi-step Mellat (بانک ملت) online gateway
+- **Purpose:** Implements the multi-step Mellat (بانک ملت) online gateway with per-attempt transaction tracking
 - **Process:**
-  - `process()` loads gateway credentials from config, initializes a SOAP client via `SoapClientFactory`, calls `bpPayRequest`, and returns `PaymentProcessResultData::pendingWithRedirect()` containing the target URL + RefId payload
-  - `verify()` locks the pending payment, performs `bpVerifyRequest` and `bpSettleRequest`, maps Mellat response codes to domain exceptions, and only dispatches `PaymentCompletedEvent` when both verification and settlement succeed; failures update the payment with diagnostic metadata
+  - `process()`: Generates unique transaction reference via `PaymentTransactionReferenceService`. Creates Payment + PaymentTransaction (INITIATED) records with full gateway request/response capture. Uses transaction reference (not order increment_id) as gateway `orderId`. Tracks attempt count, IP address, user agent.
+  - `verify()`: Loads latest transaction for the payment. Maps `ResCode` to error messages for failures. On success (`ResCode === '0'`): performs `bpVerifyRequest` + `bpSettleRequest`. Both must succeed before marking transaction as COMPLETED and dispatching `PaymentCompletedEvent`. Failure at any step (verification fail, settlement fail, SOAP fault) updates transaction to FAILED with error details, error codes, timestamps. Settlement code 45 (already settled) treated as success.
+  - **Transaction Lifecycle:** Every gateway interaction creates a `PaymentTransaction` record tracking `initiated_at`, `completed_at`, `gateway_request`, `gateway_response`, `error_code`, `error_message`. This provides full audit trail per payment attempt.
 
 ### SoapClientFactory (`app/Services/Payment/SoapClientFactory.php`)
 - **Purpose:** Minimal helper that instantiates `SoapClient` instances from remote or local WSDL endpoints; wrapped to simplify mocking in unit tests
 
 ### OrderStatusService (`app/Services/OrderStatusService.php`)
-- **Purpose:** Centralized order and enrolment status management
+- **Purpose:** Centralized order and enrolment status management with provisioning trigger awareness
 - **Public Methods:**
-  - `handlePaymentCompletion(Order $order): void`: Cascades status updates after payment confirmation, updates order items and parent order status
-  - `updateEnrollmentStatus(OrderItem $item): void`: Updates enrolment access based on order item status changes (completed items now move enrolments into `PENDING_PROVISIONING` before provisioning pipelines take over)
+  - `handlePaymentCompletion(Order $order): void`: Reads `config('order.provisioning.trigger')` to determine auto-provisioning behavior:
+    - `any_payment` (default): Immediately completes items/enrollments (same as previous behavior)
+    - `full_payment`: Provisions only when `balance_due <= 0`
+    - `manual_approval`: Never auto-provisions — sets order to PROCESSING instead, requiring staff to call `ApproveOrderAction`
+  - `updateEnrollmentStatus(OrderItem $item): void`: Updates enrolment access based on order item status changes (completed items move enrolments into `PENDING_PROVISIONING`). Now uses `save()` instead of `saveQuietly()` to fire model events for `enrolled_count` synchronization.
   - `completeOrderItemAfterPayment(OrderItem $item): void`: Internal method for item-level status updates
-  - `updateParentOrderStatus(Order $order): void`: Updates parent order status based on item statuses
+  - `updateParentOrderStatus(Order $order): void`: Determines parent order status from collective item states: all refunded → REFUNDED, all cancelled → CANCELLED, any refunded → PARTIALLY_REFUNDED, all completed → COMPLETED, default → PROCESSING
 
 ### CartService (`app/Services/CartService.php`)
 - **Purpose:** Single façade for cart lifecycle management across authenticated and guest flows
@@ -318,7 +332,7 @@
 
 ### RequestCartIdentifier (`app/Services/Cart/RequestCartIdentifier.php`)
 - **Purpose:** HTTP-scoped implementation of `CartIdentifier` that decides whether to use an authenticated user ID or a persistent guest token (via `X-Guest-Token` header)
-- **Responsibilities:** Captures guard state at instantiation, exposes `userId()`, `guestToken()`, and `ensureGuestToken()` helpers used by `CartService` and middleware to keep carts consistent across sessions
+- **Responsibilities:** Exposes `userId()`, `guestToken()`, and `ensureGuestToken()` helpers used by `CartService` and middleware to keep carts consistent across sessions. Refactored from singleton to scoped binding — no longer caches auth state at construction; `userId()` and `guestToken()` check auth on each call, ensuring dynamic auth state reflection across a request lifecycle. `isGuest()` delegates directly to `auth->check()`.
 
 ### Discount Services (`app/Services/Discounts/`)
 
@@ -358,7 +372,7 @@
 #### PromotionFinder (`app/Services/Discounts/PromotionFinder.php`)
 - **Purpose:** Finds and matches promotions to orders and products
 - **Public Methods:**
-  - `findApplicablePromotions(Order $order): Collection`: Finds promotions applicable to order
+  - `findApplicablePromotions(Order $order): Collection`: Finds promotions applicable to order; now enforces `usage_limit_total` — excludes promotions where `total_usage_count >= usage_limit_total` (Gap #2 fix)
   - `findBestPromotion(Product $product): ?DiscountPromotion`: Returns best available promotion for product
 
 ### Discount Cart Services (`app/Services/Discounts/Cart/`)
@@ -386,6 +400,84 @@
   - `getPriceRangeForProduct(Product $product): array`: Returns min/max price range
   - `getHighestDiscountPercentage(Product $product, ?int $selectedDeliveryOptionId = null): float`: Calculates maximum discount percentage
 - **Dependencies:** `RequestDataCacheService` for performance optimization
+
+### SettingSecretRedactor (`app/Services/SettingSecretRedactor.php`)
+- **Purpose:** Redacts secret field values from integration setting arrays before API responses and audit logging
+- **Methods:**
+  - `redact(string $settingKey, mixed $value): mixed`: Replaces known secret field values with `***REDACTED***`
+  - `hasSecrets(string $settingKey): bool`: Whether a setting key has any secret fields
+- **Secret fields per key:** IMS (`api_key`), Moodle (`token`, `auth_userkey_token`), BBB (`secret`, `default_attendee_password`, `default_moderator_password`), SpotPlayer (`api_key`)
+- **Usage:** Applied in `SettingData::fromModel()`, `SettingsService::auditIntegrationWrite()`, and during `set()` for placeholder detection
+
+### Integration Services (`app/Services/Integrations/`)
+
+#### ImsService (`app/Services/Integrations/ImsService.php`)
+- **Purpose:** IMS (Internal Management System) REST API client for student & enrollment CRUD operations
+- **Methods:**
+  - `setConfig(array $config): void`: Injects runtime configuration (credentials, endpoint)
+  - `storeStudent(array $payload): array`: Creates student record via POST `/api/v2/student`
+  - `storeEnrollment(User $user, array $payload): array`: Creates enrollment record via POST `/api/v2/enrolment/{civil_id}`
+- **Security:** PII redaction in logs (email, phone via `sanitizeBody()`); credentials resolved via `SettingsService`
+
+#### MoodleService (`app/Services/Integrations/MoodleService.php`)
+- **Purpose:** Moodle Web Services API client for user management, enrollment, grades, and SSO
+- **Methods:**
+  - `setConfig(array $config): void`: Injects runtime configuration
+  - `findOrCreateUser(User $user): array`: Finds or creates Moodle user → returns `[moodleUserId, moodleUsername]`
+  - `isCourseCompleted(int $moodleCourseId, int $moodleUserId): bool`: Checks course completion status
+  - `getActivityCompletionStatus(int $moodleCourseId, int $moodleUserId): array`: Returns per-activity completion states
+  - `getGrades(int $moodleCourseId, int $moodleUserId): array`: Returns course grade + activity-level grades
+  - `getCourse(int $moodleCourseId): LmsMoodleBlockData`: Fetches course content structure
+  - `enrollUser(int $moodleUserId, int $moodleCourseId, ?int $startTime, ?int $endTime, int $roleId = 5): void`: Manual enrollment
+  - `createUserKey(string $username, ?string $token = null): string`: Generates SSO login URL key
+
+#### SpotPlayerService (`app/Services/Integrations/SpotPlayerService.php`)
+- **Purpose:** SpotPlayer video platform license provisioning
+- **Methods:**
+  - `issueLicense(string $spotId, User $user): array`: Issues license → returns `{license_key, player_url, raw}`
+
+#### BbbService (`app/Services/Integrations/BbbService.php`)
+- **Purpose:** BigBlueButton API client for meeting management and join URL generation (SHA1 checksum auth)
+- **Methods:**
+  - `createMeeting(string $meetingId, string $name, ?string $attendeePw, ?string $moderatorPw): void`: Creates BBB meeting
+  - `buildJoinUrl(string $meetingId, string $fullName, ?string $password): string`: Generates attendee/moderator join URL
+
+### Provisioning Jobs (`app/Jobs/Provisioning/`)
+
+#### HandlesProvisioningStatus Trait (`app/Jobs/Provisioning/Concerns/HandlesProvisioningStatus.php`)
+- **Purpose:** Shared trait for all provisioning jobs providing success/failure marking and provider requirement detection
+- `markProvisioningSuccess(Enrollment $enrollment, string $provider, array $data): void`: Updates `provisioning_data` JSONB with provider status
+- `markProvisioningFailed(Enrollment $enrollment, string $provider, string $error): void`: Sets provisioning failure state
+- `requiresProvisioning(string $provider): bool`: Checks if a provider is enabled via SettingsService
+
+#### ProvisionImsEnrollmentJob (`app/Jobs/Provisioning/ProvisionImsEnrollmentJob.php`)
+- **Purpose:** Provisions student + enrollment via IMS. Resolves payment info for IMS bank account mapping. Tries: 3, backoff: [60, 180, 600]s. Creates `AdminActionLog` on failure.
+
+#### ProvisionMoodleEnrollmentJob (`app/Jobs/Provisioning/ProvisionMoodleEnrollmentJob.php`)
+- **Purpose:** Finds/creates Moodle user and enrolls in course. Tries: 3, backoff: [60, 180, 600]s.
+
+#### ProvisionSpotPlayerEnrollmentJob (`app/Jobs/Provisioning/ProvisionSpotPlayerEnrollmentJob.php`)
+- **Purpose:** Issues SpotPlayer license for a user. Tries: 3, backoff: [60, 180, 600]s.
+
+#### ProvisionBbbEnrollmentJob (`app/Jobs/Provisioning/ProvisionBbbEnrollmentJob.php`)
+- **Purpose:** Optionally auto-creates BBB meeting and generates join URL. Tries: 3, backoff: [60, 180, 600]s.
+
+#### SyncMoodleProgressJob (`app/Jobs/Provisioning/SyncMoodleProgressJob.php`)
+- **Purpose:** Syncs Moodle course completion, activity statuses, and grades into enrollment `provisioning_data`. Triggered on enrollment detail view (rate-limited to 5-min throttle per enrollment).
+
+### Provisioning Orchestration
+
+#### ProvisionPaidResourcesListener (`app/Listeners/ProvisionPaidResourcesListener.php`)
+- **Purpose:** Dispatches provisioning jobs after payment completion based on delivery method
+- **Trigger:** Listens on `PaymentCompletedEvent` (queued)
+- **Logic:** For each order item with completed status, dispatches jobs based on:
+  - `ims_course_code` in details → `ProvisionImsEnrollmentJob`
+  - `LMS_MOODLE` delivery → `ProvisionMoodleEnrollmentJob`
+  - `VIDEO_PLATFORM_SPOTPLAYER` delivery → `ProvisionSpotPlayerEnrollmentJob`
+  - `LIVE_SESSION_BBB` delivery → `ProvisionBbbEnrollmentJob`
+
+#### UpdateStatusesAfterPaymentListener (`app/Listeners/UpdateStatusesAfterPaymentListener.php`)
+- **Purpose:** Calls `OrderStatusService::handlePaymentCompletion()` after payment confirmed (synchronous)
 
 ### RequestDataCacheService (`app/Services/RequestDataCacheService.php`)
 - **Purpose:** Request-scoped caching service to prevent duplicate database queries and calculations
@@ -442,14 +534,19 @@
   - `globalSearchProductsDatabase()` / `globalSearchProductsScout()`: Driver-specific search implementations used by the primary entry point
   - `availableProducts()`: Ensures published product, productable, delivery options, and active term status
   - `availableNow()`: Filters to delivery options currently within registration and availability windows
-  - `registrationWindow()` / `availabilityWindow()`: Overlap-aware date filtering for storefront scheduling needs
+  - `registrationWindow(Carbon $from, Carbon $to)` / `availabilityWindow(Carbon $from, Carbon $to)`: Overlap-aware date filtering for storefront scheduling needs (now supports direct date range params in addition to existing scope usage)
+  - `availabilityStatus(AvailabilityStatusEnum)`: Filters products by temporal state — `PAST` (available_to < now), `UPCOMING` (available_from > now), `ONGOING` (within window). Applied as deferred relationship constraint on `productDeliveryOptions`
+  - `nearingCapacity(float $threshold = 0.8)`: Filters to products where at least one delivery option has `enrolled_count / capacity >= threshold`
+  - `withoutFullProducts()`: Excludes delivery options where `capacity IS NOT NULL AND capacity <= enrolled_count`
+  - `sortByCapacityUtilization(float $threshold = 0.8)`: Uses `LEFT JOIN LATERAL` subquery to compute `max_ratio` and `near_capacity_flag` in a single pass; orders by near-capacity first, then utilization ratio descending. `sortBy` now accepts `capacity_utilization`
   - `inCategories()` / `inCategoryIds()`: Deferred category constraints using collected relationship callbacks
   - `goodForStart(array $categorySlugs)`: Limits to course productables flagged as `good_for_start` within the pivot table
   - `byCourseLevel()` / `byFulfillmentTypes()`: Filters using enums for consistent DTO integration
   - `withDiscounts()` / `priceRange()`: Joins the price index when required without duplicating joins
-  - `sortBy()` & `query->orderByScore()`: Supports deterministic ordering with optional PGroonga scoring metadata
+  - `sortBy()` & `query->orderByScore()`: Supports deterministic ordering with optional PGroonga scoring metadata. New allowed sort field: `capacity_utilization`
   - Terminal methods (`paginate`, `get`, `first`, `getQuery`) execute after deferred relationship constraints are applied
 - **Pattern:** Maintains the deferred constraint collector ensuring `whereHas`/`whereHasMorph` consolidation, preventing redundant joins and enabling reusable query presets.
+- **Scout fallback:** When `capacity_utilization` sorting or capacity-related filters are used, automatically falls back to database query (Typesense cannot handle these natively)
 
 ### CategoryQueryService (`app/Query/CategoryQueryService.php`)
 - **Purpose:** Category-focussed product loader that reuses the shared query engine and hydrates pricing in bulk
@@ -486,10 +583,15 @@
   - `isPgroongaEnabled(): bool`: Cached probe that inspects `pg_extension` and gracefully handles connection failures, allowing search macros to choose the correct strategy
 
 ### SettingsService (`app/Services/SettingsService.php`)
-- **Purpose:** SmartCache-backed facade over `Setting` models powering CMS content payloads
+- **Purpose:** SmartCache-backed facade over `Setting` models powering CMS content payloads and integration credentials
 - **Public Methods:**
-  - `get(SettingKeyEnum $key, mixed $default = null): mixed`: Reads a single setting, hydrating media references through `Setting::witImages()` and falling back to defaults
+  - `get(SettingKeyEnum $key, mixed $default = null): mixed`: Reads a single setting from cached collection. Skips `witImages()` for integration keys (SKIP_MEDIA optimization — IMS, Moodle, BBB, SpotPlayer) to avoid unnecessary media queries. Automatically tries decryption of registered secret fields via `Crypt::decryptString()` on read.
+  - `set(SettingKeyEnum $key, mixed $value): bool`: Persists value. Encrypts registered secret fields via `Crypt::encryptString()` before write. Preserves existing secrets when `***REDACTED***` placeholder is sent. Creates audit log entries for integration key writes via `SettingSecretRedactor`.
   - `forget(): void`: Exposes cache invalidation hook used by observers/actions to refresh settings payloads
+- **SKIP_MEDIA Optimization:** Four integration keys (IMS, Moodle, BBB, SpotPlayer) skip `witImages()` media hydration since they store credentials, not content with media references
+- **Encryption on Write:** Secret fields defined by `SettingKeyEnum::secretFields()` are encrypted at rest using Laravel's `Crypt::encryptString()`
+- **Decryption on Read:** Encrypted values are transparently decrypted when retrieved via `get()`, with graceful fallback for legacy plaintext
+- **Audit Logging:** Integration setting writes are logged via `AdminActionLog` with secrets redacted, risk level "high"
 - **Implementation Notes:** Caches the full settings collection forever using `SmartCache` keyed by `CacheKeysEnum::Settings`, ensuring single query hydration per deploy cycle
 
 ## Observers, Events & Async Processing
@@ -521,22 +623,28 @@
 
 ### Payment Services (`app/Services/Payment/`)
 
-#### PaymentProcessorFactory (`app/Services/Payment/PaymentProcessorFactory.php`)
+#### PaymentTransactionReferenceService (`app/Services/PaymentTransactionReferenceService.php`)
+- **Purpose:** Generates unique numeric payment transaction references with concurrency safety
+- **Method:**
+  - `generate(): string`: Uses DB row-locking (`lockForUpdate()`) on the latest `PaymentTransaction` row to calculate the next sequential number. Starts from `config('payments.transaction_reference.start_from')` (default: 200000001). Returns as string.
+- **Usage:** Injected into all payment processors (Mellat, Wallet, BankTransfer) for unified transaction reference generation.
+
+### PaymentProcessorFactory (`app/Services/Payment/PaymentProcessorFactory.php`)
 - **Purpose:** Factory pattern for payment processor creation
 - **Public Methods:**
   - `create(string $method): PaymentProcessorInterface`: Creates appropriate payment processor
   - `getSupportedMethods(): array`: Returns list of supported payment methods
 
 #### WalletPaymentProcessor (`app/Services/Payment/WalletPaymentProcessor.php`)
-- **Purpose:** Processes wallet-based payments
+- **Purpose:** Processes wallet-based payments with transaction tracking
 - **Public Methods:**
-  - `processPayment(PaymentData $data): PaymentResult`: Processes wallet payments
+  - `processPayment(PaymentData $data): PaymentResult`: Processes wallet payments, creates PaymentTransaction record, validates balance with domain exception
   - `validateWalletBalance(Wallet $wallet, float $amount): bool`: Validates sufficient balance
 
 #### BankTransferPaymentProcessor (`app/Services/Payment/BankTransferPaymentProcessor.php`)
 - **Purpose:** Handles bank transfer payment processing
 - **Public Methods:**
-  - `processPayment(PaymentData $data): PaymentResult`: Processes bank transfer payments
+  - `processPayment(PaymentData $data): PaymentResult`: Processes bank transfer payments, validates bank transfer details for admin-initiated payments
   - `validateBankDetails(array $details): bool`: Validates bank transfer information
 
 ### OtpManagerService (`app/Services/OtpManagerService.php`)
@@ -545,6 +653,12 @@
   - `generateOtp(string $identifier): string`: Creates time-limited OTP codes
   - `validateOtp(string $identifier, string $otp): bool`: Validates submitted OTP codes
   - `resendOtp(string $identifier): void`: Handles OTP resending with rate limiting
+
+### InsufficientWalletBalanceException (`app/Exceptions/Payment/InsufficientWalletBalanceException.php`)
+- **Purpose:** Domain exception for wallet balance validation failures
+- **Properties:** `availableBalance`, `requiredBalance`, `shortfall`
+- **Thrown by:** `WalletPaymentProcessor::process()` when wallet balance is insufficient for payment amount
+- **Message:** Localized via `validation.custom.insufficient_wallet_balance` language key
 
 ### DefaultOtpGenerator (`app/Services/DefaultOtpGenerator.php`)
 - **Purpose:** Default implementation of OTP generation
@@ -565,3 +679,23 @@
 - **Signature:** `post:publish`
 - **Functionality:** Publishes blog posts with SCHEDULED status where `published_at` date has passed, updating status to PUBLISHED
 - **Usage:** Intended for cron job scheduling to automate content publication workflow
+
+### EncryptSettingSecretsCommand (`app/Console/Commands/EncryptSettingSecretsCommand.php`)
+- **Purpose:** One-time migration to encrypt legacy plaintext secret values in integration setting configurations
+- **Signature:** `settings:encrypt-secrets {--dry-run}`
+- **Functionality:** Targets all four integration keys (IMS, Moodle, BBB, SpotPlayer). Detects already-encrypted values via try-decrypt to ensure idempotency. Dry-run mode previews changes. Busts settings cache after write.
+- **Usage:** Run after deployment to ensure all stored secrets are encrypted at rest.
+
+## Traits & Utilities
+
+### FakeMediaTrait (`tests/Support/Traits/FakeMediaTrait.php`)
+- **Purpose:** Reusable test trait that seeds real uploaded media files from `resources/seed-media/` into the database
+- **Behavior:** Copies seed media files to `public/fake-media/`, imports via `MediaUploader::importPath()`, creates 8 media entries (3 video, 5 image variants) for use in feature tests
+- **Usage:** Applied in test classes that need real media attachments rather than mock IDs
+
+### HandlesProvisioningStatus Trait (`app/Jobs/Provisioning/Concerns/HandlesProvisioningStatus.php`)
+- **Purpose:** Shared provisioning job logic for success/failure marking and provider detection
+- **Methods:** `markProvisioningSuccess()`, `markProvisioningFailed()`, `requiresProvisioning()`
+
+### HasMedia Trait — `getAllMedia()` Enhancement
+- **Method:** `getAllMedia(bool $urlOnly = false, array $onlyTags = []): array` — now accepts optional `$onlyTags` parameter to filter media by specific tags instead of returning all tags. Used by BlogPostCardData (cover only) and BlogPostDetailData (all media).

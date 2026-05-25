@@ -124,13 +124,18 @@
 
 ### OrderController (`app/Http/Controllers/Api/Admin/OrderController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/order` - **Delegates to:** Order listing with filtering - **Response DTO:** OrderData collection
-- `store(OrderCreateData $request)`: **Route:** `POST /api/v1/admin/order` - **Request DTO:** OrderCreateData - **Delegates to:** CreateOrderAction::handle() - **Response DTO:** OrderData
+- `store(OrderCreateData $request)`: **Route:** `POST /api/v1/admin/order` - **Request DTO:** OrderCreateData - **Delegates to:** CreateOrderAction::handle() — now validates registration window and availability window on each item - **Response DTO:** OrderData
 - `show(Order $order)`: **Route:** `GET /api/v1/admin/order/{order}` - **Delegates to:** Order retrieval with relationships - **Response DTO:** OrderData
 - `update(OrderUpdateData $request, Order $order)`: **Route:** `PUT /api/v1/admin/order/{order}` - **Request DTO:** OrderUpdateData - **Response DTO:** OrderData
 - `destroy(Order $order)`: **Route:** `DELETE /api/v1/admin/order/{order}` - **Delegates to:** Order deletion
 
+### ApproveOrderController (`app/Http/Controllers/Api/Admin/Order/ApproveOrderController.php`)
+- `__invoke(Order $order, ApproveOrderAction $action)`: **Route:** `POST /api/v1/admin/order/{order}/approve` - **Authorization:** `Gate::authorize('approve', $order)` via `PermissionEnum::ORDER_APPROVE` - **Delegates to:** ApproveOrderAction::handle() - **Response DTO:** OrderData - **Response File:** `storage/responses/admin/order/approve.json`
+
 #### Validation Error Keys (Clarifications)
 - Checkout validation errors for cart items use literal keys like `items.0`.
+- Registration window errors use key `items.0` with messages like "Registration for '...' has not started yet." / "Registration period for '...' has ended."
+- Availability window errors use key `items.0` with messages like "'...' is not yet available for purchase." / "'...' is no longer available for purchase."
 - Wallet insufficient balance error key is `wallet_balance`.
 - Gateway verify on non-pending payments returns a validation error keyed `payment`.
 
@@ -223,7 +228,9 @@
 ### Settings & Content Management Controllers
 
 #### SettingController (`app/Http/Controllers/Api/Admin/Settings/SettingController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/settings` - **Response DTO:** SettingData collection assembled from cached CMS payloads
+- `index()`: **Route:** `GET /api/v1/admin/settings` - **Response DTO:** SettingData collection assembled from cached CMS payloads via `SettingData::fromModel()`. Secrets (integration keys, tokens, passwords) are auto-redacted via `SettingSecretRedactor`.
+- `update(SettingUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings` - **Request DTO:** SettingUpdateData (array of `{key, value}` pairs) - **Delegates to:** SettingsService::set() for each key — encrypted secrets written at rest, **REDACTED** placeholders preserve existing secret values, audit-logged with redacted payloads. Cache busted after write.
+- **Response DTO:** `SettingData` collection post-update (with secrets redacted).
 
 #### ContactInfoController (`app/Http/Controllers/Api/Admin/Content/ContactInfoController.php`)
 - `show()`: **Route:** `GET /api/v1/admin/settings/contact-info` - **Response DTO:** ContactInfoData sourced from SmartCache-backed SettingsService
@@ -384,11 +391,14 @@
 - `removeCoupon()`: **Route:** `DELETE /api/v1/shop/cart/coupon` - Clears any applied coupon - **Response DTO:** `CartData`
 
 #### CheckoutController (`app/Http/Controllers/Api/Shop/Sale/CheckoutController.php`)
-- `__invoke(CheckoutData $request, CreateOrderFromCartAction $action)`: **Route:** `POST /api/v1/shop/checkout` (requires `auth:user`, `profile.check`) - Converts the current cart into an order, runs `CreateOrderFromCartAction`, and returns `CheckoutResponseData` that either embeds a completed `OrderData` payload or redirect instructions for multi-step gateways (Mellat, etc.). Free orders auto-complete with `NO_PAYMENT`.
+- `__invoke(CheckoutData $request, CreateOrderFromCartAction $action)`: **Route:** `POST /api/v1/shop/checkout` (requires `auth:user`, `profile.check`) - Converts the current cart into an order, runs `CreateOrderFromCartAction`, and returns `CheckoutResponseData` that either embeds a completed `OrderData` payload or redirect instructions for multi-step gateways (Mellat, etc.). Free orders auto-complete with `NO_PAYMENT`. Now validates registration window (`registration_start_date`/`registration_end_date`) and availability window (`available_from`/`available_to`) on each cart item at checkout.
 
 #### OrderController (`app/Http/Controllers/Api/Shop/Sale/OrderController.php`)
 - `index()`: **Route:** `GET /api/v1/shop/orders` - Lists authenticated user orders (with items + payments eager loaded) - **Response DTO:** `OrderData` paginator
 - `show(string $incrementId)`: **Route:** `GET /api/v1/shop/orders/{order:increment_id}` - Returns a single order with nested items/payments - **Response DTO:** `OrderData`
+
+#### CancelOrderController (`app/Http/Controllers/Api/Shop/Sale/CancelOrderController.php`)
+- `__invoke(Order $order)`: **Route:** `POST /api/v1/shop/orders/{order:increment_id}/cancel` - **Auth:** `auth:user` - **Delegates to:** CancelOrderByCustomerAction::execute() - **Response DTO:** OrderData - **Error:** 422 with `DomainException` message if order has completed payments or is not in PENDING status
 
 #### RetryPaymentController (`app/Http/Controllers/Api/Shop/Sale/RetryPaymentController.php`)
 - `__invoke(string $incrementId, RetryOrderPaymentData $request)`: **Route:** `POST /api/v1/shop/orders/{order:increment_id}/retry-payment` (throttled) - Revalidates eligibility and triggers `RetryOrderPaymentAction`, responding with either redirect metadata (pending gateway payment) or immediate success payload.
@@ -416,12 +426,11 @@
 **Authentication:** Unauthenticated public access
 
 #### CourseController (`app/Http/Controllers/Api/Shop/Product/CourseController.php`)
-- `index(ProductListRequestData $request)`: **Route:** `GET /api/v1/shop/courses` - **Request DTO:** ProductListRequestData (supports `filter[category_slugs][]`, `filter[fulfillment_types][]`, `filter[difficulty_level]`, price range, discount flag, availability windows, search `q`, sort, pagination) - **Delegates to:** `ProductQueryService::getCourseList()` with `ProductPriceService` hydration - **Response DTO:** Paginated `ProductCardData`
+- `index(ProductListRequestData $request)`: **Route:** `GET /api/v1/shop/courses` - **Request DTO:** ProductListRequestData (supports `filter[category_slugs][]`, `filter[fulfillment_types][]`, `filter[difficulty_level]`, `filter[availability_status]` (past|upcoming|ongoing), `filter[capacity]`, price range, discount flag, availability windows, search `q`, sort (including `capacity_utilization`), pagination) - **Delegates to:** `ProductQueryService::getCourseList()` with `ProductPriceService` hydration - **Response DTO:** Paginated `ProductCardData`
 - `show(Product $product)`: **Route:** `GET /api/v1/shop/course/{product:slug}` - **Delegates to:** `ProductQueryService` detail pipeline and `ProductPriceService` for pricing snapshot - **Response DTO:** `CourseDetailData`
 
 #### SeminarController (`app/Http/Controllers/Api/Shop/Product/SeminarController.php`)
-- `index(ProductListRequestData $request)`: **Route:** `GET /api/v1/shop/seminars` - **Request DTO:** ProductListRequestData (same filtering/sorting contract) - **Delegates to:** `ProductQueryService::getSeminarList()` with price hydration - **Response DTO:** Paginated `ProductCardData`
-- `show(Product $product)`: **Route:** `GET /api/v1/shop/seminar/{product:slug}` - **Delegates to:** `ProductQueryService` detail pipeline + `ProductPriceService` - **Response DTO:** `SeminarDetailData`
+- `index(ProductListRequestData $request)`: **Route:** `GET /api/v1/shop/seminars` - **Request DTO:** ProductListRequestData (same filtering/sorting contract as courses) - **Delegates to:** `ProductQueryService::getSeminarList()` with price hydration - **Response DTO:** Paginated `ProductCardData`
 
 #### DigitalAssetController (`app/Http/Controllers/Api/Shop/Product/DigitalAssetController.php`)
 - `index(ProductListRequestData $request)`: **Route:** `GET /api/v1/shop/digital-assets` - **Request DTO:** ProductListRequestData - **Delegates to:** `ProductQueryService::getDigitalAssetList()` with price hydration - **Response DTO:** Paginated `ProductCardData`
@@ -437,8 +446,8 @@
 - `__invoke(SearchSuggestRequestData $request, GlobalSearchService $service)`: **Route:** `GET /api/v1/shop/search/suggest` - **Request DTO:** SearchSuggestRequestData (`q`, optional `limit`) - **Delegates to:** `GlobalSearchService::suggest()` using SWR cache & Typesense autocomplete - **Response:** Array of suggestion strings
 
 #### BlogPostController (`app/Http/Controllers/Api/Shop/Blog/BlogPostController.php`)
-- `index(BlogPostListRequestData $request)`: **Route:** `GET /api/v1/shop/blog/posts` - **Request DTO:** BlogPostListRequestData (supports `is_featured`, `category_slug`, `sortBy=published_at|created_at`, `sortOrder`, pagination controls) - **Response DTO:** Paginated `BlogPostCardData` containing author summary, rating aggregates, Jalali `published_at`, thumbnail URL, featured flag, and attached categories. Only posts with `status=PUBLISHED` and `published_at <= now()` surface and the endpoint supports category slug filtering through `whereHas`.
-- `show(string $slug)`: **Route:** `GET /api/v1/shop/blog/post/{slug}` - **Response DTO:** `BlogPostDetailData` enriched with author data, media collections (cover/gallery/video tags), category cards, SEO metadata, and review aggregates. Returns 404 if the slug belongs to unpublished, scheduled, or missing posts.
+- `index(BlogPostListRequestData $request)`: **Route:** `GET /api/v1/shop/blog/posts` - **Request DTO:** BlogPostListRequestData (supports `is_featured`, `category_slug`, `sortBy=published_at|created_at|popularity`, `sortOrder`, pagination controls) - **Response DTO:** Paginated `BlogPostCardData` containing author summary, rating aggregates, Jalali `published_at`, thumbnail URL (scoped to tag `cover` via `getAllMedia(urlOnly: true, onlyTags: ['cover'])`), featured flag, and attached categories. Only posts with `status=PUBLISHED` and `published_at <= now()` surface and the endpoint supports category slug filtering through `whereHas`. `sortBy=popularity` orders by `average_rating DESC` with nulls last.
+- `show(string $slug)`: **Route:** `GET /api/v1/shop/blog/post/{slug}` - **Response DTO:** `BlogPostDetailData` enriched with author data, media collections (cover/gallery/video tags via `getAllMedia()`), category cards, SEO metadata, review aggregates, and **related products** (up to 4 published products linked via `main_productable`). Returns 404 if the slug belongs to unpublished, scheduled, or missing posts.
 
 #### BlogCategoryController (`app/Http/Controllers/Api/Shop/Blog/BlogCategoryController.php`)
 - `index()`: **Route:** `GET /api/v1/shop/blog/categories` - **Response DTO:** `BlogCategoryCardData` collection ordered by name with `posts_count` reflecting currently published posts.
@@ -449,7 +458,7 @@
 **Authentication:** Unauthenticated public access
 
 #### CategoryController (`app/Http/Controllers/Api/Shop/Product/CategoryController.php`)
-- `index()`: **Route:** `GET /api/v1/shop/categories` - **Response DTO:** `CategoryCardData` collection with aggregated product counts computed via `ProductQueryService`
+- `index()`: **Route:** `GET /api/v1/shop/categories` - **Response DTO:** `CategoryCardData` collection with aggregated product counts computed via `ProductQueryService`. Each category now includes `$children` array (recursive `CategoryCardData` for subcategories).
 - `show(PaginationRequestData $request, Category $category, CategoryQueryService $service)`: **Route:** `GET /api/v1/shop/category/{category:slug}` - **Request DTO:** PaginationRequestData (`per_page`) - **Delegates to:** `CategoryQueryService::getProductsForCategory()` for each productable type - **Response DTO:** `CategoryDetailData` containing embedded course/seminar/digital asset collections
 
 #### CategoryCourseController (`app/Http/Controllers/Api/Shop/Product/CategoryCourseController.php`)
@@ -460,6 +469,13 @@
 
 #### CategoryDigitalAssetController (`app/Http/Controllers/Api/Shop/Product/CategoryDigitalAssetController.php`)
 - `__invoke(PaginationRequestData $request, Category $category, CategoryQueryService $service)`: **Route:** `GET /api/v1/shop/category/{category:slug}/digital-assets` - **Delegates to:** `CategoryQueryService::getProductsForCategory()` - **Response DTO:** Paginated `ProductCardData`
+
+### ProductCardData Enhancements
+- **New fields:** `registration_status` (ProductRegistrationStatusEnum — derived from registration dates across all delivery options), `delivery_type` (ProductDeliveryStatusEnum — aggregated from fulfillment types), `teachers` (array of TeacherBasicData — unique teachers across all delivery options)
+- **All shop product listings** now include these derived fields automatically via `ProductQueryService` when building `ProductCardData`
+
+### ProductDetail Endpoint — `show()` sync trigger
+- **EnrolmentController::show()** (`GET /api/v1/shop/my-courses/{enrolment:uuid}`): Now triggers `SyncMoodleProgressJob` after rendering response to sync Moodle course progress (throttled at 5-min per enrollment). The sync result is stored in `provisioning_data` for subsequent reads.
 
 #### TeacherController (`app/Http/Controllers/Api/Shop/TeacherController.php`)
 - `show(Teacher $teacher)`: **Route:** `GET /api/v1/shop/teachers/{teacher:uuid}` - **URL Param:** `uuid` - **Response DTO:** `TeacherDetailData` with full instructor profile
@@ -484,6 +500,16 @@
 
 #### CollaborationPageController (`app/Http/Controllers/Api/Shop/CMS/CollaborationPageController.php`)
 - `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/collaboration` - **Response DTO:** CollaborationPageData providing collaboration content sections
+
+### Moodle SSO Endpoint
+#### MoodleSsoController (`app/Http/Controllers/Api/Shop/MoodleSsoController.php`)
+- `__invoke(Order $order, MoodleService $moodleService)`: **Route:** `GET /api/v1/shop/moodle/sso/{order:increment_id}` - **Auth:** `auth:user` - **Delegates to:** MoodleService SSO URL generation - **Response:** Redirects user to Moodle with auto-login key. Requires Moodle integration to be enabled and user to be enrolled in the order's Moodle-linked products. Generates a `createUserKey` token valid for single-use login.
+
+## CORS Configuration (`config/cors.php`)
+- **Pattern:** Schema-based allowed origins — reads `cors.allowed_origins` from config, parsing each into `scheme://host` format
+- **Credentials:** `supports_credentials` set to `true` (allows cookies/auth headers)
+- **Allows all:** origins, headers, methods default to wildcard
+- **Usage:** Enables cross-origin API access from configured frontend domains with credential support
 
 ### Shop Form Submission Endpoints (`/api/v1/shop/*`)
 **Rate Limiting:** `throttle:10,1` (10 requests per minute)
@@ -522,8 +548,8 @@
 
 ## Route Organization Pattern
 - **Base Routes:** `/api/v1/api.php` includes all interface route files
-- **Admin Routes:** `/api/v1/admin.php` - Complete platform management with `auth:staff` + `admin.audit`
-- **Customer Routes:** `/api/v1/customer.php` - Protected customer operations with `auth:user`
+- **Admin Routes:** `/api/v1/admin.php` - Complete platform management with `auth:staff` + `admin.audit`. Individual route file `admin/sale.php` now includes `POST order/{order}/approve` (ApproveOrderController).
+- **Customer Routes:** `/api/v1/customer.php` - Protected customer operations with `auth:user`. Now includes `POST orders/{order:increment_id}/cancel` (CancelOrderController).
 - **Public Routes:** `/api/v1/shop/shop.php` - CMS-driven public endpoints (home page blocks, sliders, partners, header/footer, about/contact/collaboration pages)
 - **Rate-Limited Shop Routes:** `/api/v1/shop/rate-limited.php` - Public form submissions (contact us, collaboration) protected by `throttle:10,1`
 - **Auth Routes:** `/api/v1/auth.php` - Dual authentication system for both interfaces
