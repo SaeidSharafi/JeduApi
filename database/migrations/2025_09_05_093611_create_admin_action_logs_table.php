@@ -17,7 +17,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('admin_id')
                 ->constrained('staff')
-                ->restrictOnDelete()
+                ->nullable()
+                ->nullOnDelete()
                 ->comment('Reference to the staff member who performed the action');
             $table->string('action_type', 50)
                 ->comment('Type of action: create, update, delete, view, etc.');
