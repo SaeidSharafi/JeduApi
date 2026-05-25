@@ -6,13 +6,13 @@
     "attempt_number": 1,
     "status": "completed",
     "gateway_request": {
-      "amount": 3700000,
-      "callback_url": "https://jedushop.com/payment/callback",
-      "order_id": "ORD-20241001-001"
+      "amount": 1950000,
+      "callback_url": "https://jedushop.ir/payment/callback",
+      "order_id": "ORD-20241021-001"
     },
     "gateway_response": {
       "SaleReferenceId": "REF-20241021-001",
-      "status": "0",
+      "ResCode": "0",
       "message": "تراکنش با موفقیت انجام شد"
     },
     "initiated_at": "2024-10-21 15:30:00",
@@ -32,12 +32,12 @@
     "status": "completed",
     "gateway_request": {
       "amount": 2250000,
-      "callback_url": "https://jedushop.com/payment/callback",
+      "callback_url": "https://jedushop.ir/payment/callback",
       "order_id": "ORD-20241015-002"
     },
     "gateway_response": {
-      "Authority": "A000000000000000000000000000000000001",
-      "status": 100,
+      "Authority": "A000000000000000000000000000000000002",
+      "Status": 100,
       "message": "پرداخت با موفقیت انجام شد"
     },
     "initiated_at": "2024-10-15 10:00:00",
@@ -55,19 +55,167 @@
     "transaction_reference": "TXN-20241110-001",
     "attempt_number": 1,
     "status": "completed",
-    "gateway_request": null,
+    "gateway_request": {
+      "amount": 3300000,
+      "callback_url": "https://jedushop.ir/payment/callback",
+      "order_id": "ORD-20241110-004"
+    },
     "gateway_response": {
-      "transfer_type": "bank_transfer",
-      "bank_name": "بانک ملی ایران",
-      "deposit_date": "2024-11-10"
+      "SaleReferenceId": "REF-20241110-001",
+      "ResCode": "0",
+      "message": "تراکنش با موفقیت انجام شد"
     },
     "initiated_at": "2024-11-10 09:45:00",
     "completed_at": "2024-11-10 10:00:00",
     "error_code": null,
     "error_message": null,
-    "ip_address": "192.168.1.104",
-    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_1) Safari/17.1",
+    "ip_address": "192.168.1.100",
+    "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0) AppleWebKit/605.1.15",
     "created_at": "2024-11-10 09:45:00",
     "updated_at": "2024-11-10 10:00:00"
+  },
+  {
+    "id": 4,
+    "payment_id": 4,
+    "transaction_reference": "TXN-20241125-001",
+    "attempt_number": 1,
+    "status": "completed",
+    "gateway_request": null,
+    "gateway_response": {
+      "transfer_type": "bank_transfer",
+      "bank_name": "بانک ملی ایران",
+      "deposit_date": "2024-11-25",
+      "reference": "TRF-20241125-001"
+    },
+    "initiated_at": "2024-11-25 11:00:00",
+    "completed_at": "2024-11-25 11:10:00",
+    "error_code": null,
+    "error_message": null,
+    "ip_address": "192.168.1.100",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_1) Safari/17.1",
+    "created_at": "2024-11-25 11:00:00",
+    "updated_at": "2024-11-25 11:10:00"
+  },
+  {
+    "id": 5,
+    "payment_id": 5,
+    "transaction_reference": "TXN-20241201-001",
+    "attempt_number": 1,
+    "status": "completed",
+    "gateway_request": {
+      "amount": 722500,
+      "callback_url": "https://jedushop.ir/payment/callback",
+      "order_id": "ORD-20241201-007"
+    },
+    "gateway_response": {
+      "Authority": "A000000000000000000000000000000000005",
+      "Status": 100,
+      "message": "پرداخت با موفقیت انجام شد"
+    },
+    "initiated_at": "2024-12-01 14:20:00",
+    "completed_at": "2024-12-01 14:30:00",
+    "error_code": null,
+    "error_message": null,
+    "ip_address": "192.168.1.101",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120",
+    "created_at": "2024-12-01 14:20:00",
+    "updated_at": "2024-12-01 14:30:00"
+  },
+  {
+    "id": 6,
+    "payment_id": 6,
+    "transaction_reference": "TXN-20241210-001",
+    "attempt_number": 1,
+    "status": "completed",
+    "gateway_request": {
+      "amount": 1450000,
+      "callback_url": "https://jedushop.ir/payment/callback",
+      "order_id": "ORD-20241210-008"
+    },
+    "gateway_response": {
+      "SaleReferenceId": "REF-20241210-001",
+      "ResCode": "0",
+      "message": "تراکنش با موفقیت انجام شد"
+    },
+    "initiated_at": "2024-12-10 09:00:00",
+    "completed_at": "2024-12-10 09:10:00",
+    "error_code": null,
+    "error_message": null,
+    "ip_address": "192.168.1.100",
+    "user_agent": "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36",
+    "created_at": "2024-12-10 09:00:00",
+    "updated_at": "2024-12-10 09:10:00"
+  },
+  {
+    "id": 7,
+    "payment_id": 7,
+    "transaction_reference": "TXN-20250105-001",
+    "attempt_number": 1,
+    "status": "completed",
+    "gateway_request": null,
+    "gateway_response": {
+      "transfer_type": "bank_transfer",
+      "bank_name": "بانک صادرات ایران",
+      "deposit_date": "2025-01-05",
+      "reference": "TRF-20250105-001"
+    },
+    "initiated_at": "2025-01-05 10:30:00",
+    "completed_at": "2025-01-05 10:40:00",
+    "error_code": null,
+    "error_message": null,
+    "ip_address": "192.168.1.101",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121",
+    "created_at": "2025-01-05 10:30:00",
+    "updated_at": "2025-01-05 10:40:00"
+  },
+  {
+    "id": 8,
+    "payment_id": 8,
+    "transaction_reference": "TXN-20250115-001",
+    "attempt_number": 1,
+    "status": "completed",
+    "gateway_request": {
+      "amount": 1000000,
+      "callback_url": "https://jedushop.ir/payment/callback",
+      "order_id": "ORD-20250115-010"
+    },
+    "gateway_response": {
+      "SaleReferenceId": "REF-20250115-001",
+      "ResCode": "0",
+      "message": "تراکنش پیش‌پرداخت با موفقیت انجام شد"
+    },
+    "initiated_at": "2025-01-15 16:00:00",
+    "completed_at": "2025-01-15 16:10:00",
+    "error_code": null,
+    "error_message": null,
+    "ip_address": "192.168.1.100",
+    "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2) AppleWebKit/605.1.15",
+    "created_at": "2025-01-15 16:00:00",
+    "updated_at": "2025-01-15 16:10:00"
+  },
+  {
+    "id": 9,
+    "payment_id": 9,
+    "transaction_reference": "TXN-20250120-001",
+    "attempt_number": 1,
+    "status": "completed",
+    "gateway_request": {
+      "amount": 700000,
+      "callback_url": "https://jedushop.ir/payment/callback",
+      "order_id": "ORD-20250120-011"
+    },
+    "gateway_response": {
+      "Authority": "A000000000000000000000000000000000009",
+      "Status": 100,
+      "message": "پرداخت با موفقیت انجام شد"
+    },
+    "initiated_at": "2025-01-20 13:00:00",
+    "completed_at": "2025-01-20 13:05:00",
+    "error_code": null,
+    "error_message": null,
+    "ip_address": "192.168.1.101",
+    "user_agent": "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36",
+    "created_at": "2025-01-20 13:00:00",
+    "updated_at": "2025-01-20 13:05:00"
   }
 ]

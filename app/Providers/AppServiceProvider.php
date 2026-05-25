@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Contracts\CartIdentifier;
 use App\Contracts\OtpGeneratorInterface;
+use App\Providers\DemoServiceProvider;
 use App\Enums\System\MorphTypeEnum;
 use App\Services\Cart\RequestCartIdentifier;
 use App\Services\DefaultOtpGenerator;
@@ -27,6 +28,10 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        if ($this->app->isLocal()) {
+            $this->app->register(DemoServiceProvider::class);
+        }
+
         $this->app->singleton(OtpGeneratorInterface::class, DefaultOtpGenerator::class);
         $this->app->singleton(DiscountHandlerRegistry::class);
         $this->app->singleton(DiscountMetadataService::class);
