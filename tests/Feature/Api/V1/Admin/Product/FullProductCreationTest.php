@@ -233,13 +233,13 @@ test('product createion with all combinations',
                     'url',
                     'message',
                 ],
-                'delivery_block',
+                'delivery_access',
             ],
         ]);
 
         $responseData = $response->json('data');
         expect($responseData['uuid'])->toBe($enrolment->uuid)
-            ->and($responseData['delivery_block'])->toEqual(getDeliveryBlock($data, $deliveryType, $enrolment,
+            ->and($responseData['delivery_access'])->toEqual(getDeliveryBlock($data, $deliveryType, $enrolment,
                 $ditialAsset));
 
     })->with('valid product');
@@ -250,8 +250,6 @@ function getDeliveryBlock(
     Enrollment $enrollment,
     DigitalAsset $digitalAsset
 ): ?array {
-    $moodleBaseUrl = mb_rtrim(config('services.moodle.base_url', ''), '/');
-
     return match ($deliveryMethod) {
         'direct_download' => [
             'id'            => $digitalAsset->id,
@@ -263,18 +261,52 @@ function getDeliveryBlock(
 
         ],
         'live_session_bbb', 'live_session_skyroom' => [
-            'join_url'        => null,
-            'start_date'      => verta()->addDays(7)->formatDate(),
-            'past_recordings' => [],
+            'type'          => $deliveryMethod,
+            'session_label' => 'کلاس آنلاین',
+            'join_url_path' => '/api/v1/shop/my-courses/'.$enrollment->uuid.'/join',
+            'course_url'    => null,
+            'completed'     => null,
+            'course_grade'  => null,
+            'license_key'   => null,
+            'player_url'    => null,
+            'address'       => null,
+            'map_url'       => null,
         ],
-        'lms_moodle'                => null,
+        'lms_moodle' => [
+            'type'          => $deliveryMethod,
+            'session_label' => null,
+            'join_url_path' => null,
+            'course_url'    => null,
+            'completed'     => false,
+            'course_grade'  => null,
+            'license_key'   => null,
+            'player_url'    => null,
+            'address'       => null,
+            'map_url'       => null,
+        ],
         'video_platform_spotplayer' => [
-            'license_key' => 'XYZ',
-            'player_url'  => 'spotplayer.example.com/player/12345',
+            'type'          => $deliveryMethod,
+            'session_label' => null,
+            'join_url_path' => null,
+            'course_url'    => null,
+            'completed'     => null,
+            'course_grade'  => null,
+            'license_key'   => 'XYZ',
+            'player_url'    => 'spotplayer.example.com/player/12345',
+            'address'       => null,
+            'map_url'       => null,
         ],
         'in_person' => [
-            'address' => $data['address'],
-            'map_url' => $data['map_url'] ?? null,
+            'type'          => $deliveryMethod,
+            'session_label' => null,
+            'join_url_path' => null,
+            'course_url'    => null,
+            'completed'     => null,
+            'course_grade'  => null,
+            'license_key'   => null,
+            'player_url'    => null,
+            'address'       => $data['address'],
+            'map_url'       => $data['map_url'] ?? null,
         ],
         default => [],
     };

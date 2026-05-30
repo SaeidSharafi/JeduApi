@@ -49,7 +49,8 @@ final class MoodleSsoController extends Controller
             return response()->validationError(__('messages.enrollments.not_moodle'));
         }
 
-        $moodleUsername = data_get($enrollment->provisioning_data, 'providers.moodle.data.moodle_user_name');
+        $moodleUsername = data_get($enrollment->provisioning_data, 'providers.moodle.data.moodle_username')
+            ?? data_get($enrollment->provisioning_data, 'providers.moodle.data.moodle_user_name');
 
         if (! is_string($moodleUsername) || $moodleUsername === '') {
             return response()->validationError(__('messages.enrollments.moodle_provisioning_incomplete'));

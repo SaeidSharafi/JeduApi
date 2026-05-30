@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Models\ProductDeliveryOption;
+use App\Services\Integrations\BbbService;
+
+use function Pest\Laravel\getJson;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 beforeEach(function (): void {
@@ -90,4 +93,43 @@ it('does not show other users enrollment details', function (): void {
     $response->assertNotFound();
     $response->assertJsonFragment(['message' => __('messages.enrollments.not_found')]);
 
+});
+
+// ─── Join URL ─────────────────────────────────────────────────────────────────
+
+it('returns join url for bbb enrollment', function (): void {
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_BBB);
+    $enrollment->forceFill([
+        'provisioning_data' => [
+            'providers' => [
+                'bbb' => [
+                    'status' => 'completed',
+                    'data'   => ['meeting_id' => 'test-meeting-123'],
+                ],
+            ],
+        ],
+    ])->saveQuietly();
+
+    $this->mock(BbbService::class, function ($mock): void {
+        $mock->shouldReceive('buildJoinUrl')->andReturn('https://bbb.test/join/abc');
+    });
+
+    getJson(route('api.v1.shop.my-courses.join', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.url', 'https://bbb.test/join/abc');
+});
+
+it('returns 404 for join url when enrollment belongs to another user', function (): void {
+    $otherUser  = App\Models\User::factory()->create();
+    $enrollment = createEnrollment($otherUser, DeliveryMethodEnum::LIVE_SESSION_BBB);
+
+    getJson(route('api.v1.shop.my-courses.join', ['enrollment' => $enrollment->uuid]))
+        ->assertNotFound();
+});
+
+it('returns 422 for join url when delivery method does not support it', function (): void {
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
+
+    getJson(route('api.v1.shop.my-courses.join', ['enrollment' => $enrollment->uuid]))
+        ->assertUnprocessable();
 });

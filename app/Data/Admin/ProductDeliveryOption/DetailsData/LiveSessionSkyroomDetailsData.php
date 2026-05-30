@@ -16,6 +16,9 @@ use Spatie\LaravelData\Data;
 final class LiveSessionSkyroomDetailsData extends Data implements DeliveryOptionDetailDataContract
 {
     public function __construct(
+        #[Nullable, IntegerType]
+        public ?int $room_id,
+
         #[Nullable, StringType, Max(255)]
         public string $meeting_name_identifier,
 
@@ -47,6 +50,9 @@ final class LiveSessionSkyroomDetailsData extends Data implements DeliveryOption
         public ?string $default_presentation_url,
 
         #[Nullable, StringType, Max(2000)]
-        public ?string $admin_notes // Internal notes for this specific session setup
+        public ?string $admin_notes, // Internal notes for this specific session setup
+
+        #[Nullable, IntegerType]
+        public ?int $moodle_quiz_course_id = null,
     ) {}
 }

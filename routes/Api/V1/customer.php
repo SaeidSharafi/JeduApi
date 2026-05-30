@@ -24,6 +24,10 @@ Route::middleware(['auth:user'])
                 App\Http\Controllers\Api\Shop\MyCourses\MoodleSsoController::class)
                 ->name('moodle.sso');
 
+            Route::get('/{enrollment:uuid}/join',
+                App\Http\Controllers\Api\Shop\MyCourses\JoinUrlController::class)
+                ->name('join');
+
         });
 
         Route::get('/my-digital-assets', App\Http\Controllers\Api\Shop\MyCourses\DigitalAssetEnrollmentController::class)

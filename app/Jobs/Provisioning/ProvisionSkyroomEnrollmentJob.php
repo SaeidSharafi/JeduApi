@@ -7,7 +7,7 @@ namespace App\Jobs\Provisioning;
 use App\Enums\System\SettingKeyEnum;
 use App\Jobs\Provisioning\Concerns\HandlesProvisioningStatus;
 use App\Models\Enrollment;
-use App\Services\Integrations\SpotPlayerService;
+use App\Services\Integrations\SkyroomService;
 use App\Services\SettingsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,7 +17,7 @@ use Illuminate\Queue\SerializesModels;
 use RuntimeException;
 use Throwable;
 
-final class ProvisionSpotPlayerEnrollmentJob implements ShouldQueue
+final class ProvisionSkyroomEnrollmentJob implements ShouldQueue
 {
     use Dispatchable;
     use HandlesProvisioningStatus;
@@ -29,33 +29,38 @@ final class ProvisionSpotPlayerEnrollmentJob implements ShouldQueue
 
     public function __construct(public readonly int $enrollmentId) {}
 
-    public function handle(SpotPlayerService $service, SettingsService $settings): void
+    public function handle(SkyroomService $skyroomService, SettingsService $settings): void
     {
-        $config = $settings->get(SettingKeyEnum::SPOT_PLAYER);
+        $config = $settings->get(SettingKeyEnum::SKYROOM);
 
         if (! ($config['enabled'] ?? false)) {
             return;
         }
-        if (empty($config['endpoint']) || empty($config['api_key'])) {
-            throw new RuntimeException('SpotPlayer configuration is missing endpoint or api_key.');
+
+        if (empty($config['api_key']) || empty($config['base_url'])) {
+            throw new RuntimeException('Skyroom configuration is missing api_key or base_url.');
         }
+
         $enrollment = $this->findEnrollment();
         if (! $enrollment) {
             return;
         }
 
         $details = $enrollment->productDeliveryOption?->details_json ?? [];
-        $spotId  = data_get($details, 'spot_id');
-        if (! is_string($spotId) || $spotId === '') {
-            throw new RuntimeException('SpotPlayer spot_id is missing from delivery option details.');
+        $roomId  = data_get($details, 'room_id');
+
+        if (! is_numeric($roomId)) {
+            throw new RuntimeException('Skyroom room_id is missing from delivery option details.');
         }
+        $roomId = (int) $roomId;
 
-        $result = $service->issueLicense($spotId, $enrollment->customer);
+        $result        = $skyroomService->findOrCreateUser($enrollment->customer);
+        $skyroomUserId = $result['skyroom_user_id'];
+        $skyroomService->addUserToRoom($roomId, $skyroomUserId);
 
-        $this->markProvisioningSuccess($enrollment, 'spotplayer', [
-            'spot_id'     => $spotId,
-            'license_key' => data_get($result, 'license_key'),
-            'player_url'  => data_get($result, 'player_url'),
+        $this->markProvisioningSuccess($enrollment, 'skyroom', [
+            'room_id'         => $roomId,
+            'skyroom_user_id' => $skyroomUserId,
         ]);
     }
 
@@ -65,13 +70,9 @@ final class ProvisionSpotPlayerEnrollmentJob implements ShouldQueue
         if (! $enrollment) {
             return;
         }
-
-        $this->markProvisioningFailure($enrollment, 'spotplayer', $exception->getMessage());
+        $this->markProvisioningFailure($enrollment, 'skyroom', $exception->getMessage());
     }
 
-    /**
-     * @return array<int, int>
-     */
     public function backoff(): array
     {
         return [60, 180, 600];

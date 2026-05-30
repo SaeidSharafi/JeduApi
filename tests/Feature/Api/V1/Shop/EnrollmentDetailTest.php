@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Jobs\Provisioning\SyncMoodleProgressJob;
 use App\Models\Course;
+use App\Models\DigitalAsset;
 use App\Models\Enrollment;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
@@ -32,66 +33,80 @@ it('returns enrollment detail for owner', function (): void {
         ->assertJsonPath('data.uuid', $enrollment->uuid);
 });
 
-// ─── Delivery blocks ─────────────────────────────────────────────────────────
+it('returns enrollment detail for digital asset enrollment', function (): void {
+    $digitalAsset = DigitalAsset::factory()->withFile()->create();
+    $enrollment   = createEnrollmentForProductable($this->user, DeliveryMethodEnum::DIRECT_DOWNLOAD, $digitalAsset);
 
-it('show returns bbb delivery block for live_session_bbb enrollment', function (): void {
+    $this->getJson(route('api.v1.shop.my-courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk()
+        ->assertJsonPath('data.uuid', $enrollment->uuid)
+        ->assertJsonCount(1, 'data.files');
+});
+
+// ─── Delivery access ─────────────────────────────────────────────────────────
+
+it('show returns bbb delivery_access for live_session_bbb enrollment', function (): void {
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LIVE_SESSION_BBB);
 
     $response = $this->getJson(route('api.v1.shop.my-courses.show', ['enrollment' => $enrollment->uuid]));
 
-    $response->assertOk();
-    $block = $response->json('data.delivery_block');
-    expect($block)->toHaveKey('join_url')
-        ->and($block)->toHaveKey('past_recordings');
+    $response->assertOk()
+        ->assertJsonStructure(['data' => ['delivery_access', 'files', 'quizzes']]);
+    $access = $response->json('data.delivery_access');
+    expect($access)->toHaveKey('type')
+        ->and($access)->toHaveKey('join_url_path');
 });
 
-it('show returns moodle delivery block for lms_moodle enrollment', function (): void {
+it('show returns moodle delivery_access for lms_moodle enrollment', function (): void {
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, provisioning: true);
 
     $response = $this->getJson(route('api.v1.shop.my-courses.show', ['enrollment' => $enrollment->uuid]));
 
-    $response->assertOk();
-    $block = $response->json('data.delivery_block');
-    expect($block)
-        ->toHaveKey('course_url')
-        ->and($block)->toHaveKey('visible')
-        ->and($block)->toHaveKey('name')
-        ->and($block)->toHaveKey('completed')
-        ->and($block)->toHaveKey('course_grade')
-        ->and($block)->toHaveKey('activities')
-        ->and($block['activities'])->toBeArray();
+    $response->assertOk()
+        ->assertJsonStructure(['data' => ['delivery_access', 'files', 'quizzes']]);
+    $access = $response->json('data.delivery_access');
+    expect($access)
+        ->toHaveKey('type')
+        ->and($access)->toHaveKey('course_url')
+        ->and($access)->toHaveKey('completed')
+        ->and($access)->toHaveKey('course_grade');
 });
 
-it('show returns spotplayer delivery block for video_platform_spotplayer enrollment', function (): void {
+it('show returns spotplayer delivery_access for video_platform_spotplayer enrollment', function (): void {
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER);
 
     $response = $this->getJson(route('api.v1.shop.my-courses.show', ['enrollment' => $enrollment->uuid]));
 
-    $response->assertOk();
-    $block = $response->json('data.delivery_block');
-    expect($block)->toHaveKey('license_key')
-        ->and($block)->toHaveKey('player_url');
+    $response->assertOk()
+        ->assertJsonStructure(['data' => ['delivery_access', 'files', 'quizzes']]);
+    $access = $response->json('data.delivery_access');
+    expect($access)->toHaveKey('type')
+        ->and($access)->toHaveKey('license_key')
+        ->and($access)->toHaveKey('player_url');
 });
 
-it('show returns in_person delivery block for in_person enrollment', function (): void {
+it('show returns in_person delivery_access for in_person enrollment', function (): void {
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON);
 
     $response = $this->getJson(route('api.v1.shop.my-courses.show', ['enrollment' => $enrollment->uuid]));
 
-    $response->assertOk();
-    $block = $response->json('data.delivery_block');
-    expect($block)->toHaveKey('address')
-        ->and($block)->toHaveKey('map_url');
+    $response->assertOk()
+        ->assertJsonStructure(['data' => ['delivery_access', 'files', 'quizzes']]);
+    $access = $response->json('data.delivery_access');
+    expect($access)->toHaveKey('type')
+        ->and($access)->toHaveKey('address')
+        ->and($access)->toHaveKey('map_url');
 });
 
-it('show returns direct_download delivery block for direct_download enrollment', function (): void {
+it('show returns direct_download delivery_access for direct_download enrollment', function (): void {
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::DIRECT_DOWNLOAD);
 
     $response = $this->getJson(route('api.v1.shop.my-courses.show', ['enrollment' => $enrollment->uuid]));
 
-    $response->assertOk();
-    $block = $response->json('data.delivery_block');
-    expect($block)->toHaveKey('files');
+    $response->assertOk()
+        ->assertJsonStructure(['data' => ['delivery_access', 'files', 'quizzes']]);
+    $access = $response->json('data.delivery_access');
+    expect($access)->toHaveKey('type');
 });
 
 // ─── certificate_info ────────────────────────────────────────────────────────
@@ -170,6 +185,53 @@ it('show dispatches SyncMoodleProgressJob (rate-limited) for provisioned moodle 
         ->assertOk();
 
     Illuminate\Support\Facades\Queue::assertPushed(SyncMoodleProgressJob::class);
+});
+
+it('show dispatches SyncMoodleProgressJob for moodle_quiz enrollment with provider key', function (): void {
+    Illuminate\Support\Facades\Queue::fake();
+
+    $moodleCourseId = 777;
+    $moodleUserId   = 666;
+
+    $deliveryOption = App\Models\ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::IN_PERSON->value,
+        'fulfillment_type' => DeliveryMethodEnum::IN_PERSON->getFulfillmentType(),
+        'details_json'     => ['moodle_quiz_course_id' => $moodleCourseId],
+    ]);
+
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, deliveryOption: $deliveryOption);
+    $enrollment->forceFill([
+        'provisioning_data' => [
+            'providers' => [
+                'moodle_quiz' => [
+                    'data' => [
+                        'moodle_user_id' => $moodleUserId,
+                    ],
+                ],
+            ],
+        ],
+    ])->saveQuietly();
+
+    $this->getJson(route('api.v1.shop.my-courses.show', ['enrollment' => $enrollment->uuid]))
+        ->assertOk();
+
+    Illuminate\Support\Facades\Queue::assertPushed(SyncMoodleProgressJob::class, function (SyncMoodleProgressJob $job) use ($enrollment, $moodleCourseId, $moodleUserId): bool {
+        $reflection   = new ReflectionClass($job);
+        $enrollmentId = $reflection->getProperty('enrollmentId');
+        $moodleCourse = $reflection->getProperty('moodleCourseId');
+        $moodleUser   = $reflection->getProperty('moodleUserId');
+        $providerKey  = $reflection->getProperty('providerKey');
+
+        $enrollmentId->setAccessible(true);
+        $moodleCourse->setAccessible(true);
+        $moodleUser->setAccessible(true);
+        $providerKey->setAccessible(true);
+
+        return $enrollmentId->getValue($job) === $enrollment->id
+            && $moodleCourse->getValue($job) === $moodleCourseId
+            && $moodleUser->getValue($job)   === $moodleUserId
+            && $providerKey->getValue($job)  === 'moodle_quiz';
+    });
 });
 
 it('show does not dispatch SWR job for non-moodle enrollment', function (): void {

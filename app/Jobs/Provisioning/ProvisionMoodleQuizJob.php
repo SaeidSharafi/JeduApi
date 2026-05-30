@@ -7,7 +7,7 @@ namespace App\Jobs\Provisioning;
 use App\Enums\System\SettingKeyEnum;
 use App\Jobs\Provisioning\Concerns\HandlesProvisioningStatus;
 use App\Models\Enrollment;
-use App\Services\Integrations\SpotPlayerService;
+use App\Services\Integrations\MoodleService;
 use App\Services\SettingsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,7 +17,7 @@ use Illuminate\Queue\SerializesModels;
 use RuntimeException;
 use Throwable;
 
-final class ProvisionSpotPlayerEnrollmentJob implements ShouldQueue
+final class ProvisionMoodleQuizJob implements ShouldQueue
 {
     use Dispatchable;
     use HandlesProvisioningStatus;
@@ -29,33 +29,37 @@ final class ProvisionSpotPlayerEnrollmentJob implements ShouldQueue
 
     public function __construct(public readonly int $enrollmentId) {}
 
-    public function handle(SpotPlayerService $service, SettingsService $settings): void
+    public function handle(MoodleService $moodleService, SettingsService $settings): void
     {
-        $config = $settings->get(SettingKeyEnum::SPOT_PLAYER);
+        $config = $settings->get(SettingKeyEnum::MOODLE);
 
         if (! ($config['enabled'] ?? false)) {
             return;
         }
-        if (empty($config['endpoint']) || empty($config['api_key'])) {
-            throw new RuntimeException('SpotPlayer configuration is missing endpoint or api_key.');
+        if (empty($config['base_url']) || empty($config['token'])) {
+            throw new RuntimeException('Moodle configuration is missing base_url or token.');
         }
+
         $enrollment = $this->findEnrollment();
         if (! $enrollment) {
             return;
         }
 
-        $details = $enrollment->productDeliveryOption?->details_json ?? [];
-        $spotId  = data_get($details, 'spot_id');
-        if (! is_string($spotId) || $spotId === '') {
-            throw new RuntimeException('SpotPlayer spot_id is missing from delivery option details.');
+        $details  = $enrollment->productDeliveryOption?->details_json ?? [];
+        $courseId = data_get($details, 'moodle_quiz_course_id');
+        if (! is_numeric($courseId)) {
+            throw new RuntimeException('Moodle quiz course id is missing from delivery option details.');
         }
+        $courseId = (int) $courseId;
 
-        $result = $service->issueLicense($spotId, $enrollment->customer);
+        [$moodleUserId, $moodleUsername] = $moodleService->findOrCreateUser($enrollment->customer);
+        $roleId                          = (int) ($config['default_role_id'] ?? 5);
+        $moodleService->enrollUser($moodleUserId, $courseId, null, null, $roleId);
 
-        $this->markProvisioningSuccess($enrollment, 'spotplayer', [
-            'spot_id'     => $spotId,
-            'license_key' => data_get($result, 'license_key'),
-            'player_url'  => data_get($result, 'player_url'),
+        $this->markProvisioningSuccess($enrollment, 'moodle_quiz', [
+            'moodle_user_id'   => $moodleUserId,
+            'moodle_username'  => $moodleUsername,
+            'moodle_course_id' => $courseId,
         ]);
     }
 
@@ -66,7 +70,7 @@ final class ProvisionSpotPlayerEnrollmentJob implements ShouldQueue
             return;
         }
 
-        $this->markProvisioningFailure($enrollment, 'spotplayer', $exception->getMessage());
+        $this->markProvisioningFailure($enrollment, 'moodle_quiz', $exception->getMessage());
     }
 
     /**

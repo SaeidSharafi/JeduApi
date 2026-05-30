@@ -4,12 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\MyCourses;
 
-use App\Data\Shop\MyCourses\Blocks\DigitalAssetBlockData;
-use App\Data\Shop\MyCourses\Blocks\InPersonBlockData;
-use App\Data\Shop\MyCourses\Blocks\LiveSessionBbbBlockData;
-use App\Data\Shop\MyCourses\Blocks\LiveSessionSkyroomBlockData;
-use App\Data\Shop\MyCourses\Blocks\LmsMoodleBlockData;
-use App\Data\Shop\MyCourses\Blocks\VideoPlatformSpotplayerBlockData;
+use App\Data\Shop\MyCourses\Blocks\DigitalAssetFileData;
 use App\Data\Shop\Product\ProductDeliveryOptionCardData;
 use App\Data\Shop\Teacher\TeacherDetailData;
 use App\Data\Transformer\TranslatableEnumData;
@@ -36,11 +31,18 @@ final class EnrollmentDetailData extends Data
         public ?string $external_enrollment_id,
         public ?string $notes,
         public ProductDeliveryOptionCardData $product,
+        /** @var DataCollection<int, TeacherDetailData> */
         #[DataCollectionOf(TeacherDetailData::class)]
         public DataCollection $teachers,
+        /** @var DataCollection<int, DigitalAssetFileData> */
+        #[DataCollectionOf(DigitalAssetFileData::class)]
+        public DataCollection $files,
+        /** @var DataCollection<int, EnrollmentQuizData> */
+        #[DataCollectionOf(EnrollmentQuizData::class)]
+        public DataCollection $quizzes,
+        public ?DeliveryAccessData $delivery_access,
         public EnrollmentReviewInfoData $review_info,
         public ?EnrollmentCertificateInfoData $certificate_info,
         public ?EnrollmentSurveyBlockData $survey_block,
-        public LiveSessionBbbBlockData|LiveSessionSkyroomBlockData|LmsMoodleBlockData|VideoPlatformSpotplayerBlockData|InPersonBlockData|DigitalAssetBlockData|null $delivery_block,
     ) {}
 }

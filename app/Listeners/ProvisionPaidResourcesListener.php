@@ -9,6 +9,8 @@ use App\Events\PaymentCompletedEvent;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
+use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -48,6 +50,16 @@ final class ProvisionPaidResourcesListener implements ShouldQueue
 
             if ($deliveryMethod === DeliveryMethodEnum::LIVE_SESSION_BBB) {
                 ProvisionBbbEnrollmentJob::dispatch($item->enrollment->id);
+            }
+
+            if ($deliveryMethod === DeliveryMethodEnum::LIVE_SESSION_SKYROOM) {
+                ProvisionSkyroomEnrollmentJob::dispatch($item->enrollment->id);
+            }
+
+            if ($deliveryMethod !== DeliveryMethodEnum::LMS_MOODLE
+                && isset($item->productDeliveryOption->details_json['moodle_quiz_course_id'])
+            ) {
+                ProvisionMoodleQuizJob::dispatch($item->enrollment->id);
             }
         }
     }

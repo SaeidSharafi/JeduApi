@@ -83,31 +83,59 @@ final class EnrollmentController extends Controller
     {
         $deliveryOption = $enrollment->productDeliveryOption;
 
-        if ($deliveryOption?->delivery_method !== DeliveryMethodEnum::LMS_MOODLE) {
-            return;
+        if ($deliveryOption?->delivery_method === DeliveryMethodEnum::LMS_MOODLE) {
+            $rawCourseId = data_get($deliveryOption->details_json, 'moodle_course_id');
+            $rawUserId   = data_get($enrollment->provisioning_data, 'providers.moodle.data.moodle_user_id');
+
+            if (is_numeric($rawCourseId) && is_numeric($rawUserId)) {
+                $this->dispatchMoodleSync(
+                    $enrollment,
+                    (int) $rawCourseId,
+                    (int) $rawUserId,
+                    'moodle'
+                );
+            }
         }
 
-        $rawCourseId = data_get($deliveryOption->details_json, 'moodle_course_id');
-        $rawUserId   = data_get($enrollment->provisioning_data, 'providers.moodle.data.moodle_user_id');
+        if ($deliveryOption?->delivery_method !== DeliveryMethodEnum::LMS_MOODLE
+            && isset($deliveryOption->details_json['moodle_quiz_course_id'])
+        ) {
+            $rawCourseId = data_get($deliveryOption->details_json, 'moodle_quiz_course_id');
+            $rawUserId   = data_get($enrollment->provisioning_data, 'providers.moodle_quiz.data.moodle_user_id');
 
-        if (! is_numeric($rawCourseId) || ! is_numeric($rawUserId)) {
-            return;
+            if (is_numeric($rawCourseId) && is_numeric($rawUserId)) {
+                $this->dispatchMoodleSync(
+                    $enrollment,
+                    (int) $rawCourseId,
+                    (int) $rawUserId,
+                    'moodle_quiz'
+                );
+            }
         }
+    }
 
-        $moodleCourseId = (int) $rawCourseId;
-        $moodleUserId   = (int) $rawUserId;
-
+    private function dispatchMoodleSync(
+        Enrollment $enrollment,
+        int $moodleCourseId,
+        int $moodleUserId,
+        string $providerKey
+    ): void {
         if ($moodleCourseId <= 0 || $moodleUserId <= 0) {
             return;
         }
 
-        $throttleKey = "throttle:moodle-sync:{$enrollment->id}:{$moodleCourseId}:{$moodleUserId}";
+        $throttleKey = "throttle:moodle-sync:{$enrollment->id}:{$moodleCourseId}:{$moodleUserId}:{$providerKey}";
 
         RateLimiter::attempt(
             $throttleKey,
             maxAttempts: 1,
-            callback: fn () => dispatch(new SyncMoodleProgressJob($enrollment->id, $moodleCourseId, $moodleUserId)),
-            decaySeconds: 300 // 5 minutes
+            callback: fn () => dispatch(new SyncMoodleProgressJob(
+                $enrollment->id,
+                $moodleCourseId,
+                $moodleUserId,
+                $providerKey
+            )),
+            decaySeconds: 300
         );
     }
 }

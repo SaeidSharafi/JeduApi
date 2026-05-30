@@ -72,7 +72,7 @@ it('returns when enrollment does not exist', function (): void {
 
 it('throws when spotplayer course id is missing', function (): void {
     $enrollment = createSpotPlayerEnrollmentForJob([
-        'course_id' => null,
+        'spot_id' => null,
     ]);
 
     $service = $this->mock(SpotPlayerService::class);
@@ -85,7 +85,7 @@ it('throws when spotplayer course id is missing', function (): void {
 
 it('provisions spotplayer enrollment and saves provisioning data', function (): void {
     $enrollment = createSpotPlayerEnrollmentForJob([
-        'course_id' => 'SPOT-COURSE-99',
+        'spot_id' => 'SPOT-COURSE-99',
     ]);
 
     $service = $this->mock(SpotPlayerService::class);
@@ -144,7 +144,7 @@ function createSpotPlayerEnrollmentForJob(array $detailsOverrides = []): Enrollm
     $order    = Order::factory()->for($customer, 'customer')->create();
 
     $details = array_merge([
-        'course_id'       => 'SPOT-DEFAULT',
+        'spot_id'         => 'SPOT-DEFAULT',
         'ims_course_code' => 'IMS-SPOT-1',
     ], $detailsOverrides);
 

@@ -66,13 +66,8 @@ final class ProvisionBbbEnrollmentJob implements ShouldQueue
             );
         }
 
-        $fullName = mb_trim(($enrollment->customer->first_name ?? '').' '.($enrollment->customer->last_name ?? '')) ?: 'Student';
-        $joinUrl  = $bbbService->buildJoinUrl($meetingId, $fullName, $attendeePassword);
-
         $this->markProvisioningSuccess($enrollment, 'bbb', [
-            'meeting_id'          => $meetingId,
-            'auto_create_meeting' => $autoCreate,
-            'attendee_join_url'   => $joinUrl,
+            'meeting_id' => $meetingId,
         ]);
     }
 

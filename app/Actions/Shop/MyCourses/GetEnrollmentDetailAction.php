@@ -4,50 +4,44 @@ declare(strict_types=1);
 
 namespace App\Actions\Shop\MyCourses;
 
-use App\Data\Shop\MyCourses\Blocks\DigitalAssetBlockData;
 use App\Data\Shop\MyCourses\Blocks\DigitalAssetFileData;
-use App\Data\Shop\MyCourses\Blocks\InPersonBlockData;
-use App\Data\Shop\MyCourses\Blocks\LiveSessionBbbBlockData;
-use App\Data\Shop\MyCourses\Blocks\LiveSessionSkyroomBlockData;
-use App\Data\Shop\MyCourses\Blocks\LmsMoodleBlockData;
-use App\Data\Shop\MyCourses\Blocks\VideoPlatformSpotplayerBlockData;
+use App\Data\Shop\MyCourses\DeliveryAccessData;
 use App\Data\Shop\MyCourses\EnrollmentCertificateInfoData;
 use App\Data\Shop\MyCourses\EnrollmentDetailData;
+use App\Data\Shop\MyCourses\EnrollmentQuizData;
 use App\Data\Shop\MyCourses\EnrollmentReviewInfoData;
 use App\Data\Shop\MyCourses\EnrollmentSurveyBlockData;
 use App\Data\Shop\Product\ProductDeliveryOptionCardData;
 use App\Data\Shop\Teacher\TeacherDetailData;
+use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\User\GenderEnum;
 use App\Models\DigitalAsset;
 use App\Models\Enrollment;
 use App\Models\Review;
-use App\Services\Integrations\BbbService;
-use App\Services\SettingsService;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\DataCollection;
-use Throwable;
 
 final readonly class GetEnrollmentDetailAction
 {
-    public function __construct(private BbbService $bbbService, private SettingsService $settings) {}
-
     public function handle(Enrollment $enrollment): EnrollmentDetailData
     {
         $enrollment->loadMissing([
-            'productDeliveryOption.product.productable',
+            'productDeliveryOption.product.productableWithAllRelations',
             'productDeliveryOption.teachers.media',
             'orderItem',
             'customer',
         ]);
 
-        $deliveryOption  = $enrollment->productDeliveryOption;
-        $product         = ProductDeliveryOptionCardData::fromModel($deliveryOption);
-        $teachers        = $this->buildTeachers($enrollment);
-        $reviewInfo      = $this->buildReviewInfo($enrollment);
-        $certificateInfo = $this->buildCertificateInfo($enrollment);
-        $surveyBlock     = $this->buildSurveyBlock($enrollment);
-        $deliveryBlock   = $this->buildDeliveryBlock($enrollment);
+        $deliveryOption = $enrollment->productDeliveryOption;
+        $product        = ProductDeliveryOptionCardData::fromModel($deliveryOption);
+        $teachers       = $this->buildTeachers($enrollment);
+        $reviewInfo     = $this->buildReviewInfo($enrollment);
+        $certInfo       = $this->buildCertificateInfo($enrollment);
+        $surveyBlock    = $this->buildSurveyBlock($enrollment);
+        $files          = $this->buildFiles($enrollment);
+        $quizzes        = $this->buildQuizzes($enrollment);
+        $deliveryAccess = $this->buildDeliveryAccess($enrollment);
 
         return new EnrollmentDetailData(
             uuid: $enrollment->uuid,
@@ -63,10 +57,12 @@ final readonly class GetEnrollmentDetailAction
             notes: $enrollment->notes,
             product: $product,
             teachers: $teachers,
+            files: $files,
+            quizzes: $quizzes,
+            delivery_access: $deliveryAccess,
             review_info: $reviewInfo,
-            certificate_info: $certificateInfo,
+            certificate_info: $certInfo,
             survey_block: $surveyBlock,
-            delivery_block: $deliveryBlock,
         );
     }
 
@@ -93,6 +89,7 @@ final readonly class GetEnrollmentDetailAction
         $productable = $enrollment->productDeliveryOption->product->productable;
 
         $review = Review::query()
+            ->where('status', PublicationStatusEnum::PUBLISHED)
             ->where('user_id', $enrollment->customer_id)
             ->where('reviewable_type', $productable::class)
             ->where('reviewable_id', $productable->id)
@@ -142,131 +139,105 @@ final readonly class GetEnrollmentDetailAction
         );
     }
 
-    private function buildDeliveryBlock(
-        Enrollment $enrollment
-    ): LiveSessionBbbBlockData|LiveSessionSkyroomBlockData|LmsMoodleBlockData|VideoPlatformSpotplayerBlockData|InPersonBlockData|DigitalAssetBlockData|null {
+    private function buildFiles(Enrollment $enrollment): DataCollection
+    {
+        $productable = $enrollment->productDeliveryOption->product->productable;
+
+        if ($productable instanceof DigitalAsset) {
+            $files = collect([$productable]);
+        } elseif (method_exists($productable, 'digitalAssets')) {
+            $productable->loadMissing('digitalAssets');
+            $files = $productable->digitalAssets ?? collect();
+        } else {
+            $files = collect();
+        }
+
+        $items = $files->map(fn ($asset): DigitalAssetFileData => new DigitalAssetFileData(
+            id: $asset->id,
+            short_name: $asset->short_name,
+            full_name: $asset->full_name,
+            thumbnail_url: $asset->thumbnail_url,
+            download_url: route(
+                'api.v1.shop.my-digital-assets.download',
+                ['enrollment' => $enrollment->uuid, 'digitalAsset' => $asset->id],
+                absolute: true
+            ),
+        ))->values()->all();
+
+        return new DataCollection(DigitalAssetFileData::class, $items);
+    }
+
+    private function buildQuizzes(Enrollment $enrollment): DataCollection
+    {
+        $provisioning = $enrollment->provisioning_data['providers'] ?? [];
+
+        $activities = data_get($provisioning, 'moodle.sync.activities')
+            ?? data_get($provisioning, 'moodle_quiz.sync.activities')
+            ?? [];
+
+        // Backwards compat: old format stored activities inside course_info
+        if (empty($activities)) {
+            $activities = data_get($provisioning, 'moodle.data.course_info.activities', []);
+        }
+
+        $items = collect($activities)
+            ->map(fn (array|object $activity): EnrollmentQuizData => new EnrollmentQuizData(
+                cmid: (int) data_get($activity, 'cmid', 0),
+                name: (string) data_get($activity, 'name', ''),
+                type: (string) data_get($activity, 'type', ''),
+                url: (string) data_get($activity, 'url', ''),
+                state: (int) data_get($activity, 'state', 0),
+                score: data_get($activity, 'score') ?? data_get($activity, 'grade'),
+                timecompleted: data_get($activity, 'timecompleted') !== null
+                    ? (int) data_get($activity, 'timecompleted')
+                    : null,
+            ))
+            ->values()->all();
+
+        return new DataCollection(EnrollmentQuizData::class, $items);
+    }
+
+    private function buildDeliveryAccess(Enrollment $enrollment): DeliveryAccessData
+    {
         $deliveryOption = $enrollment->productDeliveryOption;
         $deliveryMethod = $deliveryOption->delivery_method;
         $details        = $deliveryOption->details_json               ?? [];
         $provisioning   = $enrollment->provisioning_data['providers'] ?? [];
 
         return match ($deliveryMethod) {
-            DeliveryMethodEnum::LIVE_SESSION_BBB          => $this->buildBbbBlock($enrollment, $details, $provisioning),
-            DeliveryMethodEnum::LIVE_SESSION_SKYROOM      => $this->buildSkyroomBlock(),
-            DeliveryMethodEnum::LMS_MOODLE                => $this->buildMoodleBlock($provisioning),
-            DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER => $this->buildSpotplayerBlock($provisioning),
-            DeliveryMethodEnum::IN_PERSON                 => $this->buildInPersonBlock($details),
-            DeliveryMethodEnum::DIRECT_DOWNLOAD           => $this->buildDirectDownloadBlock($enrollment),
+            DeliveryMethodEnum::LIVE_SESSION_BBB => new DeliveryAccessData(
+                type: $deliveryMethod->value,
+                session_label: 'کلاس آنلاین',
+                join_url_path: '/api/v1/shop/my-courses/'.$enrollment->uuid.'/join',
+            ),
+            DeliveryMethodEnum::LIVE_SESSION_SKYROOM => new DeliveryAccessData(
+                type: $deliveryMethod->value,
+                session_label: 'کلاس آنلاین',
+                join_url_path: '/api/v1/shop/my-courses/'.$enrollment->uuid.'/join',
+            ),
+            DeliveryMethodEnum::LMS_MOODLE => new DeliveryAccessData(
+                type: $deliveryMethod->value,
+                course_url: data_get($provisioning, 'moodle.data.course_url'),
+                completed: (bool) (
+                    data_get($provisioning, 'moodle.sync.completed')
+                    ?? data_get($provisioning, 'moodle.data.course_info.completed', false)
+                ),
+                course_grade: data_get($provisioning, 'moodle.sync.course_grade')
+                    ?? data_get($provisioning, 'moodle.data.course_info.course_grade'),
+            ),
+            DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER => new DeliveryAccessData(
+                type: $deliveryMethod->value,
+                license_key: data_get($provisioning, 'spotplayer.data.license_key'),
+                player_url: data_get($provisioning, 'spotplayer.data.player_url'),
+            ),
+            DeliveryMethodEnum::IN_PERSON => new DeliveryAccessData(
+                type: $deliveryMethod->value,
+                address: data_get($details, 'address'),
+                map_url: data_get($details, 'map_url'),
+            ),
+            DeliveryMethodEnum::DIRECT_DOWNLOAD => new DeliveryAccessData(
+                type: $deliveryMethod->value,
+            ),
         };
-    }
-
-    private function buildBbbBlock(Enrollment $enrollment, array $details, array $provisioning): LiveSessionBbbBlockData
-    {
-        $meetingId = data_get($details, 'meeting_id');
-        $joinUrl   = null;
-
-        if (is_string($meetingId) && $meetingId !== '') {
-            try {
-                $bbbConfig = $this->settings->get(\App\Enums\System\SettingKeyEnum::BIG_BLUE_BUTTON);
-
-                if (($bbbConfig['enabled'] ?? false) && ! empty($bbbConfig['base_url'])
-                                                     && ! empty($bbbConfig['secret'])
-                ) {
-                    $this->bbbService->setConfig($bbbConfig);
-
-                    $customer = $enrollment->customer;
-                    $fullName = mb_trim(($customer->first_name ?? '').' '.($customer->last_name ?? '')) ?: 'Student';
-
-                    $attendeePassword = data_get($details, 'attendee_password');
-                    $joinUrl          = $this->bbbService->buildJoinUrl($meetingId, $fullName, $attendeePassword);
-                }
-            } catch (Throwable) {
-                // BBB config missing or service unavailable; join_url stays null
-            }
-        }
-
-        $startDate = data_get($details, 'start_date');
-
-        // TODO: fetch BBB recordings via BBB API (getRecordings) and populate past_recordings
-        return new LiveSessionBbbBlockData(
-            join_url: $joinUrl,
-            start_date: is_string($startDate) ? $startDate : null,
-            past_recordings: [],
-        );
-    }
-
-    private function buildSkyroomBlock(): LiveSessionSkyroomBlockData
-    {
-        // TODO: integrate with Skyroom API to build join_url and fetch recordings
-        return new LiveSessionSkyroomBlockData(
-            join_url: null,
-            start_date: null,
-            past_recordings: [],
-        );
-    }
-
-    private function buildMoodleBlock(array $provisioning): ?LmsMoodleBlockData
-    {
-        $moodleData = $provisioning['moodle']['data'] ?? [];
-        $courseInfo = data_get($moodleData, 'course_info');
-
-        if (! is_array($courseInfo) || empty($courseInfo)) {
-            return null;
-        }
-
-        return LmsMoodleBlockData::from($courseInfo);
-    }
-
-    private function buildSpotplayerBlock(array $provisioning): VideoPlatformSpotplayerBlockData
-    {
-        $spotData   = $provisioning['spotplayer']['data'] ?? [];
-        $licenseKey = data_get($spotData, 'license_key');
-        $playerUrl  = data_get($spotData, 'player_url');
-
-        return new VideoPlatformSpotplayerBlockData(
-            license_key: is_string($licenseKey) ? $licenseKey : null,
-            player_url: is_string($playerUrl) ? $playerUrl : null,
-        );
-    }
-
-    private function buildInPersonBlock(array $details): InPersonBlockData
-    {
-        $location = data_get($details, 'address');
-        $mapUrl   = data_get($details, 'map_url') ?? data_get($details, 'additional_info');
-
-        return new InPersonBlockData(
-            address: is_string($location) ? $location : null,
-            map_url: is_string($mapUrl) ? $mapUrl : null,
-        );
-    }
-
-    private function buildDirectDownloadBlock(Enrollment $enrollment): DigitalAssetBlockData
-    {
-        $productable = $enrollment->productDeliveryOption->product->productable;
-
-        $assets = collect();
-
-        if ($productable instanceof DigitalAsset) {
-            $assets->push($productable);
-        } elseif (method_exists($productable, 'digitalAssets')) {
-            $productable->loadMissing('digitalAssets');
-            $assets = $productable->digitalAssets;
-        }
-
-        // Deduplicate by id
-        $assets = $assets->unique('id')->values();
-
-        $files = $assets->map(fn (DigitalAsset $asset): DigitalAssetFileData => new DigitalAssetFileData(
-            id: $asset->id,
-            short_name: $asset->short_name,
-            full_name: $asset->full_name,
-            thumbnail_url: $asset->thumbnail_url,
-            download_url: route('api.v1.shop.my-digital-assets.download',
-                ['enrollment' => $enrollment->uuid, 'digitalAsset' => $asset->id], absolute: true),
-        ))->values()->all();
-
-        return new DigitalAssetBlockData(
-            files: new DataCollection(DigitalAssetFileData::class, $files),
-        );
     }
 }

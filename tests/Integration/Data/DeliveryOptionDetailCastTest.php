@@ -122,6 +122,7 @@ it('return LiveSessionSkyroomDetailsData if delivery_method is LIVE_SESSION_SKYR
     $properties['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE;
     $properties['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_SKYROOM;
     $details                        = [
+        'room_id'                     => 10,
         'meeting_name_identifier'     => 'meeting123',
         'moderator_password_override' => 'mod123',
         'attendee_password'           => 'att123',
@@ -137,7 +138,10 @@ it('return LiveSessionSkyroomDetailsData if delivery_method is LIVE_SESSION_SKYR
     $delivery_option = $caster->cast($this->mockProperty, $details, $properties, $this->mockContext);
     expect($delivery_option)
         ->toBeInstanceOf(LiveSessionSkyroomDetailsData::class)
-        ->and($delivery_option->toArray())->toBe($details);
+        ->and($delivery_option->toArray())->toBe(array_merge($details, [
+            'room_id'               => 10,
+            'moodle_quiz_course_id' => null,
+        ]));
 });
 
 it('return VideoPlatformSpotplayerDetailsData if delivery_method is VIDEO_PLATFORM_SPOTPLAYER', function (): void {

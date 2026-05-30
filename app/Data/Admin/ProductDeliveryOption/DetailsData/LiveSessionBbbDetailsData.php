@@ -75,5 +75,8 @@ final class LiveSessionBbbDetailsData extends Data implements DeliveryOptionDeta
 
         #[Nullable, StringType, Max(255)]
         public ?string $meeting_id,
+
+        #[Nullable, IntegerType]
+        public ?int $moodle_quiz_course_id = null,
     ) {}
 }

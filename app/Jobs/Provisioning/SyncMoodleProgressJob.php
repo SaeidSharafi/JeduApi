@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Jobs\Provisioning;
 
-use App\Data\Shop\MyCourses\Blocks\LmsMoodleBlockData;
 use App\Enums\System\SettingKeyEnum;
 use App\Models\Enrollment;
 use App\Services\Integrations\MoodleService;
@@ -30,7 +29,8 @@ final class SyncMoodleProgressJob implements ShouldQueue
     public function __construct(
         private readonly int $enrollmentId,
         private readonly int $moodleCourseId,
-        private readonly int $moodleUserId
+        private readonly int $moodleUserId,
+        private readonly string $providerKey = 'moodle',
     ) {}
 
     public function handle(MoodleService $moodleService, SettingsService $settings): void
@@ -55,19 +55,33 @@ final class SyncMoodleProgressJob implements ShouldQueue
         $activityStatuses = $moodleService->getActivityCompletionStatus($this->moodleCourseId, $this->moodleUserId);
         $grades           = $moodleService->getGrades($this->moodleCourseId, $this->moodleUserId);
 
-        $data               = LmsMoodleBlockData::from($courseInfo);
-        $data->completed    = $isCompleted;
-        $data->course_grade = $enrollment->survey_completed_at ? data_get($grades, 'course_grade') : null;
-
-        foreach ($data->activities as $activity) {
-            $activity->state = data_get($activityStatuses, "{$activity->cid}.state", 0);
-            $activity->grade = $enrollment->survey_completed_at
-                ? data_get($grades, "activities.{$activity->cid}")
-                : null;
+        $activities = [];
+        foreach ($courseInfo->activities as $activity) {
+            $cmid         = $activity->cid;
+            $activities[] = [
+                'cmid'  => $cmid,
+                'name'  => $activity->name,
+                'type'  => $activity->type,
+                'url'   => $activity->url,
+                'state' => (int) data_get($activityStatuses, "{$cmid}.state", 0),
+                'score' => $enrollment->survey_completed_at
+                    ? data_get($grades, "activities.{$cmid}")
+                    : null,
+                'timecompleted' => data_get($activityStatuses, "{$cmid}.timecompleted"),
+            ];
         }
 
+        $syncData = [
+            'synced_at'    => now()->toIso8601String(),
+            'completed'    => $isCompleted,
+            'course_grade' => $enrollment->survey_completed_at
+                ? data_get($grades, 'course_grade')
+                : null,
+            'activities' => $activities,
+        ];
+
         $enrollment->forceFill([
-            'provisioning_data->providers->moodle->data->course_info' => $data,
+            "provisioning_data->providers->{$this->providerKey}->sync" => $syncData,
         ])->saveQuietly();
     }
 
@@ -82,6 +96,7 @@ final class SyncMoodleProgressJob implements ShouldQueue
             'enrollment_id'    => $this->enrollmentId,
             'moodle_course_id' => $this->moodleCourseId,
             'moodle_user_id'   => $this->moodleUserId,
+            'provider_key'     => $this->providerKey,
             'error'            => $exception->getMessage(),
         ]);
 

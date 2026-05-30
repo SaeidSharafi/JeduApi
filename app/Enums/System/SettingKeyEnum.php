@@ -18,6 +18,7 @@ enum SettingKeyEnum: string
     case MOODLE           = 'moodle';
     case BIG_BLUE_BUTTON  = 'big_blue_button';
     case SPOT_PLAYER      = 'spot_player';
+    case SKYROOM          = 'skyroom';
 
     /**
      * Secret sub-fields that must be encrypted at rest for each integration key.
@@ -31,6 +32,7 @@ enum SettingKeyEnum: string
             self::MOODLE          => ['token', 'auth_userkey_token'],
             self::BIG_BLUE_BUTTON => ['secret', 'default_attendee_password', 'default_moderator_password'],
             self::SPOT_PLAYER     => ['api_key'],
+            self::SKYROOM         => ['api_key', 'secret'],
             default               => [],
         };
     }

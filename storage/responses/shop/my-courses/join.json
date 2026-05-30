@@ -1,0 +1,7 @@
+{
+  "data": {
+    "url": "https://bbb.example.com/bigbluebutton/api/join?meetingID=abc123&fullName=%D8%AF%D8%A7%D9%86%D8%B4%D8%AC%D9%88&password=attendee&checksum=xyz",
+    "type": "bbb",
+    "expires_at": null
+  }
+}

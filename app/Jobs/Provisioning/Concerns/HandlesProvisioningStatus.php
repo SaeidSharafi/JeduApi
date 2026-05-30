@@ -84,6 +84,18 @@ trait HandlesProvisioningStatus
             $providers[] = 'bbb';
         }
 
+        if ($deliveryMethod === DeliveryMethodEnum::LIVE_SESSION_SKYROOM) {
+            $providers[] = 'skyroom';
+        }
+
+        $details = $enrollment->productDeliveryOption?->details_json ?? [];
+
+        if ($deliveryMethod !== DeliveryMethodEnum::LMS_MOODLE
+            && isset($details['moodle_quiz_course_id'])
+        ) {
+            $providers[] = 'moodle_quiz';
+        }
+
         return $providers;
     }
 }
