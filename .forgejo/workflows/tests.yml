@@ -54,6 +54,10 @@ jobs:
       - name: Copy .env
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
 
+      - name: Configure Composer to use Nexus
+        run: |
+          composer config --global repos.packagist composer https://nexus.jedu.ir/repository/composer-proxy/
+
       - name: Install Dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
         env:
