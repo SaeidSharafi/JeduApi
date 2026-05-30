@@ -12,11 +12,11 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
     container:
-      image: nexus.jedu.ir/repository/docker-hub-proxy/catthehacker/ubuntu:act-22.04
+      image: nexus.jedu.ir/docker-hub-proxy/catthehacker/ubuntu:act-22.04
 
     services:
       postgres:
-        image: nexus.jedu.ir/repository/docker-hub-proxy/groonga/pgroonga:latest-alpine-17
+        image: nexus.jedu.ir/docker-hub-proxy/groonga/pgroonga:latest-alpine-17
         env:
           POSTGRES_DB: testing
           POSTGRES_USER: sail
@@ -31,7 +31,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: https://data.forgejo.org/actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: https://git.jedu.ir/jedu/setup-php@v2
@@ -45,7 +45,7 @@ jobs:
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache Composer dependencies
-        uses: https://data.forgejo.org/actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
