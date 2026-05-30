@@ -114,6 +114,7 @@ it('return LiveSessionBbbDetailsData if delivery_method is LIVE_SESSION_BBB', fu
         ->and($delivery_option->toArray())->toBe(array_merge($details, [
             'auto_create_meeting' => null,
             'meeting_id'          => null,
+            'moodle_quiz_course_id' => null,
         ]));
 });
 

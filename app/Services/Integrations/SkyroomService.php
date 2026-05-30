@@ -8,13 +8,21 @@ use App\Enums\System\SettingKeyEnum;
 use App\Exceptions\Integrations\ExternalProvisioningException;
 use App\Models\User;
 use App\Services\SettingsService;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
+use Throwable;
 
 final class SkyroomService
 {
+    private const BASE_URL = 'https://www.skyroom.online/skyroom/api';
+
     public function __construct(private readonly SettingsService $settings) {}
 
     /**
-     * Find an existing Skyroom user by phone/email or create a new one.
+     * Find an existing Skyroom user by username or create a new one.
+     *
+     * Username is derived from the app user ID: "user-{id}".
+     * The Skyroom user ID is returned for storing in provisioning_data.
      *
      * @return array{skyroom_user_id: int}
      *
@@ -22,60 +30,130 @@ final class SkyroomService
      */
     public function findOrCreateUser(User $user): array
     {
-        $config = $this->resolveConfig();
+        $username = 'user-'.$user->id;
 
-        // TODO: implement Skyroom API call
-        // POST /api/1.1/addMember or /api/1.1/getMember
-        // See Skyroom REST API docs for exact endpoint
-        throw new ExternalProvisioningException('SkyroomService::findOrCreateUser is not yet implemented.');
+        // Try to find by username first
+        try {
+            $existing = $this->request('getUser', ['username' => $username]);
+
+            return ['skyroom_user_id' => (int) $existing['id']];
+        } catch (ExternalProvisioningException $e) {
+            // Error code 15 = not found; re-throw anything else
+            if (! str_contains($e->getMessage(), '15')) {
+                throw $e;
+            }
+        }
+
+        // Create a new user
+        $skyroomUserId = $this->request('createUser', [
+            'username' => $username,
+            'password' => Str::random(16),
+            'nickname' => $user->full_name ?? $username,
+            'status'   => 1,
+        ]);
+
+        return ['skyroom_user_id' => (int) $skyroomUserId];
     }
 
     /**
-     * Add a user to a Skyroom room.
+     * Add a Skyroom user to a room with viewer access (access level 1).
      *
      * @throws ExternalProvisioningException
      */
     public function addUserToRoom(int $roomId, int $skyroomUserId): void
     {
-        $config = $this->resolveConfig();
-
-        // TODO: implement Skyroom API call
-        // POST /api/1.1/addRoomUsers
-        throw new ExternalProvisioningException('SkyroomService::addUserToRoom is not yet implemented.');
+        $this->request('addRoomUsers', [
+            'room_id' => $roomId,
+            'users'   => [['user_id' => $skyroomUserId]],
+        ]);
     }
 
     /**
-     * Generate a one-time login URL for a user to join a room.
+     * Generate a direct login URL for a user to join a room.
+     *
+     * Does not require a pre-registered Skyroom user.
+     * The userId is used only for concurrent login control.
      *
      * @throws ExternalProvisioningException
      */
-    public function createLoginUrl(int $roomId, int $skyroomUserId): string
-    {
-        $config = $this->resolveConfig();
+    public function createLoginUrl(
+        int $roomId,
+        string $userId,
+        string $nickname,
+        int $access = 1,
+        int $ttl = 3600,
+    ): string {
+        $url = $this->request('createLoginUrl', [
+            'room_id'    => $roomId,
+            'user_id'    => $userId,
+            'nickname'   => $nickname,
+            'access'     => $access,
+            'concurrent' => 1,
+            'language'   => 'fa',
+            'ttl'        => $ttl,
+        ]);
 
-        // TODO: implement Skyroom API call
-        // POST /api/1.1/getLoginUrl or similar
-        throw new ExternalProvisioningException('SkyroomService::createLoginUrl is not yet implemented.');
+        return (string) $url;
     }
 
     /**
-     * @return array{api_key: string, base_url: string}
+     * Perform a Skyroom API call.
      *
      * @throws ExternalProvisioningException
      */
-    private function resolveConfig(): array
+    private function request(string $action, array $params = []): mixed
     {
-        $config  = $this->settings->get(SettingKeyEnum::SKYROOM);
-        $apiKey  = (string) data_get($config, 'api_key', '');
-        $baseUrl = (string) data_get($config, 'base_url', '');
+        $apiKey   = $this->resolveApiKey();
+        $endpoint = self::BASE_URL.'/'.$apiKey;
 
-        if ($apiKey === '' || $baseUrl === '') {
-            throw new ExternalProvisioningException('Skyroom service configuration is missing.');
+        $body = ['action' => $action];
+        if (! empty($params)) {
+            $body['params'] = $params;
         }
 
-        return [
-            'api_key'  => $apiKey,
-            'base_url' => $baseUrl,
-        ];
+        try {
+            $response = Http::timeout(30)
+                ->acceptJson()
+                ->post($endpoint, $body);
+        } catch (Throwable $e) {
+            throw new ExternalProvisioningException(
+                "Skyroom network error on [{$action}]: {$e->getMessage()}",
+                previous: $e,
+            );
+        }
+
+        if ($response->failed()) {
+            throw new ExternalProvisioningException(
+                "Skyroom HTTP error on [{$action}]: status {$response->status()}"
+            );
+        }
+
+        $json = $response->json();
+
+        if (! ($json['ok'] ?? false)) {
+            $code    = $json['error_code']    ?? 0;
+            $message = $json['error_message'] ?? 'Unknown error';
+
+            throw new ExternalProvisioningException(
+                "Skyroom API error {$code} on [{$action}]: {$message}"
+            );
+        }
+
+        return $json['result'] ?? null;
+    }
+
+    /**
+     * @throws ExternalProvisioningException
+     */
+    private function resolveApiKey(): string
+    {
+        $config = $this->settings->get(SettingKeyEnum::SKYROOM);
+        $apiKey = (string) data_get($config, 'api_key', '');
+
+        if ($apiKey === '') {
+            throw new ExternalProvisioningException('Skyroom api_key is not configured.');
+        }
+
+        return $apiKey;
     }
 }

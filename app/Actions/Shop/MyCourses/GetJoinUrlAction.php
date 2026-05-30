@@ -52,16 +52,17 @@ final readonly class GetJoinUrlAction
 
     private function buildSkyroomJoinUrl(Enrollment $enrollment, array $provisioning): JoinUrlData
     {
-        $roomId        = data_get($provisioning, 'skyroom.data.room_id');
-        $skyroomUserId = data_get($provisioning, 'skyroom.data.skyroom_user_id');
+        $roomId = data_get($provisioning, 'skyroom.data.room_id');
 
-        if (! $roomId || ! $skyroomUserId) {
+        if (! $roomId) {
             throw new ExternalProvisioningException('Skyroom room not provisioned yet.');
         }
 
-        $joinUrl = $this->skyroomService->createLoginUrl(
+        $customer = $enrollment->customer;
+        $joinUrl  = $this->skyroomService->createLoginUrl(
             roomId: (int) $roomId,
-            skyroomUserId: (int) $skyroomUserId,
+            userId: 'user-'.$enrollment->customer_id,
+            nickname: $customer?->full_name ?? 'دانشجو',
         );
 
         return new JoinUrlData(url: $joinUrl, type: 'skyroom');

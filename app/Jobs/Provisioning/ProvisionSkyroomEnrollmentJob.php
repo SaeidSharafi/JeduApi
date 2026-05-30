@@ -37,8 +37,8 @@ final class ProvisionSkyroomEnrollmentJob implements ShouldQueue
             return;
         }
 
-        if (empty($config['api_key']) || empty($config['base_url'])) {
-            throw new RuntimeException('Skyroom configuration is missing api_key or base_url.');
+        if (empty($config['api_key'])) {
+            throw new RuntimeException('Skyroom configuration is missing api_key.');
         }
 
         $enrollment = $this->findEnrollment();
