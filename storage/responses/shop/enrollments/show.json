@@ -61,17 +61,17 @@
       "certificate_url": null
     },
     "survey_block": null,
-    "delivery_block": {
-      "files": [
-        {
-          "id": 1,
-          "short_name": "فصل اول",
-          "full_name": "فصل اول - مقدمه",
-          "thumbnail_url": null,
-          "download_url": "http://jedu.test/api/v1/shop/enrollments/019803f5-0dbc-7325-aa7e-852eed356839/download/1"
-        }
-      ]
-    }
+    "files": [
+      {
+        "id": 1,
+        "short_name": "فصل اول",
+        "full_name": "فصل اول - مقدمه",
+        "thumbnail_url": null,
+        "download_url": "http://jedu.test/api/v1/shop/enrollments/019803f5-0dbc-7325-aa7e-852eed356839/download/1"
+      }
+    ],
+    "quizzes": [],
+    "delivery_access": null
   },
   "metadata": []
 }

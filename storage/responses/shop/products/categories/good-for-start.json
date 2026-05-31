@@ -25,6 +25,14 @@
       ],
       "reviews_count": 0,
       "average_rating": 0,
+      "registration_status": {
+        "value": "in_progress",
+        "label": "در حال ثبت‌نام"
+      },
+      "delivery_type": {
+        "value": "online",
+        "label": "آنلاین"
+      },
       "price_data": {
         "min_price": 1200000,
         "min_original_price": 1200000,

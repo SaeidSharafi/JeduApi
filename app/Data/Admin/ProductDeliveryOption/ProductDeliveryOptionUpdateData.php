@@ -276,10 +276,15 @@ final class ProductDeliveryOptionUpdateData extends Data
                 'required'    => false,
                 'example'     => '1404-12-31 23:59:59',
             ],
-            'details.location' => [
-                'description' => 'For `in_person`. Physical location for in-person sessions (required)',
+            'details.address' => [
+                'description' => 'For `in_person`. Physical address for in-person sessions (required)',
                 'required'    => false,
                 'example'     => 'Room 101, Main Building',
+            ],
+            'details.map_url' => [
+                'description' => 'For `in_person`. URL for the map location of the in-person session (optional but recommended)',
+                'required'    => false,
+                'example'     => 'https://maps.google.com/?q=Room+101,+Main+Building',
             ],
             'details.schedule' => [
                 'description' => 'For `in_person`. Schedule for in-person session (required)',

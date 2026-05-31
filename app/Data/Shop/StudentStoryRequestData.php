@@ -25,4 +25,31 @@ final class StudentStoryRequestData extends Data
             'limit'         => ['nullable', 'integer', 'min:1'],
         ];
     }
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @return array<string, mixed>
+     */
+    public function queryParameters(): array
+    {
+        return [
+            'course_slug' => [
+                'description' => 'Filter stories by the slug of a specific course.',
+                'example'     => 'python-fundamentals',
+            ],
+            'category_slug' => [
+                'description' => 'Filter stories by the slug of a specific category.',
+                'example'     => 'programming',
+            ],
+            'featured_only' => [
+                'description' => 'When true, returns only featured student stories.',
+                'example'     => true,
+            ],
+            'limit' => [
+                'description' => 'Maximum number of student stories to return.',
+                'example'     => 6,
+            ],
+        ];
+    }
 }
