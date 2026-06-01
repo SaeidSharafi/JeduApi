@@ -116,9 +116,7 @@ jobs:
     needs: tests
     # Ensure deployment runs ONLY on direct pushes to main or manual dispatch, never on PRs
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    runs-on: docker
-    container:
-      image: alpine:latest
+    runs-on: alpine:latest
 
     steps:
       - name: Install system dependencies
