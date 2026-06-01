@@ -31,7 +31,7 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
     container:
-      image: nexus.jedu.ir/docker-hub-proxy/catthehacker/ubuntu:act-22.04
+      image: nexus.jedu.ir/docker-hub/php-ci:8.4
 
     services:
       postgres:
@@ -51,13 +51,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: https://git.jedu.ir/public/setup-php@v2
-        with:
-          php-version: '8.4'
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, pdo_pgsql, bcmath, soap, intl, gd, exif, iconv
-          coverage: xdebug
 
       - name: Get composer cache directory
         id: composer-cache
@@ -118,7 +111,7 @@ jobs:
     runs-on: ubuntu-latest # Matches the label registered in your runner-config.yml
     container:
       # Using the Nexus proxy path ensures it pulls successfully through your network setup
-      image: nexus.jedu.ir/docker-hub-proxy/library/alpine:latest
+      image: nexus.jedu.ir/docker-hub-proxy/alpine:latest
 
     steps:
       - name: Install system dependencies
