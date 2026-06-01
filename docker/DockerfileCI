@@ -1,8 +1,7 @@
-# You can use alpine or debian-based images
 FROM php:8.4-cli-alpine
 
-# Install git, unzip, and bash (required by Composer and some CI scripts)
-RUN apk add --no-cache git unzip bash
+# Add nodejs here (needed by Gitea Actions to run checkout & cache steps)
+RUN apk add --no-cache git unzip bash nodejs
 
 # Download the helper script to easily install PHP extensions
 ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
