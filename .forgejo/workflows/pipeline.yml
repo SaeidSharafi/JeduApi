@@ -114,9 +114,11 @@ jobs:
   deploy:
     name: Deploy API
     needs: tests
-    # Ensure deployment runs ONLY on direct pushes to main or manual dispatch, never on PRs
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    runs-on: alpine:latest
+    runs-on: ubuntu-latest # Matches the label registered in your runner-config.yml
+    container:
+      # Using the Nexus proxy path ensures it pulls successfully through your network setup
+      image: nexus.jedu.ir/docker-hub-proxy/library/alpine:latest
 
     steps:
       - name: Install system dependencies
