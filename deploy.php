@@ -1,5 +1,6 @@
 <?php
 
+
 namespace Deployer;
 
 require 'recipe/laravel.php';
@@ -61,9 +62,9 @@ task('deploy', [
     'artisan:optimize:clear',
     'permission:update',
     'artisan:optimize',
-    'deploy:publish',
     'db:seed:demo',
     'scribe:generate',
+    'deploy:publish',
     'php-fpm:reload',
 ]);
 
