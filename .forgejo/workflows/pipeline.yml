@@ -89,7 +89,6 @@ jobs:
           DB_DATABASE: testing
           DB_USERNAME: sail
           DB_PASSWORD: password
-          XDEBUG_MODE: coverage
         run: php artisan migrate:fresh --seed --force
 
       - name: Execute tests (Pest)
@@ -100,6 +99,7 @@ jobs:
           DB_DATABASE: testing
           DB_USERNAME: sail
           DB_PASSWORD: password
+          XDEBUG_MODE: coverage
         run: ./vendor/bin/pest --parallel --coverage --coverage-clover=coverage.xml --log-junit junit.xml
 
   # =========================================================================
