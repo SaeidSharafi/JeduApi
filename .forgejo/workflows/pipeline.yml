@@ -112,13 +112,11 @@ jobs:
     runs-on: ubuntu-latest # Matches the label registered in your runner-config.yml
     container:
       # Using the Nexus proxy path ensures it pulls successfully through your network setup
-      image: nexus.jedu.ir/docker-hub-proxy/alpine:latest
+      image: nexus.jedu.ir/docker-hub/php-ci:8.4
 
     steps:
-      - name: Install system dependencies
-        run: apk add --no-cache git openssh-client php84 php84-phar curl bash
-
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Install Deployer
         run: |
