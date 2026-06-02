@@ -30,25 +30,34 @@ final readonly class RetryProvisioningAction
             && $enrollment->enrollment_status !== EnrollmentStatusEnum::PENDING_PROVISIONING
         ) {
             throw ValidationException::withMessages([
-                'enrollment_status' => sprintf(
-                    'Cannot retry provisioning for enrollment with status: %s',
-                    $enrollment->enrollment_status->value
-                ),
+                'enrollment_status' => __('messages.enrollments.retry_provisioning_not_allowed',
+                    ['status' => $enrollment->enrollment_status->translate()]),
             ]);
+        }
+
+        // If provisioning_data is null, this enrollment was never provisioned
+        // (queue failure, event listener crash, etc.). Dispatch all required providers.
+        if ($enrollment->provisioning_data === null) {
+            $dispatchedProviders = $this->dispatchAllRequiredProviders($enrollment);
+
+            return [
+                'message'   => __('messages.enrollments.initial_provisioning_dispatched', ['count' => count($dispatchedProviders)]),
+                'providers' => $dispatchedProviders,
+            ];
         }
 
         $failedProviders = $this->getFailedProviders($enrollment);
 
         if (empty($failedProviders)) {
             throw ValidationException::withMessages([
-                'provisioning_data' => 'No failed providers found to retry',
+                'provisioning_data' => __('messages.enrollments.no_failed_providers'),
             ]);
         }
 
         $dispatchedProviders = $this->dispatchProvisioningJobs($enrollment, $failedProviders);
 
         return [
-            'message'   => sprintf('Retry dispatched for %d provider(s)', count($dispatchedProviders)),
+            'message'   => __('messages.enrollments.retry_dispatched', ['count' => count($dispatchedProviders)]),
             'providers' => $dispatchedProviders,
         ];
     }
@@ -131,5 +140,64 @@ final readonly class RetryProvisioningAction
             ->first();
 
         return $payment?->id;
+    }
+
+    /**
+     * Dispatch all required provisioning jobs (for null provisioning_data case).
+     *
+     * This handles the edge case where provisioning was never attempted
+     * (queue failure, event listener crash, etc.).
+     *
+     * @return array<int, string>
+     */
+    private function dispatchAllRequiredProviders(Enrollment $enrollment): array
+    {
+        $dispatched     = [];
+        $deliveryMethod = $enrollment->productDeliveryOption?->delivery_method;
+        $detailsJson    = $enrollment->productDeliveryOption?->details_json ?? [];
+
+        // IMS - if ims_course_code exists
+        $imsCourseCode = data_get($detailsJson, 'ims_course_code');
+        if (is_string($imsCourseCode) && $imsCourseCode !== '') {
+            $paymentId = $this->resolvePaymentId($enrollment);
+            ProvisionImsEnrollmentJob::dispatch($enrollment->id, $paymentId);
+            $dispatched[] = 'ims';
+        }
+
+        // Moodle - if delivery method is LMS_MOODLE
+        if ($deliveryMethod === DeliveryMethodEnum::LMS_MOODLE) {
+            ProvisionMoodleEnrollmentJob::dispatch($enrollment->id);
+            $dispatched[] = 'moodle';
+        }
+
+        // SpotPlayer - if delivery method is VIDEO_PLATFORM_SPOTPLAYER
+        if ($deliveryMethod === DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER) {
+            ProvisionSpotPlayerEnrollmentJob::dispatch($enrollment->id);
+            $dispatched[] = 'spotplayer';
+        }
+
+        // BBB - if delivery method is LIVE_SESSION_BBB
+        if ($deliveryMethod === DeliveryMethodEnum::LIVE_SESSION_BBB) {
+            ProvisionBbbEnrollmentJob::dispatch($enrollment->id);
+            $dispatched[] = 'bbb';
+        }
+
+        // Skyroom - if delivery method is LIVE_SESSION_SKYROOM
+        if ($deliveryMethod === DeliveryMethodEnum::LIVE_SESSION_SKYROOM) {
+            ProvisionSkyroomEnrollmentJob::dispatch($enrollment->id);
+            $dispatched[] = 'skyroom';
+        }
+
+        // Moodle Quiz - if delivery is NOT LMS_MOODLE and moodle_quiz_course_id exists
+        $moodleQuizCourseId = data_get($detailsJson, 'moodle_quiz_course_id');
+        if (
+            $deliveryMethod !== DeliveryMethodEnum::LMS_MOODLE
+            && is_numeric($moodleQuizCourseId)
+        ) {
+            ProvisionMoodleQuizJob::dispatch($enrollment->id);
+            $dispatched[] = 'moodle_quiz';
+        }
+
+        return $dispatched;
     }
 }

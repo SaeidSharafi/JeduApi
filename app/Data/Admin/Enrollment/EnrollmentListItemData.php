@@ -19,6 +19,7 @@ use Spatie\LaravelData\Data;
 final class EnrollmentListItemData extends Data
 {
     public function __construct(
+        public int $id,
         public string $uuid,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public EnrollmentStatusEnum $enrollment_status,

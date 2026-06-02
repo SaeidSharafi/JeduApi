@@ -12,15 +12,16 @@ use Illuminate\Validation\ValidationException;
 
 final readonly class ChangeEnrollmentStatusAction
 {
-    private const array ALLOWED_TRANSITIONS = [
-        'awaiting_payment'     => ['pending_provisioning', 'cancelled'],
-        'pending_provisioning' => ['active', 'provisioning_failed', 'cancelled'],
-        'active'               => ['suspended', 'expired', 'cancelled'],
-        'suspended'            => ['active', 'cancelled'],
-        'provisioning_failed'  => ['pending_provisioning', 'cancelled'],
-        'expired'              => [],
-        'cancelled'            => [],
-    ];
+    private const array ALLOWED_TRANSITIONS
+        = [
+            'awaiting_payment'     => ['pending_provisioning', 'cancelled'],
+            'pending_provisioning' => ['active', 'provisioning_failed', 'cancelled'],
+            'active'               => ['suspended', 'expired', 'cancelled'],
+            'suspended'            => ['active', 'cancelled'],
+            'provisioning_failed'  => ['pending_provisioning', 'cancelled'],
+            'expired'              => [],
+            'cancelled'            => [],
+        ];
 
     /**
      * Execute the action.
@@ -59,11 +60,8 @@ final readonly class ChangeEnrollmentStatusAction
 
         if (! in_array($newStatus->value, $allowedStatuses, true)) {
             throw ValidationException::withMessages([
-                'enrollment_status' => sprintf(
-                    'Cannot transition from %s to %s',
-                    $currentStatus->value,
-                    $newStatus->value
-                ),
+                'enrollment_status' => __('messages.enrollments.invalid_status_transition',
+                    ['from' => $currentStatus->translate(), 'to' => $newStatus->translate()]),
             ]);
         }
     }

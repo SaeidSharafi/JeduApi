@@ -11,7 +11,7 @@ use App\Models\Enrollment;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * @group Enrollment Management
+ * @group Admin - Enrollment
  *
  * @subgroup Enrollment Provisioning
  *

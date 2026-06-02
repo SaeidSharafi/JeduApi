@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Gate;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
- * @group Enrollment Management
+ * @group Admin - Enrollment
  *
  * @subgroup Enrollments
  *

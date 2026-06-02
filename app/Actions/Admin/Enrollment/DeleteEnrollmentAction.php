@@ -22,9 +22,9 @@ final readonly class DeleteEnrollmentAction
             || $enrollment->enrollment_status === EnrollmentStatusEnum::PENDING_PROVISIONING
         ) {
             throw ValidationException::withMessages([
-                'enrollment_status' => sprintf(
-                    'Cannot delete enrollment with status: %s',
-                    $enrollment->enrollment_status->value
+                'enrollment_status' => __(
+                    'messages.enrollments.cannot_delete_enrollment',
+                    ['status' => $enrollment->enrollment_status->translate()]
                 ),
             ]);
         }

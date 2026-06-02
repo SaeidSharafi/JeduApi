@@ -30,7 +30,7 @@ describe('RetryProvisioningAction', function (): void {
         ]);
 
         expect(fn () => $this->action->handle($enrollment))
-            ->toThrow(ValidationException::class, 'Cannot retry provisioning for enrollment with status: active');
+            ->toThrow(ValidationException::class);
     });
 
     it('throws exception when no failed providers found', function (): void {
@@ -46,6 +46,32 @@ describe('RetryProvisioningAction', function (): void {
 
         expect(fn () => $this->action->handle($enrollment))
             ->toThrow(ValidationException::class, 'No failed providers found to retry');
+    });
+
+    it('dispatches all required providers when provisioning_data is null', function (): void {
+        $pdo = ProductDeliveryOption::factory()->create([
+            'delivery_method' => DeliveryMethodEnum::LMS_MOODLE,
+            'details_json'    => ['ims_course_code' => 'TEST-123'],
+        ]);
+
+        $enrollment = Enrollment::factory()->create([
+            'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING,
+            'product_delivery_option_id' => $pdo->id,
+            'provisioning_data'          => null, // Never provisioned
+        ]);
+
+        Payment::factory()->create([
+            'order_id' => $enrollment->order_id,
+            'status'   => PaymentStatusEnum::COMPLETED,
+        ]);
+
+        $result = $this->action->handle($enrollment);
+
+        expect($result['message'])->toContain('Initial provisioning dispatched');
+        expect($result['providers'])->toContain('ims', 'moodle');
+
+        Queue::assertPushed(ProvisionImsEnrollmentJob::class);
+        Queue::assertPushed(ProvisionMoodleEnrollmentJob::class);
     });
 
     it('dispatches IMS provisioning job for failed IMS provider', function (): void {
