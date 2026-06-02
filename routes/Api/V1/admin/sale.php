@@ -13,6 +13,9 @@ use App\Http\Controllers\Api\Admin\Promotion\DiscountInfoController;
 use App\Http\Controllers\Api\Admin\Promotion\DiscountPromotionController;
 use App\Http\Controllers\Api\Admin\Promotion\DiscountPromotionStatisticsController;
 use App\Http\Controllers\Api\Admin\Promotion\DiscountPromotionStatusUpdateController;
+use App\Http\Controllers\Api\Admin\Enrollment\ChangeEnrollmentStatusController;
+use App\Http\Controllers\Api\Admin\Enrollment\EnrollmentController;
+use App\Http\Controllers\Api\Admin\Enrollment\RetryProvisioningController;
 use App\Http\Controllers\Api\Admin\Wallet\AdjustWalletController;
 use App\Http\Controllers\Api\Admin\Wallet\AdminWalletController;
 use App\Http\Controllers\Api\Admin\Wallet\CreateWalletController;
@@ -55,6 +58,14 @@ Route::get('discount-info/operators', [DiscountInfoController::class, 'operators
     ->name('discount-info.operators');
 Route::get('discount-info/types', [DiscountInfoController::class, 'types'])
     ->name('discount-info.types');
+
+// Enrollment Management
+Route::apiResource('enrollment', EnrollmentController::class)->except(['store']);
+Route::post('enrollment/{enrollment}/change-status', ChangeEnrollmentStatusController::class)
+    ->name('enrollment.change-status');
+Route::post('enrollment/{enrollment}/retry-provisioning', RetryProvisioningController::class)
+    ->name('enrollment.retry-provisioning');
+
 Route::prefix('wallet')->name('wallet.')->group(function (): void {
     Route::apiResource('/', AdminWalletController::class)->only(['index', 'show'])->parameters(['' => 'wallet']);
 
