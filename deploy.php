@@ -31,7 +31,7 @@ add('writable_dirs', [
 host('production')
     ->setHostname('185.141.133.113')
     ->setRemoteUser('deployer')
-    ->setIdentityFile('~/.ssh/deploy_dims')
+    ->setIdentityFile('~/.ssh/deploy_key')
     ->setDeployPath('/var/www/api.jedu.ir')
     ->set('branch', 'main');
 

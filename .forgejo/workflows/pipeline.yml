@@ -132,8 +132,9 @@ jobs:
           ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Deploy
-        run: dep deploy production --identity-file=~/.ssh/deploy_key -o migrate=${{ github.event.inputs.migrate || 'false' }}
-
+        #run: dep deploy production -o migrate=${{ github.event.inputs.migrate || 'false' }}
+        # we are still in development phase so it should always run with migrate-fresh=true, we will change it later
+        run: dep deploy production -o migrate-fresh=true
       - name: Cleanup SSH
         if: always()
         run: rm -f ~/.ssh/deploy_key
