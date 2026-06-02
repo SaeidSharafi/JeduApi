@@ -1,0 +1,59 @@
+{
+  "session_id": "ses_y454uly1",
+  "browser_session_id": null,
+  "request": "Refactor enrollment detail API response and integration services (BBB, Skyroom, Moodle, SpotPlayer, IMS) for clean response structure, maintainability, and standard data flow: product creation → provisioning → enrollment API response.",
+  "created_at": 1780143918720,
+  "updated_at": 1780143918720,
+  "branches": {
+    "data_flow": {
+      "id": "data_flow",
+      "scope": "Where should each piece of data live: details_json (product config) vs provisioning_data (runtime results) vs re-computed on API request?",
+      "status": "exploring",
+      "questions": [],
+      "finding": null
+    },
+    "universal_blocks": {
+      "id": "universal_blocks",
+      "scope": "Should digital assets (files) and quizzes be universal top-level blocks for ALL delivery types, or stay inside each delivery-specific block?",
+      "status": "exploring",
+      "questions": [],
+      "finding": null
+    },
+    "skyroom_scope": {
+      "id": "skyroom_scope",
+      "scope": "How deep should the Skyroom integration go now? What needs to be built vs stubbed?",
+      "status": "exploring",
+      "questions": [],
+      "finding": null
+    },
+    "details_json_schema": {
+      "id": "details_json_schema",
+      "scope": "Should details_json fields be formalized, validated per delivery type, and should any become actual DB columns?",
+      "status": "exploring",
+      "questions": [],
+      "finding": null
+    },
+    "response_structure": {
+      "id": "response_structure",
+      "scope": "Should the delivery_block have a type discriminator field, and should the union type be simplified in the DTO?",
+      "status": "exploring",
+      "questions": [],
+      "finding": null
+    },
+    "moodle_provisioning_split": {
+      "id": "moodle_provisioning_split",
+      "scope": "Should ProvisionMoodleEnrollmentJob stop writing course_info/activities blob, leaving all Moodle response data to SyncMoodleProgressJob?",
+      "status": "exploring",
+      "questions": [],
+      "finding": null
+    }
+  },
+  "branch_order": [
+    "data_flow",
+    "universal_blocks",
+    "skyroom_scope",
+    "details_json_schema",
+    "response_structure",
+    "moodle_provisioning_split"
+  ]
+}
