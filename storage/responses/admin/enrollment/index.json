@@ -1,0 +1,111 @@
+{
+    "success": true,
+    "message": "Enrollments retrieved successfully",
+    "data": [
+        {
+            "uuid": "550e8400-e29b-41d4-a716-446655440000",
+            "enrollment_status": {
+                "value": "active",
+                "label": "enums.EnrollmentStatusEnum.active"
+            },
+            "access_start_date": "2025-09-01",
+            "access_end_date": "2025-12-31",
+            "created_at": "2025-08-15T10:30:00Z",
+            "order": {
+                "id": 123,
+                "increment_id": "100000001",
+                "customer_first_name": "John",
+                "customer_last_name": "Doe",
+                "customer_email": "john@example.com",
+                "customer_phone": "09123456789",
+                "subtotal": 1000000,
+                "discount_amount": 100000,
+                "tax_amount": 0,
+                "grand_total": 900000,
+                "total_paid": 900000,
+                "balance_due": 0,
+                "admin_notes": null,
+                "status": {
+                    "value": "completed",
+                    "label": "enums.OrderStatusEnum.completed"
+                },
+                "payment_status": {
+                    "value": "paid",
+                    "label": "enums.OrderPaymentStatusEnum.paid"
+                },
+                "created_at": "2025-08-15T10:30:00Z",
+                "updated_at": "2025-08-15T10:35:00Z",
+                "payments": [],
+                "items": []
+            },
+            "customer": {
+                "id": 1,
+                "phone": "09123456789",
+                "first_name": "John",
+                "last_name": "Doe",
+                "email": "john@example.com",
+                "phone2": null,
+                "civil_id": null,
+                "civil_id_type": {
+                    "value": "none",
+                    "label": "enums.CivilIdTypeEnum.none"
+                },
+                "date_of_birth": null,
+                "father_name": null,
+                "gender": null,
+                "education_level": null,
+                "field_of_study": null,
+                "education_status": null
+            },
+            "product_delivery_option": {
+                "id": 5,
+                "name": "Advanced Python Course",
+                "sku": "PY-ADV-001",
+                "fulfillment_type": {
+                    "value": "automatic",
+                    "label": "enums.FulfillmentTypeEnum.automatic"
+                },
+                "delivery_method": {
+                    "value": "online",
+                    "label": "enums.DeliveryMethodEnum.online"
+                },
+                "price": 500000,
+                "capacity": null,
+                "status": {
+                    "value": "published",
+                    "label": "enums.PublicationStatusEnum.published"
+                },
+                "is_prepayment_available": false,
+                "prepayment_amount": null,
+                "details": {},
+                "is_featured": false,
+                "featured_price": null,
+                "featured_price_start_date": null,
+                "featured_price_end_date": null,
+                "registration_start_date": null,
+                "registration_end_date": null,
+                "available_from": null,
+                "available_to": null,
+                "access_days": null,
+                "teachers": [],
+                "product": null,
+                "created_at": null,
+                "updated_at": null
+            }
+        }
+    ],
+    "meta": {
+        "current_page": 1,
+        "from": 1,
+        "last_page": 1,
+        "per_page": 15,
+        "to": 1,
+        "total": 1
+    },
+    "links": {
+        "first": "http://localhost/api/v1/admin/enrollments?page=1",
+        "last": "http://localhost/api/v1/admin/enrollments?page=1",
+        "prev": null,
+        "next": null
+    }
+}
