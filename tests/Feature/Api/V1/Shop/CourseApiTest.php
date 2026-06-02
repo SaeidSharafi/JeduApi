@@ -421,7 +421,7 @@ describe('Course Lsiting filters', function (): void {
         // Convert to Jalali date for the filter
         $futureDate = Verta::instance($now->clone()->addDays(10))->format('Y-m-d');
 
-        // Registration starts in the future
+        // Registration starts in the future - available NOW so it passes base filter
         $futureCourse = Product::factory()
             ->withDeliveryOptions(1)
             ->withCourse(Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]))
@@ -432,12 +432,12 @@ describe('Course Lsiting filters', function (): void {
             'fulfillment_type'        => FulfillmentTypeEnum::DIGITAL->value,
             'registration_start_date' => $now->clone()->addDays(15)->toDateString(),
             'registration_end_date'   => $now->clone()->addDays(25)->toDateString(),
-            'available_from'          => $now->clone()->addDays(30)->toDateString(),
+            'available_from'          => $now->clone()->subDays(5)->toDateString(),
             'available_to'            => $now->clone()->addDays(40)->toDateString(),
         ]);
         $this->indexProductPrice($futureCourse);
 
-        // Registration started in the past
+        // Registration started in the past - available NOW so it passes base filter
         $pastCourse = Product::factory()
             ->withDeliveryOptions(1)
             ->withCourse(Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]))
@@ -448,7 +448,7 @@ describe('Course Lsiting filters', function (): void {
             'fulfillment_type'        => FulfillmentTypeEnum::DIGITAL->value,
             'registration_start_date' => $now->clone()->subDays(5)->toDateString(),
             'registration_end_date'   => $now->clone()->addDays(5)->toDateString(),
-            'available_from'          => $now->clone()->addDays(10)->toDateString(),
+            'available_from'          => $now->clone()->subDays(10)->toDateString(),
             'available_to'            => $now->clone()->addDays(40)->toDateString(),
         ]);
         $this->indexProductPrice($pastCourse);
@@ -471,7 +471,7 @@ describe('Course Lsiting filters', function (): void {
         $startDate = verta()->addDays(5)->format('Y-m-d');
         $endDate   = verta()->addDays(15)->format('Y-m-d');
 
-        // Course that overlaps with the specified window
+        // Course that overlaps with the specified window - available NOW so it passes base filter
         $windowCourse = Product::factory()
             ->withDeliveryOptions(1)
             ->withCourse(Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]))
@@ -483,7 +483,7 @@ describe('Course Lsiting filters', function (): void {
                 'fulfillment_type'        => FulfillmentTypeEnum::DIGITAL->value,
                 'registration_start_date' => $now->clone()->subDays(5)->toDateString(),
                 'registration_end_date'   => $now->clone()->addDays(20)->toDateString(),
-                'available_from'          => $now->clone()->addDays(3)->toDateString(),
+                'available_from'          => $now->clone()->subDays(2)->toDateString(),
                 'available_to'            => $now->clone()->addDays(20)->toDateString(),
             ]);
         $this->indexProductPrice($windowCourse);

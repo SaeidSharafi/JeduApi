@@ -397,13 +397,15 @@ describe('validation', function (): void {
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,
         ]);
         $product = App\Models\Product::factory()->create();
+        $teacher = Teacher::factory()->create();
         $data    = ProductDeliveryOption::factory()
             ->make([
                 'product_id'       => $product->id,
                 'fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::DIGITAL->value,
                 'delivery_method'  => App\Enums\Product\DeliveryMethodEnum::DIRECT_DOWNLOAD->value,
             ])->toArray();
-        $data['details'] = [];
+        $data['teachers'] = [$teacher->id];
+        $data['details']  = [];
 
         $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
 
@@ -419,7 +421,7 @@ describe('validation', function (): void {
             ->assertJsonValidationErrors(['details.moodle_course_id']);
 
         $data['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value;
-        $data['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_BBB->value;
+        $data['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE->value;
 
         $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
 
@@ -430,7 +432,7 @@ describe('validation', function (): void {
         $response                = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['details.meeting_name_identifier']);
+            ->assertJsonValidationErrors(['details']);
 
         $data['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::OFFLINE_SERVICE->value;
         $data['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value;

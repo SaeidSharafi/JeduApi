@@ -580,14 +580,14 @@ describe('filters tests', function () {
             ->withDeliveryOptions(realData: [
                 [
                     'price'            => 100,
-                    'available_from'   => $now->clone()->subDays(3),
+                    'available_from'   => $now->clone()->subDays(10),
                     'available_to'     => $now->clone()->subDays(1),
                     'fulfillment_type' => FulfillmentTypeEnum::ONLINE_SERVICE->value,
                 ],
             ])
             ->withCategory(1)
             ->withCourse(Course::factory()->create())
-            ->create(['name' => 'Active Product']);
+            ->create(['name' => 'Past Product']);
 
         // Upcoming
         $futureContentProduct = Product::factory()
@@ -610,7 +610,7 @@ describe('filters tests', function () {
         $json = $response->json();
         expect($json['data']['total'])->toBe(1);
         if (! empty($json['data']['data'])) {
-            expect($json['data']['data'][0]['name'])->toBe('Active Product');
+            expect($json['data']['data'][0]['name'])->toBe('Past Product');
         }
     });
 });

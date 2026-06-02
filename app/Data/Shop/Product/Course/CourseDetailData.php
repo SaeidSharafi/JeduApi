@@ -11,6 +11,8 @@ use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\CourseDifficultyLevelEnum;
 use App\Models\Product;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\WithCast;
@@ -63,7 +65,9 @@ final class CourseDetailData extends Data
                     // Note: Removed capacity check as enrolled_count property needs verification
                 })
                 ->map(function ($pdoPrice) use ($product) {
-                    $pdo = $product->productDeliveryOptions->firstWhere('uuid', $pdoPrice->uuid);
+                    $pdo           = $product->productDeliveryOptions->firstWhere('uuid', $pdoPrice->uuid);
+                    $isAvailable   = self::isAvailable($pdo->available_from, $pdo->available_to);
+                    $isPurchasable = $isAvailable && self::isAvailable($pdo->registration_start_date, $pdo->registration_end_date);
 
                     return new ProductDeliveryOptionData(
                         uuid: $pdo->uuid,
@@ -72,6 +76,12 @@ final class CourseDetailData extends Data
                         price_data: $pdoPrice,
                         fulfillment_type: $pdo->fulfillment_type,
                         delivery_method: $pdo->delivery_method,
+                        is_available: $isAvailable,
+                        is_purchasable: $isPurchasable,
+                        available_from: $pdo->available_from,
+                        available_to: $pdo->available_to,
+                        registration_start_date: $pdo->registration_start_date,
+                        registration_end_date: $pdo->registration_end_date,
                     );
                 });
         }
@@ -116,5 +126,24 @@ final class CourseDetailData extends Data
                 'media'                   => $product->productable->getAllMedia(urlOnly: true),
             ]
         );
+    }
+
+    private static function isAvailable(
+        null|Carbon|CarbonImmutable $availableFrom,
+        null|Carbon|CarbonImmutable $availableTo
+    ): bool {
+        if ($availableFrom === null && $availableTo === null) {
+            return true;
+        }
+
+        if ($availableTo && $availableFrom === null) {
+            return now()->lessThanOrEqualTo($availableTo);
+        }
+
+        if ($availableFrom && $availableTo === null) {
+            return now()->greaterThanOrEqualTo($availableFrom);
+        }
+
+        return now()->between($availableFrom, $availableTo);
     }
 }

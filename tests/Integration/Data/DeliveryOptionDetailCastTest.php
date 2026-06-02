@@ -112,8 +112,8 @@ it('return LiveSessionBbbDetailsData if delivery_method is LIVE_SESSION_BBB', fu
     expect($delivery_option)
         ->toBeInstanceOf(LiveSessionBbbDetailsData::class)
         ->and($delivery_option->toArray())->toBe(array_merge($details, [
-            'auto_create_meeting' => null,
-            'meeting_id'          => null,
+            'auto_create_meeting'   => null,
+            'meeting_id'            => null,
             'moodle_quiz_course_id' => null,
         ]));
 });
@@ -123,26 +123,19 @@ it('return LiveSessionSkyroomDetailsData if delivery_method is LIVE_SESSION_SKYR
     $properties['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE;
     $properties['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_SKYROOM;
     $details                        = [
-        'room_id'                     => 10,
-        'meeting_name_identifier'     => 'meeting123',
-        'moderator_password_override' => 'mod123',
-        'attendee_password'           => 'att123',
-        'record_session'              => true,
-        'auto_start_recording'        => false,
-        'webcams_only_for_moderator'  => true,
-        'mute_on_start'               => true,
-        'welcome_message'             => 'Welcome to the Skyroom session',
-        'planned_duration_minutes'    => 60,
-        'default_presentation_url'    => 'https://example.com/skyroom-presentation',
-        'admin_notes'                 => 'Admin notes for Skyroom session',
+        'room_id'                  => 10,
+        'planned_duration_minutes' => 60,
+        'admin_notes'              => 'Admin notes for Skyroom session',
     ];
     $delivery_option = $caster->cast($this->mockProperty, $details, $properties, $this->mockContext);
     expect($delivery_option)
         ->toBeInstanceOf(LiveSessionSkyroomDetailsData::class)
-        ->and($delivery_option->toArray())->toBe(array_merge($details, [
-            'room_id'               => 10,
-            'moodle_quiz_course_id' => null,
-        ]));
+        ->and($delivery_option->toArray())->toBe([
+            'room_id'                  => 10,
+            'planned_duration_minutes' => 60,
+            'admin_notes'              => 'Admin notes for Skyroom session',
+            'moodle_quiz_course_id'    => null,
+        ]);
 });
 
 it('return VideoPlatformSpotplayerDetailsData if delivery_method is VIDEO_PLATFORM_SPOTPLAYER', function (): void {
@@ -155,8 +148,9 @@ it('return VideoPlatformSpotplayerDetailsData if delivery_method is VIDEO_PLATFO
     $delivery_option = $caster->cast($this->mockProperty, $details, $properties, $this->mockContext);
     expect($delivery_option)
         ->toBeInstanceOf(VideoPlatformSpotplayerDetailsData::class)
-        ->and($delivery_option->toArray())->toBe(array_merge($details, [
-            'spot_id'    => 'spot123',
-            'updated_at' => null,
-        ]));
+        ->and($delivery_option->toArray())->toBe([
+            'spot_id'               => 'spot123',
+            'updated_at'            => null,
+            'moodle_quiz_course_id' => null,
+        ]);
 });

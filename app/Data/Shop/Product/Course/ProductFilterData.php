@@ -87,8 +87,12 @@ final class ProductFilterData extends Data
                 'example'     => CourseDifficultyLevelEnum::BEGINNER->value,
 
             ],
+            $prefix.'is_available_now' => [
+                'description' => 'When true, only include products that are currently available for registration and content access. This filter supersedes all other availability filters (availability_status, available_from, available_to). Registration window filters still apply within available products.',
+                'example'     => true,
+            ],
             $prefix.'availability_status' => [
-                'description' => 'Filter by the temporal state of the product (e.g., past, upcoming, ongoing). Note: This parameter overrides `available_from` and `available_to` if provided.',
+                'description' => 'Filter by the temporal state of the product (e.g., past, upcoming, ongoing). Note: This parameter overrides `available_from` and `available_to` if provided. Ignored when `is_available_now` is true.',
                 'example'     => AvailabilityStatusEnum::PAST->value,
             ],
             $prefix.'min_price' => [
@@ -112,11 +116,11 @@ final class ProductFilterData extends Data
                 'example'     => 0.8,
             ],
             $prefix.'registration_starts_after' => [
-                'description' => 'Filter products where registration opens on or after this date.',
+                'description' => 'Filter products where registration opens on or after this date. Applied within available products (does not bypass availability filters).',
                 'example'     => '1404-01-01',
             ],
             $prefix.'registration_ends_before' => [
-                'description' => 'Filter products where registration closes on or before this date.',
+                'description' => 'Filter products where registration closes on or before this date. Applied within available products (does not bypass availability filters).',
                 'example'     => '1404-02-01',
             ],
             $prefix.'available_from' => [

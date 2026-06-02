@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Product;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Product\Course\CourseDetailData;
 use App\Data\Shop\Product\Course\ProductListRequestData;
 use App\Data\Shop\Product\ProductCardData;
@@ -27,13 +28,25 @@ final class CourseController extends Controller
     /**
      * Course List
      *
-     * Retrieve a paginated list of active product of course type with optional filtering and sorting.
+     * Retrieve a paginated list of active courses with optional filtering and sorting.
+     *
+     * **Default Behavior**: Only courses currently available for content access are returned
+     * unless explicitly overridden by filter parameters.
+     *
+     * **Availability Filters**:
+     * - `filter.is_available_now=true`: Returns only currently available courses (default behavior)
+     * - `filter.availability_status`: Filter by temporal state (past/upcoming/ongoing) - overrides is_available_now
+     * - `filter.available_from` / `filter.available_to`: Custom availability date range
+     *
+     * **Registration Filters** (applied within available courses):
+     * - `filter.registration_starts_after`: Registration opens on/after this date
+     * - `filter.registration_ends_before`: Registration closes on/before this date
      *
      * @ignoreQueryParam type
      *
      * @responseFile responses/shop/products/courses/index.json
      */
-    public function index(ProductListRequestData $requestData)
+    public function index(ProductListRequestData $requestData): ApiResponseInterface
     {
         $requestData->type = ProductableEnum::COURSE->value;
         $courses           = ProductQueryService::make()
@@ -56,7 +69,7 @@ final class CourseController extends Controller
      * @responseFile  200 responses/shop/products/courses/show.json
      * @responseFile  404 responses/404.json
      */
-    public function show(Product $product)
+    public function show(Product $product): ApiResponseInterface
     {
         // Load the product with all required relations for detail view
         $product = ProductQueryService::make()

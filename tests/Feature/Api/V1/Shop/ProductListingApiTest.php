@@ -510,7 +510,7 @@ describe('Product Listing Filters - :dataset', function (): void {
             'fulfillment_type'        => FulfillmentTypeEnum::DIGITAL->value,
             'registration_start_date' => $now->clone()->addDays(15)->toDateString(),
             'registration_end_date'   => $now->clone()->addDays(25)->toDateString(),
-            'available_from'          => $now->clone()->addDays(30)->toDateString(),
+            'available_from'          => $now->clone()->subDays(5)->toDateString(),
             'available_to'            => $now->clone()->addDays(40)->toDateString(),
         ]);
         $this->indexProductPrice($futureProduct);
@@ -532,7 +532,7 @@ describe('Product Listing Filters - :dataset', function (): void {
             'fulfillment_type'        => FulfillmentTypeEnum::DIGITAL->value,
             'registration_start_date' => $now->clone()->subDays(5)->toDateString(),
             'registration_end_date'   => $now->clone()->addDays(5)->toDateString(),
-            'available_from'          => $now->clone()->addDays(10)->toDateString(),
+            'available_from'          => $now->clone()->subDays(10)->toDateString(),
             'available_to'            => $now->clone()->addDays(40)->toDateString(),
         ]);
         $this->indexProductPrice($pastProduct);
@@ -572,7 +572,7 @@ describe('Product Listing Filters - :dataset', function (): void {
                 'fulfillment_type'        => FulfillmentTypeEnum::DIGITAL->value,
                 'registration_start_date' => $now->clone()->subDays(5)->toDateString(),
                 'registration_end_date'   => $now->clone()->addDays(20)->toDateString(),
-                'available_from'          => $now->clone()->addDays(3)->toDateString(),
+                'available_from'          => $now->clone()->subDays(2)->toDateString(),
                 'available_to'            => $now->clone()->addDays(20)->toDateString(),
             ]);
         $this->indexProductPrice($windowProduct);

@@ -148,26 +148,9 @@ final class ProductQueryService
             if ($filter->fulfillment_types) {
                 $this->byFulfillmentTypes($filter->fulfillment_types);
             }
-            if ($filter->is_available_now) {
-                $this->availableNow();
-            }
 
-            if ($filter->registration_starts_after || $filter->registration_ends_before) {
-                $this->registrationWindow(
-                    $filter->registration_starts_after,
-                    $filter->registration_ends_before
-                );
-            }
-            if ($filter->availability_status) {
-                $this->availabilityStatus(AvailabilityStatusEnum::from($filter->availability_status));
-            }
-
-            if (! $filter->availability_status && ($filter->available_from || $filter->available_to)) {
-                $this->availabilityWindow(
-                    $filter->available_from,
-                    $filter->available_to
-                );
-            }
+            // Apply consolidated availability/registration filters
+            $this->applyDatabaseAvailabilityFilters($filter);
 
         }
         if ($requestData->sortBy === 'capacity_utilization') {
@@ -283,45 +266,8 @@ final class ProductQueryService
             }
 
             // Available now filter: check if all date windows allow current date
-            if ($filter->is_available_now) {
-                $now = now()->timestamp;
-                $query->where('earliest_registration_start_ts', ['<=', $now]);
-                $query->where('latest_registration_end_ts', ['>=', $now]);
-                $query->where('earliest_availability_start_ts', ['<=', $now]);
-                $query->where('latest_availability_end_ts', ['>=', $now]);
-            }
-
-            // Registration window filters
-            if ($filter->registration_starts_after) {
-                $timestamp = $filter->registration_starts_after->timestamp;
-                $query->where('latest_registration_end_ts', ['>=', $timestamp]);
-            }
-
-            if ($filter->registration_ends_before) {
-                $timestamp = $filter->registration_ends_before->timestamp;
-                $query->where('earliest_registration_start_ts', ['<=', $timestamp]);
-            }
-
-            if ($filter->availability_status) {
-                $startOfDayTs = now()->startOfDay()->timestamp;
-                match ($filter->availability_status) {
-                    AvailabilityStatusEnum::PAST->value     => $query->where('latest_availability_end_ts', ['<', $startOfDayTs]),
-                    AvailabilityStatusEnum::UPCOMING->value => $query->where('earliest_availability_start_ts', ['>', $startOfDayTs]),
-                    AvailabilityStatusEnum::ONGOING->value  => $query
-                        ->where('earliest_availability_start_ts', ['<=', $startOfDayTs])
-                        ->where('latest_availability_end_ts', ['>=', $startOfDayTs]),
-                };
-            }
-            // Availability window filters
-            if (! $filter->availability_status && $filter->available_from) {
-                $timestamp = $filter->available_from->timestamp;
-                $query->where('latest_availability_end_ts', ['>=', $timestamp]);
-            }
-
-            if (! $filter->availability_status && $filter->available_to) {
-                $timestamp = $filter->available_to->timestamp;
-                $query->where('earliest_availability_start_ts', ['<=', $timestamp]);
-            }
+            // Apply consolidated availability/registration filters
+            $this->applyScoutAvailabilityFilters($query, $filter);
         }
 
         // Apply Sorting
@@ -773,6 +719,131 @@ final class ProductQueryService
         return $this->query;
     }
 
+    /**
+     * Filter products to only those whose content is currently available (ignores registration window).
+     * This checks only the available_from/available_to dates, not registration dates.
+     */
+    private function contentAvailableNow(): self
+    {
+        $now = now();
+
+        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($now) {
+            // Check availability window is active
+            $q->where(function ($subQuery) use ($now) {
+                $subQuery->whereNull('available_from')
+                    ->orWhere('available_from', '<=', $now->startOfDay());
+            })->where(function ($subQuery) use ($now) {
+                $subQuery->whereNull('available_to')
+                    ->orWhere('available_to', '>=', $now->endOfDay());
+            });
+        });
+    }
+
+    /**
+     * Apply database availability/registration filters based on ProductFilterData.
+     * Consolidates all filter logic to prevent duplication and conflicts.
+     */
+    private function applyDatabaseAvailabilityFilters(\App\Data\Shop\Product\Course\ProductFilterData $filter): void
+    {
+        // Early return: if is_available_now is set, it supersedes everything else
+        if ($filter->is_available_now) {
+            $this->availableNow();
+
+            return;
+        }
+
+        // Handle registration window filters
+        if ($filter->registration_starts_after || $filter->registration_ends_before) {
+            $this->registrationWindow(
+                $filter->registration_starts_after,
+                $filter->registration_ends_before
+            );
+        }
+
+        // Handle availability filters (mutually exclusive: status OR window OR default)
+        if ($filter->availability_status) {
+            $this->availabilityStatus(AvailabilityStatusEnum::from($filter->availability_status));
+
+            return;
+        }
+
+        if ($filter->available_from || $filter->available_to) {
+            $this->availabilityWindow(
+                $filter->available_from,
+                $filter->available_to
+            );
+
+            return;
+        }
+
+        // Default: Only show products whose content is currently available (ignores registration window)
+        $this->contentAvailableNow();
+    }
+
+    /**
+     * Apply Scout availability/registration filters based on ProductFilterData.
+     * Parallel to applyDatabaseAvailabilityFilters but uses Scout timestamp fields.
+     */
+    private function applyScoutAvailabilityFilters($query, \App\Data\Shop\Product\Course\ProductFilterData $filter): void
+    {
+        // Early return: if is_available_now is set, it supersedes everything else
+        if ($filter->is_available_now) {
+            $now = now()->timestamp;
+            $query->where('earliest_registration_start_ts', ['<=', $now]);
+            $query->where('latest_registration_end_ts', ['>=', $now]);
+            $query->where('earliest_availability_start_ts', ['<=', $now]);
+            $query->where('latest_availability_end_ts', ['>=', $now]);
+
+            return;
+        }
+
+        // Handle registration window filters
+        if ($filter->registration_starts_after) {
+            $timestamp = $filter->registration_starts_after->timestamp;
+            $query->where('latest_registration_end_ts', ['>=', $timestamp]);
+        }
+
+        if ($filter->registration_ends_before) {
+            $timestamp = $filter->registration_ends_before->timestamp;
+            $query->where('earliest_registration_start_ts', ['<=', $timestamp]);
+        }
+
+        // Handle availability filters (mutually exclusive: status OR window OR default)
+        if ($filter->availability_status) {
+            $startOfDayTs = now()->startOfDay()->timestamp;
+            match ($filter->availability_status) {
+                AvailabilityStatusEnum::PAST->value => $query->where('latest_availability_end_ts',
+                    ['<', $startOfDayTs]),
+                AvailabilityStatusEnum::UPCOMING->value => $query->where('earliest_availability_start_ts',
+                    ['>', $startOfDayTs]),
+                AvailabilityStatusEnum::ONGOING->value => $query
+                    ->where('earliest_availability_start_ts', ['<=', $startOfDayTs])
+                    ->where('latest_availability_end_ts', ['>=', $startOfDayTs]),
+            };
+
+            return;
+        }
+
+        if ($filter->available_from || $filter->available_to) {
+            // Custom availability window
+            if ($filter->available_from) {
+                $timestamp = $filter->available_from->timestamp;
+                $query->where('latest_availability_end_ts', ['>=', $timestamp]);
+            }
+            if ($filter->available_to) {
+                $timestamp = $filter->available_to->timestamp;
+                $query->where('earliest_availability_start_ts', ['<=', $timestamp]);
+            }
+
+            return;
+        }
+
+        // Default: Only show products whose content is currently available (ignores registration window)
+        $now = now()->timestamp;
+        $query->where('earliest_availability_start_ts', ['<=', $now]);
+        $query->where('latest_availability_end_ts', ['>=', $now]);
+    }
+
     // === PRIVATE HELPER METHODS ===
 
     /**
@@ -787,6 +858,7 @@ final class ProductQueryService
         // Filter by available delivery options
         $this->addRelationshipConstraint('productDeliveryOptions', function ($q) {
             $q->where('status', PublicationStatusEnum::PUBLISHED);
+
             if (! $this->includeFullProducts) {
                 $q->where(function ($capacityQuery) {
                     $capacityQuery->whereNull('capacity')

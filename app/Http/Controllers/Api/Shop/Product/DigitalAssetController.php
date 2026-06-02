@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Product;
 
+use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Product\Course\ProductListRequestData;
 use App\Data\Shop\Product\DigitalAssetDetailData;
 use App\Data\Shop\Product\ProductCardData;
@@ -27,13 +28,25 @@ final class DigitalAssetController extends Controller
     /**
      * Digital Assets List
      *
-     * Retrieve a paginated list of active product of digital asset type with optional filtering and sorting.
+     * Retrieve a paginated list of active digital assets with optional filtering and sorting.
+     *
+     * **Default Behavior**: Only digital assets currently available for content access are returned
+     * unless explicitly overridden by filter parameters.
+     *
+     * **Availability Filters**:
+     * - `filter.is_available_now=true`: Returns only currently available digital assets (default behavior)
+     * - `filter.availability_status`: Filter by temporal state (past/upcoming/ongoing) - overrides is_available_now
+     * - `filter.available_from` / `filter.available_to`: Custom availability date range
+     *
+     * **Registration Filters** (applied within available digital assets):
+     * - `filter.registration_starts_after`: Registration opens on/after this date
+     * - `filter.registration_ends_before`: Registration closes on/before this date
      *
      * @ignoreQueryParam type
      *
      * @responseFile responses/shop/products/digital-assets/index.json
      */
-    public function index(ProductListRequestData $requestData)
+    public function index(ProductListRequestData $requestData): ApiResponseInterface
     {
         $requestData->type = ProductableEnum::DIGITAL_ASSET->value;
         $courses           = ProductQueryService::make()
@@ -55,7 +68,7 @@ final class DigitalAssetController extends Controller
      * @responseFile  200 responses/shop/products/digital-assets/show.json
      * @responseFile  404 responses/404.json
      */
-    public function show(Product $product)
+    public function show(Product $product): ApiResponseInterface
     {
         $product = ProductQueryService::make()
             ->ofType(ProductableEnum::DIGITAL_ASSET)
