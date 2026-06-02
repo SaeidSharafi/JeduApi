@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Gate;
 
 /**
  * @group Enrollment Management
+ *
  * @subgroup Enrollment Status
  *
  * @authenticated

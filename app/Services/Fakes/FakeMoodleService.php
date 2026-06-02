@@ -22,8 +22,8 @@ final class FakeMoodleService
      */
     public function setConfig(array $config): void
     {
-        $this->baseUrl  = (string) ($config['base_url'] ?? $this->baseUrl);
-        $this->timeout  = (int) ($config['timeout'] ?? 30);
+        $this->baseUrl = (string) ($config['base_url'] ?? $this->baseUrl);
+        $this->timeout = (int) ($config['timeout'] ?? 30);
     }
 
     /**
@@ -62,25 +62,25 @@ final class FakeMoodleService
 
     public function getCourse(int $moodleCourseId): LmsMoodleBlockData
     {
-        $baseUrl    = rtrim($this->baseUrl, '/');
+        $baseUrl    = mb_rtrim($this->baseUrl, '/');
         $activities = [
             new MoodleActivityData(
-                url:  $baseUrl.'/mod/page/view.php?id='.($moodleCourseId * 10 + 1),
-                cid:  $moodleCourseId * 10 + 1,
+                url: $baseUrl.'/mod/page/view.php?id='.($moodleCourseId * 10 + 1),
+                cid: $moodleCourseId * 10 + 1,
                 name: 'معرفی دوره',
                 type: 'page',
                 state: 0,
             ),
             new MoodleActivityData(
-                url:  $baseUrl.'/mod/quiz/view.php?id='.($moodleCourseId * 10 + 2),
-                cid:  $moodleCourseId * 10 + 2,
+                url: $baseUrl.'/mod/quiz/view.php?id='.($moodleCourseId * 10 + 2),
+                cid: $moodleCourseId * 10 + 2,
                 name: 'آزمون اول',
                 type: 'quiz',
                 state: 0,
             ),
             new MoodleActivityData(
-                url:  $baseUrl.'/mod/assign/view.php?id='.($moodleCourseId * 10 + 3),
-                cid:  $moodleCourseId * 10 + 3,
+                url: $baseUrl.'/mod/assign/view.php?id='.($moodleCourseId * 10 + 3),
+                cid: $moodleCourseId * 10 + 3,
                 name: 'تکلیف هفته اول',
                 type: 'assign',
                 state: 0,
@@ -88,10 +88,10 @@ final class FakeMoodleService
         ];
 
         return new LmsMoodleBlockData(
-            visible:    true,
-            name:       'دوره آموزشی ('.$moodleCourseId.')',
+            visible: true,
+            name: 'دوره آموزشی ('.$moodleCourseId.')',
             course_url: $baseUrl.'/course/view.php?id='.$moodleCourseId,
-            completed:  false,
+            completed: false,
             activities: $activities,
         );
     }
@@ -108,7 +108,7 @@ final class FakeMoodleService
 
     public function createUserKey(string $username, ?string $token = null): string
     {
-        $baseUrl = rtrim($this->baseUrl, '/');
+        $baseUrl = mb_rtrim($this->baseUrl, '/');
 
         return $baseUrl.'/login/index.php?username='.urlencode($username).'&demo_sso=1';
     }

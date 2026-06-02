@@ -39,6 +39,6 @@ final class FakeBbbService
             'password'  => $password ?? 'demo-attendee-pw',
         ]);
 
-        return rtrim($baseUrl, '/').'/bigbluebutton/api/join?'.$query.'&checksum=demo-checksum';
+        return mb_rtrim($baseUrl, '/').'/bigbluebutton/api/join?'.$query.'&checksum=demo-checksum';
     }
 }

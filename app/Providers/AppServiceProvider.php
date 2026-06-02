@@ -6,7 +6,6 @@ namespace App\Providers;
 
 use App\Contracts\CartIdentifier;
 use App\Contracts\OtpGeneratorInterface;
-use App\Providers\DemoServiceProvider;
 use App\Enums\System\MorphTypeEnum;
 use App\Services\Cart\RequestCartIdentifier;
 use App\Services\DefaultOtpGenerator;
@@ -28,7 +27,7 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        if (!$this->app->environment('production') && config('app.use_fake_providers')) {
+        if (! $this->app->environment('production') && config('app.use_fake_providers')) {
             $this->app->register(DemoServiceProvider::class);
         }
 

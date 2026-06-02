@@ -12,14 +12,13 @@ use App\Data\Admin\Enrollment\EnrollmentListItemData;
 use App\Data\Admin\Enrollment\EnrollmentUpdateData;
 use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
-use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
  * @group Enrollment Management
+ *
  * @subgroup Enrollments
  *
  * APIs for managing enrollments in the admin panel.

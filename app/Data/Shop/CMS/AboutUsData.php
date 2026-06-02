@@ -55,7 +55,7 @@ final class AboutUsData extends Data
                 title: data_get($setting, 'about_online_course_block_2.title'),
                 content: data_get($setting, 'about_online_course_block_2.content'),
                 icon_url: data_get($setting, 'about_online_course_block_2.icon.url'),
-                subtitle: data_get($setting,'about_online_course_block_2.subtitle'),
+                subtitle: data_get($setting, 'about_online_course_block_2.subtitle'),
             ),
         );
     }

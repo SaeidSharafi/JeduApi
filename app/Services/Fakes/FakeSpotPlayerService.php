@@ -19,11 +19,11 @@ final class FakeSpotPlayerService
             'license_key' => '0001'.$licenseKey,
             'player_url'  => 'https://app.spotplayer.ir/player/'.$spotId.'/',
             'raw'         => [
-                'status'     => 'ok',
-                'license_id' => $spotId,
-                'license_key'=> '0001'.$licenseKey,
-                'player_url' => 'https://app.spotplayer.ir/player/'.$spotId.'/',
-                'created_at' => now()->toIso8601String(),
+                'status'      => 'ok',
+                'license_id'  => $spotId,
+                'license_key' => '0001'.$licenseKey,
+                'player_url'  => 'https://app.spotplayer.ir/player/'.$spotId.'/',
+                'created_at'  => now()->toIso8601String(),
             ],
         ];
     }
