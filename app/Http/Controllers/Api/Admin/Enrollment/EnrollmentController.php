@@ -53,7 +53,13 @@ final class EnrollmentController extends Controller
             ])
             ->allowedSorts(['created_at', 'enrollment_status', 'access_start_date'])
             ->defaultSort('-created_at')
-            ->with(['order', 'customer', 'productDeliveryOption', 'orderItem'])
+            ->with([
+                'order.items.vendor',
+                'order.payments',
+                'customer',
+                'productDeliveryOption',
+                'orderItem.vendor',
+            ])
             ->paginate(request()->integer('per_page', 15));
 
         return response()->success(EnrollmentListItemData::collect($enrollments));
@@ -69,7 +75,13 @@ final class EnrollmentController extends Controller
     public function show(Enrollment $enrollment): ApiResponseInterface
     {
         Gate::authorize('view', $enrollment);
-        $enrollment->load(['order', 'customer', 'productDeliveryOption', 'orderItem']);
+        $enrollment->load([
+            'order.items.vendor',
+            'order.payments',
+            'customer',
+            'productDeliveryOption',
+            'orderItem.vendor',
+        ]);
 
         return response()->success(EnrollmentData::from($enrollment));
     }
@@ -86,7 +98,13 @@ final class EnrollmentController extends Controller
     {
         Gate::authorize('update', $enrollment);
         $enrollment = $action->handle($enrollment, $data);
-        $enrollment->load(['order', 'customer', 'productDeliveryOption', 'orderItem']);
+        $enrollment->load([
+            'order.items.vendor',
+            'order.payments',
+            'customer',
+            'productDeliveryOption',
+            'orderItem.vendor',
+        ]);
 
         return response()->success(EnrollmentData::from($enrollment));
     }

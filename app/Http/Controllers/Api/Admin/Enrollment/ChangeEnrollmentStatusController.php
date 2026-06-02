@@ -32,6 +32,13 @@ final class ChangeEnrollmentStatusController extends Controller
         Gate::authorize('changeStatus', $enrollment);
 
         $updated = $action->handle($enrollment, $data);
+        $updated->load([
+            'order.items.vendor',
+            'order.payments',
+            'customer',
+            'productDeliveryOption',
+            'orderItem.vendor',
+        ]);
 
         return response()->success(
             data: EnrollmentData::from($updated),

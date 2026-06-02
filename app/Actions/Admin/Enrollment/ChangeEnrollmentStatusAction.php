@@ -28,15 +28,16 @@ final readonly class ChangeEnrollmentStatusAction
     public function handle(Enrollment $enrollment, EnrollmentStatusChangeData $data): Enrollment
     {
         return DB::transaction(function () use ($enrollment, $data): Enrollment {
-            $this->validateTransition($enrollment->enrollment_status, $data->enrollment_status);
+            $newStatus = EnrollmentStatusEnum::from($data->new_status);
+            $this->validateTransition($enrollment->enrollment_status, $newStatus);
 
             $enrollment->update([
-                'enrollment_status' => $data->enrollment_status,
+                'enrollment_status' => $newStatus,
             ]);
 
             if ($data->reason !== null && $data->reason !== '') {
                 $timestamp   = now()->format('Y-m-d H:i:s');
-                $newNote     = "[{$timestamp}] Status changed to {$data->enrollment_status->value}: {$data->reason}";
+                $newNote     = "[{$timestamp}] Status changed to {$newStatus->value}: {$data->reason}";
                 $currentNote = $enrollment->notes ?? '';
                 $updatedNote = $currentNote === '' ? $newNote : $currentNote.PHP_EOL.$newNote;
 
