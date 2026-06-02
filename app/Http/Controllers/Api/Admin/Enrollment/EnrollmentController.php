@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
+use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
@@ -45,10 +46,10 @@ final class EnrollmentController extends Controller
         Gate::authorize('viewAny', Enrollment::class);
         $enrollments = QueryBuilder::for(Enrollment::class)
             ->allowedFilters([
-                'enrollment_status',
-                'customer_id',
-                'order_id',
-                'product_delivery_option_id',
+                AllowedFilter::exact('enrollment_status'),
+                AllowedFilter::exact('customer_id'),
+                AllowedFilter::exact('order_id'),
+                AllowedFilter::exact('product_delivery_option_id'),
             ])
             ->allowedSorts(['created_at', 'enrollment_status', 'access_start_date'])
             ->defaultSort('-created_at')
