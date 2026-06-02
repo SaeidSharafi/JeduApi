@@ -63,7 +63,8 @@ describe('ChangeEnrollmentStatusAction', function (): void {
         ]);
 
         expect(fn () => $this->action->handle($enrollment, $data))
-            ->toThrow(ValidationException::class, 'Cannot transition from expired to active');
+            ->toThrow(ValidationException::class, __('messages.enrollments.invalid_status_transition',
+                ['from' => EnrollmentStatusEnum::EXPIRED->translate(), 'to' => EnrollmentStatusEnum::ACTIVE->translate()]));
     });
 
     it('handles empty reason without modifying notes', function (): void {

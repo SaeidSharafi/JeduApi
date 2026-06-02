@@ -150,7 +150,7 @@ return [
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
-            'approve' => 'Approve orders for fulfillment and provisioning',
+            'approve',
         ],
         'payment' => [
             PermissionAction::VIEW_SCOPED,

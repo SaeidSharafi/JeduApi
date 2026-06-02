@@ -20,11 +20,11 @@ describe('permissions listing', function (): void {
                     ->has('data')
                     ->has('metadata')
                     ->has('data.staff')
-                    ->has('data.role')
-                    ->has('data.category')
-                    ->has('data.course')
-                    ->has('data.file')
-                    ->has('data.seminar')
+                    ->has('data.roles')
+                    ->has('data.categories')
+                    ->has('data.courses')
+                    ->has('data.files')
+                    ->has('data.seminars')
                     ->etc();
             });
     });
@@ -51,10 +51,10 @@ describe('permissions listing', function (): void {
                         })
                         ->etc();
                 })
-                    ->has('data.role', function (AssertableJson $roleJson): void {
+                    ->has('data.roles', function (AssertableJson $roleJson): void {
                         $roleJson->has('label')
                             ->has('resource')
-                            ->where('resource', 'role')
+                            ->where('resource', 'roles')
                             ->has('permissions')
                             ->etc();
                     })

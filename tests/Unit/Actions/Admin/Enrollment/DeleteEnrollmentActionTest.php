@@ -32,7 +32,10 @@ describe('DeleteEnrollmentAction', function (): void {
         ]);
 
         expect(fn () => $this->action->handle($enrollment))
-            ->toThrow(ValidationException::class, 'Cannot delete enrollment with status: active');
+            ->toThrow(ValidationException::class, __(
+                'messages.enrollments.cannot_delete_enrollment',
+                ['status' => EnrollmentStatusEnum::ACTIVE->translate()]
+            ));
     });
 
     it('throws exception when deleting pending provisioning enrollment', function (): void {
@@ -41,7 +44,10 @@ describe('DeleteEnrollmentAction', function (): void {
         ]);
 
         expect(fn () => $this->action->handle($enrollment))
-            ->toThrow(ValidationException::class, 'Cannot delete enrollment with status: pending_provisioning');
+            ->toThrow(ValidationException::class,  __(
+                'messages.enrollments.cannot_delete_enrollment',
+                ['status' => EnrollmentStatusEnum::PENDING_PROVISIONING->translate()]
+            ));
     });
 
     it('allows deletion of expired enrollment', function (): void {

@@ -22,7 +22,7 @@ describe('EnrollmentController', function (): void {
             ->assertJsonStructure([
                 'data' => [
                     'data' => [
-                        '*' => ['id', 'enrollment_status', 'customer_id', 'order_id'],
+                        '*' => ['id', 'enrollment_status', 'customer', 'order'],
                     ],
                 ],
             ]);
@@ -58,7 +58,7 @@ describe('EnrollmentController', function (): void {
 
         $response->assertOk()
             ->assertJsonCount(1, 'data.data')
-            ->assertJsonPath('data.data.0.customer_id', $customer1->id);
+            ->assertJsonPath('data.data.0.customer.id', $customer1->id);
     });
 
     it('can filter enrollments by order_id', function (): void {
@@ -73,7 +73,7 @@ describe('EnrollmentController', function (): void {
 
         $response->assertOk()
             ->assertJsonCount(1, 'data.data')
-            ->assertJsonPath('data.data.0.order_id', $enrollment1->order_id);
+            ->assertJsonPath('data.data.0.order.id', $enrollment1->order_id);
     });
 
     it('can sort enrollments by created_at ascending', function (): void {
@@ -115,11 +115,11 @@ describe('EnrollmentController', function (): void {
         $response->assertOk()
             ->assertJsonStructure([
                 'data' => [
-                    'id', 'enrollment_status', 'customer_id', 'order_id',
-                    'product_delivery_option_id', 'notes', 'created_at',
-                ],
+                    'uuid', 'enrollment_status', 'customer', 'order',
+                    'productDeliveryOption', 'notes', 'created_at',
+                    ],
             ])
-            ->assertJsonPath('data.id', $enrollment->id)
+            ->assertJsonPath('data.uuid', $enrollment->uuid)
             ->assertJsonPath('data.enrollment_status.value', EnrollmentStatusEnum::ACTIVE->value);
     });
 
@@ -143,8 +143,8 @@ describe('EnrollmentController', function (): void {
         $response = $this->putJson(route('api.v1.admin.enrollment.update', ['enrollment' => $enrollment->id]), $updateData);
 
         $response->assertOk()
-            ->assertJsonPath('data.access_start_date', '2026-01-01')
-            ->assertJsonPath('data.access_end_date', '2026-12-31')
+            ->assertJsonPath('data.access_start_date', '1404-10-11')
+            ->assertJsonPath('data.access_end_date', '1405-10-10')
             ->assertJsonPath('data.external_enrollment_id', 22222)
             ->assertJsonPath('data.notes', 'Updated notes');
 
