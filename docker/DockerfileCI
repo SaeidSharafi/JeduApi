@@ -24,5 +24,13 @@ RUN install-php-extensions \
     iconv \
     xdebug
 
+RUN echo -e "memory_limit = -1\n\
+xdebug.mode = coverage\n\
+error_reporting = E_ALL\n\
+display_errors = On\n\
+date.timezone = UTC" > /usr/local/etc/php/conf.d/99-ci-overrides.ini
+
+RUN apk add --no-cache openssh-client rsync
+
 # Install Composer by copying it from the official Composer image
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
