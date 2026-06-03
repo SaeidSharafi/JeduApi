@@ -64,9 +64,9 @@ task('deploy', [
     'permission:update',
     'artisan:optimize',
     'db:seed:demo',
-    'scribe:generate',
     'deploy:publish',
     'php-fpm:reload',
+    'scribe:generate',
 ]);
 
 after('artisan:storage:link', function () {
