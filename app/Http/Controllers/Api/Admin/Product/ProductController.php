@@ -41,7 +41,7 @@ final class ProductController extends Controller
      * @queryParam page integer Page number for pagination. Example: 2
      * @queryParam perPage integer Number of results per page. Example: 15
      *
-     * @responseFile 200 responses/product/index.json
+     * @responseFile 200 resources/responses/admin/product/index.json
      */
     public function index(): ApiResponseInterface
     {
@@ -66,8 +66,8 @@ final class ProductController extends Controller
     /**
      * Store a newly created product in storage.
      *
-     * @responseFile 201 responses/201.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 201 resources/responses/201.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function store(ProductCreateData $data, CreateProductAction $action): ApiResponseInterface
     {
@@ -81,9 +81,9 @@ final class ProductController extends Controller
     /**
      * Display the specified product.
      *
-     * @responseFile 200 responses/product/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/product/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function show(Product $product): ApiResponseInterface
     {
@@ -98,9 +98,9 @@ final class ProductController extends Controller
     /**
      * Update the specified product in storage.
      *
-     * @responseFile 200 responses/product/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/product/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function update(ProductUpdateData $data, Product $product, UpdateProductAction $action): ApiResponseInterface
     {
@@ -119,8 +119,8 @@ final class ProductController extends Controller
      *
      * @response 204
      *
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function destroy(Product $product, DeleteProductAction $action): JsonResponse
     {

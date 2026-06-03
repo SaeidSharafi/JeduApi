@@ -47,7 +47,7 @@ final class OrderController extends Controller
      * @queryParam page integer Page number for pagination. Example: 2
      * @queryParam per_page integer Number of results per page. Example: 15
      *
-     * @responseFile 200 responses/order/index.json
+     * @responseFile 200 resources/responses/admin/order/index.json
      */
     public function index(): ApiResponseInterface
     {
@@ -80,9 +80,9 @@ final class OrderController extends Controller
     /**
      * Store a newly created order.
      *
-     * @responseFile 201 responses/order/show.json
-     * @responseFile 422 responses/422.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 201 resources/responses/admin/order/show.json
+     * @responseFile 422 resources/responses/422.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function store(OrderCreateData $data, CreateOrderAction $action): ApiResponseInterface
     {
@@ -96,9 +96,9 @@ final class OrderController extends Controller
     /**
      * Display the specified order.
      *
-     * @responseFile 200 responses/order/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/order/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function show(Order $order): ApiResponseInterface
     {
@@ -111,10 +111,10 @@ final class OrderController extends Controller
     /**
      * Update the specified order.
      *
-     * @responseFile 200 responses/order/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/order/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function update(OrderUpdateData $data, Order $order, UpdateOrderAction $action): ApiResponseInterface
     {
@@ -130,8 +130,8 @@ final class OrderController extends Controller
      *
      * @response 204
      *
-     * @responseFile 404 responses/404.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function destroy(Order $order, DeleteOrderAction $action): JsonResponse
     {

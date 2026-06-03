@@ -26,7 +26,7 @@ final class JoinUrlController extends Controller
      *
      * Returns a time-limited join URL for BBB or Skyroom live sessions.
      *
-     * @responseFile storage/responses/shop/my-courses/join.json
+     * @responseFile resources/responses/shop/my-courses/join.json
      *
      * @response 404 {"message": "Enrollment not found."}
      * @response 422 {"message": "Delivery method does not support join URLs."}

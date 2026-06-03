@@ -22,7 +22,7 @@ final class CategorySelectOptionController extends Controller
      *
      * @queryParam  q string The search query for filtering categories (match name and slug). Example: "electronics"
      *
-     * @responseFile 200 responses/select-options/category.json
+     * @responseFile 200 resources/responses/admin/select-options/category.json
      */
     public function __invoke()
     {

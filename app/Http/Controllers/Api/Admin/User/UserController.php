@@ -43,8 +43,8 @@ final class UserController extends Controller
      * @queryParam sort string Sort by a field. Allowed values: first_name, last_name, email, phone, civil_id,
      *     civil_id_type, date_of_birth. Prefix with '-' for descending order
      *
-     * @responseFile 200 responses/user/index.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/user/index.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function index()
     {
@@ -87,9 +87,9 @@ final class UserController extends Controller
     /**
      * Store a newly created User in storage.
      *
-     * @responseFile 201 responses/user/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 201 resources/responses/admin/user/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function store(UserCreateData $data, CreateUserAction $action)
     {
@@ -102,10 +102,10 @@ final class UserController extends Controller
     /**
      * Display the specified User.
      *
-     * @responseFile 200 responses/user/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/user/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      * */
     public function show(User $user)
     {
@@ -117,10 +117,10 @@ final class UserController extends Controller
     /**
      * Update the specified User in storage.
      *
-     * @responseFile 200 responses/user/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/user/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function update(UserCreateData $data, User $user, UpdateUserAction $action)
     {
@@ -135,9 +135,9 @@ final class UserController extends Controller
      *
      * @response 204
      *
-     * @responseFile 422 responses/422-delete.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 422 resources/responses/422-delete.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      *
      * @throws ModelHasRelationshipDataException|Throwable
      */

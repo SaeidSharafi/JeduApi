@@ -20,7 +20,7 @@ final class SettingController extends Controller
     /**
      * Get all settings grouped by category.
      *
-     * @responseFile 200 responses/settings/index.json
+     * @responseFile 200 resources/responses/admin/settings/index.json
      */
     public function index(): ApiResponseInterface
     {

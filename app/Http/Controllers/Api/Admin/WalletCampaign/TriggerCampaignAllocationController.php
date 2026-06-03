@@ -26,8 +26,8 @@ final class TriggerCampaignAllocationController extends Controller
      *
      * Allocates a campaign bonus to a user and returns the resulting wallet transaction.
      *
-     * @responseFile 200 responses/wallet-campaign/trigger-allocation.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/wallet-campaign/trigger-allocation.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function __invoke(
         TriggerCampaignAllocationData $data,

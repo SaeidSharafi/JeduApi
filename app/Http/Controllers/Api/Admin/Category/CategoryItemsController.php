@@ -30,7 +30,7 @@ final class CategoryItemsController extends Controller
      * @queryParam page integer Page number for pagination. Example: 2
      * @queryParam per_page integer Number of results per page. Example: 15
      *
-     * @responseFile 200 responses/category/index.json
+     * @responseFile 200 resources/responses/admin/category/index.json
      */
     public function __invoke(Category $category): ApiResponseInterface
     {

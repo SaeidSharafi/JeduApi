@@ -27,8 +27,8 @@ final class HomePageBlockController
     /**
      * Display a listing of the home page blocks.
      *
-     * @responseFile 200 responses/settings/home-page-block/index.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/settings/home-page-block/index.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function index()
     {
@@ -91,9 +91,9 @@ final class HomePageBlockController
      *
      *
      *
-     * @responseFile 200 responses/settings/home-page-block/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/settings/home-page-block/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function store(
         HomePageBlockCreateData $data,
@@ -111,9 +111,9 @@ final class HomePageBlockController
     /**
      * Display the specified home page block.
      *
-     * @responseFile 200 responses/settings/home-page-block/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 200 resources/responses/admin/settings/home-page-block/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function show(HomePageBlock $homePageBlock): ApiResponseInterface
     {
@@ -127,10 +127,10 @@ final class HomePageBlockController
     /**
      * Update the specified home page block in storage.
      *
-     * @responseFile 200 responses/settings/home-page-block/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/settings/home-page-block/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function update(
         HomePageBlockCreateData $data,
@@ -149,8 +149,8 @@ final class HomePageBlockController
      *
      * @response 204
      *
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function destroy(HomePageBlock $homePageBlock, DeleteHomePageBlockAction $action): JsonResponse
     {

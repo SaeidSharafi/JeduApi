@@ -23,7 +23,7 @@ final class CollaborationInfoController extends Controller
     /**
      * Get collaboration settings.
      *
-     * @responseFile 200 responses/settings/collaboration.json
+     * @responseFile 200 resources/responses/admin/settings/collaboration.json
      */
     public function show(SettingsService $settingsService): ApiResponseInterface
     {
@@ -37,8 +37,8 @@ final class CollaborationInfoController extends Controller
     /**
      * Update collaboration settings.
      *
-     * @responseFile 200 responses/settings/collaboration.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/settings/collaboration.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function update(CollaborationPageCreateData $data, SettingsService $settingsService): ApiResponseInterface
     {

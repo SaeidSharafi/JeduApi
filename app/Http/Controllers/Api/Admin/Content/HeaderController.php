@@ -24,7 +24,7 @@ final class HeaderController extends Controller
     /**
      * Get header settings.
      *
-     * @responseFile 200 responses/settings/header.json
+     * @responseFile 200 resources/responses/admin/settings/header.json
      */
     public function show(SettingsService $settingsService): ApiResponseInterface
     {
@@ -38,8 +38,8 @@ final class HeaderController extends Controller
     /**
      * Update header settings.
      *
-     * @responseFile 200 responses/settings/header.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/settings/header.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function update(HeaderCreateData $data, UpdateHeaderSettingAction $action): ApiResponseInterface
     {

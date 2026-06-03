@@ -27,7 +27,7 @@ final class CategoryCourseController extends Controller
      * @queryParam per_page int Optional number of items per page. Default is 15. Example: 15
      * @queryParam page int Optional page number for pagination. Default is 1. Example: 1
      *
-     * @responseFile responses/shop/products/categories/courses.json
+     * @responseFile resources/responses/shop/products/categories/courses.json
      */
     public function __invoke(PaginationRequestData $data, Category $category, CategoryQueryService $service)
     {

@@ -60,7 +60,7 @@ final class TeacherController extends Controller
      *
      * @response 201
      *
-     * @responseFile 422 responses/422.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function store(CreateTeacherData $data, CreateTeacherAction $action): ApiResponseInterface
     {
@@ -73,9 +73,9 @@ final class TeacherController extends Controller
     /**
      * Display the specified teacher.
      *
-     * @responseFile 200 responses/teacher/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 200 resources/responses/admin/teacher/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function show(Teacher $teacher): ApiResponseInterface
     {
@@ -98,9 +98,9 @@ final class TeacherController extends Controller
     /**
      * Update the specified teacher in database.
      *
-     * @responseFile 200 responses/teacher/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 200 resources/responses/admin/teacher/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function update(CreateTeacherData $data, Teacher $teacher, UpdateTeacherAction $action): ApiResponseInterface
     {
@@ -115,7 +115,7 @@ final class TeacherController extends Controller
      *
      * @response 204
      *
-     * @responseFile  244 responses/422-delete.json
+     * @responseFile  244 resources/responses/422-delete.json
      */
     public function destroy(Teacher $teacher, DeleteTeacherAction $action): JsonResponse|ApiResponseInterface
     {

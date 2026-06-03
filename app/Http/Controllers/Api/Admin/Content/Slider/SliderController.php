@@ -35,8 +35,8 @@ final class SliderController extends Controller
      * @queryParam page int Page number Example: 1
      * @queryParam per_page int Items per page Example: 15
      *
-     * @responseFile 200 scenario="success" responses/settings/slider/index.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 scenario="success" resources/responses/admin/settings/slider/index.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function index(): ApiResponseInterface
     {
@@ -54,9 +54,9 @@ final class SliderController extends Controller
     }
 
     /**
-     * @responseFile 200 scenario="success" responses/settings/slider/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 200 scenario="success" resources/responses/admin/settings/slider/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function show(Slider $slider): ApiResponseInterface
     {
@@ -70,9 +70,9 @@ final class SliderController extends Controller
     }
 
     /**
-     * @responseFile 201 scenario="success" responses/settings/slider/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 201 scenario="success" resources/responses/admin/settings/slider/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function store(SliderCreateData $data, CreateSliderAction $action): ApiResponseInterface
     {
@@ -87,10 +87,10 @@ final class SliderController extends Controller
     }
 
     /**
-     * @responseFile 200 scenario="success" responses/settings/slider/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 scenario="success" resources/responses/admin/settings/slider/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function update(SliderCreateData $data, Slider $slider, UpdateSliderAction $action): ApiResponseInterface
     {
@@ -107,8 +107,8 @@ final class SliderController extends Controller
     /**
      * @response 204
      *
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function destroy(Slider $slider, DeleteSliderAction $action): JsonResponse
     {

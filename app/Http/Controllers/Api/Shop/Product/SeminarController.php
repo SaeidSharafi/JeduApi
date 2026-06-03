@@ -44,7 +44,7 @@ final class SeminarController extends Controller
      *
      * @ignoreQueryParam type
      *
-     * @responseFile responses/shop/products/seminars/index.json
+     * @responseFile resources/responses/shop/products/seminars/index.json
      */
     public function index(ProductListRequestData $requestData): ApiResponseInterface
     {
@@ -65,8 +65,8 @@ final class SeminarController extends Controller
      *
      * Retrieve detailed information about a specific product of seminar type by its slug.
      *
-     * @responseFile  200 responses/shop/products/seminars/show.json
-     * @responseFile  404 responses/404.json
+     * @responseFile  200 resources/responses/shop/products/seminars/show.json
+     * @responseFile  404 resources/responses/404.json
      */
     public function show(Product $product): ApiResponseInterface
     {

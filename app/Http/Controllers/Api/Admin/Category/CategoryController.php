@@ -35,7 +35,7 @@ final class CategoryController extends Controller
      * @queryParam page integer Page number for pagination. Example: 2
      * @queryParam per_page integer Number of results per page. Example: 15
      *
-     * @responseFile 200 responses/category/index.json
+     * @responseFile 200 resources/responses/admin/category/index.json
      */
     public function index(): ApiResponseInterface
     {
@@ -53,8 +53,8 @@ final class CategoryController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @responseFile 201 responses/201.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 201 resources/responses/201.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function store(CreateCategoryData $data, CreateCategoryAction $action): ApiResponseInterface
     {
@@ -69,8 +69,8 @@ final class CategoryController extends Controller
     /**
      * return the specified category.
      *
-     * @responseFile 200 responses/category/show.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 200 resources/responses/admin/category/show.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function show(Category $category): ApiResponseInterface
     {
@@ -85,9 +85,9 @@ final class CategoryController extends Controller
     /**
      * Update the specified category in database.
      *
-     * @responseFile 200 responses/category/show.json
-     * @responseFile 422 responses/422.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 200 resources/responses/admin/category/show.json
+     * @responseFile 422 resources/responses/422.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function update(CreateCategoryData $data, Category $category, UpdateCategoryAction $action): ApiResponseInterface
     {
@@ -106,7 +106,7 @@ final class CategoryController extends Controller
     /**
      * Remove the specified category from storage.
      *
-     * @responseFile 404 responses/404.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function destroy(Category $category, DeleteCategoryAction $action): JsonResponse|ApiResponseInterface
     {

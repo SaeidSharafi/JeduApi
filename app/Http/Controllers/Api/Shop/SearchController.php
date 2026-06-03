@@ -23,7 +23,7 @@ final class SearchController extends Controller
      *
      * Perform a global search across products and blog posts with faceted filtering.
      *
-     * @responseFile 200 responses/shop/search.json
+     * @responseFile 200 resources/responses/shop/search.json
      *
      * @return \Illuminate\Http\JsonResponse
      */

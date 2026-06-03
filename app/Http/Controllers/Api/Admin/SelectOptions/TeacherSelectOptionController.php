@@ -22,7 +22,7 @@ final class TeacherSelectOptionController extends Controller
      * @queryParam  q string The search query for filtering teachers (match combined [first_name and last_name],
      *              email and phone. Example: "John Doe"
      *
-     * @responseFile 200 responses/select-options/teacher.json
+     * @responseFile 200 resources/responses/admin/select-options/teacher.json
      */
     public function __invoke()
     {

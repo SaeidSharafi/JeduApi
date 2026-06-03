@@ -26,8 +26,8 @@ final class DiscountInfoController extends Controller
     /**
      * Get all discount metadata (conditions & actions for cart and product).
      *
-     * @responseFile 200 responses/discount/info.index.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/discount/info.index.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function index(): ApiResponseInterface
     {
@@ -39,8 +39,8 @@ final class DiscountInfoController extends Controller
     /**
      * Get available discount conditions and their configurations dynamically.
      *
-     * @responseFile 200 responses/discount/info.conditions.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/discount/info.conditions.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function conditions(): ApiResponseInterface
     {
@@ -52,8 +52,8 @@ final class DiscountInfoController extends Controller
     /**
      * Get available discount actions and their configurations dynamically.
      *
-     * @responseFile 200 responses/discount/info.actions.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/discount/info.actions.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function actions(): ApiResponseInterface
     {
@@ -65,8 +65,8 @@ final class DiscountInfoController extends Controller
     /**
      * Get all available discount operators.
      *
-     * @responseFile 200 responses/discount/info.operators.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/discount/info.operators.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function operators(): ApiResponseInterface
     {
@@ -78,8 +78,8 @@ final class DiscountInfoController extends Controller
     /**
      * Get discount promotion types.
      *
-     * @responseFile 200 responses/discount/info.types.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/discount/info.types.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function types(): ApiResponseInterface
     {

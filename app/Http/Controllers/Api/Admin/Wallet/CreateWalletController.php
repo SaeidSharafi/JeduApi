@@ -21,8 +21,8 @@ final class CreateWalletController extends Controller
     /**
      * Create a new wallet for a user.
      *
-     * @responseFile 201 responses/wallet/create.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 201 resources/responses/admin/wallet/create.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function __invoke(CreateWalletData $data): JsonResource
     {

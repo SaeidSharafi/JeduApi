@@ -26,7 +26,7 @@ final class ChangeEnrollmentStatusController extends Controller
      *
      * This endpoint allows authorized staff to change the status of an enrollment.
      *
-     * @responseFile storage/responses/admin/enrollment/show.json
+     * @responseFile resources/responses/admin/enrollment/show.json
      */
     public function __invoke(EnrollmentStatusChangeData $data, Enrollment $enrollment, ChangeEnrollmentStatusAction $action): ApiResponseInterface
     {

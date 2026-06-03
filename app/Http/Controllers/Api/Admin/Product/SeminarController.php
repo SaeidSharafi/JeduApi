@@ -39,7 +39,7 @@ final class SeminarController extends Controller
      * @queryParam page integer Page number for pagination. Example: 2
      * @queryParam per_page integer Number of results per page. Example: 15
      *
-     * @responseFile 200 responses/seminar/index.json
+     * @responseFile 200 resources/responses/admin/seminar/index.json
      */
     public function index(): ApiResponseInterface
     {
@@ -71,9 +71,9 @@ final class SeminarController extends Controller
     /**
      * Display the specified seminar.
      *
-     * @responseFile 200 responses/seminar/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 200 resources/responses/admin/seminar/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function show(Seminar $seminar): ApiResponseInterface
     {
@@ -97,9 +97,9 @@ final class SeminarController extends Controller
     /**
      * Update the specified seminar in database.
      *
-     * @responseFile 200 responses/seminar/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 200 resources/responses/admin/seminar/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function update(CreateSeminarData $data, Seminar $seminar, UpdateSeminarAction $action): ApiResponseInterface
     {

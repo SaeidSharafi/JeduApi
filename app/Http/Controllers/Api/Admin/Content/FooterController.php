@@ -24,7 +24,7 @@ final class FooterController extends Controller
     /**
      * Get footer settings.
      *
-     * @responseFile 200 responses/settings/footer.json
+     * @responseFile 200 resources/responses/admin/settings/footer.json
      */
     public function show(SettingsService $settingsService): ApiResponseInterface
     {
@@ -38,8 +38,8 @@ final class FooterController extends Controller
     /**
      * Update footer settings.
      *
-     * @responseFile 200 responses/settings/footer.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/settings/footer.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function update(FooterCreateData $data, UpdateFooterSettingAction $action): ApiResponseInterface
     {

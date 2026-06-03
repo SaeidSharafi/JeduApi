@@ -23,7 +23,7 @@ final class ContactPageController extends Controller
      *
      * Returns the configuration settings for the Contact page.
      *
-     * @responseFile storage/responses/shop/contactpage/show.json
+     * @responseFile resources/responses/shop/contactpage/show.json
      */
     public function __invoke(SettingsService $service): ApiResponseInterface
     {

@@ -38,7 +38,7 @@ final class StaffController extends Controller
      * @queryParam sort string Sort by a field. Allowed values: name, email, phone, created_at, updated_at.
      *              Prefix with '-' for descending order
      *
-     * @responseFile 200 responses/staff/index.json
+     * @responseFile 200 resources/responses/admin/staff/index.json
      */
     public function index(): ApiResponseInterface
     {
@@ -62,7 +62,7 @@ final class StaffController extends Controller
      *
      * @response 201
      *
-     * @responseFile 403 responses/403.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function store(CreateStaffData $data, CreateStaffAction $action): ApiResponseInterface
     {
@@ -75,9 +75,9 @@ final class StaffController extends Controller
     /**
      * Display the specified Staff.
      *
-     * @responseFile 200 responses/staff/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 200 resources/responses/admin/staff/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function show(Staff $staff): ApiResponseInterface
     {
@@ -90,9 +90,9 @@ final class StaffController extends Controller
     /**
      * Update the specified Staff in database.
      *
-     * @responseFile 200 responses/staff/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 200 resources/responses/admin/staff/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function update(UpdateStaffData $data, Staff $staff, UpdateStaffAction $action): ApiResponseInterface
     {

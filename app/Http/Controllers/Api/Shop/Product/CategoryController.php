@@ -25,7 +25,7 @@ final class CategoryController extends Controller
      *
      * Retrieve a list of all product categories with the count of available products in each category.
      *
-     * @responseFile responses/shop/products/categories/index.json
+     * @responseFile resources/responses/shop/products/categories/index.json
      */
     public function index()
     {
@@ -52,7 +52,7 @@ final class CategoryController extends Controller
      *
      * @queryParam per_page int Optional number of items per page for each product type. Default is 15. Example: 15
      *
-     * @responseFile responses/shop/products/categories/show.json
+     * @responseFile resources/responses/shop/products/categories/show.json
      */
     public function show(PaginationRequestData $data, Category $category, CategoryQueryService $service)
     {

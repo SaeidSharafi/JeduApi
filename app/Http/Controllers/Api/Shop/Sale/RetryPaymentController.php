@@ -25,7 +25,7 @@ final class RetryPaymentController extends Controller
      * with failed or incomplete payment attempts. The order must belong to the authenticated
      * user and have an outstanding balance.
      *
-     * @responseFile storage/responses/shop/order/retry-payment.json
+     * @responseFile resources/responses/shop/order/retry-payment.json
      */
     public function __invoke(
         string $incrementId,

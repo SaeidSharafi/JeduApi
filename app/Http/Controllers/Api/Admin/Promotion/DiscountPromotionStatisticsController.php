@@ -21,8 +21,8 @@ final class DiscountPromotionStatisticsController extends Controller
     /**
      * Get discount promotion statistics.
      *
-     * @responseFile 200 responses/discount/promotion.statistics.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/discount/promotion.statistics.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function __invoke(): ApiResponseInterface
     {

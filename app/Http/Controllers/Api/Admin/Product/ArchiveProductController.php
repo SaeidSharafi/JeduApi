@@ -29,8 +29,8 @@ final class ArchiveProductController extends Controller
      *  "message": "Product archived successfully."
      * }
      *
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function __invoke(Product $product): ApiResponseInterface
     {

@@ -22,7 +22,7 @@ final class ProfileController extends Controller
     /**
      * Display the authenticated user's profile.
      *
-     * @responseFile 200 responses/shop/profile/show.json
+     * @responseFile 200 resources/responses/shop/profile/show.json
      */
     public function show(): ApiSuccessResponse
     {
@@ -32,7 +32,7 @@ final class ProfileController extends Controller
     /**
      * Update the authenticated user's profile.
      *
-     * @responseFile 200 responses/shop/profile/show.json
+     * @responseFile 200 resources/responses/shop/profile/show.json
      */
     public function update(UpdateProfileData $data, UpdateProfileAction $action): ApiSuccessResponse
     {

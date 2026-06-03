@@ -29,7 +29,7 @@ final class ProductDeliveryOptionController extends Controller
     /**
      * Get a list of delivery options for a product.
      *
-     * @responseFile 200 responses/product-delivery-option/index.json
+     * @responseFile 200 resources/responses/admin/product-delivery-option/index.json
      */
     public function index(Product $product): ApiResponseInterface
     {
@@ -44,7 +44,7 @@ final class ProductDeliveryOptionController extends Controller
     /**
      * Create a new delivery option for a product.
      *
-     * @responseFile 201 responses/201.json
+     * @responseFile 201 resources/responses/201.json
      */
     public function store(
         ProductDeliveryOptionCreateData $data,
@@ -64,8 +64,8 @@ final class ProductDeliveryOptionController extends Controller
     /**
      * Get the specified delivery option details.
      *
-     * @responseFile 200 responses/product-delivery-option/show.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 200 resources/responses/admin/product-delivery-option/show.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function show(Product $product, ProductDeliveryOption $deliveryOption): ApiResponseInterface
     {
@@ -78,9 +78,9 @@ final class ProductDeliveryOptionController extends Controller
     /**
      * Update the specified delivery option.
      *
-     * @responseFile 200 responses/product-delivery-option/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/product-delivery-option/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function update(
         ProductDeliveryOptionUpdateData $data,
@@ -103,8 +103,8 @@ final class ProductDeliveryOptionController extends Controller
      *
      * @response 204
      *
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function destroy(
         Product $product,

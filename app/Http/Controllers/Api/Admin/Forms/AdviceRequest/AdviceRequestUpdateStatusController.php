@@ -27,10 +27,10 @@ final class AdviceRequestUpdateStatusController extends Controller
      *
      * @bodyParam status string required The new status of the advice request. Example: handled
      *
-     * @responseFile 200 responses/advice-request/show.json
+     * @responseFile 200 resources/responses/admin/advice-request/show.json
      *
-     * @response 403 responses/403.json
-     * @response 404 responses/404.json
+     * @response 403 resources/responses/403.json
+     * @response 404 resources/responses/404.json
      */
     public function __invoke(
         AdviceRequestUpdateData $data,

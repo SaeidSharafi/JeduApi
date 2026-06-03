@@ -24,7 +24,7 @@ final class OrderController extends Controller
      * This endpoint returns a paginated list of all orders belonging to the authenticated user.
      * Orders are sorted by creation date (newest first).
      *
-     * @responseFile storage/responses/shop/order/index.json
+     * @responseFile resources/responses/shop/order/index.json
      */
     public function index(): ApiResponseInterface
     {
@@ -45,7 +45,7 @@ final class OrderController extends Controller
      * This endpoint returns detailed information about a specific order.
      * Users can only view their own orders.
      *
-     * @responseFile storage/responses/shop/order/show.json
+     * @responseFile resources/responses/shop/order/show.json
      */
     public function show(string $incrementId): ApiResponseInterface
     {

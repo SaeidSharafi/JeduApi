@@ -40,7 +40,7 @@ final class CheckoutController extends Controller
      * - `redirect_method`: HTTP method to use (GET or POST)
      * - `redirect_data`: Optional form data to submit (for POST redirects)
      *
-     * @responseFile storage/responses/shop/checkout/show.json
+     * @responseFile resources/responses/shop/checkout/show.json
      */
     public function __invoke(CheckoutData $data, CreateOrderFromCartAction $action): ApiResponseInterface
     {

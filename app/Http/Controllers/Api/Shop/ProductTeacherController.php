@@ -22,7 +22,7 @@ final class ProductTeacherController extends Controller
      *
      * @urlParam product_slug string required The slug of the product. Example: advanced-javascript-course
      *
-     * @responseFile storage/responses/shop/products/teachers.json
+     * @responseFile resources/responses/shop/products/teachers.json
      */
     public function __invoke(Product $product)
     {

@@ -18,7 +18,7 @@ final class PermissionController extends Controller
     /**
      * Get all permissions
      *
-     * @responseFile 200 responses/permissions.json
+     * @responseFile 200 resources/responses/permissions.json
      */
     public function __invoke(OutputPermissionsAction $action): ApiResponseInterface
     {

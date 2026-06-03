@@ -22,8 +22,8 @@ final class WithdrawFromWalletController extends Controller
     /**
      * Withdraw funds from a wallet (admin action).
      *
-     * @responseFile 201 responses/wallet/withdraw.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 201 resources/responses/admin/wallet/withdraw.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function __invoke(WithdrawFromWalletData $data, Wallet $wallet, WithdrawFromWalletAction $action): ApiResponseInterface
     {

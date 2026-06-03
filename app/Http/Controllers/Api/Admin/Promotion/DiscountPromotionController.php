@@ -36,8 +36,8 @@ final class DiscountPromotionController extends Controller
      * @queryParam page integer Page number. Example: 1
      * @queryParam per_page integer Results per page. Example: 15
      *
-     * @responseFile 200 responses/discount/promotion.index.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/discount/promotion.index.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function index(Request $request): ApiResponseInterface
     {
@@ -60,9 +60,9 @@ final class DiscountPromotionController extends Controller
      * Create a new discount promotion.
      *
      *
-     * @responseFile 201 responses/discount/promotion.store.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 422 responses/discount/promotion.422.json
+     * @responseFile 201 resources/responses/admin/discount/promotion.store.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 422 resources/responses/admin/discount/promotion.422.json
      */
     public function store(DiscountPromotionCreateData $data, CreateDiscountPromotionAction $action): ApiResponseInterface
     {
@@ -75,9 +75,9 @@ final class DiscountPromotionController extends Controller
     /**
      * Show a discount promotion.
      *
-     * @responseFile 200 responses/discount/promotion.show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 200 resources/responses/admin/discount/promotion.show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function show(DiscountPromotion $discountPromotion): ApiResponseInterface
     {
@@ -90,10 +90,10 @@ final class DiscountPromotionController extends Controller
     /**
      * Update a discount promotion.
      *
-     * @responseFile 200 responses/discount/promotion.update.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/discount/promotion.422.json
+     * @responseFile 200 resources/responses/admin/discount/promotion.update.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/admin/discount/promotion.422.json
      */
     public function update(
         DiscountPromotionCreateData $data,
@@ -113,8 +113,8 @@ final class DiscountPromotionController extends Controller
      *
      * @response 204
      *
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function destroy(DiscountPromotion $discountPromotion, DeleteDiscountPromotionAction $action): JsonResponse
     {

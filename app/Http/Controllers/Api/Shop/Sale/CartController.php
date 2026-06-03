@@ -31,7 +31,7 @@ final class CartController extends Controller
     /**
      * Get the current user's cart.
      *
-     * @responseFile 200 storage/responses/shop/cart/index.json
+     * @responseFile 200 resources/responses/shop/cart/index.json
      */
     public function index(): ApiSuccessResponse
     {
@@ -43,7 +43,7 @@ final class CartController extends Controller
     /**
      * Add an item to the cart.
      *
-     * @responseFile storage/responses/shop/cart/show.json
+     * @responseFile resources/responses/shop/cart/show.json
      */
     public function store(AddCartItemData $data): ApiSuccessResponse
     {
@@ -55,7 +55,7 @@ final class CartController extends Controller
     /**
      * Update a cart item's quantity.
      *
-     * @responseFile storage/responses/shop/cart/show.json
+     * @responseFile resources/responses/shop/cart/show.json
      */
     public function update(UpdateCartItemData $data, CartItem $cartItem): ApiSuccessResponse
     {
@@ -77,7 +77,7 @@ final class CartController extends Controller
     /**
      * Apply a coupon code to the cart.
      *
-     * @responseFile storage/responses/shop/cart/show.json
+     * @responseFile resources/responses/shop/cart/show.json
      */
     public function applyCoupon(ApplyCouponData $data): ApiSuccessResponse
     {
@@ -89,7 +89,7 @@ final class CartController extends Controller
     /**
      * Remove the applied coupon from the cart.
      *
-     * @responseFile storage/responses/shop/cart/show.json
+     * @responseFile resources/responses/shop/cart/show.json
      */
     public function removeCoupon(): ApiSuccessResponse
     {

@@ -22,9 +22,9 @@ final class DiscountPromotionStatusUpdateController extends Controller
     /**
      * Toggle the active status of a discount promotion.
      *
-     * @responseFile 200 responses/discount/promotion.status_update.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 200 resources/responses/admin/discount/promotion.status_update.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function __invoke(DiscountPromotion $discountPromotion): ApiResponseInterface
     {

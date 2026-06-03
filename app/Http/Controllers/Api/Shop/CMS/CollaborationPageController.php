@@ -23,7 +23,7 @@ final class CollaborationPageController extends Controller
      *
      * Returns the configuration settings for the Contact page.
      *
-     * @responseFile storage/responses/shop/collaboration/show.json
+     * @responseFile resources/responses/shop/collaboration/show.json
      */
     public function __invoke(SettingsService $service): ApiResponseInterface
     {

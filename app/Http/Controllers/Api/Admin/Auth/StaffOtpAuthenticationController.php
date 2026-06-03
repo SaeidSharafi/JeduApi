@@ -39,7 +39,7 @@ final class StaffOtpAuthenticationController extends Controller
      *
      * @throws InvalidOtpCode
      *
-     * @responseFile 200 responses/auth/staff.login.json
+     * @responseFile 200 resources/responses/admin/auth/staff.login.json
      *
      * @response 422 {
      *  "message": "Invalid OTP code",

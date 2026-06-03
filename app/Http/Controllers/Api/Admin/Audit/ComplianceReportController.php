@@ -22,7 +22,7 @@ final class ComplianceReportController extends Controller
     /**
      * Generate compliance report for financial transactions.
      *
-     * @responseFile 200 responses/compliance-report/index.json
+     * @responseFile 200 resources/responses/admin/compliance-report/index.json
      *
      * @authenticated
      */

@@ -22,7 +22,7 @@ final class StaffSelectOptionController extends Controller
      *
      * @queryParam  q string The search query for filtering staff (match first_name, last_name, phone adn email ). Example: "John Doe"
      *
-     * @responseFile 200 responses/select-options/staff.json
+     * @responseFile 200 resources/responses/admin/select-options/staff.json
      */
     public function __invoke()
     {

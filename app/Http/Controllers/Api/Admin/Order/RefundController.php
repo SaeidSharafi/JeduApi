@@ -26,9 +26,9 @@ final class RefundController extends Controller
     /**
      * Display a listing of the refunds.
      *
-     * @responseFile 200 responses/refund/index.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/refund/index.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function index(OrderItem $orderItem): ApiResponseInterface
     {
@@ -44,9 +44,9 @@ final class RefundController extends Controller
     /**
      * Store a newly created refund.
      *
-     * @responseFile 201 responses/refund/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 422 responses/refund/store-422.json
+     * @responseFile 201 resources/responses/admin/refund/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 422 resources/responses/admin/refund/store-422.json
      */
     public function store(RefundCreateData $data, OrderItem $orderItem, CreateRefundAction $action): ApiResponseInterface
     {
@@ -59,9 +59,9 @@ final class RefundController extends Controller
     /**
      * Display the specified refund.
      *
-     * @responseFile 200 responses/refund/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 200 resources/responses/admin/refund/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function show(OrderItem $orderItem, Refund $refund)
     {
@@ -73,9 +73,9 @@ final class RefundController extends Controller
     /**
      * Update the specified refund.
      *
-     * @responseFile 200 responses/refund/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 422 responses/refund/update-422.json
+     * @responseFile 200 resources/responses/admin/refund/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 422 resources/responses/admin/refund/update-422.json
      */
     public function update(RefundCreateData $data, OrderItem $orderItem, Refund $refund, UpdateRefundAction $action): ApiResponseInterface
     {
@@ -90,9 +90,9 @@ final class RefundController extends Controller
      *
      * @response 204
      *
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/refund/delete-422.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/admin/refund/delete-422.json
      */
     public function destroy(OrderItem $orderItem, Refund $refund, DeletePendingRefundAction $action): JsonResponse
     {

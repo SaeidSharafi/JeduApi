@@ -24,9 +24,9 @@ final class BulkCampaignAllocationController extends Controller
      *
      * Allocates the selected campaign to a list of users. Returns the number of successful and failed allocations, with details for each user.
      *
-     * @responseFile 200 responses/wallet-campaign/bulk-allocation.json
-     * @responseFile 207 responses/wallet-campaign/bulk-allocation.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/wallet-campaign/bulk-allocation.json
+     * @responseFile 207 resources/responses/admin/wallet-campaign/bulk-allocation.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function __invoke(
         BulkCampaignAllocationData $data,

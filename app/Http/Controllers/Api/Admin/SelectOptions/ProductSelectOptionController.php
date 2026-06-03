@@ -27,7 +27,7 @@ final class ProductSelectOptionController extends Controller
      * @queryParam  q string The search query for filtering products (match name or SKU). Example: "advanced"
      * @queryParam  limit integer The maximum number of results to return. Default is 15. Example: 10
      *
-     * @responseFile 200 responses/select-options/products.json
+     * @responseFile 200 resources/responses/admin/select-options/products.json
      */
     public function __invoke(ProductQueryService $service, ?ProductableEnum $productableType = null): ApiResponseInterface
     {

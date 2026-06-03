@@ -28,7 +28,7 @@ final class GoodForStartCoursesController extends Controller
      *
      * @queryParam limit int The maximum number of courses to return. Default is 10. Example: 5
      *
-     * @responseFile 200 responses/shop/products/categories/good-for-start.json
+     * @responseFile 200 resources/responses/shop/products/categories/good-for-start.json
      */
     public function __invoke(Category $category, ProductPriceService $priceService)
     {

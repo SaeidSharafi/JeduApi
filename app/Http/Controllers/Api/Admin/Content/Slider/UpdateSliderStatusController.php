@@ -23,10 +23,10 @@ final class UpdateSliderStatusController extends Controller
      *
      * Update the publication status of a specific slider.
      *
-     * @responseFile 200 scenario="success" responses/settings/slider/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 scenario="success" resources/responses/admin/settings/slider/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function __invoke(ChangeStatusData $data, Slider $slider, UpdateSliderStatusAction $action)
     {

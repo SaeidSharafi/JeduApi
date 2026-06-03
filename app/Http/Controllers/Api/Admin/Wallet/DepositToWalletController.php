@@ -22,8 +22,8 @@ final class DepositToWalletController extends Controller
     /**
      * Deposit funds to a wallet (admin action).
      *
-     * @responseFile 201 responses/wallet/deposit.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 201 resources/responses/admin/wallet/deposit.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function __invoke(DepositToWalletData $data, Wallet $wallet, DepositToWalletAction $action): ApiResponseInterface
     {

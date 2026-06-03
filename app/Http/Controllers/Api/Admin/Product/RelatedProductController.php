@@ -31,7 +31,7 @@ final class RelatedProductController extends Controller
      *
      * @queryParam relation_type string Filter by relation type (related, cross_sell, upsell). Example: cross_sell
      *
-     * @responseFile 200 responses/related-products/index.json
+     * @responseFile 200 resources/responses/admin/related-products/index.json
      */
     public function index(Product $product): ApiResponseInterface
     {
@@ -56,8 +56,8 @@ final class RelatedProductController extends Controller
      *
      * This will replace all existing relations of the specified type with the new list.
      *
-     * @responseFile 200 responses/related-products/index.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/related-products/index.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function store(Product $product, RelatedProductSyncData $data, CreateRelatedProductAction $action): ApiResponseInterface
     {
@@ -82,8 +82,8 @@ final class RelatedProductController extends Controller
      *
      * @response 204
      *
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function destroy(Product $product, Product $relatedProduct, DeleteRelatedProductAction $action): JsonResponse|ApiResponseInterface
     {

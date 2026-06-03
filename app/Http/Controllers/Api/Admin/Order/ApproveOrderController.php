@@ -27,7 +27,7 @@ final class ApproveOrderController extends Controller
      *
      * The order must have sufficient payment coverage considering prepayment options.
      *
-     * @responseFile storage/responses/admin/order/approve.json
+     * @responseFile resources/responses/admin/order/approve.json
      */
     public function __invoke(Order $order, ApproveOrderAction $action): ApiResponseInterface
     {

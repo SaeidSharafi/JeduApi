@@ -23,7 +23,7 @@ final class PrivateFileDownloadController extends Controller
      *
      * @response 200 <<binary>> file,
      *
-     * @responseFile 404 storage/responses/404.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function __invoke(Request $request, Media $file): ApiResponseInterface|\Symfony\Component\HttpFoundation\StreamedResponse
     {

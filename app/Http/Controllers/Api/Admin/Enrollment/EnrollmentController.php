@@ -39,7 +39,7 @@ final class EnrollmentController extends Controller
      * @queryParam page integer Page number for pagination. Example: 2
      * @queryParam per_page integer Number of results per page. Example: 15
      *
-     * @responseFile storage/responses/admin/enrollment/index.json
+     * @responseFile resources/responses/admin/enrollment/index.json
      */
     public function index(): ApiResponseInterface
     {
@@ -68,9 +68,9 @@ final class EnrollmentController extends Controller
     /**
      * Display the specified enrollment.
      *
-     * @responseFile storage/responses/admin/enrollment/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile resources/responses/admin/enrollment/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function show(Enrollment $enrollment): ApiResponseInterface
     {
@@ -89,10 +89,10 @@ final class EnrollmentController extends Controller
     /**
      * Update the specified enrollment.
      *
-     * @responseFile storage/responses/admin/enrollment/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
-     * @responseFile 403 responses/403.json
+     * @responseFile resources/responses/admin/enrollment/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function update(EnrollmentUpdateData $data, Enrollment $enrollment, UpdateEnrollmentAction $action): ApiResponseInterface
     {
@@ -114,8 +114,8 @@ final class EnrollmentController extends Controller
      *
      * @response 204
      *
-     * @responseFile 404 responses/404.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function destroy(Enrollment $enrollment, DeleteEnrollmentAction $action): JsonResponse
     {

@@ -31,7 +31,7 @@ final class CancelOrderController extends Controller
      * Once an order has been paid (fully or partially), cancellation is not allowed and the customer
      * must contact support for refund assistance.
      *
-     * @responseFile storage/responses/shop/order/show.json
+     * @responseFile resources/responses/shop/order/show.json
      */
     public function __invoke(Order $order): ApiResponseInterface
     {

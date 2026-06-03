@@ -21,7 +21,7 @@ final class DigitalAssetEnrollmentController extends Controller
      *
      * Returns only enrollments where the delivery method is DIRECT_DOWNLOAD.
      *
-     * @responseFile 200 storage/responses/shop/enrollments/digital-assets-index.json
+     * @responseFile 200 resources/responses/shop/enrollments/digital-assets-index.json
      */
     public function __invoke(): ApiResponseInterface
     {

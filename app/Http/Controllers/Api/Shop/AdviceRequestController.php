@@ -21,7 +21,7 @@ final class AdviceRequestController extends Controller
      *
      * Submits a user's phone number to request a private consultation.
      *
-     * @responseFile storage/responses/shop/advice-request/show.json
+     * @responseFile resources/responses/shop/advice-request/show.json
      */
     public function __invoke(AdviceRequestCreateData $data, StoreAdviceRequestAction $action): ApiResponseInterface
     {

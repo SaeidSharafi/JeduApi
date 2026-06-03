@@ -28,6 +28,8 @@ final class PaymentController extends Controller
 {
     /**
      * Display a listing of the payments for a specific order.
+     *
+     * @responseFile 201 resources/responses/admin/payment/index.json
      */
     public function index(Order $order): ApiResponseInterface
     {
@@ -45,8 +47,8 @@ final class PaymentController extends Controller
      * For single-step payments (Wallet, Bank Transfer), the payment is completed immediately.
      * For multi-step payments (Online Gateway), returns redirect information for customer.
      *
-     * @responseFile 201 responses/admin/payment/process-result.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 201 resources/responses/admin/payment/process-result.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function store(PaymentCreateData $data, Order $order, CreatePaymentAction $action): ApiResponseInterface
     {
@@ -71,9 +73,9 @@ final class PaymentController extends Controller
      * Display the specified payment for an order.
      *
      *
-     * @responseFile 200 responses/payment/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/payment/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function show(Order $order, Payment $payment): ApiResponseInterface
     {
@@ -87,9 +89,9 @@ final class PaymentController extends Controller
      *
      *
      *
-     * @responseFile 200 responses/payment/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/payment/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function update(PaymentUpdateData $request, Order $order, Payment $payment, UpdatePaymentAction $action): ApiResponseInterface
     {
@@ -106,8 +108,8 @@ final class PaymentController extends Controller
      *
      * @response 204 scenario="successful deletion"
      *
-     * @responseFile 404 responses/404.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function destroy(Order $order, Payment $payment, DeletePaymentAction $action): \Illuminate\Http\JsonResponse
     {

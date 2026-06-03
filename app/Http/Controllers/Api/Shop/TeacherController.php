@@ -23,8 +23,8 @@ final class TeacherController extends Controller
      *
      * @urlParam uuid string required The UUID of the teacher. Example: 123e4567-e89b-12d3-a456-426614174000
      *
-     * @responseFile storage/responses/shop/teacher/show.json
-     * @responseFile 404 responses/404.json
+     * @responseFile resources/responses/shop/teacher/show.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function show(Teacher $teacher): ApiSuccessResponse
     {

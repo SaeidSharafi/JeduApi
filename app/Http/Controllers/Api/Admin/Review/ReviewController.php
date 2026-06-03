@@ -29,7 +29,7 @@ final class ReviewController extends Controller
     /**
      * Display a listing of the reviews.
      *
-     * @responseFile 200  responses/review/index.json
+     * @responseFile 200  resources/responses/admin/review/index.json
      */
     public function index(Request $request): ApiResponseInterface
     {
@@ -69,9 +69,9 @@ final class ReviewController extends Controller
     /**
      * Display the specified review.
      *
-     * @responseFile 200  responses/review/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200  resources/responses/admin/review/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function show(Review $review): ApiResponseInterface
     {
@@ -86,8 +86,8 @@ final class ReviewController extends Controller
      *
      * @response 204
      *
-     * @responseFile 404 responses/404.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function destroy(Review $review): JsonResponse
     {

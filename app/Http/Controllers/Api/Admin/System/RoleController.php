@@ -32,7 +32,7 @@ final class RoleController extends Controller
      *   Prefix with '-' for descending order (e.g., -name for descending by name). Example: name
      * @queryParam per_page integer Number of results per page. Default is 15. Example: 20
      *
-     * @responseFile 200 responses/role/index.json
+     * @responseFile 200 resources/responses/admin/role/index.json
      */
     public function index()
     {
@@ -63,7 +63,7 @@ final class RoleController extends Controller
     /**
      * Display the specified role.
      *
-     * @responseFile 200 responses/role/show.json
+     * @responseFile 200 resources/responses/admin/role/show.json
      *
      * @response 403
      * @response 404
@@ -79,7 +79,7 @@ final class RoleController extends Controller
     /**
      * Update the specified role in storage.
      *
-     * @responseFile 200 responses/role/show.json
+     * @responseFile 200 resources/responses/admin/role/show.json
      *
      * @response 403
      * @response 404

@@ -20,9 +20,9 @@ final class NextPaymentDetailsController extends Controller
     /**
      * Display the next payment details for a given order.
      *
-     * @responseFile responses/order/next-payment-details.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile resources/responses/admin/order/next-payment-details.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function __invoke(Order $order, GetNextPaymentDetailsAction $action)
     {

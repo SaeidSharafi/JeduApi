@@ -25,8 +25,8 @@ final class GatewayCallbackController extends Controller
      * This endpoint receives the callback from the payment gateway after
      * the customer completes (or cancels) their payment.
      *
-     * @responseFile 200 storage/responses/shop/payment/verify.json
-     * @responseFile 422 storage/responses/422.json
+     * @responseFile 200 resources/responses/shop/payment/verify.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function __invoke(Request $request, VerifyPaymentAction $action)
     {

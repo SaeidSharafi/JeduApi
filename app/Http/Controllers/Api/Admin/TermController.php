@@ -36,7 +36,7 @@ final class TermController extends Controller
      * @queryParam page integer Page number for pagination. Example: 2
      * @queryParam per_page integer Number of results per page. Example: 15
      *
-     * @responseFile 200 responses/term/index.json
+     * @responseFile 200 resources/responses/admin/term/index.json
      */
     public function index(): ApiResponseInterface
     {
@@ -55,7 +55,7 @@ final class TermController extends Controller
     /**
      * Create a new term.
      *
-     * @responseFile 201 responses/201.json
+     * @responseFile 201 resources/responses/201.json
      */
     public function store(CreateTermData $data, CreateTermAction $action): ApiResponseInterface
     {
@@ -68,9 +68,9 @@ final class TermController extends Controller
     /**
      * Return the specified term detail.
      *
-     * @responseFile 200 responses/term/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/term/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function show(Term $term): ApiResponseInterface
     {
@@ -82,9 +82,9 @@ final class TermController extends Controller
     /**
      * Update the specified term.
      *
-     * @responseFile 200 responses/term/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/term/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function update(CreateTermData $data, Term $term, UpdateTermAction $action): ApiResponseInterface
     {
@@ -99,8 +99,8 @@ final class TermController extends Controller
      *
      * @response 204
      *
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function destroy(Term $term, DeleteTermAction $action): \Illuminate\Http\JsonResponse|ApiResponseInterface
     {

@@ -27,8 +27,8 @@ final class DigitalAssetDownloadController extends Controller
      *
      * @response 200 <<binary>> file
      *
-     * @responseFile 403 storage/responses/403.json
-     * @responseFile 404 storage/responses/404.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function __invoke(Enrollment $enrollment, DigitalAsset $digitalAsset): ApiResponseInterface|StreamedResponse
     {

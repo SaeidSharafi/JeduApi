@@ -30,7 +30,7 @@ final class PartnerController extends Controller
      * @queryParam filter[is_active] boolean Filter by active status. Example: 1
      * @queryParam sort string Sort by a field. Allowed values: order, title, created_at. Prefix with '-' for descending order (e.g., -title for descending by title). Example: order
      *
-     * @responseFile 200 responses/settings/partner/index.json
+     * @responseFile 200 resources/responses/admin/settings/partner/index.json
      */
     public function index(): ApiResponseInterface
     {
@@ -48,7 +48,7 @@ final class PartnerController extends Controller
     /**
      * Display the specified partner.
      *
-     * @responseFile 200 responses/settings/partner/show.json
+     * @responseFile 200 resources/responses/admin/settings/partner/show.json
      */
     public function show(Partner $partner): ApiResponseInterface
     {
@@ -64,7 +64,7 @@ final class PartnerController extends Controller
     /**
      * Store a newly created partner.
      *
-     * @responseFile 201 responses/settings/partner/show.json
+     * @responseFile 201 resources/responses/admin/settings/partner/show.json
      */
     public function store(PartnerCreateData $data, CreatePartnerAction $action): ApiResponseInterface
     {
@@ -81,7 +81,7 @@ final class PartnerController extends Controller
     /**
      * Update the specified partner.
      *
-     * @responseFile 200 responses/settings/partner/show.json
+     * @responseFile 200 resources/responses/admin/settings/partner/show.json
      */
     public function update(PartnerCreateData $data, Partner $partner, UpdatePartnerAction $action): ApiResponseInterface
     {

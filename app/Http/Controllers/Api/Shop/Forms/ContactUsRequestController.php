@@ -21,7 +21,7 @@ final class ContactUsRequestController extends Controller
      *
      * Accepts and stores a public contact request.
      *
-     * @responseFile storage/responses/shop/contactus/show.json
+     * @responseFile resources/responses/shop/contactus/show.json
      */
     public function __invoke(ContactUsRequestData $data, StoreContactUsRequestAction $action): ApiResponseInterface
     {

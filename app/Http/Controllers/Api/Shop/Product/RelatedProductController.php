@@ -27,7 +27,7 @@ final class RelatedProductController extends Controller
      * @urlParam product_slug string required The slug of the product. Example: example-product
      * @urlParam relation_type string required The type of relation (RELATED, CROSS_SELL, UPSELL). Example: RELATED
      *
-     * @responseFile storage/responses/shop/products/related_products.json
+     * @responseFile resources/responses/shop/products/related_products.json
      */
     public function __invoke(Product $product, RelationTypeEnum $relation_type)
     {

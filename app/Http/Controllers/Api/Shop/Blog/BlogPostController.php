@@ -28,7 +28,7 @@ final class BlogPostController extends Controller
      *
      * Retrieve a paginated list of published blog posts with optional filtering and sorting.
      *
-     * @responseFile storage/responses/shop/blog/post/index.json
+     * @responseFile resources/responses/shop/blog/post/index.json
      */
     public function index(BlogPostListRequestData $requestData)
     {
@@ -67,8 +67,8 @@ final class BlogPostController extends Controller
      *
      * Retrieve detailed information about a specific blog post by its slug.
      *
-     * @responseFile 200 storage/responses/shop/blog/post/show.json
-     * @responseFile 404 storage/responses/404.json
+     * @responseFile 200 resources/responses/shop/blog/post/show.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function show(string $slug, ProductPriceService $productPriceService)
     {

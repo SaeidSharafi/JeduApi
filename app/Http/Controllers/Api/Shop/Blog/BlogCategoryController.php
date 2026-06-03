@@ -26,7 +26,7 @@ final class BlogCategoryController extends Controller
      *
      * Retrieve a list of all blog categories with their post counts.
      *
-     * @responseFile storage/responses/shop/blog/category/index.json
+     * @responseFile resources/responses/shop/blog/category/index.json
      */
     public function index()
     {
@@ -49,8 +49,8 @@ final class BlogCategoryController extends Controller
      *
      * Retrieve detailed information about a specific blog category by its slug.
      *
-     * @responseFile 200 storage/responses/shop/blog/category/show.json
-     * @responseFile 404 storage/responses/404.json
+     * @responseFile 200 resources/responses/shop/blog/category/show.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function show(string $slug)
     {
@@ -71,7 +71,7 @@ final class BlogCategoryController extends Controller
      *
      * Retrieve a paginated list of published blog posts for a specific category.
      *
-     * @responseFile storage/responses/shop/blog/post/index.json
+     * @responseFile resources/responses/shop/blog/post/index.json
      */
     public function posts(string $slug, BlogPostListRequestData $requestData)
     {

@@ -22,7 +22,7 @@ final class ContactInfoController extends Controller
     /**
      * Get contact info settings.
      *
-     * @responseFile 200 responses/settings/contact-info.json
+     * @responseFile 200 resources/responses/admin/settings/contact-info.json
      */
     public function show(SettingsService $settingsService): ApiResponseInterface
     {
@@ -36,8 +36,8 @@ final class ContactInfoController extends Controller
     /**
      * Update contact info settings.
      *
-     * @responseFile 200 responses/settings/contact-info.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/settings/contact-info.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function update(ContactInfoData $data, SettingsService $settingsService): ApiResponseInterface
     {

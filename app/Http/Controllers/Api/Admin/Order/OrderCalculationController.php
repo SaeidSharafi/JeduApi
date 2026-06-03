@@ -21,7 +21,7 @@ final class OrderCalculationController extends Controller
      * Preview the order calculation based on the provided data.
      *
      *
-     * @responseFile 200 responses/order/preview.json
+     * @responseFile 200 resources/responses/admin/order/preview.json
      */
     public function __invoke(OrderCreateData $data, OrderCalculationService $orderCalculationService): ApiSuccessResponse
     {

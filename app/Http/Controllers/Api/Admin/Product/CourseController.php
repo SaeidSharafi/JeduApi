@@ -40,7 +40,7 @@ final class CourseController extends Controller
      * @queryParam page integer Page number for pagination. Example: 2
      * @queryParam per_page integer Number of results per page. Example: 15
      *
-     * @responseFile 200 responses/course/index.json
+     * @responseFile 200 resources/responses/admin/course/index.json
      */
     public function index(): ApiResponseInterface
     {
@@ -58,7 +58,7 @@ final class CourseController extends Controller
     /**
      * Create a new course.
      *
-     * @responseFile 201 responses/201.json
+     * @responseFile 201 resources/responses/201.json
      */
     public function store(CreateCourseData $data, CreateCourseAction $action): ApiResponseInterface
     {
@@ -72,9 +72,9 @@ final class CourseController extends Controller
     /**
      *  return the specified course detail.
      *
-     * @responseFile 200 responses/course/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/course/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function show(Course $course): ApiResponseInterface
     {
@@ -94,9 +94,9 @@ final class CourseController extends Controller
     /**
      * Update the specified course.
      *
-     * @responseFile 200 responses/course/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/course/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function update(CreateCourseData $data, Course $course, UpdateCourseAction $action): ApiResponseInterface
     {
@@ -119,8 +119,8 @@ final class CourseController extends Controller
      *
      * @response 204
      *
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      *
      * @throws ModelHasRelationshipDataException
      */

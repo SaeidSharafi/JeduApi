@@ -35,7 +35,7 @@ final class VendorController extends Controller
      * @queryParam filter[email] string Filter vendors by email. Example: vendor@example.com
      * @queryParam filter[phone] string Filter vendors by phone number. Example: +1234567890
      *
-     * @responseFile responses/vendor/index.json
+     * @responseFile resources/responses/admin/vendor/index.json
      */
     public function index(): ApiResponseInterface
     {
@@ -54,8 +54,8 @@ final class VendorController extends Controller
      *
      * @response 201
      *
-     * @responseFile 422 responses/422.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 422 resources/responses/422.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function store(CreateVendorData $data, CreateVendorAction $action): ApiResponseInterface
     {
@@ -69,9 +69,9 @@ final class VendorController extends Controller
      * Display the specified vendor.
      * This endpoint returns detailed information about a specific vendor, including associated media.
      *
-     * @responseFile responses/vendor/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile resources/responses/admin/vendor/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function show(Vendor $vendor): ApiResponseInterface
     {
@@ -94,9 +94,9 @@ final class VendorController extends Controller
     /**
      * Update the specified vendor in database.
      *
-     * @responseFile responses/vendor/show.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile resources/responses/admin/vendor/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function update(CreateVendorData $data, Vendor $vendor, UpdateVendorAction $action): ApiResponseInterface
     {
@@ -123,8 +123,8 @@ final class VendorController extends Controller
      *
      * @response 204
      *
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function destroy(Vendor $vendor, DeleteVendorAction $action): JsonResponse|ApiResponseInterface
     {

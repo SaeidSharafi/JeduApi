@@ -23,7 +23,7 @@ final class AboutUsController extends Controller
      *
      * Returns the configuration settings for the About Us page.
      *
-     * @responseFile storage/responses/shop/aboutus/show.json
+     * @responseFile resources/responses/shop/aboutus/show.json
      */
     public function __invoke(SettingsService $service): ApiResponseInterface
     {

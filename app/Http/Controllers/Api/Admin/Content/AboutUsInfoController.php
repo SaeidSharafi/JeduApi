@@ -23,7 +23,7 @@ final class AboutUsInfoController extends Controller
     /**
      * Get about us settings.
      *
-     * @responseFile 200 responses/settings/about-us.json
+     * @responseFile 200 resources/responses/admin/settings/about-us.json
      */
     public function show(SettingsService $settingsService): ApiResponseInterface
     {
@@ -36,8 +36,8 @@ final class AboutUsInfoController extends Controller
     /**
      * Update about us settings.
      *
-     * @responseFile 200 responses/settings/about-us.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/settings/about-us.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function update(AboutUsCreateData $data, SettingsService $settingsService): ApiResponseInterface
     {

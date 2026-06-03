@@ -22,7 +22,7 @@ final class TermSelectOptionController extends Controller
      *
      * @queryParam  q string The search query for filtering terms (match name and academic_year). Example: "2023"
      *
-     * @responseFile 200 responses/select-options/term.json
+     * @responseFile 200 resources/responses/admin/select-options/term.json
      */
     public function __invoke()
     {

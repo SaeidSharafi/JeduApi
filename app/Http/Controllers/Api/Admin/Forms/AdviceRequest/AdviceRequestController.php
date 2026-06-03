@@ -35,9 +35,9 @@ final class AdviceRequestController extends Controller
      * @queryParam per_page integer Number of items per page. Default is 15. Example: 15
      * @queryParam page integer Page number. Default is 1. Example: 1
      *
-     * @responseFile 200 responses/advice-request/index.json
+     * @responseFile 200 resources/responses/admin/advice-request/index.json
      *
-     * @response 403 responses/403.json
+     * @response 403 resources/responses/403.json
      */
     public function index(): ApiResponseInterface
     {
@@ -61,10 +61,10 @@ final class AdviceRequestController extends Controller
      *
      * Display detailed information about a specific advice request.
      *
-     * @responseFile 200 responses/advice-request/show.json
+     * @responseFile 200 resources/responses/admin/advice-request/show.json
      *
-     * @response 403 responses/403.json
-     * @response 404 responses/404.json
+     * @response 403 resources/responses/403.json
+     * @response 404 resources/responses/404.json
      */
     public function show(AdviceRequest $adviceRequest): ApiResponseInterface
     {
@@ -79,10 +79,10 @@ final class AdviceRequestController extends Controller
      *
      * Update the details of a specific advice request.
      *
-     * @responseFile 200 responses/advice-request/show.json
+     * @responseFile 200 resources/responses/admin/advice-request/show.json
      *
-     * @response 403 responses/403.json
-     * @response 404 responses/404.json
+     * @response 403 resources/responses/403.json
+     * @response 404 resources/responses/404.json
      */
     public function update(
         AdviceRequestUpdateData $data,
@@ -103,8 +103,8 @@ final class AdviceRequestController extends Controller
      * Remove a specific advice request from the system.
      *
      * @response 204
-     * @response 403 responses/403.json
-     * @response 404 responses/404.json
+     * @response 403 resources/responses/403.json
+     * @response 404 resources/responses/404.json
      */
     public function destroy(AdviceRequest $adviceRequest): JsonResponse
     {

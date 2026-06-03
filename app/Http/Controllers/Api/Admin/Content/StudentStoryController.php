@@ -39,8 +39,8 @@ final class StudentStoryController extends Controller
      * @queryParam per_page integer Number of items per page. Example: 15
      * @queryParam page integer Page number. Example: 1
      *
-     * @responseFile 200 responses/settings/student_story/index.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/settings/student_story/index.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function index(): ApiResponseInterface
     {
@@ -74,10 +74,10 @@ final class StudentStoryController extends Controller
     /**
      * Get a Student Story
      *
-     * @responseFile 200 responses/settings/student_story/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 422 responses/422.json
+     * @responseFile 200 resources/responses/admin/settings/student_story/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function show(StudentStory $studentStory): ApiResponseInterface
     {
@@ -91,10 +91,10 @@ final class StudentStoryController extends Controller
     /**
      * Create a Student Story
      *
-     * @responseFile 201 responses/settings/student_story/show.json
-     * @responseFile 422 responses/422.json
-     * @responseFile 403 responses/403.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 201 resources/responses/admin/settings/student_story/show.json
+     * @responseFile 422 resources/responses/422.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function store(StudentStoryCreateData $data, CreateStudentStoryAction $action): ApiResponseInterface
     {
@@ -109,10 +109,10 @@ final class StudentStoryController extends Controller
     /**
      * Update a Student Story
      *
-     * @responseFile 200 responses/settings/student_story/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 422 responses/422.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/settings/student_story/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function update(
         StudentStoryCreateData $data,
@@ -131,8 +131,8 @@ final class StudentStoryController extends Controller
      *
      * @response 204
      *
-     * @responseFile 404 responses/404.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function destroy(StudentStory $studentStory, DeleteStudentStoryAction $action): JsonResponse
     {

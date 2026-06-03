@@ -28,7 +28,7 @@ final class ProductableSelectOptionController extends Controller
      *     digital_asset. Example: ["course", "seminar"]
      * @queryParam  limit integer The maximum number of results to return. Default is 15. Example: 10
      *
-     * @responseFile 200 responses/select-options/productable.json
+     * @responseFile 200 resources/responses/admin/select-options/productable.json
      */
     public function __invoke()
     {

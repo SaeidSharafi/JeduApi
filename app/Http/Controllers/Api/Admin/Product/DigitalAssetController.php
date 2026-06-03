@@ -47,7 +47,7 @@ final class DigitalAssetController extends Controller
      * @queryParam filter[is_attachable_to_course] boolean Filter by whether the asset is attachable to a course.
      * @queryParam sort string Sort by asset name, slug, or status. Prefix with '-' for descending order (e.g., -name).
      *
-     * @responseFile 200 responses/digital-asset/index.json
+     * @responseFile 200 resources/responses/admin/digital-asset/index.json
      */
     public function index(): ApiResponseInterface
     {
@@ -93,9 +93,9 @@ final class DigitalAssetController extends Controller
     /**
      * Display the specified file.
      *
-     * @responseFile 200 responses/digital-asset/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/digital-asset/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function show(DigitalAsset $digitalAsset): ApiResponseInterface
     {
@@ -127,9 +127,9 @@ final class DigitalAssetController extends Controller
     /**
      * Update the specified file in database.
      *
-     * @responseFile 200 responses/digital-asset/show.json
-     * @responseFile 404 responses/404.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/digital-asset/show.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function update(
         CreateDigitalAssetData $request,

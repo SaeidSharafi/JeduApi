@@ -36,8 +36,8 @@ final class OrderItemController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      *
-     * @responseFile 200 responses/order-item/show.json
-     * @responseFile 403 responses/403.json
+     * @responseFile 200 resources/responses/admin/order-item/show.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function show(Order $order, OrderItem $orderItem)
     {

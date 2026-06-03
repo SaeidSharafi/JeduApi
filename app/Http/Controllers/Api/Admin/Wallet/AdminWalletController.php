@@ -27,7 +27,7 @@ final class AdminWalletController extends Controller
      * @queryParam sort string Sort by a field. Allowed values: id, balance, created_at. Example: -created_at
      * @queryParam per_page integer Number of results per page. Example: 15
      *
-     * @responseFile 200 responses/wallet/index.json
+     * @responseFile 200 resources/responses/admin/wallet/index.json
      */
     public function index(Request $request): ApiResponseInterface
     {
@@ -43,8 +43,8 @@ final class AdminWalletController extends Controller
     /**
      * Display the specified wallet.
      *
-     * @responseFile 200 responses/wallet/show.json
-     * @responseFile 404 responses/404.json
+     * @responseFile 200 resources/responses/admin/wallet/show.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function show(Wallet $wallet): ApiResponseInterface
     {

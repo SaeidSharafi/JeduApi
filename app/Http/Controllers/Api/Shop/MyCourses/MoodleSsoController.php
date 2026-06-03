@@ -25,7 +25,7 @@ final class MoodleSsoController extends Controller
      *
      * Returns a live Moodle SSO login URL for the authenticated user's LMS_MOODLE enrollment.
      *
-     * @responseFile storage/responses/shop/enrollments/moodle-sso.json
+     * @responseFile resources/responses/shop/enrollments/moodle-sso.json
      *
      * @queryParam wantsurl string Optional URL to redirect to after Moodle SSO login. Example: "https://lms.example.com/course/view.php?id=2"
      *
