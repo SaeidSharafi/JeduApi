@@ -11,7 +11,9 @@ set('application', 'jedu-api');
 set('repository', 'ssh://git@ssh.git.jedu.ir:222/Jedu/Jedu-api.git');
 set('git_tty', false);
 set('keep_releases', 5);
-set('writable_mode', 'acl');
+set('http_user', 'www-data');
+set('writable_mode', 'chmod');
+set('writable_chmod_mode', '0775');
 set('writable_use_sudo', false);
 set('php_binary', 'php8.4');
 set('bin/php', 'php8.4');
@@ -36,6 +38,16 @@ host('production')
     ->setIdentityFile('~/.ssh/deploy_key')
     ->setDeployPath('/var/www/api.jedu.ir')
     ->set('branch', 'main');
+
+task('deploy:secure_permissions', function () {
+    run('cd {{release_path}} && chgrp -R www-data bootstrap/cache storage');
+    run('cd {{release_path}} && chmod -R 775 bootstrap/cache storage');
+
+    // Set the SGID bit (the 's' in 2775)
+    // This forces any future files created in these directories to automatically
+    // inherit the 'www-data' group, preventing lockouts!
+    run('cd {{release_path}} && chmod -R 2775 bootstrap/cache storage');
+});
 
 task('scribe:generate', function () {
     run('cd {{release_path}} && {{php_binary}} artisan scribe:generate');
@@ -65,6 +77,7 @@ task('deploy', [
     'permission:update',
     'artisan:optimize',
     'db:seed:demo',
+    'deploy:secure_permissions',
     'deploy:publish',
     'php-fpm:reload',
     'scribe:generate',
