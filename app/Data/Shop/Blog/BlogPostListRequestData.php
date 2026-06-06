@@ -23,7 +23,7 @@ final class BlogPostListRequestData extends Data
     {
         return [
             'is_featured'   => ['sometimes', 'boolean'],
-            'category_slug' => ['sometimes', 'string', 'exists:blog_categories,slug'],
+            'category_slug' => ['sometimes', 'string'],
             'sortBy'        => ['sometimes', 'string', Rule::in(['created_at', 'published_at', 'popularity'])],
             'sortOrder'     => ['sometimes', 'string', 'in:asc,desc'],
             'page'          => ['sometimes', 'integer', 'min:1'],
