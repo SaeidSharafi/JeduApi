@@ -8,7 +8,7 @@
       "product_id": 7,
       "text": "در این وبینار آنلاین و جذاب، با دکتر فیروز نادری به اعماق کیهان سفر کنید و با جدیدترین یافته‌های تلسکوپ جیمز وب آشنا شوید. فرصت را از دست ندهید.",
       "image_id": null,
-      "image_url": "fake-cover.svg"
+      "image_url": "banner-webinar.svg"
     },
     "order": 0,
     "is_active": true,
@@ -26,7 +26,7 @@
       "content": "مسیر یادگیری خود را با برترین دوره‌های آموزشی در حوزه‌های برنامه‌نویسی، هنر و کسب‌وکار آغاز کنید.",
       "preset": "default",
       "image_id": null,
-      "image_url": "main.svg"
+      "image_url": "banner-course.svg"
     },
     "order": 1,
     "is_active": true,
@@ -123,7 +123,7 @@
       "content": "مجموعه‌ای از برترین اساتید و متخصصان کشور، تجربیات خود را با شما به اشتراک می‌گذارند.",
       "preset": "default",
       "image_id": null,
-      "image_url": "fake-gallery.svg"
+      "image_url": "banner-course.svg"
     },
     "order": 7,
     "is_active": true,

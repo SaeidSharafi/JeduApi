@@ -2,7 +2,39 @@
   {
     "id": 1,
     "key": "about_us",
-    "value": {"title": "درباره جِدو", "description": "جِدو یک پلتفرم آموزشی آنلاین است که با هدف ارائه آموزش‌های با کیفیت در حوزه‌های فناوری، هنر، علوم انسانی و کسب‌وکار فعالیت می‌کند. ما به شما کمک می‌کنیم تا مهارت‌های خود را ارتقا دهید و در مسیر یادگیری همراه شما هستیم.", "mission": "توانمندسازی افراد از طریق آموزش دست‌رس‌پذیر و با کیفیت", "vision": "پیشرو در آموزش آنلاین ایران با رویکردی نوآورانه و کاربرمحور"},
+    "value": {
+      "title": "درباره جدویار",
+      "main_block": {
+        "title": "جدویار، مرکز آموزش‌های تخصصی و مهارتی",
+        "content": "جدویار با هدف ارتقاء سطح دانش و مهارت‌های افراد در زمینه‌های مختلف، از سال ۱۳۹۰ فعالیت خود را آغاز کرده است. این مرکز با بهره‌گیری از اساتید مجرب و امکانات پیشرفته، دوره‌های آموزشی متنوعی را در حوزه‌های فنی، مهندسی، علوم انسانی، زبان‌های خارجی و هنر ارائه می‌دهد. جدویار با تاکید بر آموزش‌های کاربردی و پروژه‌محور، تلاش می‌کند تا دانشجویان را برای ورود به بازار کار آماده سازد و نقش موثری در توسعه نیروی انسانی متخصص ایفا کند.",
+        "image": "icon.svg"
+      },
+      "images": [
+        "gallery-tech.svg",
+        "gallery-art.svg",
+        "gallery-nature.svg"
+      ],
+      "active_course_groups_block": {
+        "title": "گروه‌های آموزشی فعال",
+        "content": "<ol><li>فنی و مهندسی</li><li>مهندسی کامپیوتر</li><li>علوم انسانی</li><li>زبان‌های خارجه</li><li>فرهنگ و هنر</li><li>علوم پزشکی</li><li>کشاورزی</li><li>صنعت</li><li>آموزش‌های سازمانی</li><li>آموزش مجازی</li><li>آموزش‌های عالی آزاد</li><li>اشتغال و کارآفرینی</li></ol>",
+        "image": "icon.svg"
+      },
+      "capabilities_block": {
+        "title": "قابلیت‌های جدویار",
+        "content": "<ul><li>گسترده‌ترین شبکه آموزش در سطح استان</li><li>برگزاری سالانه بیش از ۶۰۰ دوره عمومی و تخصصی</li><li>آموزش بیش از ۲۰۰۰۰ نفر در سال</li><li>اجرای دوره‌های آموزشی ویژه کارکنان دولت، شهرداری‌ها و دهیاری‌ها</li><li>برخورداری از سامانه یکپارچه آموزش‌های مجازی</li><li>اجرای دوره‌های غیرحضوری، آنلاین، پروژه‌محور و شغل‌محور</li><li>صدور گواهینامه‌های معتبر و قابل ترجمه</li><li>همکاری با دستگاه‌های اجرایی از طریق تفاهم‌نامه‌های رسمی</li><li>برگزاری آزمون‌های استخدامی و ارزیابی‌های شایستگی</li><li>انجام نیازسنجی مستمر و طراحی دوره‌های متناسب با بازار کار</li><li>برخورداری از واحد اشتغال و کارآفرینی</li><li>دارای اساتید متخصص، مجرب، توانمند، متعهد و متدین</li></ul>",
+        "image": "icon.svg"
+      },
+      "about_online_course_block_1": {
+        "title": "دوره‌های آنلاین جدویار",
+        "content": "جدویار با ارائه دوره‌های آنلاین متنوع در زمینه‌های مختلف، امکان یادگیری از هر مکان و در هر زمان را برای شما فراهم می‌کند. با استفاده از فناوری‌های پیشرفته، تجربه‌ای بی‌نظیر از آموزش آنلاین را تجربه کنید.",
+        "image": "icon.svg"
+      },
+      "about_online_course_block_2": {
+        "title": "چرا دوره‌های آنلاین جدویار؟",
+        "content": "<ul><li>دسترسی آسان به محتوای آموزشی از هر نقطه جهان</li><li>انعطاف‌پذیری در زمان‌بندی یادگیری</li><li>تعامل مستقیم با اساتید و دانشجویان از طریق انجام‌های زنده و تالارهای گفتگو</li><li>محتوای آموزشی به‌روز و مطابق با نیازهای بازار کار</li><li>پشتیبانی فنی و آموزشی مستمر</li><li>امکان دریافت گواهینامه معتبر پس از اتمام دوره</li></ul>",
+        "image": "icon.svg"
+      }
+    },
     "type": "json",
     "group": "content",
     "created_at": "2024-09-01 08:00:00",
@@ -11,7 +43,28 @@
   {
     "id": 2,
     "key": "contact_info",
-    "value": {"address": "تهران، خیابان ولیعصر، نبش خیابان پاکستان، ساختمان جِدو", "phones": ["021-12345678", "021-87654321"], "email": "info@jedushop.com", "working_hours": "شنبه تا چهارشنبه ۹ صبح تا ۶ عصر"},
+    "value": {
+      "addresses": [
+        {
+          "name": "دفتر مرکزی",
+          "address": "تهران، خیابان آزادی، پلاک ۱۲۳",
+          "location_url": "https://maps.example.com/?q=35.6892,51.3890",
+          "phone": "۰۲۱-۱۲۳۴۵۶۷۸"
+        }
+      ],
+      "working_hours": "شنبه تا چهارشنبه، ۹ صبح تا ۵ بعدازظهر",
+      "support_email": "info@jedu.ir",
+      "social_media_links": [
+        {
+          "platform": "instagram",
+          "link": "https://instagram.com/jedushop"
+        },
+        {
+          "platform": "linkedin",
+          "link": "https://linkedin.com/company/jedushop"
+        }
+      ]
+    },
     "type": "json",
     "group": "content",
     "created_at": "2024-09-01 08:00:00",
@@ -20,7 +73,16 @@
   {
     "id": 3,
     "key": "collaboration",
-    "value": {"title": "همکاری با جِدو", "description": "ما همواره استقبال می‌کنیم از همکاری با اساتید، مدرسان و سازمان‌های آموزشی. اگر شما هم دغدغه آموزش دارید، با ما تماس بگیرید.", "benefits": ["دسترسی به جامعه بزرگ مخاطبان", "پلتفرم قدرتمند آموزشی", "پشتیبانی فنی و محتوایی", "تسهیلات مالی ویژه"]},
+    "value": {
+      "title": "همکاری با جِدو",
+      "description": "ما همواره استقبال می‌کنیم از همکاری با اساتید، مدرسان و سازمان‌های آموزشی. اگر شما هم دغدغه آموزش دارید، با ما تماس بگیرید.",
+      "benefits": [
+        "دسترسی به جامعه بزرگ مخاطبان",
+        "پلتفرم قدرتمند آموزشی",
+        "پشتیبانی فنی و محتوایی",
+        "تسهیلات مالی ویژه"
+      ]
+    },
     "type": "json",
     "group": "content",
     "created_at": "2024-09-01 08:00:00",
@@ -29,7 +91,46 @@
   {
     "id": 4,
     "key": "header",
-    "value": {"logo_alt": "جِدو شاپ", "show_search": true, "show_cart": true, "show_wallet": true, "menu_items": [{"title": "دوره‌ها", "link": "/courses"}, {"title": "وبینارها", "link": "/seminars"}, {"title": "مقالات", "link": "/blog"}, {"title": "درباره ما", "link": "/about"}]},
+    "value": {
+      "logo": null,
+      "logo_url": "logo-tech.svg",
+      "navigation_links": [
+        {
+          "title": "درباره ما",
+          "url": "/about-us"
+        },
+        {
+          "title": "ارتباط با ما",
+          "url": "/contact-us"
+        },
+        {
+          "title": "کتب و جزوات",
+          "url": "/books"
+        },
+        {
+          "title": "وبینارها",
+          "url": "/webinars"
+        },
+        {
+          "title": "مدرک بین المللی",
+          "url": "/international-certificate"
+        },
+        {
+          "title": "استعلام مدرک",
+          "url": "/certificate-verification"
+        },
+        {
+          "title": "بلاگ",
+          "url": "/blog"
+        },
+        {
+          "title": "دوره‌ها",
+          "url": "/courses"
+        }
+      ],
+      "contact_phone": "+98-21-12345678",
+      "contact_email": "info@jedu.ir"
+    },
     "type": "json",
     "group": "appearance",
     "created_at": "2024-09-01 08:00:00",
@@ -38,7 +139,68 @@
   {
     "id": 5,
     "key": "footer",
-    "value": {"description": "جِدو، سکوی پرتاب شما به دنیای مهارت‌های نوین", "copyright": "تمامی حقوق مادی و معنوی این سایت متعلق به جِدو می‌باشد.", "social_links": [{"platform": "instagram", "url": "https://instagram.com/jedushop"}, {"platform": "telegram", "url": "https://t.me/jedushop"}, {"platform": "linkedin", "url": "https://linkedin.com/company/jedushop"}]},
+    "value": {
+      "logo": null,
+      "logo_url": "logo-tech.svg",
+      "logo_alt": "جهاددانشگاهی قزوین",
+      "caption": "شریک شما در آموزش مدرن",
+      "support_link": "/contact-us",
+      "support_email_address": "support@jedu.ir",
+      "addresses": [
+        {
+          "name": "دفتر مرکزی",
+          "address": "تهران، خیابان آزادی، پلاک ۱۲۳",
+          "location_url": "https://maps.example.com/?q=35.6892,51.3890",
+          "phone": "۰۲۱-۱۲۳۴۵۶۷۸"
+        }
+      ],
+      "categories": [
+        "دوره‌ها",
+        "معماری",
+        "آموزش صنعتی",
+        "زبان‌های خارجی"
+      ],
+      "main_links": [
+        {
+          "title": "درباره ما",
+          "link": "/about-us"
+        },
+        {
+          "title": "وبلاگ",
+          "link": "/blog"
+        },
+        {
+          "title": "تماس با ما",
+          "link": "/contact-us"
+        },
+        {
+          "title": "قوانین",
+          "link": "/rules"
+        }
+      ],
+      "social_media_links": [
+        {
+          "platform": "instagram",
+          "link": "https://instagram.com/jedushop"
+        },
+        {
+          "platform": "linkedin",
+          "link": "https://linkedin.com/company/jedushop"
+        }
+      ],
+      "certifications": [
+        {
+          "name": "اینماد",
+          "image": "favicon-tech.svg",
+          "html": ""
+        },
+        {
+          "name": "ساماندهی",
+          "image": "favicon-art.svg",
+          "html": ""
+        }
+      ]
+    },
     "type": "json",
     "group": "appearance",
     "created_at": "2024-09-01 08:00:00",
@@ -47,7 +209,9 @@
   {
     "id": 6,
     "key": "rules",
-    "value": {"title": "قوانین و مقررات", "sections": [{"title": "ثبت‌نام", "body": "کاربران موظفند اطلاعات صحیح و کامل در هنگام ثبت‌نام ارائه دهند."}, {"title": "حضور در کلاس‌ها", "body": "حضور به موقع در کلاس‌های آنلاین الزامی است."}, {"title": "انصراف و بازگشت وجه", "body": "تا ۷ روز پس از ثبت‌نام امکان انصراف با کسر ۱۰٪ کارمزد وجود دارد."}]},
+    "value": {
+      "text": "<h1>قوانین و مقررات</h1><p>این بخش شامل قوانین و مقررات استفاده از سایت است.</p>"
+    },
     "type": "json",
     "group": "legal",
     "created_at": "2024-09-01 08:00:00",
@@ -56,7 +220,7 @@
   {
     "id": 7,
     "key": "sliders",
-    "value": {"autoplay": true, "autoplay_speed": 5000, "show_dots": true, "show_arrows": true},
+    "value": [],
     "type": "json",
     "group": "appearance",
     "created_at": "2024-09-01 08:00:00",
@@ -65,7 +229,7 @@
   {
     "id": 8,
     "key": "home_page_blocks",
-    "value": {"show_categories": true, "show_featured_courses": true, "show_popular_seminars": true, "show_blog": true, "show_testimonials": true, "show_partners": true},
+    "value": [],
     "type": "json",
     "group": "appearance",
     "created_at": "2024-09-01 08:00:00",
@@ -74,7 +238,15 @@
   {
     "id": 9,
     "key": "ims",
-    "value": {"enabled": false, "url": null, "api_key": null},
+    "value": {
+      "base_url": null,
+      "api_key": null,
+      "enabled": false,
+      "create_studets": true,
+      "update_studets": true,
+      "create_enrollments": true,
+      "update_enrollments": true
+    },
     "type": "json",
     "group": "integrations",
     "created_at": "2024-09-01 08:00:00",
@@ -83,7 +255,18 @@
   {
     "id": 10,
     "key": "moodle",
-    "value": {"enabled": false, "url": null, "token": null},
+    "value": {
+      "base_url": null,
+      "token": null,
+      "auth_userkey_token": null,
+      "default_role_id": 5,
+      "default_login_redirect_script": "/my/",
+      "enabled": false,
+      "create_studets": true,
+      "update_studets": true,
+      "create_enrollments": true,
+      "update_enrollments": true
+    },
     "type": "json",
     "group": "integrations",
     "created_at": "2024-09-01 08:00:00",
@@ -92,7 +275,14 @@
   {
     "id": 11,
     "key": "big_blue_button",
-    "value": {"enabled": true, "url": "https://bbb.jedushop.com/bigbluebutton/api", "secret": "***"},
+    "value": {
+      "enabled": false,
+      "base_url": null,
+      "secret": null,
+      "api_path": "/bigbluebutton/api",
+      "default_attendee_password": "ap",
+      "default_moderator_password": "mp"
+    },
     "type": "json",
     "group": "integrations",
     "created_at": "2024-09-01 08:00:00",
@@ -101,7 +291,11 @@
   {
     "id": 12,
     "key": "spot_player",
-    "value": {"enabled": true, "api_url": "https://api.spotplayer.ir/v1", "api_key": "***"},
+    "value": {
+      "endpoint": null,
+      "api_key": null,
+      "sandbox": false
+    },
     "type": "json",
     "group": "integrations",
     "created_at": "2024-09-01 08:00:00",
