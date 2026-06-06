@@ -12,9 +12,7 @@ set('repository', 'ssh://git@ssh.git.jedu.ir:222/Jedu/Jedu-api.git');
 set('git_tty', false);
 set('keep_releases', 5);
 set('http_user', 'www-data');
-set('writable_mode', 'chmod');
-set('writable_chmod_mode', '0775');
-set('writable_use_sudo', true);
+set('writable_mode', 'acl');
 set('php_binary', 'php8.4');
 set('bin/php', 'php8.4');
 set('bin/composer', '{{bin/php}} $(which composer)');
@@ -39,11 +37,6 @@ host('production')
     ->setDeployPath('/var/www/api.jedu.ir')
     ->set('branch', 'main');
 
-task('deploy:secure_permissions', function () {
-    run('cd {{release_path}} && sudo chgrp -R www-data bootstrap/cache storage');
-    run('cd {{release_path}} && sudo chmod -R 775 bootstrap/cache storage');
-    run('cd {{release_path}} && sudo chmod -R 2775 bootstrap/cache storage');
-});
 
 task('scribe:generate', function () {
     run('cd {{release_path}} && {{php_binary}} artisan scribe:generate');
@@ -54,7 +47,9 @@ task('permission:update', function () {
     run('cd {{release_path}} && {{php_binary}} artisan permissions:sync --guard=user');
 });
 task('db:seed:demo', function () {
-    run('cd {{release_path}} && {{php_binary}} artisan db:seed --class=DemoSeeder');
+    if (get('migrate-fresh')) {
+        run('cd {{release_path}} && {{php_binary}} artisan db:seed --class=DemoSeeder');
+    }
 });
 task('scribe:generate', function () {
     run('cd {{release_path}} && {{php_binary}} artisan scribe:generate');
@@ -73,7 +68,6 @@ task('deploy', [
     'permission:update',
     'artisan:optimize',
     'db:seed:demo',
-    'deploy:secure_permissions',
     'deploy:publish',
     'php-fpm:reload',
     'scribe:generate',
