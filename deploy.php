@@ -11,7 +11,8 @@ set('application', 'jedu-api');
 set('repository', 'ssh://git@ssh.git.jedu.ir:222/Jedu/Jedu-api.git');
 set('git_tty', false);
 set('keep_releases', 5);
-set('writable_mode', 'skip');
+set('writable_mode', 'acl');
+set('writable_use_sudo', false);
 set('php_binary', 'php8.4');
 set('bin/php', 'php8.4');
 set('bin/composer', '{{bin/php}} $(which composer)');
@@ -58,6 +59,7 @@ task('deploy', [
     'deploy:prepare',
     'deploy:vendors',
     'artisan:storage:link',
+    'deploy:writable',
     'artisan:cache:clear',
     'artisan:optimize:clear',
     'permission:update',
