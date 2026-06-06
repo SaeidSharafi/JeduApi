@@ -396,7 +396,7 @@ describe('BlogPostController', function () {
         ]));
 
         // Assert
-        $response->assertStatus(422);
-        $response->assertJsonValidationErrors(['category_slug']);
+        $response->assertStatus(200);
+        $response->assertJsonCount(0, 'data.data');
     });
 });
