@@ -49,6 +49,8 @@ final class SeminarDetailData extends Data
         public ?Collection $categories,
         #[DataCollectionOf(ProductDeliveryOptionData::class)]
         public ?Collection $delivery_options = null,
+        public ?string $event_start_at = null,
+        public ?string $event_ended_at = null,
         public array $media = [],
     ) {}
 
@@ -124,6 +126,8 @@ final class SeminarDetailData extends Data
                 'status'                   => $product->status,
                 'categories'               => $product->categories,
                 'delivery_options'         => $pdoData,
+                'event_start_at'           => $product->event_start_at?->toDateString(),
+                'event_ended_at'           => $product->event_ended_at?->toDateString(),
                 'media'                    => $product->productable->getAllMedia(urlOnly: true),
             ]
         );

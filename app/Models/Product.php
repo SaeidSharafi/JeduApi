@@ -8,6 +8,8 @@ use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\RelationTypeEnum;
 use App\Enums\TermStatusEnum;
 use App\Traits\HasCategories;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -40,6 +42,8 @@ final class Product extends Model
             'is_featured',
             'price_data_cache',
             'details_json',
+            'event_start_at',
+            'event_ended_at',
         ];
 
     /**
@@ -91,6 +95,9 @@ final class Product extends Model
             'latest_registration_end_ts'     => $latestRegistrationEnd?->timestamp,
             'earliest_availability_start_ts' => $earliestAvailabilityStart?->timestamp,
             'latest_availability_end_ts'     => $latestAvailabilityEnd?->timestamp,
+
+            'earliest_event_start_ts' => $this->event_start_at?->timestamp ?? 0,
+            'latest_event_ended_ts'   => $this->event_ended_at?->timestamp ?? 4102444800, // year 2100
 
             'price'             => $this->productPrice?->min_price    ?? ($this->price_data_cache['min_price'] ?? 0),
             'has_discount'      => $this->productPrice?->has_discount ?? ($this->price_data_cache['has_discount'] ?? false),
@@ -229,6 +236,38 @@ final class Product extends Model
             ->wherePivot('relation_type', RelationTypeEnum::UPSELL->value);
     }
 
+    #[Scope]
+    protected function eventEnded($query)
+    {
+        return $query->whereNotNull('event_ended_at')
+            ->where('event_ended_at', '<', today()->startOfDay());
+    }
+
+    #[Scope]
+    protected function eventNotStarted($query)
+    {
+        return $query->whereNotNull('event_start_at')
+            ->where('event_start_at', '>', today()->startOfDay());
+    }
+
+    #[Scope]
+    protected function eventOngoing($query)
+    {
+        return $query->whereNotNull('event_start_at')
+            ->where('event_start_at', '<=', today()->startOfDay())
+            ->whereNotNull('event_ended_at')
+            ->where('event_ended_at', '>=', today()->startOfDay());
+    }
+
+    #[Scope]
+    protected function eventNotEnded($query)
+    {
+        return $query->where(function (Builder $q): void {
+            $q->whereNull('event_ended_at')
+                ->orWhere('event_ended_at', '>=', today()->startOfDay());
+        });
+    }
+
     protected function casts(): array
     {
         return [
@@ -236,6 +275,8 @@ final class Product extends Model
             'is_featured'      => 'boolean',
             'price_data_cache' => 'array',
             'details_json'     => 'array',
+            'event_start_at'   => 'datetime',
+            'event_ended_at'   => 'datetime',
             'status'           => PublicationStatusEnum::class,
             'created_at'       => 'datetime',
             'updated_at'       => 'datetime',

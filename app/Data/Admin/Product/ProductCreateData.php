@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Product;
 
+use App\Data\Transformer\CarbonFromJalaliString;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Rules\ProductableExistRule;
+use Carbon\Carbon;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
@@ -26,7 +30,11 @@ final class ProductCreateData extends Data
         public ?string $name,
         public bool $is_featured,
         public array $categories,
-        public ?array $details_json
+        public ?array $details_json,
+        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]
+        public ?Carbon $event_start_at = null,
+        #[WithCast(CarbonFromJalaliString::class, 'Y-m-d H:i:s')]
+        public ?Carbon $event_ended_at = null,
     ) {}
 
     public static function rules(?ValidationContext $context = null): array
@@ -46,7 +54,24 @@ final class ProductCreateData extends Data
             'categories'        => ['required', 'array'],
             'categories.*'      => ['required', 'integer', 'exists:categories,id'],
             'details_json'      => ['present', 'array'],
+            'event_start_at'    => ['nullable', 'date_format:Y-m-d H:i:s'],
+            'event_ended_at'    => ['nullable', 'date_format:Y-m-d H:i:s', 'after_or_equal:event_start_at'],
         ];
+    }
+
+    public static function withValidator(Validator $validator): void
+    {
+        $validator->after(function ($validator) {
+            $data     = $validator->getData();
+            $startSet = ! empty($data['event_start_at']);
+            $endSet   = ! empty($data['event_ended_at']);
+
+            if ($startSet && ! $endSet) {
+                $validator->errors()->add('event_ended_at', 'The event_ended_at field is required when event_start_at is provided.');
+            } elseif (! $startSet && $endSet) {
+                $validator->errors()->add('event_start_at', 'The event_start_at field is required when event_ended_at is provided.');
+            }
+        });
     }
 
     /**
@@ -122,6 +147,16 @@ final class ProductCreateData extends Data
                 'description' => 'Additional details for the product (structure may vary by productable_type)',
                 'required'    => true,
                 'example'     => ['key' => 'value'],
+            ],
+            'event_start_at' => [
+                'description' => 'Event start date in Y-m-d H:i:s format. Must be provided together with event_ended_at.',
+                'required'    => false,
+                'example'     => '1404-06-01 00:00:00',
+            ],
+            'event_ended_at' => [
+                'description' => 'Event end date in Y-m-d H:i:s format. Must be on or after event_start_at.',
+                'required'    => false,
+                'example'     => '1404-06-30 23:59:59',
             ],
         ];
     }

@@ -152,6 +152,9 @@ final class ProductQueryService
             // Apply consolidated availability/registration filters
             $this->applyDatabaseAvailabilityFilters($filter);
 
+        } else {
+            // Default: Exclude past events, only show currently available products
+            $this->eventNotEnded()->contentAvailableNow();
         }
         if ($requestData->sortBy === 'capacity_utilization') {
             return $this
@@ -373,17 +376,74 @@ final class ProductQueryService
 
     public function availabilityStatus(AvailabilityStatusEnum $availabilityStatus): self
     {
-        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($availabilityStatus) {
-            match ($availabilityStatus) {
-                AvailabilityStatusEnum::PAST     => $q->where('available_to', '<', now()->startOfDay()),
-                AvailabilityStatusEnum::UPCOMING => $q->where('available_from', '>', now()->startOfDay()),
-                AvailabilityStatusEnum::ONGOING  => $q
-                    ->where('available_from', '<=', now()->startOfDay())
-                    ->where(function ($q) {
-                        $q->where('available_to', '>=', now()->startOfDay())
-                            ->orWhereNull('available_to');
+        return $this->eventStatus($availabilityStatus);
+    }
+
+    /**
+     * Classify products by event temporal state with fallback to PDO availability windows.
+     *
+     * Event dates (products.event_start_at / products.event_ended_at) take priority.
+     * When both event dates are null, falls back to ProductDeliveryOption available_from/available_to.
+     */
+    public function eventStatus(?AvailabilityStatusEnum $status): static
+    {
+        if ($status === null) {
+            return $this;
+        }
+
+        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($status) {
+            $q->where(function ($inner) use ($status) {
+                match ($status) {
+                    AvailabilityStatusEnum::PAST => $inner->where(function ($sq): void {
+                        // Primary: event_ended_at < today
+                        $sq->where('products.event_ended_at', '<', today()->startOfDay());
+                        // Fallback: available_to < today for products without event dates
+                        $sq->orWhere(function ($inner2): void {
+                            $inner2->whereNull('products.event_ended_at')
+                                ->where('available_to', '<', today()->startOfDay());
+                        });
                     }),
-            };
+                    AvailabilityStatusEnum::UPCOMING => $inner->where(function ($sq): void {
+                        $sq->where('products.event_start_at', '>', today()->startOfDay());
+                        $sq->orWhere(function ($inner2): void {
+                            $inner2->whereNull('products.event_start_at')
+                                ->where('available_from', '>', today()->startOfDay());
+                        });
+                    }),
+                    AvailabilityStatusEnum::ONGOING => $inner->where(function ($sq): void {
+                        $sq->where(function ($inRange): void {
+                            $inRange->whereNotNull('products.event_start_at')
+                                ->where('products.event_start_at', '<=', today()->startOfDay())
+                                ->whereNotNull('products.event_ended_at')
+                                ->where('products.event_ended_at', '>=', today()->startOfDay());
+                        });
+                        $sq->orWhere(function ($fallback): void {
+                            $fallback->whereNull('products.event_start_at')
+                                ->whereNull('products.event_ended_at')
+                                ->where('available_from', '<=', today()->startOfDay())
+                                ->where(function ($availTo): void {
+                                    $availTo->whereNull('available_to')
+                                        ->orWhere('available_to', '>=', today()->startOfDay());
+                                });
+                        });
+                    }),
+                };
+            });
+        });
+    }
+
+    /**
+     * Constrain to products whose event has not ended yet.
+     * Includes products with no event date (event_ended_at IS NULL) and
+     * products where the event end date is today or in the future.
+     */
+    public function eventNotEnded(): static
+    {
+        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q): void {
+            $q->where(function ($inner): void {
+                $inner->whereNull('products.event_ended_at')
+                    ->orWhere('products.event_ended_at', '>=', today()->startOfDay());
+            });
         });
     }
 
@@ -777,7 +837,8 @@ final class ProductQueryService
         }
 
         // Default: Only show products whose content is currently available (ignores registration window)
-        $this->contentAvailableNow();
+        // Exclude products whose events have already ended
+        $this->eventNotEnded()->contentAvailableNow();
     }
 
     /**
@@ -812,13 +873,13 @@ final class ProductQueryService
         if ($filter->availability_status) {
             $startOfDayTs = now()->startOfDay()->timestamp;
             match ($filter->availability_status) {
-                AvailabilityStatusEnum::PAST->value => $query->where('latest_availability_end_ts',
+                AvailabilityStatusEnum::PAST->value => $query->where('latest_event_ended_ts',
                     ['<', $startOfDayTs]),
-                AvailabilityStatusEnum::UPCOMING->value => $query->where('earliest_availability_start_ts',
+                AvailabilityStatusEnum::UPCOMING->value => $query->where('earliest_event_start_ts',
                     ['>', $startOfDayTs]),
                 AvailabilityStatusEnum::ONGOING->value => $query
-                    ->where('earliest_availability_start_ts', ['<=', $startOfDayTs])
-                    ->where('latest_availability_end_ts', ['>=', $startOfDayTs]),
+                    ->where('earliest_event_start_ts', ['<=', $startOfDayTs])
+                    ->where('latest_event_ended_ts', ['>=', $startOfDayTs]),
             };
 
             return;
@@ -839,9 +900,11 @@ final class ProductQueryService
         }
 
         // Default: Only show products whose content is currently available (ignores registration window)
+        // Exclude products whose events have already ended
         $now = now()->timestamp;
         $query->where('earliest_availability_start_ts', ['<=', $now]);
         $query->where('latest_availability_end_ts', ['>=', $now]);
+        $query->where('latest_event_ended_ts', ['>=', now()->startOfDay()->timestamp]);
     }
 
     // === PRIVATE HELPER METHODS ===

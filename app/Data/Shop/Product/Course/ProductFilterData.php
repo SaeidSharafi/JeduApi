@@ -92,7 +92,7 @@ final class ProductFilterData extends Data
                 'example'     => true,
             ],
             $prefix.'availability_status' => [
-                'description' => 'Filter by the temporal state of the product (e.g., past, upcoming, ongoing). Note: This parameter overrides `available_from` and `available_to` if provided. Ignored when `is_available_now` is true.',
+                'description' => 'Filter by the temporal state of the product based on event dates (e.g., past, upcoming, ongoing). Falls back to the content availability window for products without event dates. Note: This parameter overrides `available_from` and `available_to` if provided. Ignored when `is_available_now` is true.',
                 'example'     => AvailabilityStatusEnum::PAST->value,
             ],
             $prefix.'min_price' => [
@@ -124,11 +124,11 @@ final class ProductFilterData extends Data
                 'example'     => '1404-02-01',
             ],
             $prefix.'available_from' => [
-                'description' => 'Filter products that become accessible to users starting from this date.',
+                'description' => 'Filter products whose content/purchase availability window starts on or after this date (not event dates). For event-based products, use `availability_status` instead.',
                 'example'     => '1404-01-01',
             ],
             $prefix.'available_to' => [
-                'description' => 'Filter products that stop being accessible to users after this date.',
+                'description' => 'Filter products whose content/purchase availability window ends on or before this date (not event dates). For event-based products, use `availability_status` instead.',
                 'example'     => '1404-02-01',
             ],
         ];

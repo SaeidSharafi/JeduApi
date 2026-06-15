@@ -52,6 +52,8 @@ final class ProductCardData extends Data
         #[WithTransformer(TranslatableEnumData::class)]
         public ?ProductDeliveryStatusEnum $delivery_type,
         public ?ProductPriceData $price_data = null,
+        public ?string $event_start_at = null,
+        public ?string $event_ended_at = null,
     ) {}
 
     public static function fromModel(
@@ -142,6 +144,8 @@ final class ProductCardData extends Data
             registration_status: $registrationStatus,
             delivery_type: $deliveryStatus,
             price_data: $withFullPriceData ? $priceData : null,
+            event_start_at: $product->event_start_at?->toDateString(),
+            event_ended_at: $product->event_ended_at?->toDateString(),
         );
     }
 

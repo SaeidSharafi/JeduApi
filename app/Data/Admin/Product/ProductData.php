@@ -9,6 +9,8 @@ use App\Data\Admin\Term\ShowTermData;
 use App\Data\Casts\ProductableCast;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\System\MorphTypeEnum;
+use App\Models\Product;
+use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\MapOutputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
@@ -34,6 +36,18 @@ final class ProductData extends Data
         public ?string $short_name,
         public ?string $name,
         public bool $is_featured,
-        public ?array $details_json
+        public ?array $details_json,
+        public ?Verta $event_start_at = null,
+        public ?Verta $event_ended_at = null,
     ) {}
+
+    public static function fromModel(Product $product): self
+    {
+        return self::from([
+            ...$product->toArray(),
+            'productable'    => $product->productable,
+            'event_start_at' => $product->event_start_at,
+            'event_ended_at' => $product->event_ended_at,
+        ]);
+    }
 }

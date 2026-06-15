@@ -33,3 +33,5 @@ laradumps.yaml
 /.weave/plans
 /.weave/runtime
 /.octto/
+/graphify-out
+/.omo

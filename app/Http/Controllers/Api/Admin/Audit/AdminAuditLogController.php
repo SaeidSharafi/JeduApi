@@ -43,6 +43,7 @@ final class AdminAuditLogController extends Controller
      * @queryParam sort string Sort by a field. Allowed values: created_at. Prefix with '-' for descending order (e.g.,
      *             -created_at).
      * @queryParam per_page integer Number of results per page. Example: 15
+     *
      * @responseFile 200 resources/responses/admin/admin-audit-log/index.json
      */
     public function index(Request $request): ApiResponseInterface

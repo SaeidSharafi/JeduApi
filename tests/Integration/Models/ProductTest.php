@@ -21,6 +21,8 @@ test('to array', function (): void {
             'is_featured'       => $product->is_featured,
             'price_data_cache'  => $product->price_data_cache,
             'details_json'      => $product->details_json,
+            'event_start_at'    => null,
+            'event_ended_at'    => null,
             'created_at'        => $product->created_at?->utc()?->toJSON(),
             'updated_at'        => $product->updated_at?->utc()?->toJSON(),
         ]);
