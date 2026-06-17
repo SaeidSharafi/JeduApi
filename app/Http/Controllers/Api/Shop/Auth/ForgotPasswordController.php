@@ -27,13 +27,9 @@ final class ForgotPasswordController extends Controller
      *
      * @group User Authentication
      *
-     * @response {
-     *    "tracking_code": "string",
-     *    "otp_type": "string",
-     *    "identifier": "string"
-     * }
-     * @response status=401 { "message" : 'User does not have password'}
-     * @response status=404 { "message" : 'User not found'}
+     * @responseFile 200 resources/responses/shop/auth/forgot-password.json
+     * @responseFile 422 resources/responses/422.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function __invoke(InitiateAuthRequest $request): ApiResponseInterface
     {

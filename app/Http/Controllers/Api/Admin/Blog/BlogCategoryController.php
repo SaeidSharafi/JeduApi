@@ -33,6 +33,9 @@ final class BlogCategoryController extends Controller
      * @queryParam sort string Sort by fields. Allowed values: name, created_at, updated_at. Prefix with '-' for descending order. Example: -created_at
      * @queryParam per_page integer Number of items per page. Example: 15
      * @queryParam page integer Page number. Example: 1
+     *
+     * @responseFile 200 resources/responses/admin/blog/category/index.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function index(): ApiResponseInterface
     {
@@ -53,6 +56,10 @@ final class BlogCategoryController extends Controller
      * Get Blog Category
      *
      * Display the specified blog category.
+     *
+     * @responseFile 200 resources/responses/admin/blog/category/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function show(BlogCategory $category): ApiResponseInterface
     {
@@ -66,6 +73,10 @@ final class BlogCategoryController extends Controller
      * Create Blog Category
      *
      * Store a newly created blog category in storage.
+     *
+     * @responseFile 201 resources/responses/admin/blog/category/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function store(BlogCategoryCreateData $data, CreateBlogCategoryAction $action): ApiResponseInterface
     {
@@ -80,6 +91,11 @@ final class BlogCategoryController extends Controller
      * Update Blog Category
      *
      * Update the specified blog category in storage.
+     *
+     * @responseFile 200 resources/responses/admin/blog/category/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function update(BlogCategory $category, BlogCategoryUpdateData $data, UpdateBlogCategoryAction $action): ApiResponseInterface
     {
@@ -94,6 +110,10 @@ final class BlogCategoryController extends Controller
      * Delete Blog Category
      *
      * Remove the specified blog category from storage.
+     *
+     * @response 204
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function destroy(BlogCategory $category, DeleteBlogCategoryAction $action): ApiResponseInterface
     {

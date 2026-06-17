@@ -23,14 +23,7 @@ final class SuggestSearchController extends Controller
      * @queryParam q string required The search query. Example: "lap"
      * @queryParam limit int The maximum number of suggestions to return. Default is 5. Example: 10
      *
-     * @response 200 {
-     *   "success": true,
-     *   "data": [
-     *     "Laptop Gaming",
-     *     "Laptop Business",
-     *     "Laptop HP"
-     *   ]
-     * }
+     * @responseFile 200 resources/responses/shop/suggest-search.json
      *
      * @return \Illuminate\Http\JsonResponse
      */

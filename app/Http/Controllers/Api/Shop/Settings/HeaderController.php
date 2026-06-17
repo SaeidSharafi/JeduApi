@@ -22,49 +22,7 @@ final class HeaderController extends Controller
      *
      * Returns the configuration settings for the website header.
      *
-     * @response 200 {
-     *  "message": "عملیات با موفقیت انجام شد.",
-     *  "data": {
-     *      "logo_url": null,
-     *      "navigation_links": [
-     *          {
-     *              "title": "درباره ما",
-     *              "url": "/about-us"
-     *          },
-     *          {
-     *              "title": "ارتباط با ما",
-     *              "url": "/contact-us"
-     *          },
-     *          {
-     *              "title": "کتب و جزوات",
-     *              "url": "/books"
-     *          },
-     *          {
-     *              "title": "وبینارها",
-     *              "url": "/webinars"
-     *          },
-     *          {
-     *              "title": "مدرک بین المللی",
-     *              "url": "/international-certificate"
-     *          },
-     *          {
-     *              "title": "استعلام مدرک",
-     *              "url": "/certificate-verification"
-     *          },
-     *          {
-     *              "title": "بلاگ",
-     *              "url": "/blog"
-     *          },
-     *          {
-     *              "title": "دوره‌ها",
-     *              "url": "/courses"
-     *          }
-     *      ],
-     *      "contact_phone": "+98-21-12345678",
-     *      "contact_email": "info@jedu.ir"
-     *  },
-     *  "metadata": []
-     * }
+     * @responseFile 200 resources/responses/shop/settings/header.json
      * */
     public function __invoke(SettingsService $service): ApiResponseInterface
     {

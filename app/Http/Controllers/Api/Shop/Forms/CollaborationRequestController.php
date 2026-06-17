@@ -20,16 +20,8 @@ final class CollaborationRequestController extends Controller
      *
      * Handles the submission of a collaboration request form.
      *
-     * @response 200 {
-     *          "message": "Your message has been successfully sent. We will get back to you as soon as possible.",
-     *          "data": null,
-     *          "metadata": []
-     * }
-     * @response 429 {
-     * "message": "Too Many Attempts.",
-     * "errors": null,
-     * "metadata": []
-     * }
+     * @responseFile 201 resources/responses/shop/forms/collaboration-request.json
+     * @responseFile 429 resources/responses/422.json
      */
     public function __invoke(CreateCollaborationRequestData $data, CreateCollaborationRequestAction $action)
     {

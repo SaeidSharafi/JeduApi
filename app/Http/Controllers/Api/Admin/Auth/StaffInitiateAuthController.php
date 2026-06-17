@@ -31,33 +31,9 @@ final class StaffInitiateAuthController extends Controller
      * found)
      *
      *
-     * @response 201{
-     *          "message": "OTP sent successfully",
-     *          "data": {
-     *                "tracking_code": "eca11365-c491-445c-b110-ee5a763e7c27",
-     *                "otp_type": "SIGNUP",
-     *                "identifier": "09351234567",
-     *                "login_method": "OTP"
-     *            },
-     *        "metadata": []
-     *   }
-     * @response {
-     *         "message": "OTP sent successfully",
-     *         "data": {
-     *               "tracking_code": "eca11365-c491-445c-b110-ee5a763e7c27",
-     *               "otp_type": "SIGNIN",
-     *               "identifier": "09351234567",
-     *               "login_method": "OTP"
-     *           },
-     *       "metadata": []
-     *  }
-     * @response {
-     *           "message": "User has set password",
-     *           "data": {
-     *               "login_method": "PASSWORD"
-     *           },
-     *           "metadata": []
-     *  }
+     * @responseFile 200 resources/responses/admin/auth/staff.initiate.otp.json
+     * @responseFile 200 resources/responses/admin/auth/staff.initiate.password.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function __invoke(InitiateAuthRequest $request): ApiResponseInterface
     {

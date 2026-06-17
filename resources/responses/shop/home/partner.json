@@ -1,0 +1,13 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "title": "عنوان",
+      "caption": "متن",
+      "image_url": "https://jedu.ir/storage/fake-media/placeholder1.mp4",
+      "url": "https://example.com/",
+      "order": 77
+    }
+  ],
+  "metadata": []
+}

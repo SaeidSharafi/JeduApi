@@ -1,0 +1,44 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "id": 1,
+      "name": "اخبار تکنولوژی",
+      "slug": "tech-news",
+      "description": "آخرین اخبار و مقالات مرتبط با دنیای تکنولوژی",
+      "parent_id": null,
+      "meta_title": "اخبار تکنولوژی | جدیدترین رویدادهای دنیای فناوری",
+      "meta_description": "برای اطلاع از آخرین تحولات و اخبار دنیای تکنولوژی",
+      "meta_keywords": "اخبار,تکنولوژی,فناوری",
+      "icon": {
+        "id": 18,
+        "url": "https://jedu.test/storage/fake-media/icon.svg",
+        "size": 807,
+        "file_name": "icon",
+        "alt": "",
+        "mime_type": "image/svg+xml",
+        "extension": "svg",
+        "tag": null,
+        "thumbnail": null
+      },
+      "posts_count": 5,
+      "created_at": "1403-06-15 10:30:00",
+      "updated_at": "1404-01-20 14:45:00"
+    },
+    {
+      "id": 2,
+      "name": "راهنمای یادگیری",
+      "slug": "learning-guides",
+      "description": "نقشه‌های راه و راهنماهای جامع برای یادگیری مهارت‌های مختلف",
+      "parent_id": null,
+      "meta_title": "راهنمای یادگیری | نقشه راه برنامه‌نویسی و توسعه مهارت",
+      "meta_description": "راهنماهای گام به گام مسیر درست را نشان می‌دهند",
+      "meta_keywords": "راهنما,یادگیری,نقشه راه",
+      "icon": null,
+      "posts_count": 3,
+      "created_at": "1403-08-01 09:00:00",
+      "updated_at": "1404-02-10 11:30:00"
+    }
+  ],
+  "metadata": []
+}

@@ -32,30 +32,9 @@ final class StaffResetPasswordController extends Controller
      *
      * @throws \App\Exceptions\UserNotFoundException
      *
-     * @response  {
-     *  "message": "Operation successful.",
-     *  "data": "Password reset OTP sent successfully",
-     *  "metadata": []
-     *  }
-     * @response 422{
-     *      {
-     *  "message": "Invalid OTP code",
-     *  "errors": null,
-     *  "metadata": []
-     *  }
-     *  }
-     * @response 422{
-     *      {
-     *  "message": "User does not have password",
-     *  "errors": null,
-     *  "metadata": []
-     *  }
-     *  }
-     * @response 404{
-     *  "message": "User not found",
-     *  "errors": null,
-     *  "metadata": []
-     *  }
+     * @responseFile 200 resources/responses/admin/auth/staff.reset_password.json
+     * @responseFile 422 resources/responses/422.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function __invoke(ResetPasswordOtpRequest $request): ApiResponseInterface
     {

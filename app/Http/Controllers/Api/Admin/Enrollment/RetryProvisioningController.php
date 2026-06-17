@@ -24,7 +24,9 @@ final class RetryProvisioningController extends Controller
      *
      * This endpoint allows authorized staff to retry the provisioning process for an enrollment.
      *
-     * @response 200
+     * @responseFile 200 resources/responses/admin/enrollment/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function __invoke(Enrollment $enrollment, RetryProvisioningAction $action): ApiResponseInterface
     {

@@ -22,13 +22,8 @@ final class UpdateReviewFeaturedStatusController extends Controller
     /**
      * Update the featured status of the specified review.
      *
-     * @bodyParam is_featured boolean optional The featured status to set. If not provided, the status will be toggled.
-     *
-     * @response 200 {
-     *     message: "Review updated successfully.",
-     *     "data": null,
-     *    "metadata": {}
-     * }
+     * @responseFile 200 resources/responses/admin/review/update-featured-status.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function __invoke(FeaturedStatusData $data, Review $review, UpdateReviewFeaturedStatusAction $action)
     {

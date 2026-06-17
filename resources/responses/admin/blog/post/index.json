@@ -1,0 +1,54 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "id": 3,
+      "title": "مصاحبه با استاد اصغر فرهادی: درباره سینما و زندگی",
+      "slug": "interview-with-asghar-farhadi-on-cinema-and-life",
+      "excerpt": "گفتگویی صمیمی با استاد اصغر فرهادی درباره دغدغه‌هایش",
+      "author_id": 4,
+      "status": "published",
+      "published_at": "1403-12-22 14:00:00",
+      "read_time_minutes": 9,
+      "is_featured": true,
+      "meta_title": "مصاحبه با اصغر فرهادی | درباره سینما و زندگی",
+      "meta_description": "گفتگوی اختصاصی و صمیمی با اصغر فرهادی",
+      "meta_keywords": "اصغر فرهادی,مصاحبه,سینمای ایران",
+      "categories": [],
+      "author": {
+        "id": 4,
+        "name": "احمد کریمی",
+        "phone": "09300000003",
+        "email": "ahmad@example.com"
+      },
+      "thumbnail_url": "https://jedu.test/storage/fake-media/cover-science.svg",
+      "created_at": "1403-12-22 14:00:00",
+      "updated_at": "1405-03-27 13:37:58"
+    },
+    {
+      "id": 4,
+      "title": "معرفی دوره جامع طراحی گرافیک",
+      "slug": "introducing-comprehensive-graphic-design-course",
+      "excerpt": "دوره جدید طراحی گرافیک با تدریس استاد مرتضی ممیز",
+      "author_id": 5,
+      "status": "draft",
+      "published_at": null,
+      "read_time_minutes": 3,
+      "is_featured": false,
+      "meta_title": "معرفی دوره جدید: طراحی گرافیک جامع",
+      "meta_description": "با دوره جدید و جامع طراحی گرافیک ما آشنا شوید",
+      "meta_keywords": "طراحی گرافیک,دوره جدید,آموزش گرافیک",
+      "categories": [],
+      "author": {
+        "id": 5,
+        "name": "زهرا حسینی",
+        "phone": "09300000004",
+        "email": "zahra@example.com"
+      },
+      "thumbnail_url": "https://jedu.test/storage/fake-media/cover-music.svg",
+      "created_at": "1403-12-23 10:00:00",
+      "updated_at": "1405-03-27 13:37:58"
+    }
+  ],
+  "metadata": []
+}

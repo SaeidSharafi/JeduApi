@@ -29,19 +29,7 @@ final class PartnerController extends Controller
      * - `home`: Partners to be displayed on the home page.
      * - `course`: Partners to be displayed on course-related pages.
      *
-     * @response {
-     *      "message": "عملیات با موفقیت انجام شد.",
-     *      "data": [
-     *          {
-     *          "title": "عنوان",
-     *          "caption": "متن",
-     *          "image_url": "https://jedu.ir/storage/fake-media/placeholder1.mp4",
-     *          "url": "https://example.com/",
-     *          "order": 77
-     *          }
-     *      ],
-     *      "metadata": []
-     * }
+     * @responseFile 200 resources/responses/shop/home/partner.json
      */
     public function __invoke(Request $request): ApiResponseInterface
     {

@@ -22,6 +22,9 @@ final class GoodForStartController extends Controller
      * Set the good_for_start flag for items in a category.
      *
      * only items with course type can be set as good_for_start
+     *
+     * @responseFile 200 resources/responses/admin/category/good-for-start.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function __invoke(SetGoodForStartData $data, Category $category, SetGoodForStartAction $action): ApiResponseInterface
     {

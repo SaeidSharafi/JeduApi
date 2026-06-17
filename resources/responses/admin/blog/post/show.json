@@ -1,0 +1,37 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "id": 3,
+    "title": "مصاحبه با استاد اصغر فرهادی: درباره سینما و زندگی",
+    "slug": "interview-with-asghar-farhadi-on-cinema-and-life",
+    "body": "در گفتگویی صمیمی با استاد اصغر فرهادی، کارگردان برجسته سینمای ایران، از دغدغه‌هایش برای سینمای ایران پرسیدیم.",
+    "excerpt": "گفتگویی صمیمی با استاد اصغر فرهادی درباره دغدغه‌هایش برای سینمای ایران",
+    "author_id": 4,
+    "status": "published",
+    "published_at": "1403-12-22 14:00:00",
+    "read_time_minutes": 9,
+    "is_featured": true,
+    "meta_title": "مصاحبه با اصغر فرهادی | درباره سینما و زندگی",
+    "meta_description": "گفتگوی اختصاصی و صمیمی با اصغر فرهادی",
+    "meta_keywords": "اصغر فرهادی,مصاحبه,سینمای ایران",
+    "main_productable": null,
+    "categories": [],
+    "related_productables": [],
+    "author": {
+      "id": 4,
+      "name": "احمد کریمی",
+      "phone": "09300000003",
+      "email": "ahmad@example.com"
+    },
+    "media": {
+      "gallery": [],
+      "video": [],
+      "cover": [],
+      "certificate": [],
+      "main": []
+    },
+    "created_at": "1403-12-22 14:00:00",
+    "updated_at": "1405-03-27 13:37:58"
+  },
+  "metadata": []
+}

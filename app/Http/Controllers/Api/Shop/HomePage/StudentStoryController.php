@@ -24,22 +24,7 @@ final class StudentStoryController extends Controller
      *
      * Returns a list of student stories to be displayed on the home page.
      *
-     * @response {
-     *  "message": "عملیات با موفقیت انجام شد.",
-     *  {
-     * "message": "عملیات با موفقیت انجام شد.",
-     * "data": [
-     * {
-     * "student_name": "محمد صالحی",
-     * "avatar_url": "fake-avatar-6.svg",
-     * "course_name": "دوره آموزش نقاشی مینیاتور و تذهیب",
-     * "course_url": "/courses/miniature-painting-course",
-     * "story_text": "آشنایی با هنر اصیل ایرانی و یادگیری تکنیک‌های مینیاتور برای من یک سفر معنوی بود. این دوره به من کمک کرد تا با صبر و دقت، آثاری خلق کنم که به آن‌ها افتخار می‌کنم.",
-     * "display_order": 6
-     * }
-     * ],
-     * "metadata": []
-     * }
+     * @responseFile 200 resources/responses/shop/home/student-story.json
      */
     public function __invoke(StudentStoryRequestData $data): ApiResponseInterface
     {

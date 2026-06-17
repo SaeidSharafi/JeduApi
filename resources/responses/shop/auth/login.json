@@ -1,0 +1,35 @@
+{
+  "message": "Authenticated successfully",
+  "data": {
+    "token": "1|laravel_sanctum_token_example_abc123def456ghi789jkl",
+    "expires_at": "2026-03-15T12:00:00.000000Z",
+    "type": "Bearer",
+    "user": {
+      "uuid": "01993d34-24d6-7080-894d-6a72bff73ac8",
+      "phone": "09123456789",
+      "is_profile_completed": true,
+      "first_name": "علی",
+      "last_name": "محمدی",
+      "email": "ali@example.com",
+      "phone2": null,
+      "civil_id": null,
+      "civil_id_type": null,
+      "date_of_birth": "1990-06-15",
+      "father_name": "حسین",
+      "gender": {
+        "value": "male",
+        "label": "enums.GenderEnum.male"
+      },
+      "education_level": {
+        "value": "bachelor",
+        "label": "enums.EducationLevelEnum.bachelor"
+      },
+      "field_of_study": "مهندسی نرم‌افزار",
+      "education_status": {
+        "value": "graduate",
+        "label": "enums.EducationStatusEnum.graduate"
+      }
+    }
+  },
+  "metadata": []
+}

@@ -1,0 +1,61 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "id": 1,
+        "phone": "09120000301",
+        "status": {
+          "value": "pending",
+          "label": "enums.AdviceRequestStatusEnum.pending"
+        },
+        "note": "درخواست مشاوره برای انتخاب مسیر شغلی در حوزه برنامه‌نویسی",
+        "handler": {
+          "id": 1,
+          "name": "مدیر سیستم",
+          "phone": "09300000000",
+          "email": "admin@example.com"
+        },
+        "created_at": "1403-12-19 08:30:00",
+        "updated_at": "1403-12-19 08:30:00"
+      },
+      {
+        "id": 2,
+        "phone": "09120000302",
+        "status": {
+          "value": "contacted",
+          "label": "enums.AdviceRequestStatusEnum.contacted"
+        },
+        "note": "مشاوره برای یادگیری برنامه‌نویسی پایتون",
+        "handler": null,
+        "created_at": "1403-12-20 10:15:00",
+        "updated_at": "1403-12-20 14:20:00"
+      },
+      {
+        "id": 3,
+        "phone": null,
+        "status": {
+          "value": "resolved",
+          "label": "enums.AdviceRequestStatusEnum.resolved"
+        },
+        "note": "سوال در مورد دوره‌های زبان انگلیسی",
+        "handler": {
+          "id": 2,
+          "name": "مشاور آموزشی",
+          "phone": "09300000001",
+          "email": "counselor@example.com"
+        },
+        "created_at": "1403-12-21 12:00:00",
+        "updated_at": "1403-12-21 16:45:00"
+      }
+    ],
+    "from": 1,
+    "last_page": 1,
+    "path": "https://jedu.test/api/v1/admin/advice-requests",
+    "per_page": 15,
+    "to": 3,
+    "total": 3
+  },
+  "metadata": []
+}

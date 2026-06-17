@@ -25,20 +25,7 @@ final class UploadPrivateController extends Controller
      * @bodyParam file file required The file to upload
      * @bodyParam alt string optional The alt text for the file
      *
-     * @response 201 {
-     *    "message": "Private file uploaded successfully",
-     *    "data": {
-     *       "id": 1,
-     *       "url": "https://example.com/api/v1/admin/private-file/1/download",
-     *       "size": 123456,
-     *       "file_name": "example.jpg",
-     *       "alt": "Example Image",
-     *       "mime_type": "image/jpeg",
-     *       "extension": "jpg",
-     *       "tag": null
-     *    },
-     *    metadata: []
-     *  }
+     * @responseFile 201 resources/responses/admin/media/private-upload.json
      */
     public function __invoke(Request $request): ApiResponseInterface
     {

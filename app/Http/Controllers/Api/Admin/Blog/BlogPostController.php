@@ -38,6 +38,9 @@ final class BlogPostController extends Controller
      * @queryParam filter[main_productable_type] string Filter by main productable type. Example: filter[main_productable_type]=course
      * @queryParam filter[main_productable_id] integer Filter by main productable ID. Example: filter[main_productable_id]=5
      *             note: this filter is connected to mainProductable_type filter, without it, this filter will not work
+     *
+     * @responseFile 200 resources/responses/admin/blog/post/index.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function index(): ApiResponseInterface
     {
@@ -64,6 +67,10 @@ final class BlogPostController extends Controller
      * Show Blog Post
      *
      * Display the specified blog post along with its related data.
+     *
+     * @responseFile 200 resources/responses/admin/blog/post/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function show(BlogPost $post): ApiResponseInterface
     {
@@ -79,6 +86,10 @@ final class BlogPostController extends Controller
      * Create Blog Post
      *
      * Store a newly created blog post in storage.
+     *
+     * @responseFile 201 resources/responses/admin/blog/post/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function store(BlogPostCreateData $data, CreateBlogPostAction $action): ApiResponseInterface
     {
@@ -94,6 +105,11 @@ final class BlogPostController extends Controller
      * Update Blog Post
      *
      * Update the specified blog post in storage.
+     *
+     * @responseFile 200 resources/responses/admin/blog/post/show.json
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function update(BlogPost $post, BlogPostUpdateData $data, UpdateBlogPostAction $action): ApiResponseInterface
     {
@@ -109,6 +125,10 @@ final class BlogPostController extends Controller
      * Delete Blog Post
      *
      * Remove the specified blog post from storage.
+     *
+     * @response 204
+     * @responseFile 403 resources/responses/403.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function destroy(BlogPost $post, DeleteBlogPostAction $action): JsonResponse
     {

@@ -32,30 +32,9 @@ final class StaffResendOtpController extends Controller
      *
      *
      *
-     * @response {
-     *  "message": "OTP resent successfully",
-     *  "data": {
-     *  "tracking_code": "6e175b9e-c175-4001-a3a8-9d6c51afbf16",
-     *  "otp_type": "SIGNIN",
-     *  "identifier": "09351234567",
-     *  "login_method": "OTP"
-     *  },
-     *  "metadata": []
-     *  }
-     * @response 422{
-     *  "message": "'messages.auth.otp.otp.throttle",
-     *  "errors": {
-     *  "otp": [
-     *  "'messages.auth.otp.otp.throttle"
-     *  ]
-     *  },
-     *  "metadata": []
-     *  }
-     * @response 422{
-     *  "message": "User not found",
-     *  "errors": null,
-     *  "metadata": []
-     *  }
+     * @responseFile 200 resources/responses/admin/auth/staff.resend_otp.json
+     * @responseFile 422 resources/responses/422.json
+     * @responseFile 404 resources/responses/404.json
      */
     public function __invoke(OtpRequest $request): ApiResponseInterface
     {

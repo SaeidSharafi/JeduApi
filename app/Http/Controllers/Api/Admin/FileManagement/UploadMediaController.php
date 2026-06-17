@@ -27,20 +27,7 @@ final class UploadMediaController extends Controller
      * @bodyParam file file required The media file to upload
      * @bodyParam alt string optional The alt text for the media file
      *
-     * @response 201 {
-     *    "message": "Media file uploaded successfully",
-     *    "data": {
-     *       "id": 1,
-     *       "url": "https://example.com/media/1",
-     *       "size": 123456,
-     *       "file_name": "example.jpg",
-     *       "alt": "Example Image",
-     *       "mime_type": "image/jpeg",
-     *       "extension": "jpg",
-     *       "tag": null
-     *    },
-     *    metadata: []
-     *  }
+     * @responseFile 201 resources/responses/admin/media/upload.json
      */
     public function __invoke(Request $request): ApiResponseInterface
     {

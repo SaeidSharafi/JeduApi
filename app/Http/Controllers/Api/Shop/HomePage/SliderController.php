@@ -24,28 +24,7 @@ final class SliderController extends Controller
      *
      * Returns a list of active sliders to be displayed on the home page.
      *
-     * @response 200 {
-     *  "message": "عملیات با موفقیت انجام شد.",
-     *  "data": [
-     *      {
-     *          "title": "Est inventore ab ut praesentium.",
-     *          "caption": "Saepe tempore velit consequatur velit doloremque commodi.",
-     *          "image_url": "https://via.placeholder.com/800x600.png/00ddee?text=nature+voluptas",
-     *          "image_alt": "Ipsam amet quos eos voluptas officiis pariatur nulla.",
-     *          "link": null,
-     *          "order": 42
-     *      },
-     *      {
-     *          "title": "Nobis sit consequatur accusantium dolores.",
-     *          "caption": "Hic est quidem unde pariatur officiis doloremque.",
-     *          "image_url": "https://via.placeholder.com/800x600.png/00aaaa?text=nature+non",
-     *          "image_alt": "Exercitationem sunt aliquid natus vel natus reprehenderit.",
-     *          "link": null,
-     *          "order": 46
-     *      },
-     *  ],
-     *  "metadata": []
-     * }
+     * @responseFile 200 resources/responses/shop/home/slider.json
      */
     public function __invoke(): ApiResponseInterface
     {

@@ -21,12 +21,8 @@ final class RejectReviewController extends Controller
     /**
      * Reject the specified review.
      *
-     *
-     * @response 200 {
-     *     message: "Review rejected successfully.",
-     *     "data": null,
-     *    "metadata": []
-     * }
+     * @responseFile 200 resources/responses/admin/review/reject.json
+     * @responseFile 403 resources/responses/403.json
      */
     public function __invoke(Review $review, UpdateReviewStatusAction $action)
     {

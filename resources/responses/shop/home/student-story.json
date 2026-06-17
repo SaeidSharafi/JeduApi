@@ -1,0 +1,14 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "student_name": "محمد صالحی",
+      "avatar_url": "fake-avatar-6.svg",
+      "course_name": "دوره آموزش نقاشی مینیاتور و تذهیب",
+      "course_url": "/courses/miniature-painting-course",
+      "story_text": "آشنایی با هنر اصیل ایرانی و یادگیری تکنیک‌های مینیاتور برای من یک سفر معنوی بود. این دوره به من کمک کرد تا با صبر و دقت، آثاری خلق کنم که به آن‌ها افتخار می‌کنم.",
+      "display_order": 6
+    }
+  ],
+  "metadata": []
+}

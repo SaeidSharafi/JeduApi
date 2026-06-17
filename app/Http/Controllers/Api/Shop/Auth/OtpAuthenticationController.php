@@ -32,49 +32,9 @@ final class OtpAuthenticationController extends Controller
      *
      * @group User Authentication
      *
-     * @response {
-     *      "message": "User Logged in successfully",
-     *      "data": {
-     *          "token": "8|juaIqinWuRHiE2vnr3TGr7Pjuy04oHFFilPXxd2Y26f5f131",
-     *          "expires_at": null,
-     *          "type": "Bearer",
-     *          "user": {
-     *              "uuid": "0197f38e-84a3-70d3-ae33-73b777915eb2",
-     *              "phone": "09151235664",
-     *              "is_profile_completed": true,
-     *              "first_name": "Juvenal",
-     *              "last_name": "Murray",
-     *              "email": "vschiller@example.com",
-     *              "phone2": "09371134162",
-     *              "civil_id": "93530102067499",
-     *              "civil_id_type": {
-     *                  "value": "immigrant_code",
-     *                  "label": "کد اتباع"
-     *              },
-     *              "date_of_birth": "1353-01-16",
-     *              "father_name": "Prof. Solon Gutkowski",
-     *              "gender": {
-     *                  "value": "female",
-     *                  "label": "زن"
-     *              },
-     *              "education_level": {
-     *                      "value": "under_diploma",
-     *                      "label": "زیردیپلم"
-     *                  },
-     *              "field_of_study": "هنر",
-     *              "education_status": {
-     *                  "value": "student",
-     *                  "label": "دانشجو"
-     *              }
-     *          }
-     *      },
-     *      "metadata": []
-     *    }
-     * @response 422 {
-     *      "message": "Invalid OTP code",
-     *      "errors": null,
-     *      "metadata": []
-     * }
+     * @responseFile 200 resources/responses/shop/auth/login.json
+     * @responseFile 404 resources/responses/404.json
+     * @responseFile 422 resources/responses/422.json
      */
     public function __invoke(VerifyOtpRequest $request): ApiResponseInterface
     {

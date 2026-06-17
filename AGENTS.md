@@ -82,7 +82,7 @@ Required architecture for JeduShop API.
         *   **Class DocBlock:** API controller **MUST** have docblock with `@group` organizing generated docs.
         *   Add `@authenticated` to class docblock if authentication required.
         *   **Method DocBlock:** Method **MUST** have concise action description. Follow response file rules.
-        *   **`@responseFile` Convention:** Mandatory path structure: `storage/responses/<scope>/<resource>/<action>.json`.
+        *   **`@responseFile` Convention:** Mandatory path structure: `resources/responses/<scope>/<resource>/<action>.json`.
             *   **`<scope>`:** `admin` or `shop`.
             *   **`<resource>`:** Lowercase folder matching resource (e.g., `slider`, `product`). Don't place directly in `<scope>`.
             *   **`<action>.json`:**
@@ -111,7 +111,7 @@ Required architecture for JeduShop API.
                  *
                  * This endpoint allows an authorized admin to create a new slider.
                  *
-                 * @responseFile storage/responses/admin/slider/show.json
+                 * @responseFile resources/responses/admin/slider/show.json
                  */
                 public function store(SliderCreateData $data, CreateSliderAction $action): JsonResponse
                 {
