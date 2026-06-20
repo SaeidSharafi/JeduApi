@@ -8,8 +8,8 @@ services:
         image: sail-8.4/app
         extra_hosts:
             - 'host.docker.internal:host-gateway'
-#        ports:
-#            - '${APP_PORT:-80}:80'
+        ports:
+            - '${APP_PORT:-80}:80'
         environment:
             WWWUSER: '${WWWUSER}'
             LARAVEL_SAIL: 1
@@ -20,11 +20,11 @@ services:
             - '.:/var/www/html'
         networks:
             - sail
-            - fleet
-        labels:
-            - traefik.http.routers.jedu-test.rule=Host(`jedu.test`)
-            - traefik.http.services.jedu-test.loadbalancer.server.port=80
-            - traefik.docker.network=fleet
+#            - fleet
+#        labels:
+#            - traefik.http.routers.jedu-test.rule=Host(`jedu.test`)
+#            - traefik.http.services.jedu-test.loadbalancer.server.port=80
+#            - traefik.docker.network=fleet
         depends_on:
             - pgsql
             - typesense
