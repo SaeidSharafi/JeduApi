@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 use App\Enums\System\SettingKeyEnum;
-use App\Exceptions\Integrations\ExternalProvisioningException;
+use App\Exceptions\Integrations\RecoverableProvisioningException;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\User;
 use App\Services\Integrations\SpotPlayerService;
 use App\Services\SettingsService;
@@ -69,7 +70,7 @@ it('throws when spotplayer request fails', function (): void {
     ]);
 
     expect(fn () => $this->service->issueLicense('SPOT-3', $user))
-        ->toThrow(ExternalProvisioningException::class, 'SpotPlayer provisioning request failed.');
+        ->toThrow(RecoverableProvisioningException::class, 'HTTP 500 on /.');
 });
 
 it('throws when spotplayer returns non array response', function (): void {
@@ -80,7 +81,7 @@ it('throws when spotplayer returns non array response', function (): void {
     ]);
 
     expect(fn () => $this->service->issueLicense('SPOT-4', $user))
-        ->toThrow(ExternalProvisioningException::class, 'SpotPlayer invalid response format.');
+        ->toThrow(UnrecoverableProvisioningException::class, 'SpotPlayer returned an invalid response format.');
 });
 
 it('throws when spotplayer returns status false', function (): void {
@@ -94,7 +95,7 @@ it('throws when spotplayer returns status false', function (): void {
     ]);
 
     expect(fn () => $this->service->issueLicense('SPOT-5', $user))
-        ->toThrow(ExternalProvisioningException::class, 'license limit reached');
+        ->toThrow(UnrecoverableProvisioningException::class, 'license limit reached');
 });
 
 it('throws when spotplayer returns explicit error field', function (): void {
@@ -107,7 +108,7 @@ it('throws when spotplayer returns explicit error field', function (): void {
     ]);
 
     expect(fn () => $this->service->issueLicense('SPOT-6', $user))
-        ->toThrow(ExternalProvisioningException::class, 'invalid api key');
+        ->toThrow(UnrecoverableProvisioningException::class, 'invalid api key');
 });
 
 it('throws when service used before configuration', function (): void {
@@ -120,5 +121,5 @@ it('throws when service used before configuration', function (): void {
     $user    = User::factory()->create();
 
     expect(fn () => $service->issueLicense('SPOT-7', $user))
-        ->toThrow(ExternalProvisioningException::class, 'SpotPlayer service configuration is missing.');
+        ->toThrow(UnrecoverableProvisioningException::class);
 });

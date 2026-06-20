@@ -7,6 +7,7 @@ use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\System\SettingKeyEnum;
 use App\Exceptions\Integrations\ExternalProvisioningException;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
 use App\Models\AdminActionLog;
 use App\Models\Enrollment;
@@ -32,34 +33,37 @@ beforeEach(function (): void {
         'timeout'              => 15,
     ];
     Setting::setValue(SettingKeyEnum::IMS, $this->config, 'json', 'integrations');
-
+    // ImsService reads config via SettingsService::get(), need mock
+    $settings = $this->mock(SettingsService::class);
+    $settings->shouldReceive('get')
+        ->withAnyArgs()
+        ->andReturnUsing(fn (): array => $this->config);
 });
 
 it('returns when IMS integration is disabled', function (): void {
-    Setting::setValue(SettingKeyEnum::IMS, array_merge($this->config, ['enabled' => false]), 'json', 'integrations');
+    $this->config['enabled'] = false;
 
     $service = $this->mock(ImsService::class);
-    $service->shouldReceive('setConfig')->never();
+    $service->shouldReceive('isEnabled')->andReturn(false);
     $service->shouldNotReceive('storeSetudent');
     $service->shouldNotReceive('storeEnrolment');
 
     $enrollment = createEnrollmentAndPaymentForImsJob()[0];
 
     $job = new ProvisionImsEnrollmentJob($enrollment->id);
-    $job->handle($service, app(SettingsService::class));
+    $job->handle();
 
     $enrollment->refresh();
     expect($enrollment->provisioning_data)->not->toHaveKey('providers.ims');
 });
 
 it('throws when IMS configuration is missing base_url or api_key', function (): void {
-    Setting::setValue(SettingKeyEnum::IMS, array_merge($this->config, ['base_url' => '']), 'json', 'integrations');
+    $this->config['base_url'] = '';
 
-    $service = $this->mock(ImsService::class);
-    $job     = new ProvisionImsEnrollmentJob(1);
+    $job = new ProvisionImsEnrollmentJob(1);
 
-    expect(fn () => $job->handle($service, app(SettingsService::class)))
-        ->toThrow(RuntimeException::class, 'IMS is enabled but configuration is missing.');
+    expect(fn () => $job->handle())
+        ->toThrow(UnrecoverableProvisioningException::class, 'ImsService configuration is missing or invalid.');
 });
 
 it('sends configured IMS bank account number in payload', function (): void {
@@ -78,7 +82,7 @@ it('sends configured IMS bank account number in payload', function (): void {
     [$enrollment, $payment] = createEnrollmentAndPaymentForImsJob();
 
     $job = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
-    $job->handle(app(ImsService::class), app(SettingsService::class));
+    $job->handle();
 
     Http::assertSent(function ($request) {
         return str_contains($request->url(), '/api/v2/enrolment/')
@@ -107,7 +111,7 @@ it('sends null IMS bank account number when gateway config is missing', function
     ]);
 
     $job = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
-    $job->handle(app(ImsService::class), app(SettingsService::class));
+    $job->handle();
 
     Http::assertSent(function ($request) {
         return str_contains($request->url(), '/api/v2/enrolment/')
@@ -120,7 +124,7 @@ it('returns when enrollment does not exist', function (): void {
     Http::fake();
 
     $job = new ProvisionImsEnrollmentJob(999999);
-    $job->handle(app(ImsService::class), app(SettingsService::class));
+    $job->handle();
 
     Http::assertNothingSent();
 });
@@ -133,8 +137,8 @@ it('throws when ims course code is missing', function (): void {
 
     $job = new ProvisionImsEnrollmentJob($enrollment->id);
 
-    expect(fn () => $job->handle(app(ImsService::class), app(SettingsService::class)))
-        ->toThrow(RuntimeException::class, 'IMS course code is missing from delivery option details.');
+    expect(fn () => $job->handle())
+        ->toThrow(UnrecoverableProvisioningException::class, 'IMS course code is missing from delivery option details.');
 });
 
 it('resolves payment amount from latest completed payment', function (): void {
@@ -208,7 +212,7 @@ it('throws during handle when no completed payment exists and does not call IMS'
 
     $job = new ProvisionImsEnrollmentJob($enrollment->id);
 
-    expect(fn () => $job->handle(app(ImsService::class), app(SettingsService::class)))
+    expect(fn () => $job->handle())
         ->toThrow(RuntimeException::class, 'Completed payment is required for IMS provisioning.');
 
     Http::assertNothingSent();
@@ -250,7 +254,7 @@ it('uses explicit payment id to resolve bill from transaction id fallback', func
     ]);
 
     $job = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
-    $job->handle(app(ImsService::class), app(SettingsService::class));
+    $job->handle();
 
     Http::assertSent(function ($request) {
         return str_contains($request->url(), '/api/v2/enrolment/')
@@ -275,7 +279,7 @@ it('falls back to payment created at when transaction date is invalid', function
     ]);
 
     $job = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
-    $job->handle(app(ImsService::class), app(SettingsService::class));
+    $job->handle();
 
     $expectedDate = $payment->created_at?->toDateString();
 
@@ -303,7 +307,7 @@ it('sends bank transfer ims account number when payment method is bank transfer'
     ]);
 
     $job = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
-    $job->handle(app(ImsService::class), app(SettingsService::class));
+    $job->handle();
 
     Http::assertSent(function ($request) {
         return str_contains($request->url(), '/api/v2/enrolment/')
@@ -329,7 +333,7 @@ it('sends wallet ims account number when payment method is wallet', function ():
     ]);
 
     $job = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
-    $job->handle(app(ImsService::class), app(SettingsService::class));
+    $job->handle();
 
     Http::assertSent(function ($request) {
         return str_contains($request->url(), '/api/v2/enrolment/')

@@ -6,6 +6,7 @@ use App\Data\Shop\MyCourses\Blocks\LmsMoodleBlockData;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\System\SettingKeyEnum;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
 use App\Models\Enrollment;
 use App\Models\Order;
@@ -14,7 +15,6 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\Integrations\MoodleService;
-use App\Services\SettingsService;
 
 beforeEach(function () {
     $this->config = [
@@ -32,6 +32,7 @@ it('returns when moodle integration is disabled', function (): void {
     Setting::setValue(SettingKeyEnum::MOODLE, array_merge($this->config, ['enabled' => false]), 'json', 'integrations');
 
     $service = $this->mock(MoodleService::class);
+    $service->shouldReceive('isEnabled')->andReturn(false);
     $service->shouldNotReceive('findOrCreateUser');
     $service->shouldNotReceive('enrollUser');
     $service->shouldNotReceive('createUserKey');
@@ -39,7 +40,7 @@ it('returns when moodle integration is disabled', function (): void {
     $enrollment = createMoodleEnrollmentForJob();
 
     $job = new ProvisionMoodleEnrollmentJob($enrollment->id);
-    $job->handle($service, app(SettingsService::class));
+    $job->handle();
 
     $enrollment->refresh();
     expect($enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::PENDING_PROVISIONING)
@@ -49,18 +50,20 @@ it('returns when moodle integration is disabled', function (): void {
 it('throws when moodle configuration is missing base_url or token', function (): void {
     Setting::setValue(SettingKeyEnum::MOODLE, array_merge($this->config, ['base_url' => '']), 'json', 'integrations');
 
-    $service = $this->mock(MoodleService::class);
-    $job     = new ProvisionMoodleEnrollmentJob(1);
+    $job = new ProvisionMoodleEnrollmentJob(1);
 
-    expect(fn () => $job->handle($service, app(SettingsService::class)))
-        ->toThrow(RuntimeException::class, 'Moodle configuration is missing base_url or token.');
+    expect(fn () => $job->handle())
+        ->toThrow(UnrecoverableProvisioningException::class, 'MoodleService configuration is missing or invalid.');
 });
+
 it('returns when enrollment does not exist', function (): void {
     $service = $this->mock(MoodleService::class);
+    $service->shouldReceive('isEnabled')->andReturn(true);
+    $service->shouldReceive('assertConfigured');
     $service->shouldNotReceive('findOrCreateUser');
 
     $job = new ProvisionMoodleEnrollmentJob(999999);
-    $job->handle($service, app(SettingsService::class));
+    $job->handle();
 
     // No exception thrown; no enrollment to mutate — assert job completes cleanly
     expect(Enrollment::find(999999))->toBeNull();
@@ -72,11 +75,13 @@ it('throws when moodle course id is missing', function (): void {
     ]);
 
     $service = $this->mock(MoodleService::class);
+    $service->shouldReceive('isEnabled')->andReturn(true);
+    $service->shouldReceive('assertConfigured');
 
     $job = new ProvisionMoodleEnrollmentJob($enrollment->id);
 
-    expect(fn () => $job->handle($service, app(SettingsService::class)))
-        ->toThrow(RuntimeException::class, 'Moodle course id is missing from delivery option details.');
+    expect(fn () => $job->handle())
+        ->toThrow(UnrecoverableProvisioningException::class, 'Moodle course_id is missing from delivery option details.');
 });
 
 it('provisions moodle enrollment with parsed start and end dates', function (): void {
@@ -87,6 +92,10 @@ it('provisions moodle enrollment with parsed start and end dates', function (): 
     ]);
 
     $service = $this->mock(MoodleService::class);
+    $service->shouldReceive('isEnabled')->andReturn(true);
+    $service->shouldReceive('assertConfigured');
+    $service->shouldReceive('getDefaultRoleId')->andReturn(5);
+    $service->shouldReceive('getLoginPath')->andReturn('/my/');
     $service->shouldReceive('findOrCreateUser')
         ->once()
         ->with(
@@ -110,7 +119,7 @@ it('provisions moodle enrollment with parsed start and end dates', function (): 
     $service->shouldNotReceive('createUserKey');
 
     $job = new ProvisionMoodleEnrollmentJob($enrollment->id);
-    $job->handle($service, app(SettingsService::class));
+    $job->handle();
 
     $enrollment->refresh();
 
@@ -129,6 +138,10 @@ it('passes null timestamps when enrollment dates are invalid', function (): void
     ]);
 
     $service = $this->mock(MoodleService::class);
+    $service->shouldReceive('isEnabled')->andReturn(true);
+    $service->shouldReceive('assertConfigured');
+    $service->shouldReceive('getDefaultRoleId')->andReturn(5);
+    $service->shouldReceive('getLoginPath')->andReturn('/my/');
     $service->shouldReceive('findOrCreateUser')->once()->andReturn([988, 'user1']);
     $service->shouldReceive('getCourse')->once()->with(124)->andReturn(LmsMoodleBlockData::from([
         'visible'      => true,
@@ -144,7 +157,7 @@ it('passes null timestamps when enrollment dates are invalid', function (): void
     $service->shouldNotReceive('createUserKey');
 
     $job = new ProvisionMoodleEnrollmentJob($enrollment->id);
-    $job->handle($service, app(SettingsService::class));
+    $job->handle();
 
     $enrollment->refresh();
 
@@ -185,6 +198,10 @@ it('stores computed course_url and renamed username in provisioning_data after s
     ]);
 
     $service = $this->mock(MoodleService::class);
+    $service->shouldReceive('isEnabled')->andReturn(true);
+    $service->shouldReceive('assertConfigured');
+    $service->shouldReceive('getDefaultRoleId')->andReturn(5);
+    $service->shouldReceive('getLoginPath')->andReturn('/my/');
     $service->shouldReceive('findOrCreateUser')->once()->andReturn([500, 'user500']);
     $service->shouldReceive('getCourse')->once()->with(200)->andReturn(LmsMoodleBlockData::from([
         'visible'      => true,
@@ -197,7 +214,7 @@ it('stores computed course_url and renamed username in provisioning_data after s
     $service->shouldReceive('enrollUser')->once();
 
     $job = new ProvisionMoodleEnrollmentJob($enrollment->id);
-    $job->handle($service, app(SettingsService::class));
+    $job->handle();
 
     $enrollment->refresh();
 

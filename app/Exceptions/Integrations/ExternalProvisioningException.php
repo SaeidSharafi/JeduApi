@@ -21,6 +21,6 @@ final class ExternalProvisioningException extends RuntimeException
 
     public function getMoodleErrorCode(): string
     {
-        return data_get($this->metaData, 'errorcode', '');
+        return data_get($this->metaData, 'errorcode');
     }
 }

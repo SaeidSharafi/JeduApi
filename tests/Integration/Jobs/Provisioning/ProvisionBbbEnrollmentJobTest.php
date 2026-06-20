@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\System\SettingKeyEnum;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Models\Enrollment;
 use App\Models\Order;
@@ -13,7 +14,6 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\Integrations\BbbService;
-use App\Services\SettingsService;
 
 beforeEach(function (): void {
     $this->config = [
@@ -33,13 +33,13 @@ it('returns when bbb integration is disabled', function (): void {
     ]), 'json', 'integrations');
 
     $service = $this->mock(BbbService::class);
+    $service->shouldReceive('isEnabled')->andReturn(false);
     $service->shouldNotReceive('createMeeting');
-    $service->shouldNotReceive('buildJoinUrl');
 
     $enrollment = createBbbEnrollmentForJob();
 
     $job = new ProvisionBbbEnrollmentJob($enrollment->id);
-    $job->handle($service, app(SettingsService::class));
+    $job->handle();
 
     $enrollment->refresh();
     expect($enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::PENDING_PROVISIONING)
@@ -51,27 +51,27 @@ it('throws when bbb configuration is missing base_url or secret', function (): v
         'base_url' => '',
     ]), 'json', 'integrations');
 
-    $service = $this->mock(BbbService::class);
-    $job     = new ProvisionBbbEnrollmentJob(1);
+    $job = new ProvisionBbbEnrollmentJob(1);
 
-    expect(fn () => $job->handle($service, app(SettingsService::class)))
-        ->toThrow(RuntimeException::class, 'BBB configuration is missing base_url or secret.');
+    expect(fn () => $job->handle())
+        ->toThrow(UnrecoverableProvisioningException::class, 'BbbService configuration is missing or invalid.');
 
     Setting::setValue(SettingKeyEnum::BIG_BLUE_BUTTON, array_merge($this->config, [
         'secret' => '',
     ]), 'json', 'integrations');
 
-    expect(fn () => $job->handle($service, app(SettingsService::class)))
-        ->toThrow(RuntimeException::class, 'BBB configuration is missing base_url or secret.');
+    expect(fn () => $job->handle())
+        ->toThrow(UnrecoverableProvisioningException::class, 'BbbService configuration is missing or invalid.');
 });
 
 it('returns when enrollment does not exist', function (): void {
     $service = $this->mock(BbbService::class);
+    $service->shouldReceive('isEnabled')->andReturn(true);
+    $service->shouldReceive('assertConfigured');
     $service->shouldNotReceive('createMeeting');
-    $service->shouldNotReceive('buildJoinUrl');
 
     $job = new ProvisionBbbEnrollmentJob(999999);
-    $job->handle($service, app(SettingsService::class));
+    $job->handle();
 
     // No exception thrown; no enrollment to mutate — assert job completes cleanly
     expect(Enrollment::find(999999))->toBeNull();
@@ -83,11 +83,13 @@ it('throws when bbb meeting id is missing', function (): void {
     ]);
 
     $service = $this->mock(BbbService::class);
+    $service->shouldReceive('isEnabled')->andReturn(true);
+    $service->shouldReceive('assertConfigured');
 
     $job = new ProvisionBbbEnrollmentJob($enrollment->id);
 
-    expect(fn () => $job->handle($service, app(SettingsService::class)))
-        ->toThrow(RuntimeException::class, 'BBB meeting_id is missing from delivery option details.');
+    expect(fn () => $job->handle())
+        ->toThrow(UnrecoverableProvisioningException::class, 'BBB meeting_id is missing from delivery option details.');
 });
 
 it('provisions bbb enrollment without creating meeting when auto create disabled', function (): void {
@@ -98,10 +100,12 @@ it('provisions bbb enrollment without creating meeting when auto create disabled
     ]);
 
     $service = $this->mock(BbbService::class);
+    $service->shouldReceive('isEnabled')->andReturn(true);
+    $service->shouldReceive('assertConfigured');
     $service->shouldNotReceive('createMeeting');
 
     $job = new ProvisionBbbEnrollmentJob($enrollment->id);
-    $job->handle($service, app(SettingsService::class));
+    $job->handle();
 
     $enrollment->refresh();
 
@@ -120,12 +124,14 @@ it('creates meeting when auto create enabled', function (): void {
     ]);
 
     $service = $this->mock(BbbService::class);
+    $service->shouldReceive('isEnabled')->andReturn(true);
+    $service->shouldReceive('assertConfigured');
     $service->shouldReceive('createMeeting')
         ->once()
         ->with('BBB-MEET-2', $enrollment->productDeliveryOption->name, 'ap-2', 'mp-2');
 
     $job = new ProvisionBbbEnrollmentJob($enrollment->id);
-    $job->handle($service, app(SettingsService::class));
+    $job->handle();
 
     $enrollment->refresh();
 

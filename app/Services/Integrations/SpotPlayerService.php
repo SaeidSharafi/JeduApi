@@ -4,55 +4,41 @@ declare(strict_types=1);
 
 namespace App\Services\Integrations;
 
-use AllowDynamicProperties;
 use App\Enums\System\SettingKeyEnum;
-use App\Exceptions\Integrations\ExternalProvisioningException;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\User;
-use App\Services\SettingsService;
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 
-#[AllowDynamicProperties]
-final class SpotPlayerService
+final class SpotPlayerService extends AbstractIntegrationService
 {
-    private string $apiKey;
-
-    private string $endpoint;
-
-    private bool $sandbox;
-
-    public function __construct(private readonly SettingsService $settings)
-    {
-        $this->resolveConfig();
-    }
-
     public function issueLicense(string $spotId, User $user): array
     {
-        if ($this->endpoint === '' || $this->apiKey === '') {
-            throw new ExternalProvisioningException('SpotPlayer service configuration is missing.');
-        }
+        $this->assertConfigured();
 
-        $response = $this->request($this->endpoint, $this->apiKey)->post('', [
-            'spot_id'       => $spotId,
-            'mobile'        => $user->phone,
-            'name'          => mb_trim(($user->first_name ?? '').' '.($user->last_name ?? '')),
-            'email'         => $user->email,
-            'national_code' => $user->civil_id,
-            'sandbox'       => $this->sandbox,
-        ]);
+        $response = Http::baseUrl($this->config['endpoint'])
+            ->timeout((int) config('services.spotplayer.timeout', 15))
+            ->acceptJson()
+            ->withHeaders(['x-api-key' => $this->config['api_key']])
+            ->post('', [
+                'spot_id'       => $spotId,
+                'mobile'        => $user->phone,
+                'name'          => mb_trim(($user->first_name ?? '').' '.($user->last_name ?? '')),
+                'email'         => $user->email,
+                'national_code' => $user->civil_id,
+                'sandbox'       => (bool) ($this->config['sandbox'] ?? false),
+            ]);
 
-        if ($response->failed()) {
-            throw new ExternalProvisioningException('SpotPlayer provisioning request failed.');
-        }
+        $this->handleHttpErrors($response, '/'); // handles 4xx/5xx
 
         $data = $response->json();
         if (! is_array($data)) {
-            throw new ExternalProvisioningException('SpotPlayer invalid response format.');
+            throw new UnrecoverableProvisioningException('SpotPlayer returned an invalid response format.');
         }
 
+        // Application-level error (bad spot_id, etc.) — retrying won't fix it
         if ((isset($data['status']) && $data['status'] === false) || isset($data['error'])) {
-            $message = (string) ($data['message'] ?? $data['error'] ?? 'SpotPlayer returned an error response.');
-            throw new ExternalProvisioningException($message);
+            $message = (string) ($data['message'] ?? $data['error'] ?? 'SpotPlayer returned an error.');
+            throw new UnrecoverableProvisioningException($message, 0, null, ['raw_response' => $data]);
         }
 
         return [
@@ -62,22 +48,18 @@ final class SpotPlayerService
         ];
     }
 
-    private function request(string $endpoint, string $apiKey): PendingRequest
+    protected function getSettingKey(): SettingKeyEnum
     {
-        return Http::baseUrl($endpoint)
-            ->timeout((int) config('services.spotplayer.timeout', 15))
-            ->acceptJson()
-            ->withHeaders([
-                'x-api-key' => $apiKey,
-            ]);
+        return SettingKeyEnum::SPOT_PLAYER;
     }
 
-    private function resolveConfig(): void
+    protected function getConfigFallbackPath(): string
     {
-        $config         = $this->settings->get(SettingKeyEnum::SPOT_PLAYER, config('services.spotplayer'));
-        $this->endpoint = (string) data_get($config, 'endpoint', '');
-        $this->apiKey   = (string) data_get($config, 'api_key', '');
-        $this->sandbox  = (bool) data_get($config, 'sandbox', false);
+        return 'services.spotplayer';
+    }
 
+    protected function validateConfig(): bool
+    {
+        return ! empty($this->config['endpoint']) && ! empty($this->config['api_key']);
     }
 }

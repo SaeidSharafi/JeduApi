@@ -4,44 +4,38 @@ declare(strict_types=1);
 
 namespace App\Jobs\Provisioning;
 
-use App\Enums\System\SettingKeyEnum;
-use App\Jobs\Provisioning\Concerns\HandlesProvisioningStatus;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
 use App\Services\Integrations\BbbService;
-use App\Services\SettingsService;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
-use RuntimeException;
-use Throwable;
 
-final class ProvisionBbbEnrollmentJob implements ShouldQueue
+final class ProvisionBbbEnrollmentJob extends AbstractProvisioningJob
 {
-    use Dispatchable;
-    use HandlesProvisioningStatus;
-    use InteractsWithQueue;
-    use Queueable;
-    use SerializesModels;
-
-    public int $tries = 3;
-
     public function __construct(public readonly int $enrollmentId) {}
 
-    public function handle(BbbService $bbbService, SettingsService $settings): void
+    protected function resolveEnrollment(): ?Enrollment
     {
-        $config = $settings->get(SettingKeyEnum::BIG_BLUE_BUTTON);
+        return Enrollment::query()
+            ->with(['customer', 'productDeliveryOption'])
+            ->find($this->enrollmentId);
+    }
 
-        if (! ($config['enabled'] ?? false)) {
+    protected function getIntegrationName(): string
+    {
+        return 'bbb';
+    }
+
+    protected function executeProvisioning(): void
+    {
+        /** @var BbbService $service */
+        $service = app(BbbService::class);
+
+        if (! $service->isEnabled()) {
             return;
         }
 
-        if (empty($config['base_url']) || empty($config['secret'])) {
-            throw new RuntimeException('BBB configuration is missing base_url or secret.');
-        }
+        $service->assertConfigured();
 
-        $enrollment = $this->findEnrollment();
+        $enrollment = $this->getEnrollment();
         if (! $enrollment) {
             return;
         }
@@ -49,8 +43,11 @@ final class ProvisionBbbEnrollmentJob implements ShouldQueue
         $details   = $enrollment->productDeliveryOption?->details_json ?? [];
         $meetingId = data_get($details, 'meeting_id');
 
+        // A missing meeting_id in the DB will never fix itself on retry.
         if (! is_string($meetingId) || $meetingId === '') {
-            throw new RuntimeException('BBB meeting_id is missing from delivery option details.');
+            throw new UnrecoverableProvisioningException(
+                'BBB meeting_id is missing from delivery option details.'
+            );
         }
 
         $autoCreate        = (bool) data_get($details, 'auto_create_meeting', false);
@@ -58,38 +55,16 @@ final class ProvisionBbbEnrollmentJob implements ShouldQueue
         $moderatorPassword = data_get($details, 'moderator_password');
 
         if ($autoCreate) {
-            $bbbService->createMeeting(
+            $service->createMeeting(
                 meetingId: $meetingId,
                 name: $enrollment->productDeliveryOption?->name ?? "meeting-{$meetingId}",
-                attendeePw: $attendeePassword,
-                moderatorPw: $moderatorPassword,
+                attendeePw: is_string($attendeePassword) ? $attendeePassword : null,
+                moderatorPw: is_string($moderatorPassword) ? $moderatorPassword : null,
             );
         }
 
         $this->markProvisioningSuccess($enrollment, 'bbb', [
             'meeting_id' => $meetingId,
         ]);
-    }
-
-    public function failed(Throwable $exception): void
-    {
-        $enrollment = $this->findEnrollment();
-        if (! $enrollment) {
-            return;
-        }
-
-        $this->markProvisioningFailure($enrollment, 'bbb', $exception->getMessage());
-    }
-
-    public function backoff(): array
-    {
-        return [60, 180, 600];
-    }
-
-    private function findEnrollment(): ?Enrollment
-    {
-        return Enrollment::query()
-            ->with(['customer', 'productDeliveryOption'])
-            ->find($this->enrollmentId);
     }
 }

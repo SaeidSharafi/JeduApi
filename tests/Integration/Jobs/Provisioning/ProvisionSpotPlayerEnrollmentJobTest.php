@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\System\SettingKeyEnum;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Models\Enrollment;
 use App\Models\Order;
@@ -13,7 +14,6 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\Integrations\SpotPlayerService;
-use App\Services\SettingsService;
 
 beforeEach(function (): void {
     Setting::setValue(SettingKeyEnum::SPOT_PLAYER, [
@@ -24,20 +24,14 @@ beforeEach(function (): void {
     ], 'json', 'integrations');
 });
 it('returns when spotplayer integration is disabled', function (): void {
-    Setting::setValue(SettingKeyEnum::SPOT_PLAYER, [
-        'enabled'  => false,
-        'endpoint' => 'https://spotplayer.example/license',
-        'api_key'  => 'spot-api-key',
-        'sandbox'  => true,
-    ], 'json', 'integrations');
-
     $service = $this->mock(SpotPlayerService::class);
+    $service->shouldReceive('isEnabled')->andReturn(false);
     $service->shouldNotReceive('issueLicense');
 
     $enrollment = createSpotPlayerEnrollmentForJob();
 
     $job = new ProvisionSpotPlayerEnrollmentJob($enrollment->id);
-    $job->handle($service, app(SettingsService::class));
+    $job->handle();
 
     $enrollment->refresh();
     expect($enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::PENDING_PROVISIONING)
@@ -52,19 +46,20 @@ it('throws when spotplayer configuration is missing endpoint or api_key', functi
         'sandbox'  => true,
     ], 'json', 'integrations');
 
-    $service = $this->mock(SpotPlayerService::class);
-    $job     = new ProvisionSpotPlayerEnrollmentJob(1);
+    $job = new ProvisionSpotPlayerEnrollmentJob(1);
 
-    expect(fn () => $job->handle($service, app(SettingsService::class)))
-        ->toThrow(RuntimeException::class, 'SpotPlayer configuration is missing endpoint or api_key.');
+    expect(fn () => $job->handle())
+        ->toThrow(UnrecoverableProvisioningException::class, 'SpotPlayerService configuration is missing or invalid.');
 });
 
 it('returns when enrollment does not exist', function (): void {
     $service = $this->mock(SpotPlayerService::class);
+    $service->shouldReceive('isEnabled')->andReturn(true);
+    $service->shouldReceive('assertConfigured');
     $service->shouldNotReceive('issueLicense');
 
     $job = new ProvisionSpotPlayerEnrollmentJob(999999);
-    $job->handle($service, app(SettingsService::class));
+    $job->handle();
 
     // No exception thrown; no enrollment to mutate — assert job completes cleanly
     expect(Enrollment::find(999999))->toBeNull();
@@ -76,11 +71,13 @@ it('throws when spotplayer course id is missing', function (): void {
     ]);
 
     $service = $this->mock(SpotPlayerService::class);
+    $service->shouldReceive('isEnabled')->andReturn(true);
+    $service->shouldReceive('assertConfigured');
 
     $job = new ProvisionSpotPlayerEnrollmentJob($enrollment->id);
 
-    expect(fn () => $job->handle($service, app(SettingsService::class)))
-        ->toThrow(RuntimeException::class, 'SpotPlayer spot_id is missing from delivery option details.');
+    expect(fn () => $job->handle())
+        ->toThrow(UnrecoverableProvisioningException::class, 'SpotPlayer spot_id is missing from delivery option details.');
 });
 
 it('provisions spotplayer enrollment and saves provisioning data', function (): void {
@@ -89,6 +86,8 @@ it('provisions spotplayer enrollment and saves provisioning data', function (): 
     ]);
 
     $service = $this->mock(SpotPlayerService::class);
+    $service->shouldReceive('isEnabled')->andReturn(true);
+    $service->shouldReceive('assertConfigured');
     $service->shouldReceive('issueLicense')
         ->once()
         ->with('SPOT-COURSE-99', Mockery::on(fn ($user): bool => $user instanceof User && $user->is($enrollment->customer)))
@@ -99,7 +98,7 @@ it('provisions spotplayer enrollment and saves provisioning data', function (): 
         ]);
 
     $job = new ProvisionSpotPlayerEnrollmentJob($enrollment->id);
-    $job->handle($service, app(SettingsService::class));
+    $job->handle();
 
     $enrollment->refresh();
 

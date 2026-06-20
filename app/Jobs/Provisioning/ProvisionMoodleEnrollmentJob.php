@@ -4,94 +4,74 @@ declare(strict_types=1);
 
 namespace App\Jobs\Provisioning;
 
-use App\Enums\System\SettingKeyEnum;
-use App\Jobs\Provisioning\Concerns\HandlesProvisioningStatus;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
 use App\Services\Integrations\MoodleService;
-use App\Services\SettingsService;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
-use RuntimeException;
-use Throwable;
 
-final class ProvisionMoodleEnrollmentJob implements ShouldQueue
+final class ProvisionMoodleEnrollmentJob extends AbstractProvisioningJob
 {
-    use Dispatchable;
-    use HandlesProvisioningStatus;
-    use InteractsWithQueue;
-    use Queueable;
-    use SerializesModels;
-
-    public int $tries = 3;
-
     public function __construct(public readonly int $enrollmentId) {}
 
-    public function handle(MoodleService $moodleService, SettingsService $settings): void
+    protected function resolveEnrollment(): ?Enrollment
     {
-        $config = $settings->get(SettingKeyEnum::MOODLE);
+        return Enrollment::query()
+            ->with(['customer', 'productDeliveryOption'])
+            ->find($this->enrollmentId);
+    }
 
-        if (! ($config['enabled'] ?? false)) {
+    protected function getIntegrationName(): string
+    {
+        return 'moodle';
+    }
+
+    protected function executeProvisioning(): void
+    {
+        /** @var MoodleService $service */
+        $service = app(MoodleService::class);
+
+        // Silently skip — integration toggled off, not a failure.
+        if (! $service->isEnabled()) {
             return;
         }
-        if (empty($config['base_url']) || empty($config['token'])) {
-            throw new RuntimeException('Moodle configuration is missing base_url or token.');
-        }
-        $enrollment = $this->findEnrollment();
+
+        // Missing base_url / token → UnrecoverableProvisioningException → job fails immediately.
+        $service->assertConfigured();
+
+        $enrollment = $this->getEnrollment();
         if (! $enrollment) {
             return;
         }
 
         $details  = $enrollment->productDeliveryOption?->details_json ?? [];
         $courseId = data_get($details, 'moodle_course_id');
+
+        // A non-numeric course_id in the DB will never fix itself on retry.
         if (! is_numeric($courseId)) {
-            throw new RuntimeException('Moodle course id is missing from delivery option details.');
+            throw new UnrecoverableProvisioningException(
+                'Moodle course_id is missing from delivery option details.'
+            );
         }
         $courseId = (int) $courseId;
 
-        [$moodleUserId, $moodleUsername] = $moodleService->findOrCreateUser($enrollment->customer);
-        $startDate                       = data_get($details, 'enrollment_start_date');
-        $endDate                         = data_get($details, 'enrollment_end_date');
+        [$moodleUserId, $moodleUsername] = $service->findOrCreateUser($enrollment->customer);
 
-        $startTime  = is_string($startDate) && strtotime($startDate) !== false ? strtotime($startDate) : null;
-        $endTime    = is_string($endDate)   && strtotime($endDate)   !== false ? strtotime($endDate) : null;
-        $courseInfo = $moodleService->getCourse($courseId);
-        $roleId     = (int) ($config['default_role_id'] ?? 5);
-        $moodleService->enrollUser($moodleUserId, $courseId, $startTime, $endTime, $roleId);
+        $startDate = data_get($details, 'enrollment_start_date');
+        $endDate   = data_get($details, 'enrollment_end_date');
+        $startTime = is_string($startDate) && strtotime($startDate) !== false ? strtotime($startDate) : null;
+        $endTime   = is_string($endDate)   && strtotime($endDate)   !== false ? strtotime($endDate) : null;
+
+        // getCourse is called before enrollUser intentionally — it validates that the course
+        // actually exists in Moodle and returns data needed for the success payload.
+        $courseInfo = $service->getCourse($courseId);
+
+        $service->enrollUser($moodleUserId, $courseId, $startTime, $endTime, $service->getDefaultRoleId());
 
         $this->markProvisioningSuccess($enrollment, 'moodle', [
             'moodle_user_id'   => $moodleUserId,
             'moodle_user_name' => $moodleUsername,
             'moodle_course_id' => $courseId,
-            'login_path'       => $config['default_login_redirect_script'] ?? '/my',
+            'login_path'       => $service->getLoginPath(),
             'course_info'      => $courseInfo,
         ]);
-    }
-
-    public function failed(Throwable $exception): void
-    {
-        $enrollment = $this->findEnrollment();
-        if (! $enrollment) {
-            return;
-        }
-
-        $this->markProvisioningFailure($enrollment, 'moodle', $exception->getMessage());
-    }
-
-    /**
-     * @return array<int, int>
-     */
-    public function backoff(): array
-    {
-        return [60, 180, 600];
-    }
-
-    private function findEnrollment(): ?Enrollment
-    {
-        return Enrollment::query()
-            ->with(['customer', 'productDeliveryOption'])
-            ->find($this->enrollmentId);
     }
 }

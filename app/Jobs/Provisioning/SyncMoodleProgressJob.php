@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Jobs\Provisioning;
 
-use App\Enums\System\SettingKeyEnum;
 use App\Models\Enrollment;
 use App\Services\Integrations\MoodleService;
-use App\Services\SettingsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -17,6 +15,13 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Throwable;
 
+/**
+ * Syncs Moodle course progress back into the local enrollment record.
+ *
+ * This is intentionally NOT an AbstractProvisioningJob. It is a background
+ * sync task, not a provisioning task, so it has no markProvisioningSuccess/
+ * Failure calls, no AdminActionLog, and no delivery-option lookup.
+ */
 final class SyncMoodleProgressJob implements ShouldQueue
 {
     use Dispatchable;
@@ -33,20 +38,15 @@ final class SyncMoodleProgressJob implements ShouldQueue
         private readonly string $providerKey = 'moodle',
     ) {}
 
-    public function handle(MoodleService $moodleService, SettingsService $settings): void
+    public function handle(MoodleService $moodleService): void
     {
         $enrollment = Enrollment::find($this->enrollmentId);
         if (! $enrollment) {
             return;
         }
 
-        $config = $settings->get(SettingKeyEnum::MOODLE, config('services.moodle'));
-
-        if (! is_array($config) || ! isset($config['base_url'], $config['token']) || ! is_string($config['base_url']) || ! is_string($config['token'])) {
-            return;
-        }
-
-        if ($config['base_url'] === '' || $config['token'] === '') {
+        // isReady() = isEnabled() && validateConfig() — replaces 8 lines of raw config checks.
+        if (! $moodleService->isReady()) {
             return;
         }
 

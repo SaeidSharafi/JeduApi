@@ -5,94 +5,78 @@ declare(strict_types=1);
 namespace App\Services\Integrations;
 
 use App\Enums\System\SettingKeyEnum;
-use App\Exceptions\Integrations\ExternalProvisioningException;
-use App\Services\SettingsService;
-use Illuminate\Support\Facades\Http;
+use App\Exceptions\Integrations\RecoverableProvisioningException;
 
-final class BbbService
+final class BbbService extends AbstractIntegrationService
 {
-    public function __construct(private readonly SettingsService $settings) {}
-
     public function createMeeting(
         string $meetingId,
         string $name,
         ?string $attendeePw = null,
-        ?string $moderatorPw = null
+        ?string $moderatorPw = null,
     ): void {
-        $config = $this->resolveConfig();
-
         $queryParams = [
             'meetingID'   => $meetingId,
             'name'        => $name,
-            'attendeePW'  => $attendeePw ?: $config['default_attendee_pw'],
-            'moderatorPW' => $moderatorPw ?: $config['default_moderator_pw'],
+            'attendeePW'  => $attendeePw ?: ($this->config['default_attendee_pw'] ?? ''),
+            'moderatorPW' => $moderatorPw ?: ($this->config['default_moderator_pw'] ?? ''),
         ];
 
         $queryString = http_build_query($queryParams);
+        $checksum    = sha1('create'.$queryString.$this->config['secret']);
+        $endpoint    = $this->buildEndpoint('create', $queryString, $checksum);
 
-        $checksum = sha1('create'.$queryString.$config['secret']);
-
-        $endpoint = sprintf('%s/%s/create?%s&checksum=%s',
-            mb_rtrim($config['base_url'], '/'),
-            mb_trim($config['api_path'], '/'),
-            $queryString,
-            $checksum
-        );
-
-        $response = Http::timeout($config['timeout'])->get($endpoint);
+        $response = \Illuminate\Support\Facades\Http::timeout($this->config['timeout'] ?? 30)
+            ->get($endpoint);
 
         if ($response->failed()) {
-            throw new ExternalProvisioningException('BBB create meeting request failed.');
+            // BBB failures are typically transient (server restart, network) — recoverable.
+            throw new RecoverableProvisioningException(
+                'BBB create meeting request failed.',
+                $response->status(),
+            );
         }
     }
 
-    /**
-     * @codeCoverageIgnore
-     */
+    /** @codeCoverageIgnore */
     public function buildJoinUrl(string $meetingId, string $fullName, ?string $password = null): string
     {
-        $config = $this->resolveConfig();
-
         $queryParams = [
             'meetingID' => $meetingId,
             'fullName'  => $fullName,
-            'password'  => $password ?: $config['default_attendee_pw'],
+            'password'  => $password ?: ($this->config['default_attendee_pw'] ?? ''),
         ];
 
         $queryString = http_build_query($queryParams);
+        $checksum    = sha1('join'.$queryString.$this->config['secret']);
 
-        $checksum = sha1('join'.$queryString.$config['secret']);
-
-        return sprintf('%s/%s/join?%s&checksum=%s',
-            mb_rtrim($config['base_url'], '/'),
-            mb_trim($config['api_path'], '/'),
-            $queryString,
-            $checksum
-        );
+        return $this->buildEndpoint('join', $queryString, $checksum);
     }
 
-    /**
-     * @return array{base_url: string, secret: string, api_path: string, default_attendee_pw: string, default_moderator_pw: string, timeout: int}
-     */
-    private function resolveConfig(): array
+    protected function getSettingKey(): SettingKeyEnum
     {
-        $config  = $this->settings->get(SettingKeyEnum::BIG_BLUE_BUTTON);
-        $baseUrl = (string) data_get($config, 'base_url', '');
-        $secret  = (string) data_get($config, 'secret', '');
+        return SettingKeyEnum::BIG_BLUE_BUTTON;
+    }
 
-        if ($baseUrl === '' || $secret === '') {
-            throw new ExternalProvisioningException('BBB service configuration is missing.');
-        }
+    protected function getConfigFallbackPath(): string
+    {
+        return 'services.bbb';
+    }
 
-        return [
-            'base_url'            => $baseUrl,
-            'secret'              => $secret,
-            'api_path'            => (string) data_get($config, 'api_path', '/bigbluebutton/api'),
-            'default_attendee_pw' => (string) data_get($config, 'default_attendee_pw',
-                data_get($config, 'default_attendee_password', '')),
-            'default_moderator_pw' => (string) data_get($config, 'default_moderator_pw',
-                data_get($config, 'default_moderator_password', '')),
-            'timeout' => (int) config('services.bbb.timeout', 30),
-        ];
+    protected function validateConfig(): bool
+    {
+        return ! empty($this->config['base_url']) && ! empty($this->config['secret']);
+    }
+
+    private function buildEndpoint(string $action, string $queryString, string $checksum): string
+    {
+        return sprintf(
+            '%s/%s/%s?%s&checksum=%s',
+            mb_rtrim($this->config['base_url'], '/'),
+            mb_trim($this->config['api_path'] ?? '/bigbluebutton/api', '/'),
+            $action,
+            $queryString,
+            $checksum,
+        );
     }
 }

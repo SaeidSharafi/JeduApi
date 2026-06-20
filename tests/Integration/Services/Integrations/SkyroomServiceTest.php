@@ -3,31 +3,12 @@
 declare(strict_types=1);
 
 use App\Enums\System\SettingKeyEnum;
-use App\Exceptions\Integrations\ExternalProvisioningException;
+use App\Exceptions\Integrations\RecoverableProvisioningException;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\User;
 use App\Services\Integrations\SkyroomService;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\Http;
-
-function makeSkyroomService(string $apiKey = 'test-api-key'): SkyroomService
-{
-    $settings = Mockery::mock(SettingsService::class);
-    $settings->shouldReceive('get')
-        ->with(SettingKeyEnum::SKYROOM)
-        ->andReturn($apiKey !== '' ? ['api_key' => $apiKey] : []);
-
-    return new SkyroomService($settings);
-}
-
-function skyroomEndpoint(string $apiKey = 'test-api-key'): string
-{
-    return 'https://www.skyroom.online/skyroom/api/'.$apiKey.'*';
-}
-
-function makeUser(int $id = 1, string $name = 'Test User'): User
-{
-    return (new User())->forceFill(['id' => $id, 'full_name' => $name]);
-}
 
 describe('findOrCreateUser', function () {
     it('returns skyroom_user_id when getUser finds an existing user', function () {
@@ -43,19 +24,18 @@ describe('findOrCreateUser', function () {
         expect($result)->toBe(['skyroom_user_id' => 42]);
     });
 
-    it('creates a new user when getUser returns error_code 15 (not found)', function () {
+    it('throws RecoverableProvisioningException when getUser returns error_code 15 (not found)', function () {
         Http::fake([
             skyroomEndpoint() => Http::sequence()
                 ->push(['ok' => false, 'error_code' => 15, 'error_message' => 'User not found'])
                 ->push(['ok' => true, 'result' => 99]),
         ]);
 
-        $result = makeSkyroomService()->findOrCreateUser(makeUser(5, 'Ali Karimi'));
-
-        expect($result)->toBe(['skyroom_user_id' => 99]);
+        expect(fn () => makeSkyroomService()->findOrCreateUser(makeUser(5, 'Ali Karimi')))
+            ->toThrow(RecoverableProvisioningException::class);
     });
 
-    it('re-throws ExternalProvisioningException when getUser returns a non-15 error', function () {
+    it('throws RecoverableProvisioningException when getUser returns a non-15 error', function () {
         Http::fake([
             skyroomEndpoint() => Http::response([
                 'ok'            => false,
@@ -65,7 +45,7 @@ describe('findOrCreateUser', function () {
         ]);
 
         expect(fn () => makeSkyroomService()->findOrCreateUser(makeUser(3)))
-            ->toThrow(ExternalProvisioningException::class);
+            ->toThrow(RecoverableProvisioningException::class);
     });
 });
 
@@ -77,7 +57,7 @@ describe('addUserToRoom', function () {
 
         $service = makeSkyroomService();
 
-        expect(fn () => $service->addUserToRoom(10, 42))->not->toThrow(ExternalProvisioningException::class);
+        expect(fn () => $service->addUserToRoom(10, 42))->not->toThrow(UnrecoverableProvisioningException::class);
 
         Http::assertSent(function ($request) {
             $body = $request->data();
@@ -98,7 +78,7 @@ describe('addUserToRoom', function () {
         ]);
 
         expect(fn () => makeSkyroomService()->addUserToRoom(10, 42))
-            ->toThrow(ExternalProvisioningException::class, '7');
+            ->toThrow(UnrecoverableProvisioningException::class, 'Skyroom [addRoomUsers] error 7: Permission denied');
     });
 });
 
@@ -117,33 +97,53 @@ describe('createLoginUrl', function () {
 });
 
 describe('error handling', function () {
-    it('throws ExternalProvisioningException when api_key is not configured', function () {
+    it('throws RecoverableProvisioningException when Skyroom service configuration is missing.', function () {
         $settings = Mockery::mock(SettingsService::class);
         $settings->shouldReceive('get')
-            ->with(SettingKeyEnum::SKYROOM)
-            ->andReturn([]);
+            ->with(SettingKeyEnum::SKYROOM, Mockery::any())
+            ->andReturn(['enabled' => true, 'base_url' => 'https://www.skyroom.online/skyroom/api', 'api_key' => '']);
 
         $service = new SkyroomService($settings);
 
         expect(fn () => $service->findOrCreateUser(makeUser(1)))
-            ->toThrow(ExternalProvisioningException::class, 'api_key is not configured');
+            ->toThrow(RecoverableProvisioningException::class);
     });
 
-    it('throws ExternalProvisioningException on HTTP failure (5xx)', function () {
+    it('throws RecoverableProvisioningException on HTTP failure (5xx)', function () {
         Http::fake([
             skyroomEndpoint() => Http::response([], 500),
         ]);
 
         expect(fn () => makeSkyroomService()->findOrCreateUser(makeUser(1)))
-            ->toThrow(ExternalProvisioningException::class);
+            ->toThrow(RecoverableProvisioningException::class);
     });
 
-    it('throws ExternalProvisioningException on network error', function () {
+    it('throws RecoverableProvisioningException on network error', function () {
         Http::fake([
             skyroomEndpoint() => fn () => throw new RuntimeException('Connection refused'),
         ]);
 
         expect(fn () => makeSkyroomService()->findOrCreateUser(makeUser(1)))
-            ->toThrow(ExternalProvisioningException::class, 'network error');
+            ->toThrow(RecoverableProvisioningException::class);
     });
 });
+
+function makeSkyroomService(string $apiKey = 'test-api-key'): SkyroomService
+{
+    $settings = Mockery::mock(SettingsService::class);
+    $settings->shouldReceive('get')
+        ->with(SettingKeyEnum::SKYROOM, Mockery::any())
+        ->andReturn($apiKey !== '' ? ['enabled' => true,'base_url' => "https://www.skyroom.online/skyroom/api", 'api_key' => $apiKey] : []);
+
+    return new SkyroomService($settings);
+}
+
+function skyroomEndpoint(string $apiKey = 'test-api-key'): string
+{
+    return 'https://www.skyroom.online/skyroom/api/'.$apiKey.'*';
+}
+
+function makeUser(int $id = 1, string $name = 'Test User'): User
+{
+    return (new User())->forceFill(['id' => $id, 'full_name' => $name]);
+}

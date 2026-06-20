@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 use App\Enums\System\SettingKeyEnum;
-use App\Exceptions\Integrations\ExternalProvisioningException;
+use App\Exceptions\Integrations\RecoverableProvisioningException;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Services\Integrations\BbbService;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\Http;
@@ -13,7 +14,7 @@ beforeEach(function (): void {
 
     $settings = $this->mock(SettingsService::class);
     $settings->shouldReceive('get')
-        ->with(SettingKeyEnum::BIG_BLUE_BUTTON)
+        ->with(SettingKeyEnum::BIG_BLUE_BUTTON, Mockery::any())
         ->andReturn([
             'base_url'             => 'https://bbb.test',
             'secret'               => 'secret',
@@ -49,20 +50,20 @@ it('throws when create meeting request fails', function (): void {
     ]);
 
     expect(fn () => $this->service->createMeeting('MEET-100', 'Physics 101', 'ap', 'mp'))
-        ->toThrow(ExternalProvisioningException::class, 'BBB create meeting request failed.');
+        ->toThrow(RecoverableProvisioningException::class, 'BBB create meeting request failed.');
 });
 
 it('throws when service used before configuration', function (): void {
     $settings = $this->mock(SettingsService::class);
     $settings->shouldReceive('get')
-        ->with(SettingKeyEnum::BIG_BLUE_BUTTON)
+        ->with(SettingKeyEnum::BIG_BLUE_BUTTON, Mockery::any())
         ->andReturn(['base_url' => '', 'secret' => '']);
 
     $service = app(BbbService::class);
 
-    expect(fn () => $service->createMeeting('MEET-100', 'Physics 101'))
-        ->toThrow(ExternalProvisioningException::class, 'BBB service configuration is missing.');
+    expect(fn () => $service->assertConfigured())
+        ->toThrow(UnrecoverableProvisioningException::class);
 
-    expect(fn () => $service->buildJoinUrl('MEET-100', 'Physics 101', 'pass'))
-        ->toThrow(ExternalProvisioningException::class, 'BBB service configuration is missing.');
+    expect(fn () => $service->assertConfigured())
+        ->toThrow(UnrecoverableProvisioningException::class);
 });

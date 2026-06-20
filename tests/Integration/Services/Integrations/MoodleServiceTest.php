@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 use App\Enums\System\SettingKeyEnum;
-use App\Exceptions\Integrations\ExternalProvisioningException;
+use App\Exceptions\Integrations\RecoverableProvisioningException;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\User;
 use App\Services\Integrations\MoodleService;
 use App\Services\SettingsService;
@@ -67,7 +68,7 @@ it('throws when username does not exist on user model', function (): void {
     ]);
 
     expect(fn () => $this->moodleService->findOrCreateUser($user))
-        ->toThrow(ExternalProvisioningException::class, 'Moodle username source missing.');
+        ->toThrow(UnrecoverableProvisioningException::class, 'Moodle username source missing.');
 
 });
 it('throws when moodle user creation response missing id', function (): void {
@@ -80,7 +81,7 @@ it('throws when moodle user creation response missing id', function (): void {
     ]);
 
     expect(fn () => $this->moodleService->findOrCreateUser($user))
-        ->toThrow(ExternalProvisioningException::class, 'Moodle user creation failed.');
+        ->toThrow(UnrecoverableProvisioningException::class, 'Moodle user creation failed.');
 });
 
 it('enrolls user with optional start and end times', function (): void {
@@ -126,7 +127,7 @@ it('throws when user key missing from moodle response', function (): void {
     ]);
 
     expect(fn () => $this->moodleService->createUserKey('1122334', 'AUTH_USER_KEY'))
-        ->toThrow(ExternalProvisioningException::class, 'Moodle auth_userkey creation failed.');
+        ->toThrow(UnrecoverableProvisioningException::class, 'Moodle auth_userkey creation failed.');
 });
 
 it('throws when moodle request returns failed status', function (): void {
@@ -135,7 +136,7 @@ it('throws when moodle request returns failed status', function (): void {
     ]);
 
     expect(fn () => $this->moodleService->enrollUser(1, 2))
-        ->toThrow(ExternalProvisioningException::class, 'Moodle request failed for enrol_manual_enrol_users.');
+        ->toThrow(RecoverableProvisioningException::class, 'Moodle server error for enrol_manual_enrol_users.');
 });
 it('throws when response contains exception', function (): void {
     Http::fake([
@@ -146,7 +147,7 @@ it('throws when response contains exception', function (): void {
     ]);
 
     expect(fn () => $this->moodleService->createUserKey('1122334', 'AUTH_USER_KEY'))
-        ->toThrow(ExternalProvisioningException::class, 'Something went wrong');
+        ->toThrow(UnrecoverableProvisioningException::class, 'Something went wrong');
 });
 it('throws when service used before configuration', function (): void {
     $settings = $this->mock(SettingsService::class);
@@ -157,5 +158,5 @@ it('throws when service used before configuration', function (): void {
     $service = app(MoodleService::class);
 
     expect(fn () => $service->enrollUser(1, 2))
-        ->toThrow(ExternalProvisioningException::class, 'Moodle service configuration is missing.');
+        ->toThrow(UnrecoverableProvisioningException::class);
 });

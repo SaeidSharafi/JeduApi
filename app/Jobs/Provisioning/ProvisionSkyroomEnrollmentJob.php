@@ -4,44 +4,40 @@ declare(strict_types=1);
 
 namespace App\Jobs\Provisioning;
 
-use App\Enums\System\SettingKeyEnum;
-use App\Jobs\Provisioning\Concerns\HandlesProvisioningStatus;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
 use App\Services\Integrations\SkyroomService;
-use App\Services\SettingsService;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
-use RuntimeException;
-use Throwable;
 
-final class ProvisionSkyroomEnrollmentJob implements ShouldQueue
+final class ProvisionSkyroomEnrollmentJob extends AbstractProvisioningJob
 {
-    use Dispatchable;
-    use HandlesProvisioningStatus;
-    use InteractsWithQueue;
-    use Queueable;
-    use SerializesModels;
-
-    public int $tries = 3;
-
     public function __construct(public readonly int $enrollmentId) {}
 
-    public function handle(SkyroomService $skyroomService, SettingsService $settings): void
+    protected function resolveEnrollment(): ?Enrollment
     {
-        $config = $settings->get(SettingKeyEnum::SKYROOM);
+        return Enrollment::query()
+            ->with(['customer', 'productDeliveryOption'])
+            ->find($this->enrollmentId);
+    }
 
-        if (! ($config['enabled'] ?? false)) {
+    protected function getIntegrationName(): string
+    {
+        return 'skyroom';
+    }
+
+    protected function executeProvisioning(): void
+    {
+        /** @var SkyroomService $service */
+        $service = app(SkyroomService::class);
+
+        // Silently skip — integration toggled off, not a failure.
+        if (! $service->isEnabled()) {
             return;
         }
 
-        if (empty($config['api_key'])) {
-            throw new RuntimeException('Skyroom configuration is missing api_key.');
-        }
+        // Missing api_key → UnrecoverableProvisioningException → job fails immediately.
+        $service->assertConfigured();
 
-        $enrollment = $this->findEnrollment();
+        $enrollment = $this->getEnrollment();
         if (! $enrollment) {
             return;
         }
@@ -49,39 +45,22 @@ final class ProvisionSkyroomEnrollmentJob implements ShouldQueue
         $details = $enrollment->productDeliveryOption?->details_json ?? [];
         $roomId  = data_get($details, 'room_id');
 
+        // A non-numeric room_id in the DB will never fix itself on retry.
         if (! is_numeric($roomId)) {
-            throw new RuntimeException('Skyroom room_id is missing from delivery option details.');
+            throw new UnrecoverableProvisioningException(
+                'Skyroom room_id is missing from delivery option details.'
+            );
         }
         $roomId = (int) $roomId;
 
-        $result        = $skyroomService->findOrCreateUser($enrollment->customer);
+        $result        = $service->findOrCreateUser($enrollment->customer);
         $skyroomUserId = $result['skyroom_user_id'];
-        $skyroomService->addUserToRoom($roomId, $skyroomUserId);
+
+        $service->addUserToRoom($roomId, $skyroomUserId);
 
         $this->markProvisioningSuccess($enrollment, 'skyroom', [
             'room_id'         => $roomId,
             'skyroom_user_id' => $skyroomUserId,
         ]);
-    }
-
-    public function failed(Throwable $exception): void
-    {
-        $enrollment = $this->findEnrollment();
-        if (! $enrollment) {
-            return;
-        }
-        $this->markProvisioningFailure($enrollment, 'skyroom', $exception->getMessage());
-    }
-
-    public function backoff(): array
-    {
-        return [60, 180, 600];
-    }
-
-    private function findEnrollment(): ?Enrollment
-    {
-        return Enrollment::query()
-            ->with(['customer', 'productDeliveryOption'])
-            ->find($this->enrollmentId);
     }
 }

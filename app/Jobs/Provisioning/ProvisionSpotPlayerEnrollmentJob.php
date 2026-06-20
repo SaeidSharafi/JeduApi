@@ -4,52 +4,57 @@ declare(strict_types=1);
 
 namespace App\Jobs\Provisioning;
 
-use App\Enums\System\SettingKeyEnum;
-use App\Jobs\Provisioning\Concerns\HandlesProvisioningStatus;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
 use App\Services\Integrations\SpotPlayerService;
-use App\Services\SettingsService;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
-use RuntimeException;
-use Throwable;
 
-final class ProvisionSpotPlayerEnrollmentJob implements ShouldQueue
+final class ProvisionSpotPlayerEnrollmentJob extends AbstractProvisioningJob
 {
-    use Dispatchable;
-    use HandlesProvisioningStatus;
-    use InteractsWithQueue;
-    use Queueable;
-    use SerializesModels;
-
-    public int $tries = 3;
-
     public function __construct(public readonly int $enrollmentId) {}
 
-    public function handle(SpotPlayerService $service, SettingsService $settings): void
+    protected function resolveEnrollment(): ?Enrollment
     {
-        $config = $settings->get(SettingKeyEnum::SPOT_PLAYER);
+        return Enrollment::query()
+            ->with(['customer', 'productDeliveryOption'])
+            ->find($this->enrollmentId);
+    }
 
-        if (! ($config['enabled'] ?? false)) {
+    protected function getIntegrationName(): string
+    {
+        return 'spotplayer';
+    }
+
+    protected function executeProvisioning(): void
+    {
+        /** @var SpotPlayerService $service */
+        $service = app(SpotPlayerService::class);
+
+        // Silently skip — integration toggled off, not a failure.
+        if (! $service->isEnabled()) {
             return;
         }
-        if (empty($config['endpoint']) || empty($config['api_key'])) {
-            throw new RuntimeException('SpotPlayer configuration is missing endpoint or api_key.');
-        }
-        $enrollment = $this->findEnrollment();
+
+        // Missing endpoint / api_key → UnrecoverableProvisioningException → job fails immediately.
+        $service->assertConfigured();
+
+        $enrollment = $this->getEnrollment();
         if (! $enrollment) {
             return;
         }
 
         $details = $enrollment->productDeliveryOption?->details_json ?? [];
         $spotId  = data_get($details, 'spot_id');
+
+        // A missing spot_id in the DB will never fix itself on retry.
         if (! is_string($spotId) || $spotId === '') {
-            throw new RuntimeException('SpotPlayer spot_id is missing from delivery option details.');
+            throw new UnrecoverableProvisioningException(
+                'SpotPlayer spot_id is missing from delivery option details.'
+            );
         }
 
+        // issueLicense throws UnrecoverableProvisioningException for application-level
+        // errors (bad spot_id, status: false) and RecoverableProvisioningException for
+        // HTTP 5xx. Both are handled correctly by AbstractProvisioningJob::handle().
         $result = $service->issueLicense($spotId, $enrollment->customer);
 
         $this->markProvisioningSuccess($enrollment, 'spotplayer', [
@@ -57,30 +62,5 @@ final class ProvisionSpotPlayerEnrollmentJob implements ShouldQueue
             'license_key' => data_get($result, 'license_key'),
             'player_url'  => data_get($result, 'player_url'),
         ]);
-    }
-
-    public function failed(Throwable $exception): void
-    {
-        $enrollment = $this->findEnrollment();
-        if (! $enrollment) {
-            return;
-        }
-
-        $this->markProvisioningFailure($enrollment, 'spotplayer', $exception->getMessage());
-    }
-
-    /**
-     * @return array<int, int>
-     */
-    public function backoff(): array
-    {
-        return [60, 180, 600];
-    }
-
-    private function findEnrollment(): ?Enrollment
-    {
-        return Enrollment::query()
-            ->with(['customer', 'productDeliveryOption'])
-            ->find($this->enrollmentId);
     }
 }

@@ -8,11 +8,15 @@ use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\System\SettingKeyEnum;
 use App\Models\Enrollment;
+use App\Services\Integrations\BbbService;
+use App\Services\Integrations\MoodleService;
+use App\Services\Integrations\SkyroomService;
+use App\Services\Integrations\SpotPlayerService;
 use App\Services\SettingsService;
 
 trait HandlesProvisioningStatus
 {
-    private function markProvisioningSuccess(
+    protected function markProvisioningSuccess(
         Enrollment $enrollment,
         string $provider,
         array $data,
@@ -34,7 +38,7 @@ trait HandlesProvisioningStatus
         }
 
         $requiredProviders = $this->requiredProviders($enrollment);
-        $allSuccessful     = collect($requiredProviders)
+        $allSuccessful     = empty($requiredProviders) || collect($requiredProviders)
             ->every(fn (string $requiredProvider): bool => ($providersData[$requiredProvider]['status'] ?? null) === 'success');
 
         if ($allSuccessful) {
@@ -71,20 +75,21 @@ trait HandlesProvisioningStatus
         $isImsActive    = data_get(app(SettingsService::class)->get(SettingKeyEnum::IMS), 'enabled', false);
         $providers      = $isImsActive ? ['ims'] : [];
         $deliveryMethod = $enrollment->productDeliveryOption?->delivery_method;
+        $moodleService  = app(MoodleService::class);
 
-        if ($deliveryMethod === DeliveryMethodEnum::LMS_MOODLE) {
+        if ($deliveryMethod === DeliveryMethodEnum::LMS_MOODLE && $moodleService->isEnabled()) {
             $providers[] = 'moodle';
         }
 
-        if ($deliveryMethod === DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER) {
+        if ($deliveryMethod === DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER && app(SpotPlayerService::class)->isEnabled()) {
             $providers[] = 'spotplayer';
         }
 
-        if ($deliveryMethod === DeliveryMethodEnum::LIVE_SESSION_BBB) {
+        if ($deliveryMethod === DeliveryMethodEnum::LIVE_SESSION_BBB && app(BbbService::class)->isEnabled()) {
             $providers[] = 'bbb';
         }
 
-        if ($deliveryMethod === DeliveryMethodEnum::LIVE_SESSION_SKYROOM) {
+        if ($deliveryMethod === DeliveryMethodEnum::LIVE_SESSION_SKYROOM && app(SkyroomService::class)->isEnabled()) {
             $providers[] = 'skyroom';
         }
 
@@ -92,6 +97,7 @@ trait HandlesProvisioningStatus
 
         if ($deliveryMethod !== DeliveryMethodEnum::LMS_MOODLE
             && isset($details['moodle_quiz_course_id'])
+            && $moodleService->isEnabled()
         ) {
             $providers[] = 'moodle_quiz';
         }

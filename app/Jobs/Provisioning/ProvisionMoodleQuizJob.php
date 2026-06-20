@@ -4,87 +4,64 @@ declare(strict_types=1);
 
 namespace App\Jobs\Provisioning;
 
-use App\Enums\System\SettingKeyEnum;
-use App\Jobs\Provisioning\Concerns\HandlesProvisioningStatus;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\Enrollment;
 use App\Services\Integrations\MoodleService;
-use App\Services\SettingsService;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
-use RuntimeException;
-use Throwable;
 
-final class ProvisionMoodleQuizJob implements ShouldQueue
+final class ProvisionMoodleQuizJob extends AbstractProvisioningJob
 {
-    use Dispatchable;
-    use HandlesProvisioningStatus;
-    use InteractsWithQueue;
-    use Queueable;
-    use SerializesModels;
-
-    public int $tries = 3;
-
     public function __construct(public readonly int $enrollmentId) {}
 
-    public function handle(MoodleService $moodleService, SettingsService $settings): void
+    protected function resolveEnrollment(): ?Enrollment
     {
-        $config = $settings->get(SettingKeyEnum::MOODLE);
+        return Enrollment::query()
+            ->with(['customer', 'productDeliveryOption'])
+            ->find($this->enrollmentId);
+    }
 
-        if (! ($config['enabled'] ?? false)) {
+    protected function getIntegrationName(): string
+    {
+        return 'moodle_quiz';
+    }
+
+    protected function executeProvisioning(): void
+    {
+        /** @var MoodleService $service */
+        $service = app(MoodleService::class);
+
+        // Silently skip — integration toggled off, not a failure.
+        if (! $service->isEnabled()) {
             return;
         }
-        if (empty($config['base_url']) || empty($config['token'])) {
-            throw new RuntimeException('Moodle configuration is missing base_url or token.');
-        }
 
-        $enrollment = $this->findEnrollment();
+        // Missing base_url / token → UnrecoverableProvisioningException → job fails immediately.
+        $service->assertConfigured();
+
+        $enrollment = $this->getEnrollment();
         if (! $enrollment) {
             return;
         }
 
         $details  = $enrollment->productDeliveryOption?->details_json ?? [];
         $courseId = data_get($details, 'moodle_quiz_course_id');
+
+        // A non-numeric course_id in the DB will never fix itself on retry.
         if (! is_numeric($courseId)) {
-            throw new RuntimeException('Moodle quiz course id is missing from delivery option details.');
+            throw new UnrecoverableProvisioningException(
+                'Moodle quiz course_id is missing from delivery option details.'
+            );
         }
         $courseId = (int) $courseId;
 
-        [$moodleUserId, $moodleUsername] = $moodleService->findOrCreateUser($enrollment->customer);
-        $roleId                          = (int) ($config['default_role_id'] ?? 5);
-        $moodleService->enrollUser($moodleUserId, $courseId, null, null, $roleId);
+        [$moodleUserId, $moodleUsername] = $service->findOrCreateUser($enrollment->customer);
+
+        // Quiz enrollments have no date window — enroll immediately with no expiry.
+        $service->enrollUser($moodleUserId, $courseId, null, null, $service->getDefaultRoleId());
 
         $this->markProvisioningSuccess($enrollment, 'moodle_quiz', [
             'moodle_user_id'   => $moodleUserId,
             'moodle_username'  => $moodleUsername,
             'moodle_course_id' => $courseId,
         ]);
-    }
-
-    public function failed(Throwable $exception): void
-    {
-        $enrollment = $this->findEnrollment();
-        if (! $enrollment) {
-            return;
-        }
-
-        $this->markProvisioningFailure($enrollment, 'moodle_quiz', $exception->getMessage());
-    }
-
-    /**
-     * @return array<int, int>
-     */
-    public function backoff(): array
-    {
-        return [60, 180, 600];
-    }
-
-    private function findEnrollment(): ?Enrollment
-    {
-        return Enrollment::query()
-            ->with(['customer', 'productDeliveryOption'])
-            ->find($this->enrollmentId);
     }
 }

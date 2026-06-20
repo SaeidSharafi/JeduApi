@@ -8,14 +8,15 @@ use App\Data\Shop\MyCourses\Blocks\LmsMoodleBlockData;
 use App\Data\Shop\MyCourses\Blocks\MoodleActivityData;
 use App\Enums\System\SettingKeyEnum;
 use App\Exceptions\Integrations\ExternalProvisioningException;
+use App\Exceptions\Integrations\RecoverableProvisioningException;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\User;
-use App\Services\SettingsService;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
-final class MoodleService
+final class MoodleService extends AbstractIntegrationService
 {
     private string $baseUrl = '';
 
@@ -29,24 +30,6 @@ final class MoodleService
 
     private int $timeout = 30;
 
-    public function __construct(private readonly SettingsService $settings)
-    {
-        $this->resolveConfig();
-    }
-
-    /**
-     * @param  array<string, mixed>  $config
-     */
-    public function setConfig(array $config): void
-    {
-        $this->baseUrl                       = (string) ($config['base_url'] ?? data_get($config, 'baseUrl', ''));
-        $this->token                         = (string) ($config['token'] ?? '');
-        $this->auth_userkey_token            = (string) ($config['auth_userkey_token'] ?? '');
-        $this->default_role_id               = (string) ($config['default_role_id'] ?? data_get($config, 'defaultRoleId', ''));
-        $this->default_login_redirect_script = (string) ($config['default_login_redirect_script'] ?? data_get($config, 'defaultLoginRedirectScript', ''));
-        $this->timeout                       = (int) ($config['timeout'] ?? 30);
-    }
-
     /**
      * @return array{0:int,1:string}
      */
@@ -55,7 +38,7 @@ final class MoodleService
         $email    = $user->email ?? sprintf('user-%d@jedu.ir', $user->phone);
         $username = $user->civil_id;
         if (! is_string($username) || $username === '') {
-            throw new ExternalProvisioningException('Moodle username source missing.');
+            throw new UnrecoverableProvisioningException('Moodle username source missing.');
         }
 
         $lookup = $this->call('core_user_get_users_by_field', [
@@ -78,7 +61,7 @@ final class MoodleService
         ]);
 
         if (! is_array($created) || ! isset($created[0]['id'])) {
-            throw new ExternalProvisioningException('Moodle user creation failed.');
+            throw new UnrecoverableProvisioningException('Moodle user creation failed.');
         }
 
         return [(int) $created[0]['id'], $username];
@@ -172,7 +155,7 @@ final class MoodleService
 
         $response = $this->call('core_course_get_contents', $params);
         if (! $response || ! is_array($response)) {
-            throw new ExternalProvisioningException('Moodle course not found.');
+            throw new UnrecoverableProvisioningException('Moodle course not found.');
         }
         $response = reset($response);
         $modules  = [];
@@ -232,18 +215,25 @@ final class MoodleService
 
         $loginUrl = data_get($result, 'loginurl');
         if (! is_string($loginUrl) || $loginUrl === '') {
-            throw new ExternalProvisioningException('Moodle auth_userkey creation failed.');
+            throw new UnrecoverableProvisioningException('Moodle auth_userkey creation failed.');
         }
 
         return $loginUrl;
     }
 
-    private function resolveConfig(): void
+    protected function getSettingKey(): SettingKeyEnum
     {
-        $config = $this->settings->get(SettingKeyEnum::MOODLE, config('services.moodle'));
-        if (is_array($config)) {
-            $this->setConfig($config);
-        }
+        return SettingKeyEnum::MOODLE;
+    }
+
+    protected function getConfigFallbackPath(): string
+    {
+        return 'services.moodle';
+    }
+
+    protected function validateConfig(): bool
+    {
+        return ! empty($this->config['base_url']) && ! empty($this->config['token']);
     }
 
     /**
@@ -251,13 +241,11 @@ final class MoodleService
      */
     private function call(string $function, array $params, ?string $token = null): mixed
     {
-        if ($this->baseUrl === '' || $this->token === '') {
-            throw new ExternalProvisioningException('Moodle service configuration is missing.');
-        }
+        $this->assertConfigured(); // throws UnrecoverableProvisioningException if not ready
 
-        $response = $this->request($this->baseUrl)->post('/webservice/rest/server.php', array_merge(
+        $response = $this->request($this->config['base_url'])->post('/webservice/rest/server.php', array_merge(
             [
-                'wstoken'            => $token ?: $this->token,
+                'wstoken'            => $token ?: $this->config['token'],
                 'wsfunction'         => $function,
                 'moodlewsrestformat' => 'json',
             ],
@@ -265,13 +253,18 @@ final class MoodleService
         ));
 
         if ($response->failed()) {
-            throw new ExternalProvisioningException(sprintf('Moodle request failed for %s.', $function));
+            $status = $response->status();
+            if ($status >= 500) {
+                throw new RecoverableProvisioningException("Moodle server error for {$function}.", $status);
+            }
+            throw new UnrecoverableProvisioningException("Moodle request failed for {$function}.", $status);
         }
 
         $json = $response->json();
         if (is_array($json) && isset($json['exception'])) {
             $message = (string) ($json['message'] ?? 'Moodle returned an exception response.');
-            throw new ExternalProvisioningException(message: $message, metaData: $json);
+            // metaData['errorcode'] is what getMoodleErrorCode() reads — must be preserved
+            throw new UnrecoverableProvisioningException($message, 0, null, $json);
         }
 
         return $json;

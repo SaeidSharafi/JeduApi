@@ -5,29 +5,25 @@ declare(strict_types=1);
 namespace App\Jobs\Provisioning;
 
 use App\Enums\Payment\PaymentStatusEnum;
-use App\Enums\System\SettingKeyEnum;
 use App\Enums\User\GenderEnum;
-use App\Exceptions\Integrations\ExternalProvisioningException;
-use App\Jobs\Provisioning\Concerns\HandlesProvisioningStatus;
+use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\AdminActionLog;
 use App\Models\Enrollment;
+use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\User;
 use App\Services\Integrations\ImsService;
-use App\Services\SettingsService;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Throwable;
 
-final class ProvisionImsEnrollmentJob implements ShouldQueue
+final class ProvisionImsEnrollmentJob extends AbstractProvisioningJob
 {
     use Dispatchable;
-    use HandlesProvisioningStatus;
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
@@ -39,19 +35,30 @@ final class ProvisionImsEnrollmentJob implements ShouldQueue
         public readonly ?int $paymentId = null,
     ) {}
 
-    public function handle(ImsService $service, SettingsService $settings): void
+    protected function resolveEnrollment(): ?Enrollment
     {
-        $imsConfig = $settings->get(SettingKeyEnum::IMS);
+        return Enrollment::query()
+            ->with(['customer', 'order', 'productDeliveryOption'])
+            ->find($this->enrollmentId);
+    }
 
-        if (! ($imsConfig['enabled'] ?? false)) {
+    protected function getIntegrationName(): string
+    {
+        return 'ims';
+    }
+
+    protected function executeProvisioning(): void
+    {
+        /** @var ImsService $service */
+        $service = app(ImsService::class);
+
+        if (! $service->isEnabled()) {
             return;
         }
 
-        if (empty($imsConfig['base_url']) || empty($imsConfig['api_key'])) {
-            throw new RuntimeException('IMS is enabled but configuration is missing.');
-        }
+        $service->assertConfigured();
 
-        $enrollment = $this->findEnrollment();
+        $enrollment = $this->getEnrollment();
         if (! $enrollment) {
             return;
         }
@@ -59,14 +66,17 @@ final class ProvisionImsEnrollmentJob implements ShouldQueue
         $this->resolvePaymentOrFail($enrollment);
 
         $deliveryDetails = $enrollment->productDeliveryOption?->details_json ?? [];
-        $imsCourseCode   = data_get($deliveryDetails, 'ims_course_code');
-        if (! is_string($imsCourseCode) || $imsCourseCode === '') {
-            throw new RuntimeException('IMS course code is missing from delivery option details.');
+
+        $imsCourseCode = data_get($enrollment->productDeliveryOption?->details_json ?? [], 'ims_course_code');
+        if (empty($imsCourseCode)) {
+            throw new UnrecoverableProvisioningException('IMS course code is missing from delivery option details.');
         }
 
-        $customer          = $enrollment->customer;
+        /** @var User $customer */
+        $customer = $enrollment->customer;
+        /** @var ?OrderItem $orderItem */
         $orderItem         = $enrollment->orderItem;
-        $discountAmount    = $orderItem?->discount_amount ?? 0;
+        $discountAmount    = $orderItem->discount_amount ?? 0;
         $orderItemAmount   = $orderItem?->total;
         $paymentAmount     = $this->resolvePaymentAmount($enrollment) > 0 ? $orderItemAmount : 0;
         $paymentDate       = $this->resolvePaymentDate($enrollment);
@@ -77,7 +87,8 @@ final class ProvisionImsEnrollmentJob implements ShouldQueue
             'last_name'        => $customer->last_name,
             'phone'            => $customer->phone,
             'email'            => $customer->email,
-            'national_code'    => $customer->civil_id,
+            'civil_id'         => $customer->civil_id,
+            'civil_id_type'    => $customer->civil_id_type,
             'father_name'      => $customer->father_name,
             'gender'           => $customer->gender === GenderEnum::MALE ? 1 : 0,
             'field_of_study'   => $customer->field_of_study,
@@ -88,7 +99,8 @@ final class ProvisionImsEnrollmentJob implements ShouldQueue
         ];
 
         $enrolment = [
-            'national_code' => $customer->civil_id,
+            'civil_id'      => $customer->civil_id,
+            'civil_id_type' => $customer->civil_id_type,
             'course_code'   => $imsCourseCode,
             'payment'       => [
                 'amount'              => $paymentAmount,
@@ -105,41 +117,26 @@ final class ProvisionImsEnrollmentJob implements ShouldQueue
                 $enrollment->notes,
         ];
 
-        $student              = $service->storeSetudent($student);
-        $enrolment            = $service->storeEnrolment($customer, $enrolment);
-        $externalEnrollmentId = data_get($enrolment, 'data.enrollment_id');
+        $studentData   = $service->storeStudent($student);
+        $enrolmentData = $service->storeEnrolment($enrollment->customer, $enrolment);
+
+        $externalEnrollmentId = data_get($enrolmentData, 'data.enrollment_id');
         $externalEnrollmentId = is_scalar($externalEnrollmentId) ? (string) $externalEnrollmentId : null;
 
         $this->markProvisioningSuccess($enrollment, 'ims', [
             'course_code'   => $imsCourseCode,
             'enrollment_id' => $externalEnrollmentId,
-            'student_id'    => data_get($student, 'data.student_id'),
-            'created_at'    => data_get($enrolment, 'data.created_at'),
+            'student_id'    => data_get($studentData, 'data.student_id'),
+            'created_at'    => data_get($enrolmentData, 'data.created_at'),
         ], $externalEnrollmentId);
     }
 
-    public function failed(Throwable $exception): void
+    protected function onFailed(Enrollment $enrollment, Throwable $exception, array $metaData): void
     {
-        $enrollment = $this->findEnrollment();
-        if (! $enrollment) {
-            return;
-        }
-
-        $metaData = $exception instanceof ExternalProvisioningException
-            ? $exception->metaData
-            : [];
-
-        $this->markProvisioningFailure($enrollment, 'ims', $exception->getMessage(), $metaData);
-
-        Log::error('IMS provisioning failed', [
-            'enrollment_id'     => $this->enrollmentId,
-            'payment_id'        => $this->paymentId,
-            'http_status'       => $metaData['http_status']       ?? null,
-            'endpoint'          => $metaData['endpoint']          ?? null,
-            'validation_errors' => $metaData['validation_errors'] ?? [],
-            'exception_class'   => get_class($exception),
-            'job_attempts'      => $this->attempts(),
-        ]);
+        // Compute a static sanitized error message — never leak raw exception text into admin logs.
+        $errorMessage = ($metaData['http_status'] ?? 0) === 422
+            ? 'IMS validation failed'
+            : 'IMS provisioning failed';
 
         AdminActionLog::create([
             'admin_id'        => null,
@@ -151,29 +148,11 @@ final class ProvisionImsEnrollmentJob implements ShouldQueue
             'response_status' => $metaData['http_status'] ?? 0,
             'ip_address'      => '127.0.0.1',
             'risk_level'      => 'high',
-            'metadata'        => [
-                'endpoint'          => $metaData['endpoint']          ?? null,
-                'validation_errors' => $metaData['validation_errors'] ?? [],
-                'error_message'     => 'IMS validation failed',
-                'raw_body_snippet'  => $metaData['raw_body_snippet'] ?? null,
-                'job_attempts'      => $this->attempts(),
-            ],
+            'metadata'        => array_merge($metaData, [
+                'job_attempts'  => $this->attempts(),
+                'error_message' => $errorMessage,
+            ]),
         ]);
-    }
-
-    /**
-     * @return array<int, int>
-     */
-    public function backoff(): array
-    {
-        return [60, 180, 600];
-    }
-
-    private function findEnrollment(): ?Enrollment
-    {
-        return Enrollment::query()
-            ->with(['customer', 'order', 'productDeliveryOption'])
-            ->find($this->enrollmentId);
     }
 
     private function resolvePayment(Enrollment $enrollment): ?Payment

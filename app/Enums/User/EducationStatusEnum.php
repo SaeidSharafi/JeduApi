@@ -13,4 +13,5 @@ enum EducationStatusEnum: string
     case UNIVERSITY = 'university';
     case GRADUATED  = 'graduated';
     case EMPLOYED   = 'employed';
+    case JOB_SEEKER = 'job_seeker';
 }
