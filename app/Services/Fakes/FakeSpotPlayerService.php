@@ -7,6 +7,9 @@ namespace App\Services\Fakes;
 use App\Models\User;
 use App\Services\SettingsService;
 
+/**
+ * @codeCoverageIgnore
+ */
 final class FakeSpotPlayerService
 {
     public function __construct(private readonly SettingsService $settings) {}

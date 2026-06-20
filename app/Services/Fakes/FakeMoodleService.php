@@ -9,6 +9,9 @@ use App\Data\Shop\MyCourses\Blocks\MoodleActivityData;
 use App\Models\User;
 use App\Services\SettingsService;
 
+/**
+ * @codeCoverageIgnore
+ */
 final class FakeMoodleService
 {
     private string $baseUrl = 'https://moodle.demo.jedushop.ir';

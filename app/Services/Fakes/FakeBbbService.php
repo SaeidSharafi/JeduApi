@@ -6,6 +6,9 @@ namespace App\Services\Fakes;
 
 use App\Services\SettingsService;
 
+/**
+ * @codeCoverageIgnore
+ */
 final class FakeBbbService
 {
     /** @var array<string, mixed> */
