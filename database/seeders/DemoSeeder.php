@@ -215,7 +215,31 @@ final class DemoSeeder extends Seeder
 
         // ─── Content & Settings ────────────────────────────────────────────
 
-        $this->seedModel(Setting::class, 'settings.json');
+        $this->seedModel(Setting::class, 'settings.json', function ($data) {
+            $processMedia = function (array &$array) use (&$processMedia) {
+                foreach ($array as $key => &$value) {
+                    // 1. Handle "images" which is an array of strings
+                    if ($key === 'images' && is_array($value)) {
+                        foreach ($value as $subKey => $subValue) {
+                            if (is_string($subValue)) {
+                                $value[$subKey] = $this->media($subValue)?->id;
+                            }
+                        }
+                    } elseif (in_array($key, ['image', 'logo', 'icon']) && is_string($value)) {
+                        $array[$key.'_url'] = $this->media($value)?->getUrl();
+                        $value              = $this->media($value)?->id;
+                    } elseif (is_array($value)) {
+                        $processMedia($value);
+                    }
+                }
+            };
+
+            if (is_array($data)) {
+                $processMedia($data);
+            }
+
+            return $data;
+        });
         $this->seedModel(Partner::class, 'partners.json', null, function (array $collection) {
             $this->seedPartnerMedia($collection);
         });
@@ -349,7 +373,7 @@ final class DemoSeeder extends Seeder
             'avatar-male.svg', 'avatar-female.svg', 'avatar-default.svg',
             'logo-tech.svg', 'logo-art.svg', 'logo-humanities.svg', 'logo-lang.svg',
             'favicon-tech.svg', 'favicon-art.svg', 'favicon-humanities.svg', 'favicon-lang.svg',
-            'bank-mellat.svg', 'digipay.svg'
+            'bank-mellat.svg', 'digipay.svg',
         ];
 
         // Import 3 video copies
@@ -628,6 +652,31 @@ final class DemoSeeder extends Seeder
         }
     }
 
+    // private function seedSettingMedia(array $collection): void
+    // {
+    //    $logoPool = [
+    //        $this->media("logo-tech.svg"),
+    //        $this->media("bank-mellat.svg"),
+    //    ];
+    //    $images = [
+    //        $this->media("gallery-tech.svg"),
+    //        $this->media("gallery-art.svg"),
+    //        $this->media("gallery-nature.svg"),
+    //    ];
+    //
+    //    $settings = Setting::whereIn('id', collect($collection)->pluck('id'))->get();
+    //    foreach ($settings as $i => $setting) {
+    //        if (isset($setting->value['images'])){
+    //            $setting->syncMedia($logo, 'logo');
+    //        }
+    //
+    //        $logo = $logoPool[$i % count($logoPool)];
+    //        $setting->syncMedia($logo, 'logo');
+    //        $setting->image_url = $logo->getUrl();
+    //        $setting->image_id  = $logo->id;
+    //        $setting->save();
+    //    }
+    // }
     private function seedPartnerMedia(array $collection): void
     {
         $logoPool = [
