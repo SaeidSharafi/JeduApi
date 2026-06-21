@@ -8,16 +8,21 @@ use App\Data\Admin\Refund\RefundCreateData;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\RefundStatusEnum;
 use App\Events\RefundCompletedEvent;
+use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Refund;
 use App\Services\OrderStatusService;
+use App\Services\Payment\Digipay\DigipayAdminService;
+use App\Services\Payment\Digipay\DigipayException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 final readonly class CreateRefundAction
 {
     public function __construct(
-        private OrderStatusService $orderStatusService
+        private OrderStatusService $orderStatusService,
+        private DigipayAdminService $digipayService,
     ) {}
 
     public function handle(RefundCreateData $data, OrderItem $orderItem): Refund
@@ -53,6 +58,7 @@ final readonly class CreateRefundAction
                 $this->orderStatusService->updateEnrollmentStatus($orderItem);
                 $this->orderStatusService->updateParentOrderStatus($orderItem->order);
                 RefundCompletedEvent::dispatch($refund);
+                $this->processDigipayRefund($orderItem->order, $refundAmount);
             }
 
             return $refund;
@@ -132,6 +138,32 @@ final readonly class CreateRefundAction
         if ($orderItem->refunds()->whereNot('status', RefundStatusEnum::FAILED)->exists()) {
             throw ValidationException::withMessages([
                 'order_item_id' => __('messages.order.refund.refund_request_exists'),
+            ]);
+        }
+    }
+
+    private function processDigipayRefund(Order $order, int $amount): void
+    {
+        $payment = $order->payments()->where('method', 'digipay')->latest()->first();
+
+        if (! $payment) {
+            return;
+        }
+
+        try {
+            $response = $this->digipayService->refund($payment, $amount);
+
+            Log::channel('digipay')->info('[Digipay] Refund successful', [
+                'order_id'      => $order->id,
+                'amount'        => $amount,
+                'tracking_code' => $response->trackingCode,
+            ]);
+        } catch (DigipayException $e) {
+            // NON-BLOCKING: refund record already created, admin retries via controller
+            Log::channel('digipay')->error('[Digipay] Refund failed', [
+                'order_id' => $order->id,
+                'amount'   => $amount,
+                'error'    => $e->getMessage(),
             ]);
         }
     }

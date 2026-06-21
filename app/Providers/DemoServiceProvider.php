@@ -13,6 +13,9 @@ use App\Services\Integrations\SpotPlayerService;
 use App\Services\SettingsService;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * @codeCoverageIgnore
+ */
 final class DemoServiceProvider extends ServiceProvider
 {
     public function register(): void

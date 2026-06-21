@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\MediaTagEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Models\DigitalAsset;
 use App\Models\Enrollment;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
+use Illuminate\Support\Facades\Storage;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 uses(Tests\Support\Traits\FakeMediaTrait::class);
@@ -67,6 +69,68 @@ it('returns 404 when no downloadable media file exists for digital asset', funct
     $digitalAsset = DigitalAsset::factory()->create(); // no media attached
     $enrollment   = createDirectDownloadEnrollmentForAsset($this->user, $digitalAsset);
     $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
+
+    $this->getJson(route('api.v1.shop.my-digital-assets.download', [
+        'enrollment'   => $enrollment->uuid,
+        'digitalAsset' => $digitalAsset->id,
+    ]))->assertNotFound();
+});
+
+it('returns 404 when productable is Course but digital asset not attached', function (): void {
+    $course        = App\Models\Course::factory()->create();
+    $digitalAsset  = DigitalAsset::factory()->create(); // not attached to course
+    $product       = Product::factory()->create([
+        'productable_type' => $course::class,
+        'productable_id'   => $course->id,
+    ]);
+    $deliveryOption = ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::DIRECT_DOWNLOAD->value,
+        'fulfillment_type' => DeliveryMethodEnum::DIRECT_DOWNLOAD->getFulfillmentType(),
+        'product_id'       => $product->id,
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::DIRECT_DOWNLOAD, deliveryOption: $deliveryOption);
+    $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
+
+    $this->getJson(route('api.v1.shop.my-digital-assets.download', [
+        'enrollment'   => $enrollment->uuid,
+        'digitalAsset' => $digitalAsset->id,
+    ]))->assertNotFound();
+});
+
+it('streams file when productable is Course with attached digital asset', function (): void {
+    $this->fakeMedia();
+    $course       = App\Models\Course::factory()->create();
+    $digitalAsset = DigitalAsset::factory()->withFile()->create();
+    // Attach digital asset to course
+    $course->digitalAssets()->attach($digitalAsset->id);
+
+    $product = Product::factory()->create([
+        'productable_type' => $course::class,
+        'productable_id'   => $course->id,
+    ]);
+    $deliveryOption = ProductDeliveryOption::factory()->create([
+        'delivery_method'  => DeliveryMethodEnum::DIRECT_DOWNLOAD->value,
+        'fulfillment_type' => DeliveryMethodEnum::DIRECT_DOWNLOAD->getFulfillmentType(),
+        'product_id'       => $product->id,
+    ]);
+    $enrollment = createEnrollment($this->user, DeliveryMethodEnum::DIRECT_DOWNLOAD, deliveryOption: $deliveryOption);
+    $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
+
+    $this->getJson(route('api.v1.shop.my-digital-assets.download', [
+        'enrollment'   => $enrollment->uuid,
+        'digitalAsset' => $digitalAsset->id,
+    ]))->assertOk();
+});
+
+it('returns 404 when media record exists but file is missing from storage', function (): void {
+    $this->fakeMedia();
+    $digitalAsset = DigitalAsset::factory()->withFile()->create();
+    $enrollment   = createDirectDownloadEnrollmentForAsset($this->user, $digitalAsset);
+    $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
+
+    // Delete the actual file from storage to simulate missing file
+    $media = $digitalAsset->getMedia(MediaTagEnum::MAIN->value)->first();
+    Storage::disk($media->disk)->delete($media->getDiskPath());
 
     $this->getJson(route('api.v1.shop.my-digital-assets.download', [
         'enrollment'   => $enrollment->uuid,

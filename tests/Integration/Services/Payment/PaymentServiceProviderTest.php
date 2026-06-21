@@ -39,7 +39,7 @@ describe('PaymentServiceProvider', function (): void {
         $taggedProcessors = $this->app->tagged(PaymentServiceProvider::PAYMENT_PROCESSOR_TAG);
         $processors       = iterator_to_array($taggedProcessors);
 
-        expect($processors)->toHaveCount(3);
+        expect($processors)->toHaveCount(4);
 
         $processorClasses = array_map(fn ($processor): string|false => get_class($processor), $processors);
 
@@ -119,11 +119,6 @@ describe('PaymentProcessorFactory Integration', function (): void {
 
         expect($processor)->toBeInstanceOf(MellatGatewayPaymentProcessor::class)
             ->and($processor->canHandle(PaymentMethodEnum::MELLAT_GATEWAY))->toBeTrue();
-    });
-
-    it('throws exception for cash on delivery method', function (): void {
-        expect(fn () => $this->factory->make(PaymentMethodEnum::DIGIPAY))
-            ->toThrow(InvalidArgumentException::class, 'No payment processor found for method: digipay');
     });
 
     it('throws exception for no payment method', function (): void {

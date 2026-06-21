@@ -349,6 +349,7 @@ final class DemoSeeder extends Seeder
             'avatar-male.svg', 'avatar-female.svg', 'avatar-default.svg',
             'logo-tech.svg', 'logo-art.svg', 'logo-humanities.svg', 'logo-lang.svg',
             'favicon-tech.svg', 'favicon-art.svg', 'favicon-humanities.svg', 'favicon-lang.svg',
+            'bank-mellat.svg', 'digipay.svg'
         ];
 
         // Import 3 video copies
@@ -785,6 +786,10 @@ final class DemoSeeder extends Seeder
             if (! empty($storyCourseLinks)) {
                 DB::table('course_student_story')->insert($storyCourseLinks);
             }
+        }
+
+        if ($modelClass === Setting::class) {
+
         }
 
         // Run after-insert callback (used for media attachment)

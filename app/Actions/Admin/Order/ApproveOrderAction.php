@@ -9,13 +9,17 @@ use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Models\Order;
 use App\Services\OrderStatusService;
+use App\Services\Payment\Digipay\DigipayAdminService;
+use App\Services\Payment\Digipay\DigipayException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 final readonly class ApproveOrderAction
 {
     public function __construct(
-        private OrderStatusService $orderStatusService
+        private OrderStatusService $orderStatusService,
+        private DigipayAdminService $digipayService,
     ) {}
 
     /**
@@ -38,6 +42,9 @@ final readonly class ApproveOrderAction
             // Mark parent order completed
             $order->status = OrderStatusEnum::COMPLETED;
             $order->save();
+
+            // Confirm Digipay delivery for CREDIT/BNPL payment types
+            $this->confirmDigipayDelivery($order);
 
             // Manually mark each item as completed (manual approval provisioning)
             foreach ($order->items as $item) {
@@ -84,6 +91,37 @@ final readonly class ApproveOrderAction
                     'required' => number_format($requiredPayment),
                     'paid'     => number_format($order->total_paid),
                 ]),
+            ]);
+        }
+    }
+
+    /**
+     * Confirm Digipay delivery for CREDIT/BNPL payments on order approval.
+     *
+     * Only payment gateway types 5 (CREDIT) and 13 (BNPL) require delivery
+     * confirmation before Digipay releases funds. Skip silently for other types.
+     *
+     * @throws ValidationException On Digipay failure — rolls back the DB::transaction
+     */
+    private function confirmDigipayDelivery(Order $order): void
+    {
+        $payment = $order->payments()->where('method', 'digipay')->latest()->first();
+
+        if (! $payment || ! $this->digipayService->requiresDeliveryConfirmation($payment)) {
+            return;
+        }
+
+        try {
+            $this->digipayService->deliver($payment);
+
+            Log::channel(config('digipay.logging.channel', 'stack'))->info('[Digipay] Delivery confirmed on order approval', [
+                'order_id'   => $order->id,
+                'payment_id' => $payment->id,
+            ]);
+        } catch (DigipayException $e) {
+            // THROW to rollback the DB::transaction
+            throw ValidationException::withMessages([
+                'order' => 'خطا در اعلام تحویل به دیجی‌پی: '.$e->getMessage(),
             ]);
         }
     }

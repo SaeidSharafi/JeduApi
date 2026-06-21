@@ -10,7 +10,9 @@ final class DigipayGatewaySettingData extends Data
 {
     public function __construct(
         public string $client_id,
-        public ?string $client_secret,
+        public string $username,
+        public ?string $client_secret,   // sensitive
+        public ?string $password,        // sensitive
         public bool $sandbox_mode = false,
     ) {}
 
@@ -19,7 +21,9 @@ final class DigipayGatewaySettingData extends Data
         return [
             'credentials' => [
                 ['key' => 'client_id',     'type' => 'text',     'label' => __('payment_gateways.fields.client_id'),     'required' => true],
+                ['key' => 'username',      'type' => 'text',     'label' => __('payment_gateways.fields.username'),      'required' => true],
                 ['key' => 'client_secret', 'type' => 'password', 'label' => __('payment_gateways.fields.client_secret'), 'required' => true, 'sensitive' => true],
+                ['key' => 'password',      'type' => 'password', 'label' => __('payment_gateways.fields.password'),      'required' => true, 'sensitive' => true],
             ],
             'testing' => [
                 ['key' => 'sandbox_mode', 'type' => 'boolean', 'label' => __('payment_gateways.fields.sandbox_mode'), 'required' => false],

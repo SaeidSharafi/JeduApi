@@ -39,7 +39,7 @@ enum SettingKeyEnum: string
             self::SPOT_PLAYER     => ['api_key'],
             self::SKYROOM         => ['api_key', 'secret'],
             self::MELLAT          => ['password'],
-            self::DIGIPAY         => ['client_secret'],
+            self::DIGIPAY         => ['client_secret', 'password'],
             default               => [],
         };
     }

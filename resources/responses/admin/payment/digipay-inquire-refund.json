@@ -1,0 +1,10 @@
+{
+  "message": "وضعیت بازگشت وجه با موفقیت دریافت شد.",
+  "data": {
+    "status": "completed",
+    "tracking_code": "DGP-REF-20260621-123456",
+    "transfer_date": "2026-06-21T10:30:00Z",
+    "destination": "6037********1234"
+  },
+  "metadata": []
+}

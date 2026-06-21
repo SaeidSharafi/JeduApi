@@ -8,15 +8,20 @@ use App\Data\Admin\Refund\RefundStatusUpdateData;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\RefundStatusEnum;
 use App\Events\RefundCompletedEvent;
+use App\Models\Order;
 use App\Models\Refund;
 use App\Services\OrderStatusService;
+use App\Services\Payment\Digipay\DigipayAdminService;
+use App\Services\Payment\Digipay\DigipayException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 final readonly class UpdateRefundStatusAction
 {
     public function __construct(
-        private OrderStatusService $orderStatusService
+        private OrderStatusService $orderStatusService,
+        private DigipayAdminService $digipayService,
     ) {}
 
     public function handle(Refund $refund, RefundStatusUpdateData $data): Refund
@@ -95,6 +100,8 @@ final readonly class UpdateRefundStatusAction
         $this->orderStatusService->updateParentOrderStatus($orderItem->order);
 
         RefundCompletedEvent::dispatch($refund);
+
+        $this->processDigipayRefund($orderItem->order, $refund->amount);
     }
 
     /**
@@ -107,5 +114,30 @@ final readonly class UpdateRefundStatusAction
             $refund->admin_notes = $notes;
         }
         $refund->save();
+    }
+
+    private function processDigipayRefund(Order $order, int $amount): void
+    {
+        $payment = $order->payments()->where('method', 'digipay')->latest()->first();
+
+        if (! $payment) {
+            return;
+        }
+
+        try {
+            $response = $this->digipayService->refund($payment, $amount);
+
+            Log::channel('digipay')->info('[Digipay] Refund successful on status update', [
+                'order_id'      => $order->id,
+                'amount'        => $amount,
+                'tracking_code' => $response->trackingCode,
+            ]);
+        } catch (DigipayException $e) {
+            Log::channel('digipay')->error('[Digipay] Refund failed on status update', [
+                'order_id' => $order->id,
+                'amount'   => $amount,
+                'error'    => $e->getMessage(),
+            ]);
+        }
     }
 }
