@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Services\Payment\MellatGatewayPaymentProcessor;
 use App\Services\Payment\SoapClientFactory;
 use App\Services\PaymentTransactionReferenceService;
+use App\Services\SettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -23,14 +24,20 @@ beforeEach(function (): void {
     $this->referenceService = app(PaymentTransactionReferenceService::class);
 
     // Mock SOAP client to prevent real gateway calls
-    $this->soapClientMock  = Mockery::mock('SoapClient');
-    $this->soapFactoryMock = Mockery::mock(SoapClientFactory::class);
+    $this->soapClientMock      = Mockery::mock('SoapClient');
+    $this->soapFactoryMock     = Mockery::mock(SoapClientFactory::class);
+    $this->settingsServiceMock = Mockery::mock(SettingsService::class);
     $this->soapFactoryMock->shouldReceive('create')
         ->andReturn($this->soapClientMock);
+    $this->settingsServiceMock
+        ->shouldReceive('get')
+        ->with(PaymentMethodEnum::MELLAT_GATEWAY->settingKey(), Mockery::any())
+        ->andReturn(config('payments.mellat'));
 
     $this->processor = new MellatGatewayPaymentProcessor(
         $this->soapFactoryMock,
-        $this->referenceService
+        $this->referenceService,
+        $this->settingsServiceMock
     );
 });
 

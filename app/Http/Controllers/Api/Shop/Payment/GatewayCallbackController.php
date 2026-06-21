@@ -46,12 +46,18 @@ final class GatewayCallbackController extends Controller
 
             // Redirect customer based on payment status
             if ($payment->status === PaymentStatusEnum::COMPLETED) {
-                return redirect()->route('shop.payment.success', ['payment' => $payment->uuid])
-                    ->with('success', 'Payment completed successfully');
+                return redirect(
+                    config('payments.redirect.success').'?'.http_build_query([
+                        'payment' => $payment->uuid,
+                    ])
+                );
             }
 
-            return redirect()->route('shop.payment.failed', ['payment' => $payment->uuid])
-                ->with('error', 'Payment failed. Please try again.');
+            return redirect(
+                config('payments.redirect.failure').'?'.http_build_query([
+                    'payment' => $payment->uuid,
+                ])
+            );
 
         } catch (Exception $e) {
             Log::error('Gateway callback error', [
@@ -59,8 +65,7 @@ final class GatewayCallbackController extends Controller
                 'request' => $request->all(),
             ]);
 
-            return redirect()->route('shop.payment.error')
-                ->with('error', 'An error occurred while processing your payment.');
+            return redirect(config('payments.redirect.failure').'?error=processing_error');
         }
     }
 }

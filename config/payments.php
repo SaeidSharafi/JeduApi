@@ -50,4 +50,9 @@ return [
          */
         'start_from' => (int) env('PAYMENT_TRANSACTION_START', 200000001),
     ],
+
+    'redirect' => [
+        'success' => env('FRONTEND_PAYMENT_SUCCESS_URL', 'payment/success'),
+        'failure' => env('FRONTEND_PAYMENT_FAILURE_URL', 'payment/fail'),
+    ],
 ];

@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Admin\Content\PartnerController;
 use App\Http\Controllers\Api\Admin\Content\Slider\SliderController;
 use App\Http\Controllers\Api\Admin\Content\Slider\UpdateSliderStatusController;
 use App\Http\Controllers\Api\Admin\Content\StudentStoryController;
+use App\Http\Controllers\Api\Admin\Settings\PaymentGatewaySettingsController;
 use App\Http\Controllers\Api\Admin\Settings\SettingController;
 
 Route::prefix('settings')->name('settings.')->group(function (): void {
@@ -45,4 +46,8 @@ Route::prefix('settings')->name('settings.')->group(function (): void {
     Route::apiResource('home-page-block', HomePageBlockController::class);
 
     Route::apiResource('student-stories', StudentStoryController::class);
+
+    Route::get('payment-gateways', [PaymentGatewaySettingsController::class, 'index']);
+    Route::get('payment-gateways/{gateway}', [PaymentGatewaySettingsController::class, 'show']);
+    Route::put('payment-gateways/{gateway}', [PaymentGatewaySettingsController::class, 'update']);
 });

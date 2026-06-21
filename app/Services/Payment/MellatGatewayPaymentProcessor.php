@@ -17,6 +17,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Staff;
 use App\Services\PaymentTransactionReferenceService;
+use App\Services\SettingsService;
 use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Log;
@@ -30,10 +31,15 @@ use SoapFault;
  */
 final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 {
+    private array $config = [];
+
     public function __construct(
         public readonly SoapClientFactory $soapClientFactory,
-        public readonly PaymentTransactionReferenceService $referenceService
-    ) {}
+        public readonly PaymentTransactionReferenceService $referenceService,
+        private readonly SettingsService $settingsService,
+    ) {
+        $this->config = $this->settingsService->get(PaymentMethodEnum::MELLAT_GATEWAY->settingKey(), config('payments.mellat'));
+    }
 
     public function canHandle(PaymentMethodEnum $paymentMethod): bool
     {
@@ -51,23 +57,20 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         Authenticatable $adminUser,
         int $amountToPay
     ): PaymentProcessResultData {
-        // Step 1: Generate unique transaction reference
+
         $transactionReference = $this->referenceService->generate();
 
-        // Step 2: Get request metadata
         $ipAddress = request()->ip();
         $userAgent = request()->userAgent();
 
-        // Step 3: Calculate attempt number
         $attemptNumber = $order->payments()
             ->where('method', PaymentMethodEnum::MELLAT_GATEWAY)
             ->count() + 1;
 
-        // Step 4: Prepare gateway request data
         $gatewayRequest = [
-            'terminalId'     => config('payments.mellat.terminal_id'),
-            'userName'       => config('payments.mellat.username'),
-            'userPassword'   => config('payments.mellat.password'),
+            'terminalId'     => $this->getConfig('terminal_id'),
+            'userName'       => $this->getConfig('username'),
+            'userPassword'   => $this->getConfig('password'),
             'orderId'        => $transactionReference, // Use transaction reference instead of order increment_id
             'amount'         => $amountToPay,
             'localDate'      => date('Ymd'),
@@ -320,9 +323,9 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         try {
             $soap     = $this->soapClientFactory->create($this->getWsdlUrl());
             $response = $soap->bpVerifyRequest([
-                'terminalId'      => config('payments.mellat.terminal_id'),
-                'userName'        => config('payments.mellat.username'),
-                'userPassword'    => config('payments.mellat.password'),
+                'terminalId'      => $this->getConfig('terminal_id'),
+                'userName'        => $this->getConfig('username'),
+                'userPassword'    => $this->getConfig('password'),
                 'orderId'         => $saleOrderId,
                 'orderIdLong'     => $saleOrderId,
                 'saleOrderId'     => $saleOrderId,
@@ -341,9 +344,9 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         try {
             $soap     = $this->soapClientFactory->create($this->getWsdlUrl());
             $response = $soap->bpSettleRequest([
-                'terminalId'      => config('payments.mellat.terminal_id'),
-                'userName'        => config('payments.mellat.username'),
-                'userPassword'    => config('payments.mellat.password'),
+                'terminalId'      => $this->getConfig('terminal_id'),
+                'userName'        => $this->getConfig('username'),
+                'userPassword'    => $this->getConfig('password'),
                 'orderId'         => $saleOrderId,
                 'orderIdLong'     => $saleOrderId,
                 'saleOrderId'     => $saleOrderId,
@@ -416,15 +419,20 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 
     private function getWsdlUrl(): string
     {
-        $isTest = config('payments.mellat.test_mode', true);
+        $isTest = $this->getConfig('test_mode', true);
 
         return $isTest ? config('payments.mellat.test_server_url') : config('payments.mellat.server_url');
     }
 
     private function getGateWayUrl(): string
     {
-        $isTest = config('payments.mellat.test_mode', true);
+        $isTest = $this->getConfig('test_mode', true);
 
         return $isTest ? config('payments.mellat.test_gateway_url') : config('payments.mellat.gateway_url');
+    }
+
+    private function getConfig(string $key, $default = null)
+    {
+        return data_get($this->config, $key, $default);
     }
 }

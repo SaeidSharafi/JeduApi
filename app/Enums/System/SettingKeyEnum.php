@@ -20,6 +20,11 @@ enum SettingKeyEnum: string
     case SPOT_PLAYER      = 'spot_player';
     case SKYROOM          = 'skyroom';
 
+    case MELLAT        = 'payment.mellat';
+    case WALLET        = 'payment.wallet';
+    case BANK_TRANSFER = 'payment.bank_transfer';
+    case DIGIPAY       = 'payment.digipay';
+
     /**
      * Secret sub-fields that must be encrypted at rest for each integration key.
      *
@@ -33,6 +38,8 @@ enum SettingKeyEnum: string
             self::BIG_BLUE_BUTTON => ['secret', 'default_attendee_password', 'default_moderator_password'],
             self::SPOT_PLAYER     => ['api_key'],
             self::SKYROOM         => ['api_key', 'secret'],
+            self::MELLAT          => ['password'],
+            self::DIGIPAY         => ['client_secret'],
             default               => [],
         };
     }

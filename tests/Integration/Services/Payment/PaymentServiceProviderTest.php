@@ -122,8 +122,8 @@ describe('PaymentProcessorFactory Integration', function (): void {
     });
 
     it('throws exception for cash on delivery method', function (): void {
-        expect(fn () => $this->factory->make(PaymentMethodEnum::CASH_ON_DELIVERY))
-            ->toThrow(InvalidArgumentException::class, 'No payment processor found for method: cash_on_delivery');
+        expect(fn () => $this->factory->make(PaymentMethodEnum::DIGIPAY))
+            ->toThrow(InvalidArgumentException::class, 'No payment processor found for method: digipay');
     });
 
     it('throws exception for no payment method', function (): void {
@@ -160,14 +160,12 @@ describe('PaymentProcessorFactory Integration', function (): void {
         expect($walletProcessor->canHandle(PaymentMethodEnum::WALLET))->toBeTrue()
             ->and($walletProcessor->canHandle(PaymentMethodEnum::BANK_TRANSFER))->toBeFalse()
             ->and($walletProcessor->canHandle(PaymentMethodEnum::MELLAT_GATEWAY))->toBeFalse()
-            ->and($walletProcessor->canHandle(PaymentMethodEnum::CASH_ON_DELIVERY))->toBeFalse()
             ->and($walletProcessor->canHandle(PaymentMethodEnum::NO_PAYMENT))->toBeFalse();
 
         // Test bank transfer processor
         expect($bankTransferProcessor->canHandle(PaymentMethodEnum::BANK_TRANSFER))->toBeTrue()
             ->and($bankTransferProcessor->canHandle(PaymentMethodEnum::WALLET))->toBeFalse()
             ->and($bankTransferProcessor->canHandle(PaymentMethodEnum::MELLAT_GATEWAY))->toBeFalse()
-            ->and($bankTransferProcessor->canHandle(PaymentMethodEnum::CASH_ON_DELIVERY))->toBeFalse()
             ->and($bankTransferProcessor->canHandle(PaymentMethodEnum::NO_PAYMENT))->toBeFalse();
     });
 
@@ -184,7 +182,6 @@ describe('PaymentProcessorFactory Integration', function (): void {
 
     it('verifies error message format for unsupported methods', function (): void {
         $unsupportedMethods = [
-            PaymentMethodEnum::CASH_ON_DELIVERY,
             PaymentMethodEnum::NO_PAYMENT,
         ];
 

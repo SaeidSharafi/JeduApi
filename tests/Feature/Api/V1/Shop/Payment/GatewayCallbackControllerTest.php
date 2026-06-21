@@ -6,30 +6,14 @@ use App\Actions\Shop\Payment\VerifyPaymentAction;
 use App\Data\Shop\Payment\GatewayCallbackData;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Payment;
-use Illuminate\Support\Facades\Route;
 use Mockery as m;
 
 use function Pest\Laravel\postJson;
-
-beforeEach(function (): void {
-    foreach (['success', 'failed', 'error'] as $state) {
-        $routeName = "shop.payment.{$state}";
-
-        if (! Route::has($routeName)) {
-            Route::get("/tests/payment/{$state}", static fn () => "payment-{$state}")
-                ->name($routeName);
-
-            app('router')->getRoutes()->refreshNameLookups();
-        }
-    }
-});
 
 it('redirects customers to the success page when the payment is verified', function (): void {
     $payment = Payment::factory()->create([
         'status' => PaymentStatusEnum::PENDING,
     ]);
-
-    expect(Route::has('shop.payment.success'))->toBeTrue();
 
     $callbackPayload = [
         'payment_uuid' => $payment->uuid,
@@ -51,16 +35,13 @@ it('redirects customers to the success page when the payment is verified', funct
 
     $response = postJson(route('api.v1.shop.payment.gateway.callback'), $callbackPayload);
 
-    $response->assertRedirect(route('shop.payment.success', ['payment' => $payment->uuid]));
-    $response->assertSessionHas('success', 'Payment completed successfully');
+    $response->assertRedirect(config('payments.redirect.success').'?payment='.$payment->uuid);
 });
 
 it('redirects customers to the failure page when the payment verification fails', function (): void {
     $payment = Payment::factory()->create([
         'status' => PaymentStatusEnum::PENDING,
     ]);
-
-    expect(Route::has('shop.payment.failed'))->toBeTrue();
 
     $callbackPayload = [
         'payment_uuid' => $payment->uuid,
@@ -76,16 +57,13 @@ it('redirects customers to the failure page when the payment verification fails'
 
     $response = postJson(route('api.v1.shop.payment.gateway.callback'), $callbackPayload);
 
-    $response->assertRedirect(route('shop.payment.failed', ['payment' => $payment->uuid]));
-    $response->assertSessionHas('error', 'Payment failed. Please try again.');
+    $response->assertRedirect(config('payments.redirect.failure').'?payment='.$payment->uuid);
 });
 
 it('redirects customers to the generic error page when verification throws', function (): void {
     $payment = Payment::factory()->create([
         'status' => PaymentStatusEnum::PENDING,
     ]);
-
-    expect(Route::has('shop.payment.error'))->toBeTrue();
 
     $callbackPayload = [
         'payment_uuid' => $payment->uuid,
@@ -101,6 +79,5 @@ it('redirects customers to the generic error page when verification throws', fun
 
     $response = postJson(route('api.v1.shop.payment.gateway.callback'), $callbackPayload);
 
-    $response->assertRedirect(route('shop.payment.error'));
-    $response->assertSessionHas('error', 'An error occurred while processing your payment.');
+    $response->assertRedirect(config('payments.redirect.failure').'?error=processing_error');
 });

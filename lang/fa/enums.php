@@ -101,6 +101,8 @@ return [
     'PaymentMethodEnum' => [
         'bank_transfer'  => 'انتقال بانکی',
         'mellat_gateway' => 'درگاه ملت',
+        'wallet'         => 'کیف پول',
+        'digipay'        => 'دیجی‌پی',
     ],
     'PaymentStatusEnum' => [
         'pending'   => 'در انتظار',

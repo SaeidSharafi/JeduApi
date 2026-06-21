@@ -7,6 +7,7 @@ namespace Tests\Unit\Services\Payment;
 use App\Data\Admin\Payment\PaymentCreateData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Enums\Payment\PaymentTransactionStatusEnum;
 use App\Events\PaymentCompletedEvent;
 use App\Exceptions\CustomValidationException;
 use App\Exceptions\Gateway\MellatException;
@@ -15,6 +16,8 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Services\Payment\MellatGatewayPaymentProcessor;
 use App\Services\Payment\SoapClientFactory;
+use App\Services\PaymentTransactionReferenceService;
+use App\Services\SettingsService;
 use Exception;
 use Illuminate\Support\Facades\Event;
 use Mockery;
@@ -34,7 +37,7 @@ beforeEach(function (): void {
 describe('MellatGatewayPaymentProcessor', function (): void {
     it('reports its supported payment method and redirect behavior', function (): void {
         $factory   = Mockery::mock(SoapClientFactory::class);
-        $processor = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
+        $processor = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
 
         expect($processor->canHandle(PaymentMethodEnum::MELLAT_GATEWAY))->toBeTrue()
             ->and($processor->canHandle(PaymentMethodEnum::BANK_TRANSFER))->toBeFalse()
@@ -69,7 +72,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             }))
             ->andReturn((object) ['return' => $refId]);
 
-        $processor   = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
+        $processor   = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::MELLAT_GATEWAY->value,
             data: null,
@@ -106,7 +109,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->once()
             ->andReturn($soapClient);
 
-        $processor   = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
+        $processor   = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::MELLAT_GATEWAY->value,
             data: null,
@@ -139,7 +142,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->once()
             ->andReturn($soapClient);
 
-        $processor   = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
+        $processor   = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::MELLAT_GATEWAY->value,
             data: null,
@@ -173,7 +176,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->once()
             ->andReturn($soapClient);
 
-        $processor   = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
+        $processor   = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
         $paymentData = new PaymentCreateData(
             method: PaymentMethodEnum::MELLAT_GATEWAY->value,
             data: null,
@@ -211,7 +214,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         $payment->transactions()->create([
             'transaction_reference' => $transactionRef,
             'attempt_number'        => 1,
-            'status'                => \App\Enums\Payment\PaymentTransactionStatusEnum::INITIATED->value,
+            'status'                => PaymentTransactionStatusEnum::INITIATED->value,
             'gateway_request'       => ['orderId' => $transactionRef],
             'gateway_response'      => ['RefId' => 'REF123456789'],
             'initiated_at'          => now(),
@@ -244,7 +247,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             }))
             ->andReturn((object) ['return' => '0']);
 
-        $processor    = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
+        $processor    = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
         $callbackData = [
             'RefId'           => 'REF123456789',
             'ResCode'         => '0',
@@ -260,7 +263,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
 
         // Verify transaction was updated
         $transaction = $payment->transactions()->latest()->first();
-        expect($transaction->status->value)->toBe(\App\Enums\Payment\PaymentTransactionStatusEnum::COMPLETED->value)
+        expect($transaction->status->value)->toBe(PaymentTransactionStatusEnum::COMPLETED->value)
             ->and($transaction->completed_at)->not->toBeNull();
 
         Event::assertDispatched(PaymentCompletedEvent::class, function (PaymentCompletedEvent $event) use ($updatedPayment): bool {
@@ -278,7 +281,8 @@ describe('MellatGatewayPaymentProcessor', function (): void {
 
         $processor = new MellatGatewayPaymentProcessor(
             Mockery::mock(SoapClientFactory::class),
-            app(\App\Services\PaymentTransactionReferenceService::class)
+            app(PaymentTransactionReferenceService::class),
+            app(SettingsService::class),
         );
 
         expect(fn () => $processor->verify($payment, [
@@ -314,7 +318,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         $payment->transactions()->create([
             'transaction_reference' => $transactionRef,
             'attempt_number'        => 1,
-            'status'                => \App\Enums\Payment\PaymentTransactionStatusEnum::INITIATED->value,
+            'status'                => PaymentTransactionStatusEnum::INITIATED->value,
             'gateway_request'       => ['orderId' => $transactionRef],
             'gateway_response'      => [],
             'initiated_at'          => now(),
@@ -335,7 +339,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->once()
             ->andReturn((object) ['return' => '45']); // 45 = Transaction already settled
 
-        $processor    = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
+        $processor    = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
         $callbackData = [
             'RefId'           => 'REF123456789',
             'ResCode'         => '0',
@@ -365,7 +369,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         $payment->transactions()->create([
             'transaction_reference' => 'TXN-FAIL',
             'attempt_number'        => 1,
-            'status'                => \App\Enums\Payment\PaymentTransactionStatusEnum::INITIATED->value,
+            'status'                => PaymentTransactionStatusEnum::INITIATED->value,
             'gateway_request'       => ['dummy' => true],
             'gateway_response'      => [],
             'initiated_at'          => now(),
@@ -374,7 +378,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         $factory = Mockery::mock(SoapClientFactory::class);
         $factory->shouldNotReceive('create');
 
-        $processor    = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
+        $processor    = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
         $callbackData = [
             'RefId'   => 'REF-FAIL',
             'ResCode' => '12',
@@ -396,13 +400,15 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         $payment->transactions()->create([
             'transaction_reference' => 'TXN-MISSING',
             'attempt_number'        => 1,
-            'status'                => \App\Enums\Payment\PaymentTransactionStatusEnum::INITIATED->value,
+            'status'                => PaymentTransactionStatusEnum::INITIATED->value,
             'gateway_request'       => ['dummy' => true],
             'gateway_response'      => [],
             'initiated_at'          => now(),
         ]);
 
-        $processor = new MellatGatewayPaymentProcessor(Mockery::mock(SoapClientFactory::class), app(\App\Services\PaymentTransactionReferenceService::class));
+        $processor = new MellatGatewayPaymentProcessor(Mockery::mock(SoapClientFactory::class),
+            app(PaymentTransactionReferenceService::class),
+            app(SettingsService::class));
 
         // Missing RefId and ResCode
         expect(fn () => $processor->verify($payment, []))
@@ -412,7 +418,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         expect($payment->status)->toBe(PaymentStatusEnum::FAILED);
 
         $transaction = $payment->transactions()->latest()->first();
-        expect($transaction->status->value)->toBe(\App\Enums\Payment\PaymentTransactionStatusEnum::FAILED->value)
+        expect($transaction->status->value)->toBe(PaymentTransactionStatusEnum::FAILED->value)
             ->and($transaction->completed_at)->not->toBeNull()
             ->and($transaction->error_message)->not->toBeNull();
     });
@@ -429,7 +435,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         $payment->transactions()->create([
             'transaction_reference' => $transactionRef,
             'attempt_number'        => 1,
-            'status'                => \App\Enums\Payment\PaymentTransactionStatusEnum::INITIATED->value,
+            'status'                => PaymentTransactionStatusEnum::INITIATED->value,
             'gateway_request'       => ['orderId' => $transactionRef],
             'gateway_response'      => [],
             'initiated_at'          => now(),
@@ -450,7 +456,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->once()
             ->andReturn((object) ['return' => '1']); // Error code 1
 
-        $processor    = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
+        $processor    = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
         $callbackData = [
             'RefId'           => 'REF123',
             'ResCode'         => '0',
@@ -465,7 +471,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
 
         // Check transaction record for failure details
         $transaction = $payment->transactions()->latest()->first();
-        expect($transaction->status->value)->toBe(\App\Enums\Payment\PaymentTransactionStatusEnum::FAILED->value)
+        expect($transaction->status->value)->toBe(PaymentTransactionStatusEnum::FAILED->value)
             ->and($transaction->error_message)->toContain('Settlement failed');
 
         Event::assertNothingDispatched();
@@ -483,7 +489,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         $payment->transactions()->create([
             'transaction_reference' => $transactionRef,
             'attempt_number'        => 1,
-            'status'                => \App\Enums\Payment\PaymentTransactionStatusEnum::INITIATED->value,
+            'status'                => PaymentTransactionStatusEnum::INITIATED->value,
             'gateway_request'       => ['orderId' => $transactionRef],
             'gateway_response'      => [],
             'initiated_at'          => now(),
@@ -500,7 +506,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->once()
             ->andReturn((object) ['return' => '1']); // Verification failed
 
-        $processor    = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
+        $processor    = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
         $callbackData = [
             'RefId'           => 'REF123',
             'ResCode'         => '0',
@@ -515,7 +521,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
 
         // Check transaction record for failure details
         $transaction = $payment->transactions()->latest()->first();
-        expect($transaction->status->value)->toBe(\App\Enums\Payment\PaymentTransactionStatusEnum::FAILED->value)
+        expect($transaction->status->value)->toBe(PaymentTransactionStatusEnum::FAILED->value)
             ->and($transaction->error_message)->toContain('Gateway verification failed');
 
         Event::assertNothingDispatched();
@@ -531,7 +537,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         $payment->transactions()->create([
             'transaction_reference' => $transactionRef,
             'attempt_number'        => 1,
-            'status'                => \App\Enums\Payment\PaymentTransactionStatusEnum::INITIATED->value,
+            'status'                => PaymentTransactionStatusEnum::INITIATED->value,
             'gateway_request'       => ['orderId' => $transactionRef],
             'gateway_response'      => [],
             'initiated_at'          => now(),
@@ -548,7 +554,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->once()
             ->andThrow(new SoapFault('Server', 'Connection timeout'));
 
-        $processor = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
+        $processor = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
 
         expect(fn () => $processor->verify($payment, [
             'RefId'           => 'REF123',
@@ -561,7 +567,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         expect($payment->status)->toBe(PaymentStatusEnum::FAILED);
 
         $transaction = $payment->transactions()->latest()->first();
-        expect($transaction->status->value)->toBe(\App\Enums\Payment\PaymentTransactionStatusEnum::FAILED->value)
+        expect($transaction->status->value)->toBe(PaymentTransactionStatusEnum::FAILED->value)
             ->and($transaction->error_message)->not->toBeNull();
     });
 
@@ -575,7 +581,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         $payment->transactions()->create([
             'transaction_reference' => $transactionRef,
             'attempt_number'        => 1,
-            'status'                => \App\Enums\Payment\PaymentTransactionStatusEnum::INITIATED->value,
+            'status'                => PaymentTransactionStatusEnum::INITIATED->value,
             'gateway_request'       => ['orderId' => $transactionRef],
             'gateway_response'      => [],
             'initiated_at'          => now(),
@@ -596,7 +602,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->once()
             ->andThrow(new SoapFault('Server', 'Settlement service unavailable'));
 
-        $processor = new MellatGatewayPaymentProcessor($factory, app(\App\Services\PaymentTransactionReferenceService::class));
+        $processor = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
 
         expect(fn () => $processor->verify($payment, [
             'RefId'           => 'REF123',
@@ -609,7 +615,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         expect($payment->status)->toBe(PaymentStatusEnum::FAILED);
 
         $transaction = $payment->transactions()->latest()->first();
-        expect($transaction->status->value)->toBe(\App\Enums\Payment\PaymentTransactionStatusEnum::FAILED->value)
+        expect($transaction->status->value)->toBe(PaymentTransactionStatusEnum::FAILED->value)
             ->and($transaction->error_message)->not->toBeNull();
     });
 });
