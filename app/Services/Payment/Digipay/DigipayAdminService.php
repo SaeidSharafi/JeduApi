@@ -78,7 +78,7 @@ final class DigipayAdminService
 
     private function getGatewayResponse(Payment $payment): array
     {
-        $response = $payment->transactions()->latest()->firstOrFail()->gateway_response;
+        $response = $payment->transactions()->latest()->first()->gateway_response;
 
         if (empty($response['tracking_code'])) {
             throw new DigipayException(
