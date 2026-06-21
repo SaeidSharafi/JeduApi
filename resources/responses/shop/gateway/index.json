@@ -1,0 +1,22 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "method": "mellat_gateway",
+      "enabled": true,
+      "shop_enabled": true,
+      "label": "درگاه بانک ملت",
+      "description": "درگاه بانک ملت",
+      "icon_url": "http://jedu.test/storage/fake-media/bank-mellat.svg"
+    },
+    {
+      "method": "digipay",
+      "enabled": true,
+      "shop_enabled": true,
+      "label": "درگاه دیجی‌پی",
+      "description": "درگاه دیجی‌پی",
+      "icon_url": "http://jedu.test/storage/fake-media/digipay.svg"
+    }
+  ],
+  "metadata": []
+}

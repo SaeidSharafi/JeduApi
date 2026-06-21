@@ -39,7 +39,6 @@ final class PaymentGatewaySettingsController extends Controller
      * - `required` (boolean): Whether the field is required.
      * - `sensitive` (boolean, optional): Whether the stored value is masked on read-back.
      *
-     * @responseFile 200 resources/responses/admin/settings/payment-gateways/show.json
      * @responseFile 200 resources/responses/admin/settings/payment-gateways/index.json
      * @responseFile 403 resources/responses/403.json
      */
@@ -65,6 +64,14 @@ final class PaymentGatewaySettingsController extends Controller
         return response()->success($gateways->values());
     }
 
+    /**
+     *
+     * Get gateway setting
+     *
+     * @urlParam gateway string required The gateway key. Enum: `mellat`, `wallet`, `bank_transfer`, `digipay`. Example: mellat
+     * @responseFile 200 resources/responses/admin/settings/payment-gateways/show.json
+     * @responseFile 403 resources/responses/403.json
+     */
     public function show(PaymentMethodEnum $gateway): ApiResponseInterface
     {
         $gatewayData = $this->settingsService->get($gateway->settingKey());
@@ -81,6 +88,8 @@ final class PaymentGatewaySettingsController extends Controller
      * <aside class="warning">The request body varies by gateway. All gateways share the common fields below, with additional fields per gateway.</aside>
      *
      * ### Common fields (all gateways):
+     * - `enabled` (boolean, require): Whether the gateway is active and available for use.
+     * - `shop_enabled` (boolean, required): Whether the gateway is offered to customers at checkout.
      * - `label` (string, required): Display name shown to customers.
      * - `description` (string, optional): Description shown at checkout.
      * - `icon` (integer, optional): Media ID of the gateway icon image.
@@ -97,6 +106,8 @@ final class PaymentGatewaySettingsController extends Controller
      * ### Gateway: `digipay`
      * - `client_id` (string, required): Digipay OAuth client ID.
      * - `client_secret` (string, required on first save / nullable on update): Digipay OAuth client secret. **Encrypted at rest.** Omit or send `null` to keep existing.
+     * - `username` (string, required): Mellat merchant username.
+     * - `password` (string, required on first save / nullable on update): Mellat merchant password. **Encrypted at rest.** Omit or send `null` to keep existing.
      * - `sandbox_mode` (boolean, optional): Enable Digipay UAT/sandbox mode. Default: `false`.
      *
      * ### Gateway: `wallet`

@@ -10,8 +10,18 @@ use App\Enums\Payment\PaymentMethodEnum;
 use App\Http\Controllers\Controller;
 use App\Services\SettingsService;
 
+/**
+ * @group Shop - Gateways
+ *
+ */
 final class GatewayListController extends Controller
 {
+
+    /**
+     * List active gateways
+     *
+     * @responseFile 200 resources/responses/shop/gateway/index.json
+     */
     public function __invoke(SettingsService $service): ApiResponseInterface
     {
         $gateways = null;
