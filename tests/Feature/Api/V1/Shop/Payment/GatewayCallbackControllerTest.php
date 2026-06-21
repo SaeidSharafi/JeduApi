@@ -13,6 +13,7 @@ use function Pest\Laravel\postJson;
 it('redirects customers to the success page when the payment is verified', function (): void {
     $payment = Payment::factory()->create([
         'status' => PaymentStatusEnum::PENDING,
+        'method' => App\Enums\Payment\PaymentMethodEnum::MELLAT_GATEWAY,
     ]);
 
     $callbackPayload = [
@@ -41,6 +42,7 @@ it('redirects customers to the success page when the payment is verified', funct
 it('redirects customers to the failure page when the payment verification fails', function (): void {
     $payment = Payment::factory()->create([
         'status' => PaymentStatusEnum::PENDING,
+        'method' => App\Enums\Payment\PaymentMethodEnum::MELLAT_GATEWAY,
     ]);
 
     $callbackPayload = [
@@ -63,6 +65,7 @@ it('redirects customers to the failure page when the payment verification fails'
 it('redirects customers to the generic error page when verification throws', function (): void {
     $payment = Payment::factory()->create([
         'status' => PaymentStatusEnum::PENDING,
+        'method' => App\Enums\Payment\PaymentMethodEnum::MELLAT_GATEWAY,
     ]);
 
     $callbackPayload = [

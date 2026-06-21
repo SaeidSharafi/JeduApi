@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\Order\OrderStatusEnum;
+use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\PermissionEnum;
 use App\Models\Order;
@@ -38,6 +39,7 @@ it('approves an order with full payment successfully', function (): void {
     Payment::factory()->create([
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
+        'method'      => PaymentMethodEnum::MELLAT_GATEWAY,
         'amount'      => 1000000,
         'status'      => PaymentStatusEnum::COMPLETED,
     ]);
@@ -68,6 +70,7 @@ it('fails to approve order with insufficient payment', function (): void {
     Payment::factory()->create([
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
+        'method'      => PaymentMethodEnum::MELLAT_GATEWAY,
         'amount'      => 500000,
         'status'      => PaymentStatusEnum::COMPLETED,
     ]);
@@ -99,6 +102,7 @@ it('approves an order with pre_payment items when prepayment amount is paid', fu
     Payment::factory()->create([
         'order_id'    => $order->id,
         'customer_id' => $this->customer->id,
+        'method'      => PaymentMethodEnum::MELLAT_GATEWAY,
         'amount'      => 300000,
         'status'      => PaymentStatusEnum::COMPLETED,
     ]);
