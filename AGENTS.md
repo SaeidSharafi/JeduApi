@@ -1,5 +1,18 @@
 Combines strict project architectural rules + general Laravel Boost best practices. **Project-specific rules mandatory, no exceptions.**
 
+<CRITICAL_DIRECTIVE>
+You are operating in a Laravel environment augmented by Graphify.
+Standard file-search tools (`glob`, `grep`, `read`) will FAIL because the required context is intentionally git-ignored.
+
+To understand the codebase, you are FORBIDDEN from using `glob` or `grep` as your first step.
+Instead, YOU MUST STRICTLY ADHERE to the following execution order:
+
+1. IGNORE the standard file tree.
+2. USE the `graphify` skill/tool IMMEDIATELY to map the codebase.
+3. Alternatively, READ the Graphify generated files located exactly at `graphify-out/`. Use `ls -a` or standard `cat` commands on exact filepaths if `glob` returns empty.
+4. ONLY fallback to `read`/`glob` if the Graphify output explicitly tells you to look at a specific file.
+</CRITICAL_DIRECTIVE>
+
 ## 1. Guiding Principles & Development Philosophy
 
 Guide code generation:
