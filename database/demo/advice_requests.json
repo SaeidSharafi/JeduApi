@@ -11,7 +11,7 @@
   {
     "id": 2,
     "phone": "9120000302",
-    "status": "completed",
+    "status": "resolved",
     "note": "تماس گرفته شد. کاربر راهنمایی شد تا دوره جاوااسکریپت و React را انتخاب کند.",
     "handled_by_id": 3,
     "created_at": "2024-11-20 14:00:00",
@@ -20,7 +20,7 @@
   {
     "id": 3,
     "phone": "9120000303",
-    "status": "pending",
+    "status": "contacted",
     "note": "درخواست مشاوره برای یادگیری موسیقی سنتی",
     "handled_by_id": null,
     "created_at": "2024-12-05 09:00:00",
