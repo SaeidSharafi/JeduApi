@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
+use App\Events\OrderStatusUpdatedEvent;
 use App\Events\PaymentCompletedEvent;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
@@ -12,23 +14,32 @@ use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
 use App\Jobs\Provisioning\ProvisionSkyroomEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
+use App\Models\Order;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
-final class ProvisionPaidResourcesListener implements ShouldQueue
+final class OrderStatusUpdateListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    public function handle(PaymentCompletedEvent $event): void
+    public function handle(OrderStatusUpdatedEvent $event): void
     {
-        $order = $event->payment->order()->with([
-            'customer',
-            'items' => fn ($q) => $q->with('enrollment', 'productDeliveryOption'),
-        ])->first();
-
+        /** @var Order $order */
+        $order = $event->order->fresh();
         if (! $order) {
             return;
         }
+        if ($order->status !== OrderStatusEnum::COMPLETED) {
+            return;
+        }
+
+        $order = $order->load([
+            'customer',
+            'firstPayment',
+            'items' => fn ($q) => $q->with('enrollment', 'productDeliveryOption'),
+        ]);
+
+
 
         foreach ($order->items as $item) {
             if (! $item->enrollment || ! $item->productDeliveryOption) {
@@ -36,7 +47,7 @@ final class ProvisionPaidResourcesListener implements ShouldQueue
             }
 
             if (isset($item->productDeliveryOption->details_json['ims_course_code'])) {
-                ProvisionImsEnrollmentJob::dispatch($item->enrollment->id, $event->payment->id);
+                ProvisionImsEnrollmentJob::dispatch($item->enrollment->id,$order->firstPayment->id);
             }
 
             $deliveryMethod = $item->productDeliveryOption->delivery_method;

@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Listeners;
 
+use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Events\EnrollmentStatusChanged;
-use App\Events\PaymentCompletedEvent;
+use App\Events\OrderStatusUpdatedEvent;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
-use App\Listeners\ProvisionPaidResourcesListener;
+use App\Listeners\OrderStatusUpdateListener;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -20,7 +21,7 @@ use App\Models\ProductDeliveryOption;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 
-describe('ProvisionPaidResourcesListener', function (): void {
+describe('OrderStatusUpdateListener', function (): void {
 
     beforeEach(function (): void {
         Queue::fake([
@@ -35,8 +36,8 @@ describe('ProvisionPaidResourcesListener', function (): void {
         Event::fake([
             EnrollmentStatusChanged::class,
         ]);
-        $order   = Order::factory()->create();
-        $payment = Payment::factory()->for($order)->create(['status' => 'completed']);
+        $order   = Order::factory()->create(['status' => OrderStatusEnum::COMPLETED]);
+        Payment::factory()->for($order)->create(['status' => 'completed']);
 
         $inPersonItem = OrderItem::factory()->for($order)->create([
             'product_delivery_option_id' => ProductDeliveryOption::factory()
@@ -93,9 +94,9 @@ describe('ProvisionPaidResourcesListener', function (): void {
         Enrollment::factory()->for($bbbItem)->create();
 
         OrderItem::factory()->for($order)->create();
-        $event = new PaymentCompletedEvent($payment);
+        $event = new OrderStatusUpdatedEvent($order);
 
-        (new ProvisionPaidResourcesListener())->handle($event);
+        (new OrderStatusUpdateListener())->handle($event);
 
         Queue::assertPushed(ProvisionImsEnrollmentJob::class, 5);
         Queue::assertPushed(ProvisionMoodleEnrollmentJob::class, 1);
@@ -104,21 +105,20 @@ describe('ProvisionPaidResourcesListener', function (): void {
     });
 
     it('handles an order with no items gracefully', function (): void {
-        $order   = Order::factory()->create(); // No items created for this order
-        $payment = Payment::factory()->for($order)->create(['status' => 'completed']);
+        $order   = Order::factory()->create(['status' => OrderStatusEnum::COMPLETED]);
 
-        $event = new PaymentCompletedEvent($payment);
-        (new ProvisionPaidResourcesListener())->handle($event);
+        $event = new OrderStatusUpdatedEvent($order);
+        (new OrderStatusUpdateListener())->handle($event);
 
         $this->assertTrue(true);
     });
 
     it('returns early if the order is missing from the payment', function (): void {
 
-        $payment = new Payment(); // A fake payment object in memory without a real order
-        $event   = new PaymentCompletedEvent($payment);
+        $order = new Order(); // A fake payment object in memory without a real order
+        $event   = new OrderStatusUpdatedEvent($order);
 
-        (new ProvisionPaidResourcesListener())->handle($event);
+        (new OrderStatusUpdateListener())->handle($event);
 
         $this->assertTrue(true);
     });

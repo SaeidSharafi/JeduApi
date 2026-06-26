@@ -467,9 +467,9 @@
 
 ### Provisioning Orchestration
 
-#### ProvisionPaidResourcesListener (`app/Listeners/ProvisionPaidResourcesListener.php`)
-- **Purpose:** Dispatches provisioning jobs after payment completion based on delivery method
-- **Trigger:** Listens on `PaymentCompletedEvent` (queued)
+#### OrderStatusUpdateListener (`app/Listeners/OrderStatusUpdateListener.php`)
+- **Purpose:** Dispatches provisioning jobs after Order completion based on delivery method
+- **Trigger:** Listens on `OrderStatusUpdatedEvent` (queued)
 - **Logic:** For each order item with completed status, dispatches jobs based on:
   - `ims_course_code` in details → `ProvisionImsEnrollmentJob`
   - `LMS_MOODLE` delivery → `ProvisionMoodleEnrollmentJob`

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 final class Order extends Model implements WalletTransactionSourceableContract
 {
@@ -69,6 +70,11 @@ final class Order extends Model implements WalletTransactionSourceableContract
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function firstPayment(): HasOne
+    {
+        return $this->hasOne(Payment::class)->oldestOfMany();
     }
 
     public function enrollments(): HasMany
