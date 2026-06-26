@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Wallet;
 
+use App\Data\Admin\User\ShowUserData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Wallet\WalletStatusEnum;
-use App\Models\User;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\EnumCast;
@@ -19,6 +19,12 @@ final class WalletData extends Data
         public int $gift_balance,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public WalletStatusEnum $status,
-        public ?User $user = null,
-    ) {}
+        public ?ShowUserData $user = null,
+    ) {
+    }
+
+    public function exceptProperties(): array
+    {
+        return $this->user === null ? ['user'] : [];
+    }
 }

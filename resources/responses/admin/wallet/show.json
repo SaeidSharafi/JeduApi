@@ -1,16 +1,40 @@
 {
   "message": "عملیات با موفقیت انجام شد.",
   "data": {
-    "balance": 150000,
-    "gift_balance": 50000,
-    "status": "active",
+    "balance": 1500000,
+    "gift_balance": 0,
+    "status": {
+      "value": "active",
+      "label": "فعال"
+    },
     "user": {
-      "id": 101,
-      "first_name": "Ali",
-      "last_name": "Rezaei",
-      "email": "ali.rezaei@example.com"
+      "id": 16,
+      "phone": "9120000016",
+      "first_name": "کیان",
+      "last_name": "صادقی",
+      "email": "user16@example.com",
+      "phone2": "9120000066",
+      "civil_id": "1234567805",
+      "civil_id_type": {
+        "value": "national_code",
+        "label": "کد ملی"
+      },
+      "date_of_birth": "1370-12-03",
+      "father_name": "صادق",
+      "gender": {
+        "value": "male",
+        "label": "مرد"
+      },
+      "education_level": {
+        "value": "master",
+        "label": "کارشناسی ارشد"
+      },
+      "field_of_study": "مهندسی برق",
+      "education_status": {
+        "value": "graduated",
+        "label": "فارغ‌التحصیل"
+      }
     }
   },
   "metadata": []
 }
-

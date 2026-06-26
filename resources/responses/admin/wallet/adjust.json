@@ -1,35 +1,86 @@
 {
-  "message": "عملیات با موفقیت انجام شد.",
+  "message": " با موفقیت ایجاد شد.",
   "data": {
-    "id": 2001,
+    "id": 16,
     "wallet": {
-      "balance": 200000,
+      "balance": 1485000,
       "gift_balance": 0,
-      "status": "active",
-      "user": {
-        "id": 102,
-        "first_name": "Sara",
-        "last_name": "Ahmadi",
-        "email": "sara.ahmadi@example.com"
+      "status": {
+        "value": "active",
+        "label": "فعال"
       }
     },
     "user": {
-      "id": 102,
-      "first_name": "Sara",
-      "last_name": "Ahmadi",
-      "email": "sara.ahmadi@example.com"
+      "id": 16,
+      "phone": "9120000016",
+      "first_name": "کیان",
+      "last_name": "صادقی",
+      "email": "user16@example.com",
+      "phone2": "9120000066",
+      "civil_id": "1234567805",
+      "civil_id_type": {
+        "value": "national_code",
+        "label": "کد ملی"
+      },
+      "date_of_birth": "1370-12-03",
+      "father_name": "صادق",
+      "gender": {
+        "value": "male",
+        "label": "مرد"
+      },
+      "education_level": {
+        "value": "master",
+        "label": "کارشناسی ارشد"
+      },
+      "field_of_study": "مهندسی برق",
+      "education_status": {
+        "value": "graduated",
+        "label": "فارغ‌التحصیل"
+      }
     },
-    "type": "adjustment",
-    "amount": 50000,
-    "balance_after": 200000,
+    "type": {
+      "value": "adjustment",
+      "label": "enums.TransactionTypeEnum.adjustment"
+    },
+    "amount": 5000,
+    "balance_after": 1485000,
     "gift_balance_after": 0,
-    "source_type": "manual",
-    "source": null,
+    "source_type": {
+      "value": "staff",
+      "label": "enums.TransactionSourceEnum.staff"
+    },
+    "source": {
+      "id": 1,
+      "name": "مدیر کل سیستم",
+      "email": "staff@example.com",
+      "phone": "9300000000",
+      "is_admin": true,
+      "roles": null
+    },
     "description": "Manual adjustment by admin.",
-    "metadata": {"reason": "correction"},
+    "metadata": {
+      "source": "admin_panel",
+      "reason": "Correction after failed transaction.",
+      "adjustment_type": "credit",
+      "audit": {
+        "ip_address": "172.18.0.1",
+        "user_agent": "bruno-runtime/3.4.2",
+        "session_id": "zFGdh5ZatGBrDxw31t8npv1L3Aze3q6EECCWRDgm",
+        "admin_id": 1,
+        "admin_name": "مدیر کل سیستم",
+        "timestamp": "2026-06-26T09:40:32.258462Z",
+        "request_id": "6a3e49103f31d",
+        "risk_level": "low",
+        "is_admin_initiated": true,
+        "source_details": {
+          "source_type": "staff",
+          "source_id": 1,
+          "description": "Manual adjustment by admin."
+        }
+      }
+    },
     "expires_at": null,
-    "created_at": "2025-09-06 12:00:00"
+    "created_at": "1405-04-05 13:10:32"
   },
   "metadata": []
 }
-

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\Wallet;
 
 use App\Contracts\WalletTransactionSourceableDataContract;
+use App\Data\Admin\User\ShowUserData;
 use App\Data\Casts\TransactionSourceCast;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Wallet\TransactionSourceEnum;
@@ -21,7 +22,7 @@ final class WalletTransactionData extends Data
     public function __construct(
         public int $id,
         public WalletData $wallet,
-        public User $user,
+        public ShowUserData $user,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public TransactionTypeEnum $type,
         public int $amount,

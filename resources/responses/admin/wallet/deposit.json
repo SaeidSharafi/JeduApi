@@ -1,35 +1,84 @@
 {
-  "message": "عملیات با موفقیت انجام شد.",
+  "message": " با موفقیت ایجاد شد.",
   "data": {
-    "id": 3001,
+    "id": 15,
     "wallet": {
-      "balance": 250000,
-      "gift_balance": 50000,
-      "status": "active",
-      "user": {
-        "id": 103,
-        "first_name": "Reza",
-        "last_name": "Karimi",
-        "email": "reza.karimi@example.com"
+      "balance": 1480000,
+      "gift_balance": 0,
+      "status": {
+        "value": "active",
+        "label": "فعال"
       }
     },
     "user": {
-      "id": 103,
-      "first_name": "Reza",
-      "last_name": "Karimi",
-      "email": "reza.karimi@example.com"
+      "id": 16,
+      "phone": "9120000016",
+      "first_name": "کیان",
+      "last_name": "صادقی",
+      "email": "user16@example.com",
+      "phone2": "9120000066",
+      "civil_id": "1234567805",
+      "civil_id_type": {
+        "value": "national_code",
+        "label": "کد ملی"
+      },
+      "date_of_birth": "1370-12-03",
+      "father_name": "صادق",
+      "gender": {
+        "value": "male",
+        "label": "مرد"
+      },
+      "education_level": {
+        "value": "master",
+        "label": "کارشناسی ارشد"
+      },
+      "field_of_study": "مهندسی برق",
+      "education_status": {
+        "value": "graduated",
+        "label": "فارغ‌التحصیل"
+      }
     },
-    "type": "deposit",
-    "amount": 100000,
-    "balance_after": 250000,
-    "gift_balance_after": 50000,
-    "source_type": "manual",
-    "source": null,
-    "description": "Admin deposit.",
-    "metadata": {"reason": "bonus"},
+    "type": {
+      "value": "deposit",
+      "label": "enums.TransactionTypeEnum.deposit"
+    },
+    "amount": 20000,
+    "balance_after": 1480000,
+    "gift_balance_after": 0,
+    "source_type": {
+      "value": "staff",
+      "label": "enums.TransactionSourceEnum.staff"
+    },
+    "source": {
+      "id": 1,
+      "name": "مدیر کل سیستم",
+      "email": "staff@example.com",
+      "phone": "9300000000",
+      "is_admin": true,
+      "roles": null
+    },
+    "description": "Deposit for campaign bonus.",
+    "metadata": {
+      "source": "admin_panel",
+      "audit": {
+        "ip_address": "172.18.0.1",
+        "user_agent": "bruno-runtime/3.4.2",
+        "session_id": "680XHbPIDOdA5kFdK0e7JRmx9g3vf9A5WCcu2xjZ",
+        "admin_id": 1,
+        "admin_name": "مدیر کل سیستم",
+        "timestamp": "2026-06-26T09:40:21.314462Z",
+        "request_id": "6a3e49054ccd9",
+        "risk_level": "low",
+        "is_admin_initiated": true,
+        "source_details": {
+          "source_type": "staff",
+          "source_id": 1,
+          "description": "Deposit for campaign bonus."
+        }
+      }
+    },
     "expires_at": null,
-    "created_at": "2025-09-06 13:00:00"
+    "created_at": "1405-04-05 13:10:21"
   },
   "metadata": []
 }
-

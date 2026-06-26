@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
@@ -33,8 +34,12 @@ final class AdminWalletController extends Controller
     {
         Gate::authorize('viewAny', Wallet::class);
         $wallets = QueryBuilder::for(Wallet::class)
-            ->allowedFilters(['user_id', 'status'])
+            ->allowedFilters([
+                AllowedFilter::exact('user_id'),
+                AllowedFilter::exact('status'),
+            ])
             ->allowedSorts(['id', 'balance', 'created_at'])
+            ->with('user')
             ->paginate($request->integer('per_page', 15));
 
         return response()->success(WalletData::collect($wallets));
@@ -49,6 +54,7 @@ final class AdminWalletController extends Controller
     public function show(Wallet $wallet): ApiResponseInterface
     {
         Gate::authorize('view', $wallet);
+        $wallet->load('user');
 
         return response()->success(WalletData::from($wallet));
     }

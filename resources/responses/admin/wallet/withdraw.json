@@ -1,35 +1,84 @@
 {
-  "message": "عملیات با موفقیت انجام شد.",
+  "message": " با موفقیت ایجاد شد.",
   "data": {
-    "id": 4001,
+    "id": 14,
     "wallet": {
-      "balance": 100000,
+      "balance": 1460000,
       "gift_balance": 0,
-      "status": "active",
-      "user": {
-        "id": 104,
-        "first_name": "Mina",
-        "last_name": "Jafari",
-        "email": "mina.jafari@example.com"
+      "status": {
+        "value": "active",
+        "label": "فعال"
       }
     },
     "user": {
-      "id": 104,
-      "first_name": "Mina",
-      "last_name": "Jafari",
-      "email": "mina.jafari@example.com"
+      "id": 16,
+      "phone": "9120000016",
+      "first_name": "کیان",
+      "last_name": "صادقی",
+      "email": "user16@example.com",
+      "phone2": "9120000066",
+      "civil_id": "1234567805",
+      "civil_id_type": {
+        "value": "national_code",
+        "label": "کد ملی"
+      },
+      "date_of_birth": "1370-12-03",
+      "father_name": "صادق",
+      "gender": {
+        "value": "male",
+        "label": "مرد"
+      },
+      "education_level": {
+        "value": "master",
+        "label": "کارشناسی ارشد"
+      },
+      "field_of_study": "مهندسی برق",
+      "education_status": {
+        "value": "graduated",
+        "label": "فارغ‌التحصیل"
+      }
     },
-    "type": "withdrawal",
-    "amount": 50000,
-    "balance_after": 100000,
+    "type": {
+      "value": "withdrawal",
+      "label": "enums.TransactionTypeEnum.withdrawal"
+    },
+    "amount": -10000,
+    "balance_after": 1460000,
     "gift_balance_after": 0,
-    "source_type": "manual",
-    "source": null,
-    "description": "Admin withdrawal.",
-    "metadata": {"reason": "refund"},
+    "source_type": {
+      "value": "staff",
+      "label": "enums.TransactionSourceEnum.staff"
+    },
+    "source": {
+      "id": 1,
+      "name": "مدیر کل سیستم",
+      "email": "staff@example.com",
+      "phone": "9300000000",
+      "is_admin": true,
+      "roles": null
+    },
+    "description": "Withdrawal for purchase.",
+    "metadata": {
+      "source": "admin_panel",
+      "audit": {
+        "ip_address": "172.18.0.1",
+        "user_agent": "bruno-runtime/3.4.2",
+        "session_id": "UoGxnfoLcUhVZoh4g47QawvV3TomLR6GidI5Oz4D",
+        "admin_id": 1,
+        "admin_name": "مدیر کل سیستم",
+        "timestamp": "2026-06-26T09:40:06.300944Z",
+        "request_id": "6a3e48f649810",
+        "risk_level": "low",
+        "is_admin_initiated": true,
+        "source_details": {
+          "source_type": "staff",
+          "source_id": 1,
+          "description": "Withdrawal for purchase."
+        }
+      }
+    },
     "expires_at": null,
-    "created_at": "2025-09-06 14:00:00"
+    "created_at": "1405-04-05 13:10:06"
   },
   "metadata": []
 }
-

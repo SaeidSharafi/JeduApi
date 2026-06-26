@@ -139,4 +139,9 @@ return [
         'cancelled'            => 'لغو شده',
         'provisioning_failed'  => 'خطا در آماده‌سازی دسترسی',
     ],
+    'WalletStatusEnum' => [
+        'active'    => 'فعال',
+        'suspended' => 'معلق',
+        'closed'    => 'بسته شده',
+    ],
 ];
