@@ -7,13 +7,18 @@ use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Order\RefundStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Events\RefundCompletedEvent;
 use App\Models\Order;
 use App\Models\Refund;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\assertDatabaseHas;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 describe('RefundController', function (): void {
+    beforeEach(function (): void {
+        Event::fake([RefundCompletedEvent::class]);
+    });
 
     it('should return a list of refunds', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::REFUND_VIEW_ANY]);

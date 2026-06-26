@@ -171,6 +171,7 @@ return [
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
             'update_status', // Custom String:   refunds.update_status
+            'skip_gateway',  // Custom String:   refunds.skip_gateway
         ],
         'discount' => [
             PermissionAction::VIEW_SCOPED,

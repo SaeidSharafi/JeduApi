@@ -36,7 +36,7 @@ return new class extends Migration
             $table->unsignedBigInteger('tax_amount')->default(0)->comment('Cart-level tax.');
             $table->unsignedBigInteger('grand_total')->comment('The final, total value of the order.');
             $table->unsignedBigInteger('full_value_grand_total')->default(0)->comment('calculated as if all items were full-payment.');
-
+            $table->unsignedBigInteger('total_refunded')->default(0);
             // --- Metadata ---
             $table->string('currency_code')->default('IRR');
             $table->string('applied_coupon_code')->nullable();

@@ -41,7 +41,7 @@ final class DigipayAdminController extends Controller
                 'message'       => $response->message,
             ]);
         } catch (DigipayException $e) {
-            return response()->error($e->getMessage(), 422, ['digipay_code' => $e->getDigipayCode()]);
+            return response()->error($e->getUserMessage(), 422, ['digipay_code' => $e->getDigipayCode()]);
         }
     }
 
@@ -63,7 +63,7 @@ final class DigipayAdminController extends Controller
 
             return response()->success(['message' => $response->message]);
         } catch (DigipayException $e) {
-            return response()->error($e->getMessage(), 422, ['digipay_code' => $e->getDigipayCode()]);
+            return response()->error($e->getUserMessage(), 422, ['digipay_code' => $e->getDigipayCode()]);
         }
     }
 
@@ -90,7 +90,7 @@ final class DigipayAdminController extends Controller
                 'message'       => $response->message,
             ]);
         } catch (DigipayException $e) {
-            return response()->error($e->getMessage(), 422, ['digipay_code' => $e->getDigipayCode()]);
+            return response()->error($e->getUserMessage(), 422, ['digipay_code' => $e->getDigipayCode()]);
         }
     }
 
@@ -118,7 +118,7 @@ final class DigipayAdminController extends Controller
                 'destination'   => $response->destination,
             ]);
         } catch (DigipayException $e) {
-            return response()->error($e->getMessage(), 422, ['digipay_code' => $e->getDigipayCode()]);
+            return response()->error($e->getUserMessage(), 422, ['digipay_code' => $e->getDigipayCode()]);
         }
     }
 }

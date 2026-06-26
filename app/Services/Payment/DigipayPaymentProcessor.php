@@ -87,7 +87,7 @@ final class DigipayPaymentProcessor implements PaymentProcessorContract
         $payment->transactions()->create([
             'transaction_reference' => $transactionReference,
             'attempt_number'        => $attemptNumber,
-            'status'                => PaymentTransactionStatusEnum::PENDING,
+            'status'                => PaymentTransactionStatusEnum::INITIATED,
             'gateway_request'       => [
                 'provider_id' => $providerId,
                 'amount'      => $amountToPay,

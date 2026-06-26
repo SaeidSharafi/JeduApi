@@ -27,4 +27,29 @@ final class DigipayException extends RuntimeException
     {
         return $this->context;
     }
+
+    /**
+     * Get user-friendly error message.
+     */
+    public function getUserMessage(): string
+    {
+        return DigipayPaymentStatus::getMessage($this->digipayCode);
+    }
+
+    /**
+     * Convert to array for logging.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'exception'  => self::class,
+            'message'    => $this->getMessage(),
+            'error_code' => $this->digipayCode,
+            'context'    => $this->context,
+            'file'       => $this->getFile(),
+            'line'       => $this->getLine(),
+        ];
+    }
 }

@@ -19,7 +19,8 @@ final class RefundCreateData extends Data
         public readonly ?int $deduction_percent,
         public readonly RefundTransactionData $transaction_details,
         public readonly string $status,
-        public readonly ?string $admin_notes,
+        public readonly bool $skip_gateway = false,
+        public readonly ?string $admin_notes = null,
     ) {}
 
     public static function rules(?ValidationContext $context = null): array
@@ -34,8 +35,9 @@ final class RefundCreateData extends Data
                 'max:100',
             ],
 
-            'status'      => ['required', Rule::enum(RefundStatusEnum::class)],
-            'admin_notes' => ['nullable', 'string'],
+            'status'       => ['required', Rule::enum(RefundStatusEnum::class)],
+            'skip_gateway' => ['boolean'],
+            'admin_notes'  => ['nullable', 'string'],
 
             'transaction_details'               => ['required', 'array'],
             'transaction_details.receiver_name' => ['required', 'string', 'max:255'],
@@ -89,6 +91,10 @@ final class RefundCreateData extends Data
             'status' => [
                 'description' => 'Refund status value.',
                 'example'     => 'pending',
+            ],
+            'skip_gateway' => [
+                'description' => 'Whether to skip the payment gateway refund processing.',
+                'example'     => false,
             ],
             'admin_notes' => [
                 'description' => 'Optional admin notes for the refund.',

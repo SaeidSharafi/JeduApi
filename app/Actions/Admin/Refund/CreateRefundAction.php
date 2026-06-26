@@ -7,62 +7,156 @@ namespace App\Actions\Admin\Refund;
 use App\Data\Admin\Refund\RefundCreateData;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\RefundStatusEnum;
+use App\Enums\Payment\PaymentMethodEnum;
+use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\RefundCompletedEvent;
-use App\Models\Order;
+use App\Exceptions\RefundValidationException;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\Refund;
 use App\Services\OrderStatusService;
-use App\Services\Payment\Digipay\DigipayAdminService;
 use App\Services\Payment\Digipay\DigipayException;
+use App\Services\Payment\Refund\RefundProcessorFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use SmartCache\Facades\SmartCache;
+use Throwable;
 
-final readonly class CreateRefundAction
+final class CreateRefundAction
 {
     public function __construct(
-        private OrderStatusService $orderStatusService,
-        private DigipayAdminService $digipayService,
+        private readonly OrderStatusService $orderStatusService,
+        private readonly RefundProcessorFactory $processorFactory,
+        private readonly UpdateOrderRefundedAmountAction $updateOrderRefundedAmount,
     ) {}
 
     public function handle(RefundCreateData $data, OrderItem $orderItem): Refund
     {
-        $orderItem->loadMissing('order', 'enrollment');
-        $this->validateOrderItemIsRefundable($orderItem);
+        $lockKey = "refund_order_item_{$orderItem->id}";
 
-        $amountPaidForItem = $this->calculateAmountPaidForItem($orderItem);
-        // Deduction is calculated from the original price.
-        $deductionAmount = $this->calculateDeductionAmount($data, $orderItem->price);
+        return SmartCache::lock($lockKey, 15)->block(5, function () use ($data, $orderItem) {
 
-        $refundAmount = max(0, $amountPaidForItem - $deductionAmount);
+            $orderItem->refresh()->loadMissing('order.payments', 'enrollment');
+            $order = $orderItem->order;
 
-        return DB::transaction(function () use ($data, $orderItem, $refundAmount, $deductionAmount) {
-            // 1. Create the single refund record for this item.
-            $refund = Refund::create([
-                'order_id'            => $orderItem->order_id,
-                'order_item_id'       => $orderItem->id,
-                'customer_id'         => $orderItem->order->customer_id,
-                'amount'              => $refundAmount,
-                'deduction_amount'    => $deductionAmount,
-                'status'              => $data->status,
-                'transaction_details' => $data->transaction_details->toArray(),
-                'refunded_at'         => $data->status === RefundStatusEnum::COMPLETED->value ? now() : null,
-                'admin_notes'         => $data->admin_notes,
-            ]);
+            $this->validateOrderItemIsRefundable($orderItem, $data);
 
-            // 2. Update the OrderItem's status and refunded total.
-            if ($data->status === RefundStatusEnum::COMPLETED->value) {
-                $orderItem->total_refunded = $refundAmount;
-                $orderItem->status         = OrderItemStatusEnum::REFUNDED;
-                $orderItem->saveQuietly();
-                $this->orderStatusService->updateEnrollmentStatus($orderItem);
-                $this->orderStatusService->updateParentOrderStatus($orderItem->order);
-                RefundCompletedEvent::dispatch($refund);
-                $this->processDigipayRefund($orderItem->order, $refundAmount);
+            $amountPaidForItem = $this->calculateAmountPaidForItem($orderItem);
+            $deductionAmount   = $this->calculateDeductionAmount($data, $orderItem->price);
+            $refundAmount      = max(0, $amountPaidForItem - $deductionAmount);
+
+            $payment       = $this->resolvePayment($orderItem);
+            $paymentMethod = $payment?->method?->value ?? PaymentMethodEnum::BANK_TRANSFER->value;
+            $processor     = $this->processorFactory->make($paymentMethod);
+
+            $isImmediateCompletion = $data->status                                                     === RefundStatusEnum::COMPLETED->value;
+            $requiresGateway       = $isImmediateCompletion && ! $data->skip_gateway && $paymentMethod === PaymentMethodEnum::DIGIPAY->value;
+
+            $refund = DB::transaction(function () use ($order, $orderItem, $payment, $refundAmount, $deductionAmount, $data) {
+                return Refund::create([
+                    'order_id'         => $order->id,
+                    'order_item_id'    => $orderItem->id,
+                    'payment_id'       => $payment?->id,
+                    'customer_id'      => $order->customer_id,
+                    'amount'           => $refundAmount,
+                    'deduction_amount' => $deductionAmount,
+                    // FORCE status to processing while we talk to gateway
+                    'status'              => RefundStatusEnum::PROCESSING,
+                    'transaction_details' => $data->transaction_details->toArray(),
+                    'refunded_at'         => null, // Not refunded yet
+                    'admin_notes'         => $data->admin_notes,
+                ]);
+            });
+
+            $gatewayTrackingCode = null;
+            try {
+                if ($requiresGateway) {
+                    $gatewayTrackingCode = $processor->process(
+                        new Refund(['payment_id' => $payment?->id]),
+                        $order,
+                        $refundAmount,
+                    );
+                }
+            } catch (DigipayException $e) {
+                $refund->update(['status' => RefundStatusEnum::FAILED, 'admin_notes' => ($refund->admin_notes ?? '').PHP_EOL.$e->getUserMessage()]);
+                throw new RefundValidationException($e->getUserMessage());
+            } catch (Throwable $e) {
+                // API Failed! Mark our refund as failed so we don't try again blindly.
+                $refund->update(['status' => RefundStatusEnum::FAILED]);
+                throw $e;
             }
 
-            return $refund;
+            try {
+                return DB::transaction(function () use (
+                    $refund, $orderItem, $order, $refundAmount, $paymentMethod,
+                    $processor, $gatewayTrackingCode, $isImmediateCompletion, $data
+                ) {
+
+                    // Update the Refund record
+                    $transactionDetails = array_merge(
+                        $refund->transaction_details ?? [],
+                        $gatewayTrackingCode ? ['gateway_tracking_code' => $gatewayTrackingCode] : []
+                    );
+
+                    $adminNotes = $refund->admin_notes;
+                    if ($data->skip_gateway && $isImmediateCompletion) {
+                        $adminNotes = mb_trim(($adminNotes ?? '').PHP_EOL.__('messages.order.refund.gateway_skipped_by_admin_at', ['date' => verta()->formatDatetime()]));
+                    }
+
+                    $refund->update([
+                        'status'              => $isImmediateCompletion ? RefundStatusEnum::COMPLETED : RefundStatusEnum::from($data->status),
+                        'transaction_details' => $transactionDetails,
+                        'refunded_at'         => $isImmediateCompletion ? now() : null,
+                        'admin_notes'         => $adminNotes,
+                    ]);
+
+                    if ($isImmediateCompletion) {
+                        // Process Wallet/Offline methods
+                        if (! $data->skip_gateway && $paymentMethod === PaymentMethodEnum::WALLET->value) {
+                            $processor->process($refund, $order, $refundAmount);
+                        }
+                        if (in_array($paymentMethod, [PaymentMethodEnum::BANK_TRANSFER->value, PaymentMethodEnum::MELLAT_GATEWAY->value], true)) {
+                            $processor->process($refund, $order, $refundAmount);
+                        }
+
+                        // Update Order Item
+                        $orderItem->total_refunded = $refundAmount;
+                        $orderItem->qty_refunded   = $orderItem->qty_ordered;
+                        $orderItem->status         = OrderItemStatusEnum::REFUNDED;
+                        $orderItem->saveQuietly();
+
+                        // Update parent statuses
+                        $this->orderStatusService->updateEnrollmentStatus($orderItem);
+                        $this->orderStatusService->updateParentOrderStatus($order->fresh());
+                        $this->updateOrderRefundedAmount->handle($order->fresh());
+
+                        RefundCompletedEvent::dispatch($refund);
+                    }
+
+                    return $refund;
+                });
+
+            } catch (Throwable $e) {
+                // CRITICAL FAILURE: Gateway succeeded, but DB failed to update to COMPLETED.
+                Log::emergency('Partial Failure: Refund API succeeded but DB update failed. Record is stuck in PROCESSING state.', [
+                    'refund_id'     => $refund->id,
+                    'tracking_code' => $gatewayTrackingCode,
+                    'error'         => $e->getMessage(),
+                ]);
+
+                // Optionally dispatch a retry job here, or just let your Reconciliation command handle it.
+                throw $e;
+            }
         });
+    }
+
+    private function resolvePayment(OrderItem $orderItem): ?Payment
+    {
+        return $orderItem->order->payments()
+            ->where('status', PaymentStatusEnum::COMPLETED)
+            ->oldest()
+            ->first();
     }
 
     /**
@@ -78,8 +172,6 @@ final readonly class CreateRefundAction
                 * $orderItem->qty_ordered);
         }
 
-        // If the order is not fully paid, the amount paid for any item is simply its 'total'
-        // (which represents either the full value or the prepayment amount).
         return $orderItem->total;
     }
 
@@ -90,7 +182,6 @@ final readonly class CreateRefundAction
     {
         if ($data->deduction_amount !== null && $data->deduction_percent !== null) {
             $dedcutionAmount = (int) floor(($originalPrice * $data->deduction_percent) / 100);
-            // If both are provided, we take the maximum of the two.
             if ($dedcutionAmount !== $data->deduction_amount) {
                 throw ValidationException::withMessages([
                     'deduction_amount' => __('messages.order.refund.deduction_conflict'),
@@ -104,67 +195,50 @@ final readonly class CreateRefundAction
         }
 
         if ($data->deduction_percent !== null) {
-            // Perform percentage calculation carefully to avoid float issues.
             return (int) floor(($originalPrice * $data->deduction_percent) / 100);
         }
 
-        return 0; // Should not be reached due to DTO validation, but as a fallback.
+        return 0;
     }
 
     /**
      * Ensures the item is in a state where it can be refunded.
-     *
-     * @throws ValidationException
      */
-    private function validateOrderItemIsRefundable(OrderItem $orderItem): void
+    private function validateOrderItemIsRefundable(OrderItem $orderItem, RefundCreateData $data): void
     {
-        if ($orderItem->order->total_paid <= 0) {
+        $order = $orderItem->order;
+
+        if ($order->total_paid <= 0) {
             throw ValidationException::withMessages([
                 'order_item_id' => __('messages.order.refund.no_completed_payments'),
             ]);
         }
-        // Rule 2: Can't refund an item that has already been refunded.
-        // This is the key change. We check the status directly.
+
         if ($orderItem->status === OrderItemStatusEnum::REFUNDED) {
             throw ValidationException::withMessages([
                 'order_item_id' => __('messages.order.refund.already_refunded'),
             ]);
         }
+
         if ($orderItem->status === OrderItemStatusEnum::CANCELLED) {
             throw ValidationException::withMessages([
                 'order_item_id' => __('messages.order.refund.not_allowed'),
             ]);
         }
+
         if ($orderItem->refunds()->whereNot('status', RefundStatusEnum::FAILED)->exists()) {
             throw ValidationException::withMessages([
                 'order_item_id' => __('messages.order.refund.refund_request_exists'),
             ]);
         }
-    }
 
-    private function processDigipayRefund(Order $order, int $amount): void
-    {
-        $payment = $order->payments()->where('method', 'digipay')->latest()->first();
+        // ——— Digipay partial refund gate ———
+        $paymentMethod = $order->payments()
+            ->where('status', PaymentStatusEnum::COMPLETED)
+            ->oldest()->value('method');
 
-        if (! $payment) {
-            return;
-        }
-
-        try {
-            $response = $this->digipayService->refund($payment, $amount);
-
-            Log::channel('digipay')->info('[Digipay] Refund successful', [
-                'order_id'      => $order->id,
-                'amount'        => $amount,
-                'tracking_code' => $response->trackingCode,
-            ]);
-        } catch (DigipayException $e) {
-            // NON-BLOCKING: refund record already created, admin retries via controller
-            Log::channel('digipay')->error('[Digipay] Refund failed', [
-                'order_id' => $order->id,
-                'amount'   => $amount,
-                'error'    => $e->getMessage(),
-            ]);
+        if ($paymentMethod === PaymentMethodEnum::DIGIPAY->value && ! config('payments.digipay.allow_partial_refund')) {
+            throw new RefundValidationException(__('messages.order.refund.digipay_partial_refund_not_supported'));
         }
     }
 }

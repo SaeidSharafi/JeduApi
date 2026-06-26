@@ -42,4 +42,9 @@ final class RefundPolicy
     {
         return $user->can(PermissionEnum::REFUND_UPDATE_STATUS);
     }
+
+    public function skipGateway(Staff $user): bool
+    {
+        return $user->can(PermissionEnum::REFUND_SKIP_GATEWAY->value);
+    }
 }

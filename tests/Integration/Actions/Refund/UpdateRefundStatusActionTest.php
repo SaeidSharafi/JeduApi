@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Actions\Admin\Refund\UpdateOrderRefundedAmountAction;
 use App\Actions\Admin\Refund\UpdateRefundStatusAction;
 use App\Data\Admin\Refund\RefundStatusUpdateData;
 use App\Enums\EnrollmentStatusEnum;
@@ -13,7 +14,7 @@ use App\Models\OrderItem;
 use App\Models\Refund;
 use App\Models\User;
 use App\Services\OrderStatusService;
-use App\Services\Payment\Digipay\DigipayAdminService;
+use App\Services\Payment\Refund\RefundProcessorFactory;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
 
@@ -52,7 +53,7 @@ describe('UpdateRefundStatusAction', function (): void {
             tracking_code: 'TRACK123',
             admin_notes: 'Completed refund',
         );
-        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(DigipayAdminService::class));
+        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
         expect($updated->status)->toBe(RefundStatusEnum::COMPLETED)
             ->and($updated->admin_notes)->toBe('Completed refund')
@@ -84,7 +85,7 @@ describe('UpdateRefundStatusAction', function (): void {
             tracking_code: null,
             admin_notes: 'Processing refund',
         );
-        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(DigipayAdminService::class));
+        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
         expect($updated->status)->toBe(RefundStatusEnum::PROCESSING)
             ->and($updated->admin_notes)->toBe('Processing refund');
@@ -105,7 +106,7 @@ describe('UpdateRefundStatusAction', function (): void {
             tracking_code: 'TRACK456',
             admin_notes: null,
         );
-        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(DigipayAdminService::class));
+        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
         expect($updated->status)->toBe(RefundStatusEnum::COMPLETED)
             ->and($updated->transaction_details['tracking_code'])->toBe('TRACK456');
@@ -126,7 +127,7 @@ describe('UpdateRefundStatusAction', function (): void {
             tracking_code: null,
             admin_notes: null,
         );
-        $action = new UpdateRefundStatusAction(new OrderStatusService(), app(DigipayAdminService::class));
+        $action = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         expect(fn (): Refund => $action->handle($refund, $data))
             ->toThrow(ValidationException::class);
     });
@@ -145,7 +146,7 @@ describe('UpdateRefundStatusAction', function (): void {
             tracking_code: null,
             admin_notes: null,
         );
-        $action = new UpdateRefundStatusAction(new OrderStatusService(), app(DigipayAdminService::class));
+        $action = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         expect(fn (): Refund => $action->handle($refund, $data))
             ->toThrow(ValidationException::class);
     });
@@ -164,7 +165,7 @@ describe('UpdateRefundStatusAction', function (): void {
             tracking_code: null,
             admin_notes: 'Failed refund',
         );
-        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(DigipayAdminService::class));
+        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
         expect($updated->status)->toBe(RefundStatusEnum::FAILED)
             ->and($updated->admin_notes)->toBe('Failed refund');
@@ -184,7 +185,7 @@ describe('UpdateRefundStatusAction', function (): void {
             tracking_code: null,
             admin_notes: 'Cancelled refund',
         );
-        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(DigipayAdminService::class));
+        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
         expect($updated->status)->toBe(RefundStatusEnum::CANCELLED)
             ->and($updated->admin_notes)->toBe('Cancelled refund');
@@ -205,7 +206,7 @@ describe('UpdateRefundStatusAction', function (): void {
             tracking_code: null,
             admin_notes: null,
         );
-        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(DigipayAdminService::class));
+        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
         expect($updated->admin_notes)->toBe('Original note');
     });

@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\Order\NextPaymentDetailsController;
 use App\Http\Controllers\Api\Admin\Order\OrderCalculationController;
 use App\Http\Controllers\Api\Admin\Order\OrderController;
 use App\Http\Controllers\Api\Admin\Order\OrderItemController;
+use App\Http\Controllers\Api\Admin\Order\OrderRefundController;
 use App\Http\Controllers\Api\Admin\Order\PaymentController;
 use App\Http\Controllers\Api\Admin\Order\RefundUpdateStatusController;
 use App\Http\Controllers\Api\Admin\Payment\DigipayAdminController;
@@ -46,6 +47,8 @@ Route::post('payment/digipay/inquire-refund', [DigipayAdminController::class, 'i
     ->name('payment.digipay.inquire-refund');
 
 Route::apiResource('/order-item/{orderItem}/refund', App\Http\Controllers\Api\Admin\Order\RefundController::class);
+Route::post('order/{order}/refund', [OrderRefundController::class, 'store'])
+    ->name('order.refund');
 Route::put('refund/{refund}/status', RefundUpdateStatusController::class)
     ->name('refund.status');
 

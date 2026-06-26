@@ -97,6 +97,7 @@ enum PermissionEnum: string
     case PRODUCT_VIEW_ANY                 = 'products.view_any';
     case REFUND_CREATE                    = 'refunds.create';
     case REFUND_DELETE                    = 'refunds.delete';
+    case REFUND_SKIP_GATEWAY              = 'refunds.skip_gateway';
     case REFUND_UPDATE                    = 'refunds.update';
     case REFUND_UPDATE_STATUS             = 'refunds.update_status';
     case REFUND_VIEW                      = 'refunds.view';

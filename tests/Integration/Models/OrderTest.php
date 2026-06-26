@@ -37,6 +37,7 @@ test('to array', function (): void {
             'updated_at'                  => $order->updated_at?->utc()->toJSON(),
             'created_by'                  => $order->created_by,
             'payments'                    => $order->payments->toArray(),
+            'total_refunded'              => $order->total_refunded,
 
         ]);
 });

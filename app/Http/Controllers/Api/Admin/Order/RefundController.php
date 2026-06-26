@@ -10,11 +10,14 @@ use App\Actions\Admin\Refund\UpdateRefundAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Refund\RefundCreateData;
 use App\Data\Admin\Refund\RefundData;
+use App\Exceptions\RefundValidationException;
 use App\Http\Controllers\Controller;
 use App\Models\OrderItem;
 use App\Models\Refund;
+use App\Services\Payment\Digipay\DigipayException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @group Admin - Refunds
@@ -51,7 +54,11 @@ final class RefundController extends Controller
     public function store(RefundCreateData $data, OrderItem $orderItem, CreateRefundAction $action): ApiResponseInterface
     {
         Gate::authorize('create', Refund::class);
-        $refund = $action->handle($data, $orderItem);
+        try {
+            $refund = $action->handle($data, $orderItem);
+        } catch (RefundValidationException $exception) {
+            throw ValidationException::withMessages([$exception->getMessage()]);
+        }
 
         return response()->created(RefundData::from($refund));
     }
@@ -80,7 +87,11 @@ final class RefundController extends Controller
     public function update(RefundCreateData $data, OrderItem $orderItem, Refund $refund, UpdateRefundAction $action): ApiResponseInterface
     {
         Gate::authorize('update', $refund);
-        $updatedRefund = $action->handle($refund, $data);
+        try {
+            $updatedRefund = $action->handle($refund, $data);
+        } catch (RefundValidationException $exception) {
+            throw ValidationException::withMessages([$exception->getMessage()]);
+        }
 
         return response()->success(RefundData::from($updatedRefund));
     }

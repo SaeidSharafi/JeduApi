@@ -13,7 +13,7 @@ use App\Services\Payment\Digipay\Data\ReverseResponse;
 final class DigipayAdminService
 {
     // Payment types requiring delivery confirmation before funds are released
-    private const DELIVERY_REQUIRED_TYPES = [5, 13]; // CREDIT, BNPL
+    public const DELIVERY_REQUIRED_TYPES = [5, 13]; // CREDIT, BNPL
 
     public function __construct(
         private DigipayClient $client,

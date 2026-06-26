@@ -40,6 +40,7 @@ final class Order extends Model implements WalletTransactionSourceableContract
             'tax_amount',
             'grand_total',
             'full_value_grand_total',
+            'total_refunded',
             'currency_code',
             'applied_coupon_code',
             'applied_cart_discounts_json',
@@ -146,6 +147,7 @@ final class Order extends Model implements WalletTransactionSourceableContract
             'created_at'                  => 'datetime',
             'updated_at'                  => 'datetime',
             'total_paid'                  => 'integer',
+            'total_refunded'              => 'integer',
         ];
     }
 
@@ -174,6 +176,13 @@ final class Order extends Model implements WalletTransactionSourceableContract
     {
         return Attribute::make(
             get: fn (): int|float => $this->full_value_grand_total - $this->total_paid,
+        );
+    }
+
+    protected function netRevenue(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): int => $this->total_paid - (int) ($this->total_refunded ?? 0),
         );
     }
 }

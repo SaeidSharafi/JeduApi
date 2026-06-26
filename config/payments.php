@@ -33,6 +33,10 @@ return [
         'ims_bank_account_number' => env('WALLET_IMS_BANK_ACCOUNT_NUMBER'),
     ],
 
+    'digipay' => [
+        'allow_partial_refund' => env('DIGIPAY_ALLOW_PARTIAL_REFUND', false),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Payment Transaction Reference Configuration
