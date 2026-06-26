@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 final class CreateWalletAction
 {
@@ -22,10 +23,14 @@ final class CreateWalletAction
     {
         $user = User::find($data->user_id);
         if (! $user) {
-            throw new Exception(__('validation.custom.user_not_found'));
+            throw ValidationException::withMessages([
+                'user_id' => [__('validation.custom.user_not_found')],
+            ]);
         }
         if ($user->wallet) {
-            throw new Exception(__('validation.wallet_already_exists'));
+            throw ValidationException::withMessages([
+                'user_id' => [__('validation.custom.wallet_already_exists')],
+            ]);
         }
 
         return DB::transaction(function () use ($data, $user) {

@@ -7,6 +7,7 @@ use App\Data\Admin\Wallet\CreateWalletData;
 use App\Enums\Wallet\WalletStatusEnum;
 use App\Models\User;
 use App\Models\Wallet;
+use Illuminate\Validation\ValidationException;
 use Tests\Support\Traits\AuthTestTrait;
 
 uses(AuthTestTrait::class);
@@ -34,7 +35,7 @@ test('cannot create duplicate wallet for user', function (): void {
         'status'       => WalletStatusEnum::ACTIVE->value,
     ]);
     expect(fn () => $this->action->execute($data))
-        ->toThrow(Exception::class, __('validation.wallet_already_exists'));
+        ->toThrow(ValidationException::class, __('validation.custom.wallet_already_exists'));
 });
 
 test('cannot create wallet for invalid user', function (): void {
@@ -48,7 +49,7 @@ test('cannot create wallet for invalid user', function (): void {
         'status'       => WalletStatusEnum::ACTIVE->value,
     ]);
     expect(fn () => $this->action->execute($data))
-        ->toThrow(Exception::class, __('validation.custom.user_not_found'));
+        ->toThrow(ValidationException::class, __('validation.custom.user_not_found'));
 });
 
 it('successfully creates a wallet for user', function (): void {
@@ -136,7 +137,7 @@ it('throws exception when user already has a wallet', function (): void {
     );
 
     expect(fn () => $this->action->execute($data))
-        ->toThrow(Exception::class, __('validation.wallet_already_exists'));
+        ->toThrow(ValidationException::class, __('validation.custom.wallet_already_exists'));
 });
 
 it('handles large balance amounts correctly', function (): void {
