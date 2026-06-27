@@ -34,11 +34,11 @@ This guide explains how to integrate with the JeduShop backend APIs for order cr
 
 ### Step 1: Order Calculation Preview (Required)
 
-**Endpoint**: `POST /api/v1/admin/order-calculation/preview`
+**Endpoint**: `POST /api/v1/admin/order/preview`
 
 Before creating any order, you MUST call this preview endpoint to get the calculated totals with all applicable discounts. This endpoint does NOT create any data in the database.
 
-**Request Data**:
+**Request Data** (same `OrderCreateData` DTO as order creation):
 ```json
 {
   "customer_id": 123,
@@ -96,7 +96,7 @@ Before creating any order, you MUST call this preview endpoint to get the calcul
 
 ### Step 2: Order Creation
 
-**Endpoint**: `POST /api/v1/admin/orders`
+**Endpoint**: `POST /api/v1/admin/order`
 
 Use the exact same data structure as the preview to create the actual order.
 
@@ -119,14 +119,13 @@ Use the exact same data structure as the preview to create the actual order.
 
 ### Step 3: Payment Creation
 
-**Endpoint**: `POST /api/v1/admin/payments`
+**Endpoint**: `POST /api/v1/admin/order/{order}/payment`
 
 **Critical**: Payment amounts are NEVER provided by the frontend. The backend calculates the required amount automatically.
 
-**Request Data**:
+**Request Data** (no `order_id` — it's in the URL):
 ```json
 {
-  "order_id": 123,
   "method": "bank_transfer",
   "status": "completed",
   "admin_notes": "Payment confirmed via bank transfer",
@@ -294,6 +293,7 @@ The discount system is completely dynamic. You must fetch metadata to build form
 - `GET /api/v1/admin/discount-info` - Complete metadata (conditions + actions)
 - `GET /api/v1/admin/discount-info/conditions` - Only conditions
 - `GET /api/v1/admin/discount-info/actions` - Only actions
+- `GET /api/v1/admin/discount-info/operators` - Available math operators
 - `GET /api/v1/admin/discount-info/types` - Promotion types
 
 ---
@@ -428,6 +428,33 @@ Products have a specific pricing hierarchy that affects what users see:
 - **Multiple conditions** in one promotion must ALL pass (AND logic)
 - **Multiple actions** in one promotion ALL execute
 
+### Refund Business Rules
+
+**Deduction Options**:
+- Provide EITHER `deduction_amount` (fixed Rials) OR `deduction_percent` (percent of original item price), not both
+- Percentage is always calculated against the **original item price**, not the amount paid
+- If deduction exceeds paid amount → refund amount = 0 (customer receives nothing)
+
+**Per-Item vs Full-Order**:
+- Per-item refund: refunds a single order item
+- Full-order refund: refunds ALL refundable items at once
+- Full-order is required for Digipay orders when `DIGIPAY_ALLOW_PARTIAL_REFUND` is `false` (default)
+
+**`skip_gateway` Flag**:
+- Requires `refunds.skip-gateway` permission
+- When `true`, skips the payment gateway call entirely
+- Use for manual refunds (bank transfer / Mellat) where admin wires money out-of-band
+
+**Status Transitions**:
+- Can only edit/delete refunds in `pending` status
+- `pending` → `processing`, `completed`, `cancelled`
+- `processing` → `completed`, `failed`
+- `completed`, `failed`, `cancelled` are terminal
+
+**Digipay Partial Refund Gate**:
+- When `DIGIPAY_ALLOW_PARTIAL_REFUND=false` (default), per-item Digipay refunds return 422
+- Admin must use the full-order refund endpoint instead
+
 ### Validation Edge Cases
 
 **Empty Rules Array**:
@@ -456,15 +483,15 @@ Products have a specific pricing hierarchy that affects what users see:
 ## API Endpoints Reference
 
 ### Order Management
-- `POST /api/v1/admin/order-calculation/preview` - Calculate order totals with discounts
-- `POST /api/v1/admin/orders` - Create new order
-- `GET /api/v1/admin/orders` - List orders with filtering
-- `GET /api/v1/admin/orders/{id}` - Get specific order details
+- `POST /api/v1/admin/order/preview` - Calculate order totals with discounts
+- `POST /api/v1/admin/order` - Create new order
+- `GET /api/v1/admin/order` - List orders with filtering
+- `GET /api/v1/admin/order/{id}` - Get specific order details
 
 ### Payment Management
-- `POST /api/v1/admin/payments` - Create payment for order (amount calculated automatically)
-- `GET /api/v1/admin/payments` - List payments with filtering
-- `GET /api/v1/admin/payments/{id}` - Get specific payment details
+- `POST /api/v1/admin/order/{order}/payment` - Create payment for order (amount calculated automatically)
+- `GET /api/v1/admin/order/{order}/payment` - List payments for an order
+- `GET /api/v1/admin/order/{order}/payment/{id}` - Get specific payment details
 
 ### Discount Promotion Management
 - `GET /api/v1/admin/discount-promotion` - List promotions with filtering
@@ -483,6 +510,32 @@ Products have a specific pricing hierarchy that affects what users see:
 ### Statistics and Reporting
 - `GET /api/v1/admin/discount-promotion-statistics` - Promotion usage statistics
 
+### Refund Management
+- `GET /api/v1/admin/order-item/{orderItem}/refund` - List refunds for an order item
+- `POST /api/v1/admin/order-item/{orderItem}/refund` - Create refund for a single order item
+- `GET /api/v1/admin/order-item/{orderItem}/refund/{refund}` - View refund details
+- `PUT /api/v1/admin/order-item/{orderItem}/refund/{refund}` - Edit a PENDING refund
+- `DELETE /api/v1/admin/order-item/{orderItem}/refund/{refund}` - Delete a PENDING refund
+- `PUT /api/v1/admin/refund/{refund}/status` - Transition refund status (state machine)
+- **`POST /api/v1/admin/order/{order}/refund`** - Refund entire order (all refundable items at once)
+
+### Refund Status Values
+- `pending` - Created, awaiting processing
+- `processing` - Being processed
+- `completed` - Money returned, access revoked (terminal)
+- `failed` - Processing failed, can retry (terminal)
+- `cancelled` - Admin cancelled (terminal)
+
+### Refund Transaction Details (bank info)
+```json
+{
+  "receiver_name": "Ali Rezaei",
+  "card_number": "1234567890123456",
+  "iban_number": "IR123456789012345678901234",
+  "tracking_code": "TRK987654"
+}
+```
+
 ---
 
 ## Data Structures
@@ -494,6 +547,7 @@ interface OrderCreateRequest {
   customer_id: number;
   items: OrderItemRequest[];
   applied_coupon_code?: string;
+  promotion_id?: number;
   admin_notes?: string;
 }
 
@@ -507,7 +561,6 @@ interface OrderItemRequest {
 ### Payment Creation Request
 ```typescript
 interface PaymentCreateRequest {
-  order_id: number;
   method: 'cash' | 'card' | 'bank_transfer';
   status: 'pending' | 'completed' | 'failed';
   admin_notes?: string;
@@ -520,6 +573,48 @@ interface PaymentMethodData {
   transaction_date?: string; // YYYY-MM-DD format
   sender_name?: string;
   notes?: string;
+}
+```
+
+### Refund Request Data
+
+**Per-Item Refund** (`POST /order-item/{orderItem}/refund`):
+```typescript
+interface RefundCreateRequest {
+  deduction_amount?: number;         // Fixed deduction in Rials
+  deduction_percent?: number;        // Percentage deduction (0-100), based on original price
+  transaction_details: {             // Bank info for manual refunds
+    receiver_name: string;
+    card_number: string;             // 16 digits
+    iban_number: string;
+    tracking_code?: string;
+  };
+  status: string;                    // RefundStatusEnum value
+  skip_gateway?: boolean;            // Skip payment gateway (needs permission)
+  admin_notes?: string;
+}
+```
+
+**Full-Order Refund** (`POST /order/{order}/refund`):
+```typescript
+interface RefundOrderRequest {
+  deduction_amount?: number;         // Flat deduction from total refundable sum
+  deduction_percent?: number;        // Percentage applied per-item against original price
+  skip_gateway?: boolean;            // Skip payment gateway (needs refunds.skip-gateway permission)
+  admin_notes?: string;
+  receiver_name?: string;            // Bank transfer receiver
+  card_number?: string;              // 16-digit card number
+  iban?: string;                     // IBAN number
+}
+```
+
+**Status Update** (`PUT /refund/{refund}/status`):
+```typescript
+interface RefundStatusUpdateRequest {
+  status: 'completed' | 'processing' | 'failed' | 'cancelled';
+  tracking_code?: string;
+  skip_gateway?: boolean;
+  admin_notes?: string;
 }
 ```
 
@@ -713,6 +808,15 @@ interface ConfigurationSchema {
 - Invalid payment method data
 - Missing required fields for bank transfers
 
+**Refund Errors**:
+- Order has no completed payments (`no_completed_payments`)
+- Item already refunded (`already_refunded`)
+- Existing refund request for this item (`refund_request_exists`)
+- Digipay partial refund not supported — use full-order endpoint instead (`digipay_partial_refund_not_supported`)
+- No refundable items in order (`no_refundable_items`)
+- Deduction amount conflicts with deduction percentage (`deduction_conflict`)
+- Missing `refunds.skip-gateway` permission for `skip_gateway` flag
+
 **Discount Creation Errors**:
 - Invalid handler keys
 - Configuration doesn't match schema
@@ -732,7 +836,7 @@ Always check HTTP status codes and handle the `errors` object for field-specific
 
 **1. Skipping Order Preview**
 - ❌ Never create orders without showing preview first
-- ✅ Always call `/order-calculation/preview` before order creation
+- ✅ Always call `/order/preview` before order creation
 - Users need to see final prices with discounts applied
 
 **2. Mismatching Preview and Order Data**

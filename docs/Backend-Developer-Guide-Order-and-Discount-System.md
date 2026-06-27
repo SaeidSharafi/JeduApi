@@ -59,9 +59,11 @@ Actions are the primary entry points for business operations. They orchestrate c
 
 **Responsibilities**:
 - Coordinate order creation workflow
-- Apply business validation rules
-- Calculate pricing with discounts
-- Ensure data consistency
+- Apply business validation rules (registration windows, capacity, duplicate purchases)
+- Calculate pricing with discounts via `OrderCalculationService`
+- Create immutable product snapshots in `OrderItem`
+- Create enrollments with `AWAITING_PAYMENT` status
+- Ensure data consistency via DB transaction with pessimistic locks
 - Dispatch domain events
 
 **Key Methods**:
@@ -71,61 +73,116 @@ public function handle(OrderCreateData $data): Order
 {
     // 1. Calculate prices and discounts
     $context = $this->orderCalculationService->calculate($data);
-    
-    // 2. Validate business rules
-    $this->validateNoDuplicatePurchases($context->customer->id, $deliveryOptionIds);
-    
-    // 3. Create order in transaction
+
+    // 2. Validate no duplicate purchases (dedicated action)
+    $this->validateNoDuplicatePurchases->handle($context->customer, $deliveryOptions);
+
+    // 3. Create order in transaction with pessimistic locking
     $order = DB::transaction(function () use ($data, $context): Order {
-        // Create order and items
-        // Create enrollments
-        // Update usage counts
+        foreach ($context->items as $calculatedItem) {
+            // Lock each delivery option row for concurrency safety
+            $deliveryOption = ProductDeliveryOption::query()
+                ->lockForUpdate()->findOrFail(...);
+
+            // Validate: publication status, registration window,
+            //          content availability, capacity, quantity, prepayment
+            $this->validateItem($key, $itemData, $deliveryOption);
+
+            // Build order item with full product snapshot
+            $orderItemsData->push([
+                'product_data_snapshot_json' => ProductDeliveryOptionShowData::from($deliveryOption),
+                'vendor_id' => $deliveryOption->product->vendor_id,
+                'name'      => $deliveryOption->product->name,
+                'sku'       => $deliveryOption->sku,
+                // ... price, discount, total, payment_type, etc.
+            ]);
+        }
+
+        // Create order with increment_id, customer snapshot, financial totals
+        $order = Order::create([
+            'increment_id' => Order::generateIncrementId(),
+            'customer_snapshot_json' => $context->customer->toArray(),
+            'full_value_grand_total' => $context->subtotal_all_items,
+            'applied_cart_discounts_json' => $context->applied_cart_discounts,
+            // ... all financial fields, coupon code, admin notes
+        ]);
+
+        // Create enrollments with AWAITING_PAYMENT status
+        $order->items->each(function ($item) use ($context): void {
+            Enrollment::create([
+                'order_item_id' => $item->id,
+                'customer_id'   => $context->customer->id,
+                'enrollment_status' => EnrollmentStatusEnum::AWAITING_PAYMENT,
+            ]);
+        });
+
+        return $order->fresh();
     });
-    
-    // 4. Dispatch events
+
+    // 4. Increment promotion/coupon usage counts (outside transaction)
+    if ($context->evaluating_promotion) {
+        $this->incrementUsageCounts($context);
+    }
+
+    // 5. Dispatch events
     OrderCreatedEvent::dispatch($order);
-    
-    return $order;
+
+    return $order->load('items', 'payments', 'enrollments');
 }
 ```
 
 **Key Validation Methods**:
-- `validateItem()` - Product availability, capacity, payment options
-- `validateNoDuplicatePurchases()` - Prevent duplicate enrollments
-- Transactional safety with database locks
+- `validateItem()` - Publication status, registration start/end dates, content availability window, capacity with enrolled count, quantity limits, prepayment eligibility
+- `ValidateNoDuplicatePurchasesAction` - Prevent duplicate enrollments (injected dependency)
+- `incrementUsageCounts()` - Update promotion `total_usage_count` and coupon `usage_count`
+- Transactional safety with `lockForUpdate()` pessimistic locks on delivery options
 
 #### CreatePaymentAction
 
 **Location**: `app/Actions/Admin/Payment/CreatePaymentAction.php`
 
 **Key Features**:
-- Automatic payment amount calculation
+- Returns `PaymentProcessResultData` (may contain redirect URL for multi-step gateways)
+- Free order auto-completion (handles `grand_total <= 0` orders)
+- Delegates to `PaymentProcessorFactory` strategy pattern
 - Pessimistic locking for concurrency safety
-- Payment method-specific validation
+- Automatic payment amount calculation (never trusts user input)
+- Pending payment collision detection
 - Event dispatch for fulfillment triggering
 
 ```php
-public function handle(Order $order, PaymentCreateData $paymentData, Staff $adminUser): ?Payment
+public function handle(Order $order, PaymentCreateData $data, Staff $admin): PaymentProcessResultData
 {
-    return DB::transaction(function () use ($order, $paymentData, $adminUser): ?Payment {
-        // Lock order to prevent concurrent modifications
+    return DB::transaction(function () use ($order, $data, $admin): PaymentProcessResultData {
         $order = Order::lockForUpdate()->findOrFail($order->id);
-        
-        // Calculate required payment (never trust user input for amounts)
-        $amountToPay = $this->calculateRequiredPayment($order);
-        
-        // Create payment record
-        $payment = $this->createPaymentRecordAndDispatchEvents(...);
-        
-        // Trigger fulfillment if payment completed
-        if ($payment->status === PaymentStatusEnum::COMPLETED) {
-            PaymentCompletedEvent::dispatch($payment);
+
+        // Free order handling
+        if ($order->grand_total <= 0) {
+            return $this->createFreeOrderPayment($order, $data, $admin);
         }
-        
-        return $payment;
+
+        // Validate: not fully paid, no pending payment
+        $this->validateOrderState($order);
+
+        $amount = $this->calculateRequiredPayment($order);
+        $processor = $this->processorFactory->make(PaymentMethodEnum::from($data->method));
+
+        // Delegate to processor (handles gateway-specific logic)
+        return $processor->process($order, $data, $admin, $amount);
     });
 }
 ```
+
+**Amount Calculation** (`calculateRequiredPayment`):
+- **First payment**: sum of all `order_items.total`
+- **Subsequent payments**: `order.balance_due` (remaining balance)
+
+**Payment Methods** (via `PaymentProcessorFactory`):
+- `NO_PAYMENT` — free orders, auto-completed
+- `WALLET` — deducts user wallet balance
+- `DIGIPAY` — gateway redirect flow (multi-step)
+- `BANK_TRANSFER` — manual confirmation by admin
+- `MELLAT_GATEWAY` — Mellat bank gateway
 
 ### 2. Services (Domain Logic)
 
@@ -149,11 +206,14 @@ Services contain complex business logic that spans multiple models or requires e
 ```php
 public function calculate(OrderCreateData $data): OrderContextData
 {
-    // 1. Build initial state (before discounts)
+    // 1. Build initial context (load products, customers, prices via ProductPriceService)
     $context = $this->buildInitialContext($data);
     
-    // 2. Find applicable promotion
-    $promotion = $this->promotionFinder->findApplicablePromotion($data);
+    // 2. Find applicable promotion (by coupon code or promotion ID)
+    $promotion = $this->promotionFinder->findApplicablePromotion(
+        $data->applied_coupon_code,
+        $data->promotion_id,
+    );
     
     if ($promotion && $promotion->type === DiscountTypeEnum::CART_CHECKOUT) {
         if ($this->allConditionsPass($promotion, $context)) {
@@ -169,10 +229,12 @@ public function calculate(OrderCreateData $data): OrderContextData
 }
 ```
 
-**Pricing Hierarchy** (implemented in `getBasePrice()`):
-1. **Product-specific discount price** (cached from promotions)
-2. **Featured price** (manual sale price)
+**Pricing Hierarchy** (implemented via `ProductPriceService::getPriceDataForOption()`):
+1. **Product-specific discount price** (cached from promotions via `productDeliveryOptionDiscountPrice` relation)
+2. **Featured price** (manual sale price, if active within date range)
 3. **Standard price** (default product price)
+
+**Prepayment Handling**: Prepayment items use `prepayment_amount` instead of full price for initial line-item total.
 
 #### PromotionFinder
 
@@ -180,12 +242,21 @@ public function calculate(OrderCreateData $data): OrderContextData
 
 **Purpose**: Select the best applicable promotion for an order
 
+**Signature**:
+```php
+public function findApplicablePromotion(
+    ?string $appliedCouponCode = null,
+    ?int $promotionId = null,
+): ?DiscountPromotion
+```
+
 **Selection Logic**:
 1. Filter active promotions within date range
-2. Filter by promotion type (cart vs product)
-3. Check coupon code if provided
-4. Validate usage limits
-5. Return highest priority promotion
+2. Enforce total usage limit (`total_usage_count < usage_limit_total`)
+3. If `appliedCouponCode` provided: match by coupon code with usage limit check
+4. If `promotionId` provided: find directly by ID
+5. Eager-load `rules` relationship
+6. Return first matching promotion (or null)
 
 ---
 
@@ -479,39 +550,21 @@ public function extractConfigSchema(string $configClass): array
 
 #### Step 1: Order Calculation Preview
 
-**Endpoint**: `POST /api/v1/admin/order-calculation/preview`
-**Controller**: `OrderCalculationController::preview()`
+**Endpoint**: `POST /api/v1/admin/order/preview`
+**Controller**: `OrderCalculationController::__invoke()`
 
 ```php
-public function preview(Request $request, OrderCalculationService $orderCalculationService): JsonResponse
+public function __invoke(OrderCreateData $data, OrderCalculationService $orderCalculationService): ApiSuccessResponse
 {
-    // Basic validation
-    $validated = $request->validate([
-        'customer_id' => 'required|integer|exists:users,id',
-        'items' => 'required|array|min:1',
-        'items.*.product_delivery_option_id' => 'required|integer|exists:product_delivery_options,id',
-        'items.*.qty_ordered' => 'required|integer|min:1',
-        'items.*.payment_type' => 'required|string',
-        'applied_coupon_code' => 'nullable|string',
-    ]);
-
-    $data = new OrderCreateData(...);
     $context = $orderCalculationService->calculate($data);
 
-    return response()->json([
-        'subtotal' => $context->items->sum(fn($i) => $i->price * $i->qty),
-        'discount_amount' => $context->items->sum('discount_amount'),
-        'grand_total' => $context->items->sum('total'),
-        'items' => $context->items,
-        'applied_cart_discounts' => $context->applied_cart_discounts,
-        'triggered_by_coupon_code' => $context->triggered_by_coupon_code,
-    ]);
+    return response()->success(OrderPreviewData::fromOrderContext($context));
 }
 ```
 
 #### Step 2: Order Creation
 
-**Endpoint**: `POST /api/v1/admin/orders`
+**Endpoint**: `POST /api/v1/admin/order`
 **Action**: `CreateOrderAction::handle()`
 
 **Validation Layers**:
@@ -546,11 +599,11 @@ $order = DB::transaction(function () use ($data, $context): Order {
     // 3. Create enrollments
     foreach ($order->items as $item) {
         if ($item->productDeliveryOption->product->type === 'course') {
-            Enrolment::create([
+            Enrollment::create([
                 'customer_id' => $order->customer_id,
                 'product_delivery_option_id' => $item->product_delivery_option_id,
                 'order_item_id' => $item->id,
-                'status' => EnrolmentStatusEnum::PENDING,
+                'enrollment_status' => EnrollmentStatusEnum::AWAITING_PAYMENT,
             ]);
         }
     }
@@ -582,7 +635,7 @@ private function incrementUsageCounts(OrderContextData $context): void
 
 ### Payment Creation Flow
 
-**Endpoint**: `POST /api/v1/admin/payments`
+**Endpoint**: `POST /api/v1/admin/order/{order}/payment`
 **Action**: `CreatePaymentAction::handle()`
 
 **Key Features**:
@@ -593,7 +646,7 @@ private function incrementUsageCounts(OrderContextData $context): void
 
 **Amount Calculation Logic**:
 ```php
-private function calculateRequiredPayment(Order $order): float
+private function calculateRequiredPayment(Order $order): int
 {
     $hasCompletedPayments = $order->payments()
         ->where('status', 'completed')
@@ -634,15 +687,32 @@ private function validateBankTransferDetails(PaymentCreateData $paymentData): vo
 ```sql
 CREATE TABLE orders (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    increment_id VARCHAR(255) NOT NULL UNIQUE,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending',
     customer_id BIGINT UNSIGNED NOT NULL,
-    subtotal INT NOT NULL,
+    customer_email VARCHAR(255) NULL,
+    customer_phone VARCHAR(255) NULL,
+    customer_first_name VARCHAR(255) NULL,
+    customer_last_name VARCHAR(255) NULL,
+    customer_snapshot_json JSON NULL,
+    total_item_count INT NOT NULL DEFAULT 0,
+    total_qty_ordered INT NOT NULL DEFAULT 0,
+    subtotal INT NOT NULL DEFAULT 0,
     discount_amount INT NOT NULL DEFAULT 0,
-    grand_total INT NOT NULL,
+    tax_amount INT NOT NULL DEFAULT 0,
+    grand_total INT NOT NULL DEFAULT 0,
+    full_value_grand_total INT NOT NULL DEFAULT 0,
+    total_refunded INT NOT NULL DEFAULT 0,
+    currency_code VARCHAR(3) NOT NULL DEFAULT 'IRR',
+    applied_coupon_code VARCHAR(255) NULL,
+    applied_cart_discounts_json JSON NULL,
     admin_notes TEXT NULL,
+    created_by BIGINT UNSIGNED NULL,
     created_at TIMESTAMP NULL DEFAULT NULL,
     updated_at TIMESTAMP NULL DEFAULT NULL,
     
-    FOREIGN KEY (customer_id) REFERENCES users(id)
+    FOREIGN KEY (customer_id) REFERENCES users(id),
+    FOREIGN KEY (created_by) REFERENCES staffs(id)
 );
 ```
 
@@ -652,17 +722,27 @@ CREATE TABLE order_items (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     order_id BIGINT UNSIGNED NOT NULL,
     product_delivery_option_id BIGINT UNSIGNED NOT NULL,
+    vendor_id BIGINT UNSIGNED NULL,
+    name VARCHAR(255) NOT NULL,
+    sku VARCHAR(255) NULL,
+    product_data_snapshot_json JSON NULL,
     qty_ordered INT NOT NULL,
     price INT NOT NULL,
     discount_amount INT NOT NULL DEFAULT 0,
+    tax_amount INT NOT NULL DEFAULT 0,
     total INT NOT NULL,
+    prepayment_amount INT NOT NULL DEFAULT 0,
     payment_type ENUM('full_payment', 'pre_payment') NOT NULL,
-    status ENUM('pending', 'processing', 'completed', 'cancelled') NOT NULL,
+    status ENUM('pending', 'processing', 'completed', 'cancelled', 'refunded') NOT NULL DEFAULT 'pending',
+    total_refunded INT NOT NULL DEFAULT 0,
+    qty_refunded INT NOT NULL DEFAULT 0,
+    applied_discount_details_json JSON NULL,
     created_at TIMESTAMP NULL DEFAULT NULL,
     updated_at TIMESTAMP NULL DEFAULT NULL,
     
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_delivery_option_id) REFERENCES product_delivery_options(id)
+    FOREIGN KEY (product_delivery_option_id) REFERENCES product_delivery_options(id),
+    FOREIGN KEY (vendor_id) REFERENCES vendors(id)
 );
 ```
 
@@ -747,7 +827,135 @@ CREATE TABLE product_delivery_option_discount_prices (
 3. **Order → Payments** (1:N) - Order can have multiple payments
 4. **DiscountPromotion → Rules** (1:N) - Promotion has multiple conditions/actions
 5. **DiscountPromotion → Coupons** (1:N) - Promotion can have multiple coupon codes
-6. **OrderItem → Enrolment** (1:1) - Each order item creates an enrollment
+6. **OrderItem → Enrollment** (1:1) - Each order item creates an enrollment
+
+---
+
+## Refund System
+
+### Architecture Overview
+
+The refund system uses a **strategy-based processor pattern** with **gateway-first architecture** for financial safety. Refunds can be per-item or full-order, and the payment method determines which processor handles the money movement.
+
+```
+RefundProcessorInterface
+├── DigipayRefundProcessor   (gateway-first: called BEFORE DB transaction)
+├── WalletRefundProcessor    (inside DB transaction, pessimistic lock)
+└── ManualRefundProcessor    (no-op, admin wires money out-of-band)
+```
+
+**Factory**: `RefundProcessorFactory::make(string $paymentMethod)` resolves the correct processor.
+
+### Key Design Principle: Gateway-First
+
+For Digipay refunds, the API call happens **before** any database writes:
+
+```
+1. [OUTSIDE TRANSACTION] $processor->process(...) → Digipay API call
+   → On failure: RefundGatewayException thrown, NOTHING saved to DB
+2. [DB TRANSACTION] Create Refund record, update OrderItem/Enrollment/Order, dispatch events
+```
+
+This ensures the system never records a "completed" refund that the gateway failed to process.
+
+### Refund State Machine
+
+```
+PENDING → PROCESSING → COMPLETED
+PENDING → COMPLETED (immediate)
+PENDING → CANCELLED
+PROCESSING → FAILED
+
+Terminal: COMPLETED, FAILED, CANCELLED
+```
+
+### Per-Item Refund: CreateRefundAction
+
+**Endpoint**: `POST /api/v1/admin/order-item/{orderItem}/refund`
+
+Validation rules:
+1. Order must have `total_paid > 0`
+2. Item not already REFUNDED or CANCELLED
+3. No existing non-FAILED refund for this item
+4. Digipay partial refund gate: blocked when `config('payments.digipay.allow_partial_refund') === false`
+
+Amount calculation:
+```php
+$amountPaid = balance_due <= 0 ? (price - discount + tax) × qty : item->total;
+$deduction  = $data->deduction_amount ?? floor(price × $data->deduction_percent / 100);
+$refund     = max(0, $amountPaid - $deduction);
+```
+
+Payment targeting: uses the **oldest** completed payment (semantically: first payment = `sum(items.total)`).
+
+### Full-Order Refund: RefundOrderAction
+
+**Endpoint**: `POST /api/v1/admin/order/{order}/refund`
+
+Refunds ALL refundable items in one operation. Required path when `allow_partial_refund` is `false` for Digipay orders. Includes cumulative cap check: `alreadyRefunded + amount ≤ payment.amount`.
+
+### `skip_gateway` Flag
+
+When `skip_gateway = true` (gated behind `refunds.skip-gateway` permission):
+- All gateway calls are skipped
+- Refund marked COMPLETED immediately  
+- Admin notes appended: `[Gateway skipped by Admin at {timestamp}]`
+
+### Enrollment Revocation
+
+On refund completion: `OrderStatusService::updateEnrollmentStatus()` sets enrollment to `CANCELLED`.
+
+### Order Status Aggregation
+
+| Items State | Order Status |
+|-------------|-------------|
+| All REFUNDED | `REFUNDED` |
+| Some REFUNDED | `PARTIALLY_REFUNDED` |
+| All CANCELLED | `CANCELLED` |
+
+### Financial Dashboard
+
+```php
+// Order model accessors
+$order->total_paid;      // Sum of completed payment amounts (computed)
+$order->total_refunded;  // Sum of completed refund amounts (UpdateOrderRefundedAmountAction)
+$order->net_revenue;     // total_paid - total_refunded
+```
+
+### Notifications
+
+`SendRefundCompletedNotification` (`#[AsEventListener]`, auto-discovered):
+- **Mail**: Payment-method-specific messaging (digipay tracking code / wallet credited / bank transfer pending)
+- **SMS**: "استرداد وجه سفارش #X به مبلغ Y ریال تأیید شد"
+
+Both channels are queued (`ShouldQueue`).
+
+### Refund Endpoints
+
+| Method | Endpoint | Action |
+|--------|----------|--------|
+| GET | `/order-item/{id}/refund` | List refunds |
+| POST | `/order-item/{id}/refund` | Create per-item refund |
+| GET | `/order-item/{id}/refund/{refund}` | Show refund |
+| PUT | `/order-item/{id}/refund/{refund}` | Edit PENDING refund |
+| DELETE | `/order-item/{id}/refund/{refund}` | Delete PENDING refund |
+| PUT | `/refund/{refund}/status` | Transition status |
+| POST | `/order/{order}/refund` | Full-order refund |
+
+### Exceptions
+
+| Exception | HTTP | When |
+|-----------|------|------|
+| `RefundValidationException` | 422 | Business rule violated |
+| `RefundGatewayException` | 500 | Gateway API call failed |
+| `DigipayException` | — | Low-level HTTP error (caught, re-thrown) |
+
+### Configuration
+
+```env
+# config/payments.php → payments.digipay.allow_partial_refund
+DIGIPAY_ALLOW_PARTIAL_REFUND=false   # default: safe; set true to enable per-item Digipay refunds
+```
 
 ---
 
@@ -801,7 +1009,7 @@ describe('DiscountMetadataService', function () {
 // tests/Feature/Api/V1/Admin/DiscountPromotionControllerTest.php
 describe('DiscountPromotionController', function () {
     beforeEach(function () {
-        $this->actingAsStaff();
+        $this->authorized_user([PermissionEnum::DISCOUNT_PROMOTION_CREATE]);
     });
 
     describe('POST /api/v1/admin/discount-promotion', function () {
@@ -844,6 +1052,7 @@ describe('DiscountPromotionController', function () {
 4. **Use Factory Classes** - Consistent test data creation
 5. **Database Transactions** - Clean state between tests
 6. **Test Events** - Verify event dispatching and handling
+7. **Use AuthTestTrait** - For authentication: `$this->authorized_user([...])`, `$this->customer()`, `$this->admin_user()`
 
 ### Running Tests
 
@@ -1115,7 +1324,8 @@ CREATE INDEX idx_pdo_promotion ON product_delivery_option_discount_prices (produ
 
 -- For order queries
 CREATE INDEX idx_customer_created ON orders (customer_id, created_at);
-CREATE INDEX idx_status_created ON order_items (status, created_at);
+CREATE INDEX idx_increment_id ON orders (increment_id);
+CREATE INDEX idx_order_items_status ON order_items (status, created_at);
 ```
 
 ### Background Job Processing
@@ -1260,13 +1470,13 @@ if (Cache::has(DiscountHandlerRegistry::CACHE_KEY)) {
 
 ```bash
 # Clear discount cache
-php artisan cache:forget discounts.handler_registry.cache
+sail artisan cache:forget discounts.handler_registry.cache
 
 # Regenerate all product discount prices
-php artisan discounts:regenerate-prices
+sail artisan discounts:regenerate-prices
 
 # View current discount metadata
-php artisan tinker
+sail artisan tinker
 >>> app(DiscountMetadataService::class)->getMetadata()
 
 # Test specific promotion
