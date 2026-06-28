@@ -8,9 +8,9 @@ use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Order;
-use DomainException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 final class CancelOrderByCustomerAction
 {
@@ -31,9 +31,9 @@ final class CancelOrderByCustomerAction
 
         // Verify order is in PENDING status
         if ($order->status !== OrderStatusEnum::PENDING) {
-            throw new DomainException(
-                'Only pending orders can be cancelled. Current status: '.$order->status->value
-            );
+            throw ValidationException::withMessages([
+                __('messages.order.only_pending_orders_can_be_cancelled', ['status' => $order->status->translate()]),
+            ]);
         }
 
         // Check if order has any completed payments
@@ -42,9 +42,9 @@ final class CancelOrderByCustomerAction
             ->exists();
 
         if ($hasCompletedPayments) {
-            throw new DomainException(
-                'Cannot cancel an order with completed payments. Please contact support for refund assistance.'
-            );
+            throw ValidationException::withMessages([
+                __('messages.order.cannot_cancel_order_with_completed_payments', ['order_id' => $order->id]),
+            ]);
         }
 
         return DB::transaction(function () use ($order) {
