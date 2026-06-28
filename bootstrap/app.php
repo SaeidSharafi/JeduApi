@@ -157,6 +157,24 @@ return Application::configure(basePath: dirname(__DIR__))
             return null;
         });
 
+        // 6.5. RefundValidationException (422 Unprocessable Entity)
+        $exceptions->renderable(function (App\Exceptions\RefundValidationException $e, Request $request) use ($isApiRequest) {
+            if ($isApiRequest($request)) {
+                return response()->error($e->getMessage(), 422);
+            }
+
+            return null;
+        });
+
+        // 6.6. RefundGatewayException (422 Unprocessable Entity)
+        $exceptions->renderable(function (App\Exceptions\RefundGatewayException $e, Request $request) use ($isApiRequest) {
+            if ($isApiRequest($request)) {
+                return response()->error($e->getMessage(), 422);
+            }
+
+            return null;
+        });
+
         // 7. Other generic HttpExceptions (e.g., 419 CSRF, 400 Bad Request not caught by others)
         $exceptions->renderable(function (
             Symfony\Component\HttpKernel\Exception\HttpException $e,

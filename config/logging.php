@@ -59,6 +59,13 @@ return [
             'level'  => env('LOG_LEVEL', 'debug'),
             'days'   => 14,
         ],
+
+        'digipay' => [
+            'driver' => 'single',
+            'path'   => storage_path('logs/digipay.log'),
+            'level'  => env('LOG_LEVEL', 'debug'),
+        ],
+
         'stack' => [
             'driver'            => 'stack',
             'channels'          => explode(',', env('LOG_STACK', 'single')),

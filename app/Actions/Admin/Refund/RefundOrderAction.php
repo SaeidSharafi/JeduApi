@@ -38,7 +38,7 @@ final class RefundOrderAction
 
         return SmartCache::lock($lockKey, 20)->block(5, function () use ($order, $data) {
 
-            $order->refresh()->loadMissing('orderItems', 'payments');
+            $order->refresh()->loadMissing('items', 'payments');
 
             // 1. Resolve & Validate
             $refundableItems = $this->getRefundableItems($order);
@@ -79,12 +79,13 @@ final class RefundOrderAction
                         'amount'              => $itemData['refund_amount'],
                         'deduction_amount'    => $itemData['deduction'],
                         'status'              => RefundStatusEnum::PROCESSING,
-                        'transaction_details' => [],
+                        'transaction_details' => [
+                            'receiver_name'       => $data->receiver_name,
+                            'card_number'         => $data->card_number,
+                            'iban'                => $data->iban,
+                        ],
                         'refunded_at'         => null,
                         'admin_notes'         => $data->admin_notes,
-                        'receiver_name'       => $data->receiver_name,
-                        'card_number'         => $data->card_number,
-                        'iban'                => $data->iban,
                     ]));
                 }
                 return $refunds;
@@ -99,12 +100,12 @@ final class RefundOrderAction
                         $totalRefundAmount,
                     );
                 }
-            } catch (DigipayException $e) {
+            } catch (RefundGatewayException $e) {
                 $processingRefunds->each(fn($r) => $r->update([
                     'status' => RefundStatusEnum::FAILED,
-                    'admin_notes' => ($r->admin_notes ?? '') . PHP_EOL . $e->getUserMessage()
+                    'admin_notes' => ($r->admin_notes ?? '') . PHP_EOL . $e->getMessage()
                 ]));
-                throw new RefundValidationException($e->getUserMessage());
+                throw new RefundValidationException($e->getMessage());
             } catch (Throwable $e) {
                 $processingRefunds->each(fn($r) => $r->update(['status' => RefundStatusEnum::FAILED]));
                 throw $e;
@@ -150,7 +151,7 @@ final class RefundOrderAction
 
                     $processingRefunds->each(fn (Refund $r) => RefundCompletedEvent::dispatch($r));
 
-                    return $processingRefunds;
+                    return $processingRefunds->load('order');
                 });
 
             } catch (Throwable $e) {
@@ -167,7 +168,7 @@ final class RefundOrderAction
 
     private function getRefundableItems(Order $order): Collection
     {
-        $refundableItems = $order->orderItems()
+        $refundableItems = $order->items()
             ->whereNotIn('status', [OrderItemStatusEnum::REFUNDED, OrderItemStatusEnum::CANCELLED])
             ->whereDoesntHave('refunds', fn ($q) => $q->where('status', '!=', RefundStatusEnum::FAILED))
             ->get();

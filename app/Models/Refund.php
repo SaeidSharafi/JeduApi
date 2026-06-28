@@ -31,6 +31,11 @@ final class Refund extends Model implements WalletTransactionSourceableContract
         return $this->belongsTo(OrderItem::class);
     }
 
+    public function payment(): BelongsTo
+    {
+        return $this->belongsTo(Payment::class);
+    }
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(User::class);
