@@ -14,7 +14,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Validation\ValidationException;
 
 /**
- * @group Checkout
+ * @group Shop - Checkout
  *
  * @authenticated
  */

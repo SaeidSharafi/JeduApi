@@ -7,16 +7,15 @@ namespace App\Http\Controllers\Api\Shop\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-
+/**
+ * @group Shop - Auth
+ *
+ * @authenticated
+ */
 final class LogoutController extends Controller
 {
     /**
      * Logout the current User
-     *
-     *
-     * @group User Authentication
-     *
-     * @authenticated
      *
      * @response 500{
      * "message": "Unauthenticated."

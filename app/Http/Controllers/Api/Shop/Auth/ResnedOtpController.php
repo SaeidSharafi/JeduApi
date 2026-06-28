@@ -11,6 +11,9 @@ use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\OtpRequest;
 
+/**
+ * @group Shop - Auth
+ */
 final class ResnedOtpController extends Controller
 {
     public function __construct(
@@ -23,8 +26,6 @@ final class ResnedOtpController extends Controller
      * Re-Sends an OTP to the user's phone number (or Email) for a specific
      * purpose (login/registration or password reset).
      *
-     *
-     * @group User Authentication
      *
      * @responseFile 200 resources/responses/shop/auth/resend-otp.json
      * @responseFile 422 resources/responses/422.json

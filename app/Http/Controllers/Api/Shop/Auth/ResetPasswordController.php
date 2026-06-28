@@ -12,6 +12,9 @@ use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ResetPasswordOtpRequest;
 
+/**
+ * @group Shop - Auth
+ */
 final class ResetPasswordController extends Controller
 {
     public function __construct(
@@ -25,8 +28,6 @@ final class ResetPasswordController extends Controller
      *
      *
      * @throws UserNotFoundException
-     *
-     * @group User Authentication
      *
      * @responseFile 200 resources/responses/shop/auth/reset-password.json
      * @responseFile 422 resources/responses/422.json

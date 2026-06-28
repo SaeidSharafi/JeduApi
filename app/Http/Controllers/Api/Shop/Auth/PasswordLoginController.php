@@ -12,7 +12,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-
+/**
+ * @group Shop - Auth
+ */
 final class PasswordLoginController extends Controller
 {
     public function __construct(
@@ -26,8 +28,6 @@ final class PasswordLoginController extends Controller
      *
      *
      * @throws UserNotFoundException
-     *
-     * @group User Authentication
      *
      * @responseFile 200 resources/responses/shop/auth/login.json
      * @responseFile 404 resources/responses/404.json

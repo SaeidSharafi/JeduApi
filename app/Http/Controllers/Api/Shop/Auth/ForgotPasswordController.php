@@ -11,6 +11,9 @@ use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\InitiateAuthRequest;
 
+/**
+ * @group Shop - Auth
+ */
 final class ForgotPasswordController extends Controller
 {
     public function __construct(
@@ -25,7 +28,6 @@ final class ForgotPasswordController extends Controller
      *
      * @throws UserNotFoundException
      *
-     * @group User Authentication
      *
      * @responseFile 200 resources/responses/shop/auth/forgot-password.json
      * @responseFile 422 resources/responses/422.json

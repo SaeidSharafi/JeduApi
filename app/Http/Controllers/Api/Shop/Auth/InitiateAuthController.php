@@ -11,6 +11,9 @@ use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\InitiateAuthRequest;
 
+/**
+ * @group Shop - Auth
+ */
 final class InitiateAuthController extends Controller
 {
     public function __construct(
@@ -23,8 +26,6 @@ final class InitiateAuthController extends Controller
      * User provides phone or email. API determines the next step (e.g., prompt for password, request OTP, user not
      * found)
      *
-     *
-     * @group User Authentication
      *
      * @responseFile 200 resources/responses/shop/auth/initiate.json
      * @responseFile 200 resources/responses/shop/auth/initiate-password.json
