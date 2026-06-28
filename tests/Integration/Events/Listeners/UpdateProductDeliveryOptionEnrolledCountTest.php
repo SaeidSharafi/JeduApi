@@ -12,16 +12,16 @@ it('increment enrolled_count when status changes to ACTIVE', function (): void {
     Event::fake([
         EnrollmentStatusChanged::class,
     ]);
-    $enrolment = Enrollment::factory()->create(
+    $enrollment = Enrollment::factory()->create(
         ['enrollment_status' => EnrollmentStatusEnum::ACTIVE]
     );
     Event::assertDispatched(EnrollmentStatusChanged::class);
-    $event = new EnrollmentStatusChanged($enrolment);
-    expect($enrolment->productDeliveryOption->enrolled_count)->toBe(0);
+    $event = new EnrollmentStatusChanged($enrollment);
+    expect($enrollment->productDeliveryOption->enrolled_count)->toBe(0);
     $listener = new UpdateProductDeliveryOptionEnrolledCount();
     $listener->handle($event);
-    $enrolment->productDeliveryOption->refresh();
-    expect($enrolment->productDeliveryOption->enrolled_count)->toBe(1);
+    $enrollment->productDeliveryOption->refresh();
+    expect($enrollment->productDeliveryOption->enrolled_count)->toBe(1);
 });
 
 it('increments when transitioning from non-occupying to occupying (AWAITING_PAYMENT -> PENDING_PROVISIONING)', function (): void {

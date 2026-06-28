@@ -326,7 +326,7 @@ final readonly class CartService
         return CartData::fromModel($cart, $subtotal, $discountAmount, $grandTotal);
     }
 
-    private function validateQuantity(ProductDeliveryOption $deliveryOption, int $quantity = 1, ?CartItem $exsitingItem = null): void
+    private function validateQuantity(ProductDeliveryOption $deliveryOption, int $quantity = 1, ?CartItem $existingItem = null): void
     {
 
         $allowMultiple = ProductableEnum::tryFrom($deliveryOption->product->productable_type)?->allowsMultipleQuantity();
@@ -337,13 +337,13 @@ final readonly class CartService
             return;
         }
         // @codeCoverageIgnoreEnd
-        if ($exsitingItem && $exsitingItem->quantity >= 1) {
+        if ($existingItem && $existingItem->quantity >= 1) {
             throw ValidationException::withMessages([
                 'product_delivery_option_uuid' => __('shop.cart.errors.product_already_in_cart'),
             ]);
         }
 
-        $existingQty = $exsitingItem ? $exsitingItem->quantity : 0;
+        $existingQty = $existingItem ? $existingItem->quantity : 0;
         if ($existingQty + $quantity > 1) {
             throw ValidationException::withMessages([
                 'quantity' => __('shop.cart.errors.multiple_quantity_not_allowed'),

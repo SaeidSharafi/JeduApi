@@ -186,7 +186,7 @@ test('product createion with all combinations',
             ->withCalculatedTotals($items)
             ->create(['customer_id' => $customer->id])
             ->fresh();
-        $enrolment = Enrollment::factory()->create([
+        $enrollment = Enrollment::factory()->create([
             'order_id'                   => $order->id,
             'order_item_id'              => $order->items()->first()->id,
             'product_delivery_option_id' => $deliveryOption->id,
@@ -194,7 +194,7 @@ test('product createion with all combinations',
             'provisioning_data'          => ['providers' => getProvisioningData($data, $deliveryType)],
         ]);
         $this->customer($customer);
-        $response = getJson(route('api.v1.shop.student.courses.show', $enrolment->uuid));
+        $response = getJson(route('api.v1.shop.student.courses.show', $enrollment->uuid));
         $response->assertOk();
 
         $response->assertJsonStructure([
@@ -238,8 +238,8 @@ test('product createion with all combinations',
         ]);
 
         $responseData = $response->json('data');
-        expect($responseData['uuid'])->toBe($enrolment->uuid)
-            ->and($responseData['delivery_access'])->toEqual(getDeliveryBlock($data, $deliveryType, $enrolment,
+        expect($responseData['uuid'])->toBe($enrollment->uuid)
+            ->and($responseData['delivery_access'])->toEqual(getDeliveryBlock($data, $deliveryType, $enrollment,
                 $ditialAsset));
 
     })->with('valid product');

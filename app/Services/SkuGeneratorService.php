@@ -95,7 +95,7 @@ final class SkuGeneratorService
     }
 
     /**
-     * Generates a short code from the delivery option's fullfilment type and deliverymethod.
+     * Generates a short code from the delivery option's fulfillment, type and deliverymethod.
      *
      * @param  ProductDeliveryOptionCreateData  $data  .
      * @return string A short code like "LOC".

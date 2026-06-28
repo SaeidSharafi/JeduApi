@@ -38,7 +38,7 @@ final class SmsMessage
 
     /**
      * Set the type of the SMS (e.g., 'OTP', 'marketing').
-     * This is useful for logging and analytics.
+     * This is useful for logging and analytic.
      */
     public function type(string $type): self
     {

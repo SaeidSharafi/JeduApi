@@ -95,7 +95,7 @@ final class ProvisionImsEnrollmentJob extends AbstractProvisioningJob
             'update_student'   => false,
         ];
 
-        $enrolment = [
+        $enrollmentData = [
             'civil_id'      => $customer->civil_id,
             'civil_id_type' => $customer->civil_id_type,
             'course_code'   => $imsCourseCode,
@@ -108,23 +108,23 @@ final class ProvisionImsEnrollmentJob extends AbstractProvisioningJob
                 'date'                => $paymentDateString,
                 'bank_account_number' => $this->resolveImsBankAccountNumber($enrollment),
             ],
-            'note' => __('messages.online_enrolment').PHP_EOL.
+            'note' => __('messages.online_enrollment').PHP_EOL.
                 __('messages.order.order_number', ['order_id' => $enrollment->order?->increment_id])
                 .PHP_EOL.
                 $enrollment->notes,
         ];
 
         $studentData   = $service->storeStudent($student);
-        $enrolmentData = $service->storeEnrolment($enrollment->customer, $enrolment);
+        $enrollmentData = $service->storeEnrollment($enrollment->customer, $enrollmentData);
 
-        $externalEnrollmentId = data_get($enrolmentData, 'data.enrollment_id');
+        $externalEnrollmentId = data_get($enrollmentData, 'data.enrollment_id');
         $externalEnrollmentId = is_scalar($externalEnrollmentId) ? (string) $externalEnrollmentId : null;
 
         $this->markProvisioningSuccess($enrollment, 'ims', [
             'course_code'   => $imsCourseCode,
             'enrollment_id' => $externalEnrollmentId,
             'student_id'    => data_get($studentData, 'data.student_id'),
-            'created_at'    => data_get($enrolmentData, 'data.created_at'),
+            'created_at'    => data_get($enrollmentData, 'data.created_at'),
         ], $externalEnrollmentId);
     }
 

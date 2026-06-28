@@ -60,7 +60,7 @@ abstract class AbstractIntegrationService
     }
 
     /**
-     * Standardised HTTP error handler for JSON REST APIs (IMS, SpotPlayer).
+     * standardized HTTP error handler for JSON REST APIs (IMS, SpotPlayer).
      * Do NOT call this for BBB (XML) or Moodle (form/JSON hybrid) — handle those inline.
      */
     protected function handleHttpErrors(Response $response, string $endpoint): void

@@ -168,7 +168,7 @@ final class GlobalSearchService
             $hits      = $rawResults['hits']  ?? [];
             $totalHits = $rawResults['found'] ?? 0;
 
-            // Log search analytics
+            // Log search analytic
             Log::channel('daily')->info('Search performed', [
                 'query'         => $searchData->q,
                 'results_count' => $totalHits,

@@ -44,7 +44,7 @@ final class HomePageContentController extends Controller
      * @responseFile status=200 scenario="webinar-banner" resources/responses/shop/home/show-webinar-banner.json
      * @responseFile status=200 scenario="curated-list-products" resources/responses/shop/home/show-list-products.json
      * @responseFile status=200 scenario="curated-list-categories" resources/responses/shop/home/show-list-categories.json
-     * @responseFile status=200 scenario="dynamic-list-products" resources/responses/shop/home/show-dlist-courses.json
+     * @responseFile status=200 scenario="dynamic-list-products" resources/responses/shop/home/show-list-courses.json
      * @responseFile status=200 scenario="dynamic-list-blog" resources/responses/shop/home/show-dlist-blog.json
      */
     public function show(HomePageBlock $homePageBlock, GetHomePageBlockAction $action): ApiResponseInterface

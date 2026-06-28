@@ -105,14 +105,14 @@ it('storeStudent throws with metadata on 500', function (): void {
     }
 });
 
-it('storeEnrolment throws with metadata on 422', function (): void {
+it('storeEnrollment throws with metadata on 422', function (): void {
     $user = User::factory()->create([
         'civil_id'      => '1234567890',
         'civil_id_type' => CivilIdTypeEnum::NATIONAL_CODE,
     ]);
 
     Http::fake([
-        'https://ims.test/api/v2/enrolment/*' => Http::response([
+        'https://ims.test/api/v2/enrollment/*' => Http::response([
             'errors' => [
                 'course_code' => ['The selected course code is invalid.'],
             ],
@@ -120,31 +120,31 @@ it('storeEnrolment throws with metadata on 422', function (): void {
     ]);
 
     try {
-        $this->imsService->storeEnrolment($user, ['course_code' => 'IMS-1']);
+        $this->imsService->storeEnrollment($user, ['course_code' => 'IMS-1']);
         $this->fail('Expected UnrecoverableProvisioningException');
     } catch (UnrecoverableProvisioningException $e) {
         expect($e->metaData['http_status'])->toBe(422);
-        expect($e->metaData['endpoint'])->toBe('/api/v2/enrolment');
+        expect($e->metaData['endpoint'])->toBe('/api/v2/enrollment');
         expect($e->metaData['validation_errors'])->toHaveKey('course_code');
     }
 });
 
-it('storeEnrolment throws with metadata on 500', function (): void {
+it('storeEnrollment throws with metadata on 500', function (): void {
     $user = User::factory()->create([
         'civil_id'      => '1234567890',
         'civil_id_type' => CivilIdTypeEnum::NATIONAL_CODE,
     ]);
 
     Http::fake([
-        'https://ims.test/api/v2/enrolment/*' => Http::response([], 500),
+        'https://ims.test/api/v2/enrollment/*' => Http::response([], 500),
     ]);
 
     try {
-        $this->imsService->storeEnrolment($user, ['course_code' => 'IMS-1']);
+        $this->imsService->storeEnrollment($user, ['course_code' => 'IMS-1']);
         $this->fail('Expected RecoverableProvisioningException');
     } catch (RecoverableProvisioningException $e) {
         expect($e->metaData['http_status'])->toBe(500);
-        expect($e->getMessage())->toBe('HTTP 500 on /api/v2/enrolment.');
+        expect($e->getMessage())->toBe('HTTP 500 on /api/v2/enrollment.');
     }
 });
 

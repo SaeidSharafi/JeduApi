@@ -35,7 +35,7 @@ return [
     'file_deleted'           => 'فایل با موفقیت حذف شد.',
     'file_not_found'         => 'فایل مورد نظر یافت نشد.',
     'something_went_wrong'   => 'متأسفانه مشکلی پیش آمد. لطفاً بعداً دوباره تلاش کنید.',
-    'online_enrolment'       => 'ثبت‌نام آنلاین',
+    'online_enrollment'       => 'ثبت‌نام آنلاین',
     'models'                 => [
         'seminar'            => 'سمینار',
         'staff'              => 'مدیر',

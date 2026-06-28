@@ -7,7 +7,7 @@
         "uuid": "019803f5-0dc3-7346-a108-cd51e023d3c7",
         "enrollment_status": {
           "value": "provisioning_failed",
-          "label": "enums.EnrolmentStatusEnum.provisioning_failed"
+          "label": "enums.EnrollmentStatusEnum.provisioning_failed"
         },
         "access_start_date": "1398-05-12 15:26:51",
         "access_end_date": "1399-01-07 15:26:51",
@@ -51,7 +51,7 @@
         "uuid": "019803f5-0dca-7167-a654-dbfe3f58da42",
         "enrollment_status": {
           "value": "expired",
-          "label": "enums.EnrolmentStatusEnum.expired"
+          "label": "enums.EnrollmentStatusEnum.expired"
         },
         "access_start_date": "1392-08-07 14:26:51",
         "access_end_date": "1393-05-28 15:26:51",

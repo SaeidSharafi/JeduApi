@@ -33,7 +33,7 @@ final class ImsService extends AbstractIntegrationService
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
-    public function storeEnrolment(User $user, array $payload): array
+    public function storeEnrollment(User $user, array $payload): array
     {
         $this->assertConfigured();
 
@@ -41,9 +41,9 @@ final class ImsService extends AbstractIntegrationService
             ->timeout((int) ($this->config['timeout'] ?? 15))
             ->acceptJson()
             ->withToken($this->config['api_key'])
-            ->post('/api/v2/enrolment/', $payload);
+            ->post('/api/v2/enrollment/', $payload);
 
-        $this->handleHttpErrors($response, '/api/v2/enrolment');
+        $this->handleHttpErrors($response, '/api/v2/enrollment');
 
         return (array) ($response->json() ?? []);
     }
