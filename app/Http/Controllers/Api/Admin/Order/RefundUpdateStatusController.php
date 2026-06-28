@@ -29,6 +29,7 @@ final class RefundUpdateStatusController extends Controller
     {
         Gate::authorize('update-status', $refund);
         $refund = $action->handle($refund, $data);
+        $refund->loadMissing('order');
 
         return response()->success(RefundData::from($refund));
     }

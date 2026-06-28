@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Refund;
 
-use App\Data\Admin\Refund\RefundCreateData;
+use App\Data\Admin\Refund\RefundUpdateData;
 use App\Enums\Order\RefundStatusEnum;
 use App\Models\OrderItem;
 use App\Models\Refund;
@@ -16,7 +16,7 @@ final class UpdateRefundAction
      * Updates the details of a PENDING refund request.
      * This action is forbidden on refunds that are already processing or completed.
      */
-    public function handle(Refund $refund, RefundCreateData $data): Refund
+    public function handle(Refund $refund, RefundUpdateData $data): Refund
     {
         // CRITICAL: This action's power is safely limited to the PENDING state.
         if ($refund->status !== RefundStatusEnum::PENDING) {
@@ -64,7 +64,7 @@ final class UpdateRefundAction
     /**
      * Calculates the final deduction amount based on either a fixed amount or a percentage of the original price.
      */
-    private function calculateDeductionAmount(RefundCreateData $data, int $originalPrice): int
+    private function calculateDeductionAmount(RefundUpdateData $data, int $originalPrice): int
     {
         if ($data->deduction_amount !== null) {
             return $data->deduction_amount;

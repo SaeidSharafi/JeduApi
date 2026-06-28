@@ -511,11 +511,11 @@ Products have a specific pricing hierarchy that affects what users see:
 - `GET /api/v1/admin/discount-promotion-statistics` - Promotion usage statistics
 
 ### Refund Management
-- `GET /api/v1/admin/order-item/{orderItem}/refund` - List refunds for an order item
-- `POST /api/v1/admin/order-item/{orderItem}/refund` - Create refund for a single order item
-- `GET /api/v1/admin/order-item/{orderItem}/refund/{refund}` - View refund details
-- `PUT /api/v1/admin/order-item/{orderItem}/refund/{refund}` - Edit a PENDING refund
-- `DELETE /api/v1/admin/order-item/{orderItem}/refund/{refund}` - Delete a PENDING refund
+- `GET /api/v1/admin/refund` - List refunds for an order item
+- `POST /api/v1/admin/refund` - Create refund for a single order item
+- `GET /api/v1/admin/refund/{refund}` - View refund details
+- `PUT /api/v1/admin/refund/{refund}` - Edit a PENDING refund
+- `DELETE /api/v1/admin/refund/{refund}` - Delete a PENDING refund
 - `PUT /api/v1/admin/refund/{refund}/status` - Transition refund status (state machine)
 - **`POST /api/v1/admin/order/{order}/refund`** - Refund entire order (all refundable items at once)
 
@@ -578,9 +578,10 @@ interface PaymentMethodData {
 
 ### Refund Request Data
 
-**Per-Item Refund** (`POST /order-item/{orderItem}/refund`):
+**Per-Item Refund** (`POST /refund`):
 ```typescript
 interface RefundCreateRequest {
+  order_item_id: number;
   deduction_amount?: number;         // Fixed deduction in Rials
   deduction_percent?: number;        // Percentage deduction (0-100), based on original price
   transaction_details: {             // Bank info for manual refunds

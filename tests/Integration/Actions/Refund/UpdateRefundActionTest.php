@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Actions\Admin\Refund\UpdateRefundAction;
-use App\Data\Admin\Refund\RefundCreateData;
 use App\Data\Admin\Refund\RefundTransactionData;
+use App\Data\Admin\Refund\RefundUpdateData;
 use App\Enums\Order\RefundStatusEnum;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -26,7 +26,7 @@ describe('UpdateRefundAction', function (): void {
             'amount'           => 0,
             'deduction_amount' => 0,
         ]);
-        $data = new RefundCreateData(
+        $data = new RefundUpdateData(
             deduction_amount: 500,
             deduction_percent: null,
             transaction_details: new RefundTransactionData(
@@ -35,7 +35,6 @@ describe('UpdateRefundAction', function (): void {
                 iban_number: 'IR123456789012345678901234',
                 tracking_code: 'TRACK123',
             ),
-            status: RefundStatusEnum::PENDING->value,
             admin_notes: 'Test note',
         );
         $action  = new UpdateRefundAction();
@@ -65,7 +64,7 @@ describe('UpdateRefundAction', function (): void {
             'deduction_amount' => 0,
         ]);
 
-        $data = new RefundCreateData(
+        $data = new RefundUpdateData(
             deduction_amount: null,
             deduction_percent: 25,
             transaction_details: new RefundTransactionData(
@@ -74,7 +73,6 @@ describe('UpdateRefundAction', function (): void {
                 iban_number: 'IR987654321098765432109876',
                 tracking_code: 'TRACK456',
             ),
-            status: RefundStatusEnum::PENDING->value,
             admin_notes: 'Percent note',
         );
         $action  = new UpdateRefundAction();
@@ -91,7 +89,7 @@ describe('UpdateRefundAction', function (): void {
             'order_item_id' => $orderItem->id,
             'status'        => RefundStatusEnum::COMPLETED,
         ]);
-        $data = new RefundCreateData(
+        $data = new RefundUpdateData(
             deduction_amount: 100,
             deduction_percent: null,
             transaction_details: new RefundTransactionData(
@@ -100,7 +98,6 @@ describe('UpdateRefundAction', function (): void {
                 iban_number: 'IR123456789012345678901234',
                 tracking_code: 'TRACK123',
             ),
-            status: RefundStatusEnum::COMPLETED->value,
             admin_notes: 'Should fail',
         );
         $action = new UpdateRefundAction();
@@ -130,7 +127,7 @@ describe('UpdateRefundAction', function (): void {
             'amount'           => 0,
             'deduction_amount' => 0,
         ]);
-        $data = new RefundCreateData(
+        $data = new RefundUpdateData(
             deduction_amount: 2000,
             deduction_percent: null,
             transaction_details: new RefundTransactionData(
@@ -139,7 +136,6 @@ describe('UpdateRefundAction', function (): void {
                 iban_number: 'IR000000000000000000000000',
                 tracking_code: 'ZERO',
             ),
-            status: RefundStatusEnum::PENDING->value,
             admin_notes: 'Zero test',
         );
         $action  = new UpdateRefundAction();
@@ -169,7 +165,7 @@ describe('UpdateRefundAction', function (): void {
             'amount'           => 0,
             'deduction_amount' => 0,
         ]);
-        $data = new RefundCreateData(
+        $data = new RefundUpdateData(
             deduction_amount: null,
             deduction_percent: null,
             transaction_details: new RefundTransactionData(
@@ -178,7 +174,6 @@ describe('UpdateRefundAction', function (): void {
                 iban_number: 'IR111111111111111111111111',
                 tracking_code: 'FALLBACK',
             ),
-            status: RefundStatusEnum::PENDING->value,
             admin_notes: 'Fallback test',
         );
         $action  = new UpdateRefundAction();

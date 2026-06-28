@@ -87,6 +87,11 @@ final class Order extends Model implements WalletTransactionSourceableContract
         return $this->belongsTo(User::class, 'customer_id');
     }
 
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class, 'order_id');
+    }
+
     /**
      * Accessor to get the live payment status of the order.
      */

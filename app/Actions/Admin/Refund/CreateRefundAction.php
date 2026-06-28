@@ -31,14 +31,13 @@ final class CreateRefundAction
         private readonly UpdateOrderRefundedAmountAction $updateOrderRefundedAmount,
     ) {}
 
-    public function handle(RefundCreateData $data, OrderItem $orderItem): Refund
+    public function handle(RefundCreateData $data): Refund
     {
-        $lockKey = "refund_order_item_{$orderItem->id}";
+        $lockKey = "refund_order_item_{$data->order_item_id}";
 
-        return SmartCache::lock($lockKey, 15)->block(5, function () use ($data, $orderItem) {
-
-            $orderItem->refresh()->loadMissing('order.payments', 'enrollment');
-            $order = $orderItem->order;
+        return SmartCache::lock($lockKey, 15)->block(5, function () use ($data) {
+            $orderItem = OrderItem::with(['order.payments', 'enrollment'])->findOrFail($data->order_item_id);
+            $order     = $orderItem->order;
 
             $this->validateOrderItemIsRefundable($orderItem, $data);
 

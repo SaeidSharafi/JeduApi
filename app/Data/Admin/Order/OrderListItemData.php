@@ -42,7 +42,7 @@ final class OrderListItemData extends Data implements WalletTransactionSourceabl
         #[DataCollectionOf(PaymentData::class)]
         public Collection $payments,
         #[DataCollectionOf(OrderItemListItemData::class)]
-        public Collection $items,
+        public ?Collection $items,
 
     ) {}
 }

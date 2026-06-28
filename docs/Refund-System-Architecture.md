@@ -142,7 +142,7 @@ When `skip_gateway = true` (gated behind `refunds.skip-gateway` permission):
 
 ## Refund Creation Flow (Per-Item)
 
-`POST /api/v1/admin/order-item/{orderItem}/refund` → `RefundController@store` → `CreateRefundAction@handle`
+`POST /api/v1/admin/refund` → `RefundController@store` → `CreateRefundAction@handle`
 
 ### Step 1: Validation (`validateOrderItemIsRefundable`)
 
@@ -270,11 +270,11 @@ This is a **defensive warning log only** — not a hard block. Delivery confirma
 
 | Endpoint | Action | Constraints |
 |----------|--------|-------------|
-| `GET /order-item/{id}/refund` | List refunds for item | — |
-| `POST /order-item/{id}/refund` | Create refund (per-item) | Item must be refundable; Digipay partial gate applies |
-| `GET /order-item/{id}/refund/{refund}` | Show refund details | — |
-| `PUT /order-item/{id}/refund/{refund}` | Edit refund | Only PENDING status |
-| `DELETE /order-item/{id}/refund/{refund}` | Delete refund | Only PENDING status |
+| `GET /refund` | List refunds for item | — |
+| `POST /refund` | Create refund (per-item) | Item must be refundable; Digipay partial gate applies |
+| `GET /refund/{refund}` | Show refund details | — |
+| `PUT /refund/{refund}` | Edit refund | Only PENDING status |
+| `DELETE /refund/{refund}` | Delete refund | Only PENDING status |
 | `PUT /refund/{refund}/status` | Update status | State machine rules; gateway-first on COMPLETED |
 | **`POST /order/{order}/refund`** | **Full-order refund** | **New** — refunds all refundable items; `skip_gateway` gated by `refunds.skip-gateway` permission |
 | `POST /payment/{payment}/digipay/refund` | Direct Digipay refund | Gateway-level retry |

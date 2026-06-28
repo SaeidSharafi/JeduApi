@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Admin\Order\OrderController;
 use App\Http\Controllers\Api\Admin\Order\OrderItemController;
 use App\Http\Controllers\Api\Admin\Order\OrderRefundController;
 use App\Http\Controllers\Api\Admin\Order\PaymentController;
+use App\Http\Controllers\Api\Admin\Order\RefundController;
 use App\Http\Controllers\Api\Admin\Order\RefundUpdateStatusController;
 use App\Http\Controllers\Api\Admin\Payment\DigipayAdminController;
 use App\Http\Controllers\Api\Admin\Promotion\DiscountInfoController;
@@ -46,7 +47,8 @@ Route::prefix('payment/{payment}/digipay')->name('payment.digipay.')->group(func
 Route::post('payment/digipay/inquire-refund', [DigipayAdminController::class, 'inquireRefund'])
     ->name('payment.digipay.inquire-refund');
 
-Route::apiResource('/order-item/{orderItem}/refund', App\Http\Controllers\Api\Admin\Order\RefundController::class);
+Route::apiResource('/refunds', RefundController::class);
+
 Route::post('order/{order}/refund', [OrderRefundController::class, 'store'])
     ->name('order.refund');
 Route::put('refund/{refund}/status', RefundUpdateStatusController::class)

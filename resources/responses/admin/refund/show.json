@@ -2,20 +2,64 @@
   "message": "عملیات با موفقیت انجام شد.",
   "data": {
     "id": 1,
-    "deduction_amount" : 1000,
+    "deduction_amount": 200000,
     "transaction_details": {
-      "receiver_name": "نام گیرنده",
-      "card_number": "1234-5678-9012-3456",
-      "iban_number": "IR123456789012345678901234",
-      "tracking_code": "TRK123456789"
+      "receiver_name": null,
+      "card_number": null,
+      "iban_number": null,
+      "tracking_code": null
     },
     "status": {
-      "value": "pending",
-        "label": "در انتظار بررسی"
+      "value": "completed",
+      "label": "enums.RefundStatusEnum.completed"
     },
-    "admin_notes" : "توضیحات مدیر",
-    "created_at": "1404-01-01 12:00:00",
-    "updated_at": "1404-01-01 12:00:00"
+    "admin_notes": "بازگشت وجه به کیف پول کاربر به دلیل انصراف",
+    "created_at": "1403-08-30 11:00:00",
+    "updated_at": "1403-08-30 11:00:00",
+    "order": {
+      "id": 4,
+      "increment_id": "ORD-20241110-004",
+      "customer_first_name": "محمد",
+      "customer_last_name": "رضایی",
+      "customer_email": "user1@example.com",
+      "customer_phone": "9120000001",
+      "subtotal": 3300000,
+      "discount_amount": 0,
+      "tax_amount": 0,
+      "grand_total": 3300000,
+      "total_paid": 3300000,
+      "balance_due": 0,
+      "admin_notes": null,
+      "status": {
+        "value": "completed",
+        "label": "تکمیل شده"
+      },
+      "payment_status": {
+        "value": "paid",
+        "label": "پرداخت شده"
+      },
+      "created_at": "1403-08-20 09:45:00",
+      "updated_at": "1403-08-20 10:00:00",
+      "payments": [
+        {
+          "id": 3,
+          "order_id": 4,
+          "customer_id": 1,
+          "created_by": 1,
+          "amount": 3300000,
+          "method": {
+            "value": "mellat_gateway",
+            "label": "درگاه ملت"
+          },
+          "status": {
+            "value": "completed",
+            "label": "تکمیل شده"
+          },
+          "admin_notes": null
+        }
+      ],
+      "items": null
+    }
   },
   "metadata": []
 }

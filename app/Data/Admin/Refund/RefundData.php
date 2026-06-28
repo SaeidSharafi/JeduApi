@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\Refund;
 
 use App\Contracts\WalletTransactionSourceableDataContract;
+use App\Data\Admin\Order\OrderListItemData;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Order\RefundStatusEnum;
 use Hekmatinasser\Verta\Verta;
@@ -24,6 +25,7 @@ final class RefundData extends Data implements WalletTransactionSourceableDataCo
         public readonly ?string $admin_notes,
         public ?Verta $created_at,
         public ?Verta $updated_at,
+        public OrderListItemData $order,
     ) {}
 
 }

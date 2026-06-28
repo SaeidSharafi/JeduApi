@@ -871,7 +871,7 @@ Terminal: COMPLETED, FAILED, CANCELLED
 
 ### Per-Item Refund: CreateRefundAction
 
-**Endpoint**: `POST /api/v1/admin/order-item/{orderItem}/refund`
+**Endpoint**: `POST /api/v1/admin/refund`
 
 Validation rules:
 1. Order must have `total_paid > 0`

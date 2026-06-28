@@ -4,30 +4,24 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Refund;
 
-use App\Enums\Order\RefundStatusEnum;
 use App\Rules\IbanNumberRule;
-use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-final class RefundCreateData extends Data
+final class RefundUpdateData extends Data
 {
     public function __construct(
-        public readonly int $order_item_id,
         public readonly ?int $deduction_amount,
         #[Max(100)]
         public readonly ?int $deduction_percent,
-        public readonly RefundTransactionData $transaction_details,
-        public readonly string $status,
-        public readonly bool $skip_gateway = false,
+        public readonly ?RefundTransactionData $transaction_details,
         public readonly ?string $admin_notes = null,
     ) {}
 
     public static function rules(?ValidationContext $context = null): array
     {
         return [
-            'order_item_id'    => ['required', 'integer', 'exists:order_items,id'],
             'deduction_amount' => [
                 'nullable', 'required_without:deduction_percent', 'integer',
                 'min:0',
@@ -37,9 +31,7 @@ final class RefundCreateData extends Data
                 'max:100',
             ],
 
-            'status'       => ['required', Rule::enum(RefundStatusEnum::class)],
-            'skip_gateway' => ['boolean'],
-            'admin_notes'  => ['nullable', 'string'],
+            'admin_notes' => ['nullable', 'string'],
 
             'transaction_details'               => ['sometimes', 'nullable', 'array'],
             'transaction_details.receiver_name' => ['required_with:transaction_details', 'string', 'max:255'],
@@ -57,10 +49,6 @@ final class RefundCreateData extends Data
     public function bodyParameters(): array
     {
         return [
-            'order_item_id' => [
-                'description' => 'Order Item ID',
-                'example'     => 1,
-            ],
             'deduction_amount' => [
                 'description' => 'Amount to deduct from the refund.',
                 'example'     => 10000,
@@ -93,14 +81,6 @@ final class RefundCreateData extends Data
             'transaction_details.tracking_code' => [
                 'description' => 'Optional tracking code for the transaction.',
                 'example'     => 'TRK987654',
-            ],
-            'status' => [
-                'description' => 'Refund status value.',
-                'example'     => 'pending',
-            ],
-            'skip_gateway' => [
-                'description' => 'Whether to skip the payment gateway refund processing.',
-                'example'     => false,
             ],
             'admin_notes' => [
                 'description' => 'Optional admin notes for the refund.',

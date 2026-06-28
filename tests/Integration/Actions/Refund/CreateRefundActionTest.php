@@ -61,6 +61,7 @@ describe('CreateRefundAction', function (): void {
         $orderItem->update(['status' => OrderItemStatusEnum::COMPLETED]);
 
         $refundData = new RefundCreateData(
+            order_item_id: $orderItem->id,
             deduction_amount: 0,
             deduction_percent: null,
             transaction_details: new RefundTransactionData(
@@ -74,7 +75,7 @@ describe('CreateRefundAction', function (): void {
         );
         $orderItem->refresh();
         // Act
-        $refund = (resolve(CreateRefundAction::class))->handle($refundData, $orderItem);
+        $refund = (resolve(CreateRefundAction::class))->handle($refundData);
 
         // Assert
         $this->assertDatabaseHas('refunds', [
@@ -111,6 +112,7 @@ describe('CreateRefundAction', function (): void {
         $orderItem->update(['status' => OrderItemStatusEnum::COMPLETED]);
 
         $refundData = new RefundCreateData(
+            order_item_id: $orderItem->id,
             deduction_amount: null,
             deduction_percent: 10, // 10% of original price (100k) is 10k
             transaction_details: new RefundTransactionData(
@@ -124,7 +126,7 @@ describe('CreateRefundAction', function (): void {
         );
 
         // Act
-        $refund = (resolve(CreateRefundAction::class))->handle($refundData, $orderItem);
+        $refund = (resolve(CreateRefundAction::class))->handle($refundData);
 
         // Assert
         // Amount paid (20k) - deduction (10k) = 10k refund
@@ -162,6 +164,7 @@ describe('CreateRefundAction', function (): void {
         $orderItem->update(['status' => OrderItemStatusEnum::COMPLETED]);
 
         $refundData = new RefundCreateData(
+            order_item_id: $orderItem->id,
             deduction_amount: 1000,
             deduction_percent: null,
             transaction_details: new RefundTransactionData(
@@ -175,7 +178,7 @@ describe('CreateRefundAction', function (): void {
         );
         $orderItem->refresh();
         // Act
-        $refund = (resolve(CreateRefundAction::class))->handle($refundData, $orderItem);
+        $refund = (resolve(CreateRefundAction::class))->handle($refundData);
 
         // Assert
         $this->assertDatabaseHas('refunds', [
@@ -215,6 +218,7 @@ describe('CreateRefundAction', function (): void {
         $orderItem->update(['status' => OrderItemStatusEnum::COMPLETED]);
 
         $refundData = new RefundCreateData(
+            order_item_id: $orderItem->id,
             deduction_amount: 5000,
             deduction_percent: 10,
             transaction_details: new RefundTransactionData(
@@ -228,7 +232,7 @@ describe('CreateRefundAction', function (): void {
         );
         $orderItem->refresh();
         // Act
-        $refund = (resolve(CreateRefundAction::class))->handle($refundData, $orderItem);
+        $refund = (resolve(CreateRefundAction::class))->handle($refundData);
 
         // Assert
         $this->assertDatabaseHas('refunds', [
@@ -268,6 +272,7 @@ describe('CreateRefundAction', function (): void {
         $orderItem->update(['status' => OrderItemStatusEnum::COMPLETED]);
 
         $refundData = new RefundCreateData(
+            order_item_id: $orderItem->id,
             deduction_amount: null,
             deduction_percent: null,
             transaction_details: new RefundTransactionData(
@@ -281,7 +286,7 @@ describe('CreateRefundAction', function (): void {
         );
         $orderItem->refresh();
         // Act
-        $refund = (resolve(CreateRefundAction::class))->handle($refundData, $orderItem);
+        $refund = (resolve(CreateRefundAction::class))->handle($refundData);
 
         // Assert
         $this->assertDatabaseHas('refunds', [
@@ -305,6 +310,7 @@ describe('CreateRefundAction', function (): void {
         $orderItem = $order->items->first();
 
         $refundData = new RefundCreateData(
+            order_item_id: $orderItem->id,
             deduction_amount: 0,
             deduction_percent: null,
             transaction_details: new RefundTransactionData(
@@ -316,7 +322,7 @@ describe('CreateRefundAction', function (): void {
             status: RefundStatusEnum::COMPLETED->value,
             admin_notes: 'Test refund');
 
-        expect(fn () => (resolve(CreateRefundAction::class))->handle($refundData, $orderItem))
+        expect(fn () => (resolve(CreateRefundAction::class))->handle($refundData))
             ->toThrow(ValidationException::class, __('messages.order.refund.no_completed_payments'));
     });
 
@@ -332,6 +338,7 @@ describe('CreateRefundAction', function (): void {
                 'status'      => 'completed',
             ]);
         $refundData = new RefundCreateData(
+            order_item_id: $orderItem->id,
             deduction_amount: 0,
             deduction_percent: null,
             transaction_details: new RefundTransactionData(
@@ -343,7 +350,7 @@ describe('CreateRefundAction', function (): void {
             status: RefundStatusEnum::COMPLETED->value,
             admin_notes: 'Test refund');
 
-        expect(fn () => (resolve(CreateRefundAction::class))->handle($refundData, $orderItem))
+        expect(fn () => (resolve(CreateRefundAction::class))->handle($refundData))
             ->toThrow(ValidationException::class, __('messages.order.refund.already_refunded'));
     });
 
@@ -369,6 +376,7 @@ describe('CreateRefundAction', function (): void {
             'status'        => RefundStatusEnum::PENDING->value,
         ]);
         $refundData = new RefundCreateData(
+            order_item_id: $orderItem->id,
             deduction_amount: 0,
             deduction_percent: null,
             transaction_details: new RefundTransactionData(
@@ -380,7 +388,7 @@ describe('CreateRefundAction', function (): void {
             status: RefundStatusEnum::COMPLETED->value,
             admin_notes: 'Test refund');
 
-        expect(fn () => (resolve(CreateRefundAction::class))->handle($refundData, $orderItem))
+        expect(fn () => (resolve(CreateRefundAction::class))->handle($refundData))
             ->toThrow(ValidationException::class, __('messages.order.refund.refund_request_exists'));
     });
 });
