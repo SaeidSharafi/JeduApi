@@ -8,8 +8,8 @@ use App\Models\Blog\BlogPost;
 
 use function Pest\Laravel\getJson;
 
-describe('BlogCategoryController', function () {
-    it('can get list of all blog categories with published posts count', function () {
+describe('BlogCategoryController', function (): void {
+    it('can get list of all blog categories with published posts count', function (): void {
         // Arrange
         $category1 = BlogCategory::factory()->create(['name' => 'Programming']);
         $category2 = BlogCategory::factory()->create(['name' => 'Web Development']);
@@ -67,7 +67,7 @@ describe('BlogCategoryController', function () {
         expect($category1Data['posts_count'])->toBe(3);
     });
 
-    it('orders categories by name', function () {
+    it('orders categories by name', function (): void {
         // Arrange
         BlogCategory::factory()->create(['name' => 'Zebra Category']);
         BlogCategory::factory()->create(['name' => 'Alpha Category']);
@@ -86,7 +86,7 @@ describe('BlogCategoryController', function () {
         expect($categories[2]['name'])->toBe('Zebra Category');
     });
 
-    it('can get a single blog category by slug', function () {
+    it('can get a single blog category by slug', function (): void {
         // Arrange
         $category = BlogCategory::factory()->create([
             'slug'             => 'programming',
@@ -135,7 +135,7 @@ describe('BlogCategoryController', function () {
         expect($response->json('data.meta_title'))->toBe('Programming Meta Title');
     });
 
-    it('returns 404 when blog category slug is not found', function () {
+    it('returns 404 when blog category slug is not found', function (): void {
         // Act
         $response = getJson(route('api.v1.shop.blog.categories.show', ['slug' => 'non-existent-category']));
 
@@ -143,7 +143,7 @@ describe('BlogCategoryController', function () {
         $response->assertNotFound();
     });
 
-    it('can get posts for a specific category', function () {
+    it('can get posts for a specific category', function (): void {
         // Arrange
         $category = BlogCategory::factory()->create(['slug' => 'programming']);
 
@@ -200,7 +200,7 @@ describe('BlogCategoryController', function () {
         expect($response->json('data.total'))->toBe(5);
     });
 
-    it('can filter category posts by featured status', function () {
+    it('can filter category posts by featured status', function (): void {
         // Arrange
         $category = BlogCategory::factory()->create(['slug' => 'programming']);
 
@@ -247,7 +247,7 @@ describe('BlogCategoryController', function () {
         }
     });
 
-    it('can sort category posts by published_at', function () {
+    it('can sort category posts by published_at', function (): void {
         // Arrange
         $category = BlogCategory::factory()->create(['slug' => 'programming']);
 
@@ -282,7 +282,7 @@ describe('BlogCategoryController', function () {
         expect($posts[1]['slug'])->toBe($oldPost->slug);
     });
 
-    it('respects pagination for category posts', function () {
+    it('respects pagination for category posts', function (): void {
         // Arrange
         $category = BlogCategory::factory()->create(['slug' => 'programming']);
 
@@ -312,7 +312,7 @@ describe('BlogCategoryController', function () {
         expect($response->json('data.total'))->toBe(25);
     });
 
-    it('returns 404 when getting posts for non-existent category', function () {
+    it('returns 404 when getting posts for non-existent category', function (): void {
         // Act
         $response = getJson(route('api.v1.shop.blog.categories.posts', ['slug' => 'non-existent-category']));
 
@@ -320,7 +320,7 @@ describe('BlogCategoryController', function () {
         $response->assertNotFound();
     });
 
-    it('excludes unpublished posts from category posts', function () {
+    it('excludes unpublished posts from category posts', function (): void {
         // Arrange
         $category = BlogCategory::factory()->create(['slug' => 'programming']);
 

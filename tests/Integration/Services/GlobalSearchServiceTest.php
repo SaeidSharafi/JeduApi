@@ -21,8 +21,8 @@ use Tests\Support\Helpers\TypesenseTestHelper;
 // DATABASE FALLBACK TESTS (Always run with real data)
 // =============================================================================
 
-describe('Database Fallback', function () {
-    it('searches products in database when Typesense unavailable', function () {
+describe('Database Fallback', function (): void {
+    it('searches products in database when Typesense unavailable', function (): void {
         Config::set('scout.driver', 'database');
 
         // Create test product with searchable data
@@ -39,7 +39,7 @@ describe('Database Fallback', function () {
             ->and($results->perPage())->toBe(15);
     });
 
-    it('filters by result_types=product in database', function () {
+    it('filters by result_types=product in database', function (): void {
         Config::set('scout.driver', 'database');
 
         Product::factory()
@@ -58,7 +58,7 @@ describe('Database Fallback', function () {
         expect($results)->toBeInstanceOf(Illuminate\Pagination\LengthAwarePaginator::class);
     });
 
-    it('returns empty when filtering by blog_post only (not supported in DB)', function () {
+    it('returns empty when filtering by blog_post only (not supported in DB)', function (): void {
         Config::set('scout.driver', 'database');
 
         $service = app(GlobalSearchService::class);
@@ -71,7 +71,7 @@ describe('Database Fallback', function () {
         expect($results->total())->toBe(0);
     });
 
-    it('applies category filter in database search', function () {
+    it('applies category filter in database search', function (): void {
         Config::set('scout.driver', 'database');
 
         $category = Category::factory()->create(['name' => 'Web Development']);
@@ -90,7 +90,7 @@ describe('Database Fallback', function () {
         expect($results)->toBeInstanceOf(Illuminate\Pagination\LengthAwarePaginator::class);
     });
 
-    it('returns empty suggestions when Typesense unavailable', function () {
+    it('returns empty suggestions when Typesense unavailable', function (): void {
         Config::set('scout.driver', 'database');
 
         $service     = app(GlobalSearchService::class);
@@ -104,8 +104,8 @@ describe('Database Fallback', function () {
 // TYPESENSE INTEGRATION (Skip if unavailable - results unpredictable)
 // =============================================================================
 
-describe('Typesense Integration', function () {
-    it('performs basic search with Typesense when available', function () {
+describe('Typesense Integration', function (): void {
+    it('performs basic search with Typesense when available', function (): void {
         TypesenseTestHelper::skipIfTypesenseUnavailable();
 
         $service    = app(GlobalSearchService::class);
@@ -117,7 +117,7 @@ describe('Typesense Integration', function () {
             ->and($results->perPage())->toBe(15);
     });
 
-    it('filters by result_types=product in Typesense', function () {
+    it('filters by result_types=product in Typesense', function (): void {
         TypesenseTestHelper::skipIfTypesenseUnavailable();
         TypesenseTestHelper::regenerateIndex();
         $service = app(GlobalSearchService::class);
@@ -130,7 +130,7 @@ describe('Typesense Integration', function () {
         expect($results)->toBeInstanceOf(Illuminate\Pagination\LengthAwarePaginator::class);
     });
 
-    it('filters by result_types=blog_post in Typesense', function () {
+    it('filters by result_types=blog_post in Typesense', function (): void {
         TypesenseTestHelper::skipIfTypesenseUnavailable();
         TypesenseTestHelper::regenerateIndex();
         $service = app(GlobalSearchService::class);
@@ -143,7 +143,7 @@ describe('Typesense Integration', function () {
         expect($results)->toBeInstanceOf(Illuminate\Pagination\LengthAwarePaginator::class);
     });
 
-    it('returns suggestions when Typesense is available', function () {
+    it('returns suggestions when Typesense is available', function (): void {
         TypesenseTestHelper::skipIfTypesenseUnavailable();
         TypesenseTestHelper::regenerateIndex();
         $service     = app(GlobalSearchService::class);
@@ -153,7 +153,7 @@ describe('Typesense Integration', function () {
             ->and(count($suggestions))->toBeLessThanOrEqual(5);
     });
 
-    it('caches suggestions for performance', function () {
+    it('caches suggestions for performance', function (): void {
         TypesenseTestHelper::skipIfTypesenseUnavailable();
         TypesenseTestHelper::regenerateIndex();
         Cache::flush();

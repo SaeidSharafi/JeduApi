@@ -45,7 +45,7 @@ describe('StudentStoryController', function (): void {
         $responseData = collect($response->json('data'));
 
         $this->assertCount(4, $responseData);
-        foreach ($featuredStories as $index => $story) {
+        foreach ($featuredStories as $story) {
             expect($story->student_name)->toBeInCollection($responseData, 'student_name')
                 ->and($story->course_name)->toBeInCollection($responseData, 'course_name')
                 ->and($story->course_url)->toBeInCollection($responseData, 'course_url')

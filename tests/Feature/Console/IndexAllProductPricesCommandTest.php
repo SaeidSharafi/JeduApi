@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\artisan;
 
-it('processes all published products into a single chunk without --missing-only option', function () {
+it('processes all published products into a single chunk without --missing-only option', function (): void {
     Queue::fake();
     $products = Product::factory()->count(5)->create(['status' => 'published']);
 
@@ -30,7 +30,7 @@ it('processes all published products into a single chunk without --missing-only 
     });
 });
 
-it('shows appropriate message when no products need processing', function () {
+it('shows appropriate message when no products need processing', function (): void {
     Queue::fake();
     $product = Product::factory()->create(['status' => 'published']);
     $product->productPrice()->create([
@@ -52,7 +52,7 @@ it('shows appropriate message when no products need processing', function () {
     Queue::assertNotPushed(UpdateProductPricingJob::class);
 });
 
-it('handles synchronous processing by updating the database directly', function () {
+it('handles synchronous processing by updating the database directly', function (): void {
     // Arrange: Create one product that needs its price index generated
     $product = Product::factory()
         ->withDeliveryOptions(realData: [

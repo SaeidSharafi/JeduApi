@@ -21,7 +21,7 @@ final readonly class CreateRelatedProductAction
             ]);
         }
 
-        DB::transaction(function () use ($product, $data) {
+        DB::transaction(function () use ($product, $data): void {
             $this->deleteAction->handle($product, $data->relation_type);
             $syncData = [];
             foreach ($data->product_ids as $relatedProductId) {

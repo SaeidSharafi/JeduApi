@@ -65,7 +65,7 @@ it('get getAllMedia as url only list', function (): void {
         ->and($media['certificate'])
         ->toHaveCount(0);
 
-    foreach ($media as $tag => $items) {
+    foreach ($media as $items) {
         foreach ($items as $item) {
             $this->assertIsString($item);
         }

@@ -45,7 +45,7 @@ final class PaymentGatewaySettingsController extends Controller
     public function index(): ApiResponseInterface
     {
         $gateways = collect(PaymentMethodEnum::cases())
-            ->filter(fn (PaymentMethodEnum $gateway) => $gateway->settingKey() !== null)
+            ->filter(fn (PaymentMethodEnum $gateway): bool => $gateway->settingKey() !== null)
             ->map(function (PaymentMethodEnum $gateway) {
                 $stored = $this->settingsService->get($gateway->settingKey(), []);
 

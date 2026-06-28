@@ -16,7 +16,7 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Services\Integrations\MoodleService;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->config = [
         'enabled'                       => true,
         'base_url'                      => 'https://moodle.test',

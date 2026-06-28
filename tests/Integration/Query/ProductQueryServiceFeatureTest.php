@@ -28,9 +28,9 @@ use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Tests\Support\Helpers\TypesenseTestHelper;
 
-describe('ProductQueryService integration', function () {
-    describe('get by type', function () {
-        beforeEach(function () {
+describe('ProductQueryService integration', function (): void {
+    describe('get by type', function (): void {
+        beforeEach(function (): void {
             Product::factory()
                 ->withDeliveryOptions(1)
                 ->withCategory(1)
@@ -68,7 +68,7 @@ describe('ProductQueryService integration', function () {
                 ->count(6)
                 ->create();
         });
-        it('fetches products with type course', function () {
+        it('fetches products with type course', function (): void {
             $retrievedProducts = ProductQueryService::make()->getCourseList(new ProductListRequestData());
             expect($retrievedProducts->count())->toBe(12);
             /** @var Product $product */
@@ -86,7 +86,7 @@ describe('ProductQueryService integration', function () {
             }
         });
 
-        it('fetches products with type seminar', function () {
+        it('fetches products with type seminar', function (): void {
             $retrievedProducts = ProductQueryService::make()->getSeminarList(new ProductListRequestData());
             expect($retrievedProducts->count())->toBe(12);
             /** @var Product $product */
@@ -103,7 +103,7 @@ describe('ProductQueryService integration', function () {
                     ->and($product->productDeliveryOptions)->toHaveCount(1);
             }
         });
-        it('fetches products with type digital assets', function () {
+        it('fetches products with type digital assets', function (): void {
             $retrievedProducts = ProductQueryService::make()->getDigitalAssetList(new ProductListRequestData());
             expect($retrievedProducts->count())->toBe(12);
             /** @var Product $product */
@@ -122,8 +122,8 @@ describe('ProductQueryService integration', function () {
         });
     });
 
-    describe('Product listings', function () {
-        it('applies search, category, fulfillment_type, and level filters', function () {
+    describe('Product listings', function (): void {
+        it('applies search, category, fulfillment_type, and level filters', function (): void {
             $targetCategory = Category::factory()->create(['slug' => 'laravel-bootcamp']);
             $otherCategory  = Category::factory()->create();
 
@@ -191,7 +191,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->total())->toBe(1)
                 ->and($results->first()->is($targetProduct))->toBeTrue();
         });
-        it('filter courses by price range', function () {
+        it('filter courses by price range', function (): void {
             $cheapCourse  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED->value]);
             $cheapProduct = Product::factory()
                 ->withCourse($cheapCourse)
@@ -227,7 +227,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($expensiveProduct))->toBeTrue();
         });
 
-        it('get semianrs', function () {
+        it('get semianrs', function (): void {
             $seminarCategory = Category::factory()->create();
 
             $seminarProduct = Product::factory()
@@ -253,7 +253,7 @@ describe('ProductQueryService integration', function () {
             expect($results->total())->toBe(1)
                 ->and($results->first()->is($seminarProduct))->toBeTrue();
         });
-        it('get digital assets', function () {
+        it('get digital assets', function (): void {
             $assetCategory = Category::factory()->create();
 
             $assetProduct = Product::factory()
@@ -279,7 +279,7 @@ describe('ProductQueryService integration', function () {
             expect($results->total())->toBe(1)
                 ->and($results->first()->is($assetProduct))->toBeTrue();
         });
-        it('narrows results by product type and categories', function () {
+        it('narrows results by product type and categories', function (): void {
             $seminarCategory = Category::factory()->create();
             $courseCategory  = Category::factory()->create();
 
@@ -318,7 +318,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($seminarProduct))->toBeTrue();
         });
 
-        it('filters by price range and sorts by price ascending', function () {
+        it('filters by price range and sorts by price ascending', function (): void {
             $courseProduct = Product::factory()->withCourse(Course::factory()->create())
                 ->create(['name' => 'Course A']);
             ProductDeliveryOption::factory()->for($courseProduct)->create([
@@ -363,7 +363,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->items()[1]->is($seminarProduct->fresh()))->toBeTrue();
         });
 
-        it('filter product by search term matches product name', function () {
+        it('filter product by search term matches product name', function (): void {
             $courseProduct = Product::factory()->withCourse(Course::factory()->create())
                 ->create(['name' => 'Learn PHP']);
             ProductDeliveryOption::factory()->for($courseProduct)->create([
@@ -401,7 +401,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($seminarProduct->fresh()))->toBeTrue();
         });
 
-        it('filter product by search term matches data in produtable fields', function () {
+        it('filter product by search term matches data in produtable fields', function (): void {
             $courseProduct = Product::factory()->withCourse(
                 Course::factory()->create([
                     'full_name'   => 'Full Stack Web Development',
@@ -452,7 +452,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($seminarProduct->fresh()))->toBeTrue();
         });
 
-        it('filter product by discounted products only', function () {
+        it('filter product by discounted products only', function (): void {
             $discountedProduct = Product::factory()->withCourse(Course::factory()->create())
                 ->create(['name' => 'Discounted Course']);
             $discountedOption = ProductDeliveryOption::factory()->for($discountedProduct)->create([
@@ -488,8 +488,8 @@ describe('ProductQueryService integration', function () {
         });
     });
 
-    describe('fluent query helpers', function () {
-        it('excludes unavailable products from availableProducts()', function () {
+    describe('fluent query helpers', function (): void {
+        it('excludes unavailable products from availableProducts()', function (): void {
             $validProduct = Product::factory()->withCourse(Course::factory()->create())->create();
             $validOption  = ProductDeliveryOption::factory()->for($validProduct)->create([
                 'status'           => PublicationStatusEnum::PUBLISHED->value,
@@ -531,7 +531,7 @@ describe('ProductQueryService integration', function () {
             expect($validOption->status)->toBe(PublicationStatusEnum::PUBLISHED);
         });
 
-        it('searches across productable attributes using deferred constraints', function () {
+        it('searches across productable attributes using deferred constraints', function (): void {
             $course = Course::factory()->create([
                 'full_name' => 'Kotlin Expert Bootcamp',
             ]);
@@ -556,7 +556,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($product->fresh()))->toBeTrue();
         });
 
-        it('keeps only discounted products when withDiscounts() is applied', function () {
+        it('keeps only discounted products when withDiscounts() is applied', function (): void {
             $discounted     = Product::factory()->withCourse(Course::factory()->create())->create(['name' => 'Discounted']);
             $discountOption = ProductDeliveryOption::factory()->for($discounted)->create([
                 'price'            => 180_000,
@@ -586,7 +586,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($discounted->fresh()))->toBeTrue();
         });
 
-        it('orders products by popularity when popular() is chained', function () {
+        it('orders products by popularity when popular() is chained', function (): void {
             $popularProduct = Product::factory()->withCourse(Course::factory()->create())
                 ->create(['name' => 'Popular']);
             $popularOption = ProductDeliveryOption::factory()->for($popularProduct)->create([
@@ -631,7 +631,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($popularProduct->fresh()))->toBeTrue()
                 ->and($results->last()->is($lessPopularProduct->fresh()))->toBeTrue();
         });
-        it('get products using byInstructor', function () {
+        it('get products using byInstructor', function (): void {
             $instructor = App\Models\Teacher::factory()->create();
 
             $courseByInstructor = Product::factory()
@@ -665,7 +665,7 @@ describe('ProductQueryService integration', function () {
                 ->and($products->first()->is($courseByInstructor->fresh()))->toBeTrue();
         });
 
-        it('return correct data when using forDetail()', function () {
+        it('return correct data when using forDetail()', function (): void {
             $course = Course::factory()
                 ->withMedia()
                 ->create(['status' => PublicationStatusEnum::PUBLISHED->value]);
@@ -709,7 +709,7 @@ describe('ProductQueryService integration', function () {
                 ->and($fetchedProduct->productDeliveryOptions)->toHaveCount(2);
         });
 
-        it('return correct data when using forList()', function () {
+        it('return correct data when using forList()', function (): void {
             $course = Course::factory()
                 ->withMedia()
                 ->create(['status' => PublicationStatusEnum::PUBLISHED->value]);
@@ -748,7 +748,7 @@ describe('ProductQueryService integration', function () {
                 ->and($fetchedProduct->productDeliveryOptions)->toHaveCount(1);
         });
 
-        it('does not return full products when includeFullProducts is false', function () {
+        it('does not return full products when includeFullProducts is false', function (): void {
             $product = Product::factory()
                 ->withCategory()
                 ->withCourse()
@@ -800,7 +800,7 @@ describe('ProductQueryService integration', function () {
                 ->and($fetchedProducts)->toHaveCount(3);
         });
 
-        it('filter products by category slugs', function () {
+        it('filter products by category slugs', function (): void {
             $categoryA = Category::factory()->create(['slug' => 'category-a']);
             $categoryB = Category::factory()->create(['slug' => 'category-b']);
 
@@ -819,7 +819,7 @@ describe('ProductQueryService integration', function () {
             expect($results)->toHaveCount(1)
                 ->and($results->first()->is($productA->fresh()))->toBeTrue();
         });
-        it('filter products by category ids', function () {
+        it('filter products by category ids', function (): void {
             $categoryA = Category::factory()->create(['slug' => 'category-a']);
             $categoryB = Category::factory()->create(['slug' => 'category-b']);
 
@@ -839,7 +839,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($productA->fresh()))->toBeTrue();
         });
 
-        it('filters products by featured flag', function () {
+        it('filters products by featured flag', function (): void {
             $featuredProduct = Product::factory()
                 ->withCourse(Course::factory()->create())
                 ->create(['name' => 'Featured Product', 'is_featured' => true]);
@@ -867,7 +867,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($featuredProduct->fresh()))->toBeTrue();
         });
 
-        it('filters products by availability now - active registration and content', function () {
+        it('filters products by availability now - active registration and content', function (): void {
             $now = now();
 
             // Product with all windows open
@@ -920,7 +920,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($activeProduct->fresh()))->toBeTrue();
         });
 
-        it('filters products by availability status', function () {
+        it('filters products by availability status', function (): void {
             $now = now();
 
             // Past
@@ -984,7 +984,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($futureContentProduct->fresh()))->toBeTrue();
         });
 
-        it('filters products by registration window', function () {
+        it('filters products by registration window', function (): void {
             $targetDate = Carbon::now();
 
             // Product with registration starting before target date
@@ -1020,7 +1020,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($lateRegProduct->fresh()))->toBeTrue();
         });
 
-        it('filters products by registration window - end date constraint', function () {
+        it('filters products by registration window - end date constraint', function (): void {
             $toDate = Carbon::now();
 
             // Product with registration ending before target date - NO OVERLAP
@@ -1070,7 +1070,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->pluck('name')->toArray())->not()->toContain('Future Registration');
         });
 
-        it('filters products by registration window - both from and to dates', function () {
+        it('filters products by registration window - both from and to dates', function (): void {
             $fromDate = Carbon::now();
             $toDate   = $fromDate->clone()->addDays(30);
 
@@ -1120,7 +1120,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->pluck('name')->toArray())->not()->toContain('Outside Range');
         });
 
-        it('filters products by availability window', function () {
+        it('filters products by availability window', function (): void {
             $targetDate = Carbon::now();
 
             // Product available before target date
@@ -1156,7 +1156,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($laterAvailProduct->fresh()))->toBeTrue();
         });
 
-        it('filters products by availability window - end date constraint', function () {
+        it('filters products by availability window - end date constraint', function (): void {
             $toDate = Carbon::now();
 
             // Product available ending before target date - NO OVERLAP
@@ -1206,7 +1206,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->pluck('name')->toArray())->not()->toContain('Future Available');
         });
 
-        it('filters products by availability window - both from and to dates', function () {
+        it('filters products by availability window - both from and to dates', function (): void {
             $fromDate = Carbon::now();
             $toDate   = $fromDate->clone()->addDays(30);
 
@@ -1256,7 +1256,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->pluck('name')->toArray())->not()->toContain('Outside Range');
         });
 
-        it('handles null dates in availability and registration windows', function () {
+        it('handles null dates in availability and registration windows', function (): void {
             $targetDate = Carbon::now();
 
             // Product with null registration dates (always open)
@@ -1281,7 +1281,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($openRegProduct->fresh()))->toBeTrue();
         });
 
-        it('filters with course difficulty level', function () {
+        it('filters with course difficulty level', function (): void {
             $beginnerCourse = Course::factory()->create([
                 'difficulty_level' => CourseDifficultyLevelEnum::BEGINNER->value,
                 'status'           => PublicationStatusEnum::PUBLISHED->value,
@@ -1317,7 +1317,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($advancedProduct->fresh()))->toBeTrue();
         });
 
-        it('filters by fulfillment types', function () {
+        it('filters by fulfillment types', function (): void {
             $onlineProduct = Product::factory()
                 ->withCourse(Course::factory()->create())
                 ->create(['name' => 'Online Course']);
@@ -1345,7 +1345,7 @@ describe('ProductQueryService integration', function () {
                 ->and($results->first()->is($digitalProduct->fresh()))->toBeTrue();
         });
 
-        it('combines multiple filters - difficulty, fulfillment, and category', function () {
+        it('combines multiple filters - difficulty, fulfillment, and category', function (): void {
             $category = Category::factory()->create(['slug' => 'advanced-digital']);
 
             $advancedCourse = Course::factory()->create([
@@ -1399,8 +1399,8 @@ describe('ProductQueryService integration', function () {
         return $product->fresh(['productPrice', 'productDeliveryOptions.productDeliveryOptionDiscountPrice']);
     }
 });
-describe('ProductQueryService - globalSearch', function () {
-    it('uses Typesense when available', function () {
+describe('ProductQueryService - globalSearch', function (): void {
+    it('uses Typesense when available', function (): void {
         TypesenseTestHelper::skipIfTypesenseUnavailable();
 
         $requestData = new ProductListRequestData(
@@ -1416,7 +1416,7 @@ describe('ProductQueryService - globalSearch', function () {
             ->and($results->perPage())->toBe(15);
     });
 
-    it('uses database fallback when Typesense is not available', function () {
+    it('uses database fallback when Typesense is not available', function (): void {
         // Force database fallback by setting wrong driver
         Config::set('scout.driver', 'database');
 
@@ -1432,7 +1432,7 @@ describe('ProductQueryService - globalSearch', function () {
         expect($results)->toBeInstanceOf(LengthAwarePaginator::class);
     });
 
-    it('uses database fallback when Typesense throws exception', function () {
+    it('uses database fallback when Typesense throws exception', function (): void {
         // Even if Typesense is configured, exceptions should trigger fallback
         // This test verifies the try-catch logic
         Config::set('scout.driver', 'typesense');
@@ -1451,7 +1451,7 @@ describe('ProductQueryService - globalSearch', function () {
         expect($results)->toBeInstanceOf(LengthAwarePaginator::class);
     });
 
-    it('returns paginated results from database search', function () {
+    it('returns paginated results from database search', function (): void {
         Config::set('scout.driver', 'database');
 
         $filterData = new ProductFilterData(

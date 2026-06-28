@@ -38,7 +38,7 @@ final class ProductPriceData extends Data
         $pricesCollection = collect($prices);
 
         $bestDiscountOption = $pricesCollection
-            ->filter(fn (ProductDeliveryOptionPriceData $p) => $p->discount_amount > 0)
+            ->filter(fn (ProductDeliveryOptionPriceData $p): bool => $p->discount_amount > 0)
             ->sortByDesc('discount_amount')
             ->first();
 
@@ -47,12 +47,12 @@ final class ProductPriceData extends Data
 
         // --- "Capability Flags" logic (This is the change) ---
         // These flags are now independent of which discount won. They check for presence.
-        $hasDiscount = $pricesCollection->some(fn (ProductDeliveryOptionPriceData $p) => $p->discount_type
+        $hasDiscount = $pricesCollection->contains(fn (ProductDeliveryOptionPriceData $p): bool => $p->discount_type
             === 'promotion');
-        $hasFeaturedPrice = $pricesCollection->some(fn (ProductDeliveryOptionPriceData $p) => $p->discount_type
+        $hasFeaturedPrice = $pricesCollection->contains(fn (ProductDeliveryOptionPriceData $p): bool => $p->discount_type
             === 'featured'
             || $p->featured_price !== null);
-        $hasPrePayment = $pricesCollection->some('has_pre_payment_price', true);
+        $hasPrePayment = $pricesCollection->contains('has_pre_payment_price', true);
 
         // --- Aggregation (This stays the same) ---
         return new self(

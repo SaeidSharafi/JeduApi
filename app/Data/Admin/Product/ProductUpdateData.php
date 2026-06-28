@@ -62,9 +62,9 @@ final class ProductUpdateData extends Data
         ];
     }
 
-    public static function withValidator(Validator $validator): void
+    public static function withValidator(\Illuminate\Contracts\Validation\Validator $validator): void
     {
-        $validator->after(function ($validator) {
+        $validator->after(function ($validator): void {
             $data     = $validator->getData();
             $startSet = ! empty($data['event_start_at']);
             $endSet   = ! empty($data['event_ended_at']);

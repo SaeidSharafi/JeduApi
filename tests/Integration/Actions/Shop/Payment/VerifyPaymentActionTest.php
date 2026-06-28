@@ -58,7 +58,7 @@ it('throws validation exception when the payment is no longer pending', function
 
     $action = new VerifyPaymentAction($factory);
 
-    expect(fn () => $action->handle(new GatewayCallbackData(
+    expect(fn (): \App\Models\Payment => $action->handle(new GatewayCallbackData(
         payment_uuid: $payment->uuid,
         gateway_response: ['SaleReferenceId' => '987654'],
     )))->toThrow(ValidationException::class, "Payment {$payment->uuid} is not in pending state.");
@@ -70,7 +70,7 @@ it('throws model not found exception when the payment uuid is invalid', function
 
     $action = new VerifyPaymentAction($factory);
 
-    expect(fn () => $action->handle(new GatewayCallbackData(
+    expect(fn (): \App\Models\Payment => $action->handle(new GatewayCallbackData(
         payment_uuid: (string) Str::uuid(),
         gateway_response: ['SaleReferenceId' => 'missing'],
     )))->toThrow(ModelNotFoundException::class);

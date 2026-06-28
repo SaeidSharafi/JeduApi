@@ -11,13 +11,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-describe('ProductQueryService unit tests', function () {
-    beforeEach(function () {
+describe('ProductQueryService unit tests', function (): void {
+    beforeEach(function (): void {
         $this->service = new ProductQueryService();
     });
 
-    describe('fluent interface', function () {
-        it('returns self for chainable methods', function () {
+    describe('fluent interface', function (): void {
+        it('returns self for chainable methods', function (): void {
             expect($this->service->availableProducts())->toBe($this->service)
                 ->and($this->service->search('test'))->toBe($this->service)
                 ->and($this->service->featured())->toBe($this->service)
@@ -28,7 +28,7 @@ describe('ProductQueryService unit tests', function () {
                 ->and($this->service->forListing())->toBe($this->service);
         });
 
-        it('allows method chaining in any order', function () {
+        it('allows method chaining in any order', function (): void {
             $result = $this->service
                 ->availableProducts()
                 ->search('test')
@@ -39,7 +39,7 @@ describe('ProductQueryService unit tests', function () {
 
             expect($result)->toBe($this->service);
         });
-        it('set the query correctly', function () {
+        it('set the query correctly', function (): void {
             $builder = Product::query()->where('id', '>', 0);
             $result  = $this->service->setQuery($builder);
             expect($result)->toBe($this->service);
@@ -50,11 +50,11 @@ describe('ProductQueryService unit tests', function () {
 
             expect($property->getValue($this->service))->toBe($builder);
         });
-        it('throws exception for query with invalid model', function () {
+        it('throws exception for query with invalid model', function (): void {
             $this->expectException(InvalidArgumentException::class);
             $this->service->setQuery(Course::query()->where('id', '>', 0));
         });
-        it('join with price cache works', function () {
+        it('join with price cache works', function (): void {
             $result = $this->service->withPrices();
             expect($result)->toBe($this->service);
             $reflection = new ReflectionClass($this->service);
@@ -63,8 +63,8 @@ describe('ProductQueryService unit tests', function () {
         });
     });
 
-    describe('productable type filtering', function () {
-        it('sets single product type correctly', function () {
+    describe('productable type filtering', function (): void {
+        it('sets single product type correctly', function (): void {
             $service = ProductQueryService::make()->ofType(ProductableEnum::COURSE);
 
             // Use reflection to check internal state
@@ -75,7 +75,7 @@ describe('ProductQueryService unit tests', function () {
             expect($property->getValue($service))->toBe([ProductableEnum::COURSE->value]);
         });
 
-        it('sets multiple product types correctly', function () {
+        it('sets multiple product types correctly', function (): void {
             $types   = [ProductableEnum::COURSE, ProductableEnum::SEMINAR];
             $service = ProductQueryService::make()->ofTypes($types);
 
@@ -89,7 +89,7 @@ describe('ProductQueryService unit tests', function () {
             ]);
         });
 
-        it('defaults to all productable types', function () {
+        it('defaults to all productable types', function (): void {
             $service = ProductQueryService::make();
 
             $reflection = new ReflectionClass($service);
@@ -100,64 +100,64 @@ describe('ProductQueryService unit tests', function () {
         });
     });
 
-    describe('search method', function () {
-        it('handles null search term gracefully', function () {
+    describe('search method', function (): void {
+        it('handles null search term gracefully', function (): void {
             $result = $this->service->search(null);
             expect($result)->toBe($this->service);
         });
 
-        it('handles empty search term gracefully', function () {
+        it('handles empty search term gracefully', function (): void {
             $result = $this->service->search('');
             expect($result)->toBe($this->service);
         });
 
-        it('handles whitespace-only search term', function () {
+        it('handles whitespace-only search term', function (): void {
             $result = $this->service->search('   ');
             expect($result)->toBe($this->service);
         });
-        it('handles from & to being null in registrationWindow', function () {
+        it('handles from & to being null in registrationWindow', function (): void {
             $result = $this->service->registrationWindow(null, null);
             expect($result)->toBe($this->service);
         });
-        it('handles from & to being null in availabilityWindow', function () {
+        it('handles from & to being null in availabilityWindow', function (): void {
             $result = $this->service->availabilityWindow(null, null);
             expect($result)->toBe($this->service);
         });
-        it('handles empty category slug in goodForStart', function () {
+        it('handles empty category slug in goodForStart', function (): void {
             $result = $this->service->goodForStart([]);
             expect($result)->toBe($this->service);
         });
     });
 
-    describe('price range filtering', function () {
-        it('handles null price parameters gracefully', function () {
+    describe('price range filtering', function (): void {
+        it('handles null price parameters gracefully', function (): void {
             $result = $this->service->priceRange(null, null);
             expect($result)->toBe($this->service);
         });
 
-        it('handles only min price', function () {
+        it('handles only min price', function (): void {
             $result = $this->service->priceRange(100, null);
             expect($result)->toBe($this->service);
         });
 
-        it('handles only max price', function () {
+        it('handles only max price', function (): void {
             $result = $this->service->priceRange(null, 500);
             expect($result)->toBe($this->service);
         });
     });
 
-    describe('sorting validation', function () {
-        it('ignores invalid sort fields', function () {
+    describe('sorting validation', function (): void {
+        it('ignores invalid sort fields', function (): void {
             $result = $this->service->sortBy('invalid_field');
             expect($result)->toBe($this->service);
         });
 
-        it('ignores invalid sort directions', function () {
+        it('ignores invalid sort directions', function (): void {
             $result = $this->service->sortBy('name', 'invalid_direction');
             expect($result)->toBe($this->service);
         });
 
-        it('accepts valid sort combinations', function () {
+        it('accepts valid sort combinations', function (): void {
             $validFields     = ['created_at', 'updated_at', 'name', 'price'];
             $validDirections = ['asc', 'desc'];
 
@@ -169,7 +169,7 @@ describe('ProductQueryService unit tests', function () {
             }
         });
 
-        it('sortBy capacity_utilization returns self and adds lateral join', function () {
+        it('sortBy capacity_utilization returns self and adds lateral join', function (): void {
             $result = $this->service->sortBy('capacity_utilization');
 
             expect($result)->toBe($this->service);
@@ -181,40 +181,40 @@ describe('ProductQueryService unit tests', function () {
         });
     });
 
-    describe('category filtering', function () {
-        it('handles empty category slug array gracefully', function () {
+    describe('category filtering', function (): void {
+        it('handles empty category slug array gracefully', function (): void {
             $result = $this->service->inCategories([]);
             expect($result)->toBe($this->service);
         });
 
-        it('handles single category slug correctly', function () {
+        it('handles single category slug correctly', function (): void {
             $result = $this->service->inCategories(['art']);
             expect($result)->toBe($this->service);
         });
 
-        it('handles multiple categories slug correctly', function () {
+        it('handles multiple categories slug correctly', function (): void {
             $result = $this->service->inCategories(['art', 'science', 'history']);
             expect($result)->toBe($this->service);
         });
 
-        it('handles empty category id array gracefully', function () {
+        it('handles empty category id array gracefully', function (): void {
             $result = $this->service->inCategoryIds([]);
             expect($result)->toBe($this->service);
         });
 
-        it('handles single category id correctly', function () {
+        it('handles single category id correctly', function (): void {
             $result = $this->service->inCategoryIds([1]);
             expect($result)->toBe($this->service);
         });
 
-        it('handles multiple category ids correctly', function () {
+        it('handles multiple category ids correctly', function (): void {
             $result = $this->service->inCategoryIds([1, 2, 3, 4]);
             expect($result)->toBe($this->service);
         });
     });
 
-    describe('terminal methods return correct types', function () {
-        it('get() returns Collection', function () {
+    describe('terminal methods return correct types', function (): void {
+        it('get() returns Collection', function (): void {
             $service = ProductQueryService::make();
 
             /** @var Builder|MockInterface $queryMock */
@@ -241,7 +241,7 @@ describe('ProductQueryService unit tests', function () {
                 ->and($result)->toHaveCount(2);
         });
 
-        it('first() returns Product or null', function () {
+        it('first() returns Product or null', function (): void {
             $service = new ProductQueryService();
             /** @var Builder|MockInterface $queryMock */
             $queryMock = mock(Builder::class);
@@ -269,7 +269,7 @@ describe('ProductQueryService unit tests', function () {
                 ->and($result->name)->toBe('Test Product');
         });
 
-        it('paginate() returns LengthAwarePaginator', function () {
+        it('paginate() returns LengthAwarePaginator', function (): void {
             $service = new ProductQueryService();
             /** @var Builder|MockInterface $queryMock */
             $queryMock = mock(Builder::class);
@@ -303,15 +303,15 @@ describe('ProductQueryService unit tests', function () {
         });
     });
 
-    describe('course difficulty_level filtering', function () {
-        it('handles course difficulty_level enum correctly', function () {
+    describe('course difficulty_level filtering', function (): void {
+        it('handles course difficulty_level enum correctly', function (): void {
             $result = $this->service->byCourseLevel(CourseDifficultyLevelEnum::BEGINNER);
             expect($result)->toBe($this->service);
         });
     });
 
-    describe('deferred constraints collection', function () {
-        it('collects multiple constraints for same relationship', function () {
+    describe('deferred constraints collection', function (): void {
+        it('collects multiple constraints for same relationship', function (): void {
             $service = $this->service
                 ->inCategories(['test-slug'])
                 ->inCategoryIds([1, 2, 3]);

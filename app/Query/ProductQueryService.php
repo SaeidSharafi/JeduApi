@@ -279,12 +279,12 @@ final class ProductQueryService
         }
 
         return $query
-            ->query(function ($query) {
+            ->query(function ($query): void {
                 $query->with([
                     'vendor:id,name',
                     'categories:id,name,slug',
                     'productable:id,thumbnail_url,default_teacher_info',
-                    'productDeliveryOptions' => function ($q) {
+                    'productDeliveryOptions' => function ($q): void {
                         $q->where('status', PublicationStatusEnum::PUBLISHED)
                             ->with([
                                 'productDeliveryOptionDiscountPrice',
@@ -314,21 +314,21 @@ final class ProductQueryService
     {
         $now = now();
 
-        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($now) {
+        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($now): void {
             // Check registration window is active
-            $q->where(function ($subQuery) use ($now) {
+            $q->where(function ($subQuery) use ($now): void {
                 $subQuery->whereNull('registration_start_date')
                     ->orWhere('registration_start_date', '<=', $now->startOfDay());
-            })->where(function ($subQuery) use ($now) {
+            })->where(function ($subQuery) use ($now): void {
                 $subQuery->whereNull('registration_end_date')
                     ->orWhere('registration_end_date', '>=', $now->endOfDay());
             });
 
             // Check availability window is active
-            $q->where(function ($subQuery) use ($now) {
+            $q->where(function ($subQuery) use ($now): void {
                 $subQuery->whereNull('available_from')
                     ->orWhere('available_from', '<=', $now->startOfDay());
-            })->where(function ($subQuery) use ($now) {
+            })->where(function ($subQuery) use ($now): void {
                 $subQuery->whereNull('available_to')
                     ->orWhere('available_to', '>=', $now->endOfDay());
             });
@@ -354,13 +354,13 @@ final class ProductQueryService
             return $this;
         }
 
-        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($from, $to) {
+        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($from, $to): void {
             // Check for overlap: registration_start_date <= to AND registration_end_date >= from
             // Also include products with NULL dates (no restrictions)
-            $q->where(function ($subQ) use ($from, $to) {
+            $q->where(function ($subQ) use ($from, $to): void {
                 $subQ->whereNull('registration_start_date')
                     ->orWhereNull('registration_end_date')
-                    ->orWhere(function ($dateQ) use ($from, $to) {
+                    ->orWhere(function ($dateQ) use ($from, $to): void {
                         if ($from && $to) {
                             $dateQ->where('registration_start_date', '<=', $to->endOfDay())
                                 ->where('registration_end_date', '>=', $from->startOfDay());
@@ -391,8 +391,8 @@ final class ProductQueryService
             return $this;
         }
 
-        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($status) {
-            $q->where(function ($inner) use ($status) {
+        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($status): void {
+            $q->where(function ($inner) use ($status): void {
                 match ($status) {
                     AvailabilityStatusEnum::PAST => $inner->where(function ($sq): void {
                         // Primary: event_ended_at < today
@@ -460,13 +460,13 @@ final class ProductQueryService
             return $this;
         }
 
-        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($from, $to) {
+        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($from, $to): void {
             // Check for overlap: available_from <= to AND available_to >= from
             // Also include products with NULL dates (no restrictions)
-            $q->where(function ($subQ) use ($from, $to) {
+            $q->where(function ($subQ) use ($from, $to): void {
                 $subQ->whereNull('available_from')
                     ->orWhereNull('available_to')
-                    ->orWhere(function ($dateQ) use ($from, $to) {
+                    ->orWhere(function ($dateQ) use ($from, $to): void {
                         if ($from && $to) {
                             $dateQ->where('available_from', '<=', $to->endOfDay())
                                 ->where('available_to', '>=', $from->startOfDay());
@@ -497,7 +497,7 @@ final class ProductQueryService
     {
         $threshold = max(0.0, min(1.0, $threshold));
 
-        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($threshold) {
+        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($threshold): void {
             $q->whereNotNull('capacity')
                 ->where('capacity', '>', 0)
                 ->whereRaw('((enrolled_count * 1.0) / NULLIF(capacity, 0)) >= ?', [$threshold]);
@@ -539,7 +539,7 @@ final class ProductQueryService
             return $this;
         }
 
-        return $this->addRelationshipConstraint('categories', function ($q) use ($categorySlugs) {
+        return $this->addRelationshipConstraint('categories', function ($q) use ($categorySlugs): void {
             $q->whereIn('categories.slug', $categorySlugs);
         });
     }
@@ -550,7 +550,7 @@ final class ProductQueryService
             return $this;
         }
 
-        return $this->addRelationshipConstraint('categories', function ($q) use ($categoryIds) {
+        return $this->addRelationshipConstraint('categories', function ($q) use ($categoryIds): void {
             $q->whereIn('categories.id', $categoryIds);
         });
     }
@@ -562,8 +562,8 @@ final class ProductQueryService
         }
 
         return $this->addRelationshipConstraint('productable',
-            function (Builder $productableQuery) use ($categorySlugs) {
-                $productableQuery->whereHas('categories', function (Builder $categoryQuery) use ($categorySlugs) {
+            function (Builder $productableQuery) use ($categorySlugs): void {
+                $productableQuery->whereHas('categories', function (Builder $categoryQuery) use ($categorySlugs): void {
                     $categoryQuery
                         ->whereIn('categories.slug', $categorySlugs)
                         ->where('categorizables.good_for_start', true);
@@ -576,7 +576,7 @@ final class ProductQueryService
      */
     public function byInstructor(int $instructorId): self
     {
-        return $this->addRelationshipConstraint('productDeliveryOptions.teachers', function ($q) use ($instructorId) {
+        return $this->addRelationshipConstraint('productDeliveryOptions.teachers', function ($q) use ($instructorId): void {
             $q->where('teachers.id', $instructorId);
         });
     }
@@ -586,7 +586,7 @@ final class ProductQueryService
      */
     public function byCourseLevel(CourseDifficultyLevelEnum $difficulty_level): self
     {
-        return $this->addRelationshipConstraint('productable', function ($q) use ($difficulty_level) {
+        return $this->addRelationshipConstraint('productable', function ($q) use ($difficulty_level): void {
             $q->where('difficulty_level', $difficulty_level->value);
         });
     }
@@ -596,7 +596,7 @@ final class ProductQueryService
      */
     public function byFulfillmentTypes(array $fulfillmentTypes): self
     {
-        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($fulfillmentTypes) {
+        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($fulfillmentTypes): void {
             $q->whereIn('fulfillment_type', $fulfillmentTypes);
         });
     }
@@ -608,13 +608,13 @@ final class ProductQueryService
         }
         $this->ensureBaseSelects();
         $this->query->selectScore(table: 'products');
-        $this->query->where(function (Builder $q) use ($searchTerm) {
+        $this->query->where(function (Builder $q) use ($searchTerm): void {
             // Use the new fullTextSearch macro which automatically detects the database driver
             // and falls back to appropriate methods (PGroonga for PostgreSQL, MATCH AGAINST for MySQL, etc.)
             $q->fullTextSearch(['name', 'short_name', 'short_description', 'slug'], $searchTerm);
 
             foreach ($this->productableTypes as $type) {
-                $q->orWhereHasMorph('productable', [$type], function (Builder $sq) use ($searchTerm, $type) {
+                $q->orWhereHasMorph('productable', [$type], function (Builder $sq) use ($searchTerm, $type): void {
                     $searchColumns = ['full_name', 'short_name', 'description', 'slug'];
 
                     if (in_array($type, [ProductableEnum::SEMINAR->value, ProductableEnum::DIGITAL_ASSET->value])) {
@@ -741,7 +741,7 @@ final class ProductQueryService
         $this->query->with([
             'vendor:id,name',
             'categories:id,name,slug',
-            'productDeliveryOptions' => function ($q) {
+            'productDeliveryOptions' => function ($q): void {
                 $q->where('status', PublicationStatusEnum::PUBLISHED)
                     ->with([
                         'productDeliveryOptionDiscountPrice',
@@ -759,7 +759,7 @@ final class ProductQueryService
         $this->query->with([
             'vendor:id,name',
             'categories:id,name,slug',
-            'productDeliveryOptions' => function ($q) {
+            'productDeliveryOptions' => function ($q): void {
                 $q->where('status', PublicationStatusEnum::PUBLISHED)
                     ->with([
                         'productDeliveryOptionDiscountPrice',
@@ -787,12 +787,12 @@ final class ProductQueryService
     {
         $now = now();
 
-        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($now) {
+        return $this->addRelationshipConstraint('productDeliveryOptions', function ($q) use ($now): void {
             // Check availability window is active
-            $q->where(function ($subQuery) use ($now) {
+            $q->where(function ($subQuery) use ($now): void {
                 $subQuery->whereNull('available_from')
                     ->orWhere('available_from', '<=', $now->startOfDay());
-            })->where(function ($subQuery) use ($now) {
+            })->where(function ($subQuery) use ($now): void {
                 $subQuery->whereNull('available_to')
                     ->orWhere('available_to', '>=', $now->endOfDay());
             });
@@ -919,11 +919,11 @@ final class ProductQueryService
             ->where('products.is_visible', true);
 
         // Filter by available delivery options
-        $this->addRelationshipConstraint('productDeliveryOptions', function ($q) {
+        $this->addRelationshipConstraint('productDeliveryOptions', function ($q): void {
             $q->where('status', PublicationStatusEnum::PUBLISHED);
 
             if (! $this->includeFullProducts) {
-                $q->where(function ($capacityQuery) {
+                $q->where(function ($capacityQuery): void {
                     $capacityQuery->whereNull('capacity')
                         ->orWhereColumn('capacity', '>', 'enrolled_count');
                 });
@@ -931,13 +931,13 @@ final class ProductQueryService
         });
 
         // Filter by the status of the related 'productable' model
-        $this->addRelationshipConstraint('productable', function ($q) {
+        $this->addRelationshipConstraint('productable', function ($q): void {
             $q->where('status', PublicationStatusEnum::PUBLISHED);
         });
 
         // Optional term status check
         if ($this->checkTermStatus) {
-            $this->query->where(function ($q) {
+            $this->query->where(function ($q): void {
                 $q->whereNull('term_id')
                     ->orWhereHas('term', fn ($termQuery) => $termQuery->where('status', TermStatusEnum::ACTIVE));
             });
@@ -967,7 +967,7 @@ final class ProductQueryService
             }
             // @codeCoverageIgnoreEnd
 
-            $consolidatedCallback = function ($q) use ($callbacks) {
+            $consolidatedCallback = function ($q) use ($callbacks): void {
                 foreach ($callbacks as $callback) {
                     $callback($q);
                 }

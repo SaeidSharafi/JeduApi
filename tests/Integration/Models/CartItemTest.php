@@ -6,7 +6,7 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\ProductDeliveryOption;
 
-test('to array', function () {
+test('to array', function (): void {
     $cartItem = CartItem::factory()->create()->fresh();
 
     $array = $cartItem->toArray();
@@ -20,7 +20,7 @@ test('to array', function () {
     ]);
 });
 
-test('relationships', function () {
+test('relationships', function (): void {
     $cartItem = CartItem::factory()->create()->fresh();
 
     // Test cart relationship

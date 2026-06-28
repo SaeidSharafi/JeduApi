@@ -7,12 +7,12 @@ use App\Models\Product;
 use App\Models\Slider;
 use SmartCache\Facades\SmartCache;
 
-beforeEach(function () {
+beforeEach(function (): void {
     SmartCache::clear();
 });
 
-describe('InvalidationObserver - Cache Invalidation', function () {
-    it('clears simple cache keys when product is updated', function () {
+describe('InvalidationObserver - Cache Invalidation', function (): void {
+    it('clears simple cache keys when product is updated', function (): void {
         // Arrange
         SmartCache::put('shop.homepage.content', ['data' => 'test'], 3600);
         expect(SmartCache::has('shop.homepage.content'))->toBeTrue();
@@ -24,7 +24,7 @@ describe('InvalidationObserver - Cache Invalidation', function () {
         expect(SmartCache::has('shop.homepage.content'))->toBeFalse();
     });
 
-    it('clears cache when slider is updated', function () {
+    it('clears cache when slider is updated', function (): void {
         // Arrange
         SmartCache::put('shop.homepage.sliders', [['id' => 1]], 7200);
         expect(SmartCache::has('shop.homepage.sliders'))->toBeTrue();
@@ -37,7 +37,7 @@ describe('InvalidationObserver - Cache Invalidation', function () {
         expect(SmartCache::has('shop.homepage.sliders'))->toBeFalse();
     });
 
-    it('clears cache when category is deleted', function () {
+    it('clears cache when category is deleted', function (): void {
         // Arrange
         SmartCache::put('shop.homepage.content', ['categories' => [1, 2, 3]], 3600);
 
@@ -51,7 +51,7 @@ describe('InvalidationObserver - Cache Invalidation', function () {
         expect(SmartCache::has('shop.homepage.content'))->toBeFalse();
     });
 
-    it('handles cache invalidation for models not in config map', function () {
+    it('handles cache invalidation for models not in config map', function (): void {
         // Arrange - Create a cache key that will be cleared
         SmartCache::put('test_key', 'test_value', 3600);
 
@@ -64,7 +64,7 @@ describe('InvalidationObserver - Cache Invalidation', function () {
         expect(true)->toBeTrue();
     });
 
-    it('preserves unrelated cache keys during invalidation', function () {
+    it('preserves unrelated cache keys during invalidation', function (): void {
         // Arrange
         SmartCache::put('shop.homepage.content', ['homepage' => 'data'], 3600);
         SmartCache::put('user.123.profile', ['name' => 'John'], 86400);
@@ -80,7 +80,7 @@ describe('InvalidationObserver - Cache Invalidation', function () {
         expect(SmartCache::has('user.123.profile'))->toBeTrue();
     });
 
-    it('handles multiple cache invalidation patterns for a single model', function () {
+    it('handles multiple cache invalidation patterns for a single model', function (): void {
         // Arrange - Store multiple types of caches
         SmartCache::put('shop.homepage.content', ['data' => 'homepage'], 3600);
 

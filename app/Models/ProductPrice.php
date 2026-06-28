@@ -79,7 +79,8 @@ final class ProductPrice extends Model
     /**
      * Scope for products with discounts.
      */
-    public function scopeWithDiscount($query)
+    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected function withDiscount($query)
     {
         return $query->where('has_discount', true);
     }
@@ -87,7 +88,8 @@ final class ProductPrice extends Model
     /**
      * Scope for products with featured prices.
      */
-    public function scopeWithFeaturedPrice($query)
+    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected function withFeaturedPrice($query)
     {
         return $query->where('has_featured_price', true);
     }
@@ -95,7 +97,8 @@ final class ProductPrice extends Model
     /**
      * Scope for products within a price range.
      */
-    public function scopePriceRange($query, ?int $minPrice = null, ?int $maxPrice = null)
+    #[\Illuminate\Database\Eloquent\Attributes\Scope]
+    protected function priceRange($query, ?int $minPrice = null, ?int $maxPrice = null)
     {
         if ($minPrice !== null) {
             $query->where('min_price', '>=', $minPrice);

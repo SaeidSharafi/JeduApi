@@ -10,8 +10,8 @@ use App\Models\Staff;
 
 use function Pest\Laravel\getJson;
 
-describe('BlogPostController', function () {
-    it('can get list of published blog posts', function () {
+describe('BlogPostController', function (): void {
+    it('can get list of published blog posts', function (): void {
         Storage::fake('public');
         $this->fakeMedia();
         // Arrange - Create published and unpublished posts
@@ -75,7 +75,7 @@ describe('BlogPostController', function () {
             ->and($response->json('data.data.0.media.cover'))->toHaveCount(1);
     });
 
-    it('can filter blog posts by featured status', function () {
+    it('can filter blog posts by featured status', function (): void {
         // Arrange
         $featuredPosts = BlogPost::factory()
             ->count(2)
@@ -109,7 +109,7 @@ describe('BlogPostController', function () {
         }
     });
 
-    it('can filter blog posts by category slug', function () {
+    it('can filter blog posts by category slug', function (): void {
         // Arrange
         $category = BlogCategory::factory()->create(['slug' => 'programming']);
         $posts    = BlogPost::factory()
@@ -142,7 +142,7 @@ describe('BlogPostController', function () {
         expect($response->json('data.total'))->toBe(3);
     });
 
-    it('can sort blog posts by published_at', function () {
+    it('can sort blog posts by published_at', function (): void {
         // Arrange
         $oldPost = BlogPost::factory()
             ->state([
@@ -171,7 +171,7 @@ describe('BlogPostController', function () {
         expect($posts[1]['slug'])->toBe($oldPost->slug);
     });
 
-    it('can sort blog posts by populraity', function () {
+    it('can sort blog posts by populraity', function (): void {
         // Arrange
         $firstPost = BlogPost::factory()
             ->state([
@@ -209,7 +209,7 @@ describe('BlogPostController', function () {
             ->and($posts[2]['slug'])->toBe($lastPost->slug);
     });
 
-    it('can sort blog posts by created_at ascending', function () {
+    it('can sort blog posts by created_at ascending', function (): void {
         // Arrange
         $oldPost = BlogPost::factory()
             ->state([
@@ -240,7 +240,7 @@ describe('BlogPostController', function () {
         expect($posts[1]['slug'])->toBe($newPost->slug);
     });
 
-    it('respects pagination parameters', function () {
+    it('respects pagination parameters', function (): void {
         // Arrange
         BlogPost::factory()
             ->count(25)
@@ -263,7 +263,7 @@ describe('BlogPostController', function () {
         expect($response->json('data.total'))->toBe(25);
     });
 
-    it('can get a single published blog post by slug', function () {
+    it('can get a single published blog post by slug', function (): void {
         // Arrange
         $category = BlogCategory::factory()->create();
         $staff    = Staff::factory()->create(['name' => 'John Doe']);
@@ -280,7 +280,7 @@ describe('BlogPostController', function () {
             ->create();
 
         $products = $products
-            ->map(fn (Product $product) => ['type' => $product->productable_type, 'id' => $product->productable_id])
+            ->map(fn (Product $product): array => ['type' => $product->productable_type, 'id' => $product->productable_id])
             ->toArray();
 
         $post->syncRelatedProductables($products);
@@ -338,7 +338,7 @@ describe('BlogPostController', function () {
         expect($response->json('data.author.name'))->toBe('John Doe');
     });
 
-    it('returns 404 when blog post slug is not found', function () {
+    it('returns 404 when blog post slug is not found', function (): void {
         // Act
         $response = getJson(route('api.v1.shop.blog.posts.show', ['slug' => 'non-existent-slug']));
 
@@ -346,7 +346,7 @@ describe('BlogPostController', function () {
         $response->assertNotFound();
     });
 
-    it('returns 404 when accessing unpublished blog post', function () {
+    it('returns 404 when accessing unpublished blog post', function (): void {
         // Arrange
         $post = BlogPost::factory()
             ->state([
@@ -362,7 +362,7 @@ describe('BlogPostController', function () {
         $response->assertNotFound();
     });
 
-    it('returns 404 when accessing future published blog post', function () {
+    it('returns 404 when accessing future published blog post', function (): void {
         // Arrange
         $post = BlogPost::factory()
             ->state([
@@ -378,7 +378,7 @@ describe('BlogPostController', function () {
         $response->assertNotFound();
     });
 
-    it('validates invalid sort field', function () {
+    it('validates invalid sort field', function (): void {
         // Act
         $response = getJson(route('api.v1.shop.blog.posts.index', [
             'sortBy' => 'invalid_field',
@@ -389,7 +389,7 @@ describe('BlogPostController', function () {
         $response->assertJsonValidationErrors(['sortBy']);
     });
 
-    it('validates invalid category slug', function () {
+    it('validates invalid category slug', function (): void {
         // Act
         $response = getJson(route('api.v1.shop.blog.posts.index', [
             'category_slug' => 'non-existent-category',

@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Log;
 
 final class UpdateProductPricingJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use \Illuminate\Foundation\Queue\Queueable;
 
     public function __construct(
         public array $productIds,

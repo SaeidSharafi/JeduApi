@@ -10,11 +10,11 @@ use App\Models\Category;
 use Illuminate\Support\Facades\Validator;
 
 // We group all tests for this Data object in a "describe" block.
-describe('ProductListRequestData Validation Rules', function () {
+describe('ProductListRequestData Validation Rules', function (): void {
 
     // Test Case 1: Testing all failure scenarios using a dataset.
     // The `with()` function provides the data for each test run.
-    it('fails validation for invalid data', function (array $data, string $expectedFailedField) {
+    it('fails validation for invalid data', function (array $data, string $expectedFailedField): void {
         // 1. Get the combined rules from the static method.
         $rules = ProductListRequestData::rules();
 
@@ -49,7 +49,7 @@ describe('ProductListRequestData Validation Rules', function () {
         ],
     ]);
 
-    it('passes validation with valid data', function () {
+    it('passes validation with valid data', function (): void {
         $category  = Category::factory()->create();
         $validData = [
             'type'   => ProductableEnum::COURSE->value,

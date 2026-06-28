@@ -9,8 +9,8 @@ use App\Enums\Product\ProductRegistrationStatusEnum;
 use App\Enums\User\GenderEnum;
 use App\Models\Product;
 
-describe('ProductCardData', function () {
-    it('can be created from a Product model', function () {
+describe('ProductCardData', function (): void {
+    it('can be created from a Product model', function (): void {
         // Mock a Product model (you can use a factory or create a mock manually)
         $product                    = new Product();
         $product->slug              = 'example-product';
@@ -94,7 +94,7 @@ describe('ProductCardData', function () {
             ->and($productCardData->price_data)->toBe($priceData);
     });
 
-    it('fallback to default teacher if no teachers from delivery options', function () {
+    it('fallback to default teacher if no teachers from delivery options', function (): void {
         // Mock a Product model (you can use a factory or create a mock manually)
         $product                   = new Product();
         $product->slug             = 'example-product';
@@ -133,7 +133,7 @@ describe('ProductCardData', function () {
         expect($productCardData->teachers)->toBe(['John Doe']);
     });
 
-    it('get  earliest available_from and latest available_to dates (same for registration dates)', function () {
+    it('get  earliest available_from and latest available_to dates (same for registration dates)', function (): void {
         // Mock a Product model (you can use a factory or create a mock manually)
         $product                   = new Product();
         $product->slug             = 'example-product';
@@ -185,7 +185,7 @@ describe('ProductCardData', function () {
             ->and($productCardData->registration_start_date)->toEqual(new Verta('2023-01-01'))
             ->and($productCardData->registration_end_date)->toEqual(new Verta('2023-01-11'));
     });
-    it('get registrationStatus correctly [FINISHED]', function () {
+    it('get registrationStatus correctly [FINISHED]', function (): void {
         $product                   = new Product();
         $product->slug             = 'example-product';
         $product->name             = 'Example Product';
@@ -217,7 +217,7 @@ describe('ProductCardData', function () {
         expect($productCardData->registration_status)->toEqual(ProductRegistrationStatusEnum::FINISHED);
     });
 
-    it('get registrationStatus correctly [IN PROGRESS]', function () {
+    it('get registrationStatus correctly [IN PROGRESS]', function (): void {
         $product                   = new Product();
         $product->slug             = 'example-product';
         $product->name             = 'Example Product';

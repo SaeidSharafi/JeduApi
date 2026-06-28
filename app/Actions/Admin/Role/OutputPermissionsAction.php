@@ -30,6 +30,6 @@ final readonly class OutputPermissionsAction
                     ],
                 ];
             })
-            ->toArray();
+            ->all();
     }
 }

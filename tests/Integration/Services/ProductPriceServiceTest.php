@@ -77,7 +77,7 @@ describe('ProductPriceService: Fetching Data', function (): void {
             ->and($priceData->discount_percentage)->toBe(40.0)
             ->and($priceData->range)->toEqual(['min' => 12000, 'max' => 25000]);
     });
-    it('returns correct price data for multiple products', function () {
+    it('returns correct price data for multiple products', function (): void {
         $cachedData = [
             'min_price'           => 1000,
             'min_original_price'  => 20000,
@@ -92,7 +92,7 @@ describe('ProductPriceService: Fetching Data', function (): void {
         $products = Product::factory()
             ->count(5)
             ->sequence(
-                fn ($sequence) => [
+                fn ($sequence): array => [
                     'name'             => 'Product '.($sequence->index + 1),
                     'price_data_cache' => array_merge($cachedData, ['min_price' => 1000 * ($sequence->index + 1)]),
                 ],
@@ -193,7 +193,7 @@ describe('ProductPriceService: Updating Data', function (): void {
     /**
      * This is the most important new test. It proves the refactoring was successful.
      */
-    it('updates price data for multiple products efficiently using a single upsert query', function () {
+    it('updates price data for multiple products efficiently using a single upsert query', function (): void {
         $productToUpdate = Product::factory()
             ->has(ProductDeliveryOption::factory(['price' => 10000, 'status' => 'published']))
             ->create();

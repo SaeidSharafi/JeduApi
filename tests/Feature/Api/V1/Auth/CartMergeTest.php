@@ -9,7 +9,7 @@ use App\Models\User;
 
 use function Pest\Laravel\postJson;
 
-it('do nothing if X-Guest-Token is not UUID', function () {
+it('do nothing if X-Guest-Token is not UUID', function (): void {
     $user     = User::factory()->create(['password' => bcrypt('password')]);
     $userCart = Cart::factory()->create(['user_id' => $user->id]);
 
@@ -41,7 +41,7 @@ it('do nothing if X-Guest-Token is not UUID', function () {
         'quantity'                   => 2,
     ]);
 });
-it('do nothing if there is no guest cart or cart is empty', function () {
+it('do nothing if there is no guest cart or cart is empty', function (): void {
     // Arrange: Create a user with an existing cart
     $user     = User::factory()->create(['password' => bcrypt('password')]);
     $userCart = Cart::factory()->create(['user_id' => $user->id]);
@@ -75,7 +75,7 @@ it('do nothing if there is no guest cart or cart is empty', function () {
     ]);
 
 });
-it('merges guest cart into user cart on password login', function () {
+it('merges guest cart into user cart on password login', function (): void {
     // Arrange: Create a user with an existing cart
     $user     = User::factory()->create(['password' => bcrypt('password')]);
     $userCart = Cart::factory()->create(['user_id' => $user->id]);
@@ -130,7 +130,7 @@ it('merges guest cart into user cart on password login', function () {
     ]);
 });
 
-it('merges guest cart quantities when user already has the same item', function () {
+it('merges guest cart quantities when user already has the same item', function (): void {
     // Arrange: Create a user with cart containing an item
     $user     = User::factory()->create(['password' => bcrypt('password')]);
     $userCart = Cart::factory()->create(['user_id' => $user->id]);
@@ -178,7 +178,7 @@ it('merges guest cart quantities when user already has the same item', function 
     ]);
 });
 
-it('converts guest cart to user cart when user has no existing cart', function () {
+it('converts guest cart to user cart when user has no existing cart', function (): void {
     // Arrange: Create a user WITHOUT a cart
     $user = User::factory()->create(['password' => bcrypt('password')]);
 
@@ -221,7 +221,7 @@ it('converts guest cart to user cart when user has no existing cart', function (
     ]);
 });
 
-it('merges guest cart on OTP login', function () {
+it('merges guest cart on OTP login', function (): void {
     // Arrange: Create a user
     $user = User::factory()->create();
 

@@ -7,12 +7,12 @@ use App\Models\Category;
 use App\Models\Product;
 use SmartCache\Facades\SmartCache;
 
-beforeEach(function () {
+beforeEach(function (): void {
     SmartCache::clear();
 });
 
-describe('GoodForStartCoursesController Cache Invalidation', function () {
-    it('clears good-for-start cache when product is updated', function () {
+describe('GoodForStartCoursesController Cache Invalidation', function (): void {
+    it('clears good-for-start cache when product is updated', function (): void {
         // Arrange - Simulate GoodForStartCoursesController caching with query parameters
         $cacheKey1 = CacheKeysEnum::GoodForStart->key(['slug' => 'programming']).'-5';
         $cacheKey2 = CacheKeysEnum::GoodForStart->key(['slug' => 'programming']).'-10';
@@ -35,7 +35,7 @@ describe('GoodForStartCoursesController Cache Invalidation', function () {
         expect(SmartCache::has($cacheKey3))->toBeFalse();
     });
 
-    it('clears category-specific good-for-start cache when category is updated', function () {
+    it('clears category-specific good-for-start cache when category is updated', function (): void {
         // Arrange
         $category = Category::factory()->create(['slug' => 'advanced-web']);
         $cacheKey = CacheKeysEnum::GoodForStart->key(['slug' => 'advanced-web']).'-10';
@@ -50,7 +50,7 @@ describe('GoodForStartCoursesController Cache Invalidation', function () {
         expect(SmartCache::has($cacheKey))->toBeFalse();
     });
 
-    it('handles multiple good-for-start caches with different limit parameters', function () {
+    it('handles multiple good-for-start caches with different limit parameters', function (): void {
         // Arrange - Simulate multiple requests with different limit query parameters
         $slug   = 'beginner';
         $caches = [];

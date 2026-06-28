@@ -38,7 +38,7 @@ final class DigipayAdminService
         $order           = $payment->order;
 
         $products = $order->items
-            ->map(fn ($item) => 'product-'.$item->product_id)
+            ->map(fn ($item): string => 'product-'.$item->product_id)
             ->values()
             ->all();
 

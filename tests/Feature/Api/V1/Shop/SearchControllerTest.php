@@ -28,8 +28,8 @@ use function Pest\Laravel\getJson;
 // RESPONSE TRANSFORMATION & REAL DATA TESTS
 // =============================================================================
 
-describe('Response Transformation', function () {
-    it('returns properly structured response with products', function () {
+describe('Response Transformation', function (): void {
+    it('returns properly structured response with products', function (): void {
         Product::factory()
             ->withDeliveryOptions(1)
             ->withCategory(1)
@@ -76,7 +76,7 @@ describe('Response Transformation', function () {
             ->and($json['price_data'])->toBeNull();
 
     });
-    it('returns properly structured response with blog post', function () {
+    it('returns properly structured response with blog post', function (): void {
         BlogPost::factory()
             ->create(['title' => 'Laravel Version 12!', 'status' => PublicationStatusEnum::PUBLISHED]);
 
@@ -113,7 +113,7 @@ describe('Response Transformation', function () {
             ->and($json['type'])->toBe('blog_post');
 
     });
-    it('adds type field to product results', function () {
+    it('adds type field to product results', function (): void {
         TypesenseTestHelper::skipIfTypesenseUnavailable();
 
         Product::factory()
@@ -137,7 +137,7 @@ describe('Response Transformation', function () {
         }
     });
 
-    it('adds type field to blog post results', function () {
+    it('adds type field to blog post results', function (): void {
         TypesenseTestHelper::skipIfTypesenseUnavailable();
 
         BlogPost::factory()->create([
@@ -163,15 +163,15 @@ describe('Response Transformation', function () {
 // SEARCH VALIDATION TESTS
 // =============================================================================
 
-describe('Search Validation', function () {
-    it('rejects per_page parameter over maximum', function () {
+describe('Search Validation', function (): void {
+    it('rejects per_page parameter over maximum', function (): void {
         $response = getJson(route('api.v1.shop.search', ['q' => 'test', 'per_page' => 101]));
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['per_page']);
     });
 
-    it('rejects non-array category_slugs parameter', function () {
+    it('rejects non-array category_slugs parameter', function (): void {
         $response = getJson(route('api.v1.shop.search', [
             'q'      => 'test',
             'filter' => ['category_slugs' => 'not-an-array'],
@@ -181,7 +181,7 @@ describe('Search Validation', function () {
             ->assertJsonValidationErrors(['filter.category_slugs']);
     });
 
-    it('rejects non-integer price_min parameter', function () {
+    it('rejects non-integer price_min parameter', function (): void {
         $response = getJson(route('api.v1.shop.search', [
             'q'      => 'test',
             'filter' => ['min_price' => 'not-a-number'],
@@ -191,7 +191,7 @@ describe('Search Validation', function () {
             ->assertJsonValidationErrors(['filter.min_price']);
     });
 
-    it('rejects negative price_min parameter', function () {
+    it('rejects negative price_min parameter', function (): void {
         $response = getJson(route('api.v1.shop.search', [
             'q'      => 'test',
             'filter' => ['min_price' => -100],
@@ -201,7 +201,7 @@ describe('Search Validation', function () {
             ->assertJsonValidationErrors(['filter.min_price']);
     });
 
-    it('rejects invalid result_types values', function () {
+    it('rejects invalid result_types values', function (): void {
         $response = getJson(route('api.v1.shop.search', [
             'q'            => 'test',
             'result_types' => ['invalid_type'],
@@ -211,7 +211,7 @@ describe('Search Validation', function () {
             ->assertJsonValidationErrors(['result_types.0']);
     });
 
-    it('rejects non-array result_types parameter', function () {
+    it('rejects non-array result_types parameter', function (): void {
         $response = getJson(route('api.v1.shop.search', [
             'q'            => 'test',
             'result_types' => 'not-an-array',
@@ -221,13 +221,13 @@ describe('Search Validation', function () {
             ->assertJsonValidationErrors(['result_types']);
     });
 
-    it('accepts valid search with minimal parameters', function () {
+    it('accepts valid search with minimal parameters', function (): void {
         $response = getJson(route('api.v1.shop.search', ['q' => 'test']));
 
         expect($response->status())->toBeIn([200, 500]);
     });
 
-    it('accepts valid search with all filter parameters', function () {
+    it('accepts valid search with all filter parameters', function (): void {
         $response = getJson(route('api.v1.shop.search', [
             'q'                => 'test',
             'per_page'         => 10,
@@ -246,7 +246,7 @@ describe('Search Validation', function () {
         expect($response->status())->toBeIn([200, 500]);
     });
 
-    it('accepts result_types with product only', function () {
+    it('accepts result_types with product only', function (): void {
         $response = getJson(route('api.v1.shop.search', [
             'q'            => 'test',
             'result_types' => ['product'],
@@ -255,7 +255,7 @@ describe('Search Validation', function () {
         expect($response->status())->toBeIn([200, 500]);
     });
 
-    it('accepts result_types with blog_post only', function () {
+    it('accepts result_types with blog_post only', function (): void {
         $response = getJson(route('api.v1.shop.search', [
             'q'            => 'test',
             'result_types' => ['blog_post'],
@@ -264,7 +264,7 @@ describe('Search Validation', function () {
         expect($response->status())->toBeIn([200, 500]);
     });
 
-    it('accepts result_types with both types', function () {
+    it('accepts result_types with both types', function (): void {
         $response = getJson(route('api.v1.shop.search', [
             'q'            => 'test',
             'result_types' => ['product', 'blog_post'],
@@ -278,22 +278,22 @@ describe('Search Validation', function () {
 // SUGGESTION VALIDATION TESTS
 // =============================================================================
 
-describe('Suggestion Validation', function () {
-    it('requires query parameter', function () {
+describe('Suggestion Validation', function (): void {
+    it('requires query parameter', function (): void {
         $response = getJson(route('api.v1.shop.search.suggest'));
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['q']);
     });
 
-    it('requires minimum query length of 2 characters', function () {
+    it('requires minimum query length of 2 characters', function (): void {
         $response = getJson(route('api.v1.shop.search.suggest', ['q' => 'a']));
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['q']);
     });
 
-    it('rejects limit parameter over maximum', function () {
+    it('rejects limit parameter over maximum', function (): void {
         $response = getJson(route('api.v1.shop.search.suggest', [
             'q'     => 'test',
             'limit' => 25,
@@ -303,7 +303,7 @@ describe('Suggestion Validation', function () {
             ->assertJsonValidationErrors(['limit']);
     });
 
-    it('rejects limit parameter under minimum', function () {
+    it('rejects limit parameter under minimum', function (): void {
         $response = getJson(route('api.v1.shop.search.suggest', [
             'q'     => 'test',
             'limit' => 0,
@@ -313,13 +313,13 @@ describe('Suggestion Validation', function () {
             ->assertJsonValidationErrors(['limit']);
     });
 
-    it('accepts valid suggest request with minimal parameters', function () {
+    it('accepts valid suggest request with minimal parameters', function (): void {
         $response = getJson(route('api.v1.shop.search.suggest', ['q' => 'test']));
 
         expect($response->status())->toBeIn([200, 500]);
     });
 
-    it('accepts valid suggest request with limit parameter', function () {
+    it('accepts valid suggest request with limit parameter', function (): void {
         $response = getJson(route('api.v1.shop.search.suggest', [
             'q'     => 'test',
             'limit' => 10,
@@ -332,8 +332,8 @@ describe('Suggestion Validation', function () {
     });
 });
 
-describe('filters tests', function () {
-    it('returns all products without filter or query', function () {
+describe('filters tests', function (): void {
+    it('returns all products without filter or query', function (): void {
         Product::factory()
             ->withDeliveryOptions(1)
             ->withCategory(1)
@@ -344,7 +344,7 @@ describe('filters tests', function () {
         $response->assertOk();
         $response->assertJsonCount(10, 'data.data');
     });
-    it('filters by productable_type=course', function () {
+    it('filters by productable_type=course', function (): void {
         Product::factory()
             ->withDeliveryOptions(1)
             ->withCategory(1)
@@ -371,7 +371,7 @@ describe('filters tests', function () {
         }
     });
 
-    it('filters by has_discount=true', function () {
+    it('filters by has_discount=true', function (): void {
         $product = Product::factory()
             ->withDeliveryOptions(1)
             ->withCategory(1)
@@ -422,7 +422,7 @@ describe('filters tests', function () {
         }
     });
 
-    it('filters by category_slugs', function () {
+    it('filters by category_slugs', function (): void {
         $category1 = App\Models\Category::factory()->create(['name' => 'Category One']);
         $category2 = App\Models\Category::factory()->create(['name' => 'Category Two']);
         $category3 = App\Models\Category::factory()->create(['name' => 'Category Three']);
@@ -448,12 +448,12 @@ describe('filters tests', function () {
         $response->assertOk();
         $json = $response->json();
         expect($json['data']['total'])->toBe(2);
-        $names = array_map(fn ($item) => $item['name'], $json['data']['data']);
+        $names = array_map(fn ($item): mixed => $item['name'], $json['data']['data']);
         expect($names)->toContain('Multi-category Course')
             ->and($names)->toContain('Single-category Course')
             ->and($names)->not->toContain('No-category Course');
     });
-    it('filters by price_min and price_max', function () {
+    it('filters by price_min and price_max', function (): void {
         $cheapProduct = Product::factory()
             ->withDeliveryOptions(1)
             ->withCategory(1)
@@ -518,7 +518,7 @@ describe('filters tests', function () {
             expect($json['data']['data'][0]['name'])->toBe('Affordable Course');
         }
     });
-    it('filters by level', function () {
+    it('filters by level', function (): void {
         Product::factory()
             ->withDeliveryOptions(1)
             ->withCategory(1)
@@ -548,7 +548,7 @@ describe('filters tests', function () {
             expect($json['data']['data'][0]['name'])->toBe('Beginner Course');
         }
     });
-    it('filters by fulfillment_types', function () {
+    it('filters by fulfillment_types', function (): void {
         Product::factory()
             ->withDeliveryOptions(realData: [
                 ['fulfillment_type' => FulfillmentTypeEnum::DIGITAL],
@@ -574,7 +574,7 @@ describe('filters tests', function () {
             expect($json['data']['data'][0]['name'])->toBe('Digital Course');
         }
     });
-    it('filters by availabilty status', function () {
+    it('filters by availabilty status', function (): void {
         $now         = now();
         $pastProduct = Product::factory()
             ->withDeliveryOptions(realData: [

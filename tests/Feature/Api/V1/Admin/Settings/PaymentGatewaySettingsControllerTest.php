@@ -5,12 +5,12 @@ use App\Enums\System\SettingKeyEnum;
 use App\Services\SettingsService;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->admin_user();
 });
 
-describe('index', function () {
-    it('returns all payment gateways with their corresponding schemas and stored settings', function () {
+describe('index', function (): void {
+    it('returns all payment gateways with their corresponding schemas and stored settings', function (): void {
         // Mocking SettingsService response for wallet
         $mockSettings = [
             'enabled' => true,
@@ -62,8 +62,8 @@ describe('index', function () {
     });
 });
 
-describe('show', function () {
-    it('returns the settings for a specific gateway', function () {
+describe('show', function (): void {
+    it('returns the settings for a specific gateway', function (): void {
         $mockSettings = [
             'enabled' => true,
             'shop_enabled' => true,
@@ -88,15 +88,15 @@ describe('show', function () {
     });
 });
 
-describe('update validation', function () {
-    it('fails when common required fields are missing', function () {
+describe('update validation', function (): void {
+    it('fails when common required fields are missing', function (): void {
         $response = $this->putJson('/api/v1/admin/settings/payment-gateways/'. PaymentMethodEnum::WALLET->value, []);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['enabled', 'shop_enabled', 'label']);
     });
 
-    it('fails when a complex gateway is missing its nested configuration', function () {
+    it('fails when a complex gateway is missing its nested configuration', function (): void {
         $payload = [
             'enabled' => true,
             'shop_enabled' => true,
@@ -113,7 +113,7 @@ describe('update validation', function () {
             ->assertJsonValidationErrors(['config']);
     });
 
-    it('fails when nested config fields are missing for a complex gateway', function () {
+    it('fails when nested config fields are missing for a complex gateway', function (): void {
         $payload = [
             'enabled' => true,
             'shop_enabled' => true,
@@ -133,7 +133,7 @@ describe('update validation', function () {
             ->assertJsonValidationErrors(['config.username']);
     });
 
-    it('fails when a simple gateway tries to submit a config payload', function () {
+    it('fails when a simple gateway tries to submit a config payload', function (): void {
         $payload = [
             'enabled' => true,
             'shop_enabled' => true,
@@ -153,8 +153,8 @@ describe('update validation', function () {
     });
 });
 
-describe('update success', function () {
-    it('successfully updates a simple gateway config', function () {
+describe('update success', function (): void {
+    it('successfully updates a simple gateway config', function (): void {
         $payload = [
             'enabled' => true,
             'shop_enabled' => true,
@@ -181,7 +181,7 @@ describe('update success', function () {
             ->assertJsonPath('data.config', null);
     });
 
-    it('successfully updates a complex gateway config', function () {
+    it('successfully updates a complex gateway config', function (): void {
         $payload = [
             'enabled' => true,
             'shop_enabled' => true,

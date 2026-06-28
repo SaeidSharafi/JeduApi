@@ -5,9 +5,9 @@ declare(strict_types=1);
 use App\Models\Category;
 use App\Models\Product;
 
-describe('CategoryController', function () {
+describe('CategoryController', function (): void {
 
-    it('get list of categories', function () {
+    it('get list of categories', function (): void {
         $parentCategory = Category::factory()->create();
         Category::factory()->create(['parent_id' => $parentCategory->id]);
         Category::factory()->create(['parent_id' => $parentCategory->id]);
@@ -35,7 +35,7 @@ describe('CategoryController', function () {
         ]);
     });
 
-    it('get single category details', function () {
+    it('get single category details', function (): void {
         $category        = Category::factory()->create();
         $anotherCategory = Category::factory()->create();
 
@@ -159,7 +159,7 @@ describe('CategoryController', function () {
         }
     });
 
-    it('get single category details for courses', function () {
+    it('get single category details for courses', function (): void {
         $category = Category::factory()->create();
 
         $courses = Product::factory()
@@ -221,7 +221,7 @@ describe('CategoryController', function () {
         }
     });
 
-    it('get single category details for seminars', function () {
+    it('get single category details for seminars', function (): void {
         $category = Category::factory()->create();
 
         $seminars = Product::factory()
@@ -282,7 +282,7 @@ describe('CategoryController', function () {
                 ->and($product['price_data'])->toBeArray();
         }
     });
-    it('get single category details for digital assets', function () {
+    it('get single category details for digital assets', function (): void {
         $category = Category::factory()->create();
         $assets   = Product::factory()
             ->withDigitalAsset()

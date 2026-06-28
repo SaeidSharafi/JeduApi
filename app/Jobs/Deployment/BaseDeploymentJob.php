@@ -16,7 +16,7 @@ use Throwable;
 
 abstract class BaseDeploymentJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use \Illuminate\Foundation\Queue\Queueable;
 
     public int $tries = 3;
 

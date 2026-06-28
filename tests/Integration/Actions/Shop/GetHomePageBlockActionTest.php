@@ -304,7 +304,7 @@ describe('GetHomePageBlockAction', function (): void {
             [DynamicListSortByEnum::FEATURED],
 
         ]);
-    it('can handle dynamic list blocks for featured blog posts', function () {
+    it('can handle dynamic list blocks for featured blog posts', function (): void {
         // Create test data
         $blogPosts = BlogPost::factory()
             ->count(5)

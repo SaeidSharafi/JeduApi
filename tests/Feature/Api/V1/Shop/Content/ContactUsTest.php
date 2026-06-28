@@ -7,8 +7,8 @@ use App\Models\ContactUsRequest;
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
 
-describe('ContactPageController', function () {
-    it('shows contact page settings', function () {
+describe('ContactPageController', function (): void {
+    it('shows contact page settings', function (): void {
         $response = getJson(route('api.v1.shop.contactpage.show'));
         $response->assertOk();
         $response->assertJsonStructure([
@@ -25,8 +25,8 @@ describe('ContactPageController', function () {
         ]);
     });
 });
-describe('ContactUsRequestController', function () {
-    it('stores contact us request', function () {
+describe('ContactUsRequestController', function (): void {
+    it('stores contact us request', function (): void {
         // Arrange
         $payload = [
             'full_name' => 'John Doe',
@@ -45,7 +45,7 @@ describe('ContactUsRequestController', function () {
         expect(ContactUsRequest::where('email', 'john@example.com')->exists())->toBeTrue();
     });
 
-    it('throttles contact us requests', function () {
+    it('throttles contact us requests', function (): void {
         $payload = [
             'full_name' => 'Jane Doe',
             'phone'     => '+1234567891',

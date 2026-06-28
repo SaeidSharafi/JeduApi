@@ -8,7 +8,7 @@ use Illuminate\Validation\ValidationException;
 use Tests\Support\Traits\AuthTestTrait;
 
 uses(AuthTestTrait::class);
-it('throws validation error when payment method is not provided', function () {
+it('throws validation error when payment method is not provided', function (): void {
     $this->customer();
     $pdo = App\Models\ProductDeliveryOption::factory()->create();
     App\Models\Cart::factory()

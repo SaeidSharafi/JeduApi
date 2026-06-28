@@ -19,7 +19,7 @@ use SmartCache\Facades\SmartCache;
  */
 final class RegenerateAllDiscountPricesJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use \Illuminate\Foundation\Queue\Queueable;
 
     /**
      * Execute the job.

@@ -9,7 +9,7 @@ use Illuminate\Http\UploadedFile;
 
 use function Pest\Laravel\getJson;
 
-it('returns about us data for shop (public)', function () {
+it('returns about us data for shop (public)', function (): void {
     $response = getJson(route('api.v1.shop.aboutus.show'));
     $response->assertOk();
 
@@ -37,7 +37,7 @@ it('returns about us data for shop (public)', function () {
         'metadata',
     ]);
 });
-it('returns about us data with correct media', function () {
+it('returns about us data with correct media', function (): void {
     Storage::fake('public');
     $image1 = MediaUploader::fromSource(UploadedFile::fake()->image('image1.jpg'))
         ->toDisk('public')

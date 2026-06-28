@@ -29,8 +29,8 @@ final class ProductTeacherController extends Controller
 
         $product->load('productDeliveryOptions.teachers');
         $teachers = [];
-        $product->productDeliveryOptions->each(function ($deliveryOption) use (&$teachers) {
-            $deliveryOption->teachers->each(function ($teacher) use (&$teachers) {
+        $product->productDeliveryOptions->each(function ($deliveryOption) use (&$teachers): void {
+            $deliveryOption->teachers->each(function ($teacher) use (&$teachers): void {
                 $teachers[$teacher->id] = $teacher;
             });
 

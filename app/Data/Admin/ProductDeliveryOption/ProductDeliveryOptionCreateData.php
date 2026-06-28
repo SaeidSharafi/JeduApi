@@ -109,9 +109,9 @@ final class ProductDeliveryOptionCreateData extends Data
         return array_merge($baseRules, $conditionalDetailsRules);
     }
 
-    public static function withValidator(Validator $validator): void
+    public static function withValidator(\Illuminate\Contracts\Validation\Validator $validator): void
     {
-        $validator->after(function ($validator) {});
+        $validator->after(function ($validator): void {});
     }
 
     public static function attributes(...$args): array

@@ -23,10 +23,7 @@ use Throwable;
 
 final class ProvisionImsEnrollmentJob extends AbstractProvisioningJob
 {
-    use Dispatchable;
-    use InteractsWithQueue;
-    use Queueable;
-    use SerializesModels;
+    use \Illuminate\Foundation\Queue\Queueable;
 
     public int $tries = 3;
 

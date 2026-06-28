@@ -10,8 +10,8 @@ use App\Services\Integrations\SkyroomService;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\Http;
 
-describe('findOrCreateUser', function () {
-    it('returns skyroom_user_id when getUser finds an existing user', function () {
+describe('findOrCreateUser', function (): void {
+    it('returns skyroom_user_id when getUser finds an existing user', function (): void {
         Http::fake([
             skyroomEndpoint() => Http::response([
                 'ok'     => true,
@@ -24,18 +24,18 @@ describe('findOrCreateUser', function () {
         expect($result)->toBe(['skyroom_user_id' => 42]);
     });
 
-    it('throws RecoverableProvisioningException when getUser returns error_code 15 (not found)', function () {
+    it('throws RecoverableProvisioningException when getUser returns error_code 15 (not found)', function (): void {
         Http::fake([
             skyroomEndpoint() => Http::sequence()
                 ->push(['ok' => false, 'error_code' => 15, 'error_message' => 'User not found'])
                 ->push(['ok' => true, 'result' => 99]),
         ]);
 
-        expect(fn () => makeSkyroomService()->findOrCreateUser(makeUser(5, 'Ali Karimi')))
+        expect(fn (): array => makeSkyroomService()->findOrCreateUser(makeUser(5, 'Ali Karimi')))
             ->toThrow(RecoverableProvisioningException::class);
     });
 
-    it('throws RecoverableProvisioningException when getUser returns a non-15 error', function () {
+    it('throws RecoverableProvisioningException when getUser returns a non-15 error', function (): void {
         Http::fake([
             skyroomEndpoint() => Http::response([
                 'ok'            => false,
@@ -44,13 +44,13 @@ describe('findOrCreateUser', function () {
             ]),
         ]);
 
-        expect(fn () => makeSkyroomService()->findOrCreateUser(makeUser(3)))
+        expect(fn (): array => makeSkyroomService()->findOrCreateUser(makeUser(3)))
             ->toThrow(RecoverableProvisioningException::class);
     });
 });
 
-describe('addUserToRoom', function () {
-    it('calls addRoomUsers with correct payload on success', function () {
+describe('addUserToRoom', function (): void {
+    it('calls addRoomUsers with correct payload on success', function (): void {
         Http::fake([
             skyroomEndpoint() => Http::response(['ok' => true, 'result' => null]),
         ]);
@@ -68,7 +68,7 @@ describe('addUserToRoom', function () {
         });
     });
 
-    it('throws when API returns ok: false', function () {
+    it('throws when API returns ok: false', function (): void {
         Http::fake([
             skyroomEndpoint() => Http::response([
                 'ok'            => false,
@@ -82,8 +82,8 @@ describe('addUserToRoom', function () {
     });
 });
 
-describe('createLoginUrl', function () {
-    it('returns the login URL string from the API result', function () {
+describe('createLoginUrl', function (): void {
+    it('returns the login URL string from the API result', function (): void {
         $url = 'https://www.skyroom.online/ch/test/room?token=abc123';
 
         Http::fake([
@@ -96,8 +96,8 @@ describe('createLoginUrl', function () {
     });
 });
 
-describe('error handling', function () {
-    it('throws RecoverableProvisioningException when Skyroom service configuration is missing.', function () {
+describe('error handling', function (): void {
+    it('throws RecoverableProvisioningException when Skyroom service configuration is missing.', function (): void {
         $settings = Mockery::mock(SettingsService::class);
         $settings->shouldReceive('get')
             ->with(SettingKeyEnum::SKYROOM, Mockery::any())
@@ -105,25 +105,25 @@ describe('error handling', function () {
 
         $service = new SkyroomService($settings);
 
-        expect(fn () => $service->findOrCreateUser(makeUser(1)))
+        expect(fn (): array => $service->findOrCreateUser(makeUser(1)))
             ->toThrow(RecoverableProvisioningException::class);
     });
 
-    it('throws RecoverableProvisioningException on HTTP failure (5xx)', function () {
+    it('throws RecoverableProvisioningException on HTTP failure (5xx)', function (): void {
         Http::fake([
             skyroomEndpoint() => Http::response([], 500),
         ]);
 
-        expect(fn () => makeSkyroomService()->findOrCreateUser(makeUser(1)))
+        expect(fn (): array => makeSkyroomService()->findOrCreateUser(makeUser(1)))
             ->toThrow(RecoverableProvisioningException::class);
     });
 
-    it('throws RecoverableProvisioningException on network error', function () {
+    it('throws RecoverableProvisioningException on network error', function (): void {
         Http::fake([
             skyroomEndpoint() => fn () => throw new RuntimeException('Connection refused'),
         ]);
 
-        expect(fn () => makeSkyroomService()->findOrCreateUser(makeUser(1)))
+        expect(fn (): array => makeSkyroomService()->findOrCreateUser(makeUser(1)))
             ->toThrow(RecoverableProvisioningException::class);
     });
 });

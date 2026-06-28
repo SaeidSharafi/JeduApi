@@ -52,7 +52,7 @@ final readonly class CartService
         }
         // If no explicit user provided, attempt to resolve authenticated user via identifier
         if ($this->identifier->userId() !== null) {
-            $userId = (int) $this->identifier->userId();
+            $userId = $this->identifier->userId();
 
             $cart = $query->where('user_id', $userId)->first();
 
@@ -302,7 +302,7 @@ final readonly class CartService
         // Get the user ID - for guest carts, we'll use a temporary user concept
         $userId = $cart->user_id ?? Auth::guard('user')->id();
 
-        $items = $cart->items->map(fn (CartItem $item) => new OrderItemCreateData(
+        $items = $cart->items->map(fn (CartItem $item): \App\Data\Admin\Order\OrderItemCreateData => new OrderItemCreateData(
             product_delivery_option_id: $item->product_delivery_option_id,
             payment_type: $item->payment_type->value,
             qty_ordered: $item->quantity

@@ -80,7 +80,7 @@ it('throws when required config key is missing', function (): void {
 
     $repo = new DigipayConfigRepository($this->settingsService);
 
-    expect(fn () => $repo->getUsername())
+    expect(fn (): string => $repo->getUsername())
         ->toThrow(DigipayException::class, 'Digipay configuration missing: username');
 });
 
@@ -96,7 +96,7 @@ it('throws when required config key does not exist', function (): void {
 
     $repo = new DigipayConfigRepository($this->settingsService);
 
-    expect(fn () => $repo->getUsername())
+    expect(fn (): string => $repo->getUsername())
         ->toThrow(DigipayException::class, 'Digipay configuration missing: username');
 });
 

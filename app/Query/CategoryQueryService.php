@@ -34,7 +34,7 @@ final class CategoryQueryService
 
         // Map the results into the ProductCardData DTO
         $productsCollection->transform(
-            fn (Product $product) => ProductCardData::fromModel($product, $prices->get($product->id))
+            fn (Product $product): \App\Data\Shop\Product\ProductCardData => ProductCardData::fromModel($product, $prices->get($product->id))
         );
 
         return $productsCollection;

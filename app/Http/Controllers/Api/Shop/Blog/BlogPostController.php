@@ -36,17 +36,17 @@ final class BlogPostController extends Controller
             ->where('status', PublicationStatusEnum::PUBLISHED)
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
-            ->when($requestData->is_featured !== null, function ($q) use ($requestData) {
+            ->when($requestData->is_featured !== null, function ($q) use ($requestData): void {
                 $q->where('is_featured', $requestData->is_featured);
             })
-            ->when($requestData->category_slug, function ($q) use ($requestData) {
-                $q->whereHas('categories', function ($q2) use ($requestData) {
+            ->when($requestData->category_slug, function ($q) use ($requestData): void {
+                $q->whereHas('categories', function ($q2) use ($requestData): void {
                     $q2->where('slug', $requestData->category_slug);
                 });
             })
-            ->when($requestData->sortBy === 'popularity', function ($q) {
+            ->when($requestData->sortBy === 'popularity', function ($q): void {
                 $q->orderByDesc('average_rating');
-            }, function ($q) use ($requestData) {
+            }, function ($q) use ($requestData): void {
                 $q->orderBy($requestData->sortBy, $requestData->sortOrder);
             })
             ->with(['author', 'categories'])
@@ -88,7 +88,7 @@ final class BlogPostController extends Controller
             ->availableProducts()
             ->forListing()
             ->getQuery()
-            ->where(function (Builder $query) use ($relatedProductableIds) {
+            ->where(function (Builder $query) use ($relatedProductableIds): void {
                 $query->where(fn (Builder $query) => $query->where('productable_type', 'course')
                     ->whereIn('productable_id', $relatedProductableIds['course'] ?? []))
                     ->orWhere(fn (Builder $query) => $query->where('productable_type', 'seminar')

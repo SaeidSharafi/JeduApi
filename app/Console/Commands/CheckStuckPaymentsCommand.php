@@ -82,7 +82,7 @@ final class CheckStuckPaymentsCommand extends Command
             // Output to console
             $this->table(
                 ['Field', 'Value'],
-                collect($logData)->map(fn ($value, $key) => [$key, $value])->values()->toArray()
+                collect($logData)->map(fn ($value, $key): array => [$key, $value])->values()->all()
             );
         }
 

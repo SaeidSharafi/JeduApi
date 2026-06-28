@@ -7,7 +7,7 @@ use Illuminate\Http\UploadedFile;
 
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
-it('can get collaboration settings', function () {
+it('can get collaboration settings', function (): void {
     $this->authorized_user([PermissionEnum::SETTING_VIEW_ANY]);
 
     $response = $this->getJson(route('api.v1.admin.settings.collaboration.show'));
@@ -24,7 +24,7 @@ it('can get collaboration settings', function () {
     ]);
 });
 
-it('can update collaboration settings', function () {
+it('can update collaboration settings', function (): void {
     $this->authorized_user([PermissionEnum::SETTING_UPDATE]);
     Storage::fake('public');
     $image = MediaUploader::fromSource(UploadedFile::fake()->image('image.jpg'))
@@ -47,7 +47,7 @@ it('can update collaboration settings', function () {
 
 });
 
-it('cannot update collaboration settings with invalid data', function () {
+it('cannot update collaboration settings with invalid data', function (): void {
     $this->authorized_user([PermissionEnum::SETTING_UPDATE]);
 
     $payload = [
@@ -62,7 +62,7 @@ it('cannot update collaboration settings with invalid data', function () {
     $response->assertJsonValidationErrors(['title', 'content']);
 });
 
-it('cannot access collaboration settings without authentication', function () {
+it('cannot access collaboration settings without authentication', function (): void {
     $this->authorized_user();
     $response = $this->getJson(route('api.v1.admin.settings.collaboration.show'));
     $response->assertForbidden();

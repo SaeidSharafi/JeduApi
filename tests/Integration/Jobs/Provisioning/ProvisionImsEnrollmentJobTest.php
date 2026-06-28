@@ -173,7 +173,7 @@ it('throws when no completed payment exists while resolving amount', function ()
 
     $job = new ProvisionImsEnrollmentJob($enrollment->id);
 
-    expect(fn () => invokeProvisionImsPrivate($job, 'resolvePaymentAmount', $enrollment))
+    expect(fn (): mixed => invokeProvisionImsPrivate($job, 'resolvePaymentAmount', $enrollment))
         ->toThrow(RuntimeException::class, 'Completed payment is required for IMS provisioning.');
 });
 
@@ -182,7 +182,7 @@ it('throws when enrollment has no order while resolving amount', function (): vo
 
     $job = new ProvisionImsEnrollmentJob(1);
 
-    expect(fn () => invokeProvisionImsPrivate($job, 'resolvePaymentAmount', $enrollment))
+    expect(fn (): mixed => invokeProvisionImsPrivate($job, 'resolvePaymentAmount', $enrollment))
         ->toThrow(RuntimeException::class, 'Enrollment order is required for IMS provisioning.');
 });
 
@@ -191,7 +191,7 @@ it('throws when payment order id does not match enrollment order id', function (
     $payment      = Payment::factory()->create([]);
     $job          = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
 
-    expect(fn () => invokeProvisionImsPrivate($job, 'resolvePaymentOrFail', $enrollment))
+    expect(fn (): mixed => invokeProvisionImsPrivate($job, 'resolvePaymentOrFail', $enrollment))
         ->toThrow(RuntimeException::class, 'Payment does not belong to enrollment order.');
 });
 
@@ -201,7 +201,7 @@ it('throws when payment status is not completed', function (): void {
     $payment->save();
     $job = new ProvisionImsEnrollmentJob($enrollment->id, $payment->id);
 
-    expect(fn () => invokeProvisionImsPrivate($job, 'resolvePaymentOrFail', $enrollment))
+    expect(fn (): mixed => invokeProvisionImsPrivate($job, 'resolvePaymentOrFail', $enrollment))
         ->toThrow(RuntimeException::class, 'Payment must be completed before IMS provisioning');
 });
 
@@ -466,7 +466,7 @@ it('logs error with enrollment context on failure', function (): void {
     $job->failed(new RuntimeException('test error'));
 
     Log::shouldHaveReceived('error')
-        ->withArgs(fn ($message, $context) => $message === 'IMS provisioning failed'
+        ->withArgs(fn ($message, $context): bool => $message === 'IMS provisioning failed'
             && ($context['enrollment_id'] ?? null)     === $enrollment->id
         );
 });

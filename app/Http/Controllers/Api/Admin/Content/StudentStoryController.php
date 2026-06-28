@@ -52,13 +52,13 @@ final class StudentStoryController extends Controller
                 'course_name',
                 AllowedFilter::exact('is_visible'),
                 AllowedFilter::exact('is_featured'),
-                AllowedFilter::callback('course_id', function ($query, $value) {
-                    $query->whereHas('courses', function ($q) use ($value) {
+                AllowedFilter::callback('course_id', function ($query, $value): void {
+                    $query->whereHas('courses', function ($q) use ($value): void {
                         $q->where('courses.id', $value);
                     });
                 }),
-                AllowedFilter::callback('category_id', function ($query, $value) {
-                    $query->whereHas('categories', function ($q) use ($value) {
+                AllowedFilter::callback('category_id', function ($query, $value): void {
+                    $query->whereHas('categories', function ($q) use ($value): void {
                         $q->where('categories.id', $value);
                     });
                 }),

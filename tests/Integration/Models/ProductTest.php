@@ -73,7 +73,7 @@ test('relation orderItems through product_delivery_options', function (): void {
         ->toEqual($orderItem->id);
 });
 
-test('relation relatedProducts', function () {
+test('relation relatedProducts', function (): void {
     $productA = App\Models\Product::factory()->create();
     $productB = App\Models\Product::factory()->create();
 
@@ -87,7 +87,7 @@ test('relation relatedProducts', function () {
         ->toEqual($productB->id);
 });
 
-test('relation relatedProducts with type', function () {
+test('relation relatedProducts with type', function (): void {
     $productA = App\Models\Product::factory()->create();
     $productB = App\Models\Product::factory()->create();
     $productC = App\Models\Product::factory()->create();

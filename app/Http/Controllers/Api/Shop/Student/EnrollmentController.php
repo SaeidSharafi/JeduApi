@@ -129,7 +129,7 @@ final class EnrollmentController extends Controller
         RateLimiter::attempt(
             $throttleKey,
             maxAttempts: 1,
-            callback: fn () => dispatch(new SyncMoodleProgressJob(
+            callback: fn (): \Illuminate\Foundation\Bus\PendingDispatch => dispatch(new SyncMoodleProgressJob(
                 $enrollment->id,
                 $moodleCourseId,
                 $moodleUserId,

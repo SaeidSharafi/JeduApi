@@ -53,7 +53,7 @@ final class ProductableSelectOptionController extends Controller
                 ])
                 ->when($query->isNotEmpty(), function ($q) use ($query): void {
                     $term = '%'.addcslashes((string) $query, '%_').'%';
-                    $q->where(function ($w) use ($term) {
+                    $q->where(function ($w) use ($term): void {
                         $w->whereLike('full_name', $term)
                             ->orWhereLike('short_name', $term);
                     });

@@ -61,7 +61,7 @@ describe('Retry Order Payment', function (): void {
         $expectedWsdlUrl = config('payments.mellat.test_server_url');
         $fakeRefId       = 'ABCDEF1234567890';
         $soapClientMock  = Mockery::mock(SoapClient::class);
-        $this->mock(SoapClientFactory::class, function (MockInterface $mock) use ($expectedWsdlUrl, $soapClientMock) {
+        $this->mock(SoapClientFactory::class, function (MockInterface $mock) use ($expectedWsdlUrl, $soapClientMock): void {
             $mock->shouldReceive('create')
                 ->with($expectedWsdlUrl)
                 ->andReturn($soapClientMock);

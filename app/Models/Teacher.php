@@ -52,7 +52,7 @@ final class Teacher extends Model
     {
         parent::boot();
 
-        self::creating(function ($model) {
+        self::creating(function ($model): void {
             if (! $model->uuid) {
                 $model->uuid = Str::uuid7();
             }

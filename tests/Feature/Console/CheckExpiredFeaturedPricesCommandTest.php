@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-describe('CheckExpiredFeaturedPricesCommand', function () {
+describe('CheckExpiredFeaturedPricesCommand', function (): void {
     it('handles no expired featured prices', function (): void {
         $this->artisan('prices:check-expired-featured')
             ->expectsOutput('Checking for expired featured prices...')

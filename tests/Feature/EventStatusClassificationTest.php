@@ -11,9 +11,9 @@ use App\Models\ProductDeliveryOption;
 use App\Query\ProductQueryService;
 use Carbon\Carbon;
 
-describe('EventStatusClassification', function () {
-    describe('eventStatus()', function () {
-        it('PAST: returns products where event_ended_at < today even if PDO available_to is null (recording scenario)', function () {
+describe('EventStatusClassification', function (): void {
+    describe('eventStatus()', function (): void {
+        it('PAST: returns products where event_ended_at < today even if PDO available_to is null (recording scenario)', function (): void {
             // Arrange: Past product with recording (event ended yesterday, recording always available)
             $pastProduct = Product::factory()
                 ->withSeminar()
@@ -56,7 +56,7 @@ describe('EventStatusClassification', function () {
                 ->and($results->first()->id)->toBe($pastProduct->id);
         });
 
-        it('PAST: returns products without event dates but with past available_to (fallback)', function () {
+        it('PAST: returns products without event dates but with past available_to (fallback)', function (): void {
             // Arrange: Product with no event dates, but PDO available_to in the past
             $pastFallbackProduct = Product::factory()
                 ->withSeminar()
@@ -98,7 +98,7 @@ describe('EventStatusClassification', function () {
                 ->and($results->first()->id)->toBe($pastFallbackProduct->id);
         });
 
-        it('UPCOMING: returns products where event_start_at > today', function () {
+        it('UPCOMING: returns products where event_start_at > today', function (): void {
             // Arrange: Upcoming product
             $upcomingProduct = Product::factory()
                 ->withSeminar()
@@ -140,7 +140,7 @@ describe('EventStatusClassification', function () {
                 ->and($results->first()->id)->toBe($upcomingProduct->id);
         });
 
-        it('UPCOMING: returns products without event dates but with future available_from (fallback)', function () {
+        it('UPCOMING: returns products without event dates but with future available_from (fallback)', function (): void {
             // Arrange: Product with no event dates, PDO available_from in the future
             $upcomingFallbackProduct = Product::factory()
                 ->withSeminar()
@@ -182,7 +182,7 @@ describe('EventStatusClassification', function () {
                 ->and($results->first()->id)->toBe($upcomingFallbackProduct->id);
         });
 
-        it('ONGOING: returns products where today is between event_start_at and event_ended_at', function () {
+        it('ONGOING: returns products where today is between event_start_at and event_ended_at', function (): void {
             // Arrange: Ongoing product spanning today
             $ongoingProduct = Product::factory()
                 ->withSeminar()
@@ -224,7 +224,7 @@ describe('EventStatusClassification', function () {
                 ->and($results->first()->id)->toBe($ongoingProduct->id);
         });
 
-        it('ONGOING: returns products without event dates but with active availability window (fallback)', function () {
+        it('ONGOING: returns products without event dates but with active availability window (fallback)', function (): void {
             // Arrange: Product with no event dates, active availability window
             $ongoingFallbackProduct = Product::factory()
                 ->withSeminar()
@@ -266,7 +266,7 @@ describe('EventStatusClassification', function () {
                 ->and($results->first()->id)->toBe($ongoingFallbackProduct->id);
         });
 
-        it('ONGOING fallback: includes products with null available_to in active window', function () {
+        it('ONGOING fallback: includes products with null available_to in active window', function (): void {
             // Arrange: Product with no event dates, available_from active, available_to null
             $ongoingNoEndProduct = Product::factory()
                 ->withSeminar()
@@ -308,7 +308,7 @@ describe('EventStatusClassification', function () {
                 ->and($results->first()->id)->toBe($ongoingNoEndProduct->id);
         });
 
-        it('returns empty collection when null status is passed', function () {
+        it('returns empty collection when null status is passed', function (): void {
             // Arrange: Create a product that would match PAST
             $pastProduct = Product::factory()
                 ->withSeminar()
@@ -334,8 +334,8 @@ describe('EventStatusClassification', function () {
         });
     });
 
-    describe('eventNotEnded()', function () {
-        it('excludes products with event_ended_at < today from results', function () {
+    describe('eventNotEnded()', function (): void {
+        it('excludes products with event_ended_at < today from results', function (): void {
             // Arrange: Three products with different event_end states
             $pastProduct = Product::factory()
                 ->withSeminar()
@@ -386,7 +386,7 @@ describe('EventStatusClassification', function () {
                 ->not->toContain($pastProduct->id);
         });
 
-        it('includes products with null event_ended_at', function () {
+        it('includes products with null event_ended_at', function (): void {
             // Arrange: Product with no event ended date
             $nullEndedProduct = Product::factory()
                 ->withSeminar()
@@ -424,7 +424,7 @@ describe('EventStatusClassification', function () {
                 ->and($results->first()->id)->toBe($nullEndedProduct->id);
         });
 
-        it('includes products where event_ended_at equals today', function () {
+        it('includes products where event_ended_at equals today', function (): void {
             // Arrange: Product ending today
             $endsTodayProduct = Product::factory()
                 ->withSeminar()
@@ -450,8 +450,8 @@ describe('EventStatusClassification', function () {
         });
     });
 
-    describe('Past seminar with recording scenario', function () {
-        it('classifies past seminar as PAST even though SpotPlayer recording is still purchasable', function () {
+    describe('Past seminar with recording scenario', function (): void {
+        it('classifies past seminar as PAST even though SpotPlayer recording is still purchasable', function (): void {
             // Arrange: Past seminar with SpotPlayer recording (available_to=null)
             $pastSeminar = Product::factory()
                 ->withSeminar()
@@ -505,8 +505,8 @@ describe('EventStatusClassification', function () {
         });
     });
 
-    describe('Integration: ProductFilterData availability_status', function () {
-        it('filters by PAST availability_status through applyDatabaseAvailabilityFilters', function () {
+    describe('Integration: ProductFilterData availability_status', function (): void {
+        it('filters by PAST availability_status through applyDatabaseAvailabilityFilters', function (): void {
             // Arrange
             $pastProduct = Product::factory()
                 ->withSeminar()

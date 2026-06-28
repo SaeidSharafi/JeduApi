@@ -14,7 +14,7 @@ use App\Models\Term;
 use App\Services\SkuGeneratorService;
 
 describe('SkuGeneratorService', function (): void {
-    beforeEach(function () {
+    beforeEach(function (): void {
         $this->skuService = new SkuGeneratorService();
         $this->course     = Course::factory()->create(
             [

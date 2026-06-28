@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use Illuminate\Http\UploadedFile;
 
-describe('CollaborationPageController', function () {
+describe('CollaborationPageController', function (): void {
 
-    it('should return collaboration page configuration', function () {
+    it('should return collaboration page configuration', function (): void {
         $response = $this->getJson(route('api.v1.shop.collaboration.show'));
         $response->assertOk();
         $response->assertJsonStructure([
@@ -21,9 +21,9 @@ describe('CollaborationPageController', function () {
     });
 });
 
-describe('CollaborationRequestController', function () {
+describe('CollaborationRequestController', function (): void {
 
-    it('should submit collaboration request', function () {
+    it('should submit collaboration request', function (): void {
         Storage::fake('local');
         $document = UploadedFile::fake()->create('attachment.pdf', 100, 'application/pdf');
         $postData = [

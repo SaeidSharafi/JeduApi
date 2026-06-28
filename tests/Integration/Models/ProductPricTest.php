@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Models\Product;
 use App\Models\ProductPrice;
 
-it('to array', function () {
+it('to array', function (): void {
     $data = [
         'product_id'              => Product::factory()->create()->id,
         'min_price'               => 1000,
@@ -41,7 +41,7 @@ it('to array', function () {
         ]);
 });
 
-it('hasActiveDiscount returns true if has_discount is true', function () {
+it('hasActiveDiscount returns true if has_discount is true', function (): void {
     $productPrice = ProductPrice::query()->create([
         'product_id'              => Product::factory()->create()->id,
         'min_price'               => 1000,
@@ -58,7 +58,7 @@ it('hasActiveDiscount returns true if has_discount is true', function () {
     expect($productPrice->hasActiveDiscount())->toBeTrue();
 });
 
-it('hasActiveDiscount returns true if has_featured_price is true', function () {
+it('hasActiveDiscount returns true if has_featured_price is true', function (): void {
     $productPrice = ProductPrice::query()->create([
         'product_id'              => Product::factory()->create()->id,
         'min_price'               => 1000,
@@ -75,7 +75,7 @@ it('hasActiveDiscount returns true if has_featured_price is true', function () {
     expect($productPrice->hasActiveDiscount())->toBeTrue();
 });
 
-it('hasActiveDiscount returns false if both has_discount and has_featured_price are false', function () {
+it('hasActiveDiscount returns false if both has_discount and has_featured_price are false', function (): void {
     $productPrice = ProductPrice::query()->create([
         'product_id'              => Product::factory()->create()->id,
         'min_price'               => 1000,
@@ -92,7 +92,7 @@ it('hasActiveDiscount returns false if both has_discount and has_featured_price 
     expect($productPrice->hasActiveDiscount())->toBeFalse();
 });
 
-it('isSinglePrice returns true if min_price equals max_price', function () {
+it('isSinglePrice returns true if min_price equals max_price', function (): void {
     $productPrice = ProductPrice::query()->create([
         'product_id'              => Product::factory()->create()->id,
         'min_price'               => 1000,
@@ -109,7 +109,7 @@ it('isSinglePrice returns true if min_price equals max_price', function () {
     expect($productPrice->isSinglePrice())->toBeTrue();
 });
 
-it('isSinglePrice returns false if min_price does not equal max_price', function () {
+it('isSinglePrice returns false if min_price does not equal max_price', function (): void {
     $productPrice = ProductPrice::query()->create([
         'product_id'              => Product::factory()->create()->id,
         'min_price'               => 1000,
@@ -126,7 +126,7 @@ it('isSinglePrice returns false if min_price does not equal max_price', function
     expect($productPrice->isSinglePrice())->toBeFalse();
 });
 
-it('getDiscountAmount returns correct discount amount', function () {
+it('getDiscountAmount returns correct discount amount', function (): void {
     $productPrice = ProductPrice::query()->create([
         'product_id'              => Product::factory()->create()->id,
         'min_price'               => 1000,
@@ -143,7 +143,7 @@ it('getDiscountAmount returns correct discount amount', function () {
     expect($productPrice->getDiscountAmount())->toBe(500);
 });
 
-it('getPriceRange returns correct min and max prices', function () {
+it('getPriceRange returns correct min and max prices', function (): void {
     $productPrice = ProductPrice::query()->create([
         'product_id'              => Product::factory()->create()->id,
         'min_price'               => 1000,
@@ -166,7 +166,7 @@ it('getPriceRange returns correct min and max prices', function () {
         ->and($range['max'])->toBe(2000);
 });
 
-it('getEffectiveMinPrice returns min_price', function () {
+it('getEffectiveMinPrice returns min_price', function (): void {
     $productPrice = ProductPrice::query()->create([
         'product_id'              => Product::factory()->create()->id,
         'min_price'               => 1000,
@@ -183,7 +183,7 @@ it('getEffectiveMinPrice returns min_price', function () {
     expect($productPrice->getEffectiveMinPrice())->toBe(1000);
 });
 
-it('belongs to a product', function () {
+it('belongs to a product', function (): void {
     $product = Product::factory()->create();
 
     $productPrice = ProductPrice::query()->create([
@@ -203,7 +203,7 @@ it('belongs to a product', function () {
         ->and($productPrice->product->id)->toBe($product->id);
 });
 
-it('scopeWithDiscount returns only products with discounts', function () {
+it('scopeWithDiscount returns only products with discounts', function (): void {
     $productWithDiscount = ProductPrice::query()->create([
         'product_id'              => Product::factory()->create()->id,
         'min_price'               => 1000,
@@ -236,7 +236,7 @@ it('scopeWithDiscount returns only products with discounts', function () {
         ->and($discountedProducts->first()->product_id)->toBe($productWithDiscount->product_id);
 });
 
-it('scopeWithFeaturedPrice returns only products with featured prices', function () {
+it('scopeWithFeaturedPrice returns only products with featured prices', function (): void {
     $productWithFeaturedPrice = ProductPrice::query()->create([
         'product_id'              => Product::factory()->create()->id,
         'min_price'               => 1000,
@@ -269,7 +269,7 @@ it('scopeWithFeaturedPrice returns only products with featured prices', function
         ->and($featuredProducts->first()->product_id)->toBe($productWithFeaturedPrice->product_id);
 });
 
-it('scopePriceRange filters products within a price range', function () {
+it('scopePriceRange filters products within a price range', function (): void {
     $productInRange = ProductPrice::query()->create([
         'product_id'              => Product::factory()->create()->id,
         'min_price'               => 1500,

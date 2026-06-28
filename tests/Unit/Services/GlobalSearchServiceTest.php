@@ -5,8 +5,8 @@ use App\Data\Shop\Search\SearchData;
 use App\Services\GlobalSearchService;
 use Laravel\Scout\EngineManager;
 
-describe('Filter Building', function () {
-    it('builds complete product filters with all parameters', function () {
+describe('Filter Building', function (): void {
+    it('builds complete product filters with all parameters', function (): void {
         $service    = new GlobalSearchService(app(EngineManager::class));
         $reflection = new ReflectionClass($service);
         $method     = $reflection->getMethod('buildProductFilters');
@@ -38,7 +38,7 @@ describe('Filter Building', function () {
             ->and($result)->toContain('fulfillment_types:=physical');
     });
 
-    it('builds filters with has_discount=false', function () {
+    it('builds filters with has_discount=false', function (): void {
         $service    = new GlobalSearchService(app(EngineManager::class));
         $reflection = new ReflectionClass($service);
         $method     = $reflection->getMethod('buildProductFilters');
@@ -49,7 +49,7 @@ describe('Filter Building', function () {
         expect($result)->toContain('has_discount:=false');
     });
 
-    it('builds filters with price_min only', function () {
+    it('builds filters with price_min only', function (): void {
         $service    = new GlobalSearchService(app(EngineManager::class));
         $reflection = new ReflectionClass($service);
         $method     = $reflection->getMethod('buildProductFilters');
@@ -60,7 +60,7 @@ describe('Filter Building', function () {
         expect($result)->toContain('price:>=100000');
     });
 
-    it('builds filters with price_max only', function () {
+    it('builds filters with price_max only', function (): void {
         $service    = new GlobalSearchService(app(EngineManager::class));
         $reflection = new ReflectionClass($service);
         $method     = $reflection->getMethod('buildProductFilters');
@@ -71,7 +71,7 @@ describe('Filter Building', function () {
         expect($result)->toContain('price:<=500000');
     });
 
-    it('excludes fulfillment_types when empty', function () {
+    it('excludes fulfillment_types when empty', function (): void {
         $service    = new GlobalSearchService(app(EngineManager::class));
         $reflection = new ReflectionClass($service);
         $method     = $reflection->getMethod('buildProductFilters');
@@ -82,7 +82,7 @@ describe('Filter Building', function () {
         expect($result)->not->toContain('fulfillment_types');
     });
 
-    it('builds blog filters correctly', function () {
+    it('builds blog filters correctly', function (): void {
         $service    = new GlobalSearchService(app(EngineManager::class));
         $reflection = new ReflectionClass($service);
         $method     = $reflection->getMethod('buildBlogFilters');

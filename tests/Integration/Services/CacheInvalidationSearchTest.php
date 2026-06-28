@@ -5,12 +5,12 @@ declare(strict_types=1);
 use App\Models\Product;
 use SmartCache\Facades\SmartCache;
 
-beforeEach(function () {
+beforeEach(function (): void {
     SmartCache::clear();
 });
 
-describe('GlobalSearchService Cache Invalidation', function () {
-    it('clears search cache when product is updated', function () {
+describe('GlobalSearchService Cache Invalidation', function (): void {
+    it('clears search cache when product is updated', function (): void {
         // Arrange - Simulate GlobalSearchService MD5 hash-based cache keys
         $searchQuery = 'php programming';
         $filters     = ['category' => 'programming', 'level' => 'intermediate'];
@@ -36,7 +36,7 @@ describe('GlobalSearchService Cache Invalidation', function () {
         expect(SmartCache::has($cacheKey))->toBeFalse();
     });
 
-    it('clears multiple search cache entries with different queries', function () {
+    it('clears multiple search cache entries with different queries', function (): void {
         // Arrange - Create multiple search result caches
         $searches = [
             'php laravel',
@@ -66,7 +66,7 @@ describe('GlobalSearchService Cache Invalidation', function () {
         }
     });
 
-    it('preserves non-search related caches when product changes', function () {
+    it('preserves non-search related caches when product changes', function (): void {
         // Arrange
         $searchCacheKey   = 'search:'.md5('test query');
         $userCacheKey     = 'user.123.profile';
@@ -89,7 +89,7 @@ describe('GlobalSearchService Cache Invalidation', function () {
         expect(SmartCache::has($settingsCacheKey))->toBeTrue();
     });
 
-    it('handles search cache with pagination variations', function () {
+    it('handles search cache with pagination variations', function (): void {
         // Arrange - Simulate pagination caches for the same query
         $query     = 'laravel tutorial';
         $cacheKeys = [];

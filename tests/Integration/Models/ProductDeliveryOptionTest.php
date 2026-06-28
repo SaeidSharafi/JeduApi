@@ -179,7 +179,7 @@ test('discountPrice', function (): void {
     expect($deliveryOption->discountPrice)->toEqual(10000);
 });
 
-describe('scopes', function () {
+describe('scopes', function (): void {
 
     it('withCapacityInfo adds enrolled_count', function (): void {
         $deliveryOption = App\Models\ProductDeliveryOption::factory()->create();

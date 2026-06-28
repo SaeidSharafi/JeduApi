@@ -15,7 +15,7 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Services\Integrations\SkyroomService;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->config = [
         'enabled'    => true,
         'service_id' => 'test-service-123',

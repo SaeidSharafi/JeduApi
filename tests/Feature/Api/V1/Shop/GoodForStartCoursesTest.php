@@ -7,8 +7,8 @@ use App\Models\Course;
 use App\Models\Product;
 use App\Models\Seminar;
 
-describe('GoodForStartCoursesController', function () {
-    it('returns a list of good-for-start courses for a given category', function () {
+describe('GoodForStartCoursesController', function (): void {
+    it('returns a list of good-for-start courses for a given category', function (): void {
         $category = Category::factory()->create(['slug' => 'programming']);
         $course1  = Course::factory()->create();
         $course2  = Course::factory()->create();
@@ -40,7 +40,7 @@ describe('GoodForStartCoursesController', function () {
         expect(count($responseData))->toBe(1);
     });
 
-    it('limits the number of returned courses based on the limit parameter', closure: function () {
+    it('limits the number of returned courses based on the limit parameter', closure: function (): void {
         $category = Category::factory()->create(['slug' => 'design']);
 
         Course::factory()

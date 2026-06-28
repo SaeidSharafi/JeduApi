@@ -17,11 +17,8 @@ use Throwable;
 
 abstract class AbstractProvisioningJob implements ShouldQueue
 {
-    use Dispatchable;
+    use \Illuminate\Foundation\Queue\Queueable;
     use HandlesProvisioningStatus;
-    use InteractsWithQueue;
-    use Queueable;
-    use SerializesModels;
 
     public int $tries = 3;
 

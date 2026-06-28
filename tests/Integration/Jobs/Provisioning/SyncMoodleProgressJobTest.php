@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Data\Shop\Student\Blocks\LmsMoodleBlockData;
 use App\Data\Shop\Student\Blocks\MoodleActivityData;
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\MoodleActivityStateEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Jobs\Provisioning\SyncMoodleProgressJob;
 use App\Models\Enrollment;
@@ -53,7 +54,7 @@ it('syncs course progress into enrollment provisioning_data', function (): void 
             cid: 10,
             name: 'Activity One',
             type: 'page',
-            state: 2,
+            state: MoodleActivityStateEnum::COMPLETE_PASS,
             grade: null,
             timecompleted: null,
         ),
@@ -113,7 +114,7 @@ it('includes score and course_grade when survey is completed', function (): void
             cid: 20,
             name: 'Quiz One',
             type: 'quiz',
-            state: 1,
+            state: MoodleActivityStateEnum::COMPLETE,
             grade: null,
             timecompleted: '1700000000',
         ),

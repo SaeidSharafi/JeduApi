@@ -18,7 +18,7 @@ use Illuminate\Queue\SerializesModels;
  */
 final class RegeneratePromotionDiscountPricesJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use \Illuminate\Foundation\Queue\Queueable;
 
     /**
      * Default batch size for processing products.

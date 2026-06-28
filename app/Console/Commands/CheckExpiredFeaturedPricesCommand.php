@@ -55,7 +55,7 @@ final class CheckExpiredFeaturedPricesCommand extends Command
                 $this->warn('DRY RUN MODE - No changes will be made');
                 $this->table(
                     ['Product ID', 'Product Name', 'Option ID', 'Expired Date'],
-                    $expiredOptions->map(fn ($option) => [
+                    $expiredOptions->map(fn ($option): array => [
                         $option->product_id,
                         $option->product->name ?? 'Unknown',
                         $option->id,

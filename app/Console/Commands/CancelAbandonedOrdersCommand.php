@@ -67,7 +67,7 @@ final class CancelAbandonedOrdersCommand extends Command
             $this->warn('DRY RUN MODE - No changes will be made');
             $this->table(
                 ['Order ID', 'Increment ID', 'Customer', 'Created At', 'Grand Total'],
-                $abandonedOrders->map(fn (Order $o) => [
+                $abandonedOrders->map(fn (Order $o): array => [
                     $o->id,
                     $o->increment_id,
                     $o->customer_email,

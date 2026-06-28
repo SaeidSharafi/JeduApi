@@ -31,7 +31,7 @@ final class BlogCategoryController extends Controller
     public function index()
     {
         $categories = BlogCategory::query()
-            ->withCount(['posts' => function ($query) {
+            ->withCount(['posts' => function ($query): void {
                 $query->where('status', PublicationStatusEnum::PUBLISHED)
                     ->whereNotNull('published_at')
                     ->where('published_at', '<=', now());
@@ -39,7 +39,7 @@ final class BlogCategoryController extends Controller
             ->orderBy('name')
             ->get();
 
-        $data = $categories->map(fn (BlogCategory $category) => BlogCategoryCardData::fromModel($category));
+        $data = $categories->map(fn (BlogCategory $category): \App\Data\Shop\Blog\BlogCategoryCardData => BlogCategoryCardData::fromModel($category));
 
         return response()->success($data);
     }
@@ -56,7 +56,7 @@ final class BlogCategoryController extends Controller
     {
         $category = BlogCategory::query()
             ->where('slug', $slug)
-            ->withCount(['posts' => function ($query) {
+            ->withCount(['posts' => function ($query): void {
                 $query->where('status', PublicationStatusEnum::PUBLISHED)
                     ->whereNotNull('published_at')
                     ->where('published_at', '<=', now());
@@ -83,7 +83,7 @@ final class BlogCategoryController extends Controller
             ->where('status', PublicationStatusEnum::PUBLISHED)
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
-            ->whereHas('categories', function ($q) use ($category) {
+            ->whereHas('categories', function ($q) use ($category): void {
                 $q->where('blog_categories.id', $category->id);
             })
             ->with(['author', 'categories']);

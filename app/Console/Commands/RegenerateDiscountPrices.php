@@ -31,7 +31,7 @@ final class RegenerateDiscountPrices extends Command
         $indexer->reIndexComplete();
         $this->info('Discount prices regenerated successfully.');
 
-        DB::afterCommit(function () {
+        DB::afterCommit(function (): void {
             if (! $this->option('skip-price-index')) {
                 $this->info('Updating price index for all products...');
 

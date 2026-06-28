@@ -107,7 +107,7 @@ final readonly class GetHomePageBlockAction
                 ->filter()
                 ->map(fn ($category): array => CategoryCardData::from($category)->toArray())
                 ->values()
-                ->toArray();
+                ->all();
         } else {
             $items = collect($itemsIds)
                 ->map(fn ($id) => $preloadedData['products']->get($id))
@@ -118,7 +118,7 @@ final readonly class GetHomePageBlockAction
                     return ProductCardData::fromModel($product, $priceData)->toArray();
                 })
                 ->values()
-                ->toArray();
+                ->all();
         }
 
         return [
@@ -165,7 +165,7 @@ final readonly class GetHomePageBlockAction
 
                 return ProductCardData::fromModel($entity, $priceData)->toArray();
             })
-                ->toArray(),
+                ->all(),
         ];
     }
 

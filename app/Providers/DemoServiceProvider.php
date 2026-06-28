@@ -22,17 +22,17 @@ final class DemoServiceProvider extends ServiceProvider
     {
         $this->app->singleton(
             SpotPlayerService::class,
-            fn ($app) => new FakeSpotPlayerService($app->make(SettingsService::class))
+            fn ($app): \App\Services\Fakes\FakeSpotPlayerService => new FakeSpotPlayerService($app->make(SettingsService::class))
         );
 
         $this->app->singleton(
             BbbService::class,
-            fn ($app) => new FakeBbbService($app->make(SettingsService::class))
+            fn ($app): \App\Services\Fakes\FakeBbbService => new FakeBbbService($app->make(SettingsService::class))
         );
 
         $this->app->singleton(
             MoodleService::class,
-            fn ($app) => new FakeMoodleService($app->make(SettingsService::class))
+            fn ($app): \App\Services\Fakes\FakeMoodleService => new FakeMoodleService($app->make(SettingsService::class))
         );
     }
 }

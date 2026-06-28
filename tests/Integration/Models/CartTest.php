@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-test('to array', function () {
+test('to array', function (): void {
     $cart  = App\Models\Cart::factory()->create()->fresh();
     $array = $cart->toArray();
     expect($array)->toHaveKeys([
@@ -14,7 +14,7 @@ test('to array', function () {
     ]);
 });
 
-test('relationships', function () {
+test('relationships', function (): void {
     $user = App\Models\User::factory()->create()->fresh();
     $cart = App\Models\Cart::factory()->create(
         [

@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use SmartCache\Facades\SmartCache;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->service = new CacheInvalidationService();
 });
 
-it('invalidates direct keys', function () {
+it('invalidates direct keys', function (): void {
     $model              = new class() extends Model {};
     $invalidationConfig = ['key1', 'key2'];
 
@@ -22,7 +22,7 @@ it('invalidates direct keys', function () {
     $this->service->invalidateForModel($model, $invalidationConfig);
 });
 
-it('invalidates patterns', function () {
+it('invalidates patterns', function (): void {
     $model              = new class() extends Model {};
     $invalidationConfig = [
         ['type' => 'pattern', 'value' => 'pattern1:*'],
@@ -34,7 +34,7 @@ it('invalidates patterns', function () {
     $this->service->invalidateForModel($model, $invalidationConfig);
 });
 
-it('invalidates enum keys', function () {
+it('invalidates enum keys', function (): void {
     $model              = new class() extends Model {};
     $invalidationConfig = [CacheKeysEnum::HomePageContent];
 
@@ -43,7 +43,7 @@ it('invalidates enum keys', function () {
     $this->service->invalidateForModel($model, $invalidationConfig);
 });
 
-it('handles mixed configuration', function () {
+it('handles mixed configuration', function (): void {
     $model              = new class() extends Model {};
     $invalidationConfig = [
         CacheKeysEnum::HomePageContent,
@@ -58,7 +58,7 @@ it('handles mixed configuration', function () {
     $this->service->invalidateForModel($model, $invalidationConfig);
 });
 
-it('logs error on direct key invalidation failure', function () {
+it('logs error on direct key invalidation failure', function (): void {
     $model              = new class() extends Model {};
     $invalidationConfig = ['key1'];
     $exception          = new Exception('Cache forget failed');
@@ -75,7 +75,7 @@ it('logs error on direct key invalidation failure', function () {
     $this->service->invalidateForModel($model, $invalidationConfig);
 });
 
-it('logs error on pattern invalidation failure', function () {
+it('logs error on pattern invalidation failure', function (): void {
     $model              = new class() extends Model {};
     $invalidationConfig = [['type' => 'pattern', 'value' => 'pattern1:*']];
     $exception          = new Exception('Cache flush failed');
@@ -92,7 +92,7 @@ it('logs error on pattern invalidation failure', function () {
     $this->service->invalidateForModel($model, $invalidationConfig);
 });
 
-it('handles model class string correctly', function () {
+it('handles model class string correctly', function (): void {
     $modelClass         = 'App\Models\SomeModel';
     $invalidationConfig = ['key1'];
 

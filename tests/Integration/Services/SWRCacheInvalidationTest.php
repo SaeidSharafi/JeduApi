@@ -7,18 +7,18 @@ use App\Models\Product;
 use App\Services\SWRCacheService;
 use SmartCache\Facades\SmartCache;
 
-beforeEach(function () {
+beforeEach(function (): void {
     SmartCache::clear();
 });
 
-describe('SWR Cache Invalidation', function () {
-    it('invalidates SWR search suggestions when product is created', function () {
+describe('SWR Cache Invalidation', function (): void {
+    it('invalidates SWR search suggestions when product is created', function (): void {
         // Arrange
         $suggestionKey1 = 'search:suggest:'.md5('django5');
         $suggestionKey2 = 'search:suggest:'.md5('python10');
 
-        SWRCacheService::rememberSearchSuggestions($suggestionKey1, fn () => ['Django 5 Tips']);
-        SWRCacheService::rememberSearchSuggestions($suggestionKey2, fn () => ['Python Best Practices']);
+        SWRCacheService::rememberSearchSuggestions($suggestionKey1, fn (): array => ['Django 5 Tips']);
+        SWRCacheService::rememberSearchSuggestions($suggestionKey2, fn (): array => ['Python Best Practices']);
 
         expect(SmartCache::has($suggestionKey1))->toBeTrue();
         expect(SmartCache::has($suggestionKey2))->toBeTrue();
@@ -31,16 +31,16 @@ describe('SWR Cache Invalidation', function () {
         expect(SmartCache::has($suggestionKey2))->toBeFalse();
     });
 
-    it('invalidates SWR cache with pattern matching when category changes', function () {
+    it('invalidates SWR cache with pattern matching when category changes', function (): void {
         // Arrange
         $goodForStartKey1 = 'shop.category.programming.good-for-start.courses.limit-5';
         $goodForStartKey2 = 'shop.category.programming.good-for-start.courses.limit-10';
         $goodForStartKey3 = 'shop.category.design.good-for-start.courses.limit-5';
 
         // Cache SWR data for multiple good-for-start endpoints
-        SWRCacheService::rememberTrendingContent($goodForStartKey1, fn () => ['courses' => [1]]);
-        SWRCacheService::rememberTrendingContent($goodForStartKey2, fn () => ['courses' => [1, 2]]);
-        SWRCacheService::rememberTrendingContent($goodForStartKey3, fn () => ['courses' => [3]]);
+        SWRCacheService::rememberTrendingContent($goodForStartKey1, fn (): array => ['courses' => [1]]);
+        SWRCacheService::rememberTrendingContent($goodForStartKey2, fn (): array => ['courses' => [1, 2]]);
+        SWRCacheService::rememberTrendingContent($goodForStartKey3, fn (): array => ['courses' => [3]]);
 
         expect(SmartCache::has($goodForStartKey1))->toBeTrue();
         expect(SmartCache::has($goodForStartKey2))->toBeTrue();
@@ -58,7 +58,7 @@ describe('SWR Cache Invalidation', function () {
         expect(SmartCache::has($goodForStartKey3))->toBeFalse();
     });
 
-    it('preserves unrelated SWR caches during invalidation', function () {
+    it('preserves unrelated SWR caches during invalidation', function (): void {
         // Arrange - Create multiple SWR caches
         // Note: Product changes clear: shop.homepage.content, shop.category.*.good-for-start.*, search:*
         $homepageContentKey = 'shop.homepage.content'; // Cleared by Product observer (HomePageContent enum)
@@ -66,9 +66,9 @@ describe('SWR Cache Invalidation', function () {
         $slidersCacheKey    = 'shop.homepage.sliders'; // NOT cleared by Product (only by Slider updates)
         $userProfileKey     = 'user.123.profile'; // Not managed by any observer
 
-        SWRCacheService::rememberHomepageContent($homepageContentKey, fn () => ['content']);
-        SWRCacheService::rememberSearchSuggestions($searchSuggestKey, fn () => ['test1']);
-        SWRCacheService::rememberHomepageContent($slidersCacheKey, fn () => ['slider1']);
+        SWRCacheService::rememberHomepageContent($homepageContentKey, fn (): array => ['content']);
+        SWRCacheService::rememberSearchSuggestions($searchSuggestKey, fn (): array => ['test1']);
+        SWRCacheService::rememberHomepageContent($slidersCacheKey, fn (): array => ['slider1']);
         SmartCache::put($userProfileKey, ['name' => 'John'], 3600); // Direct put, not SWR
 
         expect(SmartCache::has($homepageContentKey))->toBeTrue();
@@ -86,7 +86,7 @@ describe('SWR Cache Invalidation', function () {
         expect(SmartCache::has($userProfileKey))->toBeTrue();       // NOT cleared: not in any observer map
     });
 
-    it('handles concurrent SWR cache invalidation for multiple products', function () {
+    it('handles concurrent SWR cache invalidation for multiple products', function (): void {
         // Arrange
         $cacheKeys = [
             'search:suggest:'.md5('product1'),
@@ -96,7 +96,7 @@ describe('SWR Cache Invalidation', function () {
         ];
 
         foreach ($cacheKeys as $key) {
-            SWRCacheService::rememberSearchSuggestions($key, fn () => ['data']);
+            SWRCacheService::rememberSearchSuggestions($key, fn (): array => ['data']);
         }
 
         foreach ($cacheKeys as $key) {
@@ -114,15 +114,15 @@ describe('SWR Cache Invalidation', function () {
         }
     });
 
-    it('demonstrates SWR benefits over cache tags (no memory leaks)', function () {
+    it('demonstrates SWR benefits over cache tags (no memory leaks)', function (): void {
         // This test proves SWR + patterns is safer than tags
 
         // SWR approach (safe)
         $swr_key1 = 'product.cache.item1';
         $swr_key2 = 'product.cache.item2';
 
-        SWRCacheService::rememberHomepageContent($swr_key1, fn () => ['data1']);
-        SWRCacheService::rememberHomepageContent($swr_key2, fn () => ['data2']);
+        SWRCacheService::rememberHomepageContent($swr_key1, fn (): array => ['data1']);
+        SWRCacheService::rememberHomepageContent($swr_key2, fn (): array => ['data2']);
 
         // Invalidate all product.*  caches
         SmartCache::flushPatterns(['product.cache.*']);
@@ -137,7 +137,7 @@ describe('SWR Cache Invalidation', function () {
         // Cache::tags(['products'])->flush();                  <- doesn't always work
     });
 
-    it('works with all cache drivers (unlike tags)', function () {
+    it('works with all cache drivers (unlike tags)', function (): void {
         // SWR pattern works with:
         // - Redis ✓
         // - Database ✓
@@ -151,7 +151,7 @@ describe('SWR Cache Invalidation', function () {
         $data     = ['driver_agnostic' => true];
 
         // This works regardless of which cache driver is configured
-        $result = SWRCacheService::rememberHomepageContent($cacheKey, fn () => $data);
+        $result = SWRCacheService::rememberHomepageContent($cacheKey, fn (): array => $data);
 
         expect($result)->toBe($data);
 

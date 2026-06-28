@@ -22,7 +22,7 @@ use function Pest\Laravel\postJson;
 // =============================================================================
 // TEST 1: PAST filter on seminars returns past events (event_ended_at < today)
 // =============================================================================
-it('filters seminars by availability_status=past returning past events', function () {
+it('filters seminars by availability_status=past returning past events', function (): void {
     $today = Carbon::now()->startOfDay();
 
     // Arrange: Past seminar (ended yesterday)
@@ -72,7 +72,7 @@ it('filters seminars by availability_status=past returning past events', functio
 // =============================================================================
 // TEST 2: UPCOMING filter on seminars returns upcoming events (event_start_at > today)
 // =============================================================================
-it('filters seminars by availability_status=upcoming returning upcoming events', function () {
+it('filters seminars by availability_status=upcoming returning upcoming events', function (): void {
     $today = Carbon::now()->startOfDay();
 
     // Arrange: Upcoming seminar (starts tomorrow)
@@ -122,7 +122,7 @@ it('filters seminars by availability_status=upcoming returning upcoming events',
 // =============================================================================
 // TEST 3: ONGOING filter on seminars returns ongoing events (today between start and end)
 // =============================================================================
-it('filters seminars by availability_status=ongoing returning ongoing events', function () {
+it('filters seminars by availability_status=ongoing returning ongoing events', function (): void {
     $today = Carbon::now()->startOfDay();
 
     // Arrange: Ongoing seminar (started yesterday, ends tomorrow)
@@ -188,7 +188,7 @@ it('filters seminars by availability_status=ongoing returning ongoing events', f
 // =============================================================================
 // TEST 4: Default seminar listing (no filter) excludes past events
 // =============================================================================
-it('default seminar listing excludes past events via eventNotEnded default', function () {
+it('default seminar listing excludes past events via eventNotEnded default', function (): void {
     $today = Carbon::now()->startOfDay();
 
     // Arrange: Past seminar (should be EXCLUDED from default listing)
@@ -247,7 +247,7 @@ it('default seminar listing excludes past events via eventNotEnded default', fun
     $json = $response->json();
 
     // Should have 2 results (upcoming + ongoing), NOT past
-    $names = array_map(fn ($item) => $item['name'], $json['data']['data']);
+    $names = array_map(fn ($item): mixed => $item['name'], $json['data']['data']);
 
     expect($json['data']['total'])->toBe(2);
     expect($names)->toContain('Upcoming Seminar Included')
@@ -258,7 +258,7 @@ it('default seminar listing excludes past events via eventNotEnded default', fun
 // =============================================================================
 // TEST 5: PAST filter works for courses with null event dates but past available_to (fallback)
 // =============================================================================
-it('filters courses by availability_status=past via available_to fallback', function () {
+it('filters courses by availability_status=past via available_to fallback', function (): void {
     $today = Carbon::now()->startOfDay();
 
     // Arrange: Course with null event dates, PDO available_to in the past (fallback to PAST)
@@ -320,7 +320,7 @@ it('filters courses by availability_status=past via available_to fallback', func
 // =============================================================================
 // TEST 6: PAST filter works for digital assets with null event dates (null fallback)
 // =============================================================================
-it('filters digital-assets by availability_status=past via available_to fallback', function () {
+it('filters digital-assets by availability_status=past via available_to fallback', function (): void {
     $today = Carbon::now()->startOfDay();
 
     // Arrange: Digital asset with null event dates, PDO available_to in the past (fallback to PAST)
@@ -384,7 +384,7 @@ it('filters digital-assets by availability_status=past via available_to fallback
 // =============================================================================
 // TEST 7: Past seminar with SpotPlayer recording PDO (available_to=null) → checkout succeeds
 // =============================================================================
-it('allows checkout of past seminar with SpotPlayer recording delivery option', function () {
+it('allows checkout of past seminar with SpotPlayer recording delivery option', function (): void {
     uses(Tests\Support\Traits\AuthTestTrait::class);
     $this->customer();
 

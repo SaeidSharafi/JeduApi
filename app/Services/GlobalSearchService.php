@@ -199,7 +199,7 @@ final class GlobalSearchService
         if (! $searchProducts) {
             return BlogPost::query()
                 ->where('status', PublicationStatusEnum::PUBLISHED)
-                ->where(function ($q) use ($searchData) {
+                ->where(function ($q) use ($searchData): void {
                     $q->fullTextSearch(['title', 'body', 'slug', 'excerpt'], $searchData->q);
                 })->paginate()
                 ->withQueryString();
@@ -278,7 +278,7 @@ final class GlobalSearchService
                 ->with([
                     'vendor:id,name',
                     'categories:id,name,slug',
-                    'productDeliveryOptions' => function ($q) {
+                    'productDeliveryOptions' => function ($q): void {
                         $q->where('status', PublicationStatusEnum::PUBLISHED)
                             ->with(['productDeliveryOptionDiscountPrice', 'teachers:id,first_name,last_name,gender,uuid,avatar_url,rate']);
                     },
@@ -337,7 +337,7 @@ final class GlobalSearchService
             }
 
             if (! empty($searchData->filter->fulfillment_types)) {
-                $types         = array_map(fn ($type) => "fulfillment_types:={$type}", $searchData->filter->fulfillment_types);
+                $types         = array_map(fn ($type): string => "fulfillment_types:={$type}", $searchData->filter->fulfillment_types);
                 $baseFilters[] = '('.implode(' || ', $types).')';
             }
         }

@@ -8,7 +8,7 @@ use App\Listeners\UpdateProductDeliveryOptionEnrolledCount;
 use App\Models\Enrollment;
 use Illuminate\Support\Facades\Event;
 
-it('increment enrolled_count when status changes to ACTIVE', function () {
+it('increment enrolled_count when status changes to ACTIVE', function (): void {
     Event::fake([
         EnrollmentStatusChanged::class,
     ]);
@@ -24,7 +24,7 @@ it('increment enrolled_count when status changes to ACTIVE', function () {
     expect($enrolment->productDeliveryOption->enrolled_count)->toBe(1);
 });
 
-it('increments when transitioning from non-occupying to occupying (AWAITING_PAYMENT -> PENDING_PROVISIONING)', function () {
+it('increments when transitioning from non-occupying to occupying (AWAITING_PAYMENT -> PENDING_PROVISIONING)', function (): void {
     $enrollment = Enrollment::factory()->create([
         'enrollment_status' => EnrollmentStatusEnum::AWAITING_PAYMENT,
     ]);
@@ -44,7 +44,7 @@ it('increments when transitioning from non-occupying to occupying (AWAITING_PAYM
     expect($pdo->enrolled_count)->toBe(1);
 });
 
-it('decrements when transitioning from occupying to non-occupying (ACTIVE -> CANCELLED)', function () {
+it('decrements when transitioning from occupying to non-occupying (ACTIVE -> CANCELLED)', function (): void {
     Event::fake([EnrollmentStatusChanged::class]);
     // Start with 1 occupying seat recorded
     $enrollment = Enrollment::factory()->create([
@@ -71,7 +71,7 @@ it('decrements when transitioning from occupying to non-occupying (ACTIVE -> CAN
     expect($pdo->enrolled_count)->toBe(0);
 });
 
-it('does nothing when transitioning within occupying (PENDING_PROVISIONING -> ACTIVE)', function () {
+it('does nothing when transitioning within occupying (PENDING_PROVISIONING -> ACTIVE)', function (): void {
     Event::fake([EnrollmentStatusChanged::class]);
     $enrollment = Enrollment::factory()->create([
         'enrollment_status' => EnrollmentStatusEnum::AWAITING_PAYMENT,
@@ -97,7 +97,7 @@ it('does nothing when transitioning within occupying (PENDING_PROVISIONING -> AC
     expect($pdo->enrolled_count)->toBe(1);
 });
 
-it('does nothing when transitioning within non-occupying (AWAITING_PAYMENT -> PROVISIONING_FAILED)', function () {
+it('does nothing when transitioning within non-occupying (AWAITING_PAYMENT -> PROVISIONING_FAILED)', function (): void {
     $enrollment = Enrollment::factory()->create([
         'enrollment_status' => EnrollmentStatusEnum::AWAITING_PAYMENT,
     ]);
@@ -113,7 +113,7 @@ it('does nothing when transitioning within non-occupying (AWAITING_PAYMENT -> PR
     expect($pdo->enrolled_count)->toBe(0);
 });
 
-it('increments on creation when new status is occupying (oldStatus = null, new = PENDING_PROVISIONING)', function () {
+it('increments on creation when new status is occupying (oldStatus = null, new = PENDING_PROVISIONING)', function (): void {
     Event::fake([EnrollmentStatusChanged::class]);
     $enrollment = Enrollment::factory()->create([
         'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING,
@@ -127,7 +127,7 @@ it('increments on creation when new status is occupying (oldStatus = null, new =
     expect($pdo->enrolled_count)->toBe(1);
 });
 
-it('does not increment on creation when new status is non-occupying (oldStatus = null, new = AWAITING_PAYMENT)', function () {
+it('does not increment on creation when new status is non-occupying (oldStatus = null, new = AWAITING_PAYMENT)', function (): void {
     $enrollment = Enrollment::factory()->create([
         'enrollment_status' => EnrollmentStatusEnum::AWAITING_PAYMENT,
     ]);
@@ -139,7 +139,7 @@ it('does not increment on creation when new status is non-occupying (oldStatus =
     $pdo->refresh();
     expect($pdo->enrolled_count)->toBe(0);
 });
-it('handle missing productDeliveryOption gracefully', function () {
+it('handle missing productDeliveryOption gracefully', function (): void {
     $enrollment = Enrollment::factory()->create([
         'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
     ]);

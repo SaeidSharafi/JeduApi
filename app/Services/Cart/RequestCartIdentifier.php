@@ -38,7 +38,7 @@ final class RequestCartIdentifier implements CartIdentifier
         }
 
         // Prefer header for headless APIs
-        $incoming = (string) ($this->request->headers->get('X-Guest-Token') ?? '');
+        $incoming = $this->request->headers->get('X-Guest-Token') ?? '';
         if ($incoming !== '' && Str::isUuid($incoming)) {
             $this->resolvedGuestToken = $incoming;
 

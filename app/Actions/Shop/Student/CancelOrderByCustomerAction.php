@@ -56,7 +56,7 @@ final class CancelOrderByCustomerAction
             // Use each() instead of update() to fire model events for enrolled_count tracking
             $order->enrollments()
                 ->where('enrollment_status', '!=', EnrollmentStatusEnum::CANCELLED)
-                ->each(function ($enrollment) {
+                ->each(function ($enrollment): void {
                     $enrollment->enrollment_status = EnrollmentStatusEnum::CANCELLED;
                     $enrollment->save();
                 });

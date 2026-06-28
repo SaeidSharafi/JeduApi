@@ -55,8 +55,8 @@ final class DigitalAssetController extends Controller
         $files = QueryBuilder::for(DigitalAsset::class)
             ->allowedFilters([
                 'slug', 'status',
-                AllowedFilter::callback('name', function ($q, $value) {
-                    $q->where(function ($q2) use ($value) {
+                AllowedFilter::callback('name', function ($q, $value): void {
+                    $q->where(function ($q2) use ($value): void {
                         $q2->whereLike('short_name', "%{$value}%")
                             ->orWhereLike('full_name', "%{$value}%");
                     });
@@ -64,7 +64,7 @@ final class DigitalAssetController extends Controller
                 AllowedFilter::exact('is_attachable_to_course'),
             ])
             ->allowedSorts([
-                AllowedSort::callback('name', function ($q, $descending, $property) {
+                AllowedSort::callback('name', function ($q, $descending, $property): void {
                     $q->orderBy('short_name', $descending ? 'desc' : 'asc')
                         ->orderBy('full_name', $descending ? 'desc' : 'asc');
                 }), 'slug', 'status',

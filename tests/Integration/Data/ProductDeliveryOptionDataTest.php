@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-describe('ProductDeliveryOptionData', function () {
-    it('can be created from a model', function () {
+describe('ProductDeliveryOptionData', function (): void {
+    it('can be created from a model', function (): void {
         $deliveryOption = new App\Models\ProductDeliveryOption([
             'sku'              => 'SKU123',
             'name'             => 'Test Delivery Option',

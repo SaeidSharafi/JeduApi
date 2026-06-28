@@ -50,7 +50,7 @@ final class FullTextSearchProvider extends ServiceProvider
                 if (count($columns) === 1) {
                     $this->whereRaw("\"{$columns[0]}\" &@~ ?", [$value]);
                 } else {
-                    $this->where(function ($query) use ($columns, $value) {
+                    $this->where(function ($query) use ($columns, $value): void {
                         foreach ($columns as $column) {
                             $query->orWhereRaw("\"{$column}\" &@~ ?", [$value]);
                         }
@@ -67,7 +67,7 @@ final class FullTextSearchProvider extends ServiceProvider
 
             // MySQL with FULLTEXT index
             if ($dbDriver === 'mysql') {
-                $columnList = implode(', ', array_map(fn ($col) => "`{$col}`", $columns));
+                $columnList = implode(', ', array_map(fn ($col): string => "`{$col}`", $columns));
                 $this->whereRaw("MATCH({$columnList}) AGAINST(? IN BOOLEAN MODE)", [$value]);
 
                 if ($scoreAs) {
@@ -91,7 +91,7 @@ final class FullTextSearchProvider extends ServiceProvider
             }
 
             // SQLite fallback: Use LIKE for each column (no scoring support)
-            $this->where(function ($query) use ($columns, $value) {
+            $this->where(function ($query) use ($columns, $value): void {
                 foreach ($columns as $column) {
                     $query->orWhere($column, 'LIKE', "%{$value}%");
                 }
@@ -109,7 +109,7 @@ final class FullTextSearchProvider extends ServiceProvider
          */
         Builder::macro('orFullTextSearch', function (array|string $columns, string $value) {
             /** @var Builder $this */
-            return $this->orWhere(function ($query) use ($columns, $value) {
+            return $this->orWhere(function ($query) use ($columns, $value): void {
                 $query->fullTextSearch($columns, $value);
             });
         });

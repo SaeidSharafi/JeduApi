@@ -37,10 +37,10 @@ final class StudentStoryController extends Controller
                     ->when($data->featured_only, fn ($query) => $query->featured())
                     ->when($data->category_slug,
                         fn ($query, $slug) => $query->whereHas('categories', fn ($q) => $q->where('slug', $slug)))
-                    ->when($data->course_slug, function ($query, $slug) {
-                        $query->whereHas('courses', function ($q) use ($slug) {
+                    ->when($data->course_slug, function ($query, $slug): void {
+                        $query->whereHas('courses', function ($q) use ($slug): void {
                             $q->where('slug', $slug)
-                                ->orWhereHas('products', function ($q2) use ($slug) {
+                                ->orWhereHas('products', function ($q2) use ($slug): void {
                                     $q2->where('slug', $slug);
                                 });
                         });

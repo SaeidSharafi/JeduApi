@@ -132,7 +132,7 @@ abstract class GetFromLaravelDataBase extends Strategy
         $ignoredProperties  = $this->getIgnoredProperties($method);
         $filteredParameters = array_filter(
             $parametersFromLaravelData,
-            fn ($parameterName) => ! in_array($parameterName, $ignoredProperties, true),
+            fn ($parameterName): bool => ! in_array($parameterName, $ignoredProperties, true),
             ARRAY_FILTER_USE_KEY
         );
 

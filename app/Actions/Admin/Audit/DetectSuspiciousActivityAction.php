@@ -275,7 +275,7 @@ final class DetectSuspiciousActivityAction
 
         return [
             'total_suspicious_activities' => $typeCountsAndUsers->sum('count'),
-            'by_type'                     => $typeCountsAndUsers->mapWithKeys(fn ($data, $type): array => [$type => $data['count']])->toArray(),
+            'by_type'                     => $typeCountsAndUsers->mapWithKeys(fn ($data, $type): array => [$type => $data['count']])->all(),
             'high_risk_count'             => 0, // Can be calculated based on specific criteria if needed
             'unique_users_involved'       => $typeCountsAndUsers->pluck('user_ids')->flatten()->unique()->count(),
         ];

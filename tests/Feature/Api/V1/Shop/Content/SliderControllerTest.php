@@ -51,7 +51,7 @@ describe('SliderController', function (): void {
                         'link'      => $slider->link,
                         'order'     => $slider->order,
                     ];
-                })->toArray(),
+                })->all(),
             ]);
 
     });

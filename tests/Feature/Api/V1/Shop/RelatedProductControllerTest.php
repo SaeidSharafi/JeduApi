@@ -6,8 +6,8 @@ use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\RelationTypeEnum;
 use App\Models\Product;
 
-describe('RelatedProductController', function () {
-    beforeEach(function () {
+describe('RelatedProductController', function (): void {
+    beforeEach(function (): void {
         $this->product = Product::factory()
             ->withCourse()
             ->withDeliveryOptions(1)
@@ -39,7 +39,7 @@ describe('RelatedProductController', function () {
 
     });
 
-    it('returns related products', function (RelationTypeEnum $relationType, string $expectedProductProperty) {
+    it('returns related products', function (RelationTypeEnum $relationType, string $expectedProductProperty): void {
         $response = $this->getJson(route('api.v1.shop.products.related', [
             'product'       => $this->product->slug,
             'relation_type' => $relationType->value,
@@ -56,7 +56,7 @@ describe('RelatedProductController', function () {
         'UPSELL'     => [RelationTypeEnum::UPSELL, 'upsellProduct'],
     ]);
 
-    it('does not return unpublished related products', function () {
+    it('does not return unpublished related products', function (): void {
         $unpublishedProduct = Product::factory()
             ->withCourse()
             ->withDeliveryOptions(1)
@@ -77,7 +77,7 @@ describe('RelatedProductController', function () {
             ->and($responseData[0]['slug'])->toBe($this->relatedProduct->slug);
     });
 
-    it('returns empty array when no related products exist for the given relation type', function () {
+    it('returns empty array when no related products exist for the given relation type', function (): void {
 
         $response = $this->getJson(route('api.v1.shop.products.related', [
             'product' => Product::factory()->withCourse()->withDeliveryOptions(1)->create([
