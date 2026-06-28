@@ -1,0 +1,111 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "visible": true,
+      "name": "آزمون ICDL2 مجازی",
+      "course_url": "/course/view.php?id=231",
+      "completed": false,
+      "course_grade": null,
+      "activities": [
+        {
+          "url": "/mod/quiz/view.php?id=841",
+          "cid": 841,
+          "name": "آزمون تئوری WORD",
+          "type": "quiz",
+          "state": {
+            "value": 0,
+            "label": "تکمیل نشده"
+          },
+          "grade": "-",
+          "timecompleted": null
+        },
+        {
+          "url": "/mod/quiz/view.php?id=842",
+          "cid": 842,
+          "name": "آزمون تئوری EXCEL",
+          "type": "quiz",
+          "state": {
+            "value": 0,
+            "label": "تکمیل نشده"
+          },
+          "grade": "-",
+          "timecompleted": null
+        },
+        {
+          "url": "/mod/quiz/view.php?id=843",
+          "cid": 843,
+          "name": "آزمون تئوری PowerPoint",
+          "type": "quiz",
+          "state": {
+            "value": 0,
+            "label": "تکمیل نشده"
+          },
+          "grade": "-",
+          "timecompleted": null
+        },
+        {
+          "url": "/mod/quiz/view.php?id=844",
+          "cid": 844,
+          "name": "آزمون تئوری Access",
+          "type": "quiz",
+          "state": {
+            "value": 0,
+            "label": "تکمیل نشده"
+          },
+          "grade": "-",
+          "timecompleted": null
+        },
+        {
+          "url": "/mod/quiz/view.php?id=671",
+          "cid": 671,
+          "name": "آزمون ورد مقدماتی - عملی",
+          "type": "quiz",
+          "state": {
+            "value": 0,
+            "label": "تکمیل نشده"
+          },
+          "grade": "-",
+          "timecompleted": null
+        },
+        {
+          "url": "/mod/quiz/view.php?id=669",
+          "cid": 669,
+          "name": "آزمون اکسل مقدماتی - عملی",
+          "type": "quiz",
+          "state": {
+            "value": 0,
+            "label": "تکمیل نشده"
+          },
+          "grade": "-",
+          "timecompleted": null
+        },
+        {
+          "url": "/mod/quiz/view.php?id=673",
+          "cid": 673,
+          "name": "آزمون پاورپوینت مقدماتی - عملی",
+          "type": "quiz",
+          "state": {
+            "value": 0,
+            "label": "تکمیل نشده"
+          },
+          "grade": "-",
+          "timecompleted": null
+        },
+        {
+          "url": "/mod/quiz/view.php?id=672",
+          "cid": 672,
+          "name": "آزمون اکسس مقدماتی - عملی",
+          "type": "quiz",
+          "state": {
+            "value": 0,
+            "label": "تکمیل نشده"
+          },
+          "grade": "-",
+          "timecompleted": null
+        }
+      ]
+    }
+  ],
+  "metadata": []
+}

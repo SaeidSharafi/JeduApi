@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Student\Blocks;
 
+use App\Data\Transformer\TranslatableEnumData;
+use App\Enums\MoodleActivityStateEnum;
+use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Attributes\WithTransformer;
+use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
 final class MoodleActivityData extends Data
@@ -13,7 +18,8 @@ final class MoodleActivityData extends Data
         public int $cid,
         public string $name,
         public string $type,
-        public int $state,
+        #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
+        public MoodleActivityStateEnum $state,
         public ?string $grade = null,
         public ?string $timecompleted = null,
     ) {}

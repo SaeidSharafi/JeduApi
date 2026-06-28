@@ -144,4 +144,14 @@ return [
         'suspended' => 'معلق',
         'closed'    => 'بسته شده',
     ],
+    'MoodleActivityStateEnum' => [
+        'incomplete' => 'تکمیل نشده',
+        '0' => 'تکمیل نشده',
+        'complete' => 'تکمیل شده',
+        '1' => 'تکمیل شده',
+        'complete_pass' => 'قبول شده',
+        '2' => 'قبول شده',
+        'complete_fail' => 'رد شده',
+        '3' => 'رد شده',
+    ]
 ];

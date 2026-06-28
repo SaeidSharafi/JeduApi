@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Shop\Student\EnrollmentController;
 use App\Http\Controllers\Api\Shop\Student\JoinUrlController;
 use App\Http\Controllers\Api\Shop\Student\MoodleSsoController;
 use App\Http\Controllers\Api\Shop\Student\OrderController;
+use App\Http\Controllers\Api\Shop\Student\QuizController;
 use App\Http\Controllers\Api\Shop\Student\RetryPaymentController;
 
 
@@ -42,6 +43,8 @@ Route::middleware(['auth:user'])
                 Route::get('/{enrollment:uuid}/join', JoinUrlController::class)
                     ->name('join');
             });
+
+            Route::get('quizzes', QuizController::class)->name('quizzes');
 
             // Enrolled Digital Assets
             Route::prefix('digital-assets')->name('digital-assets.')->group(function (): void {
