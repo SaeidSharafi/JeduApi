@@ -16,7 +16,7 @@ describe('EnrollmentController', function (): void {
 
         Enrollment::factory()->count(3)->create();
 
-        $response = $this->getJson(route('api.v1.admin.enrollment.index'));
+        $response = $this->getJson(route('api.v1.admin.enrollments.index'));
 
         $response->assertOk()
             ->assertJsonStructure([
@@ -34,7 +34,7 @@ describe('EnrollmentController', function (): void {
         Enrollment::factory()->create(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
         Enrollment::factory()->create(['enrollment_status' => EnrollmentStatusEnum::CANCELLED]);
 
-        $response = $this->getJson(route('api.v1.admin.enrollment.index', [
+        $response = $this->getJson(route('api.v1.admin.enrollments.index', [
             'filter[enrollment_status]' => EnrollmentStatusEnum::ACTIVE->value,
         ]));
 
@@ -52,7 +52,7 @@ describe('EnrollmentController', function (): void {
         Enrollment::factory()->create(['customer_id' => $customer1->id]);
         Enrollment::factory()->create(['customer_id' => $customer2->id]);
 
-        $response = $this->getJson(route('api.v1.admin.enrollment.index', [
+        $response = $this->getJson(route('api.v1.admin.enrollments.index', [
             'filter[customer_id]' => $customer1->id,
         ]));
 
@@ -67,7 +67,7 @@ describe('EnrollmentController', function (): void {
         $enrollment1 = Enrollment::factory()->create();
         $enrollment2 = Enrollment::factory()->create();
 
-        $response = $this->getJson(route('api.v1.admin.enrollment.index', [
+        $response = $this->getJson(route('api.v1.admin.enrollments.index', [
             'filter[order_id]' => $enrollment1->order_id,
         ]));
 
@@ -82,7 +82,7 @@ describe('EnrollmentController', function (): void {
         $enrollment1 = Enrollment::factory()->create(['created_at' => now()->subDays(2)]);
         $enrollment2 = Enrollment::factory()->create(['created_at' => now()->subDay()]);
 
-        $response = $this->getJson(route('api.v1.admin.enrollment.index', ['sort' => 'created_at']));
+        $response = $this->getJson(route('api.v1.admin.enrollments.index', ['sort' => 'created_at']));
 
         $response->assertOk()
             ->assertJsonPath('data.data.0.id', $enrollment1->id)
@@ -95,7 +95,7 @@ describe('EnrollmentController', function (): void {
         $enrollment1 = Enrollment::factory()->create(['created_at' => now()->subDays(2)]);
         $enrollment2 = Enrollment::factory()->create(['created_at' => now()->subDay()]);
 
-        $response = $this->getJson(route('api.v1.admin.enrollment.index'));
+        $response = $this->getJson(route('api.v1.admin.enrollments.index'));
 
         $response->assertOk()
             ->assertJsonPath('data.data.0.id', $enrollment2->id)
@@ -110,7 +110,7 @@ describe('EnrollmentController', function (): void {
             'notes'             => 'Test enrollment notes',
         ]);
 
-        $response = $this->getJson(route('api.v1.admin.enrollment.show', ['enrollment' => $enrollment->id]));
+        $response = $this->getJson(route('api.v1.admin.enrollments.show', ['enrollment' => $enrollment->id]));
 
         $response->assertOk()
             ->assertJsonStructure([
@@ -140,7 +140,7 @@ describe('EnrollmentController', function (): void {
             'notes'                  => 'Updated notes',
         ];
 
-        $response = $this->putJson(route('api.v1.admin.enrollment.update', ['enrollment' => $enrollment->id]), $updateData);
+        $response = $this->putJson(route('api.v1.admin.enrollments.update', ['enrollment' => $enrollment->id]), $updateData);
 
         $response->assertOk()
             ->assertJsonPath('data.access_start_date', '1404-10-11')
@@ -166,7 +166,7 @@ describe('EnrollmentController', function (): void {
 
         $enrollmentId = $enrollment->id;
 
-        $response = $this->deleteJson(route('api.v1.admin.enrollment.destroy', ['enrollment' => $enrollment->id]));
+        $response = $this->deleteJson(route('api.v1.admin.enrollments.destroy', ['enrollment' => $enrollment->id]));
 
         $response->assertNoContent();
 
@@ -180,7 +180,7 @@ describe('EnrollmentController', function (): void {
             'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
         ]);
 
-        $response = $this->deleteJson(route('api.v1.admin.enrollment.destroy', ['enrollment' => $enrollment->id]));
+        $response = $this->deleteJson(route('api.v1.admin.enrollments.destroy', ['enrollment' => $enrollment->id]));
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['enrollment_status']);
@@ -191,7 +191,7 @@ describe('EnrollmentController', function (): void {
     it('cannot access index without permissions', function (): void {
         $this->unauthorized_user();
 
-        $response = $this->getJson(route('api.v1.admin.enrollment.index'));
+        $response = $this->getJson(route('api.v1.admin.enrollments.index'));
 
         $response->assertForbidden();
     });
@@ -201,7 +201,7 @@ describe('EnrollmentController', function (): void {
 
         $enrollment = Enrollment::factory()->create();
 
-        $response = $this->getJson(route('api.v1.admin.enrollment.show', ['enrollment' => $enrollment->id]));
+        $response = $this->getJson(route('api.v1.admin.enrollments.show', ['enrollment' => $enrollment->id]));
 
         $response->assertForbidden();
     });
@@ -211,7 +211,7 @@ describe('EnrollmentController', function (): void {
 
         $enrollment = Enrollment::factory()->create();
 
-        $response = $this->putJson(route('api.v1.admin.enrollment.update', ['enrollment' => $enrollment->id]), [
+        $response = $this->putJson(route('api.v1.admin.enrollments.update', ['enrollment' => $enrollment->id]), [
             'notes' => 'Test',
         ]);
 
@@ -223,7 +223,7 @@ describe('EnrollmentController', function (): void {
 
         $enrollment = Enrollment::factory()->create();
 
-        $response = $this->deleteJson(route('api.v1.admin.enrollment.destroy', ['enrollment' => $enrollment->id]));
+        $response = $this->deleteJson(route('api.v1.admin.enrollments.destroy', ['enrollment' => $enrollment->id]));
 
         $response->assertForbidden();
     });

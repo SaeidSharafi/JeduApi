@@ -30,7 +30,7 @@ describe('Admin Vendor Select Option API', function (): void {
                 'address' => 'test address',
             ])->fresh();
         $response = $this->getJson(
-            route('api.v1.admin.select-option.vendor', ['q' => 'TestVendor'])
+            route('api.v1.admin.select-option.vendors', ['q' => 'TestVendor'])
         );
 
         $response->assertOk();
@@ -54,7 +54,7 @@ describe('Admin Vendor Select Option API', function (): void {
     it('returns empty data if no match', function (): void {
         $this->authorized_user();
         $response = $this->getJson(
-            route('api.v1.admin.select-option.vendor', ['q' => 'NoSuchVendor'])
+            route('api.v1.admin.select-option.vendors', ['q' => 'NoSuchVendor'])
         );
         $response->assertOk();
         $response->assertJson(['data' => []]);

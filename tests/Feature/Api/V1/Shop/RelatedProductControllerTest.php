@@ -40,7 +40,7 @@ describe('RelatedProductController', function () {
     });
 
     it('returns related products', function (RelationTypeEnum $relationType, string $expectedProductProperty) {
-        $response = $this->getJson(route('api.v1.shop.product.related', [
+        $response = $this->getJson(route('api.v1.shop.products.related', [
             'product'       => $this->product->slug,
             'relation_type' => $relationType->value,
         ]));
@@ -65,7 +65,7 @@ describe('RelatedProductController', function () {
             ]);
         $this->product->relatedProducts()->attach($unpublishedProduct->id, ['relation_type' => RelationTypeEnum::RELATED]);
 
-        $response = $this->getJson(route('api.v1.shop.product.related', [
+        $response = $this->getJson(route('api.v1.shop.products.related', [
             'product'       => $this->product->slug,
             'relation_type' => RelationTypeEnum::RELATED->value,
         ]));
@@ -79,7 +79,7 @@ describe('RelatedProductController', function () {
 
     it('returns empty array when no related products exist for the given relation type', function () {
 
-        $response = $this->getJson(route('api.v1.shop.product.related', [
+        $response = $this->getJson(route('api.v1.shop.products.related', [
             'product' => Product::factory()->withCourse()->withDeliveryOptions(1)->create([
                 'status' => PublicationStatusEnum::PUBLISHED,
             ])->slug,

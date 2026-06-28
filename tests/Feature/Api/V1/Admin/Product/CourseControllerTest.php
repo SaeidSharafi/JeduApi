@@ -39,7 +39,7 @@ describe('list filters', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
         ]);
-        $response = $this->getJson(route('api.v1.admin.course.index', [
+        $response = $this->getJson(route('api.v1.admin.courses.index', [
             'filter' => [
                 'status' => App\Enums\Content\PublicationStatusEnum::DRAFT->value,
             ],
@@ -59,7 +59,7 @@ describe('list filters', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
         ]);
-        $response = $this->getJson(route('api.v1.admin.course.index', [
+        $response = $this->getJson(route('api.v1.admin.courses.index', [
             'filter' => [
                 'slug' => $courses[0]->slug,
             ],
@@ -83,7 +83,7 @@ describe('list filters', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
         ]);
-        $response = $this->getJson(route('api.v1.admin.course.index', [
+        $response = $this->getJson(route('api.v1.admin.courses.index', [
             'filter' => [
                 'full_name' => $customNameCourse->full_name,
             ],
@@ -107,7 +107,7 @@ describe('list filters', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
         ]);
-        $response = $this->getJson(route('api.v1.admin.course.index', [
+        $response = $this->getJson(route('api.v1.admin.courses.index', [
             'filter' => [
                 'short_name' => $customNameCourse->short_name,
             ],
@@ -126,7 +126,7 @@ describe('list filters', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
         ]);
-        $response = $this->getJson(route('api.v1.admin.course.index', [
+        $response = $this->getJson(route('api.v1.admin.courses.index', [
             'sort' => 'slug',
         ]));
         $courses = App\Models\Course::query()->orderBy('slug')->get();
@@ -154,7 +154,7 @@ describe('list filters', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
         ]);
-        $response = $this->getJson(route('api.v1.admin.course.index', [
+        $response = $this->getJson(route('api.v1.admin.courses.index', [
             'sort' => 'full_name',
         ]));
         $courses = App\Models\Course::query()->orderBy('full_name')->get();
@@ -179,7 +179,7 @@ describe('list filters', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
         ]);
-        $response = $this->getJson(route('api.v1.admin.course.index', [
+        $response = $this->getJson(route('api.v1.admin.courses.index', [
             'sort' => 'short_name',
         ]));
         $courses = App\Models\Course::query()->orderBy('short_name')->get();
@@ -207,7 +207,7 @@ it('can view list of courses', function (): void {
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_VIEW_ANY->value,
     ]);
-    $response = $this->getJson(route('api.v1.admin.course.index'));
+    $response = $this->getJson(route('api.v1.admin.courses.index'));
     $response
         ->assertStatus(200)
         ->assertJsonStructure([
@@ -279,7 +279,7 @@ it('can create a new course with valid data', function (): void {
 
     $categories   = App\Models\Category::factory(2)->create()->pluck('id')->toArray();
     $ditialAssets = App\Models\DigitalAsset::factory(2)->create();
-    $response     = $this->postJson(route('api.v1.admin.course.store'), [
+    $response     = $this->postJson(route('api.v1.admin.courses.store'), [
         ...$courseData->toArray(),
         'categories'     => $categories,
         'digital_assets' => $ditialAssets->pluck('id')->toArray(),
@@ -349,7 +349,7 @@ it('can not create a new course with invalid data', function (): void {
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_CREATE->value,
     ]);
-    $response = $this->postJson(route('api.v1.admin.course.store'), $courseData);
+    $response = $this->postJson(route('api.v1.admin.courses.store'), $courseData);
     $response
         ->assertStatus(422)
         ->assertJsonValidationErrors([
@@ -367,7 +367,7 @@ it('can not create a new course with smiliar slug', function (): void {
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_CREATE->value,
     ]);
-    $response = $this->postJson(route('api.v1.admin.course.store'), $courseData);
+    $response = $this->postJson(route('api.v1.admin.courses.store'), $courseData);
     $response
         ->assertStatus(422)
         ->assertJsonValidationErrors([
@@ -381,7 +381,7 @@ it('can not create a new course with invalid slug', function (): void {
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_CREATE->value,
     ]);
-    $response = $this->postJson(route('api.v1.admin.course.store'), $courseData);
+    $response = $this->postJson(route('api.v1.admin.courses.store'), $courseData);
     $response
         ->assertStatus(422)
         ->assertJsonValidationErrors([
@@ -396,7 +396,7 @@ it('can not create a new course with non-attachable digital asset', function ():
     $digitalAsset = App\Models\DigitalAsset::factory()->create([
         'is_attachable_to_course' => false,
     ]);
-    $response = $this->postJson(route('api.v1.admin.course.store'),
+    $response = $this->postJson(route('api.v1.admin.courses.store'),
         [
             ...$courseData,
             'digital_assets' => [$digitalAsset->id],
@@ -425,7 +425,7 @@ it('can view a course', function (): void {
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_VIEW->value,
     ]);
-    $response = $this->getJson(route('api.v1.admin.course.show', $course->id));
+    $response = $this->getJson(route('api.v1.admin.courses.show', $course->id));
 
     $media = $course->getMedia('cover')->first();
 
@@ -493,7 +493,7 @@ it('can edit a course', function (): void {
     $categories    = App\Models\Category::factory(3)->create()->pluck('id')->toArray();
     $digitalAssets = App\Models\DigitalAsset::factory(2)->create();
 
-    $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
+    $response = $this->putJson(route('api.v1.admin.courses.update', $course->id), [
         ...$courseData,
         'categories'     => $categories,
         'digital_assets' => $digitalAssets->pluck('id')->toArray(),
@@ -557,7 +557,7 @@ it('can pass slug unique check', function (): void {
         App\Enums\PermissionEnum::COURSE_UPDATE->value,
     ]);
 
-    $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
+    $response = $this->putJson(route('api.v1.admin.courses.update', $course->id), [
         ...$courseData,
         'categories'     => [$category->id],
         'digital_assets' => [],
@@ -614,7 +614,7 @@ it('can not edit a course with duplicate slug', function (): void {
         App\Enums\PermissionEnum::COURSE_UPDATE->value,
     ]);
 
-    $response = $this->putJson(route('api.v1.admin.course.update', $course->id), [
+    $response = $this->putJson(route('api.v1.admin.courses.update', $course->id), [
         ...$courseData,
         'media' => [
             'gallery'     => [],
@@ -643,7 +643,7 @@ it('can not edit a course with invalid data', function (): void {
         'meta_keywords'        => null,
         'status'               => null,
     ])->toArray();
-    $response = $this->putJson(route('api.v1.admin.course.update', $course->id), $courseData);
+    $response = $this->putJson(route('api.v1.admin.courses.update', $course->id), $courseData);
     $response
         ->assertStatus(422)
         ->assertJsonValidationErrors([
@@ -662,7 +662,7 @@ it('can not edit a course with invalid slug', function (): void {
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_UPDATE->value,
     ]);
-    $response = $this->putJson(route('api.v1.admin.course.update', $course->id), $courseData);
+    $response = $this->putJson(route('api.v1.admin.courses.update', $course->id), $courseData);
     $response
         ->assertStatus(422)
         ->assertJsonValidationErrors([
@@ -680,7 +680,7 @@ it('can delete a course', function (): void {
     $this->authorized_user([
         App\Enums\PermissionEnum::COURSE_DELETE->value,
     ]);
-    $response = $this->deleteJson(route('api.v1.admin.course.destroy', $course->id));
+    $response = $this->deleteJson(route('api.v1.admin.courses.destroy', $course->id));
     $response->assertStatus(204);
     $this->assertDatabaseMissing('courses', [
         'id' => $course->id,
@@ -702,7 +702,7 @@ it('can not delete course if there is related data', function (): void {
         'productable_id'   => $course->id,
         'productable_type' => MorphTypeEnum::COURSE->value,
     ]);
-    $response = $this->deleteJson(route('api.v1.admin.course.destroy', $course->id));
+    $response = $this->deleteJson(route('api.v1.admin.courses.destroy', $course->id));
 
     $response->assertStatus(422)
         ->assertJsonFragment([

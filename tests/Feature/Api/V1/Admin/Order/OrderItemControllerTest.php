@@ -42,7 +42,7 @@ describe('Admin OrderItemController', function (): void {
 
     it('returns order item details (show)', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::ORDER_VIEW->value]);
-        $response = getJson("/api/v1/admin/order/{$this->order->id}/order-item/{$this->orderItem->id}");
+        $response = getJson("/api/v1/admin/orders/{$this->order->id}/order-items/{$this->orderItem->id}");
         $response->assertOk();
         $response->assertJsonStructure([
             'message',
@@ -72,7 +72,7 @@ describe('Admin OrderItemController', function (): void {
 
     it('returns all order items for an order (index)', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::ORDER_VIEW_ANY->value]);
-        $response = getJson("/api/v1/admin/order/{$this->order->id}/order-item");
+        $response = getJson("/api/v1/admin/orders/{$this->order->id}/order-items");
         $response->assertOk();
         $response->assertJsonStructure([
             'message',

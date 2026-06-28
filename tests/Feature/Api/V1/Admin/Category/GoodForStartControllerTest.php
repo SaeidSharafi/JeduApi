@@ -33,7 +33,7 @@ describe('GoodForStartController', function (): void {
         ];
 
         // Act as admin and make POST request
-        $response = $this->postJson("/api/v1/admin/category/{$category->id}/good-for-start", $payload);
+        $response = $this->postJson("/api/v1/admin/categories/{$category->id}/good-for-start", $payload);
 
         // Assert 200 OK response
         $response->assertStatus(200);
@@ -80,7 +80,7 @@ describe('GoodForStartController', function (): void {
         ];
 
         // Act as admin and make POST request
-        $response = $this->postJson("/api/v1/admin/category/{$category->id}/good-for-start", $payload);
+        $response = $this->postJson("/api/v1/admin/categories/{$category->id}/good-for-start", $payload);
 
         // Assert 422 Unprocessable Entity response
         $response->assertStatus(422);
@@ -144,7 +144,7 @@ describe('GoodForStartController', function (): void {
 
         foreach ($invalidPayloads as $payload) {
             // Act as admin and make POST request
-            $response = $this->postJson("/api/v1/admin/category/{$category->id}/good-for-start", $payload);
+            $response = $this->postJson("/api/v1/admin/categories/{$category->id}/good-for-start", $payload);
 
             // Assert 422 Unprocessable Entity response
             $response->assertStatus(422);
@@ -174,7 +174,7 @@ describe('GoodForStartController', function (): void {
         ];
 
         // Act as user without permissions and make POST request
-        $response = $this->postJson("/api/v1/admin/category/{$category->id}/good-for-start", $payload);
+        $response = $this->postJson("/api/v1/admin/categories/{$category->id}/good-for-start", $payload);
 
         // Assert 403 Forbidden response
         $response->assertStatus(403);

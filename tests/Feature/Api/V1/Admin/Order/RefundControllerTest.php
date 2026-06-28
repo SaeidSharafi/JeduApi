@@ -57,7 +57,7 @@ describe('RefundController', function (): void {
             'order_item_id' => App\Models\OrderItem::factory()->create(),
             'status'        => RefundStatusEnum::COMPLETED,
         ]);
-        $response = $this->getJson(route('api.v1.admin.refund.index'));
+        $response = $this->getJson(route('api.v1.admin.refunds.index'));
         $response->assertOk()
             ->assertJsonCount(4, 'data.data')
             ->assertJsonStructure([
@@ -81,7 +81,7 @@ describe('RefundController', function (): void {
                 ],
             ]);
 
-        $response = $this->getJson(route('api.v1.admin.refund.index', [
+        $response = $this->getJson(route('api.v1.admin.refunds.index', [
             'filter' => [
                 'increment_id' => $order->increment_id,
             ],
@@ -129,7 +129,7 @@ describe('RefundController', function (): void {
             ],
         ];
 
-        $response = $this->postJson(route('api.v1.admin.refund.store'), $data);
+        $response = $this->postJson(route('api.v1.admin.refunds.store'), $data);
         $response->assertCreated()
             ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json): void {
                 $json
@@ -205,7 +205,7 @@ describe('RefundController', function (): void {
                 ],
             ];
 
-            $response = $this->postJson(route('api.v1.admin.refund.store'), $data);
+            $response = $this->postJson(route('api.v1.admin.refunds.store'), $data);
             $response->assertUnprocessable()
                 ->assertJsonValidationErrors($field);
         })->with([
@@ -248,18 +248,18 @@ describe('RefundController', function (): void {
             ],
         ];
 
-        $response = $this->postJson(route('api.v1.admin.refund.store'), $data);
+        $response = $this->postJson(route('api.v1.admin.refunds.store'), $data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['order_item_id' => __('messages.order.refund.not_allowed')]);
 
         $orderItem->status = OrderItemStatusEnum::REFUNDED;
         $orderItem->save();
-        $response = $this->postJson(route('api.v1.admin.refund.store'), $data);
+        $response = $this->postJson(route('api.v1.admin.refunds.store'), $data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['order_item_id' => __('messages.order.refund.already_refunded')]);
 
         $order->payments()->delete();
-        $response = $this->postJson(route('api.v1.admin.refund.store'), $data);
+        $response = $this->postJson(route('api.v1.admin.refunds.store'), $data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['order_item_id' => __('messages.order.refund.no_completed_payments')]);
     });
@@ -278,7 +278,7 @@ describe('RefundController', function (): void {
             ],
         ];
 
-        $response = $this->postJson(route('api.v1.admin.refund.store'), $data);
+        $response = $this->postJson(route('api.v1.admin.refunds.store'), $data);
         $response->assertUnprocessable();
         $response->assertJsonValidationErrors('order_item_id');
     });
@@ -320,7 +320,7 @@ describe('RefundController', function (): void {
             'admin_notes' => 'Updated refund details',
         ];
 
-        $response = $this->putJson(route('api.v1.admin.refund.update',
+        $response = $this->putJson(route('api.v1.admin.refunds.update',
             ['refund' => $refund->id]), $data);
         $response->assertOk()
             ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json): void {
@@ -383,7 +383,7 @@ describe('RefundController', function (): void {
             'admin_notes' => 'Updated refund details',
         ];
 
-        $response = $this->putJson(route('api.v1.admin.refund.update',
+        $response = $this->putJson(route('api.v1.admin.refunds.update',
             ['refund' => $refund->id]), $data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['refund' => __('messages.order.refund.only_pending_refunds_can_be_edited')]);
@@ -419,7 +419,7 @@ describe('RefundController', function (): void {
             ],
         ]);
 
-        $response = $this->getJson(route('api.v1.admin.refund.show',
+        $response = $this->getJson(route('api.v1.admin.refunds.show',
             ['refund' => $refund->id]));
         $response->assertOk()
             ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($refund): void {
@@ -461,7 +461,7 @@ describe('RefundController', function (): void {
             'status'        => RefundStatusEnum::PENDING,
         ]);
 
-        $response = $this->deleteJson(route('api.v1.admin.refund.destroy',
+        $response = $this->deleteJson(route('api.v1.admin.refunds.destroy',
             ['refund' => $refund->id]));
         $response->assertNoContent();
 
@@ -492,7 +492,7 @@ describe('RefundController', function (): void {
             'status'        => $status, // Not pending
         ]);
 
-        $response = $this->deleteJson(route('api.v1.admin.refund.destroy',
+        $response = $this->deleteJson(route('api.v1.admin.refunds.destroy',
             ['refund' => $refund->id]));
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['status' => __('messages.order.refund.only_pending_refunds_can_be_deleted')]);
@@ -510,7 +510,7 @@ describe('RefundController', function (): void {
             'status'        => RefundStatusEnum::PENDING,
         ]);
 
-        $response = $this->getJson(route('api.v1.admin.refund.index', ['orderItem' => $orderItem->id]));
+        $response = $this->getJson(route('api.v1.admin.refunds.index', ['orderItem' => $orderItem->id]));
         $response->assertForbidden();
     });
 
@@ -533,7 +533,7 @@ describe('RefundController', function (): void {
             ],
         ];
 
-        $response = $this->postJson(route('api.v1.admin.refund.store'), $data);
+        $response = $this->postJson(route('api.v1.admin.refunds.store'), $data);
         $response->assertForbidden();
     });
 
@@ -558,7 +558,7 @@ describe('RefundController', function (): void {
             'admin_notes' => 'Updated refund details',
         ];
 
-        $response = $this->putJson(route('api.v1.admin.refund.update',
+        $response = $this->putJson(route('api.v1.admin.refunds.update',
             ['refund' => $refund->id]), $data);
         $response->assertForbidden();
     });
@@ -569,7 +569,7 @@ describe('RefundController', function (): void {
             'status' => RefundStatusEnum::PENDING,
         ]);
 
-        $response = $this->deleteJson(route('api.v1.admin.refund.destroy',
+        $response = $this->deleteJson(route('api.v1.admin.refunds.destroy',
             ['orderItem' => $refund->order_item_id, 'refund' => $refund->id]));
         $response->assertForbidden();
     });

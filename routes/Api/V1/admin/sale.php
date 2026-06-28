@@ -26,40 +26,41 @@ use App\Http\Controllers\Api\Admin\Wallet\DepositToWalletController;
 use App\Http\Controllers\Api\Admin\Wallet\WithdrawFromWalletController;
 
 // Order and Payment Management
-Route::apiResource('order', OrderController::class);
-Route::post('order/preview', OrderCalculationController::class)
-    ->name('order.preview');
-Route::post('order/{order}/approve', ApproveOrderController::class)
-    ->name('order.approve');
-Route::apiResource('order/{order}/order-item', OrderItemController::class)
+Route::apiResource('orders', OrderController::class);
+Route::post('orders/preview', OrderCalculationController::class)
+    ->name('orders.preview');
+Route::post('orders/{order}/approve', ApproveOrderController::class)
+    ->name('orders.approve');
+Route::apiResource('orders/{order}/order-items', OrderItemController::class)
     ->only(['index', 'show']);
 
-Route::apiResource('order/{order}/payment', PaymentController::class);
-Route::get('order/{order}/next-payment-details', NextPaymentDetailsController::class)
-    ->name('next-payment-details');
+Route::apiResource('orders/{order}/payment', PaymentController::class);
+Route::get('orders/{order}/next-payment-details', NextPaymentDetailsController::class)
+    ->name('orders.payment.next-payment-details');
 
 // Digipay admin operations
-Route::prefix('payment/{payment}/digipay')->name('payment.digipay.')->group(function (): void {
+Route::prefix('payments/{payment}/digipay')->name('payment.digipay.')->group(function (): void {
     Route::post('refund', [DigipayAdminController::class, 'refund'])->name('refund');
     Route::post('deliver', [DigipayAdminController::class, 'deliver'])->name('deliver');
     Route::post('reverse', [DigipayAdminController::class, 'reverse'])->name('reverse');
 });
-Route::post('payment/digipay/inquire-refund', [DigipayAdminController::class, 'inquireRefund'])
-    ->name('payment.digipay.inquire-refund');
+Route::post('payments/digipay/inquire-refund', [DigipayAdminController::class, 'inquireRefund'])
+    ->name('payments.digipay.inquire-refund');
 
-Route::apiResource('/refunds', RefundController::class);
+Route::apiResource('refunds', RefundController::class);
 
-Route::post('order/{order}/refund', [OrderRefundController::class, 'store'])
-    ->name('order.refund');
-Route::put('refund/{refund}/status', RefundUpdateStatusController::class)
-    ->name('refund.status');
+Route::post('orders/{order}/refund', [OrderRefundController::class, 'store'])
+    ->name('orders.refund');
+Route::put('refunds/{refund}/status', RefundUpdateStatusController::class)
+    ->name('refunds.status');
 
 // Discount Promotion routes
-Route::apiResource('discount-promotion', DiscountPromotionController::class);
-Route::put('discount-promotion/{discountPromotion}/status', DiscountPromotionStatusUpdateController::class)
-    ->name('discount-promotion.toggle-status');
-Route::get('discount-promotion-statistics', DiscountPromotionStatisticsController::class)
-    ->name('discount-promotion.statistics');
+Route::get('discount-promotions/statistics', DiscountPromotionStatisticsController::class)
+    ->name('discount-promotions.statistics');
+Route::apiResource('discount-promotions', DiscountPromotionController::class);
+Route::put('discount-promotions/{discountPromotion}/status', DiscountPromotionStatusUpdateController::class)
+    ->name('discount-promotions.toggle-status');
+
 
 // Discount Info routes (for frontend to get available rules, actions, etc.)
 Route::get('discount-info', [DiscountInfoController::class, 'index'])
@@ -75,13 +76,13 @@ Route::get('discount-info/types', [DiscountInfoController::class, 'types'])
     ->name('discount-info.types');
 
 // Enrollment Management
-Route::apiResource('enrollment', EnrollmentController::class)->except(['store']);
-Route::post('enrollment/{enrollment}/change-status', ChangeEnrollmentStatusController::class)
-    ->name('enrollment.change-status');
-Route::post('enrollment/{enrollment}/retry-provisioning', RetryProvisioningController::class)
-    ->name('enrollment.retry-provisioning');
+Route::apiResource('enrollments', EnrollmentController::class)->except(['store']);
+Route::post('enrollments/{enrollment}/change-status', ChangeEnrollmentStatusController::class)
+    ->name('enrollments.change-status');
+Route::post('enrollments/{enrollment}/retry-provisioning', RetryProvisioningController::class)
+    ->name('enrollments.retry-provisioning');
 
-Route::prefix('wallet')->name('wallet.')->group(function (): void {
+Route::prefix('wallets')->name('wallets.')->group(function (): void {
     Route::apiResource('/', AdminWalletController::class)->only(['index', 'show'])->parameters(['' => 'wallet']);
 
     Route::post('create', CreateWalletController::class)->name('create');

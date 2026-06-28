@@ -26,7 +26,7 @@ it('returns order payments list', function (): void {
     App\Models\Payment::factory()->create([
         'order_id' => $order->id,
     ]);
-    $response = \Pest\Laravel\getJson("/api/v1/admin/order/{$order->id}/payment");
+    $response = \Pest\Laravel\getJson("/api/v1/admin/orders/{$order->id}/payment");
     $response->assertOk();
     $response->assertJsonStructure([
         'message',
@@ -68,7 +68,7 @@ it('returns order payment detail', function (): void {
         'status'      => PaymentStatusEnum::COMPLETED,
         'admin_notes' => 'Test payment',
     ]);
-    $response = \Pest\Laravel\getJson("/api/v1/admin/order/{$order->id}/payment/{$payment->id}");
+    $response = \Pest\Laravel\getJson("/api/v1/admin/orders/{$order->id}/payment/{$payment->id}");
     $response->assertOk();
     $response->assertJsonStructure([
         'message',

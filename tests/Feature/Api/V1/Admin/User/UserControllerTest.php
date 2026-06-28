@@ -18,7 +18,7 @@ describe('list filters', function (): void {
                 'first_name' => 'John',
                 'last_name'  => 'Doe',
             ])->fresh();
-        $response = $this->getJson(route('api.v1.admin.user.index', ['filter' => ['name' => 'John Doe']]));
+        $response = $this->getJson(route('api.v1.admin.users.index', ['filter' => ['name' => 'John Doe']]));
 
         $response->assertSuccessful();
         $response->assertJsonCount(1, 'data.data');
@@ -34,7 +34,7 @@ describe('list filters', function (): void {
             ->create([
                 'email' => 'TESTjohn@example.com',
             ])->fresh();
-        $response = $this->getJson(route('api.v1.admin.user.index', ['filter' => ['email' => 'TESTjohn@example.com']]));
+        $response = $this->getJson(route('api.v1.admin.users.index', ['filter' => ['email' => 'TESTjohn@example.com']]));
 
         $response->assertSuccessful();
         $response->assertJsonCount(1, 'data.data');
@@ -49,7 +49,7 @@ describe('list filters', function (): void {
             ->create([
                 'phone' => '09999999999',
             ])->fresh();
-        $response = $this->getJson(route('api.v1.admin.user.index', ['filter' => ['phone' => '09999999999']]));
+        $response = $this->getJson(route('api.v1.admin.users.index', ['filter' => ['phone' => '09999999999']]));
 
         $response->assertSuccessful();
         $response->assertJsonCount(1, 'data.data');
@@ -65,7 +65,7 @@ describe('list filters', function (): void {
             ->create([
                 'civil_id' => 'XYZ',
             ])->fresh();
-        $response = $this->getJson(route('api.v1.admin.user.index', ['filter' => ['civil_id' => 'XYZ']]));
+        $response = $this->getJson(route('api.v1.admin.users.index', ['filter' => ['civil_id' => 'XYZ']]));
 
         $response->assertSuccessful();
         $response->assertJsonCount(1, 'data.data');
@@ -85,7 +85,7 @@ describe('list filters', function (): void {
             ->withNationalCode()
             ->create();
         $response = $this->getJson(
-            route('api.v1.admin.user.index',
+            route('api.v1.admin.users.index',
                 [
                     'filter' => ['civil_id_type' => CivilIdTypeEnum::NATIONAL_CODE->value],
                 ]
@@ -127,7 +127,7 @@ describe('list filters', function (): void {
             ->create([
                 'date_of_birth' => '1992-01-01',
             ])->fresh();
-        $response = $this->getJson(route('api.v1.admin.user.index',
+        $response = $this->getJson(route('api.v1.admin.users.index',
             [
                 'filter' => [
                     'date_of_birth_from' => '1369-10-11',
@@ -147,7 +147,7 @@ describe('CRUD Autherized', function (): void {
     it('should return list of user', function (): void {
         $this->authorized_user([PermissionEnum::USER_VIEW_ANY]);
         $users           = User::factory(10)->create()->fresh();
-        $response        = $this->getJson(route('api.v1.admin.user.index'));
+        $response        = $this->getJson(route('api.v1.admin.users.index'));
         $actualDataItems = collect($response->json('data.data'));
 
         foreach ($users as $expectedUser) {
@@ -197,7 +197,7 @@ describe('CRUD Autherized', function (): void {
             ...$user->toArray(),
             'date_of_birth' => verta($user->date_of_birth)->format('Y-m-d'),
         ];
-        $response = $this->postJson(route('api.v1.admin.user.store'), $userData);
+        $response = $this->postJson(route('api.v1.admin.users.store'), $userData);
         $response->assertCreated();
         $response->assertJson(function (AssertableJson $json) use ($user): void {
             $json->where('data.phone', $user->phone)
@@ -249,7 +249,7 @@ describe('CRUD Autherized', function (): void {
         $this->authorized_user([PermissionEnum::USER_VIEW]);
         $user = User::factory()->create()->fresh();
 
-        $response = $this->getJson(route('api.v1.admin.user.show', $user->id));
+        $response = $this->getJson(route('api.v1.admin.users.show', $user->id));
         $response->assertSuccessful();
         $response->assertJson(function (AssertableJson $json) use ($user): void {
             $json
@@ -293,7 +293,7 @@ describe('CRUD Autherized', function (): void {
             'last_name'     => 'Updated last name',
         ];
         $user->refresh();
-        $response = $this->putJson(route('api.v1.admin.user.update', $user->id), $updateUserData);
+        $response = $this->putJson(route('api.v1.admin.users.update', $user->id), $updateUserData);
 
         $response->assertSuccessful();
         $response->assertJson(function (AssertableJson $json) use ($user, $updateUserData): void {
@@ -340,7 +340,7 @@ describe('CRUD Autherized', function (): void {
     it('should delete user', function (): void {
         $this->authorized_user([PermissionEnum::USER_DELETE]);
         $user     = User::factory()->create()->fresh();
-        $response = $this->deleteJson(route('api.v1.admin.user.destroy', $user->id));
+        $response = $this->deleteJson(route('api.v1.admin.users.destroy', $user->id));
         $response->assertNoContent();
 
         $this->assertDatabaseMissing('users', [
@@ -354,7 +354,7 @@ describe('CRUD Autherized', function (): void {
         $teacher = App\Models\Teacher::factory()->create([
             'user_id' => $user->id,
         ]);
-        $response = $this->deleteJson(route('api.v1.admin.user.destroy', $user->id));
+        $response = $this->deleteJson(route('api.v1.admin.users.destroy', $user->id));
         $response->assertUnprocessable();
         $response->assertJson(function (AssertableJson $json): void {
             $json->where('message', __(
@@ -376,7 +376,7 @@ describe('CRUD Unautherized', function (): void {
     });
     it('should not return list of user', function (): void {
         $users    = User::factory(10)->create()->fresh();
-        $response = $this->getJson(route('api.v1.admin.user.index'));
+        $response = $this->getJson(route('api.v1.admin.users.index'));
         $response->assertForbidden();
     });
 
@@ -384,7 +384,7 @@ describe('CRUD Unautherized', function (): void {
         $user = User::factory()->withPassport()->make([
             'date_of_birth' => '1360-01-01',
         ]);
-        $response = $this->postJson(route('api.v1.admin.user.store'), $user->toArray());
+        $response = $this->postJson(route('api.v1.admin.users.store'), $user->toArray());
         $response->assertForbidden();
 
         $this->assertDatabaseMissing('users', [
@@ -407,7 +407,7 @@ describe('CRUD Unautherized', function (): void {
     it('should not return user data', function (): void {
         $user = User::factory()->create()->fresh();
 
-        $response = $this->getJson(route('api.v1.admin.user.show', $user->id));
+        $response = $this->getJson(route('api.v1.admin.users.show', $user->id));
         $response->assertForbidden();
     });
 
@@ -420,7 +420,7 @@ describe('CRUD Unautherized', function (): void {
             'last_name'     => 'Updated last name',
         ];
         $user->refresh();
-        $response = $this->putJson(route('api.v1.admin.user.update', $user->id), $updateUserData);
+        $response = $this->putJson(route('api.v1.admin.users.update', $user->id), $updateUserData);
 
         $response->assertForbidden();
 
@@ -438,7 +438,7 @@ describe('CRUD Unautherized', function (): void {
 
     it('should delete user', function (): void {
         $user     = User::factory()->create()->fresh();
-        $response = $this->deleteJson(route('api.v1.admin.user.destroy', $user->id));
+        $response = $this->deleteJson(route('api.v1.admin.users.destroy', $user->id));
         $response->assertForbidden();
 
         $this->assertDatabaseHas('users', [
@@ -458,7 +458,7 @@ describe('Validations', function (): void {
                 ]
             )->fresh();
         }
-        $response = $this->postJson(route('api.v1.admin.user.store'), $data);
+        $response = $this->postJson(route('api.v1.admin.users.store'), $data);
         $response->assertJsonValidationErrors(
             ['civil_id']
         );

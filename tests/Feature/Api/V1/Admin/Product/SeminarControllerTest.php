@@ -28,7 +28,7 @@ describe('list filters', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::SEMINAR_VIEW_ANY->value,
         ]);
-        $response = $this->getJson(route('api.v1.admin.seminar.index', [
+        $response = $this->getJson(route('api.v1.admin.seminars.index', [
             'filter' => [
                 'full_name' => 'Test Seminar',
             ],
@@ -43,7 +43,7 @@ describe('list filters', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::SEMINAR_VIEW_ANY->value,
         ]);
-        $response = $this->getJson(route('api.v1.admin.seminar.index', ['filter' => ['slug' => 'test-seminar']]));
+        $response = $this->getJson(route('api.v1.admin.seminars.index', ['filter' => ['slug' => 'test-seminar']]));
         $response->assertOk()
             ->assertJsonCount(1, 'data.data')
             ->assertJsonFragment(['slug' => 'test-seminar']);
@@ -53,7 +53,7 @@ describe('list filters', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::SEMINAR_VIEW_ANY->value,
         ]);
-        $response = $this->getJson(route('api.v1.admin.seminar.index',
+        $response = $this->getJson(route('api.v1.admin.seminars.index',
             ['filter' => ['short_name' => 'Short Seminar']]));
         $response->assertOk()
             ->assertJsonCount(1, 'data.data')
@@ -63,7 +63,7 @@ describe('list filters', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::SEMINAR_VIEW_ANY->value,
         ]);
-        $response = $this->getJson(route('api.v1.admin.seminar.index',
+        $response = $this->getJson(route('api.v1.admin.seminars.index',
             ['filter' => ['full_name' => 'Nonexistent Seminar']]));
         $response->assertOk()
             ->assertJsonCount(0, 'data.data');
@@ -73,7 +73,7 @@ describe('list filters', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::SEMINAR_VIEW_ANY->value,
         ]);
-        $response = $this->getJson(route('api.v1.admin.seminar.index'));
+        $response = $this->getJson(route('api.v1.admin.seminars.index'));
         $response->assertOk()
             ->assertJsonCount(3, 'data.data')
             ->assertJsonFragment(['full_name' => $seminars[0]->full_name])
@@ -86,7 +86,7 @@ describe('list filters', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::SEMINAR_VIEW_ANY->value,
         ]);
-        $response = $this->getJson(route('api.v1.admin.seminar.index', ['per_page' => 10]));
+        $response = $this->getJson(route('api.v1.admin.seminars.index', ['per_page' => 10]));
         $response->assertOk()
             ->assertJsonCount(10, 'data.data')
             ->assertJsonFragment(['full_name' => $seminars[0]->full_name])
@@ -99,7 +99,7 @@ describe('list filters', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::SEMINAR_VIEW_ANY->value,
         ]);
-        $response = $this->getJson(route('api.v1.admin.seminar.index', ['sort' => 'full_name']));
+        $response = $this->getJson(route('api.v1.admin.seminars.index', ['sort' => 'full_name']));
         $response->assertOk()
             ->assertJsonFragment(['full_name' => 'A Seminar'])
             ->assertJsonFragment(['full_name' => 'B Seminar'])
@@ -112,7 +112,7 @@ describe('list filters', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::SEMINAR_VIEW_ANY->value,
         ]);
-        $response = $this->getJson(route('api.v1.admin.seminar.index', ['sort' => 'created_at']));
+        $response = $this->getJson(route('api.v1.admin.seminars.index', ['sort' => 'created_at']));
         $response->assertOk()
             ->assertJsonPath('data.data.0.full_name', $seminar1->full_name)
             ->assertJsonPath('data.data.1.full_name', $seminar2->full_name);
@@ -123,7 +123,7 @@ describe('list filters', function (): void {
         $this->authorized_user([
             App\Enums\PermissionEnum::SEMINAR_VIEW_ANY->value,
         ]);
-        $response = $this->getJson(route('api.v1.admin.seminar.index', ['sort' => 'updated_at']));
+        $response = $this->getJson(route('api.v1.admin.seminars.index', ['sort' => 'updated_at']));
         $response->assertOk()
             ->assertJsonPath('data.data.0.full_name', $seminar1->full_name)
             ->assertJsonPath('data.data.1.full_name', $seminar2->full_name);
@@ -142,7 +142,7 @@ describe('SeminarController', function (): void {
             App\Enums\PermissionEnum::SEMINAR_VIEW_ANY->value,
         ]);
 
-        $response = $this->getJson(route('api.v1.admin.seminar.index'));
+        $response = $this->getJson(route('api.v1.admin.seminars.index'));
 
         $response->assertOk();
         $response
@@ -239,7 +239,7 @@ describe('SeminarController', function (): void {
             App\Enums\PermissionEnum::SEMINAR_VIEW->value,
         ]);
 
-        $response = $this->getJson(route('api.v1.admin.seminar.show', ['seminar' => $seminar->id]));
+        $response = $this->getJson(route('api.v1.admin.seminars.show', ['seminar' => $seminar->id]));
         $response->assertOk();
         $response->assertJsonCount(2, 'data.digital_assets');
         $response->assertJsonCount(3, 'data.categories');
@@ -270,7 +270,7 @@ describe('SeminarController', function (): void {
         $seminarData['categories']     = $cateogires->pluck('id')->toArray();
         $seminarData['digital_assets'] = App\Models\DigitalAsset::factory()->count(2)->create()->pluck('id')->toArray();
 
-        $response = $this->postJson(route('api.v1.admin.seminar.store'), [
+        $response = $this->postJson(route('api.v1.admin.seminars.store'), [
             ...$seminarData,
             'media' => [
                 'cover'   => [$this->cover->id],
@@ -336,20 +336,20 @@ describe('SeminarController', function (): void {
 
     it('should not create a seminar without required permissions', function (): void {
         $seminarData = App\Models\Seminar::factory()->make()->toArray();
-        $response    = $this->postJson(route('api.v1.admin.seminar.store'), $seminarData);
+        $response    = $this->postJson(route('api.v1.admin.seminars.store'), $seminarData);
 
         $response->assertUnauthorized();
     });
 
     it('should not list seminars without required permissions', function (): void {
-        $response = $this->getJson(route('api.v1.admin.seminar.index'));
+        $response = $this->getJson(route('api.v1.admin.seminars.index'));
 
         $response->assertUnauthorized();
     });
 
     it('should not show a seminar without required permissions', function (): void {
         $seminar  = App\Models\Seminar::factory()->create();
-        $response = $this->getJson(route('api.v1.admin.seminar.show', ['seminar' => $seminar->id]));
+        $response = $this->getJson(route('api.v1.admin.seminars.show', ['seminar' => $seminar->id]));
 
         $response->assertUnauthorized();
     });
@@ -359,7 +359,7 @@ describe('SeminarController', function (): void {
             App\Enums\PermissionEnum::SEMINAR_CREATE->value,
         ]);
 
-        $response = $this->postJson(route('api.v1.admin.seminar.store'), [
+        $response = $this->postJson(route('api.v1.admin.seminars.store'), [
             'full_name' => '', // Invalid data
         ]);
 
@@ -369,7 +369,7 @@ describe('SeminarController', function (): void {
 
     it('should not update a seminar without required permissions', function (): void {
         $seminar  = App\Models\Seminar::factory()->create();
-        $response = $this->putJson(route('api.v1.admin.seminar.update', ['seminar' => $seminar->id]), [
+        $response = $this->putJson(route('api.v1.admin.seminars.update', ['seminar' => $seminar->id]), [
             'full_name' => 'Updated Seminar Name',
         ]);
 
@@ -385,7 +385,7 @@ describe('SeminarController', function (): void {
         ]);
         $categories = Category::factory()->count(5)->create();
         $category   = $categories->first();
-        $response   = $this->putJson(route('api.v1.admin.seminar.update', ['seminar' => $seminar->id]), [
+        $response   = $this->putJson(route('api.v1.admin.seminars.update', ['seminar' => $seminar->id]), [
             ...$seminar->toArray(),
             'full_name'      => 'Updated Seminar Name',
             'short_name'     => 'Updated Short Name',
@@ -416,14 +416,14 @@ describe('SeminarController', function (): void {
             App\Enums\PermissionEnum::SEMINAR_DELETE->value,
         ]);
 
-        $response = $this->deleteJson(route('api.v1.admin.seminar.destroy', ['seminar' => $seminar->id]));
+        $response = $this->deleteJson(route('api.v1.admin.seminars.destroy', ['seminar' => $seminar->id]));
 
         $response->assertNoContent();
         $this->assertDatabaseMissing('seminars', ['id' => $seminar->id]);
     });
     it('should not delete a seminar without required permissions', function (): void {
         $seminar  = App\Models\Seminar::factory()->create();
-        $response = $this->deleteJson(route('api.v1.admin.seminar.destroy', ['seminar' => $seminar->id]));
+        $response = $this->deleteJson(route('api.v1.admin.seminars.destroy', ['seminar' => $seminar->id]));
 
         $response->assertUnauthorized();
     });
@@ -432,7 +432,7 @@ describe('SeminarController', function (): void {
             App\Enums\PermissionEnum::SEMINAR_DELETE->value,
         ]);
 
-        $response = $this->deleteJson(route('api.v1.admin.seminar.destroy', ['seminar' => 999]));
+        $response = $this->deleteJson(route('api.v1.admin.seminars.destroy', ['seminar' => 999]));
 
         $response->assertNotFound();
     });
@@ -446,7 +446,7 @@ describe('SeminarController', function (): void {
             App\Enums\PermissionEnum::SEMINAR_DELETE->value,
         ]);
 
-        $response = $this->deleteJson(route('api.v1.admin.seminar.destroy', ['seminar' => $seminar->id]));
+        $response = $this->deleteJson(route('api.v1.admin.seminars.destroy', ['seminar' => $seminar->id]));
         $response->assertStatus(422)
             ->assertJsonFragment([
                 'message' => __('messages.errors.model_has_relationship_data',
@@ -460,7 +460,7 @@ describe('SeminarController', function (): void {
             App\Enums\PermissionEnum::SEMINAR_UPDATE->value,
         ]);
 
-        $response = $this->putJson(route('api.v1.admin.seminar.update', ['seminar' => 999]), [
+        $response = $this->putJson(route('api.v1.admin.seminars.update', ['seminar' => 999]), [
             'full_name' => 'Updated Seminar Name',
         ]);
 
@@ -472,7 +472,7 @@ describe('SeminarController', function (): void {
             App\Enums\PermissionEnum::SEMINAR_UPDATE->value,
         ]);
 
-        $response = $this->putJson(route('api.v1.admin.seminar.update', ['seminar' => $seminar->id]), [
+        $response = $this->putJson(route('api.v1.admin.seminars.update', ['seminar' => $seminar->id]), [
             'full_name' => '',
         ]);
 

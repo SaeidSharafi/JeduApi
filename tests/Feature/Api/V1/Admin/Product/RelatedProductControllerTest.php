@@ -21,7 +21,7 @@ describe('User with permissions - Related Products Management', function (): voi
             App\Enums\PermissionEnum::PRODUCT_VIEW,
         ]);
 
-        $response = $this->getJson(route('api.v1.admin.product.related-products.index', [
+        $response = $this->getJson(route('api.v1.admin.products.related-products.index', [
             'product' => $this->mainProduct->id,
         ]));
 
@@ -47,7 +47,7 @@ describe('User with permissions - Related Products Management', function (): voi
             ]);
         }
 
-        $response = $this->getJson(route('api.v1.admin.product.related-products.index', [
+        $response = $this->getJson(route('api.v1.admin.products.related-products.index', [
             'product' => $this->mainProduct->id,
         ]));
 
@@ -83,7 +83,7 @@ describe('User with permissions - Related Products Management', function (): voi
         ]);
 
         // Filter by RELATED type
-        $response = $this->getJson(route('api.v1.admin.product.related-products.index', [
+        $response = $this->getJson(route('api.v1.admin.products.related-products.index', [
             'product'       => $this->mainProduct->id,
             'relation_type' => RelationTypeEnum::RELATED->value,
         ]));
@@ -96,7 +96,7 @@ describe('User with permissions - Related Products Management', function (): voi
         }
 
         // Filter by CROSS_SELL type
-        $response = $this->getJson(route('api.v1.admin.product.related-products.index', [
+        $response = $this->getJson(route('api.v1.admin.products.related-products.index', [
             'product'       => $this->mainProduct->id,
             'relation_type' => RelationTypeEnum::CROSS_SELL->value,
         ]));
@@ -120,7 +120,7 @@ describe('User with permissions - Related Products Management', function (): voi
         ];
 
         $response = $this->postJson(
-            route('api.v1.admin.product.related-products.store', ['product' => $this->mainProduct->id]),
+            route('api.v1.admin.products.related-products.store', ['product' => $this->mainProduct->id]),
             $data
         );
 
@@ -155,7 +155,7 @@ describe('User with permissions - Related Products Management', function (): voi
         ];
 
         $response = $this->postJson(
-            route('api.v1.admin.product.related-products.store', ['product' => $this->mainProduct->id]),
+            route('api.v1.admin.products.related-products.store', ['product' => $this->mainProduct->id]),
             $data
         );
 
@@ -198,7 +198,7 @@ describe('User with permissions - Related Products Management', function (): voi
         ];
 
         $this->postJson(
-            route('api.v1.admin.product.related-products.store', ['product' => $this->mainProduct->id]),
+            route('api.v1.admin.products.related-products.store', ['product' => $this->mainProduct->id]),
             $data
         );
 
@@ -223,7 +223,7 @@ describe('User with permissions - Related Products Management', function (): voi
         ];
 
         $response = $this->postJson(
-            route('api.v1.admin.product.related-products.store', ['product' => $this->mainProduct->id]),
+            route('api.v1.admin.products.related-products.store', ['product' => $this->mainProduct->id]),
             $data
         );
 
@@ -247,7 +247,7 @@ describe('User with permissions - Related Products Management', function (): voi
         ];
 
         $response = $this->postJson(
-            route('api.v1.admin.product.related-products.store', ['product' => $this->mainProduct->id]),
+            route('api.v1.admin.products.related-products.store', ['product' => $this->mainProduct->id]),
             $data
         );
         $response->assertUnprocessable()
@@ -265,7 +265,7 @@ describe('User with permissions - Related Products Management', function (): voi
         ];
 
         $response = $this->postJson(
-            route('api.v1.admin.product.related-products.store', ['product' => $this->mainProduct->id]),
+            route('api.v1.admin.products.related-products.store', ['product' => $this->mainProduct->id]),
             $data
         );
 
@@ -291,7 +291,7 @@ describe('User with permissions - Related Products Management', function (): voi
         ]);
 
         $response = $this->deleteJson(
-            route('api.v1.admin.product.related-products.destroy', [
+            route('api.v1.admin.products.related-products.destroy', [
                 'product'        => $this->mainProduct->id,
                 'relatedProduct' => $relatedProduct->id,
                 'relation_type'  => RelationTypeEnum::RELATED->value,
@@ -324,7 +324,7 @@ describe('User with permissions - Related Products Management', function (): voi
 
         // Delete only RELATED type
         $response = $this->deleteJson(
-            route('api.v1.admin.product.related-products.destroy', [
+            route('api.v1.admin.products.related-products.destroy', [
                 'product'        => $this->mainProduct->id,
                 'relatedProduct' => $relatedProduct->id,
                 'relation_type'  => RelationTypeEnum::RELATED->value,
@@ -356,7 +356,7 @@ describe('User with permissions - Related Products Management', function (): voi
         $relatedProduct = $this->relatedProducts->first();
 
         $response = $this->deleteJson(
-            route('api.v1.admin.product.related-products.destroy', [
+            route('api.v1.admin.products.related-products.destroy', [
                 'product'        => $this->mainProduct->id,
                 'relatedProduct' => $relatedProduct->id,
             ])
@@ -376,7 +376,7 @@ describe('User with permissions - Related Products Management', function (): voi
         $relatedProduct = $this->relatedProducts->first();
 
         $response = $this->deleteJson(
-            route('api.v1.admin.product.related-products.destroy', [
+            route('api.v1.admin.products.related-products.destroy', [
                 'product'        => $this->mainProduct->id,
                 'relatedProduct' => $relatedProduct->id,
                 'relation_type'  => 'invalid_type',
@@ -399,7 +399,7 @@ describe('User without permissions - Related Products Management', function (): 
     it('should deny access to list related products without permission', function (): void {
         $this->authorized_user([]);
 
-        $response = $this->getJson(route('api.v1.admin.product.related-products.index', [
+        $response = $this->getJson(route('api.v1.admin.products.related-products.index', [
             'product' => $this->mainProduct->id,
         ]));
 
@@ -415,7 +415,7 @@ describe('User without permissions - Related Products Management', function (): 
         ];
 
         $response = $this->postJson(
-            route('api.v1.admin.product.related-products.store', ['product' => $this->mainProduct->id]),
+            route('api.v1.admin.products.related-products.store', ['product' => $this->mainProduct->id]),
             $data
         );
 
@@ -426,7 +426,7 @@ describe('User without permissions - Related Products Management', function (): 
         $this->authorized_user([]);
 
         $response = $this->deleteJson(
-            route('api.v1.admin.product.related-products.destroy', [
+            route('api.v1.admin.products.related-products.destroy', [
                 'product'        => $this->mainProduct->id,
                 'relatedProduct' => $this->relatedProducts->first()->id,
                 'relation_type'  => RelationTypeEnum::RELATED->value,

@@ -14,14 +14,14 @@ test('admin with permission can list wallets', function (): void {
     $admin = $this->authorized_user([PermissionEnum::WALLET_VIEW_ANY]);
 
     User::factory()->count(3)->create();
-    $response = getJson(route('api.v1.admin.wallet.index'));
+    $response = getJson(route('api.v1.admin.wallets.index'));
     $response->assertOk();
     $response->assertJsonCount(3, 'data.data');
 });
 
 test('admin without permission cannot list wallets', function (): void {
     $admin    = $this->authorized_user([]);
-    $response = getJson(route('api.v1.admin.wallet.index'));
+    $response = getJson(route('api.v1.admin.wallets.index'));
     $response->assertForbidden();
 });
 
@@ -30,7 +30,7 @@ test('admin with permission can view a wallet', function (): void {
     $user   = User::factory()->create();
     $wallet = $user->wallet->fresh();
 
-    $response = getJson(route('api.v1.admin.wallet.show', $wallet->id));
+    $response = getJson(route('api.v1.admin.wallets.show', $wallet->id));
     $response->assertOk();
     $response->assertJsonPath('data.balance', $wallet->balance);
     $response->assertJsonPath('data.gift_balance', $wallet->gift_balance);
@@ -41,6 +41,6 @@ test('admin without permission cannot view a wallet', function (): void {
     $user   = User::factory()->create();
     $wallet = $user->wallet;
 
-    $response = getJson(route('api.v1.admin.wallet.show', [$wallet->id]));
+    $response = getJson(route('api.v1.admin.wallets.show', [$wallet->id]));
     $response->assertForbidden();
 });

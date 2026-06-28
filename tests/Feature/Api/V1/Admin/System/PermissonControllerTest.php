@@ -12,7 +12,7 @@ describe('permissions listing', function (): void {
     it('should return permissions list for authenticated staff', function (): void {
         $this->authorized_user();
 
-        $response = $this->getJson(route('api.v1.admin.permission.index'));
+        $response = $this->getJson(route('api.v1.admin.permissions.index'));
 
         $response->assertOk()
             ->assertJson(function (AssertableJson $json): void {
@@ -32,7 +32,7 @@ describe('permissions listing', function (): void {
     it('should group permissions by resource correctly', function (): void {
         $this->authorized_user();
 
-        $response = $this->getJson(route('api.v1.admin.permission.index'));
+        $response = $this->getJson(route('api.v1.admin.permissions.index'));
 
         $response->assertOk()
             ->assertJson(function (AssertableJson $json): void {
@@ -65,7 +65,7 @@ describe('permissions listing', function (): void {
     it('should include permission details in response', function (): void {
         $this->authorized_user();
 
-        $response = $this->getJson(route('api.v1.admin.permission.index'));
+        $response = $this->getJson(route('api.v1.admin.permissions.index'));
 
         $response->assertOk();
 
@@ -86,7 +86,7 @@ describe('permissions listing', function (): void {
     });
 
     it('should not return permissions list without authentication', function (): void {
-        $response = $this->getJson(route('api.v1.admin.permission.index'));
+        $response = $this->getJson(route('api.v1.admin.permissions.index'));
 
         $response->assertUnauthorized();
     });
@@ -97,7 +97,7 @@ describe('permissions listing', function (): void {
 
         $this->authorized_user();
 
-        $response = $this->getJson(route('api.v1.admin.permission.index'));
+        $response = $this->getJson(route('api.v1.admin.permissions.index'));
 
         $response->assertOk()
             ->assertJson(function (AssertableJson $json): void {
@@ -116,7 +116,7 @@ describe('permissions listing', function (): void {
 
         $this->authorized_user();
 
-        $response = $this->getJson(route('api.v1.admin.permission.index'));
+        $response = $this->getJson(route('api.v1.admin.permissions.index'));
 
         $response->assertOk();
 
@@ -146,7 +146,7 @@ describe('permissions listing', function (): void {
     it('should format permission data correctly using PermissionData', function (): void {
         $this->authorized_user();
 
-        $response = $this->getJson(route('api.v1.admin.permission.index'));
+        $response = $this->getJson(route('api.v1.admin.permissions.index'));
 
         $response->assertOk();
 
@@ -168,19 +168,19 @@ describe('permissions listing', function (): void {
         $this->authorized_user();
 
         // GET should work
-        $response = $this->getJson(route('api.v1.admin.permission.index'));
+        $response = $this->getJson(route('api.v1.admin.permissions.index'));
         $response->assertOk();
 
         // POST should not be allowed
-        $response = $this->postJson(route('api.v1.admin.permission.index'));
+        $response = $this->postJson(route('api.v1.admin.permissions.index'));
         $response->assertMethodNotAllowed();
 
         // PUT should not be allowed
-        $response = $this->putJson(route('api.v1.admin.permission.index'));
+        $response = $this->putJson(route('api.v1.admin.permissions.index'));
         $response->assertMethodNotAllowed();
 
         // DELETE should not be allowed
-        $response = $this->deleteJson(route('api.v1.admin.permission.index'));
+        $response = $this->deleteJson(route('api.v1.admin.permissions.index'));
         $response->assertMethodNotAllowed();
     });
 });
@@ -203,7 +203,7 @@ describe('permissions action integration', function (): void {
                 ]);
         });
 
-        $response = $this->getJson(route('api.v1.admin.permission.index'));
+        $response = $this->getJson(route('api.v1.admin.permissions.index'));
 
         $response->assertOk()
             ->assertJsonPath('data.test.label', 'Test Resource')
@@ -213,7 +213,7 @@ describe('permissions action integration', function (): void {
     it('should return response with success format', function (): void {
         $this->authorized_user();
 
-        $response = $this->getJson(route('api.v1.admin.permission.index'));
+        $response = $this->getJson(route('api.v1.admin.permissions.index'));
 
         $response->assertOk()
             ->assertJsonStructure([

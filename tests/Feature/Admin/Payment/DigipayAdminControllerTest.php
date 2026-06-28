@@ -55,7 +55,7 @@ it('refunds a Digipay payment successfully', function (): void {
             ));
     });
 
-    $response = postJson("/api/v1/admin/payment/{$payment->id}/digipay/refund", [
+    $response = postJson("/api/v1/admin/payments/{$payment->id}/digipay/refund", [
         'amount' => 500000,
     ]);
 
@@ -71,7 +71,7 @@ it('refuses refund without PAYMENT_UPDATE permission', function (): void {
     // Mock so the controller can be resolved; it should never be called
     $this->mock(DigipayAdminService::class);
 
-    $response = postJson("/api/v1/admin/payment/{$payment->id}/digipay/refund", [
+    $response = postJson("/api/v1/admin/payments/{$payment->id}/digipay/refund", [
         'amount' => 500000,
     ]);
 
@@ -92,7 +92,7 @@ it('returns 422 when refund throws DigipayException', function (): void {
             ));
     });
 
-    $response = postJson("/api/v1/admin/payment/{$payment->id}/digipay/refund", [
+    $response = postJson("/api/v1/admin/payments/{$payment->id}/digipay/refund", [
         'amount' => 500000,
     ]);
 
@@ -106,7 +106,7 @@ it('rejects refund for unauthenticated user', function (): void {
     // Mock so the controller can be resolved
     $this->mock(DigipayAdminService::class);
 
-    $response = postJson("/api/v1/admin/payment/{$payment->id}/digipay/refund", [
+    $response = postJson("/api/v1/admin/payments/{$payment->id}/digipay/refund", [
         'amount' => 500000,
     ]);
 
@@ -141,7 +141,7 @@ it('confirms delivery for a CREDIT payment', function (): void {
             ));
     });
 
-    $response = postJson("/api/v1/admin/payment/{$payment->id}/digipay/deliver");
+    $response = postJson("/api/v1/admin/payments/{$payment->id}/digipay/deliver");
 
     $response->assertOk();
     $response->assertJsonPath('data.message', 'Delivery confirmed successfully');
@@ -158,7 +158,7 @@ it('returns 422 when payment type does not require delivery confirmation', funct
             ->andReturn(false);
     });
 
-    $response = postJson("/api/v1/admin/payment/{$payment->id}/digipay/deliver");
+    $response = postJson("/api/v1/admin/payments/{$payment->id}/digipay/deliver");
 
     $response->assertStatus(422);
     $response->assertJsonFragment([
@@ -187,7 +187,7 @@ it('reverses a payment within the 25-minute window', function (): void {
             ));
     });
 
-    $response = postJson("/api/v1/admin/payment/{$payment->id}/digipay/reverse");
+    $response = postJson("/api/v1/admin/payments/{$payment->id}/digipay/reverse");
 
     $response->assertOk();
     $response->assertJsonPath('data.tracking_code', 'DGP-REV-789');
@@ -205,7 +205,7 @@ it('returns 422 when reverse window has expired', function (): void {
     // Mock so the controller can be resolved; reverse() should NOT be called
     $this->mock(DigipayAdminService::class);
 
-    $response = postJson("/api/v1/admin/payment/{$payment->id}/digipay/reverse");
+    $response = postJson("/api/v1/admin/payments/{$payment->id}/digipay/reverse");
 
     $response->assertStatus(422);
     $response->assertJsonFragment([
@@ -227,7 +227,7 @@ it('returns 422 when reverse throws DigipayException', function (): void {
             ));
     });
 
-    $response = postJson("/api/v1/admin/payment/{$payment->id}/digipay/reverse");
+    $response = postJson("/api/v1/admin/payments/{$payment->id}/digipay/reverse");
 
     $response->assertStatus(422);
     $response->assertJsonPath('errors.digipay_code', 99);
@@ -241,7 +241,7 @@ it('refuses reverse without PAYMENT_DELETE permission', function (): void {
     // Mock so the controller can be resolved; it should never be called
     $this->mock(DigipayAdminService::class);
 
-    $response = postJson("/api/v1/admin/payment/{$payment->id}/digipay/reverse");
+    $response = postJson("/api/v1/admin/payments/{$payment->id}/digipay/reverse");
 
     $response->assertForbidden();
 });
@@ -275,7 +275,7 @@ it('inquires refund status and returns completed', function (): void {
             ));
     });
 
-    $response = postJson('/api/v1/admin/payment/digipay/inquire-refund', [
+    $response = postJson('/api/v1/admin/payments/digipay/inquire-refund', [
         'refund_provider_id' => 'REFUND-123-1719000000',
         'type'               => 0,
     ]);
@@ -292,7 +292,7 @@ it('returns 422 for invalid inquire refund request data', function (): void {
     // because spatie/laravel-data halts before the controller method body runs.
     $this->mock(DigipayAdminService::class);
 
-    $response = postJson('/api/v1/admin/payment/digipay/inquire-refund', []);
+    $response = postJson('/api/v1/admin/payments/digipay/inquire-refund', []);
 
     $response->assertStatus(422);
 });
@@ -307,7 +307,7 @@ it('refuses inquire refund without PAYMENT_VIEW permission', function (): void {
 
     $this->mock(DigipayAdminService::class);
 
-    $response = postJson('/api/v1/admin/payment/digipay/inquire-refund', [
+    $response = postJson('/api/v1/admin/payments/digipay/inquire-refund', [
         'refund_provider_id' => 'REFUND-123-1719000000',
         'type'               => 0,
     ]);

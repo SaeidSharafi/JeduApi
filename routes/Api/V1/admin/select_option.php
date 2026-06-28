@@ -10,17 +10,17 @@ use App\Http\Controllers\Api\Admin\SelectOptions\TeacherSelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\TermSelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\VendorSelectOptionController;
 
-Route::get('select-option/category', CategorySelectOptionController::class)
-    ->name('select-option.category');
-Route::get('select-option/term', TermSelectOptionController::class)
-    ->name('select-option.term');
-Route::get('select-option/vendor', VendorSelectOptionController::class)
-    ->name('select-option.vendor');
-Route::get('select-option/teacher', TeacherSelectOptionController::class)
-    ->name('select-option.teacher');
-Route::get('select-option/productable', ProductableSelectOptionController::class)
-    ->name('select-option.productable');
+Route::get('select-option/categories', CategorySelectOptionController::class)
+    ->name('select-option.categories');
+Route::get('select-option/terms', TermSelectOptionController::class)
+    ->name('select-option.terms');
+Route::get('select-option/vendors', VendorSelectOptionController::class)
+    ->name('select-option.vendors');
+Route::get('select-option/teachers', TeacherSelectOptionController::class)
+    ->name('select-option.teacherss');
+Route::get('select-option/productables', ProductableSelectOptionController::class)
+    ->name('select-option.productables');
 Route::get('select-option/staff', StaffSelectOptionController::class)
     ->name('select-option.staff');
 Route::get('select-option/products/{productableType?}', ProductSelectOptionController::class)
-    ->name('select-option.product');
+    ->name('select-option.products');

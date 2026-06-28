@@ -21,7 +21,7 @@ describe('list filter', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         Vendor::factory(10)->create();
         $vendor   = Vendor::factory()->create(['name' => 'Test Vendor']);
-        $response = $this->getJson(route('api.v1.admin.vendor.index', ['filter' => ['name' => 'Test Vendor']]));
+        $response = $this->getJson(route('api.v1.admin.vendors.index', ['filter' => ['name' => 'Test Vendor']]));
 
         $response->assertOk()
             ->assertJsonFragment(['name' => 'Test Vendor'])
@@ -31,7 +31,7 @@ describe('list filter', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         Vendor::factory(10)->create();
         $vendor   = Vendor::factory()->create(['email' => 'vendor@example.com']);
-        $response = $this->getJson(route('api.v1.admin.vendor.index', ['filter' => ['email' => 'vendor@example.com']]));
+        $response = $this->getJson(route('api.v1.admin.vendors.index', ['filter' => ['email' => 'vendor@example.com']]));
         $response->assertOk()
             ->assertJsonFragment(['email' => 'vendor@example.com'])
             ->assertJsonCount(1, 'data.data');
@@ -40,7 +40,7 @@ describe('list filter', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         Vendor::factory(10)->create();
         $vendor   = Vendor::factory()->create(['phone' => '+1234567890']);
-        $response = $this->getJson(route('api.v1.admin.vendor.index', ['filter' => ['phone' => '+1234567890']]));
+        $response = $this->getJson(route('api.v1.admin.vendors.index', ['filter' => ['phone' => '+1234567890']]));
         $response->assertOk()
             ->assertJsonFragment(['phone' => '+1234567890'])
             ->assertJsonCount(1, 'data.data');
@@ -48,7 +48,7 @@ describe('list filter', function (): void {
     it('should return all vendors when no filter is applied', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         Vendor::factory(10)->create();
-        $response = $this->getJson(route('api.v1.admin.vendor.index'));
+        $response = $this->getJson(route('api.v1.admin.vendors.index'));
 
         $response->assertOk()
             ->assertJsonCount(10, 'data.data');
@@ -57,7 +57,7 @@ describe('list filter', function (): void {
     it('should return an empty list when no vendors match the filter', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         Vendor::factory(10)->create();
-        $response = $this->getJson(route('api.v1.admin.vendor.index', ['filter' => ['name' => 'Nonexistent Vendor']]));
+        $response = $this->getJson(route('api.v1.admin.vendors.index', ['filter' => ['name' => 'Nonexistent Vendor']]));
 
         $response->assertOk()
             ->assertJsonCount(0, 'data.data');
@@ -67,7 +67,7 @@ describe('list filter', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         Vendor::factory()->create(['name' => 'B Vendor']);
         Vendor::factory()->create(['name' => 'A Vendor']);
-        $response = $this->getJson(route('api.v1.admin.vendor.index', ['sort' => 'name']));
+        $response = $this->getJson(route('api.v1.admin.vendors.index', ['sort' => 'name']));
 
         $response->assertOk()
             ->assertJsonFragment(['name' => 'A Vendor'])
@@ -78,7 +78,7 @@ describe('list filter', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
         $vendor1  = Vendor::factory()->create(['created_at' => now()->subDays(2)])->fresh();
         $vendor2  = Vendor::factory()->create(['created_at' => now()->subDays(1)])->fresh();
-        $response = $this->getJson(route('api.v1.admin.vendor.index', ['sort' => '-created_at']));
+        $response = $this->getJson(route('api.v1.admin.vendors.index', ['sort' => '-created_at']));
 
         $response->assertOk()
             ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($vendor2, $vendor1): void {
@@ -93,7 +93,7 @@ describe('list filter', function (): void {
 describe('CRUD', function (): void {
     it('should return a list of vendors', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::VENDOR_VIEW_ANY]);
-        $response = $this->getJson(route('api.v1.admin.vendor.index'));
+        $response = $this->getJson(route('api.v1.admin.vendors.index'));
 
         $response->assertOk()
             ->assertJsonStructure([
@@ -125,7 +125,7 @@ describe('CRUD', function (): void {
             'favicon' => $this->favicon->id,
         ];
 
-        $response = $this->postJson(route('api.v1.admin.vendor.store'), $data);
+        $response = $this->postJson(route('api.v1.admin.vendors.store'), $data);
         $response->assertCreated();
         $this->assertDatabaseHas('vendors', [
             'name'         => $data['name'],
@@ -156,7 +156,7 @@ describe('CRUD', function (): void {
         $vendor->attachMedia($this->logo, 'logo');
         $vendor->attachMedia($this->favicon, 'favicon');
 
-        $response = $this->getJson(route('api.v1.admin.vendor.show', ['vendor' => $vendor->id]));
+        $response = $this->getJson(route('api.v1.admin.vendors.show', ['vendor' => $vendor->id]));
         $response->assertOk()
             ->assertJsonFragment([
                 'id'           => $vendor->id,
@@ -178,7 +178,7 @@ describe('CRUD', function (): void {
             'favicon' => $this->favicon->id,
         ];
 
-        $response = $this->putJson(route('api.v1.admin.vendor.update', ['vendor' => $vendor->id]), $data);
+        $response = $this->putJson(route('api.v1.admin.vendors.update', ['vendor' => $vendor->id]), $data);
         $response->assertOk();
         $this->assertDatabaseHas('vendors', [
             'id'           => $vendor->id,
@@ -209,7 +209,7 @@ describe('CRUD', function (): void {
         $vendor->attachMedia($this->logo, 'logo');
         $vendor->attachMedia($this->favicon, 'favicon');
 
-        $response = $this->deleteJson(route('api.v1.admin.vendor.destroy', ['vendor' => $vendor->id]));
+        $response = $this->deleteJson(route('api.v1.admin.vendors.destroy', ['vendor' => $vendor->id]));
         $response->assertNoContent();
         $this->assertDatabaseMissing('vendors', ['id' => $vendor->id]);
         $this->assertDatabaseMissing('mediables', [
@@ -230,7 +230,7 @@ describe('CRUD', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::VENDOR_DELETE]);
         $vendor = Vendor::factory()->create();
         App\Models\Product::factory()->create(['vendor_id' => $vendor->id]);
-        $response = $this->deleteJson(route('api.v1.admin.vendor.destroy', ['vendor' => $vendor->id]));
+        $response = $this->deleteJson(route('api.v1.admin.vendors.destroy', ['vendor' => $vendor->id]));
         $response
             ->assertStatus(422)
             ->assertJsonFragment([

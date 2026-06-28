@@ -45,20 +45,20 @@ Route::get('partners', PartnerController::class)->name('partners.index');
 Route::get('student-stories', StudentStoryController::class)->name('student-stories.index');
 
 Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
-Route::get('category/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
-Route::get('category/{category:slug}/courses', CategoryCourseController::class)->name('categories.courses');
-Route::get('category/{category:slug}/seminars', CategorySeminarController::class)->name('categories.seminars');
-Route::get('category/{category:slug}/digital-assets', CategoryDigitalAssetController::class)->name('categories.digital-assets');
-Route::get('good-for-start/category/{category:slug}/courses', GoodForStartCoursesController::class)
+Route::get('categories/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
+Route::get('categories/{category:slug}/courses', CategoryCourseController::class)->name('categories.courses');
+Route::get('categories/{category:slug}/seminars', CategorySeminarController::class)->name('categories.seminars');
+Route::get('categories/{category:slug}/digital-assets', CategoryDigitalAssetController::class)->name('categories.digital-assets');
+Route::get('good-for-start/categories/{category:slug}/courses', GoodForStartCoursesController::class)
     ->name('categories.courses.good-for-start');
 Route::get('courses', [CourseController::class, 'index'])->name('courses.index');
-Route::get('course/{product:slug}', [CourseController::class, 'show'])
+Route::get('courses/{product:slug}', [CourseController::class, 'show'])
     ->name('courses.show');
 Route::get('seminars', [SeminarController::class, 'index'])->name('seminars.index');
-Route::get('seminar/{product:slug}', [SeminarController::class, 'show'])
+Route::get('seminars/{product:slug}', [SeminarController::class, 'show'])
     ->name('seminars.show');
 Route::get('digital-assets', [DigitalAssetController::class, 'index'])->name('digital-assets.index');
-Route::get('digital-asset/{product:slug}', [DigitalAssetController::class, 'show'])
+Route::get('digital-assets/{product:slug}', [DigitalAssetController::class, 'show'])
     ->name('digital-assets.show');
 
 Route::get('search', SearchController::class)->name('search');
@@ -66,17 +66,17 @@ Route::get('search/suggest', SuggestSearchController::class)->name('search.sugge
 
 Route::get('teachers/{teacher:uuid}', [TeacherController::class, 'show'])->name('teachers.show');
 // Route::get('teachers', [TeacherController::class, 'index'])->name('teachers.index');
-Route::get('product/{product:slug}/teachers', ProductTeacherController::class)->name('product.teachers');
+Route::get('products/{product:slug}/teachers', ProductTeacherController::class)->name('products.teachers');
 
-Route::get('product/{product:slug}/related/{relation_type}', RelatedProductController::class)
-    ->name('product.related');
+Route::get('products/{product:slug}/related/{relation_type}', RelatedProductController::class)
+    ->name('products.related');
 
 // Blog Routes
 Route::get('blog/posts', [BlogPostController::class, 'index'])->name('blog.posts.index');
-Route::get('blog/post/{slug}', [BlogPostController::class, 'show'])->name('blog.posts.show');
+Route::get('blog/posts/{slug}', [BlogPostController::class, 'show'])->name('blog.posts.show');
 Route::get('blog/categories', [BlogCategoryController::class, 'index'])->name('blog.categories.index');
-Route::get('blog/category/{slug}', [BlogCategoryController::class, 'show'])->name('blog.categories.show');
-Route::get('blog/category/{slug}/posts', [BlogCategoryController::class, 'posts'])->name('blog.categories.posts');
+Route::get('blog/categories/{slug}', [BlogCategoryController::class, 'show'])->name('blog.categories.show');
+Route::get('blog/categories/{slug}/posts', [BlogCategoryController::class, 'posts'])->name('blog.categories.posts');
 
 // Cart Routes (supports both guest and authenticated users)
 Route::middleware([])

@@ -58,25 +58,25 @@ describe('OrderController', function (): void {
             'customer_id' => $customer->id,
         ]);
         // Filter by status
-        $this->getJson(route('api.v1.admin.order.index',
+        $this->getJson(route('api.v1.admin.orders.index',
             ['filter[payment_status]' => PaymentStatusEnum::FAILED->value]))
             ->assertOk()->assertJsonCount(1, 'data.data')
             ->assertJsonPath('data.data.0.payments.0.status.value', PaymentStatusEnum::FAILED->value);
 
-        $this->getJson(route('api.v1.admin.order.index', ['filter[status]' => OrderStatusEnum::COMPLETED->value]))
+        $this->getJson(route('api.v1.admin.orders.index', ['filter[status]' => OrderStatusEnum::COMPLETED->value]))
             ->assertOk()->assertJsonCount(1, 'data.data')
             ->assertJsonPath('data.data.0.status.value', OrderStatusEnum::COMPLETED->value);
 
         // Filter by increment_id
-        $this->getJson(route('api.v1.admin.order.index', ['filter[increment_id]' => '1001']))
+        $this->getJson(route('api.v1.admin.orders.index', ['filter[increment_id]' => '1001']))
             ->assertOk()->assertJsonCount(1, 'data.data')->assertJsonPath('data.data.0.increment_id', '1001');
 
         // Filter by product_name (partial)
-        $this->getJson(route('api.v1.admin.order.index', ['filter[product_name]' => 'Wid']))
+        $this->getJson(route('api.v1.admin.orders.index', ['filter[product_name]' => 'Wid']))
             ->assertOk()->assertJsonCount(1, 'data.data')->assertJsonPath('data.data.0.items.0.name', 'Widget');
 
         // Filter by product_sku (partial)
-        $this->getJson(route('api.v1.admin.order.index', ['filter[product_sku]' => 'SKU']))
+        $this->getJson(route('api.v1.admin.orders.index', ['filter[product_sku]' => 'SKU']))
             ->assertOk()->assertJsonCount(1, 'data.data')->assertJsonPath('data.data.0.items.0.sku', 'SKU123');
     });
 
@@ -111,7 +111,7 @@ describe('OrderController', function (): void {
                 'admin_notes' => 'Test order creation',
             ];
 
-            $response = $this->postJson(route('api.v1.admin.order.store'), $orderData);
+            $response = $this->postJson(route('api.v1.admin.orders.store'), $orderData);
 
             $response->assertStatus(201)
                 ->assertJsonStructure([
@@ -173,7 +173,7 @@ describe('OrderController', function (): void {
                 ],
             ];
 
-            $response = $this->postJson(route('api.v1.admin.order.store'), $orderData);
+            $response = $this->postJson(route('api.v1.admin.orders.store'), $orderData);
 
             $response->assertStatus(201)
                 ->assertJsonPath('data.grand_total', 20000)
@@ -186,7 +186,7 @@ describe('OrderController', function (): void {
                 'grand_total' => 5000,
             ]);
 
-            $response = $this->getJson(route('api.v1.admin.order.show', ['order' => $order->id]));
+            $response = $this->getJson(route('api.v1.admin.orders.show', ['order' => $order->id]));
             $response->assertStatus(200)
                 ->assertJsonStructure([
                     'message',
@@ -239,7 +239,7 @@ describe('OrderController', function (): void {
             Event::fake([
                 App\Events\OrderStatusUpdatedEvent::class,
             ]);
-            $response = $this->putJson(route('api.v1.admin.order.update', ['order' => $order->id]), $updateData);
+            $response = $this->putJson(route('api.v1.admin.orders.update', ['order' => $order->id]), $updateData);
             $response->assertStatus(200)
                 ->assertJsonStructure([
                     'message',
@@ -299,7 +299,7 @@ describe('OrderController', function (): void {
                 'product_delivery_option_id' => $item->product_delivery_option_id,
                 'enrollment_status'          => App\Enums\EnrollmentStatusEnum::PENDING_PROVISIONING,
             ]);
-            $response = $this->deleteJson(route('api.v1.admin.order.destroy', ['order' => $order->id]));
+            $response = $this->deleteJson(route('api.v1.admin.orders.destroy', ['order' => $order->id]));
             $response->assertStatus(204);
             $this->assertDatabaseMissing('orders', [
                 'id' => $order->id,
@@ -349,7 +349,7 @@ describe('OrderController', function (): void {
                 'product_delivery_option_id' => $item->product_delivery_option_id,
                 'enrollment_status'          => App\Enums\EnrollmentStatusEnum::PENDING_PROVISIONING,
             ]);
-            $response = $this->deleteJson(route('api.v1.admin.order.destroy', ['order' => $order->id]));
+            $response = $this->deleteJson(route('api.v1.admin.orders.destroy', ['order' => $order->id]));
             $response->assertStatus(422);
             $response->assertJsonValidationErrors(
                 [
@@ -392,7 +392,7 @@ describe('OrderController', function (): void {
                     'status'                     => App\Enums\Order\OrderItemStatusEnum::COMPLETED,
                 ]
             );
-            $response = $this->deleteJson(route('api.v1.admin.order.destroy', ['order' => $order->id]));
+            $response = $this->deleteJson(route('api.v1.admin.orders.destroy', ['order' => $order->id]));
             $response->assertStatus(422);
             $response->assertJsonValidationErrors(
                 ['order' => __('messages.order.cannot_delete_non_pending_order')]
@@ -411,15 +411,15 @@ describe('OrderController', function (): void {
         $this->unauthorized_user();
         $order = Order::factory()->create();
 
-        $this->getJson(route('api.v1.admin.order.index'))->assertStatus(403);
-        $this->getJson(route('api.v1.admin.order.show', ['order' => $order->id]))->assertStatus(403);
-        $this->deleteJson(route('api.v1.admin.order.destroy', ['order' => $order->id]))->assertStatus(403);
-        $this->putJson(route('api.v1.admin.order.update', ['order' => $order->id]),
+        $this->getJson(route('api.v1.admin.orders.index'))->assertStatus(403);
+        $this->getJson(route('api.v1.admin.orders.show', ['order' => $order->id]))->assertStatus(403);
+        $this->deleteJson(route('api.v1.admin.orders.destroy', ['order' => $order->id]))->assertStatus(403);
+        $this->putJson(route('api.v1.admin.orders.update', ['order' => $order->id]),
             [
                 'status' => OrderStatusEnum::PENDING->value,
             ]
         )->assertStatus(403);
-        $this->postJson(route('api.v1.admin.order.store'), [
+        $this->postJson(route('api.v1.admin.orders.store'), [
             'status'      => OrderStatusEnum::PENDING->value,
             'customer_id' => User::factory()->create()->id,
             'items'       => [
@@ -436,7 +436,7 @@ describe('OrderController', function (): void {
 
     it('validates top-level required fields on create', function (): void {
         $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
-        $response = $this->postJson(route('api.v1.admin.order.store'), []);
+        $response = $this->postJson(route('api.v1.admin.orders.store'), []);
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['status', 'customer_id', 'items']);
     });
@@ -451,7 +451,7 @@ describe('OrderController', function (): void {
                 [/* item missing all required fields */],
             ],
         ];
-        $response = $this->postJson(route('api.v1.admin.order.store'), $data);
+        $response = $this->postJson(route('api.v1.admin.orders.store'), $data);
         $response->assertStatus(422)
             ->assertJsonValidationErrors([
                 'items.0.product_delivery_option_id',

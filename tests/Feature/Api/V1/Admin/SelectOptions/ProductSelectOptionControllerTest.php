@@ -24,7 +24,7 @@ describe('Admin Product Select Option API', function (): void {
             ->count(25)
             ->create();
 
-        $response = $this->getJson(route('api.v1.admin.select-option.product'));
+        $response = $this->getJson(route('api.v1.admin.select-option.products'));
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -65,7 +65,7 @@ describe('Admin Product Select Option API', function (): void {
             'short_name' => 'Advanced Design Patterns',
         ]);
 
-        $response = $this->getJson(route('api.v1.admin.select-option.product', ['q' => 'advanced']));
+        $response = $this->getJson(route('api.v1.admin.select-option.products', ['q' => 'advanced']));
 
         $response->assertStatus(200);
         $response->assertJsonCount(3, 'data');
@@ -83,7 +83,7 @@ describe('Admin Product Select Option API', function (): void {
 
     it('limits the number of productable items returned', function (): void {
         Product::factory()->withDeliveryOptions(1)->count(10)->create();
-        $response = $this->getJson(route('api.v1.admin.select-option.product', ['limit' => 5]));
+        $response = $this->getJson(route('api.v1.admin.select-option.products', ['limit' => 5]));
 
         $response->assertStatus(200);
         $this->assertCount(5, $response->json('data'));
@@ -105,7 +105,7 @@ describe('Admin Product Select Option API', function (): void {
             ->withDigitalAsset()
             ->count(10)
             ->create();
-        $response = $this->getJson(route('api.v1.admin.select-option.product', ['productableType' => 'course']));
+        $response = $this->getJson(route('api.v1.admin.select-option.products', ['productableType' => 'course']));
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
@@ -121,7 +121,7 @@ describe('Admin Product Select Option API', function (): void {
             expect($item['type']['value'])->toBe(ProductableEnum::COURSE->value);
         }
 
-        $response = $this->getJson(route('api.v1.admin.select-option.product', ['productableType' => 'seminar']));
+        $response = $this->getJson(route('api.v1.admin.select-option.products', ['productableType' => 'seminar']));
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
@@ -137,7 +137,7 @@ describe('Admin Product Select Option API', function (): void {
             expect($item['type']['value'])->toBe(ProductableEnum::SEMINAR->value);
         }
 
-        $response = $this->getJson(route('api.v1.admin.select-option.product', ['productableType' => 'digital_asset']));
+        $response = $this->getJson(route('api.v1.admin.select-option.products', ['productableType' => 'digital_asset']));
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
@@ -157,7 +157,7 @@ describe('Admin Product Select Option API', function (): void {
     it('returns empty data when no productable items match the criteria', function (): void {
         Product::factory()->withDeliveryOptions(1)->count(4)->create();
 
-        $response = $this->getJson(route('api.v1.admin.select-option.product', ['q' => 'nonexistentitem']));
+        $response = $this->getJson(route('api.v1.admin.select-option.products', ['q' => 'nonexistentitem']));
 
         $response->assertStatus(200);
         $response->assertJsonCount(0, 'data');

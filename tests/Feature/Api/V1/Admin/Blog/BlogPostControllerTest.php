@@ -12,7 +12,7 @@ describe('BlogPostController List & Filter', function (): void {
     it('should list posts', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::BLOG_POST_VIEW_ANY]);
         App\Models\Blog\BlogPost::factory(20)->create();
-        $response = $this->getJson(route('api.v1.admin.blog.post.index'));
+        $response = $this->getJson(route('api.v1.admin.blog.posts.index'));
         $response->assertOk();
         $response->assertJsonCount(15, 'data.data');
         $response->assertJsonStructure([
@@ -59,7 +59,7 @@ describe('BlogPostController List & Filter', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::BLOG_POST_VIEW_ANY]);
         App\Models\Blog\BlogPost::factory(20)->create();
         App\Models\Blog\BlogPost::factory()->create(['title' => 'TechX Innovations']);
-        $response = $this->getJson(route('api.v1.admin.blog.post.index',
+        $response = $this->getJson(route('api.v1.admin.blog.posts.index',
             ['filter' => ['title' => 'TechX Innovations']]));
         $response->assertOk();
         $response->assertJsonCount(1, 'data.data');
@@ -70,7 +70,7 @@ describe('BlogPostController List & Filter', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::BLOG_POST_VIEW_ANY]);
         App\Models\Blog\BlogPost::factory(20)->create();
         App\Models\Blog\BlogPost::factory()->create(['slug' => 'unique-post-slug']);
-        $response = $this->getJson(route('api.v1.admin.blog.post.index', ['filter' => ['slug' => 'unique-post-slug']]));
+        $response = $this->getJson(route('api.v1.admin.blog.posts.index', ['filter' => ['slug' => 'unique-post-slug']]));
         $response->assertOk();
         $response->assertJsonCount(1, 'data.data');
         $response->assertJsonFragment(['slug' => 'unique-post-slug']);
@@ -80,7 +80,7 @@ describe('BlogPostController List & Filter', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::BLOG_POST_VIEW_ANY]);
         App\Models\Blog\BlogPost::factory()->create(['status' => PublicationStatusEnum::DRAFT]);
         App\Models\Blog\BlogPost::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
-        $response = $this->getJson(route('api.v1.admin.blog.post.index',
+        $response = $this->getJson(route('api.v1.admin.blog.posts.index',
             ['filter' => ['status' => PublicationStatusEnum::PUBLISHED->value]]));
         $response->assertOk();
         $response->assertJsonCount(1, 'data.data');
@@ -92,7 +92,7 @@ describe('BlogPostController List & Filter', function (): void {
         $author = App\Models\Staff::factory()->create();
         App\Models\Blog\BlogPost::factory()->create(['author_id' => $author->id]);
         App\Models\Blog\BlogPost::factory()->create();
-        $response = $this->getJson(route('api.v1.admin.blog.post.index', ['filter' => ['author_id' => $author->id]]));
+        $response = $this->getJson(route('api.v1.admin.blog.posts.index', ['filter' => ['author_id' => $author->id]]));
         $response->assertOk();
         $response->assertJsonCount(1, 'data.data');
         $response->assertJsonFragment(['author_id' => $author->id]);
@@ -110,7 +110,7 @@ describe('BlogPostController List & Filter', function (): void {
             'main_productable_type' => ProductableEnum::SEMINAR->value,
             'main_productable_id'   => App\Models\Seminar::factory(),
         ]);
-        $response = $this->getJson(route('api.v1.admin.blog.post.index', [
+        $response = $this->getJson(route('api.v1.admin.blog.posts.index', [
             'filter' => [
                 'main_productable_type' => ProductableEnum::COURSE->value,
             ],
@@ -129,7 +129,7 @@ describe('BlogPostController List & Filter', function (): void {
         $postWithCourse->save();
 
         App\Models\Blog\BlogPost::factory()->count(5)->create();
-        $response = $this->getJson(route('api.v1.admin.blog.post.index', [
+        $response = $this->getJson(route('api.v1.admin.blog.posts.index', [
             'filter' => [
                 'main_productable_type' => ProductableEnum::COURSE->value,
                 'main_productable_id'   => $course->id,
@@ -178,7 +178,7 @@ describe('BlogPostController CRUD', function (): void {
             ],
         ];
 
-        $response = $this->postJson(route('api.v1.admin.blog.post.store'), $postData);
+        $response = $this->postJson(route('api.v1.admin.blog.posts.store'), $postData);
         $response->assertCreated();
         $response->assertJsonFragment(['title' => 'New Blog Post']);
         $responseData = $response->json('data');
@@ -218,7 +218,7 @@ describe('BlogPostController CRUD', function (): void {
     it('should show a post', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::BLOG_POST_VIEW]);
         $post     = App\Models\Blog\BlogPost::factory()->create();
-        $response = $this->getJson(route('api.v1.admin.blog.post.show', ['post' => $post->id]));
+        $response = $this->getJson(route('api.v1.admin.blog.posts.show', ['post' => $post->id]));
         $response->assertOk();
         $response->assertJsonFragment(['id' => $post->id, 'title' => $post->title]);
     });
@@ -239,7 +239,7 @@ describe('BlogPostController CRUD', function (): void {
             ],
 
         ];
-        $response = $this->putJson(route('api.v1.admin.blog.post.update', ['post' => $post->id]), $updateData);
+        $response = $this->putJson(route('api.v1.admin.blog.posts.update', ['post' => $post->id]), $updateData);
         $response->assertOk();
         $response->assertJsonFragment(['title' => 'Updated Blog Post Title']);
         $responseData = $response->json('data');
@@ -254,7 +254,7 @@ describe('BlogPostController CRUD', function (): void {
     it('should delete a post', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::BLOG_POST_DELETE]);
         $post     = App\Models\Blog\BlogPost::factory()->create();
-        $response = $this->deleteJson(route('api.v1.admin.blog.post.destroy', ['post' => $post->id]));
+        $response = $this->deleteJson(route('api.v1.admin.blog.posts.destroy', ['post' => $post->id]));
         $response->assertNoContent();
         $this->assertDatabaseMissing('blog_posts', ['id' => $post->id]);
     });
@@ -279,15 +279,15 @@ describe('BlogPostController CRUD', function (): void {
                 'cover' => [$this->cover->id],
             ],
         ];
-        $response = $this->getJson(route('api.v1.admin.blog.post.index'));
+        $response = $this->getJson(route('api.v1.admin.blog.posts.index'));
         $response->assertForbidden();
-        $response = $this->postJson(route('api.v1.admin.blog.post.store'), $postData);
+        $response = $this->postJson(route('api.v1.admin.blog.posts.store'), $postData);
         $response->assertForbidden();
-        $response = $this->getJson(route('api.v1.admin.blog.post.show', ['post' => $post->id]));
+        $response = $this->getJson(route('api.v1.admin.blog.posts.show', ['post' => $post->id]));
         $response->assertForbidden();
-        $response = $this->putJson(route('api.v1.admin.blog.post.update', ['post' => $post->id]), $postData);
+        $response = $this->putJson(route('api.v1.admin.blog.posts.update', ['post' => $post->id]), $postData);
         $response->assertForbidden();
-        $response = $this->deleteJson(route('api.v1.admin.blog.post.destroy', ['post' => $post->id]));
+        $response = $this->deleteJson(route('api.v1.admin.blog.posts.destroy', ['post' => $post->id]));
         $response->assertForbidden();
     });
 });

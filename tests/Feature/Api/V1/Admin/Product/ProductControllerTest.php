@@ -16,7 +16,7 @@ describe('list filters', function (): void {
             'is_featured' => false,
             'status'      => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
-        $response = $this->getJson(route('api.v1.admin.product.index', [
+        $response = $this->getJson(route('api.v1.admin.products.index', [
             'filter'  => ['name' => 'Test Product'],
             'perPage' => 10,
         ]));
@@ -35,7 +35,7 @@ describe('list filters', function (): void {
             'is_featured' => false,
             'status'      => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
-        $response = $this->getJson(route('api.v1.admin.product.index', [
+        $response = $this->getJson(route('api.v1.admin.products.index', [
             'filter'  => ['short_name' => 'Test Short Name'],
             'perPage' => 10,
         ]));
@@ -58,7 +58,7 @@ describe('list filters', function (): void {
             'is_featured' => false,
             'status'      => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
-        $response = $this->getJson(route('api.v1.admin.product.index', [
+        $response = $this->getJson(route('api.v1.admin.products.index', [
             'filter'  => ['is_visible' => true],
             'perPage' => 10,
         ]));
@@ -81,7 +81,7 @@ describe('list filters', function (): void {
             'is_featured' => true,
             'status'      => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
-        $response = $this->getJson(route('api.v1.admin.product.index', [
+        $response = $this->getJson(route('api.v1.admin.products.index', [
             'filter'  => ['is_featured' => true],
             'perPage' => 10,
         ]));
@@ -102,7 +102,7 @@ describe('list filters', function (): void {
             'is_featured' => false,
             'status'      => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ]);
-        $response = $this->getJson(route('api.v1.admin.product.index', [
+        $response = $this->getJson(route('api.v1.admin.products.index', [
             'filter'  => ['status' => App\Enums\Content\PublicationStatusEnum::PUBLISHED->value],
             'perPage' => 10,
         ]));
@@ -133,7 +133,7 @@ describe('Controller Tests', function (): void {
                 'status' => App\Enums\Content\PublicationStatusEnum::DRAFT,
             ]
         );
-        $response = $this->getJson(route('api.v1.admin.product.index'));
+        $response = $this->getJson(route('api.v1.admin.products.index'));
         $response->assertOk()
             ->assertJsonCount(10, 'data.data');
     });
@@ -148,7 +148,7 @@ describe('Controller Tests', function (): void {
             'force_create' => true,
             'categories'   => [$this->category->id],
         ];
-        $response = $this->postJson(route('api.v1.admin.product.store'), $data);
+        $response = $this->postJson(route('api.v1.admin.products.store'), $data);
         $response->assertCreated()
             ->assertJsonFragment(['name' => 'New Product']);
     });
@@ -156,7 +156,7 @@ describe('Controller Tests', function (): void {
     it('should show a product', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_VIEW]);
         $product  = Product::factory()->create()->fresh();
-        $response = $this->getJson(route('api.v1.admin.product.show', ['product' => $product->id]));
+        $response = $this->getJson(route('api.v1.admin.products.show', ['product' => $product->id]));
         $response->assertOk()
             ->assertJsonFragment(['name' => $product->name]);
     });
@@ -173,7 +173,7 @@ describe('Controller Tests', function (): void {
             'status'      => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             'categories'  => [$this->category->id],
         ];
-        $response = $this->putJson(route('api.v1.admin.product.update', ['product' => $product->id]), $data);
+        $response = $this->putJson(route('api.v1.admin.products.update', ['product' => $product->id]), $data);
         $response->assertOk()
             ->assertJsonFragment(['name' => 'Updated Product']);
     });
@@ -181,7 +181,7 @@ describe('Controller Tests', function (): void {
     it('should delete a product', function (): void {
         $product = Product::factory()->create()->fresh();
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_DELETE]);
-        $response = $this->deleteJson(route('api.v1.admin.product.destroy', ['product' => $product->id]));
+        $response = $this->deleteJson(route('api.v1.admin.products.destroy', ['product' => $product->id]));
         $response->assertNoContent();
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
         $this->assertDatabaseCount('products', 0);
@@ -195,7 +195,7 @@ describe('Controller Tests', function (): void {
         App\Models\OrderItem::factory()->create([
             'product_delivery_option_id' => $deliveryOption->id,
         ]);
-        $response = $this->deleteJson(route('api.v1.admin.product.destroy', ['product' => $product->id]));
+        $response = $this->deleteJson(route('api.v1.admin.products.destroy', ['product' => $product->id]));
         $response->assertUnprocessable()
             ->assertJsonFragment(['product' => [__('validation.custom.product.cannot_delete_product_with_orders')]]);
         $this->assertDatabaseHas('products', ['id' => $product->id]);
@@ -203,7 +203,7 @@ describe('Controller Tests', function (): void {
     it('should not delete a product if unauthorized', function (): void {
         $this->unauthorized_user();
         $product  = Product::factory()->create();
-        $response = $this->deleteJson(route('api.v1.admin.product.destroy', ['product' => $product->id]));
+        $response = $this->deleteJson(route('api.v1.admin.products.destroy', ['product' => $product->id]));
         $response->assertForbidden();
         $this->assertDatabaseHas('products', ['id' => $product->id]);
     });
@@ -215,7 +215,7 @@ describe('Controller Tests', function (): void {
             'force_create' => true,
             'categories'   => [$this->category->id],
         ];
-        $response = $this->postJson(route('api.v1.admin.product.store'), $data);
+        $response = $this->postJson(route('api.v1.admin.products.store'), $data);
         $response->assertForbidden();
     });
     it('should not update a product if unauthorized', function (): void {
@@ -230,29 +230,29 @@ describe('Controller Tests', function (): void {
             'status'      => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             'categories'  => [$this->category->id],
         ];
-        $response = $this->putJson(route('api.v1.admin.product.update', ['product' => $product->id]), $data);
+        $response = $this->putJson(route('api.v1.admin.products.update', ['product' => $product->id]), $data);
         $response->assertForbidden();
     });
     it('should not show a product if unauthorized', function (): void {
         $this->unauthorized_user();
         $product  = Product::factory()->create()->fresh();
-        $response = $this->getJson(route('api.v1.admin.product.show', ['product' => $product->id]));
+        $response = $this->getJson(route('api.v1.admin.products.show', ['product' => $product->id]));
         $response->assertForbidden();
     });
     it('should not list products if unauthorized', function (): void {
         $this->unauthorized_user();
-        $response = $this->getJson(route('api.v1.admin.product.index'));
+        $response = $this->getJson(route('api.v1.admin.products.index'));
         $response->assertForbidden();
     });
     it('should not delete a product if it does not exist', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_DELETE]);
-        $response = $this->deleteJson(route('api.v1.admin.product.destroy', ['product' => 999]));
+        $response = $this->deleteJson(route('api.v1.admin.products.destroy', ['product' => 999]));
         $response->assertNotFound();
     });
     it('should not update a product if it does not exist', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_UPDATE]);
         $data     = Product::factory()->make();
-        $response = $this->putJson(route('api.v1.admin.product.update', ['product' => 999]), $data->toArray());
+        $response = $this->putJson(route('api.v1.admin.products.update', ['product' => 999]), $data->toArray());
         $response->assertNotFound();
     });
     it('should not create a product with invalid data', function (): void {
@@ -268,7 +268,7 @@ describe('Controller Tests', function (): void {
             'status'       => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             'categories'   => [$this->category->id],
         ];
-        $response = $this->postJson(route('api.v1.admin.product.store'), $data);
+        $response = $this->postJson(route('api.v1.admin.products.store'), $data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['name']);
     });
@@ -284,7 +284,7 @@ describe('Controller Tests', function (): void {
             'status'      => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
             'categories'  => [$this->category->id],
         ];
-        $response = $this->putJson(route('api.v1.admin.product.update', ['product' => $product->id]), $data);
+        $response = $this->putJson(route('api.v1.admin.products.update', ['product' => $product->id]), $data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['name']);
     });
@@ -310,7 +310,7 @@ describe('Product Creation tests', function (): void {
             $data['status']       = App\Enums\Content\PublicationStatusEnum::PUBLISHED->value;
             $data['force_create'] = false;
             $data['categories']   = [$this->category->id];
-            $response             = $this->postJson(route('api.v1.admin.product.store'), $data);
+            $response             = $this->postJson(route('api.v1.admin.products.store'), $data);
             $response->assertUnprocessable()
                 ->assertJsonValidationErrors(['productable_id']);
 
@@ -331,7 +331,7 @@ describe('Product Creation tests', function (): void {
             $data['status']       = App\Enums\Content\PublicationStatusEnum::PUBLISHED->value;
             $data['force_create'] = true;
             $data['categories']   = [$this->category->id];
-            $response             = $this->postJson(route('api.v1.admin.product.store'), $data);
+            $response             = $this->postJson(route('api.v1.admin.products.store'), $data);
             $response->assertCreated()
                 ->assertJsonFragment(['name' => $data['name']]);
             \Pest\Laravel\assertDatabaseHas('products', [
@@ -352,7 +352,7 @@ describe('Archive Product Tests', function (): void {
         $product = Product::factory()->create([
             'status' => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ])->fresh();
-        $response = $this->postJson(route('api.v1.admin.product.archive', ['product' => $product->id]));
+        $response = $this->postJson(route('api.v1.admin.products.archive', ['product' => $product->id]));
         $response->assertOk()
             ->assertJsonFragment(['message' => __('messages.product.acrhived')])
             ->assertJsonFragment(['data' => null]);
@@ -366,7 +366,7 @@ describe('Archive Product Tests', function (): void {
         $product = Product::factory()->create([
             'status' => App\Enums\Content\PublicationStatusEnum::PUBLISHED,
         ])->fresh();
-        $response = $this->postJson(route('api.v1.admin.product.archive', ['product' => $product->id]));
+        $response = $this->postJson(route('api.v1.admin.products.archive', ['product' => $product->id]));
         $response->assertForbidden();
         $this->assertDatabaseHas('products', [
             'id'     => $product->id,
@@ -375,7 +375,7 @@ describe('Archive Product Tests', function (): void {
     });
     it('should not archive a product if it does not exist', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::PRODUCT_UPDATE]);
-        $response = $this->postJson(route('api.v1.admin.product.archive', ['product' => 999]));
+        $response = $this->postJson(route('api.v1.admin.products.archive', ['product' => 999]));
         $response->assertNotFound();
     });
 });

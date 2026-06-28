@@ -28,7 +28,7 @@ describe('Admin Teacher Select Option API', function (): void {
                 'phone'      => '09305214697',
             ])->fresh();
         $response = $this->getJson(
-            route('api.v1.admin.select-option.teacher', ['q' => 'Test Teacher'])
+            route('api.v1.admin.select-option.teacherss', ['q' => 'Test Teacher'])
         );
 
         $response->assertOk();
@@ -52,7 +52,7 @@ describe('Admin Teacher Select Option API', function (): void {
     it('returns empty data if no match', function (): void {
         $this->authorized_user();
         $response = $this->getJson(
-            route('api.v1.admin.select-option.teacher', ['q' => 'NoSuchTeacher'])
+            route('api.v1.admin.select-option.teacherss', ['q' => 'NoSuchTeacher'])
         );
         $response->assertOk();
         $response->assertJson(['data' => []]);

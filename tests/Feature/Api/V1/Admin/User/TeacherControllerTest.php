@@ -19,7 +19,7 @@ describe('list filters', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_VIEW_ANY]);
         App\Models\Teacher::factory(20)->create();
         App\Models\Teacher::factory()->create(['first_name' => 'JohnFirstName']);
-        $response = $this->getJson(route('api.v1.admin.teacher.index', ['filter' => ['first_name' => 'JohnFirstName']]));
+        $response = $this->getJson(route('api.v1.admin.teachers.index', ['filter' => ['first_name' => 'JohnFirstName']]));
         $response->assertOk();
         $response->assertJsonCount(1, 'data.data');
         $response->assertJsonFragment(['first_name' => 'JohnFirstName']);
@@ -29,7 +29,7 @@ describe('list filters', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_VIEW_ANY]);
         App\Models\Teacher::factory(20)->create();
         App\Models\Teacher::factory()->create(['last_name' => 'DoeLastName']);
-        $response = $this->getJson(route('api.v1.admin.teacher.index', ['filter' => ['last_name' => 'DoeLastName']]));
+        $response = $this->getJson(route('api.v1.admin.teachers.index', ['filter' => ['last_name' => 'DoeLastName']]));
         $response->assertOk();
         $response->assertJsonCount(1, 'data.data');
         $response->assertJsonFragment(['last_name' => 'DoeLastName']);
@@ -38,7 +38,7 @@ describe('list filters', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_VIEW_ANY]);
         App\Models\Teacher::factory(20)->create();
         App\Models\Teacher::factory()->create(['email' => 'teacher@example.com']);
-        $response = $this->getJson(route('api.v1.admin.teacher.index', ['filter' => ['email' => 'teacher@example.com']]));
+        $response = $this->getJson(route('api.v1.admin.teachers.index', ['filter' => ['email' => 'teacher@example.com']]));
         $response->assertOk();
         $response->assertJsonCount(1, 'data.data');
         $response->assertJsonFragment(['email' => 'teacher@example.com']);
@@ -47,7 +47,7 @@ describe('list filters', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_VIEW_ANY]);
         App\Models\Teacher::factory(20)->create();
         App\Models\Teacher::factory()->create(['phone' => '1234567890']);
-        $response = $this->getJson(route('api.v1.admin.teacher.index', ['filter' => ['phone' => '1234567890']]));
+        $response = $this->getJson(route('api.v1.admin.teachers.index', ['filter' => ['phone' => '1234567890']]));
         $response->assertOk();
         $response->assertJsonCount(1, 'data.data');
         $response->assertJsonFragment(['phone' => '1234567890']);
@@ -56,7 +56,7 @@ describe('list filters', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_VIEW_ANY]);
         App\Models\Teacher::factory(20)->create();
         App\Models\Teacher::factory()->create(['first_name' => 'John', 'last_name' => 'Doe']);
-        $response = $this->getJson(route('api.v1.admin.teacher.index', ['filter' => ['first_name' => 'John', 'last_name' => 'Doe']]));
+        $response = $this->getJson(route('api.v1.admin.teachers.index', ['filter' => ['first_name' => 'John', 'last_name' => 'Doe']]));
         $response->assertOk();
         $response->assertJsonCount(1, 'data.data');
         $response->assertJsonFragment(['first_name' => 'John', 'last_name' => 'Doe']);
@@ -67,7 +67,7 @@ describe('TeacherController Test', function (): void {
     it('should list teachers', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_VIEW_ANY]);
         App\Models\Teacher::factory(20)->create();
-        $response = $this->getJson(route('api.v1.admin.teacher.index'));
+        $response = $this->getJson(route('api.v1.admin.teachers.index'));
         $response->assertOk();
         $response->assertJsonCount(15, 'data.data');
     });
@@ -79,7 +79,7 @@ describe('TeacherController Test', function (): void {
             'avatar' => $this->avatar->id,
         ];
         $data['birth_date'] = verta($data->birth_date)->format('Y-m-d');
-        $response           = $this->postJson(route('api.v1.admin.teacher.store'), $data->toArray());
+        $response           = $this->postJson(route('api.v1.admin.teachers.store'), $data->toArray());
         $response->assertCreated();
         $this->assertDatabaseHas('teachers', [
             'email'      => $data->email,
@@ -91,7 +91,7 @@ describe('TeacherController Test', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_VIEW]);
         $teacher = App\Models\Teacher::factory()->create();
         $teacher->attachMedia($this->avatar->id, 'avatar');
-        $response = $this->getJson(route('api.v1.admin.teacher.show', ['teacher' => $teacher]));
+        $response = $this->getJson(route('api.v1.admin.teachers.show', ['teacher' => $teacher]));
         $response->assertOk();
         $response->assertJsonFragment(['email' => $teacher->email]);
         $response
@@ -110,7 +110,7 @@ describe('TeacherController Test', function (): void {
             'avatar' => $this->avatar->id,
         ];
         $data['birth_date'] = verta($data->birth_date)->format('Y-m-d');
-        $response           = $this->putJson(route('api.v1.admin.teacher.update', ['teacher' => $teacher]), $data->toArray());
+        $response           = $this->putJson(route('api.v1.admin.teachers.update', ['teacher' => $teacher]), $data->toArray());
         $response->assertOk();
         $this->assertDatabaseHas('teachers', [
             'id'         => $teacher->id,
@@ -132,7 +132,7 @@ describe('TeacherController Test', function (): void {
             'avatar' => null,
         ];
         $data['birth_date'] = verta($data->birth_date)->format('Y-m-d');
-        $response           = $this->putJson(route('api.v1.admin.teacher.update', ['teacher' => $teacher]), $data->toArray());
+        $response           = $this->putJson(route('api.v1.admin.teachers.update', ['teacher' => $teacher]), $data->toArray());
         $response->assertOk();
         $this->assertDatabaseHas('teachers', [
             'id'         => $teacher->id,
@@ -149,7 +149,7 @@ describe('TeacherController Test', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::TEACHER_DELETE]);
         $teacher = App\Models\Teacher::factory()->create();
         $teacher->attachMedia($this->avatar->id, 'avatar');
-        $response = $this->deleteJson(route('api.v1.admin.teacher.destroy', ['teacher' => $teacher]));
+        $response = $this->deleteJson(route('api.v1.admin.teachers.destroy', ['teacher' => $teacher]));
         $response->assertNoContent();
         $this->assertDatabaseMissing('teachers', ['id' => $teacher->id]);
         $this->assertDatabaseMissing('mediables', [
@@ -165,7 +165,7 @@ describe('TeacherController Test', function (): void {
         $teacher  = App\Models\Teacher::factory()->create();
         $delivery = App\Models\ProductDeliveryOption::factory()->create();
         $delivery->teachers()->attach($teacher->id);
-        $response = $this->deleteJson(route('api.v1.admin.teacher.destroy', ['teacher' => $teacher]));
+        $response = $this->deleteJson(route('api.v1.admin.teachers.destroy', ['teacher' => $teacher]));
         $response->assertStatus(422)
             ->assertJsonFragment([
                 'message' => __('messages.errors.model_has_relationship_data',

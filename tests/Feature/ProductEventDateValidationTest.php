@@ -47,7 +47,7 @@ describe('Product Event Date Validation', function (): void {
         $data                   = validProductCreateData();
         $data['event_start_at'] = '1405-03-11 00:00:00';
         $data['name']           = 'Missing End Date';
-        $response               = $this->postJson(route('api.v1.admin.product.store'), $data);
+        $response               = $this->postJson(route('api.v1.admin.products.store'), $data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['event_ended_at']);
     });
@@ -57,7 +57,7 @@ describe('Product Event Date Validation', function (): void {
         $data                   = validProductCreateData();
         $data['event_ended_at'] = '1405-04-09 00:00:00';
         $data['name']           = 'Missing Start Date';
-        $response               = $this->postJson(route('api.v1.admin.product.store'), $data);
+        $response               = $this->postJson(route('api.v1.admin.products.store'), $data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['event_start_at']);
     });
@@ -68,7 +68,7 @@ describe('Product Event Date Validation', function (): void {
         $data['event_start_at'] = '1405-04-09 00:00:00';
         $data['event_ended_at'] = '1405-03-11 00:00:00';
         $data['name']           = 'Reversed Dates';
-        $response               = $this->postJson(route('api.v1.admin.product.store'), $data);
+        $response               = $this->postJson(route('api.v1.admin.products.store'), $data);
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['event_ended_at']);
     });
@@ -79,7 +79,7 @@ describe('Product Event Date Validation', function (): void {
         $data['event_start_at'] = '1405-03-11 00:00:00';
         $data['event_ended_at'] = '1405-04-09 23:59:00';
         $data['name']           = 'Event Product';
-        $response = $this->postJson(route('api.v1.admin.product.store'), $data);
+        $response = $this->postJson(route('api.v1.admin.products.store'), $data);
         $response->assertCreated();
         assertDatabaseHas('products', [
             'name'           => 'Event Product',
@@ -94,7 +94,7 @@ describe('Product Event Date Validation', function (): void {
         $data['event_start_at'] = '1405-03-25 00:00:00';
         $data['event_ended_at'] = '1405-03-25 00:00:00';
         $data['name']           = 'Same Day Event';
-        $response = $this->postJson(route('api.v1.admin.product.store'), $data);
+        $response = $this->postJson(route('api.v1.admin.products.store'), $data);
         $response->assertCreated();
         assertDatabaseHas('products', [
             'name'           => 'Same Day Event',
@@ -119,7 +119,7 @@ describe('Product Event Date Validation', function (): void {
             'event_start_at' => '1405-04-10 00:00:00',
             'event_ended_at' => '1405-05-09 00:00:00',
         ];
-        $response = $this->putJson(route('api.v1.admin.product.update', ['product' => $product->id]), $data);
+        $response = $this->putJson(route('api.v1.admin.products.update', ['product' => $product->id]), $data);
         $response->assertOk();
         assertDatabaseHas('products', [
             'id'             => $product->id,

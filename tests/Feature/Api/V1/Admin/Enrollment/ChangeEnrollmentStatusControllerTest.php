@@ -17,7 +17,7 @@ describe('ChangeEnrollmentStatusController', function (): void {
             'enrollment_status' => EnrollmentStatusEnum::AWAITING_PAYMENT,
         ]);
 
-        $response = $this->postJson(route('api.v1.admin.enrollment.change-status', ['enrollment' => $enrollment->id]), [
+        $response = $this->postJson(route('api.v1.admin.enrollments.change-status', ['enrollment' => $enrollment->id]), [
             'new_status' => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
             'reason'     => 'Payment received',
         ]);
@@ -42,7 +42,7 @@ describe('ChangeEnrollmentStatusController', function (): void {
             'notes'             => 'Initial note',
         ]);
 
-        $response = $this->postJson(route('api.v1.admin.enrollment.change-status', ['enrollment' => $enrollment->id]), [
+        $response = $this->postJson(route('api.v1.admin.enrollments.change-status', ['enrollment' => $enrollment->id]), [
             'new_status' => EnrollmentStatusEnum::SUSPENDED->value,
             'reason'     => 'Non-payment',
         ]);
@@ -63,7 +63,7 @@ describe('ChangeEnrollmentStatusController', function (): void {
             'enrollment_status' => EnrollmentStatusEnum::EXPIRED,
         ]);
 
-        $response = $this->postJson(route('api.v1.admin.enrollment.change-status', ['enrollment' => $enrollment->id]), [
+        $response = $this->postJson(route('api.v1.admin.enrollments.change-status', ['enrollment' => $enrollment->id]), [
             'new_status' => EnrollmentStatusEnum::ACTIVE->value,
             'reason'     => null,
         ]);
@@ -77,7 +77,7 @@ describe('ChangeEnrollmentStatusController', function (): void {
 
         $enrollment = Enrollment::factory()->create();
 
-        $response = $this->postJson(route('api.v1.admin.enrollment.change-status', ['enrollment' => $enrollment->id]), [
+        $response = $this->postJson(route('api.v1.admin.enrollments.change-status', ['enrollment' => $enrollment->id]), [
             'reason' => 'Test',
         ]);
 
@@ -92,7 +92,7 @@ describe('ChangeEnrollmentStatusController', function (): void {
             'enrollment_status' => EnrollmentStatusEnum::AWAITING_PAYMENT,
         ]);
 
-        $response = $this->postJson(route('api.v1.admin.enrollment.change-status', ['enrollment' => $enrollment->id]), [
+        $response = $this->postJson(route('api.v1.admin.enrollments.change-status', ['enrollment' => $enrollment->id]), [
             'new_status' => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
         ]);
 

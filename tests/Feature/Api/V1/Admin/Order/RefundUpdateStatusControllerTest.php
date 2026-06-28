@@ -41,7 +41,7 @@ describe('RefundUpdateStatusController', function (): void {
             'status'        => RefundStatusEnum::PENDING,
         ]);
 
-        $response = $this->putJson(route('api.v1.admin.refund.status', ['refund' => $refund->id]), [
+        $response = $this->putJson(route('api.v1.admin.refunds.status', ['refund' => $refund->id]), [
             'status' => RefundStatusEnum::COMPLETED,
         ]);
 
@@ -94,7 +94,7 @@ describe('RefundUpdateStatusController', function (): void {
             'status'        => RefundStatusEnum::COMPLETED, // Not pending
         ]);
 
-        $response = $this->putJson(route('api.v1.admin.refund.status', ['refund' => $refund->id]), [
+        $response = $this->putJson(route('api.v1.admin.refunds.status', ['refund' => $refund->id]), [
             'status' => RefundStatusEnum::COMPLETED, // Trying to set to the same status
         ]);
 
@@ -130,7 +130,7 @@ describe('RefundUpdateStatusController', function (): void {
             'status'        => RefundStatusEnum::PENDING,
         ]);
 
-        $response = $this->putJson(route('api.v1.admin.refund.status', ['refund' => $refund->id]), [
+        $response = $this->putJson(route('api.v1.admin.refunds.status', ['refund' => $refund->id]), [
             'status' => RefundStatusEnum::COMPLETED,
         ]);
 

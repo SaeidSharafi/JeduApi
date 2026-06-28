@@ -54,7 +54,7 @@ describe('ReviewController', function (): void {
                 break;
         }
         if ($filters) { // Make API request with filter
-            $response = $this->getJson('/api/v1/admin/review'.'?'.http_build_query(['filter' => $filters]));
+            $response = $this->getJson('/api/v1/admin/reviews'.'?'.http_build_query(['filter' => $filters]));
         }
 
         // Assert the response is successful and contains the expected number of items
@@ -79,7 +79,7 @@ describe('ReviewController', function (): void {
     it('shows list of review', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_VIEW_ANY]);
         Review::factory()->count(5)->create();
-        $response = $this->getJson('/api/v1/admin/review');
+        $response = $this->getJson('/api/v1/admin/reviews');
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
@@ -113,7 +113,7 @@ describe('ReviewController', function (): void {
             'reviewable_type' => MorphTypeEnum::COURSE->value,
             'reviewable_id'   => $course->id,
         ]);
-        $response = $this->getJson('/api/v1/admin/review/'.$review->id);
+        $response = $this->getJson('/api/v1/admin/reviews/'.$review->id);
         $response->assertOk();
         $responseData = $response->json('data');
 
@@ -127,7 +127,7 @@ describe('ReviewController', function (): void {
 
     it('returns 404 if the review does not exist', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_VIEW]);
-        $response = $this->getJson('/api/v1/admin/review/999');
+        $response = $this->getJson('/api/v1/admin/reviews/999');
         $response->assertNotFound();
     });
 
@@ -137,7 +137,7 @@ describe('ReviewController', function (): void {
         ]);
         $this->authorized_user([PermissionEnum::REVIEW_DELETE]);
         $review   = Review::factory()->create();
-        $response = $this->deleteJson('/api/v1/admin/review/'.$review->id);
+        $response = $this->deleteJson('/api/v1/admin/reviews/'.$review->id);
         $response->assertNoContent();
         $this->assertDatabaseMissing('reviews', ['id' => $review->id]);
         Event::assertDispatched(ReviewableAggregatesChanged::class, function ($event) use ($review) {
@@ -149,7 +149,7 @@ describe('ReviewController', function (): void {
 
     it('returns 404 if the review to delete does not exist', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_DELETE]);
-        $response = $this->deleteJson('/api/v1/admin/review/999');
+        $response = $this->deleteJson('/api/v1/admin/reviews/999');
         $response->assertNotFound();
     });
 });
@@ -166,7 +166,7 @@ describe('ApproveReviewController', function (): void {
             'reviewable_id'   => $course->id,
             'status'          => ReviewStatusEnum::PENDING->value,
         ]);
-        $response = $this->postJson('/api/v1/admin/review/'.$review->id.'/approve');
+        $response = $this->postJson('/api/v1/admin/reviews/'.$review->id.'/approve');
         $response->assertOk();
         $response->assertJson([
             'message'  => __('messages.review.approved'),
@@ -186,7 +186,7 @@ describe('ApproveReviewController', function (): void {
 
     it('returns 404 if the review does not exist', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE]);
-        $response = $this->postJson('/api/v1/admin/review/999/approve');
+        $response = $this->postJson('/api/v1/admin/reviews/999/approve');
         $response->assertNotFound();
     });
 });
@@ -203,7 +203,7 @@ describe('RejectReviewController', function (): void {
             'reviewable_id'   => $course->id,
             'status'          => ReviewStatusEnum::PENDING->value,
         ]);
-        $response = $this->postJson('/api/v1/admin/review/'.$review->id.'/reject');
+        $response = $this->postJson('/api/v1/admin/reviews/'.$review->id.'/reject');
         $response->assertOk();
         $response->assertJson([
             'message'  => __('messages.review.rejected'),
@@ -223,7 +223,7 @@ describe('RejectReviewController', function (): void {
 
     it('returns 404 if the review does not exist', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE]);
-        $response = $this->postJson('/api/v1/admin/review/999/reject');
+        $response = $this->postJson('/api/v1/admin/reviews/999/reject');
         $response->assertNotFound();
     });
 });
@@ -232,7 +232,7 @@ describe('UpdateReviewFeaturedStatusController', function (): void {
     it('toggles the featured status of a review when is_featured is not provided', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE_FEATURED_STATUS]);
         $review   = Review::factory()->create(['is_featured' => false]);
-        $response = $this->patchJson('/api/v1/admin/review/'.$review->id.'/featured');
+        $response = $this->patchJson('/api/v1/admin/reviews/'.$review->id.'/featured');
         $response->assertOk();
         $response->assertJson([
             'message'  => __('messages.updated', ['model' => __('messages.models.review')]),
@@ -245,7 +245,7 @@ describe('UpdateReviewFeaturedStatusController', function (): void {
         ]);
 
         // Toggle again
-        $response = $this->patchJson('/api/v1/admin/review/'.$review->id.'/featured');
+        $response = $this->patchJson('/api/v1/admin/reviews/'.$review->id.'/featured');
         $response->assertOk();
         $this->assertDatabaseHas('reviews', [
             'id'          => $review->id,
@@ -256,7 +256,7 @@ describe('UpdateReviewFeaturedStatusController', function (): void {
     it('sets the featured status of a review when is_featured is provided', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE_FEATURED_STATUS]);
         $review   = Review::factory()->create(['is_featured' => false]);
-        $response = $this->patchJson('/api/v1/admin/review/'.$review->id.'/featured', [
+        $response = $this->patchJson('/api/v1/admin/reviews/'.$review->id.'/featured', [
             'is_featured' => true,
         ]);
         $response->assertOk();
@@ -271,7 +271,7 @@ describe('UpdateReviewFeaturedStatusController', function (): void {
         ]);
 
         // Set to false
-        $response = $this->patchJson('/api/v1/admin/review/'.$review->id.'/featured', [
+        $response = $this->patchJson('/api/v1/admin/reviews/'.$review->id.'/featured', [
             'is_featured' => false,
         ]);
         $response->assertOk();
@@ -283,7 +283,7 @@ describe('UpdateReviewFeaturedStatusController', function (): void {
 
     it('returns 404 if the review does not exist', function (): void {
         $this->authorized_user([PermissionEnum::REVIEW_UPDATE_FEATURED_STATUS]);
-        $response = $this->patchJson('/api/v1/admin/review/999/featured');
+        $response = $this->patchJson('/api/v1/admin/reviews/999/featured');
         $response->assertNotFound();
     });
 });
@@ -315,7 +315,7 @@ describe('ReviewableAggregates', function (): void {
             'rating'          => 1,
         ]);
 
-        $response = $this->postJson('/api/v1/admin/review/'.$review->id.'/approve');
+        $response = $this->postJson('/api/v1/admin/reviews/'.$review->id.'/approve');
         $response->assertOk();
         $this->assertDatabaseHas('reviews', [
             'id'     => $review->id,
@@ -352,7 +352,7 @@ describe('ReviewableAggregates', function (): void {
             'status'          => ReviewStatusEnum::PENDING->value,
             'rating'          => 1,
         ]);
-        $response = $this->postJson('/api/v1/admin/review/'.$review->id.'/reject');
+        $response = $this->postJson('/api/v1/admin/reviews/'.$review->id.'/reject');
         $response->assertOk();
         $this->assertDatabaseHas('reviews', [
             'id'     => $review->id,
@@ -391,7 +391,7 @@ describe('ReviewableAggregates', function (): void {
         ]);
 
         // Delete one approved review
-        $response = $this->deleteJson('/api/v1/admin/review/'.$review3->id);
+        $response = $this->deleteJson('/api/v1/admin/reviews/'.$review3->id);
         $response->assertNoContent();
         $this->assertDatabaseMissing('reviews', ['id' => $review3->id]);
 
@@ -428,7 +428,7 @@ describe('ReviewableAggregates', function (): void {
         ]);
 
         // Delete the pending review
-        $response = $this->deleteJson('/api/v1/admin/review/'.$pendingReview->id);
+        $response = $this->deleteJson('/api/v1/admin/reviews/'.$pendingReview->id);
         $response->assertNoContent();
         $this->assertDatabaseMissing('reviews', ['id' => $pendingReview->id]);
         $this->assertDatabaseHas('courses', [
@@ -464,7 +464,7 @@ describe('ReviewableAggregates', function (): void {
         ]);
 
         // Delete the rejected review
-        $response = $this->deleteJson('/api/v1/admin/review/'.$rejectedReview->id);
+        $response = $this->deleteJson('/api/v1/admin/reviews/'.$rejectedReview->id);
         $response->assertNoContent();
         $this->assertDatabaseMissing('reviews', ['id' => $rejectedReview->id]);
         $this->assertDatabaseHas('courses', [
@@ -493,7 +493,7 @@ describe('ReviewableAggregates', function (): void {
             'rating'          => 2,
         ]);
 
-        $response = $this->postJson('/api/v1/admin/review/'.$review->id.'/reject');
+        $response = $this->postJson('/api/v1/admin/reviews/'.$review->id.'/reject');
         $response->assertOk();
         $this->assertDatabaseHas('courses', [
             'id'             => $course->id,
@@ -506,21 +506,21 @@ describe('ReviewableAggregates', function (): void {
 it('returns 403 if the user does not have permission', function (): void {
     $this->authorized_user(); // No permissions
     $review   = Review::factory()->create();
-    $response = $this->getJson('/api/v1/admin/review');
+    $response = $this->getJson('/api/v1/admin/reviews');
     $response->assertForbidden();
 
-    $response = $this->getJson('/api/v1/admin/review/'.$review->id);
+    $response = $this->getJson('/api/v1/admin/reviews/'.$review->id);
     $response->assertForbidden();
 
-    $response = $this->deleteJson('/api/v1/admin/review/'.$review->id);
+    $response = $this->deleteJson('/api/v1/admin/reviews/'.$review->id);
     $response->assertForbidden();
 
-    $response = $this->postJson('/api/v1/admin/review/'.$review->id.'/approve');
+    $response = $this->postJson('/api/v1/admin/reviews/'.$review->id.'/approve');
     $response->assertForbidden();
 
-    $response = $this->postJson('/api/v1/admin/review/'.$review->id.'/reject');
+    $response = $this->postJson('/api/v1/admin/reviews/'.$review->id.'/reject');
     $response->assertForbidden();
 
-    $response = $this->patchJson('/api/v1/admin/review/'.$review->id.'/featured');
+    $response = $this->patchJson('/api/v1/admin/reviews/'.$review->id.'/featured');
     $response->assertForbidden();
 });

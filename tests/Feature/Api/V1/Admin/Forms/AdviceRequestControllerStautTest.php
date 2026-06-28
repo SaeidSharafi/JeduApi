@@ -25,7 +25,7 @@ describe('AdviceRequestController', function (): void {
                 'status'        => AdviceRequestStatusEnum::CONTACTED,
                 'handled_by_id' => $staff->id,
             ]);
-        $response = $this->getJson('/api/v1/admin/advice-request');
+        $response = $this->getJson('/api/v1/admin/advice-requests');
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
@@ -44,14 +44,14 @@ describe('AdviceRequestController', function (): void {
         ]);
         $responseData = $response->json('data.data');
         $this->assertCount(15, $responseData);
-        $response = $this->getJson('/api/v1/admin/advice-request?filter[status]=contacted');
+        $response = $this->getJson('/api/v1/admin/advice-requests?filter[status]=contacted');
         $response->assertOk();
         $responseData = $response->json('data.data');
         $this->assertCount(5, $responseData);
         foreach ($responseData as $item) {
             $this->assertEquals(AdviceRequestStatusEnum::CONTACTED->value, $item['status']['value']);
         }
-        $response = $this->getJson('/api/v1/admin/advice-request?filter[handled_by_id]='.$staff->id);
+        $response = $this->getJson('/api/v1/admin/advice-requests?filter[handled_by_id]='.$staff->id);
         $response->assertOk();
         $responseData = $response->json('data.data');
         $this->assertCount(2, $responseData);
@@ -65,7 +65,7 @@ describe('AdviceRequestController', function (): void {
         $request = AdviceRequest::factory()->create([
             'status' => AdviceRequestStatusEnum::PENDING,
         ]);
-        $response = $this->getJson('/api/v1/admin/advice-request/'.$request->id);
+        $response = $this->getJson('/api/v1/admin/advice-requests/'.$request->id);
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
@@ -93,7 +93,7 @@ describe('AdviceRequestController', function (): void {
             'status' => AdviceRequestStatusEnum::CONTACTED->value,
             'note'   => 'This is a note',
         ];
-        $response = $this->putJson('/api/v1/admin/advice-request/'.$request->id, $payload);
+        $response = $this->putJson('/api/v1/admin/advice-requests/'.$request->id, $payload);
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
@@ -127,7 +127,7 @@ describe('AdviceRequestController', function (): void {
         $request = AdviceRequest::factory()->create([
             'status' => AdviceRequestStatusEnum::PENDING,
         ]);
-        $response = $this->deleteJson('/api/v1/admin/advice-request/'.$request->id);
+        $response = $this->deleteJson('/api/v1/admin/advice-requests/'.$request->id);
         $response->assertNoContent();
         $this->assertDatabaseMissing('advice_requests', [
             'id' => $request->id,
@@ -137,19 +137,19 @@ describe('AdviceRequestController', function (): void {
     it('forbid unauthorized access', function (): void {
         $this->unauthorized_user();
         // List
-        $response = $this->getJson('/api/v1/admin/advice-request');
+        $response = $this->getJson('/api/v1/admin/advice-requests');
         $response->assertForbidden();
         // View
         $request  = AdviceRequest::factory()->create();
-        $response = $this->getJson('/api/v1/admin/advice-request/'.$request->id);
+        $response = $this->getJson('/api/v1/admin/advice-requests/'.$request->id);
         $response->assertForbidden();
         // Update
-        $response = $this->putJson('/api/v1/admin/advice-request/'.$request->id, [
+        $response = $this->putJson('/api/v1/admin/advice-requests/'.$request->id, [
             'status' => AdviceRequestStatusEnum::CONTACTED->value,
         ]);
         $response->assertForbidden();
         // Delete
-        $response = $this->deleteJson('/api/v1/admin/advice-request/'.$request->id);
+        $response = $this->deleteJson('/api/v1/admin/advice-requests/'.$request->id);
         $response->assertForbidden();
     });
 });
@@ -163,7 +163,7 @@ describe('AdviceRequestUpdateStatusController', function (): void {
         $payload = [
             'status' => AdviceRequestStatusEnum::CONTACTED->value,
         ];
-        $response = $this->patchJson('/api/v1/admin/advice-request/'.$request->id.'/status', $payload);
+        $response = $this->patchJson('/api/v1/admin/advice-requests/'.$request->id.'/status', $payload);
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
@@ -193,7 +193,7 @@ describe('AdviceRequestUpdateStatusController', function (): void {
     it('forbid unauthorized access', function (): void {
         $this->unauthorized_user();
         $request  = AdviceRequest::factory()->create();
-        $response = $this->patchJson('/api/v1/admin/advice-request/'.$request->id.'/status', [
+        $response = $this->patchJson('/api/v1/admin/advice-requests/'.$request->id.'/status', [
             'status' => AdviceRequestStatusEnum::CONTACTED->value,
         ]);
         $response->assertForbidden();

@@ -32,7 +32,7 @@ describe('GoodForStartCoursesController', function () {
         $course2->categories()->syncWithPivotValues([$category], ['good_for_start' => false]);
         $seminar->categories()->syncWithPivotValues([$category], ['good_for_start' => true]);
 
-        $response = $this->getJson("/api/v1/shop/good-for-start/category/{$category->slug}/courses");
+        $response = $this->getJson("/api/v1/shop/good-for-start/categories/{$category->slug}/courses");
 
         $response->assertStatus(200);
 
@@ -62,14 +62,14 @@ describe('GoodForStartCoursesController', function () {
             ->withDeliveryOptions(1)
             ->count(5)
             ->create();
-        $response = $this->getJson("/api/v1/shop/good-for-start/category/{$category->slug}/courses");
+        $response = $this->getJson("/api/v1/shop/good-for-start/categories/{$category->slug}/courses");
 
         $response->assertStatus(200);
 
         $responseData = $response->json('data');
         expect(count($responseData))->toBe(10);
 
-        $response = $this->getJson("/api/v1/shop/good-for-start/category/{$category->slug}/courses?limit=3");
+        $response = $this->getJson("/api/v1/shop/good-for-start/categories/{$category->slug}/courses?limit=3");
 
         $response->assertStatus(200);
 

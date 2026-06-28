@@ -49,7 +49,7 @@ test('product createion with all combinations',
             'name' => 'Category 1',
             'slug' => 'category-1',
         ]);
-        $response = postJson(route('api.v1.admin.category.store'), $categoryData->toArray());
+        $response = postJson(route('api.v1.admin.categories.store'), $categoryData->toArray());
         $response->assertCreated();
         assertDatabaseCount('categories', 1);
         assertDatabaseHas('categories', [
@@ -58,7 +58,7 @@ test('product createion with all combinations',
         ]);
         $category        = Category::first();
         $ditialAssetData = DigitalAsset::factory()->make();
-        $response        = postJson(route('api.v1.admin.digital-asset.store'),
+        $response        = postJson(route('api.v1.admin.digital-assets.store'),
             [
                 ...$ditialAssetData->toArray(),
                 'slug'         => 'digital-asset-1',
@@ -85,9 +85,9 @@ test('product createion with all combinations',
         $ditialAsset     = DigitalAsset::first();
         $productabelData = createProdutable($productableType);
         $route           = match ($productableType) {
-            ProductableEnum::COURSE        => 'api.v1.admin.course.store',
-            ProductableEnum::DIGITAL_ASSET => 'api.v1.admin.digital-asset.store',
-            ProductableEnum::SEMINAR       => 'api.v1.admin.seminar.store',
+            ProductableEnum::COURSE        => 'api.v1.admin.courses.store',
+            ProductableEnum::DIGITAL_ASSET => 'api.v1.admin.digital-assets.store',
+            ProductableEnum::SEMINAR       => 'api.v1.admin.seminars.store',
         };
         $productabelData = [
             ...$productabelData,
@@ -121,7 +121,7 @@ test('product createion with all combinations',
         $productable = Illuminate\Support\Facades\DB::table($table)->first();
         $vendor      = Vendor::factory()->create();
         $term        = Term::factory()->create();
-        $response    = postJson(route('api.v1.admin.product.store'), [
+        $response    = postJson(route('api.v1.admin.products.store'), [
             'force_create'     => false,
             'name'             => 'Product 1',
             'status'           => PublicationStatusEnum::PUBLISHED->value,
@@ -145,7 +145,7 @@ test('product createion with all combinations',
             'productable_id'   => $productable->id,
         ]);
         $product  = Product::first();
-        $response = postJson(route('api.v1.admin.delivery-option.store', $product->id), [
+        $response = postJson(route('api.v1.admin.delivery-options.store', $product->id), [
             'name'                    => 'Delivery Option 1',
             'is_prepayment_available' => false,
             'is_featured'             => false,

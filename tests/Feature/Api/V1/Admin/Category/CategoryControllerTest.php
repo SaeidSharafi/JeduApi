@@ -6,7 +6,7 @@ uses(Tests\Support\Traits\AuthTestTrait::class);
 it('can get list of categories', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::CATEGORY_VIEW_ANY->value]);
     App\Models\Course::factory()->count(10)->create();
-    $response = $this->getJson(route('api.v1.admin.category.index'));
+    $response = $this->getJson(route('api.v1.admin.categories.index'));
     $response->assertStatus(200)
         ->assertJsonStructure([
             'data' => [
@@ -33,7 +33,7 @@ it('can get list of categories', function (): void {
 it('can get single category', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::CATEGORY_VIEW->value]);
     $category = App\Models\Category::factory()->create();
-    $response = $this->getJson(route('api.v1.admin.category.show', ['category' => $category->id]));
+    $response = $this->getJson(route('api.v1.admin.categories.show', ['category' => $category->id]));
     $response->assertStatus(200)
         ->assertJson(function (Illuminate\Testing\Fluent\AssertableJson $json) use ($category): void {
             $json->where('data.id', $category->id)
@@ -63,7 +63,7 @@ it('can create category', function (): void {
         ->toDisk('public')
         ->upload();
     $category = App\Models\Category::factory()->make();
-    $response = $this->postJson(route('api.v1.admin.category.store'), [
+    $response = $this->postJson(route('api.v1.admin.categories.store'), [
         'name'             => $category->name,
         'slug'             => $category->slug,
         'status'           => $category->status,
@@ -113,7 +113,7 @@ it('can update category', function (): void {
         ->toDisk('public')
         ->upload();
     $category = App\Models\Category::factory()->create();
-    $response = $this->putJson(route('api.v1.admin.category.update', ['category' => $category->id]), [
+    $response = $this->putJson(route('api.v1.admin.categories.update', ['category' => $category->id]), [
         'name'             => 'Updated Category',
         'slug'             => 'updated-category',
         'status'           => App\Enums\Content\PublicationStatusEnum::DRAFT,
@@ -167,7 +167,7 @@ it('can delete category', function (): void {
     $category->syncMedia($image, 'image');
     $category->syncMedia($educationalCalendar, 'educational_calendar');
 
-    $response = $this->deleteJson(route('api.v1.admin.category.destroy', ['category' => $category->id]));
+    $response = $this->deleteJson(route('api.v1.admin.categories.destroy', ['category' => $category->id]));
     $response->assertStatus(204);
     $this->assertDatabaseMissing('categories', [
         'id' => $category->id,
@@ -188,7 +188,7 @@ it('can not delete category if there is related data', function (): void {
     $category = App\Models\Category::factory()->create();
     $product  = App\Models\Product::factory()->create();
     $product->categories()->attach($category->id);
-    $response = $this->deleteJson(route('api.v1.admin.category.destroy', ['category' => $category->id]));
+    $response = $this->deleteJson(route('api.v1.admin.categories.destroy', ['category' => $category->id]));
     $response->assertStatus(422)
         ->assertJsonFragment(['message' => __('messages.errors.model_has_relationship_data_without_related_model')]);
     $this->assertDatabaseHas('categories', [
@@ -198,10 +198,10 @@ it('can not delete category if there is related data', function (): void {
 it('can not access category without auth', function (): void {
     $this->unauthorized_user();
     $category = App\Models\Category::factory()->create();
-    $response = $this->getJson(route('api.v1.admin.category.show', ['category' => $category->id]));
+    $response = $this->getJson(route('api.v1.admin.categories.show', ['category' => $category->id]));
     $response->assertStatus(403);
 
-    $response = $this->postJson(route('api.v1.admin.category.store'), [
+    $response = $this->postJson(route('api.v1.admin.categories.store'), [
         'name'             => 'Test Category',
         'slug'             => 'test-category',
         'status'           => App\Enums\Content\PublicationStatusEnum::DRAFT,
@@ -215,7 +215,7 @@ it('can not access category without auth', function (): void {
         'additional_info'  => ['info1' => 'value1'],
     ]);
     $response->assertStatus(403);
-    $response = $this->putJson(route('api.v1.admin.category.update', ['category' => $category->id]), [
+    $response = $this->putJson(route('api.v1.admin.categories.update', ['category' => $category->id]), [
         'name'             => 'Updated Category',
         'slug'             => 'updated-category',
         'status'           => App\Enums\Content\PublicationStatusEnum::DRAFT,
@@ -229,7 +229,7 @@ it('can not access category without auth', function (): void {
         'additional_info'  => ['info1' => 'value1'],
     ]);
     $response->assertStatus(403);
-    $response = $this->deleteJson(route('api.v1.admin.category.destroy', ['category' => $category->id]));
+    $response = $this->deleteJson(route('api.v1.admin.categories.destroy', ['category' => $category->id]));
     $response->assertStatus(403);
 
 });

@@ -13,7 +13,7 @@ describe('Admin Category Select Option API', function (): void {
             'icon_url' => 'http://example.com/icon.png',
         ]);
         $response = $this->getJson(
-            route('api.v1.admin.select-option.category', ['q' => 'TestCategory'])
+            route('api.v1.admin.select-option.categories', ['q' => 'TestCategory'])
         );
 
         $response->assertOk();
@@ -37,7 +37,7 @@ describe('Admin Category Select Option API', function (): void {
     it('returns empty data if no match', function (): void {
         $this->authorized_user();
         $response = $this->getJson(
-            route('api.v1.admin.select-option.category', ['q' => 'NoSuchCategory'])
+            route('api.v1.admin.select-option.categories', ['q' => 'NoSuchCategory'])
         );
         $response->assertOk();
         $response->assertJson(['data' => []]);

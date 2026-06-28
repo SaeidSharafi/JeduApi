@@ -55,7 +55,7 @@ describe('Shop ProductTeacherController', function (): void {
             ->create();
         $pdo->teachers()->attach([$teacher1->id, $teacher2->id]);
 
-        $response = $this->getJson(route('api.v1.shop.product.teachers', ['product' => $product->slug]));
+        $response = $this->getJson(route('api.v1.shop.products.teachers', ['product' => $product->slug]));
 
         $response->assertOk();
         $response->assertJsonCount(2, 'data');

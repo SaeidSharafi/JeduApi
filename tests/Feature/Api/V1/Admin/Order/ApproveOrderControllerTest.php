@@ -44,7 +44,7 @@ it('approves an order with full payment successfully', function (): void {
         'status'      => PaymentStatusEnum::COMPLETED,
     ]);
 
-    $response = postJson("/api/v1/admin/order/{$order->id}/approve");
+    $response = postJson("/api/v1/admin/orders/{$order->id}/approve");
 
     $response->assertOk();
     $order->refresh();
@@ -75,7 +75,7 @@ it('fails to approve order with insufficient payment', function (): void {
         'status'      => PaymentStatusEnum::COMPLETED,
     ]);
 
-    $response = postJson("/api/v1/admin/order/{$order->id}/approve");
+    $response = postJson("/api/v1/admin/orders/{$order->id}/approve");
 
     $response->assertStatus(422);
 });
@@ -107,7 +107,7 @@ it('approves an order with pre_payment items when prepayment amount is paid', fu
         'status'      => PaymentStatusEnum::COMPLETED,
     ]);
 
-    $response = postJson("/api/v1/admin/order/{$order->id}/approve");
+    $response = postJson("/api/v1/admin/orders/{$order->id}/approve");
 
     $response->assertOk();
     $order->refresh();
@@ -122,7 +122,7 @@ it('fails to approve an already completed order', function (): void {
         'status'      => OrderStatusEnum::COMPLETED,
     ]);
 
-    $response = postJson("/api/v1/admin/order/{$order->id}/approve");
+    $response = postJson("/api/v1/admin/orders/{$order->id}/approve");
 
     $response->assertStatus(422);
 });
@@ -135,7 +135,7 @@ it('fails to approve a cancelled order', function (): void {
         'status'      => OrderStatusEnum::CANCELLED,
     ]);
 
-    $response = postJson("/api/v1/admin/order/{$order->id}/approve");
+    $response = postJson("/api/v1/admin/orders/{$order->id}/approve");
 
     $response->assertStatus(422);
 });
@@ -148,7 +148,7 @@ it('requires ORDER_APPROVE permission', function (): void {
         'status'      => OrderStatusEnum::PENDING,
     ]);
 
-    $response = postJson("/api/v1/admin/order/{$order->id}/approve");
+    $response = postJson("/api/v1/admin/orders/{$order->id}/approve");
 
     $response->assertForbidden();
 });
@@ -156,7 +156,7 @@ it('requires ORDER_APPROVE permission', function (): void {
 it('requires authentication', function (): void {
     $order = Order::factory()->create();
 
-    $response = postJson("/api/v1/admin/order/{$order->id}/approve");
+    $response = postJson("/api/v1/admin/orders/{$order->id}/approve");
 
     $response->assertUnauthorized();
 });

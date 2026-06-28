@@ -24,7 +24,7 @@ describe('DiscountPromotionController', function (): void {
         DiscountPromotion::factory()->count(3)->create();
 
         // Act
-        $response = $this->get('/api/v1/admin/discount-promotion');
+        $response = $this->get('/api/v1/admin/discount-promotions');
 
         // Assert
         $response->assertOk()
@@ -53,7 +53,7 @@ describe('DiscountPromotionController', function (): void {
         DiscountPromotion::factory()->create(['is_active' => false]);
 
         // Act
-        $response = $this->get('/api/v1/admin/discount-promotion?filter[is_active]=1');
+        $response = $this->get('/api/v1/admin/discount-promotions?filter[is_active]=1');
 
         // Assert
         $response->assertOk();
@@ -67,7 +67,7 @@ describe('DiscountPromotionController', function (): void {
         DiscountPromotion::factory()->create(['type' => 'product_specific']);
 
         // Act
-        $response = $this->get('/api/v1/admin/discount-promotion?filter[type]=cart_checkout');
+        $response = $this->get('/api/v1/admin/discount-promotions?filter[type]=cart_checkout');
 
         // Assert
         $response->assertOk();
@@ -81,7 +81,7 @@ describe('DiscountPromotionController', function (): void {
         DiscountPromotion::factory()->create(['name' => 'Winter Discount']);
 
         // Act
-        $response = $this->get('/api/v1/admin/discount-promotion?filter[search]=Summer');
+        $response = $this->get('/api/v1/admin/discount-promotions?filter[search]=Summer');
 
         // Assert
         $response->assertOk();
@@ -113,7 +113,7 @@ describe('DiscountPromotionController', function (): void {
         ];
 
         // Act
-        $response = $this->postJson('/api/v1/admin/discount-promotion', $data);
+        $response = $this->postJson('/api/v1/admin/discount-promotions', $data);
 
         // Assert
         $response->assertCreated()
@@ -166,7 +166,7 @@ describe('DiscountPromotionController', function (): void {
         ];
 
         // Act
-        $response = $this->postJson('/api/v1/admin/discount-promotion', $data);
+        $response = $this->postJson('/api/v1/admin/discount-promotions', $data);
 
         // Assert
         $response->assertCreated()
@@ -191,7 +191,7 @@ describe('DiscountPromotionController', function (): void {
     });
     test('store validates required fields', function (): void {
         // Act
-        $response = $this->postJson('/api/v1/admin/discount-promotion', []);
+        $response = $this->postJson('/api/v1/admin/discount-promotions', []);
 
         // Assert
         $response->assertUnprocessable()
@@ -208,7 +208,7 @@ describe('DiscountPromotionController', function (): void {
         ]);
 
         // Act
-        $response = $this->get("/api/v1/admin/discount-promotion/{$promotion->id}");
+        $response = $this->get("/api/v1/admin/discount-promotions/{$promotion->id}");
 
         // Assert
         $response->assertOk()
@@ -259,7 +259,7 @@ describe('DiscountPromotionController', function (): void {
         ];
 
         // Act
-        $response = $this->putJson("/api/v1/admin/discount-promotion/{$promotion->id}", $updateData);
+        $response = $this->putJson("/api/v1/admin/discount-promotions/{$promotion->id}", $updateData);
 
         // Assert
         $response->assertOk()
@@ -311,7 +311,7 @@ describe('DiscountPromotionController', function (): void {
         ];
 
         // Act
-        $response = $this->putJson("/api/v1/admin/discount-promotion/{$promotion->id}", $updateData);
+        $response = $this->putJson("/api/v1/admin/discount-promotions/{$promotion->id}", $updateData);
 
         // Assert
         $response->assertOk()
@@ -333,7 +333,7 @@ describe('DiscountPromotionController', function (): void {
         // Arrange
         $promotion = DiscountPromotion::factory()->create()->fresh();
         // Act
-        $response = $this->delete("/api/v1/admin/discount-promotion/{$promotion->id}");
+        $response = $this->delete("/api/v1/admin/discount-promotions/{$promotion->id}");
 
         // Assert
         $response->assertNoContent();
@@ -348,7 +348,7 @@ describe('DiscountPromotionController', function (): void {
         $promotion = DiscountPromotion::factory()->create(['is_active' => true])->fresh();
 
         // Act
-        $response = $this->put("/api/v1/admin/discount-promotion/{$promotion->id}/status");
+        $response = $this->put("/api/v1/admin/discount-promotions/{$promotion->id}/status");
 
         // Assert
         $response->assertOk()
@@ -371,7 +371,7 @@ describe('DiscountPromotionController', function (): void {
         DiscountPromotion::factory()->create(['is_active' => false, 'type' => 'product_specific']);
 
         // Act
-        $response = $this->get('/api/v1/admin/discount-promotion-statistics');
+        $response = $this->get('/api/v1/admin/discount-promotions/statistics');
 
         // Assert
         $response->assertOk()
@@ -397,7 +397,7 @@ describe('DiscountPromotionController', function (): void {
 test('requires authentication', function (): void {
 
     // Act
-    $response = $this->get('/api/v1/admin/discount-promotion');
+    $response = $this->get('/api/v1/admin/discount-promotions');
 
     // Assert
     $response->assertUnauthorized();

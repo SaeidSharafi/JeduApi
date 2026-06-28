@@ -23,7 +23,7 @@ describe('Admin Producatable Select Option API', function (): void {
         Seminar::factory()->count(2)->create();
         DigitalAsset::factory()->count(2)->create();
 
-        $response = $this->getJson('/api/v1/admin/select-option/productable');
+        $response = $this->getJson('/api/v1/admin/select-option/productables');
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -63,7 +63,7 @@ describe('Admin Producatable Select Option API', function (): void {
             'full_name'  => 'Design Patterns in Software Engineering',
         ]);
 
-        $response = $this->getJson('/api/v1/admin/select-option/productable?q=advanced');
+        $response = $this->getJson('/api/v1/admin/select-option/productables?q=advanced');
 
         $response->assertStatus(200);
         $response->assertJsonCount(3, 'data');
@@ -82,7 +82,7 @@ describe('Admin Producatable Select Option API', function (): void {
     it('limits the number of productable items returned', function (): void {
         Course::factory()->count(10)->create();
         Seminar::factory()->count(10)->create();
-        $response = $this->getJson('/api/v1/admin/select-option/productable?limit=5');
+        $response = $this->getJson('/api/v1/admin/select-option/productables?limit=5');
 
         $response->assertStatus(200);
         $this->assertCount(5, $response->json('data'));
@@ -92,7 +92,7 @@ describe('Admin Producatable Select Option API', function (): void {
         Course::factory()->count(10)->create();
         Seminar::factory()->count(10)->create();
         DigitalAsset::factory()->count(10)->create();
-        $response = $this->getJson('/api/v1/admin/select-option/productable?types[]=course&types[]=seminar');
+        $response = $this->getJson('/api/v1/admin/select-option/productables?types[]=course&types[]=seminar');
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -115,7 +115,7 @@ describe('Admin Producatable Select Option API', function (): void {
         Seminar::factory()->count(2)->create();
         DigitalAsset::factory()->count(4)->create();
 
-        $response = $this->getJson('/api/v1/admin/select-option/productable?q=nonexistentitem');
+        $response = $this->getJson('/api/v1/admin/select-option/productables?q=nonexistentitem');
 
         $response->assertStatus(200);
         $response->assertJsonCount(0, 'data');
@@ -126,7 +126,7 @@ describe('Admin Producatable Select Option API', function (): void {
         Seminar::factory()->count(2)->create();
         DigitalAsset::factory()->count(4)->create();
 
-        $response = $this->getJson('/api/v1/admin/select-option/productable?types[]=');
+        $response = $this->getJson('/api/v1/admin/select-option/productables?types[]=');
 
         $response->assertStatus(200);
         $response->assertJsonCount(0, 'data');

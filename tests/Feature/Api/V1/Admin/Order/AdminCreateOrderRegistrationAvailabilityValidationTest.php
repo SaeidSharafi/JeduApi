@@ -52,7 +52,7 @@ describe('Admin create order registration & availability validation', function (
         $customer = User::factory()->create();
         $this->authorized_user([PermissionEnum::ORDER_CREATE]);
 
-        $response = postJson(route('api.v1.admin.order.store'), [
+        $response = postJson(route('api.v1.admin.orders.store'), [
             'status'      => OrderStatusEnum::PENDING->value,
             'customer_id' => $customer->id,
             'items'       => [
@@ -80,7 +80,7 @@ describe('Admin create order registration & availability validation', function (
         $customer = User::factory()->create();
         $this->authorized_user([PermissionEnum::ORDER_CREATE]);
 
-        $response = postJson(route('api.v1.admin.order.store'), [
+        $response = postJson(route('api.v1.admin.orders.store'), [
             'status'      => OrderStatusEnum::PENDING->value,
             'customer_id' => $customer->id,
             'items'       => [
@@ -105,7 +105,7 @@ describe('Admin create order registration & availability validation', function (
         $customer = User::factory()->create();
         $this->authorized_user([PermissionEnum::ORDER_CREATE]);
 
-        $response = postJson(route('api.v1.admin.order.store'), [
+        $response = postJson(route('api.v1.admin.orders.store'), [
             'status'      => OrderStatusEnum::PENDING->value,
             'customer_id' => $customer->id,
             'items'       => [
@@ -132,7 +132,7 @@ describe('Admin create order registration & availability validation', function (
         $customer = User::factory()->create();
         $this->authorized_user([PermissionEnum::ORDER_CREATE]);
 
-        $response = postJson(route('api.v1.admin.order.store'), [
+        $response = postJson(route('api.v1.admin.orders.store'), [
             'status'      => OrderStatusEnum::PENDING->value,
             'customer_id' => $customer->id,
             'items'       => [
@@ -160,7 +160,7 @@ describe('Admin create order registration & availability validation', function (
         $customer = User::factory()->create();
         $this->authorized_user([PermissionEnum::ORDER_CREATE]);
 
-        postJson(route('api.v1.admin.order.store'), [
+        postJson(route('api.v1.admin.orders.store'), [
             'status'      => OrderStatusEnum::PENDING->value,
             'customer_id' => $customer->id,
             'items'       => [

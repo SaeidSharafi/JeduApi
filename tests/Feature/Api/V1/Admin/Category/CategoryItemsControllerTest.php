@@ -22,7 +22,7 @@ describe('CategoryItemsController', function (): void {
         $this->authorized_user([App\Enums\PermissionEnum::CATEGORY_VIEW]);
 
         // Test listing items without filters
-        $response = $this->getJson("/api/v1/admin/category/{$category->id}/items");
+        $response = $this->getJson("/api/v1/admin/categories/{$category->id}/items");
         $response->assertStatus(200);
         $responseData = $response->json('data.data');
         expect(count($responseData))->toBe(6);
@@ -34,7 +34,7 @@ describe('CategoryItemsController', function (): void {
         }
 
         // Test filtering by single categorizable_type
-        $response = $this->getJson("/api/v1/admin/category/{$category->id}/items?filter[categorizable_type]=course");
+        $response = $this->getJson("/api/v1/admin/categories/{$category->id}/items?filter[categorizable_type]=course");
         $response->assertStatus(200);
         $responseData = $response->json('data.data');
         expect(count($responseData))->toBe(2); // Only coursees
@@ -43,7 +43,7 @@ describe('CategoryItemsController', function (): void {
         }
         // Test filtering by mutliple categorizable_type
         $response
-            = $this->getJson("/api/v1/admin/category/{$category->id}/items?filter[categorizable_type][]=course&filter[categorizable_type][]=seminar");
+            = $this->getJson("/api/v1/admin/categories/{$category->id}/items?filter[categorizable_type][]=course&filter[categorizable_type][]=seminar");
         $response->assertStatus(200);
         $responseData = $response->json('data.data');
         expect(count($responseData))->toBe(4); // 2 courses + 2 seminars
@@ -54,7 +54,7 @@ describe('CategoryItemsController', function (): void {
         }
 
         // Test filtering by good_for_start
-        $response = $this->getJson("/api/v1/admin/category/{$category->id}/items?filter[good_for_start]=true");
+        $response = $this->getJson("/api/v1/admin/categories/{$category->id}/items?filter[good_for_start]=true");
         $response->assertStatus(200);
         $responseData = $response->json('data.data');
         expect(count($responseData))->toBe(2); // 1 seminar + 1 course with good_for_start = true

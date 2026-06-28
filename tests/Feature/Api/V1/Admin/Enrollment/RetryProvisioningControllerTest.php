@@ -38,7 +38,7 @@ describe('RetryProvisioningController', function (): void {
             ],
         ]);
 
-        $response = $this->postJson(route('api.v1.admin.enrollment.retry-provisioning', ['enrollment' => $enrollment->id]));
+        $response = $this->postJson(route('api.v1.admin.enrollments.retry-provisioning', ['enrollment' => $enrollment->id]));
 
         $response->assertOk()
             ->assertJsonPath('data.message', 'Retry dispatched for 1 provider(s)')
@@ -54,7 +54,7 @@ describe('RetryProvisioningController', function (): void {
             'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
         ]);
 
-        $response = $this->postJson(route('api.v1.admin.enrollment.retry-provisioning', ['enrollment' => $enrollment->id]));
+        $response = $this->postJson(route('api.v1.admin.enrollments.retry-provisioning', ['enrollment' => $enrollment->id]));
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['enrollment_status']);
@@ -72,7 +72,7 @@ describe('RetryProvisioningController', function (): void {
             ],
         ]);
 
-        $response = $this->postJson(route('api.v1.admin.enrollment.retry-provisioning', ['enrollment' => $enrollment->id]));
+        $response = $this->postJson(route('api.v1.admin.enrollments.retry-provisioning', ['enrollment' => $enrollment->id]));
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['provisioning_data']);
@@ -102,7 +102,7 @@ describe('RetryProvisioningController', function (): void {
             'status'   => PaymentStatusEnum::COMPLETED,
         ]);
 
-        $response = $this->postJson(route('api.v1.admin.enrollment.retry-provisioning', ['enrollment' => $enrollment->id]));
+        $response = $this->postJson(route('api.v1.admin.enrollments.retry-provisioning', ['enrollment' => $enrollment->id]));
 
         $response->assertOk()
             ->assertJsonPath('data.message', 'Retry dispatched for 2 provider(s)')
@@ -129,7 +129,7 @@ describe('RetryProvisioningController', function (): void {
             ],
         ]);
 
-        $response = $this->postJson(route('api.v1.admin.enrollment.retry-provisioning', ['enrollment' => $enrollment->id]));
+        $response = $this->postJson(route('api.v1.admin.enrollments.retry-provisioning', ['enrollment' => $enrollment->id]));
 
         $response->assertOk();
 
@@ -148,7 +148,7 @@ describe('RetryProvisioningController', function (): void {
             ],
         ]);
 
-        $response = $this->postJson(route('api.v1.admin.enrollment.retry-provisioning', ['enrollment' => $enrollment->id]));
+        $response = $this->postJson(route('api.v1.admin.enrollments.retry-provisioning', ['enrollment' => $enrollment->id]));
 
         $response->assertForbidden();
     });

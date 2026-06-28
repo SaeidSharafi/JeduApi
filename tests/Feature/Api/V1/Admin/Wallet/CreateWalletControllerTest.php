@@ -21,7 +21,7 @@ test('admin with permission can create wallet via controller', function (): void
         'gift_balance' => 200,
         'status'       => WalletStatusEnum::ACTIVE->value,
     ];
-    $response = postJson(route('api.v1.admin.wallet.create'), $payload);
+    $response = postJson(route('api.v1.admin.wallets.create'), $payload);
     $response->assertCreated();
     $response->assertJsonPath('data.user_id', $user->id);
 });
@@ -36,7 +36,7 @@ test('admin without permission cannot create wallet via controller', function ()
         'gift_balance' => 200,
         'status'       => WalletStatusEnum::ACTIVE->value,
     ];
-    $response = postJson(route('api.v1.admin.wallet.create'), $payload);
+    $response = postJson(route('api.v1.admin.wallets.create'), $payload);
     $response->assertForbidden();
 });
 
@@ -46,7 +46,7 @@ test('validation error on missing fields', function (): void {
         'balance' => 1000,
         'status'  => WalletStatusEnum::ACTIVE->value,
     ];
-    $response = postJson(route('api.v1.admin.wallet.create'), $payload);
+    $response = postJson(route('api.v1.admin.wallets.create'), $payload);
     $response->assertUnprocessable();
     $response->assertJsonValidationErrors(['user_id']);
 });

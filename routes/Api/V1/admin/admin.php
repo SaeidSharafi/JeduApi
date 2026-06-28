@@ -25,23 +25,23 @@ require __DIR__.'/setting.php';
 require __DIR__.'/wallet.php';
 
 Route::apiResource('staff', StaffController::class);
-Route::apiResource('role', RoleController::class);
-Route::get('permission', PermissionController::class)->name('permission.index');
+Route::apiResource('roles', RoleController::class);
+Route::get('permissions', PermissionController::class)->name('permissions.index');
 
-Route::apiResource('vendor', VendorController::class);
-Route::apiResource('teacher', TeacherController::class);
-Route::apiResource('term', TermController::class);
+Route::apiResource('vendors', VendorController::class);
+Route::apiResource('teachers', TeacherController::class);
+Route::apiResource('terms', TermController::class);
 
-Route::apiResource('user', UserController::class);
+Route::apiResource('users', UserController::class);
 
-Route::apiResource('review', ReviewController::class)
+Route::apiResource('reviews', ReviewController::class)
     ->except(['store', 'update']);
-Route::post('review/{review}/approve', ApproveReviewController::class)->name('review.approve');
-Route::post('review/{review}/reject', RejectReviewController::class)->name('review.reject');
-Route::patch('review/{review}/featured', UpdateReviewFeaturedStatusController::class)
-    ->name('review.update-featured-status');
+Route::post('reviews/{review}/approve', ApproveReviewController::class)->name('reviews.approve');
+Route::post('reviews/{review}/reject', RejectReviewController::class)->name('reviews.reject');
+Route::patch('reviews/{review}/featured', UpdateReviewFeaturedStatusController::class)
+    ->name('reviews.update-featured-status');
 
 // Advice Request Management
-Route::apiResource('advice-request', AdviceRequestController::class)->except(['store']);
-Route::patch('advice-request/{adviceRequest}/status', AdviceRequestUpdateStatusController::class)
-    ->name('advice-request.update-status');
+Route::apiResource('advice-requests', AdviceRequestController::class)->except(['store']);
+Route::patch('advice-requests/{adviceRequest}/status', AdviceRequestUpdateStatusController::class)
+    ->name('advice-requests.update-status');

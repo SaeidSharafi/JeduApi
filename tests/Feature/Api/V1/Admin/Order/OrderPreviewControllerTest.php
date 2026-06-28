@@ -112,7 +112,7 @@ describe('OrderPreviewController', function (): void {
             'applied_coupon_code' => 'TEST10',
         ];
 
-        $response = $this->postJson(route('api.v1.admin.order.preview'), $orderData);
+        $response = $this->postJson(route('api.v1.admin.orders.preview'), $orderData);
 
         $response->assertStatus(200)
             ->assertJsonStructure([

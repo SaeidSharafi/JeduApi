@@ -6,7 +6,7 @@ uses(Tests\Support\Traits\AuthTestTrait::class);
 it('can list roles', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::ROLE_VIEW_ANY->value]);
     $this
-        ->getJson(route('api.v1.admin.role.index'))
+        ->getJson(route('api.v1.admin.roles.index'))
         ->assertOk()
         ->assertJsonStructure([
             'data' => [
@@ -32,7 +32,7 @@ it('can create a role', function (): void {
         ],
     ];
     $this
-        ->postJson(route('api.v1.admin.role.store'), $data)
+        ->postJson(route('api.v1.admin.roles.store'), $data)
         ->assertCreated();
 
     $this->assertDatabaseHas('roles', [
@@ -73,7 +73,7 @@ it('can show a role', function (): void {
         App\Enums\PermissionEnum::STAFF_VIEW->value,
     ]);
     $this
-        ->getJson(route('api.v1.admin.role.show', $role))
+        ->getJson(route('api.v1.admin.roles.show', $role))
         ->assertOk()
         ->assertJsonStructure([
             'data' => [
@@ -115,7 +115,7 @@ it('can update a role', function (): void {
         ],
     ];
     $this
-        ->putJson(route('api.v1.admin.role.update', $role), $data)
+        ->putJson(route('api.v1.admin.roles.update', $role), $data)
         ->assertOk();
 });
 it('can not update it\'s own role', function (): void {
@@ -136,7 +136,7 @@ it('can not update it\'s own role', function (): void {
         ],
     ];
     $this
-        ->putJson(route('api.v1.admin.role.update', $role), $data)
+        ->putJson(route('api.v1.admin.roles.update', $role), $data)
         ->assertForbidden();
 });
 it('can delete a role', function (): void {
@@ -147,7 +147,7 @@ it('can delete a role', function (): void {
         'guard_name' => 'staff',
     ]);
     $this
-        ->deleteJson(route('api.v1.admin.role.destroy', $role))
+        ->deleteJson(route('api.v1.admin.roles.destroy', $role))
         ->assertNoContent();
 });
 it('can not delete it\'s own role', function (): void {
@@ -159,6 +159,6 @@ it('can not delete it\'s own role', function (): void {
     ]);
     $this->user->assignRole($role);
     $this
-        ->deleteJson(route('api.v1.admin.role.destroy', $role))
+        ->deleteJson(route('api.v1.admin.roles.destroy', $role))
         ->assertForbidden();
 });

@@ -42,7 +42,7 @@ describe('User with permissions', function (): void {
         $deliveryOptions = ProductDeliveryOption::query()
             ->with('teachers', fn ($q) => $q->orderBy('id'))
             ->get();
-        $response = $this->getJson(route('api.v1.admin.delivery-option.index', ['product' => $product->id]));
+        $response = $this->getJson(route('api.v1.admin.delivery-options.index', ['product' => $product->id]));
         $response->assertOk()
             ->assertJsonCount(3, 'data');
         $actualDataItems = collect($response->json('data'));
@@ -112,7 +112,7 @@ describe('User with permissions', function (): void {
             App\Enums\PermissionEnum::PRODUCT_DELIVERY_OPTION_CREATE,
         ]);
 
-        $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $this->product->id]),
+        $response = $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $this->product->id]),
             $this->simpleData);
 
         $response->assertCreated()
@@ -150,7 +150,7 @@ describe('User with permissions', function (): void {
             unset($this->simpleData['sku']);
         }
 
-        $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $this->product->id]),
+        $response = $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $this->product->id]),
             $this->simpleData);
 
         $response->assertCreated()
@@ -177,7 +177,7 @@ describe('User with permissions', function (): void {
             ->withTeachers(3, true)
             ->create();
 
-        $response = $this->getJson(route('api.v1.admin.delivery-option.show',
+        $response = $this->getJson(route('api.v1.admin.delivery-options.show',
             ['product' => $deliveryOption->product_id, 'delivery_option' => $deliveryOption->id]));
 
         $response->assertOk();
@@ -255,7 +255,7 @@ describe('User with permissions', function (): void {
         $newTeachers      = Teacher::factory(2)->create();
         $data['teachers'] = $newTeachers->pluck('id')->toArray();
 
-        $response = $this->putJson(route('api.v1.admin.delivery-option.update',
+        $response = $this->putJson(route('api.v1.admin.delivery-options.update',
             ['product' => $deliveryOption->product_id, 'delivery_option' => $deliveryOption->id]), $data);
 
         $response->assertOk()
@@ -287,7 +287,7 @@ describe('User with permissions', function (): void {
         ]);
         $deliveryOption = ProductDeliveryOption::factory()->create();
 
-        $response = $this->deleteJson(route('api.v1.admin.delivery-option.destroy',
+        $response = $this->deleteJson(route('api.v1.admin.delivery-options.destroy',
             ['product' => $deliveryOption->product_id, 'delivery_option' => $deliveryOption->id]));
 
         $response->assertNoContent();
@@ -317,14 +317,14 @@ describe('User without permissions', function (): void {
 
         $product = App\Models\Product::factory()->create();
 
-        $response = $this->getJson(route('api.v1.admin.delivery-option.index', ['product' => $product->id]));
+        $response = $this->getJson(route('api.v1.admin.delivery-options.index', ['product' => $product->id]));
 
         $response->assertForbidden();
     });
     it('should return 403 if user does not have permission to create delivery options', function (): void {
 
         $product  = App\Models\Product::factory()->create();
-        $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]),
+        $response = $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $product->id]),
             $this->simpleData);
 
         $response->assertForbidden();
@@ -341,7 +341,7 @@ describe('User without permissions', function (): void {
                 ],
             ]
         );
-        $response = $this->putJson(route('api.v1.admin.delivery-option.update',
+        $response = $this->putJson(route('api.v1.admin.delivery-options.update',
             ['product' => $deliveryOption->product_id, 'delivery_option' => $deliveryOption->id]), $this->simpleData);
 
         $response->assertForbidden();
@@ -350,7 +350,7 @@ describe('User without permissions', function (): void {
 
         $deliveryOption = ProductDeliveryOption::factory()->create();
 
-        $response = $this->deleteJson(route('api.v1.admin.delivery-option.destroy',
+        $response = $this->deleteJson(route('api.v1.admin.delivery-options.destroy',
             ['product' => $deliveryOption->product_id, 'delivery_option' => $deliveryOption->id]));
 
         $response->assertForbidden();
@@ -367,7 +367,7 @@ describe('validation', function (): void {
         $data    = ProductDeliveryOption::factory()
             ->make(['product_id' => $product->id, 'name' => null])->toArray();
 
-        $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
+        $response = $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['name']);
@@ -386,7 +386,7 @@ describe('validation', function (): void {
         $data['details'] = [
             'file_id' => 'file-id-123',
         ];
-        $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
+        $response = $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['delivery_method']);
@@ -407,7 +407,7 @@ describe('validation', function (): void {
         $data['teachers'] = [$teacher->id];
         $data['details']  = [];
 
-        $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
+        $response = $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['details.max_downloads']);
@@ -415,7 +415,7 @@ describe('validation', function (): void {
         $data['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value;
         $data['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE->value;
 
-        $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
+        $response = $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['details.moodle_course_id']);
@@ -423,27 +423,27 @@ describe('validation', function (): void {
         $data['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value;
         $data['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::LMS_MOODLE->value;
 
-        $response = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
+        $response = $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['details']);
 
         $data['delivery_method'] = App\Enums\Product\DeliveryMethodEnum::LIVE_SESSION_SKYROOM->value;
-        $response                = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
+        $response                = $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['details']);
 
         $data['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::OFFLINE_SERVICE->value;
         $data['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER->value;
-        $response                 = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
+        $response                 = $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(['details.spot_id']);
 
         $data['fulfillment_type'] = App\Enums\Product\FulfillmentTypeEnum::IN_PERSON_SERVICE->value;
         $data['delivery_method']  = App\Enums\Product\DeliveryMethodEnum::IN_PERSON->value;
-        $response                 = $this->postJson(route('api.v1.admin.delivery-option.store', ['product' => $product->id]), $data);
+        $response                 = $this->postJson(route('api.v1.admin.delivery-options.store', ['product' => $product->id]), $data);
 
         $response->assertUnprocessable()
             ->assertJsonValidationErrors(

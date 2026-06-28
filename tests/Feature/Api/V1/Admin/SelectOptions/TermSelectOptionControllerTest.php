@@ -12,7 +12,7 @@ describe('Admin Term Select Option API', function (): void {
             'academic_year' => 'test-academic-year',
         ]);
         $response = $this->getJson(
-            route('api.v1.admin.select-option.term', ['q' => 'TestTerm'])
+            route('api.v1.admin.select-option.terms', ['q' => 'TestTerm'])
         );
 
         $response->assertOk();
@@ -36,7 +36,7 @@ describe('Admin Term Select Option API', function (): void {
     it('returns empty data if no match', function (): void {
         $this->authorized_user();
         $response = $this->getJson(
-            route('api.v1.admin.select-option.term', ['q' => 'NoSuchTerm'])
+            route('api.v1.admin.select-option.terms', ['q' => 'NoSuchTerm'])
         );
         $response->assertOk();
         $response->assertJson(['data' => []]);
