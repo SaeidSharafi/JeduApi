@@ -6,7 +6,7 @@ namespace App\Actions\Shop\Student;
 
 use App\Data\Shop\Student\JoinUrlData;
 use App\Enums\Product\DeliveryMethodEnum;
-use App\Exceptions\Integrations\ExternalProvisioningException;
+use App\Exceptions\Integrations\ResourceNotProvisionedException;
 use App\Models\Enrollment;
 use App\Services\Integrations\BbbService;
 use App\Services\Integrations\SkyroomService;
@@ -39,7 +39,7 @@ final readonly class GetJoinUrlAction
         $meetingId = data_get($provisioning, 'bbb.data.meeting_id');
 
         if (! $meetingId) {
-            throw new ExternalProvisioningException('BBB meeting not provisioned yet.');
+            throw new ResourceNotProvisionedException('BBB meeting not provisioned yet.');
         }
 
         $joinUrl = $this->bbbService->buildJoinUrl(
@@ -55,7 +55,7 @@ final readonly class GetJoinUrlAction
         $roomId = data_get($provisioning, 'skyroom.data.room_id');
 
         if (! $roomId) {
-            throw new ExternalProvisioningException('Skyroom room not provisioned yet.');
+            throw new ResourceNotProvisionedException('Skyroom room not provisioned yet.');
         }
 
         $customer = $enrollment->customer;

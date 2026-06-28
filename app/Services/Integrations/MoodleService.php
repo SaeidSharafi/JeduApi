@@ -7,7 +7,6 @@ namespace App\Services\Integrations;
 use App\Data\Shop\Student\Blocks\LmsMoodleBlockData;
 use App\Data\Shop\Student\Blocks\MoodleActivityData;
 use App\Enums\System\SettingKeyEnum;
-use App\Exceptions\Integrations\ExternalProvisioningException;
 use App\Exceptions\Integrations\RecoverableProvisioningException;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\User;
@@ -77,7 +76,7 @@ final class MoodleService extends AbstractIntegrationService
             $response = $this->call('core_completion_get_course_completion_status', $params);
 
             return data_get($response, 'completionstatus.completed', false);
-        } catch (ExternalProvisioningException $exception) {
+        } catch (RecoverableProvisioningException $exception) {
             // If completion isn't enabled or configured, it's technically not "completed"
             if ($exception->getMoodleErrorCode() === 'nocriteriaset') {
                 return false;
@@ -94,7 +93,7 @@ final class MoodleService extends AbstractIntegrationService
         ];
         try {
             $response = $this->call('core_completion_get_activities_completion_status', $params);
-        } catch (ExternalProvisioningException $exception) {
+        } catch (RecoverableProvisioningException $exception) {
             // Return empty array if tracking isn't set up
             if ($exception->getMoodleErrorCode() === 'nocriteriaset') {
                 return [];

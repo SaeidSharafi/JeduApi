@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api\Shop\Student;
 
 use App\Actions\Shop\Student\GetJoinUrlAction;
 use App\Contracts\ApiResponseInterface;
-use App\Exceptions\Integrations\ExternalProvisioningException;
+use App\Exceptions\Integrations\ResourceNotProvisionedException;
 use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
 use InvalidArgumentException;
@@ -40,7 +40,7 @@ final class JoinUrlController extends Controller
 
         try {
             $joinUrlData = $action->handle($enrollment);
-        } catch (ExternalProvisioningException $e) {
+        } catch (ResourceNotProvisionedException $e) {
             return response()->error($e->getMessage(), 503);
         } catch (InvalidArgumentException $e) {
             return response()->validationError($e->getMessage());

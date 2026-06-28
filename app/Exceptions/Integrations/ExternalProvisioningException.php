@@ -8,7 +8,7 @@ use JetBrains\PhpStorm\Pure;
 use RuntimeException;
 use Throwable;
 
-final class ExternalProvisioningException extends RuntimeException
+abstract class ExternalProvisioningException extends RuntimeException
 {
     public array $metaData;
 

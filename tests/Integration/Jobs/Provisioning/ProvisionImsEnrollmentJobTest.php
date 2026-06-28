@@ -6,7 +6,7 @@ use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Enums\System\SettingKeyEnum;
-use App\Exceptions\Integrations\ExternalProvisioningException;
+use App\Exceptions\Integrations\RecoverableProvisioningException;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
 use App\Models\AdminActionLog;
@@ -367,7 +367,7 @@ it('returns from failed callback when enrollment does not exist', function (): v
 it('stores ims metadata on provisioning failure', function (): void {
     [$enrollment] = createEnrollmentAndPaymentForImsJob();
 
-    $exception = new ExternalProvisioningException('ims validation failed', 0, null, [
+    $exception = new RecoverableProvisioningException('ims validation failed', 0, null, [
         'http_status'       => 422,
         'endpoint'          => '/api/v2/student',
         'validation_errors' => ['field' => ['error']],
@@ -406,7 +406,7 @@ it('creates AdminActionLog entry on ims provisioning failure', function (): void
 it('AdminActionLog error_message is static generic not raw exception text', function (): void {
     [$enrollment] = createEnrollmentAndPaymentForImsJob();
 
-    $exception = new ExternalProvisioningException('user submitted PII data: test@example.com', 0, null, [
+    $exception = new RecoverableProvisioningException('user submitted PII data: test@example.com', 0, null, [
         'http_status'       => 422,
         'endpoint'          => '/api/v2/student',
         'validation_errors' => [],
@@ -427,7 +427,7 @@ it('AdminActionLog error_message is static generic not raw exception text', func
 it('stores raw_body_snippet in AdminActionLog when exception has metadata', function (): void {
     [$enrollment] = createEnrollmentAndPaymentForImsJob();
 
-    $exception = new ExternalProvisioningException('error', 0, null, [
+    $exception = new RecoverableProvisioningException('error', 0, null, [
         'http_status'       => 422,
         'endpoint'          => '/api/v2/student',
         'validation_errors' => [],
@@ -474,7 +474,7 @@ it('logs error with enrollment context on failure', function (): void {
 it('stores sanitized raw_body_snippet in provisioning_data metadata from ExternalProvisioningException', function (): void {
     [$enrollment] = createEnrollmentAndPaymentForImsJob();
 
-    $exception = new ExternalProvisioningException('error', 0, null, [
+    $exception = new RecoverableProvisioningException('error', 0, null, [
         'http_status'       => 422,
         'endpoint'          => '/api/v2/student',
         'validation_errors' => [],
