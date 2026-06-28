@@ -19,7 +19,7 @@ it('returns 404 when enrollment belongs to another user', function (): void {
     $otherUser  = App\Models\User::factory()->create();
     $enrollment = createEnrollment($otherUser, DeliveryMethodEnum::LIVE_SESSION_BBB);
 
-    $this->getJson(route('api.v1.shop.my-courses.join', ['enrollment' => $enrollment->uuid]))
+    $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertNotFound();
 });
 
@@ -47,7 +47,7 @@ it('returns join url for BBB live session', function (): void {
             ->andReturn($joinUrl);
     });
 
-    $this->getJson(route('api.v1.shop.my-courses.join', ['enrollment' => $enrollment->uuid]))
+    $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertOk()
         ->assertJsonPath('data.url', $joinUrl)
         ->assertJsonPath('data.type', 'bbb');
@@ -67,7 +67,7 @@ it('returns 503 when BBB meeting is not provisioned yet', function (): void {
     ];
     $enrollment->save();
 
-    $this->getJson(route('api.v1.shop.my-courses.join', ['enrollment' => $enrollment->uuid]))
+    $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertStatus(503)
         ->assertJsonFragment(['message' => 'BBB meeting not provisioned yet.']);
 });
@@ -96,7 +96,7 @@ it('returns join url for Skyroom live session', function (): void {
             ->andReturn($joinUrl);
     });
 
-    $this->getJson(route('api.v1.shop.my-courses.join', ['enrollment' => $enrollment->uuid]))
+    $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertOk()
         ->assertJsonPath('data.url', $joinUrl)
         ->assertJsonPath('data.type', 'skyroom');
@@ -116,7 +116,7 @@ it('returns 503 when Skyroom room is not provisioned yet', function (): void {
     ];
     $enrollment->save();
 
-    $this->getJson(route('api.v1.shop.my-courses.join', ['enrollment' => $enrollment->uuid]))
+    $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertStatus(503)
         ->assertJsonFragment(['message' => 'Skyroom room not provisioned yet.']);
 });
@@ -127,7 +127,7 @@ it('returns 422 when delivery method does not support join URLs', function (): v
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON);
     $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
 
-    $this->getJson(route('api.v1.shop.my-courses.join', ['enrollment' => $enrollment->uuid]))
+    $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertUnprocessable();
 });
 
@@ -152,6 +152,6 @@ it('returns 500 when an unexpected error occurs', function (): void {
             ->andThrow(new RuntimeException('BbbService crashed'));
     });
 
-    $this->getJson(route('api.v1.shop.my-courses.join', ['enrollment' => $enrollment->uuid]))
+    $this->getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertServerError();
 });

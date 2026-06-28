@@ -23,7 +23,7 @@ it('returns 403 when enrollment belongs to another user', function (): void {
     $enrollment   = createEnrollment($other, DeliveryMethodEnum::DIRECT_DOWNLOAD);
     $digitalAsset = DigitalAsset::factory()->create();
 
-    $this->getJson(route('api.v1.shop.my-digital-assets.download', [
+    $this->getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
         'digitalAsset' => $digitalAsset->id,
     ]))->assertForbidden();
@@ -35,7 +35,7 @@ it('returns 403 when enrollment is not active', function (): void {
     $enrollment->enrollment_status = EnrollmentStatusEnum::AWAITING_PAYMENT;
     $enrollment->save();
 
-    $this->getJson(route('api.v1.shop.my-digital-assets.download', [
+    $this->getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
         'digitalAsset' => $digitalAsset->id,
     ]))->assertForbidden();
@@ -47,7 +47,7 @@ it('returns 404 when digital asset does not belong to enrollment productable', f
     $enrollment     = createDirectDownloadEnrollmentForAsset($this->user, $digitalAsset);
     $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
 
-    $this->getJson(route('api.v1.shop.my-digital-assets.download', [
+    $this->getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
         'digitalAsset' => $unrelatedAsset->id,
     ]))->assertNotFound();
@@ -59,7 +59,7 @@ it('streams file for owner with active enrollment and attached main media', func
     $enrollment   = createDirectDownloadEnrollmentForAsset($this->user, $digitalAsset);
     $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
 
-    $this->getJson(route('api.v1.shop.my-digital-assets.download', [
+    $this->getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
         'digitalAsset' => $digitalAsset->id,
     ]))->assertOk();
@@ -70,7 +70,7 @@ it('returns 404 when no downloadable media file exists for digital asset', funct
     $enrollment   = createDirectDownloadEnrollmentForAsset($this->user, $digitalAsset);
     $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
 
-    $this->getJson(route('api.v1.shop.my-digital-assets.download', [
+    $this->getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
         'digitalAsset' => $digitalAsset->id,
     ]))->assertNotFound();
@@ -91,7 +91,7 @@ it('returns 404 when productable is Course but digital asset not attached', func
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::DIRECT_DOWNLOAD, deliveryOption: $deliveryOption);
     $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
 
-    $this->getJson(route('api.v1.shop.my-digital-assets.download', [
+    $this->getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
         'digitalAsset' => $digitalAsset->id,
     ]))->assertNotFound();
@@ -116,7 +116,7 @@ it('streams file when productable is Course with attached digital asset', functi
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::DIRECT_DOWNLOAD, deliveryOption: $deliveryOption);
     $enrollment->update(['enrollment_status' => EnrollmentStatusEnum::ACTIVE]);
 
-    $this->getJson(route('api.v1.shop.my-digital-assets.download', [
+    $this->getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
         'digitalAsset' => $digitalAsset->id,
     ]))->assertOk();
@@ -132,7 +132,7 @@ it('returns 404 when media record exists but file is missing from storage', func
     $media = $digitalAsset->getMedia(MediaTagEnum::MAIN->value)->first();
     Storage::disk($media->disk)->delete($media->getDiskPath());
 
-    $this->getJson(route('api.v1.shop.my-digital-assets.download', [
+    $this->getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
         'digitalAsset' => $digitalAsset->id,
     ]))->assertNotFound();

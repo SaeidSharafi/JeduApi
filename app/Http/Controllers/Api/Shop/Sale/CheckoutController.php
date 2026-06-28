@@ -8,7 +8,7 @@ use App\Actions\Shop\CreateOrderFromCartAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Cart\CheckoutData;
 use App\Data\Shop\Cart\CheckoutResponseData;
-use App\Data\Shop\Order\OrderData;
+use App\Data\Shop\Student\Order\OrderData;
 use App\Exceptions\Payment\InsufficientWalletBalanceException;
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\ValidationException;

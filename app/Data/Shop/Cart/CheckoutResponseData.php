@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Cart;
 
-use App\Data\Shop\Order\OrderData;
+use App\Data\Shop\Student\Order\OrderData;
 use Spatie\LaravelData\Attributes\Validation\In;
 use Spatie\LaravelData\Data;
 

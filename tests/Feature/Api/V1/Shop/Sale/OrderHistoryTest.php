@@ -33,7 +33,7 @@ describe('Order History - Authorization', function (): void {
         ]);
 
         $this->customer($this->userB);
-        $response = getJson(route('api.v1.shop.orders.show', ['order' => $orderForUserA->increment_id]));
+        $response = getJson(route('api.v1.shop.student.orders.show', ['order' => $orderForUserA->increment_id]));
 
         $response->assertNotFound();
     });
@@ -49,7 +49,7 @@ describe('Order History - Authorization', function (): void {
         ]);
 
         $this->customer($this->userA);
-        $response = getJson(route('api.v1.shop.orders.show', ['order' => $orderForUserA->increment_id]));
+        $response = getJson(route('api.v1.shop.student.orders.show', ['order' => $orderForUserA->increment_id]));
 
         $response->assertOk()
             ->assertJsonPath('data.increment_id', '100000002')
@@ -62,7 +62,7 @@ describe('Order History - Authorization', function (): void {
             'increment_id' => '100000001',
         ]);
 
-        $response = getJson(route('api.v1.shop.orders.show', ['order' => $order->increment_id]));
+        $response = getJson(route('api.v1.shop.student.orders.show', ['order' => $order->increment_id]));
 
         $response->assertUnauthorized();
     });
@@ -83,7 +83,7 @@ describe('Order History - Index Endpoint', function (): void {
         ]);
 
         $this->customer($this->userA);
-        $response = getJson(route('api.v1.shop.orders.index'));
+        $response = getJson(route('api.v1.shop.student.orders.index'));
 
         $response->assertOk()
             ->assertJsonCount(3, 'data.data');
@@ -114,7 +114,7 @@ describe('Order History - Index Endpoint', function (): void {
         ]);
 
         $this->customer($this->userA);
-        $response = getJson(route('api.v1.shop.orders.index'));
+        $response = getJson(route('api.v1.shop.student.orders.index'));
 
         $response->assertOk();
         $orders = $response->json('data.data');
@@ -126,7 +126,7 @@ describe('Order History - Index Endpoint', function (): void {
 
     test('empty order list returns correct response', function (): void {
         $this->customer($this->userA);
-        $response = getJson(route('api.v1.shop.orders.index'));
+        $response = getJson(route('api.v1.shop.student.orders.index'));
 
         $response->assertOk()
             ->assertJsonCount(0, 'data.data');
@@ -181,7 +181,7 @@ describe('Order History - Show Endpoint', function (): void {
         ]);
 
         $this->customer($this->userA);
-        $response = getJson(route('api.v1.shop.orders.show', ['order' => $order->increment_id]));
+        $response = getJson(route('api.v1.shop.student.orders.show', ['order' => $order->increment_id]));
 
         $response->assertOk()
             ->assertJsonStructure([
@@ -231,7 +231,7 @@ describe('Order History - Show Endpoint', function (): void {
 
     test('accessing non-existent order returns 404', function (): void {
         $this->customer($this->userA);
-        $response = getJson(route('api.v1.shop.orders.show', ['order' => '999999999']));
+        $response = getJson(route('api.v1.shop.student.orders.show', ['order' => '999999999']));
 
         $response->assertNotFound();
     });

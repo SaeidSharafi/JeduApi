@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Integrations;
 
-use App\Data\Shop\MyCourses\Blocks\LmsMoodleBlockData;
-use App\Data\Shop\MyCourses\Blocks\MoodleActivityData;
+use App\Data\Shop\Student\Blocks\LmsMoodleBlockData;
+use App\Data\Shop\Student\Blocks\MoodleActivityData;
 use App\Enums\System\SettingKeyEnum;
 use App\Exceptions\Integrations\ExternalProvisioningException;
 use App\Exceptions\Integrations\RecoverableProvisioningException;

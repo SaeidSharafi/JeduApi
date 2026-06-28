@@ -17,7 +17,7 @@ it('returns 404 for non-owner enrollment', function (): void {
     $otherUser  = App\Models\User::factory()->create();
     $enrollment = createEnrollment($otherUser, DeliveryMethodEnum::LMS_MOODLE);
 
-    $this->postJson(route('api.v1.shop.my-courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
+    $this->postJson(route('api.v1.shop.student.courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
         ->assertNotFound()
         ->assertJsonFragment(['message' => __('messages.enrollments.not_found')]);
 });
@@ -25,7 +25,7 @@ it('returns 404 for non-owner enrollment', function (): void {
 it('returns 422 for non-moodle enrollment', function (): void {
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON);
 
-    $this->postJson(route('api.v1.shop.my-courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
+    $this->postJson(route('api.v1.shop.student.courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
         ->assertUnprocessable()
         ->assertJsonFragment(['message' => __('messages.enrollments.not_moodle')]);
 });
@@ -36,7 +36,7 @@ it('returns 422 when moodle provisioning is incomplete', function (): void {
     $enrollment->provisioning_data = [];
     $enrollment->save();
 
-    $this->postJson(route('api.v1.shop.my-courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
+    $this->postJson(route('api.v1.shop.student.courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
         ->assertUnprocessable()
         ->assertJsonFragment(['message' => __('messages.enrollments.moodle_provisioning_incomplete')]);
 });
@@ -74,7 +74,7 @@ it('returns sso url for valid moodle enrollment', function (): void {
             ->andReturn($ssoUrl);
     });
 
-    $this->postJson(route('api.v1.shop.my-courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
+    $this->postJson(route('api.v1.shop.student.courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
         ->assertOk()
         ->assertJsonPath('data.url', $ssoUrl);
 });
@@ -113,7 +113,7 @@ it('includes wantsurl in request to MoodleService when provided', function (): v
             ->andReturn($ssoUrl);
     });
 
-    $this->postJson(route('api.v1.shop.my-courses.moodle.sso', [
+    $this->postJson(route('api.v1.shop.student.courses.moodle.sso', [
         'enrollment' => $enrollment->uuid,
         'wantsurl'   => $wants,
     ]))
@@ -156,7 +156,7 @@ it('uses moodle_username provisioning key fallback', function (): void {
             ->andReturn($ssoUrl);
     });
 
-    $this->postJson(route('api.v1.shop.my-courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
+    $this->postJson(route('api.v1.shop.student.courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
         ->assertOk()
         ->assertJsonPath('data.url', $ssoUrl);
 });
@@ -191,7 +191,7 @@ it('returns 422 when MoodleService throws an exception', function (): void {
             ->andThrow(new RuntimeException('Moodle API error'));
     });
 
-    $this->postJson(route('api.v1.shop.my-courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
+    $this->postJson(route('api.v1.shop.student.courses.moodle.sso', ['enrollment' => $enrollment->uuid]))
         ->assertUnprocessable()
         ->assertJsonFragment(['message' => __('messages.enrollments.moodle_service_error')]);
 });

@@ -194,7 +194,7 @@ test('product createion with all combinations',
             'provisioning_data'          => ['providers' => getProvisioningData($data, $deliveryType)],
         ]);
         $this->customer($customer);
-        $response = getJson(route('api.v1.shop.my-courses.show', $enrolment->uuid));
+        $response = getJson(route('api.v1.shop.student.courses.show', $enrolment->uuid));
         $response->assertOk();
 
         $response->assertJsonStructure([
@@ -256,7 +256,7 @@ function getDeliveryBlock(
             'short_name'    => $digitalAsset->short_name,
             'full_name'     => $digitalAsset->full_name,
             'thumbnail_url' => $digitalAsset->thumbnail_url,
-            'download_url'  => route('api.v1.shop.my-digital-assets.download',
+            'download_url'  => route('api.v1.shop.student.digital-assets.download',
                 ['enrollment' => $enrollment->uuid, 'digitalAsset' => $digitalAsset->id], absolute: true),
 
         ],

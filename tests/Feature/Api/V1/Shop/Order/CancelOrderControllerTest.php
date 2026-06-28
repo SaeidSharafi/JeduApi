@@ -24,7 +24,7 @@ it('allows customer to cancel their own pending order', function (): void {
         'status'      => OrderStatusEnum::PENDING,
     ]);
 
-    $response = postJson(route('api.v1.shop.orders.cancel', $order->increment_id));
+    $response = postJson(route('api.v1.shop.student.orders.cancel', $order->increment_id));
 
     $response->assertOk();
     $response->assertJsonStructure([
@@ -53,7 +53,7 @@ it('cancels enrollments when order is cancelled', function (): void {
     $orderItem->enrollment->save();
     $enrollment = $orderItem->enrollment;
 
-    $response = postJson(route('api.v1.shop.orders.cancel', $order->increment_id));
+    $response = postJson(route('api.v1.shop.student.orders.cancel', $order->increment_id));
     $response->assertOk();
 
     $enrollment->refresh();
@@ -72,11 +72,11 @@ it('prevents cancellation of order with completed payments', function (): void {
         'status'      => PaymentStatusEnum::COMPLETED,
     ]);
 
-    $response = postJson(route('api.v1.shop.orders.cancel', $order->increment_id));
+    $response = postJson(route('api.v1.shop.student.orders.cancel', $order->increment_id));
 
     $response->assertStatus(422);
     $response->assertJsonFragment([
-        'message' => 'Cannot cancel an order with completed payments. Please contact support for refund assistance.',
+        'message' => __('messages.order.cannot_cancel_order_with_completed_payments', ['order_id' => $order->id]),
     ]);
 
     $order->refresh();
@@ -89,7 +89,7 @@ it('prevents cancellation of non-pending orders', function (): void {
         'status'      => OrderStatusEnum::COMPLETED,
     ]);
 
-    $response = postJson(route('api.v1.shop.orders.cancel', $order->increment_id));
+    $response = postJson(route('api.v1.shop.student.orders.cancel', $order->increment_id));
 
     $response->assertStatus(422);
 });
@@ -101,7 +101,7 @@ it('prevents customer from cancelling another users order', function (): void {
         'status'      => OrderStatusEnum::PENDING,
     ]);
 
-    $response = postJson(route('api.v1.shop.orders.cancel', $order->increment_id));
+    $response = postJson(route('api.v1.shop.student.orders.cancel', $order->increment_id));
 
     $response->assertNotFound();
 });
@@ -111,7 +111,7 @@ it('requires authentication', function (): void {
         'status' => OrderStatusEnum::PENDING,
     ]);
 
-    $response = $this->postJson(route('api.v1.shop.orders.cancel', $order->increment_id));
+    $response = $this->postJson(route('api.v1.shop.student.orders.cancel', $order->increment_id));
 
     $response->assertNotFound(); // unauthenticated leads to model not found due to ownership check
 });

@@ -37,7 +37,7 @@ describe('Retry Order Payment', function (): void {
 
         // Act: Retry payment
         $response = $this->customer($user)
-            ->postJson(route('api.v1.shop.orders.retry-payment', $order->increment_id), [
+            ->postJson(route('api.v1.shop.student.orders.retry-payment', $order->increment_id), [
                 'payment_method' => PaymentMethodEnum::WALLET->value,
             ]);
 
@@ -72,7 +72,7 @@ describe('Retry Order Payment', function (): void {
             ->andReturn((object) ['return' => $fakeRefId]);
         $this->customer($user);
         // Act: Retry with gateway (requires redirect)
-        $response = $this->postJson(route('api.v1.shop.orders.retry-payment', $order->increment_id), [
+        $response = $this->postJson(route('api.v1.shop.student.orders.retry-payment', $order->increment_id), [
             'payment_method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
         ]);
 
@@ -100,7 +100,7 @@ describe('Retry Order Payment', function (): void {
 
         // Act: Pay only 300k
         $response = $this->customer($user)
-            ->postJson(route('api.v1.shop.orders.retry-payment', $order->increment_id), [
+            ->postJson(route('api.v1.shop.student.orders.retry-payment', $order->increment_id), [
                 'payment_method' => PaymentMethodEnum::WALLET->value,
             ]);
 
@@ -123,7 +123,7 @@ describe('Retry Order Payment', function (): void {
 
         // Act
         $response = $this->customer($user)
-            ->postJson(route('api.v1.shop.orders.retry-payment', $order->increment_id), [
+            ->postJson(route('api.v1.shop.student.orders.retry-payment', $order->increment_id), [
                 'payment_method' => PaymentMethodEnum::WALLET->value,
             ]);
 
@@ -145,7 +145,7 @@ describe('Retry Order Payment', function (): void {
 
         // Act
         $response = $this->customer($user)
-            ->postJson(route('api.v1.shop.orders.retry-payment', $order->increment_id), [
+            ->postJson(route('api.v1.shop.student.orders.retry-payment', $order->increment_id), [
                 'payment_method' => PaymentMethodEnum::WALLET->value,
             ]);
 
@@ -176,7 +176,7 @@ describe('Retry Order Payment', function (): void {
 
         // Act
         $response = $this->customer($user)
-            ->postJson(route('api.v1.shop.orders.retry-payment', $order->increment_id), [
+            ->postJson(route('api.v1.shop.student.orders.retry-payment', $order->increment_id), [
                 'payment_method' => PaymentMethodEnum::WALLET->value,
             ]);
 
@@ -198,7 +198,7 @@ describe('Retry Order Payment', function (): void {
         // Act: Current user tries to retry other user's order
         $currentUser = User::factory()->create();
         $response    = $this->customer($currentUser)
-            ->postJson(route('api.v1.shop.orders.retry-payment', $order->increment_id), [
+            ->postJson(route('api.v1.shop.student.orders.retry-payment', $order->increment_id), [
                 'payment_method' => PaymentMethodEnum::WALLET->value,
             ]);
 
@@ -219,7 +219,7 @@ describe('Retry Order Payment', function (): void {
 
         // Act: No payment method
         $response = $this->customer($user)
-            ->postJson(route('api.v1.shop.orders.retry-payment', $order->increment_id), []);
+            ->postJson(route('api.v1.shop.student.orders.retry-payment', $order->increment_id), []);
 
         // Assert
         $response->assertUnprocessable();

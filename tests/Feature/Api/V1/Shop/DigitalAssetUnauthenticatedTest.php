@@ -14,7 +14,7 @@ use function Pest\Laravel\getJson;
 uses(Tests\Support\Traits\AuthTestTrait::class);
 
 it('returns 401 for unauthenticated request to digital assets index', function (): void {
-    getJson(route('api.v1.shop.my-digital-assets.index'))
+    getJson(route('api.v1.shop.student.digital-assets.index'))
         ->assertUnauthorized();
 });
 
@@ -23,7 +23,7 @@ it('returns 401 for unauthenticated download request', function (): void {
     $digitalAsset = DigitalAsset::factory()->create();
     $enrollment   = createUnauthEnrollmentForAsset($user, $digitalAsset);
 
-    getJson(route('api.v1.shop.my-digital-assets.download', [
+    getJson(route('api.v1.shop.student.digital-assets.download', [
         'enrollment'   => $enrollment->uuid,
         'digitalAsset' => $digitalAsset->id,
     ]))->assertUnauthorized();

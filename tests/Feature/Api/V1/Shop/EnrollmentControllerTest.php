@@ -15,7 +15,7 @@ beforeEach(function (): void {
 it('should filter by fulfillment type', function (): void {
     createEnrollment($this->user, DeliveryMethodEnum::IN_PERSON, 2);
     createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
-    $this->getJson(route('api.v1.shop.my-courses.index', [
+    $this->getJson(route('api.v1.shop.student.courses.index', [
         'filter' => ['fulfillment_type' => App\Enums\Product\FulfillmentTypeEnum::ONLINE_SERVICE->value],
     ]))
         ->assertOk()
@@ -35,7 +35,7 @@ it('should filter by product name', function (): void {
         ]);
     createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, 5);
     createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
-    $this->getJson(route('api.v1.shop.my-courses.index', [
+    $this->getJson(route('api.v1.shop.student.courses.index', [
         'filter' => ['name' => 'Test Product'],
     ]))
         ->assertOk()
@@ -44,7 +44,7 @@ it('should filter by product name', function (): void {
 });
 it('should paginate results', function (): void {
     createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, count: 5);
-    $this->getJson(route('api.v1.shop.my-courses.index', [
+    $this->getJson(route('api.v1.shop.student.courses.index', [
         'per_page' => 1,
     ]))
         ->assertOk()
@@ -63,7 +63,7 @@ it('shows current user specific enrollment details', function (): void {
         ]);
     createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, 5);
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE, deliveryOption: $deliveryOption);
-    $response   = $this->getJson(route('api.v1.shop.my-courses.show', [
+    $response   = $this->getJson(route('api.v1.shop.student.courses.show', [
         'enrollment' => $enrollment->uuid,
         'per_page'   => 1,
     ]));
@@ -85,7 +85,7 @@ it('does not show other users enrollment details', function (): void {
 
     $user       = App\Models\User::factory()->create()->fresh();
     $enrollment = createEnrollment($user, DeliveryMethodEnum::LMS_MOODLE);
-    $response   = $this->getJson(route('api.v1.shop.my-courses.show', [
+    $response   = $this->getJson(route('api.v1.shop.student.courses.show', [
         'enrollment' => $enrollment->uuid,
         'per_page'   => 1,
     ]));
@@ -114,7 +114,7 @@ it('returns join url for bbb enrollment', function (): void {
         $mock->shouldReceive('buildJoinUrl')->andReturn('https://bbb.test/join/abc');
     });
 
-    getJson(route('api.v1.shop.my-courses.join', ['enrollment' => $enrollment->uuid]))
+    getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertOk()
         ->assertJsonPath('data.url', 'https://bbb.test/join/abc');
 });
@@ -123,13 +123,13 @@ it('returns 404 for join url when enrollment belongs to another user', function 
     $otherUser  = App\Models\User::factory()->create();
     $enrollment = createEnrollment($otherUser, DeliveryMethodEnum::LIVE_SESSION_BBB);
 
-    getJson(route('api.v1.shop.my-courses.join', ['enrollment' => $enrollment->uuid]))
+    getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertNotFound();
 });
 
 it('returns 422 for join url when delivery method does not support it', function (): void {
     $enrollment = createEnrollment($this->user, DeliveryMethodEnum::LMS_MOODLE);
 
-    getJson(route('api.v1.shop.my-courses.join', ['enrollment' => $enrollment->uuid]))
+    getJson(route('api.v1.shop.student.courses.join', ['enrollment' => $enrollment->uuid]))
         ->assertUnprocessable();
 });

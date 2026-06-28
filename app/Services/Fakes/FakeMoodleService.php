@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Fakes;
 
-use App\Data\Shop\MyCourses\Blocks\LmsMoodleBlockData;
-use App\Data\Shop\MyCourses\Blocks\MoodleActivityData;
+use App\Data\Shop\Student\Blocks\LmsMoodleBlockData;
+use App\Data\Shop\Student\Blocks\MoodleActivityData;
 use App\Models\User;
 use App\Services\SettingsService;
 

@@ -29,7 +29,7 @@ it('returns structured error when wallet balance is insufficient', function (): 
     ]);
 
     $response = postJson(
-        route('api.v1.shop.orders.retry-payment', $order->increment_id),
+        route('api.v1.shop.student.orders.retry-payment', $order->increment_id),
         ['payment_method' => PaymentMethodEnum::WALLET->value]
     );
 
@@ -68,7 +68,7 @@ it('processes payment successfully when wallet has sufficient balance', function
     ]);
 
     $response = postJson(
-        route('api.v1.shop.orders.retry-payment', $order->increment_id),
+        route('api.v1.shop.student.orders.retry-payment', $order->increment_id),
         ['payment_method' => PaymentMethodEnum::WALLET->value]
     );
 
@@ -99,7 +99,7 @@ it('provides exact shortfall amount in error response', function (): void {
     ]);
 
     $response = postJson(
-        route('api.v1.shop.orders.retry-payment', $order->increment_id),
+        route('api.v1.shop.student.orders.retry-payment', $order->increment_id),
         ['payment_method' => PaymentMethodEnum::WALLET->value]
     );
 
@@ -125,7 +125,7 @@ it('returns error when wallet balance is zero', function (): void {
     ]);
 
     $response = postJson(
-        route('api.v1.shop.orders.retry-payment', $order->increment_id),
+        route('api.v1.shop.student.orders.retry-payment', $order->increment_id),
         ['payment_method' => PaymentMethodEnum::WALLET->value]
     );
 

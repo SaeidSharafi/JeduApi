@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Data\Shop\MyCourses\Blocks\LmsMoodleBlockData;
-use App\Data\Shop\MyCourses\Blocks\MoodleActivityData;
+use App\Data\Shop\Student\Blocks\LmsMoodleBlockData;
+use App\Data\Shop\Student\Blocks\MoodleActivityData;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Jobs\Provisioning\SyncMoodleProgressJob;
