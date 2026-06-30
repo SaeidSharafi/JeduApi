@@ -11,7 +11,6 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Category\CategoryListItemData;
 use App\Data\Admin\Category\CreateCategoryData;
 use App\Data\Admin\Category\ShowCategoryData;
-use App\Exceptions\ModelHasRelationshipDataException;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
@@ -111,11 +110,7 @@ final class CategoryController extends Controller
     public function destroy(Category $category, DeleteCategoryAction $action): JsonResponse|ApiResponseInterface
     {
         Gate::authorize('delete', $category);
-        try {
-            $action->handle($category);
-        } catch (ModelHasRelationshipDataException $exception) {
-            return response()->validationError($exception->getMessage());
-        }
+        $action->handle($category);
 
         return response()->noContentJson();
     }

@@ -9,7 +9,7 @@ use App\Actions\Auth\VerifyOtpAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Auth\StaffData;
 use App\Enums\System\OtpType;
-use App\Exceptions\InvalidOtpCode;
+use App\Exceptions\InvalidOtpCodeException;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyOtpRequest;
@@ -37,7 +37,7 @@ final class StaffOtpAuthenticationController extends Controller
      * If valid for login/registration, authenticates the user (creating if necessary) and returns auth token.
      *
      *
-     * @throws InvalidOtpCode
+     * @throws InvalidOtpCodeException
      *
      * @responseFile 200 resources/responses/admin/auth/staff.login.json
      *
@@ -60,7 +60,7 @@ final class StaffOtpAuthenticationController extends Controller
             $token = $this->authenticateUser->execute($user, 'staff');
         } catch (UserNotFoundException) {
             return response()->notFound(__('messages.auth.login.not_found'));
-        } catch (InvalidOtpCode $e) {
+        } catch (InvalidOtpCodeException $e) {
             return response()->validationError(
                 message: __('messages.auth.otp.invalid_code')
             );

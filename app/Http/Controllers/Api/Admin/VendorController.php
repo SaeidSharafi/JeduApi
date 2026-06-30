@@ -12,7 +12,6 @@ use App\Data\Admin\MediaData;
 use App\Data\Admin\Vendor\CreateVendorData;
 use App\Data\Admin\Vendor\ShowVendorData;
 use App\Data\Admin\Vendor\VendorListItemData;
-use App\Exceptions\ModelHasRelationshipDataException;
 use App\Http\Controllers\Controller;
 use App\Models\Vendor;
 use Illuminate\Http\JsonResponse;
@@ -129,11 +128,7 @@ final class VendorController extends Controller
     public function destroy(Vendor $vendor, DeleteVendorAction $action): JsonResponse|ApiResponseInterface
     {
         Gate::authorize('delete', $vendor);
-        try {
-            $action->handle($vendor);
-        } catch (ModelHasRelationshipDataException $exception) {
-            return response()->validationError(message: $exception->getMessage());
-        }
+        $action->handle($vendor);
 
         return response()->noContentJson();
     }

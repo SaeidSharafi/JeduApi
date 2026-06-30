@@ -10,7 +10,6 @@ use App\Actions\Admin\WalletCampaign\UpdateWalletCampaignAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\WalletCampaign\WalletCampaignCreateData;
 use App\Data\Admin\WalletCampaign\WalletCampaignData;
-use App\Exceptions\ModelHasRelationshipDataException;
 use App\Http\Controllers\Controller;
 use App\Models\WalletCampaign;
 use Illuminate\Http\JsonResponse;
@@ -136,15 +135,7 @@ final class AdminWalletCampaignController extends Controller
     public function destroy(WalletCampaign $walletCampaign, DeleteWalletCampaignAction $action): ApiResponseInterface|JsonResponse
     {
         Gate::authorize('delete', $walletCampaign);
-        try {
-            $action->handle($walletCampaign);
-        } catch (ModelHasRelationshipDataException $exception) {
-            return response()->error(
-                message: __('messages.campaign_has_transactions_cannot_delete'),
-                errors: ['campaign' => [__('messages.campaign_has_transactions_cannot_delete')]],
-                status: 422
-            );
-        }
+        $action->handle($walletCampaign);
 
         return response()->noContentJson();
     }

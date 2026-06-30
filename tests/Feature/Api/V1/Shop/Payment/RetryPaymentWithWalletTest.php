@@ -36,23 +36,27 @@ it('returns structured error when wallet balance is insufficient', function (): 
     $response->assertStatus(422);
     $response->assertJsonStructure([
         'message',
-        'errors' => [
+        'errors'   => [
+            'wallet_balance',
+        ],
+        'metadata' => [
             'error_code',
             'available_balance',
             'required_balance',
             'shortfall',
-            'redirect_suggestion',
-        ],
+        ]
     ]);
 
     $response->assertJson([
-        'errors' => [
-            'error_code'          => 'INSUFFICIENT_WALLET_BALANCE',
-            'available_balance'   => 500000,
-            'required_balance'    => 1000000,
-            'shortfall'           => 500000,
-            'redirect_suggestion' => 'wallet-topup',
+        'errors'   => [
+            'wallet_balance' => __('validation.custom.checkout.insufficient_wallet_balance'),
         ],
+        'metadata' => [
+            "error_code"        => "INSUFFICIENT_WALLET_BALANCE",
+            'available_balance' => 500000,
+            'required_balance'  => 1000000,
+            'shortfall'         => 500000,
+        ]
     ]);
 });
 
@@ -104,13 +108,18 @@ it('provides exact shortfall amount in error response', function (): void {
     );
 
     $response->assertStatus(422);
+
     $response->assertJson([
+        'message'  => __('messages.validation_error'),
         'errors' => [
+            'wallet_balance' => __('validation.custom.checkout.insufficient_wallet_balance'),
+        ],
+        'metadata' => [
             'error_code'        => 'INSUFFICIENT_WALLET_BALANCE',
             'available_balance' => 750000,
             'required_balance'  => 1000000,
             'shortfall'         => 250000,
-        ],
+        ]
     ]);
 });
 
@@ -131,11 +140,15 @@ it('returns error when wallet balance is zero', function (): void {
 
     $response->assertStatus(422);
     $response->assertJson([
-        'errors' => [
+        'message'  => __('messages.validation_error'),
+        'errors'   => [
+            'wallet_balance' => __('validation.custom.checkout.insufficient_wallet_balance'),
+        ],
+        'metadata' => [
             'error_code'        => 'INSUFFICIENT_WALLET_BALANCE',
             'available_balance' => 0,
             'required_balance'  => 1000000,
             'shortfall'         => 1000000,
-        ],
+        ]
     ]);
 });

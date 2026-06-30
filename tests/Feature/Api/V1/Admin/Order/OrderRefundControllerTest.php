@@ -234,7 +234,7 @@ it('returns 422 when cumulative cap is exceeded', function (): void {
 
     // 250k + 200k > 300k
     $response->assertStatus(422);
-    $response->assertJsonFragment(['message' => 'Total refund exceeds original payment amount.']);
+    $response->assertJsonFragment(['message' => __('validation.custom.refund.exceeds_payment_amount')]);
 });
 
 it('returns 422 when deduction_amount and deduction_percent conflict', function (): void {

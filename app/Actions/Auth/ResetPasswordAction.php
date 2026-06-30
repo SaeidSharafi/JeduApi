@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Auth;
 
 use App\Enums\System\OtpType;
-use App\Exceptions\InvalidOtpCode;
+use App\Exceptions\InvalidOtpCodeException;
 use App\Exceptions\UserDoesNotHavePasswordException;
 use App\Exceptions\UserNotFoundException;
 use App\Services\OtpManagerService;
@@ -37,8 +37,8 @@ final class ResetPasswordAction extends AuthAction
 
         try {
             $this->verifyOtpAction->execute($user, $trackingCode, $otpCode, OtpType::RESET_PASSWORD, $guard);
-        } catch (InvalidOtpCode $e) {
-            throw new InvalidOtpCode();
+        } catch (InvalidOtpCodeException $e) {
+            throw new InvalidOtpCodeException();
         }
 
         $user->password = Hash::make($password);

@@ -9,10 +9,10 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-final class UserDoesNotHavePasswordException extends Exception
+final class InvalidOtpCodeException extends Exception
 {
     public function render(Request $request): ApiResponseInterface
     {
-        return response()->validationError(__('messages.auth.doesnot_have_password'));
+        return response()->validationError(__('messages.auth.otp.invalid_code'));
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Auth;
 
 use App\Enums\System\OtpType;
-use App\Exceptions\InvalidOtpCode;
+use App\Exceptions\InvalidOtpCodeException;
 use App\Exceptions\UserNotFoundException;
 use App\Models\Staff;
 use App\Models\User;
@@ -29,7 +29,7 @@ final class VerifyOtpAction extends AuthAction
             throw new UserNotFoundException();
         }
         if (! $this->otpManagerService->verify($user->phone, $guard, $otpCode, $trackingCode, $otpType)) {
-            throw new InvalidOtpCode();
+            throw new InvalidOtpCodeException();
         }
 
         return $user;

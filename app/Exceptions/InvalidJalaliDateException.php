@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 final class InvalidJalaliDateException extends Exception
 {
@@ -20,5 +22,15 @@ final class InvalidJalaliDateException extends Exception
     ) {
         $message = "The value for the [{$property}] field is not a valid Jalali date format.";
         parent::__construct($message);
+    }
+
+    /**
+     * Convert this exception to a ValidationException for a 422 response.
+     */
+    public function render(Request $request): void
+    {
+        throw ValidationException::withMessages([
+            $this->property => [$this->getMessage()],
+        ]);
     }
 }

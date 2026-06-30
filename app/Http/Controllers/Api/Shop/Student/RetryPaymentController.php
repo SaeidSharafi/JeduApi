@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Api\Shop\Student;
 use App\Actions\Shop\RetryOrderPaymentAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Student\Order\RetryOrderPaymentData;
-use App\Exceptions\Payment\InsufficientWalletBalanceException;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 
@@ -39,44 +38,29 @@ final class RetryPaymentController extends Controller
             ->where('increment_id', $incrementId)
             ->firstOrFail();
 
-        try {
-            // Process payment retry
-            $result = $action->handle(
-                order: $order,
-                paymentMethod: $data->payment_method,
-                amountToPay: $order->grand_total
-            );
+        // Process payment retry
+        $result = $action->handle(
+            order: $order,
+            paymentMethod: $data->payment_method,
+            amountToPay: $order->grand_total
+        );
 
-            // Return response based on payment type
-            if ($result->requiresRedirect()) {
-                return response()->success([
-                    'message'           => 'Payment initiated. Please complete payment at the gateway.',
-                    'payment'           => $result->payment,
-                    'requires_redirect' => true,
-                    'redirect_url'      => $result->redirect_url,
-                    'redirect_data'     => $result->redirect_data,
-                    'redirect_method'   => $result->redirect_method,
-                ]);
-            }
-
+        // Return response based on payment type
+        if ($result->requiresRedirect()) {
             return response()->success([
-                'message'           => 'Payment completed successfully.',
+                'message'           => 'Payment initiated. Please complete payment at the gateway.',
                 'payment'           => $result->payment,
-                'requires_redirect' => false,
+                'requires_redirect' => true,
+                'redirect_url'      => $result->redirect_url,
+                'redirect_data'     => $result->redirect_data,
+                'redirect_method'   => $result->redirect_method,
             ]);
-        } catch (InsufficientWalletBalanceException $e) {
-            // Return structured error for frontend to redirect to wallet top-up
-            return response()->error(
-                'Insufficient wallet balance',
-                422,
-                [
-                    'error_code'          => 'INSUFFICIENT_WALLET_BALANCE',
-                    'available_balance'   => $e->availableBalance,
-                    'required_balance'    => $e->requiredBalance,
-                    'shortfall'           => $e->shortfall,
-                    'redirect_suggestion' => 'wallet-topup',
-                ]
-            );
         }
+
+        return response()->success([
+            'message'           => 'Payment completed successfully.',
+            'payment'           => $result->payment,
+            'requires_redirect' => false,
+        ]);
     }
 }

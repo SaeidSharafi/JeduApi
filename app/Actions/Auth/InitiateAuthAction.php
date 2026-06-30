@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
+use App\Data\Auth\AuthInitiationResultData;
 use App\Data\OtpManager\SentOtpDto;
 use App\Enums\System\OtpType;
-use App\Exceptions\UserHasPasswordException;
 use App\Exceptions\UserNotFoundException;
 use App\Models\User;
 
@@ -17,7 +17,7 @@ final class InitiateAuthAction extends AuthAction
         protected AuthenticateUserAction $authenticateUser,
     ) {}
 
-    public function execute(string $identifier, string $guard = 'user'): SentOtpDto
+    public function execute(string $identifier, string $guard = 'user'): AuthInitiationResultData
     {
         $user = $this->getUser($identifier, $guard);
 
@@ -31,13 +31,17 @@ final class InitiateAuthAction extends AuthAction
                 ]
             );
 
-            return $this->generateOtp->execute($user, OtpType::SIGNUP);
+            return AuthInitiationResultData::otp(
+                $this->generateOtp->execute($user, OtpType::SIGNUP)
+            );
         }
 
         if ($user->hasSetPassword()) {
-            throw new UserHasPasswordException;
+            return AuthInitiationResultData::password();
         }
 
-        return $this->generateOtp->execute($user, OtpType::SIGNIN);
+        return AuthInitiationResultData::otp(
+            $this->generateOtp->execute($user, OtpType::SIGNIN)
+        );
     }
 }

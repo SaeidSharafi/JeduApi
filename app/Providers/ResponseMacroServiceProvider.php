@@ -150,13 +150,13 @@ final class ResponseMacroServiceProvider extends ServiceProvider
          * @return JsonResponse
          */
         $responseFactory->macro('validationErrors',
-            function (mixed $errors, ?string $message = null): ApiResponseInterface {
+            function (mixed $errors, ?string $message = null, ?array $metadata =[]): ApiResponseInterface {
                 $errorPayload = ($errors instanceof \Illuminate\Contracts\Validation\Validator) ? $errors->errors()->toArray() : $errors;
                 if (! $message) {
                     $message = __('messages.validation_error');
                 }
 
-                return new ApiFailResponse($message, $errorPayload, HttpStatus::HTTP_UNPROCESSABLE_ENTITY);
+                return new ApiFailResponse($message, $errorPayload, HttpStatus::HTTP_UNPROCESSABLE_ENTITY, $metadata);
             });
 
         /**

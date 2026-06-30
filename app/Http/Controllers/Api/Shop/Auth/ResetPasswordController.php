@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api\Shop\Auth;
 
 use App\Actions\Auth\ResetPasswordAction;
 use App\Contracts\ApiResponseInterface;
-use App\Exceptions\InvalidOtpCode;
+use App\Exceptions\InvalidOtpCodeException;
 use App\Exceptions\UserDoesNotHavePasswordException;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
@@ -48,7 +48,7 @@ final class ResetPasswordController extends Controller
             return response()->validationError(
                 message: __('messages.auth.doesnot_have_password')
             );
-        } catch (InvalidOtpCode $exception) {
+        } catch (InvalidOtpCodeException $exception) {
             return response()->validationError(
                 message: __('messages.auth.otp.invalid_code')
             );

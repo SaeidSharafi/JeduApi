@@ -86,22 +86,20 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         Integration::handles($exceptions);
+
+        // Suppress expected/retryable exceptions from Sentry to reduce noise.
+        $exceptions->dontReport([
+            App\Exceptions\Gateway\MellatException::class,
+            App\Exceptions\Integrations\RecoverableProvisioningException::class,
+            App\Exceptions\Integrations\UnrecoverableProvisioningException::class,
+        ]);
+
         $isApiRequest = function (Request $request) {
             return $request->expectsJson()
                 || $request->is('api/*')
                 || str_starts_with($request->path(), 'api/');
         };
 
-        $exceptions->renderable(function (App\Exceptions\InvalidJalaliDateException $e, $request) use ($isApiRequest): void {
-            // Check if the request expects a JSON response (typical for APIs)
-            if ($isApiRequest($request)) {
-                // Throw a standard Laravel ValidationException
-                // This will automatically generate a 422 response
-                throw ValidationException::withMessages([
-                    $e->property => [$e->getMessage()], // Use the property name from the exception
-                ]);
-            }
-        });
         // 1. ValidationException (422 Unprocessable Entity)
         $exceptions->renderable(function (ValidationException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
@@ -144,7 +142,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // 5. NotFoundHttpException (404 Not Found - for routes or other non-model 404s)
         $exceptions->renderable(function (NotFoundHttpException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
-                return response()->notFound();
+                return response()->notFound($e->getMessage());
             }
 
             return null;
@@ -168,10 +166,40 @@ return Application::configure(basePath: dirname(__DIR__))
             return null;
         });
 
-        // 6.6. RefundGatewayException (422 Unprocessable Entity)
+        // 6.6. RefundGatewayException (502 Bad Gateway — payment gateway failures)
         $exceptions->renderable(function (App\Exceptions\RefundGatewayException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
-                return response()->error($e->getMessage(), 422);
+                return response()->error($e->getMessage(), 502);
+            }
+
+            return null;
+        });
+
+        // 6.7. MellatException (502 Bad Gateway — bank gateway errors)
+        $exceptions->renderable(function (App\Exceptions\Gateway\MellatException $e, Request $request) use ($isApiRequest) {
+            if ($isApiRequest($request)) {
+                return response()->error($e->getMessage(), 502);
+            }
+
+            return null;
+        });
+
+        // 6.8. CustomValidationException (422 Unprocessable Entity — service-layer validation failures)
+        $exceptions->renderable(function (App\Exceptions\CustomValidationException $e, Request $request) use ($isApiRequest) {
+            if ($isApiRequest($request)) {
+                return response()->validationError($e->getMessage());
+            }
+
+            return null;
+        });
+
+        // 6.9. ExternalProvisioningException hierarchy (provisioning integration errors)
+        // Covers: ResourceNotProvisioned(404), RecoverableProvisioning(503), UnrecoverableProvisioning(500)
+        $exceptions->renderable(function (App\Exceptions\Integrations\ExternalProvisioningException $e, Request $request) use ($isApiRequest) {
+            if ($isApiRequest($request)) {
+                $status = $e instanceof App\Exceptions\Integrations\ResourceNotProvisionedException ? 404 : 503;
+
+                return response()->error($e->getMessage(), $status);
             }
 
             return null;

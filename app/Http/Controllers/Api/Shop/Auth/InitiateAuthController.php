@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Api\Shop\Auth;
 
 use App\Actions\Auth\InitiateAuthAction;
 use App\Contracts\ApiResponseInterface;
-use App\Exceptions\UserHasPasswordException;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\InitiateAuthRequest;
@@ -33,25 +32,24 @@ final class InitiateAuthController extends Controller
      */
     public function __invoke(InitiateAuthRequest $request): ApiResponseInterface
     {
-        try {
-            $otpSent = $this->action->execute(
-                $request->identifier,
-            );
+        $result = $this->action->execute(
+            $request->identifier,
+        );
 
-            return response()->success([
-                'tracking_code' => $otpSent->trackingCode,
-                'otp_type'      => $otpSent->otpType->identifier(),
-                'identifier'    => $request->identifier,
-                'waiting_time'  => $otpSent->waitingTime,
-                'login_method'  => 'OTP',
-            ], __('messages.auth.otp.sent'));
-
-        } catch (UserHasPasswordException $e) {
+        if ($result->requiresPassword) {
             return response()->success([
                 'login_method' => 'PASSWORD',
             ], 'User has set password');
-        } catch (UserNotFoundException $exception) {
-            return response()->notFound(__('messages.auth.login.not_found'));
         }
+
+        $otpSent = $result->otpSent;
+
+        return response()->success([
+            'tracking_code' => $otpSent->trackingCode,
+            'otp_type'      => $otpSent->otpType->identifier(),
+            'identifier'    => $request->identifier,
+            'waiting_time'  => $otpSent->waitingTime,
+            'login_method'  => 'OTP',
+        ], __('messages.auth.otp.sent'));
     }
 }

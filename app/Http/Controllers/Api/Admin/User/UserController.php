@@ -11,7 +11,6 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\User\ShowUserData;
 use App\Data\Admin\User\UserCreateData;
 use App\Data\Admin\User\UserListItemData;
-use App\Exceptions\ModelHasRelationshipDataException;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -144,19 +143,7 @@ final class UserController extends Controller
     public function destroy(User $user, DeleteUserAction $action): JsonResponse|ApiResponseInterface
     {
         Gate::authorize('delete', $user);
-        try {
-            $action->handle($user);
-        } catch (ModelHasRelationshipDataException $exception) {
-            return response()->validationError(
-                message: __(
-                    'messages.errors.model_has_relationship_data',
-                    [
-                        'model'         => __('messages.models.user'),
-                        'related_model' => getModelLabel($exception->getRelatedModel()),
-                    ]
-                )
-            );
-        }
+        $action->handle($user);
 
         return response()->noContentJson();
     }

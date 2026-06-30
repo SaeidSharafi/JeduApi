@@ -13,7 +13,6 @@ use App\Data\Admin\DigitalAsset\DigitalAssetListItemData;
 use App\Data\Admin\DigitalAsset\ShowDigitalAssetData;
 use App\Data\Admin\MediaData;
 use App\Data\Admin\PrivateFileData;
-use App\Exceptions\ModelHasRelationshipDataException;
 use App\Http\Controllers\Controller;
 use App\Models\DigitalAsset;
 use Illuminate\Http\JsonResponse;
@@ -175,11 +174,7 @@ final class DigitalAssetController extends Controller
         DeleteDigitalAssetAction $action
     ): JsonResponse|ApiResponseInterface {
         Gate::authorize('delete', $digitalAsset);
-        try {
-            $action->handle($digitalAsset);
-        } catch (ModelHasRelationshipDataException $exception) {
-            return response()->validationError(message: $exception->getMessage());
-        }
+        $action->handle($digitalAsset);
 
         return response()->noContentJson();
     }

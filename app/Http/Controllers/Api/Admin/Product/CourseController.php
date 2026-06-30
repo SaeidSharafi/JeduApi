@@ -11,7 +11,6 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Course\CourseListItemData;
 use App\Data\Admin\Course\CreateCourseData;
 use App\Data\Admin\Course\ShowCourseData;
-use App\Exceptions\ModelHasRelationshipDataException;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use Illuminate\Http\JsonResponse;
@@ -127,11 +126,7 @@ final class CourseController extends Controller
     public function destroy(Course $course, DeleteCourseAction $action): JsonResponse|ApiResponseInterface
     {
         Gate::authorize('delete', $course);
-        try {
-            $action->handle($course);
-        } catch (ModelHasRelationshipDataException $exception) {
-            return response()->validationError(message: $exception->getMessage());
-        }
+        $action->handle($course);
 
         return response()->noContentJson();
     }

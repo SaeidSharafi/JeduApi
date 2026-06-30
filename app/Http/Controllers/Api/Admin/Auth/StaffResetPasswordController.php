@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api\Admin\Auth;
 
 use App\Actions\Auth\ResetPasswordAction;
 use App\Contracts\ApiResponseInterface;
-use App\Exceptions\InvalidOtpCode;
+use App\Exceptions\InvalidOtpCodeException;
 use App\Exceptions\UserDoesNotHavePasswordException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ResetPasswordOtpRequest;
@@ -52,7 +52,7 @@ final class StaffResetPasswordController extends Controller
             return response()->validationError(
                 message: __('messages.auth.doesnot_have_password')
             );
-        } catch (InvalidOtpCode $exception) {
+        } catch (InvalidOtpCodeException $exception) {
             return response()->validationError(
                 message: __('messages.auth.otp.invalid_code')
             );

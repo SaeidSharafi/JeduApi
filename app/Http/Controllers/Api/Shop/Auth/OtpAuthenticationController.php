@@ -9,7 +9,7 @@ use App\Actions\Auth\VerifyOtpAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Customer\CustomerData;
 use App\Enums\System\OtpType;
-use App\Exceptions\InvalidOtpCode;
+use App\Exceptions\InvalidOtpCodeException;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyOtpRequest;
@@ -30,7 +30,7 @@ final class OtpAuthenticationController extends Controller
      * If valid for login/registration, authenticates the user (creating if necessary) and returns auth token.
      *
      *
-     * @throws InvalidOtpCode
+     * @throws InvalidOtpCodeException
      *
      * @responseFile 200 resources/responses/shop/auth/login.json
      * @responseFile 404 resources/responses/404.json
@@ -48,7 +48,7 @@ final class OtpAuthenticationController extends Controller
             $token = $this->authenticateUser->execute($user);
         } catch (UserNotFoundException) {
             return response()->notFound(__('messages.auth.login.not_found'));
-        } catch (InvalidOtpCode $e) {
+        } catch (InvalidOtpCodeException $e) {
             return response()->validationError(
                 message: __('messages.auth.otp.invalid_code')
             );

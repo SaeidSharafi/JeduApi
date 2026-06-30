@@ -6,9 +6,9 @@ use App\Actions\Auth\AuthenticateUserAction;
 use App\Actions\Auth\GenerateOtpAction;
 use App\Actions\Auth\InitiateAuthAction;
 use App\Actions\Auth\PasswordLoginAction;
+use App\Data\Auth\AuthInitiationResultData;
 use App\Data\OtpManager\SentOtpDto;
 use App\Enums\System\OtpType;
-use App\Exceptions\UserHasPasswordException;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -52,10 +52,12 @@ test('InitiateAuthAction returns correct action for user without password', func
 
     $result = $action->execute($user->email);
 
-    expect($result)->toBeInstanceOf(SentOtpDto::class)
-        ->and($result->otpType)->toBe(OtpType::SIGNIN)
-        ->and($result->code)->toBe($placeholderCode)
-        ->and($result->trackingCode)->toBe($placeholderTrackingCode);
+    expect($result)->toBeInstanceOf(AuthInitiationResultData::class)
+        ->and($result->requiresPassword)->toBeFalse()
+        ->and($result->otpSent)->not->toBeNull()
+        ->and($result->otpSent->otpType)->toBe(OtpType::SIGNIN)
+        ->and($result->otpSent->code)->toBe($placeholderCode)
+        ->and($result->otpSent->trackingCode)->toBe($placeholderTrackingCode);
 });
 
 test('InitiateAuthAction returns correct action for user with password', function (): void {
@@ -65,9 +67,10 @@ test('InitiateAuthAction returns correct action for user with password', functio
     app()->instance(AuthenticateUserAction::class, $mockAuthenticateUser);
     $action = app()->make(InitiateAuthAction::class);
     $user   = User::factory()->create(['password' => Hash::make('password')]);
-    // Should throw UserHasPasswordException
-    expect(fn () => $action->execute($user->email, 'email'))
-        ->toThrow(UserHasPasswordException::class);
+    $result = $action->execute($user->email, 'email');
+
+    expect($result->requiresPassword)->toBeTrue()
+        ->and($result->otpSent)->toBeNull();
 });
 
 test('PasswordLoginAction authenticates valid credentials', function (): void {

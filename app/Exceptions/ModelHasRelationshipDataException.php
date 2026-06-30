@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Contracts\ApiResponseInterface;
 use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use JetBrains\PhpStorm\Pure;
+use Throwable;
 
 final class ModelHasRelationshipDataException extends Exception
 {
     protected string $relatedModel;
 
     #[Pure]
-    public function __construct(string $relatedModel, string $message = '', int $code = 422, ?Throwable $previous = null)
+    public function __construct(string $relatedModel, string $message = '', ?Throwable $previous = null)
     {
         $this->relatedModel = $relatedModel;
         $message            = $message ?: __(
@@ -21,11 +25,16 @@ final class ModelHasRelationshipDataException extends Exception
                 'related_model' => getModelLabel($relatedModel),
             ]
         );
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message, 0, $previous);
     }
 
     public function getRelatedModel(): string
     {
         return $this->relatedModel;
+    }
+
+    public function render(Request $request): ApiResponseInterface
+    {
+        return response()->validationError($this->getMessage());
     }
 }

@@ -14,7 +14,10 @@ final class DeleteWalletCampaignAction
     {
         // Check if campaign has transactions
         if ($campaign->transactions()->exists()) {
-            throw new ModelHasRelationshipDataException(WalletTransaction::class);
+            throw new ModelHasRelationshipDataException(
+                WalletTransaction::class,
+                __('messages.campaign_has_transactions_cannot_delete')
+            );
         }
         $campaign->delete();
     }

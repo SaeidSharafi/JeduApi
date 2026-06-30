@@ -12,7 +12,6 @@ use App\Data\Admin\MediaData;
 use App\Data\Admin\Teacher\CreateTeacherData;
 use App\Data\Admin\Teacher\ShowTeacherData;
 use App\Data\Admin\Teacher\TeacherListItemData;
-use App\Exceptions\ModelHasRelationshipDataException;
 use App\Http\Controllers\Controller;
 use App\Models\Teacher;
 use Illuminate\Http\JsonResponse;
@@ -120,19 +119,7 @@ final class TeacherController extends Controller
     public function destroy(Teacher $teacher, DeleteTeacherAction $action): JsonResponse|ApiResponseInterface
     {
         Gate::authorize('delete', $teacher);
-        try {
-            $action->handle($teacher);
-        } catch (ModelHasRelationshipDataException $exception) {
-            return response()->validationError(
-                message: __(
-                    'messages.errors.model_has_relationship_data',
-                    [
-                        'model'         => __('messages.models.user'),
-                        'related_model' => getModelLabel($exception->getRelatedModel()),
-                    ]
-                )
-            );
-        }
+        $action->handle($teacher);
 
         return response()->noContentJson();
     }

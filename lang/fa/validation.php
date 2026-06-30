@@ -232,6 +232,9 @@ return [
             // 'Payment method is required for paid orders.'
             'payment_method_required' => 'روش پرداخت الزامی است.',
         ],
+        'refund' => [
+            'exceeds_payment_amount' => 'مبلغ بازپرداخت نمی تواند از مبلغ پرداختی بیشتر باشد.',
+        ]
     ],
 
     /*

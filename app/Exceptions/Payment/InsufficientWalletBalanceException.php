@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Exceptions\Payment;
 
+use App\Contracts\ApiResponseInterface;
 use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 final class InsufficientWalletBalanceException extends Exception
 {
@@ -14,7 +17,7 @@ final class InsufficientWalletBalanceException extends Exception
         public readonly int $shortfall,
         string $message = ''
     ) {
-        $message = $message ?: __('validation.custom.insufficient_wallet_balance');
+        $message = $message ?: __('validation.custom.checkout.insufficient_wallet_balance');
         parent::__construct($message);
     }
 
@@ -31,5 +34,18 @@ final class InsufficientWalletBalanceException extends Exception
     public function getShortfall(): int
     {
         return $this->shortfall;
+    }
+
+    public function render(Request $request): ApiResponseInterface
+    {
+        return response()->validationErrors(
+            ['wallet_balance' => $this->getMessage()],
+            metadata: [
+                'error_code'        => 'INSUFFICIENT_WALLET_BALANCE',
+                'available_balance' => $this->availableBalance,
+                'required_balance'  => $this->requiredBalance,
+                'shortfall'         => $this->shortfall,
+            ],
+        );
     }
 }

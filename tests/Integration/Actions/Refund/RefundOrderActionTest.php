@@ -359,7 +359,7 @@ it('validates cumulative cap before gateway call for Digipay', function (): void
 
     // 250k + 200k > 300k
     expect(fn () => (resolve(RefundOrderAction::class))->handle($order, $data))
-        ->toThrow(RefundGatewayException::class, 'exceeds original payment');
+        ->toThrow(RefundValidationException::class, __('validation.custom.refund.exceeds_payment_amount'));
 });
 
 // ─── Error Handling ───────────────────────────────────────────────────

@@ -9,7 +9,6 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Cart\CheckoutData;
 use App\Data\Shop\Cart\CheckoutResponseData;
 use App\Data\Shop\Student\Order\OrderData;
-use App\Exceptions\Payment\InsufficientWalletBalanceException;
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\ValidationException;
 
@@ -41,6 +40,20 @@ final class CheckoutController extends Controller
      * - `redirect_data`: Optional form data to submit (for POST redirects)
      *
      * @responseFile resources/responses/shop/checkout/show.json
+     *
+     * @response 422 scenario="insufficient wallet balance" {
+     *   "message": "Validation error.",
+     *   "errors": {
+     *     "wallet_balance": "Insufficient wallet balance."
+     *    },
+     *   "metadata": {
+     *     "error_code": "INSUFFICIENT_WALLET_BALANCE",
+     *     "available_balance": 500000,
+     *     "required_balance": 1000000,
+     *     "shortfall": 500000
+     *   }
+     * }
+     *
      */
     public function __invoke(CheckoutData $data, CreateOrderFromCartAction $action): ApiResponseInterface
     {
@@ -50,20 +63,7 @@ final class CheckoutController extends Controller
             ]);
         }
 
-        try {
-            $result = $action->handle($data, auth()->user());
-        } catch (InsufficientWalletBalanceException $e) {
-            // Map domain exception to standard validation error structure (422)
-            return response()->validationErrors([
-                'wallet_balance' => [[
-                    'error_code'          => 'INSUFFICIENT_WALLET_BALANCE',
-                    'available_balance'   => $e->availableBalance,
-                    'required_balance'    => $e->requiredBalance,
-                    'shortfall'           => $e->shortfall,
-                    'redirect_suggestion' => 'wallet-topup',
-                ]],
-            ]);
-        }
+        $result = $action->handle($data, auth()->user());
 
         // Build response with order data and optional redirect information
         $order     = $result->payment->order->fresh(['items.productDeliveryOption.product', 'customer', 'payments.transactions']);

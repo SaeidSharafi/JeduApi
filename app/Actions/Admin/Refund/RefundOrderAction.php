@@ -195,7 +195,7 @@ final class RefundOrderAction
             ->sum('amount');
 
         if (($alreadyRefunded + $totalRefundAmount) > $payment->amount) {
-            throw new RefundGatewayException('Total refund exceeds original payment amount.');
+            throw new RefundValidationException(__('validation.custom.refund.exceeds_payment_amount'));
         }
     }
 
