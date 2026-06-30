@@ -11,5 +11,4 @@ return [
     App\Providers\PaymentServiceProvider::class,
     App\Providers\PersianFakesServiceProvider::class,
     App\Providers\ResponseMacroServiceProvider::class,
-    App\Providers\TelescopeServiceProvider::class,
 ];
