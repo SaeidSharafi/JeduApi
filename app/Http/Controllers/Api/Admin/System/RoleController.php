@@ -43,7 +43,7 @@ final class RoleController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(RoleListItemData::collect($roles));
+        return apiResponse()->success(RoleListItemData::collect($roles));
     }
 
     /**
@@ -57,7 +57,7 @@ final class RoleController extends Controller
         Gate::authorize('create', Role::class);
         $action->handle($data);
 
-        return response()->created();
+        return apiResponse()->created();
     }
 
     /**
@@ -73,7 +73,7 @@ final class RoleController extends Controller
         Gate::authorize('view', $role);
         $role->load('permissions');
 
-        return response()->success(ShowRoleData::fromModel($role));
+        return apiResponse()->success(ShowRoleData::fromModel($role));
     }
 
     /**
@@ -90,7 +90,7 @@ final class RoleController extends Controller
         $role->load('permissions');
         $action->handle($data, $role);
 
-        return response()->updated(ShowRoleData::fromModel($role));
+        return apiResponse()->updated(ShowRoleData::fromModel($role));
     }
 
     /**
@@ -103,6 +103,6 @@ final class RoleController extends Controller
         Gate::authorize('delete', $role);
         $action->handle($role);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

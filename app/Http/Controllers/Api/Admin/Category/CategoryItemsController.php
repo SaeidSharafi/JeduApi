@@ -47,6 +47,6 @@ final class CategoryItemsController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(CategorizableListItemData::collect($items));
+        return apiResponse()->success(CategorizableListItemData::collect($items));
     }
 }

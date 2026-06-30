@@ -41,7 +41,7 @@ final class ChangeEnrollmentStatusController extends Controller
             'orderItem.vendor',
         ]);
 
-        return response()->success(
+        return apiResponse()->success(
             data: EnrollmentData::from($updated),
             message: __('messages.enrollment.status_changed_successfully')
         );

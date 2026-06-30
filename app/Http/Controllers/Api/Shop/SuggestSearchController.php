@@ -31,6 +31,6 @@ final class SuggestSearchController extends Controller
     {
         $suggestions = $service->suggest($requestData->q, $requestData->limit);
 
-        return response()->success($suggestions);
+        return apiResponse()->success($suggestions);
     }
 }

@@ -34,6 +34,6 @@ final class DiscountPromotionStatusUpdateController extends Controller
         ]);
         $discountPromotion->load('rules', 'coupons');
 
-        return response()->success(DiscountPromotionData::from($discountPromotion->fresh()));
+        return apiResponse()->success(DiscountPromotionData::from($discountPromotion->fresh()));
     }
 }

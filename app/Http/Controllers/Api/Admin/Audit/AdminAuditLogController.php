@@ -86,7 +86,7 @@ final class AdminAuditLogController extends Controller
             ->defaultSort('-created_at')
             ->paginate($request->integer('per_page', 15));
 
-        return response()->success(
+        return apiResponse()->success(
             data: AdminAuditLogListData::collect($logs),
             message: __('messages.audit.admin_actions_loaded_successfully')
         );
@@ -107,7 +107,7 @@ final class AdminAuditLogController extends Controller
 
         $adminActionLog->load(['admin', 'resource']);
 
-        return response()->success(
+        return apiResponse()->success(
             data: AdminAuditLogData::from($adminActionLog),
             message: __('messages.audit.audit_log_loaded_successfully')
         );

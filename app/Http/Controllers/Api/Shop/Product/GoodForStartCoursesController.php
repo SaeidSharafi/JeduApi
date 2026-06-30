@@ -51,6 +51,6 @@ final class GoodForStartCoursesController extends Controller
                     });
             });
 
-        return response()->success($courses);
+        return apiResponse()->success($courses);
     }
 }

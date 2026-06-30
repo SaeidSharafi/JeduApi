@@ -54,12 +54,12 @@ final class TriggerCampaignAllocationController extends Controller
                 ? __('messages.gift_credit_allocated_successfully')
                 : __('messages.campaign_bonus_processed_successfully');
 
-            return response()->success(
+            return apiResponse()->success(
                 data: WalletTransactionData::from($transaction),
                 message: $message
             );
         } catch (CustomValidationException $e) {
-            return response()->error(
+            return apiResponse()->error(
                 message: $e->getMessage(),
                 status: 422
             );

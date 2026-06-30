@@ -29,7 +29,7 @@ final class CollaborationInfoController extends Controller
     {
         Gate::authorize('viewAny', Setting::class);
 
-        return response()->success(
+        return apiResponse()->success(
             CollaborationPageData::from($settingsService->get(SettingKeyEnum::COLLABORATION, CollaborationPageData::getDefaults()))
         );
     }
@@ -46,7 +46,7 @@ final class CollaborationInfoController extends Controller
 
         $settingsService->set(SettingKeyEnum::COLLABORATION, $data->toArray(), 'json', 'cms');
 
-        return response()->success(
+        return apiResponse()->success(
             CollaborationPageData::from($settingsService->get(SettingKeyEnum::COLLABORATION, CollaborationPageData::getDefaults())),
             __('messages.updated', ['model' => __('messages.models.about_us')])
         );

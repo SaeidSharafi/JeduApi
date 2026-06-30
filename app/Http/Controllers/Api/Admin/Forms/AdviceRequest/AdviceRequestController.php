@@ -53,7 +53,7 @@ final class AdviceRequestController extends Controller
             ->paginate(request()->get('per_page', 15))
             ->withQueryString();
 
-        return response()->success(AdviceRequestData::collect($requests));
+        return apiResponse()->success(AdviceRequestData::collect($requests));
     }
 
     /**
@@ -71,7 +71,7 @@ final class AdviceRequestController extends Controller
         Gate::authorize('view', $adviceRequest);
         $adviceRequest->load('handler');
 
-        return response()->success(AdviceRequestData::from($adviceRequest));
+        return apiResponse()->success(AdviceRequestData::from($adviceRequest));
     }
 
     /**
@@ -94,7 +94,7 @@ final class AdviceRequestController extends Controller
         $adviceRequest = $action->handle($data, $adviceRequest, auth('staff')->user());
         $adviceRequest->load('handler');
 
-        return response()->updated(AdviceRequestData::from($adviceRequest), model: AdviceRequest::class);
+        return apiResponse()->updated(AdviceRequestData::from($adviceRequest), model: AdviceRequest::class);
     }
 
     /**
@@ -112,6 +112,6 @@ final class AdviceRequestController extends Controller
 
         $adviceRequest->delete();
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

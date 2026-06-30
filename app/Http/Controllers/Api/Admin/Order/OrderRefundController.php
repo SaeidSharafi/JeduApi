@@ -42,6 +42,6 @@ final class OrderRefundController extends Controller
 
         $refunds = $action->handle($order, $data);
 
-        return response()->created(RefundData::collect($refunds));
+        return apiResponse()->created(RefundData::collect($refunds));
     }
 }

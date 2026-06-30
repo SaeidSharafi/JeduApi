@@ -50,6 +50,6 @@ final class UploadMediaController extends Controller
             CreateImageVariants::dispatch($media, 'thumb');
         }
 
-        return response()->created(MediaData::fromModel($media), message: __('messages.success'));
+        return apiResponse()->created(MediaData::fromModel($media), message: __('messages.success'));
     }
 }

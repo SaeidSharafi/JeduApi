@@ -42,14 +42,14 @@ final class StaffInitiateAuthController extends Controller
         );
 
         if ($result->requiresPassword) {
-            return response()->success([
+            return apiResponse()->success([
                 'login_method' => 'PASSWORD',
             ], 'User has set password');
         }
 
         $otpSent = $result->otpSent;
 
-        return response()->success([
+        return apiResponse()->success([
             'tracking_code' => $otpSent->trackingCode,
             'otp_type'      => $otpSent->otpType->identifier(),
             'identifier'    => $request->identifier,

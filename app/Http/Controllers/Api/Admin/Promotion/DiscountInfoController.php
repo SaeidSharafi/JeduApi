@@ -33,7 +33,7 @@ final class DiscountInfoController extends Controller
     {
         Gate::authorize('viewAny', DiscountPromotion::class);
 
-        return response()->success($this->discountMetadataService->getMetadata());
+        return apiResponse()->success($this->discountMetadataService->getMetadata());
     }
 
     /**
@@ -46,7 +46,7 @@ final class DiscountInfoController extends Controller
     {
         Gate::authorize('viewAny', DiscountPromotion::class);
 
-        return response()->success($this->discountMetadataService->getConditions());
+        return apiResponse()->success($this->discountMetadataService->getConditions());
     }
 
     /**
@@ -59,7 +59,7 @@ final class DiscountInfoController extends Controller
     {
         Gate::authorize('viewAny', DiscountPromotion::class);
 
-        return response()->success($this->discountMetadataService->getActions());
+        return apiResponse()->success($this->discountMetadataService->getActions());
     }
 
     /**
@@ -72,7 +72,7 @@ final class DiscountInfoController extends Controller
     {
         Gate::authorize('viewAny', DiscountPromotion::class);
 
-        return response()->success($this->discountMetadataService->getOperators());
+        return apiResponse()->success($this->discountMetadataService->getOperators());
     }
 
     /**
@@ -85,6 +85,6 @@ final class DiscountInfoController extends Controller
     {
         Gate::authorize('viewAny', DiscountPromotion::class);
 
-        return response()->success($this->discountMetadataService->getTypes());
+        return apiResponse()->success($this->discountMetadataService->getTypes());
     }
 }

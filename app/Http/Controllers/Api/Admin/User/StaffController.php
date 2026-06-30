@@ -54,7 +54,7 @@ final class StaffController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(StaffListItemData::collect($staff));
+        return apiResponse()->success(StaffListItemData::collect($staff));
     }
 
     /**
@@ -69,7 +69,7 @@ final class StaffController extends Controller
         Gate::authorize('create', Staff::class);
         $action->handle($data);
 
-        return response()->created(model: Staff::class);
+        return apiResponse()->created(model: Staff::class);
     }
 
     /**
@@ -84,7 +84,7 @@ final class StaffController extends Controller
         Gate::authorize('view', $staff);
         $staff->load('roles');
 
-        return response()->success(ShowStaffData::from($staff));
+        return apiResponse()->success(ShowStaffData::from($staff));
     }
 
     /**
@@ -99,7 +99,7 @@ final class StaffController extends Controller
         Gate::authorize('update', $staff);
         $action->handle($data, $staff);
 
-        return response()->updated(ShowStaffData::from($staff), model: Staff::class);
+        return apiResponse()->updated(ShowStaffData::from($staff), model: Staff::class);
     }
 
     /**
@@ -112,7 +112,7 @@ final class StaffController extends Controller
         Gate::authorize('delete', $staff);
         $action->handle($staff);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
 
     }
 }

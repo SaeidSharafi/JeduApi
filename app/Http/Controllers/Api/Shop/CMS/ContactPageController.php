@@ -29,6 +29,6 @@ final class ContactPageController extends Controller
     {
         $contactPage = $service->get(SettingKeyEnum::CONTACT_INFO, ContactInfoData::getDefaults());
 
-        return response()->success(ContactPageData::fromSetting($contactPage));
+        return apiResponse()->success(ContactPageData::fromSetting($contactPage));
     }
 }

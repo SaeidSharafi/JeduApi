@@ -38,6 +38,6 @@ final class ArchiveProductController extends Controller
 
         $product->update(['status' => PublicationStatusEnum::ARCHIVED]);
 
-        return response()->success(message: __('messages.product.acrhived'));
+        return apiResponse()->success(message: __('messages.product.acrhived'));
     }
 }

@@ -27,6 +27,6 @@ final class AdviceRequestController extends Controller
     {
         $action->handle($data);
 
-        return response()->created(null, __('shop.responses.advice_request_submitted'));
+        return apiResponse()->created(null, __('shop.responses.advice_request_submitted'));
     }
 }

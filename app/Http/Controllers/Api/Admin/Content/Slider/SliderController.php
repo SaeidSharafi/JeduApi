@@ -50,7 +50,7 @@ final class SliderController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(SliderListItemData::collect($sliders));
+        return apiResponse()->success(SliderListItemData::collect($sliders));
     }
 
     /**
@@ -63,7 +63,7 @@ final class SliderController extends Controller
         Gate::authorize('view', $slider);
         $slider->load('media');
 
-        return response()->success(SliderData::from([
+        return apiResponse()->success(SliderData::from([
             ...$slider->toArray(),
             'image' => $slider->getImage(),
         ]));
@@ -80,7 +80,7 @@ final class SliderController extends Controller
         $slider = $action->handle($data);
         $slider->load('media');
 
-        return response()->created(SliderData::from([
+        return apiResponse()->created(SliderData::from([
             ...$slider->toArray(),
             'image' => $slider->getImage(),
         ]));
@@ -98,7 +98,7 @@ final class SliderController extends Controller
         $slider = $action->handle($slider, $data);
         $slider->load('media');
 
-        return response()->updated(SliderData::from([
+        return apiResponse()->updated(SliderData::from([
             ...$slider->toArray(),
             'image' => $slider->getImage(),
         ]), model: Slider::class);
@@ -115,6 +115,6 @@ final class SliderController extends Controller
         Gate::authorize('delete', $slider);
         $action->handle($slider);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

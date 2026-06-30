@@ -68,7 +68,7 @@ final class StudentStoryController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(StudentStoryListItemData::collect($stories));
+        return apiResponse()->success(StudentStoryListItemData::collect($stories));
     }
 
     /**
@@ -85,7 +85,7 @@ final class StudentStoryController extends Controller
 
         $studentStory->load('media');
 
-        return response()->success(StudentStoryData::fromModel($studentStory));
+        return apiResponse()->success(StudentStoryData::fromModel($studentStory));
     }
 
     /**
@@ -103,7 +103,7 @@ final class StudentStoryController extends Controller
         $story = $action->handle($data);
         $story->load('media');
 
-        return response()->created(StudentStoryData::fromModel($story));
+        return apiResponse()->created(StudentStoryData::fromModel($story));
     }
 
     /**
@@ -123,7 +123,7 @@ final class StudentStoryController extends Controller
         $updatedStory = $action->handle($studentStory, $data);
         $updatedStory->load('media');
 
-        return response()->success(StudentStoryData::fromModel($updatedStory));
+        return apiResponse()->success(StudentStoryData::fromModel($updatedStory));
     }
 
     /**
@@ -140,6 +140,6 @@ final class StudentStoryController extends Controller
 
         $action->handle($studentStory);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

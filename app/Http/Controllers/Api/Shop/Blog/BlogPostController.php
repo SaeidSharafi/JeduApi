@@ -59,7 +59,7 @@ final class BlogPostController extends Controller
 
         $data = BlogPostCardData::collect($posts);
 
-        return response()->success($data);
+        return apiResponse()->success($data);
     }
 
     /**
@@ -105,6 +105,6 @@ final class BlogPostController extends Controller
             })
             ->all();
 
-        return response()->success(BlogPostDetailData::fromModel($post, $relatedProducts));
+        return apiResponse()->success(BlogPostDetailData::fromModel($post, $relatedProducts));
     }
 }

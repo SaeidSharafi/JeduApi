@@ -47,6 +47,6 @@ final class PartnerController extends Controller
                 return PartnerData::collect($partners);
             });
 
-        return response()->success($partners);
+        return apiResponse()->success($partners);
     }
 }

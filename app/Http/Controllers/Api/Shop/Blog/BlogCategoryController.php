@@ -41,7 +41,7 @@ final class BlogCategoryController extends Controller
 
         $data = $categories->map(fn (BlogCategory $category): \App\Data\Shop\Blog\BlogCategoryCardData => BlogCategoryCardData::fromModel($category));
 
-        return response()->success($data);
+        return apiResponse()->success($data);
     }
 
     /**
@@ -63,7 +63,7 @@ final class BlogCategoryController extends Controller
             }])
             ->firstOrFail();
 
-        return response()->success(BlogCategoryDetailData::fromModel($category));
+        return apiResponse()->success(BlogCategoryDetailData::fromModel($category));
     }
 
     /**
@@ -102,6 +102,6 @@ final class BlogCategoryController extends Controller
 
         $data = BlogPostCardData::collect($posts);
 
-        return response()->success($data);
+        return apiResponse()->success($data);
     }
 }

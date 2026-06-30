@@ -37,7 +37,7 @@ final class RelatedProductController extends Controller
             ->get(['related_product_id']);
 
         if ($relatedProducts->isEmpty()) {
-            return response()->success([]);
+            return apiResponse()->success([]);
         }
 
         $relatedProducts = $this->productQueryService
@@ -52,6 +52,6 @@ final class RelatedProductController extends Controller
                 return ProductCardData::fromModel($product, $priceData);
             });
 
-        return response()->success($relatedProducts);
+        return apiResponse()->success($relatedProducts);
     }
 }

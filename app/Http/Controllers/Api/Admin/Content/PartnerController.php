@@ -42,7 +42,7 @@ final class PartnerController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(PartnerListItemData::collect($partners));
+        return apiResponse()->success(PartnerListItemData::collect($partners));
     }
 
     /**
@@ -55,7 +55,7 @@ final class PartnerController extends Controller
         Gate::authorize('view', $partner);
         $partner->load('media');
 
-        return response()->success(PartnerData::from([
+        return apiResponse()->success(PartnerData::from([
             ...$partner->toArray(),
             'image' => $partner->getImage(),
         ]));
@@ -72,7 +72,7 @@ final class PartnerController extends Controller
         $partner = $action->handle($data);
         $partner->load('media');
 
-        return response()->created(PartnerData::from([
+        return apiResponse()->created(PartnerData::from([
             ...$partner->toArray(),
             'image' => $partner->getImage(),
         ]));
@@ -89,7 +89,7 @@ final class PartnerController extends Controller
         $partner = $action->handle($partner, $data);
         $partner->load('media');
 
-        return response()->updated(PartnerData::from([
+        return apiResponse()->updated(PartnerData::from([
             ...$partner->toArray(),
             'image' => $partner->getImage(),
         ]), model: Partner::class);
@@ -105,6 +105,6 @@ final class PartnerController extends Controller
         Gate::authorize('delete', $partner);
         $action->handle($partner);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

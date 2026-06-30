@@ -558,7 +558,7 @@ public function __invoke(OrderCreateData $data, OrderCalculationService $orderCa
 {
     $context = $orderCalculationService->calculate($data);
 
-    return response()->success(OrderPreviewData::fromOrderContext($context));
+    return apiResponse()->success(OrderPreviewData::fromOrderContext($context));
 }
 ```
 

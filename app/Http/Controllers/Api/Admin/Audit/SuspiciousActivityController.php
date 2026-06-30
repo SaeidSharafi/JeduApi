@@ -34,7 +34,7 @@ final class SuspiciousActivityController extends Controller
 
         $activities = $action->handle($data);
 
-        return response()->success(
+        return apiResponse()->success(
             data: $activities,
             message: __('messages.audit.suspicious_activity_detected_successfully')
         );

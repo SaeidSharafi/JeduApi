@@ -29,6 +29,6 @@ final class RejectReviewController extends Controller
         Gate::authorize('update', $review);
         $action->handle($review, ReviewStatusEnum::REJECTED);
 
-        return response()->success(message: __('messages.review.rejected'));
+        return apiResponse()->success(message: __('messages.review.rejected'));
     }
 }

@@ -26,6 +26,6 @@ final class LogoutController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

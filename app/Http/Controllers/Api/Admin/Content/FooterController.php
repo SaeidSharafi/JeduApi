@@ -30,7 +30,7 @@ final class FooterController extends Controller
     {
         Gate::authorize('viewAny', Setting::class);
 
-        return response()->success(
+        return apiResponse()->success(
             FooterData::from($settingsService->get(SettingKeyEnum::FOOTER, FooterData::getDefaults()))
         );
     }
@@ -45,7 +45,7 @@ final class FooterController extends Controller
     {
         Gate::authorize('update', Setting::class);
 
-        return response()->success(
+        return apiResponse()->success(
             $action->handle($data),
             __('messages.updated', ['model' => __('messages.models.footer')])
         );

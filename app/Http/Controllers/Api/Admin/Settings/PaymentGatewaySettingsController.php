@@ -61,7 +61,7 @@ final class PaymentGatewaySettingsController extends Controller
                 ];
             });
 
-        return response()->success($gateways->values());
+        return apiResponse()->success($gateways->values());
     }
 
     /**
@@ -76,7 +76,7 @@ final class PaymentGatewaySettingsController extends Controller
     {
         $gatewayData = $this->settingsService->get($gateway->settingKey());
 
-        return response()->success($gatewayData);
+        return apiResponse()->success($gatewayData);
     }
 
     /**
@@ -127,6 +127,6 @@ final class PaymentGatewaySettingsController extends Controller
         $this->settingsService->set($gateway->settingKey(), $request->toArray());
         $gatewayData = $this->settingsService->get($gateway->settingKey());
 
-        return response()->success($gatewayData);
+        return apiResponse()->success($gatewayData);
     }
 }

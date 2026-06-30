@@ -38,7 +38,7 @@ final class VendorSelectOptionController extends Controller
             ->when($limit, fn (Builder $q): Builder => $q->limit($limit))
             ->get(['id', 'name', 'address', 'logo_url']);
 
-        return response()->success(
+        return apiResponse()->success(
             VendorSelectOptionData::collect($vendors)
         );
     }

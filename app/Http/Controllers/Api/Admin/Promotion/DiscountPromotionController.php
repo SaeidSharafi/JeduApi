@@ -53,7 +53,7 @@ final class DiscountPromotionController extends Controller
             ->paginate($request->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(DiscountPromotionData::collect($promotions));
+        return apiResponse()->success(DiscountPromotionData::collect($promotions));
     }
 
     /**
@@ -69,7 +69,7 @@ final class DiscountPromotionController extends Controller
         Gate::authorize('create', DiscountPromotion::class);
         $promotion = $action->execute($data);
 
-        return response()->created(DiscountPromotionData::from($promotion), model: DiscountPromotion::class);
+        return apiResponse()->created(DiscountPromotionData::from($promotion), model: DiscountPromotion::class);
     }
 
     /**
@@ -84,7 +84,7 @@ final class DiscountPromotionController extends Controller
         Gate::authorize('view', $discountPromotion);
         $discountPromotion->load(['rules', 'coupons']);
 
-        return response()->success(DiscountPromotionData::from($discountPromotion));
+        return apiResponse()->success(DiscountPromotionData::from($discountPromotion));
     }
 
     /**
@@ -103,7 +103,7 @@ final class DiscountPromotionController extends Controller
         Gate::authorize('update', $discountPromotion);
         $updatedPromotion = $action->execute($discountPromotion, $data);
 
-        return response()->success(DiscountPromotionData::from($updatedPromotion));
+        return apiResponse()->success(DiscountPromotionData::from($updatedPromotion));
     }
 
     /**
@@ -121,6 +121,6 @@ final class DiscountPromotionController extends Controller
         Gate::authorize('delete', $discountPromotion);
         $action->execute($discountPromotion);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

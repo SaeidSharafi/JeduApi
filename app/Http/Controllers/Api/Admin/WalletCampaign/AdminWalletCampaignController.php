@@ -62,7 +62,7 @@ final class AdminWalletCampaignController extends Controller
             ->defaultSort('-created_at')
             ->paginate($request->get('per_page', 15));
 
-        return response()->success(WalletCampaignData::collect($campaigns));
+        return apiResponse()->success(WalletCampaignData::collect($campaigns));
     }
 
     /**
@@ -81,7 +81,7 @@ final class AdminWalletCampaignController extends Controller
         $staff    = auth('staff')->user();
         $campaign = $action->execute($data, $staff);
 
-        return response()->created(
+        return apiResponse()->created(
             WalletCampaignData::from($campaign)
         );
     }
@@ -99,7 +99,7 @@ final class AdminWalletCampaignController extends Controller
         $walletCampaign->load(['auditor', 'transactions']);
         $walletCampaign->loadCount('transactions');
 
-        return response()->success(
+        return apiResponse()->success(
             WalletCampaignData::from($walletCampaign)
         );
     }
@@ -121,7 +121,7 @@ final class AdminWalletCampaignController extends Controller
         $campaign = $action->execute($walletCampaign, $data);
         $campaign->load(['auditor']);
 
-        return response()->success(
+        return apiResponse()->success(
             WalletCampaignData::from($campaign)
         );
     }
@@ -137,6 +137,6 @@ final class AdminWalletCampaignController extends Controller
         Gate::authorize('delete', $walletCampaign);
         $action->handle($walletCampaign);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

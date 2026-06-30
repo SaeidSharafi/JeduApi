@@ -60,7 +60,7 @@ final class BlogPostController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(BlogPostListItemData::collect($posts));
+        return apiResponse()->success(BlogPostListItemData::collect($posts));
     }
 
     /**
@@ -79,7 +79,7 @@ final class BlogPostController extends Controller
             ->loadRelatedproductables()
             ->load('author', 'media', 'mainProductable');
 
-        return response()->success(BlogPostData::from($post));
+        return apiResponse()->success(BlogPostData::from($post));
     }
 
     /**
@@ -98,7 +98,7 @@ final class BlogPostController extends Controller
         $post->loadRelatedproductables()
             ->load('author', 'media', 'mainProductable');
 
-        return response()->created(BlogPostData::from($post), model: BlogPost::class);
+        return apiResponse()->created(BlogPostData::from($post), model: BlogPost::class);
     }
 
     /**
@@ -118,7 +118,7 @@ final class BlogPostController extends Controller
         $post->loadRelatedproductables()
             ->load('author', 'media', 'mainProductable');
 
-        return response()->updated(BlogPostData::from($post), model: $post);
+        return apiResponse()->updated(BlogPostData::from($post), model: $post);
     }
 
     /**
@@ -135,6 +135,6 @@ final class BlogPostController extends Controller
         Gate::authorize('delete', $post);
         $action->handle($post);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

@@ -36,6 +36,6 @@ final class ProductTeacherController extends Controller
 
         });
 
-        return response()->success(TeacherDetailData::collect(array_values($teachers)));
+        return apiResponse()->success(TeacherDetailData::collect(array_values($teachers)));
     }
 }

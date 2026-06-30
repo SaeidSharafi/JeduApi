@@ -30,6 +30,6 @@ final class UpdateReviewFeaturedStatusController extends Controller
         Gate::authorize('update-featured-status', $review);
         $action->handle($review, $data);
 
-        return response()->updated(model: Review::class);
+        return apiResponse()->updated(model: Review::class);
     }
 }

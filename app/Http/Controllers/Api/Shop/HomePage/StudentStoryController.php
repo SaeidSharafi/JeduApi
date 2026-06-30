@@ -59,6 +59,6 @@ final class StudentStoryController extends Controller
                 return StudentStoryData::collect($stories);
             });
 
-        return response()->success($stories);
+        return apiResponse()->success($stories);
     }
 }

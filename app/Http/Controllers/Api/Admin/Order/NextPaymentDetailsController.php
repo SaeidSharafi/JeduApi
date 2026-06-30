@@ -29,10 +29,10 @@ final class NextPaymentDetailsController extends Controller
         Gate::authorize('viewAny', Order::class);
         try {
             // The action will return the DTO or throw an exception.
-            return response()->success($action->handle($order));
+            return apiResponse()->success($action->handle($order));
         } catch (Exception $e) {
             // Return a 422 Unprocessable Entity status if payment is not possible.
-            return response()->validationErrors([$e->getMessage()], 422);
+            return apiResponse()->validationErrors([$e->getMessage()]);
         }
     }
 }

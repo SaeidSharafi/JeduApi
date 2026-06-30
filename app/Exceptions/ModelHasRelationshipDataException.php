@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\ApiResponseInterface;
+use App\Http\Responses\ApiFailResponse;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use JetBrains\PhpStorm\Pure;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 final class ModelHasRelationshipDataException extends Exception
@@ -35,6 +37,6 @@ final class ModelHasRelationshipDataException extends Exception
 
     public function render(Request $request): ApiResponseInterface
     {
-        return response()->validationError($this->getMessage());
+        return apiResponse()->validationError($this->getMessage());
     }
 }

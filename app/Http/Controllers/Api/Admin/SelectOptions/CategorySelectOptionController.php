@@ -42,7 +42,7 @@ final class CategorySelectOptionController extends Controller
             ->when($limit, fn (Builder $q): Builder => $q->limit($limit))
             ->get(['id', 'name', 'slug', 'icon_url']);
 
-        return response()->success(
+        return apiResponse()->success(
             CategorySelectOptionData::collect($categories)
         );
     }

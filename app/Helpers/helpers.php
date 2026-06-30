@@ -1,6 +1,9 @@
 <?php
 
 declare(strict_types=1);
+
+use App\Http\Responses\ApiResponseService;
+
 if (! function_exists('get_model_label')) {
     /**
      * Get the class name from a fully qualified class name or object.
@@ -65,5 +68,15 @@ if (! function_exists('httpStatusText')) {
         $text = __($key);
 
         return $text === $key ? (string) $code : $text;
+    }
+}
+
+if (! function_exists('apiResponse')) {
+    /**
+     * Get the API Response Service.
+     */
+    function apiResponse(): ApiResponseService
+    {
+        return app(ApiResponseService::class);
     }
 }

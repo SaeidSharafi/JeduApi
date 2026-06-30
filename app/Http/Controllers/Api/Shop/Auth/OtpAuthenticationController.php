@@ -47,14 +47,14 @@ final class OtpAuthenticationController extends Controller
                 OtpType::from($request->otp_type));
             $token = $this->authenticateUser->execute($user);
         } catch (UserNotFoundException) {
-            return response()->notFound(__('messages.auth.login.not_found'));
+            return apiResponse()->notFound(__('messages.auth.login.not_found'));
         } catch (InvalidOtpCodeException $e) {
-            return response()->validationError(
+            return apiResponse()->validationError(
                 message: __('messages.auth.otp.invalid_code')
             );
         }
 
-        return response()->success(
+        return apiResponse()->success(
             [
                 'token'      => $token->plainTextToken,
                 'expires_at' => $token->accessToken->expires_at,

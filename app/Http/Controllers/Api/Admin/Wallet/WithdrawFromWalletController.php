@@ -33,6 +33,6 @@ final class WithdrawFromWalletController extends Controller
 
         $transaction->load('wallet', 'user', 'source');
 
-        return response()->created(WalletTransactionData::from($transaction));
+        return apiResponse()->created(WalletTransactionData::from($transaction));
     }
 }

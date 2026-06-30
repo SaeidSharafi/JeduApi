@@ -51,7 +51,7 @@ final class SeminarController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(SeminarListItemData::collect($seminars));
+        return apiResponse()->success(SeminarListItemData::collect($seminars));
     }
 
     /**
@@ -64,7 +64,7 @@ final class SeminarController extends Controller
         Gate::authorize('create', Seminar::class);
         $action->handle($data);
 
-        return response()->created(message: __('messages.created', ['model' => __('models.seminar')]));
+        return apiResponse()->created(message: __('messages.created', ['model' => __('models.seminar')]));
     }
 
     /**
@@ -82,7 +82,7 @@ final class SeminarController extends Controller
             ->loadMediaWithVariantsMatchAll();
         $media = $seminar->getAllMedia();
 
-        return response()->success(
+        return apiResponse()->success(
             ShowSeminarData::from(
                 [
                     ...$seminar->toArray(),
@@ -109,7 +109,7 @@ final class SeminarController extends Controller
             ->loadMediaWithVariantsMatchAll();
         $media = $seminar->getAllMedia();
 
-        return response()->success(ShowSeminarData::from(
+        return apiResponse()->success(ShowSeminarData::from(
             [
                 ...$seminar->toArray(),
                 'categories' => $seminar->categories,
@@ -128,6 +128,6 @@ final class SeminarController extends Controller
         Gate::authorize('delete', $seminar);
         $action->handle($seminar);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

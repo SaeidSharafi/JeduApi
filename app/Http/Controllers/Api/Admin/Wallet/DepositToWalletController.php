@@ -32,6 +32,6 @@ final class DepositToWalletController extends Controller
         $transaction = $action->handle($data, auth('staff')->user(), $wallet);
         $transaction->load('wallet', 'user', 'source');
 
-        return response()->created(WalletTransactionData::from($transaction));
+        return apiResponse()->created(WalletTransactionData::from($transaction));
     }
 }

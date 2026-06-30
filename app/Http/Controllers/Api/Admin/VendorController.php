@@ -45,7 +45,7 @@ final class VendorController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(VendorListItemData::collect($vendors));
+        return apiResponse()->success(VendorListItemData::collect($vendors));
     }
 
     /**
@@ -61,7 +61,7 @@ final class VendorController extends Controller
         Gate::authorize('create', Vendor::class);
         $action->handle($data);
 
-        return response()->created(model: Vendor::class);
+        return apiResponse()->created(model: Vendor::class);
     }
 
     /**
@@ -82,7 +82,7 @@ final class VendorController extends Controller
                 });
             })->toArray();
 
-        return response()->success(ShowVendorData::from(
+        return apiResponse()->success(ShowVendorData::from(
             [
                 ...$vendor->toArray(),
                 'media' => $media,
@@ -109,7 +109,7 @@ final class VendorController extends Controller
                 });
             })->toArray();
 
-        return response()->success(ShowVendorData::from(
+        return apiResponse()->success(ShowVendorData::from(
             [
                 ...$vendor->toArray(),
                 'media' => $media,
@@ -130,6 +130,6 @@ final class VendorController extends Controller
         Gate::authorize('delete', $vendor);
         $action->handle($vendor);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

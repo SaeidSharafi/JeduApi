@@ -28,6 +28,6 @@ final class HeaderController extends Controller
     {
         $header = $service->get(SettingKeyEnum::HEADER, \App\Data\Admin\Settings\HeaderData::getDefaults());
 
-        return response()->success(HeaderData::from($header));
+        return apiResponse()->success(HeaderData::from($header));
     }
 }

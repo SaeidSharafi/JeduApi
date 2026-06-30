@@ -28,6 +28,6 @@ final class TeacherController extends Controller
      */
     public function show(Teacher $teacher): ApiSuccessResponse
     {
-        return response()->success(TeacherDetailData::from($teacher));
+        return apiResponse()->success(TeacherDetailData::from($teacher));
     }
 }

@@ -30,7 +30,7 @@ final class HeaderController extends Controller
     {
         Gate::authorize('viewAny', Setting::class);
 
-        return response()->success(
+        return apiResponse()->success(
             HeaderData::from($settingsService->get(SettingKeyEnum::HEADER, HeaderData::getDefaults()))
         );
     }
@@ -45,7 +45,7 @@ final class HeaderController extends Controller
     {
         Gate::authorize('update', Setting::class);
 
-        return response()->success(
+        return apiResponse()->success(
             $action->handle($data),
             __('messages.updated', ['model' => __('messages.models.header')])
         );

@@ -40,20 +40,20 @@ final class MoodleSsoController extends Controller
         $user     = auth()->user();
         $wantsurl = request()->get('wantsurl');
         if ($enrollment->customer_id !== $user->id) {
-            return response()->notFound(__('messages.enrollments.not_found'));
+            return apiResponse()->notFound(__('messages.enrollments.not_found'));
         }
 
         $deliveryOption = $enrollment->productDeliveryOption;
 
         if ($deliveryOption->delivery_method !== DeliveryMethodEnum::LMS_MOODLE) {
-            return response()->validationError(__('messages.enrollments.not_moodle'));
+            return apiResponse()->validationError(__('messages.enrollments.not_moodle'));
         }
 
         $moodleUsername = data_get($enrollment->provisioning_data, 'providers.moodle.data.moodle_username')
             ?? data_get($enrollment->provisioning_data, 'providers.moodle.data.moodle_user_name');
 
         if (! is_string($moodleUsername) || $moodleUsername === '') {
-            return response()->validationError(__('messages.enrollments.moodle_provisioning_incomplete'));
+            return apiResponse()->validationError(__('messages.enrollments.moodle_provisioning_incomplete'));
         }
 
         try {
@@ -61,9 +61,9 @@ final class MoodleSsoController extends Controller
         } catch (Throwable $e) {
             report($e);
 
-            return response()->validationError(__('messages.enrollments.moodle_service_error'));
+            return apiResponse()->validationError(__('messages.enrollments.moodle_service_error'));
         }
 
-        return response()->success(new MoodleSsoUrlData(url: $url, wantsurl: $wantsurl));
+        return apiResponse()->success(new MoodleSsoUrlData(url: $url, wantsurl: $wantsurl));
     }
 }

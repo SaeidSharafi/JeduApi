@@ -38,7 +38,7 @@ final class PaymentController extends Controller
             ->latest()
             ->get();
 
-        return response()->success(PaymentData::collect($payments));
+        return apiResponse()->success(PaymentData::collect($payments));
     }
 
     /**
@@ -60,7 +60,7 @@ final class PaymentController extends Controller
         $result = $action->handle($order, $data, $admin);
 
         // Return different response based on whether redirect is required
-        return response()->created([
+        return apiResponse()->created([
             'payment'           => PaymentData::from($result->payment),
             'requires_redirect' => $result->requiresRedirect(),
             'redirect_url'      => $result->redirect_url,
@@ -81,7 +81,7 @@ final class PaymentController extends Controller
     {
         Gate::authorize('view', $order);
 
-        return response()->success(PaymentData::from($payment));
+        return apiResponse()->success(PaymentData::from($payment));
     }
 
     /**
@@ -98,7 +98,7 @@ final class PaymentController extends Controller
         Gate::authorize('update', $order);
         $payment = $action->handle($order, $payment, $request);
 
-        return response()->success(PaymentData::from($payment));
+        return apiResponse()->success(PaymentData::from($payment));
     }
 
     /**
@@ -116,6 +116,6 @@ final class PaymentController extends Controller
         Gate::authorize('delete', $order);
         $action->handle($order, $payment);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

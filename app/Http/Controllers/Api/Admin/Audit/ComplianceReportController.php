@@ -34,7 +34,7 @@ final class ComplianceReportController extends Controller
 
         $report = $action->execute($data);
 
-        return response()->success(
+        return apiResponse()->success(
             data: $report,
             message: __('messages.audit.compliance_report_generated_successfully')
         );

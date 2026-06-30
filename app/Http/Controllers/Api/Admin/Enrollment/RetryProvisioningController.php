@@ -34,7 +34,7 @@ final class RetryProvisioningController extends Controller
 
         $result = $action->handle($enrollment);
 
-        return response()->success(
+        return apiResponse()->success(
             data: $result,
             message: __('messages.enrollment.provisioning_retry_dispatched')
         );

@@ -80,7 +80,7 @@ final class UserController extends Controller
             ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
-        return response()->success(UserListItemData::collect($user));
+        return apiResponse()->success(UserListItemData::collect($user));
     }
 
     /**
@@ -95,7 +95,7 @@ final class UserController extends Controller
         Gate::authorize('create', User::class);
         $user = $action->handle($data);
 
-        return response()->created(ShowUserData::from($user), model: User::class);
+        return apiResponse()->created(ShowUserData::from($user), model: User::class);
     }
 
     /**
@@ -110,7 +110,7 @@ final class UserController extends Controller
     {
         Gate::authorize('view', $user);
 
-        return response()->success(ShowUserData::from($user));
+        return apiResponse()->success(ShowUserData::from($user));
     }
 
     /**
@@ -126,7 +126,7 @@ final class UserController extends Controller
         Gate::authorize('update', $user);
         $user = $action->handle($data, $user);
 
-        return response()->updated(ShowUserData::from($user), model: User::class);
+        return apiResponse()->updated(ShowUserData::from($user), model: User::class);
     }
 
     /**
@@ -145,6 +145,6 @@ final class UserController extends Controller
         Gate::authorize('delete', $user);
         $action->handle($user);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

@@ -42,7 +42,7 @@ final class StaffSelectOptionController extends Controller
             ->when($limit, fn (Builder $q): Builder => $q->limit($limit))
             ->get(['id', 'name', 'email']);
 
-        return response()->success(
+        return apiResponse()->success(
             StaffSelectOptionData::collect($staffs)
         );
     }

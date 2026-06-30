@@ -104,7 +104,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->renderable(function (ValidationException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
                 // Use your specific macro for validation errors
-                return response()->validationErrors($e->errors());
+                return apiResponse()->validationErrors($e->errors());
             }
 
             return null;
@@ -114,7 +114,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->renderable(function (AuthenticationException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
                 // Use your 'unauthorized' macro
-                return response()->unauthorized(__('messages.unauthorized'), $e);
+                return apiResponse()->unauthorized(__('messages.unauthorized'), $e);
             }
 
             return null;
@@ -124,7 +124,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // (e.g., from Gate denials or Policies if user is authenticated but not authorized)
         $exceptions->renderable(function (AccessDeniedHttpException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
-                return response()->forbidden(__('messages.forbidden'), $e);
+                return apiResponse()->forbidden(__('messages.forbidden'), $e);
             }
 
             return null;
@@ -133,7 +133,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // 4. ModelNotFoundException (Typically leads to 404)
         $exceptions->renderable(function (ModelNotFoundException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
-                return response()->notFound(model: $e->getModel());
+                return apiResponse()->notFound(model: $e->getModel());
             }
 
             return null;
@@ -142,7 +142,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // 5. NotFoundHttpException (404 Not Found - for routes or other non-model 404s)
         $exceptions->renderable(function (NotFoundHttpException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
-                return response()->notFound($e->getMessage());
+                return apiResponse()->notFound($e->getMessage());
             }
 
             return null;
@@ -151,7 +151,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // 6. MethodNotAllowedHttpException (405 Method Not Allowed)
         $exceptions->renderable(function (MethodNotAllowedHttpException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
-                return response()->methodNotAllowed($e->getMessage() ?: 'Method not allowed for this resource.');
+                return apiResponse()->methodNotAllowed($e->getMessage() ?: 'Method not allowed for this resource.');
             }
 
             return null;
@@ -160,7 +160,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // 6.5. RefundValidationException (422 Unprocessable Entity)
         $exceptions->renderable(function (App\Exceptions\RefundValidationException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
-                return response()->error($e->getMessage(), 422);
+                return apiResponse()->error($e->getMessage(), 422);
             }
 
             return null;
@@ -169,7 +169,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // 6.6. RefundGatewayException (502 Bad Gateway — payment gateway failures)
         $exceptions->renderable(function (App\Exceptions\RefundGatewayException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
-                return response()->error($e->getMessage(), 502);
+                return apiResponse()->error($e->getMessage(), 502);
             }
 
             return null;
@@ -178,7 +178,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // 6.7. MellatException (502 Bad Gateway — bank gateway errors)
         $exceptions->renderable(function (App\Exceptions\Gateway\MellatException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
-                return response()->error($e->getMessage(), 502);
+                return apiResponse()->error($e->getMessage(), 502);
             }
 
             return null;
@@ -187,7 +187,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // 6.8. CustomValidationException (422 Unprocessable Entity — service-layer validation failures)
         $exceptions->renderable(function (App\Exceptions\CustomValidationException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
-                return response()->validationError($e->getMessage());
+                return apiResponse()->validationError($e->getMessage());
             }
 
             return null;
@@ -199,7 +199,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($isApiRequest($request)) {
                 $status = $e instanceof App\Exceptions\Integrations\ResourceNotProvisionedException ? 404 : 503;
 
-                return response()->error($e->getMessage(), $status);
+                return apiResponse()->error($e->getMessage(), $status);
             }
 
             return null;
@@ -211,7 +211,7 @@ return Application::configure(basePath: dirname(__DIR__))
             Request $request
         ) use ($isApiRequest) {
             if ($isApiRequest($request)) {
-                return response()->error($e->getMessage(), $e->getStatusCode());
+                return apiResponse()->error($e->getMessage(), $e->getStatusCode());
             }
 
             return null;

@@ -37,6 +37,6 @@ final class DiscountPromotionStatisticsController extends Controller
             'promotions_without_coupons'  => DiscountPromotion::whereDoesntHave('coupons')->count(),
         ];
 
-        return response()->success($stats);
+        return apiResponse()->success($stats);
     }
 }

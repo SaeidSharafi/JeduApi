@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Contracts\ApiResponseInterface;
+use App\Http\Responses\ApiFailResponse;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 final class InvalidOtpCodeException extends Exception
 {
     public function render(Request $request): ApiResponseInterface
     {
-        return response()->validationError(__('messages.auth.otp.invalid_code'));
+        return apiResponse()->validationError(__('messages.auth.otp.invalid_code'));
     }
 }

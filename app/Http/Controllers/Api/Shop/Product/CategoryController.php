@@ -40,7 +40,7 @@ final class CategoryController extends Controller
                 },
             ])->get();
 
-        return response()->success(CategoryCardData::collect($categories));
+        return apiResponse()->success(CategoryCardData::collect($categories));
     }
 
     /**
@@ -61,7 +61,7 @@ final class CategoryController extends Controller
         $seminars      = $service->getProductsForCategory($category, ProductableEnum::SEMINAR, $data->per_page);
         $digitalAssets = $service->getProductsForCategory($category, ProductableEnum::DIGITAL_ASSET, $data->per_page);
 
-        return response()->success(CategoryDetailData::from(
+        return apiResponse()->success(CategoryDetailData::from(
             [
                 ...$category->toArray(),
                 'courses'        => $courses,

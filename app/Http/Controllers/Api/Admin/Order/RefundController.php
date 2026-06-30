@@ -63,7 +63,7 @@ final class RefundController extends Controller
             ->with('order')
             ->paginate(request()->integer('per_page', 15));
 
-        return response()->success(RefundData::collect($refunds));
+        return apiResponse()->success(RefundData::collect($refunds));
     }
 
     /**
@@ -83,7 +83,7 @@ final class RefundController extends Controller
             throw ValidationException::withMessages([$exception->getMessage()]);
         }
 
-        return response()->created(RefundData::from($refund));
+        return apiResponse()->created(RefundData::from($refund));
     }
 
     /**
@@ -98,7 +98,7 @@ final class RefundController extends Controller
         Gate::authorize('view', $refund);
         $refund->load('order');
 
-        return response()->success(RefundData::from($refund));
+        return apiResponse()->success(RefundData::from($refund));
     }
 
     /**
@@ -118,7 +118,7 @@ final class RefundController extends Controller
             throw ValidationException::withMessages([$exception->getMessage()]);
         }
 
-        return response()->success(RefundData::from($updatedRefund));
+        return apiResponse()->success(RefundData::from($updatedRefund));
     }
 
     /**
@@ -135,6 +135,6 @@ final class RefundController extends Controller
         Gate::authorize('delete', $refund);
         $action->handle($refund);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Exceptions\Payment;
 
 use App\Contracts\ApiResponseInterface;
+use App\Http\Responses\ApiFailResponse;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 final class InsufficientWalletBalanceException extends Exception
 {
@@ -38,7 +40,7 @@ final class InsufficientWalletBalanceException extends Exception
 
     public function render(Request $request): ApiResponseInterface
     {
-        return response()->validationErrors(
+        return apiResponse()->validationErrors(
             ['wallet_balance' => $this->getMessage()],
             metadata: [
                 'error_code'        => 'INSUFFICIENT_WALLET_BALANCE',

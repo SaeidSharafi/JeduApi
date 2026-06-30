@@ -30,6 +30,6 @@ final class ApproveReviewController extends Controller
         Gate::authorize('update', $review);
         $action->handle($review, ReviewStatusEnum::APPROVED);
 
-        return response()->success(message: __('messages.review.approved'));
+        return apiResponse()->success(message: __('messages.review.approved'));
     }
 }

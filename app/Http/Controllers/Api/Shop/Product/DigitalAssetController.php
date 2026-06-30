@@ -57,7 +57,7 @@ final class DigitalAssetController extends Controller
                 return ProductCardData::fromModel($product, $priceData);
             });
 
-        return response()->success($courses);
+        return apiResponse()->success($courses);
     }
 
     /**
@@ -80,6 +80,6 @@ final class DigitalAssetController extends Controller
 
         $priceData = $this->priceService->getPriceDataForProduct($product);
 
-        return response()->success(DigitalAssetDetailData::fromModel($product, $priceData));
+        return apiResponse()->success(DigitalAssetDetailData::fromModel($product, $priceData));
     }
 }

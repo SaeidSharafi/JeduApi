@@ -46,7 +46,7 @@ final class CategoryController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(CategoryListItemData::collect($categories));
+        return apiResponse()->success(CategoryListItemData::collect($categories));
     }
 
     /**
@@ -60,7 +60,7 @@ final class CategoryController extends Controller
         Gate::authorize('create', Category::class);
         $action->handle($data);
 
-        return response()->created(
+        return apiResponse()->created(
             __('catalog.category.message.crated'),
         );
     }
@@ -76,7 +76,7 @@ final class CategoryController extends Controller
         Gate::authorize('view', $category);
         $category->loadMediaWithVariantsMatchAll();
 
-        return response()->success(
+        return apiResponse()->success(
             ShowCategoryData::from($category)
         );
     }
@@ -96,7 +96,7 @@ final class CategoryController extends Controller
             ->refresh()
             ->loadMediaWithVariantsMatchAll();
 
-        return response()->success(
+        return apiResponse()->success(
             ShowCategoryData::from($category),
             __('catalog.category.message.updated')
         );
@@ -112,6 +112,6 @@ final class CategoryController extends Controller
         Gate::authorize('delete', $category);
         $action->handle($category);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

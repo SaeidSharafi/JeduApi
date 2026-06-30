@@ -74,7 +74,7 @@ final class OrderController extends Controller
             ], 'amount')
             ->paginate(request()->integer('per_page', 15));
 
-        return response()->success(OrderListItemData::collect($orders));
+        return apiResponse()->success(OrderListItemData::collect($orders));
     }
 
     /**
@@ -90,7 +90,7 @@ final class OrderController extends Controller
         $order = $action->handle($data);
         $order->load('items.vendor', 'payments');
 
-        return response()->created(OrderData::from($order));
+        return apiResponse()->created(OrderData::from($order));
     }
 
     /**
@@ -105,7 +105,7 @@ final class OrderController extends Controller
         Gate::authorize('view', $order);
         $order->load('items.vendor', 'payments');
 
-        return response()->success(OrderData::from($order));
+        return apiResponse()->success(OrderData::from($order));
     }
 
     /**
@@ -122,7 +122,7 @@ final class OrderController extends Controller
         $order = $action->handle($data, $order);
         $order->load('items.vendor', 'payments');
 
-        return response()->success(OrderData::from($order));
+        return apiResponse()->success(OrderData::from($order));
     }
 
     /**
@@ -138,6 +138,6 @@ final class OrderController extends Controller
         Gate::authorize('delete', $order);
         $action->handle($order);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

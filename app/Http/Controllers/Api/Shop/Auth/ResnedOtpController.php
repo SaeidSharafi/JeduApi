@@ -39,7 +39,7 @@ final class ResnedOtpController extends Controller
                 OtpType::tryFrom($request->otp_type)
             );
 
-            return response()->success([
+            return apiResponse()->success([
                 'tracking_code' => $result->trackingCode,
                 'otp_type'      => $result->otpType->identifier(),
                 'identifier'    => $request->identifier,
@@ -48,7 +48,7 @@ final class ResnedOtpController extends Controller
             ], 'OTP resent successfully');
 
         } catch (UserNotFoundException $exception) {
-            return response()->notFound(__('messages.auth.login.not_found'));
+            return apiResponse()->notFound(__('messages.auth.login.not_found'));
         }
 
     }

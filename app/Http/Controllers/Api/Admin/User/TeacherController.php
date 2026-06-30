@@ -51,7 +51,7 @@ final class TeacherController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(TeacherListItemData::collect($teachers));
+        return apiResponse()->success(TeacherListItemData::collect($teachers));
     }
 
     /**
@@ -66,7 +66,7 @@ final class TeacherController extends Controller
         Gate::authorize('create', Teacher::class);
         $action->handle($data);
 
-        return response()->created(model: Teacher::class);
+        return apiResponse()->created(model: Teacher::class);
     }
 
     /**
@@ -87,7 +87,7 @@ final class TeacherController extends Controller
                 });
             })->toArray();
 
-        return response()->success(ShowTeacherData::from([
+        return apiResponse()->success(ShowTeacherData::from([
             ...$teacher->toArray(),
             'user'  => $teacher->user,
             'media' => $media,
@@ -106,7 +106,7 @@ final class TeacherController extends Controller
         Gate::authorize('update', $teacher);
         $action->handle($data, $teacher);
 
-        return response()->updated(model: Teacher::class);
+        return apiResponse()->updated(model: Teacher::class);
     }
 
     /**
@@ -121,6 +121,6 @@ final class TeacherController extends Controller
         Gate::authorize('delete', $teacher);
         $action->handle($teacher);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

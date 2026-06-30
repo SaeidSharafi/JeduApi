@@ -30,7 +30,7 @@ final class AboutUsInfoController extends Controller
         Gate::authorize('viewAny', Setting::class);
         $aboutUs = $settingsService->get(SettingKeyEnum::ABOUT_US, AboutUsData::getDefaults());
 
-        return response()->success(AboutUsData::from($aboutUs));
+        return apiResponse()->success(AboutUsData::from($aboutUs));
     }
 
     /**
@@ -46,7 +46,7 @@ final class AboutUsInfoController extends Controller
         $settingsService->set(SettingKeyEnum::ABOUT_US, $data->toArray(), 'json', 'cms');
         $aboutUs = $settingsService->get(SettingKeyEnum::ABOUT_US, AboutUsData::getDefaults());
 
-        return response()->success(
+        return apiResponse()->success(
             AboutUsData::from($aboutUs),
             __('messages.updated', ['model' => __('messages.models.about_us')])
         );

@@ -72,7 +72,7 @@ final class StaffPasswordLoginController extends Controller
             return Permission::query()->where('guard_name', 'staff')->get()->pluck('name')->toArray();
         });
 
-        return response()->success([
+        return apiResponse()->success([
             'token'      => $token->plainTextToken,
             'expires_at' => $token->accessToken->expires_at,
             'type'       => 'Bearer',

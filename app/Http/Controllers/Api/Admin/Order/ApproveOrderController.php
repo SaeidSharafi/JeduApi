@@ -36,7 +36,7 @@ final class ApproveOrderController extends Controller
         $order = $action->handle($order);
         $order->load('items.vendor', 'payments');
 
-        return response()->success(
+        return apiResponse()->success(
             data: OrderData::from($order),
             message: __('messages.order.approved_successfully')
         );

@@ -33,6 +33,6 @@ final class StaffLogoutController extends Controller
     {
         $request->user('staff')->currentAccessToken()->delete();
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

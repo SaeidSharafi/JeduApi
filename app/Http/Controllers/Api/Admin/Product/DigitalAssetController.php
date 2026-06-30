@@ -71,7 +71,7 @@ final class DigitalAssetController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(
+        return apiResponse()->success(
             DigitalAssetListItemData::collect($files)
         );
     }
@@ -86,7 +86,7 @@ final class DigitalAssetController extends Controller
         Gate::authorize('create', DigitalAsset::class);
         $action->handle($data);
 
-        return response()->created();
+        return apiResponse()->created();
     }
 
     /**
@@ -115,7 +115,7 @@ final class DigitalAssetController extends Controller
                 ->toArray();
         }
 
-        return response()->success(ShowDigitalAssetData::from([
+        return apiResponse()->success(ShowDigitalAssetData::from([
             ...$digitalAsset->toArray(),
             'categories'  => $digitalAsset->categories,
             'attachments' => $attachments,
@@ -154,7 +154,7 @@ final class DigitalAssetController extends Controller
                 ->toArray();
         }
 
-        return response()->success(
+        return apiResponse()->success(
             ShowDigitalAssetData::from([
                 ...$digitalAsset->toArray(),
                 'categories'  => $digitalAsset->categories,
@@ -176,6 +176,6 @@ final class DigitalAssetController extends Controller
         Gate::authorize('delete', $digitalAsset);
         $action->handle($digitalAsset);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

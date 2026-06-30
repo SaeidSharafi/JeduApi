@@ -42,7 +42,7 @@ final class AdminWalletController extends Controller
             ->with('user')
             ->paginate($request->integer('per_page', 15));
 
-        return response()->success(WalletData::collect($wallets));
+        return apiResponse()->success(WalletData::collect($wallets));
     }
 
     /**
@@ -56,6 +56,6 @@ final class AdminWalletController extends Controller
         Gate::authorize('view', $wallet);
         $wallet->load('user');
 
-        return response()->success(WalletData::from($wallet));
+        return apiResponse()->success(WalletData::from($wallet));
     }
 }

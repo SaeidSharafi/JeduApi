@@ -38,12 +38,12 @@ final class CancelOrderController extends Controller
         try {
             $cancelledOrder = $this->action->execute($order, Auth::id());
 
-            return response()->success(
+            return apiResponse()->success(
                 OrderData::from($cancelledOrder),
                 __('messages.order.order_cancelled_successfully')
             );
         } catch (ValidationException $e) {
-            return response()->error($e->getMessage(), 422);
+            return apiResponse()->error($e->getMessage(), 422);
         }
     }
 }

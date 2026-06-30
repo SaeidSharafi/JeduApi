@@ -28,7 +28,7 @@ final class OrderItemController extends Controller
     {
         $orderItems = $order->items()->with(['vendor'])->get();
 
-        return response()->success(OrderItemData::collect($orderItems));
+        return apiResponse()->success(OrderItemData::collect($orderItems));
     }
 
     /**
@@ -43,6 +43,6 @@ final class OrderItemController extends Controller
     {
         $orderItem->load(['vendor']);
 
-        return response()->success(OrderItemData::from($orderItem));
+        return apiResponse()->success(OrderItemData::from($orderItem));
     }
 }

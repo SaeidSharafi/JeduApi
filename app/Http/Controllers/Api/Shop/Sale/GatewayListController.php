@@ -39,6 +39,6 @@ final class GatewayListController extends Controller
             }
         }
 
-        return response()->success($gateways);
+        return apiResponse()->success($gateways);
     }
 }

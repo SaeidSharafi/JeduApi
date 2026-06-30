@@ -44,6 +44,6 @@ final class UploadPrivateController extends Controller
             ->onDuplicateIncrement()
             ->upload();
 
-        return response()->created(MediaData::fromModel($file), __('messages.file_uploaded'));
+        return apiResponse()->created(MediaData::fromModel($file), __('messages.file_uploaded'));
     }
 }

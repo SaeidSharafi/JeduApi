@@ -805,7 +805,7 @@ public function store(
     $result = $action->handle($order, $data, auth('staff')->user());
 
     // Return different response based on whether redirect is required
-    return response()->created([
+    return apiResponse()->created([
         'payment'      => PaymentData::from($result->payment),
         'requires_redirect' => $result->requiresRedirect(),
         'redirect_url' => $result->redirect_url,

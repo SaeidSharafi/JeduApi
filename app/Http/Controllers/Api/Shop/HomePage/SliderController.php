@@ -34,6 +34,6 @@ final class SliderController extends Controller
             )
         );
 
-        return response()->success($sliders);
+        return apiResponse()->success($sliders);
     }
 }

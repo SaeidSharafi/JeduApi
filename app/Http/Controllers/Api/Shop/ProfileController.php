@@ -26,7 +26,7 @@ final class ProfileController extends Controller
      */
     public function show(): ApiSuccessResponse
     {
-        return response()->success(CustomerData::from(auth()->user()));
+        return apiResponse()->success(CustomerData::from(auth()->user()));
     }
 
     /**
@@ -38,6 +38,6 @@ final class ProfileController extends Controller
     {
         $user = $action->handle($data, auth()->user());
 
-        return response()->updated(CustomerData::from($user), model: $user);
+        return apiResponse()->updated(CustomerData::from($user), model: $user);
     }
 }

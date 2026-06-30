@@ -29,6 +29,6 @@ final class FooterController extends Controller
     {
         $footer = $service->get(SettingKeyEnum::FOOTER, AdminFooterData::getDefaults());
 
-        return response()->success(FooterData::from($footer));
+        return apiResponse()->success(FooterData::from($footer));
     }
 }

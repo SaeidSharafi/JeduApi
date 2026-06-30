@@ -59,9 +59,9 @@ final class StaffOtpAuthenticationController extends Controller
             );
             $token = $this->authenticateUser->execute($user, 'staff');
         } catch (UserNotFoundException) {
-            return response()->notFound(__('messages.auth.login.not_found'));
+            return apiResponse()->notFound(__('messages.auth.login.not_found'));
         } catch (InvalidOtpCodeException $e) {
-            return response()->validationError(
+            return apiResponse()->validationError(
                 message: __('messages.auth.otp.invalid_code')
             );
         }
@@ -69,7 +69,7 @@ final class StaffOtpAuthenticationController extends Controller
             return Permission::query()->where('guard_name', 'staff')->get()->pluck('name')->toArray();
         });
 
-        return response()->success(
+        return apiResponse()->success(
             [
                 'token'       => $token->plainTextToken,
                 'expires_at'  => $token->accessToken->expires_at,

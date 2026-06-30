@@ -49,6 +49,6 @@ final class SearchController extends Controller
             // @codeCoverageIgnoreEnd
         });
 
-        return response()->success($data);
+        return apiResponse()->success($data);
     }
 }

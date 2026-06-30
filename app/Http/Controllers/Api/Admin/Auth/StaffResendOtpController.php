@@ -45,7 +45,7 @@ final class StaffResendOtpController extends Controller
                 'staff'
             );
 
-            return response()->success([
+            return apiResponse()->success([
                 'tracking_code' => $result->trackingCode,
                 'otp_type'      => $result->otpType->identifier(),
                 'identifier'    => $request->identifier,
@@ -54,7 +54,7 @@ final class StaffResendOtpController extends Controller
             ], 'OTP resent successfully');
 
         } catch (UserNotFoundException $exception) {
-            return response()->notFound(__('messages.auth.login.not_found'));
+            return apiResponse()->notFound(__('messages.auth.login.not_found'));
         }
 
     }

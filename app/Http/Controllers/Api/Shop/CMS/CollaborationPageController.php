@@ -29,6 +29,6 @@ final class CollaborationPageController extends Controller
     {
         $contactPage = $service->get(SettingKeyEnum::COLLABORATION, AdminCollaborationPageData::getDefaults());
 
-        return response()->success(CollaborationPageData::fromSetting($contactPage));
+        return apiResponse()->success(CollaborationPageData::fromSetting($contactPage));
     }
 }

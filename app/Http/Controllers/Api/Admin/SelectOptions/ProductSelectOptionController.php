@@ -44,6 +44,6 @@ final class ProductSelectOptionController extends Controller
             ->limit($limit)
             ->get();
 
-        return response()->success(ProductSelectOptionData::collect($products));
+        return apiResponse()->success(ProductSelectOptionData::collect($products));
     }
 }

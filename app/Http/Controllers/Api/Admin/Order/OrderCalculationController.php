@@ -28,6 +28,6 @@ final class OrderCalculationController extends Controller
 
         $context = $orderCalculationService->calculate($data);
 
-        return response()->success(OrderPreviewData::fromOrderContext($context));
+        return apiResponse()->success(OrderPreviewData::fromOrderContext($context));
     }
 }

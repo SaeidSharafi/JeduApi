@@ -35,21 +35,21 @@ final class JoinUrlController extends Controller
     public function __invoke(Enrollment $enrollment, GetJoinUrlAction $action): ApiResponseInterface
     {
         if ($enrollment->customer_id !== auth()->id()) {
-            return response()->notFound();
+            return apiResponse()->notFound();
         }
 
         try {
             $joinUrlData = $action->handle($enrollment);
         } catch (ResourceNotProvisionedException $e) {
-            return response()->error($e->getMessage(), 503);
+            return apiResponse()->error($e->getMessage(), 503);
         } catch (InvalidArgumentException $e) {
-            return response()->validationError($e->getMessage());
+            return apiResponse()->validationError($e->getMessage());
         } catch (Throwable $e) {
             report($e);
 
-            return response()->serverError();
+            return apiResponse()->serverError();
         }
 
-        return response()->success($joinUrlData);
+        return apiResponse()->success($joinUrlData);
     }
 }

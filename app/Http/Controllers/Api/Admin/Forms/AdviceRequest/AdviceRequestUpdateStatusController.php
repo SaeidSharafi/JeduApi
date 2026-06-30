@@ -42,6 +42,6 @@ final class AdviceRequestUpdateStatusController extends Controller
         $adviceRequest = $action->handle($data, $adviceRequest, auth('staff')->user());
         $adviceRequest->load('handler');
 
-        return response()->updated(AdviceRequestData::from($adviceRequest), model: AdviceRequest::class);
+        return apiResponse()->updated(AdviceRequestData::from($adviceRequest), model: AdviceRequest::class);
     }
 }

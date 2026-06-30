@@ -28,7 +28,7 @@ Guide code generation:
 *   **Clarify Ambiguity:** Ask clarification if scope (API behavior, response structure, validation rules) unclear. No assumptions.
 *   **Adhere to Code Quality Standards:**
     *   **Consistency:** Strict follow existing project patterns, RESTful principles, DTO/Action architecture.
-    *   **Robust Error Handling:** Use project custom response macros for success/error responses.
+    *   **Robust Error Handling:** Use project custom `apiResponse()` for success/error responses.
     *   **Security:** Implement security via established patterns: `spatie/laravel-data` for validation, Gates/Policies for authorization, built-in authentication.
 
 ## 2. Project Glossary: Core Concepts & Terminology
@@ -172,7 +172,7 @@ Required architecture for JeduShop API.
         *   **Public endpoints:** `routes/Api/V1/shop/shop.php` (no guard)
     *   **NEVER** mix route types in wrong files.
 *   **API Responses:**
-    *   Controller methods **MUST** return responses using custom macros from `app/Providers/ResponseMacroServiceProvider.php` (e.g., `response()->success()`, `response()->notFound()`).
+    *   Controller methods **MUST** return responses using `apiResponse()` (e.g., `apiResponse()->success()`, `apiResponse()->notFound()`).
 *   **Authorization:**
     *   Admin controller method **MUST** include `Gate::authorize()` using appropriate policy method.
     *   Policies in `app/Policies/Admin/` **MUST** use `PermissionEnum` for permission checks.

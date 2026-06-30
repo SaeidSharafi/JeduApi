@@ -22,6 +22,6 @@ final class PermissionController extends Controller
      */
     public function __invoke(OutputPermissionsAction $action): ApiResponseInterface
     {
-        return response()->success($action->handle());
+        return apiResponse()->success($action->handle());
     }
 }

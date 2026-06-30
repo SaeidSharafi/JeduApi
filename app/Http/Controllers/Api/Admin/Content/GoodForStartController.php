@@ -31,6 +31,6 @@ final class GoodForStartController extends Controller
         Gate::authorize('update', $category);
         $updated = $action->handle($category, $data);
 
-        return response()->success(__('messages.category.good_for_start.updated', ['count' => $updated]));
+        return apiResponse()->success(__('messages.category.good_for_start.updated', ['count' => $updated]));
     }
 }

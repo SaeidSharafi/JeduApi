@@ -58,7 +58,7 @@ final class CourseController extends Controller
                 return ProductCardData::fromModel($product, $priceData);
             });
 
-        return response()->success($courses);
+        return apiResponse()->success($courses);
     }
 
     /**
@@ -82,6 +82,6 @@ final class CourseController extends Controller
 
         $priceData = $this->priceService->getPriceDataForProduct($product);
 
-        return response()->success(CourseDetailData::fromModel($product, $priceData));
+        return apiResponse()->success(CourseDetailData::fromModel($product, $priceData));
     }
 }

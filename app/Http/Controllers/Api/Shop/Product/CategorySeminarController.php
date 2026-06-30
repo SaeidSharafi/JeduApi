@@ -33,6 +33,6 @@ final class CategorySeminarController extends Controller
     {
         $paginatedCourses = $service->getProductsForCategory($category, ProductableEnum::SEMINAR, $data->per_page, true);
 
-        return response()->success($paginatedCourses);
+        return apiResponse()->success($paginatedCourses);
     }
 }

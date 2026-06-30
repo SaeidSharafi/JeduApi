@@ -40,18 +40,18 @@ final class ForgotPasswordController extends Controller
                 $request->identifier,
             );
 
-            return response()->success([
+            return apiResponse()->success([
                 'tracking_code' => $otpSent->trackingCode,
                 'otp_type'      => $otpSent->otpType->identifier(),
                 'identifier'    => $request->identifier,
             ], __('messages.auth.otp.sent'));
 
         } catch (UserDoesNotHavePasswordException $e) {
-            return response()->validationError(
+            return apiResponse()->validationError(
                 message: __('messages.auth.doesnot_have_password')
             );
         } catch (UserNotFoundException $e) {
-            return response()->notFound(
+            return apiResponse()->notFound(
                 message: __('messages.auth.login.not_found')
             );
         }

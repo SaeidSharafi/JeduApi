@@ -27,6 +27,6 @@ final class CollaborationRequestController extends Controller
     {
         $action->handle($data);
 
-        return response()->created(null, __('shop.responses.forms.collaboration_request_submitted'));
+        return apiResponse()->created(null, __('shop.responses.forms.collaboration_request_submitted'));
     }
 }

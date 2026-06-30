@@ -40,6 +40,6 @@ final class DigitalAssetEnrollmentController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(EnrollmentData::collect($enrollments));
+        return apiResponse()->success(EnrollmentData::collect($enrollments));
     }
 }

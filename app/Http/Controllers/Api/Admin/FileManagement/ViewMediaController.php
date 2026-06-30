@@ -27,6 +27,6 @@ final class ViewMediaController extends Controller
     {
         $media->load('variants');
 
-        return response()->success(MediaData::fromModel($media), message: __('messages.media_retrieved'));
+        return apiResponse()->success(MediaData::fromModel($media), message: __('messages.media_retrieved'));
     }
 }

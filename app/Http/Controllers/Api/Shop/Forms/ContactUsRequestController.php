@@ -27,6 +27,6 @@ final class ContactUsRequestController extends Controller
     {
         $action->handle($data);
 
-        return response()->success(message: __('shop.responses.contact_form_submitted'));
+        return apiResponse()->success(message: __('shop.responses.contact_form_submitted'));
     }
 }

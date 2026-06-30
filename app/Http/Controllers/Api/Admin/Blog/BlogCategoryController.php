@@ -49,7 +49,7 @@ final class BlogCategoryController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(BlogCategoryData::collect($categories));
+        return apiResponse()->success(BlogCategoryData::collect($categories));
     }
 
     /**
@@ -66,7 +66,7 @@ final class BlogCategoryController extends Controller
         Gate::authorize('view', $category);
         $category->load('media');
 
-        return response()->success(BlogCategoryData::fromModel($category));
+        return apiResponse()->success(BlogCategoryData::fromModel($category));
     }
 
     /**
@@ -84,7 +84,7 @@ final class BlogCategoryController extends Controller
         $category = $action->handle($data);
         $category->load('media');
 
-        return response()->created(BlogCategoryData::fromModel($category), model: BlogCategory::class);
+        return apiResponse()->created(BlogCategoryData::fromModel($category), model: BlogCategory::class);
     }
 
     /**
@@ -103,7 +103,7 @@ final class BlogCategoryController extends Controller
         $category = $action->handle($category, $data);
         $category->load('media');
 
-        return response()->updated(BlogCategoryData::fromModel($category), model: $category);
+        return apiResponse()->updated(BlogCategoryData::fromModel($category), model: $category);
     }
 
     /**
@@ -120,6 +120,6 @@ final class BlogCategoryController extends Controller
         Gate::authorize('delete', $category);
         $action->handle($category);
 
-        return response()->success();
+        return apiResponse()->success();
     }
 }

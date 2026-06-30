@@ -36,12 +36,12 @@ final class DigipayAdminController extends Controller
         try {
             $response = $this->service->refund($payment, $data->amount);
 
-            return response()->success([
+            return apiResponse()->success([
                 'tracking_code' => $response->trackingCode,
                 'message'       => $response->message,
             ]);
         } catch (DigipayException $e) {
-            return response()->error($e->getUserMessage(), 422, ['digipay_code' => $e->getDigipayCode()]);
+            return apiResponse()->error($e->getUserMessage(), 422, ['digipay_code' => $e->getDigipayCode()]);
         }
     }
 
@@ -55,15 +55,15 @@ final class DigipayAdminController extends Controller
         Gate::authorize('deliver', $payment);
 
         if (! $this->service->requiresDeliveryConfirmation($payment)) {
-            return response()->error('This payment type does not require delivery confirmation.', 422);
+            return apiResponse()->error('This payment type does not require delivery confirmation.', 422);
         }
 
         try {
             $response = $this->service->deliver($payment);
 
-            return response()->success(['message' => $response->message]);
+            return apiResponse()->success(['message' => $response->message]);
         } catch (DigipayException $e) {
-            return response()->error($e->getUserMessage(), 422, ['digipay_code' => $e->getDigipayCode()]);
+            return apiResponse()->error($e->getUserMessage(), 422, ['digipay_code' => $e->getDigipayCode()]);
         }
     }
 
@@ -78,19 +78,19 @@ final class DigipayAdminController extends Controller
 
         $latestTx = $payment->transactions()->latest()->first();
         if ($latestTx && $latestTx->created_at->addMinutes(25)->isPast()) {
-            return response()->error('Reverse window expired (25 minutes). Use refund instead.', 422);
+            return apiResponse()->error('Reverse window expired (25 minutes). Use refund instead.', 422);
         }
 
         try {
             $response = $this->service->reverse($payment);
 
-            return response()->success([
+            return apiResponse()->success([
                 'tracking_code' => $response->trackingCode,
                 'amount'        => $response->amount,
                 'message'       => $response->message,
             ]);
         } catch (DigipayException $e) {
-            return response()->error($e->getUserMessage(), 422, ['digipay_code' => $e->getDigipayCode()]);
+            return apiResponse()->error($e->getUserMessage(), 422, ['digipay_code' => $e->getDigipayCode()]);
         }
     }
 
@@ -106,7 +106,7 @@ final class DigipayAdminController extends Controller
         try {
             $response = $this->service->inquireRefund($data->refund_provider_id, $data->type);
 
-            return response()->success([
+            return apiResponse()->success([
                 'status' => match (true) {
                     $response->isRefundCompleted() => 'completed',
                     $response->isRefundFailed()    => 'failed',
@@ -118,7 +118,7 @@ final class DigipayAdminController extends Controller
                 'destination'   => $response->destination,
             ]);
         } catch (DigipayException $e) {
-            return response()->error($e->getUserMessage(), 422, ['digipay_code' => $e->getDigipayCode()]);
+            return apiResponse()->error($e->getUserMessage(), 422, ['digipay_code' => $e->getDigipayCode()]);
         }
     }
 }

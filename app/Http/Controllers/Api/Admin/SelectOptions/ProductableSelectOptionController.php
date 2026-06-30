@@ -95,7 +95,7 @@ final class ProductableSelectOptionController extends Controller
 
         // If no types were selected, return an empty collection
         if (empty($queries)) {
-            return response()->success(ProductableSelectOptionData::collect([]));
+            return apiResponse()->success(ProductableSelectOptionData::collect([]));
         }
 
         // 4. Combine the queries using UNION ALL
@@ -108,7 +108,7 @@ final class ProductableSelectOptionController extends Controller
         // 5. Apply the final limit and get the results
         $results = $firstQuery->limit($limit)->get();
 
-        return response()->success(ProductableSelectOptionData::collect($results));
+        return apiResponse()->success(ProductableSelectOptionData::collect($results));
 
     }
 }

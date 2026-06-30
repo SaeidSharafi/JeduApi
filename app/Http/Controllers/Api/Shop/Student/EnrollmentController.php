@@ -53,7 +53,7 @@ final class EnrollmentController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(EnrollmentData::collect($enrollments));
+        return apiResponse()->success(EnrollmentData::collect($enrollments));
     }
 
     /**
@@ -66,7 +66,7 @@ final class EnrollmentController extends Controller
     public function show(Enrollment $enrollment, GetEnrollmentDetailAction $action): ApiResponseInterface
     {
         if (auth()->user()->id !== $enrollment->customer_id) {
-            return response()->notFound(__('messages.enrollments.not_found'));
+            return apiResponse()->notFound(__('messages.enrollments.not_found'));
         }
         $enrollment->loadMissing([
             'productDeliveryOption.product.productableWithAllRelations',
@@ -76,7 +76,7 @@ final class EnrollmentController extends Controller
 
         $this->triggerMoodleSwr($enrollment);
 
-        return response()->success($action->handle($enrollment));
+        return apiResponse()->success($action->handle($enrollment));
     }
 
     private function triggerMoodleSwr(Enrollment $enrollment): void

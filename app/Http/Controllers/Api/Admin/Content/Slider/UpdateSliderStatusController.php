@@ -33,6 +33,6 @@ final class UpdateSliderStatusController extends Controller
         Gate::authorize('update', $slider);
         $updatedSlider = $action->handle($data, $slider);
 
-        return response()->updated(data: SliderData::from($updatedSlider), model: $updatedSlider);
+        return apiResponse()->updated(data: SliderData::from($updatedSlider), model: $updatedSlider);
     }
 }

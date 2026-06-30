@@ -47,7 +47,7 @@ final class RetryPaymentController extends Controller
 
         // Return response based on payment type
         if ($result->requiresRedirect()) {
-            return response()->success([
+            return apiResponse()->success([
                 'message'           => 'Payment initiated. Please complete payment at the gateway.',
                 'payment'           => $result->payment,
                 'requires_redirect' => true,
@@ -57,7 +57,7 @@ final class RetryPaymentController extends Controller
             ]);
         }
 
-        return response()->success([
+        return apiResponse()->success([
             'message'           => 'Payment completed successfully.',
             'payment'           => $result->payment,
             'requires_redirect' => false,

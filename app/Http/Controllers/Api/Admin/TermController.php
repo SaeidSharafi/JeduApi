@@ -48,7 +48,7 @@ final class TermController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(data: TermListItemData::collect($terms)->toArray());
+        return apiResponse()->success(data: TermListItemData::collect($terms)->toArray());
     }
 
     /**
@@ -61,7 +61,7 @@ final class TermController extends Controller
         Gate::authorize('create', Term::class);
         $action->execute($data);
 
-        return response()->created(model: Term::class);
+        return apiResponse()->created(model: Term::class);
     }
 
     /**
@@ -75,7 +75,7 @@ final class TermController extends Controller
     {
         Gate::authorize('view', $term);
 
-        return response()->success(ShowTermData::from($term));
+        return apiResponse()->success(ShowTermData::from($term));
     }
 
     /**
@@ -90,7 +90,7 @@ final class TermController extends Controller
         Gate::authorize('update', $term);
         $term = $action->execute($term, $data);
 
-        return response()->updated(ShowTermData::from($term)->toArray(), model: Term::class);
+        return apiResponse()->updated(ShowTermData::from($term)->toArray(), model: Term::class);
     }
 
     /**
@@ -106,6 +106,6 @@ final class TermController extends Controller
         Gate::authorize('delete', $term);
         $action->execute($term);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

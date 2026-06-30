@@ -38,7 +38,7 @@ final class ProductDeliveryOptionController extends Controller
             ->with('teachers', fn ($q) => $q->orderBy('id'))
             ->get();
 
-        return response()->success(ProductDeliveryOptionShowData::collect($deliveryOptions));
+        return apiResponse()->success(ProductDeliveryOptionShowData::collect($deliveryOptions));
     }
 
     /**
@@ -55,7 +55,7 @@ final class ProductDeliveryOptionController extends Controller
         $deliveryOption = $action->handle($data, $product);
         $deliveryOption->loadMissing('teachers');
 
-        return response()->created(
+        return apiResponse()->created(
             ProductDeliveryOptionShowData::from($deliveryOption),
             model: ProductDeliveryOption::class,
         );
@@ -72,7 +72,7 @@ final class ProductDeliveryOptionController extends Controller
         Gate::authorize('view', $deliveryOption);
         $deliveryOption->loadMissing('teachers');
 
-        return response()->success(ProductDeliveryOptionShowData::from($deliveryOption));
+        return apiResponse()->success(ProductDeliveryOptionShowData::from($deliveryOption));
     }
 
     /**
@@ -92,7 +92,7 @@ final class ProductDeliveryOptionController extends Controller
         $deliveryOption = $action->handle($data, $deliveryOption);
         $deliveryOption->loadMissing('teachers');
 
-        return response()->updated(
+        return apiResponse()->updated(
             ProductDeliveryOptionShowData::from($deliveryOption),
             model: ProductDeliveryOption::class,
         );
@@ -114,6 +114,6 @@ final class ProductDeliveryOptionController extends Controller
         Gate::authorize('delete', $deliveryOption);
         $action->handle($deliveryOption);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

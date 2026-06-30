@@ -33,6 +33,6 @@ final class CategoryDigitalAssetController extends Controller
     {
         $paginatedCourses = $service->getProductsForCategory($category, ProductableEnum::DIGITAL_ASSET, $data->per_page, true);
 
-        return response()->success($paginatedCourses);
+        return apiResponse()->success($paginatedCourses);
     }
 }

@@ -40,7 +40,7 @@ final class HomePageBlockController
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(HomePageBlockData::collect($blocks));
+        return apiResponse()->success(HomePageBlockData::collect($blocks));
     }
 
     /**
@@ -105,7 +105,7 @@ final class HomePageBlockController
 
         $responseDto = HomePageBlockData::fromModel($block);
 
-        return response()->created($responseDto);
+        return apiResponse()->created($responseDto);
     }
 
     /**
@@ -121,7 +121,7 @@ final class HomePageBlockController
 
         $homePageBlock->load('media');
 
-        return response()->success(HomePageBlockData::fromModel($homePageBlock));
+        return apiResponse()->success(HomePageBlockData::fromModel($homePageBlock));
     }
 
     /**
@@ -141,7 +141,7 @@ final class HomePageBlockController
 
         $homePageBlock = $action->handle($homePageBlock, $data);
 
-        return response()->updated(HomePageBlockData::fromModel($homePageBlock), model: HomePageBlock::class);
+        return apiResponse()->updated(HomePageBlockData::fromModel($homePageBlock), model: HomePageBlock::class);
     }
 
     /**
@@ -158,6 +158,6 @@ final class HomePageBlockController
 
         $action->handle($homePageBlock);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

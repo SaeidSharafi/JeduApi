@@ -30,7 +30,7 @@ final class HomePageContentController extends Controller
      */
     public function index(GetHomePageBlocksListAction $action): ApiResponseInterface
     {
-        return response()->success($action->handle());
+        return apiResponse()->success($action->handle());
     }
 
     /**
@@ -49,6 +49,6 @@ final class HomePageContentController extends Controller
      */
     public function show(HomePageBlock $homePageBlock, GetHomePageBlockAction $action): ApiResponseInterface
     {
-        return response()->success($action->handle($homePageBlock));
+        return apiResponse()->success($action->handle($homePageBlock));
     }
 }

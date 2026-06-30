@@ -31,6 +31,6 @@ final class RefundUpdateStatusController extends Controller
         $refund = $action->handle($refund, $data);
         $refund->loadMissing('order');
 
-        return response()->success(RefundData::from($refund));
+        return apiResponse()->success(RefundData::from($refund));
     }
 }

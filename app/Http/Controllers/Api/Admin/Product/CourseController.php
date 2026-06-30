@@ -51,7 +51,7 @@ final class CourseController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return Response::success(data: CourseListItemData::collect($courses)->toArray());
+        return apiResponse()->success(data: CourseListItemData::collect($courses)->toArray());
     }
 
     /**
@@ -65,7 +65,7 @@ final class CourseController extends Controller
 
         $action->handle($data);
 
-        return response()->created();
+        return apiResponse()->created();
     }
 
     /**
@@ -83,7 +83,7 @@ final class CourseController extends Controller
 
         $media = $course->getAllMedia();
 
-        return response()->success(ShowCourseData::from([
+        return apiResponse()->success(ShowCourseData::from([
             ...$course->toArray(),
             'categories' => $course->categories,
             'media'      => $media,
@@ -106,7 +106,7 @@ final class CourseController extends Controller
             ->loadMediaWithVariantsMatchAll();
         $media = $course->getAllMedia();
 
-        return response()->success(ShowCourseData::from([
+        return apiResponse()->success(ShowCourseData::from([
             ...$course->toArray(),
             'categories' => $course->categories,
             'media'      => $media,
@@ -128,6 +128,6 @@ final class CourseController extends Controller
         Gate::authorize('delete', $course);
         $action->handle($course);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

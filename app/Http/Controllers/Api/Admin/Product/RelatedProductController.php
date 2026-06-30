@@ -48,7 +48,7 @@ final class RelatedProductController extends Controller
 
         $relatedProducts = $query->get();
 
-        return response()->success(RelatedProductData::collect($relatedProducts));
+        return apiResponse()->success(RelatedProductData::collect($relatedProducts));
     }
 
     /**
@@ -69,7 +69,7 @@ final class RelatedProductController extends Controller
             ->wherePivot('relation_type', $data->relation_type->value)
             ->get();
 
-        return response()->created(data: RelatedProductData::collect($relatedProducts));
+        return apiResponse()->created(data: RelatedProductData::collect($relatedProducts));
     }
 
     /**
@@ -92,11 +92,11 @@ final class RelatedProductController extends Controller
         $relationType = request()->input('relation_type', 'invalid');
         $relationType = RelationTypeEnum::tryFrom($relationType);
         if (! $relationType) {
-            return response()->validationError(__('validation.custom.product.related_product_type_invalid'));
+            return apiResponse()->validationError(__('validation.custom.product.related_product_type_invalid'));
         }
 
         $action->handle($product, $relationType, $relatedProduct);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

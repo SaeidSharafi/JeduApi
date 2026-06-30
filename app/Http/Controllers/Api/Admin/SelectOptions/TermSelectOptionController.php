@@ -41,7 +41,7 @@ final class TermSelectOptionController extends Controller
             ->when($limit, fn (Builder $q): Builder => $q->limit($limit))
             ->get(['id', 'name', 'academic_year']);
 
-        return response()->success(
+        return apiResponse()->success(
             TermSelectOptionData::collect($terms)
         );
     }

@@ -26,6 +26,6 @@ class QuizController extends Controller
             $quizzes = $moodleService->getAllQuizzes($moodleUserId);
             return $quizzes;
         });
-        return response()->success($quizzes);
+        return apiResponse()->success($quizzes);
     }
 }

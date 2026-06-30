@@ -57,7 +57,7 @@ final class SeminarController extends Controller
                 return ProductCardData::fromModel($product, $priceData);
             });
 
-        return response()->success($courses);
+        return apiResponse()->success($courses);
     }
 
     /**
@@ -80,6 +80,6 @@ final class SeminarController extends Controller
 
         $priceData = $this->priceService->getPriceDataForProduct($product);
 
-        return response()->success(SeminarDetailData::fromModel($product, $priceData));
+        return apiResponse()->success(SeminarDetailData::fromModel($product, $priceData));
     }
 }

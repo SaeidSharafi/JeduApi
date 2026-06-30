@@ -60,7 +60,7 @@ final class ProductController extends Controller
             ->paginate(request()->input('perPage', 15))
             ->withQueryString();
 
-        return response()->success(ProductListItemData::collect($products));
+        return apiResponse()->success(ProductListItemData::collect($products));
     }
 
     /**
@@ -75,7 +75,7 @@ final class ProductController extends Controller
         $product = $action->handle($data);
         $product->load(['productableWithAllRelations', 'term']);
 
-        return response()->created(data: ProductData::from($product), model: Product::class);
+        return apiResponse()->created(data: ProductData::from($product), model: Product::class);
     }
 
     /**
@@ -90,7 +90,7 @@ final class ProductController extends Controller
         Gate::authorize('view', $product);
         $product->load(['productableWithAllRelations', 'term']);
 
-        return response()->success(
+        return apiResponse()->success(
             ProductData::from($product)->toArray()
         );
     }
@@ -108,7 +108,7 @@ final class ProductController extends Controller
         $product = $action->handle($data, $product);
         $product->load(['productableWithAllRelations', 'term', 'categories']);
 
-        return response()->updated(
+        return apiResponse()->updated(
             ProductData::from($product)->toArray(),
             model: Product::class
         );
@@ -127,6 +127,6 @@ final class ProductController extends Controller
         Gate::authorize('delete', $product);
         $action->handle($product);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

@@ -324,7 +324,7 @@ final class WalletTopupController extends Controller
         );
         
         // Return result (redirect URL for gateways, or pending status for bank transfer)
-        return response()->created([
+        return apiResponse()->created([
             'payment'           => PaymentData::from($result->payment),
             'requires_redirect' => $result->requiresRedirect(),
             'redirect_url'      => $result->redirect_url,

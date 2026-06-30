@@ -36,7 +36,7 @@ final class OrderController extends Controller
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(OrderData::collect($orders));
+        return apiResponse()->success(OrderData::collect($orders));
     }
 
     /**
@@ -55,6 +55,6 @@ final class OrderController extends Controller
             ->with(['items.productDeliveryOption.product', 'payments'])
             ->firstOrFail();
 
-        return response()->success(OrderData::from($order)->include('items'));
+        return apiResponse()->success(OrderData::from($order)->include('items'));
     }
 }

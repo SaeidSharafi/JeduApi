@@ -43,17 +43,17 @@ final class ResetPasswordController extends Controller
                 $request->password,
             );
 
-            return response()->success(message: __('messages.auth.password_reset'));
+            return apiResponse()->success(message: __('messages.auth.password_reset'));
         } catch (UserDoesNotHavePasswordException $exception) {
-            return response()->validationError(
+            return apiResponse()->validationError(
                 message: __('messages.auth.doesnot_have_password')
             );
         } catch (InvalidOtpCodeException $exception) {
-            return response()->validationError(
+            return apiResponse()->validationError(
                 message: __('messages.auth.otp.invalid_code')
             );
         } catch (UserNotFoundException $exception) {
-            return response()->notFound(
+            return apiResponse()->notFound(
                 message: __('messages.auth.login.not_found')
             );
         }

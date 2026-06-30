@@ -30,6 +30,6 @@ final class SettingController extends Controller
             ->map(fn (Setting $setting): SettingData => SettingData::fromModel($setting))
             ->groupBy('group');
 
-        return response()->success($settings);
+        return apiResponse()->success($settings);
     }
 }

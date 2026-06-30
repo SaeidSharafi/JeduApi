@@ -63,7 +63,7 @@ final class ReviewController extends Controller
             ->paginate($request->integer('per_page', 15))
             ->withQueryString();
 
-        return response()->success(ReviewListItemData::collect($reviews));
+        return apiResponse()->success(ReviewListItemData::collect($reviews));
     }
 
     /**
@@ -78,7 +78,7 @@ final class ReviewController extends Controller
         Gate::authorize('view', $review);
         $review->load(['user', 'reviewable']);
 
-        return response()->success(ReviewData::from($review));
+        return apiResponse()->success(ReviewData::from($review));
     }
 
     /**
@@ -95,6 +95,6 @@ final class ReviewController extends Controller
         $review->delete();
         ReviewableAggregatesChanged::dispatch($review->reviewable_id, $review->reviewable_type);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

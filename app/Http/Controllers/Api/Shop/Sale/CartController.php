@@ -37,7 +37,7 @@ final class CartController extends Controller
     {
         $cartData = $this->cartService->getCart();
 
-        return response()->success($cartData);
+        return apiResponse()->success($cartData);
     }
 
     /**
@@ -49,7 +49,7 @@ final class CartController extends Controller
     {
         $cartData = $this->cartService->addItem($data);
 
-        return response()->success($cartData);
+        return apiResponse()->success($cartData);
     }
 
     /**
@@ -61,7 +61,7 @@ final class CartController extends Controller
     {
         $cartData = $this->cartService->updateItem($cartItem->id, $data);
 
-        return response()->updated($cartData);
+        return apiResponse()->updated($cartData);
     }
 
     /**
@@ -71,7 +71,7 @@ final class CartController extends Controller
     {
         $this->cartService->removeItem($cartItem->id);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 
     /**
@@ -83,7 +83,7 @@ final class CartController extends Controller
     {
         $cartData = $this->cartService->applyCoupon($data);
 
-        return response()->success($cartData);
+        return apiResponse()->success($cartData);
     }
 
     /**
@@ -95,6 +95,6 @@ final class CartController extends Controller
     {
         $cartData = $this->cartService->removeCoupon();
 
-        return response()->success($cartData);
+        return apiResponse()->success($cartData);
     }
 }

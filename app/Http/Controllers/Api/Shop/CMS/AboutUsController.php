@@ -29,6 +29,6 @@ final class AboutUsController extends Controller
     {
         $aboutUs = $service->get(SettingKeyEnum::ABOUT_US, AdminAboutUsData::getDefaults());
 
-        return response()->success(AboutUsData::fromSetting($aboutUs));
+        return apiResponse()->success(AboutUsData::fromSetting($aboutUs));
     }
 }

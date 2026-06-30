@@ -82,6 +82,6 @@ final class CheckoutController extends Controller
             $responseData = CheckoutResponseData::completed($orderData);
         }
 
-        return response()->created($responseData);
+        return apiResponse()->created($responseData);
     }
 }

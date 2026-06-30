@@ -62,7 +62,7 @@ final class EnrollmentController extends Controller
             ])
             ->paginate(request()->integer('per_page', 15));
 
-        return response()->success(EnrollmentListItemData::collect($enrollments));
+        return apiResponse()->success(EnrollmentListItemData::collect($enrollments));
     }
 
     /**
@@ -83,7 +83,7 @@ final class EnrollmentController extends Controller
             'orderItem.vendor',
         ]);
 
-        return response()->success(EnrollmentData::from($enrollment));
+        return apiResponse()->success(EnrollmentData::from($enrollment));
     }
 
     /**
@@ -106,7 +106,7 @@ final class EnrollmentController extends Controller
             'orderItem.vendor',
         ]);
 
-        return response()->success(EnrollmentData::from($enrollment));
+        return apiResponse()->success(EnrollmentData::from($enrollment));
     }
 
     /**
@@ -122,6 +122,6 @@ final class EnrollmentController extends Controller
         Gate::authorize('delete', $enrollment);
         $action->handle($enrollment);
 
-        return response()->noContentJson();
+        return apiResponse()->noContentJson();
     }
 }

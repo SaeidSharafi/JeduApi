@@ -28,7 +28,7 @@ final class ContactInfoController extends Controller
     {
         Gate::authorize('viewAny', Setting::class);
 
-        return response()->success(
+        return apiResponse()->success(
             ContactInfoData::from($settingsService->get(SettingKeyEnum::CONTACT_INFO, ContactInfoData::getDefaults()))
         );
     }
@@ -45,7 +45,7 @@ final class ContactInfoController extends Controller
 
         $settingsService->set(SettingKeyEnum::CONTACT_INFO, $data->toArray(), 'json', 'cms');
 
-        return response()->success(
+        return apiResponse()->success(
             ContactInfoData::from($settingsService->get(SettingKeyEnum::CONTACT_INFO, ContactInfoData::getDefaults())),
             __('messages.updated', ['model' => __('messages.models.contact_info')])
         );
