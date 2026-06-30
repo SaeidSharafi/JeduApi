@@ -175,7 +175,7 @@
 - Purpose: Purchase options with pricing/schedule.
 - Columns:
   - id (BIGINT, PK)
-  - uuid (UUID not null, unique) [added for external referencing]
+  - uuid (UUID not null, unique) — external referencing identifier
   - product_id (BIGINT) FK -> products(id) CASCADE
   - name (VARCHAR)
   - sku (VARCHAR nullable, unique) [auto-generated via SkuGeneratorService if not provided]
@@ -196,7 +196,7 @@
   - registration_end_date (DATE nullable)
   - available_from (DATE nullable)
   - available_to (DATE nullable)
-  - access_days (INT unsigned nullable, default null) — Number of days user has access to content after enrollment; null means unlimited
+  - access_days (INT unsigned nullable, default null) — Number of days user has access to content from enrollment date; null means unlimited
   - created_at/updated_at (TIMESTAMPS)
 - Indexes: UNIQUE(sku), INDEX(status)
 

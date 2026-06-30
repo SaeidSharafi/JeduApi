@@ -26,7 +26,7 @@
 - **Relationships:**
   - `belongsTo(Staff::class, 'admin_id')` - admin
   - `morphTo()` - resource (polymorphic to any audited model)
-- **Special Features:** Risk level categorization, wallet action detection, compliance reporting
+- **Special Features:** Risk level categorization, wallet action detection, compliance reporting. `admin_id` nullable — system-triggered actions (automated provisioning) have no staff actor.
 
 ### Order (`app/Models/Order.php`)
 - **Purpose:** Sales transaction records implementing WalletTransactionSourceableContract
@@ -40,7 +40,7 @@
 
 ### Product (`app/Models/Product.php`)
 - **Purpose:** Sellable instances of educational content with polymorphic relationships
-- **Key Fields:** `vendor_id`, `productable_id`, `productable_type`, `term_id`, `status`, `is_visible`, `short_name`, `name`, `slug`, `short_description`, `is_featured`, `price_data_cache`, `details_json`
+- **Key Fields:** `vendor_id`, `productable_id`, `productable_type`, `term_id`, `status`, `is_visible`, `short_name`, `name`, `slug`, `short_description`, `is_featured`, `price_data_cache`, `details_json`, `event_start_at`, `event_ended_at`
 - **Relationships:**
   - `morphTo()` - productable (Course, Seminar, DigitalAsset)
   - `belongsTo(Vendor::class)` - vendor
@@ -52,7 +52,7 @@
   - `crossSellProducts()` - related products filtered by CROSS_SELL type
   - `upsellProducts()` - related products filtered by UPSELL type
 - **Traits:** Uses `HasCategories`, `HasFactory`, and `Searchable` for taxonomy tagging, database seeding, and Scout/Typesense indexing
-- **Special Features:** Publication-aware scopes (`active*` helpers) combine status, visibility, and availability checks; SmartCache-backed price snapshots in `price_data_cache`; enum-backed casting for `status` with JSON casting on cached fields; supports product relationships (related, cross-sell, upsell) via pivot table with `relation_type` column; search index payload captures availability windows, discount flags, and scores for Typesense and PGroonga powered relevance ordering
+- **Special Features:** Publication-aware scopes (`active*` helpers) combine status, visibility, and availability checks; SmartCache-backed price snapshots in `price_data_cache`; enum-backed casting for `status` with JSON casting on cached fields; supports product relationships (related, cross-sell, upsell) via pivot table with `relation_type` column; search index payload captures availability windows, discount flags, scores, and event timestamps (`earliest_event_start_ts`, `latest_event_ended_ts`) for Typesense and PGroonga powered relevance ordering. **Event date scopes** (`eventEnded()`, `eventNotStarted()`, `eventOngoing()`, `eventNotEnded()`) filter products by temporal event state; `event_start_at`/`event_ended_at` datetime fields with indexes enable efficient querying for event-based products (seminars, workshops).
 
 ### Course (`app/Models/Course.php`)
 - **Purpose:** Educational course definitions and blueprints
@@ -74,7 +74,7 @@
   - `hasMany(Review::class, 'reviewable_id')` - reviews (polymorphic)
   - `morphToMany(BlogPost::class, 'productable', 'blog_post_productables')` - blogPosts
 - **Traits:** Combines `HasAssets`, `HasAuditor`, `HasCategories`, `HasMedia`, `HasReview`, `IsProductable`, and `Mediable` to manage attached resources, audit data, categories, and review aggregates
-- **Special Features:** Curriculum structure replaced `learning_objectives` with `curriculum_summary_text` (text summary) and `outcomes_json` (structured learning outcomes array) for better content organization; difficulty level now aligns with `CourseDifficultyLevelEnum` for catalog-wide filtering
+- **Special Features:** Curriculum structure uses `curriculum_summary_text` (text summary) and `outcomes_json` (structured learning outcomes array); difficulty level aligns with `CourseDifficultyLevelEnum` for catalog-wide filtering
 
 ### DigitalAsset (`app/Models/DigitalAsset.php`)
 - **Purpose:** Standalone digital products (PDFs, videos, etc.)
@@ -88,7 +88,7 @@
 
 ### ProductDeliveryOption (`app/Models/ProductDeliveryOption.php`)
 - **Purpose:** Specific purchase/delivery methods per product with pricing
-- **Key Fields:** `uuid` (UUID v7 auto-generated), `sku` (optional, auto-generated if not provided), `name`, `price`, `capacity`, `enrolled_count`, `status`, `fulfillment_type`, `delivery_method`, `is_prepayment_available`, `prepayment_amount`, `is_featured`, `featured_price`, `featured_price_start_date`, `featured_price_end_date`, `registration_start_date`, `registration_end_date`, `available_from`, `available_to`, `access_days` (number of days user has access after enrollment), `details_json`
+- **Key Fields:** `uuid` (UUID v7 auto-generated), `sku` (optional, auto-generated if not provided), `name`, `price`, `capacity`, `enrolled_count`, `status`, `fulfillment_type`, `delivery_method`, `is_prepayment_available`, `prepayment_amount`, `is_featured`, `featured_price`, `featured_price_start_date`, `featured_price_end_date`, `registration_start_date`, `registration_end_date`, `available_from`, `available_to`, `access_days` (access duration from enrollment date), `details_json`
 - **Relationships:**
   - `belongsTo(Product::class)` - product
   - `hasMany(ProductDeliveryOptionDiscountPrice::class)` - discountPrices
@@ -156,11 +156,14 @@
 - **Special Features:** Sequential transaction references via `PaymentTransactionReferenceService` with row-locking for concurrency; full gateway request/response capture for debugging; lifecycle tracking with `initiated_at`/`completed_at` timestamps; error codes and messages for failure analysis
 
 ### Refund (`app/Models/Refund.php`)
-- **Purpose:** Refund transaction records
-- **Key Fields:** Refund amounts, status, reasoning
+- **Purpose:** Refund transaction records implementing `WalletTransactionSourceableContract` for wallet credit reversals
+- **Key Fields:** `order_id`, `order_item_id`, `payment_id` (nullable — tracks which payment was refunded), `customer_id`, `created_by` (staff ID), `amount`, `deduction_amount`, `status` (`RefundStatusEnum: PENDING/COMPLETED/FAILED`), `transaction_details` (JSON — gateway-specific refund metadata), `admin_notes`, `refunded_at`
 - **Relationships:** 
+  - `belongsTo(Order::class)` - order
   - `belongsTo(OrderItem::class)` - orderItem
   - `belongsTo(Payment::class)` - payment
+  - `belongsTo(User::class, 'customer_id')` - customer
+- **Special Features:** SmartCache locking prevents concurrent refund processing; amount validation caps cumulative refunds against payment amount; gateway-specific refund processors via `RefundProcessorFactory` (Digipay, Manual, Wallet). Uses `HasAuditor` trait for staff attribution, `HasFactory` for test seeding.
 
 ### Review (`app/Models/Review.php`)
 - **Purpose:** Customer review system for products and courses
@@ -265,7 +268,8 @@
 - **Purpose:** Application configuration registry powering CMS, storefront content, and integration credentials
 - **Key Fields:** `key`, `value` (JSON payload — includes encrypted secrets for integration configs), `type`, `group`
 - **Relationships:** Self-contained configuration system with media attachments via Mediable
-- **Special Features:** `witImages()` helper resolves stored media IDs into `MediaData` DTOs; integrates with SettingsService and SmartCache invalidation; supports encrypted secret fields via `SettingKeyEnum::secretFields()`; secrets redacted from API responses via `SettingSecretRedactor`; SKIP_MEDIA optimization skips `witImages()` for integration keys (IMS, Moodle, BBB, SpotPlayer) to avoid unnecessary media queries
+- **Special Features:** `witImages()` helper resolves stored media IDs into `MediaData` DTOs; integrates with SettingsService and SmartCache invalidation; supports encrypted secret fields via `SettingKeyEnum::secretFields()`; secrets redacted from API responses via `SettingSecretRedactor`; SKIP_MEDIA optimization skips `witImages()` for integration keys (IMS, Moodle, BBB, SpotPlayer, Skyroom) to avoid unnecessary media queries
+- **Setting Key Values:** Payment gateway configs under `SettingKeyEnum`: `MELLAT` (`payment.mellat`), `WALLET` (`payment.wallet`), `BANK_TRANSFER` (`payment.bank_transfer`), `DIGIPAY` (`payment.digipay`), `SKYROOM` (`skyroom`). Each gateway has its own `secretFields()` for encrypted credential storage at rest.
 
 ### HomePageBlock (`app/Models/HomePageBlock.php`)
 - **Purpose:** Dynamic homepage block definitions rendered on the shop front
@@ -289,10 +293,10 @@
 - **Purpose:** Success stories and testimonials showcased on the storefront
 - **Key Fields:** `student_name`, `course_name`, `course_url` (validated as string, accepts relative paths like `/course-url`), `story_text`, `avatar_url`, `is_visible`, `is_featured`, `display_order`
 - **Relationships:**
-  - Media attachments (avatar) via Mediable; `avatar_url` now persisted rather than computed on the fly
+  - Media attachments (avatar) via Mediable; `avatar_url` persisted (not computed on the fly)
   - `belongsToMany(Category::class)` via `HasCategories`
   - `belongsToMany(Course::class, 'course_student_story')` - courses featured in the testimonial
-- **Special Features:** `visible()` and new `featured()` scopes drive storefront filtering; ordered display via `display_order`; category/course pivots enable admin/shop filtering; seeded demo data ships via `database/demo/student_stories.json`.
+- **Special Features:** `visible()` and `featured()` scopes drive storefront filtering; ordered display via `display_order`; category/course pivots enable admin/shop filtering; seeded demo data ships via `database/demo/student_stories.json`.
 
 ### course_student_story (Pivot)
 - **Purpose:** Associates curated StudentStory testimonials with one or more Courses for filtering in admin/shop surfaces
@@ -343,7 +347,7 @@
 - `config/payments.php` centralizes Mellat, bank transfer, and wallet gateway configurations plus transaction reference starting point (default: 200000001).
 
 ### Payment Transaction Tracking
-- All payment processors now create `PaymentTransaction` records for every gateway interaction.
+- All payment processors create `PaymentTransaction` records for every gateway interaction.
 - Transaction references are numeric-only sequential IDs beginning at 200000001 (configurable via `PAYMENT_TRANSACTION_START` env).
 - Mellat gateway uses transaction reference (not order increment_id) as `orderId` in gateway requests.
 - Wallet payments create immediate COMPLETED transaction records with wallet metadata.
@@ -356,7 +360,7 @@
 
 ### Payment Verification State
 - Payment verification is idempotent; only `PENDING` payments transition to `COMPLETED`. Re-verification attempts on non-pending payments are rejected.
-- Verification now tracks full lifecycle via `PaymentTransaction` (INITIATED → COMPLETED/FAILED) with complete gateway request/response capture.
+- Verification tracks full lifecycle via `PaymentTransaction` (INITIATED → COMPLETED/FAILED) with complete gateway request/response capture.
 
 ### Order & Enrollment Provisioning Triggers
 - `config('order.provisioning.trigger')` controls auto-provisioning: `any_payment` (default), `full_payment`, or `manual_approval`.

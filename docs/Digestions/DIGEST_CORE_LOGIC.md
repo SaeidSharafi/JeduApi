@@ -40,6 +40,10 @@
 - **Locking:** Uses distributed lock `price-indexing` with 30-minute timeout to prevent concurrent executions
 - **Usage:** `php artisan prices:index-all --missing-only` for first run, `php artisan prices:index-all` for full refresh
 
+#### EncryptSettingSecretsCommand (`app/Console/Commands/EncryptSettingSecretsCommand.php`)
+- **Signature:** `settings:encrypt-secrets {key?} {--dry-run}`
+- **Purpose:** Batch encryption of integration setting secret fields at rest. Scans all `Setting` records matching integration `SettingKeyEnum` values, encrypts any plaintext secret fields using `Crypt::encryptString()`. Supports targeting a specific setting key and dry-run mode for previewing which secrets would be encrypted.
+
 #### CheckExpiredFeaturedPricesCommand (`app/Console/Commands/CheckExpiredFeaturedPricesCommand.php`)
 - **Purpose:** Automated cleanup of expired featured prices with price index synchronization
 - **Signature:** `prices:check-expired-featured {--dry-run} {--queue=default}`
@@ -191,6 +195,16 @@
 - **DeleteHomePageBlockAction** (`app/Actions/Admin/Setting/DeleteHomePageBlockAction.php`)
   - `handle(HomePageBlock $block): void`: Removes homepage blocks
 
+#### Enrollment Actions (`app/Actions/Admin/Enrollment/`)
+- **ChangeEnrollmentStatusAction** (`app/Actions/Admin/Enrollment/ChangeEnrollmentStatusAction.php`)
+  - `handle(Enrollment $enrollment, EnrollmentStatusChangeData $data): Enrollment`: Validates status transitions against an allowed transition matrix (e.g., `awaiting_payment → pending_provisioning|cancelled`). Appends timestamped status change notes to the enrollment record. Throws `ValidationException` on invalid transitions.
+- **DeleteEnrollmentAction** (`app/Actions/Admin/Enrollment/DeleteEnrollmentAction.php`)
+  - `handle(Enrollment $enrollment): void`: Deletes enrollment only if status is not `ACTIVE` — prevents deletion of active enrollments.
+- **RetryProvisioningAction** (`app/Actions/Admin/Enrollment/RetryProvisioningAction.php`)
+  - `handle(Enrollment $enrollment): void`: Re-dispatches provisioning jobs for enrollment when `provisioning_data` contains partial/null provider states. Used for recovery from provisioning failures.
+- **UpdateEnrollmentAction** (`app/Actions/Admin/Enrollment/UpdateEnrollmentAction.php`)
+  - `handle(EnrollmentUpdateData $data, Enrollment $enrollment): Enrollment`: Updates enrollment metadata including access dates, notes, and survey completion status.
+
 #### Student Story Actions (`app/Actions/Admin/Setting/StudentStory/`)
 - **CreateStudentStoryAction** (`app/Actions/Admin/Setting/StudentStory/CreateStudentStoryAction.php`)
   - `handle(StudentStoryCreateData $data): StudentStory`: Creates new student success stories
@@ -211,9 +225,16 @@
 - **UpdateReviewFeaturedStatusAction**: Manages featured review selection
 
 #### Refund Actions (`app/Actions/Admin/Refund/`)
-- **CreateRefundAction**: Processes refund requests
-- **UpdateRefundAction**: Updates refund status and details
-- **DeleteRefundAction**: Cancels refund requests
+- **CreateRefundAction** (`app/Actions/Admin/Refund/CreateRefundAction.php`)
+  - `handle(RefundCreateData $data): Refund`: Creates refund records with SmartCache locking (`refund_order_item_{id}`, 15s timeout) to prevent double-refund race conditions. Calculates `amountPaid` vs `deductionAmount` for each item. Delegates gateway-specific processing logic to `RefundProcessorFactory` after creation. Updates `OrderItem.total_refunded` and re-evaluates parent order status via `UpdateOrderRefundedAmountAction`. Dispatches `RefundCompletedEvent` on completion.
+- **RefundOrderAction** (`app/Actions/Admin/Refund/RefundOrderAction.php`)
+  - `handle(Order $order, RefundCreateData $data): void`: Orchestrates full-order refund by iterating over refundable order items, calling `CreateRefundAction` per item.
+- **UpdateOrderRefundedAmountAction** (`app/Actions/Admin/Refund/UpdateOrderRefundedAmountAction.php`)
+  - `handle(Order $order): void`: Recalculates `total_refunded` across all order items and updates parent order status accordingly.
+- **UpdateRefundAction** (`app/Actions/Admin/Refund/UpdateRefundAction.php`)
+  - `handle(RefundUpdateData $data, Refund $refund): Refund`: Updates refund metadata and transaction details.
+- **UpdateRefundStatusAction** (`app/Actions/Admin/Refund/UpdateRefundStatusAction.php`)
+  - `handle(RefundStatusUpdateData $data, Refund $refund): Refund`: Transitions refund status with validation of allowed transitions (e.g., PENDING → COMPLETED/FAILED). On `COMPLETED`, updates item/parent order status and dispatches `RefundCompletedEvent`.
 
 #### Audit Actions (`app/Actions/Admin/Audit/`)
 - **DetectSuspiciousActivityAction**: Analyzes admin actions for security risks
@@ -250,6 +271,14 @@
 - **StoreAdviceRequestAction** (`app/Actions/Shop/Forms/StoreAdviceRequestAction.php`)
   - `handle(AdviceRequestCreateData $data): void`: Records phone numbers from users requesting educational consultation callbacks.
 
+#### Student Dashboard Actions (`app/Actions/Shop/Student/`)
+- **GetEnrollmentDetailAction** (`app/Actions/Shop/Student/GetEnrollmentDetailAction.php`)
+  - `handle(User $user, Enrollment $enrollment): EnrollmentDetailData`: Returns enriched enrollment detail with typed block DTOs per delivery method, SSO URLs (Moodle via `MoodleService`, Skyroom via `SkyroomService`), certificate info, review info, and survey block status. Block types: `DigitalAssetBlockData`, `InPersonBlockData`, `LiveSessionBbbBlockData`, `LiveSessionSkyroomBlockData`, `LmsMoodleBlockData`, `VideoPlatformSpotplayerBlockData`. Each block type carries delivery-specific data (join URLs, file downloads, etc.).
+- **GetJoinUrlAction** (`app/Actions/Shop/Student/GetJoinUrlAction.php`)
+  - `handle(Enrollment $enrollment): string`: Lazy-generates join URL for enrollment based on delivery method (BBB, Skyroom, SpotPlayer, Moodle). URLs generated on demand rather than pre-computed.
+- **CancelOrderByCustomerAction** (`app/Actions/Shop/Student/CancelOrderByCustomerAction.php`)
+  - `execute(Order $order, int $userId): Order`: Allows customers to cancel their own pending orders. Validates: order belongs to user, order is PENDING, no completed payments exist. Transactionally cancels order and associated enrollments.
+
 #### Checkout & Payment Actions (`app/Actions/Shop/*`)
 - **CreateOrderFromCartAction** (`app/Actions/Shop/CreateOrderFromCartAction.php`)
   - `handle(CheckoutData $checkoutData, User $user): PaymentProcessResultData`: Wraps the entire checkout pipeline—loads/validates the active cart (capacity, **registration window, availability window**, publication, duplicate ownership, order velocity), converts it into `OrderCreateData`, reuses `CreateOrderAction`, and then dispatches the selected payment processor. Returns redirect info for multi-step gateways or finalizes wallet/no-payment flows before clearing the cart.
@@ -257,8 +286,7 @@
   - `handle(Order $order, PaymentMethodEnum $method, ?int $amount = null): PaymentProcessResultData`: Allows customers to retry failed/pending orders, validating outstanding balance and order status before reissuing a processor-specific payment request (partial amounts supported via `amount`).
 - **VerifyPaymentAction** (`app/Actions/Shop/Payment/VerifyPaymentAction.php`)
   - `handle(GatewayCallbackData $data): Payment`: Locks the pending payment by UUID, resolves the correct processor via `PaymentProcessorFactory`, and delegates gateway-specific verification/settlement workflows (Mellat, etc.), surfacing validation errors if the payment is no longer pending.
-- **CancelOrderByCustomerAction** (`app/Actions/Shop/Order/CancelOrderByCustomerAction.php`)
-  - `execute(Order $order, int $userId): Order`: Allows customers to cancel their own pending orders. Validates: order belongs to user, order is PENDING, no completed payments exist. Transactionally sets order to CANCELLED, cancels associated enrollments (fires model events for `enrolled_count` tracking via `each()` + `save()`).
+
 
 ### Auth Actions (`app/Actions/Auth/`)
 - **GenerateOtpAction** (`app/Actions/Auth/GenerateOtpAction.php`)
@@ -307,6 +335,21 @@
   - `verify()`: Loads latest transaction for the payment. Maps `ResCode` to error messages for failures. On success (`ResCode === '0'`): performs `bpVerifyRequest` + `bpSettleRequest`. Both must succeed before marking transaction as COMPLETED and dispatching `PaymentCompletedEvent`. Failure at any step (verification fail, settlement fail, SOAP fault) updates transaction to FAILED with error details, error codes, timestamps. Settlement code 45 (already settled) treated as success.
   - **Transaction Lifecycle:** Every gateway interaction creates a `PaymentTransaction` record tracking `initiated_at`, `completed_at`, `gateway_request`, `gateway_response`, `error_code`, `error_message`. This provides full audit trail per payment attempt.
 
+### DigipayPaymentProcessor (`app/Services/Payment/DigipayPaymentProcessor.php`)
+- **Purpose:** Implements the multi-step Digipay (دیجی‌پی) REST gateway with token-based authentication, callback verification, delivery confirmation, and refund operations
+- **Process:**
+  - `process()`: Requests access token via `DigipayAuthenticator` (client_credentials grant with `client_id`/`client_secret`). Creates a payment request via `DigipayClient::createTransaction()` with amount, providerId (order UUID), callback URL, and optional PSP selection. Returns redirect URL for customer.
+  - `verify()`: Validates callback payload via `CallbackPayload::fromRequest()`. On `SUCCESS` result, performs settlement via `DigipayClient::verify()` with tracking code. Completes the payment and dispatches `PaymentCompletedEvent`.
+- **Data Objects:** `CallbackPayload` (amount, providerId, trackingCode, result, rrn, psp, pspCode, pspName), `VerifyResponse`, `DeliverResponse`, `RefundResponse`, `RefundInquiryResponse`, `ReverseResponse`, `TicketResponse`.
+- **Admin Operations** (`DigipayAdminService`): `refund(Payment $payment, int $amount)` — initiates gateway reversal; `deliver(Payment $payment)` — confirms digital goods delivery; `reverse(Payment $payment)` — voids unsettled transaction; `inquireRefund(string $trackingCode)` — checks refund status.
+
+### RefundProcessorFactory (`app/Services/Payment/Refund/RefundProcessorFactory.php`)
+- **Purpose:** Resolves the appropriate `RefundProcessorInterface` implementation by `PaymentMethodEnum`
+- **Available Processors:**
+  - `DigipayRefundProcessor` — processes refunds through Digipay gateway API with cumulative cap validation (prevents over-refund)
+  - `ManualRefundProcessor` — records manual/offline refunds without gateway interaction
+  - `WalletRefundProcessor` — credits refund amount back to customer wallet
+
 ### SoapClientFactory (`app/Services/Payment/SoapClientFactory.php`)
 - **Purpose:** Minimal helper that instantiates `SoapClient` instances from remote or local WSDL endpoints; wrapped to simplify mocking in unit tests
 
@@ -314,10 +357,10 @@
 - **Purpose:** Centralized order and enrolment status management with provisioning trigger awareness
 - **Public Methods:**
   - `handlePaymentCompletion(Order $order): void`: Reads `config('order.provisioning.trigger')` to determine auto-provisioning behavior:
-    - `any_payment` (default): Immediately completes items/enrollments (same as previous behavior)
-    - `full_payment`: Provisions only when `balance_due <= 0`
-    - `manual_approval`: Never auto-provisions — sets order to PROCESSING instead, requiring staff to call `ApproveOrderAction`
-  - `updateEnrollmentStatus(OrderItem $item): void`: Updates enrolment access based on order item status changes (completed items move enrolments into `PENDING_PROVISIONING`). Now uses `save()` instead of `saveQuietly()` to fire model events for `enrolled_count` synchronization.
+   - `any_payment` (default): Immediately completes items/enrollments
+   - `full_payment`: Provisions only when `balance_due <= 0`
+   - `manual_approval`: Never auto-provisions — sets order to PROCESSING, requiring staff to call `ApproveOrderAction`
+   - `updateEnrollmentStatus(OrderItem $item): void`: Updates enrolment access based on order item status changes (completed items move enrolments into `PENDING_PROVISIONING`). Uses `save()` to fire model events for `enrolled_count` synchronization.
   - `completeOrderItemAfterPayment(OrderItem $item): void`: Internal method for item-level status updates
   - `updateParentOrderStatus(Order $order): void`: Determines parent order status from collective item states: all refunded → REFUNDED, all cancelled → CANCELLED, any refunded → PARTIALLY_REFUNDED, all completed → COMPLETED, default → PROCESSING
 
@@ -372,7 +415,7 @@
 #### PromotionFinder (`app/Services/Discounts/PromotionFinder.php`)
 - **Purpose:** Finds and matches promotions to orders and products
 - **Public Methods:**
-  - `findApplicablePromotions(Order $order): Collection`: Finds promotions applicable to order; now enforces `usage_limit_total` — excludes promotions where `total_usage_count >= usage_limit_total` (Gap #2 fix)
+   - `findApplicablePromotions(Order $order): Collection`: Finds promotions applicable to order; enforces `usage_limit_total` — excludes promotions where `total_usage_count >= usage_limit_total`
   - `findBestPromotion(Product $product): ?DiscountPromotion`: Returns best available promotion for product
 
 ### Discount Cart Services (`app/Services/Discounts/Cart/`)
@@ -410,6 +453,27 @@
 - **Usage:** Applied in `SettingData::fromModel()`, `SettingsService::auditIntegrationWrite()`, and during `set()` for placeholder detection
 
 ### Integration Services (`app/Services/Integrations/`)
+
+#### AbstractIntegrationService (`app/Services/Integrations/AbstractIntegrationService.php`)
+- **Purpose:** Abstract base class providing shared configuration resolution, HTTP error handling, and lifecycle guards for all integration services
+- **Abstract Methods:**
+  - `getSettingKey(): SettingKeyEnum` — which settings key holds credentials
+  - `getConfigFallbackPath(): string` — config fallback path
+  - `validateConfig(): bool` — validates mandatory config fields
+- **Concrete Methods:**
+  - `isEnabled(): bool` — checks `config['enabled']`
+  - `assertConfigured(): void` — throws `UnrecoverableProvisioningException` if config invalid
+  - `isReady(): bool` — combines `isEnabled()` + `validateConfig()`
+  - `resolveConfig(): void` — merges stored settings with config fallback
+  - `handleHttpErrors(Response $response, string $endpoint): void` — standardized error handler for JSON REST integrations (throws `RecoverableProvisioningException` for 5xx, `UnrecoverableProvisioningException` for 4xx)
+- **Subclasses:** ImsService, MoodleService, SpotPlayerService, BbbService, SkyroomService all extend this base
+
+#### SkyroomService (`app/Services/Integrations/SkyroomService.php`)
+- **Purpose:** Skyroom video conferencing API client for meeting management and user provisioning
+- **Methods:**
+  - `createLoginUrl(string $userId, string $username): string`: Generates SSO login URL for Skyroom platform
+  - `findOrCreateUser(User $user): array`: Finds existing Skyroom user by email or creates a new account
+  - `addUserToRoom(int $roomId, int $skyroomUserId, string $role = 'normal'): void`: Enrolls user in a Skyroom room with specified role
 
 #### ImsService (`app/Services/Integrations/ImsService.php`)
 - **Purpose:** IMS (Internal Management System) REST API client for student & enrollment CRUD operations
@@ -475,6 +539,7 @@
   - `LMS_MOODLE` delivery → `ProvisionMoodleEnrollmentJob`
   - `VIDEO_PLATFORM_SPOTPLAYER` delivery → `ProvisionSpotPlayerEnrollmentJob`
   - `LIVE_SESSION_BBB` delivery → `ProvisionBbbEnrollmentJob`
+  - `LIVE_SESSION_SKYROOM` delivery → (handled via `GetJoinUrlAction` at request time, not async)
 
 #### UpdateStatusesAfterPaymentListener (`app/Listeners/UpdateStatusesAfterPaymentListener.php`)
 - **Purpose:** Calls `OrderStatusService::handlePaymentCompletion()` after payment confirmed (synchronous)
@@ -491,6 +556,17 @@
 - **Pattern:** Singleton service registered in AppServiceProvider for request lifecycle management
 
 ---
+
+### Exception Hierarchy
+- `ExternalProvisioningException` — abstract base; subclasses: `RecoverableProvisioningException` (transient 5xx errors), `UnrecoverableProvisioningException` (permanent 4xx/config errors).
+- `BankException` — abstract base for gateway-specific bank exceptions.
+- `ResourceNotProvisionedException` — thrown when a requested provisioning resource is unavailable.
+- Order cancellation throws `ValidationException`.
+- Wallet/user creation errors use `ValidationException`.
+
+### PermissionEnum
+- `PermissionEnum` cases organized by resource domain. See `config/permission-generator.php` for full list. Run `sail artisan permission:sync` to synchronize enums with permissions.
+- `ENROLLMENT_RETRY_PROVISION` permission gates retry provisioning authorization.
 
 ## Recent Behavior Clarifications
 
@@ -510,7 +586,7 @@
 - `DiscountPromotion.total_usage_count` and `DiscountCoupon.usage_count` increment only on successful checkout.
 
 ### Wallet Insufficient Balance Flow
-- Wallet checkout with insufficient funds returns a `wallet_balance` validation error; after top-up, retry completes normally.
+- Wallet checkout with insufficient funds returns a `wallet_balance` validation error; retry after top-up completes normally.
 
 ### Discount Snapshots on Orders
 - `Order.applied_cart_discounts_json` and `OrderItem.applied_discount_details_json` persist the applied discounts as immutable snapshots of checkout state.
@@ -534,11 +610,11 @@
   - `globalSearchProductsDatabase()` / `globalSearchProductsScout()`: Driver-specific search implementations used by the primary entry point
   - `availableProducts()`: Ensures published product, productable, delivery options, and active term status
   - `availableNow()`: Filters to delivery options currently within registration and availability windows
-  - `registrationWindow(Carbon $from, Carbon $to)` / `availabilityWindow(Carbon $from, Carbon $to)`: Overlap-aware date filtering for storefront scheduling needs (now supports direct date range params in addition to existing scope usage)
+  - `registrationWindow(Carbon $from, Carbon $to)` / `availabilityWindow(Carbon $from, Carbon $to)`: Overlap-aware date filtering for storefront scheduling needs (supports direct date range params and scope usage)
   - `availabilityStatus(AvailabilityStatusEnum)`: Filters products by temporal state — `PAST` (available_to < now), `UPCOMING` (available_from > now), `ONGOING` (within window). Applied as deferred relationship constraint on `productDeliveryOptions`
   - `nearingCapacity(float $threshold = 0.8)`: Filters to products where at least one delivery option has `enrolled_count / capacity >= threshold`
   - `withoutFullProducts()`: Excludes delivery options where `capacity IS NOT NULL AND capacity <= enrolled_count`
-  - `sortByCapacityUtilization(float $threshold = 0.8)`: Uses `LEFT JOIN LATERAL` subquery to compute `max_ratio` and `near_capacity_flag` in a single pass; orders by near-capacity first, then utilization ratio descending. `sortBy` now accepts `capacity_utilization`
+  - `sortByCapacityUtilization(float $threshold = 0.8)`: Uses `LEFT JOIN LATERAL` subquery to compute `max_ratio` and `near_capacity_flag` in a single pass; orders by near-capacity first, then utilization ratio descending. `sortBy` accepts `capacity_utilization` parameter
   - `inCategories()` / `inCategoryIds()`: Deferred category constraints using collected relationship callbacks
   - `goodForStart(array $categorySlugs)`: Limits to course productables flagged as `good_for_start` within the pivot table
   - `byCourseLevel()` / `byFulfillmentTypes()`: Filters using enums for consistent DTO integration
@@ -566,7 +642,7 @@
 - **Public Methods:**
   - `remember(string $key, Closure $callback, int $freshSeconds = 300, int $staleSeconds = 900)`: Core SWR wrapper returning fresh or stale payloads while refreshing asynchronously
   - `rememberHomepageContent(string $key, Closure $callback)`: Preset for homepage fragments (5 min fresh / 15 min stale)
-  - `rememberHomepageContent(string $key, Closure $callback)`: Preset for homepage fragments (5 min fresh / 15 min stale); keys can now encode filter hashes (e.g., student story course/category slug combos) with wildcard invalidation support to keep variant caches consistent.
+  - `rememberHomepageContent(string $key, Closure $callback)`: Preset for homepage fragments (5 min fresh / 15 min stale); keys encode filter hashes (e.g., student story course/category slug combos) with wildcard invalidation support to keep variant caches consistent.
   - `rememberSearchSuggestions(string $key, Closure $callback)`: Preset for search autocomplete (1 hour fresh / 4 hours stale)
   - `rememberTrendingContent(string $key, Closure $callback)`: Preset for trending widgets (10 min fresh / 30 min stale)
 - **Usage:** Powers search suggestions and homepage listings to balance freshness with perceived performance
@@ -575,7 +651,7 @@
 - **Purpose:** Central cache eviction utility invoked by `InvalidationObserver`
 - **Public Method:**
   - `invalidateForModel(string|Model $model, array $invalidationConfig): void`: Iterates configured keys/patterns, calling `SmartCache::forget()` and `SmartCache::flushPatterns()` with exception-safe logging
-- **Configuration:** Consumes `config/cache_invalidation.php` entries that can mix `CacheKeysEnum` values, literal keys, and wildcard patterns (e.g., StudentStory now flushes `student_stories:*` variants whenever testimonials change)
+- **Configuration:** Consumes `config/cache_invalidation.php` entries that mix `CacheKeysEnum` values, literal keys, and wildcard patterns (e.g., StudentStory flushes `student_stories:*` variants whenever testimonials change)
 
 ### PgroongaService (`app/Services/PgroongaService.php`)
 - **Purpose:** Lightweight helper to detect PGroonga availability on PostgreSQL connections
@@ -686,6 +762,18 @@
 - **Functionality:** Targets all four integration keys (IMS, Moodle, BBB, SpotPlayer). Detects already-encrypted values via try-decrypt to ensure idempotency. Dry-run mode previews changes. Busts settings cache after write.
 - **Usage:** Run after deployment to ensure all stored secrets are encrypted at rest.
 
+### ResponseService (`app/Services/ResponseService.php`)
+- **Purpose:** Centralized API response builder (`apiResponse()->success()`, etc.)
+- **Methods:**
+  - `success(mixed $data = null, string $message = 'Success', int $code = 200, array $extra = []): JsonResponse` — wraps data in standardized `{data, message, ...extra}` envelope
+  - `created(mixed $data = null, string $message = 'Created'): JsonResponse` — shorthand for 201 responses
+  - `noContent(): JsonResponse` — 204 No Content
+  - `error(string $message, int $code = 400, ?array $errors = null): JsonResponse` — standardized error responses with optional field-level error map
+  - `notFound(?string $message = null): JsonResponse` — 404 shorthand
+  - `forbidden(?string $message = null): JsonResponse` — 403 shorthand
+  - `unauthenticated(?string $message = null): JsonResponse` — 401 shorthand
+- **Usage:** All controllers use this service (via `apiResponse()` helper).
+
 ## Traits & Utilities
 
 ### FakeMediaTrait (`tests/Support/Traits/FakeMediaTrait.php`)
@@ -697,5 +785,5 @@
 - **Purpose:** Shared provisioning job logic for success/failure marking and provider detection
 - **Methods:** `markProvisioningSuccess()`, `markProvisioningFailed()`, `requiresProvisioning()`
 
-### HasMedia Trait — `getAllMedia()` Enhancement
-- **Method:** `getAllMedia(bool $urlOnly = false, array $onlyTags = []): array` — now accepts optional `$onlyTags` parameter to filter media by specific tags instead of returning all tags. Used by BlogPostCardData (cover only) and BlogPostDetailData (all media).
+### HasMedia Trait — `getAllMedia()` 
+- **Method:** `getAllMedia(bool $urlOnly = false, array $onlyTags = []): array` — optional `$onlyTags` parameter filters media by specific tags (e.g., BlogPostCardData uses cover only).

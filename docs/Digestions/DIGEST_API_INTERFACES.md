@@ -2,7 +2,8 @@
 
 ## Admin API Interface (`/api/v1/admin/*`)
 **Authentication:** `auth:staff` guard with `admin.audit` middleware  
-**Response Pattern:** All responses use `spatie/laravel-data` DTOs with custom response macros
+**Response Pattern:** All responses use `spatie/laravel-data` DTOs via `ResponseService`.
+**Scribe Response Files:** Stored in `resources/responses/` (version-controlled). All `@responseFile` paths reference this directory.
 
 ### StaffController (`app/Http/Controllers/Api/Admin/StaffController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/staff` - **Delegates to:** Staff listing action - **Response DTO:** StaffData collection
@@ -12,42 +13,42 @@
 - `destroy(Staff $staff)`: **Route:** `DELETE /api/v1/admin/staff/{staff}` - **Delegates to:** Staff deletion action
 
 ### RoleController (`app/Http/Controllers/Api/Admin/RoleController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/role` - **Delegates to:** Role listing - **Response DTO:** RoleData collection
-- `store(RoleCreateData $request)`: **Route:** `POST /api/v1/admin/role` - **Request DTO:** RoleCreateData - **Response DTO:** RoleData
-- `show(Role $role)`: **Route:** `GET /api/v1/admin/role/{role}` - **Response DTO:** RoleData
-- `update(RoleUpdateData $request, Role $role)`: **Route:** `PUT /api/v1/admin/role/{role}` - **Request DTO:** RoleUpdateData - **Response DTO:** RoleData
-- `destroy(Role $role)`: **Route:** `DELETE /api/v1/admin/role/{role}` - **Delegates to:** Role deletion
+- `index()`: **Route:** `GET /api/v1/admin/roles` - **Delegates to:** Role listing - **Response DTO:** RoleData collection
+- `store(RoleCreateData $request)`: **Route:** `POST /api/v1/admin/roles` - **Request DTO:** RoleCreateData - **Response DTO:** RoleData
+- `show(Role $role)`: **Route:** `GET /api/v1/admin/roles/{role}` - **Response DTO:** RoleData
+- `update(RoleUpdateData $request, Role $role)`: **Route:** `PUT /api/v1/admin/roles/{role}` - **Request DTO:** RoleUpdateData - **Response DTO:** RoleData
+- `destroy(Role $role)`: **Route:** `DELETE /api/v1/admin/roles/{role}` - **Delegates to:** Role deletion
 
 ### PermissionController (`app/Http/Controllers/Api/Admin/PermissionController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/permission` - **Delegates to:** Permission listing - **Response DTO:** PermissionData collection
+- `index()`: **Route:** `GET /api/v1/admin/permissions` - **Delegates to:** Permission listing - **Response DTO:** PermissionData collection
 
 ### VendorController (`app/Http/Controllers/Api/Admin/VendorController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/vendor` - **Delegates to:** Vendor listing - **Response DTO:** VendorData collection
-- `store(VendorCreateData $request)`: **Route:** `POST /api/v1/admin/vendor` - **Request DTO:** VendorCreateData - **Response DTO:** VendorData
-- `show(Vendor $vendor)`: **Route:** `GET /api/v1/admin/vendor/{vendor}` - **Response DTO:** VendorData
-- `update(VendorUpdateData $request, Vendor $vendor)`: **Route:** `PUT /api/v1/admin/vendor/{vendor}` - **Request DTO:** VendorUpdateData - **Response DTO:** VendorData
-- `destroy(Vendor $vendor)`: **Route:** `DELETE /api/v1/admin/vendor/{vendor}` - **Delegates to:** Vendor deletion
+- `index()`: **Route:** `GET /api/v1/admin/vendors` - **Delegates to:** Vendor listing - **Response DTO:** VendorData collection
+- `store(VendorCreateData $request)`: **Route:** `POST /api/v1/admin/vendors` - **Request DTO:** VendorCreateData - **Response DTO:** VendorData
+- `show(Vendor $vendor)`: **Route:** `GET /api/v1/admin/vendors/{vendor}` - **Response DTO:** VendorData
+- `update(VendorUpdateData $request, Vendor $vendor)`: **Route:** `PUT /api/v1/admin/vendors/{vendor}` - **Request DTO:** VendorUpdateData - **Response DTO:** VendorData
+- `destroy(Vendor $vendor)`: **Route:** `DELETE /api/v1/admin/vendors/{vendor}` - **Delegates to:** Vendor deletion
 
 ### TeacherController (`app/Http/Controllers/Api/Admin/TeacherController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/teacher` - **Delegates to:** Teacher listing - **Response DTO:** TeacherData collection
-- `store(TeacherCreateData $request)`: **Route:** `POST /api/v1/admin/teacher` - **Request DTO:** TeacherCreateData - **Response DTO:** TeacherData
-- `show(Teacher $teacher)`: **Route:** `GET /api/v1/admin/teacher/{teacher}` - **Response DTO:** TeacherData
-- `update(TeacherUpdateData $request, Teacher $teacher)`: **Route:** `PUT /api/v1/admin/teacher/{teacher}` - **Request DTO:** TeacherUpdateData - **Response DTO:** TeacherData
-- `destroy(Teacher $teacher)`: **Route:** `DELETE /api/v1/admin/teacher/{teacher}` - **Delegates to:** Teacher deletion
+- `index()`: **Route:** `GET /api/v1/admin/teachers` - **Delegates to:** Teacher listing - **Response DTO:** TeacherData collection
+- `store(TeacherCreateData $request)`: **Route:** `POST /api/v1/admin/teachers` - **Request DTO:** TeacherCreateData - **Response DTO:** TeacherData
+- `show(Teacher $teacher)`: **Route:** `GET /api/v1/admin/teachers/{teacher}` - **Response DTO:** TeacherData
+- `update(TeacherUpdateData $request, Teacher $teacher)`: **Route:** `PUT /api/v1/admin/teachers/{teacher}` - **Request DTO:** TeacherUpdateData - **Response DTO:** TeacherData
+- `destroy(Teacher $teacher)`: **Route:** `DELETE /api/v1/admin/teachers/{teacher}` - **Delegates to:** Teacher deletion
 
 ### TermController (`app/Http/Controllers/Api/Admin/TermController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/term` - **Delegates to:** Term listing - **Response DTO:** TermData collection
-- `store(TermCreateData $request)`: **Route:** `POST /api/v1/admin/term` - **Request DTO:** TermCreateData - **Response DTO:** TermData
-- `show(Term $term)`: **Route:** `GET /api/v1/admin/term/{term}` - **Response DTO:** TermData
-- `update(TermUpdateData $request, Term $term)`: **Route:** `PUT /api/v1/admin/term/{term}` - **Request DTO:** TermUpdateData - **Response DTO:** TermData
-- `destroy(Term $term)`: **Route:** `DELETE /api/v1/admin/term/{term}` - **Delegates to:** Term deletion
+- `index()`: **Route:** `GET /api/v1/admin/terms` - **Delegates to:** Term listing - **Response DTO:** TermData collection
+- `store(TermCreateData $request)`: **Route:** `POST /api/v1/admin/terms` - **Request DTO:** TermCreateData - **Response DTO:** TermData
+- `show(Term $term)`: **Route:** `GET /api/v1/admin/terms/{term}` - **Response DTO:** TermData
+- `update(TermUpdateData $request, Term $term)`: **Route:** `PUT /api/v1/admin/terms/{term}` - **Request DTO:** TermUpdateData - **Response DTO:** TermData
+- `destroy(Term $term)`: **Route:** `DELETE /api/v1/admin/terms/{term}` - **Delegates to:** Term deletion
 
 ### UserController (`app/Http/Controllers/Api/Admin/UserController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/user` - **Delegates to:** Customer user listing - **Response DTO:** UserData collection
-- `store(UserCreateData $request)`: **Route:** `POST /api/v1/admin/user` - **Request DTO:** UserCreateData - **Response DTO:** UserData
-- `show(User $user)`: **Route:** `GET /api/v1/admin/user/{user}` - **Response DTO:** UserData
-- `update(UserUpdateData $request, User $user)`: **Route:** `PUT /api/v1/admin/user/{user}` - **Request DTO:** UserUpdateData - **Response DTO:** UserData
-- `destroy(User $user)`: **Route:** `DELETE /api/v1/admin/user/{user}` - **Delegates to:** User deletion
+- `index()`: **Route:** `GET /api/v1/admin/users` - **Delegates to:** Customer user listing - **Response DTO:** UserData collection
+- `store(UserCreateData $request)`: **Route:** `POST /api/v1/admin/users` - **Request DTO:** UserCreateData - **Response DTO:** UserData
+- `show(User $user)`: **Route:** `GET /api/v1/admin/users/{user}` - **Response DTO:** UserData
+- `update(UserUpdateData $request, User $user)`: **Route:** `PUT /api/v1/admin/users/{user}` - **Request DTO:** UserUpdateData - **Response DTO:** UserData
+- `destroy(User $user)`: **Route:** `DELETE /api/v1/admin/users/{user}` - **Delegates to:** User deletion
 
 ### CategoryController (`app/Http/Controllers/Api/Admin/Category/CategoryController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/category` - **Delegates to:** Category listing with hierarchy - **Response DTO:** CategoryData collection
@@ -71,19 +72,19 @@
 
 ### DigitalAssetController (`app/Http/Controllers/Api/Admin/Product/DigitalAssetController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/digital-asset` - **Delegates to:** Digital asset listing - **Response DTO:** DigitalAssetData collection
-- `store(DigitalAssetCreateData $request)`: **Route:** `POST /api/v1/admin/digital-asset` - **Request DTO:** DigitalAssetCreateData (includes short_name, full_name instead of name field) - **Response DTO:** DigitalAssetData
+- `store(DigitalAssetCreateData $request)`: **Route:** `POST /api/v1/admin/digital-asset` - **Request DTO:** DigitalAssetCreateData (short_name, full_name) - **Response DTO:** DigitalAssetData
 - `show(DigitalAsset $digitalAsset)`: **Route:** `GET /api/v1/admin/digital-asset/{digital_asset}` - **Response DTO:** DigitalAssetData (includes short_name, full_name)
 - `update(DigitalAssetUpdateData $request, DigitalAsset $digitalAsset)`: **Route:** `PUT /api/v1/admin/digital-asset/{digital_asset}` - **Request DTO:** DigitalAssetUpdateData (includes short_name, full_name) - **Response DTO:** DigitalAssetData
 - `destroy(DigitalAsset $digitalAsset)`: **Route:** `DELETE /api/v1/admin/digital-asset/{digital_asset}` - **Delegates to:** Digital asset deletion
-- **DTO Changes:** All DigitalAsset DTOs now use `short_name` (max 100 chars) and `full_name` (max 191 chars) instead of single `name` field
+- **DTO Fields:** DigitalAsset DTOs use `short_name` (max 100 chars) and `full_name` (max 191 chars)
 
 ### SeminarController (`app/Http/Controllers/Api/Admin/Product/SeminarController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/seminar` - **Delegates to:** Seminar listing - **Response DTO:** SeminarData collection
-- `store(SeminarCreateData $request)`: **Route:** `POST /api/v1/admin/seminar` - **Request DTO:** SeminarCreateData (includes curriculum_summary_text, outcomes_json array instead of learning_objectives) - **Response DTO:** SeminarData
+- `store(SeminarCreateData $request)`: **Route:** `POST /api/v1/admin/seminar` - **Request DTO:** SeminarCreateData (curriculum_summary_text, outcomes_json array) - **Response DTO:** SeminarData
 - `show(Seminar $seminar)`: **Route:** `GET /api/v1/admin/seminar/{seminar}` - **Response DTO:** SeminarData (includes curriculum_summary_text, outcomes_json)
 - `update(SeminarUpdateData $request, Seminar $seminar)`: **Route:** `PUT /api/v1/admin/seminar/{seminar}` - **Request DTO:** SeminarUpdateData (includes curriculum_summary_text, outcomes_json) - **Response DTO:** SeminarData
 - `destroy(Seminar $seminar)`: **Route:** `DELETE /api/v1/admin/seminar/{seminar}` - **Delegates to:** Seminar deletion
-- **DTO Changes:** All Seminar DTOs replaced `learning_objectives` text field with `curriculum_summary_text` (nullable text) and `outcomes_json` (required array) for structured curriculum data
+- **DTO Fields:** Seminar DTOs use `curriculum_summary_text` (nullable text) and `outcomes_json` (required array) for curriculum data
 
 ### ProductController (`app/Http/Controllers/Api/Admin/Product/ProductController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/product` - **Delegates to:** Product listing with filtering - **Response DTO:** ProductData collection
@@ -123,14 +124,14 @@
 - **Special Features:** Enhanced filtering with main_productable_type/id support, uses BlogPostListItemData for listing efficiency
 
 ### OrderController (`app/Http/Controllers/Api/Admin/OrderController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/order` - **Delegates to:** Order listing with filtering - **Response DTO:** OrderData collection
-- `store(OrderCreateData $request)`: **Route:** `POST /api/v1/admin/order` - **Request DTO:** OrderCreateData - **Delegates to:** CreateOrderAction::handle() — now validates registration window and availability window on each item - **Response DTO:** OrderData
-- `show(Order $order)`: **Route:** `GET /api/v1/admin/order/{order}` - **Delegates to:** Order retrieval with relationships - **Response DTO:** OrderData
-- `update(OrderUpdateData $request, Order $order)`: **Route:** `PUT /api/v1/admin/order/{order}` - **Request DTO:** OrderUpdateData - **Response DTO:** OrderData
-- `destroy(Order $order)`: **Route:** `DELETE /api/v1/admin/order/{order}` - **Delegates to:** Order deletion
+- `index()`: **Route:** `GET /api/v1/admin/orders` - **Delegates to:** Order listing with filtering - **Response DTO:** OrderData collection
+- `store(OrderCreateData $request)`: **Route:** `POST /api/v1/admin/orders` - **Request DTO:** OrderCreateData - **Delegates to:** CreateOrderAction::handle() — validates registration window and availability window on each item - **Response DTO:** OrderData
+- `show(Order $order)`: **Route:** `GET /api/v1/admin/orders/{order}` - **Delegates to:** Order retrieval with relationships - **Response DTO:** OrderData
+- `update(OrderUpdateData $request, Order $order)`: **Route:** `PUT /api/v1/admin/orders/{order}` - **Request DTO:** OrderUpdateData - **Response DTO:** OrderData
+- `destroy(Order $order)`: **Route:** `DELETE /api/v1/admin/orders/{order}` - **Delegates to:** Order deletion
 
 ### ApproveOrderController (`app/Http/Controllers/Api/Admin/Order/ApproveOrderController.php`)
-- `__invoke(Order $order, ApproveOrderAction $action)`: **Route:** `POST /api/v1/admin/order/{order}/approve` - **Authorization:** `Gate::authorize('approve', $order)` via `PermissionEnum::ORDER_APPROVE` - **Delegates to:** ApproveOrderAction::handle() - **Response DTO:** OrderData - **Response File:** `storage/responses/admin/order/approve.json`
+- `__invoke(Order $order, ApproveOrderAction $action)`: **Route:** `POST /api/v1/admin/orders/{order}/approve` - **Authorization:** `Gate::authorize('approve', $order)` via `PermissionEnum::ORDER_APPROVE` - **Delegates to:** ApproveOrderAction::handle() - **Response DTO:** OrderData - **Response File:** `resources/responses/admin/order/approve.json`
 
 #### Validation Error Keys (Clarifications)
 - Checkout validation errors for cart items use literal keys like `items.0`.
@@ -140,31 +141,21 @@
 - Gateway verify on non-pending payments returns a validation error keyed `payment`.
 
 ### OrderCalculationController (`app/Http/Controllers/Api/Admin/OrderCalculationController.php`)
-- `__invoke(OrderCreateData $request)`: **Route:** `POST /api/v1/admin/order/preview` - **Request DTO:** OrderCreateData - **Delegates to:** OrderCalculationService::calculate() - **Response DTO:** OrderContextData
+- `__invoke(OrderCreateData $request)`: **Route:** `POST /api/v1/admin/orders/preview` - **Request DTO:** OrderCreateData - **Delegates to:** OrderCalculationService::calculate() - **Response DTO:** OrderContextData
 
 ### OrderItemController (`app/Http/Controllers/Api/Admin/OrderItemController.php`)
-- `index(Order $order)`: **Route:** `GET /api/v1/admin/order/{order}/order-item` - **Response DTO:** OrderItemData collection
-- `show(Order $order, OrderItem $orderItem)`: **Route:** `GET /api/v1/admin/order/{order}/order-item/{order_item}` - **Response DTO:** OrderItemData
+- `index(Order $order)`: **Route:** `GET /api/v1/admin/orders/{order}/order-items` - **Response DTO:** OrderItemData collection
+- `show(Order $order, OrderItem $orderItem)`: **Route:** `GET /api/v1/admin/orders/{order}/order-items/{order_item}` - **Response DTO:** OrderItemData
 
 ### PaymentController (`app/Http/Controllers/Api/Admin/PaymentController.php`)
-- `index(Order $order)`: **Route:** `GET /api/v1/admin/order/{order}/payment` - **Delegates to:** Payment listing for order - **Response DTO:** PaymentData collection
-- `store(PaymentCreateData $request, Order $order)`: **Route:** `POST /api/v1/admin/order/{order}/payment` - **Request DTO:** PaymentCreateData - **Delegates to:** CreatePaymentAction - **Response DTO:** PaymentData
-- `show(Order $order, Payment $payment)`: **Route:** `GET /api/v1/admin/order/{order}/payment/{payment}` - **Response DTO:** PaymentData
-- `update(PaymentUpdateData $request, Order $order, Payment $payment)`: **Route:** `PUT /api/v1/admin/order/{order}/payment/{payment}` - **Response DTO:** PaymentData
-- `destroy(Order $order, Payment $payment)`: **Route:** `DELETE /api/v1/admin/order/{order}/payment/{payment}` - **Delegates to:** Payment deletion
+- `index(Order $order)`: **Route:** `GET /api/v1/admin/orders/{order}/payment` - **Delegates to:** Payment listing for order - **Response DTO:** PaymentData collection
+- `store(PaymentCreateData $request, Order $order)`: **Route:** `POST /api/v1/admin/orders/{order}/payment` - **Request DTO:** PaymentCreateData - **Delegates to:** CreatePaymentAction - **Response DTO:** PaymentData
+- `show(Order $order, Payment $payment)`: **Route:** `GET /api/v1/admin/orders/{order}/payment/{payment}` - **Response DTO:** PaymentData
+- `update(PaymentUpdateData $request, Order $order, Payment $payment)`: **Route:** `PUT /api/v1/admin/orders/{order}/payment/{payment}` - **Response DTO:** PaymentData
+- `destroy(Order $order, Payment $payment)`: **Route:** `DELETE /api/v1/admin/orders/{order}/payment/{payment}` - **Delegates to:** Payment deletion
 
-### NextPaymentDetailsController (`app/Http/Controllers/Api/Admin/NextPaymentDetailsController.php`)
-- `__invoke(Order $order)`: **Route:** `GET /api/v1/admin/order/{order}/next-payment-details` - **Response DTO:** NextPaymentData
-
-### RefundController (`app/Http/Controllers/Api/Admin/RefundController.php`)
-- `index(OrderItem $orderItem)`: **Route:** `GET /api/v1/admin/order-item/{order_item}/refund` - **Response DTO:** RefundData collection
-- `store(RefundCreateData $request, OrderItem $orderItem)`: **Route:** `POST /api/v1/admin/order-item/{order_item}/refund` - **Request DTO:** RefundCreateData - **Response DTO:** RefundData
-- `show(OrderItem $orderItem, Refund $refund)`: **Route:** `GET /api/v1/admin/order-item/{order_item}/refund/{refund}` - **Response DTO:** RefundData
-- `update(RefundUpdateData $request, OrderItem $orderItem, Refund $refund)`: **Route:** `PUT /api/v1/admin/order-item/{order_item}/refund/{refund}` - **Response DTO:** RefundData
-- `destroy(OrderItem $orderItem, Refund $refund)`: **Route:** `DELETE /api/v1/admin/order-item/{order_item}/refund/{refund}` - **Delegates to:** Refund deletion
-
-### RefundUpdateStatusController (`app/Http/Controllers/Api/Admin/RefundUpdateStatusController.php`)
-- `__invoke(RefundStatusUpdateData $request, Refund $refund)`: **Route:** `PUT /api/v1/admin/refund/{refund}/status` - **Request DTO:** RefundStatusUpdateData - **Response DTO:** RefundData
+### NextPaymentDetailsController (`app/Http/Controllers/Api/Admin/Order/NextPaymentDetailsController.php`)
+- `__invoke(Order $order)`: **Route:** `GET /api/v1/admin/orders/{order}/next-payment-details` - **Response DTO:** NextPaymentData
 
 ### DiscountPromotionController (`app/Http/Controllers/Api/Admin/DiscountPromotionController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/discount-promotion` - **Delegates to:** Discount promotion listing - **Response DTO:** DiscountPromotionData collection
@@ -277,38 +268,76 @@
 - `destroy(HomePageBlock $homePageBlock)`: **Route:** `DELETE /api/v1/admin/settings/home-page-block/{home_page_block}` - **Delegates to:** Home page block deletion
 
 #### StudentStoryController (`app/Http/Controllers/Api/Admin/Content/StudentStoryController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/settings/student-stories` - **Filters:** `filter[student_name]`, `filter[course_name]`, exact `filter[is_visible]`, `filter[is_featured]`, plus callback filters `filter[course_id]`/`filter[category_id]` that leverage the new course + category pivots. Sortable by `student_name`, `course_name`, `display_order`, `created_at`. **Response DTO:** Paginated `StudentStoryListItemData`.
-- `store(StudentStoryCreateData $request)`: **Route:** `POST /api/v1/admin/settings/student-stories` - **Request DTO:** StudentStoryCreateData (now accepts `is_featured`, `categories[]`, `courses[]`, optional `avatar` media id) - **Response DTO:** `StudentStoryData` including attached categories/courses collections.
+- `index()`: **Route:** `GET /api/v1/admin/settings/student-stories` - **Filters:** `filter[student_name]`, `filter[course_name]`, exact `filter[is_visible]`, `filter[is_featured]`, callback filters `filter[course_id]`/`filter[category_id]` via course + category pivots. Sortable by `student_name`, `course_name`, `display_order`, `created_at`. **Response DTO:** Paginated `StudentStoryListItemData`.
+- `store(StudentStoryCreateData $request)`: **Route:** `POST /api/v1/admin/settings/student-stories` - **Request DTO:** StudentStoryCreateData (`is_featured`, `categories[]`, `courses[]`, optional `avatar` media id) - **Response DTO:** `StudentStoryData` including attached categories/courses collections.
 - `show(StudentStory $studentStory)`: **Route:** `GET /api/v1/admin/settings/student-stories/{student_story}` - Loads media + relationships before returning `StudentStoryData` with avatar, categories, courses and feature flag.
 - `update(StudentStoryUpdateData $request, StudentStory $studentStory)`: **Route:** `PUT /api/v1/admin/settings/student-stories/{student_story}` - Mirrors `store()` contract for updating associations and feature status - **Response DTO:** `StudentStoryData`.
 - `destroy(StudentStory $studentStory)`: **Route:** `DELETE /api/v1/admin/settings/student-stories/{student_story}` - **Response:** 204 No Content.
 
+### Order Endpoints
+Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/preview`, `/api/v1/admin/orders/{order}/approve`, `/api/v1/admin/orders/{order}/order-items`, `/api/v1/admin/orders/{order}/payment`, `/api/v1/admin/orders/{order}/next-payment-details`.`
+
+### Refund & Order Refund Endpoints
+- **RefundController** (`app/Http/Controllers/Api/Admin/Order/RefundController.php`):
+  - `index()`: **Route:** `GET /api/v1/admin/refunds` - **Response DTO:** RefundData collection
+  - `store(RefundCreateData $request)`: **Route:** `POST /api/v1/admin/refunds` - **Request DTO:** RefundCreateData - **Response DTO:** RefundData
+  - `show(Refund $refund)`: **Route:** `GET /api/v1/admin/refunds/{refund}` - **Response DTO:** RefundData
+  - `update(RefundUpdateData $request, Refund $refund)`: **Route:** `PUT /api/v1/admin/refunds/{refund}` - **Response DTO:** RefundData
+  - `destroy(Refund $refund)`: **Route:** `DELETE /api/v1/admin/refunds/{refund}` - **Delegates to:** Refund deletion
+- **OrderRefundController** (`app/Http/Controllers/Api/Admin/Order/OrderRefundController.php`):
+  - `store(RefundCreateData $request, Order $order)`: **Route:** `POST /api/v1/admin/orders/{order}/refund` - **Request DTO:** RefundCreateData - **Response DTO:** RefundData - Initiates full or partial refund at order level.
+- **RefundUpdateStatusController** (`app/Http/Controllers/Api/Admin/Order/RefundUpdateStatusController.php`):
+  - `__invoke(RefundStatusUpdateData $request, Refund $refund)`: **Route:** `PUT /api/v1/admin/refunds/{refund}/status` - **Request DTO:** RefundStatusUpdateData - **Response DTO:** RefundData
+
+### Digipay Admin Endpoints
+- **DigipayAdminController** (`app/Http/Controllers/Api/Admin/Payment/DigipayAdminController.php`):
+  - `refund(Payment $payment)`: **Route:** `POST /api/v1/admin/payments/{payment}/digipay/refund` - Initiates refund via Digipay gateway
+  - `deliver(Payment $payment)`: **Route:** `POST /api/v1/admin/payments/{payment}/digipay/deliver` - Confirms digital goods delivery
+  - `reverse(Payment $payment)`: **Route:** `POST /api/v1/admin/payments/{payment}/digipay/reverse` - Voids unsettled transaction
+  - `inquireRefund(Request $request)`: **Route:** `POST /api/v1/admin/payments/digipay/inquire-refund` - Checks refund status by tracking code
+
+### Payment Gateway Settings Controller
+- **PaymentGatewaySettingsController** (`app/Http/Controllers/Api/Admin/Settings/PaymentGatewaySettingsController.php`):
+  - `index()`: **Route:** `GET /api/v1/admin/settings/payment-gateways` - Returns gateway config (with secrets redacted)
+  - `update(PaymentGatewaySettingsUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/payment-gateways` - Updates gateway credentials and settings
+
+### Enrollment Management Endpoints
+- **EnrollmentController** (`app/Http/Controllers/Api/Admin/Enrollment/EnrollmentController.php`):
+  - `index()`: **Route:** `GET /api/v1/admin/enrollments` - **Query Filters:** `filter[customer_id]`, `filter[enrollment_status]`, `filter[order_id]`, `filter[product_delivery_option_id]`, `filter[productable_type]` - **Response DTO:** `EnrollmentListItemData` paginated collection
+  - `show(Enrollment $enrollment)`: **Route:** `GET /api/v1/admin/enrollments/{enrollment}` - **Response DTO:** `EnrollmentData` with nested order, customer, delivery option
+  - `update(EnrollmentUpdateData $request, Enrollment $enrollment)`: **Route:** `PUT /api/v1/admin/enrollments/{enrollment}` - **Request DTO:** EnrollmentUpdateData - **Response DTO:** EnrollmentData
+  - `destroy(Enrollment $enrollment)`: **Route:** `DELETE /api/v1/admin/enrollments/{enrollment}` - **Authorization:** `Gate::authorize('delete', $enrollment)` via `PermissionEnum::ENROLLMENT_DELETE` - **Delegates to:** DeleteEnrollmentAction
+- **ChangeEnrollmentStatusController** (`app/Http/Controllers/Api/Admin/Enrollment/ChangeEnrollmentStatusController.php`):
+  - `__invoke(Enrollment $enrollment, EnrollmentStatusChangeData $data, ChangeEnrollmentStatusAction $action)`: **Route:** `POST /api/v1/admin/enrollments/{enrollment}/change-status` - **Request DTO:** EnrollmentStatusChangeData (new_status, reason) - **Response DTO:** EnrollmentData
+- **RetryProvisioningController** (`app/Http/Controllers/Api/Admin/Enrollment/RetryProvisioningController.php`):
+  - `__invoke(Enrollment $enrollment, RetryProvisioningAction $action)`: **Route:** `POST /api/v1/admin/enrollments/{enrollment}/retry-provisioning` - **Authorization:** `Gate::authorize('retryProvision', $enrollment)` via `PermissionEnum::ENROLLMENT_RETRY_PROVISION` - Delegates to RetryProvisioningAction
+
 ### Review Management Controllers
 
 #### ReviewController (`app/Http/Controllers/Api/Admin/Review/ReviewController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/review` - **Response DTO:** ReviewData collection
-- `show(Review $review)`: **Route:** `GET /api/v1/admin/review/{review}` - **Response DTO:** ReviewData
-- `destroy(Review $review)`: **Route:** `DELETE /api/v1/admin/review/{review}` - **Delegates to:** Review deletion
+- `index()`: **Route:** `GET /api/v1/admin/reviews` - **Response DTO:** ReviewData collection
+- `show(Review $review)`: **Route:** `GET /api/v1/admin/reviews/{review}` - **Response DTO:** ReviewData
+- `destroy(Review $review)`: **Route:** `DELETE /api/v1/admin/reviews/{review}` - **Delegates to:** Review deletion
 
 #### ApproveReviewController (`app/Http/Controllers/Api/Admin/Review/ApproveReviewController.php`)
-- `__invoke(Review $review)`: **Route:** `POST /api/v1/admin/review/{review}/approve` - **Response DTO:** ReviewData
+- `__invoke(Review $review)`: **Route:** `POST /api/v1/admin/reviews/{review}/approve` - **Response DTO:** ReviewData
 
 #### RejectReviewController (`app/Http/Controllers/Api/Admin/Review/RejectReviewController.php`)
-- `__invoke(Review $review)`: **Route:** `POST /api/v1/admin/review/{review}/reject` - **Response DTO:** ReviewData
+- `__invoke(Review $review)`: **Route:** `POST /api/v1/admin/reviews/{review}/reject` - **Response DTO:** ReviewData
 
 #### UpdateReviewFeaturedStatusController (`app/Http/Controllers/Api/Admin/Review/UpdateReviewFeaturedStatusController.php`)
-- `__invoke(ReviewFeaturedStatusData $request, Review $review)`: **Route:** `PATCH /api/v1/admin/review/{review}/featured` - **Request DTO:** ReviewFeaturedStatusData - **Response DTO:** ReviewData
+- `__invoke(ReviewFeaturedStatusData $request, Review $review)`: **Route:** `PATCH /api/v1/admin/reviews/{review}/featured` - **Request DTO:** ReviewFeaturedStatusData - **Response DTO:** ReviewData
 
 ### Forms Management Controllers
 
 #### AdviceRequestController (`app/Http/Controllers/Api/Admin/Forms/AdviceRequest/AdviceRequestController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/advice-request` - **Response DTO:** AdviceRequestData paginated collection with handler relation
-- `show(AdviceRequest $adviceRequest)`: **Route:** `GET /api/v1/admin/advice-request/{advice_request}` - **Response DTO:** AdviceRequestData
-- `update(AdviceRequestUpdateData $data, AdviceRequest $adviceRequest, UpdateAdviceRequestAction $action)`: **Route:** `PUT /api/v1/admin/advice-request/{advice_request}` - **Request DTO:** AdviceRequestUpdateData - **Response DTO:** AdviceRequestData
-- `destroy(AdviceRequest $adviceRequest)`: **Route:** `DELETE /api/v1/admin/advice-request/{advice_request}` - **Delegates to:** Advice request deletion
+- `index()`: **Route:** `GET /api/v1/admin/advice-requests` - **Response DTO:** AdviceRequestData paginated collection with handler relation
+- `show(AdviceRequest $adviceRequest)`: **Route:** `GET /api/v1/admin/advice-requests/{advice_request}` - **Response DTO:** AdviceRequestData
+- `update(AdviceRequestUpdateData $data, AdviceRequest $adviceRequest, UpdateAdviceRequestAction $action)`: **Route:** `PUT /api/v1/admin/advice-requests/{advice_request}` - **Request DTO:** AdviceRequestUpdateData - **Response DTO:** AdviceRequestData
+- `destroy(AdviceRequest $adviceRequest)`: **Route:** `DELETE /api/v1/admin/advice-requests/{advice_request}` - **Delegates to:** Advice request deletion
 
 #### AdviceRequestUpdateStatusController (`app/Http/Controllers/Api/Admin/Forms/AdviceRequest/AdviceRequestUpdateStatusController.php`)
-- `__invoke(AdviceRequestUpdateData $data, AdviceRequest $adviceRequest, UpdateAdviceRequestStatusAction $action)`: **Route:** `PATCH /api/v1/admin/advice-request/{advice_request}/status` - **Request DTO:** AdviceRequestUpdateData - **Response DTO:** AdviceRequestData with updated status
+- `__invoke(AdviceRequestUpdateData $data, AdviceRequest $adviceRequest, UpdateAdviceRequestStatusAction $action)`: **Route:** `PATCH /api/v1/admin/advice-requests/{advice_request}/status` - **Request DTO:** AdviceRequestUpdateData - **Response DTO:** AdviceRequestData with updated status
 
 ### File Management Controllers
 
@@ -378,9 +407,39 @@
 - `show()`: **Route:** `GET /api/v1/shop/profile` - **Delegates to:** User profile retrieval - **Response DTO:** UserProfileData
 - `update(ProfileUpdateData $request)`: **Route:** `PUT /api/v1/shop/profile` - **Request DTO:** ProfileUpdateData - **Response DTO:** UserProfileData
 
-#### EnrolmentController (`app/Http/Controllers/Api/Shop/MyCourses/EnrolmentController.php`)
-- `index()`: **Route:** `GET /api/v1/shop/my-courses` - **Delegates to:** User enrolment listing - **Response DTO:** EnrolmentData collection
-- `show(Enrolment $enrolment)`: **Route:** `GET /api/v1/shop/my-courses/{enrolment:uuid}` - **Delegates to:** Enrolment details with access validation - **Response DTO:** EnrolmentData
+#### GatewayListController (`app/Http/Controllers/Api/Shop/Sale/GatewayListController.php`)
+- `__invoke()`: **Route:** `GET /api/v1/shop/payment/gateways` - Returns available payment gateway options with labels and icons for checkout UI.
+
+#### Student Dashboard (`/api/v1/shop/student/*`)
+
+##### EnrollmentController (`app/Http/Controllers/Api/Shop/Student/EnrollmentController.php`)
+- `index()`: **Route:** `GET /api/v1/shop/student/courses` - Lists authenticated user's enrolled course delivery options. **Response DTO:** Paginated collection of enrollment list DTOs with delivery method, dates, provisioning status.
+- `show(Enrollment $enrollment)`: **Route:** `GET /api/v1/shop/student/courses/{enrollment:uuid}` - Returns enriched enrollment detail with typed block DTOs per delivery method, SSO URLs, certificate/review/survey info. **Response DTO:** `EnrollmentDetailData` with nested block DTOs.
+
+##### MoodleSsoController (`app/Http/Controllers/Api/Shop/Student/MoodleSsoController.php`)
+- `__invoke(Enrollment $enrollment)`: **Route:** `POST /api/v1/shop/student/courses/{enrollment:uuid}/moodle/sso` - Generates Moodle SSO login URL for the enrolled course. **Response DTO:** `MoodleSsoUrlData`.
+
+##### JoinUrlController (`app/Http/Controllers/Api/Shop/Student/JoinUrlController.php`)
+- `__invoke(Enrollment $enrollment)`: **Route:** `GET /api/v1/shop/student/courses/{enrollment:uuid}/join` - Lazy-generates and returns join URL based on delivery method (BBB, Skyroom, SpotPlayer). **Delegates to:** GetJoinUrlAction.
+
+##### QuizController (`app/Http/Controllers/Api/Shop/Student/QuizController.php`)
+- `__invoke()`: **Route:** `GET /api/v1/shop/student/quizzes` - Returns list of user's quizzes with completion states, sourced from Moodle integration via `provisioning_data`.
+
+##### DigitalAssetEnrollmentController (`app/Http/Controllers/Api/Shop/Student/DigitalAssetEnrollmentController.php`)
+- `__invoke()`: **Route:** `GET /api/v1/shop/student/digital-assets` - Lists user's enrolled digital assets with download availability.
+
+##### DigitalAssetDownloadController (`app/Http/Controllers/Api/Shop/Student/DigitalAssetDownloadController.php`)
+- `__invoke(Enrollment $enrollment, DigitalAsset $digitalAsset)`: **Route:** `GET /api/v1/shop/student/digital-assets/{enrollment:uuid}/download/{digitalAsset}` - Generates signed download URL for digital asset file.
+
+##### OrderController (`app/Http/Controllers/Api/Shop/Student/OrderController.php`)
+- `index()`: **Route:** `GET /api/v1/shop/student/orders` - Lists authenticated user orders (with items + payments). **Response DTO:** `OrderData` paginator.
+- `show(string $incrementId)`: **Route:** `GET /api/v1/shop/student/orders/{order:increment_id}` - Returns single order with nested items/payments. **Response DTO:** `OrderData`.
+
+##### CancelOrderController (`app/Http/Controllers/Api/Shop/Student/CancelOrderController.php`)
+- `__invoke(Order $order)`: **Route:** `POST /api/v1/shop/student/orders/{order:increment_id}/cancel` - **Delegates to:** CancelOrderByCustomerAction::execute(). **Response DTO:** OrderData.
+
+##### RetryPaymentController (`app/Http/Controllers/Api/Shop/Student/RetryPaymentController.php`)
+- `__invoke(string $incrementId, RetryOrderPaymentData $request)`: **Route:** `POST /api/v1/shop/student/orders/{order:increment_id}/retry-payment` (throttled) - Revalidates eligibility and triggers `RetryOrderPaymentAction`.
 
 #### CartController (`app/Http/Controllers/Api/Shop/Sale/CartController.php`)
 - `index()`: **Route:** `GET /api/v1/shop/cart` - **Guards:** Supports authenticated users or guests (via `X-Guest-Token`) - **Response DTO:** `CartData`
@@ -392,16 +451,6 @@
 
 #### CheckoutController (`app/Http/Controllers/Api/Shop/Sale/CheckoutController.php`)
 - `__invoke(CheckoutData $request, CreateOrderFromCartAction $action)`: **Route:** `POST /api/v1/shop/checkout` (requires `auth:user`, `profile.check`) - Converts the current cart into an order, runs `CreateOrderFromCartAction`, and returns `CheckoutResponseData` that either embeds a completed `OrderData` payload or redirect instructions for multi-step gateways (Mellat, etc.). Free orders auto-complete with `NO_PAYMENT`. Now validates registration window (`registration_start_date`/`registration_end_date`) and availability window (`available_from`/`available_to`) on each cart item at checkout.
-
-#### OrderController (`app/Http/Controllers/Api/Shop/Sale/OrderController.php`)
-- `index()`: **Route:** `GET /api/v1/shop/orders` - Lists authenticated user orders (with items + payments eager loaded) - **Response DTO:** `OrderData` paginator
-- `show(string $incrementId)`: **Route:** `GET /api/v1/shop/orders/{order:increment_id}` - Returns a single order with nested items/payments - **Response DTO:** `OrderData`
-
-#### CancelOrderController (`app/Http/Controllers/Api/Shop/Sale/CancelOrderController.php`)
-- `__invoke(Order $order)`: **Route:** `POST /api/v1/shop/orders/{order:increment_id}/cancel` - **Auth:** `auth:user` - **Delegates to:** CancelOrderByCustomerAction::execute() - **Response DTO:** OrderData - **Error:** 422 with `DomainException` message if order has completed payments or is not in PENDING status
-
-#### RetryPaymentController (`app/Http/Controllers/Api/Shop/Sale/RetryPaymentController.php`)
-- `__invoke(string $incrementId, RetryOrderPaymentData $request)`: **Route:** `POST /api/v1/shop/orders/{order:increment_id}/retry-payment` (throttled) - Revalidates eligibility and triggers `RetryOrderPaymentAction`, responding with either redirect metadata (pending gateway payment) or immediate success payload.
 
 ### Shop Public Endpoints (`/api/v1/shop/*`)
 **Authentication:** Unauthenticated public access
@@ -447,6 +496,7 @@
 
 #### BlogPostController (`app/Http/Controllers/Api/Shop/Blog/BlogPostController.php`)
 - `index(BlogPostListRequestData $request)`: **Route:** `GET /api/v1/shop/blog/posts` - **Request DTO:** BlogPostListRequestData (supports `is_featured`, `category_slug`, `sortBy=published_at|created_at|popularity`, `sortOrder`, pagination controls) - **Response DTO:** Paginated `BlogPostCardData` containing author summary, rating aggregates, Jalali `published_at`, thumbnail URL (scoped to tag `cover` via `getAllMedia(urlOnly: true, onlyTags: ['cover'])`), featured flag, and attached categories. Only posts with `status=PUBLISHED` and `published_at <= now()` surface and the endpoint supports category slug filtering through `whereHas`. `sortBy=popularity` orders by `average_rating DESC` with nulls last.
+- **Validation:** `category_slug` filter does not validate existence against `blog_categories` table — supports soft-deleted or temporary category references.
 - `show(string $slug)`: **Route:** `GET /api/v1/shop/blog/post/{slug}` - **Response DTO:** `BlogPostDetailData` enriched with author data, media collections (cover/gallery/video tags via `getAllMedia()`), category cards, SEO metadata, review aggregates, and **related products** (up to 4 published products linked via `main_productable`). Returns 404 if the slug belongs to unpublished, scheduled, or missing posts.
 
 #### BlogCategoryController (`app/Http/Controllers/Api/Shop/Blog/BlogCategoryController.php`)
@@ -458,7 +508,7 @@
 **Authentication:** Unauthenticated public access
 
 #### CategoryController (`app/Http/Controllers/Api/Shop/Product/CategoryController.php`)
-- `index()`: **Route:** `GET /api/v1/shop/categories` - **Response DTO:** `CategoryCardData` collection with aggregated product counts computed via `ProductQueryService`. Each category now includes `$children` array (recursive `CategoryCardData` for subcategories).
+- `index()`: **Route:** `GET /api/v1/shop/categories` - **Response DTO:** `CategoryCardData` collection with aggregated product counts computed via `ProductQueryService`. Each category includes `$children` array (recursive `CategoryCardData` for subcategories).
 - `show(PaginationRequestData $request, Category $category, CategoryQueryService $service)`: **Route:** `GET /api/v1/shop/category/{category:slug}` - **Request DTO:** PaginationRequestData (`per_page`) - **Delegates to:** `CategoryQueryService::getProductsForCategory()` for each productable type - **Response DTO:** `CategoryDetailData` containing embedded course/seminar/digital asset collections
 
 #### CategoryCourseController (`app/Http/Controllers/Api/Shop/Product/CategoryCourseController.php`)
@@ -472,10 +522,10 @@
 
 ### ProductCardData Enhancements
 - **New fields:** `registration_status` (ProductRegistrationStatusEnum — derived from registration dates across all delivery options), `delivery_type` (ProductDeliveryStatusEnum — aggregated from fulfillment types), `teachers` (array of TeacherBasicData — unique teachers across all delivery options)
-- **All shop product listings** now include these derived fields automatically via `ProductQueryService` when building `ProductCardData`
+- **All shop product listings** include these derived fields via `ProductQueryService` when building `ProductCardData`
 
 ### ProductDetail Endpoint — `show()` sync trigger
-- **EnrolmentController::show()** (`GET /api/v1/shop/my-courses/{enrolment:uuid}`): Now triggers `SyncMoodleProgressJob` after rendering response to sync Moodle course progress (throttled at 5-min per enrollment). The sync result is stored in `provisioning_data` for subsequent reads.
+- **EnrollmentController::show()** (`GET /api/v1/shop/student/courses/{enrollment:uuid}`): Triggers `SyncMoodleProgressJob` after rendering response to sync Moodle course progress (throttled at 5-min per enrollment). The sync result is stored in `provisioning_data` for subsequent reads.
 
 #### TeacherController (`app/Http/Controllers/Api/Shop/TeacherController.php`)
 - `show(Teacher $teacher)`: **Route:** `GET /api/v1/shop/teachers/{teacher:uuid}` - **URL Param:** `uuid` - **Response DTO:** `TeacherDetailData` with full instructor profile
@@ -502,8 +552,8 @@
 - `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/collaboration` - **Response DTO:** CollaborationPageData providing collaboration content sections
 
 ### Moodle SSO Endpoint
-#### MoodleSsoController (`app/Http/Controllers/Api/Shop/MoodleSsoController.php`)
-- `__invoke(Order $order, MoodleService $moodleService)`: **Route:** `GET /api/v1/shop/moodle/sso/{order:increment_id}` - **Auth:** `auth:user` - **Delegates to:** MoodleService SSO URL generation - **Response:** Redirects user to Moodle with auto-login key. Requires Moodle integration to be enabled and user to be enrolled in the order's Moodle-linked products. Generates a `createUserKey` token valid for single-use login.
+#### MoodleSsoController (`app/Http/Controllers/Api/Shop/Student/MoodleSsoController.php`)
+- `__invoke(Enrollment $enrollment, MoodleService $moodleService)`: **Route:** `POST /api/v1/shop/student/courses/{enrollment:uuid}/moodle/sso` - **Auth:** `auth:user` - **Delegates to:** MoodleService SSO URL generation via GetEnrollmentDetailAction - **Response DTO:** `MoodleSsoUrlData` with auto-login URL. Requires Moodle integration enabled and user enrolled in the course's Moodle-linked delivery option. Generates a `createUserKey` token valid for single-use login.
 
 ## CORS Configuration (`config/cors.php`)
 - **Pattern:** Schema-based allowed origins — reads `cors.allowed_origins` from config, parsing each into `scheme://host` format
@@ -548,8 +598,8 @@
 
 ## Route Organization Pattern
 - **Base Routes:** `/api/v1/api.php` includes all interface route files
-- **Admin Routes:** `/api/v1/admin.php` - Complete platform management with `auth:staff` + `admin.audit`. Individual route file `admin/sale.php` now includes `POST order/{order}/approve` (ApproveOrderController).
-- **Customer Routes:** `/api/v1/customer.php` - Protected customer operations with `auth:user`. Now includes `POST orders/{order:increment_id}/cancel` (CancelOrderController).
+- **Admin Routes:** `/api/v1/admin.php` - Complete platform management with `auth:staff` + `admin.audit`. All routes standardized to plural form. Individual route files: `admin/admin.php` (core CRUD), `admin/sale.php` (orders, payments, refunds, enrollments, Digipay admin), `admin/blog.php`, `admin/catalog.php`, `admin/setting.php`, `admin/wallet.php`, `admin/select_option.php`.
+- **Customer Routes:** `/api/v1/customer.php` - Protected customer operations with `auth:user`. Student dashboard reorganized under `/api/v1/shop/student/*`.
 - **Public Routes:** `/api/v1/shop/shop.php` - CMS-driven public endpoints (home page blocks, sliders, partners, header/footer, about/contact/collaboration pages)
 - **Rate-Limited Shop Routes:** `/api/v1/shop/rate-limited.php` - Public form submissions (contact us, collaboration) protected by `throttle:10,1`
 - **Auth Routes:** `/api/v1/auth.php` - Dual authentication system for both interfaces
