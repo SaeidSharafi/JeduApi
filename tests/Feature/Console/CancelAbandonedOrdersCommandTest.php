@@ -63,7 +63,7 @@ it('cancels abandoned orders older than timeout threshold', function (): void {
         'order_item_id'              => $orderItem->id,
         'customer_id'                => $user->id,
         'product_delivery_option_id' => $deliveryOption->id,
-        'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING,
+        'enrollment_status'          => EnrollmentStatusEnum::AWAITING_PAYMENT,
     ]);
 
     Carbon::setTestNow();
@@ -257,7 +257,7 @@ it('respects custom timeout parameter', function (): void {
     ]);
 });
 
-it('only cancels enrollments in pending provisioning status', function (): void {
+it('only cancels enrollments in awaiting payment status', function (): void {
     $user   = User::factory()->create();
     $vendor = Vendor::factory()->create();
     $term   = Term::factory()->create();
@@ -299,13 +299,13 @@ it('only cancels enrollments in pending provisioning status', function (): void 
         'product_delivery_option_id' => $deliveryOption2->id,
     ]);
 
-    // One enrollment is pending (should be cancelled)
+    // One enrollment is awaiting payment (should be cancelled)
     $enrollment1 = Enrollment::factory()->create([
         'order_id'                   => $order->id,
         'order_item_id'              => $item1->id,
         'customer_id'                => $user->id,
         'product_delivery_option_id' => $deliveryOption1->id,
-        'enrollment_status'          => EnrollmentStatusEnum::PENDING_PROVISIONING,
+        'enrollment_status'          => EnrollmentStatusEnum::AWAITING_PAYMENT,
     ]);
 
     // Another enrollment is already active (should NOT be cancelled)

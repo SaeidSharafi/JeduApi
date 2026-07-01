@@ -606,4 +606,129 @@ describe('CreateOrderAction', function (): void {
         expect($order->applied_coupon_code)->toBeNull();
         expect($order->discount_amount)->toBe(0);
     });
+
+    it('computes discount fields correctly for pre-payment order', function (): void {
+        $user           = User::factory()->create();
+        $product        = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'product_id'              => $product->id,
+            'price'                   => 100000,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'is_prepayment_available' => true,
+            'prepayment_amount'       => 20000,
+        ]);
+
+        // Create featured price discount (product-level)
+        $promotion = DiscountPromotion::factory()->create();
+        \App\Models\ProductDeliveryOptionDiscountPrice::factory()->create([
+            'product_delivery_option_id' => $deliveryOption->id,
+            'discount_promotion_id'      => $promotion->id,
+            'discounted_price'           => 85000, // 15000 product discount
+        ]);
+
+        // Create coupon discount (cart-level)
+        $couponPromotion = DiscountPromotion::factory()->create();
+        $couponPromotion->rules()->create([
+            'type'          => 'action',
+            'handler'       => 'apply_percentage_off',
+            'configuration' => ['percentage' => 10],
+        ]);
+        $coupon = DiscountCoupon::factory()->create([
+            'discount_promotion_id' => $couponPromotion->id,
+            'code'                  => 'SAVE10',
+        ]);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [
+                new OrderItemCreateData(
+                    product_delivery_option_id: $deliveryOption->id,
+                    payment_type: OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                    qty_ordered: 1
+                ),
+            ],
+            applied_coupon_code: 'SAVE10'
+        );
+
+        $order = app(CreateOrderAction::class)->handle($data);
+
+        // CRITICAL: Pre-payment items do NOT receive product-level OR cart-level discounts
+        // Customer pays prepayment_amount now and owes full ORIGINAL price later
+        expect($order->grand_total)->toBe(20000); // Only prepayment amount
+        expect($order->full_value_grand_total)->toBe(100000); // Original full price
+        expect($order->total_product_discount)->toBe(0); // NO product discount
+        expect($order->total_cart_discount)->toBe(0); // NO cart discount
+        expect($order->total_discount)->toBe(0); // NO discount at all
+
+        $orderItem = $order->items->first();
+        expect($orderItem->price)->toBe(100000); // Shows ORIGINAL price
+        expect($orderItem->original_price)->toBe(100000);
+        expect($orderItem->product_discount_amount)->toBe(0); // NO product discount
+        expect($orderItem->discount_amount)->toBe(0); // NO cart discount
+        expect($orderItem->total_discount_amount)->toBe(0); // NO discount at all
+        expect($orderItem->total)->toBe(20000); // Just the prepayment_amount
+    });
+
+    it('computes discount fields correctly for full payment with featured price and coupon', function (): void {
+        $user           = User::factory()->create();
+        $product        = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'product_id' => $product->id,
+            'price'      => 100000,
+            'status'     => PublicationStatusEnum::PUBLISHED,
+        ]);
+
+        // Create featured price discount (product-level): 100000 -> 80000
+        $promotion = DiscountPromotion::factory()->create();
+        \App\Models\ProductDeliveryOptionDiscountPrice::factory()->create([
+            'product_delivery_option_id' => $deliveryOption->id,
+            'discount_promotion_id'      => $promotion->id,
+            'discounted_price'           => 80000, // 20000 product discount
+        ]);
+
+        // Create coupon discount (cart-level): 10% off
+        $couponPromotion = DiscountPromotion::factory()->create([
+            'type' => DiscountTypeEnum::CART_CHECKOUT,
+        ]);
+        $couponPromotion->rules()->create([
+            'type'          => 'action',
+            'handler'       => 'apply_percentage_off',
+            'configuration' => ['percentage' => 10],
+        ]);
+        $coupon = DiscountCoupon::factory()->create([
+            'discount_promotion_id' => $couponPromotion->id,
+            'code'                  => 'EXTRA10',
+        ]);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [
+                new OrderItemCreateData(
+                    product_delivery_option_id: $deliveryOption->id,
+                    payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                    qty_ordered: 1
+                ),
+            ],
+            applied_coupon_code: 'EXTRA10'
+        );
+
+        $order = app(CreateOrderAction::class)->handle($data);
+
+        // 80000 - 10% (8000) = 72000
+        expect($order->grand_total)->toBe(72000);
+        expect($order->full_value_grand_total)->toBe(100000); // Original price
+        expect($order->total_product_discount)->toBe(20000); // Featured price discount
+        expect($order->total_cart_discount)->toBe(8000); // 10% of 80000
+        expect($order->total_discount)->toBe(28000); // 20000 + 8000
+
+        $orderItem = $order->items->first();
+        expect($orderItem->original_price)->toBe(100000);
+        expect($orderItem->price)->toBe(100000); // ALWAYS base price, no discount
+        expect($orderItem->product_discount_amount)->toBe(20000); // From pricing_metadata
+        expect($orderItem->discount_amount)->toBe(8000); // Cart discount
+        expect($orderItem->total_discount_amount)->toBe(28000); // Total both
+        expect($orderItem->total)->toBe(72000); // Final price after all discounts
+    });
 });

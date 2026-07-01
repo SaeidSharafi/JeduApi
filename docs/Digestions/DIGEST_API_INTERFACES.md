@@ -123,12 +123,26 @@
 - `destroy(BlogPost $blogPost)`: **Route:** `DELETE /api/v1/admin/blog-post/{blog_post}` - **Delegates to:** Blog post deletion
 - **Special Features:** Enhanced filtering with main_productable_type/id support, uses BlogPostListItemData for listing efficiency
 
-### OrderController (`app/Http/Controllers/Api/Admin/OrderController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/orders` - **Delegates to:** Order listing with filtering - **Response DTO:** OrderData collection
+### OrderController (`app/Http/Controllers/Api/Admin/Order/OrderController.php`)
+- `index()`: **Route:** `GET /api/v1/admin/orders` - **Delegates to:** Order listing with filtering - **Response DTO:** OrderListItemData collection
 - `store(OrderCreateData $request)`: **Route:** `POST /api/v1/admin/orders` - **Request DTO:** OrderCreateData - **Delegates to:** CreateOrderAction::handle() — validates registration window and availability window on each item - **Response DTO:** OrderData
 - `show(Order $order)`: **Route:** `GET /api/v1/admin/orders/{order}` - **Delegates to:** Order retrieval with relationships - **Response DTO:** OrderData
 - `update(OrderUpdateData $request, Order $order)`: **Route:** `PUT /api/v1/admin/orders/{order}` - **Request DTO:** OrderUpdateData - **Response DTO:** OrderData
 - `destroy(Order $order)`: **Route:** `DELETE /api/v1/admin/orders/{order}` - **Delegates to:** Order deletion
+
+### OrderData DTO (`app/Data/Admin/Order/OrderData.php`)
+- **Fields:** `id`, `increment_id`, `status`, `customer_id`, `customer_email`, `customer_phone`, `customer_first_name`, `customer_last_name`, `total_qty_ordered`, `total_item_count`, `subtotal`, `discount_amount`, `tax_amount`, `grand_total`, `total_paid`, `balance_due`, `full_value_grand_total`, `total_product_discount`, `total_cart_discount`, `total_discount`, `currency_code`, `customer`, `payment_status`, `applied_coupon_code`, `admin_notes`, `created_at`, `updated_at`, `customer_snapshot`, `items` (collection of `OrderItemData`)
+- **Discount Layering:** `full_value_grand_total` represents the sum of all items at their base prices (no discounts applied) and is the reference for `balance_due`. `total_product_discount` aggregates product-level discounts from all items. `total_cart_discount` reflects cart-level coupon discounts (alias for `discount_amount`). `total_discount` is the combined sum of product-level and cart-level discounts.
+
+### OrderItemData DTO (`app/Data/Admin/Order/OrderItemData.php`)
+- **Fields:** `id`, `Order_id`, `product_delivery_option_id`, `discount_amount`, `qty_ordered`, `tax_amount`, `name`, `sku`, `price`, `original_price`, `product_discount_amount`, `total_discount_amount`, `total`, `payment_type`, `prepayment_amount`, `qty_refunded`, `total_refunded`, `status`, `vendor`, `product_snapshot`
+- **Price Layering:** `price` is the base price (never includes discounts). `original_price` is read from `pricing_metadata['original_price']`. `product_discount_amount` is the product-level discount (featured price / auto-promotion). `total_discount_amount` combines product-level + cart-level discounts.
+
+### OrderListItemData DTO (`app/Data/Admin/Order/OrderListItemData.php`)
+- **Fields:** `id`, `increment_id`, `customer_first_name`, `customer_last_name`, `customer_email`, `customer_phone`, `subtotal`, `discount_amount`, `tax_amount`, `grand_total`, `total_paid`, `balance_due`, `admin_notes`, `status`, `payment_status`, `created_at`, `updated_at`, `payments` (collection of `PaymentData`), `items` (collection of `OrderItemListItemData`)
+
+### OrderItemListItemData DTO (`app/Data/Admin/Order/OrderItemListItemData.php`)
+- **Fields:** `id`, `product_delivery_option_id`, `discount_amount`, `qty_ordered`, `tax_amount`, `name`, `sku`, `price`, `total`, `payment_type`, `prepayment_amount`, `qty_refunded`, `total_refunded`
 
 ### ApproveOrderController (`app/Http/Controllers/Api/Admin/Order/ApproveOrderController.php`)
 - `__invoke(Order $order, ApproveOrderAction $action)`: **Route:** `POST /api/v1/admin/orders/{order}/approve` - **Authorization:** `Gate::authorize('approve', $order)` via `PermissionEnum::ORDER_APPROVE` - **Delegates to:** ApproveOrderAction::handle() - **Response DTO:** OrderData - **Response File:** `resources/responses/admin/order/approve.json`

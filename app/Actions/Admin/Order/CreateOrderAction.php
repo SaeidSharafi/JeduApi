@@ -9,6 +9,7 @@ use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\EnrollmentStatusEnum;
+use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Events\OrderCreatedEvent;
 use App\Models\Enrollment;
@@ -16,6 +17,7 @@ use App\Models\Order;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
 use App\Services\Discounts\OrderCalculationService;
+use App\Services\ProductPriceService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -27,6 +29,7 @@ final readonly class CreateOrderAction
     public function __construct(
         private OrderCalculationService $orderCalculationService,
         private ValidateNoDuplicatePurchasesAction $validateNoDuplicatePurchases,
+        private ProductPriceService $productPriceService,
     ) {}
 
     /**
@@ -64,10 +67,16 @@ final readonly class CreateOrderAction
                 $originalItemData = $originalInputItems->get($deliveryOption->id);
                 $this->validateItem($key, $originalItemData, $deliveryOption);
 
+                // --- GET PRICING METADATA ---
+                $priceData = $this->productPriceService->getPriceDataForOption($deliveryOption);
+
                 // =================================================================
                 // STEP 3: BUILD THE ORDER ITEM DATA FROM THE CONTEXT
                 // All manual calculation is removed. We just map the results.
                 // =================================================================
+                // PRE_PAYMENT items do NOT receive product-level discounts in pricing_metadata
+                $isPrePayment = $calculatedItem->payment_type === OrderItemPaymentTypeEnum::PRE_PAYMENT;
+                
                 $orderItemsData->push([
                     'product_delivery_option_id'    => $calculatedItem->product_delivery_option->id,
                     'vendor_id'                     => $deliveryOption->product->vendor_id,
@@ -77,20 +86,34 @@ final readonly class CreateOrderAction
                     'product_data_snapshot_json'    => ProductDeliveryOptionShowData::from($deliveryOption)->toArray(),
                     'payment_type'                  => $calculatedItem->payment_type,
                     'status'                        => OrderItemStatusEnum::PENDING->value,
+                    // ALWAYS base price from product_delivery_option table, NO discounts
                     'price'                         => $calculatedItem->product_delivery_option->price,
                     'discount_amount'               => $calculatedItem->discount_amount,
                     'total'                         => $calculatedItem->total, // This is the final value AFTER discount
                     'applied_discount_details_json' => ! empty($calculatedItem->applied_discount_details)
                         ? $calculatedItem->applied_discount_details
                         : null,
+                    // PRE_PAYMENT: no discount metadata, FULL_PAYMENT: full discount metadata
+                    'pricing_metadata' => $isPrePayment ? [
+                        'original_price'       => $priceData->original_price,
+                        'discount_type'        => null,
+                        'discount_amount'      => 0,
+                        'discount_percentage'  => null,
+                    ] : [
+                        'original_price'       => $priceData->original_price,
+                        'discount_type'        => $priceData->discount_type,
+                        'discount_amount'      => $priceData->discount_amount,
+                        'discount_percentage'  => $priceData->discount_percentage,
+                    ],
                     'prepayment_amount' => $deliveryOption->prepayment_amount,
                     'tax_amount'        => 0, // Placeholder
                 ]);
             }
             $grandTotal = $context->calculateGrandTotal();
+            
             $order      = Order::create([
                 'increment_id'           => Order::generateIncrementId(),
-                'status'                 => $data->status, // This can be an initial status from the form
+                'status'                 => $data->status,
                 'customer_id'            => $context->customer->id,
                 'customer_email'         => $context->customer->email,
                 'customer_phone'         => $context->customer->phone,
@@ -101,11 +124,11 @@ final readonly class CreateOrderAction
                 'total_qty_ordered'      => $context->items->sum('qty'),
 
                 // --- TOTALS CALCULATED FROM CONTEXT (SINGLE SOURCE OF TRUTH) ---
-                'grand_total'            => $grandTotal, // The final, authoritative bill amount from context
+                'grand_total'            => $grandTotal,
                 'full_value_grand_total' => $context->subtotal_all_items,
                 'subtotal'               => $context->calculateSubtotal(),
                 'discount_amount'        => $context->calculateTotalDiscount(),
-                'tax_amount'             => 0, // Placeholder
+                'tax_amount'             => 0,
 
                 // --- AUDIT TRAIL FOR CART DISCOUNTS ---
                 'applied_cart_discounts_json' => ! empty($context->applied_cart_discounts)

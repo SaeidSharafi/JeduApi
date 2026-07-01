@@ -180,6 +180,106 @@ describe('OrderController', function (): void {
                 ->assertJsonPath('data.balance_due', 100000);
         });
 
+        it('returns OrderData computed fields correctly for pre-payment order', function (): void {
+            $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
+            $user    = User::factory()->create();
+            
+            // Featured price: 85,000 (15% discount from 100,000)
+            $product = ProductDeliveryOption::factory()->create([
+                'product_id'              => $this->product->id,
+                'status'                  => PublicationStatusEnum::PUBLISHED,
+                'price'                   => 100000,
+                'featured_price'          => 85000,
+                'prepayment_amount'       => 20000,
+                'is_prepayment_available' => true,
+            ]);
+
+            $orderData = [
+                'status'      => OrderStatusEnum::PROCESSING->value,
+                'customer_id' => $user->id,
+                'items'       => [
+                    [
+                        'product_delivery_option_id' => $product->id,
+                        'payment_type'               => OrderItemPaymentTypeEnum::PRE_PAYMENT->value,
+                        'discount_amount'            => 0,
+                        'qty_ordered'                => 1,
+                        'tax_amount'                 => 0,
+                    ],
+                ],
+            ];
+
+            $response = $this->postJson(route('api.v1.admin.orders.store'), $orderData);
+
+            $response->assertStatus(201)
+                ->assertJsonPath('data.grand_total', 20000)
+                ->assertJsonPath('data.full_value_grand_total', 100000) // Original price
+                ->assertJsonPath('data.total_product_discount', 0) // NO product discount for pre-payment
+                ->assertJsonPath('data.total_cart_discount', 0)
+                ->assertJsonPath('data.total_discount', 0);
+        });
+
+        it('returns OrderItemData computed fields correctly for featured price and coupon', function (): void {
+            $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
+            $user = User::factory()->create();
+            
+            // Featured price: 85,000 (15,000 product discount)
+            $product = ProductDeliveryOption::factory()->create([
+                'product_id'     => $this->product->id,
+                'status'         => PublicationStatusEnum::PUBLISHED,
+                'price'          => 100000,
+                'is_featured'    => true,
+                'featured_price' => 85000,
+                'featured_price_start_date' => now()->subDay(),
+                'featured_price_end_date' => now()->addDay(),
+            ]);
+
+            // Create coupon: 10% off cart
+            $couponPromotion = App\Models\DiscountPromotion::factory()->create([
+                'type'      => 'cart_checkout',
+                'is_active' => true,
+            ]);
+            
+            $couponPromotion->rules()->create([
+                'type'          => 'action',
+                'handler'       => 'apply_percentage_off',
+                'configuration' => ['percentage' => 10],
+            ]);
+            
+            $coupon = App\Models\DiscountCoupon::factory()->create([
+                'discount_promotion_id' => $couponPromotion->id,
+                'code'                  => 'TEST10',
+            ]);
+
+            $orderData = [
+                'status'              => OrderStatusEnum::PENDING->value,
+                'customer_id'         => $user->id,
+                'applied_coupon_code' => 'TEST10',
+                'items'               => [
+                    [
+                        'product_delivery_option_id' => $product->id,
+                        'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                        'qty_ordered'                => 1,
+                    ],
+                ],
+            ];
+
+            $response = $this->postJson(route('api.v1.admin.orders.store'), $orderData);
+
+            $response->assertStatus(201);
+            
+            $item = $response->json('data.items.0');
+            
+            // Product discount: 100,000 - 85,000 = 15,000
+            // Cart discount (10% of 85,000): 8,500
+            // Final price: 85,000 - 8,500 = 76,500
+            expect($item['original_price'])->toBe(100000)
+                ->and($item['price'])->toBe(100000) // ALWAYS base price
+                ->and($item['product_discount_amount'])->toBe(15000)
+                ->and($item['discount_amount'])->toBe(8500) // Cart discount
+                ->and($item['total_discount_amount'])->toBe(23500) // 15,000 + 8,500
+                ->and($item['total'])->toBe(76500); // 100,000 - 23,500
+        });
+
         it('can show an order with permissions', function (): void {
             $this->authorized_user([PermissionEnum::ORDER_VIEW->value]);
             $order = Order::factory()->create([

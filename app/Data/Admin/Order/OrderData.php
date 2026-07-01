@@ -38,6 +38,10 @@ final class OrderData extends Data implements WalletTransactionSourceableDataCon
         public int $grand_total,
         public int $total_paid,
         public int $balance_due,
+        public int $full_value_grand_total,
+        public int $total_product_discount,
+        public int $total_cart_discount,
+        public int $total_discount,
         public ?string $currency_code,
         public ?ShowUserData $customer,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]

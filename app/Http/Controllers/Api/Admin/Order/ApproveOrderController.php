@@ -28,6 +28,14 @@ final class ApproveOrderController extends Controller
      * The order must have sufficient payment coverage considering prepayment options.
      *
      * @responseFile resources/responses/admin/order/approve.json
+     *
+     * @responseParam data.full_value_grand_total integer Total price of all items at their base (original) prices, excluding any discounts. Used as the reference for balance_due calculation.
+     * @responseParam data.total_product_discount integer Sum of product-level discounts (featured prices, auto-promotions) across all items.
+     * @responseParam data.total_cart_discount integer Total cart-level discount (coupon) applied to the order.
+     * @responseParam data.total_discount integer Combined total of all discounts (product-level + cart-level).
+     * @responseParam data.items.*.original_price integer Base price of the product delivery option before any product-level discounts.
+     * @responseParam data.items.*.product_discount_amount integer Product-level discount amount for this item, multiplied by qty_ordered. Zero for pre-payment items.
+     * @responseParam data.items.*.total_discount_amount integer Total discount on this item (product_discount_amount + discount_amount combined).
      */
     public function __invoke(Order $order, ApproveOrderAction $action): ApiResponseInterface
     {

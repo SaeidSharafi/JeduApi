@@ -27,6 +27,7 @@ test('to array', function (): void {
             'created_at'                    => $orderItem->created_at?->utc()->toJSON(),
             'updated_at'                    => $orderItem->updated_at?->utc()->toJSON(),
             'applied_discount_details_json' => $orderItem->applied_discount_details_json,
+            'pricing_metadata'              => $orderItem->pricing_metadata,
         ]);
 });
 

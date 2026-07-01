@@ -285,12 +285,13 @@
   - sku (VARCHAR)
   - product_data_snapshot_json (JSONB)
   - applied_discount_details_json (JSON nullable)
+  - pricing_metadata (JSON nullable) — stores product-level discount snapshot: `{original_price, discount_type, discount_amount, discount_percentage}`. Pre-payment items receive zero discount metadata. Populated at order creation.
   - qty_ordered (INT default 1)
-  - price (BIGINT)
+  - price (BIGINT) — base price from `product_delivery_option.price`, never includes discounts
   - total (BIGINT)
   - payment_type (VARCHAR)
   - prepayment_amount (BIGINT nullable)
-  - discount_amount (BIGINT default 0)
+  - discount_amount (BIGINT default 0) — cart-level coupon discount
   - tax_amount (BIGINT default 0)
   - total_refunded (BIGINT default 0)
   - qty_refunded (INT default 0)

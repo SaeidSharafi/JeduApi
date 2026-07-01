@@ -24,6 +24,9 @@ final class OrderItemData extends Data
         public string $sku,
         public int $price,
         public int $total,
+        public int $original_price,
+        public int $product_discount_amount,
+        public int $total_discount_amount,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public OrderItemPaymentTypeEnum $payment_type,
         public ?int $prepayment_amount,

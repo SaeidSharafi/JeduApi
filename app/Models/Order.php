@@ -196,4 +196,36 @@ final class Order extends Model implements WalletTransactionSourceableContract
             get: fn (): int => $this->total_paid - (int) ($this->total_refunded ?? 0),
         );
     }
+
+    /**
+     * Accessor to get total product-level discount (featured price + auto-promotions).
+     * Sums product_discount_amount from all order items.
+     */
+    protected function totalProductDiscount(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): int => $this->items->sum->product_discount_amount,
+        );
+    }
+
+    /**
+     * Accessor to get total cart-level discount (coupons).
+     * This is an alias for discount_amount for clarity.
+     */
+    protected function totalCartDiscount(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): int => $this->discount_amount,
+        );
+    }
+
+    /**
+     * Accessor to get total of all discounts (product + cart).
+     */
+    protected function totalDiscount(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): int => $this->total_product_discount + $this->total_cart_discount,
+        );
+    }
 }

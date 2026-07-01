@@ -55,7 +55,7 @@
 - **Usage:** Intended for scheduled task (e.g., daily at midnight) to automatically update pricing when featured prices expireses that need lightweight thumbnail references without hydrating full media relations.
 
 #### Order Actions (`app/Actions/Admin/Order/`)
-  - `handle(OrderCreateData $data): Order`: Delegates all totals to `OrderCalculationService`, locks delivery options while validating requested payment types/quantities against live capacity (`enrolled_count`), **validates registration window (`registration_start_date`/`registration_end_date`) and availability window (`available_from`/`available_to`)**, snapshots product data per item, seeds enrollments in `AWAITING_PAYMENT`, and increments promotion usage counts when coupon-driven contexts are present
+  - `handle(OrderCreateData $data): Order`: Delegates all totals to `OrderCalculationService`, locks delivery options while validating requested payment types/quantities against live capacity (`enrolled_count`), **validates registration window (`registration_start_date`/`registration_end_date`) and availability window (`available_from`/`available_to`)**, snapshots product data per item, seeds enrollments in `AWAITING_PAYMENT`, increments promotion usage counts when coupon-driven contexts are present, and populates `pricing_metadata` JSON on each order item. The `pricing_metadata` stores `{original_price, discount_type, discount_amount, discount_percentage}` — with zero discount values for `PRE_PAYMENT` items. The `price` field on order items is always set to `product_delivery_option.price` (base price) without any discounts applied.
   - `handle(OrderUpdateData $data, Order $order): Order`: Updates existing order details and status
   - `handle(Order $order): void`: Handles order deletion and cleanup
 - **ApproveOrderAction** (`app/Actions/Admin/Order/ApproveOrderAction.php`)
@@ -588,8 +588,13 @@
 ### Wallet Insufficient Balance Flow
 - Wallet checkout with insufficient funds returns a `wallet_balance` validation error; retry after top-up completes normally.
 
+### Price Field Invariant on Order Items
+- `order_items.price` always stores the base price from `product_delivery_option.price` at order creation. It never includes any discounts (product-level or cart-level). Discount information is tracked separately: product-level discounts in `pricing_metadata`, cart-level discounts in `discount_amount`.
+
 ### Discount Snapshots on Orders
 - `Order.applied_cart_discounts_json` and `OrderItem.applied_discount_details_json` persist the applied discounts as immutable snapshots of checkout state.
+- `OrderItem.pricing_metadata` stores the product-level discount breakdown (`original_price`, `discount_type`, `discount_amount`, `discount_percentage`) for each order item. Pre-payment items receive zero discount metadata.
+- Two-layer discount tracking: product-level discounts (featured prices, auto-promotions) are stored in `pricing_metadata` and exposed via `productDiscountAmount` accessor; cart-level discounts (coupons) are stored in the `discount_amount` column. The `total_discount_amount` accessor combines both layers.
 
 ### SkuGeneratorService (`app/Services/SkuGeneratorService.php`)
 - **Purpose:** Automatic SKU generation for product delivery options based on product type, term, and delivery method
