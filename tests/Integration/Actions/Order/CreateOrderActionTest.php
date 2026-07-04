@@ -113,12 +113,7 @@ describe('CreateOrderAction', function (): void {
             'status'                     => OrderItemStatusEnum::PENDING->value,
         ]);
 
-        \Pest\Laravel\assertDatabaseHas('enrollments', [
-            'order_id'                   => $order->id,
-            'customer_id'                => $user->id,
-            'product_delivery_option_id' => $deliveryOption1->id,
-            'enrollment_status'          => EnrollmentStatusEnum::AWAITING_PAYMENT->value,
-        ]);
+        \Pest\Laravel\assertDatabaseEmpty('enrollments');
         \Pest\Laravel\assertDatabaseHas('enrollments', [
             'order_id'                   => $order->id,
             'customer_id'                => $user->id,
@@ -620,7 +615,7 @@ describe('CreateOrderAction', function (): void {
 
         // Create featured price discount (product-level)
         $promotion = DiscountPromotion::factory()->create();
-        \App\Models\ProductDeliveryOptionDiscountPrice::factory()->create([
+        App\Models\ProductDeliveryOptionDiscountPrice::factory()->create([
             'product_delivery_option_id' => $deliveryOption->id,
             'discount_promotion_id'      => $promotion->id,
             'discounted_price'           => 85000, // 15000 product discount
@@ -681,7 +676,7 @@ describe('CreateOrderAction', function (): void {
 
         // Create featured price discount (product-level): 100000 -> 80000
         $promotion = DiscountPromotion::factory()->create();
-        \App\Models\ProductDeliveryOptionDiscountPrice::factory()->create([
+        App\Models\ProductDeliveryOptionDiscountPrice::factory()->create([
             'product_delivery_option_id' => $deliveryOption->id,
             'discount_promotion_id'      => $promotion->id,
             'discounted_price'           => 80000, // 20000 product discount

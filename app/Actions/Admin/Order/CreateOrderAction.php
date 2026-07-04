@@ -8,21 +8,16 @@ use App\Data\Admin\Discounts\OrderContextData;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
 use App\Enums\Content\PublicationStatusEnum;
-use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Events\OrderCreatedEvent;
-use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\ProductDeliveryOption;
-use App\Models\User;
 use App\Services\Discounts\OrderCalculationService;
 use App\Services\ProductPriceService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-
-// Make sure this is imported
 
 final readonly class CreateOrderAction
 {
@@ -76,16 +71,16 @@ final readonly class CreateOrderAction
                 // =================================================================
                 // PRE_PAYMENT items do NOT receive product-level discounts in pricing_metadata
                 $isPrePayment = $calculatedItem->payment_type === OrderItemPaymentTypeEnum::PRE_PAYMENT;
-                
+
                 $orderItemsData->push([
-                    'product_delivery_option_id'    => $calculatedItem->product_delivery_option->id,
-                    'vendor_id'                     => $deliveryOption->product->vendor_id,
-                    'qty_ordered'                   => $calculatedItem->qty,
-                    'name'                          => $deliveryOption->product->name,
-                    'sku'                           => $deliveryOption->sku,
-                    'product_data_snapshot_json'    => ProductDeliveryOptionShowData::from($deliveryOption)->toArray(),
-                    'payment_type'                  => $calculatedItem->payment_type,
-                    'status'                        => OrderItemStatusEnum::PENDING->value,
+                    'product_delivery_option_id' => $calculatedItem->product_delivery_option->id,
+                    'vendor_id'                  => $deliveryOption->product->vendor_id,
+                    'qty_ordered'                => $calculatedItem->qty,
+                    'name'                       => $deliveryOption->product->name,
+                    'sku'                        => $deliveryOption->sku,
+                    'product_data_snapshot_json' => ProductDeliveryOptionShowData::from($deliveryOption)->toArray(),
+                    'payment_type'               => $calculatedItem->payment_type,
+                    'status'                     => OrderItemStatusEnum::PENDING->value,
                     // ALWAYS base price from product_delivery_option table, NO discounts
                     'price'                         => $calculatedItem->product_delivery_option->price,
                     'discount_amount'               => $calculatedItem->discount_amount,
@@ -95,23 +90,23 @@ final readonly class CreateOrderAction
                         : null,
                     // PRE_PAYMENT: no discount metadata, FULL_PAYMENT: full discount metadata
                     'pricing_metadata' => $isPrePayment ? [
-                        'original_price'       => $priceData->original_price,
-                        'discount_type'        => null,
-                        'discount_amount'      => 0,
-                        'discount_percentage'  => null,
+                        'original_price'      => $priceData->original_price,
+                        'discount_type'       => null,
+                        'discount_amount'     => 0,
+                        'discount_percentage' => null,
                     ] : [
-                        'original_price'       => $priceData->original_price,
-                        'discount_type'        => $priceData->discount_type,
-                        'discount_amount'      => $priceData->discount_amount,
-                        'discount_percentage'  => $priceData->discount_percentage,
+                        'original_price'      => $priceData->original_price,
+                        'discount_type'       => $priceData->discount_type,
+                        'discount_amount'     => $priceData->discount_amount,
+                        'discount_percentage' => $priceData->discount_percentage,
                     ],
                     'prepayment_amount' => $deliveryOption->prepayment_amount,
                     'tax_amount'        => 0, // Placeholder
                 ]);
             }
             $grandTotal = $context->calculateGrandTotal();
-            
-            $order      = Order::create([
+
+            $order = Order::create([
                 'increment_id'           => Order::generateIncrementId(),
                 'status'                 => $data->status,
                 'customer_id'            => $context->customer->id,
@@ -142,18 +137,7 @@ final readonly class CreateOrderAction
             $order->items()->createMany($orderItemsData->all());
             $order->refresh();
 
-            // --- ENROLLMENT CREATION LOGIC (PRESERVED) ---
-            // This logic is unchanged as it depends only on the created order items.
-            $order->load('items');
-            $order->items->each(function ($item) use ($context): void {
-                Enrollment::create([
-                    'order_id'                   => $item->order_id,
-                    'order_item_id'              => $item->id,
-                    'customer_id'                => $context->customer->id,
-                    'product_delivery_option_id' => $item->product_delivery_option_id,
-                    'enrollment_status'          => EnrollmentStatusEnum::AWAITING_PAYMENT,
-                ]);
-            });
+            // Enrollments are now created by OrderStatusService after payment.
 
             return $order->fresh();
 

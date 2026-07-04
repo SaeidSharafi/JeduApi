@@ -16,6 +16,7 @@ use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\PaymentCompletedEvent;
+use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\Payment;
@@ -46,7 +47,8 @@ final readonly class CreateOrderFromCartAction
      */
     public function handle(CheckoutData $checkoutData, User $user): PaymentProcessResultData
     {
-        return DB::transaction(function () use ($checkoutData, $user): PaymentProcessResultData {
+        // Steps 1-6: Create order inside DB transaction (atomic cart→order conversion)
+        $order = DB::transaction(function () use ($user): Order {
             // Step 1: Get the cart model directly
             $cart = $this->cartService->findOrCreateCart($user);
 
@@ -65,20 +67,21 @@ final readonly class CreateOrderFromCartAction
             // Step 4: Validate that the user doesn't already own these products
             $deliveryOptions = $cart->items->pluck('productDeliveryOption');
             $this->validateNoDuplicatePurchases->handle($user, $deliveryOptions);
+
             // Step 5: Build OrderCreateData from cart
             $orderCreateData = $this->buildOrderCreateData($cart, $user);
 
             // Step 6: Execute the existing CreateOrderAction
-            $order = $this->createOrderAction->handle($orderCreateData);
-
-            // Step 7: Process payment based on order total
-            $result = $this->processPayment($order, $checkoutData, $user);
-
-            // Step 8: Delete the cart after successful checkout
-            $this->cartService->deleteCart();
-
-            return $result;
+            return $this->createOrderAction->handle($orderCreateData);
         });
+
+        // Delete cart immediately after order creation (Digikala pattern)
+        $this->cartService->deleteCart();
+
+        // Step 7: Process payment OUTSIDE transaction
+        $result = $this->processPayment($order, $checkoutData, $user);
+
+        return $result;
     }
 
     /**
@@ -160,7 +163,7 @@ final readonly class CreateOrderFromCartAction
      *
      * @throws ValidationException
      */
-    private function validateCartItems($cart): void
+    private function validateCartItems(Cart $cart): void
     {
         $errors = [];
 
@@ -245,7 +248,7 @@ final readonly class CreateOrderFromCartAction
     /**
      * Build OrderCreateData from Cart model.
      */
-    private function buildOrderCreateData($cart, User $user): OrderCreateData
+    private function buildOrderCreateData(Cart $cart, User $user): OrderCreateData
     {
         // Convert cart items to order items
         $orderItems = [];
