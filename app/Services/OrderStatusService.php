@@ -33,6 +33,7 @@ final class OrderStatusService
             OrderProvisioningTriggerEnum::FULL_PAYMENT    => $order->fresh()->balance_due <= 0,
             OrderProvisioningTriggerEnum::MANUAL_APPROVAL => false, // Never auto-provision
         };
+        // @codeCoverageIgnoreEnd
 
         if (! $shouldProvision) {
             // Update order status to PROCESSING but don't complete items
@@ -105,6 +106,20 @@ final class OrderStatusService
             $item->saveQuietly();
         }
 
+        // Create enrollment if it doesn't exist yet (payment completed -> activate access)
+        if (! $item->enrollment) {
+            $item->enrollment()->firstOrCreate(
+                ['order_item_id' => $item->id],
+                [
+                    'order_id'                   => $item->order_id,
+                    'customer_id'                => $item->order->customer_id,
+                    'product_delivery_option_id' => $item->product_delivery_option_id,
+                    'enrollment_status'          => EnrollmentStatusEnum::ACTIVE,
+                ]
+            );
+            $item->load('enrollment');
+        }
+
         $this->updateEnrollmentStatus($item);
     }
 
@@ -138,4 +153,3 @@ final class OrderStatusService
         return OrderStatusEnum::PROCESSING;
     }
 }
-// @codeCoverageIgnoreEnd

@@ -21,6 +21,7 @@ use App\Services\SettingsService;
 use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 use SoapFault;
 
 /**
@@ -129,6 +130,24 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 
     public function verify(Payment $payment, array $callbackData): Payment
     {
+        // Gatekeeper: prevent double-verification if order already has a completed payment
+        if ($payment->status === PaymentStatusEnum::COMPLETED) {
+            return $payment;
+        }
+
+        if ($payment->order->payments()
+            ->where('status', PaymentStatusEnum::COMPLETED)
+            ->where('id', '!=', $payment->id)
+            ->exists()
+        ) {
+            Log::warning('Duplicate payment verification blocked - order already has completed payment', [
+                'payment_id' => $payment->id,
+                'order_id'   => $payment->order_id,
+            ]);
+
+            throw new RuntimeException('Order already has a completed payment.');
+        }
+
         // Step 1: Verify the callback from Mellat
         Log::info('Verifying Mellat payment', [
             'payment_id'    => $payment->id,

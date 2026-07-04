@@ -20,6 +20,8 @@ use App\Services\Payment\Digipay\DigipayConfigRepository;
 use App\Services\Payment\Digipay\DigipayException;
 use App\Services\PaymentTransactionReferenceService;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
 final class DigipayPaymentProcessor implements PaymentProcessorContract
 {
@@ -110,6 +112,24 @@ final class DigipayPaymentProcessor implements PaymentProcessorContract
 
     public function verify(Payment $payment, array $callbackData): Payment
     {
+        // Gatekeeper: prevent double-verification if order already has a completed payment
+        if ($payment->status === PaymentStatusEnum::COMPLETED) {
+            return $payment;
+        }
+
+        if ($payment->order->payments()
+            ->where('id', '!=', $payment->id)
+            ->where('status', PaymentStatusEnum::COMPLETED)
+            ->exists()
+        ) {
+            Log::warning('Duplicate payment verification blocked - order already has completed payment', [
+                'payment_id' => $payment->id,
+                'order_id'   => $payment->order_id,
+            ]);
+
+            throw new RuntimeException('Order already has a completed payment.');
+        }
+
         $payload     = CallbackPayload::fromRequest($callbackData);
         $transaction = $payment->transactions()->latest()->firstOrFail();
 
