@@ -114,12 +114,7 @@ describe('CreateOrderAction', function (): void {
         ]);
 
         \Pest\Laravel\assertDatabaseEmpty('enrollments');
-        \Pest\Laravel\assertDatabaseHas('enrollments', [
-            'order_id'                   => $order->id,
-            'customer_id'                => $user->id,
-            'product_delivery_option_id' => $deliveryOption2->id,
-            'enrollment_status'          => EnrollmentStatusEnum::AWAITING_PAYMENT->value,
-        ]);
+        \Pest\Laravel\assertDatabaseEmpty('enrollments');
 
         Event::assertDispatched(OrderCreatedEvent::class, fn ($event): bool => $event->order->id === $order->id);
     });

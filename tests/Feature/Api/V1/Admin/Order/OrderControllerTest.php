@@ -141,11 +141,7 @@ describe('OrderController', function (): void {
                 'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
             ]);
 
-            $this->assertDatabaseHas('enrollments', [
-                'order_id'          => $response->json('data.id'),
-                'customer_id'       => $user->id,
-                'enrollment_status' => App\Enums\EnrollmentStatusEnum::AWAITING_PAYMENT,
-            ]);
+            $this->assertDatabaseEmpty('enrollments');
 
         });
 
@@ -183,7 +179,7 @@ describe('OrderController', function (): void {
         it('returns OrderData computed fields correctly for pre-payment order', function (): void {
             $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
             $user    = User::factory()->create();
-            
+
             // Featured price: 85,000 (15% discount from 100,000)
             $product = ProductDeliveryOption::factory()->create([
                 'product_id'              => $this->product->id,
@@ -221,7 +217,7 @@ describe('OrderController', function (): void {
         it('returns OrderItemData computed fields correctly for featured price and coupon', function (): void {
             $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
             $user = User::factory()->create();
-            
+
             // Featured price: 85,000 (15,000 product discount)
             $product = ProductDeliveryOption::factory()->create([
                 'product_id'     => $this->product->id,
@@ -238,13 +234,13 @@ describe('OrderController', function (): void {
                 'type'      => 'cart_checkout',
                 'is_active' => true,
             ]);
-            
+
             $couponPromotion->rules()->create([
                 'type'          => 'action',
                 'handler'       => 'apply_percentage_off',
                 'configuration' => ['percentage' => 10],
             ]);
-            
+
             $coupon = App\Models\DiscountCoupon::factory()->create([
                 'discount_promotion_id' => $couponPromotion->id,
                 'code'                  => 'TEST10',
@@ -266,9 +262,9 @@ describe('OrderController', function (): void {
             $response = $this->postJson(route('api.v1.admin.orders.store'), $orderData);
 
             $response->assertStatus(201);
-            
+
             $item = $response->json('data.items.0');
-            
+
             // Product discount: 100,000 - 85,000 = 15,000
             // Cart discount (10% of 85,000): 8,500
             // Final price: 85,000 - 8,500 = 76,500

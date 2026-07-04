@@ -227,20 +227,22 @@ describe('Complex Multi-Step Checkout Scenarios', function (): void {
 
         // First checkout: insufficient balance
         $response = postJson(route('api.v1.shop.checkout'), ['payment_method' => PaymentMethodEnum::WALLET->value]);
-        $response->assertStatus(422)
-            ->assertJsonStructure(['errors' => ['wallet_balance']]);
+        $response->assertStatus(422);
+        $orderIncrementId = $response->json('metadata.order_id');
+        expect($orderIncrementId)->not->toBeNull();
 
         // Top up wallet
         $customer->wallet->update(['balance' => 200000]);
 
-        // Retry checkout: should succeed
-        $response = postJson(route('api.v1.shop.checkout'), ['payment_method' => PaymentMethodEnum::WALLET->value]);
-        $response->assertCreated();
+        // Retry payment on existing order
+        $order = Order::query()->where('increment_id', $orderIncrementId)->first();
+        $response = postJson(route('api.v1.shop.student.orders.retry-payment', $order->increment_id), [
+            'payment_method' => PaymentMethodEnum::WALLET->value,
+        ]);
+        $response->assertOk();
 
-        // Verify order and payment created
-        $orderId = $response->json('data.order.id');
-        assertDatabaseHas('orders', ['id' => $orderId, 'customer_id' => $customer->id]);
-        assertDatabaseHas('payments', ['order_id' => $orderId, 'method' => PaymentMethodEnum::WALLET->value, 'status' => 'completed']);
+        // Verify payment created
+        assertDatabaseHas('payments', ['order_id' => $order->id, 'method' => PaymentMethodEnum::WALLET->value, 'status' => 'completed']);
     });
 
     test('order totals include applied_cart_discounts_json snapshot', function (): void {

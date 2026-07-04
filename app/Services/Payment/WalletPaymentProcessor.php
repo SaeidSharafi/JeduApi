@@ -69,7 +69,8 @@ final class WalletPaymentProcessor implements PaymentProcessorContract
             throw new InsufficientWalletBalanceException(
                 availableBalance: $availableBalance,
                 requiredBalance: $amountToPay,
-                shortfall: $shortfall
+                shortfall: $shortfall,
+                orderIncrementId: (string) $order->increment_id
             );
         }
 

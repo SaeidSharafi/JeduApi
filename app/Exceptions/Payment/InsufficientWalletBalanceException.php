@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace App\Exceptions\Payment;
 
 use App\Contracts\ApiResponseInterface;
-use App\Http\Responses\ApiFailResponse;
 use Exception;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 final class InsufficientWalletBalanceException extends Exception
 {
@@ -17,7 +14,8 @@ final class InsufficientWalletBalanceException extends Exception
         public readonly int $availableBalance,
         public readonly int $requiredBalance,
         public readonly int $shortfall,
-        string $message = ''
+        public readonly ?string $orderIncrementId = null,
+        string $message = '',
     ) {
         $message = $message ?: __('validation.custom.checkout.insufficient_wallet_balance');
         parent::__construct($message);
@@ -40,14 +38,20 @@ final class InsufficientWalletBalanceException extends Exception
 
     public function render(Request $request): ApiResponseInterface
     {
+        $metadata = [
+            'error_code'        => 'INSUFFICIENT_WALLET_BALANCE',
+            'available_balance' => $this->availableBalance,
+            'required_balance'  => $this->requiredBalance,
+            'shortfall'         => $this->shortfall,
+        ];
+
+        if ($this->orderIncrementId !== null) {
+            $metadata['order_id'] = $this->orderIncrementId;
+        }
+
         return apiResponse()->validationErrors(
             ['wallet_balance' => $this->getMessage()],
-            metadata: [
-                'error_code'        => 'INSUFFICIENT_WALLET_BALANCE',
-                'available_balance' => $this->availableBalance,
-                'required_balance'  => $this->requiredBalance,
-                'shortfall'         => $this->shortfall,
-            ],
+            metadata: $metadata,
         );
     }
 }

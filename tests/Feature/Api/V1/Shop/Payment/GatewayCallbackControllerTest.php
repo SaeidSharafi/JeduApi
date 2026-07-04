@@ -36,7 +36,7 @@ it('redirects customers to the success page when the payment is verified', funct
 
     $response = postJson(route('api.v1.shop.payment.gateway.callback'), $callbackPayload);
 
-    $response->assertRedirect(config('payments.redirect.success').'?payment='.$payment->uuid);
+    $response->assertRedirect(config('payments.redirect.success').'?order='.$payment->order->increment_id);
 });
 
 it('redirects customers to the failure page when the payment verification fails', function (): void {
@@ -59,7 +59,7 @@ it('redirects customers to the failure page when the payment verification fails'
 
     $response = postJson(route('api.v1.shop.payment.gateway.callback'), $callbackPayload);
 
-    $response->assertRedirect(config('payments.redirect.failure').'?payment='.$payment->uuid);
+    $response->assertRedirect(config('payments.redirect.failure').'?order='.$payment->order->increment_id);
 });
 
 it('redirects customers to the generic error page when verification throws', function (): void {

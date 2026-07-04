@@ -479,7 +479,7 @@ test('checkout fails with insufficient wallet balance', function (): void {
     $response->assertStatus(422)
         ->assertJsonPath('metadata.error_code', 'INSUFFICIENT_WALLET_BALANCE');
 
-    $this->assertDatabaseMissing(Order::class, [
+    $this->assertDatabaseHas(Order::class, [
         'customer_id' => $this->user->id,
     ]);
 });

@@ -66,7 +66,7 @@ Route::middleware(['auth:user'])
                 Route::post('/{order:increment_id}/cancel', CancelOrderController::class)
                     ->name('cancel');
 
-                Route::post('/{order:increment_id}/retry-payment', RetryPaymentController::class)
+                Route::post('/{increment_id}/retry-payment', RetryPaymentController::class)
                     ->middleware('throttle:10,1')
                     ->name('retry-payment');
             });

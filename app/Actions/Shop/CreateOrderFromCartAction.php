@@ -51,7 +51,6 @@ final readonly class CreateOrderFromCartAction
         $order = DB::transaction(function () use ($user): Order {
             // Step 1: Get the cart model directly
             $cart = $this->cartService->findOrCreateCart($user);
-
             if ($cart->items->count() === 0) {
                 throw ValidationException::withMessages([
                     'cart' => ['Your cart is empty. Please add items before checking out.'],
@@ -78,10 +77,7 @@ final readonly class CreateOrderFromCartAction
         // Delete cart immediately after order creation (Digikala pattern)
         $this->cartService->deleteCart();
 
-        // Step 7: Process payment OUTSIDE transaction
-        $result = $this->processPayment($order, $checkoutData, $user);
-
-        return $result;
+        return $this->processPayment($order, $checkoutData, $user);
     }
 
     /**

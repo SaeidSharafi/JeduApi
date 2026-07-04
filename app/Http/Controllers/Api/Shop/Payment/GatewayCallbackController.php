@@ -48,14 +48,14 @@ final class GatewayCallbackController extends Controller
             if ($payment->status === PaymentStatusEnum::COMPLETED) {
                 return redirect(
                     config('payments.redirect.success').'?'.http_build_query([
-                        'payment' => $payment->uuid,
+                        'order' => $payment->order->increment_id,
                     ])
                 );
             }
 
             return redirect(
                 config('payments.redirect.failure').'?'.http_build_query([
-                    'payment' => $payment->uuid,
+                    'order' => $payment->order->increment_id,
                 ])
             );
 

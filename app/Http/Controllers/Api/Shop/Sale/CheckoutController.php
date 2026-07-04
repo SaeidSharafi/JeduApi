@@ -50,7 +50,8 @@ final class CheckoutController extends Controller
      *     "error_code": "INSUFFICIENT_WALLET_BALANCE",
      *     "available_balance": 500000,
      *     "required_balance": 1000000,
-     *     "shortfall": 500000
+     *     "shortfall": 500000,
+     *     "order_id": "100001"
      *   }
      * }
      *
