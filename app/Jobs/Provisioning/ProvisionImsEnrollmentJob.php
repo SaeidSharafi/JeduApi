@@ -13,10 +13,6 @@ use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\User;
 use App\Services\Integrations\ImsService;
-use Illuminate\Bus\Queueable;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
 use RuntimeException;
 use Throwable;
@@ -114,7 +110,7 @@ final class ProvisionImsEnrollmentJob extends AbstractProvisioningJob
                 $enrollment->notes,
         ];
 
-        $studentData   = $service->storeStudent($student);
+        $studentData    = $service->storeStudent($student);
         $enrollmentData = $service->storeEnrollment($enrollment->customer, $enrollmentData);
 
         $externalEnrollmentId = data_get($enrollmentData, 'data.enrollment_id');

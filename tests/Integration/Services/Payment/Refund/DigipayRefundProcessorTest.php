@@ -13,7 +13,6 @@ use App\Services\Payment\Digipay\Data\RefundResponse;
 use App\Services\Payment\Digipay\DigipayAdminService;
 use App\Services\Payment\Digipay\DigipayException;
 use App\Services\Payment\Refund\DigipayRefundProcessor;
-use Illuminate\Support\Facades\Log;
 
 // ─── Success Cases ────────────────────────────────────────────────────
 
@@ -166,7 +165,7 @@ it('falls back to oldest completed payment when refund.payment_id is null', func
             ));
     });
 
-    $processor = resolve(DigipayRefundProcessor::class);
+    $processor    = resolve(DigipayRefundProcessor::class);
     $trackingCode = $processor->process($refund, $order, 50000);
 
     expect($trackingCode)->toBe('DGP-REF-FALLBACK');
@@ -267,9 +266,9 @@ it('processes BNPL refund before delivery confirmation', function (): void {
         'transaction_reference' => 'TXN-'.fake()->uuid(),
         'initiated_at'          => now(),
         'gateway_response'      => [
-            'tracking_code'        => 'DGP-BNPL',
-            'payment_gateway'      => 13, // BNPL type
-            'delivery_confirmed'   => false, // NOT delivered
+            'tracking_code'      => 'DGP-BNPL',
+            'payment_gateway'    => 13, // BNPL type
+            'delivery_confirmed' => false, // NOT delivered
         ],
     ]);
 
@@ -306,9 +305,9 @@ it('processes CREDIT refund after delivery confirmation', function (): void {
         'transaction_reference' => 'TXN-'.fake()->uuid(),
         'initiated_at'          => now(),
         'gateway_response'      => [
-            'tracking_code'       => 'DGP-CREDIT',
-            'payment_gateway'     => 5, // CREDIT type
-            'delivery_confirmed'  => true, // Delivered
+            'tracking_code'      => 'DGP-CREDIT',
+            'payment_gateway'    => 5, // CREDIT type
+            'delivery_confirmed' => true, // Delivered
         ],
     ]);
 

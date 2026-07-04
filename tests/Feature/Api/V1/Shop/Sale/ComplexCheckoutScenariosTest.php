@@ -235,7 +235,7 @@ describe('Complex Multi-Step Checkout Scenarios', function (): void {
         $customer->wallet->update(['balance' => 200000]);
 
         // Retry payment on existing order
-        $order = Order::query()->where('increment_id', $orderIncrementId)->first();
+        $order    = Order::query()->where('increment_id', $orderIncrementId)->first();
         $response = postJson(route('api.v1.shop.student.orders.retry-payment', $order->increment_id), [
             'payment_method' => PaymentMethodEnum::WALLET->value,
         ]);

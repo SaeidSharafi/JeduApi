@@ -12,7 +12,6 @@ use App\Enums\Product\FulfillmentTypeEnum;
 use App\Rules\ProductDeliveryOptionCheckRule;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;

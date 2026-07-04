@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\Shop\Student;
 
 use App\Http\Controllers\Controller;
@@ -11,7 +13,7 @@ use App\Services\SWRCacheService;
  *
  * @authenticated user
  */
-class QuizController extends Controller
+final class QuizController extends Controller
 {
     /**
      * Return List of Quizzes (on Moodle) for the authenticated user.
@@ -20,12 +22,14 @@ class QuizController extends Controller
      */
     public function __invoke(MoodleService $moodleService)
     {
-        $user = auth()->user();
-       $quizzes = SWRCacheService::remember("student_quizzes", function () use ($moodleService, $user) {
+        $user    = auth()->user();
+        $quizzes = SWRCacheService::remember('student_quizzes', function () use ($moodleService, $user) {
             [$moodleUserId] = $moodleService->findOrCreateUser($user);
-            $quizzes = $moodleService->getAllQuizzes($moodleUserId);
+            $quizzes        = $moodleService->getAllQuizzes($moodleUserId);
+
             return $quizzes;
         });
+
         return apiResponse()->success($quizzes);
     }
 }

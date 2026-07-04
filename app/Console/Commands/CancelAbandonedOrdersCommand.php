@@ -91,9 +91,9 @@ final class CancelAbandonedOrdersCommand extends Command
                     // Cancel all associated enrollments
                     foreach ($order->items as $item) {
                         if ($item->enrollment && (
-                                $item->enrollment->enrollment_status === EnrollmentStatusEnum::AWAITING_PAYMENT
-                                || $item->enrollment->enrollment_status === EnrollmentStatusEnum::PENDING_PROVISIONING
-                            )) {
+                            $item->enrollment->enrollment_status    === EnrollmentStatusEnum::AWAITING_PAYMENT
+                            || $item->enrollment->enrollment_status === EnrollmentStatusEnum::PENDING_PROVISIONING
+                        )) {
                             $item->enrollment->enrollment_status = EnrollmentStatusEnum::CANCELLED;
                             $item->enrollment->save();
                         }

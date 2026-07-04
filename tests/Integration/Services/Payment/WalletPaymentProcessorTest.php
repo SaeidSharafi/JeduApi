@@ -106,7 +106,7 @@ describe('WalletPaymentProcessor', function (): void {
             Mockery::mock(App\Services\PaymentTransactionReferenceService::class)
         );
 
-        expect(fn (): \App\Models\Payment => $processor->verify($payment, []))
+        expect(fn (): Payment => $processor->verify($payment, []))
             ->toThrow(BadMethodCallException::class);
     });
 });

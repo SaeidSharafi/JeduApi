@@ -19,7 +19,7 @@ abstract class ExternalProvisioningException extends RuntimeException
         parent::__construct($message, $code, $previous);
     }
 
-    public function getMoodleErrorCode(): string
+    final public function getMoodleErrorCode(): string
     {
         return data_get($this->metaData, 'errorcode');
     }

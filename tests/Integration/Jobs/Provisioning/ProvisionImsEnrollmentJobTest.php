@@ -467,7 +467,7 @@ it('logs error with enrollment context on failure', function (): void {
 
     Log::shouldHaveReceived('error')
         ->withArgs(fn ($message, $context): bool => $message === 'IMS provisioning failed'
-            && ($context['enrollment_id'] ?? null)     === $enrollment->id
+            && ($context['enrollment_id'] ?? null)           === $enrollment->id
         );
 });
 

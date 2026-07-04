@@ -133,7 +133,7 @@ function makeSkyroomService(string $apiKey = 'test-api-key'): SkyroomService
     $settings = Mockery::mock(SettingsService::class);
     $settings->shouldReceive('get')
         ->with(SettingKeyEnum::SKYROOM, Mockery::any())
-        ->andReturn($apiKey !== '' ? ['enabled' => true,'base_url' => "https://www.skyroom.online/skyroom/api", 'api_key' => $apiKey] : []);
+        ->andReturn($apiKey !== '' ? ['enabled' => true, 'base_url' => 'https://www.skyroom.online/skyroom/api', 'api_key' => $apiKey] : []);
 
     return new SkyroomService($settings);
 }

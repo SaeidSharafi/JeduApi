@@ -61,7 +61,6 @@ Route::apiResource('discount-promotions', DiscountPromotionController::class);
 Route::put('discount-promotions/{discountPromotion}/status', DiscountPromotionStatusUpdateController::class)
     ->name('discount-promotions.toggle-status');
 
-
 // Discount Info routes (for frontend to get available rules, actions, etc.)
 Route::get('discount-info', [DiscountInfoController::class, 'index'])
     ->name('discount-info');

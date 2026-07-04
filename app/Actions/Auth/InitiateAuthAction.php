@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Actions\Auth;
 
 use App\Data\Auth\AuthInitiationResultData;
-use App\Data\OtpManager\SentOtpDto;
 use App\Enums\System\OtpType;
 use App\Exceptions\UserNotFoundException;
 use App\Models\User;

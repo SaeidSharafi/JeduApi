@@ -45,7 +45,7 @@ final readonly class ProductPriceService
     public function getPriceDataForProducts(Collection $products): Collection
     {
         return $products->keyBy('id')->map(
-            fn (Product $product): \App\Data\Shop\ProductPriceData => $this->getPriceDataForProduct($product)
+            fn (Product $product): ProductPriceData => $this->getPriceDataForProduct($product)
         );
     }
 

@@ -44,7 +44,7 @@ describe('DeleteEnrollmentAction', function (): void {
         ]);
 
         expect(fn () => $this->action->handle($enrollment))
-            ->toThrow(ValidationException::class,  __(
+            ->toThrow(ValidationException::class, __(
                 'messages.enrollments.cannot_delete_enrollment',
                 ['status' => EnrollmentStatusEnum::PENDING_PROVISIONING->translate()]
             ));

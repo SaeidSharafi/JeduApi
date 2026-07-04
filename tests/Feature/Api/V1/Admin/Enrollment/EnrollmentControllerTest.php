@@ -117,7 +117,7 @@ describe('EnrollmentController', function (): void {
                 'data' => [
                     'uuid', 'enrollment_status', 'customer', 'order',
                     'productDeliveryOption', 'notes', 'created_at',
-                    ],
+                ],
             ])
             ->assertJsonPath('data.uuid', $enrollment->uuid)
             ->assertJsonPath('data.enrollment_status.value', EnrollmentStatusEnum::ACTIVE->value);

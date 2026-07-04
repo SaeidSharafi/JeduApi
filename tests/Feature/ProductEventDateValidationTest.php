@@ -79,7 +79,7 @@ describe('Product Event Date Validation', function (): void {
         $data['event_start_at'] = '1405-03-11 00:00:00';
         $data['event_ended_at'] = '1405-04-09 23:59:00';
         $data['name']           = 'Event Product';
-        $response = $this->postJson(route('api.v1.admin.products.store'), $data);
+        $response               = $this->postJson(route('api.v1.admin.products.store'), $data);
         $response->assertCreated();
         assertDatabaseHas('products', [
             'name'           => 'Event Product',
@@ -94,13 +94,13 @@ describe('Product Event Date Validation', function (): void {
         $data['event_start_at'] = '1405-03-25 00:00:00';
         $data['event_ended_at'] = '1405-03-25 00:00:00';
         $data['name']           = 'Same Day Event';
-        $response = $this->postJson(route('api.v1.admin.products.store'), $data);
+        $response               = $this->postJson(route('api.v1.admin.products.store'), $data);
         $response->assertCreated();
         assertDatabaseHas('products', [
             'name'           => 'Same Day Event',
             'event_start_at' => '2026-06-15 00:00:00',
-             'event_ended_at' => '2026-06-15 00:00:00',
-            ]);
+            'event_ended_at' => '2026-06-15 00:00:00',
+        ]);
     });
 
     it('updates product in database with valid event dates', function (): void {
@@ -125,7 +125,7 @@ describe('Product Event Date Validation', function (): void {
             'id'             => $product->id,
             'name'           => 'Updated Event Product',
             'event_start_at' => '2026-07-01 00:00:00',
-             'event_ended_at' => '2026-07-31 00:00:00',
-            ]);
+            'event_ended_at' => '2026-07-31 00:00:00',
+        ]);
     });
 });

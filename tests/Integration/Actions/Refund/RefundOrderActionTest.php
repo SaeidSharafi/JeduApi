@@ -10,7 +10,6 @@ use App\Enums\Order\RefundStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\RefundCompletedEvent;
-use App\Exceptions\RefundGatewayException;
 use App\Exceptions\RefundValidationException;
 use App\Models\Order;
 use App\Models\Payment;
@@ -169,7 +168,7 @@ it('processes full-order Digipay refund with gateway call', function (): void {
     $this->mock(DigipayAdminService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('refund')
             ->once()
-            ->with(\Mockery::type(Payment::class), 300000)
+            ->with(Mockery::type(Payment::class), 300000)
             ->andReturn(new RefundResponse(statusCode: 0, message: 'OK', trackingCode: 'DGP-FULL-REF'));
     });
 
@@ -386,7 +385,7 @@ it('marks refunds as FAILED when Digipay gateway throws exception', function ():
 
     $this->mock(DigipayAdminService::class, function (MockInterface $mock): void {
         $mock->shouldReceive('refund')
-            ->with(\Mockery::type(Payment::class), \Mockery::type('int'))
+            ->with(Mockery::type(Payment::class), Mockery::type('int'))
             ->andThrow(new DigipayException('Gateway error', 500));
     });
 

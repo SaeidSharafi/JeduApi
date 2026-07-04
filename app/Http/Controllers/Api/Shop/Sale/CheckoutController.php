@@ -54,7 +54,6 @@ final class CheckoutController extends Controller
      *     "order_id": "100001"
      *   }
      * }
-     *
      */
     public function __invoke(CheckoutData $data, CreateOrderFromCartAction $action): ApiResponseInterface
     {

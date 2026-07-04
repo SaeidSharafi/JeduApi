@@ -13,6 +13,7 @@ use App\Exceptions\InvalidOtpCodeException;
 use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyOtpRequest;
+
 /**
  * @group Shop - Auth
  */

@@ -51,9 +51,9 @@ it('successfully refunds a payment via Digipay API', function (): void {
         ->and($response->trackingCode)->toBe('DGP-REF-SUCCESS');
 
     Http::assertSent(function ($request) {
-        return $request->url() === 'https://api.digipay.test/purchases/refund?type=0'
-            && $request['providerId'] === 'PROV-123'
-            && $request['amount'] === 500000
+        return $request->url()              === 'https://api.digipay.test/purchases/refund?type=0'
+            && $request['providerId']       === 'PROV-123'
+            && $request['amount']           === 500000
             && $request['saleTrackingCode'] === 'DGP-SALE-123';
     });
 });
@@ -95,7 +95,7 @@ it('successfully reverses a payment via Digipay API', function (): void {
             'maskedPan'      => '603799******1234',
             'amount'         => 500000,
             'paymentGateway' => 0,
-            'result' => [
+            'result'         => [
                 'status'  => 0,
                 'message' => 'Reversal successful',
             ],
@@ -112,7 +112,7 @@ it('successfully reverses a payment via Digipay API', function (): void {
     Http::assertSent(function ($request) {
         return str_contains($request->url(), 'purchases/reverse')
             && $request['purchaseTrackingCode'] === 'DGP-SALE-123'
-            && $request['providerId'] === 'PROV-123';
+            && $request['providerId']           === 'PROV-123';
     });
 });
 
@@ -152,7 +152,7 @@ it('successfully confirms delivery for BNPL/CREDIT payments', function (): void 
 
     Http::assertSent(function ($request) {
         return str_contains($request->url(), 'purchases/deliver?type=5')
-            && $request['trackingCode'] === 'DGP-SALE-123'
+            && $request['trackingCode']  === 'DGP-SALE-123'
             && $request['invoiceNumber'] === 'INV-123';
     });
 });
@@ -222,7 +222,7 @@ it('throws DigipayException when inquire refund API fails', function (): void {
 // ─── Network/Connection Errors ────────────────────────────────────────
 
 it('handles network timeout gracefully', function (): void {
-    Http::fake(fn () => throw new \Illuminate\Http\Client\ConnectionException('Connection timeout'));
+    Http::fake(fn () => throw new Illuminate\Http\Client\ConnectionException('Connection timeout'));
 
     $client = resolve(DigipayClient::class);
 

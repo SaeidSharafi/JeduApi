@@ -7,7 +7,6 @@ namespace App\Listeners;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Product\DeliveryMethodEnum;
 use App\Events\OrderStatusUpdatedEvent;
-use App\Events\PaymentCompletedEvent;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
@@ -39,15 +38,13 @@ final class OrderStatusUpdateListener implements ShouldQueue
             'items' => fn ($q) => $q->with('enrollment', 'productDeliveryOption'),
         ]);
 
-
-
         foreach ($order->items as $item) {
             if (! $item->enrollment || ! $item->productDeliveryOption) {
                 continue;
             }
 
             if (isset($item->productDeliveryOption->details_json['ims_course_code'])) {
-                ProvisionImsEnrollmentJob::dispatch($item->enrollment->id,$order->firstPayment->id);
+                ProvisionImsEnrollmentJob::dispatch($item->enrollment->id, $order->firstPayment->id);
             }
 
             $deliveryMethod = $item->productDeliveryOption->delivery_method;

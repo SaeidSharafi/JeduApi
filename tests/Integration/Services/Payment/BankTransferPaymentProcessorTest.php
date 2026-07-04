@@ -121,7 +121,7 @@ describe('BankTransferPaymentProcessor', function (): void {
 
         $processor = new BankTransferPaymentProcessor();
 
-        expect(fn (): \App\Models\Payment => $processor->verify($payment, []))
+        expect(fn (): Payment => $processor->verify($payment, []))
             ->toThrow(BadMethodCallException::class);
     });
 });

@@ -10,5 +10,5 @@ return [
     App\Providers\FullTextSearchProvider::class,
     App\Providers\PaymentServiceProvider::class,
     App\Providers\PersianFakesServiceProvider::class,
-    //App\Providers\ResponseMacroServiceProvider::class,
+    // App\Providers\ResponseMacroServiceProvider::class,
 ];

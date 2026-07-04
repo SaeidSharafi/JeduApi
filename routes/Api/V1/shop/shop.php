@@ -95,7 +95,7 @@ Route::middleware([])
 Route::post('checkout', CheckoutController::class)
     ->middleware(['throttle:5,1', 'profile.check'])
     ->name('checkout');
-Route::get('payment/gateways', \App\Http\Controllers\Api\Shop\Sale\GatewayListController::class)
+Route::get('payment/gateways', App\Http\Controllers\Api\Shop\Sale\GatewayListController::class)
     ->name('payment.gateways');
 // Payment Gateway Callback Route (public - no auth required)
 Route::post('payment/gateway/callback', App\Http\Controllers\Api\Shop\Payment\GatewayCallbackController::class)

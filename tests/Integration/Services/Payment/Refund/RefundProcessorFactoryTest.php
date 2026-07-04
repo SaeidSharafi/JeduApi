@@ -9,28 +9,28 @@ use App\Services\Payment\Refund\RefundProcessorFactory;
 use App\Services\Payment\Refund\WalletRefundProcessor;
 
 it('resolves DigipayRefundProcessor for digipay method', function (): void {
-    $factory = resolve(RefundProcessorFactory::class);
+    $factory   = resolve(RefundProcessorFactory::class);
     $processor = $factory->make(PaymentMethodEnum::DIGIPAY->value);
 
     expect($processor)->toBeInstanceOf(DigipayRefundProcessor::class);
 });
 
 it('resolves WalletRefundProcessor for wallet method', function (): void {
-    $factory = resolve(RefundProcessorFactory::class);
+    $factory   = resolve(RefundProcessorFactory::class);
     $processor = $factory->make(PaymentMethodEnum::WALLET->value);
 
     expect($processor)->toBeInstanceOf(WalletRefundProcessor::class);
 });
 
 it('resolves ManualRefundProcessor for bank_transfer method', function (): void {
-    $factory = resolve(RefundProcessorFactory::class);
+    $factory   = resolve(RefundProcessorFactory::class);
     $processor = $factory->make(PaymentMethodEnum::BANK_TRANSFER->value);
 
     expect($processor)->toBeInstanceOf(ManualRefundProcessor::class);
 });
 
 it('resolves ManualRefundProcessor for mellat_gateway method', function (): void {
-    $factory = resolve(RefundProcessorFactory::class);
+    $factory   = resolve(RefundProcessorFactory::class);
     $processor = $factory->make(PaymentMethodEnum::MELLAT_GATEWAY->value);
 
     expect($processor)->toBeInstanceOf(ManualRefundProcessor::class);

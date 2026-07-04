@@ -45,7 +45,7 @@ final class BlogPostCardData extends Data
             read_time_minutes: $post->read_time_minutes,
             is_featured: $post->is_featured,
             categories: $post->relationLoaded('categories')
-                ? $post->categories->map(fn ($category): \App\Data\Shop\Blog\BlogCategoryCardData => BlogCategoryCardData::fromModel($category))
+                ? $post->categories->map(fn ($category): BlogCategoryCardData => BlogCategoryCardData::fromModel($category))
                 : null,
             media: $post->getAllMedia(urlOnly: true, onlyTags: ['cover']),
         );

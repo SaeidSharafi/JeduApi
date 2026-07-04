@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Sentry Laravel SDK configuration file.
  *
@@ -52,10 +54,10 @@ return [
 
     // @see: https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/#ignore_exceptions
     'ignore_exceptions' => [
-        \Illuminate\Validation\ValidationException::class,
-        \Illuminate\Auth\AuthenticationException::class,
-        \Illuminate\Auth\Access\AuthorizationException::class,
-        \Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class,
+        Illuminate\Validation\ValidationException::class,
+        Illuminate\Auth\AuthenticationException::class,
+        Illuminate\Auth\Access\AuthorizationException::class,
+        Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class,
     ],
 
     // @see: https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/#ignore_transactions

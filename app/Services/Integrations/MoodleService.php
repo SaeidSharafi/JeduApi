@@ -34,9 +34,9 @@ final class MoodleService extends AbstractIntegrationService
      */
     public function findOrCreateUser(User $user): array
     {
-        $email = $user->email ?? sprintf('user-%d@jedu.ir', $user->phone);
+        $email    = $user->email ?? sprintf('user-%d@jedu.ir', $user->phone);
         $username = $user->civil_id;
-        if (!is_string($username) || $username === '') {
+        if (! is_string($username) || $username === '') {
             throw new UnrecoverableProvisioningException('Moodle username source missing.');
         }
 
@@ -59,7 +59,7 @@ final class MoodleService extends AbstractIntegrationService
             'users[0][idnumber]'  => $user->civil_id,
         ]);
 
-        if (!is_array($created) || !isset($created[0]['id'])) {
+        if (! is_array($created) || ! isset($created[0]['id'])) {
             throw new UnrecoverableProvisioningException('Moodle user creation failed.');
         }
 
@@ -100,7 +100,7 @@ final class MoodleService extends AbstractIntegrationService
             }
             throw $exception;
         }
-        $completionStatuses = data_get($response, 'statuses', []);
+        $completionStatuses         = data_get($response, 'statuses', []);
         $activityCompletionStatuses = [];
         foreach ($completionStatuses as $status) {
             $activityCompletionStatuses[$status['cmid']] = [
@@ -125,7 +125,7 @@ final class MoodleService extends AbstractIntegrationService
             'userid'   => $moodleUserId,
         ];
 
-        $response = $this->call('gradereport_user_get_grade_items', $params);
+        $response   = $this->call('gradereport_user_get_grade_items', $params);
         $userGrades = data_get($response, 'usergrades.0.gradeitems', []);
 
         $result = [
@@ -138,7 +138,7 @@ final class MoodleService extends AbstractIntegrationService
             if ($item['itemtype'] === 'course') {
                 $result['course_grade'] = $item['gradeformatted'];
             } // Individual Activity Grade (Quiz, Assignment, etc.)
-            elseif ($item['itemtype'] === 'mod' && !empty($item['cmid'])) {
+            elseif ($item['itemtype'] === 'mod' && ! empty($item['cmid'])) {
                 $result['activities'][$item['cmid']] = $item['gradeformatted'];
             }
         }
@@ -153,22 +153,22 @@ final class MoodleService extends AbstractIntegrationService
         ];
 
         $response = $this->call('core_course_get_contents', $params);
-        if (!$response || !is_array($response)) {
+        if (! $response || ! is_array($response)) {
             throw new UnrecoverableProvisioningException('Moodle course not found.');
         }
         $response = reset($response);
-        $modules = [];
+        $modules  = [];
         foreach ($response['modules'] as $module) {
             if ($module['visible'] !== 1) {
                 continue;
             }
             $modules[] = MoodleActivityData::from(
                 [
-                    "url"   => $this->baseUrl.'/mod/'.$module['modname'].'/view.php?id='.$module['cid'],
-                    "cid"   => $module['id'],
-                    "name"  => $module['name'],
-                    "type"  => $module['modname'],
-                    "state" => 0
+                    'url'   => $this->baseUrl.'/mod/'.$module['modname'].'/view.php?id='.$module['cid'],
+                    'cid'   => $module['id'],
+                    'name'  => $module['name'],
+                    'type'  => $module['modname'],
+                    'state' => 0,
                 ]
             );
         }
@@ -186,7 +186,6 @@ final class MoodleService extends AbstractIntegrationService
      * Get all visible quizzes that the user is enrolled in Moodle,
      * populated with completion states, quiz grades, and completion times.
      *
-     * @param  int  $moodleUserId
      *
      * @return array<int, LmsMoodleBlockData>
      */
@@ -196,23 +195,23 @@ final class MoodleService extends AbstractIntegrationService
             'userid' => $moodleUserId,
         ]);
 
-        if (!is_array($courses) || empty($courses)) {
+        if (! is_array($courses) || empty($courses)) {
             return [];
         }
 
-        $params = [];
-        $coursesData = [];
+        $params                   = [];
+        $coursesData              = [];
         $courseCompletionStatuses = [];
-        $courseGrades = [];
+        $courseGrades             = [];
 
         foreach ($courses as $course) {
             // Guard clause: skip invalid or invisible courses
-            if (!is_array($course) || !isset($course['id']) || !$course['visible']) {
+            if (! is_array($course) || ! isset($course['id']) || ! $course['visible']) {
                 continue;
             }
 
-            $courseId = (int) $course['id'];
-            $params["courseids"][] = $courseId;
+            $courseId              = (int) $course['id'];
+            $params['courseids'][] = $courseId;
 
             // Determine if the entire course is completed
             $isCourseCompleted = false;
@@ -253,9 +252,9 @@ final class MoodleService extends AbstractIntegrationService
 
         // Retrieve all quizzes matching those course IDs
         $response = $this->call('mod_quiz_get_quizzes_by_courses', $params);
-        $quizzes = data_get($response, 'quizzes', []);
+        $quizzes  = data_get($response, 'quizzes', []);
 
-        if (!is_array($quizzes) || empty($quizzes)) {
+        if (! is_array($quizzes) || empty($quizzes)) {
             return [];
         }
 
@@ -266,20 +265,20 @@ final class MoodleService extends AbstractIntegrationService
 
         foreach ($visibleQuizes as $quiz) {
             $courseId = (int) $quiz['course'];
-            $cmid = (int) $quiz['coursemodule']; // Course Module ID wrapper
-            $course = data_get($coursesData, $courseId);
+            $cmid     = (int) $quiz['coursemodule']; // Course Module ID wrapper
+            $course   = data_get($coursesData, $courseId);
 
             // Guard clause: skip if the parent course was not resolved or is invisible
-            if (!$course) {
+            if (! $course) {
                 continue;
             }
 
             // Determine completion state and timestamp of the specific quiz activity
-            $state = 0;
+            $state         = 0;
             $timeCompleted = null;
 
             if (isset($courseCompletionStatuses[$courseId][$cmid])) {
-                $state = (int) data_get($courseCompletionStatuses[$courseId][$cmid], 'state', 0);
+                $state         = (int) data_get($courseCompletionStatuses[$courseId][$cmid], 'state', 0);
                 $timeCompleted = data_get($courseCompletionStatuses[$courseId][$cmid], 'timecompleted');
             }
 
@@ -292,19 +291,20 @@ final class MoodleService extends AbstractIntegrationService
             // Append the quiz to the course's activity list
             $course->activities[] = MoodleActivityData::from(
                 [
-                    "url"           => $this->baseUrl.'/mod/quiz/view.php?id='.$cmid,
-                    "cid"           => $cmid,
-                    "name"          => $quiz['name'],
-                    "type"          => 'quiz',
-                    "state"         => $state,
-                    "grade"         => $grade,
-                    "timecompleted" => $timeCompleted,
+                    'url'           => $this->baseUrl.'/mod/quiz/view.php?id='.$cmid,
+                    'cid'           => $cmid,
+                    'name'          => $quiz['name'],
+                    'type'          => 'quiz',
+                    'state'         => $state,
+                    'grade'         => $grade,
+                    'timecompleted' => $timeCompleted,
                 ]
             )->toArray();
         }
         $coursesData = array_filter($coursesData, function ($course) {
-            return !empty($course->activities);
+            return ! empty($course->activities);
         });
+
         return array_values($coursesData);
     }
 
@@ -341,7 +341,7 @@ final class MoodleService extends AbstractIntegrationService
         ], $token ?? $this->auth_userkey_token);
 
         $loginUrl = data_get($result, 'loginurl');
-        if (!is_string($loginUrl) || $loginUrl === '') {
+        if (! is_string($loginUrl) || $loginUrl === '') {
             throw new UnrecoverableProvisioningException('Moodle auth_userkey creation failed.');
         }
 
@@ -360,7 +360,7 @@ final class MoodleService extends AbstractIntegrationService
 
     protected function validateConfig(): bool
     {
-        return !empty($this->config['base_url']) && !empty($this->config['token']);
+        return ! empty($this->config['base_url']) && ! empty($this->config['token']);
     }
 
     /**

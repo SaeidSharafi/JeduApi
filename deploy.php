@@ -37,7 +37,6 @@ host('production')
     ->setDeployPath('/var/www/api.jedu.ir')
     ->set('branch', 'main');
 
-
 task('scribe:generate', function () {
     run('cd {{release_path}} && {{php_binary}} artisan scribe:generate');
 });

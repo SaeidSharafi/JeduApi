@@ -7,11 +7,7 @@ namespace App\Jobs;
 use App\Models\Product;
 use App\Services\CacheInvalidationService;
 use App\Services\ProductPriceService;
-use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
 final class UpdateProductPricingJob implements ShouldQueue

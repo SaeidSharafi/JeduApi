@@ -285,7 +285,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             app(SettingsService::class),
         );
 
-        expect(fn (): \App\Models\Payment => $processor->verify($payment, [
+        expect(fn (): Payment => $processor->verify($payment, [
             'RefId'           => 'REF123',
             'ResCode'         => '0',
             'SaleOrderId'     => 'TXN-123',
@@ -411,7 +411,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             app(SettingsService::class));
 
         // Missing RefId and ResCode
-        expect(fn (): \App\Models\Payment => $processor->verify($payment, []))
+        expect(fn (): Payment => $processor->verify($payment, []))
             ->toThrow(MellatException::class);
 
         $payment->refresh();
@@ -556,7 +556,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
 
         $processor = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
 
-        expect(fn (): \App\Models\Payment => $processor->verify($payment, [
+        expect(fn (): Payment => $processor->verify($payment, [
             'RefId'           => 'REF123',
             'ResCode'         => '0',
             'SaleOrderId'     => $transactionRef,
@@ -604,7 +604,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
 
         $processor = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
 
-        expect(fn (): \App\Models\Payment => $processor->verify($payment, [
+        expect(fn (): Payment => $processor->verify($payment, [
             'RefId'           => 'REF123',
             'ResCode'         => '0',
             'SaleOrderId'     => $transactionRef,

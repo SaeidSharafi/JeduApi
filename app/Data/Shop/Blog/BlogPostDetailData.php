@@ -48,7 +48,7 @@ final class BlogPostDetailData extends Data
             thumbnail_url: $post->thumbnail_url,
             read_time_minutes: $post->read_time_minutes,
             is_featured: $post->is_featured,
-            categories: $post->categories->map(fn ($category): \App\Data\Shop\Blog\BlogCategoryCardData => BlogCategoryCardData::fromModel($category))->all(),
+            categories: $post->categories->map(fn ($category): BlogCategoryCardData => BlogCategoryCardData::fromModel($category))->all(),
             related_products: $relatedProducts,
             media: $post->getAllMedia(),
             meta_title: $post->meta_title,

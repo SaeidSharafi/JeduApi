@@ -39,7 +39,7 @@ final class BlogCategoryController extends Controller
             ->orderBy('name')
             ->get();
 
-        $data = $categories->map(fn (BlogCategory $category): \App\Data\Shop\Blog\BlogCategoryCardData => BlogCategoryCardData::fromModel($category));
+        $data = $categories->map(fn (BlogCategory $category): BlogCategoryCardData => BlogCategoryCardData::fromModel($category));
 
         return apiResponse()->success($data);
     }

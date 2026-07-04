@@ -178,7 +178,7 @@ describe('OrderController', function (): void {
 
         it('returns OrderData computed fields correctly for pre-payment order', function (): void {
             $this->authorized_user([PermissionEnum::ORDER_CREATE->value]);
-            $user    = User::factory()->create();
+            $user = User::factory()->create();
 
             // Featured price: 85,000 (15% discount from 100,000)
             $product = ProductDeliveryOption::factory()->create([
@@ -220,13 +220,13 @@ describe('OrderController', function (): void {
 
             // Featured price: 85,000 (15,000 product discount)
             $product = ProductDeliveryOption::factory()->create([
-                'product_id'     => $this->product->id,
-                'status'         => PublicationStatusEnum::PUBLISHED,
-                'price'          => 100000,
-                'is_featured'    => true,
-                'featured_price' => 85000,
+                'product_id'                => $this->product->id,
+                'status'                    => PublicationStatusEnum::PUBLISHED,
+                'price'                     => 100000,
+                'is_featured'               => true,
+                'featured_price'            => 85000,
                 'featured_price_start_date' => now()->subDay(),
-                'featured_price_end_date' => now()->addDay(),
+                'featured_price_end_date'   => now()->addDay(),
             ]);
 
             // Create coupon: 10% off cart

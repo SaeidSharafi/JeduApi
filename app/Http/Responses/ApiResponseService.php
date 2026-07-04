@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Responses;
 
 use App\Contracts\ApiResponseInterface;
@@ -7,8 +9,9 @@ use App\Contracts\CartIdentifier;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as HttpStatus;
+use Throwable;
 
-class ApiResponseService
+final class ApiResponseService
 {
     /**
      * Get guest token headers if applicable.
@@ -153,7 +156,7 @@ class ApiResponseService
     /**
      * Internal Server Error response (500 Internal Server Error)
      */
-    public function serverError(string $message = 'An internal server error occurred.', ?\Throwable $exception = null): ApiResponseInterface
+    public function serverError(string $message = 'An internal server error occurred.', ?Throwable $exception = null): ApiResponseInterface
     {
         return new ApiErrorResponse($message, $exception, HttpStatus::HTTP_INTERNAL_SERVER_ERROR);
     }

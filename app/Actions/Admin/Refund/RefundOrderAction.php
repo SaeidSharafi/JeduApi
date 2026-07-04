@@ -16,7 +16,6 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Services\OrderStatusService;
-use App\Services\Payment\Digipay\DigipayException;
 use App\Services\Payment\Refund\RefundProcessorFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -80,14 +79,15 @@ final class RefundOrderAction
                         'deduction_amount'    => $itemData['deduction'],
                         'status'              => RefundStatusEnum::PROCESSING,
                         'transaction_details' => [
-                            'receiver_name'       => $data->receiver_name,
-                            'card_number'         => $data->card_number,
-                            'iban'                => $data->iban,
+                            'receiver_name' => $data->receiver_name,
+                            'card_number'   => $data->card_number,
+                            'iban'          => $data->iban,
                         ],
-                        'refunded_at'         => null,
-                        'admin_notes'         => $data->admin_notes,
+                        'refunded_at' => null,
+                        'admin_notes' => $data->admin_notes,
                     ]));
                 }
+
                 return $refunds;
             });
 
@@ -101,13 +101,13 @@ final class RefundOrderAction
                     );
                 }
             } catch (RefundGatewayException $e) {
-                $processingRefunds->each(fn($r) => $r->update([
-                    'status' => RefundStatusEnum::FAILED,
-                    'admin_notes' => ($r->admin_notes ?? '') . PHP_EOL . $e->getMessage()
+                $processingRefunds->each(fn ($r) => $r->update([
+                    'status'      => RefundStatusEnum::FAILED,
+                    'admin_notes' => ($r->admin_notes ?? '').PHP_EOL.$e->getMessage(),
                 ]));
                 throw new RefundValidationException($e->getMessage());
             } catch (Throwable $e) {
-                $processingRefunds->each(fn($r) => $r->update(['status' => RefundStatusEnum::FAILED]));
+                $processingRefunds->each(fn ($r) => $r->update(['status' => RefundStatusEnum::FAILED]));
                 throw $e;
             }
 
@@ -159,7 +159,7 @@ final class RefundOrderAction
                     'order_id'      => $order->id,
                     'refund_ids'    => $processingRefunds->pluck('id')->toArray(),
                     'tracking_code' => $gatewayTrackingCode,
-                    'error'         => $e->getMessage()
+                    'error'         => $e->getMessage(),
                 ]);
                 throw $e;
             }
@@ -219,6 +219,7 @@ final class RefundOrderAction
             if ($dedcutionAmount !== $data->deduction_amount) {
                 throw new RefundValidationException(__('messages.order.refund.deduction_conflict'));
             }
+
             return $data->deduction_amount;
         }
 

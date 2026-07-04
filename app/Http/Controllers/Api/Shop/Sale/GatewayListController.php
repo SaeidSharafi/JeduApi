@@ -12,11 +12,9 @@ use App\Services\SettingsService;
 
 /**
  * @group Shop - Gateways
- *
  */
 final class GatewayListController extends Controller
 {
-
     /**
      * List active gateways
      *
@@ -26,7 +24,7 @@ final class GatewayListController extends Controller
     {
         $gateways = null;
         foreach (PaymentMethodEnum::cases() as $method) {
-            if (null === $method->settingKey()){
+            if ($method->settingKey() === null) {
                 continue;
             }
             $gatewayData = $service->get($method->settingKey());
@@ -34,7 +32,7 @@ final class GatewayListController extends Controller
             if ($gatewayData && $gatewayData->enabled && $gatewayData->shop_enabled) {
                 $gateways[] = [
                     'method' => $method->value,
-                    ...$gatewayData->toArray()
+                    ...$gatewayData->toArray(),
                 ];
             }
         }

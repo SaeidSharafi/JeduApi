@@ -132,7 +132,7 @@ it('processes Digipay full-order refund with gateway call', function (): void {
     $this->mock(DigipayAdminService::class, function ($mock): void {
         $mock->shouldReceive('refund')
             ->once()
-            ->with(\Mockery::type(Payment::class), 300000)
+            ->with(Mockery::type(Payment::class), 300000)
             ->andReturn(new RefundResponse(statusCode: 0, message: 'OK', trackingCode: 'DGP-FULL-REF-123'));
     });
 

@@ -77,9 +77,9 @@ it('returns 404 when no downloadable media file exists for digital asset', funct
 });
 
 it('returns 404 when productable is Course but digital asset not attached', function (): void {
-    $course        = App\Models\Course::factory()->create();
-    $digitalAsset  = DigitalAsset::factory()->create(); // not attached to course
-    $product       = Product::factory()->create([
+    $course       = App\Models\Course::factory()->create();
+    $digitalAsset = DigitalAsset::factory()->create(); // not attached to course
+    $product      = Product::factory()->create([
         'productable_type' => $course::class,
         'productable_id'   => $course->id,
     ]);

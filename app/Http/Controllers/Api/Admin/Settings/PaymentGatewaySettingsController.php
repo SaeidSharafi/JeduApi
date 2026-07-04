@@ -65,10 +65,10 @@ final class PaymentGatewaySettingsController extends Controller
     }
 
     /**
-     *
      * Get gateway setting
      *
      * @urlParam gateway string required The gateway key. Enum: `mellat`, `wallet`, `bank_transfer`, `digipay`. Example: mellat
+     *
      * @responseFile 200 resources/responses/admin/settings/payment-gateways/show.json
      * @responseFile 403 resources/responses/403.json
      */

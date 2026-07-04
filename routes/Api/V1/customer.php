@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\Shop\ProfileController;
-
 use App\Http\Controllers\Api\Shop\Student\CancelOrderController;
 use App\Http\Controllers\Api\Shop\Student\DigitalAssetDownloadController;
 use App\Http\Controllers\Api\Shop\Student\DigitalAssetEnrollmentController;
@@ -13,7 +12,6 @@ use App\Http\Controllers\Api\Shop\Student\MoodleSsoController;
 use App\Http\Controllers\Api\Shop\Student\OrderController;
 use App\Http\Controllers\Api\Shop\Student\QuizController;
 use App\Http\Controllers\Api\Shop\Student\RetryPaymentController;
-
 
 Route::middleware(['auth:user'])
     ->prefix('shop')

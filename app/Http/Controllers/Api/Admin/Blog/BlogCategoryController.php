@@ -112,6 +112,7 @@ final class BlogCategoryController extends Controller
      * Remove the specified blog category from storage.
      *
      * @response 204
+     *
      * @responseFile 403 resources/responses/403.json
      * @responseFile 404 resources/responses/404.json
      */

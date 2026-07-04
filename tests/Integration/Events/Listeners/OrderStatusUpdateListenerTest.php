@@ -36,7 +36,7 @@ describe('OrderStatusUpdateListener', function (): void {
         Event::fake([
             EnrollmentStatusChanged::class,
         ]);
-        $order   = Order::factory()->create(['status' => OrderStatusEnum::COMPLETED]);
+        $order = Order::factory()->create(['status' => OrderStatusEnum::COMPLETED]);
         Payment::factory()->for($order)->create(['status' => 'completed']);
 
         $inPersonItem = OrderItem::factory()->for($order)->create([
@@ -105,7 +105,7 @@ describe('OrderStatusUpdateListener', function (): void {
     });
 
     it('handles an order with no items gracefully', function (): void {
-        $order   = Order::factory()->create(['status' => OrderStatusEnum::COMPLETED]);
+        $order = Order::factory()->create(['status' => OrderStatusEnum::COMPLETED]);
 
         $event = new OrderStatusUpdatedEvent($order);
         (new OrderStatusUpdateListener())->handle($event);
@@ -116,7 +116,7 @@ describe('OrderStatusUpdateListener', function (): void {
     it('returns early if the order is missing from the payment', function (): void {
 
         $order = new Order(); // A fake payment object in memory without a real order
-        $event   = new OrderStatusUpdatedEvent($order);
+        $event = new OrderStatusUpdatedEvent($order);
 
         (new OrderStatusUpdateListener())->handle($event);
 

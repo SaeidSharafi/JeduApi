@@ -55,7 +55,7 @@ describe('User with permissions - Related Products Management', function (): voi
             ->assertJsonCount(5, 'data'); // 3 related + 2 cross-sell
 
         $response->assertJson(
-            fn (AssertableJson $json): \Illuminate\Testing\Fluent\AssertableJson => $json->has('data.0', fn (AssertableJson $json): \Illuminate\Testing\Fluent\AssertableJson => $json->has('product_id')
+            fn (AssertableJson $json): AssertableJson => $json->has('data.0', fn (AssertableJson $json): AssertableJson => $json->has('product_id')
                 ->has('related_product_id')
                 ->has('relation_type')
                 ->has('relation_type.value')

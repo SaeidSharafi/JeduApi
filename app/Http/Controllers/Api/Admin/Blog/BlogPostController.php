@@ -127,6 +127,7 @@ final class BlogPostController extends Controller
      * Remove the specified blog post from storage.
      *
      * @response 204
+     *
      * @responseFile 403 resources/responses/403.json
      * @responseFile 404 resources/responses/404.json
      */

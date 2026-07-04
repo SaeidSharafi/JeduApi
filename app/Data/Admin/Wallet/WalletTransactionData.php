@@ -10,7 +10,6 @@ use App\Data\Casts\TransactionSourceCast;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
-use App\Models\User;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;

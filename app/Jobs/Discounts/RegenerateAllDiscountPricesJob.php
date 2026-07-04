@@ -6,11 +6,7 @@ namespace App\Jobs\Discounts;
 
 use App\Models\Product;
 use App\Services\Discounts\ProductDiscountIndexer;
-use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 use SmartCache\Facades\SmartCache;
 
 /**

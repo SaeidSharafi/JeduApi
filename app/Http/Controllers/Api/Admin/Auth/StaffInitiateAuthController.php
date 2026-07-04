@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Api\Admin\Auth;
 
 use App\Actions\Auth\InitiateAuthAction;
 use App\Contracts\ApiResponseInterface;
-use App\Exceptions\UserNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\InitiateAuthRequest;
 

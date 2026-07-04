@@ -7,18 +7,14 @@ namespace App\Jobs\Provisioning;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Jobs\Provisioning\Concerns\HandlesProvisioningStatus;
 use App\Models\Enrollment;
-use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 abstract class AbstractProvisioningJob implements ShouldQueue
 {
-    use \Illuminate\Foundation\Queue\Queueable;
     use HandlesProvisioningStatus;
+    use \Illuminate\Foundation\Queue\Queueable;
 
     public int $tries = 3;
 

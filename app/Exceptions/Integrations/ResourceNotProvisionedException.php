@@ -1,10 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Exceptions\Integrations;
 
-use App\Exceptions\Integrations\ExternalProvisioningException;
-
-class ResourceNotProvisionedException extends ExternalProvisioningException
-{
-
-}
+final class ResourceNotProvisionedException extends ExternalProvisioningException {}

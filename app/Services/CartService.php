@@ -302,7 +302,7 @@ final readonly class CartService
         // Get the user ID - for guest carts, we'll use a temporary user concept
         $userId = $cart->user_id ?? Auth::guard('user')->id();
 
-        $items = $cart->items->map(fn (CartItem $item): \App\Data\Admin\Order\OrderItemCreateData => new OrderItemCreateData(
+        $items = $cart->items->map(fn (CartItem $item): OrderItemCreateData => new OrderItemCreateData(
             product_delivery_option_id: $item->product_delivery_option_id,
             payment_type: $item->payment_type->value,
             qty_ordered: $item->quantity

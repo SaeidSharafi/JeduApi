@@ -20,8 +20,7 @@ final class WalletData extends Data
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public WalletStatusEnum $status,
         public ?ShowUserData $user = null,
-    ) {
-    }
+    ) {}
 
     public function exceptProperties(): array
     {
