@@ -9,6 +9,7 @@ use App\Data\Admin\Settings\FooterData as AdminFooterData;
 use App\Data\Shop\Site\FooterData;
 use App\Enums\System\SettingKeyEnum;
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Services\SettingsService;
 
 /**
@@ -28,7 +29,9 @@ final class FooterController extends Controller
     public function __invoke(SettingsService $service): ApiResponseInterface
     {
         $footer = $service->get(SettingKeyEnum::FOOTER, AdminFooterData::getDefaults());
-
+        $footer['categories'] = Category::query()
+            ->whereIn('id', data_get($footer, 'categories', []))
+            ->get(['name', 'slug'])->toArray();
         return apiResponse()->success(FooterData::from($footer));
     }
 }

@@ -88,40 +88,6 @@
     "value": {
       "logo": "logo-tech.svg",
       "logo_url": "logo-tech.svg",
-      "navigation_links": [
-        {
-          "title": "درباره ما",
-          "url": "/about-us"
-        },
-        {
-          "title": "ارتباط با ما",
-          "url": "/contact-us"
-        },
-        {
-          "title": "کتب و جزوات",
-          "url": "/books"
-        },
-        {
-          "title": "وبینارها",
-          "url": "/webinars"
-        },
-        {
-          "title": "مدرک بین المللی",
-          "url": "/international-certificate"
-        },
-        {
-          "title": "استعلام مدرک",
-          "url": "/certificate-verification"
-        },
-        {
-          "title": "بلاگ",
-          "url": "/blog"
-        },
-        {
-          "title": "دوره‌ها",
-          "url": "/courses"
-        }
-      ],
       "contact_phone": "+98-21-12345678",
       "contact_email": "info@jedu.ir"
     },
@@ -138,7 +104,6 @@
       "logo_url": "logo-tech.svg",
       "logo_alt": "جهاددانشگاهی قزوین",
       "caption": "شریک شما در آموزش مدرن",
-      "support_link": "/contact-us",
       "support_email_address": "support@jedu.ir",
       "addresses": [
         {
@@ -149,28 +114,10 @@
         }
       ],
       "categories": [
-        "دوره‌ها",
-        "معماری",
-        "آموزش صنعتی",
-        "زبان‌های خارجی"
-      ],
-      "main_links": [
-        {
-          "title": "درباره ما",
-          "link": "/about-us"
-        },
-        {
-          "title": "وبلاگ",
-          "link": "/blog"
-        },
-        {
-          "title": "تماس با ما",
-          "link": "/contact-us"
-        },
-        {
-          "title": "قوانین",
-          "link": "/rules"
-        }
+        1,
+        2,
+        3,
+        4
       ],
       "social_media_links": [
         {

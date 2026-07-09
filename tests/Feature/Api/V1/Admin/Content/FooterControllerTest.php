@@ -32,14 +32,9 @@ it('can update footer settings', function (): void {
     $footerData = [
         'logo'                  => $logo->id,
         'caption'               => 'Your partner in modern education.',
-        'support_link'          => '/contact-us',
         'support_email_address' => 'support@jedu.ir',
         'addresses'             => ['Address 1', 'Address 2'],
         'categories'            => [$cat1->id, $cat2->id],
-        'main_links'            => [
-            ['title' => 'About Us', 'link' => '/about-us'],
-            ['title' => 'Blog', 'link' => '/blog'],
-        ],
         'social_media_links' => [
             [
                 'platform' => 'instagram',
@@ -98,9 +93,10 @@ it('validates footer data - missing required fields', function (): void {
     $response->assertStatus(422)
         ->assertJsonValidationErrors([
             'caption',
-
-            'support_link',
             'support_email_address',
+            'addresses',
+            'categories',
+            'social_media_links',
         ]);
 });
 
@@ -109,11 +105,9 @@ it('validates footer data - invalid data types', function (): void {
     $invalidData = [
         'logo'                  => 'not-an-integer',
         'caption'               => str_repeat('A', 300),
-        'support_link'          => 123,
         'support_email_address' => 'not-an-email',
         'addresses'             => 'not-an-array',
         'categories'            => ['not-an-id'],
-        'main_links'            => ['not-an-array'],
         'social_media_links'    => 'not-an-array',
         'certifications'        => 'not-an-array',
     ];
@@ -122,7 +116,6 @@ it('validates footer data - invalid data types', function (): void {
         ->assertJsonValidationErrors([
             'logo',
             'caption',
-            'support_link',
             'support_email_address',
         ]);
 });
@@ -177,6 +170,5 @@ it('returns default values when no footer setting exists', function (): void {
     $response = $this->getJson(route('api.v1.admin.settings.footer.show'));
     $response->assertStatus(200);
     $data = $response->json('data');
-    expect($data['caption'])->toBe('شریک شما در آموزش مدرن')
-        ->and($data['main_links'][0]['title'])->toBe('درباره ما');
+    expect($data['caption'])->toBe('شریک شما در آموزش مدرن');
 });

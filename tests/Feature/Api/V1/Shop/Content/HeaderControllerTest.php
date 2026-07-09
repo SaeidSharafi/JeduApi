@@ -15,7 +15,6 @@ describe('HeaderController', function (): void {
         $response->assertJsonStructure([
             'data' => [
                 'logo_url',
-                'navigation_links',
                 'contact_phone',
                 'contact_email',
             ],
@@ -23,7 +22,6 @@ describe('HeaderController', function (): void {
 
         $responseData = $response->json('data');
         expect($responseData['logo_url'])->toBe($header['logo_url'] ?? null)
-            ->and($responseData['navigation_links'])->toBe($header['navigation_links'] ?? [])
             ->and($responseData['contact_phone'])->toBe($header['contact_phone'] ?? '')
             ->and($responseData['contact_email'])->toBe($header['contact_email'] ?? '');
     });

@@ -4,7 +4,6 @@
     "logo_url": null,
     "logo_alt": null,
     "caption": "شریک شما در آموزش مدرن",
-    "support_link": "/contact-us",
     "support_email_address": "support@jedu.ir",
     "addresses": [
       {
@@ -14,12 +13,19 @@
         "phone": "۰۲۱-۱۲۳۴۵۶۷۸"
       }
     ],
-    "categories": ["دوره‌ها", "معماری", "آموزش صنعتی", "زبان‌های خارجی"],
-    "main_links": [
-      {"title": "درباره ما", "link": "/about-us"},
-      {"title": "وبلاگ", "link": "/blog"},
-      {"title": "تماس با ما", "link": "/contact-us"},
-      {"title": "قوانین", "link": "/rules"}
+    "categories": [
+      {
+        "name": "معماری",
+        "slug": "architecture"
+      },
+      {
+        "name": "آموزش صنعتی",
+        "slug": "industrial-education"
+      },
+      {
+        "name": "زبان‌های خارجی",
+        "slug": "foreign-languages"
+      }
     ],
     "social_media_links": [
       {"platform": "instagram", "link": "https://instagram.com/jedushop"},

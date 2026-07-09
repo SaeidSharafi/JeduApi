@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Admin\Settings;
 
 use App\Data\Admin\MediaData;
+use App\Models\Category;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\DataCollection;
@@ -14,11 +15,9 @@ final class FooterData extends Data
     public function __construct(
         public ?MediaData $logo,
         public string $caption,
-        public string $support_link,
         public string $support_email_address,
         public array $addresses,
         public array $categories,
-        public array $main_links,
         #[DataCollectionOf(SocialMediaLinkData::class)]
         public DataCollection $social_media_links,
         public array $certifications // array of HTML strings
@@ -31,16 +30,9 @@ final class FooterData extends Data
             'logo_url'              => 'https://jedu.ir/images/logo-text.png',
             'logo_alt'              => 'جهاددانشگاهی قزوین',
             'caption'               => 'شریک شما در آموزش مدرن',
-            'support_link'          => '/contact-us',
             'support_email_address' => 'support@jedu.ir',
             'addresses'             => ContactInfoData::getDefaults()['addresses'],
-            'categories'            => ['دوره‌ها', 'معماری', 'آموزش صنعتی', 'زبان‌های خارجی'],
-            'main_links'            => [
-                ['title' => 'درباره ما', 'link' => '/about-us'],
-                ['title' => 'وبلاگ', 'link' => '/blog'],
-                ['title' => 'تماس با ما', 'link' => '/contact-us'],
-                ['title' => 'قوانین', 'link' => '/rules'],
-            ],
+            'categories'            => Category::query()->get(['name', 'slug'])->toArray(),
             'social_media_links' => ContactInfoData::getDefaults()['social_media_links'],
             'certifications'     => [
                 ['name' => 'اینماد', 'image' => 'https://jedu.ir/enamd.png', 'html' => ''],

@@ -11,7 +11,6 @@ final class HeaderCreateData extends Data
 {
     public function __construct(
         public ?int $logo,
-        public array $navigation_links,
         public string $contact_phone,
         public string $contact_email
     ) {}
@@ -20,10 +19,6 @@ final class HeaderCreateData extends Data
     {
         return [
             'logo'                     => ['nullable', 'integer', 'exists:media,id'],
-            'navigation_links'         => ['required', 'array'],
-            'navigation_links.*.title' => ['required', 'string', 'max:255'],
-            'navigation_links.*.url'   => ['required', 'string', 'max:255'],
-            'navigation_links.*.order' => ['required', 'integer:', 'min:0'],
             'contact_phone'            => ['required', 'string', 'max:32'],
             'contact_email'            => ['required', 'string', 'email', 'max:255'],
         ];
@@ -40,25 +35,6 @@ final class HeaderCreateData extends Data
             'logo' => [
                 'description' => 'Media ID for the logo.',
                 'example'     => 301,
-            ],
-            'navigation_links' => [
-                'description' => 'Array of navigation links.',
-                'example'     => [
-                    ['title' => 'Home', 'url' => '/', 'order' => 1],
-                    ['title' => 'Courses', 'url' => '/courses', 'order' => 2],
-                ],
-            ],
-            'navigation_links.*.title' => [
-                'description' => 'Title of the navigation link.',
-                'example'     => 'Home',
-            ],
-            'navigation_links.*.url' => [
-                'description' => 'URL of the navigation link.',
-                'example'     => '/',
-            ],
-            'navigation_links.*.order' => [
-                'description' => 'Order of the navigation link.',
-                'example'     => 1,
             ],
             'contact_phone' => [
                 'description' => 'Contact phone number.',
