@@ -5,17 +5,19 @@ declare(strict_types=1);
 namespace App\Services\Payment\Refund;
 
 use App\Contracts\Payment\RefundProcessorInterface;
+use App\Enums\Payment\PaymentMethodEnum;
 use InvalidArgumentException;
 
 final class RefundProcessorFactory
 {
     public function make(string $paymentMethod): RefundProcessorInterface
     {
-        return match ($paymentMethod) {
-            'digipay' => app(DigipayRefundProcessor::class),
-            'wallet'  => app(WalletRefundProcessor::class),
-            'bank_transfer',
-            'mellat_gateway' => app(ManualRefundProcessor::class),
+        $paymentMethodEnum = PaymentMethodEnum::tryFrom($paymentMethod);
+        return match ($paymentMethodEnum) {
+            PaymentMethodEnum::DIGIPAY => app(DigipayRefundProcessor::class),
+            PaymentMethodEnum::WALLET  => app(WalletRefundProcessor::class),
+            PaymentMethodEnum::BANK_TRANSFER,
+            PaymentMethodEnum::MELLAT_GATEWAY => app(ManualRefundProcessor::class),
             default          => throw new InvalidArgumentException(
                 "No refund processor for payment method: {$paymentMethod}"
             ),

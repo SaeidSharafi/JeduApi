@@ -47,7 +47,7 @@ final class PaymentGatewaySettingsController extends Controller
         $gateways = collect(PaymentMethodEnum::cases())
             ->filter(fn (PaymentMethodEnum $gateway): bool => $gateway->settingKey() !== null)
             ->map(function (PaymentMethodEnum $gateway) {
-                $stored = $this->settingsService->get($gateway->settingKey(), []);
+                $stored = $this->settingsService->get($gateway->settingKey(), config('payments.' . $gateway->settingKey()->value));
 
                 if (isset($stored['icon']) && is_array($stored['icon'])) {
                     $stored['icon'] = MediaData::from($stored['icon']);
@@ -74,7 +74,7 @@ final class PaymentGatewaySettingsController extends Controller
      */
     public function show(PaymentMethodEnum $gateway): ApiResponseInterface
     {
-        $gatewayData = $this->settingsService->get($gateway->settingKey());
+        $gatewayData = $this->settingsService->get($gateway->settingKey(), config('payments.' . $gateway->settingKey()->value));
 
         return apiResponse()->success($gatewayData);
     }

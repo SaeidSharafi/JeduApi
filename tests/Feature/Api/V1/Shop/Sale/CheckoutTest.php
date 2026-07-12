@@ -953,6 +953,7 @@ describe('Duplicate Purchase Prevention', function (): void {
             'product_id' => $product1->id,
             'status'     => PublicationStatusEnum::PUBLISHED,
             'name'       => 'Course A - Online',
+            'capacity'   => 100,
         ]);
 
         $course2  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
@@ -969,6 +970,7 @@ describe('Duplicate Purchase Prevention', function (): void {
             'product_id' => $product2->id,
             'status'     => PublicationStatusEnum::PUBLISHED,
             'name'       => 'Course B - Online',
+            'capacity'   => 100,
         ]);
 
         // User already owns both

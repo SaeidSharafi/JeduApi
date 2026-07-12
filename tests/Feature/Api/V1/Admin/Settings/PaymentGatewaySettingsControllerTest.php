@@ -77,7 +77,7 @@ describe('show', function (): void {
 
         $this->mock(SettingsService::class)
             ->shouldReceive('get')
-            ->with(SettingKeyEnum::MELLAT)
+            ->with(SettingKeyEnum::MELLAT, Mockery::any())
             ->once()
             ->andReturn($mockSettings);
 

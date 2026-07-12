@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Provisioning;
 
+use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\User\GenderEnum;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
@@ -228,11 +229,11 @@ final class ProvisionImsEnrollmentJob extends AbstractProvisioningJob
             return null;
         }
 
-        return match ($payment->method?->value) {
-            'mellat_gateway' => config('payments.mellat.ims_bank_account_number'),
-            'bank_transfer'  => config('payments.bank_transfer.ims_bank_account_number'),
-            'wallet'         => config('payments.wallet.ims_bank_account_number'),
-            default          => null,
+        return match ($payment->method) {
+            PaymentMethodEnum::MELLAT_GATEWAY => config('payments.mellat.ims_bank_account_number'),
+            PaymentMethodEnum::BANK_TRANSFER => config('payments.bank_transfer.ims_bank_account_number'),
+            PaymentMethodEnum::WALLET => config('payments.wallet.ims_bank_account_number'),
+            default => null,
         };
     }
 }

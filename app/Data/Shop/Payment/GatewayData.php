@@ -9,6 +9,7 @@ use Spatie\LaravelData\Data;
 final class GatewayData extends Data
 {
     public function __construct(
+        public string $key,
         public bool $enabled,
         public bool $shop_enabled,
         public string $label,

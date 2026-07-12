@@ -8,6 +8,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Payment\GatewayData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Http\Controllers\Controller;
+use App\Services\Payment\GatewayService;
 use App\Services\SettingsService;
 
 /**
@@ -20,23 +21,8 @@ final class GatewayListController extends Controller
      *
      * @responseFile 200 resources/responses/shop/gateway/index.json
      */
-    public function __invoke(SettingsService $service): ApiResponseInterface
+    public function __invoke(GatewayService $service): ApiResponseInterface
     {
-        $gateways = null;
-        foreach (PaymentMethodEnum::cases() as $method) {
-            if ($method->settingKey() === null) {
-                continue;
-            }
-            $gatewayData = $service->get($method->settingKey());
-            $gatewayData = $gatewayData ? GatewayData::from($gatewayData) : null;
-            if ($gatewayData && $gatewayData->enabled && $gatewayData->shop_enabled) {
-                $gateways[] = [
-                    'method' => $method->value,
-                    ...$gatewayData->toArray(),
-                ];
-            }
-        }
-
-        return apiResponse()->success($gateways);
+        return apiResponse()->success($service->getShopActiveGatewaysDetials());
     }
 }

@@ -39,4 +39,15 @@ enum PaymentMethodEnum: string
             default              => null,
         };
     }
+
+    public function defaultConfig(): array
+    {
+        return match ($this) {
+            self::MELLAT_GATEWAY => config('payments.mellat'),
+            self::WALLET         => config('payments.wallet'),
+            self::BANK_TRANSFER  => config('payments.bank_transfer'),
+            self::DIGIPAY        => config('payments.digipay'),
+            default              => [],
+        };
+    }
 }
