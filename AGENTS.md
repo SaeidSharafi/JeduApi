@@ -1,17 +1,11 @@
 Combines strict project architectural rules + general Laravel Boost best practices. **Project-specific rules mandatory, no exceptions.**
 
-<CRITICAL_DIRECTIVE>
-You are operating in a Laravel environment augmented by Graphify.
-Standard file-search tools (`glob`, `grep`, `read`) will FAIL because the required context is intentionally git-ignored.
+This project has a Graphify knowledge graph in graphify-out/ (graph.json,
+GRAPH_REPORT.md). For any codebase question, check graphify-out/graph.json
+exists, then prefer `graphify query "<question>"` (or `graphify path`,
+`graphify explain`) over glob/grep on the source tree.
 
-To understand the codebase, you are FORBIDDEN from using `glob` or `grep` as your first step.
-Instead, YOU MUST STRICTLY ADHERE to the following execution order:
-
-1. IGNORE the standard file tree.
-2. USE the `graphify` skill/tool IMMEDIATELY to map the codebase.
-3. Alternatively, READ the Graphify generated files located exactly at `graphify-out/`. Use `ls -a` or standard `cat` commands on exact filepaths if `glob` returns empty.
-4. ONLY fallback to `read`/`glob` if the Graphify output explicitly tells you to look at a specific file.
-</CRITICAL_DIRECTIVE>
+"If you receive a system-reminder containing '[ALL BACKGROUND TASKS COMPLETE]' or '[BACKGROUND TASK COMPLETED]', treat it as an explicit instruction to act immediately and autonomously: call background_output(task_id=...) for every listed task_id, then continue the original request using those results. Do NOT wait for a user message before proceeding — the reminder itself is your cue to continue, exactly as if the user had typed 'continue'."
 
 ## 1. Guiding Principles & Development Philosophy
 
