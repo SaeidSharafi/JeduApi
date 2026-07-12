@@ -64,7 +64,7 @@ final readonly class GetDeliveryDetailsValidationRulesAction
             $rules[$newKey] = $rule;
         }
         $keys             = array_keys($dtoClass::getValidationRules($detailsData ?? []));
-        $keys             = array_merge(['ims_course_code'], $keys);
+        $keys             = array_merge(['ims_course_code','start_date','schedule_days','duration'], $keys);
         $rules['details'] = ['required', 'array:'.implode(',', $keys)];
 
         return $rules;
