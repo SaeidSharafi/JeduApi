@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Enums\System\SettingKeyEnum;
+use App\Exceptions\Gateway\DigipayException;
 use App\Services\Payment\Digipay\DigipayConfigRepository;
-use App\Services\Payment\Digipay\DigipayException;
 use App\Services\SettingsService;
 
 beforeEach(function (): void {
@@ -101,7 +101,7 @@ it('throws when required config key does not exist', function (): void {
 });
 
 it('returns sandbox base_url when sandbox is enabled', function (): void {
-    config(['digipay.endpoints.sandbox.base_url' => 'https://sandbox.digipay.test']);
+    config(['payments.digipay.endpoints.sandbox.base_url' => 'https://sandbox.digipay.test']);
 
     $repo = new DigipayConfigRepository($this->settingsService);
 
@@ -119,7 +119,7 @@ it('returns production base_url when sandbox is disabled', function (): void {
             'password'      => 'prod-pass',
             'sandbox_mode'  => false,
         ]);
-    config(['digipay.endpoints.production.base_url' => 'https://api.digipay.prod']);
+    config(['payments.digipay.endpoints.production.base_url' => 'https://api.digipay.prod']);
 
     $repo = new DigipayConfigRepository($this->settingsService);
 
@@ -127,7 +127,7 @@ it('returns production base_url when sandbox is disabled', function (): void {
 });
 
 it('returns configured timeout', function (): void {
-    config(['digipay.timeout' => 45]);
+    config(['payments.digipay.timeout' => 45]);
 
     $repo = new DigipayConfigRepository($this->settingsService);
 

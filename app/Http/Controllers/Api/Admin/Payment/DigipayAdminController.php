@@ -7,10 +7,10 @@ namespace App\Http\Controllers\Api\Admin\Payment;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Payment\DigipayInquireRefundRequestData;
 use App\Data\Admin\Payment\DigipayRefundRequestData;
+use App\Exceptions\Gateway\DigipayException;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Services\Payment\Digipay\DigipayAdminService;
-use App\Services\Payment\Digipay\DigipayException;
 use Illuminate\Support\Facades\Gate;
 
 /**

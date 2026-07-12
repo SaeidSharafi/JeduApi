@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Actions\Shop\Payment\VerifyPaymentAction;
-use App\Data\Shop\Payment\GatewayCallbackData;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Payment;
 use Mockery as m;
@@ -17,27 +16,21 @@ it('redirects customers to the success page when the payment is verified', funct
     ]);
 
     $callbackPayload = [
-        'payment_uuid' => $payment->uuid,
-        'ResCode'      => '0',
+        'ResCode' => '0',
     ];
 
     $actionMock = m::mock(VerifyPaymentAction::class);
     $actionMock->expects('handle')
         ->once()
-        ->with(m::on(function (GatewayCallbackData $data) use ($payment, $callbackPayload): bool {
-            expect($data->payment_uuid)->toBe($payment->uuid);
-            expect($data->gateway_response)->toBe($callbackPayload);
-
-            return true;
-        }))
+        ->with(m::on(fn (Payment $p) => $p->is($payment)), $callbackPayload)
         ->andReturn(tap($payment)->setAttribute('status', PaymentStatusEnum::COMPLETED));
 
     app()->instance(VerifyPaymentAction::class, $actionMock);
 
-    $response = postJson(route('api.v1.shop.payment.gateway.callback'), $callbackPayload);
+    $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-    $response->assertRedirect(config('payments.redirect.success').'?order='.$payment->order->increment_id);
-});
+    $response->assertRedirect(config('payments.redirect.success')."?payment={$payment->uuid}&purpose={$payment->purpose->value}&order={$payment->order->increment_id}");
+})->group('payment');
 
 it('redirects customers to the failure page when the payment verification fails', function (): void {
     $payment = Payment::factory()->create([
@@ -46,21 +39,23 @@ it('redirects customers to the failure page when the payment verification fails'
     ]);
 
     $callbackPayload = [
-        'payment_uuid' => $payment->uuid,
-        'ResCode'      => '12',
+        'ResCode' => '12',
     ];
 
     $actionMock = m::mock(VerifyPaymentAction::class);
     $actionMock->expects('handle')
         ->once()
+        ->with(m::on(fn (Payment $p) => $p->is($payment)), $callbackPayload)
         ->andReturn(tap($payment)->setAttribute('status', PaymentStatusEnum::FAILED));
 
     app()->instance(VerifyPaymentAction::class, $actionMock);
 
-    $response = postJson(route('api.v1.shop.payment.gateway.callback'), $callbackPayload);
+    $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-    $response->assertRedirect(config('payments.redirect.failure').'?order='.$payment->order->increment_id);
-});
+    $response->assertRedirect(config('payments.redirect.failure')
+        ."?payment={$payment->uuid}&purpose={$payment->purpose->value}&order={$payment->order->increment_id}"
+    );
+})->group('payment');
 
 it('redirects customers to the generic error page when verification throws', function (): void {
     $payment = Payment::factory()->create([
@@ -69,18 +64,18 @@ it('redirects customers to the generic error page when verification throws', fun
     ]);
 
     $callbackPayload = [
-        'payment_uuid' => $payment->uuid,
-        'ResCode'      => '999',
+        'ResCode' => '999',
     ];
 
     $actionMock = m::mock(VerifyPaymentAction::class);
     $actionMock->expects('handle')
         ->once()
+        ->with(m::on(fn (Payment $p) => $p->is($payment)), $callbackPayload)
         ->andThrow(new RuntimeException('gateway boom'));
 
     app()->instance(VerifyPaymentAction::class, $actionMock);
 
-    $response = postJson(route('api.v1.shop.payment.gateway.callback'), $callbackPayload);
+    $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
-    $response->assertRedirect(config('payments.redirect.failure').'?error=processing_error');
-});
+    $response->assertRedirect(config('payments.redirect.failure')."?payment={$payment->uuid}&error=UNKNOWN_ERROR");
+})->group('payment');

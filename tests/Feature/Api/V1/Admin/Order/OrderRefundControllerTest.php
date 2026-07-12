@@ -7,12 +7,12 @@ use App\Enums\Order\RefundStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\PermissionEnum;
+use App\Exceptions\Gateway\DigipayException;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Services\Payment\Digipay\Data\RefundResponse;
 use App\Services\Payment\Digipay\DigipayAdminService;
-use App\Services\Payment\Digipay\DigipayException;
 use Illuminate\Support\Facades\Notification;
 
 use function Pest\Laravel\postJson;
@@ -87,7 +87,7 @@ it('applies deduction percentage to all items in order', function (): void {
     ]);
 
     $response->assertCreated();
-
+    $order->items->sortBy('price');
     // Item 1: 100k - 10k = 90k
     $this->assertDatabaseHas('refunds', [
         'order_item_id'    => $order->items[0]->id,

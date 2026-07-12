@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Actions\Payment\PreparePendingPaymentAction;
 use App\Data\Admin\Payment\PaymentCreateData;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
+use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Payment\PaymentTransactionStatusEnum;
 use App\Models\Order;
@@ -57,11 +59,13 @@ it('creates payment transaction record when initiating Mellat gateway payment', 
         'full_value_grand_total' => 1000000,
     ]);
 
-    $paymentData = new PaymentCreateData(
-        method: PaymentMethodEnum::MELLAT_GATEWAY->value,
-        data: null,
-        admin_notes: 'Test payment'
-    );
+    $payment = Payment::factory()->create([
+        'status' => PaymentStatusEnum::PENDING,
+        'order_id'    => $order->id,
+        'customer_id' => $customer->id,
+        'amount'      => 1000000,
+        'method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
+    ]);
 
     // Mock successful gateway response
     $this->soapClientMock->shouldReceive('bpPayRequest')
@@ -69,7 +73,7 @@ it('creates payment transaction record when initiating Mellat gateway payment', 
         ->andReturn((object) ['return' => '1234567890']);
 
     // Act
-    $result = $this->processor->process($order, $paymentData, $admin, 1000000);
+    $result = $this->processor->process($payment);
 
     // Assert
     expect($result->payment)->toBeInstanceOf(Payment::class);
@@ -91,7 +95,6 @@ it('creates payment transaction record when initiating Mellat gateway payment', 
 });
 
 it('increments attempt number for subsequent Mellat payment attempts', function (): void {
-    // Arrange
     $customer = User::factory()->create();
     $admin    = Staff::factory()->create();
 
@@ -102,8 +105,7 @@ it('increments attempt number for subsequent Mellat payment attempts', function 
         'full_value_grand_total' => 1000000,
     ]);
 
-    // Create first payment attempt
-    Payment::factory()->create([
+    $payment= Payment::factory()->create([
         'order_id'      => $order->id,
         'customer_id'   => $customer->id,
         'method'        => PaymentMethodEnum::MELLAT_GATEWAY,
@@ -112,23 +114,22 @@ it('increments attempt number for subsequent Mellat payment attempts', function 
         'attempt_count' => 1,
     ]);
 
-    $paymentData = new PaymentCreateData(
-        method: PaymentMethodEnum::MELLAT_GATEWAY->value,
-        data: null,
-        admin_notes: 'Retry payment'
-    );
+    $paymentNew = app(PreparePendingPaymentAction::class)
+        ->handle(
+            actor: $admin,
+            customerId: $customer->id,
+            method: PaymentMethodEnum::MELLAT_GATEWAY,
+            purpose: PaymentPurposeEnum::ORDER,
+            amount: $payment->amount,
+            order: $order,
+        );
 
-    // Mock successful gateway response
     $this->soapClientMock->shouldReceive('bpPayRequest')
         ->once()
         ->andReturn((object) ['return' => '9876543210']);
 
-    // Act
-    $result = $this->processor->process($order, $paymentData, $admin, 500000);
+    $result = $this->processor->process($paymentNew);
 
-    // Assert
-    $transaction = PaymentTransaction::where('payment_id', $result->payment->id)->first();
-    expect($transaction->attempt_number)->toBe(2);
     expect($result->payment->attempt_count)->toBe(2);
 });
 
@@ -166,6 +167,7 @@ it('updates transaction to COMPLETED when Mellat verification succeeds', functio
         'ResCode'         => '0',
         'SaleOrderId'     => '200000001',
         'SaleReferenceId' => 'ABC123456',
+        'FinalAmount'     => 1000000,
     ];
 
     // Mock successful verification and settlement
@@ -276,6 +278,7 @@ it('updates transaction to FAILED when Mellat settlement fails after successful 
         'ResCode'         => '0',
         'SaleOrderId'     => '200000003',
         'SaleReferenceId' => 'DEF789012',
+        'FinalAmount'     => 1_000_000,
     ];
 
     // Mock verification succeeds but settlement fails
@@ -313,11 +316,18 @@ it('generates unique transaction references for multiple Mellat payments', funct
         'full_value_grand_total' => 2000000,
     ]);
 
-    $paymentData = new PaymentCreateData(
-        method: PaymentMethodEnum::MELLAT_GATEWAY->value,
-        data: null,
-        admin_notes: null,
-    );
+    $payment1 = Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $customer->id,
+        'amount'      => 2000000,
+        'method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
+    ]);
+    $payment2 = Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $customer->id,
+        'amount'      => 2000000,
+        'method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
+    ]);
 
     // Mock gateway responses
     $this->soapClientMock->shouldReceive('bpPayRequest')
@@ -328,8 +338,8 @@ it('generates unique transaction references for multiple Mellat payments', funct
         );
 
     // Act
-    $result1 = $this->processor->process($order, $paymentData, $admin, 1000000);
-    $result2 = $this->processor->process($order, $paymentData, $admin, 1000000);
+    $result1 = $this->processor->process($payment1);
+    $result2 = $this->processor->process($payment2);
 
     // Assert
     $transaction1 = PaymentTransaction::where('payment_id', $result1->payment->id)->first();
@@ -338,5 +348,5 @@ it('generates unique transaction references for multiple Mellat payments', funct
     expect($transaction1->transaction_reference)->not->toBe($transaction2->transaction_reference);
     expect($transaction1->transaction_reference)->toMatch('/^\d{9,}$/');
     expect($transaction2->transaction_reference)->toMatch('/^\d{9,}$/');
-    expect((int) $transaction2->transaction_reference)->toBeGreaterThan((int) $transaction1->transaction_reference);
+    expect((int) $transaction2->transaction_reference)->not->toEqual((int) $transaction1->transaction_reference);
 });

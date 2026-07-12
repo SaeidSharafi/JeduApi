@@ -7,10 +7,10 @@ namespace App\Actions\Admin\Order;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Exceptions\Gateway\DigipayException;
 use App\Models\Order;
 use App\Services\OrderStatusService;
 use App\Services\Payment\Digipay\DigipayAdminService;
-use App\Services\Payment\Digipay\DigipayException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -114,7 +114,7 @@ final readonly class ApproveOrderAction
         try {
             $this->digipayService->deliver($payment);
 
-            Log::channel(config('digipay.logging.channel', 'stack'))->info('[Digipay] Delivery confirmed on order approval', [
+            Log::channel(config('payments.digipay.logging.channel', 'stack'))->info('[Digipay] Delivery confirmed on order approval', [
                 'order_id'   => $order->id,
                 'payment_id' => $payment->id,
             ]);

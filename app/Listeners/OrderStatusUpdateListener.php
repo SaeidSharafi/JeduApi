@@ -44,7 +44,7 @@ final class OrderStatusUpdateListener implements ShouldQueue
             }
 
             if (isset($item->productDeliveryOption->details_json['ims_course_code'])) {
-                ProvisionImsEnrollmentJob::dispatch($item->enrollment->id, $order->firstPayment->id);
+                ProvisionImsEnrollmentJob::dispatch($item->enrollment->id, $order->firstPayment?->id);
             }
 
             $deliveryMethod = $item->productDeliveryOption->delivery_method;

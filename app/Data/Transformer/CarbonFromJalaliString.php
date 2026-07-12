@@ -48,7 +48,6 @@ final readonly class CarbonFromJalaliString implements Cast
                 throw new InvalidJalaliDateException($property->name, $value);
             }
         }
-
         // Also throw our new exception for invalid types
         throw new InvalidJalaliDateException($property->name, $value);
     }

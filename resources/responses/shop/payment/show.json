@@ -1,0 +1,33 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "uuid": "a1000001-0000-4000-a000-000000000001",
+    "id": 1,
+    "amount": 1950000,
+    "method": {
+      "value": "mellat_gateway",
+      "label": "درگاه ملت"
+    },
+    "status": {
+      "value": "completed",
+      "label": "تکمیل شده"
+    },
+    "purpose": {
+      "value": "order",
+      "label": "سفارش"
+    },
+    "last_gateway_reference": "REF-20241021-001",
+    "attempt_count": 1,
+    "transactions": [
+      {
+        "status": {
+          "value": "completed",
+          "label": "تکمیل شده"
+        },
+        "initiated_at": "1403-07-30 15:30:00",
+        "completed_at": "1403-07-30 15:35:00"
+      }
+    ]
+  },
+  "metadata": []
+}

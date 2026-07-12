@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Shop\Payment;
 
 use App\Actions\Shop\Payment\VerifyPaymentAction;
-use App\Data\Shop\Payment\GatewayCallbackData;
+use App\Contracts\Payment\PaymentExceptionContract;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Http\Controllers\Controller;
-use Exception;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * @group Shop - Payment Gateway
@@ -28,44 +29,61 @@ final class GatewayCallbackController extends Controller
      * @responseFile 200 resources/responses/shop/payment/verify.json
      * @responseFile 422 resources/responses/422.json
      */
-    public function __invoke(Request $request, VerifyPaymentAction $action)
+    public function handle(Request $request, Payment $payment, VerifyPaymentAction $action)
     {
         Log::info('Gateway callback received', [
-            'data' => $request->all(),
-            'ip'   => $request->ip(),
+            'payment_uuid' => $payment->uuid,
+            'data'         => $request->all(),
+            'ip'           => $request->ip(),
         ]);
 
-        // Build callback data
-        $callbackData = new GatewayCallbackData(
-            payment_uuid: $request->input('payment_uuid'),
-            gateway_response: $request->all()
-        );
-
         try {
-            $payment = $action->handle($callbackData);
+            $payment = $action->handle($payment, $request->all());
+
+            $query = [
+                'payment' => $payment->uuid,
+                'purpose' => $payment->purpose->value, // 'order' | 'top_up'
+            ];
+
+            if ($payment->order) {
+                $query['order'] = $payment->order->increment_id;
+            }
 
             // Redirect customer based on payment status
             if ($payment->status === PaymentStatusEnum::COMPLETED) {
                 return redirect(
-                    config('payments.redirect.success').'?'.http_build_query([
-                        'order' => $payment->order->increment_id,
-                    ])
+                    config('payments.redirect.success').'?'.http_build_query($query)
                 );
             }
 
             return redirect(
-                config('payments.redirect.failure').'?'.http_build_query([
-                    'order' => $payment->order->increment_id,
-                ])
+                config('payments.redirect.failure').'?'.http_build_query($query)
             );
 
-        } catch (Exception $e) {
+        } catch (PaymentExceptionContract $e) {
             Log::error('Gateway callback error', [
-                'error'   => $e->getMessage(),
-                'request' => $request->all(),
+                'error_code'   => $e->errorCode(),
+                'message'      => $e->getMessage(),
+                'metadata'     => $e->metadata(),
+                'payment_uuid' => $payment->uuid,
             ]);
 
-            return redirect(config('payments.redirect.failure').'?error=processing_error');
+            return redirect(config('payments.redirect.failure').'?'.http_build_query([
+                'payment' => $payment->uuid,
+                'error'   => $e->errorCode(),
+            ]));
+        } catch (Throwable $e) {
+            // Genuinely unrecognized failure — worth distinguishing in logs from a known gateway decline.
+            Log::critical('Unhandled gateway callback error', [
+                'error'        => $e->getMessage(),
+                'payment_uuid' => $payment->uuid,
+                'request'      => $request->all(),
+            ]);
+
+            return redirect(config('payments.redirect.failure').'?'.http_build_query([
+                'payment' => $payment->uuid,
+                'error'   => 'UNKNOWN_ERROR',
+            ]));
         }
     }
 }

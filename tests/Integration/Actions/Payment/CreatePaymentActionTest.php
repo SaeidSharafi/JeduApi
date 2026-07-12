@@ -46,7 +46,6 @@ describe('CreatePaymentAction', function (): void {
             ->create();
 
         $paymentData = new PaymentCreateData(
-            method: 'bank_transfer',
             data: new BankTransferPaymentData(
                 transaction_id: '123',
                 transaction_date: now()->format('Y-m-d'),
@@ -87,7 +86,6 @@ describe('CreatePaymentAction', function (): void {
         ]);
 
         $paymentData = new PaymentCreateData(
-            method: PaymentMethodEnum::BANK_TRANSFER->value,
             data: new BankTransferPaymentData(
                 transaction_id: '456',
                 transaction_date: today()->format('Y-m-d'),
@@ -109,8 +107,10 @@ describe('CreatePaymentAction', function (): void {
     it('creates a zero-dollar payment for free orders to trigger fulfillment', function (): void {
         $order = Order::factory()->create(['grand_total' => 0]);
 
-        $paymentData = new PaymentCreateData(method: 'bank_transfer', data: null,
-            admin_notes: 'Free');
+        $paymentData = new PaymentCreateData(
+            data: null,
+            admin_notes: 'Free'
+        );
         $result = (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->adminUser);
 
         expect($result)->not->toBeNull();
@@ -135,7 +135,6 @@ describe('CreatePaymentAction', function (): void {
             sender_name: 'Test', notes: null
         );
         $paymentData = new PaymentCreateData(
-            method: PaymentMethodEnum::BANK_TRANSFER->value,
             data: $data,
             admin_notes: 'Overpayment attempt'
         );
@@ -157,7 +156,7 @@ describe('CreatePaymentAction', function (): void {
         ]);
 
         // BankTransferPaymentData is missing required fields
-        $paymentData = new PaymentCreateData(method: 'bank_transfer',
+        $paymentData = new PaymentCreateData(
             data: new BankTransferPaymentData(transaction_id: null, transaction_date: null, sender_name: null,
                 notes: null),
             admin_notes: null);
@@ -187,8 +186,7 @@ describe('CreatePaymentAction', function (): void {
             'customer_id' => $order->customer_id,
         ]);
 
-        $paymentData = new PaymentCreateData(method: 'bank_transfer', data: null,
-            admin_notes: null);
+        $paymentData = new PaymentCreateData(data: null, admin_notes: null);
 
         // Act
         $result = (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->adminUser);
@@ -223,8 +221,8 @@ describe('CreatePaymentAction', function (): void {
         ]);
 
         // BankTransferPaymentData is missing required fields
-        $paymentData = new PaymentCreateData(method: 'bank_transfer',
-            data: new BankTransferPaymentData(transaction_id: null, transaction_date: null, sender_name: null,
+        $paymentData = new PaymentCreateData(
+            data: new BankTransferPaymentData(transaction_id: "123", transaction_date: verta()->formatDate(), sender_name: "John Doe",
                 notes: null),
             admin_notes: null);
 
@@ -232,4 +230,41 @@ describe('CreatePaymentAction', function (): void {
             ->toThrow(ValidationException::class,
                 __('messages.order.payment_already_pending', ['order_id' => $order->increment_id]));
     });
+
+    it('regression: admin creates bank transfer payment successfully', function (): void {
+        $items = [
+            [
+                'product_delivery_option_id' => App\Models\ProductDeliveryOption::factory()->create(),
+                'qty_ordered'                => 1,
+                'payment_type'               => OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                'price'                      => 75000,
+                'total'                      => 75000,
+                'name'                       => 'Regression Test Product',
+            ],
+        ];
+        $order = Order::factory()
+            ->withCalculatedTotals($items)
+            ->create(['grand_total' => 75000]);
+
+        $paymentData = new PaymentCreateData(
+            data: new BankTransferPaymentData(
+                transaction_id: 'reg-123',
+                transaction_date: now()->format('Y-m-d'),
+                sender_name: 'Regression Tester',
+                notes: null,
+            ),
+            admin_notes: 'Regression test payment',
+        );
+
+        $result = (app(CreatePaymentAction::class))->handle($order, $paymentData, $this->adminUser);
+
+        expect($result)->not->toBeNull();
+        expect($result->payment->amount)->toBe(75000);
+        expect($result->payment->method)->toBe(PaymentMethodEnum::BANK_TRANSFER);
+        expect($result->requiresRedirect())->toBeFalse();
+        $this->assertDatabaseHas('payments', [
+            'id'     => $result->payment->id,
+            'amount' => 75000,
+        ]);
+    })->group('payment');
 });

@@ -6,23 +6,22 @@ namespace App\Services\Payment;
 
 use App\Actions\Wallet\RecordWalletTransactionAction;
 use App\Contracts\Payment\PaymentProcessorContract;
-use App\Data\Admin\Payment\PaymentCreateData;
 use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Data\Admin\Wallet\RecordTransactionData;
 use App\Enums\Payment\PaymentMethodEnum;
+use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Payment\PaymentTransactionStatusEnum;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Events\PaymentCompletedEvent;
-use App\Exceptions\Payment\InsufficientWalletBalanceException;
-use App\Models\Order;
+use App\Exceptions\Payment\DuplicatePaymentException;
+use App\Exceptions\Payment\InvalidPaymentPurposeException;
 use App\Models\Payment;
-use App\Models\Staff;
 use App\Models\User;
 use App\Services\PaymentTransactionReferenceService;
 use BadMethodCallException;
-use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\DB;
 
 final class WalletPaymentProcessor implements PaymentProcessorContract
 {
@@ -41,96 +40,95 @@ final class WalletPaymentProcessor implements PaymentProcessorContract
         return false; // Single-step payment
     }
 
-    public function process(
-        Order $order,
-        PaymentCreateData $paymentData,
-        Authenticatable $adminUser,
-        int $amountToPay
-    ): PaymentProcessResultData {
-
-        $user = User::query()->with('wallet')->findOrFail($order->customer_id);
-
-        // Step 1: Generate unique transaction reference
-        $transactionReference = $this->referenceService->generate();
-
-        // Step 2: Get request metadata
-        $ipAddress = request()->ip();
-        $userAgent = request()->userAgent();
-
-        // Step 3: Calculate attempt number
-        $attemptNumber = $order->payments()
-            ->where('method', PaymentMethodEnum::WALLET)
-            ->count() + 1;
-
-        // Validate sufficient balance
-        $availableBalance = $user->wallet->getAvailableBalance();
-        if ($availableBalance < $amountToPay) {
-            $shortfall = $amountToPay - $availableBalance;
-            throw new InsufficientWalletBalanceException(
-                availableBalance: $availableBalance,
-                requiredBalance: $amountToPay,
-                shortfall: $shortfall,
-                orderIncrementId: (string) $order->increment_id
-            );
+    public function process(Payment $payment): PaymentProcessResultData
+    {
+        if ($payment->purpose !== PaymentPurposeEnum::ORDER) {
+            throw new InvalidPaymentPurposeException(expectedPurpose: PaymentPurposeEnum::ORDER->value, actualPurpose: $payment->purpose->value);
         }
 
-        // Record wallet transaction (debit)
-        $transactionData = new RecordTransactionData(
-            user_id: $order->customer_id,
-            type: TransactionTypeEnum::PAYMENT,
-            amount: $amountToPay * -1,
-            source_type: TransactionSourceEnum::ORDER,
-            source_id: $order->id,
-            description: $paymentData->admin_notes ?? __('messages.wallet.payment_for_order', ['order_id' => $order->increment_id]),
-            metadata: ['order_id' => $order->id]
-        );
+        if ($payment->status !== PaymentStatusEnum::PENDING) {
+            return PaymentProcessResultData::completed($payment);
+        }
 
-        $this->recordWalletTransactionAction->execute($transactionData);
+        $order       = $payment->order;
+        $user        = User::query()->with('wallet')->findOrFail($order->customer_id);
+        $amountToPay = (int) $payment->amount;
+        $ipAddress   = request()->ip();
+        $userAgent   = request()->userAgent();
 
-        // Create payment record
-        $payment = $order->payments()->create([
-            'customer_id'       => $order->customer_id,
-            'created_by'        => $adminUser instanceof Staff ? $adminUser->id : null,
-            'amount'            => (int) round($amountToPay),
-            'method'            => PaymentMethodEnum::WALLET->value,
-            'status'            => PaymentStatusEnum::COMPLETED->value,
-            'admin_notes'       => $paymentData->admin_notes,
-            'attempt_count'     => $attemptNumber,
-            'last_attempted_at' => now(),
-            'ip_address'        => $ipAddress,
-            'user_agent'        => $userAgent,
-        ]);
+        return DB::transaction(function () use ($amountToPay, $userAgent, $ipAddress, $payment, $order, $user) {
+            $alreadyPaid = $order->payments()
+                ->where('status', PaymentStatusEnum::COMPLETED)
+                ->where('id', '!=', $payment->id)
+                ->lockForUpdate()
+                ->exists();
 
-        // Create transaction record
-        $payment->transactions()->create([
-            'transaction_reference' => $transactionReference,
-            'attempt_number'        => $attemptNumber,
-            'status'                => PaymentTransactionStatusEnum::COMPLETED,
-            'gateway_request'       => [
-                'payment_method'    => 'wallet',
-                'amount'            => $amountToPay,
-                'available_balance' => $availableBalance,
-                'wallet_id'         => $user->wallet->id,
-                'order_id'          => $order->id,
-            ],
-            'gateway_response' => [
-                'success'     => true,
-                'new_balance' => $availableBalance - $amountToPay,
-            ],
-            'initiated_at' => now(),
-            'completed_at' => now(),
-            'ip_address'   => $ipAddress,
-            'user_agent'   => $userAgent,
-        ]);
+            if ($alreadyPaid) {
+                throw new DuplicatePaymentException(paymentId: $payment->id, orderId: $order->id);
+            }
 
-        // Update payment with last reference for quick access
-        $payment->last_gateway_reference = $transactionReference;
-        $payment->save();
+            $payment = Payment::query()->whereKey($payment->id)->lockForUpdate()->firstOrFail();
 
-        // Dispatch completion event for wallet payments (they're always completed)
-        PaymentCompletedEvent::dispatch($payment);
+            if ($payment->status !== PaymentStatusEnum::PENDING) {
+                return PaymentProcessResultData::completed($payment);
+            }
 
-        return PaymentProcessResultData::completed($payment);
+            $attemptNumber = $order->payments()
+                ->where('method', PaymentMethodEnum::WALLET)
+                ->count() + 1;
+
+            $transaction          = $this->referenceService->generateFor($payment);
+            $transactionReference = $transaction->transaction_reference;
+
+            $transactionData = new RecordTransactionData(
+                user_id: $order->customer_id,
+                type: TransactionTypeEnum::PAYMENT,
+                amount: $amountToPay * -1,
+                source_type: TransactionSourceEnum::ORDER,
+                source_id: $order->id,
+                description: $payment->admin_notes ?? __('messages.wallet.payment_for_order', ['order_id' => $order->increment_id]),
+                metadata: ['order_id' => $order->id],
+            );
+
+            $availableBalance = $user->wallet->getAvailableBalance();
+            $this->recordWalletTransactionAction->execute($transactionData);
+
+            $payment->update([
+                'status'                 => PaymentStatusEnum::COMPLETED->value,
+                'attempt_count'          => $attemptNumber,
+                'last_attempted_at'      => now(),
+                'ip_address'             => $ipAddress,
+                'user_agent'             => $userAgent,
+                'last_gateway_reference' => $transactionReference,
+            ]);
+
+            // Create transaction record
+            $transaction->update([
+                'transaction_reference' => $transactionReference,
+                'attempt_number'        => $attemptNumber,
+                'status'                => PaymentTransactionStatusEnum::COMPLETED,
+                'gateway_request'       => [
+                    'payment_method'    => 'wallet',
+                    'amount'            => $amountToPay,
+                    'available_balance' => $availableBalance,
+                    'wallet_id'         => $user->wallet->id,
+                    'order_id'          => $order->id,
+                ],
+                'gateway_response' => [
+                    'success'     => true,
+                    'new_balance' => $availableBalance - $amountToPay,
+                ],
+                'initiated_at' => now(),
+                'completed_at' => now(),
+                'ip_address'   => $ipAddress,
+                'user_agent'   => $userAgent,
+            ]);
+
+            PaymentCompletedEvent::dispatch($payment);
+
+            return PaymentProcessResultData::completed($payment);
+        });
+
     }
 
     public function verify(Payment $payment, array $callbackData): Payment

@@ -3,27 +3,27 @@
 declare(strict_types=1);
 
 return [
-    'PublicationStatusEnum' => [
+    'PublicationStatusEnum'         => [
         'draft'     => 'پیش‌نویس',
         'published' => 'منتشر شده',
         'archived'  => 'آرشیو',
     ],
-    'CourseDifficultyLevelEnum' => [
+    'CourseDifficultyLevelEnum'     => [
         'beginner'     => 'مبتدی',
         'intermediate' => 'متوسط',
         'advanced'     => 'پیشرفته',
         'expert'       => 'کارشناس',
     ],
-    'GenderEnum' => [
+    'GenderEnum'                    => [
         'male'   => 'مرد',
         'female' => 'زن',
     ],
-    'TermStatusEnum' => [
+    'TermStatusEnum'                => [
         'active'   => 'فعال',
         'inactive' => 'غیرفعال',
         'planning' => 'در حال برنامه‌ریزی',
     ],
-    'MorphTypeEnum' => [
+    'MorphTypeEnum'                 => [
         'course'        => 'دوره',
         'seminar'       => 'سمینار',
         'digital_asset' => 'فایل',
@@ -33,19 +33,19 @@ return [
         'teacher'       => 'مدرس',
         'vendor'        => 'فروشنده',
     ],
-    'ProductableEnum' => [
+    'ProductableEnum'               => [
         'course'        => 'دوره',
         'seminar'       => 'سمینار',
         'digital_asset' => 'فایل',
     ],
-    'FulfillmentTypeEnum' => [
+    'FulfillmentTypeEnum'           => [
         'digital'           => 'دیجیتال',
         'physical'          => 'فیزیکی',
         'online_service'    => 'سرویس آنلاین',
         'offline_service'   => 'سرویس آفلاین',
         'in_person_service' => 'سرویس حضوری',
     ],
-    'DeliveryMethodEnum' => [
+    'DeliveryMethodEnum'            => [
         'direct_download'           => 'دانلود مستقیم',
         'live_session_bbb'          => 'جلسه زنده با BBB',
         'live_session_skyroom'      => 'جلسه زنده با Skyroom',
@@ -53,12 +53,12 @@ return [
         'video_platform_spotplayer' => 'پلتفرم ویدیویی SpotPlayer',
         'in_person'                 => 'حضوری',
     ],
-    'CivilIdTypeEnum' => [
+    'CivilIdTypeEnum'               => [
         'national_code'  => 'کد ملی',
         'passport'       => 'پاسپورت',
         'immigrant_code' => 'کد اتباع',
     ],
-    'EducationLevelEnum' => [
+    'EducationLevelEnum'            => [
         'student'       => 'دانش‌آموز',
         'under_diploma' => 'زیردیپلم',
         'diploma'       => 'دیپلم',
@@ -67,30 +67,30 @@ return [
         'master'        => 'کارشناسی ارشد',
         'doctorate'     => 'دکتری',
     ],
-    'EducationStatusEnum' => [
+    'EducationStatusEnum'           => [
         'student'    => 'دانشجو',
         'university' => 'دانشگاه',
         'graduated'  => 'فارغ‌التحصیل',
         'employed'   => 'شاغل',
     ],
-    'OrderItemStatusEnum' => [
+    'OrderItemStatusEnum'           => [
         'active'    => 'فعال',
         'cancelled' => 'لغو شده',
         'refunded'  => 'بازپرداخت شده',
     ],
-    'OrderItemPaymentTypeEnum' => [
+    'OrderItemPaymentTypeEnum'      => [
         'pre_payment'  => 'پیش‌پرداخت',
         'full_payment' => 'پرداخت کامل',
         'invoice'      => 'صورتحساب',
     ],
-    'OrderPaymentStatusEnum' => [
+    'OrderPaymentStatusEnum'        => [
         'pending'            => 'در انتظار',
         'partially_paid'     => 'پرداخت جزئی',
         'paid'               => 'پرداخت شده',
         'refunded'           => 'بازپرداخت شده',
         'partially_refunded' => 'بازپرداخت جزئی',
     ],
-    'OrderStatusEnum' => [
+    'OrderStatusEnum'               => [
         'pending'    => 'در انتظار',
         'processing' => 'در حال پردازش',
         'completed'  => 'تکمیل شده',
@@ -98,22 +98,22 @@ return [
         'failed'     => 'ناموفق',
         'refunded'   => 'بازپرداخت شده',
     ],
-    'PaymentMethodEnum' => [
+    'PaymentMethodEnum'             => [
         'bank_transfer'  => 'انتقال بانکی',
         'mellat_gateway' => 'درگاه ملت',
         'wallet'         => 'کیف پول',
         'digipay'        => 'دیجی‌پی',
     ],
-    'PaymentStatusEnum' => [
+    'PaymentStatusEnum'             => [
         'pending'   => 'در انتظار',
         'completed' => 'تکمیل شده',
         'failed'    => 'ناموفق',
     ],
-    'MatchPolicyEnum' => [
+    'MatchPolicyEnum'               => [
         'any' => 'هر کدام',
         'all' => 'همه',
     ],
-    'MathOperatorEnum' => [
+    'MathOperatorEnum'              => [
         '==' => 'برابر',
         '<'  => 'کوچکتر از',
         '>'  => 'بزرگتر از',
@@ -125,12 +125,12 @@ return [
         'in_progress' => 'در حال ثبت‌نام',
         'finished'    => 'برگزار شده',
     ],
-    'ProductDeliveryStatusEnum' => [
+    'ProductDeliveryStatusEnum'     => [
         'online'    => 'آنلاین',
         'in_person' => 'حضوری',
         'combined'  => 'ترکیبی',
     ],
-    'EnrollmentStatusEnum' => [
+    'EnrollmentStatusEnum'          => [
         'awaiting_payment'     => 'در انتظار پرداخت',
         'pending_provisioning' => 'در حال آماده‌سازی دسترسی',
         'active'               => 'فعال',
@@ -139,12 +139,12 @@ return [
         'cancelled'            => 'لغو شده',
         'provisioning_failed'  => 'خطا در آماده‌سازی دسترسی',
     ],
-    'WalletStatusEnum' => [
+    'WalletStatusEnum'              => [
         'active'    => 'فعال',
         'suspended' => 'معلق',
         'closed'    => 'بسته شده',
     ],
-    'MoodleActivityStateEnum' => [
+    'MoodleActivityStateEnum'       => [
         'incomplete'    => 'تکمیل نشده',
         '0'             => 'تکمیل نشده',
         'complete'      => 'تکمیل شده',
@@ -154,4 +154,14 @@ return [
         'complete_fail' => 'رد شده',
         '3'             => 'رد شده',
     ],
+    'PaymentTransactionStatusEnum'  =>
+        [
+            'initiated' => 'شروع شده',
+            'completed' => 'تکمیل شده',
+            'failed'    => 'ناموفق',
+        ],
+    'PaymentPurposeEnum'            => [
+        'order'        => 'سفارش',
+        'wallet_topup' => 'کیف پول',
+    ]
 ];

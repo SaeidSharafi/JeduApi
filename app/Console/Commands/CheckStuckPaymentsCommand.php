@@ -78,6 +78,8 @@ final class CheckStuckPaymentsCommand extends Command
 
             // Log to application log
             Log::warning('Stuck payment detected', $logData);
+            $payment->status = PaymentStatusEnum::FAILED;
+            $payment->save();
 
             // Output to console
             $this->table(

@@ -42,5 +42,14 @@ test('admin cannot withdraw more than available balance via API', function (): v
             'amount'  => 500,
         ]);
 
-    $response->assertStatus(500); // Should return validation error
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors('wallet_balance')
+        ->assertJsonFragment([
+            'metadata' => [
+                'error_code' => 'INSUFFICIENT_WALLET_BALANCE',
+                'available_balance' => 100,
+                'required_balance' => 500,
+                'shortfall' => 400,
+            ]
+        ]);
 });

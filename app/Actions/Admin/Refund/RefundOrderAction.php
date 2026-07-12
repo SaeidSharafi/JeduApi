@@ -20,7 +20,6 @@ use App\Services\Payment\Refund\RefundProcessorFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use SmartCache\Facades\SmartCache;
 use Throwable;
 
 final class RefundOrderAction
@@ -33,20 +32,16 @@ final class RefundOrderAction
 
     public function handle(Order $order, RefundOrderData $data): Collection
     {
-        $lockKey = "refund_order_{$order->id}";
+        $state = DB::transaction(function () use ($order, $data) {
+            $order = Order::where('id', $order->id)->lockForUpdate()->firstOrFail();
+            $order->loadMissing('items', 'payments');
 
-        return SmartCache::lock($lockKey, 20)->block(5, function () use ($order, $data) {
-
-            $order->refresh()->loadMissing('items', 'payments');
-
-            // 1. Resolve & Validate
             $refundableItems = $this->getRefundableItems($order);
             $payment         = $this->resolvePayment($order);
             $paymentMethod   = $payment?->method?->value ?? PaymentMethodEnum::BANK_TRANSFER->value;
             $processor       = $this->processorFactory->make($paymentMethod);
             $requiresGateway = $paymentMethod === PaymentMethodEnum::DIGIPAY->value && ! $data->skip_gateway;
 
-            // 2. Calculate Amounts
             $itemAmounts = collect();
             foreach ($refundableItems as $item) {
                 $amountPaid = $this->calculateAmountPaidForItem($item);
@@ -62,108 +57,130 @@ final class RefundOrderAction
 
             $totalRefundAmount = $itemAmounts->sum('refund_amount');
 
-            // Pre-flight validation for Gateway
             if ($requiresGateway) {
                 $this->validateGatewayLimits($payment, $totalRefundAmount);
             }
 
-            $processingRefunds = DB::transaction(function () use ($order, $itemAmounts, $payment, $data) {
-                $refunds = new Collection();
-                foreach ($itemAmounts as $itemData) {
-                    $refunds->push(Refund::create([
-                        'order_id'            => $order->id,
-                        'order_item_id'       => $itemData['item']->id,
-                        'payment_id'          => $payment?->id,
-                        'customer_id'         => $order->customer_id,
-                        'amount'              => $itemData['refund_amount'],
-                        'deduction_amount'    => $itemData['deduction'],
-                        'status'              => RefundStatusEnum::PROCESSING,
-                        'transaction_details' => [
-                            'receiver_name' => $data->receiver_name,
-                            'card_number'   => $data->card_number,
-                            'iban'          => $data->iban,
-                        ],
-                        'refunded_at' => null,
-                        'admin_notes' => $data->admin_notes,
-                    ]));
-                }
-
-                return $refunds;
-            });
-
-            $gatewayTrackingCode = null;
-            try {
-                if ($requiresGateway) {
-                    $gatewayTrackingCode = $processor->process(
-                        new Refund(['payment_id' => $payment->id]),
-                        $order,
-                        $totalRefundAmount,
-                    );
-                }
-            } catch (RefundGatewayException $e) {
-                $processingRefunds->each(fn ($r) => $r->update([
-                    'status'      => RefundStatusEnum::FAILED,
-                    'admin_notes' => ($r->admin_notes ?? '').PHP_EOL.$e->getMessage(),
+            $processingRefunds = new Collection();
+            foreach ($itemAmounts as $itemData) {
+                $processingRefunds->push(Refund::create([
+                    'order_id'            => $order->id,
+                    'order_item_id'       => $itemData['item']->id,
+                    'payment_id'          => $payment?->id,
+                    'customer_id'         => $order->customer_id,
+                    'amount'              => $itemData['refund_amount'],
+                    'deduction_amount'    => $itemData['deduction'],
+                    'status'              => RefundStatusEnum::PROCESSING,
+                    'transaction_details' => [
+                        'receiver_name' => $data->receiver_name,
+                        'card_number'   => $data->card_number,
+                        'iban'          => $data->iban,
+                    ],
+                    'refunded_at' => null,
+                    'admin_notes' => $data->admin_notes,
                 ]));
-                throw new RefundValidationException($e->getMessage());
-            } catch (Throwable $e) {
-                $processingRefunds->each(fn ($r) => $r->update(['status' => RefundStatusEnum::FAILED]));
-                throw $e;
             }
 
+            // Return everything we need for the next phases
+            return (object) [
+                'order'             => $order,
+                'payment'           => $payment,
+                'paymentMethod'     => $paymentMethod,
+                'processor'         => $processor,
+                'requiresGateway'   => $requiresGateway,
+                'itemAmounts'       => $itemAmounts,
+                'totalRefundAmount' => $totalRefundAmount,
+                'processingRefunds' => $processingRefunds,
+            ];
+        });
+
+        $gatewayTrackingCode = null;
+        $gatewayTrackingCode = null;
+        if ($state->requiresGateway) {
             try {
-                return DB::transaction(function () use (
-                    $order, $data, $itemAmounts, $processingRefunds, $paymentMethod,
-                    $gatewayTrackingCode, $processor,
-                ) {
-                    foreach ($itemAmounts as $itemData) {
-                        $item         = $itemData['item'];
-                        $refundAmount = $itemData['refund_amount'];
-                        $refund       = $processingRefunds->firstWhere('order_item_id', $item->id);
+                // Digipay single bulk processing via HTTP API
+                $gatewayTrackingCode = $state->processor->process(
+                    new Refund(['payment_id' => $state->payment->id]),
+                    $state->order,
+                    $state->totalRefundAmount,
+                );
+            } catch (Throwable $e) {
+                // HTTP API Failed. Revert 'PROCESSING' refunds to 'FAILED'
+                $errorMessage = $e->getMessage();
+                Refund::whereIn('id', $state->processingRefunds->pluck('id'))->update([
+                    'status'      => RefundStatusEnum::FAILED,
+                    'admin_notes' => DB::raw("CONCAT(COALESCE(admin_notes, ''), '\n', ".DB::connection()->getPdo()->quote($errorMessage).')'),
+                ]);
 
-                        $adminNotes = $refund->admin_notes;
-                        if ($data->skip_gateway) {
-                            $adminNotes = mb_trim(($adminNotes ?? '')."\n[Gateway skipped by Admin at ".now().']');
-                        }
+                if ($e instanceof RefundGatewayException) {
+                    throw new RefundValidationException($errorMessage);
+                }
+                throw $e;
+            }
+        }
 
-                        $refund->update([
-                            'status'              => RefundStatusEnum::COMPLETED,
-                            'transaction_details' => $gatewayTrackingCode ? ['gateway_tracking_code' => $gatewayTrackingCode] : [],
-                            'refunded_at'         => now(),
-                            'admin_notes'         => $adminNotes,
-                        ]);
+        try {
+            return DB::transaction(function () use ($state, $data, $gatewayTrackingCode) {
+                // Re-lock the order to safely apply status updates
+                $order = Order::where('id', $state->order->id)->lockForUpdate()->firstOrFail();
 
-                        $item->update([
-                            'status'         => OrderItemStatusEnum::REFUNDED,
-                            'total_refunded' => $refundAmount,
-                            'qty_refunded'   => $item->qty_ordered,
-                        ]);
+                foreach ($state->itemAmounts as $itemData) {
+                    $item         = $itemData['item'];
+                    $refundAmount = $itemData['refund_amount'];
+                    $refund       = $state->processingRefunds->firstWhere('order_item_id', $item->id);
 
-                        if ($paymentMethod === PaymentMethodEnum::WALLET->value && ! $data->skip_gateway) {
-                            $processor->process($refund, $order, $refundAmount);
-                        }
-
-                        $this->orderStatusService->updateEnrollmentStatus($item);
+                    if ($state->paymentMethod === PaymentMethodEnum::WALLET->value && ! $data->skip_gateway) {
+                        $state->processor->process($refund, $order, $refundAmount);
                     }
 
-                    $this->orderStatusService->updateParentOrderStatus($order->fresh());
-                    $this->updateOrderRefundedAmount->handle($order->fresh());
+                    $adminNotes = $refund->admin_notes;
+                    if ($data->skip_gateway) {
+                        $adminNotes = mb_trim(($adminNotes ?? '')."\n[Gateway skipped by Admin at ".now().']');
+                    }
 
-                    $processingRefunds->each(fn (Refund $r) => RefundCompletedEvent::dispatch($r));
+                    $refund->update([
+                        'status'              => RefundStatusEnum::COMPLETED,
+                        'transaction_details' => $gatewayTrackingCode ? ['gateway_tracking_code' => $gatewayTrackingCode] : [],
+                        'refunded_at'         => now(),
+                        'admin_notes'         => $adminNotes,
+                    ]);
 
-                    return $processingRefunds->load('order');
-                });
+                    $item->update([
+                        'status'         => OrderItemStatusEnum::REFUNDED,
+                        'total_refunded' => $refundAmount,
+                        'qty_refunded'   => $item->qty_ordered,
+                    ]);
 
-            } catch (Throwable $e) {
-                Log::emergency('Partial Failure (Bulk Refund): Digipay API succeeded but DB update failed.', [
-                    'order_id'      => $order->id,
-                    'refund_ids'    => $processingRefunds->pluck('id')->toArray(),
+                    $this->orderStatusService->updateEnrollmentStatus($item);
+                }
+
+                $this->orderStatusService->updateParentOrderStatus($order);
+                $this->updateOrderRefundedAmount->handle($order);
+
+                $state->processingRefunds->each(fn (Refund $r) => RefundCompletedEvent::dispatch($r));
+
+                return $state->processingRefunds->load('order');
+            });
+        } catch (Throwable $e) {
+            if ($state->requiresGateway) {
+                // TODO: need to notify Staff
+                // CRITICAL ERROR: We gave the user money via Digipay, but our DB failed to save the changes!
+                Log::emergency('CRITICAL ERROR: Gateway API succeeded but Database update failed.', [
+                    'order_id'      => $state->order->id,
+                    'refund_ids'    => $state->processingRefunds->pluck('id')->toArray(),
                     'tracking_code' => $gatewayTrackingCode,
                     'error'         => $e->getMessage(),
                 ]);
-                throw $e;
+            } else {
+                // LOCAL FAILURE: It was just a DB error (like Wallet logic failing).
+                // Because the transaction rolled back cleanly, no money was moved.
+                // We just need to mark Phase 1 refunds as FAILED.
+                Refund::whereIn('id', $state->processingRefunds->pluck('id'))
+                    ->update(['status' => RefundStatusEnum::FAILED]);
             }
-        });
+            throw $e;
+        }
+
     }
 
     private function getRefundableItems(Order $order): Collection

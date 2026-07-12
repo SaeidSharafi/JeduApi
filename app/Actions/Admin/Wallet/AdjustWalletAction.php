@@ -9,6 +9,8 @@ use App\Data\Admin\Wallet\AdjustWalletData;
 use App\Data\Admin\Wallet\RecordTransactionData;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
+use App\Exceptions\Wallet\WalletInsufficientBalanceException;
+use App\Exceptions\Wallet\WalletNotActive;
 use App\Models\Staff;
 use App\Models\Wallet;
 use Exception;
@@ -28,12 +30,18 @@ final readonly class AdjustWalletAction
     public function handle(AdjustWalletData $data, Staff $staff, Wallet $wallet): \App\Models\WalletTransaction
     {
         if (! $wallet->isActive()) {
-            throw new Exception(__('validation.custom.wallet_not_active'));
+            throw new WalletNotActive();
         }
 
         // For negative adjustments, check if there's sufficient balance
         if ($data->amount < 0 && ! $wallet->canWithdraw(abs($data->amount))) {
-            throw new Exception(__('validation.custom.insufficient_balance'));
+            throw new WalletInsufficientBalanceException(
+                availableBalance: $wallet->balance,
+                requiredBalance: abs($data->amount),
+                shortfall: abs($data->amount) - $wallet->balance,
+                sourceType: TransactionSourceEnum::STAFF,
+                sourceId: $staff->id,
+            );
         }
 
         $description = $data->description;

@@ -1,0 +1,184 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "current_page": 1,
+    "data": [
+      {
+        "uuid": "a1000008-0000-4000-a000-000000000008",
+        "id": 8,
+        "amount": 1000000,
+        "method": {
+          "value": "mellat_gateway",
+          "label": "درگاه ملت"
+        },
+        "status": {
+          "value": "completed",
+          "label": "تکمیل شده"
+        },
+        "purpose": {
+          "value": "order",
+          "label": "سفارش"
+        },
+        "last_gateway_reference": "REF-20250115-001",
+        "attempt_count": 1,
+        "transactions": [
+          {
+            "status": {
+              "value": "completed",
+              "label": "تکمیل شده"
+            },
+            "initiated_at": "1403-10-26 16:00:00",
+            "completed_at": "1403-10-26 16:10:00"
+          }
+        ]
+      },
+      {
+        "uuid": "a1000006-0000-4000-a000-000000000006",
+        "id": 6,
+        "amount": 1450000,
+        "method": {
+          "value": "mellat_gateway",
+          "label": "درگاه ملت"
+        },
+        "status": {
+          "value": "completed",
+          "label": "تکمیل شده"
+        },
+        "purpose": {
+          "value": "order",
+          "label": "سفارش"
+        },
+        "last_gateway_reference": "REF-20241210-001",
+        "attempt_count": 1,
+        "transactions": [
+          {
+            "status": {
+              "value": "completed",
+              "label": "تکمیل شده"
+            },
+            "initiated_at": "1403-09-20 09:00:00",
+            "completed_at": "1403-09-20 09:10:00"
+          }
+        ]
+      },
+      {
+        "uuid": "a1000004-0000-4000-a000-000000000004",
+        "id": 4,
+        "amount": 2950000,
+        "method": {
+          "value": "bank_transfer",
+          "label": "انتقال بانکی"
+        },
+        "status": {
+          "value": "completed",
+          "label": "تکمیل شده"
+        },
+        "purpose": {
+          "value": "order",
+          "label": "سفارش"
+        },
+        "last_gateway_reference": "TRF-20241125-001",
+        "attempt_count": 1,
+        "transactions": [
+          {
+            "status": {
+              "value": "completed",
+              "label": "تکمیل شده"
+            },
+            "initiated_at": "1403-09-05 11:00:00",
+            "completed_at": "1403-09-05 11:10:00"
+          }
+        ]
+      },
+      {
+        "uuid": "a1000003-0000-4000-a000-000000000003",
+        "id": 3,
+        "amount": 3300000,
+        "method": {
+          "value": "mellat_gateway",
+          "label": "درگاه ملت"
+        },
+        "status": {
+          "value": "completed",
+          "label": "تکمیل شده"
+        },
+        "purpose": {
+          "value": "order",
+          "label": "سفارش"
+        },
+        "last_gateway_reference": "REF-20241110-001",
+        "attempt_count": 1,
+        "transactions": [
+          {
+            "status": {
+              "value": "completed",
+              "label": "تکمیل شده"
+            },
+            "initiated_at": "1403-08-20 09:45:00",
+            "completed_at": "1403-08-20 10:00:00"
+          }
+        ]
+      },
+      {
+        "uuid": "a1000001-0000-4000-a000-000000000001",
+        "id": 1,
+        "amount": 1950000,
+        "method": {
+          "value": "mellat_gateway",
+          "label": "درگاه ملت"
+        },
+        "status": {
+          "value": "completed",
+          "label": "تکمیل شده"
+        },
+        "purpose": {
+          "value": "order",
+          "label": "سفارش"
+        },
+        "last_gateway_reference": "REF-20241021-001",
+        "attempt_count": 1,
+        "transactions": [
+          {
+            "status": {
+              "value": "completed",
+              "label": "تکمیل شده"
+            },
+            "initiated_at": "1403-07-30 15:30:00",
+            "completed_at": "1403-07-30 15:35:00"
+          }
+        ]
+      }
+    ],
+    "first_page_url": "http://jedu.test/api/v1/shop/student/payments?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "http://jedu.test/api/v1/shop/student/payments?page=1",
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; قبلی",
+        "page": null,
+        "active": false
+      },
+      {
+        "url": "http://jedu.test/api/v1/shop/student/payments?page=1",
+        "label": "1",
+        "page": 1,
+        "active": true
+      },
+      {
+        "url": null,
+        "label": "بعدی &raquo;",
+        "page": null,
+        "active": false
+      }
+    ],
+    "next_page_url": null,
+    "path": "http://jedu.test/api/v1/shop/student/payments",
+    "per_page": 15,
+    "prev_page_url": null,
+    "to": 5,
+    "total": 5
+  },
+  "metadata": []
+}

@@ -55,9 +55,9 @@ final class ProductFilterData extends Data
             $prefix.'near_capacity_only'        => ['sometimes', 'boolean'],
             $prefix.'capacity_threshold'        => ['sometimes', 'numeric', 'min:0', 'max:1'],
             $prefix.'registration_starts_after' => ['sometimes', 'jdate:Y-m-d'],
-            $prefix.'registration_ends_before'  => ['sometimes', 'jdate:Y-m-d', 'jdate_after:'.request( $prefix.'registration_starts_after' ).',Y-m-d'],
+            $prefix.'registration_ends_before'  => ['sometimes', 'jdate:Y-m-d', 'jdate_after:'.request($prefix.'registration_starts_after').',Y-m-d'],
             $prefix.'available_from'            => ['sometimes', 'jdate:Y-m-d'],
-            $prefix.'available_to'              => ['sometimes', 'jdate:Y-m-d', 'jdate_after:'.request( $prefix.'available_from' ).',Y-m-d'],
+            $prefix.'available_to'              => ['sometimes', 'jdate:Y-m-d', 'jdate_after:'.request($prefix.'available_from').',Y-m-d'],
         ];
     }
 

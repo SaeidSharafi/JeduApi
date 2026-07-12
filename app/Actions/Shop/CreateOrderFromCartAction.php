@@ -6,14 +6,15 @@ namespace App\Actions\Shop;
 
 use App\Actions\Admin\Order\CreateOrderAction;
 use App\Actions\Admin\Order\ValidateNoDuplicatePurchasesAction;
+use App\Actions\Payment\PreparePendingPaymentAction;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
-use App\Data\Admin\Payment\PaymentCreateData;
 use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Data\Shop\Cart\CheckoutData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
+use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\PaymentCompletedEvent;
 use App\Models\Cart;
@@ -50,7 +51,7 @@ final readonly class CreateOrderFromCartAction
         // Steps 1-6: Create order inside DB transaction (atomic cart→order conversion)
         $order = DB::transaction(function () use ($user): Order {
             // Step 1: Get the cart model directly
-            $cart = $this->cartService->findOrCreateCart($user);
+            $cart = $this->cartService->findOrCreateCart($user, lockForUpdate: true);
             if ($cart->items->count() === 0) {
                 throw ValidationException::withMessages([
                     'cart' => ['Your cart is empty. Please add items before checking out.'],
@@ -71,11 +72,12 @@ final readonly class CreateOrderFromCartAction
             $orderCreateData = $this->buildOrderCreateData($cart, $user);
 
             // Step 6: Execute the existing CreateOrderAction
-            return $this->createOrderAction->handle($orderCreateData);
-        });
+            $order = $this->createOrderAction->handle($orderCreateData);
 
-        // Delete cart immediately after order creation (Digikala pattern)
-        $this->cartService->deleteCart();
+            $cart->delete();
+
+            return $order;
+        });
 
         return $this->processPayment($order, $checkoutData, $user);
     }
@@ -88,6 +90,7 @@ final readonly class CreateOrderFromCartAction
     private function processPayment(Order $order, CheckoutData $checkoutData, User $user): PaymentProcessResultData
     {
         // Handle free orders automatically with NO_PAYMENT
+
         if ($order->grand_total <= 0) {
             return $this->createFreeOrderPayment($order, $user);
         }
@@ -104,15 +107,18 @@ final readonly class CreateOrderFromCartAction
         // Get the appropriate payment processor
         $processor = $this->processorFactory->make($paymentMethod);
 
-        // Create PaymentCreateData for the processor
-        $paymentData = new PaymentCreateData(
-            method: $paymentMethod->value,
-            data: null,
-            admin_notes: null
+        // Create pending payment then process
+        $payment = app(PreparePendingPaymentAction::class)->handle(
+            actor: $user,
+            customerId: $user->id,
+            method: $paymentMethod,
+            purpose: PaymentPurposeEnum::ORDER,
+            amount: $order->grand_total,
+            order: $order,
+            data: $checkoutData->payment_data
         );
 
-        // Process the payment
-        return $processor->process($order, $paymentData, $user, $order->grand_total);
+        return $processor->process($payment);
     }
 
     /**
@@ -125,6 +131,7 @@ final readonly class CreateOrderFromCartAction
             'customer_id' => $user->id,
             'amount'      => 0,
             'method'      => PaymentMethodEnum::NO_PAYMENT->value,
+            'purpose'     => PaymentPurposeEnum::ORDER->value,
             'status'      => PaymentStatusEnum::COMPLETED->value,
             'admin_notes' => 'Free order automatically completed.',
         ]);

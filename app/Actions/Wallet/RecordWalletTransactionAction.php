@@ -5,6 +5,11 @@ declare(strict_types=1);
 namespace App\Actions\Wallet;
 
 use App\Data\Admin\Wallet\RecordTransactionData;
+use App\Enums\Wallet\TransactionSourceEnum;
+use App\Enums\Wallet\TransactionTypeEnum;
+use App\Exceptions\Wallet\WalletInsufficientBalanceException;
+use App\Exceptions\Wallet\WalletNotFoundException;
+use App\Exceptions\Wallet\WalletUserNotFoundException;
 use App\Models\User;
 use App\Models\WalletTransaction;
 use Exception;
@@ -23,12 +28,12 @@ final class RecordWalletTransactionAction
     {
         $user = User::find($data->user_id);
         if (! $user) {
-            throw new Exception(__('validation.custom.user_not_found'));
+            throw new WalletUserNotFoundException($data->user_id);
         }
 
         $wallet = $user->wallet;
         if (! $wallet) {
-            throw new Exception(__('validation.custom.wallet_not_found'));
+            throw new WalletNotFoundException($user->id);
         }
 
         return DB::transaction(function () use ($wallet, $user, $data) {
@@ -37,7 +42,7 @@ final class RecordWalletTransactionAction
 
             // @codeCoverageIgnoreStart
             if (! $wallet) {
-                throw new Exception(__('validation.custom.wallet_not_found'));
+                throw new WalletNotFoundException($wallet->user_id);
             }
             // @codeCoverageIgnoreEnd
 
@@ -49,19 +54,43 @@ final class RecordWalletTransactionAction
                 $data->amount = abs($data->amount);
             }
 
-            // Calculate new balances
-            $newBalance     = $wallet->balance + $data->amount;
-            $newGiftBalance = $wallet->gift_balance;
+            $newBalance      = $wallet->balance;
+            $newGiftBalance  = $wallet->gift_balance;
+            $fromGiftBalance = 0;
 
-            // For gift transactions, update gift balance instead
             if ($data->type->isGift()) {
                 $newGiftBalance = $wallet->gift_balance + $data->amount;
-                $newBalance     = $wallet->balance; // Don't change regular balance for gifts
+            } elseif ($data->type === TransactionTypeEnum::PAYMENT && $data->source_type === TransactionSourceEnum::ORDER) {
+                $debitAmount     = abs($data->amount);
+                $fromBalance     = min($wallet->balance, $debitAmount);
+                $fromGiftBalance = $debitAmount - $fromBalance;
+
+                $newBalance     = $wallet->balance      - $fromBalance;
+                $newGiftBalance = $wallet->gift_balance - $fromGiftBalance;
+            } else {
+                $newBalance = $wallet->balance + $data->amount;
             }
 
-            // Validate balance constraints
-            if ($newBalance < 0) {
-                throw new Exception(__('validation.custom.insufficient_balance'));
+            if ($data->type === TransactionTypeEnum::PAYMENT && $data->source_type === TransactionSourceEnum::ORDER) {
+                $availableTotal = $wallet->balance + $wallet->gift_balance;
+
+                if ($availableTotal + $data->amount < 0) {
+                    throw new WalletInsufficientBalanceException(
+                        availableBalance: $availableTotal,
+                        requiredBalance: abs($data->amount),
+                        shortfall: abs($availableTotal + $data->amount),
+                        sourceType: $data->source_type,
+                        sourceId: $data->source_id,
+                    );
+                }
+            } elseif ($newBalance < 0) {
+                throw new WalletInsufficientBalanceException(
+                    availableBalance: $wallet->balance,
+                    requiredBalance: abs($data->amount),
+                    shortfall: abs($newBalance),
+                    sourceType: $data->source_type,
+                    sourceId: $data->source_id,
+                );
             }
 
             // Update wallet balance atomically
@@ -82,7 +111,11 @@ final class RecordWalletTransactionAction
                     'request_id'         => request()->header('X-Request-ID') ?? uniqid(),
                     'risk_level'         => $this->assessTransactionRisk($data->amount, $data->type->value),
                     'is_admin_initiated' => auth('staff')->check(),
-                    'source_details'     => [
+                    'wallet_debit_split' => [
+                        'from_balance'      => $fromBalance ?? abs($data->amount),
+                        'from_gift_balance' => $fromGiftBalance,
+                    ],
+                    'source_details' => [
                         'source_type' => $data->source_type->value,
                         'source_id'   => $data->source_id,
                         'description' => $data->description,

@@ -6,6 +6,7 @@ use App\Actions\Wallet\RecordWalletTransactionAction;
 use App\Data\Admin\Wallet\RecordTransactionData;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
+use App\Exceptions\Wallet\WalletInsufficientBalanceException;
 use App\Models\User;
 use App\Models\WalletTransaction;
 use Illuminate\Support\Facades\Date;
@@ -129,7 +130,7 @@ it('throws an error if tranaction amount is more than balance', function (): voi
         'metadata'    => [],
     ]);
     expect(fn (): WalletTransaction => (new RecordWalletTransactionAction())->execute($data))
-        ->toThrow(Exception::class, __('validation.custom.insufficient_balance'));
+        ->toThrow(WalletInsufficientBalanceException::class, __('validation.custom.insufficient_balance'));
 });
 it('will it automatically reduce balance if it\'s withdrawal', function (): void {
     $user = User::factory()->create();

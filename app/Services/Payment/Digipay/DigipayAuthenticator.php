@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Payment\Digipay;
 
+use App\Exceptions\Gateway\DigipayException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
@@ -38,7 +39,7 @@ final class DigipayAuthenticator
         $response = Http::timeout($this->config->getTimeout())
             ->withHeaders(['Authorization' => 'Basic '.$credentials])
             ->asForm()
-            ->post($this->config->getBaseUrl().config('digipay.paths.oauth_token'), [
+            ->post($this->config->getBaseUrl().config('payments.digipay.paths.oauth_token'), [
                 'username'   => $this->config->getUsername(),
                 'password'   => $this->config->getPassword(),
                 'grant_type' => 'password',
@@ -48,7 +49,7 @@ final class DigipayAuthenticator
             throw new DigipayException('Digipay authentication failed', $response->status());
         }
 
-        $buffer = config('digipay.token_cache.buffer', 300);
+        $buffer = config('payments.digipay.token_cache.buffer', 300);
         $ttl    = max(1, ((int) ($response['expires_in'] ?? 3600)) - $buffer);
 
         Cache::put(self::CACHE_KEY, $response['access_token'], $ttl);

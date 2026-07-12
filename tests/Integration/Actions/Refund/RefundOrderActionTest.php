@@ -10,6 +10,7 @@ use App\Enums\Order\RefundStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\RefundCompletedEvent;
+use App\Exceptions\Gateway\DigipayException;
 use App\Exceptions\RefundValidationException;
 use App\Models\Order;
 use App\Models\Payment;
@@ -18,7 +19,6 @@ use App\Models\Refund;
 use App\Services\OrderStatusService;
 use App\Services\Payment\Digipay\Data\RefundResponse;
 use App\Services\Payment\Digipay\DigipayAdminService;
-use App\Services\Payment\Digipay\DigipayException;
 use Illuminate\Support\Facades\Event;
 use Mockery\MockInterface;
 

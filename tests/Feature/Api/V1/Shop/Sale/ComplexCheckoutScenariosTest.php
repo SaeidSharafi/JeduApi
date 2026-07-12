@@ -228,9 +228,10 @@ describe('Complex Multi-Step Checkout Scenarios', function (): void {
         // First checkout: insufficient balance
         $response = postJson(route('api.v1.shop.checkout'), ['payment_method' => PaymentMethodEnum::WALLET->value]);
         $response->assertStatus(422);
+        $requiredBalance = $response->json('metadata.required_balance');
         $orderIncrementId = $response->json('metadata.order_id');
+        expect($requiredBalance)->toBe(100000);
         expect($orderIncrementId)->not->toBeNull();
-
         // Top up wallet
         $customer->wallet->update(['balance' => 200000]);
 

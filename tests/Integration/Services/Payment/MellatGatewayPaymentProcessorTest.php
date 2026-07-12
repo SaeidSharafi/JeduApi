@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services\Payment;
 
-use App\Data\Admin\Payment\PaymentCreateData;
+use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Payment\PaymentTransactionStatusEnum;
@@ -45,7 +45,8 @@ describe('MellatGatewayPaymentProcessor', function (): void {
     });
 
     it('initiates Mellat payment and returns redirect details', function (): void {
-        $user  = User::factory()->create();
+        $user = User::factory()->create();
+
         $order = Order::factory()->create([
             'customer_id'            => $user->id,
             'customer_email'         => $user->email,
@@ -54,7 +55,13 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             'customer_last_name'     => $user->last_name,
             'customer_snapshot_json' => $user->toArray(),
         ]);
-
+        $payment = Payment::factory()->create([
+            'customer_id' => $user->id,
+            'order_id'    => $order->id,
+            'amount'      => 520_000,
+            'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
+            'status'      => PaymentStatusEnum::PENDING->value,
+        ]);
         $soapClient = Mockery::mock(SoapClient::class);
         $factory    = Mockery::mock(SoapClientFactory::class);
         $factory->shouldReceive('create')
@@ -72,14 +79,9 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             }))
             ->andReturn((object) ['return' => $refId]);
 
-        $processor   = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
-        $paymentData = new PaymentCreateData(
-            method: PaymentMethodEnum::MELLAT_GATEWAY->value,
-            data: null,
-            admin_notes: 'Online payment',
-        );
+        $processor = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
 
-        $result = $processor->process($order, $paymentData, $user, $amount);
+        $result = $processor->process($payment);
 
         expect($result->requiresRedirect())->toBeTrue()
             ->and($result->redirect_url)->toBe('https://mellat.test/redirect')
@@ -109,17 +111,20 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->once()
             ->andReturn($soapClient);
 
-        $processor   = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
-        $paymentData = new PaymentCreateData(
-            method: PaymentMethodEnum::MELLAT_GATEWAY->value,
-            data: null,
-            admin_notes: 'Online payment',
-        );
+        $processor = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
+        $payment   = Payment::factory()->create([
+            'customer_id' => $user->id,
+            'order_id'    => $order->id,
+            'amount'      => 120_000,
+            'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
+            'status'      => PaymentStatusEnum::PENDING->value,
+        ]);
 
-        expect(fn (): \App\Data\Admin\Payment\PaymentProcessResultData => $processor->process($order, $paymentData, $user, 120_000))
+        expect(fn (): PaymentProcessResultData => $processor->process($payment))
             ->toThrow(CustomValidationException::class);
-
-        expect($order->payments()->count())->toBe(0);
+        $payment->refresh();
+        expect($order->payments()->count())->toBe(1)
+            ->and($payment->status)->toBe(PaymentStatusEnum::FAILED);
     });
     it('throws validation exception when Mellat gateway return invalid response', function (): void {
         $user  = User::factory()->create();
@@ -142,17 +147,21 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->once()
             ->andReturn($soapClient);
 
-        $processor   = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
-        $paymentData = new PaymentCreateData(
-            method: PaymentMethodEnum::MELLAT_GATEWAY->value,
-            data: null,
-            admin_notes: 'Online payment',
-        );
+        $processor = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
+        $payment   = Payment::factory()->create([
+            'customer_id' => $user->id,
+            'order_id'    => $order->id,
+            'amount'      => 120_000,
+            'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
+            'status'      => PaymentStatusEnum::PENDING->value,
+        ]);
 
-        expect(fn (): \App\Data\Admin\Payment\PaymentProcessResultData => $processor->process($order, $paymentData, $user, 120_000))
+        expect(fn (): PaymentProcessResultData => $processor->process($payment))
             ->toThrow(MellatException::class);
 
-        expect($order->payments()->count())->toBe(0);
+        $payment->refresh();
+        expect($order->payments()->count())->toBe(1)
+            ->and($payment->status)->toBe(PaymentStatusEnum::FAILED);
     });
 
     it('throws Mellat exception when gateway response is invalid', function (): void {
@@ -176,17 +185,21 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             ->once()
             ->andReturn($soapClient);
 
-        $processor   = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
-        $paymentData = new PaymentCreateData(
-            method: PaymentMethodEnum::MELLAT_GATEWAY->value,
-            data: null,
-            admin_notes: null,
-        );
+        $processor = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
+        $payment   = Payment::factory()->create([
+            'customer_id' => $user->id,
+            'order_id'    => $order->id,
+            'amount'      => 90_000,
+            'method'      => PaymentMethodEnum::MELLAT_GATEWAY->value,
+            'status'      => PaymentStatusEnum::PENDING->value,
+        ]);
 
-        expect(fn (): \App\Data\Admin\Payment\PaymentProcessResultData => $processor->process($order, $paymentData, $user, 90_000))
+        expect(fn (): PaymentProcessResultData => $processor->process($payment))
             ->toThrow(MellatException::class, '12');
 
-        expect($order->payments()->count())->toBe(0);
+        $payment->refresh();
+        expect($order->payments()->count())->toBe(1)
+            ->and($payment->status)->toBe(PaymentStatusEnum::FAILED);
     });
 
     it('verifies successful Mellat callback and dispatches completion event', function (): void {
@@ -253,6 +266,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             'ResCode'         => '0',
             'SaleOrderId'     => $transactionRef,
             'SaleReferenceId' => 'SALE-REF-123',
+            'FinalAmount'     => 520_000,
         ];
 
         $pendingPayment = Payment::query()->findOrFail($payment->id);
@@ -277,7 +291,6 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             'status' => PaymentStatusEnum::PENDING->value,
             'data'   => [],
         ]);
-        // Don't create any transaction - this should trigger the error
 
         $processor = new MellatGatewayPaymentProcessor(
             Mockery::mock(SoapClientFactory::class),
@@ -290,7 +303,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             'ResCode'         => '0',
             'SaleOrderId'     => 'TXN-123',
             'SaleReferenceId' => 'SALE-REF',
-        ]))->toThrow(Exception::class, 'No transaction found for payment');
+        ]))->toThrow(Exception::class, 'Transaction not found for reference: TXN-123');
     });
 
     it('treats settlement code 45 (already settled) as success', function (): void {
@@ -345,6 +358,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             'ResCode'         => '0',
             'SaleOrderId'     => $transactionRef,
             'SaleReferenceId' => 'SALE-REF-456',
+            'FinalAmount'     => 520_000,
         ];
 
         $pendingPayment = Payment::query()->findOrFail($payment->id);
@@ -380,8 +394,10 @@ describe('MellatGatewayPaymentProcessor', function (): void {
 
         $processor    = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
         $callbackData = [
-            'RefId'   => 'REF-FAIL',
-            'ResCode' => '12',
+            'RefId'           => 'REF-FAIL',
+            'ResCode'         => '12',
+            'SaleOrderId'     => 'TXN-FAIL',
+            'SaleReferenceId' => 'SALE-REF-456',
         ];
 
         $pendingPayment = Payment::query()->findOrFail($payment->id);
@@ -462,6 +478,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             'ResCode'         => '0',
             'SaleOrderId'     => $transactionRef,
             'SaleReferenceId' => 'SALE-REF',
+            'FinalAmount'     => $payment->amount,
         ];
 
         $pendingPayment = Payment::query()->findOrFail($payment->id);
@@ -512,6 +529,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             'ResCode'         => '0',
             'SaleOrderId'     => $transactionRef,
             'SaleReferenceId' => 'SALE-REF',
+            'FinalAmount'     => $payment->amount,
         ];
 
         $pendingPayment = Payment::query()->findOrFail($payment->id);
@@ -561,6 +579,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             'ResCode'         => '0',
             'SaleOrderId'     => $transactionRef,
             'SaleReferenceId' => 'SALE-REF',
+            'FinalAmount'     => $payment->amount,
         ]))->toThrow(MellatException::class);
 
         $payment->refresh();
@@ -609,6 +628,7 @@ describe('MellatGatewayPaymentProcessor', function (): void {
             'ResCode'         => '0',
             'SaleOrderId'     => $transactionRef,
             'SaleReferenceId' => 'SALE-REF',
+            'FinalAmount'     => $payment->amount,
         ]))->toThrow(MellatException::class);
 
         $payment->refresh();

@@ -2,18 +2,17 @@
 
 declare(strict_types=1);
 
+use App\Exceptions\Gateway\DigipayException;
 use App\Services\Payment\Digipay\DigipayAuthenticator;
 use App\Services\Payment\Digipay\DigipayClient;
 use App\Services\Payment\Digipay\DigipayConfigRepository;
-use App\Services\Payment\Digipay\DigipayException;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
-    config()->set('digipay.base_url', 'https://api.digipay.test');
-    config()->set('digipay.paths.refund', '/purchases/refund');
-    config()->set('digipay.paths.reverse', '/purchases/reverse');
-    config()->set('digipay.paths.deliver', '/purchases/deliver');
-    config()->set('digipay.paths.inquire_refund', '/purchases/refund/inquiry');
+    config()->set('payments.digipay.base_url', 'https://api.digipay.test');
+    config()->set('payments.digipay.paths.refund', '/digipay/api/refunds');
+    config()->set('payments.digipay.paths.reverse', '/digipay/api/reverse');
+    config()->set('payments.digipay.paths.deliver', '/digipay/api/purchases/deliver');
 
     $this->mock(DigipayAuthenticator::class, function ($mock): void {
         $mock->shouldReceive('getAccessToken')->andReturn('test-token');
@@ -29,7 +28,7 @@ beforeEach(function (): void {
 
 it('successfully refunds a payment via Digipay API', function (): void {
     Http::fake([
-        'api.digipay.test/purchases/refund*' => Http::response([
+        'api.digipay.test/digipay/api/refund*' => Http::response([
             'result' => [
                 'status'  => 0,
                 'message' => 'Refund successful',
@@ -51,7 +50,7 @@ it('successfully refunds a payment via Digipay API', function (): void {
         ->and($response->trackingCode)->toBe('DGP-REF-SUCCESS');
 
     Http::assertSent(function ($request) {
-        return $request->url()              === 'https://api.digipay.test/purchases/refund?type=0'
+        return $request->url()              === 'https://api.digipay.test/digipay/api/refunds?type=0'
             && $request['providerId']       === 'PROV-123'
             && $request['amount']           === 500000
             && $request['saleTrackingCode'] === 'DGP-SALE-123';
@@ -60,7 +59,7 @@ it('successfully refunds a payment via Digipay API', function (): void {
 
 it('throws DigipayException when refund API returns error', function (): void {
     Http::fake([
-        'api.digipay.test/purchases/refund*' => Http::response([
+        'api.digipay.test/digipay/api/refunds*' => Http::response([
             'result' => [
                 'status'  => 42,
                 'message' => 'Refund not allowed',
@@ -76,7 +75,7 @@ it('throws DigipayException when refund API returns error', function (): void {
 
 it('throws DigipayException on HTTP failure for refund', function (): void {
     Http::fake([
-        'api.digipay.test/purchases/refund*' => Http::response([], 500),
+        'api.digipay.test/digipay/api/refunds*' => Http::response([], 500),
     ]);
 
     $client = resolve(DigipayClient::class);
@@ -89,7 +88,7 @@ it('throws DigipayException on HTTP failure for refund', function (): void {
 
 it('successfully reverses a payment via Digipay API', function (): void {
     Http::fake([
-        'api.digipay.test/purchases/reverse*' => Http::response([
+        'api.digipay.test/digipay/api/reverse*' => Http::response([
             'trackingCode'   => 'DGP-REV-SUCCESS',
             'rrn'            => '123456789012',
             'maskedPan'      => '603799******1234',
@@ -110,7 +109,7 @@ it('successfully reverses a payment via Digipay API', function (): void {
         ->and($response->statusCode)->toBe(0);
 
     Http::assertSent(function ($request) {
-        return str_contains($request->url(), 'purchases/reverse')
+        return str_contains($request->url(), 'reverse')
             && $request['purchaseTrackingCode'] === 'DGP-SALE-123'
             && $request['providerId']           === 'PROV-123';
     });
@@ -118,7 +117,7 @@ it('successfully reverses a payment via Digipay API', function (): void {
 
 it('throws DigipayException when reverse API returns error', function (): void {
     Http::fake([
-        'api.digipay.test/purchases/reverse*' => Http::response([
+        'api.digipay.test/digipay/api/reverse*' => Http::response([
             'result' => [
                 'status'  => 99,
                 'message' => 'Reverse window expired',
@@ -136,7 +135,7 @@ it('throws DigipayException when reverse API returns error', function (): void {
 
 it('successfully confirms delivery for BNPL/CREDIT payments', function (): void {
     Http::fake([
-        'api.digipay.test/purchases/deliver*' => Http::response([
+        'api.digipay.test/digipay/api/purchases/deliver*' => Http::response([
             'result' => [
                 'status'  => 0,
                 'message' => 'Delivery confirmed',
@@ -151,7 +150,7 @@ it('successfully confirms delivery for BNPL/CREDIT payments', function (): void 
         ->and($response->message)->toBe('Delivery confirmed');
 
     Http::assertSent(function ($request) {
-        return str_contains($request->url(), 'purchases/deliver?type=5')
+        return str_contains($request->url(), 'deliver?type=5')
             && $request['trackingCode']  === 'DGP-SALE-123'
             && $request['invoiceNumber'] === 'INV-123';
     });
@@ -159,7 +158,7 @@ it('successfully confirms delivery for BNPL/CREDIT payments', function (): void 
 
 it('throws DigipayException when deliver API fails', function (): void {
     Http::fake([
-        'api.digipay.test/purchases/deliver*' => Http::response([
+        'api.digipay.test/digipay/api/purchases/deliver*' => Http::response([
             'result' => [
                 'status'  => 10,
                 'message' => 'Delivery already confirmed',
@@ -177,7 +176,7 @@ it('throws DigipayException when deliver API fails', function (): void {
 
 it('successfully inquires refund status', function (): void {
     Http::fake([
-        'api.digipay.test/purchases/refund/*' => Http::response([
+        'api.digipay.test/digipay/api/refunds/*' => Http::response([
             'result' => [
                 'status'  => 0,
                 'message' => 'OK',
@@ -199,13 +198,13 @@ it('successfully inquires refund status', function (): void {
         ->and($response->destination)->toBe('6037********1234');
 
     Http::assertSent(function ($request) {
-        return str_contains($request->url(), 'purchases/refund/REFUND-123?type=0');
+        return str_contains($request->url(), 'refunds/REFUND-123?type=0');
     });
 });
 
 it('throws DigipayException when inquire refund API fails', function (): void {
     Http::fake([
-        'api.digipay.test/purchases/refund/*' => Http::response([
+        'api.digipay.test/digipay/api/refunds/*' => Http::response([
             'result' => [
                 'status'  => 404,
                 'message' => 'Refund not found',
@@ -232,7 +231,7 @@ it('handles network timeout gracefully', function (): void {
 
 it('handles malformed JSON response', function (): void {
     Http::fake([
-        'api.digipay.test/purchases/refund*' => Http::response('Invalid JSON{', 200),
+        'api.digipay.test/digipay/api/refund*' => Http::response('Invalid JSON{', 200),
     ]);
 
     $client = resolve(DigipayClient::class);

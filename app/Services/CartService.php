@@ -31,50 +31,19 @@ final readonly class CartService
         private OrderCalculationService $orderCalculationService
     ) {}
 
-    /**
-     * Find or create cart based on authenticated user or guest token.
-     * This is the primary method for cart identification.
-     */
-    public function findOrCreateCart(?User $user = null): Cart
+    public function findOrCreateCart(?User $user = null, bool $lockForUpdate = false): Cart
     {
-        $query = Cart::query()->with(['items.productDeliveryOption.product']);
+        $userId = $user?->id ?? $this->identifier->userId();
 
-        if ($user) {
-            $cart = $query->where('user_id', $user->id)->first();
-
-            if (! $cart) {
-                // Create new cart for authenticated user
-                $cart = Cart::create(['user_id' => $user->id]);
-                $cart->load(['items.productDeliveryOption.product']);
-            }
-
-            return $cart;
+        if ($userId !== null) {
+            return $this->resolveCart('user_id', $userId, $lockForUpdate);
         }
-        // If no explicit user provided, attempt to resolve authenticated user via identifier
-        if ($this->identifier->userId() !== null) {
-            $userId = $this->identifier->userId();
 
-            $cart = $query->where('user_id', $userId)->first();
-
-            if (! $cart) {
-                $cart = Cart::create(['user_id' => $userId]);
-                $cart->load(['items.productDeliveryOption.product']);
-            }
-
-            return $cart;
-        }
         // Guest user path: obtain or mint a guest token via the identifier
         $guestToken = $this->identifier->guestToken() ?? $this->identifier->ensureGuestToken();
+
         if ($guestToken) {
-            $cart = $query->where('guest_token', $guestToken)->first();
-
-            if (! $cart) {
-                // Create new cart for guest
-                $cart = Cart::create(['guest_token' => $guestToken]);
-                $cart->load(['items.productDeliveryOption.product']);
-            }
-
-            return $cart;
+            return $this->resolveCart('guest_token', $guestToken, $lockForUpdate);
         }
 
         // @codeCoverageIgnoreStart
@@ -116,8 +85,7 @@ final readonly class CartService
             $existingItem->update([
                 'quantity' => $existingItem->quantity + $data->quantity,
             ]);
-        }
-        // @codeCoverageIgnoreEnd
+        } // @codeCoverageIgnoreEnd
         else {
             $cart->items()->create([
                 'product_delivery_option_id' => $deliveryOption->id,
@@ -290,6 +258,67 @@ final readonly class CartService
     }
 
     /**
+     * Find a cart by the given identifying column, or create one.
+     *
+     * When $lockForUpdate is true, this MUST be called from within an
+     * existing DB::transaction() in the caller — lockForUpdate() has no
+     * effect outside a transaction; the lock is acquired and immediately
+     * released with no isolation guarantee if there's no surrounding
+     * transaction to hold it open.
+     *
+     * Creation is wrapped to tolerate the race where two concurrent
+     * requests both miss the initial find() and both attempt create():
+     * the loser of that race hits a unique constraint violation instead
+     * of silently producing a duplicate cart, and we recover by re-querying
+     * for the row the winner just created.
+     */
+    private function resolveCart(string $column, int|string $value, bool $lockForUpdate): Cart
+    {
+        $query = Cart::query()->with(['items.productDeliveryOption.product'])
+            ->where($column, $value);
+
+        if ($lockForUpdate) {
+            $query->lockForUpdate();
+        }
+
+        $cart = $query->first();
+
+        if ($cart) {
+            return $cart;
+        }
+
+        try {
+            $cart = Cart::create([$column => $value]);
+        } catch (QueryException $e) {
+            // Unique constraint violation — another concurrent request won
+            // the race and created the cart first. Re-fetch it instead of
+            // failing; this requires a unique index on carts.$column.
+            if (! $this->isUniqueConstraintViolation($e)) {
+                throw $e;
+            }
+
+            $cart = Cart::query()->where($column, $value)->first();
+
+            if (! $cart) {
+                // Extremely unlikely (row was created then deleted between
+                // catch and re-fetch), but don't silently return null.
+                throw $e;
+            }
+        }
+
+        $cart->load(['items.productDeliveryOption.product']);
+
+        return $cart;
+    }
+
+    private function isUniqueConstraintViolation(QueryException $e): bool
+    {
+        // 23000 = integrity constraint violation (MySQL/SQLite);
+        // Postgres uses 23505 specifically for unique_violation.
+        return in_array($e->getCode(), ['23000', '23505'], true);
+    }
+
+    /**
      * Calculate cart totals using the order calculation service.
      */
     private function buildCartDataWithTotals(Cart $cart): CartData
@@ -326,10 +355,14 @@ final readonly class CartService
         return CartData::fromModel($cart, $subtotal, $discountAmount, $grandTotal);
     }
 
-    private function validateQuantity(ProductDeliveryOption $deliveryOption, int $quantity = 1, ?CartItem $existingItem = null): void
-    {
+    private function validateQuantity(
+        ProductDeliveryOption $deliveryOption,
+        int $quantity = 1,
+        ?CartItem $existingItem = null
+    ): void {
 
-        $allowMultiple = ProductableEnum::tryFrom($deliveryOption->product->productable_type)?->allowsMultipleQuantity();
+        $allowMultiple = ProductableEnum::tryFrom($deliveryOption->product->productable_type)
+            ?->allowsMultipleQuantity();
 
         // Right now, we do not have any products that allow multiple quantities in cart
         // @codeCoverageIgnoreStart
@@ -351,8 +384,10 @@ final readonly class CartService
         }
     }
 
-    private function validatePaymentType(ProductDeliveryOption $deliveryOption, OrderItemPaymentTypeEnum $paymentType): void
-    {
+    private function validatePaymentType(
+        ProductDeliveryOption $deliveryOption,
+        OrderItemPaymentTypeEnum $paymentType
+    ): void {
         $allowPrePayment = $deliveryOption->is_prepayment_available ?? false;
 
         if (! $allowPrePayment && $paymentType === OrderItemPaymentTypeEnum::PRE_PAYMENT) {

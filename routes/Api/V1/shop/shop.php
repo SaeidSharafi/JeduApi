@@ -98,5 +98,5 @@ Route::post('checkout', CheckoutController::class)
 Route::get('payment/gateways', App\Http\Controllers\Api\Shop\Sale\GatewayListController::class)
     ->name('payment.gateways');
 // Payment Gateway Callback Route (public - no auth required)
-Route::post('payment/gateway/callback', App\Http\Controllers\Api\Shop\Payment\GatewayCallbackController::class)
+Route::match(['get', 'post'], 'payment/gateway/callback/{payment:uuid}', [App\Http\Controllers\Api\Shop\Payment\GatewayCallbackController::class, 'handle'])
     ->name('payment.gateway.callback');

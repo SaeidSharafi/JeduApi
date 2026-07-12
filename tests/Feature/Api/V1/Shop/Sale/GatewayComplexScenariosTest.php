@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Actions\Shop\Payment\VerifyPaymentAction;
-use App\Data\Shop\Payment\GatewayCallbackData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\System\MorphTypeEnum;
@@ -78,13 +77,10 @@ describe('Gateway Payment Complex Scenarios', function (): void {
             }
 
             // Simulate first gateway callback (verify success)
-            $callbackData = new GatewayCallbackData(
-                payment_uuid: $payment->uuid,
-                gateway_response: ['ResCode' => '0', 'RefId' => '123456']
-            );
+            $gatewayResponse = ['ResCode' => '0', 'RefId' => '123456'];
 
             $verifyAction    = app(VerifyPaymentAction::class);
-            $verifiedPayment = $verifyAction->handle($callbackData);
+            $verifiedPayment = $verifyAction->handle($payment, $gatewayResponse);
 
             expect($verifiedPayment->status)->toBe(PaymentStatusEnum::COMPLETED);
 
@@ -94,7 +90,7 @@ describe('Gateway Payment Complex Scenarios', function (): void {
 
             // Second verify attempt should fail validation (not PENDING)
             try {
-                $verifyAction->handle($callbackData);
+                $verifyAction->handle($payment, $gatewayResponse);
                 expect(false)->toBeTrue('Expected validation exception for non-pending payment');
             } catch (Illuminate\Validation\ValidationException $e) {
                 expect($e->errors())->toHaveKey('payment');
@@ -149,7 +145,13 @@ describe('Gateway Payment Complex Scenarios', function (): void {
 
         // Customer1 checks out first (takes the spot)
         $this->customer($customer1);
-        $response1 = postJson(route('api.v1.shop.checkout'), ['payment_method' => 'bank_transfer']);
+        $response1 = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'bank_transfer', 'payment_data' => [
+                'transaction_id'   => '123456',
+                'transaction_date' => verta()->formatDate(),
+                'sender_name'      => 'John Doe',
+            ],
+        ]);
         $response1->assertCreated();
 
         // Customer2 tries to checkout (should fail due to capacity exhausted)
@@ -212,7 +214,13 @@ describe('Gateway Payment Complex Scenarios', function (): void {
             'quantity'                     => 1,
         ])->assertOk();
 
-        $response = postJson(route('api.v1.shop.checkout'), ['payment_method' => 'bank_transfer']);
+        $response = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'bank_transfer', 'payment_data' => [
+                'transaction_id'   => '123456',
+                'transaction_date' => verta()->formatDate(),
+                'sender_name'      => 'John Doe',
+            ],
+        ]);
         $response->assertCreated();
 
         // Try to purchase second option (different delivery, same underlying course)
@@ -221,7 +229,13 @@ describe('Gateway Payment Complex Scenarios', function (): void {
             'quantity'                     => 1,
         ])->assertOk();
 
-        $response = postJson(route('api.v1.shop.checkout'), ['payment_method' => 'bank_transfer']);
+        $response = postJson(route('api.v1.shop.checkout'), [
+            'payment_method' => 'bank_transfer', 'payment_data' => [
+                'transaction_id'   => '123456',
+                'transaction_date' => verta()->formatDate(),
+                'sender_name'      => 'John Doe',
+            ],
+        ]);
 
         // Should fail duplicate ownership check (same productable_id + productable_type)
         $response->assertStatus(422)

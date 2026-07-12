@@ -2,64 +2,63 @@
 
 declare(strict_types=1);
 
+use App\Enums\System\SettingKeyEnum;
+use App\Models\Category;
 use App\Models\Setting;
+use App\Services\SettingsService;
 
 describe('FooterController', function (): void {
 
     it('retrieves footer settings successfully', function (): void {
-
-        Setting::create([
-            'key' => 'footer',
-            'value' => [
-                'logo' => 'logo-tech.svg',
-                'logo_url' => 'logo-tech.svg',
-                'logo_alt' => 'جهاددانشگاهی قزوین',
-                'caption' => 'شریک شما در آموزش مدرن',
+        Category::factory()->count(4)
+            ->sequence(
+                ['name' => 'Art', 'slug' => 'art'],
+                ['name' => 'Design', 'slug' => 'design'],
+                ['name' => 'Photography', 'slug' => 'photography'],
+                ['name' => 'Technology', 'slug' => 'technology'],
+            )->create();
+       app(SettingsService::class)->set(SettingKeyEnum::FOOTER,
+           [
+                'logo'                  => 'logo-tech.svg',
+                'logo_url'              => 'logo-tech.svg',
+                'logo_alt'              => 'جهاددانشگاهی قزوین',
+                'caption'               => 'شریک شما در آموزش مدرن',
                 'support_email_address' => 'support@jedu.ir',
-                'addresses' => [
+                'addresses'             => [
                     [
-                        'name' => 'دفتر مرکزی',
-                        'address' => 'تهران، خیابان آزادی، پلاک ۱۲۳',
+                        'name'         => 'دفتر مرکزی',
+                        'address'      => 'تهران، خیابان آزادی، پلاک ۱۲۳',
                         'location_url' => 'https://maps.example.com/?q=35.6892,51.3890',
-                        'phone' => '۰۲۱-۱۲۳۴۵۶۷۸'
-                    ]
+                        'phone'        => '۰۲۱-۱۲۳۴۵۶۷۸',
+                    ],
                 ],
-                'categories' => [1, 2, 3, 4],
+                'categories'         => Category::query()->orderBy('name')->get('id')->toArray(),
                 'social_media_links' => [
                     [
                         'platform' => 'instagram',
-                        'link' => 'https://instagram.com/jedushop'
+                        'link'     => 'https://instagram.com/jedushop',
                     ],
                     [
                         'platform' => 'linkedin',
-                        'link' => 'https://linkedin.com/company/jedushop'
-                    ]
+                        'link'     => 'https://linkedin.com/company/jedushop',
+                    ],
                 ],
                 'certifications' => [
                     [
-                        'name' => 'اینماد',
+                        'name'  => 'اینماد',
                         'image' => 'favicon-tech.svg',
-                        'html' => ''
+                        'html'  => '',
                     ],
                     [
-                        'name' => 'ساماندهی',
+                        'name'  => 'ساماندهی',
                         'image' => 'favicon-art.svg',
-                        'html' => ''
-                    ]
-                ]
-            ]
-        ]);
+                        'html'  => '',
+                    ],
+                ],
+            ],
+        );
 
-        \App\Models\Category::factory()->count(4)
-            ->sequence(
-                ['name'=> 'Art', 'slug' => 'art'],
-                ['name'=> 'Design', 'slug' => 'design'],
-                ['name'=> 'Photography', 'slug' => 'photography'],
-                ['name'=> 'Technology', 'slug' => 'technology'],
-                ['name' => 'Fashion', 'slug' => 'fashion'],
-            )->create();
-
-
+        App\Models\Category::factory()->create(['name' => 'Fashion', 'slug' => 'fashion']);
 
         $response = $this->getJson(route('api.v1.shop.footer.index'));
 
@@ -81,14 +80,13 @@ describe('FooterController', function (): void {
             'message',
         ]);
 
-        //assert Categories are loaded
         $response->assertJsonFragment([
             'categories' => [
-                ['name'=> 'Art', 'slug' => 'art'],
-                ['name'=> 'Design', 'slug' => 'design'],
-                ['name'=> 'Photography', 'slug' => 'photography'],
-                ['name'=> 'Technology', 'slug' => 'technology'],
-            ]
+                ['name' => 'Art', 'slug' => 'art'],
+                ['name' => 'Design', 'slug' => 'design'],
+                ['name' => 'Photography', 'slug' => 'photography'],
+                ['name' => 'Technology', 'slug' => 'technology'],
+            ],
         ]);
     });
 });

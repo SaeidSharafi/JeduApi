@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Data\Admin\Payment\PaymentCreateData;
 use App\Enums\Payment\PaymentMethodEnum;
+use App\Enums\Payment\PaymentPurposeEnum;
+use App\Enums\Payment\PaymentStatusEnum;
 use App\Enums\Payment\PaymentTransactionStatusEnum;
 use App\Models\Order;
 use App\Models\Payment;
@@ -29,14 +30,17 @@ it('creates a payment transaction record when processing wallet payment', functi
         'full_value_grand_total' => 500000,
     ]);
 
-    $paymentData = new PaymentCreateData(
-        method: PaymentMethodEnum::WALLET->value,
-        data: null,
-        admin_notes: null,
-    );
+    $payment = Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $user->id,
+        'amount'      => 500000,
+        'method'      => PaymentMethodEnum::WALLET,
+        'purpose'     => PaymentPurposeEnum::ORDER,
+        'status'      => PaymentStatusEnum::PENDING,
+    ]);
 
     $processor = app(WalletPaymentProcessor::class);
-    $result    = $processor->process($order, $paymentData, $user, 500000);
+    $result    = $processor->process($payment);
 
     expect($result->payment)->toBeInstanceOf(Payment::class);
 
@@ -45,7 +49,7 @@ it('creates a payment transaction record when processing wallet payment', functi
     expect($transaction)->not->toBeNull();
     expect($transaction->transaction_reference)->toBe('200000001');
     expect($transaction->status)->toBe(PaymentTransactionStatusEnum::COMPLETED);
-    expect($transaction->attempt_number)->toBe(1);
+    expect($transaction->attempt_number)->toBe(2);
     expect($transaction->initiated_at)->not->toBeNull();
     expect($transaction->completed_at)->not->toBeNull();
 });
@@ -64,7 +68,10 @@ it('increments attempt number for subsequent transaction attempts', function ():
     $payment = Payment::factory()->create([
         'order_id'      => $order->id,
         'customer_id'   => $user->id,
-        'method'        => PaymentMethodEnum::WALLET->value,
+        'amount'        => 500000,
+        'method'        => PaymentMethodEnum::WALLET,
+        'purpose'       => PaymentPurposeEnum::ORDER,
+        'status'        => PaymentStatusEnum::PENDING,
         'attempt_count' => 1,
     ]);
 
@@ -76,18 +83,12 @@ it('increments attempt number for subsequent transaction attempts', function ():
         'status'                => PaymentTransactionStatusEnum::FAILED,
     ]);
 
-    $paymentData = new PaymentCreateData(
-        method: PaymentMethodEnum::WALLET->value,
-        data: null,
-        admin_notes: null,
-    );
-
     $processor = app(WalletPaymentProcessor::class);
-    $result    = $processor->process($order, $paymentData, $user, 500000);
+    $result    = $processor->process($payment);
 
     // Verify new transaction has incremented attempt number
     $latestTransaction = PaymentTransaction::where('payment_id', $result->payment->id)
-        ->latest('created_at')
+        ->latest('id')
         ->first();
 
     expect($latestTransaction->attempt_number)->toBe(2);
@@ -105,14 +106,17 @@ it('stores gateway metadata in transaction record', function (): void {
         'full_value_grand_total' => 500000,
     ]);
 
-    $paymentData = new PaymentCreateData(
-        method: PaymentMethodEnum::WALLET->value,
-        data: null,
-        admin_notes: null,
-    );
+    $payment = Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $user->id,
+        'amount'      => 500000,
+        'method'      => PaymentMethodEnum::WALLET,
+        'purpose'     => PaymentPurposeEnum::ORDER,
+        'status'      => PaymentStatusEnum::PENDING,
+    ]);
 
     $processor = app(WalletPaymentProcessor::class);
-    $result    = $processor->process($order, $paymentData, $user, 500000);
+    $result    = $processor->process($payment);
 
     $transaction = PaymentTransaction::where('payment_id', $result->payment->id)->first();
 
@@ -133,19 +137,21 @@ it('updates payment with last_gateway_reference after transaction', function ():
         'full_value_grand_total' => 500000,
     ]);
 
-    $paymentData = new PaymentCreateData(
-        method: PaymentMethodEnum::WALLET->value,
-        data: null,
-        admin_notes: null,
-    );
+    $payment = Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $user->id,
+        'amount'      => 500000,
+        'method'      => PaymentMethodEnum::WALLET,
+        'purpose'     => PaymentPurposeEnum::ORDER,
+        'status'      => PaymentStatusEnum::PENDING,
+    ]);
 
     $processor = app(WalletPaymentProcessor::class);
-    $result    = $processor->process($order, $paymentData, $user, 500000);
+    $result    = $processor->process($payment);
 
-    $payment = $result->payment;
-    expect($payment->last_gateway_reference)->toBe('200000001');
-    expect($payment->attempt_count)->toBe(1);
-    expect($payment->last_attempted_at)->not->toBeNull();
+    expect($result->payment->last_gateway_reference)->toBe('200000001');
+    expect($result->payment->attempt_count)->toBe(2);
+    expect($result->payment->last_attempted_at)->not->toBeNull();
 });
 
 it('generates unique transaction references for concurrent payments', function (): void {
@@ -157,17 +163,36 @@ it('generates unique transaction references for concurrent payments', function (
     $order2 = Order::factory()->create(['customer_id' => $user->id, 'grand_total' => 100000, 'full_value_grand_total' => 100000]);
     $order3 = Order::factory()->create(['customer_id' => $user->id, 'grand_total' => 100000, 'full_value_grand_total' => 100000]);
 
-    $paymentData = new PaymentCreateData(
-        method: PaymentMethodEnum::WALLET->value,
-        data: null,
-        admin_notes: null,
-    );
+    $payment1 = Payment::factory()->create([
+        'order_id'    => $order1->id,
+        'customer_id' => $user->id,
+        'amount'      => 100000,
+        'method'      => PaymentMethodEnum::WALLET,
+        'purpose'     => PaymentPurposeEnum::ORDER,
+        'status'      => PaymentStatusEnum::PENDING,
+    ]);
+    $payment2 = Payment::factory()->create([
+        'order_id'    => $order2->id,
+        'customer_id' => $user->id,
+        'amount'      => 100000,
+        'method'      => PaymentMethodEnum::WALLET,
+        'purpose'     => PaymentPurposeEnum::ORDER,
+        'status'      => PaymentStatusEnum::PENDING,
+    ]);
+    $payment3 = Payment::factory()->create([
+        'order_id'    => $order3->id,
+        'customer_id' => $user->id,
+        'amount'      => 100000,
+        'method'      => PaymentMethodEnum::WALLET,
+        'purpose'     => PaymentPurposeEnum::ORDER,
+        'status'      => PaymentStatusEnum::PENDING,
+    ]);
 
     $processor = app(WalletPaymentProcessor::class);
 
-    $result1 = $processor->process($order1, $paymentData, $user, 100000);
-    $result2 = $processor->process($order2, $paymentData, $user, 100000);
-    $result3 = $processor->process($order3, $paymentData, $user, 100000);
+    $result1 = $processor->process($payment1);
+    $result2 = $processor->process($payment2);
+    $result3 = $processor->process($payment3);
 
     $transaction1 = PaymentTransaction::where('payment_id', $result1->payment->id)->first();
     $transaction2 = PaymentTransaction::where('payment_id', $result2->payment->id)->first();

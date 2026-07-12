@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Payment;
 
+use App\Actions\Payment\PreparePendingPaymentAction;
 use App\Data\Admin\Payment\PaymentCreateData;
 use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Enums\Payment\PaymentMethodEnum;
+use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\PaymentCompletedEvent;
 use App\Models\Order;
@@ -14,6 +16,7 @@ use App\Models\Payment;
 use App\Models\Staff;
 use App\Services\Payment\PaymentProcessorFactory;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 final readonly class CreatePaymentAction
@@ -45,15 +48,31 @@ final readonly class CreatePaymentAction
 
                 return $this->createFreeOrderPayment($order, $data, $admin);
             }
-
+            // validate Bank transfer data
+            $this->validateBankTransferDetails($data);
             // Validate order state
             $this->validateOrderState($order);
 
             $amount = $this->calculateRequiredPayment($order);
 
-            $processor = $this->processorFactory->make(PaymentMethodEnum::from($data->method));
+            $processor = $this->processorFactory->make(PaymentMethodEnum::BANK_TRANSFER);
 
-            return $processor->process($order, $data, $admin, $amount);
+            $payment = app(PreparePendingPaymentAction::class)->handle(
+                actor: $admin,
+                customerId: $order->customer_id,
+                method: PaymentMethodEnum::BANK_TRANSFER,
+                purpose: PaymentPurposeEnum::ORDER,
+                amount: $amount,
+                order: $order,
+                adminNotes: $data->admin_notes,
+            );
+
+            // Set payment data (e.g., bank transfer details) for validation
+            if ($data->data !== null) {
+                $payment->update(['data' => $data->data->toArray()]);
+            }
+
+            return $processor->process($payment);
         });
     }
 
@@ -100,5 +119,21 @@ final readonly class CreatePaymentAction
 
         // Subsequent payments: remaining balance
         return $order->balance_due;
+    }
+
+    private function validateBankTransferDetails(PaymentCreateData $paymentData): void
+    {
+        $dataToValidate = [
+            'data' => $paymentData->data?->toArray() ?? [],
+        ];
+
+        $rules = [
+            'data.transaction_id'   => ['required', 'string', 'max:255'],
+            'data.transaction_date' => ['required'],
+            'data.sender_name' => ['required', 'string', 'max:255'],
+            'data.notes'       => ['nullable', 'string', 'max:1000'],
+        ];
+
+        Validator::make($dataToValidate, $rules)->validate();
     }
 }

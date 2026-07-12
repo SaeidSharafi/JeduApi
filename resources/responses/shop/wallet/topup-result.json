@@ -1,0 +1,21 @@
+{
+  "message": "Redirecting to payment gateway...",
+  "data": {
+    "payment": {
+      "id": 1,
+      "uuid": "550e8400-e29b-41d4-a716-446655440000",
+      "amount": 500000,
+      "method": "mellat_gateway",
+      "status": "pending",
+      "purpose": "wallet_topup",
+      "order_id": null
+    },
+    "requires_redirect": true,
+    "redirect_url": "https://gateway.mellat.ir/...",
+    "redirect_data": {
+      "RefId": "123456789"
+    },
+    "redirect_method": "POST",
+    "message": "Redirecting to payment gateway..."
+  }
+}

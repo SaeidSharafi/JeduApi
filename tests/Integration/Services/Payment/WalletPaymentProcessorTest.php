@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Actions\Wallet\RecordWalletTransactionAction;
-use App\Data\Admin\Payment\PaymentCreateData;
 use App\Enums\Payment\PaymentMethodEnum;
+use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\PaymentCompletedEvent;
 use App\Models\Order;
@@ -41,18 +41,22 @@ describe('WalletPaymentProcessor', function (): void {
             'customer_snapshot_json' => $user->toArray(),
         ]);
 
-        $amount    = 450_000;
+        $amount  = 450_000;
+        $payment = Payment::factory()->create([
+            'order_id'    => $order->id,
+            'customer_id' => $user->id,
+            'amount'      => $amount,
+            'method'      => PaymentMethodEnum::WALLET,
+            'purpose'     => PaymentPurposeEnum::ORDER,
+            'status'      => PaymentStatusEnum::PENDING,
+        ]);
+
         $processor = new WalletPaymentProcessor(
             app(RecordWalletTransactionAction::class),
             app(App\Services\PaymentTransactionReferenceService::class)
         );
-        $paymentData = new PaymentCreateData(
-            method: PaymentMethodEnum::WALLET->value,
-            data: null,
-            admin_notes: 'Wallet checkout',
-        );
 
-        $result = $processor->process($order, $paymentData, $user, $amount);
+        $result = $processor->process($payment);
 
         expect($result->payment->status)->toBe(PaymentStatusEnum::COMPLETED)
             ->and($result->payment->amount)->toBe($amount)
@@ -81,18 +85,22 @@ describe('WalletPaymentProcessor', function (): void {
             'customer_snapshot_json' => $user->toArray(),
         ]);
 
+        $payment = Payment::factory()->create([
+            'order_id'    => $order->id,
+            'customer_id' => $user->id,
+            'amount'      => 50_000,
+            'method'      => PaymentMethodEnum::WALLET,
+            'purpose'     => PaymentPurposeEnum::ORDER,
+            'status'      => PaymentStatusEnum::PENDING,
+        ]);
+
         $processor = new WalletPaymentProcessor(
             app(RecordWalletTransactionAction::class),
             app(App\Services\PaymentTransactionReferenceService::class)
         );
-        $paymentData = new PaymentCreateData(
-            method: PaymentMethodEnum::WALLET->value,
-            data: null,
-            admin_notes: 'Wallet checkout',
-        );
 
-        $processor->process($order, $paymentData, $user, 50_000);
-    })->throws(App\Exceptions\Payment\InsufficientWalletBalanceException::class);
+        $processor->process($payment);
+    })->throws(\App\Exceptions\Wallet\WalletInsufficientBalanceException::class);
 
     it('throws bad method call when verify is invoked', function (): void {
         $payment = Payment::factory()->create([

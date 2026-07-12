@@ -27,12 +27,7 @@ final class NextPaymentDetailsController extends Controller
     public function __invoke(Order $order, GetNextPaymentDetailsAction $action)
     {
         Gate::authorize('viewAny', Order::class);
-        try {
-            // The action will return the DTO or throw an exception.
-            return apiResponse()->success($action->handle($order));
-        } catch (Exception $e) {
-            // Return a 422 Unprocessable Entity status if payment is not possible.
-            return apiResponse()->validationErrors([$e->getMessage()]);
-        }
+        return apiResponse()->success($action->handle($order));
+
     }
 }

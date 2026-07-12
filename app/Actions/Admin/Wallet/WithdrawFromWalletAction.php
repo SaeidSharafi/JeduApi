@@ -9,6 +9,8 @@ use App\Data\Admin\Wallet\RecordTransactionData;
 use App\Data\Admin\Wallet\WithdrawFromWalletData;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
+use App\Exceptions\Wallet\WalletInsufficientBalanceException;
+use App\Exceptions\Wallet\WalletNotActive;
 use App\Models\Staff;
 use App\Models\Wallet;
 use Exception;
@@ -27,11 +29,17 @@ final readonly class WithdrawFromWalletAction
     public function handle(WithdrawFromWalletData $data, Staff $staff, Wallet $wallet): \App\Models\WalletTransaction
     {
         if (! $wallet->isActive()) {
-            throw new Exception(__('validation.custom.wallet_not_active'));
+            throw new WalletNotActive();
         }
 
         if (! $wallet->canWithdraw($data->amount)) {
-            throw new Exception(__('validation.custom.insufficient_balance'));
+            throw new WalletInsufficientBalanceException(
+                availableBalance: $wallet->balance,
+                requiredBalance: $data->amount,
+                shortfall: abs($data->amount) - $wallet->balance,
+                sourceType: TransactionSourceEnum::STAFF,
+                sourceId: $staff->id,
+            );
         }
 
         return $this->recordTransactionAction->execute(new RecordTransactionData(

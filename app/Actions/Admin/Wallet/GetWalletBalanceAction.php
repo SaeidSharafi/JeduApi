@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Wallet;
 
+use App\Exceptions\Wallet\WalletNotFoundException;
+use App\Exceptions\Wallet\WalletUserNotFoundException;
 use App\Models\User;
 use Exception;
 
@@ -18,12 +20,12 @@ final class GetWalletBalanceAction
     {
         $user = User::find($userId);
         if (! $user) {
-            throw new Exception(__('validation.custom.user_not_found'));
+            throw new WalletUserNotFoundException($userId);
         }
 
         $wallet = $user->wallet;
         if (! $wallet) {
-            throw new Exception(__('validation.custom.wallet_not_found'));
+            throw new WalletNotFoundException($user->id);
         }
 
         return [

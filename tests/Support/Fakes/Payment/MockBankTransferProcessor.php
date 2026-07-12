@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace Tests\Support\Fakes\Payment;
 
 use App\Contracts\Payment\PaymentProcessorContract;
-use App\Data\Admin\Payment\PaymentCreateData;
 use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Enums\Payment\PaymentMethodEnum;
-use App\Models\Order;
 use App\Models\Payment;
 use BadMethodCallException;
-use Illuminate\Contracts\Auth\Authenticatable;
 
 final class MockBankTransferProcessor implements PaymentProcessorContract
 {
@@ -20,9 +17,9 @@ final class MockBankTransferProcessor implements PaymentProcessorContract
         return $paymentMethod === PaymentMethodEnum::BANK_TRANSFER;
     }
 
-    public function process(Order $order, PaymentCreateData $paymentData, Authenticatable $adminUser, int $amountToPay): PaymentProcessResultData
+    public function process(Payment $payment): PaymentProcessResultData
     {
-        return PaymentProcessResultData::completed(new Payment());
+        return PaymentProcessResultData::completed($payment);
     }
 
     public function requiresRedirect(): bool

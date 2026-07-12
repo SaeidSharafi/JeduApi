@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Payment\Digipay;
 
 use App\Enums\System\SettingKeyEnum;
+use App\Exceptions\Gateway\DigipayException;
 use App\Services\SettingsService;
 
 final class DigipayConfigRepository
@@ -45,21 +46,12 @@ final class DigipayConfigRepository
     {
         $env = $this->isSandbox() ? 'sandbox' : 'production';
 
-        return config("digipay.endpoints.{$env}.base_url");
+        return config("payments.digipay.endpoints.{$env}.base_url");
     }
 
     public function getTimeout(): int
     {
-        return (int) config('digipay.timeout', 30);
-    }
-
-    public function getCallbackUrl(): string
-    {
-        // The same generic callback route — Digipay POSTs here after payment
-        // payment_uuid is appended per-payment in the processor
-        return config('payments.redirect.callback_api',
-            config('app.url').'/api/v1/shop/payment/gateway/callback'
-        );
+        return (int) config('payments.digipay.timeout', 30);
     }
 
     private function required(string $key): string

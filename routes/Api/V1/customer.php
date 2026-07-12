@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\Shop\Student\MoodleSsoController;
 use App\Http\Controllers\Api\Shop\Student\OrderController;
 use App\Http\Controllers\Api\Shop\Student\QuizController;
 use App\Http\Controllers\Api\Shop\Student\RetryPaymentController;
+use App\Http\Controllers\Api\Shop\Student\ShowPaymentController;
+use App\Http\Controllers\Api\Shop\Wallet\WalletTopupController;
 
 Route::middleware(['auth:user'])
     ->prefix('shop')
@@ -67,6 +69,13 @@ Route::middleware(['auth:user'])
                 Route::post('/{increment_id}/retry-payment', RetryPaymentController::class)
                     ->middleware('throttle:10,1')
                     ->name('retry-payment');
+
+            });
+            Route::prefix('payments')->name('payments.')->group(function (): void {
+                Route::get('/', [ShowPaymentController::class, 'index'])
+                    ->name('index');
+                Route::get('/{uuid}', [ShowPaymentController::class, 'show'])
+                    ->name('show');
             });
         });
 
@@ -77,5 +86,14 @@ Route::middleware(['auth:user'])
             // Examples of future teacher-specific endpoints:
             // Route::get('/courses', [TaughtCourseController::class, 'index'])->name('courses.index');
             // Route::get('/students', [StudentListController::class, 'index'])->name('students.index');
+        });
+
+        // ==========================================
+        // 3. WALLET
+        // ==========================================
+        Route::prefix('wallet')->name('wallet.')->group(function (): void {
+            Route::post('topup', [WalletTopupController::class, 'topup'])
+                ->middleware('throttle:5,1')
+                ->name('topup');
         });
     });

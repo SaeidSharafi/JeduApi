@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\Setting;
 use App\Observers\InvalidationObserver;
+use App\Observers\SettingObserver;
 use Illuminate\Support\ServiceProvider;
 
 final class EventServiceProvider extends ServiceProvider
@@ -18,5 +20,7 @@ final class EventServiceProvider extends ServiceProvider
         foreach ($modelsToObserve as $modelClass) {
             $modelClass::observe(InvalidationObserver::class);
         }
+
+        Setting::observe(SettingObserver::class);
     }
 }

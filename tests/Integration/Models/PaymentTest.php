@@ -12,6 +12,7 @@ test('to array', function (): void {
             'order_id'               => $payment->order_id,
             'amount'                 => $payment->amount,
             'method'                 => $payment->method->value,
+            'purpose'                => $payment->purpose->value,
             'status'                 => $payment->status->value,
             'data'                   => $payment->data,
             'admin_notes'            => $payment->admin_notes,

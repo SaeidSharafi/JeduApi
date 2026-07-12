@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions\Shop\Payment;
 
-use App\Data\Shop\Payment\GatewayCallbackData;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Payment;
 use App\Services\Payment\PaymentProcessorFactory;
@@ -20,26 +19,22 @@ final readonly class VerifyPaymentAction
     /**
      * Verify a pending payment after gateway callback.
      */
-    public function handle(GatewayCallbackData $data): Payment
+    public function handle(Payment $payment, array $gatewayResponse): Payment
     {
-        return DB::transaction(function () use ($data): Payment {
-            // Find payment by UUID
-            $payment = Payment::query()
-                ->where('uuid', $data->payment_uuid)
-                ->lockForUpdate()
-                ->firstOrFail();
+        return DB::transaction(function () use ($payment, $gatewayResponse): Payment {
+            $payment = Payment::query()->whereKey($payment->id)->lockForUpdate()->firstOrFail();
 
-            // Ensure payment is in PENDING state
+            if ($payment->status === PaymentStatusEnum::COMPLETED) {
+                return $payment;
+            }
+
             if ($payment->status !== PaymentStatusEnum::PENDING) {
                 throw ValidationException::withMessages([
                     'payment' => "Payment {$payment->uuid} is not in pending state.",
                 ]);
             }
 
-            $processor = $this->processorFactory->make($payment->method);
-
-            // Verify the payment
-            return $processor->verify($payment, $data->gateway_response);
+            return $this->processorFactory->make($payment->method)->verify($payment, $gatewayResponse);
         });
     }
 }

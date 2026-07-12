@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Payment\Digipay;
 
+use App\Exceptions\Gateway\DigipayException;
 use App\Models\Payment;
 use App\Services\Payment\Digipay\Data\DeliverResponse;
 use App\Services\Payment\Digipay\Data\RefundInquiryResponse;

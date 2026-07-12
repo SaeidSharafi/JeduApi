@@ -8,6 +8,7 @@ use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderProvisioningTriggerEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Events\OrderStatusUpdatedEvent;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Database\Eloquent\Collection;
@@ -90,7 +91,8 @@ final class OrderStatusService
 
         if ($order->status !== $newStatus) {
             $order->status = $newStatus;
-            $order->saveQuietly();
+            $order->save();
+            OrderStatusUpdatedEvent::dispatch($order);
         }
     }
 

@@ -721,4 +721,38 @@ describe('CreateOrderAction', function (): void {
         expect($orderItem->total_discount_amount)->toBe(28000); // Total both
         expect($orderItem->total)->toBe(72000); // Final price after all discounts
     });
+
+    it('does not create enrollments', function (): void {
+        $user           = User::factory()->create();
+        $product        = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'product_id'              => $product->id,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'price'                   => 50000,
+            'is_prepayment_available' => false,
+        ]);
+
+        $items = [
+            new OrderItemCreateData(
+                product_delivery_option_id: $deliveryOption->id,
+                payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                qty_ordered: 1,
+            ),
+        ];
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: $items,
+        );
+
+        $action = app(CreateOrderAction::class);
+        $order  = $action->handle($data);
+
+        $order->load('items');
+        $orderItem = $order->items->first();
+
+        $enrollmentCount = Enrollment::where('order_item_id', $orderItem->id)->count();
+        expect($enrollmentCount)->toBe(0);
+    });
 });

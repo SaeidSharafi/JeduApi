@@ -9,6 +9,7 @@ use App\Data\Admin\Wallet\DepositToWalletData;
 use App\Data\Admin\Wallet\RecordTransactionData;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
+use App\Exceptions\Wallet\WalletNotActive;
 use App\Models\Staff;
 use App\Models\Wallet;
 use Exception;
@@ -27,7 +28,7 @@ final readonly class DepositToWalletAction
     public function handle(DepositToWalletData $data, Staff $staff, Wallet $wallet): \App\Models\WalletTransaction
     {
         if (! $wallet->isActive()) {
-            throw new Exception(__('validation.custom.wallet_not_active'));
+            throw new WalletNotActive();
         }
 
         return $this->recordTransactionAction->execute(new RecordTransactionData(

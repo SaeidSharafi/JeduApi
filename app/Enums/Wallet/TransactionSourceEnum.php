@@ -15,4 +15,5 @@ enum TransactionSourceEnum: string
     case PROMOTION = 'promotion';
     case CAMPAIGN  = 'campaign';
     case SYSTEM    = 'system';
+    case DEPOSIT   = 'deposit';
 }

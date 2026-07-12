@@ -63,4 +63,14 @@ final class MellatException extends BankException
 
         parent::__construct(@self::$errors[$this->errorId].' #'.$this->errorId, $this->errorId);
     }
+
+    public function errorCode(): string
+    {
+        return 'MELLAT_ERROR_'.$this->errorId;
+    }
+
+    protected function customMetadata(): array
+    {
+        return ['gateway' => 'mellat', 'gateway_error_id' => $this->errorId];
+    }
 }

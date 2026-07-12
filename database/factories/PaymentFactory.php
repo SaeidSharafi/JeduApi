@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Enums\Payment\PaymentMethodEnum;
+use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Order;
 use App\Models\Payment;
@@ -22,6 +23,7 @@ final class PaymentFactory extends Factory
         return [
             'order_id'    => Order::factory(),
             'customer_id' => User::factory(),
+            'purpose'     => PaymentPurposeEnum::ORDER,
             'amount'      => $this->faker->numberBetween(1000, 100000), // Amount in cents
             'method'      => $this->faker->randomElement(PaymentMethodEnum::getAllValues()),
             'status'      => $this->faker->randomElement(PaymentStatusEnum::getAllValues()),
@@ -30,5 +32,13 @@ final class PaymentFactory extends Factory
             'created_at'  => Carbon::now(),
             'updated_at'  => Carbon::now(),
         ];
+    }
+
+    public function topup(): static
+    {
+        return $this->state([
+            'order_id' => null,
+            'purpose'  => PaymentPurposeEnum::WALLET_TOPUP,
+        ]);
     }
 }

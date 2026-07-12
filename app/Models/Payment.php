@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Contracts\WalletTransactionSourceableContract;
+use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Traits\HasAuditor;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -29,6 +30,7 @@ final class Payment extends Model implements WalletTransactionSourceableContract
             'customer_id',
             'amount',
             'method',
+            'purpose',
             'status',
             'admin_notes',
             'data',
@@ -73,6 +75,7 @@ final class Payment extends Model implements WalletTransactionSourceableContract
         return [
             'amount'            => 'integer',
             'method'            => \App\Enums\Payment\PaymentMethodEnum::class,
+            'purpose'           => PaymentPurposeEnum::class,
             'status'            => PaymentStatusEnum::class,
             'data'              => 'array',
             'attempt_count'     => 'integer',

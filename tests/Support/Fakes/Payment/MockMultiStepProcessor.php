@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace Tests\Support\Fakes\Payment;
 
 use App\Contracts\Payment\PaymentProcessorContract;
-use App\Data\Admin\Payment\PaymentCreateData;
 use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
-use App\Models\Order;
 use App\Models\Payment;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Str;
 
 final class MockMultiStepProcessor implements PaymentProcessorContract
@@ -21,18 +18,13 @@ final class MockMultiStepProcessor implements PaymentProcessorContract
         return $paymentMethod === PaymentMethodEnum::MELLAT_GATEWAY;
     }
 
-    public function process(Order $order, PaymentCreateData $paymentData, Authenticatable $adminUser, int $amountToPay): PaymentProcessResultData
+    public function process(Payment $payment): PaymentProcessResultData
     {
         $fakeRefId = 'FAKE_REF_'.Str::random(10);
 
-        $payment = $order->payments()->create([
-            'customer_id' => $order->customer_id,
-            'created_by'  => $adminUser instanceof Staff ? $adminUser->id : null,
-            'amount'      => $amountToPay,
-            'method'      => PaymentMethodEnum::MELLAT_GATEWAY,
-            'status'      => PaymentStatusEnum::PENDING, // Always PENDING for redirects
-            'admin_notes' => $paymentData->admin_notes,
-            'data'        => [
+        $payment->update([
+            'status' => PaymentStatusEnum::PENDING,
+            'data'   => [
                 'gateway'        => 'mellat_mock',
                 'transaction_id' => $fakeRefId,
                 'initiated_at'   => now()->toISOString(),
@@ -40,7 +32,7 @@ final class MockMultiStepProcessor implements PaymentProcessorContract
         ]);
 
         return PaymentProcessResultData::pendingWithRedirect(
-            payment: $payment, // Use the newly created, real payment model
+            payment: $payment,
             redirectUrl: 'https://fake-mellat-gateway.test/payment',
             redirectData: [
                 'RefId' => $fakeRefId,

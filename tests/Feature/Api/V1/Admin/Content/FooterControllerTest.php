@@ -35,7 +35,7 @@ it('can update footer settings', function (): void {
         'support_email_address' => 'support@jedu.ir',
         'addresses'             => ['Address 1', 'Address 2'],
         'categories'            => [$cat1->id, $cat2->id],
-        'social_media_links' => [
+        'social_media_links'    => [
             [
                 'platform' => 'instagram',
                 'link'     => 'https://instagram.com/jedushop',

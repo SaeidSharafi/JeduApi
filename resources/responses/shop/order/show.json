@@ -1,48 +1,55 @@
 {
-  "message": "Order retrieved successfully",
+  "message": "عملیات با موفقیت انجام شد.",
   "data": {
     "id": 1,
-    "increment_id": "100000001",
+    "increment_id": "ORD-20241021-001",
     "status": {
       "value": "completed",
-      "label": "enums.OrderStatusEnum.completed"
+      "label": "تکمیل شده"
     },
-    "customer_email": "customer@example.com",
-    "customer_phone": "09123456789",
-    "customer_first_name": "John",
-    "customer_last_name": "Doe",
+    "customer_email": "user1@example.com",
+    "customer_phone": "9120000001",
+    "customer_first_name": "محمد",
+    "customer_last_name": "رضایی",
     "total_qty_ordered": 2,
     "total_item_count": 2,
-    "subtotal": 1000000,
-    "discount_amount": 100000,
+    "subtotal": 1950000,
+    "discount_amount": 0,
     "tax_amount": 0,
-    "grand_total": 900000,
-    "total_paid": 900000,
+    "grand_total": 1950000,
+    "full_value_grand_total": 1950000,
+    "total_product_discount": 0,
+    "total_cart_discount": 0,
+    "total_discount": 0,
+    "total_paid": 1950000,
     "balance_due": 0,
     "currency_code": "IRR",
     "payment_status": {
       "value": "paid",
-      "label": "enums.OrderPaymentStatusEnum.paid"
+      "label": "پرداخت شده"
     },
-    "applied_coupon_code": "SAVE10",
-    "created_at": "1404-04-14 14:13:28",
-    "updated_at": "1404-04-14 14:15:10",
+    "applied_coupon_code": null,
+    "created_at": "1403-07-30 15:30:00",
+    "updated_at": "1403-07-30 15:35:00",
     "items": [
       {
         "id": 1,
         "order_id": 1,
-        "discount_amount": 50000,
+        "discount_amount": 0,
         "qty_ordered": 1,
         "tax_amount": 0,
-        "name": "Introduction to Python - Online Course",
-        "sku": "PYT-ONLINE-001",
-        "price": 500000,
-        "total": 450000,
+        "name": "دوره جامع پایتون - دسترسی ویدیویی آنلاین",
+        "sku": "spotplayer-pdo-1",
+        "price": 1200000,
+        "total": 1200000,
+        "original_price": 1200000,
+        "product_discount_amount": 0,
+        "total_discount_amount": 0,
         "payment_type": {
           "value": "full_payment",
-          "label": "enums.OrderItemPaymentTypeEnum.full_payment"
+          "label": "پرداخت کامل"
         },
-        "prepayment_amount": 0,
+        "prepayment_amount": null,
         "qty_refunded": 0,
         "total_refunded": 0,
         "status": {
@@ -53,18 +60,21 @@
       {
         "id": 2,
         "order_id": 1,
-        "discount_amount": 50000,
+        "discount_amount": 0,
         "qty_ordered": 1,
         "tax_amount": 0,
-        "name": "Advanced Laravel - Hybrid Course",
-        "sku": "LRV-HYB-002",
-        "price": 500000,
-        "total": 450000,
+        "name": "وبینار عکاسی دیجیتال - دسترسی آنلاین (Skyroom)",
+        "sku": "skyroom-pdo-9",
+        "price": 750000,
+        "total": 750000,
+        "original_price": 750000,
+        "product_discount_amount": 0,
+        "total_discount_amount": 0,
         "payment_type": {
           "value": "full_payment",
-          "label": "enums.OrderItemPaymentTypeEnum.full_payment"
+          "label": "پرداخت کامل"
         },
-        "prepayment_amount": 0,
+        "prepayment_amount": null,
         "qty_refunded": 0,
         "total_refunded": 0,
         "status": {
@@ -72,6 +82,25 @@
           "label": "enums.OrderItemStatusEnum.completed"
         }
       }
+    ],
+    "payments": [
+      {
+        "uuid": "a1000001-0000-4000-a000-000000000001",
+        "id": 1,
+        "amount": 1950000,
+        "method": {
+          "value": "mellat_gateway",
+          "label": "درگاه ملت"
+        },
+        "status": {
+          "value": "completed",
+          "label": "تکمیل شده"
+        },
+        "last_gateway_reference": "REF-20241021-001",
+        "attempt_count": 1,
+        "transactions": null
+      }
     ]
-  }
+  },
+  "metadata": []
 }

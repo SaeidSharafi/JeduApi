@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Exceptions\Payment\DuplicatePaymentException;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Payment\MellatGatewayPaymentProcessor;
@@ -28,8 +29,8 @@ describe('Verification Gatekeeper', function (): void {
         // Act & Assert: Verify throws
         $processor = app(MellatGatewayPaymentProcessor::class);
 
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Order already has a completed payment.');
+        $this->expectException(DuplicatePaymentException::class);
+        $this->expectExceptionMessage(__('validation.custom.checkout.duplicate_payment'));
 
         $processor->verify($pendingPayment, []);
     });

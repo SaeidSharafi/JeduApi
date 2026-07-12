@@ -7,6 +7,7 @@ namespace App\Actions\Shop\Student;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Events\OrderStatusUpdatedEvent;
 use App\Models\Order;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
@@ -61,12 +62,13 @@ final class CancelOrderByCustomerAction
                     $enrollment->save();
                 });
 
-            // Reload relationships for the response
             $order->load([
                 'items',
                 'payments',
                 'enrollments',
             ]);
+
+            OrderStatusUpdatedEvent::dispatch($order);
 
             return $order;
         });

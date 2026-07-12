@@ -8,6 +8,7 @@ use App\Data\Admin\Payment\NextPaymentDetailsData;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Payment\NextPaymentTypeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Exceptions\Payment\OrderFullyPaidException;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Support\Collection;
@@ -37,7 +38,7 @@ final class GetNextPaymentDetailsAction
 
         // --- EDGE CASE 2: FULLY PAID ORDER ---
         if ($order->balance_due <= 0) {
-            throw new \Exception(__('messages.order.already_fully_paid', ['order_id' => $order->increment_id]));
+            throw new OrderFullyPaidException($order->increment_id);
         }
 
         // --- GATHER AND PARTITION ITEMS ---

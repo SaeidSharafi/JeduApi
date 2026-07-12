@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Payment\Digipay;
+namespace App\Exceptions\Gateway;
 
-use RuntimeException;
+use App\Services\Payment\Digipay\DigipayPaymentStatus;
 use Throwable;
 
-final class DigipayException extends RuntimeException
+final class DigipayException extends BankException
 {
     public function __construct(
         string $message,
@@ -51,5 +51,20 @@ final class DigipayException extends RuntimeException
             'file'       => $this->getFile(),
             'line'       => $this->getLine(),
         ];
+    }
+
+    public function errorCode(): string
+    {
+        return 'DIGIPAY_ERROR_'.$this->digipayCode;
+    }
+
+    protected function customUserMessage(): string
+    {
+        return $this->getUserMessage();
+    }
+
+    protected function customMetadata(): array
+    {
+        return $this->context;
     }
 }

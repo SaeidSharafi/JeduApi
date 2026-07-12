@@ -175,7 +175,7 @@ return [
         'wallet_already_exists'          => 'کیف پول برای این کاربر قبلاً ایجاد شده است.',
         'wallet_not_found'               => 'کیف پول برای این کاربر یافت نشد.',
         'wallet_not_active'              => 'کیف پول کاربر فعال نیست.',
-        'insufficient_balance'           => 'موجودی کافی برای برداشت وجود ندارد.',
+        'insufficient_balance'           => 'موجودی کیف پول کافی نیست.',
         'insufficient_balance_with_info' => 'موجودی کیف پول شما (:available تومان) برای این تراکنش کافی نیست. مبلغ مورد نیاز: :required تومان.',
 
         // Wallet Campaign validation messages
@@ -231,6 +231,8 @@ return [
             'order_fully_paid' => 'این سفارش به طور کامل پرداخت شده است.',
             // 'Payment method is required for paid orders.'
             'payment_method_required' => 'روش پرداخت الزامی است.',
+            //'Order already has a completed payment.'
+            'duplicate_payment' => 'این سفارش قبلاً پرداخت شده است.',
         ],
         'refund' => [
             'exceeds_payment_amount' => 'مبلغ بازپرداخت نمی تواند از مبلغ پرداختی بیشتر باشد.',

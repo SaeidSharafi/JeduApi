@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
+use App\Exceptions\Gateway\DigipayException;
 use App\Models\Payment;
 use App\Services\Payment\Digipay\Data\DeliverResponse;
 use App\Services\Payment\Digipay\Data\RefundInquiryResponse;
 use App\Services\Payment\Digipay\Data\RefundResponse;
 use App\Services\Payment\Digipay\Data\ReverseResponse;
 use App\Services\Payment\Digipay\DigipayAdminService;
-use App\Services\Payment\Digipay\DigipayException;
 use Illuminate\Support\Facades\Gate;
 
 use function Pest\Laravel\postJson;

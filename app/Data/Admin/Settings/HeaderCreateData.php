@@ -18,9 +18,9 @@ final class HeaderCreateData extends Data
     public static function rules(?ValidationContext $context = null): array
     {
         return [
-            'logo'                     => ['nullable', 'integer', 'exists:media,id'],
-            'contact_phone'            => ['required', 'string', 'max:32'],
-            'contact_email'            => ['required', 'string', 'email', 'max:255'],
+            'logo'          => ['nullable', 'integer', 'exists:media,id'],
+            'contact_phone' => ['required', 'string', 'max:32'],
+            'contact_email' => ['required', 'string', 'email', 'max:255'],
         ];
     }
 

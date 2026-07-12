@@ -18,8 +18,8 @@ final class HeaderData extends Data
     public static function getDefaults(): array
     {
         return [
-            'logo'             => null,
-            'logo_url'         => null,
+            'logo'          => null,
+            'logo_url'      => null,
             'contact_phone' => '+98-21-12345678',
             'contact_email' => 'info@jedu.ir',
         ];

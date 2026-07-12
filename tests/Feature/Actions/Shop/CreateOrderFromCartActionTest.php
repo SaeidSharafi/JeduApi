@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Actions\Shop\CreateOrderFromCartAction;
 use App\Contracts\Payment\PaymentProcessorContract;
-use App\Data\Admin\Payment\PaymentCreateData;
 use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Data\Shop\Cart\CheckoutData;
 use App\Enums\Content\PublicationStatusEnum;
@@ -21,7 +20,6 @@ use App\Models\ProductDeliveryOption;
 use App\Models\Term;
 use App\Models\Vendor;
 use App\Services\Payment\PaymentProcessorFactory;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -79,15 +77,11 @@ describe('CreateOrderFromCartAction idempotency & transaction scope', function (
                 return true;
             }
 
-            public function process(
-                Order $order,
-                PaymentCreateData $paymentData,
-                Authenticatable $adminUser,
-                int $amountToPay,
-            ): PaymentProcessResultData {
+            public function process(Payment $payment): PaymentProcessResultData
+            {
                 $this->transactionLevel = DB::transactionLevel();
 
-                return PaymentProcessResultData::completed(new Payment());
+                return PaymentProcessResultData::completed($payment);
             }
 
             public function requiresRedirect(): bool
@@ -126,20 +120,8 @@ describe('CreateOrderFromCartAction idempotency & transaction scope', function (
                 return true;
             }
 
-            public function process(
-                Order $order,
-                PaymentCreateData $paymentData,
-                Authenticatable $adminUser,
-                int $amountToPay,
-            ): PaymentProcessResultData {
-                $payment = Payment::create([
-                    'order_id'    => $order->id,
-                    'customer_id' => $adminUser->getAuthIdentifier(),
-                    'amount'      => $amountToPay,
-                    'method'      => $paymentData->method,
-                    'status'      => 'pending',
-                ]);
-
+            public function process(Payment $payment): PaymentProcessResultData
+            {
                 return PaymentProcessResultData::pendingWithRedirect($payment, 'https://gateway.example.com/pay');
             }
 
@@ -205,20 +187,8 @@ describe('CreateOrderFromCartAction idempotency & transaction scope', function (
                 return true;
             }
 
-            public function process(
-                Order $order,
-                PaymentCreateData $paymentData,
-                Authenticatable $adminUser,
-                int $amountToPay,
-            ): PaymentProcessResultData {
-                $payment = Payment::create([
-                    'order_id'    => $order->id,
-                    'customer_id' => $adminUser->getAuthIdentifier(),
-                    'amount'      => $amountToPay,
-                    'method'      => $paymentData->method,
-                    'status'      => 'pending',
-                ]);
-
+            public function process(Payment $payment): PaymentProcessResultData
+            {
                 return PaymentProcessResultData::pendingWithRedirect($payment, 'https://gateway.example.com/pay');
             }
 
@@ -254,5 +224,59 @@ describe('CreateOrderFromCartAction idempotency & transaction scope', function (
 
         // Assert: cart was deleted (no items, and cart record should be gone)
         expect($cart->fresh())->toBeNull();
+    });
+
+    it('regression: creates order and pending payment via bank_transfer', function (): void {
+        // Mock processor that returns the passed payment as completed
+        $mockProcessor = new class implements PaymentProcessorContract
+        {
+            public function canHandle(PaymentMethodEnum $paymentMethod): bool
+            {
+                return true;
+            }
+
+            public function process(Payment $payment): PaymentProcessResultData
+            {
+                return PaymentProcessResultData::completed($payment);
+            }
+
+            public function requiresRedirect(): bool
+            {
+                return false;
+            }
+
+            public function verify(Payment $payment, array $callbackData): Payment
+            {
+                throw new BadMethodCallException('Mock does not support verify.');
+            }
+        };
+
+        $this->app->instance(
+            PaymentProcessorFactory::class,
+            new PaymentProcessorFactory([$mockProcessor])
+        );
+
+        // Arrange
+        $cart = Cart::factory()->create(['user_id' => $this->user->id]);
+        CartItem::factory()->create([
+            'cart_id'                    => $cart->id,
+            'product_delivery_option_id' => $this->deliveryOption->id,
+            'quantity'                   => 1,
+        ]);
+
+        $action       = app(CreateOrderFromCartAction::class);
+        $checkoutData = new CheckoutData(payment_method: 'bank_transfer');
+
+        // Act
+        $result = $action->handle($checkoutData, $this->user);
+
+        // Assert
+        expect($result->payment)->not->toBeNull();
+        expect($result->payment->order_id)->not->toBeNull();
+        expect($result->payment->purpose->value)->toBe('order');
+
+        $order = $result->payment->order;
+        expect($order->customer_id)->toBe($this->user->id);
+        expect($order->status)->toBe(OrderStatusEnum::PENDING);
     });
 });

@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\Payment;
 
-use App\Enums\Payment\PaymentMethodEnum;
-use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 final class PaymentCreateData extends Data
 {
     public function __construct(
-        public string $method,
         public ?BankTransferPaymentData $data,
         public ?string $admin_notes,
 
@@ -23,7 +20,6 @@ final class PaymentCreateData extends Data
         $now = verta()->format('Y-m-d');
 
         return [
-            'method'      => ['required', Rule::enum(PaymentMethodEnum::class)],
             'admin_notes' => ['nullable', 'string', 'max:1000'],
             'data'        => ['nullable', 'array'],
             // Bank transfer validation
@@ -42,10 +38,6 @@ final class PaymentCreateData extends Data
     public function bodyParameters(): array
     {
         return [
-            'method' => [
-                'description' => 'Payment method used for the transaction',
-                'example'     => 'credit_card',
-            ],
             'data' => [
                 'description' => 'Additional data related to the payment, such as transaction ID or gateway response',
                 'example'     => ['transaction_id' => '123456789'],

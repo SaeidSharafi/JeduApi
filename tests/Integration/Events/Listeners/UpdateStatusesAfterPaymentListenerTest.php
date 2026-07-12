@@ -46,7 +46,9 @@ describe('UpdateStatusesAfterPaymentListener', function (): void {
 
     it('does nothing if the payment has no associated order', function (): void {
         // --- Arrange ---
-        $paymentWithoutOrder = new Payment();
+        $paymentWithoutOrder = Payment::factory()->create([
+            'order_id' => null,
+        ]);
         $event               = new PaymentCompletedEvent($paymentWithoutOrder);
 
         // Mock the service but expect it to NEVER be called.

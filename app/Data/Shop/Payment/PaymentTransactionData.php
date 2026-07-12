@@ -16,16 +16,9 @@ use Spatie\LaravelData\Optional;
 final class PaymentTransactionData extends Data
 {
     public function __construct(
-        public string $transaction_reference,
-        public int $attempt_number,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public PaymentTransactionStatusEnum $status,
-        public array|Optional|null $gateway_request = null,
-        public array|Optional|null $gateway_response = null,
         public ?Verta $initiated_at = null,
         public ?Verta $completed_at = null,
-        public ?string $error_code = null,
-        public ?string $error_message = null,
-        public ?string $ip_address = null,
     ) {}
 }

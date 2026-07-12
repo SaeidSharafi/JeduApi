@@ -142,7 +142,7 @@ it('create payment successfully', function (): void {
         'admin_notes' => 'Test payment',
         'data'        => [
             'transaction_id'   => '123456789',
-            'transaction_date' => verta()->format('Y-m-d'),
+            'transaction_date' => verta()->formatDate(),
             'sender_name'      => 'Test Sender',
         ],
     ];
@@ -302,8 +302,13 @@ it('prevent creating payment if amount to pay is 0', function (): void {
             'tax_amount'                 => 0,
         ]);
     $data = [
-        'method'      => PaymentMethodEnum::BANK_TRANSFER,
-        'status'      => PaymentStatusEnum::COMPLETED,
+        'status' => PaymentStatusEnum::COMPLETED,
+        'data'   => [
+            'transaction_id'   => '23665',
+            'transaction_date' => '1405-01-07',
+            'sender_name'      => 'John Doe',
+            'notes'            => '',
+        ],
         'admin_notes' => 'Test payment',
     ];
 

@@ -26,6 +26,7 @@ final class ProductListRequestData extends Data
     public static function rules(?ValidationContext $context = null): array
     {
         $filters = ProductFilterData::rules($context, 'filter.');
+
         return [
             'q'        => ['sometimes', 'string', 'max:255'],
             'type'     => ['sometimes', 'string', Rule::enum(ProductableEnum::class)],

@@ -15,7 +15,7 @@ final class RecordTransactionData extends Data
     public function __construct(
         public int $user_id,
         public TransactionTypeEnum $type,
-        public int $amount, // Changed from float to int for consistency
+        public int $amount,
         public TransactionSourceEnum $source_type = TransactionSourceEnum::STAFF,
         public ?int $source_id = null,
         public ?string $description = null,

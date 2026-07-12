@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Actions\Shop;
 
-use App\Data\Admin\Payment\PaymentCreateData;
+use App\Actions\Payment\PreparePendingPaymentAction;
 use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
+use App\Enums\Payment\PaymentPurposeEnum;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Services\Payment\PaymentProcessorFactory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -40,11 +42,10 @@ final readonly class RetryOrderPaymentAction
         PaymentMethodEnum $paymentMethod,
         ?int $amountToPay = null
     ): PaymentProcessResultData {
-        return DB::transaction(function () use ($order, $paymentMethod, $amountToPay): PaymentProcessResultData {
-            // Validate order is eligible for retry
+        $payment = DB::transaction(function () use ($order, $paymentMethod, $amountToPay): Payment {
+
             $this->validateOrderEligibility($order);
 
-            // Use balance_due if amount not specified
             $amountToPay = $amountToPay ?? $order->balance_due;
 
             if ($amountToPay <= 0) {
@@ -59,25 +60,19 @@ final readonly class RetryOrderPaymentAction
                 ]);
             }
 
-            // Build payment data
-            $paymentData = new PaymentCreateData(
-                method: $paymentMethod->value,
-                data: null, // No additional data needed for retry
-                admin_notes: 'Payment retry by customer',
-            );
-
-            // Get the payment processor and process payment
-            $processor = $this->processorFactory->make($paymentMethod);
-
-            $result = $processor->process(
+            return app(PreparePendingPaymentAction::class)->handle(
+                actor: Auth::guard('user')->user(),
+                customerId: $order->customer_id,
+                method: $paymentMethod,
+                purpose: PaymentPurposeEnum::ORDER,
+                amount: $amountToPay,
                 order: $order,
-                paymentData: $paymentData,
-                adminUser: Auth::guard('user')->user(),
-                amountToPay: $amountToPay
             );
-
-            return $result;
         });
+
+        $processor = $this->processorFactory->make($paymentMethod);
+
+        return $processor->process($payment);
     }
 
     /**

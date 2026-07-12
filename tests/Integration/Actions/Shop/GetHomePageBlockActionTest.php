@@ -343,24 +343,34 @@ describe('GetHomePageBlockAction', function (): void {
     });
     it('can handle dynamic list blocks with category filter', function (): void {
         // Create test data
-        $categories          = Category::factory()->count(2)->create();
+        $category1          = Category::factory()->create();
+        $category2          = Category::factory()->create();
         $productsInCategory1 = Product::factory()
             ->withDeliveryOptions()
             ->count(3)
+            ->sequence(
+                ['created_at' => now()->subDays(5)],
+                ['created_at' => now()->subDays(4)],
+                ['created_at' => now()->subDays(3)],
+            )
             ->create()
-            ->each(fn ($product) => $product->categories()->attach($categories[0]->id));
+            ->each(fn ($product) => $product->categories()->attach($category1->id));
         $productsInCategory2 = Product::factory()
             ->withDeliveryOptions()
             ->count(2)
+            ->sequence(
+                ['created_at' => now()->subDays(2)],
+                ['created_at' => now()->subDay()],
+            )
             ->create()
-            ->each(fn ($product) => $product->categories()->attach($categories[1]->id));
+            ->each(fn ($product) => $product->categories()->attach($category2->id));
 
         // Create dynamic list block with category filter
         $block = HomePageBlock::factory()->dynamicList(
             DynamicListEntityTypeEnum::ALL_PRODUCTS,
             DynamicListSortByEnum::CREATED_AT_DESC,
             3,
-            [$categories[0]->id] // Filter by category 1
+            [$category1->id] // Filter by category 1
         )->create([
             'title'     => 'Category 1 Products',
             'location'  => 'content',

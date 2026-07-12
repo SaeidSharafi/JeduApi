@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Payment\Digipay;
 
+use App\Exceptions\Gateway\DigipayException;
 use App\Services\Payment\Digipay\Data\DeliverResponse;
 use App\Services\Payment\Digipay\Data\RefundInquiryResponse;
 use App\Services\Payment\Digipay\Data\RefundResponse;
@@ -38,9 +39,9 @@ final class DigipayClient
             $body['additionalInfo'] = ['description' => $description];
         }
 
-        $ticketType = config('digipay.ticket_type', 11);
+        $ticketType = config('payments.digipay.ticket_type', 11);
         $response   = TicketResponse::fromResponse(
-            $this->post(config('digipay.paths.ticket').'?type='.$ticketType, $body)
+            $this->post(config('payments.digipay.paths.ticket').'?type='.$ticketType, $body)
         );
 
         if (! $response->isSuccessful()) {
@@ -56,7 +57,7 @@ final class DigipayClient
     public function verify(string $trackingCode, string $providerId, int $type): VerifyResponse
     {
         $response = VerifyResponse::fromResponse(
-            $this->post(config('digipay.paths.verify').'?type='.$type, [
+            $this->post(config('payments.digipay.paths.verify').'?type='.$type, [
                 'trackingCode' => $trackingCode,
                 'providerId'   => $providerId,
             ])
@@ -80,7 +81,7 @@ final class DigipayClient
         int $type,
     ): RefundResponse {
         $response = RefundResponse::fromResponse(
-            $this->post(config('digipay.paths.refund').'?type='.$type, [
+            $this->post(config('payments.digipay.paths.refund').'?type='.$type, [
                 'providerId'       => $providerId,
                 'amount'           => $amount,
                 'saleTrackingCode' => $saleTrackingCode,
@@ -104,7 +105,7 @@ final class DigipayClient
         int $type,
     ): DeliverResponse {
         $response = DeliverResponse::fromResponse(
-            $this->post(config('digipay.paths.deliver').'?type='.$type, [
+            $this->post(config('payments.digipay.paths.deliver').'?type='.$type, [
                 'deliveryDate'  => (int) (now()->timestamp * 1000),
                 'invoiceNumber' => $invoiceNumber,
                 'trackingCode'  => $trackingCode,
@@ -126,7 +127,7 @@ final class DigipayClient
     {
         $response = RefundInquiryResponse::fromResponse(
             $this->post(
-                config('digipay.paths.refund').'/'.$refundProviderId.'?type='.$type,
+                config('payments.digipay.paths.refund').'/'.$refundProviderId.'?type='.$type,
                 []
             )
         );
@@ -144,7 +145,7 @@ final class DigipayClient
     public function reverse(string $purchaseTrackingCode, string $providerId): ReverseResponse
     {
         $response = ReverseResponse::fromResponse(
-            $this->post(config('digipay.paths.reverse'), [
+            $this->post(config('payments.digipay.paths.reverse'), [
                 'purchaseTrackingCode' => $purchaseTrackingCode,
                 'providerId'           => $providerId,
             ])
@@ -165,7 +166,7 @@ final class DigipayClient
         $token = $this->authenticator->getAccessToken();
         $url   = $this->config->getBaseUrl().$path;
 
-        Log::channel(config('digipay.logging.channel', 'stack'))->info('[Digipay] Request', [
+        Log::channel(config('payments.digipay.logging.channel', 'stack'))->info('[Digipay] Request', [
             'url'  => $url,
             'body' => $this->maskSensitive($data),
         ]);
@@ -174,11 +175,11 @@ final class DigipayClient
             ->withToken($token)
             ->withHeaders([
                 'Agent'           => 'WEB',
-                'Digipay-Version' => config('digipay.default_api_version', '2022-02-02'),
+                'Digipay-Version' => config('payments.digipay.default_api_version', '2022-02-02'),
             ])
             ->post($url, $data);
 
-        Log::channel(config('digipay.logging.channel', 'stack'))->info('[Digipay] Response', [
+        Log::channel(config('payments.digipay.logging.channel', 'stack'))->info('[Digipay] Response', [
             'url'    => $url,
             'status' => $response->status(),
             'body'   => $this->maskSensitive($response->json() ?? []),
@@ -196,7 +197,7 @@ final class DigipayClient
 
     private function maskSensitive(array $data): array
     {
-        $sensitiveFields = config('digipay.logging.sensitive_fields', []);
+        $sensitiveFields = config('payments.digipay.logging.sensitive_fields', []);
 
         foreach ($sensitiveFields as $field) {
             if (isset($data[$field])) {

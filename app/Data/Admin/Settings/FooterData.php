@@ -33,8 +33,8 @@ final class FooterData extends Data
             'support_email_address' => 'support@jedu.ir',
             'addresses'             => ContactInfoData::getDefaults()['addresses'],
             'categories'            => Category::query()->get(['name', 'slug'])->toArray(),
-            'social_media_links' => ContactInfoData::getDefaults()['social_media_links'],
-            'certifications'     => [
+            'social_media_links'    => ContactInfoData::getDefaults()['social_media_links'],
+            'certifications'        => [
                 ['name' => 'اینماد', 'image' => 'https://jedu.ir/enamd.png', 'html' => ''],
                 ['name' => 'ساماندهی', 'image' => 'https://jedu.ir/enamd.png', 'html' => ''],
             ],

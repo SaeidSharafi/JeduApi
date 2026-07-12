@@ -49,7 +49,7 @@ it('returns structured error when wallet balance is insufficient', function (): 
 
     $response->assertJson([
         'errors' => [
-            'wallet_balance' => __('validation.custom.checkout.insufficient_wallet_balance'),
+            'wallet_balance' => __('validation.custom.insufficient_balance'),
         ],
         'metadata' => [
             'error_code'        => 'INSUFFICIENT_WALLET_BALANCE',
@@ -112,7 +112,7 @@ it('provides exact shortfall amount in error response', function (): void {
     $response->assertJson([
         'message' => __('messages.validation_error'),
         'errors'  => [
-            'wallet_balance' => __('validation.custom.checkout.insufficient_wallet_balance'),
+            'wallet_balance' => __('validation.custom.insufficient_balance'),
         ],
         'metadata' => [
             'error_code'        => 'INSUFFICIENT_WALLET_BALANCE',
@@ -142,7 +142,7 @@ it('returns error when wallet balance is zero', function (): void {
     $response->assertJson([
         'message' => __('messages.validation_error'),
         'errors'  => [
-            'wallet_balance' => __('validation.custom.checkout.insufficient_wallet_balance'),
+            'wallet_balance' => __('validation.custom.insufficient_balance'),
         ],
         'metadata' => [
             'error_code'        => 'INSUFFICIENT_WALLET_BALANCE',

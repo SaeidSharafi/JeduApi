@@ -6,6 +6,7 @@ namespace App\Actions\Admin\WalletCampaign;
 
 use App\Data\Admin\WalletCampaign\BulkCampaignAllocationData;
 use App\Data\Admin\WalletCampaign\TriggerCampaignAllocationData;
+use App\Exceptions\Wallet\WalletUserNotFoundException;
 use App\Models\User;
 use App\Models\WalletCampaign;
 use Exception;
@@ -40,7 +41,7 @@ final readonly class BulkCampaignAllocationAction
                 $user = $users->firstWhere('id', $userId);
                 // @codeCoverageIgnoreStart
                 if (! $user) {
-                    throw new Exception(__('validation.custom.user_not_found'));
+                    throw new WalletUserNotFoundException($userId);
                 }
                 // @codeCoverageIgnoreEnd
                 $transaction = $this->triggerAction->handle($individualData, $user, $campaign);

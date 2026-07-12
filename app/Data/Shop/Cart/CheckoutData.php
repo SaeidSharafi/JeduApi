@@ -13,6 +13,7 @@ final class CheckoutData extends Data
 {
     public function __construct(
         public ?string $payment_method = null,
+        public ?array $payment_data = null,
     ) {}
 
     /**
@@ -22,6 +23,7 @@ final class CheckoutData extends Data
     {
         return [
             'payment_method' => ['nullable', 'string', Rule::enum(PaymentMethodEnum::class)],
+            'payment_data'   => ['nullable', 'array'],
         ];
     }
 

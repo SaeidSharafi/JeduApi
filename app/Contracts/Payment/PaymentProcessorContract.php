@@ -4,26 +4,19 @@ declare(strict_types=1);
 
 namespace App\Contracts\Payment;
 
-use App\Data\Admin\Payment\PaymentCreateData;
 use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Enums\Payment\PaymentMethodEnum;
-use App\Models\Order;
 use App\Models\Payment;
-use Illuminate\Contracts\Auth\Authenticatable;
 
 interface PaymentProcessorContract
 {
     /**
-     * Process the payment for the given order.
+     * Process the payment.
+     * Payment is already created by PreparePendingPaymentAction.
      *
      * @return PaymentProcessResultData Contains payment record and optional redirect URL
      */
-    public function process(
-        Order $order,
-        PaymentCreateData $paymentData,
-        Authenticatable $adminUser,
-        int $amountToPay
-    ): PaymentProcessResultData;
+    public function process(Payment $payment): PaymentProcessResultData;
 
     /**
      * Verify a payment after callback from gateway.

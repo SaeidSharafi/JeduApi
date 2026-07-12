@@ -81,6 +81,11 @@ describe('Checkout Success', function (): void {
 
         $response = postJson(route('api.v1.shop.checkout'), [
             'payment_method' => 'bank_transfer',
+            'payment_data'   => [
+                'transaction_id'   => '123456',
+                'transaction_date' => verta()->formatDate(),
+                'sender_name'      => 'John Doe',
+            ],
         ]);
         $response->assertCreated()
             ->assertJsonStructure([
@@ -194,6 +199,11 @@ describe('Checkout Validation', function (): void {
 
         $response = postJson(route('api.v1.shop.checkout'), [
             'payment_method' => 'bank_transfer',
+            'data'           => [
+                'transaction_id'   => '123456',
+                'transaction_date' => verta()->formatDate(),
+                'sender_name'      => 'John Doe',
+            ],
         ]);
 
         $response->assertStatus(422)
@@ -240,6 +250,11 @@ describe('Checkout Validation', function (): void {
 
         $response = postJson(route('api.v1.shop.checkout'), [
             'payment_method' => 'bank_transfer',
+            'payment_data'   => [
+                'transaction_id'   => '123456',
+                'transaction_date' => verta()->formatDate(),
+                'sender_name'      => 'John Doe',
+            ],
         ]);
 
         $response->assertStatus(422)
@@ -277,6 +292,11 @@ describe('Checkout Validation', function (): void {
 
         $response = postJson(route('api.v1.shop.checkout'), [
             'payment_method' => 'bank_transfer',
+            'payment_data'   => [
+                'transaction_id'   => '123456',
+                'transaction_date' => verta()->formatDate(),
+                'sender_name'      => 'John Doe',
+            ],
         ]);
 
         $response->assertStatus(422)
@@ -313,6 +333,11 @@ describe('Checkout Validation', function (): void {
 
         $response = postJson(route('api.v1.shop.checkout'), [
             'payment_method' => 'bank_transfer',
+            'payment_data'   => [
+                'transaction_id'   => '123456',
+                'transaction_date' => verta()->formatDate(),
+                'sender_name'      => 'John Doe',
+            ],
         ]);
 
         $response->assertStatus(422)
@@ -349,6 +374,11 @@ describe('Checkout Validation', function (): void {
 
         $response = postJson(route('api.v1.shop.checkout'), [
             'payment_method' => 'bank_transfer',
+            'payment_data'   => [
+                'transaction_id'   => '123456',
+                'transaction_date' => verta()->formatDate(),
+                'sender_name'      => 'John Doe',
+            ],
         ]);
 
         $response->assertStatus(422)
@@ -410,20 +440,11 @@ test('user can checkout with wallet payment and order is completed', function ()
                             'amount',
                             'method',
                             'status',
-                            'last_gateway_reference',
-                            'attempt_count',
                             'transactions' => [
                                 '*' => [
-                                    'transaction_reference',
-                                    'attempt_number',
                                     'status',
-                                    'gateway_request',
-                                    'gateway_response',
                                     'initiated_at',
                                     'completed_at',
-                                    'error_code',
-                                    'error_message',
-                                    'ip_address',
                                 ],
                             ],
                         ],
@@ -522,6 +543,11 @@ test('checkout with bank_transfer creates pending order without payment', functi
 
     $response = postJson(route('api.v1.shop.checkout'), [
         'payment_method' => 'bank_transfer',
+        'payment_data'   => [
+            'transaction_id'   => '123456',
+            'transaction_date' => verta()->formatDate(),
+            'sender_name'      => 'John Doe',
+        ],
     ]);
 
     $response->assertCreated();
@@ -678,6 +704,11 @@ test('velocity check only counts orders from the last hour', function (): void {
 
     $response = postJson(route('api.v1.shop.checkout'), [
         'payment_method' => 'bank_transfer',
+        'payment_data'   => [
+            'transaction_id'   => '123456',
+            'transaction_date' => verta()->formatDate(),
+            'sender_name'      => 'John Doe',
+        ],
     ]);
 
     $response->assertCreated();
@@ -864,6 +895,11 @@ describe('Duplicate Purchase Prevention', function (): void {
 
         $response = postJson(route('api.v1.shop.checkout'), [
             'payment_method' => 'bank_transfer',
+            'payment_data'   => [
+                'transaction_id'   => '123456',
+                'transaction_date' => verta()->formatDate(),
+                'sender_name'      => 'John Doe',
+            ],
         ]);
 
         $response->assertCreated();
@@ -886,6 +922,11 @@ describe('Duplicate Purchase Prevention', function (): void {
 
         $response = postJson(route('api.v1.shop.checkout'), [
             'payment_method' => 'bank_transfer',
+            'payment_data'   => [
+                'transaction_id'   => '123456',
+                'transaction_date' => verta()->formatDate(),
+                'sender_name'      => 'John Doe',
+            ],
         ]);
 
         $response->assertCreated();
@@ -955,6 +996,11 @@ describe('Duplicate Purchase Prevention', function (): void {
 
         $response = postJson(route('api.v1.shop.checkout'), [
             'payment_method' => 'bank_transfer',
+            'payment_data'   => [
+                'transaction_id'   => '123456',
+                'transaction_date' => verta()->formatDate(),
+                'sender_name'      => 'John Doe',
+            ],
         ]);
 
         $response->assertStatus(422)
