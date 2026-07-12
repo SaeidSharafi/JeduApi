@@ -300,10 +300,12 @@
 - Indexes: INDEX(status), INDEX(status, created_at) as idx_status_created
 
 ### Table: `payments`
-- Purpose: Order payments.
+- Purpose: Order payments and wallet top-ups.
 - Columns:
   - id (BIGINT, PK)
-  - order_id (BIGINT) FK -> orders(id) CASCADE
+  - uuid (UUID unique)
+  - order_id (BIGINT nullable) FK -> orders(id) CASCADE
+  - purpose (VARCHAR 50, default 'order') — classifies payment: `order` or `wallet_topup`
   - customer_id (BIGINT) FK -> users(id) RESTRICT
   - amount (BIGINT)
   - method (VARCHAR)
@@ -311,6 +313,11 @@
   - data (JSONB nullable)
   - admin_notes (TEXT nullable)
   - created_by (BIGINT nullable) FK -> staff(id) SET NULL
+  - last_gateway_reference (VARCHAR nullable)
+  - attempt_count (INTEGER default 0)
+  - last_attempted_at (TIMESTAMP nullable)
+  - ip_address (VARCHAR nullable)
+  - user_agent (TEXT nullable)
   - created_at/updated_at (TIMESTAMPS)
 
 ### Table: `refunds`

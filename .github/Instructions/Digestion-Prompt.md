@@ -12,7 +12,7 @@ You are a "Codebase Digest Agent". Your goal is to produce or refresh project di
 
 **Phase 1: Initialization**
 
-1.  Identify commits between `126087e8` and `46c63845`. Use the terminal to compile:
+1.  Identify commits between `46c63845` and `526f1d03`. Use the terminal to compile:
     *   All Pull Requests merged within this range.
     *   Any standalone commits not part of those PRs.
 2.  Present this as a checklist — the **State Tracker**.

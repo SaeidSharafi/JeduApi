@@ -24,10 +24,10 @@
 - **Usage:** Intended for cron job scheduling to automate content publication workflow
 
 #### CheckStuckPaymentsCommand (`app/Console/Commands/CheckStuckPaymentsCommand.php`)
-- **Purpose:** Detects payments stuck in PENDING state with initiated but uncompleted transactions beyond threshold
+- **Purpose:** Detects and auto-fails payments stuck in PENDING state with initiated but uncompleted transactions beyond threshold
 - **Signature:** `payments:check-stuck {--threshold=30}`
-- **Functionality:** Queries payments where latest transaction is `INITIATED` longer than threshold minutes ago without `completed_at`. Logs warnings with payment ID, order info, transaction reference, and stuck duration for manual review.
-- **Usage:** Intended for cron scheduling (e.g., every 15 minutes) to alert support of abandoned gateway payments.
+- **Functionality:** Queries payments where latest transaction is `INITIATED` longer than threshold minutes ago without `completed_at`. Logs warnings with payment ID, order info, transaction reference, and stuck duration. Automatically transitions stuck payment status to `FAILED`.
+- **Usage:** Intended for cron scheduling (e.g., every 15 minutes) to clean up abandoned gateway payments.
 
 #### IndexAllProductPricesCommand (`app/Console/Commands/IndexAllProductPricesCommand.php`)
 - **Purpose:** Batch re-index or initialize pricing index for products
@@ -55,7 +55,7 @@
 - **Usage:** Intended for scheduled task (e.g., daily at midnight) to automatically update pricing when featured prices expireses that need lightweight thumbnail references without hydrating full media relations.
 
 #### Order Actions (`app/Actions/Admin/Order/`)
-  - `handle(OrderCreateData $data): Order`: Delegates all totals to `OrderCalculationService`, locks delivery options while validating requested payment types/quantities against live capacity (`enrolled_count`), **validates registration window (`registration_start_date`/`registration_end_date`) and availability window (`available_from`/`available_to`)**, snapshots product data per item, seeds enrollments in `AWAITING_PAYMENT`, increments promotion usage counts when coupon-driven contexts are present, and populates `pricing_metadata` JSON on each order item. The `pricing_metadata` stores `{original_price, discount_type, discount_amount, discount_percentage}` — with zero discount values for `PRE_PAYMENT` items. The `price` field on order items is always set to `product_delivery_option.price` (base price) without any discounts applied.
+  - `handle(OrderCreateData $data): Order`: Delegates all totals to `OrderCalculationService`, locks delivery options while validating requested payment types/quantities against live capacity (`enrolled_count`), **validates registration window (`registration_start_date`/`registration_end_date`) and availability window (`available_from`/`available_to`)**, snapshots product data per item, increments promotion usage counts when coupon-driven contexts are present, and populates `pricing_metadata` JSON on each order item via `ProductPriceService::getPriceDataForOption()`. The `pricing_metadata` stores `{original_price, discount_type, discount_amount, discount_percentage}` — with zero discount values for `PRE_PAYMENT` items. The `price` field on order items is always set to `product_delivery_option.price` (base price) without any discounts applied. Enrollments are not created by this action — they are created by `OrderStatusService` after payment completion.
   - `handle(OrderUpdateData $data, Order $order): Order`: Updates existing order details and status
   - `handle(Order $order): void`: Handles order deletion and cleanup
 - **ApproveOrderAction** (`app/Actions/Admin/Order/ApproveOrderAction.php`)
@@ -281,7 +281,9 @@
 
 #### Checkout & Payment Actions (`app/Actions/Shop/*`)
 - **CreateOrderFromCartAction** (`app/Actions/Shop/CreateOrderFromCartAction.php`)
-  - `handle(CheckoutData $checkoutData, User $user): PaymentProcessResultData`: Wraps the entire checkout pipeline—loads/validates the active cart (capacity, **registration window, availability window**, publication, duplicate ownership, order velocity), converts it into `OrderCreateData`, reuses `CreateOrderAction`, and then dispatches the selected payment processor. Returns redirect info for multi-step gateways or finalizes wallet/no-payment flows before clearing the cart.
+  - `handle(CheckoutData $checkoutData, User $user): PaymentProcessResultData`: Wraps the entire checkout pipeline—loads/validates the active cart with `lockForUpdate` (capacity, **registration window, availability window**, publication, duplicate ownership, order velocity), converts it into `OrderCreateData` inside a DB transaction, reuses `CreateOrderAction`. Deletes the cart inside the transaction, then dispatches the selected payment processor **outside** the transaction. Uses `PreparePendingPaymentAction` to create a PENDING Payment before calling `processor->process($payment)`. Returns redirect info for multi-step gateways or finalizes wallet/no-payment flows.
+- **TopupWalletAction** (`app/Actions/Shop/Wallet/TopupWalletAction.php`)
+  - `handle(Payment $payment): void`: Credits wallet from a completed `WALLET_TOPUP` payment. Validates payment purpose and status. Creates wallet if missing. Records DEPOSIT transaction linked to the payment.
 - **RetryOrderPaymentAction** (`app/Actions/Shop/RetryOrderPaymentAction.php`)
   - `handle(Order $order, PaymentMethodEnum $method, ?int $amount = null): PaymentProcessResultData`: Allows customers to retry failed/pending orders, validating outstanding balance and order status before reissuing a processor-specific payment request (partial amounts supported via `amount`).
 - **VerifyPaymentAction** (`app/Actions/Shop/Payment/VerifyPaymentAction.php`)
@@ -308,8 +310,12 @@
 - **AuthAction** (`app/Actions/Auth/AuthAction.php`)
   - `handle(AuthData $data): AuthResultData`: Generic authentication action wrapper
 
+### Payment Actions (`app/Actions/Payment/`)
+- **PreparePendingPaymentAction** (`app/Actions/Payment/PreparePendingPaymentAction.php`)
+  - `handle(actor, customerId, method, purpose, amount, ?order, ?adminNotes, ?data): Payment`: Creates a PENDING Payment record with `attempt_count`, `last_attempted_at`, `ip_address`, `user_agent` tracking. Used by both shop and admin payment flows before handing off to processor.
+
 ### Wallet Actions (`app/Actions/Wallet/`)
-- **RecordWalletTransactionAction**: Records all wallet transaction activities
+- **RecordWalletTransactionAction**: Records all wallet transaction activities. For `PAYMENT`/`ORDER` transactions, debits gift balance first (before regular balance) and tracks the split in `wallet_debit_split` metadata.
 
 ## Services Pattern (`app/Services/`)
 
@@ -332,14 +338,14 @@
 - **Purpose:** Implements the multi-step Mellat (بانک ملت) online gateway with per-attempt transaction tracking
 - **Process:**
   - `process()`: Generates unique transaction reference via `PaymentTransactionReferenceService`. Creates Payment + PaymentTransaction (INITIATED) records with full gateway request/response capture. Uses transaction reference (not order increment_id) as gateway `orderId`. Tracks attempt count, IP address, user agent.
-  - `verify()`: Loads latest transaction for the payment. Maps `ResCode` to error messages for failures. On success (`ResCode === '0'`): performs `bpVerifyRequest` + `bpSettleRequest`. Both must succeed before marking transaction as COMPLETED and dispatching `PaymentCompletedEvent`. Failure at any step (verification fail, settlement fail, SOAP fault) updates transaction to FAILED with error details, error codes, timestamps. Settlement code 45 (already settled) treated as success.
+  - `verify()`: Starts with a verification gatekeeper — if the payment is already `COMPLETED`, returns early; if the order has any other completed payment, throws `RuntimeException` preventing double-verification. Loads latest transaction for the payment. Maps `ResCode` to error messages for failures. On success (`ResCode === '0'`): performs `bpVerifyRequest` + `bpSettleRequest`. Both must succeed before marking transaction as COMPLETED and dispatching `PaymentCompletedEvent`. Failure at any step (verification fail, settlement fail, SOAP fault) updates transaction to FAILED with error details, error codes, timestamps. Settlement code 45 (already settled) treated as success.
   - **Transaction Lifecycle:** Every gateway interaction creates a `PaymentTransaction` record tracking `initiated_at`, `completed_at`, `gateway_request`, `gateway_response`, `error_code`, `error_message`. This provides full audit trail per payment attempt.
 
 ### DigipayPaymentProcessor (`app/Services/Payment/DigipayPaymentProcessor.php`)
 - **Purpose:** Implements the multi-step Digipay (دیجی‌پی) REST gateway with token-based authentication, callback verification, delivery confirmation, and refund operations
 - **Process:**
   - `process()`: Requests access token via `DigipayAuthenticator` (client_credentials grant with `client_id`/`client_secret`). Creates a payment request via `DigipayClient::createTransaction()` with amount, providerId (order UUID), callback URL, and optional PSP selection. Returns redirect URL for customer.
-  - `verify()`: Validates callback payload via `CallbackPayload::fromRequest()`. On `SUCCESS` result, performs settlement via `DigipayClient::verify()` with tracking code. Completes the payment and dispatches `PaymentCompletedEvent`.
+  - `verify()`: Starts with a verification gatekeeper — if the payment is already `COMPLETED`, returns early; if the order has any other completed payment, throws `RuntimeException` preventing double-verification. Validates callback payload via `CallbackPayload::fromRequest()`. On `SUCCESS` result, performs settlement via `DigipayClient::verify()` with tracking code. Completes the payment and dispatches `PaymentCompletedEvent`.
 - **Data Objects:** `CallbackPayload` (amount, providerId, trackingCode, result, rrn, psp, pspCode, pspName), `VerifyResponse`, `DeliverResponse`, `RefundResponse`, `RefundInquiryResponse`, `ReverseResponse`, `TicketResponse`.
 - **Admin Operations** (`DigipayAdminService`): `refund(Payment $payment, int $amount)` — initiates gateway reversal; `deliver(Payment $payment)` — confirms digital goods delivery; `reverse(Payment $payment)` — voids unsettled transaction; `inquireRefund(string $trackingCode)` — checks refund status.
 
@@ -347,8 +353,9 @@
 - **Purpose:** Resolves the appropriate `RefundProcessorInterface` implementation by `PaymentMethodEnum`
 - **Available Processors:**
   - `DigipayRefundProcessor` — processes refunds through Digipay gateway API with cumulative cap validation (prevents over-refund)
-  - `ManualRefundProcessor` — records manual/offline refunds without gateway interaction
+  - `ManualRefundProcessor` — records manual/offline refunds without gateway interaction (used for MELLAT_GATEWAY and BANK_TRANSFER)
   - `WalletRefundProcessor` — credits refund amount back to customer wallet
+- **Resolution:** Uses `PaymentMethodEnum::tryFrom()` for type-safe method matching.
 
 ### SoapClientFactory (`app/Services/Payment/SoapClientFactory.php`)
 - **Purpose:** Minimal helper that instantiates `SoapClient` instances from remote or local WSDL endpoints; wrapped to simplify mocking in unit tests
@@ -361,16 +368,17 @@
    - `full_payment`: Provisions only when `balance_due <= 0`
    - `manual_approval`: Never auto-provisions — sets order to PROCESSING, requiring staff to call `ApproveOrderAction`
    - `updateEnrollmentStatus(OrderItem $item): void`: Updates enrolment access based on order item status changes (completed items move enrolments into `PENDING_PROVISIONING`). Uses `save()` to fire model events for `enrolled_count` synchronization.
-  - `completeOrderItemAfterPayment(OrderItem $item): void`: Internal method for item-level status updates
+  - `completeOrderItemAfterPayment(OrderItem $item): void`: Internal method for item-level status updates. Creates enrollment via `firstOrCreate()` if none exists (status `ACTIVE`), then calls `updateEnrollmentStatus()`.
   - `updateParentOrderStatus(Order $order): void`: Determines parent order status from collective item states: all refunded → REFUNDED, all cancelled → CANCELLED, any refunded → PARTIALLY_REFUNDED, all completed → COMPLETED, default → PROCESSING
 
 ### CartService (`app/Services/CartService.php`)
 - **Purpose:** Single façade for cart lifecycle management across authenticated and guest flows
 - **Key Capabilities:**
-  - `findOrCreateCart(?User $user = null): Cart`: Resolves carts via the `CartIdentifier` contract (user or guest token) and eagerly loads delivery options/products
+  - `findOrCreateCart(?User $user = null, bool $lockForUpdate = false): Cart`: Resolves carts via the `CartIdentifier` contract (user or guest token) and eagerly loads delivery options/products. Supports `lockForUpdate` for transactional checkout flows.
   - `addItem`, `updateItem`, `removeItem`: Validate capacity/payment type constraints before mutating cart rows
   - `applyCoupon(ApplyCouponData $data): CartData`: Validates coupon codes via `PromotionFinder`, tracks them on the cart, and recalculates totals through `OrderCalculationService`
   - `buildCartDataWithTotals(Cart $cart): CartData`: Hydrates DTOs with current pricing/discount context for API responses
+- **Internal:** `resolveCart()` implements the find-or-create pattern with unique constraint race recovery for concurrent requests.
 - **Special Notes:** Enforces an order velocity limit (5 orders/hour) during checkout and delegates cart persistence cleanup post-successful conversion
 
 ### RequestCartIdentifier (`app/Services/Cart/RequestCartIdentifier.php`)
@@ -443,6 +451,13 @@
   - `getPriceRangeForProduct(Product $product): array`: Returns min/max price range
   - `getHighestDiscountPercentage(Product $product, ?int $selectedDeliveryOptionId = null): float`: Calculates maximum discount percentage
 - **Dependencies:** `RequestDataCacheService` for performance optimization
+
+### GatewayService (`app/Services/Payment/GatewayService.php`)
+- **Purpose:** Centralized gateway settings resolution with config fallback for shop-facing and admin-facing endpoints
+- **Public Methods:**
+  - `getShopActiveGateways(): array`: Returns array of active gateway method values (e.g., `['mellat', 'wallet', 'bank_transfer']`) for checkout validation.
+  - `getShopActiveGatewaysDetials(): array`: Returns array of `GatewayData` DTOs for shop gateway listing (enabled + shop_enabled).
+- **Mechanism:** Resolves each `PaymentMethodEnum` with a `settingKey()` against `SettingsService`, falling back to `PaymentMethodEnum::defaultConfig()` (reads from `config/payments.php`) when no stored settings exist.
 
 ### SettingSecretRedactor (`app/Services/SettingSecretRedactor.php`)
 - **Purpose:** Redacts secret field values from integration setting arrays before API responses and audit logging
@@ -542,7 +557,9 @@
   - `LIVE_SESSION_SKYROOM` delivery → (handled via `GetJoinUrlAction` at request time, not async)
 
 #### UpdateStatusesAfterPaymentListener (`app/Listeners/UpdateStatusesAfterPaymentListener.php`)
-- **Purpose:** Calls `OrderStatusService::handlePaymentCompletion()` after payment confirmed (synchronous)
+- **Purpose:** Routes payment completion events based on payment purpose:
+  - `WALLET_TOPUP`: Calls `TopupWalletAction::handle()` to credit the customer's wallet.
+  - `ORDER`: Calls `OrderStatusService::handlePaymentCompletion()` to complete order/enrollment lifecycle.
 
 ### RequestDataCacheService (`app/Services/RequestDataCacheService.php`)
 - **Purpose:** Request-scoped caching service to prevent duplicate database queries and calculations
@@ -559,10 +576,21 @@
 
 ### Exception Hierarchy
 - `ExternalProvisioningException` — abstract base; subclasses: `RecoverableProvisioningException` (transient 5xx errors), `UnrecoverableProvisioningException` (permanent 4xx/config errors).
-- `BankException` — abstract base for gateway-specific bank exceptions.
+- `Gateway\BankException` — abstract base for gateway-specific bank exceptions; subclasses include `MellatException`.
+- `Gateway\DigipayException` — Digipay gateway exception in `App\Exceptions\Gateway` namespace.
+- `Payment\DuplicatePaymentException` — thrown when attempting to create a duplicate payment.
+- `Payment\InvalidPaymentPurposeException` — thrown when payment purpose does not match expected context.
+- `Payment\OrderFullyPaidException` — thrown when calculating next payment for an already fully paid order.
+- `Payment\PaymentException` — base payment domain exception implementing `PaymentExceptionContract`.
+- `Payment\PaymentTransactionNotFoundException` — thrown when a payment transaction is not found.
+- `Wallet\WalletException` — abstract base for wallet domain exceptions.
+- `Wallet\WalletNotActive` — thrown when attempting to use an inactive wallet.
+- `Wallet\WalletNotFoundException` — thrown when wallet does not exist for a user.
+- `Wallet\WalletUserNotFoundException` — thrown when user not found for wallet operations.
+- `Wallet\WalletInsufficientBalanceException` — thrown when wallet balance is insufficient; includes `availableBalance`, `requiredBalance`, `shortfall`, `sourceType`, `sourceId`.
 - `ResourceNotProvisionedException` — thrown when a requested provisioning resource is unavailable.
 - Order cancellation throws `ValidationException`.
-- Wallet/user creation errors use `ValidationException`.
+- Wallet/user creation errors use domain-specific wallet exceptions.
 
 ### PermissionEnum
 - `PermissionEnum` cases organized by resource domain. See `config/permission-generator.php` for full list. Run `sail artisan permission:sync` to synchronize enums with permissions.
@@ -570,9 +598,9 @@
 
 ## Recent Behavior Clarifications
 
-### Gateway Verification Idempotency
-- Verification proceeds only when `Payment.status` is `PENDING`.
-- Duplicate callbacks against non-pending payments raise a validation error keyed `payment` and do not create additional enrollments/payments.
+### Gateway Verification Gatekeeper
+- Verification starts with a gatekeeper in each processor: if `Payment.status` is already `COMPLETED`, returns early. If the order has any other completed payment, throws `RuntimeException` preventing double-verification.
+- Only `PENDING` payments transition to `COMPLETED`.
 
 ### Capacity & Concurrency at Checkout
 - Capacity is enforced at checkout time; cart additions do not reserve capacity.
@@ -677,6 +705,10 @@
 
 ## Observers, Events & Async Processing
 
+### SettingObserver (`app/Observers/SettingObserver.php`)
+- **Purpose:** Clears settings cache on Setting model save/delete events.
+- **Mechanism:** Calls `SettingsService::forget()` on `saved` and `deleted` events to keep cached setting payloads consistent.
+
 ### InvalidationObserver (`app/Observers/InvalidationObserver.php`)
 - **Purpose:** Global Eloquent observer that translates model save/delete events into cache invalidations.
 - **Mechanism:** Reads `config/cache_invalidation.php` to map model classes (Product, Slider, Partner, HomePageBlock, Setting, etc.) to lists of `CacheKeysEnum`, literal keys, or wildcard patterns and delegates eviction to `CacheInvalidationService` (`SmartCache::forget` + `flushPatterns`).
@@ -716,17 +748,18 @@
   - `create(string $method): PaymentProcessorInterface`: Creates appropriate payment processor
   - `getSupportedMethods(): array`: Returns list of supported payment methods
 
+#### PaymentProcessorContract (`app/Contracts/Payment/PaymentProcessorContract.php`)
+- **`process(Payment $payment): PaymentProcessResultData`**: Processes a pre-created Payment record. Payment is created by `PreparePendingPaymentAction` before processing. Returns redirect info or completion result.
+- **`verify(Payment $payment, array $callbackData): Payment`**: Verifies payment after gateway callback.
+
 #### WalletPaymentProcessor (`app/Services/Payment/WalletPaymentProcessor.php`)
 - **Purpose:** Processes wallet-based payments with transaction tracking
-- **Public Methods:**
-  - `processPayment(PaymentData $data): PaymentResult`: Processes wallet payments, creates PaymentTransaction record, validates balance with domain exception
-  - `validateWalletBalance(Wallet $wallet, float $amount): bool`: Validates sufficient balance
+- **`process(Payment $payment): PaymentProcessResultData`**: Accepts a pre-created PENDING Payment. Validates wallet balance (throws `InsufficientWalletBalanceException` with `orderIncrementId`), records debit with gift balance splitting (regular balance first, then gift balance), creates PaymentTransaction (COMPLETED), and dispatches `PaymentCompletedEvent`.
+- **`verify()`**: Unsupported — throws by design.
 
 #### BankTransferPaymentProcessor (`app/Services/Payment/BankTransferPaymentProcessor.php`)
 - **Purpose:** Handles bank transfer payment processing
-- **Public Methods:**
-  - `processPayment(PaymentData $data): PaymentResult`: Processes bank transfer payments, validates bank transfer details for admin-initiated payments
-  - `validateBankDetails(array $details): bool`: Validates bank transfer information
+- **`process(Payment $payment): PaymentProcessResultData`**: Processes a pre-created PENDING Payment for bank transfers. Staff flows complete immediately; customer flows remain pending awaiting review.
 
 ### OtpManagerService (`app/Services/OtpManagerService.php`)
 - **Purpose:** Manages OTP generation, validation, and delivery
@@ -737,9 +770,10 @@
 
 ### InsufficientWalletBalanceException (`app/Exceptions/Payment/InsufficientWalletBalanceException.php`)
 - **Purpose:** Domain exception for wallet balance validation failures
-- **Properties:** `availableBalance`, `requiredBalance`, `shortfall`
+- **Properties:** `availableBalance`, `requiredBalance`, `shortfall`, `orderIncrementId` (nullable)
 - **Thrown by:** `WalletPaymentProcessor::process()` when wallet balance is insufficient for payment amount
 - **Message:** Localized via `validation.custom.insufficient_wallet_balance` language key
+- **Response Metadata:** Includes `error_code`, `available_balance`, `required_balance`, `shortfall`, and `order_id` (when `orderIncrementId` is set) so frontend can retry the failed payment.
 
 ### DefaultOtpGenerator (`app/Services/DefaultOtpGenerator.php`)
 - **Purpose:** Default implementation of OTP generation

@@ -132,11 +132,11 @@
 
 ### OrderData DTO (`app/Data/Admin/Order/OrderData.php`)
 - **Fields:** `id`, `increment_id`, `status`, `customer_id`, `customer_email`, `customer_phone`, `customer_first_name`, `customer_last_name`, `total_qty_ordered`, `total_item_count`, `subtotal`, `discount_amount`, `tax_amount`, `grand_total`, `total_paid`, `balance_due`, `full_value_grand_total`, `total_product_discount`, `total_cart_discount`, `total_discount`, `currency_code`, `customer`, `payment_status`, `applied_coupon_code`, `admin_notes`, `created_at`, `updated_at`, `customer_snapshot`, `items` (collection of `OrderItemData`)
-- **Discount Layering:** `full_value_grand_total` represents the sum of all items at their base prices (no discounts applied) and is the reference for `balance_due`. `total_product_discount` aggregates product-level discounts from all items. `total_cart_discount` reflects cart-level coupon discounts (alias for `discount_amount`). `total_discount` is the combined sum of product-level and cart-level discounts.
+- **Discount Layering:** `full_value_grand_total` represents the sum of all items at their base prices (no discounts applied) and is the reference for `balance_due`. `total_product_discount` aggregates product-level discounts from all items (sourced from `Order::totalProductDiscount()` accessor which sums `product_discount_amount` across items). `total_cart_discount` reflects cart-level coupon discounts (alias for `discount_amount`). `total_discount` is the combined sum of product-level and cart-level discounts.
 
 ### OrderItemData DTO (`app/Data/Admin/Order/OrderItemData.php`)
 - **Fields:** `id`, `Order_id`, `product_delivery_option_id`, `discount_amount`, `qty_ordered`, `tax_amount`, `name`, `sku`, `price`, `original_price`, `product_discount_amount`, `total_discount_amount`, `total`, `payment_type`, `prepayment_amount`, `qty_refunded`, `total_refunded`, `status`, `vendor`, `product_snapshot`
-- **Price Layering:** `price` is the base price (never includes discounts). `original_price` is read from `pricing_metadata['original_price']`. `product_discount_amount` is the product-level discount (featured price / auto-promotion). `total_discount_amount` combines product-level + cart-level discounts.
+- **Price Layering:** `price` is the base price (never includes discounts). `original_price` is read from `pricing_metadata['original_price']` (sourced from `OrderItem::originalPrice()` accessor). `product_discount_amount` is the product-level discount from `pricing_metadata['discount_amount']` multiplied by `qty_ordered` (sourced from `OrderItem::productDiscountAmount()` accessor). `total_discount_amount` combines product-level + cart-level discounts.
 
 ### OrderListItemData DTO (`app/Data/Admin/Order/OrderListItemData.php`)
 - **Fields:** `id`, `increment_id`, `customer_first_name`, `customer_last_name`, `customer_email`, `customer_phone`, `subtotal`, `discount_amount`, `tax_amount`, `grand_total`, `total_paid`, `balance_due`, `admin_notes`, `status`, `payment_status`, `created_at`, `updated_at`, `payments` (collection of `PaymentData`), `items` (collection of `OrderItemListItemData`)
@@ -169,7 +169,7 @@
 - `destroy(Order $order, Payment $payment)`: **Route:** `DELETE /api/v1/admin/orders/{order}/payment/{payment}` - **Delegates to:** Payment deletion
 
 ### NextPaymentDetailsController (`app/Http/Controllers/Api/Admin/Order/NextPaymentDetailsController.php`)
-- `__invoke(Order $order)`: **Route:** `GET /api/v1/admin/orders/{order}/next-payment-details` - **Response DTO:** NextPaymentData
+- `__invoke(Order $order)`: **Route:** `GET /api/v1/admin/orders/{order}/next-payment-details` - **Response DTO:** NextPaymentData. Throws `OrderFullyPaidException` (returns 422) if order is already fully paid.
 
 ### DiscountPromotionController (`app/Http/Controllers/Api/Admin/DiscountPromotionController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/discount-promotion` - **Delegates to:** Discount promotion listing - **Response DTO:** DiscountPromotionData collection
@@ -250,11 +250,11 @@
 - `update(CollaborationInfoUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/collaboration` - **Request DTO:** CollaborationInfoUpdateData - **Response DTO:** CollaborationInfoData
 
 #### FooterController (`app/Http/Controllers/Api/Admin/Content/FooterController.php`)
-- `show()`: **Route:** `GET /api/v1/admin/settings/footer` - **Response DTO:** FooterData with nested link arrays
-- `update(FooterUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/footer` - **Request DTO:** FooterUpdateData - **Response DTO:** FooterData post-update
+- `show()`: **Route:** `GET /api/v1/admin/settings/footer` - **Response DTO:** FooterData with logo, caption, support_email, addresses, categories (array of category IDs), social_media_links, certifications
+- `update(FooterUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/footer` - **Request DTO:** FooterUpdateData (categories as array of integer IDs) - **Response DTO:** FooterData post-update
 
 #### HeaderController (`app/Http/Controllers/Api/Admin/Content/HeaderController.php`)
-- `show()`: **Route:** `GET /api/v1/admin/settings/header` - **Response DTO:** HeaderData including navigation links
+- `show()`: **Route:** `GET /api/v1/admin/settings/header` - **Response DTO:** HeaderData with logo, contact_phone, contact_email
 - `update(HeaderUpdateData $request)`: **Route:** `PUT /api/v1/admin/settings/header` - **Request DTO:** HeaderUpdateData - **Response DTO:** HeaderData
 
 #### SliderController (`app/Http/Controllers/Api/Admin/Content/Slider/SliderController.php`)
@@ -422,7 +422,10 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 - `update(ProfileUpdateData $request)`: **Route:** `PUT /api/v1/shop/profile` - **Request DTO:** ProfileUpdateData - **Response DTO:** UserProfileData
 
 #### GatewayListController (`app/Http/Controllers/Api/Shop/Sale/GatewayListController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/shop/payment/gateways` - Returns available payment gateway options with labels and icons for checkout UI.
+- `__invoke(GatewayService $service)`: **Route:** `GET /api/v1/shop/payment/gateways` - Returns available payment gateway options with labels and icons for checkout UI. Delegates to `GatewayService::getShopActiveGatewaysDetials()` which resolves gateway settings via `SettingsService` with `config/payments.php` defaults as fallback.
+
+#### WalletTopupController (`app/Http/Controllers/Api/Shop/Wallet/WalletTopupController.php`)
+- `topup(WalletTopupRequestData $data)`: **Route:** `POST /api/v1/shop/wallet/topup` (throttled: 5/1min, requires `auth:user`) - Allows authenticated user to add funds to their wallet. Blocks WALLET as payment method for top-ups. Creates PENDING payment via `PreparePendingPaymentAction` with `WALLET_TOPUP` purpose, then processes via gateway. **Request DTO:** WalletTopupRequestData (amount min 10000, payment_method: mellat_gateway|digipay). **Response DTO:** Payment process result with redirect info.
 
 #### Student Dashboard (`/api/v1/shop/student/*`)
 
@@ -453,7 +456,11 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 - `__invoke(Order $order)`: **Route:** `POST /api/v1/shop/student/orders/{order:increment_id}/cancel` - **Delegates to:** CancelOrderByCustomerAction::execute(). **Response DTO:** OrderData.
 
 ##### RetryPaymentController (`app/Http/Controllers/Api/Shop/Student/RetryPaymentController.php`)
-- `__invoke(string $incrementId, RetryOrderPaymentData $request)`: **Route:** `POST /api/v1/shop/student/orders/{order:increment_id}/retry-payment` (throttled) - Revalidates eligibility and triggers `RetryOrderPaymentAction`.
+- `__invoke(string $incrementId, RetryOrderPaymentData $request)`: **Route:** `POST /api/v1/shop/student/orders/{order:increment_id}/retry-payment` (throttled) - Revalidates eligibility and triggers `RetryOrderPaymentAction` using `PreparePendingPaymentAction` + processor.
+
+##### ShowPaymentController (`app/Http/Controllers/Api/Shop/Student/ShowPaymentController.php`)
+- `index()`: **Route:** `GET /api/v1/shop/student/payments` - Lists authenticated user's payments. **Response DTO:** `PaymentData` collection.
+- `show(string $uuid)`: **Route:** `GET /api/v1/shop/student/payments/{uuid}` - Returns single payment by UUID. **Response DTO:** `PaymentData`.
 
 #### CartController (`app/Http/Controllers/Api/Shop/Sale/CartController.php`)
 - `index()`: **Route:** `GET /api/v1/shop/cart` - **Guards:** Supports authenticated users or guests (via `X-Guest-Token`) - **Response DTO:** `CartData`
@@ -464,7 +471,7 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 - `removeCoupon()`: **Route:** `DELETE /api/v1/shop/cart/coupon` - Clears any applied coupon - **Response DTO:** `CartData`
 
 #### CheckoutController (`app/Http/Controllers/Api/Shop/Sale/CheckoutController.php`)
-- `__invoke(CheckoutData $request, CreateOrderFromCartAction $action)`: **Route:** `POST /api/v1/shop/checkout` (requires `auth:user`, `profile.check`) - Converts the current cart into an order, runs `CreateOrderFromCartAction`, and returns `CheckoutResponseData` that either embeds a completed `OrderData` payload or redirect instructions for multi-step gateways (Mellat, etc.). Free orders auto-complete with `NO_PAYMENT`. Now validates registration window (`registration_start_date`/`registration_end_date`) and availability window (`available_from`/`available_to`) on each cart item at checkout.
+- `__invoke(CheckoutData $request, CreateOrderFromCartAction $action)`: **Route:** `POST /api/v1/shop/checkout` (requires `auth:user`, `profile.check`) - Converts the current cart into an order, runs `CreateOrderFromCartAction`, and returns `CheckoutResponseData` that either embeds a completed `OrderData` payload or redirect instructions for multi-step gateways (Mellat, etc.). Free orders auto-complete with `NO_PAYMENT`. Validates registration window and availability window on each cart item at checkout. **Request DTO:** CheckoutData includes optional `payment_data` array for gateway-specific parameters.
 
 ### Shop Public Endpoints (`/api/v1/shop/*`)
 **Authentication:** Unauthenticated public access
@@ -483,13 +490,13 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 - `__invoke(StudentStoryRequestData $request)`: **Route:** `GET /api/v1/shop/student-stories` - **Query Params:** `course_slug`, `category_slug`, `featured_only`, optional `limit`. Filters visible stories by requested course/category (matching both direct course relations and linked products) and falls back to featured stories when a requested slug yields no records. **Response DTO:** `StudentStoryData` collection ordered by `display_order` and cached per-parameter via `SWRCacheService` with wildcard invalidation support.
 
 #### GatewayCallbackController (`app/Http/Controllers/Api/Shop/Payment/GatewayCallbackController.php`)
-- `__invoke(Request $request, VerifyPaymentAction $action)`: **Route:** `POST /api/v1/shop/payment/gateway/callback` - Accepts Mellat/other gateway callbacks without auth, logs payloads, wraps them in `GatewayCallbackData`, and delegates to `VerifyPaymentAction`. Redirects customers to `shop.payment.*` web routes depending on resulting `PaymentStatusEnum`.
+- `handle(Request $request, Payment $payment, VerifyPaymentAction $action)`: **Route:** `GET|POST /api/v1/shop/payment/gateway/callback/{payment}` - Accepts gateway callbacks via route-bound Payment UUID. Logs payloads, delegates to `VerifyPaymentAction` with Payment model + raw request data. Redirects customers to config-driven success/failure URLs with `payment`, `purpose`, `order` query params. Catches `PaymentExceptionContract` and `Throwable` separately for error-specific redirects.
 
 ### Shop Public Product & Search Endpoints (`/api/v1/shop/*`)
 **Authentication:** Unauthenticated public access
 
 #### CourseController (`app/Http/Controllers/Api/Shop/Product/CourseController.php`)
-- `index(ProductListRequestData $request)`: **Route:** `GET /api/v1/shop/courses` - **Request DTO:** ProductListRequestData (supports `filter[category_slugs][]`, `filter[fulfillment_types][]`, `filter[difficulty_level]`, `filter[availability_status]` (past|upcoming|ongoing), `filter[capacity]`, price range, discount flag, availability windows, search `q`, sort (including `capacity_utilization`), pagination) - **Delegates to:** `ProductQueryService::getCourseList()` with `ProductPriceService` hydration - **Response DTO:** Paginated `ProductCardData`
+- `index(ProductListRequestData $request)`: **Route:** `GET /api/v1/shop/courses` - **Request DTO:** ProductListRequestData (supports `filter[category_slugs][]`, `filter[fulfillment_types][]`, `filter[difficulty_level]`, `filter[availability_status]` (past|upcoming|ongoing), `filter[capacity]`, price range, discount flag, availability windows, search `q`, sort (including `capacity_utilization`), pagination) - **Validation:** Date filter params (`registration_starts_after`, `registration_ends_before`, `available_from`, `available_to`) use `jdate:Y-m-d` and `jdate_after` rules for Jalali date validation - **Delegates to:** `ProductQueryService::getCourseList()` with `ProductPriceService` hydration - **Response DTO:** Paginated `ProductCardData`
 - `show(Product $product)`: **Route:** `GET /api/v1/shop/course/{product:slug}` - **Delegates to:** `ProductQueryService` detail pipeline and `ProductPriceService` for pricing snapshot - **Response DTO:** `CourseDetailData`
 
 #### SeminarController (`app/Http/Controllers/Api/Shop/Product/SeminarController.php`)
@@ -554,7 +561,7 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 - `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/header` - **Response DTO:** HeaderData derived from SettingsService payload
 
 #### FooterController (`app/Http/Controllers/Api/Shop/Settings/FooterController.php`)
-- `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/footer` - **Response DTO:** FooterData including addresses, categories, links, social media entries
+- `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/footer` - **Response DTO:** FooterData including addresses, social media entries, certifications. Categories are resolved from stored IDs to `{name, slug}` pairs via `Category` model query. Footer payload excludes `support_link` and `main_links`; `navigation_links` excluded from header payload.
 
 #### AboutUsController (`app/Http/Controllers/Api/Shop/CMS/AboutUsController.php`)
 - `__invoke(SettingsService $service)`: **Route:** `GET /api/v1/shop/aboutus` - **Response DTO:** AboutUsData transformed from SettingsService
@@ -613,7 +620,7 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 ## Route Organization Pattern
 - **Base Routes:** `/api/v1/api.php` includes all interface route files
 - **Admin Routes:** `/api/v1/admin.php` - Complete platform management with `auth:staff` + `admin.audit`. All routes standardized to plural form. Individual route files: `admin/admin.php` (core CRUD), `admin/sale.php` (orders, payments, refunds, enrollments, Digipay admin), `admin/blog.php`, `admin/catalog.php`, `admin/setting.php`, `admin/wallet.php`, `admin/select_option.php`.
-- **Customer Routes:** `/api/v1/customer.php` - Protected customer operations with `auth:user`. Student dashboard reorganized under `/api/v1/shop/student/*`.
+- **Customer Routes:** `/api/v1/customer.php` - Protected customer operations with `auth:user`. Student dashboard grouped under `/api/v1/shop/student/*`.
 - **Public Routes:** `/api/v1/shop/shop.php` - CMS-driven public endpoints (home page blocks, sliders, partners, header/footer, about/contact/collaboration pages)
 - **Rate-Limited Shop Routes:** `/api/v1/shop/rate-limited.php` - Public form submissions (contact us, collaboration) protected by `throttle:10,1`
 - **Auth Routes:** `/api/v1/auth.php` - Dual authentication system for both interfaces

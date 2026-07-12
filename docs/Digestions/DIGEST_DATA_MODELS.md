@@ -37,7 +37,7 @@
   - `hasMany(Enrollment::class, 'order_id')` - enrollments
   - `belongsTo(User::class, 'customer_id')` - customer
 - **Computed Accessors:**
-  - `totalProductDiscount()` — sums `product_discount_amount` from all order items; represents product-level discounts (featured prices, auto-promotions)
+  - `totalProductDiscount()` — sums `product_discount_amount` from all order items via accessor; represents product-level discounts (featured prices, auto-promotions)
   - `totalCartDiscount()` — alias for `discount_amount`; represents cart-level discount (coupon)
   - `totalDiscount()` — sum of `total_product_discount` + `total_cart_discount`
   - `fullValueGrandTotal()` — internal accessor deriving the sum of item prices at original base values before any discounts; used as reference for `balance_due` calculation
@@ -135,7 +135,7 @@
   - `originalPrice()` — base price from `pricing_metadata['original_price']`, falls back to `price` column
   - `productDiscountAmount()` — product-level discount from `pricing_metadata['discount_amount']` multiplied by `qty_ordered`; zero for pre-payment items
   - `totalDiscountAmount()` — sum of `product_discount_amount` + `discount_amount` (cart-level coupon)
-- **Special Features:** Two-layer discount tracking: product-level discounts (featured prices, auto-promotions) stored in `pricing_metadata` JSON column; cart-level discounts (coupons) stored in `discount_amount` column. The `price` column always stores the base price from `product_delivery_option.price` with no discounts applied.
+- **Special Features:** Two-layer discount tracking: product-level discounts (featured prices, auto-promotions) stored in `pricing_metadata` JSON column; cart-level discounts (coupons) stored in `discount_amount` column. The `price` column always stores the base price from `product_delivery_option.price` with no discounts applied. The `pricing_metadata` JSON stores `{original_price, discount_type, discount_amount, discount_percentage}` — pre-payment items receive zero discount values in `pricing_metadata`.
 
 ### Enrollment (`app/Models/Enrollment.php`)
 - **Purpose:** Student access records linking customers to purchased delivery options
@@ -150,7 +150,7 @@
 
 ### Payment (`app/Models/Payment.php`)
 - **Purpose:** Financial transaction handling with multi-attempt transaction tracking
-- **Key Fields:** `uuid`, `order_id`, `customer_id`, `amount`, `method`, `status`, `admin_notes`, `data`, `created_by`, `last_gateway_reference` (latest gateway ref), `attempt_count` (sequential attempt counter), `last_attempted_at`, `ip_address`, `user_agent`
+- **Key Fields:** `uuid`, `order_id` (nullable), `customer_id`, `amount`, `method`, `purpose` (PaymentPurposeEnum: ORDER, WALLET_TOPUP), `status`, `admin_notes`, `data`, `created_by`, `last_gateway_reference` (latest gateway ref), `attempt_count` (sequential attempt counter), `last_attempted_at`, `ip_address`, `user_agent`
 - **Relationships:** 
   - `belongsTo(Order::class)` - order
   - `belongsTo(User::class, 'customer_id')` - customer
@@ -342,6 +342,10 @@
 - **Values:** `ONLINE`, `IN_PERSON`, `COMBINED`
 - **Purpose:** Derived delivery type in `ProductCardData` based on fulfillment types across delivery options
 
+#### PaymentMethodEnum (`app/Enums/Payment/PaymentMethodEnum.php`)
+- **`defaultConfig(): array`** — returns the default configuration array from `config/payments.php` for each gateway, used as fallback when no stored settings exist in the database.
+- **`settingKey(): ?SettingKeyEnum`** — maps each gateway to its `SettingKeyEnum` for persisted configuration.
+
 #### DeliveryMethodEnum (`app/Enums/Product/DeliveryMethodEnum.php`)
 - **Values:** `LMS_MOODLE`, `VIDEO_PLATFORM_SPOTPLAYER`, `LIVE_SESSION_BBB`, `LIVE_SESSION_SKYROOM`, `DIRECT_DOWNLOAD`, `IN_PERSON`
 - **Purpose:** Maps product delivery methods to external integration providers for provisioning routing
@@ -351,6 +355,14 @@
 - **Purpose:** Groups delivery methods into fulfillment categories for filtering and provisioning
 
 ## Recent Model Behavior Notes
+
+### PaymentPurposeEnum (`app/Enums/Payment/PaymentPurposeEnum.php`)
+- **Values:** `ORDER`, `WALLET_TOPUP`
+- **Purpose:** Classifies payment records by business intent — order payments vs wallet top-ups. Used by `UpdateStatusesAfterPaymentListener` to route to appropriate handler (`OrderStatusService::handlePaymentCompletion()` for orders, `TopupWalletAction` for wallet top-ups).
+
+### TransactionSourceEnum (`app/Enums/Wallet/TransactionSourceEnum.php`)
+- **Additional Value:** `DEPOSIT`
+- **Purpose:** Tracks wallet transactions originating from deposit/top-up payments.
 
 ### Order Provisioning Configuration
 - `config/order.php` controls increment ID pattern (simple/dated/prefixed) and provisioning trigger (`any_payment`/`full_payment`/`manual_approval`).
@@ -369,7 +381,8 @@
 - `DiscountPromotion.total_usage_count` and `DiscountCoupon.usage_count` increment only on successful checkout when the promotion/coupon is applied.
 
 ### Payment Verification State
-- Payment verification is idempotent; only `PENDING` payments transition to `COMPLETED`. Re-verification attempts on non-pending payments are rejected.
+- Payment verification starts with a gatekeeper check: if the payment is already `COMPLETED`, returns early; if the order has any other completed payment, throws `RuntimeException` preventing double-verification.
+- Only `PENDING` payments transition to `COMPLETED`. Duplicate callback attempts against non-pending payments are blocked by the gatekeeper.
 - Verification tracks full lifecycle via `PaymentTransaction` (INITIATED → COMPLETED/FAILED) with complete gateway request/response capture.
 
 ### Order & Enrollment Provisioning Triggers
