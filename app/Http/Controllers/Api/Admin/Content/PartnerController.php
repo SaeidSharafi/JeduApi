@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Partner;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
+use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
@@ -37,7 +38,11 @@ final class PartnerController extends Controller
         Gate::authorize('viewAny', Partner::class);
         $partners = QueryBuilder::for(Partner::class)
             ->defaultSort('order')
-            ->allowedFilters(['title', 'show_in', 'is_active'])
+            ->allowedFilters([
+                'title',
+                AllowedFilter::exact('show_in'),
+                AllowedFilter::exact('is_active')
+            ])
             ->allowedSorts('order', 'title', 'created_at')
             ->paginate(request()->integer('per_page', 15))
             ->withQueryString();
