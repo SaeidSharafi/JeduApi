@@ -9,8 +9,10 @@ use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\RefundStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Contracts\Payment\RefundProcessorInterface;
 use App\Events\RefundCompletedEvent;
 use App\Exceptions\Gateway\DigipayException;
+use App\Exceptions\RefundGatewayException;
 use App\Exceptions\RefundValidationException;
 use App\Models\Order;
 use App\Models\Payment;
@@ -19,6 +21,7 @@ use App\Models\Refund;
 use App\Services\OrderStatusService;
 use App\Services\Payment\Digipay\Data\RefundResponse;
 use App\Services\Payment\Digipay\DigipayAdminService;
+use App\Services\Payment\Refund\RefundProcessorFactory;
 use Illuminate\Support\Facades\Event;
 use Mockery\MockInterface;
 
@@ -439,4 +442,177 @@ it('validates deduction_amount and deduction_percent conflict', function (): voi
 
     expect(fn () => (resolve(RefundOrderAction::class))->handle($order, $data))
         ->toThrow(RefundValidationException::class, 'deduction amount and percentage conflict');
+});
+
+// ─── Non-Gateway Exception from Processor ────────────────────────────
+
+it('re-throws non-RefundGatewayException from Digipay processor', function (): void {
+    $order = Order::factory()->withCalculatedTotals([
+        ['price' => 100000, 'total' => 100000],
+    ])->create();
+
+    $payment = $order->payments()->create([
+        'customer_id' => $order->customer_id,
+        'method'      => PaymentMethodEnum::DIGIPAY,
+        'amount'      => 100000,
+        'status'      => PaymentStatusEnum::COMPLETED,
+    ]);
+
+    $payment->transactions()->create([
+        'transaction_reference' => 'TXN-GENERIC-ERR',
+        'initiated_at'          => now(),
+        'gateway_response'      => ['tracking_code' => 'DGP-GEN', 'payment_gateway' => 0],
+    ]);
+
+    $order->items->each->update(['status' => OrderItemStatusEnum::COMPLETED]);
+
+    // Mock the factory to return a processor that throws a generic RuntimeException
+    $mockProcessor = Mockery::mock(RefundProcessorInterface::class);
+    $mockProcessor->shouldReceive('process')
+        ->once()
+        ->andThrow(new RuntimeException('Unexpected connection timeout'));
+
+    $this->mock(RefundProcessorFactory::class, function (MockInterface $mock) use ($mockProcessor): void {
+        $mock->shouldReceive('make')
+            ->with(PaymentMethodEnum::DIGIPAY->value)
+            ->once()
+            ->andReturn($mockProcessor);
+    });
+
+    $data = new RefundOrderData(
+        deduction_amount: 0,
+        deduction_percent: null,
+        skip_gateway: false,
+        admin_notes: 'Test',
+        receiver_name: null,
+        card_number: null,
+        iban: null,
+    );
+
+    expect(fn () => (resolve(RefundOrderAction::class))->handle($order, $data))
+        ->toThrow(RuntimeException::class, 'Unexpected connection timeout');
+
+    $this->assertDatabaseHas('refunds', [
+        'order_item_id' => $order->items[0]->id,
+        'status'        => RefundStatusEnum::FAILED->value,
+    ]);
+});
+
+// ─── Wallet Payment Path ─────────────────────────────────────────────
+
+it('processes wallet payment method for full-order refund', function (): void {
+    $order = Order::factory()->withCalculatedTotals([
+        ['price' => 50000, 'total' => 50000],
+    ])->create();
+
+    $order->payments()->create([
+        'customer_id' => $order->customer_id,
+        'method'      => PaymentMethodEnum::WALLET,
+        'amount'      => 50000,
+        'status'      => PaymentStatusEnum::COMPLETED,
+    ]);
+
+    $order->items->each->update(['status' => OrderItemStatusEnum::COMPLETED]);
+
+    $mockProcessor = Mockery::mock(RefundProcessorInterface::class);
+    $mockProcessor->shouldReceive('process')
+        ->once()
+        ->andReturnNull();
+
+    $this->mock(RefundProcessorFactory::class, function (MockInterface $mock) use ($mockProcessor): void {
+        $mock->shouldReceive('make')
+            ->with(PaymentMethodEnum::WALLET->value)
+            ->once()
+            ->andReturn($mockProcessor);
+    });
+
+    $data = new RefundOrderData(
+        deduction_amount: 0,
+        deduction_percent: null,
+        skip_gateway: false,
+        admin_notes: 'Wallet refund',
+        receiver_name: null,
+        card_number: null,
+        iban: null,
+    );
+
+    $refunds = (resolve(RefundOrderAction::class))->handle($order, $data);
+
+    expect($refunds)->toHaveCount(1);
+    $this->assertDatabaseHas('refunds', [
+        'order_item_id' => $order->items[0]->id,
+        'status'        => RefundStatusEnum::COMPLETED->value,
+    ]);
+});
+
+// ─── Edge Cases: calculateAmountPaidForItem ──────────────────────────
+
+it('uses order_item total when balance_due is greater than zero', function (): void {
+    // Create order where balance_due > 0 (item.total < amount from calculated formula)
+    $order = Order::factory()->withCalculatedTotals([
+        ['price' => 100000, 'prepayment_amount' => 80000, 'payment_type' => 'pre_payment', 'total' => 80000],
+    ])->create();
+
+    $order->payments()->create([
+        'customer_id' => $order->customer_id,
+        'method'      => PaymentMethodEnum::BANK_TRANSFER,
+        'amount'      => 80000,
+        'status'      => PaymentStatusEnum::COMPLETED,
+    ]);
+
+    $order->items->each->update(['status' => OrderItemStatusEnum::COMPLETED]);
+
+    $data = new RefundOrderData(
+        deduction_amount: 0,
+        deduction_percent: null,
+        skip_gateway: false,
+        admin_notes: 'Test',
+        receiver_name: 'John Doe',
+        card_number: '1234567812345678',
+        iban: 'DE89370400440532013000',
+    );
+
+    $refunds = (resolve(RefundOrderAction::class))->handle($order, $data);
+
+    // balance_due > 0, so calculateAmountPaidForItem returns $orderItem->total (80000)
+    expect($refunds)->toHaveCount(1);
+    $this->assertDatabaseHas('refunds', [
+        'order_item_id' => $order->items[0]->id,
+        'amount'        => 80000, // total, not price
+    ]);
+});
+
+// ─── Edge Cases: calculateItemDeduction ──────────────────────────────
+
+it('returns zero deduction when both deduction_amount and deduction_percent are null', function (): void {
+    $order = Order::factory()->withCalculatedTotals([
+        ['price' => 100000, 'total' => 100000],
+    ])->create();
+
+    $order->payments()->create([
+        'customer_id' => $order->customer_id,
+        'method'      => PaymentMethodEnum::BANK_TRANSFER,
+        'amount'      => 100000,
+        'status'      => PaymentStatusEnum::COMPLETED,
+    ]);
+
+    $order->items->each->update(['status' => OrderItemStatusEnum::COMPLETED]);
+
+    $data = new RefundOrderData(
+        deduction_amount: null,
+        deduction_percent: null,
+        skip_gateway: false,
+        admin_notes: 'Test',
+        receiver_name: 'John Doe',
+        card_number: '1234567812345678',
+        iban: 'DE89370400440532013000',
+    );
+
+    $refunds = (resolve(RefundOrderAction::class))->handle($order, $data);
+
+    $this->assertDatabaseHas('refunds', [
+        'order_item_id'    => $order->items[0]->id,
+        'amount'           => 100000,
+        'deduction_amount' => 0,
+    ]);
 });

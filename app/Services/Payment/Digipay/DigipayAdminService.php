@@ -38,8 +38,10 @@ final class DigipayAdminService
         $gatewayResponse = $this->getGatewayResponse($payment);
         $order           = $payment->order;
 
+        $order->load('items.productDeliveryOption');
+
         $products = $order->items
-            ->map(fn ($item): string => 'product-'.$item->product_id)
+            ->map(fn ($item): string => 'product-'.$item->productDeliveryOption->product_id)
             ->values()
             ->all();
 

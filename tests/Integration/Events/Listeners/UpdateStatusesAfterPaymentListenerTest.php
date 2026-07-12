@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Listeners;
 
+use App\Actions\Shop\Wallet\TopupWalletAction;
+use App\Enums\Payment\PaymentPurposeEnum;
 use App\Events\PaymentCompletedEvent;
 use App\Listeners\UpdateStatusesAfterPaymentListener;
 use App\Models\Order;
@@ -62,5 +64,25 @@ describe('UpdateStatusesAfterPaymentListener', function (): void {
 
         // --- Assert ---
         // The mock assertion `shouldNotReceive` will pass if the method was not called.
+    });
+
+    it('calls TopupWalletAction for WALLET_TOPUP payments', function (): void {
+        // --- Arrange ---
+        $payment = Payment::factory()->create([
+            'purpose' => PaymentPurposeEnum::WALLET_TOPUP,
+        ]);
+        $event = new PaymentCompletedEvent($payment);
+
+        $this->mock(TopupWalletAction::class, function (MockInterface $mock) use ($payment): void {
+            $mock->shouldReceive('handle')
+                ->once()
+                ->withArgs(fn ($arg) => $arg instanceof Payment && $arg->id === $payment->id);
+        });
+
+        // --- Act ---
+        $listener = resolve(UpdateStatusesAfterPaymentListener::class);
+        $listener->handle($event);
+
+        // Assert done by mock expectation
     });
 });

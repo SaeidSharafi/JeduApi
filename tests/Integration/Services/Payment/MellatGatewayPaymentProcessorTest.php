@@ -407,6 +407,60 @@ describe('MellatGatewayPaymentProcessor', function (): void {
         Event::assertNothingDispatched();
     });
 
+    it('marks payment as failed when FinalAmount mismatches payment amount', function (): void {
+        Event::fake([PaymentCompletedEvent::class]);
+
+        // Arrange
+        $payment = Payment::factory()->create([
+            'method' => PaymentMethodEnum::MELLAT_GATEWAY->value,
+            'status' => PaymentStatusEnum::PENDING->value,
+            'amount' => 500_000,
+            'data'   => [],
+        ]);
+        $payment->transactions()->create([
+            'transaction_reference' => 'TXN-AMT-MM',
+            'attempt_number'        => 1,
+            'status'                => PaymentTransactionStatusEnum::INITIATED->value,
+            'gateway_request'       => ['orderId' => 'TXN-AMT-MM'],
+            'gateway_response'      => [],
+            'initiated_at'          => now(),
+        ]);
+
+        // Factory should NOT be called — amount mismatch is checked before SOAP calls
+        $factory = Mockery::mock(SoapClientFactory::class);
+        $factory->shouldNotReceive('create');
+
+        $processor    = new MellatGatewayPaymentProcessor($factory, app(PaymentTransactionReferenceService::class), app(SettingsService::class));
+        $callbackData = [
+            'RefId'           => 'REF-MM',
+            'ResCode'         => '0',
+            'SaleOrderId'     => 'TXN-AMT-MM',
+            'SaleReferenceId' => 'SALE-REF-MM',
+            'FinalAmount'     => 400_000, // Does NOT match payment->amount (500_000)
+        ];
+
+        // Act
+        $pendingPayment = Payment::query()->findOrFail($payment->id);
+        $updatedPayment = $processor->verify($pendingPayment, $callbackData);
+
+        // Assert
+        expect($updatedPayment->status)->toBe(PaymentStatusEnum::FAILED);
+
+        $transaction = $payment->transactions()->latest()->first();
+        expect($transaction->status->value)->toBe(PaymentTransactionStatusEnum::FAILED->value)
+            ->and($transaction->error_message)->toContain('Amount mismatch')
+            ->and($transaction->error_message)->toContain('500000')
+            ->and($transaction->error_message)->toContain('400000')
+            ->and($transaction->completed_at)->not->toBeNull()
+            ->and($transaction->gateway_response['RefId'])->toBe('REF-MM')
+            ->and($transaction->gateway_response['ResCode'])->toBe('0')
+            ->and($transaction->gateway_response['SaleOrderId'])->toBe('TXN-AMT-MM')
+            ->and($transaction->gateway_response['SaleReferenceId'])->toBe('SALE-REF-MM')
+            ->and($transaction->gateway_response['FinalAmount'])->toBe(400_000);
+
+        Event::assertNothingDispatched();
+    });
+
     it('marks payment as failed when callback data is missing required fields', function (): void {
         $payment = Payment::factory()->create([
             'method' => PaymentMethodEnum::MELLAT_GATEWAY->value,

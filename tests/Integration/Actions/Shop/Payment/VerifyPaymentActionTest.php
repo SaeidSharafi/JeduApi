@@ -8,6 +8,7 @@ use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Payment;
 use App\Services\Payment\PaymentProcessorFactory;
+use Illuminate\Validation\ValidationException;
 use Mockery as m;
 
 it('verifies pending payments via the resolved processor and returns the updated payment', function (): void {
@@ -38,6 +39,23 @@ it('verifies pending payments via the resolved processor and returns the updated
     $result = $action->handle($payment, $callbackPayload);
 
     expect($result->status)->toBe(PaymentStatusEnum::COMPLETED);
+});
+
+it('throws ValidationException when payment status is neither PENDING nor COMPLETED', function (): void {
+
+    $payment = Payment::factory()->create([
+        'status' => PaymentStatusEnum::FAILED,
+        'method' => PaymentMethodEnum::MELLAT_GATEWAY,
+    ]);
+
+    $factory = m::mock(PaymentProcessorFactory::class);
+    $factory->shouldNotReceive('make');
+
+    $action = new VerifyPaymentAction($factory);
+
+    expect(fn () => $action->handle($payment, ['SaleReferenceId' => '987654']))
+        ->toThrow(ValidationException::class);
+
 });
 
 it('return same payemnt when the payment is no longer pending', function (): void {

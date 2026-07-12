@@ -11,6 +11,7 @@ use App\Events\OrderStatusUpdatedEvent;
 use App\Jobs\Provisioning\ProvisionBbbEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionImsEnrollmentJob;
 use App\Jobs\Provisioning\ProvisionMoodleEnrollmentJob;
+use App\Jobs\Provisioning\ProvisionMoodleQuizJob;
 use App\Jobs\Provisioning\ProvisionSpotPlayerEnrollmentJob;
 use App\Listeners\OrderStatusUpdateListener;
 use App\Models\Enrollment;
@@ -27,6 +28,7 @@ describe('OrderStatusUpdateListener', function (): void {
         Queue::fake([
             ProvisionImsEnrollmentJob::class,
             ProvisionMoodleEnrollmentJob::class,
+            ProvisionMoodleQuizJob::class,
             ProvisionSpotPlayerEnrollmentJob::class,
             ProvisionBbbEnrollmentJob::class,
         ]);
@@ -121,5 +123,31 @@ describe('OrderStatusUpdateListener', function (): void {
         (new OrderStatusUpdateListener())->handle($event);
 
         $this->assertTrue(true);
+    });
+
+    it('dispatches ProvisionMoodleQuizJob when moodle_quiz_course_id is set on non-Moodle delivery', function (): void {
+        Event::fake([
+            EnrollmentStatusChanged::class,
+        ]);
+
+        $order = Order::factory()->create(['status' => OrderStatusEnum::COMPLETED]);
+        Payment::factory()->for($order)->create(['status' => 'completed']);
+
+        $item = OrderItem::factory()->for($order)->create([
+            'product_delivery_option_id' => ProductDeliveryOption::factory()
+                ->create([
+                    'delivery_method' => DeliveryMethodEnum::VIDEO_PLATFORM_SPOTPLAYER,
+                    'details_json'    => [
+                        'spot_id'               => 'SPOT-QUIZ',
+                        'moodle_quiz_course_id' => 999,
+                    ],
+                ])->id,
+        ]);
+        Enrollment::factory()->for($item)->create();
+
+        $event = new OrderStatusUpdatedEvent($order);
+        (new OrderStatusUpdateListener())->handle($event);
+
+        Queue::assertPushed(ProvisionMoodleQuizJob::class, 1);
     });
 });

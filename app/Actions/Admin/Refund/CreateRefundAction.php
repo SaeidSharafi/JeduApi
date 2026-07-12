@@ -236,7 +236,7 @@ final class CreateRefundAction
             ->where('status', PaymentStatusEnum::COMPLETED)
             ->oldest()->value('method');
 
-        if ($paymentMethod === PaymentMethodEnum::DIGIPAY->value && ! config('payments.digipay.allow_partial_refund')) {
+        if ($paymentMethod === PaymentMethodEnum::DIGIPAY && ! config('payments.digipay.allow_partial_refund')) {
             throw new RefundValidationException(__('messages.order.refund.digipay_partial_refund_not_supported'));
         }
     }

@@ -44,7 +44,7 @@ final class DigipayPaymentStatus
     /**
      * Get human-readable message for status code.
      */
-    public static function getMessage(int $code): string
+    public static function getMessage(int $code, string $default = 'خطای نامشخص'): string
     {
         $messages = [
             self::SUCCESS                  => 'عملیات با موفقیت انجام شد',
@@ -65,7 +65,7 @@ final class DigipayPaymentStatus
             self::TICKET_NOT_POSSIBLE      => 'امکان ایجاد تیکت برای این کاربر وجود ندارد',
         ];
 
-        return $messages[$code] ?? 'خطای نامشخص';
+        return $messages[$code] ?? $default;
     }
 
     /**

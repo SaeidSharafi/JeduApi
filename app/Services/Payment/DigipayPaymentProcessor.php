@@ -24,7 +24,6 @@ final class DigipayPaymentProcessor implements PaymentProcessorContract
 {
     public function __construct(
         private DigipayClient $client,
-        private DigipayConfigRepository $config,
         private PaymentTransactionReferenceService $referenceService,
     ) {}
 

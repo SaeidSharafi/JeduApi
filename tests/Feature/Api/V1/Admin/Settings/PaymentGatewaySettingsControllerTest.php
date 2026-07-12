@@ -61,6 +61,46 @@ describe('index', function (): void {
         $terminalIdField = collect($mellat['schema']['credentials'])->firstWhere('key', 'config.terminal_id');
         expect($terminalIdField)->not->toBeNull();
     });
+
+    it('converts icon from array to MediaData when icon is an array', function (): void {
+        $iconArray = [
+            'id'        => 4,
+            'url'       => 'http://jedu.test/storage/fake-media/icon.svg',
+            'size'      => 930,
+            'file_name' => 'icon',
+            'alt'       => '',
+            'mime_type' => 'image/svg+xml',
+            'extension' => 'svg',
+            'tag'       => null,
+            'thumbnail' => null,
+        ];
+
+        $mockSettings = [
+            'enabled'                 => true,
+            'shop_enabled'            => true,
+            'label'                   => 'Bank Transfer',
+            'description'             => 'Pay via bank',
+            'icon'                    => $iconArray,
+            'ims_bank_account_number' => '998877',
+        ];
+
+        $this->mock(SettingsService::class)
+            ->shouldReceive('get')
+            ->with(SettingKeyEnum::BANK_TRANSFER, Mockery::any())
+            ->andReturn($mockSettings)
+            ->shouldReceive('get')
+            ->andReturn([]);
+
+        $response = $this->getJson('/api/v1/admin/settings/payment-gateways');
+
+        $response->assertOk();
+
+        $data = $response->json('data');
+        $bankTransfer = collect($data)->firstWhere('key', PaymentMethodEnum::BANK_TRANSFER->value);
+
+        expect($bankTransfer['settings']['icon'])->toHaveKeys(['id', 'url', 'size', 'file_name', 'alt', 'mime_type', 'extension', 'tag', 'thumbnail']);
+        expect($bankTransfer['settings']['icon']['id'])->toBe(4);
+    });
 });
 
 describe('show', function (): void {

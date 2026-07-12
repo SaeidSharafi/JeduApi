@@ -158,6 +158,26 @@ test('enrollments relationship', function (): void {
         ->toHaveCount(4);
 });
 
+test('refunds relationship', function (): void {
+    $order  = App\Models\Order::factory()->create();
+    $refund = App\Models\Refund::factory()->create([
+        'order_id' => $order->id,
+    ]);
+
+    expect($order->refunds)
+        ->toHaveCount(1)
+        ->and($order->refunds->first())
+        ->toBeInstanceOf(App\Models\Refund::class)
+        ->and($order->refunds->first()->id)
+        ->toEqual($refund->id);
+
+    App\Models\Refund::factory()->count(2)->create([
+        'order_id' => $order->id,
+    ]);
+    $order->refresh();
+    expect($order->refunds)->toHaveCount(3);
+});
+
 test('generate increment ID', function (): void {
     $order          = Order::factory()->create();
     $newIncrementId = Order::generateIncrementId();

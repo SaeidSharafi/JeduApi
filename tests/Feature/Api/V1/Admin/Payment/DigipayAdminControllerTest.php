@@ -166,6 +166,38 @@ it('returns 422 when payment type does not require delivery confirmation', funct
     ]);
 });
 
+it('returns 422 when deliver throws DigipayException', function (): void {
+    $this->authorized_user([PermissionEnum::PAYMENT_UPDATE]);
+
+    $payment = createDigipayPayment();
+    $payment->transactions()->create([
+        'transaction_reference' => 'TXN-'.fake()->uuid(),
+        'initiated_at'          => now(),
+        'gateway_response'      => [
+            'tracking_code'   => 'DGP-TRK-CREDIT',
+            'payment_gateway' => 5,
+            'provider_id'     => 'PROV-456',
+        ],
+    ]);
+
+    $this->mock(DigipayAdminService::class, function ($mock): void {
+        $mock->shouldReceive('requiresDeliveryConfirmation')
+            ->once()
+            ->andReturn(true);
+        $mock->shouldReceive('deliver')
+            ->once()
+            ->andThrow(new DigipayException(
+                message: 'Delivery rejected by gateway',
+                digipayCode: 77,
+            ));
+    });
+
+    $response = postJson("/api/v1/admin/payments/{$payment->id}/digipay/deliver");
+
+    $response->assertStatus(422);
+    $response->assertJsonPath('errors.digipay_code', 77);
+});
+
 // ─── Reverse ─────────────────────────────────────────────────────────
 
 it('reverses a payment within the 25-minute window', function (): void {
@@ -295,6 +327,33 @@ it('returns 422 for invalid inquire refund request data', function (): void {
     $response = postJson('/api/v1/admin/payments/digipay/inquire-refund', []);
 
     $response->assertStatus(422);
+});
+
+it('returns 422 when inquireRefund throws DigipayException', function (): void {
+    $this->authorized_user([PermissionEnum::PAYMENT_VIEW]);
+
+    Gate::shouldReceive('authorize')
+        ->once()
+        ->with('inquire', Payment::class)
+        ->andReturn(true);
+
+    $this->mock(DigipayAdminService::class, function ($mock): void {
+        $mock->shouldReceive('inquireRefund')
+            ->once()
+            ->with('REFUND-123-1719000000', 0)
+            ->andThrow(new DigipayException(
+                message: 'Inquiry failed',
+                digipayCode: 88,
+            ));
+    });
+
+    $response = postJson('/api/v1/admin/payments/digipay/inquire-refund', [
+        'refund_provider_id' => 'REFUND-123-1719000000',
+        'type'               => 0,
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJsonPath('errors.digipay_code', 88);
 });
 
 it('refuses inquire refund without PAYMENT_VIEW permission', function (): void {

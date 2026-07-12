@@ -10,9 +10,14 @@ use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
     config()->set('payments.digipay.base_url', 'https://api.digipay.test');
+    config()->set('payments.digipay.paths.ticket', '/digipay/api/tickets/business');
+    config()->set('payments.digipay.paths.verify', '/digipay/api/purchases/verify');
     config()->set('payments.digipay.paths.refund', '/digipay/api/refunds');
     config()->set('payments.digipay.paths.reverse', '/digipay/api/reverse');
     config()->set('payments.digipay.paths.deliver', '/digipay/api/purchases/deliver');
+    config()->set('payments.digipay.ticket_type', 11);
+    config()->set('payments.digipay.timeout', 30);
+    config()->set('payments.digipay.logging.channel', 'stack');
 
     $this->mock(DigipayAuthenticator::class, function ($mock): void {
         $mock->shouldReceive('getAccessToken')->andReturn('test-token');
@@ -22,6 +27,133 @@ beforeEach(function (): void {
         $mock->shouldReceive('getBaseUrl')->andReturn('https://api.digipay.test');
         $mock->shouldReceive('getTimeout')->andReturn(30);
     });
+});
+
+// ─── Create Ticket ─────────────────────────────────────────────────────
+
+it('successfully creates a Digipay payment ticket', function (): void {
+    Http::fake([
+        'api.digipay.test/digipay/api/tickets/business*' => Http::response([
+            'result'      => ['status' => 0, 'message' => 'Success'],
+            'ticket'      => 'v2:test-ticket-abc',
+            'redirectUrl' => 'https://gateway.digipay.test/pay/v2:test-ticket-abc',
+        ], 200),
+    ]);
+
+    $client   = resolve(DigipayClient::class);
+    $response = $client->createTicket(
+        amount: 500_000,
+        cellNumber: '09121234567',
+        providerId: 'ORDER-1001',
+        callbackUrl: 'https://shop.test/digipay/callback',
+        description: 'Order #1001 payment',
+    );
+
+    expect($response->statusCode)->toBe(0)
+        ->and($response->ticket)->toBe('v2:test-ticket-abc')
+        ->and($response->redirectUrl)->toContain('gateway.digipay.test');
+
+    Http::assertSent(function ($request) {
+        return str_contains($request->url(), 'tickets/business?type=11')
+            && $request['amount']      === 500_000
+            && $request['cellNumber']  === '09121234567'
+            && $request['providerId']  === 'ORDER-1001'
+            && $request['callbackUrl'] === 'https://shop.test/digipay/callback'
+            && $request['additionalInfo']['description'] === 'Order #1001 payment';
+    });
+});
+
+it('throws DigipayException when ticket creation fails', function (): void {
+    Http::fake([
+        'api.digipay.test/digipay/api/tickets/business*' => Http::response([
+            'result' => ['status' => 4, 'message' => 'Invalid ticket'],
+        ], 200),
+    ]);
+
+    $client = resolve(DigipayClient::class);
+
+    expect(fn () => $client->createTicket(100_000, '09121234567', 'ORDER-X', 'https://shop.test/callback'))
+        ->toThrow(DigipayException::class, 'Digipay ticket creation failed: Invalid ticket');
+});
+
+// ─── Verify ────────────────────────────────────────────────────────────
+
+it('successfully verifies a Digipay payment', function (): void {
+    Http::fake([
+        'api.digipay.test/digipay/api/purchases/verify*' => Http::response([
+            'result'         => ['status' => 0, 'message' => 'Verified'],
+            'trackingCode'   => 'TRK-SUCCESS-999',
+            'providerId'     => 'ORDER-1001',
+            'amount'         => 500_000,
+            'rrn'            => '123456789012',
+            'maskedPan'      => '603799******1234',
+            'pspName'        => 'TestPSP',
+            'terminalId'     => 'TERM001',
+            'paymentGateway' => 2,
+        ], 200),
+    ]);
+
+    $client   = resolve(DigipayClient::class);
+    $response = $client->verify(
+        trackingCode: 'TRK-SUCCESS-999',
+        providerId: 'ORDER-1001',
+        type: 2,
+    );
+
+    expect($response->statusCode)->toBe(0)
+        ->and($response->trackingCode)->toBe('TRK-SUCCESS-999')
+        ->and($response->providerId)->toBe('ORDER-1001')
+        ->and($response->amount)->toBe(500_000)
+        ->and($response->paymentGateway)->toBe(2);
+
+    Http::assertSent(function ($request) {
+        return str_contains($request->url(), 'purchases/verify?type=2')
+            && $request['trackingCode'] === 'TRK-SUCCESS-999'
+            && $request['providerId']   === 'ORDER-1001';
+    });
+});
+
+it('throws DigipayException when verification fails', function (): void {
+    Http::fake([
+        'api.digipay.test/digipay/api/purchases/verify*' => Http::response([
+            'result' => ['status' => 5, 'message' => 'Transaction not found'],
+        ], 200),
+    ]);
+
+    $client = resolve(DigipayClient::class);
+
+    expect(fn () => $client->verify('TRK-INVALID', 'ORDER-X', 2))
+        ->toThrow(DigipayException::class, 'Digipay verification failed: Transaction not found');
+});
+
+// ─── maskSensitive() via createTicket with sensitive_fields config ────
+
+it('masks configured sensitive fields in request data', function (): void {
+    config()->set('payments.digipay.logging.sensitive_fields', ['cellNumber']);
+
+    Http::fake([
+        'api.digipay.test/digipay/api/tickets/business*' => Http::response([
+            'result'      => ['status' => 0, 'message' => 'Success'],
+            'ticket'      => 'v2:test-mask',
+            'redirectUrl' => 'https://gateway.digipay.test/pay/mask',
+        ], 200),
+    ]);
+
+    $client   = resolve(DigipayClient::class);
+    $response = $client->createTicket(
+        amount: 100_000,
+        cellNumber: '09121111111',
+        providerId: 'ORDER-MASK',
+        callbackUrl: 'https://shop.test/callback',
+    );
+
+    // The HTTP request itself must carry the unmasked value.
+    // maskSensitive() only affects log output, not the actual request.
+    Http::assertSent(function ($request) {
+        return $request['cellNumber'] === '09121111111';
+    });
+
+    expect($response->statusCode)->toBe(0);
 });
 
 // ─── Refund ───────────────────────────────────────────────────────────

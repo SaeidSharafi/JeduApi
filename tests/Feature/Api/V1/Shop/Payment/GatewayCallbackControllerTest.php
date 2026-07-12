@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Actions\Shop\Payment\VerifyPaymentAction;
 use App\Enums\Payment\PaymentStatusEnum;
+use App\Exceptions\Payment\DuplicatePaymentException;
 use App\Models\Payment;
 use Mockery as m;
 
@@ -78,4 +79,30 @@ it('redirects customers to the generic error page when verification throws', fun
     $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
 
     $response->assertRedirect(config('payments.redirect.failure')."?payment={$payment->uuid}&error=UNKNOWN_ERROR");
+})->group('payment');
+
+it('redirects customers to the failure page with error code when gateway throws PaymentExceptionContract', function (): void {
+    $payment = Payment::factory()->create([
+        'status' => PaymentStatusEnum::PENDING,
+        'method' => App\Enums\Payment\PaymentMethodEnum::MELLAT_GATEWAY,
+    ]);
+
+    $callbackPayload = [
+        'ResCode' => '12',
+    ];
+
+    $actionMock = m::mock(VerifyPaymentAction::class);
+    $actionMock->expects('handle')
+        ->once()
+        ->with(m::on(fn (Payment $p) => $p->is($payment)), $callbackPayload)
+        ->andThrow(new DuplicatePaymentException(
+            paymentId: $payment->id,
+            orderId: $payment->order?->id,
+        ));
+
+    app()->instance(VerifyPaymentAction::class, $actionMock);
+
+    $response = postJson(route('api.v1.shop.payment.gateway.callback', ['payment' => $payment->uuid]), $callbackPayload);
+
+    $response->assertRedirect(config('payments.redirect.failure')."?payment={$payment->uuid}&error=DUPLICATE_PAYMENT");
 })->group('payment');

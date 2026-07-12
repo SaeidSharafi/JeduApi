@@ -7,18 +7,22 @@ namespace Tests\Feature\Actions\Admin;
 use App\Actions\Admin\Refund\CreateRefundAction;
 use App\Data\Admin\Refund\RefundCreateData;
 use App\Data\Admin\Refund\RefundTransactionData;
+use App\Contracts\Payment\RefundProcessorInterface;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\RefundStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\RefundCompletedEvent;
+use App\Exceptions\Gateway\DigipayException;
+use App\Exceptions\RefundValidationException;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\ProductDeliveryOption;
 use App\Models\Staff;
 use App\Services\OrderStatusService;
+use App\Services\Payment\Refund\RefundProcessorFactory;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
 use Mockery\MockInterface;
@@ -390,5 +394,187 @@ describe('CreateRefundAction', function (): void {
 
         expect(fn () => (resolve(CreateRefundAction::class))->handle($refundData))
             ->toThrow(ValidationException::class, __('messages.order.refund.refund_request_exists'));
+    });
+
+    // ─── Gateway Error Cases ──────────────────────────────────────────────
+
+    it('marks refund FAILED and throws RefundValidationException on Digipay gateway error', function (): void {
+        // Arrange
+        $product = ProductDeliveryOption::factory()
+            ->create(['price' => 50000, 'status' => PublicationStatusEnum::PUBLISHED]);
+        $order = Order::factory()->withCalculatedTotals([
+            ['product_delivery_option_id' => $product->id, 'price' => 50000, 'total' => 50000],
+        ])->create();
+        $order->payments()->create([
+            'customer_id' => $order->customer_id,
+            'method'      => PaymentMethodEnum::DIGIPAY,
+            'amount'      => 50000,
+            'status'      => PaymentStatusEnum::COMPLETED,
+        ]);
+        $orderItem = $order->items->first();
+        $orderItem->update(['status' => OrderItemStatusEnum::COMPLETED]);
+
+        config()->set('payments.digipay.allow_partial_refund',true);
+
+        $this->mock(RefundProcessorFactory::class, function (MockInterface $mock): void {
+            $processor = \Mockery::mock(RefundProcessorInterface::class);
+            $processor->shouldReceive('process')
+                ->once()
+                ->andThrow(new DigipayException('Gateway connection failed', 500));
+            $mock->shouldReceive('make')
+                ->with(PaymentMethodEnum::DIGIPAY->value)
+                ->once()
+                ->andReturn($processor);
+        });
+
+        $refundData = new RefundCreateData(
+            order_item_id: $orderItem->id,
+            deduction_amount: 0,
+            deduction_percent: null,
+            transaction_details: new RefundTransactionData(
+                receiver_name: 'John Doe',
+                card_number: '1234567812345678',
+                iban_number: 'DE89370400440532013000',
+                tracking_code: null
+            ),
+            status: RefundStatusEnum::COMPLETED->value,
+            admin_notes: 'Test digipay error',
+        );
+
+        expect(fn () => (resolve(CreateRefundAction::class))->handle($refundData))
+            ->toThrow(RefundValidationException::class, 'Gateway connection failed');
+
+        $this->assertDatabaseHas('refunds', [
+            'order_item_id' => $orderItem->id,
+            'status'        => RefundStatusEnum::FAILED->value,
+        ]);
+    });
+
+    it('appends gateway-skipped note when skip_gateway is true with immediate completion', function (): void {
+        // Arrange
+        $product = ProductDeliveryOption::factory()
+            ->create(['price' => 50000, 'status' => PublicationStatusEnum::PUBLISHED]);
+        $order = Order::factory()->withCalculatedTotals([
+            ['product_delivery_option_id' => $product->id, 'price' => 50000, 'total' => 50000],
+        ])->create();
+        $order->payments()->create([
+            'customer_id' => $order->customer_id,
+            'method'      => PaymentMethodEnum::BANK_TRANSFER,
+            'amount'      => 50000,
+            'status'      => PaymentStatusEnum::COMPLETED,
+        ]);
+        $orderItem = $order->items->first();
+        $orderItem->update(['status' => OrderItemStatusEnum::COMPLETED]);
+
+        $refundData = new RefundCreateData(
+            order_item_id: $orderItem->id,
+            deduction_amount: 0,
+            deduction_percent: null,
+            transaction_details: new RefundTransactionData(
+                receiver_name: 'John Doe',
+                card_number: '1234567812345678',
+                iban_number: 'DE89370400440532013000',
+                tracking_code: null
+            ),
+            status: RefundStatusEnum::COMPLETED->value,
+            skip_gateway: true,
+            admin_notes: 'Manual refund',
+        );
+
+        $refund = (resolve(CreateRefundAction::class))->handle($refundData);
+
+        expect($refund->admin_notes)->toContain(__('messages.order.refund.gateway_skipped_by_admin_at', ['date' => '']));
+        $this->assertDatabaseHas('refunds', [
+            'id'     => $refund->id,
+            'status' => RefundStatusEnum::COMPLETED->value,
+        ]);
+    });
+
+    it('processes wallet payment method when immediately completing', function (): void {
+        // Arrange
+        $product = ProductDeliveryOption::factory()
+            ->create(['price' => 50000, 'status' => PublicationStatusEnum::PUBLISHED]);
+        $order = Order::factory()->withCalculatedTotals([
+            ['product_delivery_option_id' => $product->id, 'price' => 50000, 'total' => 50000],
+        ])->create();
+        $order->payments()->create([
+            'customer_id' => $order->customer_id,
+            'method'      => PaymentMethodEnum::WALLET,
+            'amount'      => 50000,
+            'status'      => PaymentStatusEnum::COMPLETED,
+        ]);
+        $orderItem = $order->items->first();
+        $orderItem->update(['status' => OrderItemStatusEnum::COMPLETED]);
+
+        $mockProcessor = \Mockery::mock(RefundProcessorInterface::class);
+        $mockProcessor->shouldReceive('process')
+            ->once()
+            ->andReturnNull();
+
+        $this->mock(RefundProcessorFactory::class, function (MockInterface $mock) use ($mockProcessor): void {
+            $mock->shouldReceive('make')
+                ->with(PaymentMethodEnum::WALLET->value)
+                ->once()
+                ->andReturn($mockProcessor);
+        });
+
+        $refundData = new RefundCreateData(
+            order_item_id: $orderItem->id,
+            deduction_amount: 0,
+            deduction_percent: null,
+            transaction_details: new RefundTransactionData(
+                receiver_name: null,
+                card_number: null,
+                iban_number: null,
+                tracking_code: null
+            ),
+            status: RefundStatusEnum::COMPLETED->value,
+            admin_notes: 'Wallet refund',
+        );
+
+        $refund = (resolve(CreateRefundAction::class))->handle($refundData);
+
+        $this->assertDatabaseHas('refunds', [
+            'id'     => $refund->id,
+            'status' => RefundStatusEnum::COMPLETED->value,
+        ]);
+        Event::assertDispatched(RefundCompletedEvent::class);
+    });
+
+    it('throws RefundValidationException when Digipay partial refund is disabled via config', function (): void {
+        // Arrange
+        $product = ProductDeliveryOption::factory()
+            ->create(['price' => 50000, 'status' => PublicationStatusEnum::PUBLISHED]);
+        $order = Order::factory()->withCalculatedTotals([
+            ['product_delivery_option_id' => $product->id, 'price' => 50000, 'total' => 50000],
+        ])->create();
+        $order->payments()->create([
+            'customer_id' => $order->customer_id,
+            'method'      => PaymentMethodEnum::DIGIPAY,
+            'amount'      => 50000,
+            'status'      => PaymentStatusEnum::COMPLETED,
+        ]);
+        $orderItem = $order->items->first();
+        $orderItem->update(['status' => OrderItemStatusEnum::COMPLETED]);
+
+        config()->set('payments.digipay.allow_partial_refund',false);
+
+        $refundData = new RefundCreateData(
+            order_item_id: $orderItem->id,
+            deduction_amount: 0,
+            deduction_percent: null,
+            transaction_details: new RefundTransactionData(
+                receiver_name: 'John Doe',
+                card_number: '1234567812345678',
+                iban_number: 'DE89370400440532013000',
+                tracking_code: null
+            ),
+            status: RefundStatusEnum::COMPLETED->value,
+            admin_notes: 'Test',
+        );
+
+            expect(fn () => (resolve(CreateRefundAction::class))->handle($refundData))
+                ->toThrow(RefundValidationException::class, __('messages.order.refund.digipay_partial_refund_not_supported'));
+
     });
 });

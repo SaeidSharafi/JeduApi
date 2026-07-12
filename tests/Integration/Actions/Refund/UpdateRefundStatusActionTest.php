@@ -4,19 +4,24 @@ declare(strict_types=1);
 
 use App\Actions\Admin\Refund\UpdateOrderRefundedAmountAction;
 use App\Actions\Admin\Refund\UpdateRefundStatusAction;
+use App\Contracts\Payment\RefundProcessorInterface;
 use App\Data\Admin\Refund\RefundStatusUpdateData;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\RefundStatusEnum;
+use App\Enums\Payment\PaymentMethodEnum;
+use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\RefundCompletedEvent;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\User;
 use App\Services\OrderStatusService;
 use App\Services\Payment\Refund\RefundProcessorFactory;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
+use Mockery\MockInterface;
 
 describe('UpdateRefundStatusAction', function (): void {
     beforeEach(function (): void {
@@ -209,5 +214,146 @@ describe('UpdateRefundStatusAction', function (): void {
         $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
         expect($updated->admin_notes)->toBe('Original note');
+    });
+
+    // ─── Completion Path: Digipay ────────────────────────────────────────
+
+    it('calls Digipay processor and stores gateway tracking code on completion', function (): void {
+        $order = Order::factory()->withCalculatedTotals([
+            ['price' => 100000, 'total' => 100000],
+        ])->create();
+
+        $payment = $order->payments()->create([
+            'customer_id' => $order->customer_id,
+            'method'      => PaymentMethodEnum::DIGIPAY,
+            'amount'      => 100000,
+            'status'      => PaymentStatusEnum::COMPLETED,
+        ]);
+
+        $payment->transactions()->create([
+            'transaction_reference' => 'TXN-DGP-COMP',
+            'initiated_at'          => now(),
+            'gateway_response'      => ['tracking_code' => 'DGP-ORIG', 'payment_gateway' => 0],
+        ]);
+
+        $orderItem = $order->items()->first();
+        $refund = Refund::factory()->create([
+            'order_item_id' => $orderItem->id,
+            'status'        => RefundStatusEnum::PENDING,
+            'amount'        => 100000,
+        ]);
+
+        $mockProcessor = \Mockery::mock(RefundProcessorInterface::class);
+        $mockProcessor->shouldReceive('process')
+            ->once()
+            ->with(Mockery::type(Refund::class), Mockery::type(Order::class), 100000)
+            ->andReturn('DGP-TRACK-001');
+
+        $this->mock(RefundProcessorFactory::class, function (MockInterface $mock) use ($mockProcessor): void {
+            $mock->shouldReceive('make')
+                ->with(PaymentMethodEnum::DIGIPAY->value)
+                ->once()
+                ->andReturn($mockProcessor);
+        });
+
+        $data = new RefundStatusUpdateData(
+            status: RefundStatusEnum::COMPLETED->value,
+            tracking_code: 'TRK-999',
+            admin_notes: 'Completed via Digipay',
+        );
+
+        $action = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $updated = $action->handle($refund, $data);
+
+        expect($updated->status)->toBe(RefundStatusEnum::COMPLETED);
+        expect($updated->transaction_details['gateway_tracking_code'])->toBe('DGP-TRACK-001');
+        expect($updated->transaction_details['tracking_code'])->toBe('TRK-999');
+        Event::assertDispatched(RefundCompletedEvent::class);
+    });
+
+    it('appends gateway-skipped note when skip_gateway is true on completion', function (): void {
+        $order = Order::factory()->withCalculatedTotals([
+            ['price' => 100000, 'total' => 100000],
+        ])->create();
+
+        $payment = $order->payments()->create([
+            'customer_id' => $order->customer_id,
+            'method'      => PaymentMethodEnum::DIGIPAY,
+            'amount'      => 100000,
+            'status'      => PaymentStatusEnum::COMPLETED,
+        ]);
+
+        $payment->transactions()->create([
+            'transaction_reference' => 'TXN-SKIP',
+            'initiated_at'          => now(),
+            'gateway_response'      => ['tracking_code' => 'DGP-SKIP', 'payment_gateway' => 0],
+        ]);
+
+        $orderItem = $order->items()->first();
+        $refund = Refund::factory()->create([
+            'order_item_id' => $orderItem->id,
+            'status'        => RefundStatusEnum::PENDING,
+            'amount'        => 100000,
+        ]);
+
+        $data = new RefundStatusUpdateData(
+            status: RefundStatusEnum::COMPLETED->value,
+            tracking_code: null,
+            admin_notes: 'Manual complete',
+            skip_gateway: true,
+        );
+
+        $action = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $updated = $action->handle($refund, $data);
+
+        expect($updated->status)->toBe(RefundStatusEnum::COMPLETED);
+        expect($updated->admin_notes)->toContain('Gateway skipped by Admin');
+    });
+
+    // ─── Completion Path: Wallet ─────────────────────────────────────────
+
+    it('calls Wallet processor on completion when payment method is wallet', function (): void {
+        $order = Order::factory()->withCalculatedTotals([
+            ['price' => 50000, 'total' => 50000],
+        ])->create();
+
+        $order->payments()->create([
+            'customer_id' => $order->customer_id,
+            'method'      => PaymentMethodEnum::WALLET,
+            'amount'      => 50000,
+            'status'      => PaymentStatusEnum::COMPLETED,
+        ]);
+
+        $orderItem = $order->items()->first();
+        $refund = Refund::factory()->create([
+            'order_item_id' => $orderItem->id,
+            'status'        => RefundStatusEnum::PENDING,
+            'amount'        => 50000,
+        ]);
+
+        $mockProcessor = \Mockery::mock(RefundProcessorInterface::class);
+        $mockProcessor->shouldReceive('process')
+            ->once()
+            ->with(Mockery::type(Refund::class), Mockery::type(Order::class), 50000)
+            ->andReturnNull();
+
+        $this->mock(RefundProcessorFactory::class, function (MockInterface $mock) use ($mockProcessor): void {
+            $mock->shouldReceive('make')
+                ->with(PaymentMethodEnum::WALLET->value)
+                ->once()
+                ->andReturn($mockProcessor);
+        });
+
+        $data = new RefundStatusUpdateData(
+            status: RefundStatusEnum::COMPLETED->value,
+            tracking_code: null,
+            admin_notes: 'Wallet completion',
+        );
+
+        $action = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $updated = $action->handle($refund, $data);
+
+        expect($updated->status)->toBe(RefundStatusEnum::COMPLETED);
+        Event::assertDispatched(RefundCompletedEvent::class);
     });
 });

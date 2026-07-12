@@ -33,7 +33,7 @@ final class DigipayException extends BankException
      */
     public function getUserMessage(): string
     {
-        return DigipayPaymentStatus::getMessage($this->digipayCode);
+        return DigipayPaymentStatus::getMessage($this->digipayCode, $this->getMessage());
     }
 
     /**

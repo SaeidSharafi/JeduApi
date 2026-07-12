@@ -9,6 +9,7 @@ use App\Services\Payment\Digipay\Data\RefundResponse;
 use App\Services\Payment\Digipay\Data\ReverseResponse;
 use App\Services\Payment\Digipay\Data\TicketResponse;
 use App\Services\Payment\Digipay\Data\VerifyResponse;
+use App\Services\Payment\Digipay\DigipayPaymentStatus;
 
 describe('TicketResponse', function (): void {
     it('parses successful response', function (): void {
@@ -190,5 +191,19 @@ describe('RefundInquiryResponse', function (): void {
         ]);
 
         expect($response->isRefundPending())->toBeTrue();
+    });
+});
+
+describe('DigipayPaymentStatus', function (): void {
+    it('returns true for SUCCESS code (0)', function (): void {
+        expect(DigipayPaymentStatus::isSuccess(DigipayPaymentStatus::SUCCESS))->toBeTrue();
+    });
+
+    it('returns false for non-zero codes', function (): void {
+        expect(DigipayPaymentStatus::isSuccess(DigipayPaymentStatus::NOT_FOUND))->toBeFalse()
+            ->and(DigipayPaymentStatus::isSuccess(DigipayPaymentStatus::INVALID_INPUT))->toBeFalse()
+            ->and(DigipayPaymentStatus::isSuccess(DigipayPaymentStatus::VERIFY_TIMEOUT))->toBeFalse()
+            ->and(DigipayPaymentStatus::isSuccess(DigipayPaymentStatus::PAYMENT_FAILED))->toBeFalse()
+            ->and(DigipayPaymentStatus::isSuccess(-1))->toBeFalse();
     });
 });

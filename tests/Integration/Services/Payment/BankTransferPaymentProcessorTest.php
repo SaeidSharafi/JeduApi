@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use App\Enums\Payment\PaymentMethodEnum;
+use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\PaymentCompletedEvent;
+use App\Exceptions\Payment\InvalidPaymentPurposeException;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Staff;
@@ -81,6 +83,55 @@ describe('BankTransferPaymentProcessor', function (): void {
         Event::assertDispatched(PaymentCompletedEvent::class, function (PaymentCompletedEvent $event) use ($result): bool {
             return $event->payment->is($result->payment);
         });
+    });
+
+    it('throws InvalidPaymentPurposeException when purpose is not ORDER', function (): void {
+        $user  = User::factory()->create();
+        $order = Order::factory()->create([
+            'customer_id'            => $user->id,
+            'customer_email'         => $user->email,
+            'customer_phone'         => $user->phone,
+            'customer_first_name'    => $user->first_name,
+            'customer_last_name'     => $user->last_name,
+            'customer_snapshot_json' => $user->toArray(),
+        ]);
+        $payment = Payment::factory()->create([
+            'order_id' => $order->id,
+            'method'   => PaymentMethodEnum::BANK_TRANSFER->value,
+            'purpose'  => PaymentPurposeEnum::WALLET_TOPUP,
+            'amount'   => 100_000,
+            'status'   => PaymentStatusEnum::PENDING,
+        ]);
+
+        $processor = new BankTransferPaymentProcessor();
+
+        expect(fn () => $processor->process($payment))
+            ->toThrow(InvalidPaymentPurposeException::class);
+    });
+
+    it('returns early without dispatching event when payment is already completed', function (): void {
+        Event::fake([PaymentCompletedEvent::class]);
+
+        $user  = User::factory()->create();
+        $order = Order::factory()->create([
+            'customer_id'            => $user->id,
+            'customer_email'         => $user->email,
+            'customer_phone'         => $user->phone,
+            'customer_first_name'    => $user->first_name,
+            'customer_last_name'     => $user->last_name,
+            'customer_snapshot_json' => $user->toArray(),
+        ]);
+        $payment = Payment::factory()->create([
+            'order_id' => $order->id,
+            'method'   => PaymentMethodEnum::BANK_TRANSFER->value,
+            'amount'   => 100_000,
+            'status'   => PaymentStatusEnum::COMPLETED,
+        ]);
+
+        $processor = new BankTransferPaymentProcessor();
+        $processor->process($payment);
+
+        Event::assertNotDispatched(PaymentCompletedEvent::class);
     });
 
     it('throws bad method call when verify is invoked', function (): void {

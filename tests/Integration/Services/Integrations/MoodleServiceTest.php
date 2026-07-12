@@ -160,3 +160,360 @@ it('throws when service used before configuration', function (): void {
     expect(fn () => $service->enrollUser(1, 2))
         ->toThrow(UnrecoverableProvisioningException::class);
 });
+
+// ─── isCourseCompleted ─────────────────────────────────────────────
+
+it('returns true when moodle course is completed', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::response([
+            'completionstatus' => [
+                'completed' => true,
+            ],
+        ], 200),
+    ]);
+
+    $result = $this->moodleService->isCourseCompleted(101, 55);
+
+    expect($result)->toBeTrue();
+
+    Http::assertSent(fn ($r) => $r['wsfunction'] === 'core_completion_get_course_completion_status');
+});
+
+it('returns false when moodle course is not completed', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::response([
+            'completionstatus' => [
+                'completed' => false,
+            ],
+        ], 200),
+    ]);
+
+    $result = $this->moodleService->isCourseCompleted(101, 55);
+
+    expect($result)->toBeFalse();
+});
+
+it('re-throws non-nocriteriaset RecoverableProvisioningException from isCourseCompleted', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::response([], 500),
+    ]);
+
+    expect(fn () => $this->moodleService->isCourseCompleted(101, 55))
+        ->toThrow(RecoverableProvisioningException::class, 'Moodle server error');
+});
+
+// ─── getActivityCompletionStatus ───────────────────────────────────
+
+it('returns activity completion statuses for a course', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::response([
+            'statuses' => [
+                [
+                    'cmid'           => 10,
+                    'hascompletion'  => true,
+                    'state'          => 1,
+                    'timecompleted'  => 1700000000,
+                ],
+                [
+                    'cmid'           => 11,
+                    'hascompletion'  => false,
+                    'state'          => 0,
+                    'timecompleted'  => null,
+                ],
+            ],
+        ], 200),
+    ]);
+
+    $result = $this->moodleService->getActivityCompletionStatus(101, 55);
+
+    expect($result)->toHaveKeys([10, 11]);
+    expect($result[10]['state'])->toBe(1);
+    expect($result[10]['timecompleted'])->toBe('2023-11-14 22:13:20');
+    expect($result[11]['timecompleted'])->toBeNull();
+
+    Http::assertSent(fn ($r) => $r['wsfunction'] === 'core_completion_get_activities_completion_status');
+});
+
+it('re-throws non-nocriteriaset exception from getActivityCompletionStatus on 500', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::response([], 500),
+    ]);
+
+    expect(fn () => $this->moodleService->getActivityCompletionStatus(101, 55))
+        ->toThrow(RecoverableProvisioningException::class, 'Moodle server error');
+});
+
+// ─── getGrades ─────────────────────────────────────────────────────
+
+it('returns course_grade and activity grades', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::response([
+            'usergrades' => [
+                [
+                    'gradeitems' => [
+                        ['itemtype' => 'course', 'gradeformatted' => '85.50'],
+                        ['itemtype' => 'mod', 'cmid' => 10, 'gradeformatted' => '90.00'],
+                        ['itemtype' => 'mod', 'cmid' => 11, 'gradeformatted' => '75.00'],
+                    ],
+                ],
+            ],
+        ], 200),
+    ]);
+
+    $result = $this->moodleService->getGrades(101, 55);
+
+    expect($result['course_grade'])->toBe('85.50');
+    expect($result['activities'])->toHaveKeys([10, 11]);
+    expect($result['activities'][10])->toBe('90.00');
+    expect($result['activities'][11])->toBe('75.00');
+
+    Http::assertSent(fn ($r) => $r['wsfunction'] === 'gradereport_user_get_grade_items');
+});
+
+it('returns empty course_grade and activities when no graded items', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::response([
+            'usergrades' => [
+                [
+                    'gradeitems' => [],
+                ],
+            ],
+        ], 200),
+    ]);
+
+    $result = $this->moodleService->getGrades(101, 55);
+
+    expect($result['course_grade'])->toBeNull();
+    expect($result['activities'])->toBe([]);
+});
+
+// ─── getCourse ─────────────────────────────────────────────────────
+
+it('returns LmsMoodleBlockData with visible modules', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::response([
+            [
+                'id'      => 101,
+                'name'    => 'Test Course',
+                'visible' => 1,
+                'modules' => [
+                    ['id' => 1, 'cid' => 10, 'name' => 'Lesson 1', 'modname' => 'resource', 'visible' => 1],
+                    ['id' => 2, 'cid' => 11, 'name' => 'Hidden', 'modname' => 'quiz', 'visible' => 0],
+                    ['id' => 3, 'cid' => 12, 'name' => 'Forum', 'modname' => 'forum', 'visible' => 1],
+                ],
+            ],
+        ], 200),
+    ]);
+
+    $result = $this->moodleService->getCourse(101);
+
+    expect($result->name)->toBe('Test Course');
+    expect($result->visible)->toBeTrue();
+    expect($result->completed)->toBeFalse();
+    expect($result->activities)->toHaveCount(2);
+    expect($result->activities[0]->cid)->toBe(1);
+    expect($result->activities[0]->name)->toBe('Lesson 1');
+    expect($result->activities[1]->cid)->toBe(3);
+    expect($result->activities[1]->name)->toBe('Forum');
+
+    Http::assertSent(fn ($r) => $r['wsfunction'] === 'core_course_get_contents');
+});
+
+it('throws when moodle course is not found', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::response([], 200),
+    ]);
+
+    expect(fn () => $this->moodleService->getCourse(999))
+        ->toThrow(UnrecoverableProvisioningException::class, 'Moodle course not found.');
+});
+
+// ─── getAllQuizzes ─────────────────────────────────────────────────
+
+it('returns empty array when user has no enrolled moodle courses', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::response([], 200),
+    ]);
+
+    $result = $this->moodleService->getAllQuizzes(55);
+
+    expect($result)->toBe([]);
+
+    Http::assertSent(fn ($r) => $r['wsfunction'] === 'core_enrol_get_users_courses');
+});
+
+it('returns empty array when no quizzes in enrolled courses', function (): void {
+    $sequence = Http::sequence();
+
+    // 1. core_enrol_get_users_courses — 1 course
+    $sequence->push([
+        ['id' => 101, 'visible' => 1, 'fullname' => 'Course A'],
+    ], 200);
+
+    // 2. core_completion_get_course_completion_status — completed=true
+    $sequence->push(['completionstatus' => ['completed' => true]], 200);
+
+    // 3. core_completion_get_activities_completion_status — empty
+    $sequence->push([], 200);
+
+    // 4. gradereport_user_get_grade_items — empty
+    $sequence->push(['usergrades' => [[]]], 200);
+
+    // 5. mod_quiz_get_quizzes_by_courses — no quizzes
+    $sequence->push(['quizzes' => []], 200);
+
+    Http::fake(['https://moodle.test/*' => $sequence]);
+
+    $result = $this->moodleService->getAllQuizzes(55);
+
+    expect($result)->toBe([]);
+});
+
+it('returns quizzes with completion and grade data', function (): void {
+    $sequence = Http::sequence();
+
+    // 1. core_enrol_get_users_courses — 1 visible course
+    $sequence->push([
+        ['id' => 101, 'visible' => 1, 'fullname' => 'Course A'],
+    ], 200);
+
+    // 2. core_completion_get_course_completion_status
+    $sequence->push(['completionstatus' => ['completed' => true]], 200);
+
+    // 3. core_completion_get_activities_completion_status — quiz cmid=10 completed
+    $sequence->push([
+        'statuses' => [
+            ['cmid' => 10, 'hascompletion' => true, 'state' => 2, 'timecompleted' => 1700000000],
+        ],
+    ], 200);
+
+    // 4. gradereport_user_get_grade_items — quiz cmid=10 has grade
+    $sequence->push([
+        'usergrades' => [[
+            'gradeitems' => [
+                ['itemtype' => 'course', 'gradeformatted' => '92.00'],
+                ['itemtype' => 'mod', 'cmid' => 10, 'gradeformatted' => '88.00'],
+            ],
+        ]],
+    ], 200);
+
+    // 5. mod_quiz_get_quizzes_by_courses — 1 quiz matching cmid=10
+    $sequence->push([
+        'quizzes' => [
+            ['id' => 1, 'course' => 101, 'coursemodule' => 10, 'name' => 'Quiz 1', 'visible' => 1],
+        ],
+    ], 200);
+
+    Http::fake(['https://moodle.test/*' => $sequence]);
+
+    $result = $this->moodleService->getAllQuizzes(55);
+
+    expect($result)->toHaveCount(1);
+    expect($result[0]->name)->toBe('Course A');
+    expect($result[0]->completed)->toBeTrue();
+    expect($result[0]->course_grade)->toBeNull(); // course_grade not populated by getAllQuizzes
+    expect($result[0]->activities)->toHaveCount(1);
+    expect($result[0]->activities[0]['cid'])->toBe(10);
+    expect($result[0]->activities[0]['name'])->toBe('Quiz 1');
+    expect($result[0]->activities[0]['grade'])->toBe('88.00');
+    expect($result[0]->activities[0]['state']['value'])->toBe(2);
+});
+
+it('skips invisible courses in getAllQuizzes', function (): void {
+    $sequence = Http::sequence();
+
+    // 1. core_enrol_get_users_courses — 1 invisible course
+    $sequence->push([
+        ['id' => 101, 'visible' => 0, 'fullname' => 'Hidden Course'],
+    ], 200);
+
+    // No further calls expected (empty params after filtering)
+    Http::fake(['https://moodle.test/*' => $sequence]);
+
+    $result = $this->moodleService->getAllQuizzes(55);
+
+    expect($result)->toBe([]);
+});
+
+it('skips courses not in coursesData in getAllQuizzes', function (): void {
+    $sequence = Http::sequence();
+
+    // 1. core_enrol_get_users_courses — 1 course
+    $sequence->push([
+        ['id' => 101, 'visible' => 1, 'fullname' => 'Course A'],
+    ], 200);
+
+    // 2. core_completion_get_course_completion_status
+    $sequence->push(['completionstatus' => ['completed' => false]], 200);
+
+    // 3. core_completion_get_activities_completion_status
+    $sequence->push(['statuses' => []], 200);
+
+    // 4. gradereport_user_get_grade_items
+    $sequence->push(['usergrades' => [[]]], 200);
+
+    // 5. mod_quiz_get_quizzes_by_courses — quiz referencing non-existent course
+    $sequence->push([
+        'quizzes' => [
+            ['id' => 1, 'course' => 999, 'coursemodule' => 99, 'name' => 'Orphan Quiz', 'visible' => 1],
+        ],
+    ], 200);
+
+    Http::fake(['https://moodle.test/*' => $sequence]);
+
+    $result = $this->moodleService->getAllQuizzes(55);
+
+    expect($result)->toBe([]); // No matching course, quizzes filtered out
+});
+
+it('handles exceptions gracefully in getAllQuizzes inner loops', function (): void {
+    $sequence = Http::sequence();
+
+    // 1. courses
+    $sequence->push([
+        ['id' => 101, 'visible' => 1, 'fullname' => 'Course A'],
+    ], 200);
+
+    // 2. isCourseCompleted throws
+    $sequence->push(['exception' => 'moodle_exception', 'errorcode' => 'other', 'message' => 'Fail'], 200);
+
+    // But getAllQuizzes catches Unrecoverable internally → fallback to false
+    // Continue with fallback: getActivityCompletionStatus also throws
+    $sequence->push(['exception' => 'moodle_exception', 'errorcode' => 'other', 'message' => 'Fail'], 200);
+
+    // getGrades also throws
+    $sequence->push(['exception' => 'moodle_exception', 'errorcode' => 'other', 'message' => 'Fail'], 200);
+
+    // 5. mod_quiz_get_quizzes_by_courses — no quizzes
+    $sequence->push(['quizzes' => []], 200);
+
+    Http::fake(['https://moodle.test/*' => $sequence]);
+
+    $result = $this->moodleService->getAllQuizzes(55);
+
+    expect($result)->toBe([]); // Still returns valid result via fallback to empty
+});
+
+// ─── call() error handling ─────────────────────────────────────────
+
+it('throws UnrecoverableProvisioningException on 4xx response', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::response([], 400),
+    ]);
+
+    expect(fn () => $this->moodleService->enrollUser(1, 2))
+        ->toThrow(UnrecoverableProvisioningException::class, 'Moodle request failed for enrol_manual_enrol_users.');
+});
+
+it('throws with errorcode metadata when moodle returns exception response', function (): void {
+    Http::fake([
+        'https://moodle.test/*' => Http::response([
+            'exception' => 'moodle_exception',
+            'errorcode' => 'invalidparameter',
+            'message'   => 'Invalid parameter value detected',
+        ], 200),
+    ]);
+
+    expect(fn () => $this->moodleService->enrollUser(1, 2))
+        ->toThrow(UnrecoverableProvisioningException::class, 'Invalid parameter value detected');
+});

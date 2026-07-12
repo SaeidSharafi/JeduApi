@@ -7,10 +7,13 @@ namespace Tests\Unit\Services;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
+use App\Enums\Order\OrderProvisioningTriggerEnum;
 use App\Enums\Order\OrderStatusEnum;
+use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Enrollment;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Services\OrderStatusService;
 
 describe('OrderStatusService', function (): void {
@@ -112,6 +115,36 @@ describe('OrderStatusService', function (): void {
         expect($enrollment->fresh()->enrollment_status)->toBe(EnrollmentStatusEnum::ACTIVE);
     });
 
+    it('creates enrollment after payment success', function (): void {
+        $items = [
+            [
+                'payment_type' => OrderItemPaymentTypeEnum::FULL_PAYMENT,
+                'status'       => OrderItemStatusEnum::PENDING,
+                'price'        => 100000,
+                'total'        => 100000,
+            ],
+        ];
+
+        $order = Order::factory()
+            ->withCalculatedTotals($items)
+            ->create(['status' => OrderStatusEnum::PENDING]);
+
+        $order->refresh();
+        $item = $order->items->first();
+
+        Payment::factory()->create([
+            'order_id' => $order->id,
+            'status'   => PaymentStatusEnum::COMPLETED,
+            'amount'   => 100000,
+        ]);
+
+        expect(Enrollment::where('order_item_id', $item->id)->exists())->toBeFalse();
+
+        (new OrderStatusService())->handlePaymentCompletion($order);
+
+        expect(Enrollment::where('order_item_id', $item->id)->exists())->toBeTrue();
+    });
+
     it('correctly cascades all status changes after a payment', function (): void {
         $order = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
 
@@ -152,4 +185,56 @@ describe('OrderStatusService', function (): void {
             'status' => OrderStatusEnum::COMPLETED->value
         ]);
     });
+
+    it('sets order to PROCESSING when FULL_PAYMENT trigger but order has balance_due > 0', function (): void {
+        $original = config('order.provisioning.trigger');
+        config(['order.provisioning.trigger' => 'full_payment']);
+
+        $order = Order::factory()->create([
+            'status'                 => OrderStatusEnum::PENDING,
+            'full_value_grand_total' => 10000,
+        ]);
+        $item = OrderItem::factory()->for($order)->create([
+            'status' => OrderItemStatusEnum::PENDING,
+        ]);
+
+        Enrollment::factory()->for($item)->create();
+
+        (new OrderStatusService())->handlePaymentCompletion($order->fresh());
+
+        $this->assertDatabaseHas('orders', [
+            'id'     => $order->id,
+            'status' => OrderStatusEnum::PROCESSING->value,
+        ]);
+        $this->assertDatabaseHas('order_items', [
+            'id'     => $item->id,
+            'status' => OrderItemStatusEnum::PENDING->value, // NOT completed
+        ]);
+
+        config(['order.provisioning.trigger' => $original]);
+    });
+
+    it('sets order to PROCESSING and does not complete items when provisioning trigger is MANUAL_APPROVAL',
+        function (): void {
+            config()->set('order.provisioning.trigger', 'manual_approval');
+
+            $order = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
+            $item = OrderItem::factory()->for($order)->create([
+                'status' => OrderItemStatusEnum::PENDING,
+            ]);
+            Enrollment::factory()->for($item)->create();
+
+            (new OrderStatusService())->handlePaymentCompletion($order->fresh());
+
+            $this->assertDatabaseHas('orders', [
+                'id'     => $order->id,
+                'status' => OrderStatusEnum::PROCESSING->value,
+            ]);
+            $this->assertDatabaseHas('order_items', [
+                'id'     => $item->id,
+                'status' => OrderItemStatusEnum::PENDING->value,
+            ]);
+
+            config()->set('order.provisioning.trigger', 'any_payment');
+        });
 });

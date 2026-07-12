@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Actions\Wallet\RecordWalletTransactionAction;
+use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
@@ -11,6 +12,8 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
 use App\Models\WalletTransaction;
+use App\Exceptions\Payment\DuplicatePaymentException;
+use App\Exceptions\Payment\InvalidPaymentPurposeException;
 use App\Services\Payment\WalletPaymentProcessor;
 use Illuminate\Support\Facades\Event;
 
@@ -116,5 +119,97 @@ describe('WalletPaymentProcessor', function (): void {
 
         expect(fn (): Payment => $processor->verify($payment, []))
             ->toThrow(BadMethodCallException::class);
+    });
+
+    // ─── Guard: InvalidPaymentPurposeException (line 46) ────────────────
+
+    it('throws InvalidPaymentPurposeException when purpose is not ORDER', function (): void {
+        // Arrange
+        $payment = Payment::factory()->topup()->create([
+            'purpose' => PaymentPurposeEnum::WALLET_TOPUP,
+            'method'  => PaymentMethodEnum::WALLET,
+            'status'  => PaymentStatusEnum::PENDING,
+        ]);
+
+        $processor = new WalletPaymentProcessor(
+            Mockery::mock(RecordWalletTransactionAction::class),
+            Mockery::mock(App\Services\PaymentTransactionReferenceService::class)
+        );
+
+        // Act & Assert
+        expect(fn (): PaymentProcessResultData => $processor->process($payment))
+            ->toThrow(InvalidPaymentPurposeException::class)
+            ->and(fn () => $processor->process($payment))
+            ->toThrow(InvalidPaymentPurposeException::class, "This payment processor requires purpose 'order', got 'wallet_topup'.");
+    });
+
+    // ─── Guard: Non-PENDING early return (lines 50, 73) ─────────────────
+
+    it('returns PaymentProcessResultData::completed immediately for non-PENDING payment', function (): void {
+        // Arrange
+        $payment = Payment::factory()->create([
+            'purpose' => PaymentPurposeEnum::ORDER,
+            'method'  => PaymentMethodEnum::WALLET,
+            'status'  => PaymentStatusEnum::COMPLETED,
+        ]);
+
+        $processor = new WalletPaymentProcessor(
+            Mockery::mock(RecordWalletTransactionAction::class),
+            Mockery::mock(App\Services\PaymentTransactionReferenceService::class)
+        );
+
+        // Act
+        $result = $processor->process($payment);
+
+        // Assert
+        expect($result)->toBeInstanceOf(PaymentProcessResultData::class)
+            ->and($result->requiresRedirect())->toBeFalse()
+            ->and($result->payment->status)->toBe(PaymentStatusEnum::COMPLETED);
+    });
+
+    // ─── Guard: DuplicatePaymentException (line 67) ─────────────────────
+
+    it('throws DuplicatePaymentException when order already has completed wallet payment', function (): void {
+        // Arrange
+        $user = User::factory()->create();
+        $user->wallet->update(['balance' => 1_000_000]);
+
+        $order = Order::factory()->create([
+            'customer_id'            => $user->id,
+            'customer_email'         => $user->email,
+            'customer_phone'         => $user->phone,
+            'customer_first_name'    => $user->first_name,
+            'customer_last_name'     => $user->last_name,
+            'customer_snapshot_json' => $user->toArray(),
+        ]);
+
+        // Existing completed wallet payment
+        Payment::factory()->create([
+            'order_id'    => $order->id,
+            'customer_id' => $user->id,
+            'amount'      => 100_000,
+            'method'      => PaymentMethodEnum::WALLET,
+            'purpose'     => PaymentPurposeEnum::ORDER,
+            'status'      => PaymentStatusEnum::COMPLETED,
+        ]);
+
+        // New pending wallet payment — should be blocked
+        $pendingPayment = Payment::factory()->create([
+            'order_id'    => $order->id,
+            'customer_id' => $user->id,
+            'amount'      => 200_000,
+            'method'      => PaymentMethodEnum::WALLET,
+            'purpose'     => PaymentPurposeEnum::ORDER,
+            'status'      => PaymentStatusEnum::PENDING,
+        ]);
+
+        $processor = new WalletPaymentProcessor(
+            app(RecordWalletTransactionAction::class),
+            app(App\Services\PaymentTransactionReferenceService::class)
+        );
+
+        // Act & Assert
+        expect(fn (): PaymentProcessResultData => $processor->process($pendingPayment))
+            ->toThrow(DuplicatePaymentException::class);
     });
 });
