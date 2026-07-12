@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\Content\HomePageBlockTypeEnum;
 use App\Enums\PermissionEnum;
 use App\Enums\System\MorphTypeEnum;
 use App\Models\AdviceRequest;
@@ -622,7 +623,7 @@ final class DemoSeeder extends Seeder
 
         $blocks = HomePageBlock::whereIn('id', collect($collection)->pluck('id'))->get();
         foreach ($blocks as $i => $block) {
-            if (! in_array($block->type, ['WEBINAR_BANNER', 'BANNER'], true)) {
+            if (! in_array($block->type, [HomePageBlockTypeEnum::WEBINAR_BANNER, HomePageBlockTypeEnum::BANNER], true)) {
                 continue;
             }
             $image = $imagePool[$i % count($imagePool)];
