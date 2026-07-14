@@ -39,7 +39,7 @@ final class WalletTopupController extends Controller
 
         if ($method === PaymentMethodEnum::WALLET) {
             throw ValidationException::withMessages([
-                'payment_method' => ['Cannot use wallet to top up wallet balance.'],
+                'payment_method' => [__('messages.wallet.cannot_use_wallet_for_topup')],
             ]);
         }
 
@@ -63,8 +63,8 @@ final class WalletTopupController extends Controller
             'redirect_data'     => $result->redirect_data,
             'redirect_method'   => $result->redirect_method,
             'message'           => $result->requiresRedirect()
-                ? 'Redirecting to payment gateway...'
-                : 'Payment is pending verification.',
+                ? __('messages.wallet.redirecting_to_gateway')
+                : __('messages.wallet.payment_pending_verification'),
         ]);
     }
 }

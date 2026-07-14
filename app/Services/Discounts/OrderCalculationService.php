@@ -68,7 +68,7 @@ final class OrderCalculationService
             // Find which ID(s) are missing to provide a more helpful error message, if desired.
             $missingIds = array_diff($pdoIds, $deliveryOptions->keys()->all());
             throw new InvalidArgumentException(
-                'One or more ProductDeliveryOption IDs do not exist: '.implode(', ', $missingIds)
+                __('messages.order.delivery_options_not_found', ['ids' => implode(', ', $missingIds)])
             );
 
         }
@@ -127,7 +127,7 @@ final class OrderCalculationService
             $handlerName  = data_get($rule, 'handler');
             $handlerClass = $this->handlerRegistry->getCartConditionHandler($handlerName);
             if (! $handlerClass) {
-                throw new RuntimeException("No discount condition handler registered for '{$handlerName}'");
+                throw new RuntimeException(__('messages.discount.no_condition_handler', ['name' => $handlerName]));
             }
 
             /** @var DiscountConditionContract $handler */
@@ -135,7 +135,7 @@ final class OrderCalculationService
             $configDtoClass = $this->handlerRegistry->getConfigClass($handlerClass);
 
             if (! $configDtoClass) {
-                throw new RuntimeException("No config DTO mapped for handler '{$handlerClass}'");
+                throw new RuntimeException(__('messages.discount.no_config_dto', ['class' => $handlerClass]));
             }
 
             $config = $configDtoClass::from(data_get($rule, 'configuration'));
@@ -162,7 +162,7 @@ final class OrderCalculationService
             $handlerName  = data_get($rule, 'handler');
             $handlerClass = $this->handlerRegistry->getCartActionHandler($handlerName);
             if (! $handlerClass) {
-                throw new RuntimeException("No discount action handler registered for '{$handlerName}'");
+                throw new RuntimeException(__('messages.discount.no_action_handler', ['name' => $handlerName]));
             }
 
             /** @var DiscountActionContract $handler */
@@ -170,7 +170,7 @@ final class OrderCalculationService
             $configDtoClass = $this->handlerRegistry->getConfigClass($handlerClass);
 
             if (! $configDtoClass) {
-                throw new RuntimeException("No config DTO mapped for handler '{$handlerClass}'");
+                throw new RuntimeException(__('messages.discount.no_config_dto', ['class' => $handlerClass]));
             }
 
             $config = $configDtoClass::from(data_get($rule, 'configuration'));

@@ -382,7 +382,7 @@ test('it skips an item in calculation if its delivery option ID does not exist',
 
     // Act & Assert
     expect(fn () => $service->calculate($data))
-        ->toThrow(InvalidArgumentException::class, 'One or more ProductDeliveryOption IDs do not exist: 99999');
+        ->toThrow(InvalidArgumentException::class, __('messages.order.delivery_options_not_found', ['ids' => '99999']));
 });
 
 test('it does not apply discount when promotion conditions fail', function (): void {

@@ -44,28 +44,16 @@ final class DigipayPaymentStatus
     /**
      * Get human-readable message for status code.
      */
-    public static function getMessage(int $code, string $default = 'خطای نامشخص'): string
+    public static function getMessage(int $code, ?string $default = null): string
     {
-        $messages = [
-            self::SUCCESS                  => 'عملیات با موفقیت انجام شد',
-            self::INVALID_INPUT            => 'پارامترهای ورودی نامعتبر است',
-            self::NOT_FOUND                => 'تراکنش یافت نشد',
-            self::INVALID_TOKEN            => 'توکن پرداخت نامعتبر است',
-            self::EXPIRED                  => 'مهلت پرداخت به پایان رسیده است',
-            self::IN_PROGRESS              => 'تراکنش در حال پردازش است',
-            self::NOT_PAYABLE              => 'امکان پرداخت وجود ندارد',
-            self::PSP_ERROR                => 'خطا در ارتباط با درگاه بانک',
-            self::PAYMENT_FAILED           => 'پرداخت ناموفق بود',
-            self::DUPLICATE_DIFFERENT_DATA => 'تراکنش تکراری با اطلاعات متفاوت',
-            self::VERIFY_TIMEOUT           => 'زمان تایید تراکنش به پایان رسیده',
-            self::VERIFY_FAILED            => 'تایید تراکنش ناموفق بود',
-            self::VERIFY_INDETERMINATE     => 'وضعیت تراکنش نامشخص است',
-            self::INVALID_STATE            => 'وضعیت درخواست نامعتبر است',
-            self::CELL_REQUIRED            => 'شماره موبایل الزامی است',
-            self::TICKET_NOT_POSSIBLE      => 'امکان ایجاد تیکت برای این کاربر وجود ندارد',
-        ];
+        $key = 'payment_gateways.digipay.status.'.$code;
+        $translated = __($key);
 
-        return $messages[$code] ?? $default;
+        if ($translated === $key) {
+            return $default ?? (string) __('messages.error');
+        }
+
+        return $translated;
     }
 
     /**

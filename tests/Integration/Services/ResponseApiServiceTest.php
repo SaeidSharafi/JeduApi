@@ -253,7 +253,7 @@ describe('ApiResponseService', function (): void {
         $jsonResponse = $apiResponse->toResponse(request());
         expect($jsonResponse->getStatusCode())->toBe(HttpStatus::HTTP_FORBIDDEN);
         $responseData = $jsonResponse->getData(true);
-        expect($responseData['message'])->toBe('This action is forbidden.')
+        expect($responseData['message'])->toBe(__('messages.forbidden'))
             ->and($responseData['errors'])->toBeNull()
             ->and($responseData['metadata'])->toBe([]);
 
@@ -274,7 +274,7 @@ describe('ApiResponseService', function (): void {
         $jsonResponse = $apiResponse->toResponse(request());
         expect($jsonResponse->getStatusCode())->toBe(HttpStatus::HTTP_UNAUTHORIZED);
         $responseData = $jsonResponse->getData(true);
-        expect($responseData['message'])->toBe('Authentication required.')
+        expect($responseData['message'])->toBe(__('messages.unauthenticated'))
             ->and($responseData['errors'])->toBeNull()
             ->and($responseData['metadata'])->toBe([]);
 
@@ -295,7 +295,7 @@ describe('ApiResponseService', function (): void {
         $jsonResponse = $apiResponse->toResponse(request());
         expect($jsonResponse->getStatusCode())->toBe(HttpStatus::HTTP_METHOD_NOT_ALLOWED);
         $responseData = $jsonResponse->getData(true);
-        expect($responseData['message'])->toBe('Method not allowed for this resource.')
+        expect($responseData['message'])->toBe(__('messages.method_not_allowed'))
             ->and($responseData['errors'])->toBeNull()
             ->and($responseData['metadata'])->toBe([]);
 
@@ -318,7 +318,7 @@ describe('ApiResponseService', function (): void {
         $jsonResponse = $apiResponse->toResponse(request());
         expect($jsonResponse->getStatusCode())->toBe(HttpStatus::HTTP_INTERNAL_SERVER_ERROR);
         $responseData = $jsonResponse->getData(true);
-        expect($responseData['message'])->toBe('An internal server error occurred.');
+        expect($responseData['message'])->toBe(__('messages.server_error'));
         expect($responseData)->not->toHaveKey('debug');
 
         // Test with custom message and exception, app.debug = true

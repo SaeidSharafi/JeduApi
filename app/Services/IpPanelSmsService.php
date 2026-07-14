@@ -151,7 +151,7 @@ final class IpPanelSmsService
     private function validateConfig(): void
     {
         if (is_null($this->apiKey) || is_null($this->from)) {
-            throw new Exception('IPPanel API key or sender number is not configured.');
+            throw new Exception(__('messages.sms.ippanel_not_configured'));
         }
 
     }

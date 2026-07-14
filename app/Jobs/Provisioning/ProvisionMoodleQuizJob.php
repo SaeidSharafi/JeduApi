@@ -48,7 +48,7 @@ final class ProvisionMoodleQuizJob extends AbstractProvisioningJob
         // A non-numeric course_id in the DB will never fix itself on retry.
         if (! is_numeric($courseId)) {
             throw new UnrecoverableProvisioningException(
-                'Moodle quiz course_id is missing from delivery option details.'
+                __('messages.provisioning.moodle_quiz_course_id_missing')
             );
         }
         $courseId = (int) $courseId;

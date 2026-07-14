@@ -63,7 +63,7 @@ final class ProvisionImsEnrollmentJob extends AbstractProvisioningJob
 
         $imsCourseCode = data_get($enrollment->productDeliveryOption?->details_json ?? [], 'ims_course_code');
         if (empty($imsCourseCode)) {
-            throw new UnrecoverableProvisioningException('IMS course code is missing from delivery option details.');
+            throw new UnrecoverableProvisioningException(__('messages.provisioning.ims_course_code_missing'));
         }
 
         /** @var User $customer */
@@ -174,20 +174,20 @@ final class ProvisionImsEnrollmentJob extends AbstractProvisioningJob
     {
         $order = $enrollment->order;
         if (! $order) {
-            throw new RuntimeException('Enrollment order is required for IMS provisioning.');
+            throw new RuntimeException(__('messages.provisioning.enrollment_order_required'));
         }
 
         $payment = $this->resolvePayment($enrollment);
         if (! $payment) {
-            throw new RuntimeException('Completed payment is required for IMS provisioning.');
+            throw new RuntimeException(__('messages.provisioning.completed_payment_required'));
         }
 
         if ((int) $payment->order_id !== (int) $order->id) {
-            throw new RuntimeException('Payment does not belong to enrollment order.');
+            throw new RuntimeException(__('messages.provisioning.payment_not_belong'));
         }
 
         if ($payment->status !== PaymentStatusEnum::COMPLETED) {
-            throw new RuntimeException('Payment must be completed before IMS provisioning.');
+            throw new RuntimeException(__('messages.provisioning.payment_must_be_completed'));
         }
 
         return $payment;

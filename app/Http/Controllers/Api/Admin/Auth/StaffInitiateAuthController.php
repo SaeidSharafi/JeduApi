@@ -43,7 +43,7 @@ final class StaffInitiateAuthController extends Controller
         if ($result->requiresPassword) {
             return apiResponse()->success([
                 'login_method' => 'PASSWORD',
-            ], 'User has set password');
+            ], __('messages.auth.user_has_password'));
         }
 
         $otpSent = $result->otpSent;

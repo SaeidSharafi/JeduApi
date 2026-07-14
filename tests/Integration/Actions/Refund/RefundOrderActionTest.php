@@ -249,7 +249,7 @@ it('throws exception when no refundable items exist', function (): void {
     );
 
     expect(fn () => (resolve(RefundOrderAction::class))->handle($order, $data))
-        ->toThrow(RefundValidationException::class, 'no_refundable_items');
+        ->toThrow(RefundValidationException::class, __('messages.order.refund.no_refundable_items'));
 });
 
 it('excludes cancelled items from refund', function (): void {

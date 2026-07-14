@@ -38,10 +38,12 @@ final readonly class DigipayRefundProcessor implements RefundProcessorInterface
             ->sum('amount');
 
         if (($alreadyRefunded + $amount) > $payment->amount) {
-            throw new RefundGatewayException(sprintf(
-                'Refund of %d would exceed payment %d (amount: %d, already refunded: %d).',
-                $amount, $payment->id, $payment->amount, $alreadyRefunded,
-            ));
+            throw new RefundGatewayException(__('messages.exceptions.refund_exceeds_payment', [
+                'amount'           => $amount,
+                'payment_id'       => $payment->id,
+                'payment_amount'   => $payment->amount,
+                'already_refunded' => $alreadyRefunded,
+            ]));
         }
 
         // BNPL/CREDIT delivery guard
@@ -65,7 +67,7 @@ final readonly class DigipayRefundProcessor implements RefundProcessorInterface
             ]);
 
             throw new RefundGatewayException(
-                "Digipay refund failed: {$e->getMessage()}",
+                __('payment_gateways.digipay.errors.refund_failed', ['details' => $e->getMessage()]),
                 previous: $e,
             );
         }

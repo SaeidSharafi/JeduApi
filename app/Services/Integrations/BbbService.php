@@ -32,7 +32,7 @@ final class BbbService extends AbstractIntegrationService
         if ($response->failed()) {
             // BBB failures are typically transient (server restart, network) — recoverable.
             throw new RecoverableProvisioningException(
-                'BBB create meeting request failed.',
+                __('messages.integration.bbb.create_meeting_failed'),
                 $response->status(),
             );
         }

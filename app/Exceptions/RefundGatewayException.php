@@ -10,10 +10,10 @@ use Throwable;
 final class RefundGatewayException extends RuntimeException
 {
     public function __construct(
-        string $message = 'Refund gateway operation failed.',
+        string $message = '',
         int $code = 0,
         ?Throwable $previous = null,
     ) {
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message ?: __('messages.exceptions.refund_gateway_failed'), $code, $previous);
     }
 }

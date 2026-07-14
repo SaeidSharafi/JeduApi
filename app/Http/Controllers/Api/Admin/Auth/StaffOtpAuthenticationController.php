@@ -76,6 +76,6 @@ final class StaffOtpAuthenticationController extends Controller
                 'type'        => 'Bearer',
                 'user'        => StaffData::from($user),
                 'permissions' => $permissions,
-            ], 'Authenticated successfully');
+            ], __('messages.auth.login.success'));
     }
 }

@@ -46,7 +46,7 @@ final class ProvisionBbbEnrollmentJob extends AbstractProvisioningJob
         // A missing meeting_id in the DB will never fix itself on retry.
         if (! is_string($meetingId) || $meetingId === '') {
             throw new UnrecoverableProvisioningException(
-                'BBB meeting_id is missing from delivery option details.'
+                __('messages.provisioning.bbb_meeting_id_missing')
             );
         }
 

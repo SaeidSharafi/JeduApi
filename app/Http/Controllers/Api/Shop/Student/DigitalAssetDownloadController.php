@@ -36,12 +36,12 @@ final class DigitalAssetDownloadController extends Controller
 
         // 1. Verify ownership
         if ($enrollment->customer_id !== $user->id) {
-            return apiResponse()->forbidden('You do not have access to this enrollment.');
+            return apiResponse()->forbidden(__('messages.digital_asset.no_access'));
         }
 
         // 2. Verify enrollment is ACTIVE
         if ($enrollment->enrollment_status !== EnrollmentStatusEnum::ACTIVE) {
-            return apiResponse()->forbidden('Your enrollment is not active.');
+            return apiResponse()->forbidden(__('messages.digital_asset.enrollment_not_active'));
         }
 
         // 3. Verify the digital asset belongs to this enrollment's productable context
@@ -49,15 +49,15 @@ final class DigitalAssetDownloadController extends Controller
 
         if ($productable instanceof DigitalAsset) {
             if ($productable->id !== $digitalAsset->id) {
-                return apiResponse()->notFound('Digital asset not found for this enrollment.');
+                return apiResponse()->notFound(__('messages.digital_asset.not_found_for_enrollment'));
             }
         } elseif (method_exists($productable, 'digitalAssets')) {
             $attached = $productable->digitalAssets()->where('digital_assets.id', $digitalAsset->id)->exists();
             if (! $attached) {
-                return apiResponse()->notFound('Digital asset not found for this enrollment.');
+                return apiResponse()->notFound(__('messages.digital_asset.not_found_for_enrollment'));
             }
         } else {
-            return apiResponse()->notFound('Digital asset not found for this enrollment.');
+            return apiResponse()->notFound(__('messages.digital_asset.not_found_for_enrollment'));
         }
 
         // 4. Load downloadable media — prefer 'main' tag
@@ -65,7 +65,7 @@ final class DigitalAssetDownloadController extends Controller
         $media = $digitalAsset->getMedia(MediaTagEnum::MAIN->value)->first();
 
         if (! $media) {
-            return apiResponse()->notFound('No downloadable file is available for this digital asset.');
+            return apiResponse()->notFound(__('messages.digital_asset.no_downloadable_file'));
         }
 
         // 5. Stream the file
@@ -73,7 +73,7 @@ final class DigitalAssetDownloadController extends Controller
         $path = $media->getDiskPath();
 
         if (! $disk->exists($path)) {
-            return apiResponse()->notFound('File not found on storage.');
+            return apiResponse()->notFound(__('messages.file.storage_not_found'));
         }
 
         return $disk->download($path, "{$media->filename}.{$media->extension}", [

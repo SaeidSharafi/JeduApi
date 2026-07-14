@@ -19,7 +19,7 @@ final class RefundProcessorFactory
             PaymentMethodEnum::BANK_TRANSFER,
             PaymentMethodEnum::MELLAT_GATEWAY => app(ManualRefundProcessor::class),
             default          => throw new InvalidArgumentException(
-                "No refund processor for payment method: {$paymentMethod}"
+                __('messages.payment.refund_processor_not_found', ['pm' => $paymentMethod])
             ),
         };
     }

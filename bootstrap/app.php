@@ -153,7 +153,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // 6. MethodNotAllowedHttpException (405 Method Not Allowed)
         $exceptions->renderable(function (MethodNotAllowedHttpException $e, Request $request) use ($isApiRequest) {
             if ($isApiRequest($request)) {
-                return apiResponse()->methodNotAllowed($e->getMessage() ?: 'Method not allowed for this resource.');
+                return apiResponse()->methodNotAllowed($e->getMessage() ?: (string) __('messages.method_not_allowed'));
             }
 
             return null;
@@ -241,7 +241,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             if ($isApiRequest($request)) {
                 $responsePayload = [];
-                $baseMessage     = 'An internal server error occurred.'; // Simplest fallback
+                $baseMessage     = (string) __('messages.server_error'); // Simplest fallback
 
                 // Attempt to get a localized message only if config seems safe
                 if ($isLikelySafeToUseConfig && app()->bound('config') && function_exists('__')) {
@@ -255,7 +255,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 $responsePayload['message'] = ($isDebug && ! ($e instanceof ParseError)) ? $e->getMessage() : $baseMessage;
                 // For ParseError, $e->getMessage() IS the critical info.
                 if ($e instanceof ParseError) {
-                    $responsePayload['message'] = 'Parse Error: '.$e->getMessage();
+                    $responsePayload['message'] = __('messages.parse_error').': '.$e->getMessage();
                 }
 
                 if ($isDebug) {
@@ -290,7 +290,9 @@ return Application::configure(basePath: dirname(__DIR__))
                     // error_log("FATAL: Could not construct JSON response in error handler: " . $jsonException->getMessage());
                     // Return a plain text response as Symfony Response might be available
                     return new Symfony\Component\HttpFoundation\Response(
-                        'Internal Server Error. Details unavailable. Check server logs. Exception: '.get_class($e),
+                        (string) __('messages.server_error_details',
+                            ['class' => get_class($e)]
+                        ),
                         500,
                         ['Content-Type' => 'text/plain']
                     );

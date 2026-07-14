@@ -85,7 +85,7 @@ final class DigipayAdminService
 
         if (empty($response['tracking_code'])) {
             throw new DigipayException(
-                "Payment #{$payment->id} has no Digipay tracking code in transaction data"
+                __('payment_gateways.digipay.errors.no_tracking_code', ['id' => $payment->id])
             );
         }
 

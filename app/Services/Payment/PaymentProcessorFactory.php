@@ -34,6 +34,6 @@ final readonly class PaymentProcessorFactory
             }
         }
 
-        throw new InvalidArgumentException("No payment processor found for method: {$method->value}");
+        throw new InvalidArgumentException(__('messages.payment.processor_not_found', ['method' => $method->value]));
     }
 }

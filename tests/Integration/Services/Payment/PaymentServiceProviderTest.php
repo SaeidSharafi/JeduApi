@@ -185,7 +185,7 @@ describe('PaymentProcessorFactory Integration', function (): void {
                 $this->factory->make($method);
                 $this->fail("Expected InvalidArgumentException for method: {$method->value}");
             } catch (InvalidArgumentException $e) {
-                expect($e->getMessage())->toBe("No payment processor found for method: {$method->value}");
+                expect($e->getMessage())->toBe(__('messages.payment.processor_not_found', ['method' => $method->value]));
             }
         }
     });

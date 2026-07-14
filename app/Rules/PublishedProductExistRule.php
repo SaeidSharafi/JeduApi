@@ -19,7 +19,7 @@ final class PublishedProductExistRule implements DataAwareRule, ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (! $this->product) {
-            $fail('Product is not set for validation.');
+            $fail(__('messages.exceptions.product_not_set'));
 
             return;
         }
@@ -33,7 +33,7 @@ final class PublishedProductExistRule implements DataAwareRule, ValidationRule
             ->where('status', PublicationStatusEnum::PUBLISHED)
             ->first();
         if ($existingProduct) {
-            $fail("A published product already exists for this {$this->product->productable_type} with ID {$existingProduct->id}.");
+            $fail(__('messages.exceptions.product_already_exists', ['type' => $this->product->productable_type, 'id' => $existingProduct->id]));
         }
     }
 

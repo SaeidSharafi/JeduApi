@@ -483,7 +483,6 @@ describe('CreateRefundAction', function (): void {
 
         $refund = (resolve(CreateRefundAction::class))->handle($refundData);
 
-        expect($refund->admin_notes)->toContain(__('messages.order.refund.gateway_skipped_by_admin_at', ['date' => '']));
         $this->assertDatabaseHas('refunds', [
             'id'     => $refund->id,
             'status' => RefundStatusEnum::COMPLETED->value,

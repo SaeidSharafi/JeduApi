@@ -36,6 +36,9 @@ return [
     'file_not_found'         => 'فایل مورد نظر یافت نشد.',
     'something_went_wrong'   => 'متأسفانه مشکلی پیش آمد. لطفاً بعداً دوباره تلاش کنید.',
     'online_enrollment'      => 'ثبت‌نام آنلاین',
+    'parse_error'            => 'خطای تجزیه',
+    'server_error_details'   => 'خطای داخلی سرور. جزئیات در دسترس نیست. لاگ‌های سرور را بررسی کنید. خطا: :class',
+    'bank_error'             => 'خطای بانک.',
     'models'                 => [
         'seminar'            => 'سمینار',
         'staff'              => 'مدیر',
@@ -68,7 +71,11 @@ return [
         'model_has_relationship_data_without_related_model' => 'رکورد مورد نظر دارای داده‌های مرتبط است و نمی‌توان آن را حذف کرد.',
     ],
     'product' => [
-        'acrhived' => 'محصول با موفقیت بایگانی شد.',
+        'acrhived'                 => 'محصول با موفقیت بایگانی شد.',
+        'registration_not_started' => "ثبت‌نام برای ':name' هنوز شروع نشده است.",
+        'registration_ended'       => "مهلت ثبت‌نام برای ':name' به پایان رسیده است.",
+        'not_available_yet'        => "':name' هنوز برای خرید در دسترس نیست.",
+        'no_longer_available'      => "':name' دیگر برای خرید در دسترس نیست.",
     ],
     'order' => [
         'items_already_purchased'                     => 'کاربر قبلاً موارد زیر را خریداری کرده‌ است: :products.',
@@ -76,13 +83,18 @@ return [
         'prepayment_not_available'                    => 'پرداخت پیش‌پرداخت برای محصول :product در دسترس نیست.',
         'payment_already_pending'                     => 'سفارش :order_id دارای پرداخت در انتظار است.',
         'amount_to_pay_is_zero'                       => 'مبلغ پرداختی برای سفارش :order_id صفر است و نیازی به پرداخت ندارد.',
+        'order_amount_to_pay_is_zero'                 => 'مبلغ پرداختی برای سفارش :order_id صفر است و نیازی به پرداخت ندارد.',
         'insufficient_capacity'                       => 'ظرفیت کافی برای :product وجود ندارد. فقط :available ظرفیت باقی مانده است.',
         'quantity_not_allowed'                        => 'فقط یک مورد از :product می‌تواند خریداری شود.',
         'discount_exceeds_price'                      => 'مبلغ تخفیف برای :product بیشتر از قیمت مورد است.',
         'discount_not_allowed_for_prepayment'         => 'تخفیف‌ها نمی‌توانند برای موارد پیش‌پرداخت اعمال شوند.',
         'items_already_purchased_or_active'           => 'کاربر قبلاً موارد زیر را خریداری کرده یا دارای ثبت‌نام فعال است: :products.',
         'item_not_available'                          => 'مورد :product در دسترس نیست.',
+        'not_found'                                   => 'سفارش یافت نشد.',
+        'delivery_options_not_found'                  => 'یک یا چند شناسه ProductDeliveryOption وجود ندارد: :ids.',
         'already_fully_paid'                          => 'سفارش :order_id قبلاً به طور کامل پرداخت شده است.',
+        'payment_processed'                           => 'پرداخت سفارش :order_id با موفقیت انجام شد.',
+        'wallet_payment_completed'                    => 'پرداخت کیف پول برای سفارش :order_id با موفقیت انجام شد.',
         'no_payment_required'                         => 'هیچ پرداختی برای سفارش :order_id مورد نیاز نیست.',
         'initial_payment_full'                        => 'این یک پرداخت کامل و نهایی است که سفارش را به طور کامل تسویه می‌کند.',
         'initial_payment_partial'                     => 'این پرداخت فقط شامل پیش‌پرداخت‌ها می‌باشد. برای تسویه کامل، می‌توانید بعدا پرداخت دیگری اضافه کنید.',
@@ -131,15 +143,23 @@ return [
     ],
     'auth' => [
         'doesnot_have_password' => 'کاربر رمز عبور ندارد.',
+        'user_has_password'     => 'کاربر رمز عبور دارد.',
         'password_reset'        => 'رمز عبور شما با موفقیت تغییر یافت!',
         'otp'                   => [
-            'sent'           => 'کد تأیید ارسال شد.',
-            'invalid_code'   => 'کد تأیید وارد شده نامعتبر است.',
-            'expired_code'   => 'کد تأیید منقضی شده است.',
-            'not_found'      => 'کاربری با این شماره تلفن یا ایمیل یافت نشد.',
-            'already_exists' => 'کاربری با این شماره تلفن یا ایمیل از قبل وجود دارد.',
-            'type_mismatch'  => 'نوع کد تأیید با نوع مورد انتظار مطابقت ندارد.',
-            'throttle'       => 'لطفاً قبل از تلاش مجدد برای ارسال کد تأیید، :seconds ثانیه صبر کنید.',
+            'sent'                 => 'کد تأیید ارسال شد.',
+            'invalid_code'         => 'کد تأیید وارد شده نامعتبر است.',
+            'expired_code'         => 'کد تأیید منقضی شده است.',
+            'not_found'            => 'کاربری با این شماره تلفن یا ایمیل یافت نشد.',
+            'already_exists'       => 'کاربری با این شماره تلفن یا ایمیل از قبل وجود دارد.',
+            'type_mismatch'        => 'نوع کد تأیید با نوع مورد انتظار مطابقت ندارد.',
+            'throttle'             => 'لطفاً قبل از تلاش مجدد برای ارسال کد تأیید، :seconds ثانیه صبر کنید.',
+            'resent_successfully'  => 'کد تأیید مجدداً ارسال شد.',
+            'password_reset_sent'  => 'کد تأیید بازنشانی رمز عبور ارسال شد.',
+            'email_subject'        => 'کد تأیید ورود شما',
+            'email_body'           => 'کد تأیید شما: :code',
+            'email_expiry'         => 'این کد تا ۵ دقیقه دیگر معتبر است.',
+            'email_ignore'         => 'اگر این کد را درخواست نکرده‌اید، این ایمیل را نادیده بگیرید.',
+            'sms_content'          => 'کد تأیید شما: *****',
         ],
         'login' => [
             'success'             => 'کاربر با موفقیت وارد سیستم شد.',
@@ -162,13 +182,16 @@ return [
         'initial_provisioning_dispatched' => 'راه‌اندازی اولیه برای :count ارائه‌دهنده ارسال شد',
     ],
     'wallet' => [
-        'deposit_description'    => 'واریز به کیف پول توسط ادمین',
-        'withdrawal_description' => 'برداشت از کیف پول توسط ادمین',
-        'adjustment_description' => 'تعدیل کیف پول - دلیل: :reason',
-        'deposit_success'        => 'واریز به کیف پول با موفقیت انجام شد.',
-        'withdrawal_success'     => 'برداشت از کیف پول با موفقیت انجام شد.',
-        'adjustment_success'     => 'تعدیل کیف پول با موفقیت انجام شد.',
-        'balance_retrieved'      => 'موجودی کیف پول با موفقیت دریافت شد.',
+        'deposit_description'             => 'واریز به کیف پول توسط ادمین',
+        'withdrawal_description'          => 'برداشت از کیف پول توسط ادمین',
+        'adjustment_description'          => 'تعدیل کیف پول - دلیل: :reason',
+        'deposit_success'                 => 'واریز به کیف پول با موفقیت انجام شد.',
+        'withdrawal_success'              => 'برداشت از کیف پول با موفقیت انجام شد.',
+        'adjustment_success'              => 'تعدیل کیف پول با موفقیت انجام شد.',
+        'balance_retrieved'               => 'موجودی کیف پول با موفقیت دریافت شد.',
+        'cannot_use_wallet_for_topup'    => 'نمی‌توان از کیف پول برای افزایش موجودی کیف پول استفاده کرد.',
+        'redirecting_to_gateway'         => 'در حال انتقال به درگاه پرداخت...',
+        'payment_pending_verification'   => 'پرداخت در انتظار تأیید است.',
     ],
 
     // Wallet Campaign Messages
@@ -180,10 +203,14 @@ return [
     'campaign_has_transactions_cannot_delete' => 'کمپین دارای تراکنش‌های موجود است و قابل حذف نیست.',
     'gift_credit_allocated_successfully'      => 'اعتبار هدیه با موفقیت تخصیص یافت.',
     'campaign_bonus_processed_successfully'   => 'پاداش کمپین با موفقیت پردازش شد.',
+    'bulk_allocation_completed_successfully'  => 'تخصیص گروهی با موفقیت انجام شد. :count کاربر پردازش شدند.',
+    'bulk_allocation_failed_completely'       => 'تخصیص گروهی برای همه کاربران با شکست مواجه شد.',
+    'bulk_allocation_completed_partially'     => 'تخصیص گروهی به صورت جزئی انجام شد. :success موفق، :failed ناموفق.',
 
     'http_status' => [
         200 => 'موفق',
         201 => 'ایجاد شد',
+        202 => 'پذیرفته شد',
         204 => 'بدون محتوا',
         400 => 'درخواست نامعتبر',
         401 => 'غیرمجاز',
@@ -258,5 +285,132 @@ return [
         'good_for_start' => [
             'updated' => ':count مورد با موفقیت به‌روزرسانی شد.',
         ],
+    ],
+
+    'digital_asset' => [
+        'no_access'                => 'شما به این ثبت‌نام دسترسی ندارید.',
+        'enrollment_not_active'    => 'ثبت‌نام شما فعال نیست.',
+        'not_found_for_enrollment' => 'دارایی دیجیتال برای این ثبت‌نام یافت نشد.',
+        'no_downloadable_file'     => 'هیچ فایل قابل دانلودی برای این دارایی دیجیتال وجود ندارد.',
+    ],
+
+    'payment' => [
+        'initiated'                     => 'پرداخت آغاز شد. لطفاً پرداخت را در درگاه تکمیل کنید.',
+        'completed_successfully'        => 'پرداخت با موفقیت تکمیل شد.',
+        'processor_not_found'           => 'پردازشگر پرداختی برای روش :method یافت نشد.',
+        'refund_processor_not_found'    => 'پردازشگر بازپرداختی برای روش پرداخت :pm یافت نشد.',
+        'wallet_no_verification'        => 'پرداخت‌های کیف پول نیازی به تأیید ندارند',
+        'bank_transfer_no_verification' => 'پرداخت‌های انتقال بانکی نیازی به تأیید ندارند',
+    ],
+
+    'digipay' => [
+        'delivery_not_required'  => 'این نوع پرداخت نیازی به تأیید تحویل ندارد.',
+        'reverse_window_expired' => 'مهلت بازگشت (۲۵ دقیقه) به پایان رسیده است. به جای آن از بازپرداخت استفاده کنید.',
+        'delivery_error'         => 'خطا در اعلام تحویل به دیجی‌پی: :message',
+    ],
+
+    'file' => [
+        'storage_not_found' => 'فایل در حافظه یافت نشد.',
+    ],
+
+    'enrollment' => [
+        'delivery_no_join_url'    => 'روش ارائه [:method] از URL پیوستن پشتیبانی نمی‌کند.',
+        'bbb_not_provisioned'     => 'جلسه BBB هنوز راه‌اندازی نشده است.',
+        'skyroom_not_provisioned' => 'اتاق Skyroom هنوز راه‌اندازی نشده است.',
+    ],
+
+    'validation' => [
+        'invalid_jalali_date' => 'مقدار فیلد [:prop] یک تاریخ جلالی معتبر نیست.',
+    ],
+
+    'cart' => [
+        'identifier_not_found' => 'شناسه سبد خرید در درخواست یافت نشد.',
+    ],
+
+    'discount' => [
+        'no_condition_handler' => "هیچ پردازشگر شرط تخفیف برای ':name' ثبت نشده است.",
+        'no_config_dto'        => "هیچ DTO پیکربندی برای پردازشگر ':class' نگاشت نشده است.",
+        'no_action_handler'    => "هیچ پردازشگر اقدام تخفیف برای ':name' ثبت نشده است.",
+    ],
+
+    'sms' => [
+        'ippanel_not_configured' => 'کلید API یا شماره فرستنده IPPanel پیکربندی نشده است.',
+    ],
+
+    'search' => [
+        'typesense_error' => 'خطای جستجوی Typesense.',
+    ],
+
+    'integration' => [
+        'config_invalid'    => 'پیکربندی :service ناقص یا نامعتبر است.',
+        'validation_failed' => 'اعتبارسنجی در :endpoint با شکست مواجه شد.',
+        'http_error'        => 'HTTP :status در :endpoint.',
+        'unknown_error'     => 'خطای ناشناخته (کد: :code)',
+        'spot_player'       => [
+            'invalid_response' => 'اسپات‌پلیر پاسخ با فرمت نامعتبر برگرداند.',
+            'service_error'    => 'اسپات‌پلیر خطا برگرداند.',
+        ],
+        'bbb' => [
+            'create_meeting_failed' => 'درخواست ایجاد جلسه BBB با شکست مواجه شد.',
+        ],
+        'skyroom' => [
+            'network_error'     => 'خطای شبکه اسکای‌روم در [:action]: :message',
+            'http_error'        => 'خطای HTTP اسکای‌روم در [:action]: وضعیت :status',
+            'action_error'      => 'اسکای‌روم [:action] خطای :code: :message',
+            'unknown_error'     => 'خطای ناشناخته اسکای‌روم',
+        ],
+        'moodle' => [
+            'username_missing'            => 'منبع نام کاربری مودل موجود نیست.',
+            'user_creation_failed'        => 'ایجاد کاربر مودل با شکست مواجه شد.',
+            'course_not_found'            => 'دوره مودل یافت نشد.',
+            'auth_userkey_creation_failed' => 'ایجاد auth_userkey مودل با شکست مواجه شد.',
+            'server_error'                => 'خطای سرور مودل برای :function.',
+            'request_failed'              => 'درخواست مودل برای :function با شکست مواجه شد.',
+            'exception_response'          => 'مودل پاسخ استثنا برگرداند.',
+            'student_default'             => 'دانشجو',
+            'user_default'                => 'کاربر',
+        ],
+    ],
+
+    'checkout' => [
+        'cart_empty'                    => 'سبد خرید شما خالی است. لطفاً قبل از ثبت سفارش، آیتم اضافه کنید.',
+        'product_unavailable'           => 'محصول \':name\' دیگر در دسترس نیست.',
+        'delivery_option_unavailable'   => 'گزینه تحویل برای \':name\' دیگر در دسترس نیست.',
+        'payment_not_pending'           => 'پرداخت :uuid در وضعیت در انتظار نیست.',
+        'spots_remaining'               => 'تنها :count ظرفیت برای \':name\' باقی مانده است، اما شما :requested درخواست کرده‌اید.',
+    ],
+
+    'wallet' => [
+        'not_topup_payment' => 'پرداخت :uuid یک پرداخت شارژ کیف پول نیست.',
+        'not_completed'     => 'پرداخت :uuid تکمیل نشده است.',
+        'topup_via'         => 'شارژ کیف پول از طریق :method',
+    ],
+
+    'admin' => [
+        'gateway_skipped_note' => '[درگاه توسط مدیر در :datetime رد شد]',
+    ],
+
+    'provisioning' => [
+        'ims_course_code_missing'       => 'کد دوره IMS در جزئیات گزینه تحویل وجود ندارد.',
+        'enrollment_order_required'     => 'سفارش ثبت‌نام برای IMS الزامی است.',
+        'completed_payment_required'    => 'پرداخت تکمیل شده برای IMS الزامی است.',
+        'payment_not_belong'           => 'پرداخت متعلق به این سفارش نیست.',
+        'payment_must_be_completed'    => 'پرداخت باید قبل از IMS تکمیل شده باشد.',
+        'skyroom_room_id_missing'      => 'شناسه اتاق اسکای‌روم در جزئیات گزینه تحویل وجود ندارد.',
+        'moodle_quiz_course_id_missing' => 'شناسه دوره آزمون مودل در جزئیات گزینه تحویل وجود ندارد.',
+        'moodle_course_id_missing'     => 'شناسه دوره مودل در جزئیات گزینه تحویل وجود ندارد.',
+        'spotplayer_spot_id_missing'   => 'شناسه اسپات‌پلیر در جزئیات گزینه تحویل وجود ندارد.',
+        'bbb_meeting_id_missing'       => 'شناسه جلسه BBB در جزئیات گزینه تحویل وجود ندارد.',
+    ],
+
+    'exceptions' => [
+        'refund_gateway_failed'    => 'عملیات بازگشت وجه درگاه با خطا مواجه شد.',
+        'refund_validation_failed' => 'اعتبارسنجی بازگشت وجه ناموفق بود.',
+        'refund_exceeds_payment'   => 'بازگشت وجه :amount از پرداخت :payment_id (مبلغ: :payment_amount، قبلاً برگشت شده: :already_refunded) بیشتر است.',
+        'invalid_payment_purpose'  => 'این پردازنده پرداخت نیاز به هدف \':expected\' دارد، اما \':actual\' دریافت شد.',
+        'product_not_set'          => 'محصول برای اعتبارسنجی تنظیم نشده است.',
+        'product_already_exists'   => 'یک محصول منتشر شده برای این :type با شناسه :id وجود دارد.',
+        'event_ended_at_required'  => 'فیلد تاریخ پایان رویداد وقتی تاریخ شروع وارد شده الزامی است.',
+        'event_start_at_required'  => 'فیلد تاریخ شروع رویداد وقتی تاریخ پایان وارد شده الزامی است.',
     ],
 ];

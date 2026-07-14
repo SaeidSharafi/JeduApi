@@ -32,12 +32,12 @@ final class SpotPlayerService extends AbstractIntegrationService
 
         $data = $response->json();
         if (! is_array($data)) {
-            throw new UnrecoverableProvisioningException('SpotPlayer returned an invalid response format.');
+            throw new UnrecoverableProvisioningException(__('messages.integration.spot_player.invalid_response'));
         }
 
         // Application-level error (bad spot_id, etc.) — retrying won't fix it
         if ((isset($data['status']) && $data['status'] === false) || isset($data['error'])) {
-            $message = (string) ($data['message'] ?? $data['error'] ?? 'SpotPlayer returned an error.');
+            $message = (string) ($data['message'] ?? $data['error'] ?? __('messages.integration.spot_player.service_error'));
             throw new UnrecoverableProvisioningException($message, 0, null, ['raw_response' => $data]);
         }
 

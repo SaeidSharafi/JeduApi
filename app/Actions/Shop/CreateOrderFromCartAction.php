@@ -54,7 +54,7 @@ final readonly class CreateOrderFromCartAction
             $cart = $this->cartService->findOrCreateCart($user, lockForUpdate: true);
             if ($cart->items->count() === 0) {
                 throw ValidationException::withMessages([
-                    'cart' => ['Your cart is empty. Please add items before checking out.'],
+                    'cart' => [__('messages.checkout.cart_empty')],
                 ]);
             }
 
@@ -185,14 +185,14 @@ final readonly class CreateOrderFromCartAction
 
             // Check if product is published and visible
             if ($deliveryOption->product->status !== PublicationStatusEnum::PUBLISHED || ! $deliveryOption->product->is_visible) {
-                $errors["items.{$index}"] = ["The product '{$deliveryOption->product->name}' is no longer available."];
+                $errors["items.{$index}"] = [__('messages.product.no_longer_available', ['name' => $deliveryOption->product->name])];
 
                 continue;
             }
 
             // Check if delivery option is active
             if ($deliveryOption->status !== PublicationStatusEnum::PUBLISHED) {
-                $errors["items.{$index}"] = ["The delivery option for '{$deliveryOption->product->name}' is no longer available."];
+                $errors["items.{$index}"] = [__('messages.checkout.delivery_option_unavailable', ['name' => $deliveryOption->product->name])];
 
                 continue;
             }
@@ -200,24 +200,24 @@ final readonly class CreateOrderFromCartAction
             // Check registration window (Gap #3 fix)
             $now = now();
             if ($deliveryOption->registration_start_date && $now->lt($deliveryOption->registration_start_date)) {
-                $errors["items.{$index}"] = ["Registration for '{$deliveryOption->product->name}' has not started yet."];
+                $errors["items.{$index}"] = [__('messages.product.registration_not_started', ['name' => $deliveryOption->product->name])];
 
                 continue;
             }
             if ($deliveryOption->registration_end_date && $now->gt($deliveryOption->registration_end_date)) {
-                $errors["items.{$index}"] = ["Registration period for '{$deliveryOption->product->name}' has ended."];
+                $errors["items.{$index}"] = [__('messages.product.registration_ended', ['name' => $deliveryOption->product->name])];
 
                 continue;
             }
 
             // Check content availability window (Gap #4 fix)
             if ($deliveryOption->available_from && $now->lt($deliveryOption->available_from)) {
-                $errors["items.{$index}"] = ["'{$deliveryOption->product->name}' is not yet available for purchase."];
+                $errors["items.{$index}"] = [__('messages.product.not_available_yet', ['name' => $deliveryOption->product->name])];
 
                 continue;
             }
             if ($deliveryOption->available_to && $now->gt($deliveryOption->available_to)) {
-                $errors["items.{$index}"] = ["'{$deliveryOption->product->name}' is no longer available for purchase."];
+                $errors["items.{$index}"] = [__('messages.product.no_longer_available', ['name' => $deliveryOption->product->name])];
 
                 continue;
             }
@@ -236,7 +236,7 @@ final readonly class CreateOrderFromCartAction
                 // @codeCoverageIgnoreStart
                 if ($cartItem->quantity > $availableCapacity) {
                     $errors["items.{$index}"] = [
-                        "Only {$availableCapacity} spot(s) remaining for '{$deliveryOption->product->name}', but you requested {$cartItem->quantity}.",
+                        __('messages.checkout.spots_remaining', ['count' => $availableCapacity, 'name' => $deliveryOption->product->name, 'requested' => $cartItem->quantity]),
                     ];
                 }
                 // @codeCoverageIgnoreEnd

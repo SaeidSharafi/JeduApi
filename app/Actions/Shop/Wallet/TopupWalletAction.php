@@ -27,13 +27,13 @@ final readonly class TopupWalletAction
     {
         if ($payment->purpose !== PaymentPurposeEnum::WALLET_TOPUP) {
             throw ValidationException::withMessages([
-                'payment' => __('Payment :uuid is not a wallet topup payment.', ['uuid' => $payment->uuid]),
+                'payment' => __('messages.wallet.not_topup_payment', ['uuid' => $payment->uuid]),
             ]);
         }
 
         if ($payment->status !== PaymentStatusEnum::COMPLETED) {
             throw ValidationException::withMessages([
-                'payment' => __('Payment :uuid is not completed.', ['uuid' => $payment->uuid]),
+                'payment' => __('messages.wallet.not_completed', ['uuid' => $payment->uuid]),
             ]);
         }
 
@@ -45,7 +45,7 @@ final readonly class TopupWalletAction
             amount: $payment->amount,
             source_type: TransactionSourceEnum::DEPOSIT,
             source_id: $payment->id,
-            description: "Wallet top-up via {$payment->method->value}",
+            description: __('messages.wallet.topup_via', ['method' => $payment->method->value]),
             metadata: [
                 'payment_uuid' => $payment->uuid,
                 'method'       => $payment->method->value,

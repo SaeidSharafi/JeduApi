@@ -10,7 +10,7 @@ final class InvalidPaymentPurposeException extends PaymentException
         public readonly string $expectedPurpose,
         public readonly string $actualPurpose,
     ) {
-        parent::__construct("This payment processor requires purpose '{$expectedPurpose}', got '{$actualPurpose}'.");
+        parent::__construct(__('messages.exceptions.invalid_payment_purpose', ['expected' => $this->expectedPurpose, 'actual' => $this->actualPurpose]));
     }
 
     public function errorCode(): string

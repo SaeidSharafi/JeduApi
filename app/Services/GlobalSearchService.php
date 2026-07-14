@@ -162,7 +162,7 @@ final class GlobalSearchService
 
             // Check for errors
             if (isset($rawResults['error'])) {
-                throw new CustomValidationException('Typesense multi-search error: '.($rawResults['error'] ?? 'Unknown error'));
+                throw new CustomValidationException(__('messages.search.typesense_error'));
             }
 
             $hits      = $rawResults['hits']  ?? [];

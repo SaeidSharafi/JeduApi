@@ -134,6 +134,6 @@ final class WalletPaymentProcessor implements PaymentProcessorContract
     public function verify(Payment $payment, array $callbackData): Payment
     {
         // Not needed for single-step payments
-        throw new BadMethodCallException('Wallet payments do not require verification');
+        throw new BadMethodCallException(__('messages.payment.wallet_no_verification'));
     }
 }

@@ -33,7 +33,7 @@ final class PrivateFileDownloadController extends Controller
         $path = $file->getDiskPath();
 
         if (! $disk->exists($path)) {
-            return apiResponse()->notFound('File not found on storage.');
+            return apiResponse()->notFound(__('messages.file.storage_not_found'));
         }
 
         $headers = [

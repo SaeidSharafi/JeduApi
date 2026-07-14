@@ -121,7 +121,7 @@ final readonly class ApproveOrderAction
         } catch (DigipayException $e) {
             // THROW to rollback the DB::transaction
             throw ValidationException::withMessages([
-                'order' => 'خطا در اعلام تحویل به دیجی‌پی: '.$e->getUserMessage(),
+                'order' => __('messages.digipay.delivery_error', ['message' => $e->getUserMessage()]),
             ]);
         }
     }

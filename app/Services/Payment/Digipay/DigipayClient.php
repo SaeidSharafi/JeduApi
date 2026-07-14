@@ -46,7 +46,7 @@ final class DigipayClient
 
         if (! $response->isSuccessful()) {
             throw new DigipayException(
-                "Digipay ticket creation failed: {$response->message}",
+                __('payment_gateways.digipay.errors.ticket_creation_failed', ['details' => $response->message]),
                 $response->statusCode,
             );
         }
@@ -65,7 +65,7 @@ final class DigipayClient
 
         if (! $response->isSuccessful()) {
             throw new DigipayException(
-                "Digipay verification failed: {$response->message}",
+                __('payment_gateways.digipay.errors.verification_failed', ['details' => $response->message]),
                 $response->statusCode,
                 ['tracking_code' => $trackingCode, 'provider_id' => $providerId],
             );
@@ -90,7 +90,7 @@ final class DigipayClient
 
         if (! $response->isSuccessful()) {
             throw new DigipayException(
-                "Digipay refund failed: {$response->message}",
+                __('payment_gateways.digipay.errors.refund_failed', ['details' => $response->message]),
                 $response->statusCode,
             );
         }
@@ -115,7 +115,7 @@ final class DigipayClient
 
         if (! $response->isSuccessful()) {
             throw new DigipayException(
-                "Digipay delivery confirmation failed: {$response->message}",
+                __('payment_gateways.digipay.errors.delivery_confirmation_failed', ['details' => $response->message]),
                 $response->statusCode,
             );
         }
@@ -134,7 +134,7 @@ final class DigipayClient
 
         if (! $response->isSuccessful()) {
             throw new DigipayException(
-                "Digipay refund inquiry failed: {$response->message}",
+                __('payment_gateways.digipay.errors.refund_inquiry_failed', ['details' => $response->message]),
                 $response->statusCode,
             );
         }
@@ -153,7 +153,7 @@ final class DigipayClient
 
         if (! $response->isSuccessful()) {
             throw new DigipayException(
-                "Digipay reverse failed: {$response->message}",
+                __('payment_gateways.digipay.errors.reverse_failed', ['details' => $response->message]),
                 $response->statusCode,
             );
         }
@@ -187,7 +187,7 @@ final class DigipayClient
 
         if ($response->failed()) {
             throw new DigipayException(
-                "Digipay HTTP error: {$response->status()}",
+                __('payment_gateways.digipay.errors.http_error', ['status' => $response->status()]),
                 $response->status(),
             );
         }

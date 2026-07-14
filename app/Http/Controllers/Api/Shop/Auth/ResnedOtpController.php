@@ -45,7 +45,7 @@ final class ResnedOtpController extends Controller
                 'identifier'    => $request->identifier,
                 'waiting_time'  => $result->waitingTime,
                 'login_method'  => 'OTP',
-            ], 'OTP resent successfully');
+            ], __('messages.auth.otp.resent_successfully'));
 
         } catch (UserNotFoundException $exception) {
             return apiResponse()->notFound(__('messages.auth.login.not_found'));

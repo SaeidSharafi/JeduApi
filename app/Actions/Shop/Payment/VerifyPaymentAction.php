@@ -30,7 +30,7 @@ final readonly class VerifyPaymentAction
 
             if ($payment->status !== PaymentStatusEnum::PENDING) {
                 throw ValidationException::withMessages([
-                    'payment' => "Payment {$payment->uuid} is not in pending state.",
+                    'payment' => __('messages.checkout.payment_not_pending', ['uuid' => $payment->uuid]),
                 ]);
             }
 

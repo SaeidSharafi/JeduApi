@@ -59,7 +59,7 @@ final class DigipayConfigRepository
         $value = $this->settings[$key] ?? '';
 
         if (empty($value)) {
-            throw new DigipayException("Digipay configuration missing: {$key}");
+            throw new DigipayException(__('payment_gateways.digipay.errors.config_missing', ['key' => $key]));
         }
 
         return $value;

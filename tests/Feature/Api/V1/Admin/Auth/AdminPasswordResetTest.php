@@ -120,7 +120,7 @@ test('staff can reset password with valid otp', function (): void {
         ->assertOk()
         ->assertJson([
             'message'  => __('messages.success'),
-            'data'     => 'Password reset OTP sent successfully',
+            'data'     => 'Password reset OTP sent successfully.',
             'metadata' => [],
         ]);
 

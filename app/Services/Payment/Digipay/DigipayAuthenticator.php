@@ -46,7 +46,7 @@ final class DigipayAuthenticator
             ]);
 
         if ($response->failed() || ! isset($response['access_token'])) {
-            throw new DigipayException('Digipay authentication failed', $response->status());
+            throw new DigipayException(__('payment_gateways.digipay.errors.authentication_failed'), $response->status());
         }
 
         $buffer = config('payments.digipay.token_cache.buffer', 300);

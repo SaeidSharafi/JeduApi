@@ -47,7 +47,7 @@ final class StaffResetPasswordController extends Controller
                 'staff'
             );
 
-            return apiResponse()->success('Password reset OTP sent successfully');
+            return apiResponse()->success(__('messages.auth.otp.password_reset_sent'));
         } catch (UserDoesNotHavePasswordException $exception) {
             return apiResponse()->validationError(
                 message: __('messages.auth.doesnot_have_password')

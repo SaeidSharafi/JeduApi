@@ -91,7 +91,7 @@ final class SkyroomService extends AbstractIntegrationService
             $response = Http::timeout(30)->acceptJson()->post($endpoint, $body);
         } catch (ConnectionException $e) {
             throw new RecoverableProvisioningException(
-                "Skyroom network error on [{$action}]: {$e->getMessage()}",
+                __('messages.integration.skyroom.network_error', ['action' => $action, 'message' => $e->getMessage()]),
                 previous: $e,
             );
         }
@@ -99,7 +99,7 @@ final class SkyroomService extends AbstractIntegrationService
         if ($response->failed()) {
             // HTTP-level failure from Skyroom's infrastructure — recoverable
             throw new RecoverableProvisioningException(
-                "Skyroom HTTP error on [{$action}]: status {$response->status()}",
+                __('messages.integration.skyroom.http_error', ['action' => $action, 'status' => $response->status()]),
                 $response->status(),
             );
         }
@@ -108,16 +108,16 @@ final class SkyroomService extends AbstractIntegrationService
 
         if (! ($json['ok'] ?? false)) {
             $code    = (int) ($json['error_code'] ?? 0);
-            $message = (string) ($json['error_message'] ?? 'Unknown Skyroom error');
+            $message = (string) ($json['error_message'] ?? __('messages.integration.skyroom.unknown_error'));
 
             // Skyroom error codes 1–10 are authentication/parameter errors — unrecoverable.
             // Codes outside that range may be transient server-side issues — recoverable.
             // Consult https://skyroom.online/doc for the full list.
             if ($code >= 1 && $code <= 10) {
-                throw new UnrecoverableProvisioningException("Skyroom [{$action}] error {$code}: {$message}");
+                throw new UnrecoverableProvisioningException(__('messages.integration.skyroom.action_error', ['action' => $action, 'code' => $code, 'message' => $message]));
             }
 
-            throw new RecoverableProvisioningException("Skyroom [{$action}] error {$code}: {$message}");
+            throw new RecoverableProvisioningException(__('messages.integration.skyroom.action_error', ['action' => $action, 'code' => $code, 'message' => $message]));
         }
 
         return $json['result'] ?? null;

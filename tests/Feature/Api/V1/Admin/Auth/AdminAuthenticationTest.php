@@ -146,7 +146,7 @@ test('staff with password gets password login action', function (): void {
 
     $response->assertOk()
         ->assertJson([
-            'message' => 'User has set password',
+            'message' => 'User has set password.',
             'data'    => [
                 'login_method' => 'PASSWORD',
             ],

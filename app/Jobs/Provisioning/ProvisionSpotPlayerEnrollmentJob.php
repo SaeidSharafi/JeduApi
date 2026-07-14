@@ -48,7 +48,7 @@ final class ProvisionSpotPlayerEnrollmentJob extends AbstractProvisioningJob
         // A missing spot_id in the DB will never fix itself on retry.
         if (! is_string($spotId) || $spotId === '') {
             throw new UnrecoverableProvisioningException(
-                'SpotPlayer spot_id is missing from delivery option details.'
+                __('messages.provisioning.spotplayer_spot_id_missing')
             );
         }
 

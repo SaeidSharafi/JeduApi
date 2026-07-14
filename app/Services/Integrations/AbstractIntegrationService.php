@@ -38,7 +38,7 @@ abstract class AbstractIntegrationService
     {
         if (! $this->validateConfig()) {
             throw new UnrecoverableProvisioningException(
-                class_basename($this).' configuration is missing or invalid.'
+                __('messages.integration.config_invalid', ['service' => class_basename($this)])
             );
         }
     }
@@ -80,13 +80,13 @@ abstract class AbstractIntegrationService
         if ($status === 422) {
             $rawErrors                     = (array) data_get($response->json(), 'errors', []);
             $metaData['validation_errors'] = $rawErrors;
-            $message                       = $this->formatValidationErrors($rawErrors)
-                ?: "Validation failed on {$endpoint}.";
+            $message = $this->formatValidationErrors($rawErrors)
+                ?: __('messages.integration.validation_failed', ['endpoint' => $endpoint]);
 
             throw new UnrecoverableProvisioningException($message, $status, null, $metaData);
         }
 
-        $message = "HTTP {$status} on {$endpoint}.";
+        $message = __('messages.integration.http_error', ['status' => $status, 'endpoint' => $endpoint]);
 
         if ($status >= 400 && $status < 500) {
             throw new UnrecoverableProvisioningException($message, $status, null, $metaData);

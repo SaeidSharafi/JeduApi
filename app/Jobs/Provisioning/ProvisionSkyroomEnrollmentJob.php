@@ -48,7 +48,7 @@ final class ProvisionSkyroomEnrollmentJob extends AbstractProvisioningJob
         // A non-numeric room_id in the DB will never fix itself on retry.
         if (! is_numeric($roomId)) {
             throw new UnrecoverableProvisioningException(
-                'Skyroom room_id is missing from delivery option details.'
+                __('messages.provisioning.skyroom_room_id_missing')
             );
         }
         $roomId = (int) $roomId;

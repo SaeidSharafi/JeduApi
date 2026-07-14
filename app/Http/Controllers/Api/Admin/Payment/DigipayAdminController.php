@@ -55,7 +55,7 @@ final class DigipayAdminController extends Controller
         Gate::authorize('deliver', $payment);
 
         if (! $this->service->requiresDeliveryConfirmation($payment)) {
-            return apiResponse()->error('This payment type does not require delivery confirmation.', 422);
+            return apiResponse()->error(__('messages.digipay.delivery_not_required'), 422);
         }
 
         try {
@@ -78,7 +78,7 @@ final class DigipayAdminController extends Controller
 
         $latestTx = $payment->transactions()->latest()->first();
         if ($latestTx && $latestTx->created_at->addMinutes(25)->isPast()) {
-            return apiResponse()->error('Reverse window expired (25 minutes). Use refund instead.', 422);
+            return apiResponse()->error(__('messages.digipay.reverse_window_expired'), 422);
         }
 
         try {

@@ -20,7 +20,7 @@ final class InvalidJalaliDateException extends Exception
         public string $property,
         public mixed $value
     ) {
-        $message = "The value for the [{$property}] field is not a valid Jalali date format.";
+        $message = __('messages.validation.invalid_jalali_date', ['prop' => $property]);
         parent::__construct($message);
     }
 

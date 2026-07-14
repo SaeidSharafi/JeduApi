@@ -135,7 +135,7 @@ final class RefundOrderAction
 
                     $adminNotes = $refund->admin_notes;
                     if ($data->skip_gateway) {
-                        $adminNotes = mb_trim(($adminNotes ?? '')."\n[Gateway skipped by Admin at ".now().']');
+                        $adminNotes = mb_trim(($adminNotes ?? '')."\n".__('messages.admin.gateway_skipped_note', ['datetime' => now()]));
                     }
 
                     $refund->update([

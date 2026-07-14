@@ -31,9 +31,9 @@ final class OtpEmailNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Your Login OTP Code')
-            ->line('Your OTP code is: '.$this->otpCode->code)
-            ->line('This code will expire in 5 minutes.')
-            ->line('If you did not request this code, please ignore this email.');
+            ->subject(__('messages.auth.otp.email_subject'))
+            ->line(__('messages.auth.otp.email_body', ['code' => $this->otpCode->code]))
+            ->line(__('messages.auth.otp.email_expiry'))
+            ->line(__('messages.auth.otp.email_ignore'));
     }
 }

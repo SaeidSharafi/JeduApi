@@ -9,9 +9,9 @@ use RuntimeException;
 final class RefundValidationException extends RuntimeException
 {
     public function __construct(
-        string $message = 'Refund validation failed.',
+        string $message = '',
         int $code = 422,
     ) {
-        parent::__construct($message, $code);
+        parent::__construct($message ?: __('messages.exceptions.refund_validation_failed'), $code);
     }
 }

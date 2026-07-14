@@ -185,24 +185,24 @@ final readonly class CreateOrderAction
         $now = now();
         if ($deliveryOption->registration_start_date && $now->lt($deliveryOption->registration_start_date)) {
             throw ValidationException::withMessages([
-                "items.{$key}" => "Registration for '{$deliveryOption->name}' has not started yet.",
+                "items.{$key}" => __('messages.product.registration_not_started', ['name' => $deliveryOption->name]),
             ]);
         }
         if ($deliveryOption->registration_end_date && $now->gt($deliveryOption->registration_end_date)) {
             throw ValidationException::withMessages([
-                "items.{$key}" => "Registration period for '{$deliveryOption->name}' has ended.",
+                "items.{$key}" => __('messages.product.registration_ended', ['name' => $deliveryOption->name]),
             ]);
         }
 
         // Check content availability window (Gap #4 fix)
         if ($deliveryOption->available_from && $now->lt($deliveryOption->available_from)) {
             throw ValidationException::withMessages([
-                "items.{$key}" => "'{$deliveryOption->name}' is not yet available for purchase.",
+                "items.{$key}" => __('messages.product.not_available_yet', ['name' => $deliveryOption->name]),
             ]);
         }
         if ($deliveryOption->available_to && $now->gt($deliveryOption->available_to)) {
             throw ValidationException::withMessages([
-                "items.{$key}" => "'{$deliveryOption->name}' is no longer available for purchase.",
+                "items.{$key}" => __('messages.product.no_longer_available', ['name' => $deliveryOption->name]),
             ]);
         }
         if ($deliveryOption->capacity !== null) {

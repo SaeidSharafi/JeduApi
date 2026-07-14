@@ -48,7 +48,7 @@ final readonly class CartService
 
         // @codeCoverageIgnoreStart
         // This should never happen if middleware is working correctly
-        abort(500, 'Cart identifier not found in request');
+        abort(500, __('messages.cart.identifier_not_found'));
         // @codeCoverageIgnoreEnd
     }
 

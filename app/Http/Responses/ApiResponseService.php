@@ -130,24 +130,30 @@ final class ApiResponseService
     /**
      * Forbidden response (403 Forbidden)
      */
-    public function forbidden(string $message = 'This action is forbidden.', mixed $errors = null): ApiResponseInterface
+    public function forbidden(string $message = '', mixed $errors = null): ApiResponseInterface
     {
+        $message = $message ?: (string) __('messages.forbidden');
+
         return apiResponse()->error($message, HttpStatus::HTTP_FORBIDDEN, $errors);
     }
 
     /**
      * Unauthorized response (401 Unauthorized)
      */
-    public function unauthorized(string $message = 'Authentication required.', mixed $errors = null): ApiResponseInterface
+    public function unauthorized(string $message = '', mixed $errors = null): ApiResponseInterface
     {
+        $message = $message ?: (string) __('messages.unauthenticated');
+
         return apiResponse()->error($message, HttpStatus::HTTP_UNAUTHORIZED, $errors);
     }
 
     /**
      * Method Not Allowed response (405 Method Not Allowed)
      */
-    public function methodNotAllowed(string $message = 'Method not allowed for this resource.'): ApiResponseInterface
+    public function methodNotAllowed(string $message = ''): ApiResponseInterface
     {
+        $message = $message ?: (string) __('messages.method_not_allowed');
+
         return apiResponse()->error($message, HttpStatus::HTTP_METHOD_NOT_ALLOWED);
     }
 
@@ -156,8 +162,10 @@ final class ApiResponseService
     /**
      * Internal Server Error response (500 Internal Server Error)
      */
-    public function serverError(string $message = 'An internal server error occurred.', ?Throwable $exception = null): ApiResponseInterface
+    public function serverError(string $message = '', ?Throwable $exception = null): ApiResponseInterface
     {
+        $message = $message ?: (string) __('messages.server_error');
+
         return new ApiErrorResponse($message, $exception, HttpStatus::HTTP_INTERNAL_SERVER_ERROR);
     }
 }

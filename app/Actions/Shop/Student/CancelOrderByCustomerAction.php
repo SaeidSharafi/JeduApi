@@ -27,7 +27,7 @@ final class CancelOrderByCustomerAction
     {
         // Verify the order belongs to the authenticated customer
         if ($order->customer_id !== $userId) {
-            throw new ModelNotFoundException('Order not found');
+            throw new ModelNotFoundException(__('messages.order.not_found'));
         }
 
         // Verify order is in PENDING status

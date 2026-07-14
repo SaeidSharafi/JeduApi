@@ -115,7 +115,7 @@ test('user with password gets password login action', function (): void {
 
     $response->assertOk()
         ->assertJson([
-            'message' => 'User has set password',
+            'message' => 'User has set password.',
             'data'    => [
                 'login_method' => 'PASSWORD',
             ],
@@ -143,7 +143,7 @@ test('user can request resend otp', function (): void {
     ]);
     $response->assertOk()
         ->assertJson([
-            'message' => 'OTP resent successfully',
+            'message' => 'OTP resent successfully.',
             'data'    => [
                 'tracking_code' => $this->trackingCode,
                 'otp_type'      => 'SIGNIN',
@@ -177,7 +177,7 @@ test('user can request otp with phone', function (): void {
 
     $response->assertOk()
         ->assertJson([
-            'message' => 'OTP resent successfully',
+            'message' => 'OTP resent successfully.',
             'data'    => [
                 'tracking_code' => $this->trackingCode,
                 'otp_type'      => 'SIGNIN',

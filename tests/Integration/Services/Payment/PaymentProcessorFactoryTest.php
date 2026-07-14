@@ -116,7 +116,7 @@ describe('PaymentProcessorFactory', function (): void {
                 $this->factory->make($testCase['method']);
                 $this->fail("Expected exception for method: {$testCase['expected']}");
             } catch (InvalidArgumentException $e) {
-                expect($e->getMessage())->toBe("No payment processor found for method: {$testCase['expected']}");
+                expect($e->getMessage())->toBe(__('messages.payment.processor_not_found', ['method' => $testCase['expected']]));
             }
         }
     });

@@ -37,7 +37,7 @@ final class MoodleService extends AbstractIntegrationService
         $email    = $user->email ?? sprintf('user-%d@jedu.ir', $user->phone);
         $username = $user->civil_id;
         if (! is_string($username) || $username === '') {
-            throw new UnrecoverableProvisioningException('Moodle username source missing.');
+            throw new UnrecoverableProvisioningException(__('messages.integration.moodle.username_missing'));
         }
 
         $lookup = $this->call('core_user_get_users_by_field', [
@@ -51,8 +51,8 @@ final class MoodleService extends AbstractIntegrationService
 
         $created = $this->call('core_user_create_users', [
             'users[0][username]'  => $username,
-            'users[0][firstname]' => $user->first_name ?: 'Student',
-            'users[0][lastname]'  => $user->last_name ?: 'User',
+            'users[0][firstname]' => $user->first_name ?: __('messages.integration.moodle.student_default'),
+            'users[0][lastname]'  => $user->last_name ?: __('messages.integration.moodle.user_default'),
             'users[0][email]'     => $email,
             'users[0][password]'  => Str::password(16),
             'users[0][phone1]'    => $user->phone,
@@ -60,7 +60,7 @@ final class MoodleService extends AbstractIntegrationService
         ]);
 
         if (! is_array($created) || ! isset($created[0]['id'])) {
-            throw new UnrecoverableProvisioningException('Moodle user creation failed.');
+            throw new UnrecoverableProvisioningException(__('messages.integration.moodle.user_creation_failed'));
         }
 
         return [(int) $created[0]['id'], $username];
@@ -154,7 +154,7 @@ final class MoodleService extends AbstractIntegrationService
 
         $response = $this->call('core_course_get_contents', $params);
         if (! $response || ! is_array($response)) {
-            throw new UnrecoverableProvisioningException('Moodle course not found.');
+            throw new UnrecoverableProvisioningException(__('messages.integration.moodle.course_not_found'));
         }
         $response = reset($response);
         $modules  = [];
@@ -342,7 +342,7 @@ final class MoodleService extends AbstractIntegrationService
 
         $loginUrl = data_get($result, 'loginurl');
         if (! is_string($loginUrl) || $loginUrl === '') {
-            throw new UnrecoverableProvisioningException('Moodle auth_userkey creation failed.');
+            throw new UnrecoverableProvisioningException(__('messages.integration.moodle.auth_userkey_creation_failed'));
         }
 
         return $loginUrl;
@@ -382,14 +382,14 @@ final class MoodleService extends AbstractIntegrationService
         if ($response->failed()) {
             $status = $response->status();
             if ($status >= 500) {
-                throw new RecoverableProvisioningException("Moodle server error for {$function}.", $status);
+                throw new RecoverableProvisioningException(__('messages.integration.moodle.server_error', ['function' => $function]), $status);
             }
-            throw new UnrecoverableProvisioningException("Moodle request failed for {$function}.", $status);
+            throw new UnrecoverableProvisioningException(__('messages.integration.moodle.request_failed', ['function' => $function]), $status);
         }
 
         $json = $response->json();
         if (is_array($json) && isset($json['exception'])) {
-            $message = (string) ($json['message'] ?? 'Moodle returned an exception response.');
+            $message = (string) ($json['message'] ?? __('messages.integration.moodle.exception_response'));
             // metaData['errorcode'] is what getMoodleErrorCode() reads — must be preserved
             throw new UnrecoverableProvisioningException($message, 0, null, $json);
         }

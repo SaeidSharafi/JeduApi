@@ -66,9 +66,9 @@ final class ProductCreateData extends Data
             $endSet   = ! empty($data['event_ended_at']);
 
             if ($startSet && ! $endSet) {
-                $validator->errors()->add('event_ended_at', 'The event_ended_at field is required when event_start_at is provided.');
+                $validator->errors()->add('event_ended_at', __('messages.exceptions.event_ended_at_required'));
             } elseif (! $startSet && $endSet) {
-                $validator->errors()->add('event_start_at', 'The event_start_at field is required when event_ended_at is provided.');
+                $validator->errors()->add('event_start_at', __('messages.exceptions.event_start_at_required'));
             }
         });
     }

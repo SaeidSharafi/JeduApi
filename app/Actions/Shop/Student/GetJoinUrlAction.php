@@ -29,7 +29,7 @@ final readonly class GetJoinUrlAction
             DeliveryMethodEnum::LIVE_SESSION_BBB     => $this->buildBbbJoinUrl($enrollment, $provisioning),
             DeliveryMethodEnum::LIVE_SESSION_SKYROOM => $this->buildSkyroomJoinUrl($enrollment, $provisioning),
             default                                  => throw new InvalidArgumentException(
-                "Delivery method [{$deliveryMethod->value}] does not support join URLs."
+                __('messages.enrollment.delivery_no_join_url', ['method' => $deliveryMethod->value])
             ),
         };
     }
@@ -39,7 +39,7 @@ final readonly class GetJoinUrlAction
         $meetingId = data_get($provisioning, 'bbb.data.meeting_id');
 
         if (! $meetingId) {
-            throw new ResourceNotProvisionedException('BBB meeting not provisioned yet.');
+            throw new ResourceNotProvisionedException(__('messages.enrollment.bbb_not_provisioned'));
         }
 
         $joinUrl = $this->bbbService->buildJoinUrl(
@@ -55,7 +55,7 @@ final readonly class GetJoinUrlAction
         $roomId = data_get($provisioning, 'skyroom.data.room_id');
 
         if (! $roomId) {
-            throw new ResourceNotProvisionedException('Skyroom room not provisioned yet.');
+            throw new ResourceNotProvisionedException(__('messages.enrollment.skyroom_not_provisioned'));
         }
 
         $customer = $enrollment->customer;

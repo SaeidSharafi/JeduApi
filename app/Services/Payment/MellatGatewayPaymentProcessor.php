@@ -147,7 +147,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
             $saleReferenceId = $callbackData['SaleReferenceId'] ?? null;
 
             if ($refId === null || $refId === '' || $resCode === null || $resCode === '') {
-                throw new MellatException('Invalid callback data from Mellat');
+                throw new MellatException(__('payment_gateways.mellat.errors.invalid_callback'));
             }
 
             $transaction = $payment->transactions()
@@ -192,7 +192,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
                     'status'           => PaymentTransactionStatusEnum::FAILED,
                     'gateway_response' => $callbackData,
                     'completed_at'     => now(),
-                    'error_message'    => "Amount mismatch: expected {$payment->amount}, got {$finalAmount}",
+                    'error_message'    => __('payment_gateways.mellat.errors.amount_mismatch', ['expected' => $payment->amount, 'actual' => $finalAmount]),
                 ]);
 
                 $payment->update([
@@ -218,7 +218,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
                     'status'           => PaymentTransactionStatusEnum::FAILED,
                     'gateway_response' => array_merge($callbackData, ['verification_failed' => true]),
                     'completed_at'     => now(),
-                    'error_message'    => 'Gateway verification failed',
+                    'error_message'    => __('payment_gateways.mellat.errors.verification_failed_short'),
                 ]);
 
                 $payment->update([
@@ -247,7 +247,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
                         'settlement_failed'    => true,
                     ]),
                     'completed_at'  => now(),
-                    'error_message' => 'Settlement failed after successful verification',
+                    'error_message' => __('payment_gateways.mellat.errors.settlement_after_verification_failed'),
                 ]);
 
                 $payment->update([
@@ -336,7 +336,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
         $result = $response->return ?? null;
 
         if (! $result) {
-            throw new MellatException('Invalid response from Mellat gateway');
+            throw new MellatException(__('payment_gateways.mellat.errors.invalid_response'));
         }
 
         // Check if request was successful (result should be RefId if successful)
@@ -366,7 +366,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
             return $response->return === '0';
         } catch (SoapFault $e) {
             Log::error('Mellat verification SOAP error', ['error' => $e->getMessage()]);
-            throw new MellatException('Gateway verification failed: '.$e->getMessage());
+            throw new MellatException(__('payment_gateways.mellat.errors.verification_failed', ['message' => $e->getMessage()]));
         }
     }
 
@@ -388,7 +388,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
             return $response->return === '0' || $response->return === '45';
         } catch (SoapFault $e) {
             Log::error('Mellat settlement SOAP error', ['error' => $e->getMessage()]);
-            throw new MellatException('Gateway settlement failed: '.$e->getMessage());
+            throw new MellatException(__('payment_gateways.mellat.errors.settlement_failed', ['message' => $e->getMessage()]));
         }
     }
 
@@ -396,56 +396,56 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
     {
         // Map Mellat error codes to messages
         $errors = [
-            '11'  => 'Invalid card number',
-            '12'  => 'No sufficient funds',
-            '13'  => 'Incorrect PIN',
-            '14'  => 'Allowable number of PIN tries exceeded',
-            '15'  => 'Invalid card',
-            '16'  => 'Allowable number of transactions exceeded',
-            '17'  => 'User canceled transaction',
-            '18'  => 'Expired card',
-            '19'  => 'Allowable number of amount exceeded',
-            '111' => 'Invalid issuer',
-            '112' => 'Card holder has restrictions',
-            '113' => 'Issuer has problems',
-            '114' => 'Invalid merchant',
-            '21'  => 'Invalid transaction',
-            '23'  => 'Invalid currency',
-            '24'  => 'Invalid amount',
-            '25'  => 'Invalid CVV2',
-            '31'  => 'Invalid response',
-            '32'  => 'Invalid format',
-            '33'  => 'Invalid account',
-            '34'  => 'System error',
-            '35'  => 'Invalid date',
-            '41'  => 'Duplicated order ID',
-            '42'  => 'Transaction not found',
-            '43'  => 'Verification already done',
-            '44'  => 'Verification request not found',
-            '45'  => 'Transaction already settled',
-            '46'  => 'Settlement request not found',
-            '47'  => 'Settlement already done',
-            '48'  => 'Transaction already reversed',
-            '49'  => 'Refund request not found',
-            '412' => 'Incorrect billing information',
-            '413' => 'Invalid authentication',
-            '414' => 'Invalid terminal ID',
-            '415' => 'Transaction in progress',
-            '416' => 'Amount exceeds merchant balance',
-            '417' => 'Transaction repeat limit exceeded',
-            '418' => 'Unacceptable IP address',
-            '419' => 'Invalid payment information',
-            '421' => 'Invalid merchant signature',
-            '51'  => 'Duplicated transaction',
-            '54'  => 'Original transaction not found',
-            '55'  => 'Invalid transaction',
-            '56'  => 'Transaction system error',
-            '57'  => 'Original transaction timeout',
-            '58'  => 'Transaction failed',
-            '61'  => 'Verification error',
+            '11'  => __('payment_gateways.mellat.error_codes.11'),
+            '12'  => __('payment_gateways.mellat.error_codes.12'),
+            '13'  => __('payment_gateways.mellat.error_codes.13'),
+            '14'  => __('payment_gateways.mellat.error_codes.14'),
+            '15'  => __('payment_gateways.mellat.error_codes.15'),
+            '16'  => __('payment_gateways.mellat.error_codes.16'),
+            '17'  => __('payment_gateways.mellat.error_codes.17'),
+            '18'  => __('payment_gateways.mellat.error_codes.18'),
+            '19'  => __('payment_gateways.mellat.error_codes.19'),
+            '111' => __('payment_gateways.mellat.error_codes.111'),
+            '112' => __('payment_gateways.mellat.error_codes.112'),
+            '113' => __('payment_gateways.mellat.error_codes.113'),
+            '114' => __('payment_gateways.mellat.error_codes.114'),
+            '21'  => __('payment_gateways.mellat.error_codes.21'),
+            '23'  => __('payment_gateways.mellat.error_codes.23'),
+            '24'  => __('payment_gateways.mellat.error_codes.24'),
+            '25'  => __('payment_gateways.mellat.error_codes.25'),
+            '31'  => __('payment_gateways.mellat.error_codes.31'),
+            '32'  => __('payment_gateways.mellat.error_codes.32'),
+            '33'  => __('payment_gateways.mellat.error_codes.33'),
+            '34'  => __('payment_gateways.mellat.error_codes.34'),
+            '35'  => __('payment_gateways.mellat.error_codes.35'),
+            '41'  => __('payment_gateways.mellat.error_codes.41'),
+            '42'  => __('payment_gateways.mellat.error_codes.42'),
+            '43'  => __('payment_gateways.mellat.error_codes.43'),
+            '44'  => __('payment_gateways.mellat.error_codes.44'),
+            '45'  => __('payment_gateways.mellat.error_codes.45'),
+            '46'  => __('payment_gateways.mellat.error_codes.46'),
+            '47'  => __('payment_gateways.mellat.error_codes.47'),
+            '48'  => __('payment_gateways.mellat.error_codes.48'),
+            '49'  => __('payment_gateways.mellat.error_codes.49'),
+            '412' => __('payment_gateways.mellat.error_codes.412'),
+            '413' => __('payment_gateways.mellat.error_codes.413'),
+            '414' => __('payment_gateways.mellat.error_codes.414'),
+            '415' => __('payment_gateways.mellat.error_codes.415'),
+            '416' => __('payment_gateways.mellat.error_codes.416'),
+            '417' => __('payment_gateways.mellat.error_codes.417'),
+            '418' => __('payment_gateways.mellat.error_codes.418'),
+            '419' => __('payment_gateways.mellat.error_codes.419'),
+            '421' => __('payment_gateways.mellat.error_codes.421'),
+            '51'  => __('payment_gateways.mellat.error_codes.51'),
+            '54'  => __('payment_gateways.mellat.error_codes.54'),
+            '55'  => __('payment_gateways.mellat.error_codes.55'),
+            '56'  => __('payment_gateways.mellat.error_codes.56'),
+            '57'  => __('payment_gateways.mellat.error_codes.57'),
+            '58'  => __('payment_gateways.mellat.error_codes.58'),
+            '61'  => __('payment_gateways.mellat.error_codes.61'),
         ];
 
-        return $errors[$code] ?? "Unknown error (Code: $code)";
+        return $errors[$code] ?? __('messages.integration.unknown_error', ['code' => $code]);
     }
 
     private function getWsdlUrl(): string

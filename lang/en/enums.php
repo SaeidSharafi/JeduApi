@@ -106,10 +106,66 @@ return [
     'PaymentMethodEnum' => [
         'bank_transfer'  => 'Bank Transfer',
         'mellat_gateway' => 'Mellat Gateway',
+        'wallet'         => 'Wallet',
+        'digipay'        => 'Digipay',
     ],
     'PaymentStatusEnum' => [
         'pending'   => 'Pending',
         'completed' => 'Completed',
         'failed'    => 'Failed',
+    ],
+    'MatchPolicyEnum'               => [
+        'any' => 'Any',
+        'all' => 'All',
+    ],
+    'MathOperatorEnum'              => [
+        '==' => 'Equals',
+        '<'  => 'Less Than',
+        '>'  => 'Greater Than',
+        '<=' => 'Less Than or Equal',
+        '>=' => 'Greater Than or Equal',
+        '<>' => 'Not Equal',
+    ],
+    'ProductRegistrationStatusEnum' => [
+        'in_progress' => 'In Progress',
+        'finished'    => 'Finished',
+    ],
+    'ProductDeliveryStatusEnum'     => [
+        'online'    => 'Online',
+        'in_person' => 'In-Person',
+        'combined'  => 'Combined',
+    ],
+    'EnrollmentStatusEnum'          => [
+        'awaiting_payment'     => 'Awaiting Payment',
+        'pending_provisioning' => 'Pending Provisioning',
+        'active'               => 'Active',
+        'suspended'            => 'Suspended',
+        'expired'              => 'Expired',
+        'cancelled'            => 'Cancelled',
+        'provisioning_failed'  => 'Provisioning Failed',
+    ],
+    'WalletStatusEnum'              => [
+        'active'    => 'Active',
+        'suspended' => 'Suspended',
+        'closed'    => 'Closed',
+    ],
+    'MoodleActivityStateEnum'       => [
+        'incomplete'    => 'Incomplete',
+        '0'             => 'Incomplete',
+        'complete'      => 'Complete',
+        '1'             => 'Complete',
+        'complete_pass' => 'Passed',
+        '2'             => 'Passed',
+        'complete_fail' => 'Failed',
+        '3'             => 'Failed',
+    ],
+    'PaymentTransactionStatusEnum'  => [
+        'initiated' => 'Initiated',
+        'completed' => 'Completed',
+        'failed'    => 'Failed',
+    ],
+    'PaymentPurposeEnum'            => [
+        'order'        => 'Order',
+        'wallet_topup' => 'Wallet Top-up',
     ],
 ];

@@ -45,6 +45,6 @@ final class BankTransferPaymentProcessor implements PaymentProcessorContract
     public function verify(Payment $payment, array $callbackData): Payment
     {
         // Not needed for single-step payments
-        throw new BadMethodCallException('Bank transfer payments do not require verification');
+        throw new BadMethodCallException(__('messages.payment.bank_transfer_no_verification'));
     }
 }

@@ -35,22 +35,43 @@ return [
     'file_deleted'           => 'File deleted successfully.',
     'file_not_found'         => 'The requested file was not found.',
     'something_went_wrong'   => 'Something went wrong. Please try again later.',
+    'online_enrollment'      => 'Online Enrollment',
+    'parse_error'            => 'Parse Error',
+    'server_error_details'   => 'Internal Server Error. Details unavailable. Check server logs. Exception: :class',
+    'bank_error'             => 'Bank error.',
     'models'                 => [
-        'seminar'       => 'Seminar',
-        'staff'         => 'Staff',
-        'user'          => 'User',
-        'category'      => 'Category',
-        'digital_asset' => 'Digital Asset',
-        'course'        => 'Course',
-        'teacher'       => 'Teacher',
-        'term'          => 'Term',
-        'contact_info'  => 'Contact Info',
-        'about_us'      => 'About Us',
+        'seminar'            => 'Seminar',
+        'staff'              => 'Staff',
+        'user'               => 'User',
+        'category'           => 'Category',
+        'digital_asset'      => 'Digital Asset',
+        'course'             => 'Course',
+        'teacher'            => 'Teacher',
+        'term'               => 'Term',
+        'wallet'             => 'Wallet',
+        'wallet_transaction' => 'Wallet Transaction',
+        'contact_info'       => 'Contact Info',
+        'about_us'           => 'About Us',
+        'setting'            => 'Setting',
+        'role'               => 'Role',
+        'permission'         => 'Permission',
+        'vendor'             => 'Vendor',
+        'review'             => 'Review',
+        'order'              => 'Order',
+        'discount_promotion' => 'Discount/Promotion',
+        'audit_log'          => 'Audit Log',
+        'refund'             => 'Refund',
+        'payment'            => 'Payment',
+        'enrollment'         => 'Enrollment',
+        'campaign'           => 'Campaign',
     ],
 
     'errors' => [
         'model_has_relationship_data'                       => 'The selected record has related data (:related_model) and cannot be deleted.',
         'model_has_relationship_data_without_related_model' => 'The selected record has related data and cannot be deleted.',
+    ],
+    'product' => [
+        'acrhived' => 'Product archived successfully.',
     ],
     'order' => [
         'items_already_purchased'             => 'You have already purchased the following items: :products.',
@@ -63,6 +84,8 @@ return [
         'discount_not_allowed_for_prepayment' => 'Discounts cannot be applied to pre-payment items.',
         'items_already_purchased_or_active'   => 'User have already purchased or have an active enrollment for the following items: :products.',
         'item_not_available'                  => 'The item :product is not available for purchase.',
+        'not_found'                           => 'Order not found.',
+        'delivery_options_not_found'          => 'One or more ProductDeliveryOption IDs do not exist: :ids.',
         'already_fully_paid'                  => 'Order :order_id is already fully paid.',
         'payment_processed'                   => 'Payment for order :order_id processed successfully.',
         'wallet_payment_completed'            => 'Wallet payment for order :order_id completed successfully.',
@@ -76,6 +99,9 @@ return [
         'final_balance_payment'               => 'Final Balance Payment',
         'cannot_delete_non_pending_order'     => 'Only orders with a "Pending" status can be deleted. Consider cancelling this order instead.',
         'cannot_delete_order_with_status'     => 'Cannot delete order :order_id with status :status.',
+        'cannot_cancel_order_with_completed_payments' => 'Cannot cancel order :order_id because it has completed payments. Please contact support for a refund.',
+        'only_pending_orders_can_be_cancelled'        => 'Only orders with a "Pending" status can be cancelled. Current status: :status.',
+        'order_cancelled_successfully' => 'Order cancelled successfully.',
         'payment_already_pending'             => 'Order :order_id already has a pending payment.',
         'payment_method_not_supported'        => 'The selected payment method is not supported.',
         'payment_method_not_available'        => 'The selected payment method is not available.',
@@ -104,16 +130,34 @@ return [
             'only_pending_refunds_can_be_edited'    => 'Only pending refunds can be edited. This refund is already being processed or is complete.',
             'deduction_conflict'                    => 'The deduction amount and percentage conflict. Please provide either a fixed amount or a percentage, not both.',
             'invalid_status_transition'             => 'Cannot transition refund from :from to :to.',
+            'digipay_partial_refund_not_supported'  => 'Partial refunds are not supported for Digipay orders. Please create a full refund.',
+            'no_refundable_items'                   => 'There are no refundable items in this order.',
+            'gateway_skipped_by_admin_at'           => 'Payment gateway was skipped by admin on :date.',
         ],
     ],
     'auth' => [
-        'otp' => [
+        'doesnot_have_password' => 'User does not have a password.',
+        'user_has_password'     => 'User has set password.',
+        'password_reset'        => 'Your password has been reset successfully!',
+        'otp'                   => [
+            'sent'                  => 'OTP code sent successfully.',
             'invalid_code'          => 'The provided OTP code is invalid.',
             'expired_code'          => 'The OTP code has expired.',
+            'not_found'             => 'User with this phone number or email was not found.',
+            'already_exists'        => 'A user with this phone number or email already exists.',
             'already_verified'      => 'The phone number is already verified.',
             'not_verified'          => 'The phone number is not verified.',
+            'type_mismatch'         => 'The OTP code type does not match the expected type.',
             'verification_required' => 'Phone number verification is required.',
             'verification_failed'   => 'Phone number verification failed. Please try again.',
+            'throttle'              => 'Please wait :seconds seconds before requesting another OTP code.',
+            'resent_successfully'   => 'OTP resent successfully.',
+            'password_reset_sent'   => 'Password reset OTP sent successfully.',
+            'email_subject'         => 'Your Login OTP Code',
+            'email_body'            => 'Your OTP code is: :code',
+            'email_expiry'          => 'This code will expire in 5 minutes.',
+            'email_ignore'          => 'If you did not request this code, please ignore this email.',
+            'sms_content'           => 'Your OTP code is: *****',
         ],
         'login' => [
             'success'             => 'User logged in successfully.',
@@ -129,8 +173,8 @@ return [
         'moodle_auth_userkey_missing'     => 'Moodle auth_userkey token is not configured.',
         'moodle_service_error'            => 'Failed to generate Moodle SSO URL. Please try again later.',
         'retry_provisioning_not_allowed'  => 'Cannot retry provisioning for enrollment with status: :status',
-        'invalid_status_transition'       => 'Cannot transition enrollment from %s to %s',
-        'cannot_delete_enrollment'        => 'Cannot delete enrollment with status: %s',
+        'invalid_status_transition'       => 'Cannot transition enrollment from :from to :to',
+        'cannot_delete_enrollment'        => 'Cannot delete enrollment with status: :status',
         'no_failed_providers'             => 'No failed providers found to retry',
         'retry_dispatched'                => 'Retry dispatched for :count provider(s)',
         'initial_provisioning_dispatched' => 'Initial provisioning dispatched for :count provider(s)',
@@ -220,10 +264,160 @@ return [
         ],
     ],
 
+    'review' => [
+        'approved' => 'Review approved successfully.',
+        'rejected' => 'Review rejected successfully.',
+    ],
     'category' => [
         'good_for_start' => [
             'updated' => 'Good for start status updated successfully.',
         ],
     ],
 
+    'digital_asset' => [
+        'no_access'                => 'You do not have access to this enrollment.',
+        'enrollment_not_active'    => 'Your enrollment is not active.',
+        'not_found_for_enrollment' => 'Digital asset not found for this enrollment.',
+        'no_downloadable_file'     => 'No downloadable file is available for this digital asset.',
+    ],
+
+    'wallet' => [
+        'deposit_description'    => 'Wallet deposit by admin',
+        'withdrawal_description' => 'Wallet withdrawal by admin',
+        'adjustment_description' => 'Wallet adjustment - Reason: :reason',
+        'deposit_success'        => 'Wallet deposit completed successfully.',
+        'withdrawal_success'     => 'Wallet withdrawal completed successfully.',
+        'adjustment_success'     => 'Wallet adjustment completed successfully.',
+        'balance_retrieved'      => 'Wallet balance retrieved successfully.',
+        'cannot_use_wallet_for_topup'   => 'Cannot use wallet to top up wallet balance.',
+        'redirecting_to_gateway'        => 'Redirecting to payment gateway...',
+        'payment_pending_verification'  => 'Payment is pending verification.',
+    ],
+
+    'payment' => [
+        'initiated'                     => 'Payment initiated. Please complete payment at the gateway.',
+        'completed_successfully'        => 'Payment completed successfully.',
+        'processor_not_found'           => 'No payment processor found for method: :method.',
+        'refund_processor_not_found'    => 'No refund processor for payment method: :pm.',
+        'wallet_no_verification'        => 'Wallet payments do not require verification',
+        'bank_transfer_no_verification' => 'Bank transfer payments do not require verification',
+    ],
+
+    'digipay' => [
+        'delivery_not_required'  => 'This payment type does not require delivery confirmation.',
+        'reverse_window_expired' => 'Reverse window expired (25 minutes). Use refund instead.',
+        'delivery_error'         => 'Error confirming delivery with Digipay: :message',
+    ],
+
+    'file' => [
+        'storage_not_found' => 'File not found on storage.',
+    ],
+
+    'product' => [
+        'registration_not_started' => "Registration for ':name' has not started yet.",
+        'registration_ended'       => "Registration period for ':name' has ended.",
+        'not_available_yet'        => "':name' is not yet available for purchase.",
+        'no_longer_available'      => "':name' is no longer available for purchase.",
+    ],
+
+    'enrollment' => [
+        'delivery_no_join_url'    => 'Delivery method [:method] does not support join URLs.',
+        'bbb_not_provisioned'     => 'BBB meeting not provisioned yet.',
+        'skyroom_not_provisioned' => 'Skyroom room not provisioned yet.',
+    ],
+
+    'validation' => [
+        'invalid_jalali_date' => 'The value for the [:prop] field is not a valid Jalali date format.',
+    ],
+
+    'cart' => [
+        'identifier_not_found' => 'Cart identifier not found in request.',
+    ],
+
+    'discount' => [
+        'no_condition_handler' => "No discount condition handler registered for ':name'.",
+        'no_config_dto'        => "No config DTO mapped for handler ':class'.",
+        'no_action_handler'    => "No discount action handler registered for ':name'.",
+    ],
+
+    'sms' => [
+        'ippanel_not_configured' => 'IPPanel API key or sender number is not configured.',
+    ],
+
+    'search' => [
+        'typesense_error' => 'Typesense multi-search error.',
+    ],
+
+    'integration' => [
+        'config_invalid'    => ':service configuration is missing or invalid.',
+        'validation_failed' => 'Validation failed on :endpoint.',
+        'http_error'        => 'HTTP :status on :endpoint.',
+        'unknown_error'     => 'Unknown error (Code: :code)',
+        'spot_player'       => [
+            'invalid_response' => 'SpotPlayer returned an invalid response format.',
+            'service_error'    => 'SpotPlayer returned an error.',
+        ],
+        'bbb' => [
+            'create_meeting_failed' => 'BBB create meeting request failed.',
+        ],
+        'skyroom' => [
+            'network_error'     => 'Skyroom network error on [:action]: :message',
+            'http_error'        => 'Skyroom HTTP error on [:action]: status :status',
+            'action_error'      => 'Skyroom [:action] error :code: :message',
+            'unknown_error'     => 'Unknown Skyroom error',
+        ],
+        'moodle' => [
+            'username_missing'            => 'Moodle username source missing.',
+            'user_creation_failed'        => 'Moodle user creation failed.',
+            'course_not_found'            => 'Moodle course not found.',
+            'auth_userkey_creation_failed' => 'Moodle auth_userkey creation failed.',
+            'server_error'                => 'Moodle server error for :function.',
+            'request_failed'              => 'Moodle request failed for :function.',
+            'exception_response'          => 'Moodle returned an exception response.',
+            'student_default'             => 'Student',
+            'user_default'                => 'User',
+        ],
+    ],
+
+    'checkout' => [
+        'cart_empty'                    => 'Your cart is empty. Please add items before checking out.',
+        'product_unavailable'           => "The product ':name' is no longer available.",
+        'delivery_option_unavailable'   => "The delivery option for ':name' is no longer available.",
+        'payment_not_pending'           => 'Payment :uuid is not in pending state.',
+        'spots_remaining'               => 'Only :count spot(s) remaining for \':name\', but you requested :requested.',
+    ],
+
+    'wallet' => [
+        'not_topup_payment' => 'Payment :uuid is not a wallet topup payment.',
+        'not_completed'     => 'Payment :uuid is not completed.',
+        'topup_via'         => 'Wallet top-up via :method',
+    ],
+
+    'admin' => [
+        'gateway_skipped_note' => '[Gateway skipped by Admin at :datetime]',
+    ],
+
+    'provisioning' => [
+        'ims_course_code_missing'     => 'IMS course code is missing from delivery option details.',
+        'enrollment_order_required'   => 'Enrollment order is required for IMS provisioning.',
+        'completed_payment_required'  => 'Completed payment is required for IMS provisioning.',
+        'payment_not_belong'          => 'Payment does not belong to enrollment order.',
+        'payment_must_be_completed'   => 'Payment must be completed before IMS provisioning.',
+        'skyroom_room_id_missing'     => 'Skyroom room_id is missing from delivery option details.',
+        'moodle_quiz_course_id_missing' => 'Moodle quiz course_id is missing from delivery option details.',
+        'moodle_course_id_missing'    => 'Moodle course_id is missing from delivery option details.',
+        'spotplayer_spot_id_missing'  => 'SpotPlayer spot_id is missing from delivery option details.',
+        'bbb_meeting_id_missing'      => 'BBB meeting_id is missing from delivery option details.',
+    ],
+
+    'exceptions' => [
+        'refund_gateway_failed'   => 'Refund gateway operation failed.',
+        'refund_validation_failed' => 'Refund validation failed.',
+        'refund_exceeds_payment'  => 'Refund of :amount would exceed payment :payment_id (amount: :payment_amount, already refunded: :already_refunded).',
+        'invalid_payment_purpose' => "This payment processor requires purpose ':expected', got ':actual'.",
+        'product_not_set'         => 'Product is not set for validation.',
+        'product_already_exists'  => 'A published product already exists for this :type with ID :id.',
+        'event_ended_at_required' => 'The event_ended_at field is required when event_start_at is provided.',
+        'event_start_at_required' => 'The event_start_at field is required when event_ended_at is provided.',
+    ],
 ];
