@@ -11,7 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
 use App\Services\Integrations\MoodleService;
 use App\Services\SettingsService;
-use Throwable;
+use Exception;
 
 /**
  * @group Shop - Student - Courses
@@ -58,7 +58,7 @@ final class MoodleSsoController extends Controller
 
         try {
             $url = $moodleService->createUserKey($moodleUsername);
-        } catch (Throwable $e) {
+        } catch (Exception $e) {
             report($e);
 
             return apiResponse()->validationError(__('messages.enrollments.moodle_service_error'));

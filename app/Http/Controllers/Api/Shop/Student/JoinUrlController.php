@@ -10,7 +10,7 @@ use App\Exceptions\Integrations\ResourceNotProvisionedException;
 use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
 use InvalidArgumentException;
-use Throwable;
+use Exception;
 
 /**
  * @group Shop - Student - Courses
@@ -44,7 +44,7 @@ final class JoinUrlController extends Controller
             return apiResponse()->error($e->getMessage(), 503);
         } catch (InvalidArgumentException $e) {
             return apiResponse()->validationError($e->getMessage());
-        } catch (Throwable $e) {
+        } catch (Exception $e) {
             report($e);
 
             return apiResponse()->serverError();

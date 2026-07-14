@@ -11,7 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Throwable;
+use Exception;
 
 /**
  * @group Shop - Payment Gateway
@@ -72,7 +72,7 @@ final class GatewayCallbackController extends Controller
                 'payment' => $payment->uuid,
                 'error'   => $e->errorCode(),
             ]));
-        } catch (Throwable $e) {
+        } catch (Exception $e) {
             // Genuinely unrecognized failure — worth distinguishing in logs from a known gateway decline.
             Log::critical('Unhandled gateway callback error', [
                 'error'        => $e->getMessage(),

@@ -10,12 +10,13 @@ use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
-use Throwable;
+use Illuminate\Http\Client\ConnectionException;
 
 final class SkyroomService extends AbstractIntegrationService
 {
     public function findOrCreateUser(User $user): array
     {
+        $this->assertConfigured();
         $username = 'user-'.$user->id;
 
         try {
@@ -40,6 +41,7 @@ final class SkyroomService extends AbstractIntegrationService
 
     public function addUserToRoom(int $roomId, int $skyroomUserId): void
     {
+        $this->assertConfigured();
         $this->request('addRoomUsers', [
             'room_id' => $roomId,
             'users'   => [['user_id' => $skyroomUserId]],
@@ -87,7 +89,7 @@ final class SkyroomService extends AbstractIntegrationService
 
         try {
             $response = Http::timeout(30)->acceptJson()->post($endpoint, $body);
-        } catch (Throwable $e) {
+        } catch (ConnectionException $e) {
             throw new RecoverableProvisioningException(
                 "Skyroom network error on [{$action}]: {$e->getMessage()}",
                 previous: $e,

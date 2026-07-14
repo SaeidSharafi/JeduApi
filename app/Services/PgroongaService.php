@@ -6,7 +6,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Throwable;
+use Illuminate\Database\QueryException;
 
 final class PgroongaService
 {
@@ -24,7 +24,7 @@ final class PgroongaService
                 $result = DB::selectOne("SELECT 1 FROM pg_extension WHERE extname = 'pgroonga'");
 
                 return (bool) $result;
-            } catch (Throwable $e) {
+            } catch (QueryException $e) {
                 // If the database connection fails or any other error occurs,
                 // assume PGroonga is not available.
                 return false;

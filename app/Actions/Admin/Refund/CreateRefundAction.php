@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use SmartCache\Facades\SmartCache;
-use Throwable;
+use Exception;
 
 final class CreateRefundAction
 {
@@ -80,7 +80,7 @@ final class CreateRefundAction
             } catch (DigipayException $e) {
                 $refund->update(['status' => RefundStatusEnum::FAILED, 'admin_notes' => ($refund->admin_notes ?? '').PHP_EOL.$e->getUserMessage()]);
                 throw new RefundValidationException($e->getUserMessage());
-            } catch (Throwable $e) {
+            } catch (Exception $e) {
                 // API Failed! Mark our refund as failed so we don't try again blindly.
                 $refund->update(['status' => RefundStatusEnum::FAILED]);
                 throw $e;
@@ -136,7 +136,7 @@ final class CreateRefundAction
                     return $refund;
                 });
 
-            } catch (Throwable $e) {
+            } catch (Exception $e) {
                 // CRITICAL FAILURE: Gateway succeeded, but DB failed to update to COMPLETED.
                 Log::emergency('Partial Failure: Refund API succeeded but DB update failed. Record is stuck in PROCESSING state.', [
                     'refund_id'     => $refund->id,

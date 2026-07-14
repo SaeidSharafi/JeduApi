@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionType;
-use Throwable;
+use Exception;
 
 final class DiscountMetadataService
 {
@@ -234,7 +234,7 @@ final class DiscountMetadataService
         if (method_exists($handlerClass, 'getConfigClass')) {
             try {
                 return $handlerClass::getConfigClass();
-            } catch (Throwable $e) {
+            } catch (Exception $e) {
                 // If the method fails, we return null
                 return null;
             }

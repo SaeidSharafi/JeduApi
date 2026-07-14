@@ -8,6 +8,7 @@ use App\Exceptions\Integrations\UnrecoverableProvisioningException;
 use App\Models\User;
 use App\Services\Integrations\SkyroomService;
 use App\Services\SettingsService;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 
 describe('findOrCreateUser', function (): void {
@@ -97,7 +98,7 @@ describe('createLoginUrl', function (): void {
 });
 
 describe('error handling', function (): void {
-    it('throws RecoverableProvisioningException when Skyroom service configuration is missing.', function (): void {
+    it('throws UnrecoverableProvisioningException when Skyroom service configuration is missing.', function (): void {
         $settings = Mockery::mock(SettingsService::class);
         $settings->shouldReceive('get')
             ->with(SettingKeyEnum::SKYROOM, Mockery::any())
@@ -106,7 +107,7 @@ describe('error handling', function (): void {
         $service = new SkyroomService($settings);
 
         expect(fn (): array => $service->findOrCreateUser(makeUser(1)))
-            ->toThrow(RecoverableProvisioningException::class);
+            ->toThrow(UnrecoverableProvisioningException::class);
     });
 
     it('throws RecoverableProvisioningException on HTTP failure (5xx)', function (): void {
@@ -120,9 +121,8 @@ describe('error handling', function (): void {
 
     it('throws RecoverableProvisioningException on network error', function (): void {
         Http::fake([
-            skyroomEndpoint() => fn () => throw new RuntimeException('Connection refused'),
+            skyroomEndpoint() => fn () => throw new ConnectionException('Connection refused'),
         ]);
-
         expect(fn (): array => makeSkyroomService()->findOrCreateUser(makeUser(1)))
             ->toThrow(RecoverableProvisioningException::class);
     });

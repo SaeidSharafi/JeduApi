@@ -20,7 +20,7 @@ use App\Services\Payment\Refund\RefundProcessorFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Throwable;
+use Exception;
 
 final class RefundOrderAction
 {
@@ -104,7 +104,7 @@ final class RefundOrderAction
                     $state->order,
                     $state->totalRefundAmount,
                 );
-            } catch (Throwable $e) {
+            } catch (Exception $e) {
                 // HTTP API Failed. Revert 'PROCESSING' refunds to 'FAILED'
                 $errorMessage = $e->getMessage();
                 Refund::whereIn('id', $state->processingRefunds->pluck('id'))->update([
@@ -161,7 +161,7 @@ final class RefundOrderAction
 
                 return $state->processingRefunds->load('order');
             });
-        } catch (Throwable $e) {
+        } catch (Exception $e) {
             if ($state->requiresGateway) {
                 // TODO: need to notify Staff
                 // CRITICAL ERROR: We gave the user money via Digipay, but our DB failed to save the changes!

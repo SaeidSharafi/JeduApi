@@ -219,7 +219,7 @@ final class DiscountHandlerRegistry
                 $this->registerHandlerIfApplicable($reflection, $className);
             }
             // @codeCoverageIgnoreStart
-            catch (Throwable $e) {
+            catch (\ReflectionException $e) {
                 Log::warning('Could not reflect class for discount handler discovery.', [
                     'class'     => $className,
                     'exception' => $e->getMessage(),
@@ -259,10 +259,11 @@ final class DiscountHandlerRegistry
                 }
             }
             // @codeCoverageIgnoreStart
-            catch (\Throwable $e) {
-                // Handler doesn't implement getConfigClass method or other error
-                // This is expected for handlers that don't follow the new pattern yet
-                // We silently skip handlers that don't have valid config class mappings
+            catch (\Exception $e) {
+                Log::warning('Discount handler config discovery failed.', [
+                    'class'     => $handlerClass,
+                    'exception' => $e->getMessage(),
+                ]);
             }
             // @codeCoverageIgnoreEnd
         }

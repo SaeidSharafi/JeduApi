@@ -85,7 +85,7 @@ final class ProcessGitHubDeploymentJob extends SpatieProcessWebhookJob
 
             Log::channel('deployment')->info('Deployment job chain dispatched successfully by ProcessGitHubDeploymentJob.');
 
-        } catch (Throwable $e) { // Changed to Throwable
+        } catch (Exception $e) {
             Log::channel('deployment')->error('Failed to dispatch initial deployment job: '.$e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
             ]);

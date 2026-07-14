@@ -214,7 +214,7 @@ final class ProvisionImsEnrollmentJob extends AbstractProvisioningJob
         if (is_string($dataDate) && $dataDate !== '') {
             try {
                 return Carbon::parse($dataDate);
-            } catch (Throwable) {
+            } catch (\InvalidArgumentException) {
                 // Fallback to created_at when custom date cannot be parsed.
             }
         }

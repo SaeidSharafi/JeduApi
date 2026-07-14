@@ -19,7 +19,7 @@ use App\Services\PaymentTransactionReferenceService;
 use App\Services\SettingsService;
 use Illuminate\Support\Facades\Log;
 use SoapFault;
-use Throwable;
+use Exception;
 
 /**
  * Payment processor for Mellat Gateway online payments.
@@ -76,7 +76,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 
         try {
             $refId = $this->sendPayRequest($gatewayRequest);
-        } catch (Throwable $e) {
+        } catch (Exception $e) {
             $transaction->update([
                 'status'        => PaymentTransactionStatusEnum::FAILED,
                 'error_message' => $e->getMessage(),
@@ -292,7 +292,7 @@ final class MellatGatewayPaymentProcessor implements PaymentProcessorContract
 
             return $payment;
 
-        } catch (Throwable $e) {
+        } catch (Exception $e) {
             Log::error('Error verifying Mellat payment', [
                 'payment_id'      => $payment->id,
                 'transaction_ref' => $transaction->transaction_reference ?? null,

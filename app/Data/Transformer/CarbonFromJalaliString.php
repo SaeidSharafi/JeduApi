@@ -7,7 +7,7 @@ namespace App\Data\Transformer;
 use App\Exceptions\InvalidJalaliDateException;
 use Carbon\Carbon;
 use DateTimeInterface;
-use Exception;
+use InvalidArgumentException;
 use Hekmatinasser\Verta\Verta;
 use Spatie\LaravelData\Casts\Cast;
 use Spatie\LaravelData\Support\Creation\CreationContext;
@@ -44,7 +44,7 @@ final readonly class CarbonFromJalaliString implements Cast
                 }
 
                 return Verta::parse($value)->toCarbon();
-            } catch (Exception $e) {
+            } catch (InvalidArgumentException $e) {
                 throw new InvalidJalaliDateException($property->name, $value);
             }
         }

@@ -286,6 +286,8 @@ final class ProductDiscountIndexer
             }
             // @codeCoverageIgnoreStart
             catch (Exception $e) {
+                Log::error("Error evaluating product condition: {$e->getMessage()}");
+
                 return false;
             }
             // @codeCoverageIgnoreEnd

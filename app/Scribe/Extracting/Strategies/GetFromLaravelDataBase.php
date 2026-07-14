@@ -14,7 +14,7 @@ use ReflectionException;
 use ReflectionFunctionAbstract;
 use ReflectionUnionType;
 use Spatie\LaravelData\Data;
-use Throwable;
+use Exception;
 
 abstract class GetFromLaravelDataBase extends Strategy
 {
@@ -38,7 +38,7 @@ abstract class GetFromLaravelDataBase extends Strategy
 
                 return app()->call([$data, 'getValidationRules'], ['payload' => $properties]);
             }
-        } catch (Throwable $e) {
+        } catch (Exception $e) {
             // During Scribe documentation generation, route parameters may not be available
             // causing rules() to fail. We'll fall back to using only the custom parameter data.
             c::warn('Failed to extract validation rules from '.get_class($data).': '.$e->getMessage());
