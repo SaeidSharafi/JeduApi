@@ -36,6 +36,182 @@ return [
         'usage_limit_reached'  => 'Campaign usage limit has been reached.',
         'already_claimed'      => 'You have already claimed this campaign bonus.',
         'wallet_not_active'    => 'User wallet is not active.',
+
+        // ── Order Create ─────────────────────────────────────────────────
+        'order' => [
+            'items' => [
+                'product_delivery_option_id' => [
+                    'required' => 'The product field is required for each order item.',
+                    'exists'   => 'The selected product for the order item is invalid.',
+                ],
+                'payment_type' => [
+                    'required' => 'The payment type field is required for each order item.',
+                    'enum'     => 'The selected payment type for the order item is invalid.',
+                ],
+                'qty_ordered' => [
+                    'integer' => 'The quantity for each order item must be an integer.',
+                    'min'     => 'The quantity for each order item must be at least 1.',
+                ],
+            ],
+        ],
+
+        // ── Footer ──────────────────────────────────────────────────────
+        'footer' => [
+            'categories' => [
+                'integer' => 'Each category item must be a valid ID.',
+                'exists'  => 'The selected category does not exist.',
+            ],
+            'social_media_links' => [
+                'platform' => [
+                    'required' => 'The platform field is required for each social media link.',
+                ],
+                'link' => [
+                    'required' => 'The link field is required for each social media link.',
+                ],
+            ],
+            'certifications' => [
+                'name' => [
+                    'required' => 'The certification name is required for each item.',
+                ],
+                'image' => [
+                    'integer' => 'The certification image must be a valid media ID.',
+                    'exists'  => 'The selected certification image is invalid.',
+                ],
+                'html' => [
+                    'string' => 'The certification HTML must be a string.',
+                ],
+            ],
+        ],
+
+        // ── Contact Info ─────────────────────────────────────────────────
+        'contact_info' => [
+            'addresses' => [
+                'name' => [
+                    'required' => 'The location name is required for each address.',
+                ],
+                'address' => [
+                    'required' => 'The address field is required for each item.',
+                ],
+                'location_url' => [
+                    'required' => 'The location URL is required for each address.',
+                    'url'      => 'The location URL must be a valid URL.',
+                ],
+                'phone' => [
+                    'required' => 'The phone field is required for each address.',
+                ],
+            ],
+            'social_media_links' => [
+                'platform' => [
+                    'required' => 'The platform field is required for each social media link.',
+                ],
+                'link' => [
+                    'required' => 'The link field is required for each social media link.',
+                    'url'      => 'The social media link must be a valid URL.',
+                ],
+            ],
+        ],
+
+        // ── Teacher ──────────────────────────────────────────────────────
+        'teacher' => [
+            'social_links' => [
+                'platform' => [
+                    'required' => 'The platform field is required for each social link.',
+                ],
+                'link' => [
+                    'required' => 'The link field is required for each social link.',
+                    'url'      => 'The social link must be a valid URL.',
+                ],
+            ],
+        ],
+
+        // ── Discount Promotion ──────────────────────────────────────────
+        'discount' => [
+            'rules' => [
+                'type' => [
+                    'required' => 'The type field is required for each discount rule.',
+                    'in'       => 'The discount rule type must be condition or action.',
+                ],
+                'handler' => [
+                    'required' => 'The handler field is required for each discount rule.',
+                ],
+                'configuration' => [
+                    'required' => 'The configuration field is required for each discount rule.',
+                    'array'    => 'The discount rule configuration must be an array.',
+                ],
+            ],
+            'coupons' => [
+                'code' => [
+                    'required' => 'The code field is required for each coupon.',
+                ],
+                'usage_limit' => [
+                    'integer' => 'The coupon usage limit must be an integer.',
+                    'min'     => 'The coupon usage limit must be at least 1.',
+                ],
+            ],
+        ],
+
+        // ── Course FAQ ───────────────────────────────────────────────────
+        'course' => [
+            'faq' => [
+                'question' => [
+                    'required' => 'The question field is required for each FAQ item.',
+                ],
+                'answer' => [
+                    'required' => 'The answer field is required for each FAQ item.',
+                ],
+            ],
+        ],
+
+        // ── Seminar FAQ ──────────────────────────────────────────────────
+        'seminar' => [
+            'faq' => [
+                'question' => [
+                    'required' => 'The question field is required for each FAQ item.',
+                ],
+                'answer' => [
+                    'required' => 'The answer field is required for each FAQ item.',
+                ],
+            ],
+        ],
+
+        // ── Digital Asset FAQ ────────────────────────────────────────────
+        'digital_asset' => [
+            'faq' => [
+                'question' => [
+                    'required' => 'The question field is required for each FAQ item.',
+                ],
+                'answer' => [
+                    'required' => 'The answer field is required for each FAQ item.',
+                ],
+            ],
+        ],
+
+        // ── Blog Post ────────────────────────────────────────────────────
+        'blog_post' => [
+            'related_productables' => [
+                'id' => [
+                    'required' => 'The ID field is required for each related productable.',
+                    'integer'  => 'The related productable ID must be an integer.',
+                ],
+                'type' => [
+                    'required' => 'The type field is required for each related productable.',
+                ],
+            ],
+            'media' => [
+                'cover' => [
+                    'integer' => 'Each cover item must be a valid media ID.',
+                    'exists'  => 'The selected cover image is invalid.',
+                ],
+                'gallery' => [
+                    'integer' => 'Each gallery item must be a valid media ID.',
+                    'exists'  => 'The selected gallery image is invalid.',
+                ],
+                'video' => [
+                    'integer' => 'Each video item must be a valid media ID.',
+                    'exists'  => 'The selected video is invalid.',
+                ],
+            ],
+        ],
     ],
 
     'attributes' => [

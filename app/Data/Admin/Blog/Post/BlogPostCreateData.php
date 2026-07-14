@@ -77,6 +77,26 @@ final class BlogPostCreateData extends Data
 
     /**
      * @codeCoverageIgnore
+     *
+     * @return array<string, string>
+     */
+    public static function messages(): array
+    {
+        return [
+            'related_productables.*.id.required'   => __('validation.custom.blog_post.related_productables.id.required'),
+            'related_productables.*.id.integer'    => __('validation.custom.blog_post.related_productables.id.integer'),
+            'related_productables.*.type.required' => __('validation.custom.blog_post.related_productables.type.required'),
+            'media.cover.*.integer'                => __('validation.custom.blog_post.media.cover.integer'),
+            'media.cover.*.exists'                 => __('validation.custom.blog_post.media.cover.exists'),
+            'media.gallery.*.integer'              => __('validation.custom.blog_post.media.gallery.integer'),
+            'media.gallery.*.exists'               => __('validation.custom.blog_post.media.gallery.exists'),
+            'media.video.*.integer'                => __('validation.custom.blog_post.media.video.integer'),
+            'media.video.*.exists'                 => __('validation.custom.blog_post.media.video.exists'),
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
      */
     public function bodyParameters(): array
     {

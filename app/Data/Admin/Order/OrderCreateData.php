@@ -40,6 +40,23 @@ final class OrderCreateData extends Data
     /**
      * @codeCoverageIgnore
      *
+     * @return array<string, string>
+     */
+    public static function messages(): array
+    {
+        return [
+            'items.*.product_delivery_option_id.required' => __('validation.custom.order.items.product_delivery_option_id.required'),
+            'items.*.product_delivery_option_id.exists'   => __('validation.custom.order.items.product_delivery_option_id.exists'),
+            'items.*.payment_type.required'               => __('validation.custom.order.items.payment_type.required'),
+            'items.*.payment_type.enum'                   => __('validation.custom.order.items.payment_type.enum'),
+            'items.*.qty_ordered.integer'                 => __('validation.custom.order.items.qty_ordered.integer'),
+            'items.*.qty_ordered.min'                     => __('validation.custom.order.items.qty_ordered.min'),
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
      * @return array<string, array<string, mixed>>
      */
     public function bodyParameters(): array

@@ -87,7 +87,10 @@ final class CreateTeacherData extends Data
     public static function messages(): array
     {
         return [
-            'media.array' => 'فیلد رسانه باید آرایه باشد و فقط می‌تواند شامل کلید \'profile\' باشد و کلیدهای اضافی مجاز نیستند.',
+            'media.array'                      => __('validation.custom.teacher.media.array'),
+            'social_links.*.platform.required' => __('validation.custom.teacher.social_links.platform.required'),
+            'social_links.*.link.required'     => __('validation.custom.teacher.social_links.link.required'),
+            'social_links.*.link.url'          => __('validation.custom.teacher.social_links.link.url'),
         ];
     }
 

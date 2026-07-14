@@ -128,6 +128,19 @@ final class CreateDigitalAssetData extends Data
     /**
      * @codeCoverageIgnore
      *
+     * @return array<string, string>
+     */
+    public static function messages(): array
+    {
+        return [
+            'faq.*.question.required' => __('validation.custom.digital_asset.faq.question.required'),
+            'faq.*.answer.required'   => __('validation.custom.digital_asset.faq.answer.required'),
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
      * Get the validation rules for the data.
      *
      * @return array<string, array<string, mixed>>

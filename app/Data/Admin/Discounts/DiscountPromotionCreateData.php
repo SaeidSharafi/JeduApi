@@ -63,6 +63,25 @@ final class DiscountPromotionCreateData extends Data
 
     /**
      * @codeCoverageIgnore
+     *
+     * @return array<string, string>
+     */
+    public static function messages(): array
+    {
+        return [
+            'rules.*.type.required'          => __('validation.custom.discount.rules.type.required'),
+            'rules.*.type.in'                => __('validation.custom.discount.rules.type.in'),
+            'rules.*.handler.required'       => __('validation.custom.discount.rules.handler.required'),
+            'rules.*.configuration.required' => __('validation.custom.discount.rules.configuration.required'),
+            'rules.*.configuration.array'    => __('validation.custom.discount.rules.configuration.array'),
+            'coupons.*.code.required_with'   => __('validation.custom.discount.coupons.code.required'),
+            'coupons.*.usage_limit.integer'  => __('validation.custom.discount.coupons.usage_limit.integer'),
+            'coupons.*.usage_limit.min'      => __('validation.custom.discount.coupons.usage_limit.min'),
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
      */
     public function bodyParameters(): array
     {

@@ -117,6 +117,19 @@ final class CreateSeminarData extends Data
     /**
      * @codeCoverageIgnore
      *
+     * @return array<string, string>
+     */
+    public static function messages(): array
+    {
+        return [
+            'faq.*.question.required' => __('validation.custom.seminar.faq.question.required'),
+            'faq.*.answer.required'   => __('validation.custom.seminar.faq.answer.required'),
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
      * @return array<string, array<string, mixed>>
      */
     public function bodyParameters(): array

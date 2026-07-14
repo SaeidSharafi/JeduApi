@@ -83,6 +83,25 @@ final class ContactInfoData extends Data
     /**
      * @codeCoverageIgnore
      *
+     * @return array<string, string>
+     */
+    public static function messages(): array
+    {
+        return [
+            'addresses.*.name.required'              => __('validation.custom.contact_info.addresses.name.required'),
+            'addresses.*.address.required'           => __('validation.custom.contact_info.addresses.address.required'),
+            'addresses.*.location_url.required'      => __('validation.custom.contact_info.addresses.location_url.required'),
+            'addresses.*.location_url.url'           => __('validation.custom.contact_info.addresses.location_url.url'),
+            'addresses.*.phone.required'             => __('validation.custom.contact_info.addresses.phone.required'),
+            'social_media_links.*.platform.required' => __('validation.custom.contact_info.social_media_links.platform.required'),
+            'social_media_links.*.link.required'     => __('validation.custom.contact_info.social_media_links.link.required'),
+            'social_media_links.*.link.url'          => __('validation.custom.contact_info.social_media_links.link.url'),
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
      * @return array<string, array<string, mixed>>
      */
     public function bodyParameters(): array

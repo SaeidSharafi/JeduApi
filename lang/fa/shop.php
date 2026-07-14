@@ -3,8 +3,7 @@
 declare(strict_types=1);
 
 return [
-    // Profile incomplete. Please complete your profile to proceed.
-    'profile_incomplete_message' => 'پروفایل شما ناقص است. لطفاً برای ادامه، پروفایل خود را تکمیل کنید.',
+    'profile_incomplete_message' => 'اطلاعات کاربری شما کامل نیست. لطفاً برای ادامه فرآیند، ابتدا پروفایل خود را تکمیل کنید.',
     'teahcer_titles'             => [
         'sir'   => 'جناب آقای',
         'madam' => 'سرکار خانم',
@@ -15,24 +14,24 @@ return [
         'categories'        => 'دسته‌بندی‌ها',
         'courses'           => 'دوره‌ها',
         'seminars'          => 'سمینارها',
-        'digital_assets'    => 'کتب و جزوات',
+        'digital_assets'    => 'کتاب‌ها و جزوات',
         'home_page_content' => 'محتوای صفحه اصلی',
     ],
 
     'responses' => [
         'forms' => [
-            'collaboration_request_submitted' => 'درخواست همکاری شما با موفقیت ارسال شد. در اسرع وقت پاسخگوی شما خواهیم بود.',
+            'collaboration_request_submitted' => 'درخواست همکاری شما با موفقیت ثبت شد. پس از بررسی، در اسرع وقت با شما تماس خواهیم گرفت.',
         ],
-        'contact_form_submitted'   => 'پیام شما با موفقیت ارسال شد. در اسرع وقت پاسخگوی شما خواهیم بود.',
-        'advice_request_submitted' => 'درخواست مشاوره شما با موفقیت ارسال شد. در اسرع وقت با شما تماس خواهیم گرفت.',
+        'contact_form_submitted'   => 'پیام شما با موفقیت دریافت شد. در اسرع وقت پاسخگوی شما خواهیم بود.',
+        'advice_request_submitted' => 'درخواست مشاوره شما با موفقیت ثبت شد. کارشناسان ما در اسرع وقت با شما تماس خواهند گرفت.',
     ],
     'cart' => [
         'empty'  => 'سبد خرید شما خالی است.',
         'errors' => [
             'product_already_in_cart'       => 'این محصول قبلاً به سبد خرید شما اضافه شده است.',
-            'multiple_quantity_not_allowed' => 'برای این محصول نمی‌توانید بیش از یک عدد سفارش دهید.',
-            'pre_payment_not_available'     => 'گزینه پیش‌پرداخت برای این محصول در دسترس نیست.',
-            'coupon_does_not_exist'         => 'کوپن تخفیف وارد شده معتبر نیست.',
+            'multiple_quantity_not_allowed' => 'امکان سفارش بیش از یک عدد برای این محصول وجود ندارد.',
+            'pre_payment_not_available'     => 'امکان پیش‌پرداخت برای این محصول وجود ندارد.',
+            'coupon_does_not_exist'         => 'کد تخفیف وارد شده معتبر نیست.',
         ],
     ],
 ];

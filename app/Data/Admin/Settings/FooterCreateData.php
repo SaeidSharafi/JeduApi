@@ -44,6 +44,25 @@ final class FooterCreateData extends Data
     /**
      * @codeCoverageIgnore
      *
+     * @return array<string, string>
+     */
+    public static function messages(): array
+    {
+        return [
+            'categories.*.integer'                   => __('validation.custom.footer.categories.integer'),
+            'categories.*.exists'                    => __('validation.custom.footer.categories.exists'),
+            'social_media_links.*.platform.required' => __('validation.custom.footer.social_media_links.platform.required'),
+            'social_media_links.*.link.required'     => __('validation.custom.footer.social_media_links.link.required'),
+            'certifications.*.name.required'         => __('validation.custom.footer.certifications.name.required'),
+            'certifications.*.image.integer'         => __('validation.custom.footer.certifications.image.integer'),
+            'certifications.*.image.exists'          => __('validation.custom.footer.certifications.image.exists'),
+            'certifications.*.html.string'           => __('validation.custom.footer.certifications.html.string'),
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
      * @return array<string, array<string, mixed>>
      */
     public function bodyParameters(): array

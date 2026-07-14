@@ -128,6 +128,19 @@ final class CreateCourseData extends Data
     /**
      * @codeCoverageIgnore
      *
+     * @return array<string, string>
+     */
+    public static function messages(): array
+    {
+        return [
+            'faq.*.question.required' => __('validation.custom.course.faq.question.required'),
+            'faq.*.answer.required'   => __('validation.custom.course.faq.answer.required'),
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     *
      * @return array<string, array<string, mixed>>
      */
     public function bodyParameters(): array
