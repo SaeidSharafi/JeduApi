@@ -35,6 +35,9 @@ final readonly class UpdateBlogPostAction
             'main_productable_id'   => null,
             'main_productable_type' => null,
             'thumbnail_url'         => $coverImageUrl,
+            'meta_title'            => $data->meta_title,
+            'meta_description'      => $data->meta_description,
+            'meta_keywords'         => $data->meta_keywords,
         ];
         if ($data->main_productable) {
             $postData['main_productable_id']   = $data->main_productable['id'];

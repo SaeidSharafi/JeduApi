@@ -21,11 +21,14 @@ final readonly class UpdateBlogCategoryAction
                 $icon = Media::find($data->icon);
             }
             $category->update([
-                'name'        => $data->name,
-                'slug'        => $slug,
-                'description' => $data->description,
-                'parent_id'   => $data->parent_id,
-                'icon'        => $icon?->getUrl(),
+                'name'             => $data->name,
+                'slug'             => $slug,
+                'description'      => $data->description,
+                'parent_id'        => $data->parent_id,
+                'icon'             => $icon?->getUrl(),
+                'meta_title'       => $data->meta_title,
+                'meta_description' => $data->meta_description,
+                'meta_keywords'    => $data->meta_keywords,
             ]);
             $category->syncMedia($icon, 'icon');
 

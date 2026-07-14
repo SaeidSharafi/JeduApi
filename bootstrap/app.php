@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\EnsureAdminNumericIdsMiddleware;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -66,6 +67,7 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prependToGroup('api', EnsureAdminNumericIdsMiddleware::class);
         $middleware->validateCsrfTokens(except: [
             '/webhooks/github-deployer',
         ]);

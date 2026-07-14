@@ -18,7 +18,11 @@ final readonly class CreateBlogPostAction
     public function handle(BlogPostCreateData $data, ?Staff $staff = null): BlogPost
     {
         return DB::transaction(function () use ($data, $staff): BlogPost {
-            $slug          = $data->slug ?? Str::slug($data->title);
+            // retry Slug to get unique slug if exists
+            $slug = $data->slug ?? Str::slug($data->title);
+            while (BlogPost::where('slug', $slug)->exists()) {
+                $slug = Str::slug($data->title.'-'.Str::random(5));
+            }
             $readTime      = $this->calculateReadTime($data->body);
             $media         = $data->media;
             $coverImageUrl = null;
@@ -36,6 +40,9 @@ final readonly class CreateBlogPostAction
                 'read_time_minutes' => $readTime,
                 'is_featured'       => $data->is_featured ?? false,
                 'thumbnail_url'     => $coverImageUrl,
+                'meta_title'        => $data->meta_title,
+                'meta_description'  => $data->meta_description,
+                'meta_keywords'     => $data->meta_keywords,
             ];
 
             if ($data->main_productable) {

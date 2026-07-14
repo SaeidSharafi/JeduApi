@@ -75,7 +75,7 @@ Route::get('discount-info/types', [DiscountInfoController::class, 'types'])
     ->name('discount-info.types');
 
 // Enrollment Management
-Route::apiResource('enrollments', EnrollmentController::class)->except(['store']);
+Route::apiResource('enrollments', EnrollmentController::class)->except(['store'])->whereNumber('enrollment');
 Route::post('enrollments/{enrollment}/change-status', ChangeEnrollmentStatusController::class)
     ->name('enrollments.change-status');
 Route::post('enrollments/{enrollment}/retry-provisioning', RetryProvisioningController::class)
