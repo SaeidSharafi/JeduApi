@@ -8,7 +8,7 @@ require 'recipe/laravel.php';
 require 'contrib/php-fpm.php';
 
 set('application', 'jedu-api');
-set('repository', 'ssh://git@ssh.git.jedu.ir:222/Jedu/Jedu-api.git');
+set('repository', 'ssh://git@ssh.git.jedu.ir:222/kuro/Jedu-api.git');
 set('git_tty', false);
 set('keep_releases', 5);
 set('http_user', 'www-data');
