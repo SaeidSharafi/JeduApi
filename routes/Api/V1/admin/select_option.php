@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\Admin\SelectOptions\BlogCategorySelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\CategorySelectOptionController;
+use App\Http\Controllers\Api\Admin\SelectOptions\CustomerSelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\ProductableSelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\ProductSelectOptionController;
 use App\Http\Controllers\Api\Admin\SelectOptions\StaffSelectOptionController;
@@ -12,6 +14,8 @@ use App\Http\Controllers\Api\Admin\SelectOptions\VendorSelectOptionController;
 
 Route::get('select-option/categories', CategorySelectOptionController::class)
     ->name('select-option.categories');
+Route::get('select-option/blog-categories', BlogCategorySelectOptionController::class)
+    ->name('select-option.blog-categories');
 Route::get('select-option/terms', TermSelectOptionController::class)
     ->name('select-option.terms');
 Route::get('select-option/vendors', VendorSelectOptionController::class)
@@ -22,5 +26,7 @@ Route::get('select-option/productables', ProductableSelectOptionController::clas
     ->name('select-option.productables');
 Route::get('select-option/staff', StaffSelectOptionController::class)
     ->name('select-option.staff');
+Route::get('select-option/customers', CustomerSelectOptionController::class)
+    ->name('select-option.customers');
 Route::get('select-option/products/{productableType?}', ProductSelectOptionController::class)
     ->name('select-option.products');

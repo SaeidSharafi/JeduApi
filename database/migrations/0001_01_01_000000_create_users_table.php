@@ -33,6 +33,7 @@ return new class extends Migration
             $table->string('education_level', 20)->nullable();
             $table->string('field_of_study')->nullable();
             $table->string('education_status', 20)->nullable();
+            $table->string('avatar_url')->nullable();
             $table->timestamps();
 
             // Index

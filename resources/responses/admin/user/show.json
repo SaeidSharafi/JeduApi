@@ -2,31 +2,44 @@
   "message": "عملیات با موفقیت انجام شد.",
   "data": {
     "id": 1,
-    "phone": "09211550073",
-    "first_name": "Ruben",
-    "last_name": "Jacobi",
-    "email": "schiller.leda@example.com",
-    "phone2": "09106417636",
-    "civil_id": "97237506960062",
+    "phone": "9120000001",
+    "first_name": "محمد",
+    "last_name": "رضایی",
+    "email": "user1@example.com",
+    "phone2": "9120000051",
+    "civil_id": "1234567890",
     "civil_id_type": {
-      "value": "immigrant_code",
-      "label": "کد اتباع"
+      "value": "national_code",
+      "label": "کد ملی"
     },
-    "date_of_birth": "1356-11-10",
-    "father_name": null,
+    "date_of_birth": "1370-05-12",
+    "father_name": "احمد",
     "gender": {
-      "value": "female",
-      "label": "زن"
+      "value": "male",
+      "label": "مرد"
     },
     "education_level": {
-      "value": "postdoctoral",
-      "label": "enums.EducationLevelEnum.postdoctoral"
+      "value": "bachelor",
+      "label": "کارشناسی"
     },
-    "field_of_study": "الکتریک",
+    "field_of_study": "مهندسی کامپیوتر",
     "education_status": {
-      "value": "graduated",
-      "label": "enums.EducationStatusEnum.graduated"
-    }
+      "value": "student",
+      "label": "دانشجو"
+    },
+    "media": [
+      {
+        "id": 19,
+        "url": "http://jedu.test/storage/fake-media/avatar-male.svg",
+        "size": 304,
+        "file_name": "avatar-male",
+        "alt": "",
+        "mime_type": "image/svg+xml",
+        "extension": "svg",
+        "tag": "avatar",
+        "thumbnail": null
+      }
+    ]
   },
   "metadata": []
 }

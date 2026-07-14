@@ -31,10 +31,11 @@ final class EnrollmentController extends Controller
     /**
      * Display a listing of the enrollments.
      *
-     * @queryParam filter[enrollment_status] string Filter by enrollment status. Example: active
+     * @queryParam filter[enrollment_status] string Filter by enrollment status.
+     *             available values: `awaiting_payment`, `pending_provisioning`, `active`, `suspended`, `expired`, `cancelled`, `provisioning_failed`. Example: active
      * @queryParam filter[customer_id] string Filter by customer ID. Example: 1
      * @queryParam filter[order_id] string Filter by order ID. Example: 1
-     * @queryParam filter[product_delivery_option_id] string Filter by product delivery option ID. Example: 1
+     * @queryParam filter[product_id] string Filter by product ID. Example: 1
      * @queryParam sort string Sort by a field. Allowed values: created_at, enrollment_status, access_start_date. Prefix with '-' for descending order (e.g., -created_at).
      * @queryParam page integer Page number for pagination. Example: 2
      * @queryParam per_page integer Number of results per page. Example: 15
@@ -49,7 +50,11 @@ final class EnrollmentController extends Controller
                 AllowedFilter::exact('enrollment_status'),
                 AllowedFilter::exact('customer_id'),
                 AllowedFilter::exact('order_id'),
-                AllowedFilter::exact('product_delivery_option_id'),
+                AllowedFilter::callback('product_id', function ($query, $value) {
+                    $query->whereHas('productDeliveryOption', function ($query) use ($value) {
+                        $query->where('product_id', $value);
+                    });
+                }),
             ])
             ->allowedSorts(['created_at', 'enrollment_status', 'access_start_date'])
             ->defaultSort('-created_at')

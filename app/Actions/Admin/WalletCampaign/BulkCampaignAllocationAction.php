@@ -6,6 +6,9 @@ namespace App\Actions\Admin\WalletCampaign;
 
 use App\Data\Admin\WalletCampaign\BulkCampaignAllocationData;
 use App\Data\Admin\WalletCampaign\TriggerCampaignAllocationData;
+use App\Exceptions\CustomValidationException;
+use App\Exceptions\Wallet\WalletInsufficientBalanceException;
+use App\Exceptions\Wallet\WalletNotFoundException;
 use App\Exceptions\Wallet\WalletUserNotFoundException;
 use App\Models\User;
 use App\Models\WalletCampaign;
@@ -29,6 +32,7 @@ final readonly class BulkCampaignAllocationAction
         $successCount = 0;
         $failureCount = 0;
         $users        = User::query()
+            ->with('wallet')
             ->find($data->user_ids);
         foreach ($data->user_ids as $userId) {
             try {
@@ -55,7 +59,7 @@ final readonly class BulkCampaignAllocationAction
 
                 $successCount++;
 
-            } catch (Exception $e) {
+            } catch (CustomValidationException|WalletUserNotFoundException|WalletNotFoundException|WalletInsufficientBalanceException $e) {
                 $results[] = [
                     'user_id' => $userId,
                     'status'  => 'failed',

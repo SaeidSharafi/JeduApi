@@ -22,7 +22,7 @@ final class RecordWalletTransactionAction
      * Record a wallet transaction with atomic balance update.
      * Uses database locking to prevent race conditions.
      *
-     * @throws Exception
+     * @throws WalletUserNotFoundException|WalletNotFoundException|WalletInsufficientBalanceException
      */
     public function execute(RecordTransactionData $data): WalletTransaction
     {

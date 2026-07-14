@@ -83,7 +83,9 @@ final class DemoSeeder extends Seeder
         $this->truncateTables();
         $this->prepareSeedMedia();
 
-        $this->seedModel(User::class, 'users.json', fn ($data) => [...$data, 'password' => Hash::make('password')]);
+        $this->seedModel(User::class, 'users.json', fn ($data) => [...$data, 'password' => Hash::make('password')], function (array $collection) {
+            $this->seedUserMedia($collection);
+        });
 
         $this->seedModel(Staff::class, 'staff.json',
             fn ($data) => [...$data, 'password' => Hash::make($data['password'])]);
@@ -453,6 +455,25 @@ final class DemoSeeder extends Seeder
             $teacher->attachMedia($avatar, 'avatar');
             $teacher->avatar_url = $avatar->getUrl();
             $teacher->save();
+        }
+    }
+    private function seedUserMedia(array $collection): void
+    {
+        $avatars = [
+            $this->media('avatar-male.svg'),
+            $this->media('avatar-female.svg'),
+            $this->media('avatar-default.svg'),
+        ];
+
+        $users = User::whereIn('id', collect($collection)->pluck('id'))->get();
+        foreach ($users as $i => $user) {
+            if (rand(1, 100) <= 30) {
+                continue;
+            }
+            $avatar = $avatars[$i % count($avatars)];
+            $user->attachMedia($avatar, 'avatar');
+            $user->avatar_url = $avatar->getUrl();
+            $user->save();
         }
     }
 

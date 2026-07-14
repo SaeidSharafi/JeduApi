@@ -30,9 +30,13 @@ final class BlogPostUpdateData extends Data
         public ?bool $is_featured = false,
         /** @var array{id: int, type: string}|null */
         public ?array $main_productable = null,
+        public ?string $meta_title = null,
+        public ?string $meta_description = null,
+        public ?string $meta_keywords = null,
         public ?array $category_ids = [],
         /** @var array<int, array{id: int, type: string}> */
         public ?array $related_productables = null,
+
         public ?array $media = [],
     ) {}
 

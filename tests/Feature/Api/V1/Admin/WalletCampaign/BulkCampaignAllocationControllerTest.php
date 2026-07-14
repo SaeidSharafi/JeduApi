@@ -35,6 +35,7 @@ beforeEach(function (): void {
 describe('BulkCampaignAllocationController', function (): void {
     it('can trigger bulk manual campaign allocation successfully', function (): void {
         $userIds = $this->users->pluck('id')->toArray();
+
         $this->authorized_user([App\Enums\PermissionEnum::WALLET_CAMPAIGN_ALLOCATE]);
         $response = postJson(route('api.v1.admin.wallet-campaigns.bulk-trigger-allocation', $this->campaign), [
             'user_ids'     => $userIds,
@@ -42,7 +43,6 @@ describe('BulkCampaignAllocationController', function (): void {
             'reason'       => 'Bulk manual allocation',
             'metadata'     => ['admin_notes' => 'Holiday bonus for all users'],
         ]);
-
         $response->assertSuccessful();
         $response->assertJsonStructure([
             'message',

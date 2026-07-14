@@ -19,6 +19,9 @@ final class BlogCategoryCreateData extends Data
         public ?string $description = null,
         public ?int $parent_id = null,
         public ?int $icon = null,
+        public ?string $meta_title = null,
+        public ?string $meta_description = null,
+        public ?string $meta_keywords = null,
     ) {}
 
     public static function rules(?ValidationContext $context = null): array

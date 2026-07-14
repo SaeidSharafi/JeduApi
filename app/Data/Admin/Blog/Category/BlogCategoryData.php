@@ -29,6 +29,7 @@ final class BlogCategoryData extends Data
 
     public static function fromModel(BlogCategory $category): self
     {
+        $icon = $category->getAllMedia(false, ['icon']);
         return self::from(
             [
                 'id'               => $category->id,
@@ -39,7 +40,7 @@ final class BlogCategoryData extends Data
                 'meta_title'       => $category->meta_title,
                 'meta_description' => $category->meta_description,
                 'meta_keywords'    => $category->meta_keywords,
-                'icon'             => Arr::first($category->getAllMedia(false, ['icon'])),
+                'icon'             => data_get($icon,'icon.0'),
                 'posts_count'      => $category->posts_count ?? null,
             ]
         );

@@ -28,6 +28,7 @@ final class UserListItemData extends Data
         public ?string $civil_id,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public CivilIdTypeEnum $civil_id_type,
+        public ?string $avatar_url,
         #[WithTransformer(AdvancedDateTimeInterfaceTransformer::class, format: 'Y-m-d')]
         public ?Verta $date_of_birth,
         public ?string $father_name,

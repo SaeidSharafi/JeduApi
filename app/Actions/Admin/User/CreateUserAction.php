@@ -16,7 +16,18 @@ final readonly class CreateUserAction
     public function handle(UserCreateData $data): User
     {
         return DB::transaction(function () use ($data): User {
-            return User::create($data->toArray())->fresh();
+            $avatarMedia = null;
+            $userData    = $data->except('media')->toArray();
+            if ($mediaId = data_get($data->media, 'avatar')) {
+                $avatarMedia            = Media::find($mediaId);
+                $userData['avatar_url'] = $avatarMedia?->getUrl();
+            }
+            $user = User::create($userData)->fresh();
+            if ($avatarMedia) {
+                $user->attachMedia($avatarMedia, 'avatar');
+            }
+
+            return $user;
         });
     }
 }

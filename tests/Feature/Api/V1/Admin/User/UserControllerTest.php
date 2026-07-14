@@ -196,6 +196,7 @@ describe('CRUD Autherized', function (): void {
         $userData = [
             ...$user->toArray(),
             'date_of_birth' => verta($user->date_of_birth)->format('Y-m-d'),
+            'media' => [],
         ];
         $response = $this->postJson(route('api.v1.admin.users.store'), $userData);
         $response->assertCreated();
@@ -291,6 +292,7 @@ describe('CRUD Autherized', function (): void {
             'date_of_birth' => verta($user->date_of_birth)->format('Y-m-d'),
             'first_name'    => 'Updated name',
             'last_name'     => 'Updated last name',
+            'media' => [],
         ];
         $user->refresh();
         $response = $this->putJson(route('api.v1.admin.users.update', $user->id), $updateUserData);
@@ -384,7 +386,7 @@ describe('CRUD Unautherized', function (): void {
         $user = User::factory()->withPassport()->make([
             'date_of_birth' => '1360-01-01',
         ]);
-        $response = $this->postJson(route('api.v1.admin.users.store'), $user->toArray());
+        $response = $this->postJson(route('api.v1.admin.users.store'), [...$user->toArray(), 'media' => [],]);
         $response->assertForbidden();
 
         $this->assertDatabaseMissing('users', [
@@ -418,6 +420,7 @@ describe('CRUD Unautherized', function (): void {
             'date_of_birth' => '1360-01-01',
             'first_name'    => 'Updated name',
             'last_name'     => 'Updated last name',
+            'media' => [],
         ];
         $user->refresh();
         $response = $this->putJson(route('api.v1.admin.users.update', $user->id), $updateUserData);

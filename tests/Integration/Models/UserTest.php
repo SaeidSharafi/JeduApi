@@ -23,6 +23,7 @@ test('to array', function (): void {
             'education_level'   => $user->education_level->value,
             'field_of_study'    => $user->field_of_study,
             'education_status'  => $user->education_status->value,
+            'avatar_url'        => $user->avatar_url,
             'email_verified_at' => $user->email_verified_at?->utc()->toJSON(),
             'phone_verified_at' => $user->phone_verified_at?->utc()->toJSON(),
             'created_at'        => $user->created_at?->utc()?->toJSON(),

@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -94,8 +95,13 @@ final class UserController extends Controller
     {
         Gate::authorize('create', User::class);
         $user = $action->handle($data);
-
-        return apiResponse()->created(ShowUserData::from($user), model: User::class);
+        $user->load('media');
+        return apiResponse()->created(ShowUserData::from(
+            [
+                ...$user->toArray(),
+                'media' => $user->getAllMedia(false, ['avatar']),
+            ]
+        ), model: User::class);
     }
 
     /**
@@ -109,8 +115,15 @@ final class UserController extends Controller
     public function show(User $user)
     {
         Gate::authorize('view', $user);
-
-        return apiResponse()->success(ShowUserData::from($user));
+        $user->load('media');
+        return apiResponse()->success(
+            ShowUserData::from(
+                [
+                    ...$user->toArray(),
+                    'media' => $user->getAllMedia(false, ['avatar']),
+                ]
+            )
+        );
     }
 
     /**
@@ -125,8 +138,13 @@ final class UserController extends Controller
     {
         Gate::authorize('update', $user);
         $user = $action->handle($data, $user);
-
-        return apiResponse()->updated(ShowUserData::from($user), model: User::class);
+        $user->load('media');
+        return apiResponse()->updated(ShowUserData::from(
+            [
+                ...$user->toArray(),
+                'media' => $user->getAllMedia(false, ['avatar']),
+            ]
+        ), model: User::class);
     }
 
     /**

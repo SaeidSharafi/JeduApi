@@ -34,6 +34,8 @@ final class UserCreateData extends Data
         public ?string $education_level,
         public ?string $field_of_study,
         public ?string $education_status,
+        public array $media,
+
     ) {}
 
     public static function rules(?ValidationContext $context = null): array
@@ -64,6 +66,31 @@ final class UserCreateData extends Data
             'education_status' => [
                 'nullable', 'string', 'max:20', Rule::enum(EducationStatusEnum::class),
             ],
+            'media'                   => ['present', 'array:avatar'],
+            'media.avatar'            => ['nullable', 'integer', 'exists:media,id'],
+        ];
+    }
+
+    public static function attributes(...$args): array
+    {
+        return [
+            'first_name'   => __('validation.attributes.first_name'),
+            'last_name'    => __('validation.attributes.last_name'),
+            'bio'          => __('validation.attributes.teacher.bio'),
+            'rate'         => __('validation.attributes.teacher.rate'),
+            'email'        => __('validation.attributes.email'),
+            'phone'        => __('validation.attributes.phone'),
+            'gender'       => __('validation.attributes.gender'),
+            'birth_date'   => __('validation.attributes.birth_date'),
+            'media'        => __('validation.attributes.media.self'),
+            'media.avatar' => __('validation.attributes.media.profile'),
+        ];
+    }
+
+    public static function messages(): array
+    {
+        return [
+            'media.array' => 'فیلد رسانه باید آرایه باشد و فقط می‌تواند شامل کلید \'avatar\' باشد و کلیدهای اضافی مجاز نیستند.',
         ];
     }
 
@@ -126,6 +153,16 @@ final class UserCreateData extends Data
             'education_status' => [
                 'description' => 'The education status of the user.',
                 'example'     => EducationStatusEnum::GRADUATED->value,
+            ],
+            'media' => [
+                'description' => __('validation.attributes.media.self'),
+                'example'     => [
+                    'profile' => 1,
+                ],
+            ],
+            'media.avatar' => [
+                'description' => __('validation.attributes.media.profile'),
+                'example'     => 1,
             ],
         ];
     }

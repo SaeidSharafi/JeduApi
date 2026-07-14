@@ -38,5 +38,6 @@ final class ShowUserData extends Data
         public ?string $field_of_study,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public ?EducationStatusEnum $education_status,
+        public array $media = []
     ) {}
 }

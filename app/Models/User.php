@@ -8,6 +8,7 @@ use App\Enums\User\CivilIdTypeEnum;
 use App\Enums\User\EducationLevelEnum;
 use App\Enums\User\EducationStatusEnum;
 use App\Enums\User\GenderEnum;
+use App\Traits\HasMedia;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -18,6 +19,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
+use Plank\Mediable\Mediable;
 
 final class User extends Authenticatable implements MustVerifyEmail
 {
@@ -25,7 +27,8 @@ final class User extends Authenticatable implements MustVerifyEmail
 
     /** @use HasFactory<UserFactory> */
     use HasFactory;
-
+    use HasMedia;
+    use Mediable;
     use Notifiable;
 
     protected string $guard_name = 'user';
@@ -36,6 +39,7 @@ final class User extends Authenticatable implements MustVerifyEmail
             'last_name',
             'email',
             'phone',
+            'avatar_url',
             'password',
             'phone2',
             'civil_id',
@@ -56,7 +60,7 @@ final class User extends Authenticatable implements MustVerifyEmail
 
     public function hasSetPassword(): bool
     {
-        return ! is_null($this->password);
+        return !is_null($this->password);
     }
 
     public function teacherData(): HasOne
@@ -86,13 +90,13 @@ final class User extends Authenticatable implements MustVerifyEmail
 
     public function profileCompleted(): bool
     {
-        return $this->first_name    !== null
-            && $this->last_name     !== null
-            && $this->email         !== null
-            && $this->phone         !== null
-            && $this->civil_id      !== null
+        return $this->first_name !== null
+            && $this->last_name !== null
+            && $this->email !== null
+            && $this->phone !== null
+            && $this->civil_id !== null
             && $this->date_of_birth !== null
-            && $this->father_name   !== null;
+            && $this->father_name !== null;
     }
 
     public function routeNotificationForSms($notification): string
@@ -136,7 +140,7 @@ final class User extends Authenticatable implements MustVerifyEmail
     protected function isProfileCompleted(): Attribute
     {
         return Attribute::make(
-            get: fn (): bool => $this->profileCompleted(),
+            get: fn(): bool => $this->profileCompleted(),
         );
     }
 }

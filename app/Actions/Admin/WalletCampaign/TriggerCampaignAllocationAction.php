@@ -11,6 +11,9 @@ use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Events\Wallet\WalletCampaignAllocationTriggeredEvent;
 use App\Exceptions\CustomValidationException;
+use App\Exceptions\Wallet\WalletInsufficientBalanceException;
+use App\Exceptions\Wallet\WalletNotFoundException;
+use App\Exceptions\Wallet\WalletUserNotFoundException;
 use App\Models\User;
 use App\Models\WalletCampaign;
 use App\Models\WalletTransaction;
@@ -26,7 +29,7 @@ final readonly class TriggerCampaignAllocationAction
     /**
      * Trigger a campaign allocation for a user (manual or event-based)
      *
-     * @throws Exception
+     * @throws CustomValidationException|WalletUserNotFoundException|WalletNotFoundException|WalletInsufficientBalanceException
      */
     public function handle(TriggerCampaignAllocationData $data, User $user, WalletCampaign $campaign): WalletTransaction
     {
