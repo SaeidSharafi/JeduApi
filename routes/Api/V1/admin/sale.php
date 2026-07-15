@@ -19,11 +19,6 @@ use App\Http\Controllers\Api\Admin\Promotion\DiscountInfoController;
 use App\Http\Controllers\Api\Admin\Promotion\DiscountPromotionController;
 use App\Http\Controllers\Api\Admin\Promotion\DiscountPromotionStatisticsController;
 use App\Http\Controllers\Api\Admin\Promotion\DiscountPromotionStatusUpdateController;
-use App\Http\Controllers\Api\Admin\Wallet\AdjustWalletController;
-use App\Http\Controllers\Api\Admin\Wallet\AdminWalletController;
-use App\Http\Controllers\Api\Admin\Wallet\CreateWalletController;
-use App\Http\Controllers\Api\Admin\Wallet\DepositToWalletController;
-use App\Http\Controllers\Api\Admin\Wallet\WithdrawFromWalletController;
 
 // Order and Payment Management
 Route::apiResource('orders', OrderController::class);
@@ -80,12 +75,3 @@ Route::post('enrollments/{enrollment}/change-status', ChangeEnrollmentStatusCont
     ->name('enrollments.change-status');
 Route::post('enrollments/{enrollment}/retry-provisioning', RetryProvisioningController::class)
     ->name('enrollments.retry-provisioning');
-
-Route::prefix('wallets')->name('wallets.')->group(function (): void {
-    Route::apiResource('/', AdminWalletController::class)->only(['index', 'show'])->parameters(['' => 'wallet']);
-
-    Route::post('create', CreateWalletController::class)->name('create');
-    Route::post('deposit/{wallet}', DepositToWalletController::class)->name('deposit');
-    Route::post('withdrawal/{wallet}', WithdrawFromWalletController::class)->name('withdrawal');
-    Route::post('adjustment/{wallet}', AdjustWalletController::class)->name('adjustment');
-});

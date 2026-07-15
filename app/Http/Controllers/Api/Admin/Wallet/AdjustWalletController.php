@@ -9,6 +9,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Wallet\AdjustWalletData;
 use App\Data\Admin\Wallet\WalletTransactionData;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Support\Facades\Gate;
 
@@ -25,8 +26,9 @@ final class AdjustWalletController extends Controller
      * @responseFile 201 resources/responses/admin/wallet/adjust.json
      * @responseFile 422 resources/responses/422.json
      */
-    public function __invoke(AdjustWalletData $data, Wallet $wallet, AdjustWalletAction $action): ApiResponseInterface
+    public function __invoke(AdjustWalletData $data, User $user, AdjustWalletAction $action): ApiResponseInterface
     {
+        $wallet = $user->wallet;
         Gate::authorize('adjustment', $wallet);
 
         $transaction = $action->handle($data, auth('staff')->user(), $wallet);

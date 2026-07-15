@@ -15,7 +15,7 @@ test('admin can adjust wallet via API', function (): void {
     $initialBalance = $user->wallet->balance;
 
     $response = $this
-        ->postJson(route('api.v1.admin.wallets.adjustment', $user->wallet->id), [
+        ->postJson(route('api.v1.admin.users.wallet.adjustment', $user->wallet->id), [
             'user_id'     => $user->id,
             'amount'      => 300,
             'reason'      => 'Dispute resolution',
@@ -36,7 +36,7 @@ test('admin can make negative adjustment via API', function (): void {
     $initialBalance = $user->wallet->balance;
 
     $response = $this
-        ->postJson(route('api.v1.admin.wallets.adjustment', $user->wallet->id), [
+        ->postJson(route('api.v1.admin.users.wallet.adjustment', $user->wallet->id), [
             'user_id'     => $user->id,
             'amount'      => -200,
             'reason'      => 'Error correction',

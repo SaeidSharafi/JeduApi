@@ -15,7 +15,6 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -42,6 +41,7 @@ final class UserController extends Controller
      * @queryParam filter[date_of_birth_to] string Filter by user date of birth to. Example: 1400-12-29
      * @queryParam sort string Sort by a field. Allowed values: first_name, last_name, email, phone, civil_id,
      *     civil_id_type, date_of_birth. Prefix with '-' for descending order
+     * @queryParam filter[wallet_status] string Filter by wallet status. Example: active
      *
      * @responseFile 200 resources/responses/admin/user/index.json
      * @responseFile 403 resources/responses/403.json
@@ -54,9 +54,10 @@ final class UserController extends Controller
                 AllowedFilter::callback('name', function ($query, $value): void {
                     $query->whereRaw("concat(first_name, ' ', last_name) like ?", '%'.$value.'%');
                 }),
-                'email',
-                'phone',
-                'civil_id',
+                AllowedFilter::partial('email'),
+                AllowedFilter::partial('phone'),
+                AllowedFilter::partial('civil_id'),
+                AllowedFilter::exact('wallet_status', 'wallet.status'),
                 AllowedFilter::exact('civil_id_type'),
                 AllowedFilter::callback('date_of_birth_from',
                     function (Builder $query, $value): void {
@@ -78,6 +79,7 @@ final class UserController extends Controller
                 'civil_id_type',
                 'date_of_birth',
             ])
+            ->with('wallet')
             ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
@@ -96,6 +98,7 @@ final class UserController extends Controller
         Gate::authorize('create', User::class);
         $user = $action->handle($data);
         $user->load('media');
+
         return apiResponse()->created(ShowUserData::from(
             [
                 ...$user->toArray(),
@@ -116,6 +119,7 @@ final class UserController extends Controller
     {
         Gate::authorize('view', $user);
         $user->load('media');
+
         return apiResponse()->success(
             ShowUserData::from(
                 [
@@ -139,6 +143,7 @@ final class UserController extends Controller
         Gate::authorize('update', $user);
         $user = $action->handle($data, $user);
         $user->load('media');
+
         return apiResponse()->updated(ShowUserData::from(
             [
                 ...$user->toArray(),

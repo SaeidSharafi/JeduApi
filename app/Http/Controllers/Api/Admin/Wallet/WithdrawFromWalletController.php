@@ -9,6 +9,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Wallet\WalletTransactionData;
 use App\Data\Admin\Wallet\WithdrawFromWalletData;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Support\Facades\Gate;
 
@@ -25,8 +26,9 @@ final class WithdrawFromWalletController extends Controller
      * @responseFile 201 resources/responses/admin/wallet/withdraw.json
      * @responseFile 422 resources/responses/422.json
      */
-    public function __invoke(WithdrawFromWalletData $data, Wallet $wallet, WithdrawFromWalletAction $action): ApiResponseInterface
+    public function __invoke(WithdrawFromWalletData $data, User $user, WithdrawFromWalletAction $action): ApiResponseInterface
     {
+        $wallet = $user->wallet;
         Gate::authorize('withdrawal', $wallet);
 
         $transaction = $action->handle($data, auth('staff')->user(), $wallet);

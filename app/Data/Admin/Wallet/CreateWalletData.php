@@ -12,7 +12,6 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 final class CreateWalletData extends Data
 {
     public function __construct(
-        public int $user_id,
         public int $balance,
         public int $gift_balance,
         public string $status
@@ -21,7 +20,6 @@ final class CreateWalletData extends Data
     public static function rules(?ValidationContext $context = null): array
     {
         return [
-            'user_id'      => ['required', 'exists:users,id'],
             'balance'      => ['required', 'integer', 'min:0'],
             'gift_balance' => ['integer', 'min:0'],
             'status'       => ['required', Rule::enum(WalletStatusEnum::class)],

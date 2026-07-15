@@ -19,14 +19,10 @@ final class CreateWalletAction
      *
      * @throws Exception
      */
-    public function execute(CreateWalletData $data): Wallet
+    public function handle(CreateWalletData $data, User $user): Wallet
     {
-        $user = User::find($data->user_id);
-        if (! $user) {
-            throw ValidationException::withMessages([
-                'user_id' => [__('validation.custom.user_not_found')],
-            ]);
-        }
+        $user->refresh();
+
         if ($user->wallet) {
             throw ValidationException::withMessages([
                 'user_id' => [__('validation.custom.wallet_already_exists')],

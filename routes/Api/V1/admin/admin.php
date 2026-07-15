@@ -15,6 +15,10 @@ use App\Http\Controllers\Api\Admin\User\StaffController;
 use App\Http\Controllers\Api\Admin\User\TeacherController;
 use App\Http\Controllers\Api\Admin\User\UserController;
 use App\Http\Controllers\Api\Admin\VendorController;
+use App\Http\Controllers\Api\Admin\Wallet\AdjustWalletController;
+use App\Http\Controllers\Api\Admin\Wallet\AdminWalletController;
+use App\Http\Controllers\Api\Admin\Wallet\DepositToWalletController;
+use App\Http\Controllers\Api\Admin\Wallet\WithdrawFromWalletController;
 
 require __DIR__.'/blog.php';
 require __DIR__.'/catalog.php';
@@ -31,9 +35,16 @@ Route::get('permissions', PermissionController::class)->name('permissions.index'
 Route::apiResource('vendors', VendorController::class);
 Route::apiResource('teachers', TeacherController::class);
 Route::apiResource('terms', TermController::class);
-
 Route::apiResource('users', UserController::class);
 
+Route::prefix('users/{user}')->name('users.')->group(function (): void {
+    Route::apiSingleton('wallet', AdminWalletController::class)->creatable();
+    Route::prefix('wallet')->name('wallet.')->group(function (): void {
+        Route::post('deposit', DepositToWalletController::class)->name('deposit');
+        Route::post('withdrawal', WithdrawFromWalletController::class)->name('withdrawal');
+        Route::post('adjustment', AdjustWalletController::class)->name('adjustment');
+    });
+});
 Route::apiResource('reviews', ReviewController::class)
     ->except(['store', 'update']);
 Route::post('reviews/{review}/approve', ApproveReviewController::class)->name('reviews.approve');

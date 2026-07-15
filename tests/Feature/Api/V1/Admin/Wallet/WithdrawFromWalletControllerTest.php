@@ -16,7 +16,7 @@ test('admin can withdraw from wallet via API', function (): void {
     $user->wallet->update(['balance' => 2000]);
 
     $response = $this
-        ->postJson(route('api.v1.admin.wallets.withdrawal', $user->wallet->id), [
+        ->postJson(route('api.v1.admin.users.wallet.withdrawal', $user->wallet->id), [
             'user_id'     => $user->id,
             'amount'      => 500,
             'description' => 'API withdrawal test',
@@ -37,7 +37,7 @@ test('admin cannot withdraw more than available balance via API', function (): v
     $user->wallet->update(['balance' => 100]);
 
     $response = $this
-        ->postJson(route('api.v1.admin.wallets.withdrawal', $user->wallet->id), [
+        ->postJson(route('api.v1.admin.users.wallet.withdrawal', $user->wallet->id), [
             'user_id' => $user->id,
             'amount'  => 500,
         ]);
@@ -46,10 +46,10 @@ test('admin cannot withdraw more than available balance via API', function (): v
         ->assertJsonValidationErrors('wallet_balance')
         ->assertJsonFragment([
             'metadata' => [
-                'error_code' => 'INSUFFICIENT_WALLET_BALANCE',
+                'error_code'        => 'INSUFFICIENT_WALLET_BALANCE',
                 'available_balance' => 100,
-                'required_balance' => 500,
-                'shortfall' => 400,
-            ]
+                'required_balance'  => 500,
+                'shortfall'         => 400,
+            ],
         ]);
 });

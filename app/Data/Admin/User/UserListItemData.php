@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Data\Admin\User;
 
+use App\Data\Admin\Wallet\WalletData;
 use App\Data\Transformer\AdvancedDateTimeInterfaceTransformer;
 use App\Data\Transformer\TranslatableEnumData;
 use App\Enums\User\CivilIdTypeEnum;
@@ -39,5 +40,6 @@ final class UserListItemData extends Data
         public ?string $field_of_study,
         #[WithCast(EnumCast::class), WithTransformer(TranslatableEnumData::class)]
         public ?EducationStatusEnum $education_status,
+        public ?WalletData $wallet,
     ) {}
 }

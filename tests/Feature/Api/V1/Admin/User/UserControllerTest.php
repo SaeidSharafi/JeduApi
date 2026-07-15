@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
 use App\Enums\User\CivilIdTypeEnum;
+use App\Enums\Wallet\WalletStatusEnum;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
 
@@ -114,6 +115,60 @@ describe('list filters', function (): void {
         ]);
     });
 
+    it('should return by wallet status', function (): void {
+        $this->authorized_user([PermissionEnum::USER_VIEW_ANY]);
+
+        // 1. Create 9 users and update their wallets
+        $users = User::factory(9)->create();
+
+        $users->slice(0, 3)->each(function (User $user) {
+            $user->wallet->update([
+                'status'       => WalletStatusEnum::SUSPENDED,
+                'balance'      => 100_000,
+                'gift_balance' => 50_000,
+            ]);
+        });
+
+        $users->slice(3, 3)->each(function (User $user) {
+            $user->wallet->update([
+                'status'       => WalletStatusEnum::ACTIVE,
+                'balance'      => 20_000,
+                'gift_balance' => 5_000,
+            ]);
+        });
+
+        $users->slice(6, 3)->each(function (User $user) {
+            $user->wallet->update([
+                'status'       => WalletStatusEnum::CLOSED,
+                'balance'      => 0,
+                'gift_balance' => 0,
+            ]);
+        });
+
+        // 2. Perform the filtered request
+        $response = $this->getJson(
+            route('api.v1.admin.users.index', [
+                'filter' => ['wallet_status' => WalletStatusEnum::SUSPENDED->value],
+            ])
+        );
+
+        // 3. Strict, Clean Fluent Assertions
+        $response->assertSuccessful();
+
+        $response->assertJson(function (AssertableJson $json) {
+            $json->has('data.data', 3)
+                ->has('data.data', function (AssertableJson $json) {
+                    $json->each(function (AssertableJson $json) {
+                        $json->where('wallet.status.value', WalletStatusEnum::SUSPENDED->value)
+                            ->where('wallet.status.label', WalletStatusEnum::SUSPENDED->translate())
+                            ->where('wallet.balance', 100_000)
+                            ->where('wallet.gift_balance', 50_000)
+                            ->etc();
+                    });
+                })->etc();
+        });
+    });
+
     it('should return by date of birth', function (): void {
         $this->authorized_user([PermissionEnum::USER_VIEW_ANY]);
 
@@ -196,7 +251,7 @@ describe('CRUD Autherized', function (): void {
         $userData = [
             ...$user->toArray(),
             'date_of_birth' => verta($user->date_of_birth)->format('Y-m-d'),
-            'media' => [],
+            'media'         => [],
         ];
         $response = $this->postJson(route('api.v1.admin.users.store'), $userData);
         $response->assertCreated();
@@ -292,7 +347,7 @@ describe('CRUD Autherized', function (): void {
             'date_of_birth' => verta($user->date_of_birth)->format('Y-m-d'),
             'first_name'    => 'Updated name',
             'last_name'     => 'Updated last name',
-            'media' => [],
+            'media'         => [],
         ];
         $user->refresh();
         $response = $this->putJson(route('api.v1.admin.users.update', $user->id), $updateUserData);
@@ -386,7 +441,7 @@ describe('CRUD Unautherized', function (): void {
         $user = User::factory()->withPassport()->make([
             'date_of_birth' => '1360-01-01',
         ]);
-        $response = $this->postJson(route('api.v1.admin.users.store'), [...$user->toArray(), 'media' => [],]);
+        $response = $this->postJson(route('api.v1.admin.users.store'), [...$user->toArray(), 'media' => []]);
         $response->assertForbidden();
 
         $this->assertDatabaseMissing('users', [
@@ -420,7 +475,7 @@ describe('CRUD Unautherized', function (): void {
             'date_of_birth' => '1360-01-01',
             'first_name'    => 'Updated name',
             'last_name'     => 'Updated last name',
-            'media' => [],
+            'media'         => [],
         ];
         $user->refresh();
         $response = $this->putJson(route('api.v1.admin.users.update', $user->id), $updateUserData);
