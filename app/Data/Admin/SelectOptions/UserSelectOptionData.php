@@ -24,7 +24,7 @@ final class UserSelectOptionData extends Data
         public string $last_name,
         public string $email,
         public string $phone,
-        public string $avatar_url,
+        public ?string $avatar_url = null,
     ) {
         $this->title    = $this->first_name.' '.$this->last_name;
         $this->subtitle = $this->email." ({$this->phone})";
