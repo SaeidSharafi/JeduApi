@@ -33,7 +33,7 @@ final class BlogPostController extends Controller
      *
      * @queryParam filter[title] string Filter by title. Example: filter[title]=Laravel
      * @queryParam filter[slug] string Filter by slug. Example: filter[slug]=laravel-introduction
-     * @queryParam filter[is_published] boolean Filter by published status. Example: filter[is_published]=1
+     * @queryParam filter[status] string Filter by published status. Example: filter[status]=published,  values: published, draft, archived, scheduled
      * @queryParam filter[author_id] integer Filter by author ID. Example: filter[author_id]=3
      * @queryParam filter[main_productable_type] string Filter by main productable type. Example: filter[main_productable_type]=course
      * @queryParam filter[main_productable_id] integer Filter by main productable ID. Example: filter[main_productable_id]=5
