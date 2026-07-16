@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Enums\Order\DiscountTypeEnum;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\DiscountMetadataService;
-use Illuminate\Support\Facades\Lang;
 
 describe('DiscountMetadataService', function (): void {
     beforeEach(function (): void {
@@ -14,13 +13,15 @@ describe('DiscountMetadataService', function (): void {
     });
 
     it('returns correct metadata structure for empty handlers', function (): void {
-        // Instead of relying on the service's getConditions/getActions, mock them directly for this test
-        $this->service = Mockery::mock(DiscountMetadataService::class.'[getConditions,getActions]',
-            [$this->mockRegistry]);
-        $this->service->shouldAllowMockingProtectedMethods();
-        $this->service->shouldReceive('getConditions')->andReturn(['cart' => [], 'product' => []]);
-        $this->service->shouldReceive('getActions')->andReturn(['cart' => [], 'product' => []]);
+        // Mock registry methods to return empty, letting the real service execute cleanly
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
+        $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
+
         $result = $this->service->getMetadata();
+
         expect($result)->toHaveKeys(['cart', 'product']);
         expect($result['cart'])->toHaveKeys(['conditions', 'actions']);
         expect($result['product'])->toHaveKeys(['conditions', 'actions']);
@@ -74,7 +75,7 @@ describe('DiscountMetadataService', function (): void {
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
         $result = $this->service->getOperators();
         expect($result)->toBeArray();
-        expect($result)->toContain(['value' => 'greater_than', 'label' => 'Greater than (>)', 'symbol' => '>']);
+        expect($result)->toContain(['value' => 'greater_than', 'label' => __('discount.operators.greater_than'), 'symbol' => '>']);
     });
 
     it('getTypes returns all types', function (): void {
@@ -95,7 +96,7 @@ describe('DiscountMetadataService', function (): void {
         $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
-        $result = $this->service->extractConfigSchema('NonExistentClass');
+        $result = $this->service->extractConfigSchema('NonExistentClass', 'anykey');
         expect($result)->toBe([]);
     });
 
@@ -108,7 +109,7 @@ describe('DiscountMetadataService', function (): void {
         if (! class_exists('NoCtorClass')) {
             eval('class NoCtorClass {}');
         }
-        $result = $this->service->extractConfigSchema('NoCtorClass');
+        $result = $this->service->extractConfigSchema('NoCtorClass', 'anykey');
         expect($result)->toBe([]);
     });
 
@@ -121,7 +122,7 @@ describe('DiscountMetadataService', function (): void {
         if (! class_exists('CustomDescConfig')) {
             eval('class CustomDescConfig { public static function descriptions() { return ["foo" => "Custom Foo Desc"]; } public function __construct(int $foo) {} }');
         }
-        $result = $this->service->extractConfigSchema('CustomDescConfig');
+        $result = $this->service->extractConfigSchema('CustomDescConfig', 'anykey');
         expect($result['foo']['description'])->toBe('Custom Foo Desc');
     });
 
@@ -137,7 +138,7 @@ describe('DiscountMetadataService', function (): void {
         if (! class_exists('EnumConfig')) {
             eval('class EnumConfig { public function __construct(TestEnum $type = TestEnum::A) {} }');
         }
-        $result = $this->service->extractConfigSchema('EnumConfig');
+        $result = $this->service->extractConfigSchema('EnumConfig', 'anykey');
         expect($result['type']['type'])->toBe('enum');
         expect($result['type']['default']->value ?? null)->toBe('a');
         expect($result['type']['cases'])->toBe([
@@ -232,59 +233,63 @@ describe('DiscountMetadataService', function (): void {
         expect($this->service->getParameterType(null))->toBe('mixed');
     });
 
-    it('generateParameterDescription returns correct string', function (): void {
+    it('extractConfigSchema generates default field descriptions from parameters', function (): void {
         $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
-        $ref    = new ReflectionClass('CartCondConfig');
-        $params = $ref->getConstructor()->getParameters();
-        $desc   = $this->service->generateParameterDescription($params[0]->getName(), $params[0]->getType());
-        expect($desc)->toBe('Foo (integer)');
+        if (! class_exists('CartCondConfig')) {
+            eval('class CartCondConfig { public function __construct(int $foo, float $float, array $array,bool $bool,  string $bar = "baz") {} }');
+        }
+        $result = $this->service->extractConfigSchema('CartCondConfig', 'cart_key');
+        expect($result['foo']['description'])->toBe('Foo (integer)');
     });
 
-    it('generateNameFromKey uses Lang if available, else fallback', function (): void {
-        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+    it('resolves handler name using Lang if available, else falls back to humanized key', function (): void {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([
+            'special_key'  => 'SomeClass',
+            'fallback_key' => 'SomeClass'
+        ]);
         $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
-        Lang::shouldReceive('has')->with('discount.name.special_key')->andReturn(true);
-        Lang::shouldReceive('get')->with('discount.name.special_key', [], null)->andReturn('Localized Name');
-        // if (! function_exists('__')) {
-        //    function __($key): string
-        //    {
-        //        return 'Localized Name';
-        //    }
-        // }
-        $result = $this->service->generateNameFromKey('special_key');
-        expect($result)->toBe('Localized Name');
-        Lang::shouldReceive('has')->with('discount.name.fallback_key')->andReturn(false);
-        $result2 = $this->service->generateNameFromKey('fallback_key');
-        expect($result2)->toBe('Fallback Key');
+
+        // Dynamically add localized line for the "special_key"
+        app('translator')->addLines(['discount.handlers.special_key.name' => 'Localized Name'], 'en');
+        app()->setLocale('en');
+
+        $conditions = $this->service->getConditions();
+
+        // Assert localized value worked
+        expect($conditions['cart'][0]['name'])->toBe('Localized Name');
+        // Assert humanized fallback worked for keys without translation entries
+        expect($conditions['cart'][1]['name'])->toBe('Fallback Key');
     });
 
-    it('generateDescription uses Lang if available, else fallback', function (): void {
-        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
+    it('resolves handler description using Lang if available, else falls back to humanized class name', function (): void {
+        $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([
+            'special_key'  => 'SomeHandlerClass',
+            'fallback_key' => 'SomeHandlerCondition'
+        ]);
         $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getCartActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getProductActionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getHandlerConfigMap')->andReturn([]);
-        Lang::shouldReceive('has')->with('discount.description.special_key')->andReturn(true);
-        Lang::shouldReceive('get')->with('discount.description.special_key', [], null)->andReturn('Localized Desc');
-        // if (! function_exists('__')) {
-        //    function __($key): string
-        //    {
-        //        return 'Localized Desc';
-        //    }
-        // }
-        $result = $this->service->generateDescription('SomeHandlerClass', 'special_key');
-        expect($result)->toBe('Localized Desc');
-        Lang::shouldReceive('has')->with('discount.description.fallback_key')->andReturn(false);
-        $result2 = $this->service->generateDescription('SomeHandlerCondition', 'fallback_key');
-        expect($result2)->toBe('Some Handler');
+
+        // Dynamically add localized line for the "special_key"
+        app('translator')->addLines(['discount.handlers.special_key.description' => 'Localized Desc'], 'en');
+        app()->setLocale('en');
+
+        $conditions = $this->service->getConditions();
+
+        // Assert localized value worked
+        expect($conditions['cart'][0]['description'])->toBe('Localized Desc');
+        // Assert humanized fallback worked for classes without translation entries
+        expect($conditions['cart'][1]['description'])->toBe('Some Handler');
     });
+
     it('extractConfigSchema handles enums with AdvanceEnum trait', function (): void {
         $this->mockRegistry->shouldReceive('getCartConditionHandlers')->andReturn([]);
         $this->mockRegistry->shouldReceive('getProductConditionHandlers')->andReturn([]);
@@ -297,7 +302,7 @@ describe('DiscountMetadataService', function (): void {
         if (! class_exists('AdvEnumConfig')) {
             eval('class AdvEnumConfig { public function __construct(AdvEnum $type) {} }');
         }
-        $result = $this->service->extractConfigSchema('AdvEnumConfig');
+        $result = $this->service->extractConfigSchema('AdvEnumConfig', 'anykey');
         expect($result['type']['cases'])->toBe(
             [
                 ['value' => 'case1', 'label' => 'enums.AdvEnum.case1'],

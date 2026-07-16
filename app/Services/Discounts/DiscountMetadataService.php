@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Discounts;
 
-use App\Enums\Order\DiscountTypeEnum;
 use App\Traits\AdvanceEnum;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Str;
@@ -19,9 +18,6 @@ final class DiscountMetadataService
         private readonly DiscountHandlerRegistry $handlerRegistry
     ) {}
 
-    /**
-     * Get metadata for all available discount promotions.
-     */
     public function getMetadata(): array
     {
         $conditions = $this->getConditions();
@@ -39,133 +35,90 @@ final class DiscountMetadataService
         ];
     }
 
-    /**
-     * Get available discount conditions with their metadata.
-     */
     public function getConditions(): array
     {
-        $conditions               = [];
-        $cartConditionHandlers    = $this->handlerRegistry->getCartConditionHandlers();
-        $productConditionHandlers = $this->handlerRegistry->getProductConditionHandlers();
-        $handlerConfigMap         = $this->handlerRegistry->getHandlerConfigMap();
+        $conditions       = ['cart' => [], 'product' => []];
+        $handlerConfigMap = $this->handlerRegistry->getHandlerConfigMap();
 
-        foreach ($cartConditionHandlers as $key => $handlerClass) {
-            $configClass = $handlerConfigMap[$handlerClass] ?? null;
-
-            $conditions['cart'][] = [
-                'key'                  => $key,
-                'name'                 => $this->generateNameFromKey($key),
-                'description'          => $this->generateDescription($handlerClass, $key),
-                'handler_class'        => $handlerClass,
-                'configuration_schema' => $configClass ? $this->extractConfigSchema($configClass) : [],
-            ];
+        foreach ($this->handlerRegistry->getCartConditionHandlers() as $key => $handlerClass) {
+            $conditions['cart'][] = $this->buildEntry($key, $handlerClass, $handlerConfigMap);
         }
-        foreach ($productConditionHandlers as $key => $handlerClass) {
-            $configClass = $handlerConfigMap[$handlerClass] ?? null;
-
-            $conditions['product'][] = [
-                'key'                  => $key,
-                'name'                 => $this->generateNameFromKey($key),
-                'description'          => $this->generateDescription($handlerClass, $key),
-                'handler_class'        => $handlerClass,
-                'configuration_schema' => $configClass ? $this->extractConfigSchema($configClass) : [],
-            ];
+        foreach ($this->handlerRegistry->getProductConditionHandlers() as $key => $handlerClass) {
+            $conditions['product'][] = $this->buildEntry($key, $handlerClass, $handlerConfigMap);
         }
-
         return $conditions;
     }
 
-    /**
-     * Get available discount actions with their metadata.
-     */
     public function getActions(): array
     {
-        $actions               = [];
-        $actionHandlers        = $this->handlerRegistry->getCartActionHandlers();
-        $productActionHandlers = $this->handlerRegistry->getProductActionHandlers();
-        $handlerConfigMap      = $this->handlerRegistry->getHandlerConfigMap();
+        $actions          = ['cart' => [], 'product' => []];
+        $handlerConfigMap = $this->handlerRegistry->getHandlerConfigMap();
 
-        foreach ($actionHandlers as $key => $handlerClass) {
-            $configClass = $handlerConfigMap[$handlerClass] ?? null;
-
-            $actions['cart'][] = [
-                'key'                  => $key,
-                'name'                 => $this->generateNameFromKey($key),
-                'description'          => $this->generateDescription($handlerClass, $key),
-                'configuration_schema' => $configClass ? $this->extractConfigSchema($configClass) : [],
-            ];
+        foreach ($this->handlerRegistry->getCartActionHandlers() as $key => $handlerClass) {
+            $actions['cart'][] = $this->buildEntry($key, $handlerClass, $handlerConfigMap);
         }
-        foreach ($productActionHandlers as $key => $handlerClass) {
-            $configClass = $handlerConfigMap[$handlerClass] ?? null;
-
-            $actions['product'][] = [
-                'key'                  => $key,
-                'name'                 => $this->generateNameFromKey($key),
-                'description'          => $this->generateDescription($handlerClass, $key),
-                'configuration_schema' => $configClass ? $this->extractConfigSchema($configClass) : [],
-            ];
+        foreach ($this->handlerRegistry->getProductActionHandlers() as $key => $handlerClass) {
+            $actions['product'][] = $this->buildEntry($key, $handlerClass, $handlerConfigMap);
         }
 
         return $actions;
     }
 
     /**
-     * Get all available discount operators.
+     * Builds a single condition/action metadata entry. `handler_class` is
+     * included for both conditions and actions (previously only conditions
+     * had it — worth confirming that asymmetry wasn't intentional on the
+     * frontend before shipping this).
      */
+    private function buildEntry(string $key, string $handlerClass, array $handlerConfigMap): array
+    {
+        $configClass = $handlerConfigMap[$handlerClass] ?? null;
+
+        return [
+            'key'                  => $key,
+            'name'                 => $this->resolveHandlerName($key),
+            'description'          => $this->resolveHandlerDescription($key, $handlerClass),
+            'handler_class'        => $handlerClass,
+            'configuration_schema' => $configClass ? $this->extractConfigSchema($configClass, $key) : [],
+        ];
+    }
+
     public function getOperators(): array
     {
-        return [
-            [
-                'value'  => 'greater_than_or_equal',
-                'label'  => 'Greater than or equal (>=)',
-                'symbol' => '>=',
-            ],
-            [
-                'value'  => 'greater_than',
-                'label'  => 'Greater than (>)',
-                'symbol' => '>',
-            ],
-            [
-                'value'  => 'less_than_or_equal',
-                'label'  => 'Less than or equal (<=)',
-                'symbol' => '<=',
-            ],
-            [
-                'value'  => 'less_than',
-                'label'  => 'Less than (<)',
-                'symbol' => '<',
-            ],
-            [
-                'value'  => 'equal',
-                'label'  => 'Equal (=)',
-                'symbol' => '=',
-            ],
-        ];
+        return collect([
+            'greater_than_or_equal' => '>=',
+            'greater_than'          => '>',
+            'less_than_or_equal'    => '<=',
+            'less_than'             => '<',
+            'equal'                 => '=',
+        ])->map(fn (string $symbol, string $value) => [
+            'value'  => $value,
+            'label'  => __("discount.operators.{$value}"),
+            'symbol' => $symbol,
+        ])->values()->all();
     }
 
-    /**
-     * Get discount promotion types.
-     */
     public function getTypes(): array
     {
-        return [
-            [
-                'value'       => 'product_specific',
-                'label'       => 'Product Specific',
-                'description' => 'Discount applied to specific products',
-            ],
-            [
-                'value'       => 'cart_checkout',
-                'label'       => 'Cart Checkout',
-                'description' => 'Discount applied to entire cart during checkout',
-            ],
-        ];
+        return collect(['product_specific', 'cart_checkout'])
+            ->map(fn (string $value) => [
+                'value'       => $value,
+                'label'       => __("discount.types.{$value}.label"),
+                'description' => __("discount.types.{$value}.description"),
+            ])->all();
     }
 
     /**
-     * Extract configuration schema from a config class using reflection.
+     * Extracts the configuration schema for a handler's config Data class.
+     *
+     * Resolution order per field is:
+     *   1. Manual override — `labels()`/`descriptions()` on the config class,
+     *      only if you deliberately define them for a case i18n can't express.
+     *   2. Automatic translation — `discount.handlers.{$key}.fields.{$param}.*`
+     *   3. Generated fallback — humanized param name (keeps things usable
+     *      before a translation is added).
      */
-    public function extractConfigSchema(string $configClass): array
+    public function extractConfigSchema(string $configClass, string $key): array
     {
         if (! class_exists($configClass)) {
             return [];
@@ -178,25 +131,28 @@ final class DiscountMetadataService
             return [];
         }
 
-        $customDescriptions = [];
-        if (method_exists($configClass, 'descriptions')) {
-            $customDescriptions = $configClass::descriptions();
-        }
+        $customDescriptions = method_exists($configClass, 'descriptions') ? $configClass::descriptions() : [];
+        $customLabels       = method_exists($configClass, 'labels') ? $configClass::labels() : [];
 
         $schema = [];
 
         foreach ($constructor->getParameters() as $parameter) {
-            $paramName          = $parameter->getName();
-            $type               = $parameter->getType();
-            $description        = $customDescriptions[$paramName] ?? $this->generateParameterDescription($paramName, $type);
+            $paramName = $parameter->getName();
+            $type      = $parameter->getType();
+
+            $label       = $customLabels[$paramName]       ?? $this->resolveFieldLabel($key, $paramName);
+            $description = $customDescriptions[$paramName] ?? $this->resolveFieldDescription($key, $paramName, $type);
+
             $schema[$paramName] = [
+                'key'         => $paramName,
                 'type'        => $this->getParameterType($type),
+                'label'       => $label,
                 'required'    => ! $parameter->isOptional(),
                 'description' => $description,
             ];
-            if ($this->getParameterType($type) === 'enum') {
-                $paramClassName = (string) $type;
 
+            if ($this->getParameterType($type) === 'enum') {
+                $paramClassName       = (string) $type;
                 $paramClassReflection = new ReflectionClass($paramClassName);
                 $cases                = [];
 
@@ -204,14 +160,13 @@ final class DiscountMetadataService
                     $schema[$paramName]['cases'] = $paramClassName::getValueLabel();
                 } else {
                     foreach ($paramClassName::cases() as $case) {
-                        // For backed enums (e.g., enum Color: string), use the value. Otherwise, use the name.
                         $value   = property_exists($case, 'value') ? $case->value : $case->name;
                         $cases[] = ['value' => $value, 'label' => Str::title($value)];
                     }
                     $schema[$paramName]['cases'] = $cases;
                 }
-
             }
+
             if ($parameter->isDefaultValueAvailable()) {
                 $schema[$paramName]['default'] = $parameter->getDefaultValue();
             }
@@ -223,37 +178,30 @@ final class DiscountMetadataService
     public function getConfigurationClass(
         string $handlerKey,
         string $handlerType,
-        DiscountTypeEnum $discountType
+        \App\Enums\Order\DiscountTypeEnum $discountType
     ): ?string {
         $handlerClass = $this->handlerRegistry->getHandlerClassByKey($handlerKey, $handlerType, $discountType);
         if (! $handlerClass) {
             return null;
         }
 
-        // Check if the handler class has a static method to get the config class
         if (method_exists($handlerClass, 'getConfigClass')) {
             try {
                 return $handlerClass::getConfigClass();
             } catch (Exception $e) {
-                // If the method fails, we return null
                 return null;
             }
         }
 
-        // If the handler class does not have a method to get the config class, we return null
         return null;
     }
 
-    /**
-     * Get parameter type as string.
-     */
     public function getParameterType(?ReflectionType $type): string
     {
         if (! $type) {
             return 'mixed';
         }
         if (! $type instanceof ReflectionNamedType) {
-            // Fallback for complex types like UnionType, etc.
             return (string) $type;
         }
 
@@ -273,45 +221,53 @@ final class DiscountMetadataService
         };
     }
 
-    /**
-     * Generate parameter description from name and type.
-     */
-    public function generateParameterDescription(string $paramName, $type): string
+    private function resolveHandlerName(string $key): string
     {
-        $humanName = ucwords(str_replace('_', ' ', $paramName));
-        $typeName  = $this->getParameterType($type);
+        $translationKey = "discount.handlers.{$key}.name";
 
-        return "{$humanName} ({$typeName})";
+        return Lang::has($translationKey) ? __($translationKey) : $this->humanize($key);
     }
 
-    /**
-     * Generate a human-readable name from a handler key.
-     */
-    public function generateNameFromKey(string $key): string
+    private function resolveHandlerDescription(string $key, string $handlerClass): string
     {
-        if (Lang::has("discount.name.{$key}")) {
-            return __("discount.name.{$key}");
+        $translationKey = "discount.handlers.{$key}.description";
+
+        if (Lang::has($translationKey)) {
+            return __($translationKey);
         }
 
-        return ucwords(str_replace('_', ' ', $key));
+        return $this->humanizeClassName($handlerClass);
     }
 
-    /**
-     * Generate a description from a handler class name.
-     */
-    public function generateDescription(string $handlerClass, string $key): string
+    private function resolveFieldLabel(string $key, string $paramName): string
     {
-        if (Lang::has("discount.description.{$key}")) {
-            return __("discount.description.{$key}");
+        $translationKey = "discount.handlers.{$key}.fields.{$paramName}.label";
+
+        return Lang::has($translationKey) ? __($translationKey) : $this->humanize($paramName);
+    }
+
+    private function resolveFieldDescription(string $key, string $paramName, ?ReflectionType $type): string
+    {
+
+        $translationKey = "discount.handlers.{$key}.fields.{$paramName}.description";
+        if (Lang::has($translationKey)) {
+            return __($translationKey);
         }
+
+        return sprintf('%s (%s)', $this->humanize($paramName), $this->getParameterType($type));
+    }
+
+    private function humanize(string $value): string
+    {
+        return Str::of($value)->replace('_', ' ')->title()->toString();
+    }
+
+    private function humanizeClassName(string $handlerClass): string
+    {
         $className = class_basename($handlerClass);
-
-        // Remove common suffixes
         $className = preg_replace('/(Condition|Action)$/', '', $className);
+        $spaced    = preg_replace('/([A-Z])/', ' $1', $className);
 
-        // Convert CamelCase to space separated
-        $description = preg_replace('/([A-Z])/', ' $1', $className);
-
-        return mb_trim($description);
+        return mb_trim($spaced);
     }
 }

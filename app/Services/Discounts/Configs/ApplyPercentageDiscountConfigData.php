@@ -23,16 +23,4 @@ final class ApplyPercentageDiscountConfigData extends Data
             'percentage' => ['required', 'integer', 'min:1', 'max:100'],
         ];
     }
-
-    /**
-     * @return array<string, string>
-     *
-     * @codeCoverageIgnore
-     */
-    public static function descriptions(): array
-    {
-        return [
-            'percentage' => 'The percentage discount to apply, e.g., 15 for a 15% discount.',
-        ];
-    }
 }

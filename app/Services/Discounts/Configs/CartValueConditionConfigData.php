@@ -30,17 +30,4 @@ final class CartValueConditionConfigData extends Data
         ];
     }
 
-    /**
-     * @return array<string, string>
-     *
-     * @codeCoverageIgnore
-     */
-    public static function descriptions(): array
-    {
-        return [
-            'operator'            => 'The mathematical operator to use for comparison.',
-            'value'               => 'The value to compare against the cart total.',
-            'include_prepayments' => 'If true, the condition checks against the full cart value including prepayments.',
-        ];
-    }
 }

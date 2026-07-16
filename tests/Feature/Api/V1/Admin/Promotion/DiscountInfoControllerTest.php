@@ -110,13 +110,13 @@ describe('DiscountInfoController', function (): void {
         $cartConditions     = collect($data['cart']);
         $poroductConditions = collect($data['product']);
         $cartValueCondition = $cartConditions->firstWhere('key', 'cart_value_over');
-        expect($cartValueCondition['name'])->toBe(__('discount.name.cart_value_over'));
+        expect($cartValueCondition['name'])->toBe(__('discount.handlers.cart_value_over.name'));
 
         $categoryCondition = $cartConditions->firstWhere('key', 'product_in_category');
-        expect($categoryCondition['name'])->toBe(__('discount.name.product_in_category'));
+        expect($categoryCondition['name'])->toBe(__('discount.handlers.product_in_category.name'));
 
         $productCategoryCondition = $poroductConditions->firstWhere('key', 'product_in_category');
-        expect($productCategoryCondition['name'])->toBe(__('discount.name.product_in_category'));
+        expect($productCategoryCondition['name'])->toBe(__('discount.handlers.product_in_category.name'));
     });
 
     test('conditions includes configuration schema from config classes', function (): void {
