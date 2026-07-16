@@ -26,7 +26,7 @@ it('returns order payments list', function (): void {
     App\Models\Payment::factory()->create([
         'order_id' => $order->id,
     ]);
-    $response = \Pest\Laravel\getJson("/api/v1/admin/orders/{$order->id}/payment");
+    $response = \Pest\Laravel\getJson("/api/v1/admin/orders/{$order->id}/payments");
     $response->assertOk();
     $response->assertJsonStructure([
         'message',
@@ -68,7 +68,7 @@ it('returns order payment detail', function (): void {
         'status'      => PaymentStatusEnum::COMPLETED,
         'admin_notes' => 'Test payment',
     ]);
-    $response = \Pest\Laravel\getJson("/api/v1/admin/orders/{$order->id}/payment/{$payment->id}");
+    $response = \Pest\Laravel\getJson("/api/v1/admin/orders/{$order->id}/payments/{$payment->id}");
     $response->assertOk();
     $response->assertJsonStructure([
         'message',
@@ -148,7 +148,7 @@ it('create payment successfully', function (): void {
     ];
 
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_CREATE]);
-    $response = $this->postJson(route('api.v1.admin.payment.store', ['order' => $order->id]), $data);
+    $response = $this->postJson(route('api.v1.admin.payments.store', ['order' => $order->id]), $data);
     $response->assertCreated()
         ->assertJsonStructure([
             'data' => [
@@ -238,7 +238,7 @@ it('create partiall payment successfully', function (): void {
     ];
 
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_CREATE]);
-    $response = $this->postJson(route('api.v1.admin.payment.store', ['order' => $order->id]), $data);
+    $response = $this->postJson(route('api.v1.admin.payments.store', ['order' => $order->id]), $data);
     $response->assertCreated()
         ->assertJsonStructure([
             'data' => [
@@ -313,7 +313,7 @@ it('prevent creating payment if amount to pay is 0', function (): void {
     ];
 
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_CREATE]);
-    $response = $this->postJson(route('api.v1.admin.payment.store', ['order' => $order->id]), $data);
+    $response = $this->postJson(route('api.v1.admin.payments.store', ['order' => $order->id]), $data);
     $response->assertCreated();
     $order->refresh();
 
@@ -346,7 +346,7 @@ it('can update payment data', function (): void {
         'admin_notes' => 'Updated payment',
     ];
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_UPDATE]);
-    $response = $this->putJson(route('api.v1.admin.payment.update',
+    $response = $this->putJson(route('api.v1.admin.payments.update',
         ['order' => $payment->order_id, 'payment' => $payment->id]), $data);
     $response->assertOk()
         ->assertJsonStructure([
@@ -389,7 +389,7 @@ it('can not change completed payment status', function (): void {
         'admin_notes' => 'Updated payment',
     ];
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_UPDATE]);
-    $response = $this->putJson(route('api.v1.admin.payment.update',
+    $response = $this->putJson(route('api.v1.admin.payments.update',
         ['order' => $payment->order_id, 'payment' => $payment->id]), $data);
     $response->assertUnprocessable();
     $response->assertJsonValidationErrors(
@@ -463,7 +463,7 @@ it('can delete payment', function (): void {
     $this->assertEquals($order->overall_payment_status, App\Enums\Order\OrderPaymentStatusEnum::PENDING->value);
 
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_DELETE]);
-    $response = $this->deleteJson(route('api.v1.admin.payment.destroy',
+    $response = $this->deleteJson(route('api.v1.admin.payments.destroy',
         ['order' => $order->id, 'payment' => $payment->id]));
     $response->assertNoContent();
     $this->assertDatabaseMissing('payments', [
@@ -538,7 +538,7 @@ it('can not delete completed payment', function (): void {
     $this->assertEquals($order->overall_payment_status, App\Enums\Order\OrderPaymentStatusEnum::PAID->value);
 
     $this->authorized_user([App\Enums\PermissionEnum::ORDER_DELETE]);
-    $response = $this->deleteJson(route('api.v1.admin.payment.destroy',
+    $response = $this->deleteJson(route('api.v1.admin.payments.destroy',
         ['order' => $order->id, 'payment' => $payment->id]));
     $response->assertUnprocessable();
     $response->assertJsonValidationErrors(

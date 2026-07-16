@@ -45,7 +45,7 @@ describe('NextPaymentDetailsController', function (): void {
             ->create();
         // --- Act ---
         // Make a GET request to the invokable controller's route.
-        $response = $this->getJson(route('api.v1.admin.orders.payment.next-payment-details', ['order' => $order->id]));
+        $response = $this->getJson(route('api.v1.admin.orders.payments.next-payment-details', ['order' => $order->id]));
 
         // --- Assert ---
         // Assert a 200 OK status and the correct JSON structure from the NextPaymentDetailsData DTO.
@@ -74,7 +74,7 @@ describe('NextPaymentDetailsController', function (): void {
         Payment::factory()->for($order)->create(['amount' => 50000, 'status' => 'completed']);
 
         // --- Act ---
-        $response = $this->getJson(route('api.v1.admin.orders.payment.next-payment-details', ['order' => $order->id]));
+        $response = $this->getJson(route('api.v1.admin.orders.payments.next-payment-details', ['order' => $order->id]));
 
         // --- Assert ---
         // Assert a 422 Unprocessable Entity status.
@@ -97,7 +97,7 @@ describe('NextPaymentDetailsController', function (): void {
         $order = Order::factory()->create();
 
         // --- Act ---
-        $response = $this->getJson(route('api.v1.admin.orders.payment.next-payment-details', ['order' => $order->id]));
+        $response = $this->getJson(route('api.v1.admin.orders.payments.next-payment-details', ['order' => $order->id]));
 
         // --- Assert ---
         $response->assertForbidden();
@@ -111,7 +111,7 @@ describe('NextPaymentDetailsController', function (): void {
         $this->authorized_user([PermissionEnum::ORDER_VIEW_ANY->value]);
 
         // --- Act ---
-        $response = $this->getJson(route('api.v1.admin.orders.payment.next-payment-details', ['order' => 99999]));
+        $response = $this->getJson(route('api.v1.admin.orders.payments.next-payment-details', ['order' => 99999]));
 
         // --- Assert ---
         $response->assertNotFound();

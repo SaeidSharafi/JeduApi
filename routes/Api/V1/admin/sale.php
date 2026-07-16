@@ -29,12 +29,12 @@ Route::post('orders/{order}/approve', ApproveOrderController::class)
 Route::apiResource('orders/{order}/order-items', OrderItemController::class)
     ->only(['index', 'show']);
 
-Route::apiResource('orders/{order}/payment', PaymentController::class);
+Route::apiResource('orders/{order}/payments', PaymentController::class);
 Route::get('orders/{order}/next-payment-details', NextPaymentDetailsController::class)
-    ->name('orders.payment.next-payment-details');
+    ->name('orders.payments.next-payment-details');
 
 // Digipay admin operations
-Route::prefix('payments/{payment}/digipay')->name('payment.digipay.')->group(function (): void {
+Route::prefix('payments/{payment}/digipay')->name('payments.digipay.')->group(function (): void {
     Route::post('refund', [DigipayAdminController::class, 'refund'])->name('refund');
     Route::post('deliver', [DigipayAdminController::class, 'deliver'])->name('deliver');
     Route::post('reverse', [DigipayAdminController::class, 'reverse'])->name('reverse');
