@@ -16,7 +16,7 @@ test('admin can deposit to wallet via API', function (): void {
     $initialBalance = $user->wallet->balance;
 
     $response = $this
-        ->postJson(route('api.v1.admin.users.wallet.deposit', $user->wallet->id), [
+        ->postJson(route('api.v1.admin.users.wallet.deposit', $user->id), [
             'user_id'     => $user->id,
             'amount'      => 1000,
             'description' => 'API deposit test',
@@ -88,7 +88,7 @@ test('admin cannot deposit to wallet without permission', function (): void {
     $user  = User::factory()->create();
 
     $response = $this
-        ->postJson(route('api.v1.admin.users.wallet.deposit', $user->wallet->id), [
+        ->postJson(route('api.v1.admin.users.wallet.deposit', $user->id), [
             'user_id' => $user->id,
             'amount'  => 1000,
         ]);
@@ -102,7 +102,7 @@ test('validation errors are returned for invalid data', function (): void {
     ]);
     $user     = User::factory()->create();
     $response = $this
-        ->postJson(route('api.v1.admin.users.wallet.deposit', $user->wallet->id), [
+        ->postJson(route('api.v1.admin.users.wallet.deposit', $user->id), [
             'amount' => 'A100', // Negative amount
         ]);
 
