@@ -27,6 +27,8 @@ return new class extends Migration
             // Rule Logic & Conflict Resolution
             $table->unsignedInteger('priority')->default(0)->index(); // Higher number runs first to resolve conflicts
             $table->boolean('stop_processing_subsequent_rules')->default(false); // If true, prevents discount stacking
+            $table->boolean('requires_coupon')->default(false);
+
 
             // Usage Limits & Tracking
             $table->unsignedInteger('usage_limit_total')->nullable(); // Max uses across all customers (null = unlimited)

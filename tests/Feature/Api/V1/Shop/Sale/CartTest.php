@@ -34,6 +34,7 @@ describe('Cart Discount Integration', function (): void {
             'starts_at' => now()->subDay(),
             'ends_at'   => now()->addDay(),
             'priority'  => 1,
+            'requires_coupon' => true
         ]);
 
         DiscountPromotionRule::create([
@@ -130,6 +131,7 @@ describe('Cart Discount Integration', function (): void {
     });
 
     test('guest cart shows zero discount_amount without coupon', function (): void {
+
         $response = postJson(route('api.v1.shop.cart.items.store'), [
             'product_delivery_option_uuid' => $this->deliveryOption->uuid,
             'quantity'                     => 1,

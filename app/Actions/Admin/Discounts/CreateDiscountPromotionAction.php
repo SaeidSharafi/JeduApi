@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Discounts;
 
 use App\Data\Admin\Discounts\DiscountPromotionCreateData;
+use App\Enums\Order\DiscountTypeEnum;
+use App\Jobs\Discounts\RegeneratePromotionDiscountPricesJob;
 use App\Models\DiscountPromotion;
 use Illuminate\Support\Facades\DB;
 
@@ -14,6 +16,7 @@ final class CreateDiscountPromotionAction
     {
         $promotion = DB::transaction(function () use ($data) {
             // Create the main promotion
+            $isCartSpecific = $data->type === DiscountTypeEnum::CART_CHECKOUT->value;
             $promotion = DiscountPromotion::create([
                 'name'                             => $data->name,
                 'description'                      => $data->description,
@@ -26,6 +29,7 @@ final class CreateDiscountPromotionAction
                 'usage_limit_total'                => $data->usage_limit_total,
                 'usage_limit_per_customer'         => $data->usage_limit_per_customer,
                 'total_usage_count'                => 0,
+                'requires_coupon'                  => !$isCartSpecific && !empty($data->coupons)
             ]);
 
             // Create rules
@@ -37,22 +41,24 @@ final class CreateDiscountPromotionAction
                 ]);
             }
 
-            // Create coupons
-            foreach ($data->coupons as $couponData) {
-                $promotion->coupons()->create([
-                    'code'        => $couponData->code,
-                    'is_active'   => $couponData->is_active,
-                    'usage_limit' => $couponData->usage_limit,
-                    'usage_count' => 0,
-                ]);
+            if ($isCartSpecific){
+                foreach ($data->coupons as $couponData) {
+                    $promotion->coupons()->create([
+                        'code'        => $couponData->code,
+                        'is_active'   => $couponData->is_active,
+                        'usage_limit' => $couponData->usage_limit,
+                        'usage_count' => 0,
+                    ]);
+                }
             }
+
 
             return $promotion->load(['rules', 'coupons']);
         });
 
         // Dispatch job to regenerate discount prices for this new promotion
-        if ($promotion->type === \App\Enums\Order\DiscountTypeEnum::PRODUCT_SPECIFIC) {
-            \App\Jobs\Discounts\RegeneratePromotionDiscountPricesJob::dispatch($promotion);
+        if ($promotion->type === DiscountTypeEnum::PRODUCT_SPECIFIC) {
+            RegeneratePromotionDiscountPricesJob::dispatch($promotion);
         }
 
         return $promotion;

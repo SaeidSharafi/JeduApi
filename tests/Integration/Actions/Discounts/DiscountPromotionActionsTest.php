@@ -160,7 +160,11 @@ describe('Discount Promotion Actions', function (): void {
 
     test('UpdateDiscountPromotionAction replaces all rules and coupons', function (): void {
         // Arrange
-        $promotion = DiscountPromotion::factory()->create();
+        $promotion = DiscountPromotion::factory()->create(
+            [
+                'type'          => DiscountTypeEnum::CART_CHECKOUT->value,
+            ]
+        );
 
         $promotion->rules()->createMany([
             ['type' => 'condition', 'handler' => 'old1', 'configuration' => []],

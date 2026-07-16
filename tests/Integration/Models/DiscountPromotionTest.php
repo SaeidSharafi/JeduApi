@@ -18,6 +18,7 @@ test('to array', function (): void {
             'ends_at'                          => $discount->ends_at?->utc()->toJSON(),
             'priority'                         => $discount->priority,
             'stop_processing_subsequent_rules' => $discount->stop_processing_subsequent_rules,
+            'requires_coupon'                  => $discount->requires_coupon,
             'usage_limit_total'                => $discount->usage_limit_total,
             'usage_limit_per_customer'         => $discount->usage_limit_per_customer,
             'total_usage_count'                => $discount->total_usage_count,

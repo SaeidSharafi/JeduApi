@@ -53,6 +53,7 @@ final class DiscountPromotion extends Model
     {
         return [
             'is_active'                        => 'boolean',
+            'requires_coupon'                  => 'boolean',
             'starts_at'                        => 'datetime',
             'ends_at'                          => 'datetime',
             'stop_processing_subsequent_rules' => 'boolean',

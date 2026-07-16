@@ -16,10 +16,11 @@ use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Product\ProductableEnum;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\DiscountPromotion;
 use App\Models\ProductDeliveryOption;
 use App\Models\User;
 use App\Services\Discounts\OrderCalculationService;
-use App\Services\Discounts\PromotionFinder;
+use App\Services\Discounts\PromotionService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -28,7 +29,8 @@ final readonly class CartService
 {
     public function __construct(
         private CartIdentifier $identifier,
-        private OrderCalculationService $orderCalculationService
+        private OrderCalculationService $orderCalculationService,
+        private PromotionService $promotionService,
     ) {}
 
     public function findOrCreateCart(?User $user = null, bool $lockForUpdate = false): Cart
@@ -151,9 +153,33 @@ final readonly class CartService
     {
         $cart = $this->findOrCreateCart();
 
-        $promotion = app(PromotionFinder::class)->findApplicablePromotion($data->coupon_code);
+        /** @var DiscountPromotion|null $promotion */
+        $promotion = $this->promotionService->findPromotionByCoupon($data->coupon_code);
 
         if (! $promotion) {
+            throw ValidationException::withMessages([
+                'coupon_code' => __('shop.cart.errors.coupon_does_not_exist'),
+            ]);
+        }
+
+        // Build order context from current cart items to check conditions
+        $userId   = $cart->user_id ?? Auth::guard('user')->id();
+        $items    = $cart->items->map(fn (CartItem $item): OrderItemCreateData => new OrderItemCreateData(
+            product_delivery_option_id: $item->product_delivery_option_id,
+            payment_type: $item->payment_type instanceof OrderItemPaymentTypeEnum
+                ? $item->payment_type->value
+                : $item->payment_type,
+            qty_ordered: $item->quantity,
+        ))->all();
+
+        $orderData = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $userId,
+            items: $items,
+            applied_coupon_code: $data->coupon_code,
+        );
+
+        if (! $this->promotionService->checkPromotionConditions($promotion, $orderData)) {
             throw ValidationException::withMessages([
                 'coupon_code' => __('shop.cart.errors.coupon_does_not_exist'),
             ]);

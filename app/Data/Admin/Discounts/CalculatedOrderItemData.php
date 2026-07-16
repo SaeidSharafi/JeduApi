@@ -24,5 +24,6 @@ final class CalculatedOrderItemData extends Data
          * @var array
          */
         public array $applied_discount_details = [],
+        public bool $is_gift = false,
     ) {}
 }

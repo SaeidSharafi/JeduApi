@@ -11,6 +11,7 @@ use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Events\OrderCreatedEvent;
+use App\Models\DiscountPromotion;
 use App\Models\Order;
 use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\OrderCalculationService;
@@ -57,10 +58,18 @@ final readonly class CreateOrderAction
                     ->lockForUpdate()
                     ->firstOrFail();
 
-                // --- VALIDATION LOGIC (PRESERVED) ---
-                // We find the original input data for this item to validate against the user's intent.
                 $originalItemData = $originalInputItems->get($deliveryOption->id);
+
+                if ($calculatedItem->is_gift && ! $originalItemData) {
+                    $originalItemData = new \App\Data\Admin\Order\OrderItemCreateData(
+                        product_delivery_option_id: $deliveryOption->id,
+                        payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                        qty_ordered: $calculatedItem->qty
+                    );
+                }
+
                 $this->validateItem($key, $originalItemData, $deliveryOption);
+
 
                 // --- GET PRICING METADATA ---
                 $priceData = $this->productPriceService->getPriceDataForOption($deliveryOption);
@@ -143,7 +152,7 @@ final readonly class CreateOrderAction
 
         });
 
-        if ($context->evaluating_promotion) {
+        if (! empty($context->applied_cart_discounts)) {
             $this->incrementUsageCounts($context);
         }
         OrderCreatedEvent::dispatch($order);
@@ -153,15 +162,28 @@ final readonly class CreateOrderAction
 
     private function incrementUsageCounts(OrderContextData $context): void
     {
-        $promotion = $context->evaluating_promotion;
+        $couponCode = $context->triggered_by_coupon_code;
 
-        $promotion->increment('total_usage_count');
+        foreach ($context->applied_cart_discounts as $discount) {
+            $promotionId = $discount['promotion_id'] ?? null;
+            if (! $promotionId) {
+                continue;
+            }
 
-        // Assuming coupon code is passed into the context by the calculation service
-        if ($context->triggered_by_coupon_code) {
-            $promotion->coupons()
-                ->where('code', $context->triggered_by_coupon_code)
-                ->increment('usage_count');
+            $promotion = DiscountPromotion::find($promotionId);
+            if (! $promotion) {
+                continue;
+            }
+
+            $promotion->increment('total_usage_count');
+
+            // Coupon usage only incremented on the promotion that owns this coupon.
+            // Safe: coupon() query on a promotion without this code affects 0 rows.
+            if ($couponCode) {
+                $promotion->coupons()
+                    ->where('code', $couponCode)
+                    ->increment('usage_count');
+            }
         }
     }
 

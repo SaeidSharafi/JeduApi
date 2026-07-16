@@ -73,7 +73,7 @@ final class RecordWalletTransactionAction
 
             if ($data->type === TransactionTypeEnum::PAYMENT && $data->source_type === TransactionSourceEnum::ORDER) {
                 $availableTotal = $wallet->balance + $wallet->gift_balance;
-
+                //dump($availableTotal, $data->amount,$availableTotal + $data->amount,$newBalance < 0);
                 if ($availableTotal + $data->amount < 0) {
                     throw new WalletInsufficientBalanceException(
                         availableBalance: $availableTotal,

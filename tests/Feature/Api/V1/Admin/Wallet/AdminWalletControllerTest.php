@@ -17,7 +17,7 @@ test('admin with permission can view a wallet', function (): void {
     $user   = User::factory()->create();
     $wallet = $user->wallet->fresh();
 
-    $response = getJson(route('api.v1.admin.users.wallet.show', $wallet->id));
+    $response = getJson(route('api.v1.admin.users.wallet.show', $user->id));
     $response->assertOk();
     $response->assertJsonPath('data.balance', $wallet->balance);
     $response->assertJsonPath('data.gift_balance', $wallet->gift_balance);
@@ -28,7 +28,7 @@ test('admin without permission cannot view a wallet', function (): void {
     $user   = User::factory()->create();
     $wallet = $user->wallet;
 
-    $response = getJson(route('api.v1.admin.users.wallet.show', [$wallet->id]));
+    $response = getJson(route('api.v1.admin.users.wallet.show', [$user->id]));
     $response->assertForbidden();
 });
 test('admin with permission can create wallet via controller', function (): void {
