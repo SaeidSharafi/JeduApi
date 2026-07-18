@@ -46,6 +46,7 @@ return new class extends Migration
                 ->nullable()
                 ->comment('Expiry date for promotional credits');
             $table->foreignId('created_by')
+                ->index()
                 ->nullable()
                 ->comment('The admin who created the transaction (if created manually)')
                 ->constrained('staff', 'id')

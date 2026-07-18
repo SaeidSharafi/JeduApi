@@ -41,11 +41,14 @@ return new class extends Migration
             $table->string('currency_code')->default('IRR');
             $table->string('applied_coupon_code')->nullable();
             $table->text('admin_notes')->nullable();
+            $table->json('applied_cart_discounts_json')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('staff', 'id')->nullOnDelete();
 
             $table->timestamps();
 
             $table->index(['customer_id', 'status'], 'idx_orders_customer_status');
+            $table->index(['customer_id', 'created_at'], 'idx_customer_created');
+            $table->index('created_by');
         });
     }
 

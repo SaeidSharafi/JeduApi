@@ -55,6 +55,7 @@ return new class extends Migration
 
             // Audit
             $table->foreignId('created_by')
+                ->index()
                 ->nullable()
                 ->comment('Admin who created campaign')
                 ->constrained('staff', 'id')

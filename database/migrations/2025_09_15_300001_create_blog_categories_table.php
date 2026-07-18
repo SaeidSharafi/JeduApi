@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->foreignId('parent_id')->nullable()->constrained('blog_categories')->onDelete('cascade');
+            $table->foreignId('parent_id')->index()->nullable()->constrained('blog_categories')->onDelete('cascade');
             $this->addMetaTagColumns($table);
             $table->string('icon')->nullable();
             $table->timestamps();

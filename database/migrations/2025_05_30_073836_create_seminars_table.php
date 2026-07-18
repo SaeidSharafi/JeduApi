@@ -43,15 +43,15 @@ return new class extends Migration
             $table->integer('review_count')->default(0);
             $table->decimal('average_rating', 3)->default(0.0);
             $table->timestamps();
-            if (DB::connection()->getDriverName() !== 'sqlite') {
+            $table->index('created_by');
+            if (DB::connection()->getDriverName() === 'sqlite') {
                 $table->fullText(['full_name', 'short_name', 'slug', 'description', 'keywords'],
                     'seminars_fulltext_index');
             }
         });
 
         if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::statement('CREATE EXTENSION IF NOT EXISTS pgroonga');
-            DB::statement('CREATE INDEX seminars_pgroonga_index ON seminars USING pgroonga (full_name, short_name, slug, description, keywords)');
+            DB::unprepared('CREATE INDEX seminars_pgroonga_index ON seminars USING pgroonga (full_name, short_name, slug, description, keywords) WHERE use_pgroonga();');
         }
     }
 };

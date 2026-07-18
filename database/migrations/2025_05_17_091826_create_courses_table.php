@@ -37,15 +37,13 @@ return new class extends Migration
             $table->integer('review_count')->default(0);
             $table->decimal('average_rating', 3)->default(0.0);
             $table->timestamps();
-            if (DB::connection()->getDriverName() !== 'sqlite') {
+            $table->index('created_by');
+            if (DB::connection()->getDriverName() === 'mysql') {
                 $table->fullText(['full_name', 'short_name', 'slug', 'description'], 'courses_fulltext_index');
             }
         });
-        Schema::table('courses', function (Blueprint $table) {
-            if (DB::connection()->getDriverName() === 'pgsql') {
-                DB::statement('CREATE EXTENSION IF NOT EXISTS pgroonga');
-                DB::statement('CREATE INDEX courses_pgroonga_index ON courses USING pgroonga (full_name, short_name, slug, description)');
-            }
-        });
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            DB::unprepared('CREATE INDEX courses_pgroonga_index ON courses USING pgroonga (full_name, short_name, slug, description) WHERE use_pgroonga();');
+        }
     }
 };

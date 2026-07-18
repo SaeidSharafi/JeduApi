@@ -29,6 +29,8 @@ return new class extends Migration
             $table->boolean('is_featured')->default(false);
             $table->jsonb('price_data_cache')->nullable();
             $table->jsonb('details_json');
+            $table->dateTime('event_start_at')->nullable();
+            $table->dateTime('event_ended_at')->nullable();
             $table->timestamps();
 
             $table->index('status');
@@ -37,15 +39,16 @@ return new class extends Migration
             $table->index(['productable_type', 'productable_id']);
             $table->index(['vendor_id', 'term_id']);
             $table->index(['status', 'is_visible']);
+            $table->index('event_start_at');
+            $table->index('event_ended_at');
             // skip on sqlite
-            if (DB::connection()->getDriverName() !== 'sqlite') {
+            if (DB::connection()->getDriverName() === 'mysql') {
                 $table->fullText(['name', 'short_name', 'short_description', 'slug'], 'products_fulltext_index');
             }
         });
 
         if (DB::connection()->getDriverName() === 'pgsql') {
-            DB::statement('CREATE EXTENSION IF NOT EXISTS pgroonga');
-            DB::statement('CREATE INDEX products_pgroonga_index ON products USING pgroonga (name, short_name, short_description, slug)');
+            DB::unprepared('CREATE INDEX products_pgroonga_index ON products USING pgroonga (name, short_name, short_description, slug) WHERE use_pgroonga();');
         }
     }
 

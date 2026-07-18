@@ -16,11 +16,11 @@ return new class extends Migration
     {
         Schema::create('refunds', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('order_item_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('payment_id')->nullable()->constrained('payments')->nullOnDelete();
-            $table->foreignId('customer_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('created_by')->nullable()->constrained('staff', 'id')->nullOnDelete();
+            $table->foreignId('order_id')->index()->constrained()->cascadeOnDelete();
+            $table->foreignId('order_item_id')->index()->constrained()->cascadeOnDelete();
+            $table->foreignId('payment_id')->index()->nullable()->constrained('payments')->nullOnDelete();
+            $table->foreignId('customer_id')->index()->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('created_by')->index()->nullable()->constrained('staff', 'id')->nullOnDelete();
 
             $table->unsignedBigInteger('amount');
             $table->unsignedBigInteger('deduction_amount');

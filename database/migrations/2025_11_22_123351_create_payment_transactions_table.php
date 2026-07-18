@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('payment_transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('payment_id')->constrained('payments')->cascadeOnDelete()->index();
+            $table->foreignId('payment_id')->index()->constrained('payments')->cascadeOnDelete();
             $table->string('transaction_reference')->unique()->index()
                 ->comment('Human-readable unique reference for customer support (e.g., 200000001)');
             $table->integer('attempt_number')->default(1)

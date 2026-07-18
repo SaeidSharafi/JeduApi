@@ -33,16 +33,15 @@ return new class extends Migration
             $table->index('is_featured');
             $table->index('published_at');
             $table->index(['status', 'published_at']);
-            if (DB::connection()->getDriverName() !== 'sqlite') {
+            $table->index('main_productable_type');
+            $table->index('author_id');
+            if (DB::connection()->getDriverName() === 'mysql') {
                 $table->fullText(['title', 'body', 'excerpt', 'slug'], 'blog_post_fulltext_index');
             }
         });
-        Schema::table('blog_posts', function (Blueprint $table) {
-            if (DB::connection()->getDriverName() === 'pgsql') {
-                DB::statement('CREATE EXTENSION IF NOT EXISTS pgroonga');
-                DB::statement('CREATE INDEX blog_posts_pgroonga_index ON blog_posts USING pgroonga (title, body, excerpt, slug)');
-            }
-        });
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            DB::unprepared('CREATE INDEX blog_posts_pgroonga_index ON blog_posts USING pgroonga (title, body, excerpt, slug) WHERE use_pgroonga();');
+        }
     }
 
     public function down(): void

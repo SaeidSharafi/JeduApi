@@ -15,6 +15,8 @@ return new class extends Migration
             $table->foreignId('blog_post_id')->constrained('blog_posts')->onDelete('cascade');
             $table->morphs('productable');
             $table->timestamps();
+
+            $table->index(['blog_post_id', 'productable_type']);
         });
     }
 

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('phone');
             $table->string('status')->index()->default(App\Enums\AdviceRequestStatusEnum::PENDING->value);
             $table->text('note')->nullable();
-            $table->unsignedBigInteger('handled_by_id')->nullable();
+            $table->unsignedBigInteger('handled_by_id')->nullable()->index();
             $table->foreign('handled_by_id')->references('id')->on('staff')->nullOnDelete();
             $table->timestamps();
         });

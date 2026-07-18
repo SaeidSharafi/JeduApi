@@ -31,6 +31,7 @@ return new class extends Migration
                 ->default(WalletStatusEnum::ACTIVE->value)
                 ->comment('Wallet status: active, suspended, closed');
             $table->foreignId('created_by')
+                ->index()
                 ->nullable()
                 ->comment('The admin who created the wallet (if created manually)')
                 ->constrained('staff', 'id')

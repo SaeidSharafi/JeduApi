@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('discount_coupons', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('discount_promotion_id')->constrained()->onDelete('cascade');
+            $table->foreignId('discount_promotion_id')->index()->constrained()->onDelete('cascade');
 
             // The actual code, e.g., 'WELCOME10'. Must be unique and is indexed for fast lookups.
             $table->string('code')->unique();
@@ -23,6 +23,8 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
 
             $table->timestamps();
+
+            $table->index(['is_active', 'code'], 'idx_active_code');
         });
     }
 

@@ -13,7 +13,7 @@ return new class extends Migration
         Schema::create('discount_promotion_rules', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('discount_promotion_id')->constrained()->onDelete('cascade');
+            $table->foreignId('discount_promotion_id')->index()->constrained()->onDelete('cascade');
 
             // The 'IF' (condition) or the 'THEN' (action)
             $table->string('type');

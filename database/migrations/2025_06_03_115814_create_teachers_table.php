@@ -26,8 +26,8 @@ return new class extends Migration
             $table->string('gender')->nullable();
             $table->date('birth_date')->nullable();
             $table->json('social_links')->nullable();
-            $table->foreignId('user_id')->references('id')->on('users')->restrictOnDelete();
-            $table->foreignId('created_by')->nullable()->constrained('staff', 'id')->nullOnDelete();
+            $table->foreignId('user_id')->index()->references('id')->on('users')->restrictOnDelete();
+            $table->foreignId('created_by')->index()->nullable()->constrained('staff', 'id')->nullOnDelete();
             $table->timestamps();
         });
     }

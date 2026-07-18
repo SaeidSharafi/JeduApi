@@ -23,6 +23,7 @@ return new class extends Migration
             $table->integer('capacity')->nullable();
             $table->unsignedInteger('enrolled_count')->index()->default(0);
             $table->boolean('allow_multiple_quantity')->default(false);
+            $table->tinyInteger('access_days')->nullable();
             $table->string('status')->default(App\Enums\Content\PublicationStatusEnum::DRAFT->value);
             $table->boolean('is_prepayment_available')->default(false);
             $table->unsignedBigInteger('prepayment_amount')->nullable();
@@ -44,6 +45,8 @@ return new class extends Migration
             $table->index(['featured_price_start_date', 'featured_price_end_date'], 'idx_featured_price_dates');
             $table->index(['registration_start_date', 'registration_end_date'], 'idx_registration_dates');
             $table->index(['available_from', 'available_to'], 'idx_availability_dates');
+            $table->index(['product_id', 'status'], 'idx_pdo_product_id_status');
+            $table->index(['product_id', 'status', 'capacity', 'enrolled_count'], 'idx_pdo_capacity_utilization');
         });
     }
 

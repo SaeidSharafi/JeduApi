@@ -17,7 +17,7 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('parent_id')->nullable()->constrained('categories')->restrictOnDelete();
+            $table->foreignId('parent_id')->index()->nullable()->constrained('categories')->restrictOnDelete();
             $table->string('name')->unique();
             $table->string('slug')->unique();
             $table->string('status')->index()->default(App\Enums\Content\PublicationStatusEnum::PUBLISHED->value);
@@ -31,6 +31,7 @@ return new class extends Migration
             $table->json('additional_info')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('staff', 'id')->nullOnDelete();
             $table->timestamps();
+            $table->index('created_by');
         });
     }
 

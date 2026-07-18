@@ -13,9 +13,9 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->uuid()->unique();
-            $table->foreignId('order_id')->nullable()->constrained('orders')->cascadeOnDelete();
+            $table->foreignId('order_id')->index()->nullable()->constrained('orders')->cascadeOnDelete();
             $table->string('purpose', 50)->default('order')->after('order_id');
-            $table->foreignId('customer_id')->constrained('users')->restrictOnDelete();
+            $table->foreignId('customer_id')->index()->constrained('users')->restrictOnDelete();
             $table->unsignedBigInteger('amount');
             $table->string('method')->comment('e.g., mellat_gateway, bank_transfer, admin_credit');
             $table->string('status')->index()
@@ -32,8 +32,10 @@ return new class extends Migration
             $table->string('user_agent')->nullable()
                 ->comment('Customer user agent string at payment initiation');
             $table->text('admin_notes')->nullable();
+            $table->json('data')->nullable();
             $table->foreignId('created_by')
                 ->nullable()
+                ->index()
                 ->comment('The admin who initiated the payment (if is created by admin).')
                 ->constrained('staff', 'id')
                 ->nullOnDelete();

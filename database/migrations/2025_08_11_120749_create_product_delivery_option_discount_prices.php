@@ -31,6 +31,8 @@ return new class extends Migration
             $table->dateTime('ends_at')->nullable();
 
             $table->timestamps();
+
+            $table->index(['product_delivery_option_id', 'discount_promotion_id'], 'idx_pdo_promotion');
         });
     }
 

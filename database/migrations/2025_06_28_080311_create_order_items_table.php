@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('sku');
             $table->jsonb('product_data_snapshot_json');
+            $table->json('applied_discount_details_json')->nullable();
+            $table->json('pricing_metadata')->nullable();
             $table->integer('qty_ordered')->default(1);
 
             $table->unsignedBigInteger('price')->comment('The FULL price per unit.');
@@ -37,6 +39,11 @@ return new class extends Migration
 
             $table->string('status')->index()->default(OrderItemStatusEnum::COMPLETED->value);
             $table->timestamps();
+
+            $table->index('order_id');
+            $table->index('product_delivery_option_id');
+            $table->index('vendor_id');
+            $table->index(['status', 'created_at'], 'idx_status_created');
         });
     }
 

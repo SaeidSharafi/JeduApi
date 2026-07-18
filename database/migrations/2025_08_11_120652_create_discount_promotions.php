@@ -36,6 +36,9 @@ return new class extends Migration
             $table->unsignedInteger('total_usage_count')->default(0); // **KEY ADDITION**: Tracks total uses for promotions without coupons.
 
             $table->timestamps();
+
+            $table->index(['is_active', 'starts_at', 'ends_at'], 'idx_active_dates');
+            $table->index(['type', 'priority'], 'idx_type_priority');
         });
     }
 

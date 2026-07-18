@@ -29,7 +29,11 @@ return new class extends Migration
             $table->unsignedBigInteger('external_enrollment_id')->nullable();
             $table->jsonb('provisioning_data')->nullable();
             $table->text('notes')->nullable();
+            $table->timestamp('survey_completed_at')->nullable();
             $table->timestamps();
+            $table->index('order_id');
+            $table->index('order_item_id');
+            $table->index('customer_id');
             $table->index(['product_delivery_option_id', 'enrollment_status'], 'pdo_enrollment_status_index');
 
         });

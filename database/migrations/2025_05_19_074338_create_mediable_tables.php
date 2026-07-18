@@ -26,8 +26,11 @@ return new class extends Migration
                     $table->string('mime_type', 128);
                     $table->string('aggregate_type', 32)->index();
                     $table->unsignedInteger('size');
+                    $table->string('variant_name', 255)->nullable();
+                    $table->foreignIdFor(Media::class, 'original_media_id')->nullable()->constrained('media')->nullOnDelete();
                     $table->timestamps();
                     $table->unique(['disk', 'directory', 'filename', 'extension']);
+                    $table->index('original_media_id');
                 }
             );
         }
