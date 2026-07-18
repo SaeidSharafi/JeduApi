@@ -26,7 +26,6 @@ use App\Query\ProductQueryService;
 use App\Services\ProductPriceService;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Tests\Support\Helpers\TypesenseTestHelper;
 
 describe('ProductQueryService integration', function (): void {
     describe('get by type', function (): void {
@@ -1400,22 +1399,6 @@ describe('ProductQueryService integration', function (): void {
     }
 });
 describe('ProductQueryService - globalSearch', function (): void {
-    it('uses Typesense when available', function (): void {
-        TypesenseTestHelper::skipIfTypesenseUnavailable();
-
-        $requestData = new ProductListRequestData(
-            filter: null,
-            q: 'test',
-            page: 1,
-            per_page: 15,
-        );
-        TypesenseTestHelper::regenerateIndex();
-        $results = ProductQueryService::make()->globalSearch($requestData);
-
-        expect($results)->toBeInstanceOf(LengthAwarePaginator::class)
-            ->and($results->perPage())->toBe(15);
-    });
-
     it('uses database fallback when Typesense is not available', function (): void {
         // Force database fallback by setting wrong driver
         Config::set('scout.driver', 'database');

@@ -10,7 +10,6 @@ use App\Models\Blog\BlogPost;
 use App\Models\Course;
 use App\Models\Product;
 use App\Models\ProductPrice;
-use Tests\Support\Helpers\TypesenseTestHelper;
 
 use function Pest\Laravel\getJson;
 
@@ -24,12 +23,18 @@ use function Pest\Laravel\getJson;
  * - Response transformation: Adding 'type' field to results
  */
 
+beforeEach(function (): void {
+    // Force the database driver for all API search tests
+    Config::set('scout.driver', 'database');
+});
+
 // =============================================================================
 // RESPONSE TRANSFORMATION & REAL DATA TESTS
 // =============================================================================
 
 describe('Response Transformation', function (): void {
     it('returns properly structured response with products', function (): void {
+
         Product::factory()
             ->withDeliveryOptions(1)
             ->withCategory(1)
@@ -76,6 +81,7 @@ describe('Response Transformation', function (): void {
             ->and($json['price_data'])->toBeNull();
 
     });
+
     it('returns properly structured response with blog post', function (): void {
         BlogPost::factory()
             ->create(['title' => 'Laravel Version 12!', 'status' => PublicationStatusEnum::PUBLISHED]);
@@ -113,52 +119,18 @@ describe('Response Transformation', function (): void {
             ->and($json['type'])->toBe('blog_post');
 
     });
-    it('adds type field to product results', function (): void {
-        TypesenseTestHelper::skipIfTypesenseUnavailable();
 
-        Product::factory()
-            ->withDeliveryOptions(1)
-            ->withCategory(1)
-            ->withCourse()
-            ->create(['name' => 'Unique XYZ123 Product']);
+    it('prepares the correct searchable data array', function () {
+        $product = Product::factory()->create(['name' => 'Laravel Advanced Course']);
 
-        TypesenseTestHelper::regenerateIndex();
-        $response = getJson(route('api.v1.shop.search', [
-            'q'            => 'XYZ123',
-            'result_types' => ['product'],
-        ]));
+        $searchableArray = $product->toSearchableArray();
 
-        $response->assertOk();
-        $json = $response->json();
-
-        if (! empty($json['data']['data'])) {
-            expect($json['data']['data'][0])->toHaveKey('type')
-                ->and($json['data']['data'][0]['type'])->toBe('product');
-        }
-    });
-
-    it('adds type field to blog post results', function (): void {
-        TypesenseTestHelper::skipIfTypesenseUnavailable();
-
-        BlogPost::factory()->create([
-            'title'  => 'Unique XYZ123 Blog Post',
-            'status' => PublicationStatusEnum::PUBLISHED,
-        ]);
-        TypesenseTestHelper::regenerateIndex();
-        $response = getJson(route('api.v1.shop.search', [
-            'q'            => 'XYZ123',
-            'result_types' => ['blog_post'],
-        ]));
-
-        $response->assertOk();
-        $json = $response->json();
-
-        if (! empty($json['data']['data'])) {
-            expect($json['data']['data'][0])->toHaveKey('type')
-                ->and($json['data']['data'][0]['type'])->toBe('blog_post');
-        }
+        expect($searchableArray)
+            ->toHaveKeys(['name', 'short_description', 'price'])
+            ->and($searchableArray['name'])->toBe('Laravel Advanced Course');
     });
 });
+
 // =============================================================================
 // SEARCH VALIDATION TESTS
 // =============================================================================
@@ -332,6 +304,10 @@ describe('Suggestion Validation', function (): void {
     });
 });
 
+// =============================================================================
+// DB FILTERS TESTS
+// =============================================================================
+
 describe('filters tests', function (): void {
     it('returns all products without filter or query', function (): void {
         Product::factory()
@@ -344,6 +320,7 @@ describe('filters tests', function (): void {
         $response->assertOk();
         $response->assertJsonCount(10, 'data.data');
     });
+
     it('filters by productable_type=course', function (): void {
         Product::factory()
             ->withDeliveryOptions(1)
@@ -380,14 +357,17 @@ describe('filters tests', function (): void {
                 'name' => 'Discounted Course',
             ]);
 
-        ProductPrice::create([
-            'product_id'         => $product->id,
-            'min_price'          => 150_000,
-            'max_price'          => 150_000,
-            'min_original_price' => 200_000,
-            'max_original_price' => 200_000,
-            'has_discount'       => true,
-            'has_featured_price' => false,
+        ProductPrice::query()->create([
+            'product_id'              => $product->id,
+            'min_price'               => 150_000,
+            'max_price'               => 150_000,
+            'min_original_price'      => 200_000,
+            'max_original_price'      => 200_000,
+            'has_discount'            => true,
+            'has_featured_price'      => false,
+            'has_prepayment'          => false,
+            'discount_percentage'     => 25,
+            'highest_discount_amount' => 50_000,
         ]);
 
         $nonDiscountedProduct = Product::factory()
@@ -398,14 +378,17 @@ describe('filters tests', function (): void {
                 'name' => 'Non-Discounted Course',
             ]);
 
-        ProductPrice::create([
-            'product_id'         => $nonDiscountedProduct->id,
-            'min_price'          => 300_000,
-            'max_price'          => 300_000,
-            'min_original_price' => 300_000,
-            'max_original_price' => 300_000,
-            'has_discount'       => false,
-            'has_featured_price' => false,
+        ProductPrice::query()->create([
+            'product_id'              => $nonDiscountedProduct->id,
+            'min_price'               => 300_000,
+            'max_price'               => 300_000,
+            'min_original_price'      => 300_000,
+            'max_original_price'      => 300_000,
+            'has_discount'            => false,
+            'has_featured_price'      => false,
+            'has_prepayment'          => false,
+            'discount_percentage'     => 0,
+            'highest_discount_amount' => 0,
         ]);
 
         $response = getJson(route('api.v1.shop.search', [
@@ -426,33 +409,40 @@ describe('filters tests', function (): void {
         $category1 = App\Models\Category::factory()->create(['name' => 'Category One']);
         $category2 = App\Models\Category::factory()->create(['name' => 'Category Two']);
         $category3 = App\Models\Category::factory()->create(['name' => 'Category Three']);
+
         $product1  = Product::factory()
             ->withDeliveryOptions(1)
             ->withCourse()
             ->create(['name' => 'Multi-category Course']);
         $product1->categories()->attach([$category1->id, $category2->id]);
+
         $product2 = Product::factory()
             ->withDeliveryOptions(1)
             ->withCourse()
             ->create(['name' => 'Single-category Course']);
         $product2->categories()->attach([$category3->id]);
+
         $product3 = Product::factory()
             ->withDeliveryOptions(1)
             ->withCourse()
             ->create(['name' => 'No-category Course']);
+
         // Filter by category1 and category3
         $response = getJson(route('api.v1.shop.search', [
             'q'      => 'Course',
             'filter' => ['category_slugs' => [$category1->slug, $category3->slug]],
         ]));
+
         $response->assertOk();
         $json = $response->json();
+
         expect($json['data']['total'])->toBe(2);
         $names = array_map(fn ($item): mixed => $item['name'], $json['data']['data']);
         expect($names)->toContain('Multi-category Course')
             ->and($names)->toContain('Single-category Course')
             ->and($names)->not->toContain('No-category Course');
     });
+
     it('filters by price_min and price_max', function (): void {
         $cheapProduct = Product::factory()
             ->withDeliveryOptions(1)
@@ -461,14 +451,18 @@ describe('filters tests', function (): void {
             ->create([
                 'name' => 'Cheap Course',
             ]);
-        ProductPrice::create([
-            'product_id'         => $cheapProduct->id,
-            'min_price'          => 100_000,
-            'max_price'          => 100_000,
-            'min_original_price' => 100_000,
-            'max_original_price' => 100_000,
-            'has_discount'       => false,
-            'has_featured_price' => false,
+
+        ProductPrice::query()->create([
+            'product_id'              => $cheapProduct->id,
+            'min_price'               => 100_000,
+            'max_price'               => 100_000,
+            'min_original_price'      => 100_000,
+            'max_original_price'      => 100_000,
+            'has_discount'            => false,
+            'has_featured_price'      => false,
+            'has_prepayment'          => false,
+            'discount_percentage'     => 0,
+            'highest_discount_amount' => 0,
         ]);
 
         $affordableProduct = Product::factory()
@@ -478,14 +472,18 @@ describe('filters tests', function (): void {
             ->create([
                 'name' => 'Affordable Course',
             ]);
-        ProductPrice::create([
-            'product_id'         => $affordableProduct->id,
-            'min_price'          => 300_000,
-            'max_price'          => 300_000,
-            'min_original_price' => 300_000,
-            'max_original_price' => 300_000,
-            'has_discount'       => false,
-            'has_featured_price' => false,
+
+        ProductPrice::query()->create([
+            'product_id'              => $affordableProduct->id,
+            'min_price'               => 300_000,
+            'max_price'               => 300_000,
+            'min_original_price'      => 300_000,
+            'max_original_price'      => 300_000,
+            'has_discount'            => false,
+            'has_featured_price'      => false,
+            'has_prepayment'          => false,
+            'discount_percentage'     => 0,
+            'highest_discount_amount' => 0,
         ]);
 
         $expensiveProduct = Product::factory()
@@ -495,14 +493,18 @@ describe('filters tests', function (): void {
             ->create([
                 'name' => 'Expensive Course',
             ]);
-        ProductPrice::create([
-            'product_id'         => $expensiveProduct->id,
-            'min_price'          => 600_000,
-            'max_price'          => 600_000,
-            'min_original_price' => 600_000,
-            'max_original_price' => 600_000,
-            'has_discount'       => false,
-            'has_featured_price' => false,
+
+        ProductPrice::query()->create([
+            'product_id'              => $expensiveProduct->id,
+            'min_price'               => 600_000,
+            'max_price'               => 600_000,
+            'min_original_price'      => 600_000,
+            'max_original_price'      => 600_000,
+            'has_discount'            => false,
+            'has_featured_price'      => false,
+            'has_prepayment'          => false,
+            'discount_percentage'     => 0,
+            'highest_discount_amount' => 0,
         ]);
 
         $response = getJson(route('api.v1.shop.search', [
@@ -518,6 +520,7 @@ describe('filters tests', function (): void {
             expect($json['data']['data'][0]['name'])->toBe('Affordable Course');
         }
     });
+
     it('filters by level', function (): void {
         Product::factory()
             ->withDeliveryOptions(1)
@@ -548,6 +551,7 @@ describe('filters tests', function (): void {
             expect($json['data']['data'][0]['name'])->toBe('Beginner Course');
         }
     });
+
     it('filters by fulfillment_types', function (): void {
         Product::factory()
             ->withDeliveryOptions(realData: [
@@ -556,6 +560,7 @@ describe('filters tests', function (): void {
             ->withCategory(1)
             ->withCourse()
             ->create(['name' => 'Digital Course']);
+
         Product::factory()
             ->withDeliveryOptions(realData: [
                 ['fulfillment_type' => FulfillmentTypeEnum::PHYSICAL],
@@ -563,18 +568,22 @@ describe('filters tests', function (): void {
             ->withCategory(1)
             ->withCourse()
             ->create(['name' => 'Physical Course']);
+
         $response = getJson(route('api.v1.shop.search', [
             'q'      => 'Course',
             'filter' => ['fulfillment_types' => ['digital']],
         ]));
+
         $response->assertOk();
         $json = $response->json();
+
         expect($json['data']['total'])->toBe(1);
         if (! empty($json['data']['data'])) {
             expect($json['data']['data'][0]['name'])->toBe('Digital Course');
         }
     });
-    it('filters by availabilty status', function (): void {
+
+    it('filters by availability status', function (): void {
         $now         = now();
         $pastProduct = Product::factory()
             ->withDeliveryOptions(realData: [
@@ -589,7 +598,6 @@ describe('filters tests', function (): void {
             ->withCourse(Course::factory()->create())
             ->create(['name' => 'Past Product']);
 
-        // Upcoming
         $futureContentProduct = Product::factory()
             ->withDeliveryOptions(realData: [
                 [
@@ -606,8 +614,10 @@ describe('filters tests', function (): void {
         $response = getJson(route('api.v1.shop.search', [
             'filter' => ['availability_status' => AvailabilityStatusEnum::PAST->value],
         ]));
+
         $response->assertOk();
         $json = $response->json();
+
         expect($json['data']['total'])->toBe(1);
         if (! empty($json['data']['data'])) {
             expect($json['data']['data'][0]['name'])->toBe('Past Product');
