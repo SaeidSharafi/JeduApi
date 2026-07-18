@@ -127,7 +127,7 @@ final class GlobalSearchService
                     'query_by'              => 'embedding, name, short_name, productable_full_name, productable_short_name, short_description, productable_description',
                     'query_by_weights'      => '0, 10, 8, 8, 5, 2, 4',
                     'rerank_hybrid_matches' => true,
-                    'vector_query'          => 'embedding:([], alpha: 0.4)',
+                    'vector_query'          => 'embedding:([], alpha: 0.3, distance_threshold: 0.25)',
                     'include_fields'        => 'id',
                     'sort_by'               => '_text_match:desc,created_at:desc',
                     'filter_by'             => $productFilters,
@@ -143,7 +143,7 @@ final class GlobalSearchService
                     'query_by'              => 'embedding, title, body, excerpt',
                     'query_by_weights'      => '0, 10, 5, 2',
                     'rerank_hybrid_matches' => true,
-                    'vector_query'          => 'embedding:([], alpha: 0.4)',
+                    'vector_query'          => 'embedding:([], alpha: 0.3, distance_threshold: 0.25)',
                     'sort_by'               => '_text_match:desc,created_at:desc',
                     'include_fields'        => 'id',
                     'filter_by'             => $blogFilters,
@@ -287,7 +287,7 @@ final class GlobalSearchService
                 ->get()
                 ->keyBy('id')
             : collect();
-        $blogPosts = ! empty($blogPostIds) ? BlogPost::whereIn('id', $blogPostIds)->get()->keyBy('id') : collect();
+        $blogPosts = ! empty($blogPostIds) ? BlogPost::whereIn('id', $blogPostIds)->with(['author'])->get()->keyBy('id') : collect();
 
         // Reconstruct the collection in the EXACT order from Typesense results.
         $models = collect();

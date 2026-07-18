@@ -186,8 +186,8 @@ return [
             App\Models\Product::class => [
                 'collection-schema' => [
                     'fields' => [
-                        ['name' => 'name', 'type' => 'string', 'locale' => 'fa'],
-                        ['name' => 'short_name', 'type' => 'string', 'locale' => 'fa'],
+                        ['name' => 'name', 'type' => 'string', 'locale' => 'fa', 'sort' => true],
+                        ['name' => 'short_name', 'type' => 'string', 'locale' => 'fa', 'sort' => true],
                         ['name' => 'short_description', 'type' => 'string', 'locale' => 'fa'],
                         ['name' => 'slug', 'type' => 'string'],
                         ['name' => 'productable_full_name', 'type' => 'string', 'optional' => true, 'locale' => 'fa'],

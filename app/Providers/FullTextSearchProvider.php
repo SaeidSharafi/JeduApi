@@ -26,6 +26,13 @@ final class FullTextSearchProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Builder::macro('withPgroonga', function () {
+            if ($this->getConnection()->getDriverName() === 'pgsql') {
+                $this->whereRaw('use_pgroonga()');
+            }
+            return $this;
+        });
+
         /**
          * Perform a full-text search with automatic driver detection.
          *

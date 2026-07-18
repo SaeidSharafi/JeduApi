@@ -189,6 +189,7 @@ final class ProductQueryService
                     'error' => $e->getMessage(),
                 ]);
                 // Fall through to database search
+                throw $e;
             }
         }
         // @codeCoverageIgnoreEnd
@@ -207,7 +208,7 @@ final class ProductQueryService
             return $this->globalSearchProductsDatabase($requestData);
         }
 
-        if (config('scout.driver') !== 'typesense') {
+        if ($this->isTypesenseAvailable() === false) {
             return $this->globalSearchProductsDatabase($requestData);
         }
 
@@ -216,6 +217,8 @@ final class ProductQueryService
         $query      = Product::search($searchTerm)
             ->options([
                 'query_by' => 'embedding',
+                'prefix'    => 'false',
+                'num_typos' => '0',
             ]);
 
         // Apply core availability filters (matching globalSearchProductsDatabase)
@@ -279,11 +282,11 @@ final class ProductQueryService
         }
 
         return $query
-            ->query(function ($query): void {
+            ->query(function (Builder $query): void {
                 $query->with([
                     'vendor:id,name',
                     'categories:id,name,slug',
-                    'productable:id,thumbnail_url,default_teacher_info',
+                    'productable:id,thumbnail_url',
                     'productDeliveryOptions' => function ($q): void {
                         $q->where('status', PublicationStatusEnum::PUBLISHED)
                             ->with([
@@ -611,7 +614,7 @@ final class ProductQueryService
         $this->query->where(function (Builder $q) use ($searchTerm): void {
             // Use the new fullTextSearch macro which automatically detects the database driver
             // and falls back to appropriate methods (PGroonga for PostgreSQL, MATCH AGAINST for MySQL, etc.)
-            $q->fullTextSearch(['name', 'short_name', 'short_description', 'slug'], $searchTerm);
+            $q->withPgroonga()->fullTextSearch(['name', 'short_name', 'short_description', 'slug'], $searchTerm);
 
             foreach ($this->productableTypes as $type) {
                 $q->orWhereHasMorph('productable', [$type], function (Builder $sq) use ($searchTerm, $type): void {
@@ -621,7 +624,7 @@ final class ProductQueryService
                         $searchColumns[] = 'keywords';
                     }
 
-                    $sq->fullTextSearch($searchColumns, $searchTerm);
+                    $sq->withPgroonga()->fullTextSearch($searchColumns, $searchTerm);
                 });
             }
         });
@@ -1061,7 +1064,6 @@ final class ProductQueryService
                 && ! empty(config('scout.typesense.client-settings.api_key'))
                 && ! app()->runningUnitTests();
         }
-
         return $available;
     }
 
