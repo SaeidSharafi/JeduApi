@@ -64,7 +64,7 @@ services:
             TYPESENSE_API_KEY: '${TYPESENSE_API_KEY:-xyz}'
             TYPESENSE_ENABLE_CORS: '${TYPESENSE_ENABLE_CORS:-true}'
         volumes:
-            - 'sail-typesense:/typesense-data'
+            - './docker/typesense-data:/typesense-data'
         networks:
             - sail
         healthcheck:

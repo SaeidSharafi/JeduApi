@@ -35,3 +35,4 @@ laradumps.yaml
 /.octto/
 /graphify-out
 /.omo
+/docker/typesense-data/
