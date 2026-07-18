@@ -66,7 +66,7 @@ final class CreateSeminarData extends Data
                 }),
             ],
             'status'                   => ['required', Rule::enum(PublicationStatusEnum::class)],
-            'difficulty_level'         => ['nullable', Rule::enum(CourseDifficultyLevelEnum::class)],
+            'difficulty_level'         => ['required', Rule::enum(CourseDifficultyLevelEnum::class)],
             'provides_certificate'     => ['required', 'boolean'],
             'description'              => ['nullable', 'string'],
             'curriculum_summary_text'  => ['nullable', 'string'],
