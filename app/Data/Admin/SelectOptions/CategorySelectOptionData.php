@@ -16,6 +16,6 @@ final class CategorySelectOptionData extends Data
         #[MapInputName('slug')]
         public string $subtitle,
         #[MapInputName('icon_url')]
-        public string $image_url,
+        public ?string $image_url,
     ) {}
 }
