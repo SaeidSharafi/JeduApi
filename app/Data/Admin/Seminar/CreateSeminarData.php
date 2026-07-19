@@ -28,7 +28,7 @@ final class CreateSeminarData extends Data
         #[WithCast(EnumCast::class)]
         public CourseDifficultyLevelEnum $difficulty_level,
         public bool $provides_certificate,
-        public ?string $description,
+        public string $description,
         public ?string $curriculum_summary_text,
         public ?array $outcomes_json,
         public ?string $target_audience,
@@ -68,7 +68,7 @@ final class CreateSeminarData extends Data
             'status'                   => ['required', Rule::enum(PublicationStatusEnum::class)],
             'difficulty_level'         => ['required', Rule::enum(CourseDifficultyLevelEnum::class)],
             'provides_certificate'     => ['required', 'boolean'],
-            'description'              => ['nullable', 'string'],
+            'description'              => ['required', 'string'],
             'curriculum_summary_text'  => ['nullable', 'string'],
             'outcomes_json'            => ['required', 'array'],
             'target_audience'          => ['nullable', 'string'],
