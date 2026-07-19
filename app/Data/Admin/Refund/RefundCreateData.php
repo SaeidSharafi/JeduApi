@@ -41,7 +41,7 @@ final class RefundCreateData extends Data
             'skip_gateway' => ['boolean'],
             'admin_notes'  => ['nullable', 'string'],
 
-            'transaction_details'               => ['sometimes', 'nullable', 'array'],
+            'transaction_details'               => ['required', 'array'],
             'transaction_details.receiver_name' => ['required_with:transaction_details', 'string', 'max:255'],
             'transaction_details.card_number'   => ['required_with:transaction_details.receiver_name', 'string', 'digits:16'],
             'transaction_details.iban_number'   => ['required_with:transaction_details.receiver_name', 'string', new IbanNumberRule()],
