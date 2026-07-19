@@ -17,6 +17,7 @@ use App\Models\HomePageBlock;
 use App\Models\Order;
 use App\Models\Partner;
 use App\Models\Payment;
+use App\Models\PersonalAccessToken;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Models\Refund;
@@ -61,16 +62,23 @@ use App\Policies\Admin\VendorPolicy;
 use App\Policies\Admin\WalletCampaignPolicy;
 use App\Policies\Admin\WalletPolicy;
 use App\Policies\AdviceRequestPolicy;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
 
 final class AuthServiceProvider extends ServiceProvider
 {
-    public function register(): void {}
+    public function register(): void {
+        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+    }
 
     public function boot(): void
     {
+        Auth::provider('cached', function ($app, array $config) {
+            return new CachedUserProvider($app['hash'], $config['model']);
+        });
         Gate::before(function (Staff|User $user, mixed $ability, mixed $arguments) {
             // if doing operaion on Super Admin handle authorization in AdminPolciy
             if (count($arguments) === 1 && $arguments[0] instanceof Staff) {
