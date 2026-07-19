@@ -55,6 +55,19 @@ services:
                 - '${DB_USERNAME}'
             retries: 3
             timeout: 5s
+    redis:
+        image: redis:latest
+        ports:
+            - "6379:6379"
+        expose:
+            - "6379"
+        volumes:
+            - 'redis-data:/data'
+        environment:
+            - REDIS_PASSWORD=${REDIS_PASSWORD}  # Reference .env file variable
+        command: [ "redis-server", "--appendonly", "yes","--port", "6379", "--requirepass", "${REDIS_PASSWORD}" ]
+        networks:
+            - sail
     typesense:
         image: 'typesense/typesense:29.0'
         ports:
@@ -94,4 +107,6 @@ volumes:
     sail-mysql:
         driver: local
     sail-typesense:
+        driver: local
+    redis-data:
         driver: local
