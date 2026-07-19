@@ -20,7 +20,6 @@ final class TeacherListItemData extends Data
         public int $id,
         public string $first_name,
         public string $last_name,
-        public string $avatar_url,
         public float $rate,
         public string $email,
         public string $phone,
@@ -29,6 +28,7 @@ final class TeacherListItemData extends Data
         #[WithTransformer(AdvancedDateTimeInterfaceTransformer::class, format: 'Y-m-d')]
         public ?Verta $birth_date,
         public ?array $social_links,
-        public ?ShowUserData $user
+        public ?ShowUserData $user,
+        public ?string $avatar_url,
     ) {}
 }
