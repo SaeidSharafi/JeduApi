@@ -77,7 +77,9 @@ return [
         \App\Exceptions\Integrations\ResourceNotProvisionedException::class,
         \App\Exceptions\Gateway\BankException::class,
         \App\Exceptions\Gateway\DigipayException::class,
-        \App\Exceptions\Gateway\MellatException::class
+        \App\Exceptions\Gateway\MellatException::class,
+        \App\Exceptions\RefundValidationException::class,
+        \App\Exceptions\Payment\OrderFullyPaidException::class,
     ],
 
     // @see: https://docs.sentry.io/platforms/php/guides/laravel/configuration/options/#ignore_transactions

@@ -15,6 +15,7 @@ use App\Models\WalletCampaign;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
@@ -45,7 +46,7 @@ final class AdminWalletCampaignController extends Controller
                 'name',
                 'type',
                 'is_active',
-                'created_by',
+                AllowedFilter::exact('created_by'),
             ])
             ->allowedSorts([
                 'name',
@@ -60,7 +61,7 @@ final class AdminWalletCampaignController extends Controller
             ->with(['auditor'])
             ->withCount('transactions')
             ->defaultSort('-created_at')
-            ->paginate($request->get('per_page', 15));
+            ->paginate($request->input('per_page', 15));
 
         return apiResponse()->success(WalletCampaignData::collect($campaigns));
     }
