@@ -12,7 +12,6 @@ use App\Data\Admin\Product\ProductCreateData;
 use App\Data\Admin\Product\ProductData;
 use App\Data\Admin\Product\ProductListItemData;
 use App\Data\Admin\Product\ProductUpdateData;
-use App\Enums\Content\PublicationStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
@@ -52,7 +51,7 @@ final class ProductController extends Controller
                 'name', 'short_name',
                 AllowedFilter::exact('is_visible'),
                 AllowedFilter::exact('is_featured'),
-                AllowedFilter::exact('status')->default(PublicationStatusEnum::PUBLISHED),
+                AllowedFilter::exact('status'),
             ])
             ->allowedSorts(['created_at', 'updated_at', 'name', 'short_name', 'status', 'is_visible', 'is_featured'])
             ->defaultSort('-created_at')

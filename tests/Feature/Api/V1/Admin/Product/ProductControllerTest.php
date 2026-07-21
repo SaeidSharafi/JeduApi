@@ -135,7 +135,7 @@ describe('Controller Tests', function (): void {
         );
         $response = $this->getJson(route('api.v1.admin.products.index'));
         $response->assertOk()
-            ->assertJsonCount(10, 'data.data');
+            ->assertJsonCount(15, 'data.data');
     });
 
     it('should create a product', function (): void {
