@@ -31,6 +31,7 @@ return [
         'https://test-jedu.encel.ir',
         'https://test-admin-jedu.encel.ir',
         'http://localhost:3000',
+        'http://185.141.133.114:8080',
     ],
 
     'allowed_origins_patterns' => [],

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\Admin\Review\ApproveReviewController;
 use App\Http\Controllers\Api\Admin\Review\RejectReviewController;
 use App\Http\Controllers\Api\Admin\Review\ReviewController;
 use App\Http\Controllers\Api\Admin\Review\UpdateReviewFeaturedStatusController;
+use App\Http\Controllers\Api\Admin\StaffProfileController;
 use App\Http\Controllers\Api\Admin\System\PermissionController;
 use App\Http\Controllers\Api\Admin\System\RoleController;
 use App\Http\Controllers\Api\Admin\TermController;
@@ -56,3 +57,6 @@ Route::patch('reviews/{review}/featured', UpdateReviewFeaturedStatusController::
 Route::apiResource('advice-requests', AdviceRequestController::class)->except(['store']);
 Route::patch('advice-requests/{adviceRequest}/status', AdviceRequestUpdateStatusController::class)
     ->name('advice-requests.update-status');
+
+Route::singleton('profile', StaffProfileController::class)
+    ->only(['show', 'update']);
