@@ -86,7 +86,7 @@ it('storeStudent throws with metadata on 422', function (): void {
         expect($e->metaData['validation_errors']['national_code'])->toContain('validation.unique');
         expect($e->metaData['raw_body_snippet'])->toBeString();
         expect(mb_strlen($e->metaData['raw_body_snippet']))->toBeLessThanOrEqual(500);
-        expect($e->getMessage())->toContain('national_code:');
+        expect($e->getMessage())->toContain('Validation failed on /api/v2/student');
     }
 });
 
@@ -213,4 +213,96 @@ it('throws when service used before configuration', function (): void {
 
     expect(fn () => $service->storeStudent(['national_code' => '1234567890']))
         ->toThrow(UnrecoverableProvisioningException::class);
+});
+
+
+it('getAttendance succeeds and returns array', function (): void {
+    Http::fake([
+        'https://ims.test/api/v2/teacher/course/IMS-1/attendance*' => Http::response([
+            'data' => ['course_name' => 'Excel', 'enrolments' => []]
+        ], 200),
+    ]);
+
+    $response = $this->imsService->getAttendance('IMS-1', '1234567890', CivilIdTypeEnum::NATIONAL_CODE);
+
+    expect($response)->toBeArray()
+        ->and($response['data']['course_name'])->toBe('Excel');
+
+    Http::assertSent(function ($request) {
+        return str_contains($request->url(), '/api/v2/teacher/course/IMS-1/attendance')
+            && $request->hasHeader('X-Teacher-Civil-Id', '1234567890')
+            && $request->method() === 'GET';
+    });
+});
+
+it('storeAttendance throws UnrecoverableProvisioningException on 422', function (): void {
+    Http::fake([
+        'https://ims.test/api/v2/teacher/course/IMS-1/attendance' => Http::response([
+            'errors' => ['attendance_date' => ['The attendance date is required.']],
+        ], 422),
+    ]);
+
+    try {
+        $this->imsService->storeAttendance('IMS-1', '1234567890', CivilIdTypeEnum::NATIONAL_CODE, []);
+        $this->fail('Expected UnrecoverableProvisioningException');
+    } catch (UnrecoverableProvisioningException $e) {
+        expect($e->metaData['http_status'])->toBe(422);
+        expect($e->metaData['validation_errors'])->toHaveKey('attendance_date');
+    }
+});
+
+it('updateAttendance succeeds', function (): void {
+    Http::fake([
+        'https://ims.test/api/v2/teacher/course/IMS-1/attendance' => Http::response(['message' => 'ok'], 200),
+    ]);
+
+    $response = $this->imsService->updateAttendance('IMS-1', '1234567890', CivilIdTypeEnum::NATIONAL_CODE, ['attendance_date' => '2024-01-01']);
+
+    expect($response['message'])->toBe('ok');
+
+    Http::assertSent(fn ($request) => $request->method() === 'PUT');
+});
+
+it('destroyAttendance succeeds', function (): void {
+    Http::fake([
+        'https://ims.test/api/v2/teacher/course/IMS-1/attendance' => Http::response(['message' => 'deleted'], 200),
+    ]);
+
+    $response = $this->imsService->destroyAttendance('IMS-1', '1234567890', CivilIdTypeEnum::NATIONAL_CODE);
+    expect($response['message'])->toBe('deleted');
+    Http::assertSent(fn ($request) => $request->method() === 'DELETE');
+});
+
+it('getGrades and storeBulkGrades succeed', function (): void {
+    Http::fake([
+        'https://ims.test/api/v2/teacher/course/IMS-1/grade/bulk' => Http::response(['message' => 'ok'], 200),
+        'https://ims.test/api/v2/teacher/course/IMS-1/grade*' => Http::response(['data' => []], 200),
+    ]);
+
+    $getRes = $this->imsService->getGrades('IMS-1', '1234567890', CivilIdTypeEnum::NATIONAL_CODE);
+    expect($getRes)->toHaveKey('data');
+
+    $postRes = $this->imsService->storeBulkGrades('IMS-1', '1234567890', CivilIdTypeEnum::NATIONAL_CODE, ['enrolments' => []]);
+    expect($postRes['message'])->toBe('ok');
+});
+
+it('getTeacherCourses returns course list', function (): void {
+    Http::fake([
+        'https://ims.test/api/v2/teacher/courses*' => Http::response([
+            'data' => [
+                ['code' => 'IMS-1', 'name' => 'Course 1', 'is_current' => true],
+            ],
+        ], 200),
+    ]);
+
+    $response = $this->imsService->getTeacherCourses('1234567890', CivilIdTypeEnum::NATIONAL_CODE);
+
+    expect($response)->toHaveKey('data')
+        ->and($response['data'][0]['code'])->toBe('IMS-1');
+
+    Http::assertSent(function ($request) {
+        return str_contains($request->url(), '/api/v2/teacher/courses')
+            && $request->hasHeader('X-Teacher-Civil-Id', '1234567890')
+            && $request->method() === 'GET';
+    });
 });

@@ -1,0 +1,131 @@
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "code": "02-14051-288-0002",
+      "name": "اکسل-گروه 2",
+      "start_date": "1405-03-04",
+      "end_date": "1405-03-20",
+      "is_current": false,
+      "has_grades_enabled": true,
+      "has_attendance_enabled": true,
+      "product_image": {
+        "url": "http://jedu.test/storage/fake-media/cover-business.svg",
+        "thumbnail": null,
+        "alt": ""
+      },
+      "product_delivery_option_id": 10
+    },
+    {
+      "code": "02-14051-288-0001",
+      "name": "اکسل",
+      "start_date": "1405-03-03",
+      "end_date": "1405-03-26",
+      "is_current": false,
+      "has_grades_enabled": false,
+      "has_attendance_enabled": true,
+      "product_image": null,
+      "product_delivery_option_id": null
+    },
+    {
+      "code": "02-14051-537-0001",
+      "name": "اکسل و ورد",
+      "start_date": "1404-12-12",
+      "end_date": "1405-02-08",
+      "is_current": false,
+      "has_grades_enabled": true,
+      "has_attendance_enabled": true,
+      "product_image": null,
+      "product_delivery_option_id": null
+    },
+    {
+      "code": "01-14042-455-0001",
+      "name": "تهیه و تنظیم گزارشات آماری",
+      "start_date": "1404-06-01",
+      "end_date": "1404-06-12",
+      "is_current": false,
+      "has_grades_enabled": true,
+      "has_attendance_enabled": true,
+      "product_image": null,
+      "product_delivery_option_id": null
+    },
+    {
+      "code": "01-14033-532-0001",
+      "name": "تهیه و تنظیم گزارشات آماری-شهرداری",
+      "start_date": "1403-07-07",
+      "end_date": "1403-07-21",
+      "is_current": false,
+      "has_grades_enabled": false,
+      "has_attendance_enabled": true,
+      "product_image": null,
+      "product_delivery_option_id": null
+    },
+    {
+      "code": "01-14014-106-0001",
+      "name": "SPSS",
+      "start_date": "1401-12-15",
+      "end_date": "1401-12-29",
+      "is_current": false,
+      "has_grades_enabled": false,
+      "has_attendance_enabled": false,
+      "product_image": null,
+      "product_delivery_option_id": null
+    },
+    {
+      "code": "01-14013-141-0002",
+      "name": "پایتون پیشرفته3",
+      "start_date": "1401-09-29",
+      "end_date": "1401-09-30",
+      "is_current": false,
+      "has_grades_enabled": false,
+      "has_attendance_enabled": true,
+      "product_image": null,
+      "product_delivery_option_id": null
+    },
+    {
+      "code": "01-14013-141-0001",
+      "name": "پایتون پیشرفته2",
+      "start_date": "1401-07-24",
+      "end_date": "1401-09-30",
+      "is_current": false,
+      "has_grades_enabled": false,
+      "has_attendance_enabled": true,
+      "product_image": null,
+      "product_delivery_option_id": null
+    },
+    {
+      "code": "01-14012-141-0001",
+      "name": "پایتون پیشرفته",
+      "start_date": "1401-05-24",
+      "end_date": "1401-06-31",
+      "is_current": false,
+      "has_grades_enabled": false,
+      "has_attendance_enabled": true,
+      "product_image": null,
+      "product_delivery_option_id": null
+    },
+    {
+      "code": "01-14004-141-0001",
+      "name": "پایتون پیشرفته(2)",
+      "start_date": "1400-12-03",
+      "end_date": "1400-12-29",
+      "is_current": false,
+      "has_grades_enabled": false,
+      "has_attendance_enabled": true,
+      "product_image": null,
+      "product_delivery_option_id": null
+    },
+    {
+      "code": "01-14003-141-0001",
+      "name": "پایتون پیشرفته",
+      "start_date": "1400-09-22",
+      "end_date": "1400-09-30",
+      "is_current": false,
+      "has_grades_enabled": true,
+      "has_attendance_enabled": true,
+      "product_image": null,
+      "product_delivery_option_id": null
+    }
+  ],
+  "metadata": []
+}

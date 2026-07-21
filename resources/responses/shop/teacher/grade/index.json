@@ -1,0 +1,79 @@
+{
+    "enrolments": [
+        {
+            "id": 38582,
+            "status": 1,
+            "student": {
+                "id": 359,
+                "first_name": "سعید",
+                "last_name": "قهرمانی",
+                "national_code": "1234567890",
+                "civil_id": "1234567890",
+                "civil_id_type": "national_code",
+                "full_name": "سعید قهرمانی"
+            },
+            "grades": {
+                "it": 90,
+                "_it": true,
+                "windows": null,
+                "word": null,
+                "excel": null,
+                "access": null,
+                "powerpoint": null,
+                "internet": null
+            },
+            "grade_id": null
+        }
+    ],
+    "course": {
+        "code": "02-14051-288-0002",
+        "name": "اکسل-گروه 2",
+        "start_date": "2026-05-24T20:30:00.000000Z",
+        "end_date": "2026-06-09T20:30:00.000000Z",
+        "capacity": 30
+    },
+    "fields": [
+        {
+            "name": "it",
+            "label": "مفاهیم پایه فناوری اطلاعات",
+            "active": true,
+            "gradepass": 80
+        },
+        {
+            "name": "windows",
+            "label": "کامپیوتر و مدیریت فایل",
+            "active": true,
+            "gradepass": 80
+        },
+        {
+            "name": "word",
+            "label": "واژه پردازها",
+            "active": true,
+            "gradepass": 80
+        },
+        {
+            "name": "excel",
+            "label": "صفحه گسترده ها",
+            "active": true,
+            "gradepass": 50
+        },
+        {
+            "name": "access",
+            "label": "بانک های اطلاعاتی",
+            "active": true,
+            "gradepass": 80
+        },
+        {
+            "name": "powerpoint",
+            "label": "ارائه مطالب",
+            "active": true,
+            "gradepass": 80
+        },
+        {
+            "name": "internet",
+            "label": "اطلاعات و ارتباطات",
+            "active": true,
+            "gradepass": 80
+        }
+    ]
+}

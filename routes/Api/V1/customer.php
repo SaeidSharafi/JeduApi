@@ -14,6 +14,9 @@ use App\Http\Controllers\Api\Shop\Student\OrderController;
 use App\Http\Controllers\Api\Shop\Student\QuizController;
 use App\Http\Controllers\Api\Shop\Student\RetryPaymentController;
 use App\Http\Controllers\Api\Shop\Student\ShowPaymentController;
+use App\Http\Controllers\Api\Shop\Teacher\AttendanceController;
+use App\Http\Controllers\Api\Shop\Teacher\CourseController;
+use App\Http\Controllers\Api\Shop\Teacher\GradeController;
 use App\Http\Controllers\Api\Shop\Wallet\WalletTopupController;
 
 Route::middleware(['auth:user'])
@@ -85,9 +88,24 @@ Route::middleware(['auth:user'])
         // 2. TEACHER DASHBOARD
         // ==========================================
         Route::prefix('teacher')->name('teacher.')->group(function (): void {
-            // Examples of future teacher-specific endpoints:
-            // Route::get('/courses', [TaughtCourseController::class, 'index'])->name('courses.index');
-            // Route::get('/students', [StudentListController::class, 'index'])->name('students.index');
+            Route::prefix('courses')->name('courses.')->group(function (): void {
+                Route::get('/', [CourseController::class, 'index'])
+                    ->name('index');
+
+                //Route::get('/{deliveryOption:uuid}', [EnrollmentController::class, 'show'])
+                //    ->name('show');
+                //
+                //Route::post('/{deliveryOption:uuid}/moodle/sso', MoodleSsoController::class)
+                //    ->name('moodle.sso');
+                //
+                //Route::get('/{deliveryOption:uuid}/join', JoinUrlController::class)
+                //    ->name('join');
+
+                Route::apiResource('/{courseCode}/attendances', AttendanceController::class);
+                Route::apiResource('/{courseCode}/grades', GradeController::class);
+                Route::post('/{courseCode}/grades/bulk', [GradeController::class, 'storeBulk']);
+
+            });
         });
 
         // ==========================================

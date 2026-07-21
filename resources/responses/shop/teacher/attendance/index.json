@@ -1,0 +1,303 @@
+{
+  "course": {
+    "code": "02-14051-288-0002",
+    "name": "اکسل-گروه 2",
+    "start_date": "2026-05-24T20:30:00.000000Z",
+    "end_date": "2026-06-09T20:30:00.000000Z",
+    "capacity": 30
+  },
+  "enrolments": [
+    {
+      "id": 38597,
+      "first_name": "مهرنوش",
+      "last_name": "اسداللهی",
+      "national_code": "0123456789",
+      "attendance": {
+        "attendance_id": 72372,
+        "left_early_at": null,
+        "left_early_reason": null,
+        "attend_status": -1,
+        "notes": null
+      }
+    },
+    {
+      "id": 38595,
+      "first_name": "فریبا",
+      "last_name": "باقرآبادی",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38763,
+      "first_name": "شادی ",
+      "last_name": "باقری",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38583,
+      "first_name": "زینت",
+      "last_name": "بالداران",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38592,
+      "first_name": "سمیه",
+      "last_name": "بخشی پور",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38587,
+      "first_name": "متین",
+      "last_name": "حجی زاده",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38581,
+      "first_name": "مریم ",
+      "last_name": "رمضانی",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38586,
+      "first_name": "فاطمه ",
+      "last_name": "صادقی نیارکی",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38588,
+      "first_name": "زهرا",
+      "last_name": "صفایی",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38578,
+      "first_name": "مهدی",
+      "last_name": "عسگرخانی فرد",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38593,
+      "first_name": "فاطمه",
+      "last_name": "فرخ نژاد",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38590,
+      "first_name": "فاطمه",
+      "last_name": "فریدنیا",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38580,
+      "first_name": "مجتبی",
+      "last_name": "قاسمی",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38589,
+      "first_name": "فاطمه",
+      "last_name": "قلی پور",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38582,
+      "first_name": "سعید",
+      "last_name": "قهرمانی",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38584,
+      "first_name": "الهه",
+      "last_name": "کشاورز",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38585,
+      "first_name": "الهام",
+      "last_name": "محمدی بازنشینی",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38594,
+      "first_name": "مهدی",
+      "last_name": "مهجور",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38596,
+      "first_name": "راضیه",
+      "last_name": "نژاد امان ارشاد",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38579,
+      "first_name": "میثم",
+      "last_name": "نظیریان",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    },
+    {
+      "id": 38591,
+      "first_name": "الناز",
+      "last_name": "یاوری",
+      "national_code": "0123456789",
+      "attendance": {
+        "attend_status": null
+      }
+    }
+  ],
+  "attendance_date": "2026-07-13",
+  "occurrence_id": 37142,
+  "has_attendance": true,
+  "attendance_types": [
+    {
+      "value": 1,
+      "label": "حاضر"
+    },
+    {
+      "value": -1,
+      "label": "غایب"
+    },
+    {
+      "value": 2,
+      "label": "تاخیر"
+    },
+    {
+      "value": 3,
+      "label": "غیبت موجه"
+    }
+  ],
+  "max": "2026-07-21",
+  "can_select_date": true,
+  "can_edit": true,
+  "date_access_denied": false,
+  "attendance_owner": null,
+  "occurrence_context": {
+    "has_occurrence": true,
+    "occurrences": [
+      {
+        "id": 37142,
+        "status": "completed",
+        "start_time": "10:00:00",
+        "end_time": "12:00:00",
+        "teacher_name": null,
+        "classroom_name": "سایت آموزش",
+        "cancellation_reason": null
+      }
+    ],
+    "messages": []
+  },
+  "available_occurrences": [
+    {
+      "id": 37142,
+      "label": "1405-04-22 - 10:00 تا 12:00",
+      "date": "2026-07-13",
+      "start_time": "10:00:00",
+      "end_time": "12:00:00"
+    },
+    {
+      "id": 37140,
+      "label": "1405-03-20 - 10:00 تا 12:00",
+      "date": "2026-06-10",
+      "start_time": "10:00:00",
+      "end_time": "12:00:00"
+    },
+    {
+      "id": 37139,
+      "label": "1405-03-18 - 10:00 تا 12:00",
+      "date": "2026-06-08",
+      "start_time": "10:00:00",
+      "end_time": "12:00:00"
+    },
+    {
+      "id": 37138,
+      "label": "1405-03-13 - 10:00 تا 12:00",
+      "date": "2026-06-03",
+      "start_time": "10:00:00",
+      "end_time": "12:00:00"
+    },
+    {
+      "id": 37137,
+      "label": "1405-03-11 - 10:00 تا 12:00",
+      "date": "2026-06-01",
+      "start_time": "10:00:00",
+      "end_time": "12:00:00"
+    },
+    {
+      "id": 37136,
+      "label": "1405-03-06 - 10:00 تا 12:00",
+      "date": "2026-05-27",
+      "start_time": "10:00:00",
+      "end_time": "12:00:00"
+    },
+    {
+      "id": 37135,
+      "label": "1405-03-04 - 10:00 تا 12:00",
+      "date": "2026-05-25",
+      "start_time": "10:00:00",
+      "end_time": "12:00:00"
+    },
+    {
+      "id": 37141,
+      "label": "786-01--698 - 10:00 تا 12:00",
+      "date": "1405-04-22",
+      "start_time": "10:00:00",
+      "end_time": "12:00:00"
+    }
+  ]
+}

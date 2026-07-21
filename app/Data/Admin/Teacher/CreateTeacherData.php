@@ -24,7 +24,7 @@ final class CreateTeacherData extends Data
         public string $phone,
         public string $gender,
         #[WithCast(CarbonFromJalaliString::class, 'Y-m-d')]
-        public ?Carbon $date_of_birth,
+        public ?Carbon $birth_date,
         public ?array $social_links,
         public int $user_id,
         public array $media,

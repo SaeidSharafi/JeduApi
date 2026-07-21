@@ -80,8 +80,7 @@ abstract class AbstractIntegrationService
         if ($status === 422) {
             $rawErrors                     = (array) data_get($response->json(), 'errors', []);
             $metaData['validation_errors'] = $rawErrors;
-            $message = $this->formatValidationErrors($rawErrors)
-                ?: __('messages.integration.validation_failed', ['endpoint' => $endpoint]);
+            $message =  __('messages.integration.validation_failed', ['endpoint' => $endpoint]);
 
             throw new UnrecoverableProvisioningException($message, $status, null, $metaData);
         }
