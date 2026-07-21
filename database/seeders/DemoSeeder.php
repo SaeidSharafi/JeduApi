@@ -711,7 +711,7 @@ final class DemoSeeder extends Seeder
         $partners = Partner::whereIn('id', collect($collection)->pluck('id'))->get();
         foreach ($partners as $i => $partner) {
             $logo = $logoPool[$i % count($logoPool)];
-            $partner->syncMedia($logo, 'logo');
+            $partner->syncMedia($logo, 'image');
             $partner->image_url = $logo->getUrl();
             $partner->image_id  = $logo->id;
             $partner->save();
