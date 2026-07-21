@@ -118,6 +118,157 @@ return [
                 ],
             ],
         ],
+        'specific_products_in_cart' => [
+            'name'        => 'Specific Products in Cart',
+            'description' => 'This condition checks whether the specified products are present in the cart.',
+            'fields'      => [
+                'product_ids' => [
+                    'label'       => 'Products',
+                    'description' => 'The products that must be present in the cart for this condition to be met.',
+                ],
+                'match_policy' => [
+                    'label'       => 'Match Policy',
+                    'description' => 'Specifies whether the cart must contain at least one of the selected products, or all of them.',
+                ],
+            ],
+        ],
+        'user_never_purchased_category' => [
+            'name'        => 'User Never Purchased Category',
+            'description' => 'This condition checks that the customer has never purchased from the specified categories.',
+            'fields'      => [
+                'category_ids' => [
+                    'label'       => 'Categories',
+                    'description' => 'The categories the customer must not have purchased from.',
+                ],
+                'match_policy' => [
+                    'label'       => 'Match Policy',
+                    'description' => 'Specifies whether the customer must not have purchased from at least one of the selected categories, or from none of them.',
+                ],
+            ],
+        ],
+        'delivery_method_is' => [
+            'name'        => 'Delivery Method',
+            'description' => 'This condition checks whether the product\'s delivery method matches the selected options.',
+            'fields'      => [
+                'delivery_methods' => [
+                    'label'       => 'Delivery Methods',
+                    'description' => 'The allowed delivery methods for this condition.',
+                ],
+            ],
+        ],
+        'price_between' => [
+            'name'        => 'Price Between',
+            'description' => 'This condition checks whether the product price falls within the specified range.',
+            'fields'      => [
+                'min_price' => [
+                    'label'       => 'Minimum Price',
+                    'description' => 'The minimum product price (in Rials).',
+                ],
+                'max_price' => [
+                    'label'       => 'Maximum Price',
+                    'description' => 'The maximum product price (in Rials). Leave empty for no upper limit.',
+                ],
+            ],
+        ],
+        'low_capacity_remaining' => [
+            'name'        => 'Low Capacity Remaining',
+            'description' => 'This condition checks whether the remaining capacity of the product is below the specified threshold.',
+            'fields'      => [
+                'threshold' => [
+                    'label'       => 'Capacity Threshold',
+                    'description' => 'The capacity utilization ratio at which the condition is triggered (e.g., 0.8 for 80% full).',
+                ],
+            ],
+        ],
+        'registration_closing_soon' => [
+            'name'        => 'Registration Closing Soon',
+            'description' => 'This condition checks whether the product registration closing date is within the specified number of days.',
+            'fields'      => [
+                'days' => [
+                    'label'       => 'Days Before Closing',
+                    'description' => 'The number of days before registration closes at which the condition is triggered.',
+                ],
+            ],
+        ],
+        'vendor_is' => [
+            'name'        => 'Vendor',
+            'description' => 'This condition checks whether the product vendor matches the selected vendors.',
+            'fields'      => [
+                'vendor_ids' => [
+                    'label'       => 'Vendors',
+                    'description' => 'The vendors whose products this condition applies to.',
+                ],
+            ],
+        ],
+        'apply_fixed_price_product' => [
+            'name'        => 'Product Fixed Price',
+            'description' => 'Sets a fixed price for the product, overriding the original price.',
+            'fields'      => [
+                'fixed_price' => [
+                    'label'       => 'Fixed Price',
+                    'description' => 'The fixed price to set for the product (in Rials).',
+                ],
+            ],
+        ],
+        'apply_tiered_percentage_off_product' => [
+            'name'        => 'Product Tiered Percentage Discount',
+            'description' => 'Applies a tiered percentage discount to the product price based on defined tiers.',
+            'fields'      => [
+                'tiers' => [
+                    'label'       => 'Discount Tiers',
+                    'description' => 'The tiers defining amount thresholds and their corresponding discount percentages.',
+                ],
+            ],
+        ],
+        'first_order_only' => [
+            'name'        => 'First Order Only',
+            'description' => 'This condition checks whether this is the customer\'s first order.',
+            'fields'      => [],
+        ],
+        'gift_product' => [
+            'name'        => 'Gift Product',
+            'description' => 'Adds a product to the cart as a gift.',
+            'fields'      => [
+                'product_delivery_option_id' => [
+                    'label'       => 'Gift Product',
+                    'description' => 'The product delivery option to add as a gift.',
+                ],
+            ],
+        ],
+        'apply_fixed_amount_off' => [
+            'name'        => 'Fixed Amount Off Cart',
+            'description' => 'A specified fixed amount is deducted from the cart total.',
+            'fields'      => [
+                'amount' => [
+                    'label'       => 'Discount Amount',
+                    'description' => 'The fixed amount deducted from the cart total (in Rials).',
+                ],
+            ],
+        ],
+        'apply_tiered_percentage_off' => [
+            'name'        => 'Tiered Percentage Off Cart',
+            'description' => 'Applies a tiered percentage discount to the cart based on defined tiers.',
+            'fields'      => [
+                'tiers' => [
+                    'label'       => 'Discount Tiers',
+                    'description' => 'The tiers defining amount thresholds and their corresponding discount percentages.',
+                ],
+            ],
+        ],
+        'cart_item_count_over' => [
+            'name'        => 'Cart Item Count Over',
+            'description' => 'This condition checks whether the number of items in the cart exceeds the specified threshold.',
+            'fields'      => [
+                'min_count' => [
+                    'label'       => 'Minimum Item Count',
+                    'description' => 'The minimum number of items required in the cart for this condition to be met.',
+                ],
+                'count_quantities' => [
+                    'label'       => 'Count Quantities',
+                    'description' => 'If enabled, the total quantity of each item is counted; otherwise, only distinct items are counted.',
+                ],
+            ],
+        ],
     ],
 
     'operators' => [
@@ -143,8 +294,8 @@ return [
     // per-field labels since the same enum can be reused across handlers.
     'enum_cases' => [
         'MatchPolicyEnum' => [
-            'any' => 'At least one of the categories',
-            'all' => 'All selected categories',
+            'any' => 'At least one of the selected items',
+            'all' => 'All selected items',
         ],
     ],
 

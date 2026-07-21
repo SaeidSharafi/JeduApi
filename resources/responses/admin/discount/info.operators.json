@@ -1,4 +1,31 @@
-[
-  {"value": "greater_than_or_equal", "label": ">=", "symbol": ">="},
-  {"value": "less_than", "label": "<", "symbol": "<"}
-]
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "value": "greater_than_or_equal",
+      "label": "بیشتر یا مساوی",
+      "symbol": ">="
+    },
+    {
+      "value": "greater_than",
+      "label": "بیشتر از",
+      "symbol": ">"
+    },
+    {
+      "value": "less_than_or_equal",
+      "label": "کمتر یا مساوی",
+      "symbol": "<="
+    },
+    {
+      "value": "less_than",
+      "label": "کمتر از",
+      "symbol": "<"
+    },
+    {
+      "value": "equal",
+      "label": "برابر با",
+      "symbol": "="
+    }
+  ],
+  "metadata": []
+}

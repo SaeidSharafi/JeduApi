@@ -1,8 +1,193 @@
-[
-  {
-    "key": "cart_discount",
-    "name": "Cart Discount",
-    "description": "Discount on cart",
-    "configuration_schema": {"amount": "number"}
-  }
-]
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "cart": [
+      {
+        "key": "add_gift_credit",
+        "name": "اعطای اعتبار هدیه",
+        "description": "مبلغی به‌عنوان اعتبار هدیه به کیف پول مشتری اضافه می‌شود.",
+        "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\AddGiftCreditAction",
+        "configuration_schema": {
+          "amount": {
+            "key": "amount",
+            "type": "integer",
+            "label": "مبلغ اعتبار هدیه",
+            "required": true,
+            "description": "مبلغ اعتبار به ریال."
+          },
+          "per_item": {
+            "key": "per_item",
+            "type": "boolean",
+            "label": "محاسبه به ازای هر کالا",
+            "required": false,
+            "description": "در صورت فعال بودن، به ازای هر کالا محاسبه می‌شود.",
+            "default": false
+          },
+          "expires_days": {
+            "key": "expires_days",
+            "type": "integer",
+            "label": "مدت اعتبار (روز)",
+            "required": false,
+            "description": "تعداد روزهای اعتبار (خالی بگذارید برای اعتبار دائمی).",
+            "default": null
+          },
+          "description": {
+            "key": "description",
+            "type": "string",
+            "label": "یادداشت تراکنش",
+            "required": false,
+            "description": "توضیحات در سابقه کیف پول.",
+            "default": null
+          }
+        }
+      },
+      {
+        "key": "add_wallet_credit",
+        "name": "افزایش موجودی کیف پول",
+        "description": "مبلغی مشخص مستقیماً به موجودی اصلی کیف پول افزوده می‌شود.",
+        "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\AddWalletCreditAction",
+        "configuration_schema": {
+          "amount": {
+            "key": "amount",
+            "type": "integer",
+            "label": "مبلغ اعتبار",
+            "required": true,
+            "description": "مبلغ به ریال."
+          },
+          "per_item": {
+            "key": "per_item",
+            "type": "boolean",
+            "label": "محاسبه به ازای هر کالا",
+            "required": false,
+            "description": "در صورت فعال بودن، به ازای هر کالا محاسبه می‌شود.",
+            "default": false
+          },
+          "description": {
+            "key": "description",
+            "type": "string",
+            "label": "یادداشت تراکنش",
+            "required": false,
+            "description": "توضیحات در سابقه کیف پول.",
+            "default": null
+          }
+        }
+      },
+      {
+        "key": "apply_fixed_amount_off",
+        "name": "تخفیف مبلغ ثابت روی سبد خرید",
+        "description": "مبلغ مشخصی از مجموع سبد خرید کسر می‌شود.",
+        "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\ApplyFixedAmountOffAction",
+        "configuration_schema": {
+          "amount": {
+            "key": "amount",
+            "type": "integer",
+            "label": "مبلغ تخفیف",
+            "required": true,
+            "description": "مبلغ تخفیف به ریال."
+          }
+        }
+      },
+      {
+        "key": "apply_percentage_off",
+        "name": "تخفیف درصدی روی سبد خرید",
+        "description": "درصد مشخصی از مبلغ اقلام سبد خرید کسر می‌شود.",
+        "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\ApplyPercentageDiscountToItemsAction",
+        "configuration_schema": {
+          "percentage": {
+            "key": "percentage",
+            "type": "integer",
+            "label": "درصد تخفیف",
+            "required": true,
+            "description": "درصد تخفیف (مثلاً ۱۵ برای ۱۵٪)."
+          }
+        }
+      },
+      {
+        "key": "apply_tiered_percentage_off",
+        "name": "تخفیف درصدی پلکانی",
+        "description": "اعمال تخفیف درصدی بر اساس پله‌های تعریف شده.",
+        "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\ApplyTieredPercentageOffAction",
+        "configuration_schema": {
+          "tiers": {
+            "key": "tiers",
+            "type": "array",
+            "label": "پله‌های تخفیف",
+            "required": true,
+            "description": "تعریف پله‌های مقداری و درصد تخفیف مربوطه.",
+            "item_type": "data",
+            "item_class": "App\\Services\\Discounts\\Configs\\TierData",
+            "item_schema": {
+              "min_amount": {
+                "key": "min_amount",
+                "type": "integer",
+                "label": "Min Amount",
+                "required": true,
+                "description": "Min Amount (integer)"
+              },
+              "percentage": {
+                "key": "percentage",
+                "type": "number",
+                "label": "Percentage",
+                "required": true,
+                "description": "Percentage (number)"
+              }
+            }
+          }
+        }
+      },
+      {
+        "key": "gift_product",
+        "name": "هدیه محصول",
+        "description": "افزودن یک محصول به عنوان هدیه به سبد خرید.",
+        "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\GiftProductAction",
+        "configuration_schema": {
+          "product_delivery_option_id": {
+            "key": "product_delivery_option_id",
+            "type": "integer",
+            "label": "شناسه گزینه تحویل محصول",
+            "required": true,
+            "description": "شناسه محصول هدیه.",
+            "model_reference": {
+              "table": "product_delivery_options",
+              "column": "id",
+              "display_column": "name"
+            }
+          }
+        }
+      }
+    ],
+    "product": [
+      {
+        "key": "apply_fixed_discount_product",
+        "name": "تخفیف مبلغ ثابت محصول",
+        "description": "مبلغ مشخصی از قیمت محصول کسر می‌شود.",
+        "handler_class": "App\\Services\\Discounts\\Product\\Actions\\ApplyFixedDiscountToProductAction",
+        "configuration_schema": {
+          "amount": {
+            "key": "amount",
+            "type": "integer",
+            "label": "مبلغ تخفیف",
+            "required": true,
+            "description": "مبلغ تخفیف به ریال."
+          }
+        }
+      },
+      {
+        "key": "apply_percentage_off_product",
+        "name": "تخفیف درصدی محصول",
+        "description": "درصد مشخصی از قیمت محصول کسر می‌شود.",
+        "handler_class": "App\\Services\\Discounts\\Product\\Actions\\ApplyPercentageDiscountToProductAction",
+        "configuration_schema": {
+          "percentage": {
+            "key": "percentage",
+            "type": "integer",
+            "label": "درصد تخفیف",
+            "required": true,
+            "description": "درصد تخفیف."
+          }
+        }
+      }
+    ]
+  },
+  "metadata": []
+}

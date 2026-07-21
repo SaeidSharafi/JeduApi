@@ -160,32 +160,70 @@ The discount system is completely dynamic. You must fetch metadata to build form
     "conditions": [
       {
         "key": "cart_value_over",
-        "name": "Cart Value Over",
-        "description": "Triggers when cart value meets specified criteria",
+        "name": "Minimum Cart Value",
+        "description": "This condition is evaluated based on the total value of the customer's cart.",
         "handler_class": "App\\Services\\Discounts\\Cart\\Conditions\\CartValueCondition",
         "configuration_schema": {
           "operator": {
+            "key": "operator",
             "type": "enum",
+            "label": "Comparison Type",
             "required": true,
-            "description": "The mathematical operator to use for comparison",
+            "description": "How the customer's cart value is compared to the specified amount.",
             "cases": [
-              {"value": "==", "label": "Equal"},
-              {"value": "<", "label": "Less Than"},
-              {"value": ">", "label": "Greater Than"},
-              {"value": "<=", "label": "Less Than Or Equal"},
-              {"value": ">=", "label": "Greater Than Or Equal"},
-              {"value": "<>", "label": "Not Equal"}
+              {"value": "greater_than_or_equal", "label": "Greater than or equal"},
+              {"value": "greater_than", "label": "Greater than"},
+              {"value": "less_than_or_equal", "label": "Less than or equal"},
+              {"value": "less_than", "label": "Less than"},
+              {"value": "equal", "label": "Equal to"}
             ]
           },
           "value": {
+            "key": "value",
             "type": "integer",
+            "label": "Amount",
             "required": true,
-            "description": "The value to compare against the cart total"
+            "description": "The amount the customer's cart is compared against (in Rials)."
           },
           "include_prepayments": {
+            "key": "include_prepayments",
             "type": "boolean",
+            "label": "Include Prepayments",
             "required": true,
-            "description": "If true, include prepayment items in calculation"
+            "description": "If enabled, prepayment amounts are also included in this condition's calculation."
+          }
+        }
+      },
+      {
+        "key": "specific_products_in_cart",
+        "name": "Specific Products in Cart",
+        "description": "This condition checks whether the specified products are present in the cart.",
+        "handler_class": "App\\Services\\Discounts\\Cart\\Conditions\\SpecificProductsInCartCondition",
+        "configuration_schema": {
+          "product_ids": {
+            "key": "product_ids",
+            "type": "array",
+            "label": "Products",
+            "required": true,
+            "description": "The products that must be present in the cart for this condition to be met.",
+            "item_type": "model",
+            "model_reference": {
+              "table": "products",
+              "column": "id",
+              "display_column": "name"
+            }
+          },
+          "match_policy": {
+            "key": "match_policy",
+            "type": "enum",
+            "label": "Match Policy",
+            "required": true,
+            "description": "Specifies whether the cart must contain at least one of the selected products, or all of them.",
+            "default": "any",
+            "cases": [
+              {"value": "any", "label": "At least one of the selected items"},
+              {"value": "all", "label": "All selected items"}
+            ]
           }
         }
       }
@@ -193,13 +231,69 @@ The discount system is completely dynamic. You must fetch metadata to build form
     "actions": [
       {
         "key": "apply_percentage_off",
-        "name": "Apply Percentage Off",
-        "description": "Apply percentage discount to qualifying items",
+        "name": "Percentage Discount on Cart",
+        "description": "A specified percentage is deducted from the total value of cart items.",
+        "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\ApplyPercentageDiscountToItemsAction",
         "configuration_schema": {
           "percentage": {
-            "type": "number",
+            "key": "percentage",
+            "type": "integer",
+            "label": "Discount Percentage",
             "required": true,
-            "description": "Discount percentage (0-100)"
+            "description": "The discount percentage to be deducted from the items' total; for example, 15 is equivalent to a 15% discount."
+          }
+        }
+      },
+      {
+        "key": "apply_tiered_percentage_off",
+        "name": "Tiered Percentage Off Cart",
+        "description": "Applies a tiered percentage discount to the cart based on defined tiers.",
+        "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\ApplyTieredPercentageOffAction",
+        "configuration_schema": {
+          "tiers": {
+            "key": "tiers",
+            "type": "array",
+            "label": "Discount Tiers",
+            "required": true,
+            "description": "The tiers defining amount thresholds and their corresponding discount percentages.",
+            "item_type": "data",
+            "item_class": "App\\Services\\Discounts\\Configs\\TierData",
+            "item_schema": {
+              "min_amount": {
+                "key": "min_amount",
+                "type": "integer",
+                "label": "Min Amount",
+                "required": true,
+                "description": "Min Amount (integer)"
+              },
+              "percentage": {
+                "key": "percentage",
+                "type": "number",
+                "label": "Percentage",
+                "required": true,
+                "description": "Percentage (number)"
+              }
+            }
+          }
+        }
+      },
+      {
+        "key": "gift_product",
+        "name": "Gift Product",
+        "description": "Adds a product to the cart as a gift.",
+        "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\GiftProductAction",
+        "configuration_schema": {
+          "product_delivery_option_id": {
+            "key": "product_delivery_option_id",
+            "type": "integer",
+            "label": "Gift Product",
+            "required": true,
+            "description": "The product delivery option to add as a gift.",
+            "model_reference": {
+              "table": "product_delivery_options",
+              "column": "id",
+              "display_column": "name"
+            }
           }
         }
       }
@@ -209,18 +303,59 @@ The discount system is completely dynamic. You must fetch metadata to build form
     "conditions": [
       {
         "key": "product_in_category",
-        "name": "Product In Category",
-        "description": "Triggers when product belongs to specified categories",
+        "name": "Product Category",
+        "description": "This condition checks whether the product (or cart products) are within the specified categories.",
+        "handler_class": "App\\Services\\Discounts\\Product\\Conditions\\ProductCategoryCondition",
         "configuration_schema": {
           "category_ids": {
+            "key": "category_ids",
             "type": "array",
+            "label": "Categories",
             "required": true,
-            "description": "Array of category IDs to check"
+            "description": "The categories the product must belong to for this condition to be met.",
+            "item_type": "model",
+            "model_reference": {
+              "table": "categories",
+              "column": "id",
+              "display_column": "name"
+            }
           },
           "match_policy": {
-            "type": "string",
+            "key": "match_policy",
+            "type": "enum",
+            "label": "Match Policy",
             "required": true,
-            "description": "How to match categories: 'any' or 'all'"
+            "description": "Specifies whether the product needs to be in at least one of the selected categories, or must be in all of them.",
+            "default": "any",
+            "cases": [
+              {"value": "any", "label": "At least one of the selected items"},
+              {"value": "all", "label": "All selected items"}
+            ]
+          }
+        }
+      },
+      {
+        "key": "delivery_method_is",
+        "name": "Delivery Method",
+        "description": "This condition checks whether the product's delivery method matches the selected options.",
+        "handler_class": "App\\Services\\Discounts\\Product\\Conditions\\DeliveryMethodIsCondition",
+        "configuration_schema": {
+          "delivery_methods": {
+            "key": "delivery_methods",
+            "type": "array",
+            "label": "Delivery Methods",
+            "required": true,
+            "description": "The allowed delivery methods for this condition.",
+            "item_type": "enum",
+            "item_enum": "App\\Enums\\Product\\DeliveryMethodEnum",
+            "item_cases": [
+              {"value": "lms_moodle", "label": "enums.DeliveryMethodEnum.lms_moodle"},
+              {"value": "direct_download", "label": "enums.DeliveryMethodEnum.direct_download"},
+              {"value": "video_platform_spotplayer", "label": "enums.DeliveryMethodEnum.video_platform_spotplayer"},
+              {"value": "in_person", "label": "enums.DeliveryMethodEnum.in_person"},
+              {"value": "live_session_bbb", "label": "enums.DeliveryMethodEnum.live_session_bbb"},
+              {"value": "live_session_skyroom", "label": "enums.DeliveryMethodEnum.live_session_skyroom"}
+            ]
           }
         }
       }
@@ -228,13 +363,16 @@ The discount system is completely dynamic. You must fetch metadata to build form
     "actions": [
       {
         "key": "apply_percentage_off_product",
-        "name": "Apply Percentage Off Product",
-        "description": "Apply percentage discount to product price",
+        "name": "Product Percentage Discount",
+        "description": "A specified percentage is deducted from the product price, and the new price is displayed to the customer on the product page and lists.",
+        "handler_class": "App\\Services\\Discounts\\Product\\Actions\\ApplyPercentageDiscountToProductAction",
         "configuration_schema": {
           "percentage": {
-            "type": "number",
+            "key": "percentage",
+            "type": "integer",
+            "label": "Discount Percentage",
             "required": true,
-            "description": "Discount percentage (0-100)"
+            "description": "The discount percentage deducted from the product price; for example, 15 is equivalent to a 15% discount."
           }
         }
       }
@@ -242,6 +380,8 @@ The discount system is completely dynamic. You must fetch metadata to build form
   }
 }
 ```
+
+> **Note on `item_cases` labels**: Enum cases that use the `AdvanceEnum` trait return translation keys (e.g. `enums.DeliveryMethodEnum.lms_moodle`) rather than localized strings. Resolve them through your i18n pipeline before rendering. Non-AdvanceEnum cases return humanized titles directly.
 
 ### Creating Discount Promotions
 
@@ -304,43 +444,194 @@ The discount system is completely dynamic. You must fetch metadata to build form
 
 Each condition and action has a `configuration_schema` that defines the form fields required. You must dynamically build forms based on this schema.
 
-**Field Types**:
-- `integer` - Number input
-- `number` - Decimal number input  
+**Field Types** (`type`):
+- `integer` - Number input (whole numbers only)
+- `number` - Decimal number input
 - `string` - Text input
-- `boolean` - Checkbox
-- `array` - Multi-select or tag input
-- `enum` - Dropdown with predefined options
+- `boolean` - Checkbox / toggle
+- `enum` - Dropdown with predefined options (see `cases`)
+- `array` - A list — inspect `item_type` to pick the right widget (see below)
+- `mixed` - Fallback when the type can't be inferred; render a generic JSON input
 
-**Required Fields**: Check the `required` property - all required fields must be filled.
+**Required Fields**: Check the `required` property — all required fields must be filled. Optional fields may carry a `default` value you should pre-populate.
 
-**Enum Fields**: When `type: "enum"`, use the `cases` array to populate dropdown options:
+### Enum Fields
+
+When `type: "enum"`, use the `cases` array to populate a dropdown:
 ```json
 {
   "type": "enum",
   "required": true,
   "cases": [
-    {"value": ">=", "label": "Greater Than Or Equal"},
-    {"value": ">", "label": "Greater Than"}
+    {"value": "greater_than_or_equal", "label": "Greater than or equal"},
+    {"value": "greater_than", "label": "Greater than"}
   ]
 }
 ```
+
+Enum cases that use the `AdvanceEnum` trait return translation keys in `label` (e.g. `enums.MatchPolicyEnum.any`). Resolve them through your i18n pipeline before rendering. Other enums return humanized titles directly.
+
+### Array Fields (Important)
+
+When `type: "array"`, you MUST inspect `item_type` to choose the right widget. The array no longer means "multi-select of random values" — the metadata tells you exactly what each item is.
+
+| `item_type` | Extra keys present | Frontend widget |
+|---|---|---|
+| `integer` / `string` / `number` / `boolean` | (none) | Tag input or multi-text input. Validate each item against `item_type`. |
+| `enum` | `item_enum`, `item_cases` | Multi-select dropdown populated from `item_cases`. Submit an array of `value`s. |
+| `model` | `model_reference: {table, column, display_column}` | **Model picker** — resolve `model_reference.table` to an admin listing endpoint via a frontend-maintained local map (see [Model Picker Pattern](#model-picker-pattern)). Display the `display_column` value, submit an array of `column` values (typically IDs). |
+| `data` | `item_class`, `item_schema` | **Nested repeater** — render a repeating group of fields described by `item_schema` (which is itself a `configuration_schema`). See [Nested Data Repeater Pattern](#nested-data-repeater-pattern) below. |
+| `mixed` | (none) | Fallback — generic JSON input. |
+
+**Example — array of model IDs**:
+```json
+{
+  "key": "product_ids",
+  "type": "array",
+  "required": true,
+  "item_type": "model",
+  "model_reference": {
+    "table": "products",
+    "column": "id",
+    "display_column": "name"
+  }
+}
+```
+Render a multi-select that shows product names but submits product IDs.
+
+**Example — array of enums**:
+```json
+{
+  "key": "delivery_methods",
+  "type": "array",
+  "required": true,
+  "item_type": "enum",
+  "item_enum": "App\\Enums\\Product\\DeliveryMethodEnum",
+  "item_cases": [
+    {"value": "lms_moodle", "label": "enums.DeliveryMethodEnum.lms_moodle"},
+    {"value": "in_person", "label": "enums.DeliveryMethodEnum.in_person"}
+  ]
+}
+```
+Render a multi-select dropdown populated from `item_cases`.
+
+**Example — array of nested Data (repeater)**:
+```json
+{
+  "key": "tiers",
+  "type": "array",
+  "required": true,
+  "item_type": "data",
+  "item_class": "App\\Services\\Discounts\\Configs\\TierData",
+  "item_schema": {
+    "min_amount": { "type": "integer", "required": true },
+    "percentage": { "type": "number", "required": true }
+  }
+}
+```
+Render a repeater where each row has two inputs (`min_amount`, `percentage`) driven by `item_schema`. Submit an array of objects.
+
+### Model Picker Pattern
+
+Scalar foreign-key fields (e.g. `product_delivery_option_id`) now carry a `model_reference` object at the same level as `type`. Render a single-select model picker:
+
+```json
+{
+  "key": "product_delivery_option_id",
+  "type": "integer",
+  "required": true,
+  "model_reference": {
+    "table": "product_delivery_options",
+    "column": "id",
+    "display_column": "name"
+  }
+}
+```
+
+For array-of-model fields, `model_reference` sits at the same level as `item_type: "model"` — same lookup, but the widget is a multi-select.
+
+**How to resolve `model_reference` to an API endpoint**
+
+The backend does NOT emit an API path — it only emits the DB `table` name as a stable identifier. The frontend maintains its own local map from table name → admin listing endpoint. This keeps the discount metadata decoupled from the routing layer (which is a frontend concern).
+
+```typescript
+// Frontend — local map maintained by FE team. Table names are stable;
+// renaming a table requires a migration, so this map rarely changes.
+const MODEL_ENDPOINTS: Record<string, string> = {
+  products:                  '/api/v1/admin/product',
+  categories:                '/api/v1/admin/category',
+  vendors:                   '/api/v1/admin/vendor',
+  product_delivery_options:  '/api/v1/admin/product-delivery-option',
+};
+
+function resolveModelEndpoint(ref: ModelReference): string {
+  const endpoint = MODEL_ENDPOINTS[ref.table];
+  if (!endpoint) {
+    throw new Error(`No listing endpoint registered for model table "${ref.table}". ` +
+      `Add it to MODEL_ENDPOINTS in your discount form module.`);
+  }
+  return endpoint;
+}
+```
+
+Steps when rendering a model picker:
+1. Read `model_reference.table` from the field schema.
+2. Look up the endpoint in your local `MODEL_ENDPOINTS` map.
+3. Fetch a paginated list from that endpoint (with whatever search/filter params your listing API supports — typically `?search=` for typeahead pickers).
+4. Display each option's `display_column` value to the user.
+5. Submit the `column` value (usually `id`) as the field's value.
+
+**Contract**: the backend guarantees `table`, `column`, and `display_column` are real columns on a real table. The frontend is responsible for knowing which admin listing endpoint serves that table. If you encounter a `model_reference.table` that isn't in your map, fail loudly — the FE team needs to add an entry.
+
+### Nested Data Repeater Pattern
+
+When `item_type: "data"`, the `item_schema` key holds a full nested `configuration_schema` (same shape as the parent). Render a repeater group where each row is a sub-form built from `item_schema`. Recurse to arbitrary depth — `item_schema` fields can themselves be arrays with their own `item_type` and `item_schema`.
+
+```text
+tiers (array, item_type: data)
+└── item_schema
+    ├── min_amount (integer, required)
+    └── percentage (number, required)
+```
+
+Submit the parent field as an array of objects matching `item_schema`.
 
 ### Form Validation Requirements
 
 The backend validates configurations using the schema. Ensure your frontend validates:
 1. **Required fields** are filled
 2. **Field types** match (integer vs string vs boolean)
-3. **Enum values** are from the allowed cases
-4. **Array fields** contain valid data
+3. **Enum values** are from the allowed `cases`
+4. **Array fields** contain valid data — validate each item against `item_type`
+5. **Model references** submit IDs that exist in the referenced table (the backend enforces `exists:table,column` on rules). Resolve `model_reference.table` to an admin listing endpoint via your frontend's local `MODEL_ENDPOINTS` map — see [Model Picker Pattern](#model-picker-pattern).
+6. **Nested Data** items match their `item_schema` exactly
 
 **Example Configuration Validation**:
 ```json
 // For cart_value_over condition
 {
-  "operator": ">=",                     // Must be from enum cases (==, <, >, <=, >=, <>)
+  "operator": "greater_than_or_equal",  // Must be from enum cases (greater_than, less_than, equal, ...)
   "value": 50000,                       // Must be integer
-  "include_prepayments": false          // Must be boolean
+  "include_prepayments": false           // Must be boolean
+}
+
+// For specific_products_in_cart condition
+{
+  "product_ids": [12, 34],              // Array of existing product IDs (see model_reference)
+  "match_policy": "any"                 // Must be from enum cases (any | all)
+}
+
+// For apply_tiered_percentage_off action
+{
+  "tiers": [                            // Array of objects matching item_schema
+    {"min_amount": 50000, "percentage": 10},
+    {"min_amount": 100000, "percentage": 20}
+  ]
+}
+
+// For gift_product action
+{
+  "product_delivery_option_id": 456     // Must be an existing product_delivery_options.id (see model_reference)
 }
 ```
 
@@ -687,21 +978,50 @@ interface MetadataResponse {
 }
 
 interface HandlerMetadata {
-  key: string;                    // Handler identifier
+  key: string;                    // Handler identifier — used in rule `handler` field
   name: string;                   // Human-readable name
   description: string;            // Description for UI
-  handler_class: string;          // Backend class name
-  configuration_schema: ConfigurationSchema;
+  handler_class: string;          // Backend class name (informational)
+  configuration_schema: Record<string, FieldSchema>;
 }
 
-interface ConfigurationSchema {
-  [fieldName: string]: {
-    type: 'integer' | 'number' | 'string' | 'boolean' | 'array' | 'enum';
-    required: boolean;
-    description: string;
-    cases?: EnumCase[];         // Only for enum types
-    default?: any;              // Default value if available
+interface FieldSchema {
+  key: string;
+  type: 'integer' | 'number' | 'string' | 'boolean' | 'array' | 'enum' | 'mixed' | string;
+  label: string;
+  required: boolean;
+  description: string;
+
+  // Present only when `type: "enum"`
+  cases?: EnumCase[];
+
+  // Present when a default value is declared
+  default?: unknown;
+
+  // --- Array fields (`type: "array"`) ---
+  // Inspect `item_type` to pick the right widget.
+  item_type?: 'integer' | 'number' | 'string' | 'boolean' | 'enum' | 'model' | 'data' | 'mixed';
+
+  // When `item_type: "enum"` — the enum class + selectable cases
+  item_enum?: string;        // Fully-qualified enum class name
+  item_cases?: EnumCase[];   // Same shape as `cases`
+
+  // When `item_type: "model"` — where to fetch options
+  // Also present at the field level when a scalar field is a foreign key
+  model_reference?: {
+    table: string;
+    column: string;             // submit this column's value (usually "id")
+    display_column: string;     // show this column's value to the user
   };
+
+  // When `item_type: "data"` — nested schema for a repeater group
+  item_class?: string;                        // Fully-qualified Data class name
+  item_schema?: Record<string, FieldSchema>;  // Same shape as `configuration_schema`
+}
+
+interface EnumCase {
+  value: string;
+  label: string;  // May be a translation key (e.g. "enums.MatchPolicyEnum.any") for AdvanceEnum-backed enums
 }
 ```
 
