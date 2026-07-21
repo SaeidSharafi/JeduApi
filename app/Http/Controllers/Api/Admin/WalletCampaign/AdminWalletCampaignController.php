@@ -45,7 +45,7 @@ final class AdminWalletCampaignController extends Controller
             ->allowedFilters([
                 'name',
                 'type',
-                'is_active',
+                AllowedFilter::exact('is_active'),
                 AllowedFilter::exact('created_by'),
             ])
             ->allowedSorts([
