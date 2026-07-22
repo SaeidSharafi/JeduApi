@@ -2,17 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api\Admin;
+namespace App\Http\Controllers\Api\Admin\Profile;
 
 use App\Actions\Admin\UpdateStaffProfileAction;
-use App\Actions\Shop\UpdateProfileAction;
 use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\Auth\StaffData;
 use App\Data\Admin\UpdateStaffProfileData;
-use App\Data\Shop\Customer\CustomerData;
-use App\Data\Shop\Customer\UpdateProfileData;
 use App\Http\Controllers\Controller;
-use App\Http\Responses\ApiSuccessResponse;
 use App\Models\Staff;
 
 /**

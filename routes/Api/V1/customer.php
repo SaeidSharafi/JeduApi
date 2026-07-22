@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\Shop\AvatarController;
-use App\Http\Controllers\Api\Shop\ProfileController;
+use App\Http\Controllers\Api\Shop\Profile\CustomerChangePasswordController;
+use App\Http\Controllers\Api\Shop\Profile\ProfileController;
 use App\Http\Controllers\Api\Shop\Student\CancelOrderController;
 use App\Http\Controllers\Api\Shop\Student\DigitalAssetDownloadController;
 use App\Http\Controllers\Api\Shop\Student\DigitalAssetEnrollmentController;
@@ -27,6 +28,7 @@ Route::middleware(['auth:user'])
         // Profile remains top-level as it applies to any authenticated user
         Route::singleton('profile', ProfileController::class)
             ->only(['show', 'update']);
+        Route::put('change-password', CustomerChangePasswordController::class)->name('customer.change-password');
         Route::post('customer/avatar', [AvatarController::class, 'update'])->name('profile.avatar.update');
         Route::delete('customer/avatar', [AvatarController::class, 'destroy'])->name('profile.avatar.destroy');
         // ==========================================

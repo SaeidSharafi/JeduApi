@@ -15,9 +15,7 @@ final class UpdateStaffProfileData extends Data
     public function __construct(
         public string $name,
         public string $email,
-        public string $phone,
-        public ?string $password,
-        public ?string $password_confirmation,
+        public string $phone
     ) {}
 
     public static function rules(?ValidationContext $context = null): array
@@ -34,8 +32,7 @@ final class UpdateStaffProfileData extends Data
                         Rule::unique('staff', 'phone')->ignore(
                             auth('staff')->user()
                         ),
-            ],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            ]
         ];
     }
 
@@ -58,23 +55,7 @@ final class UpdateStaffProfileData extends Data
             'phone' => [
                 'description' => 'The phone number of the admin.',
                 'example'     => '09123456789',
-            ],
-            'password' => [
-                'description' => 'The password for the admin account.',
-                'example'     => 'securepassword123',
-            ],
-            'password_confirmation' => [
-                'description' => 'The password confirmation for the admin account.',
-                'example'     => 'securepassword123',
-            ],
-            'roles' => [
-                'description' => 'The roles assigned to the admin.',
-                'example'     => ['super-admin', 'editor'],
-            ],
-            'roles.*' => [
-                'description' => 'Array of role names assigned to the admin.',
-                'example'     => 'editor',
-            ],
+            ]
         ];
     }
 }

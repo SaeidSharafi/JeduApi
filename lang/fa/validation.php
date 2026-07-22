@@ -123,6 +123,8 @@ return [
         'numbers'       => ':attribute باید حداقل شامل یک عدد باشد.',
         'symbols'       => ':attribute باید حداقل شامل یک علامت یا نماد خاص (مانند @، $، !) باشد.',
         'uncompromised' => ':attribute وارد شده در درز اطلاعات عمومی افشا شده است. لطفا :attribute دیگری انتخاب کنید.',
+        'current_password_required' => 'تکمیل فیلد رمز عبور فعلی الزامی است.',
+        'current_password_does_not_match' => 'رمز عبور فعلی وارد شده صحیح نیست.',
     ],
     'present'              => ':attribute باید در داده‌های ارسالی وجود داشته باشد.',
     'prohibited'           => 'ارسال فیلد :attribute مجاز نیست.',

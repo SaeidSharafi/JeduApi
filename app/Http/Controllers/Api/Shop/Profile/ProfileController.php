@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api\Shop;
+namespace App\Http\Controllers\Api\Shop\Profile;
 
 use App\Actions\Shop\UpdateProfileAction;
 use App\Data\Shop\Customer\CustomerData;

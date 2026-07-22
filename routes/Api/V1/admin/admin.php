@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\Admin\Forms\AdviceRequest\AdviceRequestController;
 use App\Http\Controllers\Api\Admin\Forms\AdviceRequest\AdviceRequestUpdateStatusController;
+use App\Http\Controllers\Api\Admin\Profile\StaffChangePasswordController;
+use App\Http\Controllers\Api\Admin\Profile\StaffProfileController;
 use App\Http\Controllers\Api\Admin\Review\ApproveReviewController;
 use App\Http\Controllers\Api\Admin\Review\RejectReviewController;
 use App\Http\Controllers\Api\Admin\Review\ReviewController;
 use App\Http\Controllers\Api\Admin\Review\UpdateReviewFeaturedStatusController;
-use App\Http\Controllers\Api\Admin\StaffProfileController;
 use App\Http\Controllers\Api\Admin\System\PermissionController;
 use App\Http\Controllers\Api\Admin\System\RoleController;
 use App\Http\Controllers\Api\Admin\TermController;
@@ -60,3 +61,4 @@ Route::patch('advice-requests/{adviceRequest}/status', AdviceRequestUpdateStatus
 
 Route::singleton('profile', StaffProfileController::class)
     ->only(['show', 'update']);
+Route::put('change-password', StaffChangePasswordController::class)->name('change-password');
