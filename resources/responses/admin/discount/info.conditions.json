@@ -1,9 +1,292 @@
-[
-  {
-    "key": "cart_total",
-    "name": "Cart Total",
-    "description": "Minimum cart total",
-    "handler_class": "App\\Handlers\\CartTotalConditionHandler",
-    "configuration_schema": {"min": "number"}
-  }
-]
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "cart": [
+      {
+        "key": "cart_item_count_over",
+        "name": "تعداد اقلام سبد خرید",
+        "description": "این شرط بر اساس تعداد کالاهای موجود در سبد خرید بررسی می‌شود.",
+        "handler_class": "App\\Services\\Discounts\\Cart\\Conditions\\CartItemCountOverCondition",
+        "configuration_schema": {
+          "min_count": {
+            "key": "min_count",
+            "type": "integer",
+            "label": "حداقل تعداد",
+            "required": true,
+            "description": "حداقل تعداد کالاهای مورد نیاز برای برقراری این شرط."
+          },
+          "count_quantities": {
+            "key": "count_quantities",
+            "type": "boolean",
+            "label": "شمارش تعداد واحدها",
+            "required": false,
+            "description": "اگر فعال باشد، مجموع تعداد واحد هر کالا شمارش می‌شود، در غیر این صورت فقط تعداد ردیف‌های سبد خرید محاسبه می‌گردد.",
+            "default": false
+          }
+        }
+      },
+      {
+        "key": "cart_value_over",
+        "name": "حداقل مبلغ سبد خرید",
+        "description": "این شرط بر اساس مجموع مبلغ سبد خرید مشتری بررسی می‌شود.",
+        "handler_class": "App\\Services\\Discounts\\Cart\\Conditions\\CartValueCondition",
+        "configuration_schema": {
+          "operator": {
+            "key": "operator",
+            "type": "enum",
+            "label": "نوع مقایسه",
+            "required": true,
+            "description": "نحوه مقایسه مبلغ سبد خرید مشتری با مبلغ تعیین‌شده (مثلاً بیشتر یا مساوی، کمتر از و ...).",
+            "cases": [
+              {
+                "value": "==",
+                "label": "برابر"
+              },
+              {
+                "value": "<",
+                "label": "کوچکتر از"
+              },
+              {
+                "value": ">",
+                "label": "بزرگتر از"
+              },
+              {
+                "value": "<=",
+                "label": "کوچکتر یا مساوی"
+              },
+              {
+                "value": ">=",
+                "label": "بزرگتر یا مساوی"
+              },
+              {
+                "value": "<>",
+                "label": "نا برابر"
+              }
+            ]
+          },
+          "value": {
+            "key": "value",
+            "type": "integer",
+            "label": "مبلغ",
+            "required": true,
+            "description": "مبلغی که سبد خرید مشتری با آن مقایسه می‌شود (به ریال)."
+          },
+          "include_prepayments": {
+            "key": "include_prepayments",
+            "type": "boolean",
+            "label": "احتساب پیش‌پرداخت‌ها",
+            "required": true,
+            "description": "در صورت فعال بودن، مبلغ پیش‌پرداخت اقلام سبد خرید هم در محاسبه این شرط لحاظ می‌شود."
+          }
+        }
+      },
+      {
+        "key": "first_order_only",
+        "name": "فقط اولین سفارش",
+        "description": "این شرط بررسی می‌کند که آیا این اولین خرید مشتری است یا خیر.",
+        "handler_class": "App\\Services\\Discounts\\Cart\\Conditions\\FirstOrderOnlyCondition",
+        "configuration_schema": []
+      },
+      {
+        "key": "product_in_category",
+        "name": "دسته‌بندی محصول",
+        "description": "این شرط بررسی می‌کند که آیا محصول در دسته‌بندی‌های مشخص‌شده قرار دارد.",
+        "handler_class": "App\\Services\\Discounts\\Cart\\Conditions\\ProductCategoryCondition",
+        "configuration_schema": {
+          "category_ids": {
+            "key": "category_ids",
+            "type": "array",
+            "label": "دسته‌بندی‌ها",
+            "required": true,
+            "description": "دسته‌بندی‌هایی که محصول باید در آن‌ها باشد.",
+            "item_type": "model",
+            "model_reference": {
+              "table": "categories",
+              "column": "id",
+              "display_column": "name"
+            }
+          },
+          "match_policy": {
+            "key": "match_policy",
+            "type": "enum",
+            "label": "نحوه بررسی تطابق",
+            "required": false,
+            "description": "مشخص می‌کند که آیا کافیست محصول در یکی از دسته‌ها باشد یا همه آن‌ها.",
+            "cases": [
+              {
+                "value": "any",
+                "label": "هر کدام"
+              },
+              {
+                "value": "all",
+                "label": "همه"
+              }
+            ],
+            "default": "any"
+          }
+        }
+      },
+      {
+        "key": "specific_products_in_cart",
+        "name": "محصولات خاص در سبد خرید",
+        "description": "این شرط بررسی می‌کند که آیا محصولات مشخص‌شده در سبد خرید وجود دارند.",
+        "handler_class": "App\\Services\\Discounts\\Cart\\Conditions\\SpecificProductsInCartCondition",
+        "configuration_schema": {
+          "product_ids": {
+            "key": "product_ids",
+            "type": "array",
+            "label": "محصولات",
+            "required": true,
+            "description": "لیست شناسه‌های محصولات مورد نیاز.",
+            "item_type": "model",
+            "model_reference": {
+              "table": "products",
+              "column": "id"
+            }
+          },
+          "match_policy": {
+            "key": "match_policy",
+            "type": "enum",
+            "label": "نحوه بررسی تطابق",
+            "required": false,
+            "description": "مشخص می‌کند که آیا کافیست یکی از محصولات در سبد باشد یا همه آن‌ها.",
+            "cases": [
+              {
+                "value": "any",
+                "label": "هر کدام"
+              },
+              {
+                "value": "all",
+                "label": "همه"
+              }
+            ],
+            "default": "any"
+          }
+        }
+      },
+      {
+        "key": "user_never_purchased_category",
+        "name": "عدم خرید قبلی از دسته‌بندی",
+        "description": "این شرط بررسی می‌کند که مشتری قبلاً هیچ خریدی از دسته‌بندی‌های مشخص‌شده نداشته باشد.",
+        "handler_class": "App\\Services\\Discounts\\Cart\\Conditions\\UserNeverPurchasedCategoryCondition",
+        "configuration_schema": {
+          "category_ids": {
+            "key": "category_ids",
+            "type": "array",
+            "label": "دسته‌بندی‌ها",
+            "required": true,
+            "description": "لیست دسته‌بندی‌هایی که مشتری نباید قبلاً از آن‌ها خرید کرده باشد.",
+            "item_type": "model",
+            "model_reference": {
+              "table": "categories",
+              "column": "id"
+            }
+          },
+          "match_policy": {
+            "key": "match_policy",
+            "type": "enum",
+            "label": "نحوه بررسی تطابق",
+            "required": false,
+            "description": "مشخص می‌کند که آیا عدم خرید از یکی از دسته‌ها کافیست یا باید از هیچ‌کام خرید نکرده باشد.",
+            "cases": [
+              {
+                "value": "any",
+                "label": "هر کدام"
+              },
+              {
+                "value": "all",
+                "label": "همه"
+              }
+            ],
+            "default": "any"
+          }
+        }
+      }
+    ],
+    "product": [
+      {
+        "key": "delivery_method_is",
+        "name": "روش تحویل محصول",
+        "description": "این شرط بررسی می‌کند که آیا روش تحویل محصول با موارد انتخاب‌شده تطابق دارد.",
+        "handler_class": "App\\Services\\Discounts\\Product\\Conditions\\DeliveryMethodIsCondition",
+        "configuration_schema": {
+          "delivery_methods": {
+            "key": "delivery_methods",
+            "type": "array",
+            "label": "روش‌های تحویل",
+            "required": true,
+            "description": "لیست روش‌های تحویل مجاز.",
+            "item_type": "enum",
+            "item_enum": "App\\Enums\\Product\\DeliveryMethodEnum",
+            "item_cases": [
+              {
+                "value": "lms_moodle",
+                "label": "LMS Moodle"
+              },
+              {
+                "value": "direct_download",
+                "label": "دانلود مستقیم"
+              },
+              {
+                "value": "video_platform_spotplayer",
+                "label": "پلتفرم ویدیویی SpotPlayer"
+              },
+              {
+                "value": "in_person",
+                "label": "حضوری"
+              },
+              {
+                "value": "live_session_bbb",
+                "label": "جلسه زنده با BBB"
+              },
+              {
+                "value": "live_session_skyroom",
+                "label": "جلسه زنده با Skyroom"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "key": "product_in_category",
+        "name": "دسته‌بندی محصول",
+        "description": "این شرط بررسی می‌کند که آیا محصول در دسته‌بندی‌های مشخص‌شده قرار دارد.",
+        "handler_class": "App\\Services\\Discounts\\Product\\Conditions\\ProductCategoryCondition",
+        "configuration_schema": {
+          "category_ids": {
+            "key": "category_ids",
+            "type": "array",
+            "label": "دسته‌بندی‌ها",
+            "required": true,
+            "description": "دسته‌بندی‌هایی که محصول باید در آن‌ها باشد.",
+            "item_type": "model",
+            "model_reference": {
+              "table": "categories",
+              "column": "id",
+              "display_column": "name"
+            }
+          },
+          "match_policy": {
+            "key": "match_policy",
+            "type": "enum",
+            "label": "نحوه بررسی تطابق",
+            "required": false,
+            "description": "مشخص می‌کند که آیا کافیست محصول در یکی از دسته‌ها باشد یا همه آن‌ها.",
+            "cases": [
+              {
+                "value": "any",
+                "label": "هر کدام"
+              },
+              {
+                "value": "all",
+                "label": "همه"
+              }
+            ],
+            "default": "any"
+          }
+        }
+      }
+    ]
+  },
+  "metadata": []
+}

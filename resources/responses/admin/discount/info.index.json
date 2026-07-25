@@ -1,18 +1,483 @@
 {
-  "cart": {
-    "conditions": [
-      {"key": "cart_total", "name": "Cart Total", "description": "Minimum cart total", "handler_class": "App\\Handlers\\CartTotalConditionHandler", "configuration_schema": {"min": "number"}}
-    ],
-    "actions": [
-      {"key": "cart_discount", "name": "Cart Discount", "description": "Discount on cart", "configuration_schema": {"amount": "number"}}
-    ]
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": {
+    "cart": {
+      "conditions": [
+        {
+          "key": "cart_item_count_over",
+          "name": "تعداد اقلام سبد خرید",
+          "description": "این شرط بر اساس تعداد کالاهای موجود در سبد خرید بررسی می‌شود.",
+          "handler_class": "App\\Services\\Discounts\\Cart\\Conditions\\CartItemCountOverCondition",
+          "configuration_schema": {
+            "min_count": {
+              "key": "min_count",
+              "type": "integer",
+              "label": "حداقل تعداد",
+              "required": true,
+              "description": "حداقل تعداد کالاهای مورد نیاز برای برقراری این شرط."
+            },
+            "count_quantities": {
+              "key": "count_quantities",
+              "type": "boolean",
+              "label": "شمارش تعداد واحدها",
+              "required": false,
+              "description": "اگر فعال باشد، مجموع تعداد واحد هر کالا شمارش می‌شود، در غیر این صورت فقط تعداد ردیف‌های سبد خرید محاسبه می‌گردد.",
+              "default": false
+            }
+          }
+        },
+        {
+          "key": "cart_value_over",
+          "name": "حداقل مبلغ سبد خرید",
+          "description": "این شرط بر اساس مجموع مبلغ سبد خرید مشتری بررسی می‌شود.",
+          "handler_class": "App\\Services\\Discounts\\Cart\\Conditions\\CartValueCondition",
+          "configuration_schema": {
+            "operator": {
+              "key": "operator",
+              "type": "enum",
+              "label": "نوع مقایسه",
+              "required": true,
+              "description": "نحوه مقایسه مبلغ سبد خرید مشتری با مبلغ تعیین‌شده (مثلاً بیشتر یا مساوی، کمتر از و ...).",
+              "cases": [
+                {
+                  "value": "==",
+                  "label": "برابر"
+                },
+                {
+                  "value": "<",
+                  "label": "کوچکتر از"
+                },
+                {
+                  "value": ">",
+                  "label": "بزرگتر از"
+                },
+                {
+                  "value": "<=",
+                  "label": "کوچکتر یا مساوی"
+                },
+                {
+                  "value": ">=",
+                  "label": "بزرگتر یا مساوی"
+                },
+                {
+                  "value": "<>",
+                  "label": "نا برابر"
+                }
+              ]
+            },
+            "value": {
+              "key": "value",
+              "type": "integer",
+              "label": "مبلغ",
+              "required": true,
+              "description": "مبلغی که سبد خرید مشتری با آن مقایسه می‌شود (به ریال)."
+            },
+            "include_prepayments": {
+              "key": "include_prepayments",
+              "type": "boolean",
+              "label": "احتساب پیش‌پرداخت‌ها",
+              "required": true,
+              "description": "در صورت فعال بودن، مبلغ پیش‌پرداخت اقلام سبد خرید هم در محاسبه این شرط لحاظ می‌شود."
+            }
+          }
+        },
+        {
+          "key": "first_order_only",
+          "name": "فقط اولین سفارش",
+          "description": "این شرط بررسی می‌کند که آیا این اولین خرید مشتری است یا خیر.",
+          "handler_class": "App\\Services\\Discounts\\Cart\\Conditions\\FirstOrderOnlyCondition",
+          "configuration_schema": []
+        },
+        {
+          "key": "product_in_category",
+          "name": "دسته‌بندی محصول",
+          "description": "این شرط بررسی می‌کند که آیا محصول در دسته‌بندی‌های مشخص‌شده قرار دارد.",
+          "handler_class": "App\\Services\\Discounts\\Cart\\Conditions\\ProductCategoryCondition",
+          "configuration_schema": {
+            "category_ids": {
+              "key": "category_ids",
+              "type": "array",
+              "label": "دسته‌بندی‌ها",
+              "required": true,
+              "description": "دسته‌بندی‌هایی که محصول باید در آن‌ها باشد.",
+              "item_type": "model",
+              "model_reference": {
+                "table": "categories",
+                "column": "id",
+                "display_column": "name"
+              }
+            },
+            "match_policy": {
+              "key": "match_policy",
+              "type": "enum",
+              "label": "نحوه بررسی تطابق",
+              "required": false,
+              "description": "مشخص می‌کند که آیا کافیست محصول در یکی از دسته‌ها باشد یا همه آن‌ها.",
+              "cases": [
+                {
+                  "value": "any",
+                  "label": "هر کدام"
+                },
+                {
+                  "value": "all",
+                  "label": "همه"
+                }
+              ],
+              "default": "any"
+            }
+          }
+        },
+        {
+          "key": "specific_products_in_cart",
+          "name": "محصولات خاص در سبد خرید",
+          "description": "این شرط بررسی می‌کند که آیا محصولات مشخص‌شده در سبد خرید وجود دارند.",
+          "handler_class": "App\\Services\\Discounts\\Cart\\Conditions\\SpecificProductsInCartCondition",
+          "configuration_schema": {
+            "product_ids": {
+              "key": "product_ids",
+              "type": "array",
+              "label": "محصولات",
+              "required": true,
+              "description": "لیست شناسه‌های محصولات مورد نیاز.",
+              "item_type": "model",
+              "model_reference": {
+                "table": "products",
+                "column": "id"
+              }
+            },
+            "match_policy": {
+              "key": "match_policy",
+              "type": "enum",
+              "label": "نحوه بررسی تطابق",
+              "required": false,
+              "description": "مشخص می‌کند که آیا کافیست یکی از محصولات در سبد باشد یا همه آن‌ها.",
+              "cases": [
+                {
+                  "value": "any",
+                  "label": "هر کدام"
+                },
+                {
+                  "value": "all",
+                  "label": "همه"
+                }
+              ],
+              "default": "any"
+            }
+          }
+        },
+        {
+          "key": "user_never_purchased_category",
+          "name": "عدم خرید قبلی از دسته‌بندی",
+          "description": "این شرط بررسی می‌کند که مشتری قبلاً هیچ خریدی از دسته‌بندی‌های مشخص‌شده نداشته باشد.",
+          "handler_class": "App\\Services\\Discounts\\Cart\\Conditions\\UserNeverPurchasedCategoryCondition",
+          "configuration_schema": {
+            "category_ids": {
+              "key": "category_ids",
+              "type": "array",
+              "label": "دسته‌بندی‌ها",
+              "required": true,
+              "description": "لیست دسته‌بندی‌هایی که مشتری نباید قبلاً از آن‌ها خرید کرده باشد.",
+              "item_type": "model",
+              "model_reference": {
+                "table": "categories",
+                "column": "id"
+              }
+            },
+            "match_policy": {
+              "key": "match_policy",
+              "type": "enum",
+              "label": "نحوه بررسی تطابق",
+              "required": false,
+              "description": "مشخص می‌کند که آیا عدم خرید از یکی از دسته‌ها کافیست یا باید از هیچ‌کام خرید نکرده باشد.",
+              "cases": [
+                {
+                  "value": "any",
+                  "label": "هر کدام"
+                },
+                {
+                  "value": "all",
+                  "label": "همه"
+                }
+              ],
+              "default": "any"
+            }
+          }
+        }
+      ],
+      "actions": [
+        {
+          "key": "add_gift_credit",
+          "name": "اعطای اعتبار هدیه",
+          "description": "مبلغی به‌عنوان اعتبار هدیه به کیف پول مشتری اضافه می‌شود.",
+          "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\AddGiftCreditAction",
+          "configuration_schema": {
+            "amount": {
+              "key": "amount",
+              "type": "integer",
+              "label": "مبلغ اعتبار هدیه",
+              "required": true,
+              "description": "مبلغ اعتبار به ریال."
+            },
+            "per_item": {
+              "key": "per_item",
+              "type": "boolean",
+              "label": "محاسبه به ازای هر کالا",
+              "required": false,
+              "description": "در صورت فعال بودن، به ازای هر کالا محاسبه می‌شود.",
+              "default": false
+            },
+            "expires_days": {
+              "key": "expires_days",
+              "type": "integer",
+              "label": "مدت اعتبار (روز)",
+              "required": false,
+              "description": "تعداد روزهای اعتبار (خالی بگذارید برای اعتبار دائمی).",
+              "default": null
+            },
+            "description": {
+              "key": "description",
+              "type": "string",
+              "label": "یادداشت تراکنش",
+              "required": false,
+              "description": "توضیحات در سابقه کیف پول.",
+              "default": null
+            }
+          }
+        },
+        {
+          "key": "add_wallet_credit",
+          "name": "افزایش موجودی کیف پول",
+          "description": "مبلغی مشخص مستقیماً به موجودی اصلی کیف پول افزوده می‌شود.",
+          "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\AddWalletCreditAction",
+          "configuration_schema": {
+            "amount": {
+              "key": "amount",
+              "type": "integer",
+              "label": "مبلغ اعتبار",
+              "required": true,
+              "description": "مبلغ به ریال."
+            },
+            "per_item": {
+              "key": "per_item",
+              "type": "boolean",
+              "label": "محاسبه به ازای هر کالا",
+              "required": false,
+              "description": "در صورت فعال بودن، به ازای هر کالا محاسبه می‌شود.",
+              "default": false
+            },
+            "description": {
+              "key": "description",
+              "type": "string",
+              "label": "یادداشت تراکنش",
+              "required": false,
+              "description": "توضیحات در سابقه کیف پول.",
+              "default": null
+            }
+          }
+        },
+        {
+          "key": "apply_fixed_amount_off",
+          "name": "تخفیف مبلغ ثابت روی سبد خرید",
+          "description": "مبلغ مشخصی از مجموع سبد خرید کسر می‌شود.",
+          "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\ApplyFixedAmountOffAction",
+          "configuration_schema": {
+            "amount": {
+              "key": "amount",
+              "type": "integer",
+              "label": "مبلغ تخفیف",
+              "required": true,
+              "description": "مبلغ تخفیف به ریال."
+            }
+          }
+        },
+        {
+          "key": "apply_percentage_off",
+          "name": "تخفیف درصدی روی سبد خرید",
+          "description": "درصد مشخصی از مبلغ اقلام سبد خرید کسر می‌شود.",
+          "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\ApplyPercentageDiscountToItemsAction",
+          "configuration_schema": {
+            "percentage": {
+              "key": "percentage",
+              "type": "integer",
+              "label": "درصد تخفیف",
+              "required": true,
+              "description": "درصد تخفیف (مثلاً ۱۵ برای ۱۵٪)."
+            }
+          }
+        },
+        {
+          "key": "apply_tiered_percentage_off",
+          "name": "تخفیف درصدی پلکانی",
+          "description": "اعمال تخفیف درصدی بر اساس پله‌های تعریف شده.",
+          "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\ApplyTieredPercentageOffAction",
+          "configuration_schema": {
+            "tiers": {
+              "key": "tiers",
+              "type": "array",
+              "label": "پله‌های تخفیف",
+              "required": true,
+              "description": "تعریف پله‌های مقداری و درصد تخفیف مربوطه.",
+              "item_type": "data",
+              "item_class": "App\\Services\\Discounts\\Configs\\TierData",
+              "item_schema": {
+                "min_amount": {
+                  "key": "min_amount",
+                  "type": "integer",
+                  "label": "Min Amount",
+                  "required": true,
+                  "description": "Min Amount (integer)"
+                },
+                "percentage": {
+                  "key": "percentage",
+                  "type": "number",
+                  "label": "Percentage",
+                  "required": true,
+                  "description": "Percentage (number)"
+                }
+              }
+            }
+          }
+        },
+        {
+          "key": "gift_product",
+          "name": "هدیه محصول",
+          "description": "افزودن یک محصول به عنوان هدیه به سبد خرید.",
+          "handler_class": "App\\Services\\Discounts\\Cart\\Actions\\GiftProductAction",
+          "configuration_schema": {
+            "product_delivery_option_id": {
+              "key": "product_delivery_option_id",
+              "type": "integer",
+              "label": "شناسه گزینه تحویل محصول",
+              "required": true,
+              "description": "شناسه محصول هدیه.",
+              "model_reference": {
+                "table": "product_delivery_options",
+                "column": "id",
+                "display_column": "name"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "product": {
+      "conditions": [
+        {
+          "key": "delivery_method_is",
+          "name": "روش تحویل محصول",
+          "description": "این شرط بررسی می‌کند که آیا روش تحویل محصول با موارد انتخاب‌شده تطابق دارد.",
+          "handler_class": "App\\Services\\Discounts\\Product\\Conditions\\DeliveryMethodIsCondition",
+          "configuration_schema": {
+            "delivery_methods": {
+              "key": "delivery_methods",
+              "type": "array",
+              "label": "روش‌های تحویل",
+              "required": true,
+              "description": "لیست روش‌های تحویل مجاز.",
+              "item_type": "enum",
+              "item_enum": "App\\Enums\\Product\\DeliveryMethodEnum",
+              "item_cases": [
+                {
+                  "value": "lms_moodle",
+                  "label": "LMS Moodle"
+                },
+                {
+                  "value": "direct_download",
+                  "label": "دانلود مستقیم"
+                },
+                {
+                  "value": "video_platform_spotplayer",
+                  "label": "پلتفرم ویدیویی SpotPlayer"
+                },
+                {
+                  "value": "in_person",
+                  "label": "حضوری"
+                },
+                {
+                  "value": "live_session_bbb",
+                  "label": "جلسه زنده با BBB"
+                },
+                {
+                  "value": "live_session_skyroom",
+                  "label": "جلسه زنده با Skyroom"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "key": "product_in_category",
+          "name": "دسته‌بندی محصول",
+          "description": "این شرط بررسی می‌کند که آیا محصول در دسته‌بندی‌های مشخص‌شده قرار دارد.",
+          "handler_class": "App\\Services\\Discounts\\Product\\Conditions\\ProductCategoryCondition",
+          "configuration_schema": {
+            "category_ids": {
+              "key": "category_ids",
+              "type": "array",
+              "label": "دسته‌بندی‌ها",
+              "required": true,
+              "description": "دسته‌بندی‌هایی که محصول باید در آن‌ها باشد.",
+              "item_type": "model",
+              "model_reference": {
+                "table": "categories",
+                "column": "id",
+                "display_column": "name"
+              }
+            },
+            "match_policy": {
+              "key": "match_policy",
+              "type": "enum",
+              "label": "نحوه بررسی تطابق",
+              "required": false,
+              "description": "مشخص می‌کند که آیا کافیست محصول در یکی از دسته‌ها باشد یا همه آن‌ها.",
+              "cases": [
+                {
+                  "value": "any",
+                  "label": "هر کدام"
+                },
+                {
+                  "value": "all",
+                  "label": "همه"
+                }
+              ],
+              "default": "any"
+            }
+          }
+        }
+      ],
+      "actions": [
+        {
+          "key": "apply_fixed_discount_product",
+          "name": "تخفیف مبلغ ثابت محصول",
+          "description": "مبلغ مشخصی از قیمت محصول کسر می‌شود.",
+          "handler_class": "App\\Services\\Discounts\\Product\\Actions\\ApplyFixedDiscountToProductAction",
+          "configuration_schema": {
+            "amount": {
+              "key": "amount",
+              "type": "integer",
+              "label": "مبلغ تخفیف",
+              "required": true,
+              "description": "مبلغ تخفیف به ریال."
+            }
+          }
+        },
+        {
+          "key": "apply_percentage_off_product",
+          "name": "تخفیف درصدی محصول",
+          "description": "درصد مشخصی از قیمت محصول کسر می‌شود.",
+          "handler_class": "App\\Services\\Discounts\\Product\\Actions\\ApplyPercentageDiscountToProductAction",
+          "configuration_schema": {
+            "percentage": {
+              "key": "percentage",
+              "type": "integer",
+              "label": "درصد تخفیف",
+              "required": true,
+              "description": "درصد تخفیف."
+            }
+          }
+        }
+      ]
+    }
   },
-  "product": {
-    "conditions": [
-      {"key": "product_category", "name": "Product Category", "description": "Category match", "handler_class": "App\\Handlers\\ProductCategoryConditionHandler", "configuration_schema": {"category_id": "integer"}}
-    ],
-    "actions": [
-      {"key": "product_discount", "name": "Product Discount", "description": "Discount on product", "configuration_schema": {"amount": "number"}}
-    ]
-  }
+  "metadata": []
 }

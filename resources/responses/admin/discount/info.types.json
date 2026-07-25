@@ -1,4 +1,16 @@
-[
-  {"value": "product_specific", "label": "Product Specific", "description": "Discount applied to specific products"},
-  {"value": "cart_checkout", "label": "Cart Checkout", "description": "Discount applied to entire cart during checkout"}
-]
+{
+  "message": "عملیات با موفقیت انجام شد.",
+  "data": [
+    {
+      "value": "product_specific",
+      "label": "تخفیف مخصوص محصول",
+      "description": "این نوع تخفیف روی محصولات انتخاب‌شده اعمال می‌شود و در صفحه محصول و لیست محصولات به مشتری نمایش داده می‌شود."
+    },
+    {
+      "value": "cart_checkout",
+      "label": "تخفیف زمان تسویه حساب",
+      "description": "این نوع تخفیف در مرحله نهایی خرید، بر اساس شرایط کل سبد خرید (مانند کد تخفیف یا مبلغ سبد خرید)، محاسبه و اعمال می‌شود."
+    }
+  ],
+  "metadata": []
+}

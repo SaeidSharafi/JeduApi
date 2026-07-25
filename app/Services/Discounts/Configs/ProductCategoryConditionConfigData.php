@@ -29,4 +29,27 @@ final class ProductCategoryConditionConfigData extends Data
             'match_policy'   => ['required', Rule::enum(MatchPolicyEnum::class)],
         ];
     }
+
+    /**
+     * Extra frontend metadata for specific fields.
+     *
+     * @return array<string, array<string, mixed>>
+     *
+     * @codeCoverageIgnore
+     */
+    public static function fieldMeta(): array
+    {
+        return [
+            'category_ids' => [
+                'item' => [
+                    'item_type'       => 'model',
+                    'model_reference' => [
+                        'table'          => 'categories',
+                        'column'         => 'id',
+                        'display_column' => 'name',
+                    ],
+                ],
+            ],
+        ];
+    }
 }
