@@ -68,7 +68,7 @@ final class DigitalAssetController extends Controller
                         ->orderBy('full_name', $descending ? 'desc' : 'asc');
                 }), 'slug', 'status',
             ])
-            ->paginate(request()->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(

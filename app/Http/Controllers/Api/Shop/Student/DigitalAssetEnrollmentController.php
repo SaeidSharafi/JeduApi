@@ -37,7 +37,7 @@ final class DigitalAssetEnrollmentController extends Controller
                 }
             )
             ->with(['orderItem.vendor'])
-            ->paginate(request()->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(EnrollmentData::collect($enrollments));

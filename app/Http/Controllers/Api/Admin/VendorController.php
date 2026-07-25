@@ -42,7 +42,7 @@ final class VendorController extends Controller
         $vendors = QueryBuilder::for(Vendor::class)
             ->allowedFilters(['name', 'email', 'phone'])
             ->allowedSorts(['name', 'created_at'])
-            ->paginate(request()->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(VendorListItemData::collect($vendors));

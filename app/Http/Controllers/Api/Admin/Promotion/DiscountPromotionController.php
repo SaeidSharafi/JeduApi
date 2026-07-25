@@ -50,7 +50,7 @@ final class DiscountPromotionController extends Controller
             ])
             ->with(['rules', 'coupons'])
             ->orderBy('created_at', 'desc')
-            ->paginate($request->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(DiscountPromotionData::collect($promotions));

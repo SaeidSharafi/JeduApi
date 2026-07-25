@@ -47,7 +47,7 @@ final class SliderController extends Controller
                 'title',
             ])
             ->allowedSorts('order', 'title', 'created_at')
-            ->paginate(request()->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(SliderListItemData::collect($sliders));

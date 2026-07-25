@@ -46,7 +46,7 @@ final class BlogCategoryController extends Controller
             ->defaultSort('-created_at')
             ->withCount('posts')
             ->with('media')
-            ->paginate(request()->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(BlogCategoryData::collect($categories));

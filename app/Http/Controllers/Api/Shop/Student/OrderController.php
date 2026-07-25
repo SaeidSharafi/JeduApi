@@ -33,7 +33,7 @@ final class OrderController extends Controller
             ->orders()
             ->with(['items.productDeliveryOption.product', 'payments'])
             ->latest()
-            ->paginate(request()->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(OrderData::collect($orders));

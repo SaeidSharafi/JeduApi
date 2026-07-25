@@ -48,7 +48,7 @@ final class CourseController extends Controller
             ->allowedFilters(['slug', 'full_name', 'short_name', 'status'])
             ->allowedSorts(['slug', 'full_name', 'short_name', 'status'])
             ->with('categories', 'digitalAssets')
-            ->paginate(request()->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(data: CourseListItemData::collect($courses)->toArray());

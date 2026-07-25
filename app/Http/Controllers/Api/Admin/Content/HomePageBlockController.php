@@ -37,7 +37,7 @@ final class HomePageBlockController
         $blocks = QueryBuilder::for(HomePageBlock::class)
             ->with('media')
             ->orderBy('order')
-            ->paginate(request()->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(HomePageBlockData::collect($blocks));

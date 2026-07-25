@@ -51,7 +51,7 @@ final class StaffController extends Controller
             ->allowedSorts(['name', 'email', 'phone', 'created_at', 'updated_at'])
             ->defaultSort('-created_at')
             ->with('roles')
-            ->paginate(request()->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(StaffListItemData::collect($staff));

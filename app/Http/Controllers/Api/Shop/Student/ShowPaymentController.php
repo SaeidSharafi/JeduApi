@@ -35,7 +35,7 @@ final class ShowPaymentController extends Controller
             ->when($purpose, fn ($query) => $query->where('purpose', $purpose))
             ->with('transactions')
             ->latest()
-            ->paginate($request->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(PaymentData::collect($payments));

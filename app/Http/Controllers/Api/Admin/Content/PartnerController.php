@@ -44,7 +44,7 @@ final class PartnerController extends Controller
                 AllowedFilter::exact('is_active')
             ])
             ->allowedSorts('order', 'title', 'created_at')
-            ->paginate(request()->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(PartnerListItemData::collect($partners));

@@ -57,7 +57,7 @@ final class BlogPostController extends Controller
             ->allowedSorts(['title', 'published_at', 'created_at', 'updated_at'])
             ->defaultSort('-created_at')
             ->with(['courses', 'seminars', 'digitalAssets', 'media', 'mainProductable', 'categories', 'author'])
-            ->paginate(request()->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(BlogPostListItemData::collect($posts));

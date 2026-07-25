@@ -65,7 +65,7 @@ final class StudentStoryController extends Controller
             )
             ->allowedSorts(['student_name', 'course_name', 'display_order', 'created_at'])
             ->defaultSort('display_order')
-            ->paginate(request()->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(StudentStoryListItemData::collect($stories));

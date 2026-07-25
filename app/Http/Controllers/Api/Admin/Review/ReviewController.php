@@ -60,7 +60,7 @@ final class ReviewController extends Controller
                 $query->with('user');
             })
             ->with(['reviewable'])
-            ->paginate($request->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(ReviewListItemData::collect($reviews));

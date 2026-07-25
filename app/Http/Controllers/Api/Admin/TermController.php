@@ -45,7 +45,7 @@ final class TermController extends Controller
                 AllowedFilter::exact('status'),
                 'academic_year'])
             ->allowedSorts(['name', 'status', 'academic_year', 'start_date', 'end_date'])
-            ->paginate(request()->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(data: TermListItemData::collect($terms)->toArray());

@@ -56,7 +56,7 @@ final class ProductController extends Controller
             ->allowedSorts(['created_at', 'updated_at', 'name', 'short_name', 'status', 'is_visible', 'is_featured'])
             ->defaultSort('-created_at')
             ->with(['term', 'productable', 'vendor'])
-            ->paginate(request()->input('perPage', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(ProductListItemData::collect($products));

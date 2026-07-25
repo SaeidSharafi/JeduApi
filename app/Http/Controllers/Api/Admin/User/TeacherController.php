@@ -48,7 +48,7 @@ final class TeacherController extends Controller
             ->allowedFilters(['first_name', 'last_name', 'email', 'phone'])
             ->allowedSorts(['first_name', 'last_name', 'email', 'phone'])
             ->with('user')
-            ->paginate(request()->integer('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(TeacherListItemData::collect($teachers));

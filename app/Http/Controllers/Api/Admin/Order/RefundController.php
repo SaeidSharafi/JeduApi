@@ -61,7 +61,7 @@ final class RefundController extends Controller
             ->allowedSorts(['created_at', 'status'])
             ->defaultSort('-created_at')
             ->with('order')
-            ->paginate(request()->integer('per_page', 15));
+            ->paginate(request()->integer('per_page', config('app.page_size')));
 
         return apiResponse()->success(RefundData::collect($refunds));
     }

@@ -72,7 +72,7 @@ final class OrderController extends Controller
                     $query->where('status', PaymentStatusEnum::COMPLETED);
                 },
             ], 'amount')
-            ->paginate(request()->integer('per_page', 15));
+            ->paginate(request()->integer('per_page', config('app.page_size')));
 
         return apiResponse()->success(OrderListItemData::collect($orders));
     }

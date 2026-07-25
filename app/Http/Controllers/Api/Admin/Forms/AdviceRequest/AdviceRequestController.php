@@ -50,7 +50,7 @@ final class AdviceRequestController extends Controller
             ->allowedSorts(['status', 'created_at', 'handled_by_id'])
             ->defaultSort('-created_at')
             ->with('handler')
-            ->paginate(request()->get('per_page', 15))
+            ->paginate(request()->integer('per_page', config('app.page_size')))
             ->withQueryString();
 
         return apiResponse()->success(AdviceRequestData::collect($requests));
