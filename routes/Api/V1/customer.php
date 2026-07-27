@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\Shop\Student\ShowPaymentController;
 use App\Http\Controllers\Api\Shop\Teacher\AttendanceController;
 use App\Http\Controllers\Api\Shop\Teacher\CourseController;
 use App\Http\Controllers\Api\Shop\Teacher\GradeController;
+use App\Http\Controllers\Api\Shop\Wallet\WalletInfoController;
 use App\Http\Controllers\Api\Shop\Wallet\WalletTopupController;
 
 Route::middleware(['auth:user'])
@@ -114,6 +115,8 @@ Route::middleware(['auth:user'])
         // 3. WALLET
         // ==========================================
         Route::prefix('wallet')->name('wallet.')->group(function (): void {
+            Route::get('/', WalletInfoController::class)
+                ->name('info');
             Route::post('topup', [WalletTopupController::class, 'topup'])
                 ->middleware('throttle:5,1')
                 ->name('topup');
