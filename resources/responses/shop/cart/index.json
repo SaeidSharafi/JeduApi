@@ -1,59 +1,23 @@
 {
   "message": "عملیات با موفقیت انجام شد.",
   "data": {
-    "id": 1,
+    "id": 3,
     "items": [
       {
         "id": 1,
-        "product_delivery_option_uuid": "01932e8f-4c3d-7b4e-9f3a-8c5e2d1b4a6f",
-        "quantity": 2,
-        "product_name": "Introduction to Python Programming - Live Online",
-        "sku": "PYT-F25-LIVE"
-      },
-      {
-        "id": 2,
-        "product_delivery_option_uuid": "01932e8f-5d2a-7a3b-8e4c-7d6f3a2e1c5b",
+        "product_delivery_option_uuid": "09760b86-0c04-4ad6-9335-4b2793e11605",
         "quantity": 1,
-        "product_name": "Data Science Bootcamp - Self-Paced",
-        "sku": "DS-W26-SELF"
+        "payment_type": "full_payment",
+        "product_name": "کارگاه کارگردانی سینما - زمستان ۱۴۰۳",
+        "sku": "offline_service_1003"
       }
     ],
-    "first_page_url": "http://jedu.test/api/v1/shop/orders?page=1",
-    "from": 1,
-    "last_page": 2,
-    "last_page_url": "http://jedu.test/api/v1/shop/orders?page=2",
-    "links": [
-      {
-        "url": null,
-        "label": "&laquo; قبلی",
-        "page": null,
-        "active": false
-      },
-      {
-        "url": "http://jedu.test/api/v1/shop/orders?page=1",
-        "label": "1",
-        "page": 1,
-        "active": true
-      },
-      {
-        "url": "http://jedu.test/api/v1/shop/orders?page=2",
-        "label": "2",
-        "page": 2,
-        "active": false
-      },
-      {
-        "url": "http://jedu.test/api/v1/shop/orders?page=2",
-        "label": "بعدی &raquo;",
-        "page": 2,
-        "active": false
-      }
-    ],
-    "next_page_url": "http://jedu.test/api/v1/shop/orders?page=2",
-    "path": "http://jedu.test/api/v1/shop/orders",
-    "per_page": 15,
-    "prev_page_url": null,
-    "to": 15,
-    "total": 26
+    "total_items_count": 1,
+    "applied_coupon_code": null,
+    "subtotal": 1800000,
+    "discount_amount": 0,
+    "grand_total": 1800000,
+    "guest_token": null
   },
   "metadata": []
 }

@@ -1,21 +1,31 @@
 {
-  "success": true,
-  "message": "Cart updated successfully",
+  "message": "عملیات با موفقیت انجام شد.",
   "data": {
-    "id": 1,
+    "id": 3,
     "items": [
       {
         "id": 1,
-        "product_delivery_option_uuid": "01932e8f-4c3d-7b4e-9f3a-8c5e2d1b4a6f",
-        "quantity": 2,
-        "product_name": "Introduction to Python Programming - Live Online",
-        "sku": "PYT-F25-LIVE"
+        "product_delivery_option_uuid": "09760b86-0c04-4ad6-9335-4b2793e11605",
+        "quantity": 1,
+        "payment_type": "full_payment",
+        "product_name": "کارگاه کارگردانی سینما - زمستان ۱۴۰۳",
+        "sku": "offline_service_1003"
+      },
+      {
+        "id": 2,
+        "product_delivery_option_uuid": "02c63284-5662-4ea5-b834-c1660fcc92a8",
+        "quantity": 1,
+        "payment_type": "full_payment",
+        "product_name": "آموزش آواز سنتی - پاییز ۱۴۰۴",
+        "sku": "offline_service_1010"
       }
     ],
-    "total_items_count": 1,
+    "total_items_count": 2,
     "applied_coupon_code": null,
-    "subtotal": 100000,
+    "subtotal": 4000000,
     "discount_amount": 0,
-    "grand_total": 100000
-  }
+    "grand_total": 4000000,
+    "guest_token": null
+  },
+  "metadata": []
 }
