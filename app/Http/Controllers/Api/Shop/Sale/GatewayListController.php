@@ -23,6 +23,6 @@ final class GatewayListController extends Controller
      */
     public function __invoke(GatewayService $service): ApiResponseInterface
     {
-        return apiResponse()->success($service->getShopActiveGatewaysDetials());
+        return apiResponse()->success($service->getShopActiveGatewaysDetails());
     }
 }

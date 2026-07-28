@@ -27,7 +27,7 @@ it('returns list of active gateways', function (): void {
     ];
 
     $this->mock(GatewayService::class)
-        ->shouldReceive('getShopActiveGatewaysDetials')
+        ->shouldReceive('getShopActiveGatewaysDetails')
         ->once()
         ->andReturn($mockGateways);
 

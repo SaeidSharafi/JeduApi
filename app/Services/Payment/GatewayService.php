@@ -17,18 +17,20 @@ final readonly class GatewayService
     /**
      * @return array<GatewayData>
      */
-    public function getShopActiveGatewaysDetials(): array
+    public function getShopActiveGatewaysDetails(): array
     {
         $gateways = [];
         foreach (PaymentMethodEnum::cases() as $method) {
             if ($method->settingKey() === null) {
                 continue;
             }
+
             $gatewayData = $this->settings->get($method->settingKey(), $method->defaultConfig());
             if (!$gatewayData) {
                 continue;
             }
-            $gatewayData['method'] = $method->value;
+
+            $gatewayData['key'] = $method->value;
             $gatewayData = GatewayData::from($gatewayData);
             if ($gatewayData->enabled && $gatewayData->shop_enabled) {
                 $gateways[] = $gatewayData->toArray();
