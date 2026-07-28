@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\Shop\Product\CategorySeminarController;
 use App\Http\Controllers\Api\Shop\Product\CourseController;
 use App\Http\Controllers\Api\Shop\Product\DigitalAssetController;
 use App\Http\Controllers\Api\Shop\Product\GoodForStartCoursesController;
+use App\Http\Controllers\Api\Shop\Product\ProductDeliveryOptionController;
 use App\Http\Controllers\Api\Shop\Product\RelatedProductController;
 use App\Http\Controllers\Api\Shop\Product\SeminarController;
 use App\Http\Controllers\Api\Shop\ProductTeacherController;
@@ -70,7 +71,7 @@ Route::get('products/{product:slug}/teachers', ProductTeacherController::class)-
 
 Route::get('products/{product:slug}/related/{relation_type}', RelatedProductController::class)
     ->name('products.related');
-
+Route::get('product-delivery-option/{productDeliveryOption:uuid}', ProductDeliveryOptionController::class);
 // Blog Routes
 Route::get('blog/posts', [BlogPostController::class, 'index'])->name('blog.posts.index');
 Route::get('blog/posts/{slug}', [BlogPostController::class, 'show'])->name('blog.posts.show');

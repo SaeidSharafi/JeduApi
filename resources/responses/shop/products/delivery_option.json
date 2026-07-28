@@ -1,0 +1,25 @@
+{
+  "uuid": "09760b86-0c04-4ad6-9335-4b2793e11605",
+  "slug": "cinema-directing-workshop-winter-1403",
+  "name": "کارگاه کارگردانی سینما - زمستان ۱۴۰۳",
+  "short_name": "کارگردانی سینما",
+  "short_description": "ثبت‌نام در کارگاه عملی کارگردانی سینما برای ترم زمستان ۱۴۰۳. اصول دکوپاژ، میزانسن و هدایت بازیگر را به صورت عملی بیاموزید.",
+  "vendor": "دپارتمان هنر و رسانه",
+  "term": "ترم زمستان ۱۴۰۳",
+  "price": 1800000,
+  "fulfillment_type": {
+    "value": "offline_service",
+    "label": "سرویس آفلاین"
+  },
+  "delivery_method": {
+    "value": "video_platform_spotplayer",
+    "label": "پلتفرم ویدیویی SpotPlayer"
+  },
+  "status": "published",
+  "productable_type": "course",
+  "cover": {
+    "url": "http://jedu.test/storage/fake-media/cover-art.svg",
+    "thumbnail": null,
+    "alt": ""
+  }
+}
