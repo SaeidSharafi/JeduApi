@@ -104,7 +104,8 @@ Route::middleware(['auth:user'])
                 //Route::get('/{deliveryOption:uuid}/join', JoinUrlController::class)
                 //    ->name('join');
 
-                Route::apiResource('/{courseCode}/attendances', AttendanceController::class);
+                Route::apiResource('/{courseCode}/attendances', AttendanceController::class)->except('destroy');
+                Route::delete('/{courseCode}/attendances', [AttendanceController::class, 'destroy']);
                 Route::apiResource('/{courseCode}/grades', GradeController::class);
                 Route::post('/{courseCode}/grades/bulk', [GradeController::class, 'storeBulk']);
 

@@ -10,12 +10,11 @@ use Hekmatinasser\Verta\Facades\Verta;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-final class StoreAttendanceData extends Data
+final class DeleteAttendanceData extends Data
 {
     public function __construct(
         public string $attendance_date,
         public ?int $occurrence_id,
-        public array $attendances,
     ) {
     }
 
@@ -41,13 +40,8 @@ final class StoreAttendanceData extends Data
     public static function rules(?ValidationContext $context = null): array
     {
         return [
-            'attendance_date'             => ['required', 'date', 'before_or_equal:'.now()->format('Y-m-d')],
+            'attendance_date'             => ['required', 'date:Y-m-d'],
             'occurrence_id'               => ['nullable', 'integer'],
-            'attendances'                 => ['required', 'array'],
-            'attendances.*.attend_status' => ['nullable', 'numeric'],
-            'attendances.*.enrolment_id'  => ['nullable', 'integer'],
-            'attendances.*.attendance_id' => ['nullable', 'integer'],
-            'attendances.*.notes'         => ['nullable', 'string', 'max:1000']
         ];
     }
 
@@ -61,35 +55,6 @@ final class StoreAttendanceData extends Data
             'occurrence_id'               => [
                 'description' => 'The occurrence ID of the attendance record.',
                 'example'     => 123,
-            ],
-            'attendances'                 => [
-                'description' => 'An array of attendance records.',
-                'example'     => [
-                    [
-                        [
-                            'attend_status' => 1,
-                            'enrolment_id'  => 456,
-                            'attendance_id' => 789,
-                            'notes'         => 'Student was present.',
-                        ],
-                    ]
-                ],
-            ],
-            'attendances.*.attend_status' => [
-                'description' => 'The attendance status (e.g., 1 for present, 0 for absent).',
-                'example'     => 1,
-            ],
-            'attendances.*.enrolment_id'  => [
-                'description' => 'The IMS enrolment ID of the student.',
-                'example'     => 456,
-            ],
-            'attendances.*.attendance_id' => [
-                'description' => 'The IMS attendance ID of the record.',
-                'example'     => 789,
-            ],
-            'attendances.*.notes'         => [
-                'description' => 'Optional notes for the attendance record.',
-                'example'     => 'Student was present.',
             ],
         ];
     }

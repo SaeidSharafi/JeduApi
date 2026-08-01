@@ -99,7 +99,7 @@ final class ImsService extends AbstractIntegrationService
         return (array) ($response->json() ?? []);
     }
 
-    public function destroyAttendance(string $courseCode, string $teacherCivilId, CivilIdTypeEnum $civilIdTypeEnum): array
+    public function destroyAttendance(string $courseCode, string $teacherCivilId, CivilIdTypeEnum $civilIdTypeEnum, array $payload): array
     {
         $this->assertConfigured();
 
@@ -109,7 +109,7 @@ final class ImsService extends AbstractIntegrationService
             ->withToken($this->config['api_key'])
             ->withHeaders(['X-Teacher-Civil-Id' => $teacherCivilId])
             ->withHeaders(['X-Teacher-Civil-Id-Type' => $civilIdTypeEnum->value])
-            ->delete("/api/v2/teacher/course/{$courseCode}/attendance");
+            ->delete("/api/v2/teacher/course/{$courseCode}/attendance", $payload);
 
         $this->handleHttpErrors($response, "/api/v2/teacher/course/{$courseCode}/attendance");
 

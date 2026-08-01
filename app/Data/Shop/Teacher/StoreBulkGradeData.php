@@ -27,13 +27,43 @@ final class StoreBulkGradeData extends Data
         return $properties;
     }
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'enrolments'                 => ['array', 'required'],
             'enrolments.*.id'            => ['required', 'integer'],
             'enrolments.*.grades'        => ['required', 'array'],
             'enrolments.*.grades.*'      => ['nullable', 'numeric', 'min:0', 'max:100'],
+        ];
+    }
+
+    public function bodyParameters(): array
+    {
+        return [
+            'enrolments' => [
+                'description' => 'array of enrolment objects',
+                'example'     => [
+                    [
+                        'id' => 120,
+                        'grades' => [
+                            'final' => 100
+                        ],
+                    ]
+                ]
+            ],
+            'enrolments.*.id' => [
+                'description' => 'the IMS enrolment ID.',
+                'example'     => 456,
+            ],
+            'enrolments.*.grades.*'       => [
+                'description' => 'An array of grade values. The structure is taken from the get grade response. Example: {midterm: 20, final: 70}',
+                'example'     => [
+                    [
+                        'midterm' => 85,
+                        'final'   => 85,
+                    ],
+                ],
+            ],
         ];
     }
 }

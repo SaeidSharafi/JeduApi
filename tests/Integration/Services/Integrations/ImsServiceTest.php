@@ -268,7 +268,7 @@ it('destroyAttendance succeeds', function (): void {
         'https://ims.test/api/v2/teacher/course/IMS-1/attendance' => Http::response(['message' => 'deleted'], 200),
     ]);
 
-    $response = $this->imsService->destroyAttendance('IMS-1', '1234567890', CivilIdTypeEnum::NATIONAL_CODE);
+    $response = $this->imsService->destroyAttendance('IMS-1', '1234567890', CivilIdTypeEnum::NATIONAL_CODE , ['attendance_date' => '2024-01-01']);
     expect($response['message'])->toBe('deleted');
     Http::assertSent(fn ($request) => $request->method() === 'DELETE');
 });

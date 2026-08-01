@@ -36,11 +36,25 @@ final class ShowAttendanceData extends Data
         return $properties;
     }
 
-    public static function rules(ValidationContext $context): array
+    public static function rules(?ValidationContext $context = null): array
     {
         return [
             'attendance_date'             => ['nullable', 'date', 'before_or_equal:' . now()->format('Y-m-d')],
             'occurrence_id'               => ['nullable', 'integer'],
+        ];
+    }
+
+    public function bodyParameters(): array
+    {
+        return [
+            'attendance_date' => [
+                'description' => 'The date of the attendance record in Jalali format (YYYY-MM-DD).',
+                'example'     => '1402-01-15',
+            ],
+            'occurrence_id'   => [
+                'description' => 'The occurrence ID of the attendance record.',
+                'example'     => 123,
+            ],
         ];
     }
 }

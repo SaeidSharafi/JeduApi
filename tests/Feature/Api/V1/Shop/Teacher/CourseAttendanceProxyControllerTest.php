@@ -171,10 +171,15 @@ it('destroy calls service and returns result', function () {
     $mockService = $this->mock(ImsService::class);
     $mockService->shouldReceive('destroyAttendance')
         ->once()
-        ->with($this->courseCode, '1234567890', CivilIdTypeEnum::NATIONAL_CODE)
+        ->with($this->courseCode, '1234567890', CivilIdTypeEnum::NATIONAL_CODE, Mockery::on(function ($payload) {
+            return $payload['attendance_date'] === '2026-03-21' && $payload['occurrence_id'] === null;
+        }))
         ->andReturn(['message' => 'Attendance deleted']);
 
-    deleteJson("/api/v1/shop/teacher/courses/{$this->courseCode}/attendances/1")
+    deleteJson("/api/v1/shop/teacher/courses/{$this->courseCode}/attendances", [
+        'attendance_date' => '1405-01-01',
+        'occurrence_id'   => null,
+    ])
         ->assertOk()
         ->assertJson(['message' => 'Attendance deleted']);
 });

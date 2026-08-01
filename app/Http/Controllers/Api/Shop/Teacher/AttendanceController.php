@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Shop\Teacher;
 
+use App\Data\Shop\Teacher\DeleteAttendanceData;
 use App\Data\Shop\Teacher\ShowAttendanceData;
 use App\Data\Shop\Teacher\StoreAttendanceData;
 use App\Exceptions\Integrations\UnrecoverableProvisioningException;
@@ -111,7 +112,7 @@ final class AttendanceController extends Controller
      *
      * @urlParam courseCode string required The IMS course code. Example: IMS-100
      */
-    public function destroy(string $courseCode)
+    public function destroy(DeleteAttendanceData $attendanceData, string $courseCode)
     {
         $teacher = Auth::user()?->teacherData;
         abort_unless($teacher, 403);
@@ -119,7 +120,7 @@ final class AttendanceController extends Controller
         $teacherCivilId = Auth::user()?->civil_id;
         $civilIdTypeEnum = Auth::user()?->civil_id_type;
 
-        $response = $this->imsService->destroyAttendance($courseCode, $teacherCivilId, $civilIdTypeEnum);
+        $response = $this->imsService->destroyAttendance($courseCode, $teacherCivilId, $civilIdTypeEnum, $attendanceData->toArray());
 
         return response()->json($response);
     }
