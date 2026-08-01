@@ -204,6 +204,6 @@ it('blocks unauthenticated users from attendance endpoints', function () {
         'attendances'     => [],
     ])->assertUnauthorized();
 
-    deleteJson("/api/v1/shop/teacher/courses/{$this->courseCode}/attendances/1")
+    deleteJson("/api/v1/shop/teacher/courses/{$this->courseCode}/attendances")
         ->assertUnauthorized();
 });
