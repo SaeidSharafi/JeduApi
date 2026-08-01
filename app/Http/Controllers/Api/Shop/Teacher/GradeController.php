@@ -100,4 +100,16 @@ final class GradeController extends Controller
 
         return response()->json($response);
     }
+
+    /**
+     * Delete a course grade record.
+     *
+     * <aside class="notice">NOT IMPLEMENTED YET</aside>
+     *
+     */
+    public function destroy(int $gradeId){
+        //TODO implement the grade delete
+        return response()->noContent();
+    }
+
 }
