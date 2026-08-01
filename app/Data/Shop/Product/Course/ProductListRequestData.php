@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Data\Shop\Product\Course;
 
 use App\Enums\Product\ProductableEnum;
-use App\Query\ProductQueryService;
+use App\Enums\Product\ProductSortFieldEnum;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
@@ -33,7 +33,7 @@ final class ProductListRequestData extends Data
             'filter'   => ['sometimes', 'array'],
             'filter.*' => ['sometimes'],
             ...$filters,
-            'sortBy'    => ['sometimes', 'string', Rule::in(ProductQueryService::allowedSortFields)],
+            'sortBy'    => ['sometimes', 'string', Rule::in(ProductSortFieldEnum::ALLOWED)],
             'sortOrder' => ['sometimes', 'string', 'in:asc,desc'],
             'page'      => ['sometimes', 'integer', 'min:1'],
             'per_page'  => ['sometimes', 'integer', 'min:1', 'max:100'],

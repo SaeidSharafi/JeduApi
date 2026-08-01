@@ -12,7 +12,6 @@ use App\Enums\Content\PublicationStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Blog\BlogPost;
 use App\Models\Product;
-use App\Query\ProductQueryService;
 use App\Services\ProductPriceService;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -84,10 +83,12 @@ final class BlogPostController extends Controller
             ->map(fn ($group) => $group->pluck('id')->all())
             ->all();
 
-        $relatedProducts = ProductQueryService::make()
-            ->availableProducts()
+        $relatedProducts = Product::query()
+            ->publishedAndVisible()
+            ->hasPublishedDeliveryOption()
+            ->publishedProductable()
+            ->activeTerm()
             ->forListing()
-            ->getQuery()
             ->where(function (Builder $query) use ($relatedProductableIds): void {
                 $query->where(fn (Builder $query) => $query->where('productable_type', 'course')
                     ->whereIn('productable_id', $relatedProductableIds['course'] ?? []))

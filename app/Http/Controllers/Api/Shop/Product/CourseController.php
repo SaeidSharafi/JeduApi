@@ -72,11 +72,13 @@ final class CourseController extends Controller
     public function show(Product $product): ApiResponseInterface
     {
         // Load the product with all required relations for detail view
-        $product = ProductQueryService::make()
+        $product = Product::query()
             ->ofType(ProductableEnum::COURSE)
-            ->availableProducts()
+            ->publishedAndVisible()
+            ->hasPublishedDeliveryOption()
+            ->publishedProductable()
+            ->activeTerm()
             ->forDetail()
-            ->getQuery()
             ->where('id', $product->id)
             ->firstOrFail();
 

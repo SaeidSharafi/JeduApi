@@ -6,6 +6,7 @@ namespace App\Listeners;
 
 use App\Enums\EnrollmentStatusEnum;
 use App\Events\EnrollmentStatusChanged;
+use App\Jobs\UpdateProductAvailabilityJob;
 use App\Models\Enrollment;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -52,5 +53,7 @@ final class UpdateProductDeliveryOptionEnrolledCount implements ShouldQueue
 
         $deliveryOption->enrolled_count = $count;
         $deliveryOption->saveQuietly();
+
+        UpdateProductAvailabilityJob::dispatch([$deliveryOption->product_id]);
     }
 }

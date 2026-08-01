@@ -36,6 +36,10 @@ return Application::configure(basePath: dirname(__DIR__))
             ->twiceDailyAt(2, 14, 3)
             ->withoutOverlapping();
 
+        $schedule->command('products:index-availability')
+            ->hourly()
+            ->withoutOverlapping();
+
         // Cancel abandoned pending orders (runs every 10 minutes, cancels orders older than 30 minutes)
         $schedule->command('orders:cancel-abandoned --timeout=30')
             ->everyTenMinutes()

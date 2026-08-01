@@ -8,7 +8,6 @@ use App\Data\Shop\Product\ProductCardData;
 use App\Enums\Product\RelationTypeEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Query\ProductQueryService;
 use App\Services\ProductPriceService;
 
 /**
@@ -17,7 +16,6 @@ use App\Services\ProductPriceService;
 final class RelatedProductController extends Controller
 {
     public function __construct(
-        private readonly ProductQueryService $productQueryService,
         private readonly ProductPriceService $priceService,
     ) {}
 
@@ -40,10 +38,12 @@ final class RelatedProductController extends Controller
             return apiResponse()->success([]);
         }
 
-        $relatedProducts = $this->productQueryService
-            ->availableProducts()
+        $relatedProducts = Product::query()
+            ->publishedAndVisible()
+            ->hasPublishedDeliveryOption()
+            ->publishedProductable()
+            ->activeTerm()
             ->forListing()
-            ->getQuery()
             ->whereIn('id', $relatedProducts->pluck('related_product_id'))
             ->get()
             ->map(function (Product $product) {

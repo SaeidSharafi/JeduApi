@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Actions\Admin\ProductDeliveryOption;
 
 use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionCreateData;
+use App\Events\ProductAvailabilityCacheInvalidated;
 use App\Events\ProductCacheInvalidated;
+use App\Events\ProductSearchIndexInvalidated;
 use App\Models\Product;
 use App\Models\ProductDeliveryOption;
 use App\Services\SkuGeneratorService;
@@ -32,6 +34,8 @@ final readonly class CreateProductDeliveryOptionAction
             return $pdo;
         });
         ProductCacheInvalidated::dispatch($pdo->product_id);
+        ProductAvailabilityCacheInvalidated::dispatch([$pdo->product_id]);
+        ProductSearchIndexInvalidated::dispatch([$pdo->product_id]);
 
         return $pdo;
     }

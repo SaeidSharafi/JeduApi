@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Content\PublicationStatusEnum;
+use App\Enums\Product\AvailabilityStatusEnum;
+use App\Enums\Product\ProductableEnum;
 use App\Enums\Product\RelationTypeEnum;
 use App\Enums\TermStatusEnum;
 use App\Traits\HasCategories;
+use App\Traits\HasProductListingPresets;
+use BackedEnum;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -19,13 +23,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Facades\DB;
 use Laravel\Scout\Searchable;
 
 final class Product extends Model
 {
     use HasCategories;
     use HasFactory;
-    use Searchable;
+    use HasProductListingPresets;
+    use Searchable {
+        search as scoutSearch;
+    }
+
+    private const int OPEN_END_TIMESTAMP = 4102444800;
 
     protected $fillable
         = [
@@ -44,6 +54,15 @@ final class Product extends Model
             'details_json',
             'event_start_at',
             'event_ended_at',
+            'has_published_delivery_option',
+            'productable_status',
+            'is_term_active',
+            'earliest_registration_start',
+            'latest_registration_end',
+            'earliest_availability_start',
+            'latest_availability_end',
+            'near_capacity',
+            'max_capacity_utilization',
         ];
 
     /**
@@ -51,26 +70,8 @@ final class Product extends Model
      */
     public function toSearchableArray(): array
     {
-        // Calculate static availability flags
         $publishedOptions = $this->productDeliveryOptions
             ->where('status', PublicationStatusEnum::PUBLISHED);
-        $now            = now();
-        $isAvailableNow = $publishedOptions->contains(function ($option) use ($now) {
-            $inRegDate = (is_null($option->registration_start_date) || $now->gte($option->registration_start_date)) && (is_null($option->registration_end_date) || $now->lte($option->registration_end_date));
-
-            $inAvailDate = (is_null($option->available_from) || $now->gte($option->available_from)) && (is_null($option->available_to) || $now->lte($option->available_to));
-
-            return $inRegDate && $inAvailDate;
-        });
-
-        $earliestRegistrationStart = $publishedOptions->pluck('registration_start_date')->filter()->min();
-        $latestRegistrationEnd     = $publishedOptions->pluck('registration_end_date')->filter()->max();
-        $earliestAvailabilityStart = $publishedOptions->pluck('available_from')->filter()->min();
-        $latestAvailabilityEnd     = $publishedOptions->pluck('available_to')->filter()->max();
-
-        $hasPublishedDeliveryOption = $publishedOptions->isNotEmpty();
-
-        $isTermActive = is_null($this->term) || $this->term->status === TermStatusEnum::ACTIVE;
 
         $searchableData = [
             'id'                => (string) $this->id,
@@ -79,33 +80,37 @@ final class Product extends Model
             'short_description' => $this->short_description,
             'slug'              => $this->slug,
 
-            // --- FIX: ADD THE MISSING TIMESTAMP FIELDS ---
-            'created_at' => $this->created_at->timestamp,
-            'updated_at' => $this->updated_at->timestamp,
+            'created_at' => (int) $this->created_at->timestamp,
+            'updated_at' => (int) $this->updated_at->timestamp,
 
-            'status'                        => $this->status->value, // e.g., 'published'
-            'is_visible'                    => $this->is_visible,
-            'productable_status'            => $this->productable?->status->value,
-            'has_published_delivery_option' => $hasPublishedDeliveryOption,
-            'is_term_active'                => $isTermActive,
+            'status'                        => $this->status->value,
+            'is_visible'                    => (bool) $this->is_visible,
+            'productable_status'            => (string) $this->productable_status,
+            'has_published_delivery_option' => (bool) $this->has_published_delivery_option,
+            'is_term_active'                => (bool) $this->is_term_active,
+            'near_capacity'                 => (bool) $this->near_capacity,
+            'max_capacity_utilization'      => (float) $this->max_capacity_utilization,
 
-            'is_available_now' => $isAvailableNow,
+            'earliest_registration_start_ts' => $this->earliest_registration_start?->startOfDay()->timestamp ?? 0,
+            'latest_registration_end_ts'     => $this->latest_registration_end?->endOfDay()->timestamp       ?? self::OPEN_END_TIMESTAMP,
+            'earliest_availability_start_ts' => $this->earliest_availability_start?->startOfDay()->timestamp ?? 0,
+            'latest_availability_end_ts'     => $this->latest_availability_end?->endOfDay()->timestamp       ?? self::OPEN_END_TIMESTAMP,
 
-            'earliest_registration_start_ts' => $earliestRegistrationStart?->timestamp,
-            'latest_registration_end_ts'     => $latestRegistrationEnd?->timestamp,
-            'earliest_availability_start_ts' => $earliestAvailabilityStart?->timestamp,
-            'latest_availability_end_ts'     => $latestAvailabilityEnd?->timestamp,
+            'earliest_event_start_ts' => $this->event_start_at?->timestamp             ?? 0,
+            'latest_event_ended_ts'   => $this->event_ended_at?->endOfDay()->timestamp ?? self::OPEN_END_TIMESTAMP,
 
-            'earliest_event_start_ts' => $this->event_start_at?->timestamp ?? 0,
-            'latest_event_ended_ts'   => $this->event_ended_at?->timestamp ?? 4102444800, // year 2100
-
-            'price'             => $this->productPrice?->min_price    ?? ($this->price_data_cache['min_price'] ?? 0),
-            'has_discount'      => $this->productPrice?->has_discount ?? ($this->price_data_cache['has_discount'] ?? false),
-            'category_ids'      => $this->categories->pluck('id')->all(),
-            'fulfillment_types' => $this->productDeliveryOptions->pluck('fulfillment_type')->unique()->values()->all(),
-            'category_slugs'    => $this->categories->pluck('slug')->all(),
-            'productable_type'  => $this->productable_type,
-            'difficulty_level'  => $this->productable->difficulty_level?->value,
+            'price'             => (int) ($this->productPrice?->min_price ?? ($this->price_data_cache['min_price'] ?? 0)),
+            'has_discount'      => (bool) ($this->productPrice?->has_discount ?? ($this->price_data_cache['has_discount'] ?? false)),
+            'category_ids'      => $this->categories->pluck('id')->map(static fn (mixed $id): int => (int) $id)->all(),
+            'fulfillment_types' => $publishedOptions
+                ->pluck('fulfillment_type')
+                ->map(static fn (mixed $type): string => $type instanceof BackedEnum ? (string) $type->value : (string) $type)
+                ->unique()
+                ->values()
+                ->all(),
+            'category_slugs'   => $this->categories->pluck('slug')->map(static fn (mixed $slug): string => (string) $slug)->all(),
+            'productable_type' => (string) $this->productable_type,
+            'difficulty_level' => $this->productable?->difficulty_level?->value,
 
             'productable_full_name'   => $this->productable?->full_name,
             'productable_short_name'  => $this->productable?->short_name,
@@ -131,6 +136,14 @@ final class Product extends Model
 
     public function shouldBeSearchable(): bool
     {
+        if (config('products.availability.use_denormalized')) {
+            return $this->status === PublicationStatusEnum::PUBLISHED
+                && (bool) $this->is_visible
+                && $this->productable_status === PublicationStatusEnum::PUBLISHED->value
+                && (bool) $this->has_published_delivery_option
+                && (bool) $this->is_term_active;
+        }
+
         return $this->status === PublicationStatusEnum::PUBLISHED
             && $this->is_visible
             && (! $this->term || $this->term->status === TermStatusEnum::ACTIVE)
@@ -237,21 +250,21 @@ final class Product extends Model
     }
 
     #[Scope]
-    protected function eventEnded($query)
+    protected function eventEnded(Builder $query): Builder
     {
         return $query->whereNotNull('event_ended_at')
             ->where('event_ended_at', '<', today()->startOfDay());
     }
 
     #[Scope]
-    protected function eventNotStarted($query)
+    protected function eventNotStarted(Builder $query): Builder
     {
         return $query->whereNotNull('event_start_at')
             ->where('event_start_at', '>', today()->startOfDay());
     }
 
     #[Scope]
-    protected function eventOngoing($query)
+    protected function eventOngoing(Builder $query): Builder
     {
         return $query->whereNotNull('event_start_at')
             ->where('event_start_at', '<=', today()->startOfDay())
@@ -260,7 +273,7 @@ final class Product extends Model
     }
 
     #[Scope]
-    protected function eventNotEnded($query)
+    protected function eventNotEnded(Builder $query): Builder
     {
         return $query->where(function (Builder $q): void {
             $q->whereNull('event_ended_at')
@@ -268,18 +281,181 @@ final class Product extends Model
         });
     }
 
+    #[Scope]
+    protected function publishedAndVisible(Builder $query): Builder
+    {
+        return $query->where('products.status', PublicationStatusEnum::PUBLISHED)
+            ->where('products.is_visible', true);
+    }
+
+    #[Scope]
+    protected function hasPublishedDeliveryOption(Builder $query): Builder
+    {
+        if (config('products.availability.use_denormalized')) {
+            return $query->where('products.has_published_delivery_option', true);
+        }
+
+        return $query->whereHas('productDeliveryOptions', fn (Builder $query): Builder => $query
+            ->where('status', PublicationStatusEnum::PUBLISHED));
+    }
+
+    #[Scope]
+    protected function publishedProductable(Builder $query): Builder
+    {
+        if (config('products.availability.use_denormalized')) {
+            return $query->where('products.productable_status', PublicationStatusEnum::PUBLISHED);
+        }
+
+        return $query->whereHasMorph('productable', ProductableEnum::getAllValues(), fn (Builder $query): Builder => $query
+            ->where('status', PublicationStatusEnum::PUBLISHED));
+    }
+
+    #[Scope]
+    protected function activeTerm(Builder $query): Builder
+    {
+        if (config('products.availability.use_denormalized')) {
+            return $query->where('products.is_term_active', true);
+        }
+
+        return $query->where(function (Builder $query): void {
+            $query->whereNull('term_id')
+                ->orWhereHas('term', fn (Builder $termQuery): Builder => $termQuery
+                    ->where('status', TermStatusEnum::ACTIVE));
+        });
+    }
+
+    #[Scope]
+    protected function availabilityStatus(Builder $query, AvailabilityStatusEnum $status): Builder
+    {
+        $today = today()->startOfDay();
+
+        return $query->where(function (Builder $query) use ($status, $today): void {
+            match ($status) {
+                AvailabilityStatusEnum::PAST => $query
+                    ->where('products.event_ended_at', '<', $today)
+                    ->orWhere(function (Builder $fallback) use ($today): void {
+                        $fallback->whereNull('products.event_start_at')
+                            ->whereNull('products.event_ended_at')
+                            ->whereHas('productDeliveryOptions', fn (Builder $optionQuery): Builder => $optionQuery
+                                ->where('available_to', '<', $today));
+                    }),
+                AvailabilityStatusEnum::UPCOMING => $query
+                    ->where('products.event_start_at', '>', $today)
+                    ->orWhere(function (Builder $fallback) use ($today): void {
+                        $fallback->whereNull('products.event_start_at')
+                            ->whereNull('products.event_ended_at')
+                            ->whereHas('productDeliveryOptions', fn (Builder $optionQuery): Builder => $optionQuery
+                                ->where('available_from', '>', $today));
+                    }),
+                AvailabilityStatusEnum::ONGOING => $query
+                    ->where(function (Builder $eventQuery) use ($today): void {
+                        $eventQuery->whereNotNull('products.event_start_at')
+                            ->where('products.event_start_at', '<=', $today)
+                            ->whereNotNull('products.event_ended_at')
+                            ->where('products.event_ended_at', '>=', $today);
+                    })->orWhere(function (Builder $fallback) use ($today): void {
+                        $fallback->whereNull('products.event_start_at')
+                            ->whereNull('products.event_ended_at')
+                            ->whereHas('productDeliveryOptions', function (Builder $optionQuery) use ($today): void {
+                                $optionQuery->where('available_from', '<=', $today)
+                                    ->where(function (Builder $endQuery) use ($today): void {
+                                        $endQuery->whereNull('available_to')
+                                            ->orWhere('available_to', '>=', $today);
+                                    });
+                            });
+                    }),
+            };
+        });
+    }
+
+    #[Scope]
+    protected function sortByCapacityUtilization(Builder $query, float $threshold = 0.8): Builder
+    {
+        $threshold = max(0.0, min(1.0, $threshold));
+
+        if (config('products.availability.use_denormalized')) {
+            return $query
+                ->orderByRaw('CASE WHEN products.max_capacity_utilization >= ? THEN 1 ELSE 0 END DESC', [$threshold])
+                ->orderByDesc('products.max_capacity_utilization');
+        }
+
+        $publishedStatus = PublicationStatusEnum::PUBLISHED->value;
+
+        return $query
+            ->select('products.*')
+            ->leftJoinLateral(
+                DB::table('product_delivery_options AS pdo_lat')
+                    ->selectRaw('COALESCE(MAX((pdo_lat.enrolled_count * 1.0) / NULLIF(pdo_lat.capacity, 0)), 0) AS max_ratio')
+                    ->selectRaw('COALESCE(MAX(CASE WHEN ((pdo_lat.enrolled_count * 1.0) / NULLIF(pdo_lat.capacity, 0)) >= ? THEN 1 ELSE 0 END), 0) AS near_capacity_flag', [$threshold])
+                    ->whereColumn('pdo_lat.product_id', 'products.id')
+                    ->where('pdo_lat.status', $publishedStatus)
+                    ->whereNotNull('pdo_lat.capacity')
+                    ->where('pdo_lat.capacity', '>', 0),
+                'pdo_cap_stats'
+            )
+            ->orderByRaw('pdo_cap_stats.near_capacity_flag DESC')
+            ->orderByRaw('pdo_cap_stats.max_ratio DESC');
+    }
+
+    #[Scope]
+    protected function ofType(Builder $query, ProductableEnum $type): Builder
+    {
+        return $query->where('products.productable_type', $type->value);
+    }
+
+    #[Scope]
+    protected function inCategory(Builder $query, int $categoryId): Builder
+    {
+        return $query->whereHas('categories', fn (Builder $categoryQuery): Builder => $categoryQuery
+            ->where('categories.id', $categoryId));
+    }
+
+    #[Scope]
+    protected function search(Builder $query, ?string $searchTerm): Builder
+    {
+        if (blank($searchTerm)) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $searchQuery) use ($searchTerm): void {
+            $searchQuery
+                ->withPgroonga()
+                ->fullTextSearch(['name', 'short_name', 'short_description', 'slug'], $searchTerm);
+
+            foreach (ProductableEnum::getAllValues() as $type) {
+                $searchQuery->orWhereHasMorph('productable', [$type], function (Builder $productableQuery) use ($searchTerm, $type): void {
+                    $columns = ['full_name', 'short_name', 'description', 'slug'];
+
+                    if (in_array($type, [ProductableEnum::SEMINAR->value, ProductableEnum::DIGITAL_ASSET->value], true)) {
+                        $columns[] = 'keywords';
+                    }
+
+                    $productableQuery->withPgroonga()->fullTextSearch($columns, $searchTerm);
+                });
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [
-            'is_visible'       => 'boolean',
-            'is_featured'      => 'boolean',
-            'price_data_cache' => 'array',
-            'details_json'     => 'array',
-            'event_start_at'   => 'datetime',
-            'event_ended_at'   => 'datetime',
-            'status'           => PublicationStatusEnum::class,
-            'created_at'       => 'datetime',
-            'updated_at'       => 'datetime',
+            'is_visible'                    => 'boolean',
+            'is_featured'                   => 'boolean',
+            'price_data_cache'              => 'array',
+            'details_json'                  => 'array',
+            'event_start_at'                => 'datetime',
+            'event_ended_at'                => 'datetime',
+            'has_published_delivery_option' => 'boolean',
+            'is_term_active'                => 'boolean',
+            'earliest_registration_start'   => 'date',
+            'latest_registration_end'       => 'date',
+            'earliest_availability_start'   => 'date',
+            'latest_availability_end'       => 'date',
+            'near_capacity'                 => 'boolean',
+            'max_capacity_utilization'      => 'decimal:2',
+            'status'                        => PublicationStatusEnum::class,
+            'created_at'                    => 'datetime',
+            'updated_at'                    => 'datetime',
         ];
     }
 }

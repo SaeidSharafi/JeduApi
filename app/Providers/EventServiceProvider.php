@@ -4,9 +4,17 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\Category;
+use App\Models\Course;
+use App\Models\DigitalAsset;
+use App\Models\Seminar;
 use App\Models\Setting;
+use App\Models\Term;
+use App\Observers\CategorySearchIndexObserver;
 use App\Observers\InvalidationObserver;
+use App\Observers\ProductableAvailabilityObserver;
 use App\Observers\SettingObserver;
+use App\Observers\TermAvailabilityObserver;
 use Illuminate\Support\ServiceProvider;
 
 final class EventServiceProvider extends ServiceProvider
@@ -22,5 +30,10 @@ final class EventServiceProvider extends ServiceProvider
         }
 
         Setting::observe(SettingObserver::class);
+        Category::observe(CategorySearchIndexObserver::class);
+        Course::observe(ProductableAvailabilityObserver::class);
+        Seminar::observe(ProductableAvailabilityObserver::class);
+        DigitalAsset::observe(ProductableAvailabilityObserver::class);
+        Term::observe(TermAvailabilityObserver::class);
     }
 }

@@ -11,7 +11,7 @@ use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Query\CategoryQueryService;
-use App\Query\ProductQueryService;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * @group Shop - Products - Categories
@@ -32,12 +32,11 @@ final class CategoryController extends Controller
         $categories = Category::query()
             ->with('children')
             ->withCount([
-                'products' => function ($query) {
-                    return ProductQueryService::make()
-                        ->setQuery($query)
-                        ->availableProducts()
-                        ->getQuery();
-                },
+                'products' => fn (Builder $query): Builder => $query
+                    ->publishedAndVisible()
+                    ->hasPublishedDeliveryOption()
+                    ->publishedProductable()
+                    ->activeTerm(),
             ])->get();
 
         return apiResponse()->success(CategoryCardData::collect($categories));

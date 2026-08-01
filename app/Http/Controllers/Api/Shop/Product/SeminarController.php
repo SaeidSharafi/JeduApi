@@ -70,11 +70,13 @@ final class SeminarController extends Controller
      */
     public function show(Product $product): ApiResponseInterface
     {
-        $product = ProductQueryService::make()
+        $product = Product::query()
             ->ofType(ProductableEnum::SEMINAR)
-            ->availableProducts()
+            ->publishedAndVisible()
+            ->hasPublishedDeliveryOption()
+            ->publishedProductable()
+            ->activeTerm()
             ->forDetail()
-            ->getQuery()
             ->where('id', $product->id)
             ->firstOrFail();
 

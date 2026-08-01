@@ -18,7 +18,6 @@ use App\Models\Blog\BlogPost;
 use App\Models\Category;
 use App\Models\HomePageBlock;
 use App\Models\Product;
-use App\Query\ProductQueryService;
 use App\Services\ProductPriceService;
 use App\Services\RequestDataCacheService;
 use Illuminate\Database\Eloquent\Builder;
@@ -71,10 +70,12 @@ final readonly class GetHomePageBlockAction
 
         // Pre-load products with relationships to avoid N+1
         if ($idsToFetch->isNotEmpty()) {
-            $fetchedProducts = ProductQueryService::make()
-                ->availableProducts()
+            $fetchedProducts = Product::query()
+                ->publishedAndVisible()
+                ->hasPublishedDeliveryOption()
+                ->publishedProductable()
+                ->activeTerm()
                 ->forListing()
-                ->getQuery()
                 ->whereIn('id', $idsToFetch)
                 ->get()
                 ->keyBy('id');
@@ -174,26 +175,38 @@ final readonly class GetHomePageBlockAction
         DynamicListSortByEnum $sortBy,
         int $limit,
         ?array $categoryIds
-    ): Builder|\Illuminate\Database\Query\Builder {
+    ): Builder {
 
         $query = match ($entityType) {
-            DynamicListEntityTypeEnum::COURSE_PRODUCTS => ProductQueryService::make()
-                ->availableProducts()
+            DynamicListEntityTypeEnum::COURSE_PRODUCTS => Product::query()
+                ->publishedAndVisible()
+                ->hasPublishedDeliveryOption()
+                ->publishedProductable()
+                ->activeTerm()
                 ->ofType(ProductableEnum::COURSE)
                 ->forListing(),
 
-            DynamicListEntityTypeEnum::SEMINAR_PRODUCTS => ProductQueryService::make()
-                ->availableProducts()
+            DynamicListEntityTypeEnum::SEMINAR_PRODUCTS => Product::query()
+                ->publishedAndVisible()
+                ->hasPublishedDeliveryOption()
+                ->publishedProductable()
+                ->activeTerm()
                 ->ofType(ProductableEnum::SEMINAR)
                 ->forListing(),
 
-            DynamicListEntityTypeEnum::DIGITAL_ASSET_PRODUCTS => ProductQueryService::make()
-                ->availableProducts()
+            DynamicListEntityTypeEnum::DIGITAL_ASSET_PRODUCTS => Product::query()
+                ->publishedAndVisible()
+                ->hasPublishedDeliveryOption()
+                ->publishedProductable()
+                ->activeTerm()
                 ->ofType(ProductableEnum::DIGITAL_ASSET)
                 ->forListing(),
 
-            DynamicListEntityTypeEnum::ALL_PRODUCTS => ProductQueryService::make()
-                ->availableProducts()
+            DynamicListEntityTypeEnum::ALL_PRODUCTS => Product::query()
+                ->publishedAndVisible()
+                ->hasPublishedDeliveryOption()
+                ->publishedProductable()
+                ->activeTerm()
                 ->forListing(),
 
             DynamicListEntityTypeEnum::BLOG_POST => BlogPost::query()
@@ -210,9 +223,8 @@ final readonly class GetHomePageBlockAction
                 DynamicListEntityTypeEnum::ALL_PRODUCTS,
             ])
         ) {
-            if ($query instanceof ProductQueryService) {
-                $query->inCategoryIds($categoryIds);
-            }
+            $query->whereHas('categories', fn (Builder $categoryQuery): Builder => $categoryQuery
+                ->whereIn('categories.id', $categoryIds));
         }
 
         // Apply sorting
@@ -227,43 +239,27 @@ final readonly class GetHomePageBlockAction
             DynamicListSortByEnum::FEATURED        => $this->applyFeaturedSorting($query, $entityType),
         };
 
-        // Apply limit and return appropriate query
-        if ($query instanceof ProductQueryService) {
-            return $query->limit($limit)->getQuery();
-        }
-
         return $query->limit($limit);
     }
 
-    private function applySorting($query, string $field, string $direction): void
+    private function applySorting(Builder $query, string $field, string $direction): void
     {
-        if ($query instanceof ProductQueryService) {
-            $query->sortBy($field, $direction);
-        } else {
-            $query->orderBy($field, $direction);
-        }
+        $query->orderBy($field, $direction);
     }
 
-    private function applyPopularSorting($query, DynamicListEntityTypeEnum $entityType): void
+    private function applyPopularSorting(Builder $query, DynamicListEntityTypeEnum $entityType): void
     {
         if ($entityType === DynamicListEntityTypeEnum::BLOG_POST) {
             // For blog posts, we could sort by view count if we had that field
             $query->orderBy('created_at', 'desc');
         } else {
-            // For products using ProductQueryService
-            if ($query instanceof ProductQueryService) {
-                $query->popular();
-            }
+            $query->withCount('orderItems')->orderByDesc('order_items_count');
         }
     }
 
-    private function applyFeaturedSorting($query, DynamicListEntityTypeEnum $entityType): void
+    private function applyFeaturedSorting(Builder $query, DynamicListEntityTypeEnum $entityType): void
     {
-        if ($query instanceof ProductQueryService) {
-            $query->featured()->sortBy('created_at', 'desc');
-        } else {
-            $query->where('is_featured', true)->orderBy('created_at', 'desc');
-        }
+        $query->where('is_featured', true)->orderByDesc('created_at');
     }
 
     private function hydrateBanner(HomePageBlock $block): array

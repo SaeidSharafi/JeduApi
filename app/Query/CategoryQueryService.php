@@ -18,10 +18,13 @@ final class CategoryQueryService
 
     public function getProductsForCategory(Category $category, ProductableEnum $type, int $limit, bool $paginate = false)
     {
-        $query = ProductQueryService::make()
+        $query = Product::query()
             ->ofType($type)
-            ->inCategoryIds([$category->id])
-            ->availableProducts()
+            ->inCategory($category->id)
+            ->publishedAndVisible()
+            ->hasPublishedDeliveryOption()
+            ->publishedProductable()
+            ->activeTerm()
             ->forListing();
 
         $productsCollection = $paginate

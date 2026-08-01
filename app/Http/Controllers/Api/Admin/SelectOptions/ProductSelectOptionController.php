@@ -8,7 +8,7 @@ use App\Contracts\ApiResponseInterface;
 use App\Data\Admin\SelectOptions\ProductSelectOptionData;
 use App\Enums\Product\ProductableEnum;
 use App\Http\Controllers\Controller;
-use App\Query\ProductQueryService;
+use App\Models\Product;
 
 /**
  * @group Admin - Select Options
@@ -29,18 +29,22 @@ final class ProductSelectOptionController extends Controller
      *
      * @responseFile 200 resources/responses/admin/select-options/products.json
      */
-    public function __invoke(ProductQueryService $service, ?ProductableEnum $productableType = null): ApiResponseInterface
+    public function __invoke(?ProductableEnum $productableType = null): ApiResponseInterface
     {
         $query         = request()->string('q', '');
         $limit         = request()->integer('limit', 15);
-        $productsQuery = $service->availableProducts();
+        $productsQuery = Product::query()
+            ->publishedAndVisible()
+            ->hasPublishedDeliveryOption()
+            ->publishedProductable()
+            ->activeTerm();
         if ($productableType) {
             $productsQuery->ofType($productableType);
         }
 
         $products = $productsQuery
             ->search($query->value())
-            ->sortBy('short_name', 'asc')
+            ->orderBy('short_name')
             ->limit($limit)
             ->get();
 

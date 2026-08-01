@@ -7,7 +7,9 @@ namespace App\Actions\Admin\Product;
 use App\Data\Admin\Product\ProductCreateData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Product\ProductableEnum;
+use App\Events\ProductAvailabilityCacheInvalidated;
 use App\Events\ProductCacheInvalidated;
+use App\Events\ProductSearchIndexInvalidated;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 
@@ -37,6 +39,8 @@ final readonly class CreateProductAction
             return $product;
         });
         ProductCacheInvalidated::dispatch($product->id);
+        ProductAvailabilityCacheInvalidated::dispatch([$product->id]);
+        ProductSearchIndexInvalidated::dispatch([$product->id]);
 
         return $product;
     }
