@@ -8,6 +8,7 @@ use App\Data\Admin\Order\OrderItemData;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * @group Admin - Order Items
@@ -26,6 +27,8 @@ final class OrderItemController extends Controller
      */
     public function index(Order $order)
     {
+        Gate::authorize('view', $order);
+
         $orderItems = $order->items()->with(['vendor'])->get();
 
         return apiResponse()->success(OrderItemData::collect($orderItems));
@@ -41,6 +44,8 @@ final class OrderItemController extends Controller
      */
     public function show(Order $order, OrderItem $orderItem)
     {
+        Gate::authorize('view', $order);
+
         $orderItem->load(['vendor']);
 
         return apiResponse()->success(OrderItemData::from($orderItem));

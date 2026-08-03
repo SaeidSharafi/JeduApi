@@ -40,7 +40,7 @@ Route::apiResource('terms', TermController::class);
 Route::apiResource('users', UserController::class);
 
 Route::prefix('users/{user}')->name('users.')->group(function (): void {
-    Route::apiSingleton('wallet', AdminWalletController::class)->creatable();
+    Route::apiSingleton('wallet', AdminWalletController::class)->creatable()->only('show', 'store');
     Route::prefix('wallet')->name('wallet.')->group(function (): void {
         Route::post('deposit', DepositToWalletController::class)->name('deposit');
         Route::post('withdrawal', WithdrawFromWalletController::class)->name('withdrawal');

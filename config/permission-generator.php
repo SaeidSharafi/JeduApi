@@ -91,7 +91,6 @@ return [
             PermissionAction::CREATE,
             PermissionAction::UPDATE,
             PermissionAction::DELETE,
-            'manage_roles',
             'impersonate',
         ],
         'role' => [
@@ -103,8 +102,6 @@ return [
         'wallet' => [
             PermissionAction::VIEW_SCOPED,
             PermissionAction::CREATE,
-            PermissionAction::UPDATE,
-            PermissionAction::DELETE,
             'deposit',
             'withdrawal',
             'adjustment',
@@ -195,6 +192,8 @@ return [
         'setting' => [
             PermissionAction::VIEW_ANY,
             PermissionAction::UPDATE,
+            'payment_view',
+            'payment_update',
         ],
         'review' => [
             PermissionAction::VIEW_SCOPED,

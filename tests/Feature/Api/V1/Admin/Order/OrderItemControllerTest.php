@@ -71,7 +71,7 @@ describe('Admin OrderItemController', function (): void {
     });
 
     it('returns all order items for an order (index)', function (): void {
-        $this->authorized_user([App\Enums\PermissionEnum::ORDER_VIEW_ANY->value]);
+        $this->authorized_user([App\Enums\PermissionEnum::ORDER_VIEW->value]);
         $response = getJson("/api/v1/admin/orders/{$this->order->id}/order-items");
         $response->assertOk();
         $response->assertJsonStructure([

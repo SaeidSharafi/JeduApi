@@ -119,6 +119,8 @@ enum PermissionEnum: string
     case SEMINAR_UPDATE_OWN               = 'seminars.update_own';
     case SEMINAR_VIEW                     = 'seminars.view';
     case SEMINAR_VIEW_ANY                 = 'seminars.view_any';
+    case SETTING_PAYMENT_UPDATE           = 'settings.payment_update';
+    case SETTING_PAYMENT_VIEW             = 'settings.payment_view';
     case SETTING_UPDATE                   = 'settings.update';
     case SETTING_VIEW_ANY                 = 'settings.view_any';
     case SLIDER_CREATE                    = 'sliders.create';
@@ -129,7 +131,6 @@ enum PermissionEnum: string
     case STAFF_CREATE                     = 'staff.create';
     case STAFF_DELETE                     = 'staff.delete';
     case STAFF_IMPERSONATE                = 'staff.impersonate';
-    case STAFF_MANAGE_ROLES               = 'staff.manage_roles';
     case STAFF_UPDATE                     = 'staff.update';
     case STAFF_VIEW                       = 'staff.view';
     case STAFF_VIEW_ANY                   = 'staff.view_any';
@@ -167,9 +168,7 @@ enum PermissionEnum: string
     case WALLET_CAMPAIGN_VIEW             = 'wallet_campaigns.view';
     case WALLET_CAMPAIGN_VIEW_ANY         = 'wallet_campaigns.view_any';
     case WALLET_CREATE                    = 'wallets.create';
-    case WALLET_DELETE                    = 'wallets.delete';
     case WALLET_DEPOSIT                   = 'wallets.deposit';
-    case WALLET_UPDATE                    = 'wallets.update';
     case WALLET_VIEW                      = 'wallets.view';
     case WALLET_VIEW_ANY                  = 'wallets.view_any';
     case WALLET_WITHDRAWAL                = 'wallets.withdrawal';

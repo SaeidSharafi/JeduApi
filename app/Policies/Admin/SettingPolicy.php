@@ -21,4 +21,14 @@ final class SettingPolicy
     {
         return $user->can(PermissionEnum::SETTING_UPDATE);
     }
+
+    public function viewPayment(Staff $user): bool
+    {
+        return $user->can(PermissionEnum::SETTING_PAYMENT_VIEW);
+    }
+
+    public function updatePayment(Staff $user): bool
+    {
+        return $user->can(PermissionEnum::SETTING_PAYMENT_UPDATE);
+    }
 }

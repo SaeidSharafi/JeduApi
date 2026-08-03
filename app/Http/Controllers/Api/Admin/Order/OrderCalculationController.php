@@ -8,7 +8,9 @@ use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderPreviewData;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiSuccessResponse;
+use App\Models\Order;
 use App\Services\Discounts\OrderCalculationService;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * @group Admin - Orders
@@ -25,6 +27,7 @@ final class OrderCalculationController extends Controller
      */
     public function __invoke(OrderCreateData $data, OrderCalculationService $orderCalculationService): ApiSuccessResponse
     {
+        Gate::authorize('create', Order::class);
 
         $context = $orderCalculationService->calculate($data);
 

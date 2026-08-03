@@ -15,11 +15,9 @@ use Tests\Support\Traits\AuthTestTrait;
 uses(AuthTestTrait::class);
 
 test('admin with permission can record deposit transaction', function (): void {
-    $admin = $this->authorized_user([
-        App\Enums\PermissionEnum::WALLET_UPDATE,
-    ]);
-    $user = User::factory()->create();
-    $data = RecordTransactionData::from([
+    $admin = $this->admin_user();
+    $user  = User::factory()->create();
+    $data  = RecordTransactionData::from([
         'user_id'     => $user->id,
         'type'        => TransactionTypeEnum::DEPOSIT,
         'amount'      => 500,
@@ -39,11 +37,9 @@ test('admin with permission can record deposit transaction', function (): void {
 });
 
 test('admin with permission can record gift transaction', function (): void {
-    $admin = $this->authorized_user([
-        App\Enums\PermissionEnum::WALLET_UPDATE,
-    ]);
-    $user = User::factory()->create();
-    $data = RecordTransactionData::from([
+    $admin = $this->admin_user();
+    $user  = User::factory()->create();
+    $data  = RecordTransactionData::from([
         'user_id'     => $user->id,
         'type'        => TransactionTypeEnum::GIFT,
         'amount'      => 500,
@@ -62,11 +58,9 @@ test('admin with permission can record gift transaction', function (): void {
     expect($user->wallet->gift_balance)->toBe(500);
 });
 test('admin with permission can record bonus transaction', function (): void {
-    $admin = $this->authorized_user([
-        App\Enums\PermissionEnum::WALLET_UPDATE,
-    ]);
-    $user = User::factory()->create();
-    $data = RecordTransactionData::from([
+    $admin = $this->admin_user();
+    $user  = User::factory()->create();
+    $data  = RecordTransactionData::from([
         'user_id'     => $user->id,
         'type'        => TransactionTypeEnum::BONUS,
         'amount'      => 500,
@@ -85,10 +79,8 @@ test('admin with permission can record bonus transaction', function (): void {
     expect($user->wallet->gift_balance)->toBe(500);
 });
 test('cannot record transaction for invalid user', function (): void {
-    $admin = $this->authorized_user([
-        App\Enums\PermissionEnum::WALLET_UPDATE,
-    ]);
-    $data = RecordTransactionData::from([
+    $admin = $this->admin_user();
+    $data  = RecordTransactionData::from([
         'user_id'     => 999999,
         'type'        => TransactionTypeEnum::DEPOSIT,
         'amount'      => 100,

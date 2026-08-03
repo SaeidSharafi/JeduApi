@@ -9,8 +9,10 @@ use App\Data\Admin\MediaData;
 use App\Data\Admin\Settings\Gateway\GatewaySettingCreateData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
 use App\Services\SettingsService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * @group Admin - Settings Management
@@ -44,10 +46,12 @@ final class PaymentGatewaySettingsController extends Controller
      */
     public function index(): ApiResponseInterface
     {
+        Gate::authorize('view-payment', Setting::class);
+
         $gateways = collect(PaymentMethodEnum::cases())
             ->filter(fn (PaymentMethodEnum $gateway): bool => $gateway->settingKey() !== null)
             ->map(function (PaymentMethodEnum $gateway) {
-                $stored = $this->settingsService->get($gateway->settingKey(), config('payments.' . $gateway->settingKey()->value));
+                $stored = $this->settingsService->get($gateway->settingKey(), config('payments.'.$gateway->settingKey()->value));
 
                 if (isset($stored['icon']) && is_array($stored['icon'])) {
                     $stored['icon'] = MediaData::from($stored['icon']);
@@ -74,7 +78,9 @@ final class PaymentGatewaySettingsController extends Controller
      */
     public function show(PaymentMethodEnum $gateway): ApiResponseInterface
     {
-        $gatewayData = $this->settingsService->get($gateway->settingKey(), config('payments.' . $gateway->settingKey()->value));
+        Gate::authorize('view-payment', Setting::class);
+
+        $gatewayData = $this->settingsService->get($gateway->settingKey(), config('payments.'.$gateway->settingKey()->value));
 
         return apiResponse()->success($gatewayData);
     }
@@ -124,6 +130,8 @@ final class PaymentGatewaySettingsController extends Controller
      */
     public function update(GatewaySettingCreateData $request, PaymentMethodEnum $gateway): ApiResponseInterface
     {
+        Gate::authorize('update-payment', Setting::class);
+
         $this->settingsService->set($gateway->settingKey(), $request->toArray());
         $gatewayData = $this->settingsService->get($gateway->settingKey());
 
