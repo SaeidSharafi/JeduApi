@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\Shop\Teacher\AttendanceController;
 use App\Http\Controllers\Api\Shop\Teacher\CourseController;
 use App\Http\Controllers\Api\Shop\Teacher\GradeController;
 use App\Http\Controllers\Api\Shop\Teacher\SeminarController;
+use App\Http\Controllers\Api\Shop\Teacher\TeacherMoodleSsoController;
 use App\Http\Controllers\Api\Shop\Wallet\WalletInfoController;
 use App\Http\Controllers\Api\Shop\Wallet\WalletTopupController;
 
@@ -99,8 +100,8 @@ Route::middleware(['auth:user'])
                 //Route::get('/{deliveryOption:uuid}', [EnrollmentController::class, 'show'])
                 //    ->name('show');
                 //
-                //Route::post('/{deliveryOption:uuid}/moodle/sso', MoodleSsoController::class)
-                //    ->name('moodle.sso');
+                Route::post('/{deliveryOption:uuid}/moodle/sso', TeacherMoodleSsoController::class)
+                    ->name('moodle.sso');
                 //
                 //Route::get('/{deliveryOption:uuid}/join', JoinUrlController::class)
                 //    ->name('join');
