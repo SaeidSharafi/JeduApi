@@ -18,7 +18,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:00:00",
     "updated_at": "2024-10-21 10:00:00",
-    "teacher_ids": []
+    "teacher_ids": [1]
   },
   {
     "id": 2,
@@ -39,7 +39,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:01:00",
     "updated_at": "2024-10-21 10:01:00",
-    "teacher_ids": []
+    "teacher_ids": [1]
   },
   {
     "id": 3,
@@ -60,7 +60,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:02:00",
     "updated_at": "2024-10-21 10:02:00",
-    "teacher_ids": [2, 8, 6]
+    "teacher_ids": [1, 8, 6]
   },
   {
     "id": 4,
@@ -81,7 +81,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:03:00",
     "updated_at": "2024-10-21 10:03:00",
-    "teacher_ids": [4]
+    "teacher_ids": [1,4]
   },
   {
     "id": 5,
@@ -102,7 +102,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:04:00",
     "updated_at": "2024-10-21 10:04:00",
-    "teacher_ids": [13, 3]
+    "teacher_ids": [1, 13, 3]
   },
   {
     "id": 6,
@@ -123,7 +123,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:05:00",
     "updated_at": "2024-10-21 10:05:00",
-    "teacher_ids": [12]
+    "teacher_ids": [1, 12]
   },
   {
     "id": 7,
@@ -144,7 +144,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:06:00",
     "updated_at": "2024-10-21 10:06:00",
-    "teacher_ids": []
+    "teacher_ids": [1]
   },
   {
     "id": 8,
@@ -165,7 +165,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:07:00",
     "updated_at": "2024-10-21 10:07:00",
-    "teacher_ids": []
+    "teacher_ids": [1]
   },
   {
     "id": 9,
@@ -186,7 +186,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:08:00",
     "updated_at": "2024-10-21 10:08:00",
-    "teacher_ids": [13]
+    "teacher_ids": [1, 13]
   },
   {
     "id": 10,
@@ -249,7 +249,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:11:00",
     "updated_at": "2024-10-21 10:11:00",
-    "teacher_ids": [5]
+    "teacher_ids": [1, 5]
   },
   {
     "id": 13,
@@ -270,7 +270,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:12:00",
     "updated_at": "2024-10-21 10:12:00",
-    "teacher_ids": []
+    "teacher_ids": [1]
   },
   {
     "id": 14,
@@ -291,7 +291,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:13:00",
     "updated_at": "2024-10-21 10:13:00",
-    "teacher_ids": [12, 14]
+    "teacher_ids": [1, 12, 14]
   },
   {
     "id": 15,
@@ -312,7 +312,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:14:00",
     "updated_at": "2024-10-21 10:14:00",
-    "teacher_ids": [12, 14]
+    "teacher_ids": [1, 12, 14]
   },
   {
     "id": 16,
@@ -333,7 +333,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:15:00",
     "updated_at": "2024-10-21 10:15:00",
-    "teacher_ids": [12]
+    "teacher_ids": []
   },
   {
     "id": 17,
@@ -357,7 +357,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:16:00",
     "updated_at": "2024-10-21 10:16:00",
-    "teacher_ids": [7]
+    "teacher_ids": [1, 7]
   },
   {
     "id": 18,
@@ -378,7 +378,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:17:00",
     "updated_at": "2024-10-21 10:17:00",
-    "teacher_ids": [9, 15, 17]
+    "teacher_ids": [1, 9, 15, 17]
   },
   {
     "id": 19,
@@ -399,7 +399,7 @@
     "featured_price_end_date": null,
     "created_at": "2024-10-21 10:18:00",
     "updated_at": "2024-10-21 10:18:00",
-    "teacher_ids": [2, 6, 8]
+    "teacher_ids": [1, 2, 6, 8]
   },
   {
     "id": 20,
