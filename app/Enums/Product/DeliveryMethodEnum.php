@@ -57,4 +57,18 @@ enum DeliveryMethodEnum: string
             self::DIRECT_DOWNLOAD, self::IN_PERSON => false,
         };
     }
+
+    public static function getSeminars(bool $asString = false): array
+    {
+        if ($asString){
+            return [
+                self::LIVE_SESSION_BBB->value,
+                self::LIVE_SESSION_SKYROOM->value,
+            ];
+        }
+        return [
+            self::LIVE_SESSION_BBB,
+            self::LIVE_SESSION_SKYROOM,
+        ];
+    }
 }

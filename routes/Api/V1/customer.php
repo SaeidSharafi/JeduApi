@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\Shop\Student\ShowPaymentController;
 use App\Http\Controllers\Api\Shop\Teacher\AttendanceController;
 use App\Http\Controllers\Api\Shop\Teacher\CourseController;
 use App\Http\Controllers\Api\Shop\Teacher\GradeController;
+use App\Http\Controllers\Api\Shop\Teacher\SeminarController;
 use App\Http\Controllers\Api\Shop\Wallet\WalletInfoController;
 use App\Http\Controllers\Api\Shop\Wallet\WalletTopupController;
 
@@ -110,6 +111,7 @@ Route::middleware(['auth:user'])
                 Route::post('/{courseCode}/grades/bulk', [GradeController::class, 'storeBulk']);
 
             });
+            Route::get('/seminars', SeminarController::class)->name('seminars');
         });
 
         // ==========================================
