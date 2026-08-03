@@ -177,43 +177,6 @@
     "updated_at": "2024-09-01 08:00:00"
   },
   {
-    "id": 9,
-    "key": "ims",
-    "value": {
-      "base_url": null,
-      "api_key": null,
-      "enabled": false,
-      "create_studets": true,
-      "update_studets": true,
-      "create_enrollments": true,
-      "update_enrollments": true
-    },
-    "type": "json",
-    "group": "integrations",
-    "created_at": "2024-09-01 08:00:00",
-    "updated_at": "2024-09-01 08:00:00"
-  },
-  {
-    "id": 10,
-    "key": "moodle",
-    "value": {
-      "base_url": null,
-      "token": null,
-      "auth_userkey_token": null,
-      "default_role_id": 5,
-      "default_login_redirect_script": "/my/",
-      "enabled": false,
-      "create_studets": true,
-      "update_studets": true,
-      "create_enrollments": true,
-      "update_enrollments": true
-    },
-    "type": "json",
-    "group": "integrations",
-    "created_at": "2024-09-01 08:00:00",
-    "updated_at": "2024-09-01 08:00:00"
-  },
-  {
     "id": 11,
     "key": "big_blue_button",
     "value": {
