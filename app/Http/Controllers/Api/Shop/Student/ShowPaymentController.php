@@ -6,12 +6,12 @@ namespace App\Http\Controllers\Api\Shop\Student;
 
 use App\Contracts\ApiResponseInterface;
 use App\Data\Shop\Payment\PaymentData;
-use App\Data\Shop\Student\Order\OrderData;
+use App\Data\Shop\Student\Payment\PaymentListData;
 use App\Enums\Payment\PaymentPurposeEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Spatie\LaravelData\Optional;
 
 /**
  * @group Shop - Student - Payments
@@ -25,17 +25,19 @@ final class ShowPaymentController extends Controller
      *
      * @responseFile resources/responses/shop/payment/index.json
      */
-    public function index(Request $request): ApiResponseInterface
+    public function index(PaymentListData $data): ApiResponseInterface
     {
 
         $user    = Auth::guard('user')->user();
-        $purpose = PaymentPurposeEnum::tryFrom($request->string('purpose')->toString());
+        $purpose = $data->purpose instanceof Optional
+            ? null
+            : PaymentPurposeEnum::tryFrom((string) $data->purpose);
         $payments = Payment::query()
             ->where('customer_id', $user->id)
             ->when($purpose, fn ($query) => $query->where('purpose', $purpose))
             ->with('transactions')
             ->latest()
-            ->paginate(request()->integer('per_page', config('app.page_size')))
+            ->paginate($data->per_page)
             ->withQueryString();
 
         return apiResponse()->success(PaymentData::collect($payments));

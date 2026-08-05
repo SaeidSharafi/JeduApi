@@ -6,12 +6,13 @@ namespace App\Http\Controllers\Api\Shop\Payment;
 
 use App\Actions\Shop\Payment\VerifyPaymentAction;
 use App\Contracts\Payment\PaymentExceptionContract;
+use App\Data\Shop\Payment\GatewayCallbackData;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Exception;
 
 /**
  * @group Shop - Payment Gateway
@@ -29,16 +30,18 @@ final class GatewayCallbackController extends Controller
      * @responseFile 200 resources/responses/shop/payment/verify.json
      * @responseFile 422 resources/responses/422.json
      */
-    public function handle(Request $request, Payment $payment, VerifyPaymentAction $action)
+    public function handle(Request $request, Payment $payment, GatewayCallbackData $data, VerifyPaymentAction $action)
     {
+        $callbackPayload = $data->gateway_response ?? $request->all();
+
         Log::info('Gateway callback received', [
             'payment_uuid' => $payment->uuid,
-            'data'         => $request->all(),
+            'data'         => $callbackPayload,
             'ip'           => $request->ip(),
         ]);
 
         try {
-            $payment = $action->handle($payment, $request->all());
+            $payment = $action->handle($payment, $callbackPayload);
 
             $query = [
                 'payment' => $payment->uuid,
@@ -77,7 +80,7 @@ final class GatewayCallbackController extends Controller
             Log::critical('Unhandled gateway callback error', [
                 'error'        => $e->getMessage(),
                 'payment_uuid' => $payment->uuid,
-                'request'      => $request->all(),
+                'request'      => $callbackPayload,
             ]);
 
             return redirect(config('payments.redirect.failure').'?'.http_build_query([
