@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Data\Shop\Cart;
 
-use App\Enums\Payment\PaymentMethodEnum;
 use App\Services\Payment\GatewayService;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
@@ -23,6 +22,7 @@ final class CheckoutData extends Data
     public static function rules(?ValidationContext $context = null): array
     {
         $gateWayServices = app(GatewayService::class);
+
         return [
             'payment_method' => ['nullable', 'string', Rule::in($gateWayServices->getShopActiveGateways())],
             'payment_data'   => ['nullable', 'array'],
@@ -40,6 +40,10 @@ final class CheckoutData extends Data
             'payment_method' => [
                 'description' => 'The payment method to use for checkout. Optional for free orders (will auto-use NO_PAYMENT). Required for paid orders. Options: "wallet" for immediate payment, "bank_transfer" for pending order, or "mellat" for redirect to payment gateway.',
                 'example'     => 'wallet',
+            ],
+            'payment_data' => [
+                'description' => 'Optional payload passed to the payment processor (e.g. bank transfer details, gateway-specific data). Shape depends on the selected payment_method.',
+                'example'     => ['notes' => 'Paid via app'],
             ],
         ];
     }
