@@ -116,7 +116,7 @@ describe('CreateOrderAction', function (): void {
         \Pest\Laravel\assertDatabaseEmpty('enrollments');
         \Pest\Laravel\assertDatabaseEmpty('enrollments');
 
-        Event::assertDispatched(OrderCreatedEvent::class, fn ($event): bool => $event->order->id === $order->id);
+        Event::assertNotDispatched(OrderCreatedEvent::class, fn ($event): bool => $event->order->id === $order->id);
     });
 
     it('throws validation exception if product capacity is exceeded', function (): void {
@@ -360,7 +360,7 @@ describe('CreateOrderAction', function (): void {
             'total'                      => 45000,
         ]);
 
-        Event::assertDispatched(OrderCreatedEvent::class);
+        Event::assertNotDispatched(OrderCreatedEvent::class);
     });
     it('applies no discount if coupon code is invalid', function (): void {
         // Arrange

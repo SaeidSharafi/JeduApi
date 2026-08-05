@@ -10,7 +10,6 @@ use App\Data\Admin\ProductDeliveryOption\ProductDeliveryOptionShowData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
-use App\Events\OrderCreatedEvent;
 use App\Models\DiscountPromotion;
 use App\Models\Order;
 use App\Models\ProductDeliveryOption;
@@ -69,7 +68,6 @@ final readonly class CreateOrderAction
                 }
 
                 $this->validateItem($key, $originalItemData, $deliveryOption);
-
 
                 // --- GET PRICING METADATA ---
                 $priceData = $this->productPriceService->getPriceDataForOption($deliveryOption);
@@ -155,7 +153,6 @@ final readonly class CreateOrderAction
         if (! empty($context->applied_cart_discounts)) {
             $this->incrementUsageCounts($context);
         }
-        OrderCreatedEvent::dispatch($order);
 
         return $order->load('items', 'payments', 'enrollments');
     }
