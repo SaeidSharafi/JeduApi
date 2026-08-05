@@ -6,6 +6,7 @@ namespace App\Actions\Shop;
 
 use App\Actions\Admin\Order\CreateOrderAction;
 use App\Actions\Admin\Order\ValidateNoDuplicatePurchasesAction;
+use App\Actions\Payment\CompleteFreeOrderPaymentAction;
 use App\Actions\Payment\PreparePendingPaymentAction;
 use App\Data\Admin\Order\OrderCreateData;
 use App\Data\Admin\Order\OrderItemCreateData;
@@ -15,8 +16,6 @@ use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentPurposeEnum;
-use App\Enums\Payment\PaymentStatusEnum;
-use App\Events\PaymentCompletedEvent;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Order;
@@ -34,6 +33,7 @@ final readonly class CreateOrderFromCartAction
         private CreateOrderAction $createOrderAction,
         private PaymentProcessorFactory $processorFactory,
         private ValidateNoDuplicatePurchasesAction $validateNoDuplicatePurchases,
+        private CompleteFreeOrderPaymentAction $completeFreeOrderPayment,
     ) {}
 
     /**
@@ -126,20 +126,12 @@ final readonly class CreateOrderFromCartAction
      */
     private function createFreeOrderPayment(Order $order, User $user): PaymentProcessResultData
     {
-        $payment = Payment::create([
-            'order_id'    => $order->id,
-            'customer_id' => $user->id,
-            'amount'      => 0,
-            'method'      => PaymentMethodEnum::NO_PAYMENT->value,
-            'purpose'     => PaymentPurposeEnum::ORDER->value,
-            'status'      => PaymentStatusEnum::COMPLETED->value,
-            'admin_notes' => 'Free order automatically completed.',
-        ]);
-
-        // Dispatch event to trigger enrollments
-        PaymentCompletedEvent::dispatch($payment);
-
-        return PaymentProcessResultData::completed($payment);
+        // Wrap in transaction so payment creation + event cascade are atomic,
+        // matching the WalletPaymentProcessor's atomicity guarantee.
+        return DB::transaction(fn (): PaymentProcessResultData => $this->completeFreeOrderPayment->handle(
+            order: $order,
+            actor: $user,
+        ));
     }
 
     /**

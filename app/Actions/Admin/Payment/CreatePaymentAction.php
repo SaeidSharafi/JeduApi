@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Payment;
 
+use App\Actions\Payment\CompleteFreeOrderPaymentAction;
 use App\Actions\Payment\PreparePendingPaymentAction;
 use App\Data\Admin\Payment\PaymentCreateData;
 use App\Data\Admin\Payment\PaymentProcessResultData;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentPurposeEnum;
 use App\Enums\Payment\PaymentStatusEnum;
-use App\Events\PaymentCompletedEvent;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Staff;
@@ -23,6 +23,7 @@ final readonly class CreatePaymentAction
 {
     public function __construct(
         private PaymentProcessorFactory $processorFactory,
+        private CompleteFreeOrderPaymentAction $completeFreeOrderPayment,
     ) {}
 
     /**
@@ -78,19 +79,11 @@ final readonly class CreatePaymentAction
 
     private function createFreeOrderPayment(Order $order, PaymentCreateData $data, Staff $admin): PaymentProcessResultData
     {
-        $payment = Payment::create([
-            'order_id'    => $order->id,
-            'customer_id' => $order->customer_id,
-            'amount'      => 0,
-            'method'      => PaymentMethodEnum::NO_PAYMENT->value,
-            'status'      => PaymentStatusEnum::COMPLETED->value,
-            'created_by'  => $admin->id,
-            'admin_notes' => $data->admin_notes ?? 'Free order automatically completed.',
-        ]);
-
-        PaymentCompletedEvent::dispatch($payment);
-
-        return PaymentProcessResultData::completed($payment);
+        return $this->completeFreeOrderPayment->handle(
+            order: $order,
+            actor: $admin,
+            adminNotes: $data->admin_notes,
+        );
     }
 
     private function validateOrderState(Order $order): void
@@ -130,8 +123,8 @@ final readonly class CreatePaymentAction
         $rules = [
             'data.transaction_id'   => ['required', 'string', 'max:255'],
             'data.transaction_date' => ['required'],
-            'data.sender_name' => ['required', 'string', 'max:255'],
-            'data.notes'       => ['nullable', 'string', 'max:1000'],
+            'data.sender_name'      => ['required', 'string', 'max:255'],
+            'data.notes'            => ['nullable', 'string', 'max:1000'],
         ];
 
         Validator::make($dataToValidate, $rules)->validate();
