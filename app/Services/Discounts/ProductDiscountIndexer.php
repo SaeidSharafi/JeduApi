@@ -12,6 +12,7 @@ use App\Models\ProductDeliveryOptionDiscountPrice;
 use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Product Discount Indexer - manages the indexing of product discount prices.
@@ -215,9 +216,9 @@ final class ProductDiscountIndexer
         return DiscountPromotion::query()
             ->where('type', DiscountTypeEnum::PRODUCT_SPECIFIC)
             ->where('is_active', true)
-            // ->where(function ($q): void {
-            //    $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
-            // })
+            ->where(function ($q): void {
+                $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
+            })
             ->where(function ($q): void {
                 $q->whereNull('ends_at')->orWhere('ends_at', '>=', now());
             })
@@ -235,20 +236,6 @@ final class ProductDiscountIndexer
 
         return $promotion->is_active && ($promotion->starts_at === null || $promotion->starts_at <= $now)
                                      && ($promotion->ends_at === null || $promotion->ends_at >= $now);
-    }
-
-    /**
-     * Get a representative promotion ID for storing in the discount price table.
-     * In our simplified system, we use the highest priority (lowest number) promotion that affected the price.
-     */
-    private function getRepresentativePromotionId(ProductDeliveryOption $option, Collection $promotions): int
-    {
-        $matchingPromotions = $promotions->filter(function (DiscountPromotion $promotion) use ($option) {
-            return $this->allConditionsPass($promotion, $option);
-        });
-
-        // Return the highest priority (lowest priority number) promotion
-        return $matchingPromotions->sortBy('priority')->first()?->id ?? $promotions->first()->id;
     }
 
     /**

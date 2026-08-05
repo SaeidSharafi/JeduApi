@@ -17,7 +17,6 @@ use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\OrderCalculationService;
 use App\Services\Discounts\PromotionService;
 use App\Services\ProductPriceService;
-use Mockery\MockInterface;
 
 /**
  * Helper: create a partial PromotionService mock with real context-building
@@ -29,8 +28,16 @@ function mockPromotionFinderReturning(mixed $promotions): void
         app(DiscountHandlerRegistry::class),
         app(ProductPriceService::class),
     ])->makePartial();
+
+    $resolvedPromotions = match (true) {
+        $promotions instanceof DiscountPromotion             => collect([$promotions]),
+        $promotions instanceof Illuminate\Support\Collection => $promotions,
+        is_array($promotions)                                => collect($promotions),
+        default                                              => collect(),
+    };
+
     $mock->shouldReceive('findAllApplicableCartPromotions')->andReturn(
-        $promotions instanceof DiscountPromotion ? collect([$promotions]) : collect()
+        $resolvedPromotions
     );
     app()->instance(PromotionService::class, $mock);
 }
@@ -402,4 +409,46 @@ test('it does not apply discount when promotion conditions fail', function (): v
     expect($context->items[0]->discount_amount)->toBe(0);
     expect($context->items[0]->total)->toBe(10000);
     expect($context->evaluating_promotion)->toBeNull();
+});
+
+test('it stops applying subsequent cart promotions when stop_processing_subsequent_rules is enabled', function (): void {
+    $user           = User::factory()->create();
+    $deliveryOption = ProductDeliveryOption::factory()->create(['price' => 10000]);
+
+    $firstPromotion = DiscountPromotion::factory()->make([
+        'id'                               => 100,
+        'type'                             => DiscountTypeEnum::CART_CHECKOUT,
+        'stop_processing_subsequent_rules' => true,
+        'priority'                         => 1,
+    ]);
+    $firstPromotion->setRelation('rules', collect([
+        ['type' => 'action', 'handler' => 'apply_percentage_off', 'configuration' => ['percentage' => 10]],
+    ]));
+
+    $secondPromotion = DiscountPromotion::factory()->make([
+        'id'                               => 101,
+        'type'                             => DiscountTypeEnum::CART_CHECKOUT,
+        'stop_processing_subsequent_rules' => false,
+        'priority'                         => 2,
+    ]);
+    $secondPromotion->setRelation('rules', collect([
+        ['type' => 'action', 'handler' => 'apply_percentage_off', 'configuration' => ['percentage' => 50]],
+    ]));
+
+    mockPromotionFinderReturning([$firstPromotion, $secondPromotion]);
+
+    $data = new OrderCreateData(
+        status: App\Enums\Order\OrderStatusEnum::PENDING->value,
+        customer_id: $user->id,
+        items: [new OrderItemCreateData(product_delivery_option_id: $deliveryOption->id, payment_type: 'full_payment')],
+        applied_coupon_code: null,
+    );
+
+    $service = app(OrderCalculationService::class);
+    $context = $service->calculate($data);
+
+    expect($context->items[0]->discount_amount)->toBe(1000)
+        ->and($context->items[0]->total)->toBe(9000)
+        ->and($context->applied_cart_discounts)->toHaveCount(1)
+        ->and($context->applied_cart_discounts[0]['promotion_id'])->toBe(100);
 });

@@ -98,8 +98,8 @@ final class PromotionService
                 }
             })
             ->with('rules')
-            ->orderBy('priority', 'asc')
-            ->when($appliedCouponCode, fn (Builder $query) => $query->orderBy('requires_coupon'));
+            ->orderBy('requires_coupon', 'asc')
+            ->orderBy('priority', 'asc');
 
         return $query->get();
     }
@@ -138,8 +138,8 @@ final class PromotionService
             /** @var ProductDeliveryOption $option */
             $option = $deliveryOptions->get($itemData->product_delivery_option_id);
 
-            $originalFullPrice = $option->price;
-            $priceData         = $this->priceService->getPriceDataForOption($option);
+            $originalFullPrice    = $option->price;
+            $priceData            = $this->priceService->getPriceDataForOption($option);
             $startingPriceForCalc = $priceData->current_price;
 
             $initialLineItemTotal = $startingPriceForCalc * $itemData->qty_ordered;

@@ -129,6 +129,28 @@ describe('ProductDiscountIndexer', function (): void {
         expect($discounted)->toBeNull();
     });
 
+    it('does not create records for promotions that have not started yet', function (): void {
+        $product = Product::factory()->create();
+        $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
+        $future  = DiscountPromotion::factory()->create([
+            'is_active' => true,
+            'starts_at' => now()->addDay(),
+            'ends_at'   => now()->addDays(2),
+        ]);
+
+        DiscountPromotionRule::factory()->create([
+            'discount_promotion_id' => $future->id,
+            'type'                  => 'action',
+            'handler'               => 'apply_fixed_discount_product',
+            'configuration'         => ['amount' => 100],
+        ]);
+
+        $this->indexer->reIndexComplete();
+
+        $discounted = ProductDeliveryOptionDiscountPrice::where('product_delivery_option_id', $option->id)->first();
+        expect($discounted)->toBeNull();
+    });
+
     it('does not create records if no discount is applied', function (): void {
         $product = Product::factory()->create();
         $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
@@ -245,26 +267,6 @@ describe('ProductDiscountIndexer', function (): void {
         $method->setAccessible(true);
         $result = $method->invoke($this->indexer, $option, collect([$promo]));
         expect($result)->toBeNull();
-    });
-
-    it('getRepresentativePromotionId falls back to first promotion if none match', function (): void {
-        $product = Product::factory()->create();
-        $option  = ProductDeliveryOption::factory()->for($product)->create(['price' => 1000]);
-        $promo1  = DiscountPromotion::factory()->create(['priority' => 1]);
-        $promo2  = DiscountPromotion::factory()->create(['priority' => 2]);
-        // Add a condition that will never pass
-        DiscountPromotionRule::factory()->create([
-            'discount_promotion_id' => $promo1->id,
-            'type'                  => 'condition',
-            'handler'               => 'nonexistent_handler',
-            'configuration'         => [],
-        ]);
-        $reflection = new ReflectionClass($this->indexer);
-        $method     = $reflection->getMethod('getRepresentativePromotionId');
-        $method->setAccessible(true);
-        $promos = collect([$promo1, $promo2]);
-        $result = $method->invoke($this->indexer, $option, $promos);
-        expect([$promo1->id, $promo2->id])->toContain($result);
     });
 
     it('allConditionsPass returns false if handler class not found', function (): void {
