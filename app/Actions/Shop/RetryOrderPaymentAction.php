@@ -30,6 +30,13 @@ final readonly class RetryOrderPaymentAction
      * - Have failed or pending payment attempts
      * - Still have outstanding balance
      *
+     * NOTE: In the current pre-payment model, PENDING orders have zero
+     * completed payments, so balance_due === grand_total. The $amountToPay
+     * parameter defaults to balance_due for forward-compatibility with future
+     * installment / online rest-payment features. Callers SHOULD omit the
+     * parameter to use the default; passing grand_total explicitly is safe
+     * today but will break once partial payments exist.
+     *
      * @param  Order  $order  The order to retry payment for
      * @param  PaymentMethodEnum  $paymentMethod  The payment method to use for retry
      * @param  int|null  $amountToPay  Optional: Amount to pay (defaults to balance_due)

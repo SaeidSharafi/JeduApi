@@ -182,6 +182,13 @@ final class Order extends Model implements WalletTransactionSourceableContract
 
     /**
      * Accessor to get the current outstanding balance.
+     *
+     * NOTE: As of the current implementation, pre-payment courses settle their
+     * remainder offline (in-person at our station), so PENDING orders always
+     * have balance_due === full_value_grand_total. Partial online payments are
+     * not yet enabled. This accessor exists for future installment / online
+     * rest-payment features. When installments ship, revisit retry-payment
+     * flows and the provisioning trigger config.
      */
     protected function balanceDue(): Attribute
     {
