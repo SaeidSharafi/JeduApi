@@ -25,11 +25,12 @@ it('processes wallet refund by recording a wallet transaction', function (): voi
         $mock->shouldReceive('execute')
             ->once()
             ->withArgs(function (RecordTransactionData $data) use ($order, $refund) {
-                return $data->user_id     === $order->customer_id
-                    && $data->amount      === 250000
-                    && $data->type        === TransactionTypeEnum::REFUND
-                    && $data->source_type === TransactionSourceEnum::ORDER
-                    && $data->source_id   === $refund->id
+                return $data->user_id         === $order->customer_id
+                    && $data->amount          === 250000
+                    && $data->type            === TransactionTypeEnum::REFUND
+                    && $data->source_type     === TransactionSourceEnum::ORDER
+                    && $data->source_id       === $refund->id
+                    && $data->idempotency_key === "wallet-refund:{$refund->id}"
                     && str_contains($data->description, "order #{$order->id}");
             })
             ->andReturn(WalletTransaction::factory()->make());
@@ -67,5 +68,6 @@ it('creates refund transaction with correct source linkage', function (): void {
 
     expect($capturedData->source_type)->toBe(TransactionSourceEnum::ORDER)
         ->and($capturedData->source_id)->toBe($refund->id)
-        ->and($capturedData->type)->toBe(TransactionTypeEnum::REFUND);
+        ->and($capturedData->type)->toBe(TransactionTypeEnum::REFUND)
+        ->and($capturedData->idempotency_key)->toBe("wallet-refund:{$refund->id}");
 });

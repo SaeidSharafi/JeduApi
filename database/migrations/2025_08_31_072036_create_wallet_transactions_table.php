@@ -45,6 +45,7 @@ return new class extends Migration
             $table->timestamp('expires_at')
                 ->nullable()
                 ->comment('Expiry date for promotional credits');
+            $table->string('idempotency_key')->nullable();
             $table->foreignId('created_by')
                 ->index()
                 ->nullable()
@@ -60,7 +61,12 @@ return new class extends Migration
             $table->index(['source_type', 'source_id']);
             $table->index('created_at');
             $table->index('expires_at');
+            $table->unique('idempotency_key');
         });
+
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            DB::statement("CREATE UNIQUE INDEX wallet_topup_once_idx ON wallet_transactions (source_id) WHERE type = 'deposit' AND source_type = 'deposit'");
+        }
     }
 
     /**

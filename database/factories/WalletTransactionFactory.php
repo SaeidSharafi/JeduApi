@@ -47,10 +47,11 @@ final class WalletTransactionFactory extends Factory
                 ['admin_note'     => $this->faker->sentence],
                 ['promotion_code' => $this->faker->word],
             ]),
-            'expires_at' => $this->faker->optional()->dateTimeBetween('now', '+1 year'),
-            'created_by' => $this->faker->optional()->randomElement([null, Staff::factory()]),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
+            'expires_at'      => $this->faker->optional()->dateTimeBetween('now', '+1 year'),
+            'idempotency_key' => $this->faker->optional()->regexify('[A-Za-z0-9\:\-_]{20,50}'),
+            'created_by'      => $this->faker->optional()->randomElement([null, Staff::factory()]),
+            'created_at'      => Carbon::now(),
+            'updated_at'      => Carbon::now(),
         ];
     }
 

@@ -66,6 +66,13 @@ describe('TriggerCampaignAllocationAction', function (): void {
         $this->mockRecordAction
             ->expects('execute')
             ->once()
+            ->withArgs(function ($transactionData): bool {
+                return $transactionData->idempotency_key === sprintf(
+                    'wallet-campaign:%d:user:%d:trigger:manual:event:manual',
+                    $this->campaign->id,
+                    $this->customer->id
+                );
+            })
             ->andReturn($mockTransaction);
 
         $result = $this->action->handle($data, $this->customer, $this->campaign);
@@ -97,6 +104,13 @@ describe('TriggerCampaignAllocationAction', function (): void {
         $this->mockRecordAction
             ->expects('execute')
             ->once()
+            ->withArgs(function ($transactionData): bool {
+                return $transactionData->idempotency_key === sprintf(
+                    'wallet-campaign:%d:user:%d:trigger:event:event:user_registration',
+                    $this->campaign->id,
+                    $this->customer->id
+                );
+            })
             ->andReturn($mockTransaction);
 
         $result = $this->action->handle($data, $this->customer, $this->campaign);
@@ -264,5 +278,35 @@ describe('TriggerCampaignAllocationAction', function (): void {
 
         expect(fn () => $this->action->handle($data, $this->customer, $this->campaign))
             ->toThrow(CustomValidationException::class);
+    });
+
+    it('reuses existing transaction when writer returns idempotent existing row', function (): void {
+        $data = new TriggerCampaignAllocationData(
+            trigger_type: 'manual',
+            trigger_event: null,
+            reason: 'Manual allocation retry'
+        );
+
+        $existingTransaction = WalletTransaction::factory()->create([
+            'user_id'         => $this->customer->id,
+            'type'            => TransactionTypeEnum::GIFT,
+            'amount'          => $this->campaign->amount,
+            'source_type'     => TransactionSourceEnum::CAMPAIGN,
+            'source_id'       => $this->campaign->id,
+            'idempotency_key' => sprintf(
+                'wallet-campaign:%d:user:%d:trigger:manual:event:manual',
+                $this->campaign->id,
+                $this->customer->id
+            ),
+        ]);
+
+        $this->mockRecordAction
+            ->shouldNotReceive('execute');
+
+        $first  = $this->action->handle($data, $this->customer, $this->campaign);
+        $second = $this->action->handle($data, $this->customer, $this->campaign);
+
+        expect($first->id)->toBe($existingTransaction->id)
+            ->and($second->id)->toBe($existingTransaction->id);
     });
 });

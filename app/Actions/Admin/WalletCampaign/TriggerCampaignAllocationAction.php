@@ -17,7 +17,6 @@ use App\Exceptions\Wallet\WalletUserNotFoundException;
 use App\Models\User;
 use App\Models\WalletCampaign;
 use App\Models\WalletTransaction;
-use Exception;
 use Illuminate\Support\Facades\DB;
 
 final readonly class TriggerCampaignAllocationAction
@@ -34,6 +33,8 @@ final readonly class TriggerCampaignAllocationAction
     public function handle(TriggerCampaignAllocationData $data, User $user, WalletCampaign $campaign): WalletTransaction
     {
         return DB::transaction(function () use ($data, $campaign, $user) {
+            $campaign = WalletCampaign::query()->whereKey($campaign->id)->lockForUpdate()->firstOrFail();
+
             // Ensure user has a wallet
             if (! $user->wallet) {
                 throw new CustomValidationException(__('validation.custom.wallet_not_found'));
@@ -55,6 +56,16 @@ final readonly class TriggerCampaignAllocationAction
             $description = $this->buildTransactionDescription($campaign, $data);
 
             // Record the transaction
+            $idempotencyKey = $this->generateIdempotencyKey($campaign, $user, $data);
+
+            $existingByIdempotencyKey = WalletTransaction::query()
+                ->where('idempotency_key', $idempotencyKey)
+                ->first();
+
+            if ($existingByIdempotencyKey) {
+                return $existingByIdempotencyKey;
+            }
+
             $transactionData = new RecordTransactionData(
                 user_id: $user->id,
                 type: TransactionTypeEnum::GIFT, // Simplified: use GIFT for all campaign allocations
@@ -62,7 +73,8 @@ final readonly class TriggerCampaignAllocationAction
                 source_type: TransactionSourceEnum::CAMPAIGN,
                 source_id: $campaign->id,
                 description: $description,
-                metadata: $this->buildTransactionMetadata($campaign, $data)
+                metadata: $this->buildTransactionMetadata($campaign, $data),
+                idempotency_key: $idempotencyKey,
             );
 
             $transaction = $this->recordWalletTransactionAction->execute($transactionData);
@@ -131,5 +143,16 @@ final readonly class TriggerCampaignAllocationAction
             'trigger_event'     => $data->trigger_event,
             'allocation_reason' => $data->reason,
         ]);
+    }
+
+    private function generateIdempotencyKey(WalletCampaign $campaign, User $user, TriggerCampaignAllocationData $data): string
+    {
+        return sprintf(
+            'wallet-campaign:%d:user:%d:trigger:%s:event:%s',
+            $campaign->id,
+            $user->id,
+            $data->trigger_type,
+            $data->trigger_event ?? 'manual'
+        );
     }
 }

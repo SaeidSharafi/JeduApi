@@ -7,6 +7,7 @@ use App\Data\Admin\Wallet\RecordTransactionData;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Exceptions\Wallet\WalletInsufficientBalanceException;
+use App\Exceptions\Wallet\WalletNotActive;
 use App\Models\User;
 use App\Models\WalletTransaction;
 use Illuminate\Support\Facades\Date;
@@ -217,4 +218,67 @@ it('will correctly set risk level', function (): void {
     $transaction = (new RecordWalletTransactionAction())->execute($data);
     expect($transaction)->toBeInstanceOf(WalletTransaction::class)
         ->and($transaction->metadata['audit']['risk_level'])->toBe('medium');
+});
+
+it('returns existing transaction when idempotency key is replayed', function (): void {
+    $user = User::factory()->create();
+
+    $data = RecordTransactionData::from([
+        'user_id'         => $user->id,
+        'type'            => TransactionTypeEnum::DEPOSIT,
+        'amount'          => 1000,
+        'source_type'     => TransactionSourceEnum::STAFF,
+        'source_id'       => null,
+        'description'     => 'Idempotent deposit',
+        'metadata'        => [],
+        'idempotency_key' => 'wallet-test-idempotency-key-1',
+    ]);
+
+    $first  = (new RecordWalletTransactionAction())->execute($data);
+    $second = (new RecordWalletTransactionAction())->execute($data);
+
+    expect($second->id)->toBe($first->id);
+    expect(WalletTransaction::query()->where('idempotency_key', 'wallet-test-idempotency-key-1')->count())->toBe(1);
+
+    $user->wallet->refresh();
+    expect($user->wallet->balance)->toBe(1000);
+});
+
+it('blocks deposit when wallet is suspended', function (): void {
+    $user = User::factory()->create();
+    $user->wallet->update(['status' => App\Enums\Wallet\WalletStatusEnum::SUSPENDED]);
+
+    $data = RecordTransactionData::from([
+        'user_id'     => $user->id,
+        'type'        => TransactionTypeEnum::DEPOSIT,
+        'amount'      => 1000,
+        'source_type' => TransactionSourceEnum::STAFF,
+        'source_id'   => null,
+        'description' => 'Suspended wallet deposit',
+        'metadata'    => [],
+    ]);
+
+    expect(fn (): WalletTransaction => (new RecordWalletTransactionAction())->execute($data))
+        ->toThrow(WalletNotActive::class);
+});
+
+it('allows refund when wallet is suspended', function (): void {
+    $user = User::factory()->create();
+    $user->wallet->update(['status' => App\Enums\Wallet\WalletStatusEnum::SUSPENDED]);
+
+    $data = RecordTransactionData::from([
+        'user_id'     => $user->id,
+        'type'        => TransactionTypeEnum::REFUND,
+        'amount'      => 1000,
+        'source_type' => TransactionSourceEnum::ORDER,
+        'source_id'   => 1,
+        'description' => 'Suspended wallet refund',
+        'metadata'    => [],
+    ]);
+
+    $transaction = (new RecordWalletTransactionAction())->execute($data);
+
+    expect($transaction)->toBeInstanceOf(WalletTransaction::class);
+    $user->wallet->refresh();
+    expect($user->wallet->balance)->toBe(1000);
 });

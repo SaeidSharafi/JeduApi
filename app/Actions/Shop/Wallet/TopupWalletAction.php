@@ -50,6 +50,7 @@ final readonly class TopupWalletAction
                 'payment_uuid' => $payment->uuid,
                 'method'       => $payment->method->value,
             ],
+            idempotency_key: "wallet-topup:{$payment->id}",
         );
 
         $this->recordTransaction->execute($transactionData);

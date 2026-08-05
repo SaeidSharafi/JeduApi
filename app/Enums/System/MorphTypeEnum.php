@@ -13,6 +13,7 @@ use App\Models\DigitalAsset;
 use App\Models\HomePageBlock;
 use App\Models\Order;
 use App\Models\Partner;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Refund;
 use App\Models\Seminar;
@@ -52,6 +53,7 @@ enum MorphTypeEnum: string
     case BLOG_CATEGORY         = 'blog_category';
     case SETTING               = 'setting';
     case COLLABORATION_REQUEST = 'collaboration_request';
+    case DEPOSIT               = 'deposit';
 
     public static function forMorphMap(): array
     {
@@ -134,6 +136,7 @@ enum MorphTypeEnum: string
             self::BLOG_CATEGORY         => BlogCategory::class,
             self::SETTING               => Setting::class,
             self::COLLABORATION_REQUEST => CollaborationRequest::class,
+            self::DEPOSIT               => Payment::class,
         };
     }
 }

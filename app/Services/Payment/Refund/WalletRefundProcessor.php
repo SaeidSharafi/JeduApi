@@ -27,6 +27,7 @@ final readonly class WalletRefundProcessor implements RefundProcessorInterface
             source_type: TransactionSourceEnum::ORDER,
             source_id: $refund->id,
             description: "Refund for order #{$order->id}",
+            idempotency_key: "wallet-refund:{$refund->id}",
         ));
 
         return null;

@@ -7,12 +7,13 @@ namespace App\Actions\Wallet;
 use App\Data\Admin\Wallet\RecordTransactionData;
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
+use App\Enums\Wallet\WalletStatusEnum;
 use App\Exceptions\Wallet\WalletInsufficientBalanceException;
+use App\Exceptions\Wallet\WalletNotActive;
 use App\Exceptions\Wallet\WalletNotFoundException;
 use App\Exceptions\Wallet\WalletUserNotFoundException;
 use App\Models\User;
 use App\Models\WalletTransaction;
-use Exception;
 use Facades\App\Models\Wallet;
 use Illuminate\Support\Facades\DB;
 
@@ -42,9 +43,23 @@ final class RecordWalletTransactionAction
 
             // @codeCoverageIgnoreStart
             if (! $wallet) {
-                throw new WalletNotFoundException($wallet->user_id);
+                throw new WalletNotFoundException($user->id);
             }
             // @codeCoverageIgnoreEnd
+
+            if ($data->idempotency_key !== null) {
+                $existingTransaction = WalletTransaction::query()
+                    ->where('idempotency_key', $data->idempotency_key)
+                    ->first();
+
+                if ($existingTransaction) {
+                    return $existingTransaction;
+                }
+            }
+
+            if (! $this->canProcessTransactionForStatus($wallet->status, $data->type)) {
+                throw new WalletNotActive();
+            }
 
             if ($data->type->isDebit()) {
                 $data->amount = -abs($data->amount);
@@ -73,7 +88,7 @@ final class RecordWalletTransactionAction
 
             if ($data->type === TransactionTypeEnum::PAYMENT && $data->source_type === TransactionSourceEnum::ORDER) {
                 $availableTotal = $wallet->balance + $wallet->gift_balance;
-                //dump($availableTotal, $data->amount,$availableTotal + $data->amount,$newBalance < 0);
+                // dump($availableTotal, $data->amount,$availableTotal + $data->amount,$newBalance < 0);
                 if ($availableTotal + $data->amount < 0) {
                     throw new WalletInsufficientBalanceException(
                         availableBalance: $availableTotal,
@@ -135,6 +150,7 @@ final class RecordWalletTransactionAction
                 'description'        => $data->description,
                 'metadata'           => $auditMetadata,
                 'expires_at'         => $data->expires_at ? now()->parse($data->expires_at) : null,
+                'idempotency_key'    => $data->idempotency_key,
             ]);
 
             return $transaction;
@@ -176,5 +192,18 @@ final class RecordWalletTransactionAction
         }
 
         return 'low';
+    }
+
+    private function canProcessTransactionForStatus(WalletStatusEnum $status, TransactionTypeEnum $type): bool
+    {
+        if ($status === WalletStatusEnum::ACTIVE) {
+            return true;
+        }
+
+        if ($status === WalletStatusEnum::SUSPENDED) {
+            return in_array($type, [TransactionTypeEnum::REFUND], true);
+        }
+
+        return false;
     }
 }

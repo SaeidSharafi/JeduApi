@@ -90,8 +90,8 @@ final class WalletPaymentProcessor implements PaymentProcessorContract
                 metadata: ['order_id' => $order->id],
             );
 
-            $availableBalance = $user->wallet->getAvailableBalance();
-            $this->recordWalletTransactionAction->execute($transactionData);
+            $availableBalance  = $user->wallet->getAvailableBalance();
+            $walletTransaction = $this->recordWalletTransactionAction->execute($transactionData);
 
             $payment->update([
                 'status'                 => PaymentStatusEnum::COMPLETED->value,
@@ -116,7 +116,7 @@ final class WalletPaymentProcessor implements PaymentProcessorContract
                 ],
                 'gateway_response' => [
                     'success'     => true,
-                    'new_balance' => $availableBalance - $amountToPay,
+                    'new_balance' => $walletTransaction->balance_after + $walletTransaction->gift_balance_after,
                 ],
                 'initiated_at' => now(),
                 'completed_at' => now(),

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\Wallet\TransactionSourceEnum;
 use App\Enums\Wallet\TransactionTypeEnum;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
@@ -120,4 +121,26 @@ test('wallet transaction factory states work correctly', function (): void {
         ->and($giftTransaction->amount)->toBe(3000)
         ->and($giftTransaction->source_type)->toBe(TransactionSourceEnum::PROMOTION)
         ->and($giftTransaction->expires_at)->not->toBeNull();
+});
+
+test('wallet transaction deposit source resolves to payment via morph map', function (): void {
+    $user    = User::factory()->create();
+    $wallet  = $user->wallet;
+    $payment = Payment::factory()->topup()->create([
+        'customer_id' => $user->id,
+    ]);
+
+    $transaction = WalletTransaction::factory()->create([
+        'wallet_id'          => $wallet->id,
+        'user_id'            => $user->id,
+        'type'               => TransactionTypeEnum::DEPOSIT,
+        'amount'             => 1000,
+        'balance_after'      => 1000,
+        'gift_balance_after' => 0,
+        'source_type'        => TransactionSourceEnum::DEPOSIT,
+        'source_id'          => $payment->id,
+    ]);
+
+    expect($transaction->source)->toBeInstanceOf(Payment::class)
+        ->and($transaction->source->is($payment))->toBeTrue();
 });

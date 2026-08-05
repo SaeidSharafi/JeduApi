@@ -32,6 +32,7 @@ final class WalletTransaction extends Model
         'description',
         'metadata',
         'expires_at',
+        'idempotency_key',
     ];
 
     // Relationships
@@ -82,6 +83,7 @@ final class WalletTransaction extends Model
             'source_type'        => TransactionSourceEnum::class,
             'metadata'           => 'array',
             'expires_at'         => 'datetime',
+            'idempotency_key'    => 'string',
             'created_at'         => 'datetime',
             'updated_at'         => 'datetime',
         ];
