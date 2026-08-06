@@ -15,6 +15,19 @@
 - **Dispatch:** Triggered by `ProductCacheInvalidated` event listener, admin pricing changes, and scheduled commands
 - **Performance:** Processes products in batches to avoid memory exhaustion
 
+#### UpdateProductAvailabilityJob (`app/Jobs/UpdateProductAvailabilityJob.php`)
+- **Purpose:** Recomputes denormalized availability snapshots for a batch of products
+- **Signature:** `handle(?CacheInvalidationService $cacheInvalidationService): void`
+- **Functionality:** Loads products with published delivery options, productable, and term; computes the snapshot columns (`has_published_delivery_option`, `productable_status`, `is_term_active`, `earliest/latest` registration & availability window boundaries, `near_capacity`, `max_capacity_utilization`) where capacity utilization counts committed seats (`enrolled_count + reserved_count`) against `config('products.availability.capacity_threshold', 0.8)`; persists only changed rows via `saveQuietly()`
+- **Side effects:** Invalidates product cache patterns and dispatches `ProductSearchIndexInvalidated` for products whose snapshot changed
+- **Dispatch:** From `IndexAllProductAvailabilityCommand`, and triggered by availability-affecting mutations (term/productable status flips)
+
+#### SynchronizeProductSearchIndexJob (`app/Jobs/SynchronizeProductSearchIndexJob.php`)
+- **Purpose:** Syncs the search engine index (Typesense) for a batch of products
+- **Signature:** `handle(): void`
+- **Functionality:** Loads products with productable, category slugs, price, delivery options, and term; splits into searchable (`shouldBeSearchable()` true → `searchableUsing()->update()`) and unsearchable (→ `searchableUsing()->delete()`) sets
+- **Dispatch:** Listens on `ProductSearchIndexInvalidated` events
+
 ### Console Commands (`app/Console/Commands/`)
 
 #### PublishPostCommand (`app/Console/Commands/PublishPostCommand.php`)
@@ -40,6 +53,22 @@
 - **Locking:** Uses distributed lock `price-indexing` with 30-minute timeout to prevent concurrent executions
 - **Usage:** `php artisan prices:index-all --missing-only` for first run, `php artisan prices:index-all` for full refresh
 
+#### IndexAllProductAvailabilityCommand (`app/Console/Commands/IndexAllProductAvailabilityCommand.php`)
+- **Purpose:** Batch recompute denormalized availability snapshots for all products
+- **Signature:** `products:index-availability {--queue=default} {--sync}`
+- **Functionality:** Dispatches `UpdateProductAvailabilityJob` for product IDs in chunks of 200; supports sync execution and custom queue
+- **Locking:** Uses distributed lock `product-availability-indexing` with 60-minute timeout to prevent concurrent runs
+- **Usage:** Run after deployment or when availability snapshots need full refresh
+
+#### CancelAbandonedOrdersCommand (`app/Console/Commands/CancelAbandonedOrdersCommand.php`)
+- **Purpose:** Cancels abandoned pending orders that never received any payment attempt
+- **Signature:** `orders:cancel-abandoned {--timeout=30} {--dry-run}`
+- **Functionality:** Selects PENDING orders older than `--timeout` minutes with no payment records at all (orders with failed/pending attempts are excluded so users can retry). For each order, within a DB transaction: sets status to CANCELLED, releases reserved seats via `ProductReservationService::release()` per item, cancels AWAITING_PAYMENT / PENDING_PROVISIONING enrollments, and dispatches `OrderStatusUpdatedEvent`.
+- **Options:**
+  - `--timeout`: Minutes after which a pending order is considered abandoned (default 30)
+  - `--dry-run`: Show orders that would be cancelled without making changes
+- **Usage:** Intended for cron scheduling (e.g., every 30 minutes) to free capacity held by abandoned checkouts.
+
 #### EncryptSettingSecretsCommand (`app/Console/Commands/EncryptSettingSecretsCommand.php`)
 - **Signature:** `settings:encrypt-secrets {key?} {--dry-run}`
 - **Purpose:** Batch encryption of integration setting secret fields at rest. Scans all `Setting` records matching integration `SettingKeyEnum` values, encrypts any plaintext secret fields using `Crypt::encryptString()`. Supports targeting a specific setting key and dry-run mode for previewing which secrets would be encrypted.
@@ -55,15 +84,15 @@
 - **Usage:** Intended for scheduled task (e.g., daily at midnight) to automatically update pricing when featured prices expireses that need lightweight thumbnail references without hydrating full media relations.
 
 #### Order Actions (`app/Actions/Admin/Order/`)
-  - `handle(OrderCreateData $data): Order`: Delegates all totals to `OrderCalculationService`, locks delivery options while validating requested payment types/quantities against live capacity (`enrolled_count`), **validates registration window (`registration_start_date`/`registration_end_date`) and availability window (`available_from`/`available_to`)**, snapshots product data per item, increments promotion usage counts when coupon-driven contexts are present, and populates `pricing_metadata` JSON on each order item via `ProductPriceService::getPriceDataForOption()`. The `pricing_metadata` stores `{original_price, discount_type, discount_amount, discount_percentage}` — with zero discount values for `PRE_PAYMENT` items. The `price` field on order items is always set to `product_delivery_option.price` (base price) without any discounts applied. Enrollments are not created by this action — they are created by `OrderStatusService` after payment completion.
+  - `handle(OrderCreateData $data): Order`: Delegates all totals to `OrderCalculationService`, locks delivery options while validating requested payment types/quantities against live capacity (`enrolled_count + reserved_count`), **validates registration window (`registration_start_date`/`registration_end_date`) and availability window (`available_from`/`available_to`)**, reserves capacity via `ProductReservationService::reserve()` for each item, snapshots product data per item, increments promotion usage counts when coupon-driven contexts are present, and populates `pricing_metadata` JSON on each order item via `ProductPriceService::getPriceDataForOption()`. The `pricing_metadata` stores `{original_price, discount_type, discount_amount, discount_percentage}` — with zero discount values for `PRE_PAYMENT` items. The `price` field on order items is always set to `product_delivery_option.price` (base price) without any discounts applied. Enrollments are not created by this action — they are created by `OrderStatusService` after payment completion.
   - `handle(OrderUpdateData $data, Order $order): Order`: Updates existing order details and status
   - `handle(Order $order): void`: Handles order deletion and cleanup
 - **ApproveOrderAction** (`app/Actions/Admin/Order/ApproveOrderAction.php`)
-  - `handle(Order $order): Order`: Manually approves order for fulfillment/provisioning. Validates: order not already completed/cancelled/refunded, sufficient payment coverage (considering prepayment amounts per item). Transactionally marks order as COMPLETED, completes each item, triggers enrollment provisioning via `OrderStatusService`. Permission-gated via `OrderPolicy::approve()` using `PermissionEnum::ORDER_APPROVE`.
+  - `handle(Order $order): Order`: Manually approves order for fulfillment/provisioning. Wraps the flow in `SmartCache::lock("approve_order_{$order->id}", 15)->block(5, ...)` to prevent concurrent approvals. Validates: order not already completed/cancelled/refunded, sufficient payment coverage (considering prepayment amounts per item). The external Digipay `deliver` call runs outside the DB transaction; on failure the order does not reach COMPLETED. Transactionally marks order as COMPLETED, completes each item, triggers enrollment provisioning via `OrderStatusService`, and consumes product reservations via `ProductReservationService`. Permission-gated via `OrderPolicy::approve()` using `PermissionEnum::ORDER_APPROVE`.
 
 #### Payment Actions (`app/Actions/Admin/Payment/`)
 - **CreatePaymentAction** (`app/Actions/Admin/Payment/CreatePaymentAction.php`)
-  - `handle(PaymentCreateData $data): Payment`: Processes payment applications to orders
+  - `handle(PaymentCreateData $data): Payment`: Processes payment applications to orders. For free orders (grand total 0) delegates to `CompleteFreeOrderPaymentAction`.
 - **UpdatePaymentAction** (`app/Actions/Admin/Payment/UpdatePaymentAction.php`)
   - `handle(PaymentUpdateData $data, Payment $payment): Payment`: Handles payment status updates and cascading effects
 - **DeletePaymentAction** (`app/Actions/Admin/Payment/DeletePaymentAction.php`)
@@ -125,11 +154,15 @@
 - **SetGoodForStartAction**: Flags categories as "good for start" recommendations
 
 #### Wallet Actions (`app/Actions/Admin/Wallet/`)
-- **CreateWalletAction**: Initializes new user wallets
+- **CreateWalletAction** (`app/Actions/Admin/Wallet/CreateWalletAction.php`)
+  - `handle(User $user): Wallet`: Initializes a wallet for a user (one per user). Invoked via the `users/{user}/wallet` singleton store endpoint.
 - **GetWalletBalanceAction**: Retrieves current wallet balance and history
-- **DepositToWalletAction**: Adds credits to user wallets
-- **WithdrawFromWalletAction**: Removes credits from user wallets
-- **WalletTransactionAction**: Handles wallet credit/debit operations
+- **DepositToWalletAction** (`app/Actions/Admin/Wallet/DepositToWalletAction.php`)
+  - `handle(WalletDepositData $data, Wallet $wallet): WalletTransaction`: Adds credits via `RecordWalletTransactionAction`.
+- **WithdrawFromWalletAction** (`app/Actions/Admin/Wallet/WithdrawFromWalletAction.php`)
+  - `handle(WalletWithdrawalData $data, Wallet $wallet): WalletTransaction`: Removes credits via `RecordWalletTransactionAction`; enforces sufficient balance.
+- **AdjustWalletAction** (`app/Actions/Admin/Wallet/AdjustWalletAction.php`)
+  - `handle(WalletAdjustmentData $data, Wallet $wallet): WalletTransaction`: Applies signed balance adjustments (positive credit / negative debit).
 
 #### WalletCampaign Actions (`app/Actions/Admin/WalletCampaign/`)
 - **CampaignAllocationAction**: Manages bulk wallet credit campaigns
@@ -143,8 +176,10 @@
 - **DeleteStaffAction**: Removes staff access and archives records
 
 #### User Actions (`app/Actions/Admin/User/`)
-- **CreateUserAction**: Creates new customer accounts
-- **UpdateUserAction**: Updates customer profile information
+- **CreateUserAction** (`app/Actions/Admin/User/CreateUserAction.php`)
+  - `handle(UserCreateData $data): User`: Creates new customer accounts; supports avatar media attachment.
+- **UpdateUserAction** (`app/Actions/Admin/User/UpdateUserAction.php`)
+  - `handle(UserUpdateData $data, User $user): User`: Updates customer profile information; supports avatar media attachment.
 - **DeleteUserAction**: Handles customer account deactivation
 
 #### Teacher Actions (`app/Actions/Admin/Teacher/`)
@@ -164,12 +199,6 @@
 - **CreateTermAction**: Sets up academic terms and periods
 - **UpdateTermAction**: Modifies term schedules and details
 - **DeleteTermAction**: Archives completed terms
-
-#### Role Actions (`app/Actions/Admin/Role/`)
-- **CreateRoleAction**: Creates new permission roles
-- **UpdateRoleAction**: Modifies role permissions
-- **DeleteRoleAction**: Removes unused roles
-- **OutputPermissionsAction**: Generates permission reports
 
 #### Blog Category Actions (`app/Actions/Admin/Blog/Category/`)
 - **CreateBlogCategoryAction** (`app/Actions/Admin/Blog/Category/CreateBlogCategoryAction.php`)
@@ -226,19 +255,27 @@
 
 #### Refund Actions (`app/Actions/Admin/Refund/`)
 - **CreateRefundAction** (`app/Actions/Admin/Refund/CreateRefundAction.php`)
-  - `handle(RefundCreateData $data): Refund`: Creates refund records with SmartCache locking (`refund_order_item_{id}`, 15s timeout) to prevent double-refund race conditions. Calculates `amountPaid` vs `deductionAmount` for each item. Delegates gateway-specific processing logic to `RefundProcessorFactory` after creation. Updates `OrderItem.total_refunded` and re-evaluates parent order status via `UpdateOrderRefundedAmountAction`. Dispatches `RefundCompletedEvent` on completion.
+  - `handle(RefundCreateData $data): Refund`: Creates refund records with SmartCache locking (`refund_order_item_{id}`, 15s timeout) to prevent double-refund race conditions. Calculates `amountPaid` vs `deductionAmount` for each item. Wraps all work in a DB transaction and catches `Throwable` to surface gateway failures as domain errors. Delegates gateway-specific processing logic to `RefundProcessorFactory` after creation. Updates `OrderItem.total_refunded` and re-evaluates parent order status via `UpdateOrderRefundedAmountAction`. Dispatches `RefundCompletedEvent` on completion.
 - **RefundOrderAction** (`app/Actions/Admin/Refund/RefundOrderAction.php`)
-  - `handle(Order $order, RefundCreateData $data): void`: Orchestrates full-order refund by iterating over refundable order items, calling `CreateRefundAction` per item.
+  - `handle(Order $order, RefundCreateData $data): void`: Orchestrates full-order refund by iterating over refundable order items, calling `CreateRefundAction` per item. Merges existing `transaction_details` on the refund instead of overwriting them.
 - **UpdateOrderRefundedAmountAction** (`app/Actions/Admin/Refund/UpdateOrderRefundedAmountAction.php`)
   - `handle(Order $order): void`: Recalculates `total_refunded` across all order items and updates parent order status accordingly.
 - **UpdateRefundAction** (`app/Actions/Admin/Refund/UpdateRefundAction.php`)
   - `handle(RefundUpdateData $data, Refund $refund): Refund`: Updates refund metadata and transaction details.
 - **UpdateRefundStatusAction** (`app/Actions/Admin/Refund/UpdateRefundStatusAction.php`)
-  - `handle(RefundStatusUpdateData $data, Refund $refund): Refund`: Transitions refund status with validation of allowed transitions (e.g., PENDING → COMPLETED/FAILED). On `COMPLETED`, updates item/parent order status and dispatches `RefundCompletedEvent`.
+  - `handle(RefundStatusUpdateData $data, Refund $refund): Refund`: Transitions refund status with validation of allowed transitions (e.g., PENDING → COMPLETED/FAILED). Uses a two-phase safe-completion pattern: locks the refund to a PREP state inside the DB transaction, performs the gateway call (e.g., Digipay refund) outside the DB transaction, and marks success atomically; on gateway failure marks the refund FAILED via `markRefundFailed`. The finalize step is idempotent and blocks on terminal states. On `COMPLETED`, updates item/parent order status and dispatches `RefundCompletedEvent`.
 
 #### Audit Actions (`app/Actions/Admin/Audit/`)
-- **DetectSuspiciousActivityAction**: Analyzes admin actions for security risks
-- **GenerateComplianceReportAction**: Creates audit and compliance reports
+- **DetectSuspiciousActivityAction**: Analyzes admin actions for security risks; report window bounds (start/end dates) are validated and normalized.
+- **GenerateComplianceReportAction**: Creates audit and compliance reports; respects report window parameters and applies audit-log redaction rules.
+
+#### Role Actions (`app/Actions/Admin/Role/`)
+- **CreateRoleAction** (`app/Actions/Admin/Role/CreateRoleAction.php`)
+  - `handle(RoleCreateData $data): Role`: Creates a new role; guards against reserved role names and syncs permissions.
+- **UpdateRoleAction** (`app/Actions/Admin/Role/UpdateRoleAction.php`)
+  - `handle(RoleUpdateData $data, Role $role): Role`: Updates role metadata and permission assignments; `UpdateRoleData` includes validation rules for role name uniqueness and permission existence.
+- **DeleteRoleAction**: Removes unused roles
+- **OutputPermissionsAction**: Generates permission reports
 
 #### Partner Actions (`app/Actions/Admin/Partner/`)
 - **CreatePartnerAction**: Persists partner showcase cards, linking uploaded media and deriving alt text automatically
@@ -281,7 +318,7 @@
 
 #### Checkout & Payment Actions (`app/Actions/Shop/*`)
 - **CreateOrderFromCartAction** (`app/Actions/Shop/CreateOrderFromCartAction.php`)
-  - `handle(CheckoutData $checkoutData, User $user): PaymentProcessResultData`: Wraps the entire checkout pipeline—loads/validates the active cart with `lockForUpdate` (capacity, **registration window, availability window**, publication, duplicate ownership, order velocity), converts it into `OrderCreateData` inside a DB transaction, reuses `CreateOrderAction`. Deletes the cart inside the transaction, then dispatches the selected payment processor **outside** the transaction. Uses `PreparePendingPaymentAction` to create a PENDING Payment before calling `processor->process($payment)`. Returns redirect info for multi-step gateways or finalizes wallet/no-payment flows.
+  - `handle(CheckoutData $checkoutData, User $user): PaymentProcessResultData`: Wraps the entire checkout pipeline—loads/validates the active cart with `lockForUpdate` (capacity, **registration window, availability window**, publication, duplicate ownership, order velocity), converts it into `OrderCreateData` inside a DB transaction, reuses `CreateOrderAction`. Deletes the cart inside the transaction, then dispatches the selected payment processor **outside** the transaction. Uses `PreparePendingPaymentAction` to create a PENDING Payment before calling `processor->process($payment)`. Free orders (grand total 0) complete immediately through `CompleteFreeOrderPaymentAction` (creates a COMPLETED `NO_PAYMENT` payment record and dispatches `PaymentCompletedEvent` inside the transaction). Returns redirect info for multi-step gateways or finalizes wallet/no-payment flows.
 - **TopupWalletAction** (`app/Actions/Shop/Wallet/TopupWalletAction.php`)
   - `handle(Payment $payment): void`: Credits wallet from a completed `WALLET_TOPUP` payment. Validates payment purpose and status. Creates wallet if missing. Records DEPOSIT transaction linked to the payment.
 - **RetryOrderPaymentAction** (`app/Actions/Shop/RetryOrderPaymentAction.php`)
@@ -294,7 +331,7 @@
 - **GenerateOtpAction** (`app/Actions/Auth/GenerateOtpAction.php`)
   - `handle(string $identifier): string`: Creates time-limited verification codes
 - **InitiateAuthAction** (`app/Actions/Auth/InitiateAuthAction.php`)
-  - `handle(AuthInitiateData $data): AuthResponseData`: Starts authentication process for both guards
+  - `handle(AuthInitiateData $data): AuthResponseData`: Starts authentication process for both guards. Creates the user/staff record race-safely (unique-constraint race recovery) when the identifier does not exist yet.
 - **PasswordLoginAction** (`app/Actions/Auth/PasswordLoginAction.php`)
   - `handle(PasswordLoginData $data): AuthTokenData`: Manages password-based login flows
 - **VerifyOtpAction** (`app/Actions/Auth/VerifyOtpAction.php`)
@@ -309,13 +346,22 @@
   - `handle(AuthenticationData $data): AuthenticatedUserData`: General user authentication handler
 - **AuthAction** (`app/Actions/Auth/AuthAction.php`)
   - `handle(AuthData $data): AuthResultData`: Generic authentication action wrapper
+- **ChangePasswordAction** (`app/Actions/Auth/ChangePasswordAction.php`)
+  - `handle(Staff|User $authenticatable, ChangePasswordRequest $request): Staff|User`: Validates `current_password` (required when the account has a password set) and updates the hash. Mismatched current password surfaces the `validation.password.current_password_does_not_match` message. Shared by the staff and customer change-password endpoints.
+
+### Admin Profile Actions (`app/Actions/Admin/`)
+- **UpdateStaffProfileAction** (`app/Actions/Admin/UpdateStaffProfileAction.php`)
+  - `handle(UpdateStaffProfileData $data, Staff $staff): Staff`: Updates the authenticated staff member's own profile fields (name, email, avatar).
 
 ### Payment Actions (`app/Actions/Payment/`)
 - **PreparePendingPaymentAction** (`app/Actions/Payment/PreparePendingPaymentAction.php`)
   - `handle(actor, customerId, method, purpose, amount, ?order, ?adminNotes, ?data): Payment`: Creates a PENDING Payment record with `attempt_count`, `last_attempted_at`, `ip_address`, `user_agent` tracking. Used by both shop and admin payment flows before handing off to processor.
+- **CompleteFreeOrderPaymentAction** (`app/Actions/Payment/CompleteFreeOrderPaymentAction.php`)
+  - `handle(Order $order, ?Authenticatable $actor, ?string $adminNotes): PaymentProcessResultData`: Completes an order with grand total 0 by creating a COMPLETED `NO_PAYMENT` payment record and dispatching `PaymentCompletedEvent` inside the DB transaction. Shared by `CreateOrderFromCartAction` and `CreatePaymentAction` so free orders follow one path.
 
 ### Wallet Actions (`app/Actions/Wallet/`)
-- **RecordWalletTransactionAction**: Records all wallet transaction activities. For `PAYMENT`/`ORDER` transactions, debits gift balance first (before regular balance) and tracks the split in `wallet_debit_split` metadata.
+- **RecordWalletTransactionAction** (`app/Actions/Wallet/RecordWalletTransactionAction.php`)
+  - `handle(RecordTransactionData $data): WalletTransaction`: Single entry point for all wallet ledger writes. Runs inside a DB transaction, locks the wallet row (`lockForUpdate`), rejects duplicate `idempotency_key` values, and enforces wallet status (throws `WalletNotActive` on inactive wallets). For `PAYMENT`/`ORDER` transactions debits gift balance first (before regular balance) and tracks the split in `wallet_debit_split` metadata.
 
 ## Services Pattern (`app/Services/`)
 
@@ -370,49 +416,66 @@
    - `updateEnrollmentStatus(OrderItem $item): void`: Updates enrolment access based on order item status changes (completed items move enrolments into `PENDING_PROVISIONING`). Uses `save()` to fire model events for `enrolled_count` synchronization.
   - `completeOrderItemAfterPayment(OrderItem $item): void`: Internal method for item-level status updates. Creates enrollment via `firstOrCreate()` if none exists (status `ACTIVE`), then calls `updateEnrollmentStatus()`.
   - `updateParentOrderStatus(Order $order): void`: Determines parent order status from collective item states: all refunded → REFUNDED, all cancelled → CANCELLED, any refunded → PARTIALLY_REFUNDED, all completed → COMPLETED, default → PROCESSING
+- **Reservations:** Depends on `ProductReservationService` — consumes reservations (`consume()`) for items reaching a paid/completed state so `enrolled_count + reserved_count` stays within capacity.
+
+### ProductReservationService (`app/Services/ProductReservationService.php`)
+- **Purpose:** Manages capacity reservations on `product_delivery_options.reserved_count` for PENDING orders
+- **Public Methods:**
+  - `reserve(int $deliveryOptionId, int $qty): void`: Atomically increments `reserved_count` (guarded against exceeding remaining capacity)
+  - `consume(int $deliveryOptionId, int $qty): void`: Decrements `reserved_count` when a payment completes (seat converts to `enrolled_count`)
+  - `release(int $deliveryOptionId, int $qty): void`: Decrements `reserved_count` when an order is cancelled/abandoned
+- **Lifecycle:** `reserve` on order creation (`CreateOrderAction`), `consume` on payment completion (`OrderStatusService`, `ApproveOrderAction`), `release` on cancellation/abandonment (`CancelOrderByCustomerAction`, `DeleteOrderAction`, `CancelAbandonedOrdersCommand`). Decrements never go below zero.
 
 ### CartService (`app/Services/CartService.php`)
 - **Purpose:** Single façade for cart lifecycle management across authenticated and guest flows
 - **Key Capabilities:**
   - `findOrCreateCart(?User $user = null, bool $lockForUpdate = false): Cart`: Resolves carts via the `CartIdentifier` contract (user or guest token) and eagerly loads delivery options/products. Supports `lockForUpdate` for transactional checkout flows.
   - `addItem`, `updateItem`, `removeItem`: Validate capacity/payment type constraints before mutating cart rows
-  - `applyCoupon(ApplyCouponData $data): CartData`: Validates coupon codes via `PromotionFinder`, tracks them on the cart, and recalculates totals through `OrderCalculationService`
+  - `applyCoupon(ApplyCouponData $data): CartData`: Validates coupon codes via `PromotionService::findPromotionByCoupon()`, checks condition gates via `checkPromotionConditions()`, tracks them on the cart, and recalculates totals through `OrderCalculationService`
   - `buildCartDataWithTotals(Cart $cart): CartData`: Hydrates DTOs with current pricing/discount context for API responses
 - **Internal:** `resolveCart()` implements the find-or-create pattern with unique constraint race recovery for concurrent requests.
 - **Special Notes:** Enforces an order velocity limit (5 orders/hour) during checkout and delegates cart persistence cleanup post-successful conversion
 
 ### RequestCartIdentifier (`app/Services/Cart/RequestCartIdentifier.php`)
 - **Purpose:** HTTP-scoped implementation of `CartIdentifier` that decides whether to use an authenticated user ID or a persistent guest token (via `X-Guest-Token` header)
-- **Responsibilities:** Exposes `userId()`, `guestToken()`, and `ensureGuestToken()` helpers used by `CartService` and middleware to keep carts consistent across sessions. Refactored from singleton to scoped binding — no longer caches auth state at construction; `userId()` and `guestToken()` check auth on each call, ensuring dynamic auth state reflection across a request lifecycle. `isGuest()` delegates directly to `auth->check()`.
+- **Responsibilities:** Exposes `userId()`, `guestToken()`, and `ensureGuestToken()` helpers used by `CartService` and middleware to keep carts consistent across sessions. Bound as a scoped binding; `userId()` and `guestToken()` check auth on each call, ensuring dynamic auth state reflection across a request lifecycle. `isGuest()` delegates directly to `auth->check()`.
 
 ### Discount Services (`app/Services/Discounts/`)
+
+#### PromotionService (`app/Services/Discounts/PromotionService.php`)
+- **Purpose:** Central promotion matching, coupon resolution, and order-context building for cart and product discounts
+- **Public Methods:**
+  - `findPromotionByCoupon(string $couponCode): ?DiscountPromotion`: Resolves an active promotion from a coupon code, enforcing `is_active`, `starts_at`/`ends_at` window, and `usage_limit_total`
+  - `findAllApplicableCartPromotions(OrderContextData $context, DiscountTypeEnum $type = CART_CHECKOUT): Collection`: Returns all promotions whose conditions pass, sorted by `priority` descending
+  - `buildOrderContext(OrderCreateData $data, bool $useFreshData = false): OrderContextData`: Normalizes order data into the shared calculation context
+  - `promotionConditionsPass(DiscountPromotion $promotion, OrderContextData $context): bool`: Evaluates all rules of a promotion against the context
+  - `checkPromotionConditions(DiscountPromotion $promotion, OrderCreateData $data): bool`: Convenience wrapper used by `CartService::applyCoupon()`
 
 #### OrderCalculationService (`app/Services/Discounts/OrderCalculationService.php`)
 - **Purpose:** Comprehensive discount and pricing calculation engine integrated with ProductPriceService
 - **Public Methods:**
-  - `calculate(OrderCreateData $data): OrderContextData`: Applies all discount rules, promotions, and coupons to order data, uses ProductPriceService for consistent pricing hierarchy
-  - `validateDiscountEligibility(): bool`: Checks discount rule conditions
-  - `applyDiscountActions(): array`: Executes discount actions (percentage, fixed amount, etc.)
-- **Dependencies:** `ProductPriceService` for standardized pricing calculations
+  - `calculate(OrderCreateData $data): OrderContextData`: Builds the order context via `promotionService->buildOrderContext()`, collects all applicable CART_CHECKOUT promotions (`findAllApplicableCartPromotions`), and applies their actions in priority order — respecting `stop_processing_subsequent_rules` to prevent stacking. Uses ProductPriceService for consistent pricing hierarchy.
+- **Dependencies:** `PromotionService`, `ProductPriceService`, `DiscountHandlerRegistry` for action execution
 
 #### DiscountHandlerRegistry (`app/Services/Discounts/DiscountHandlerRegistry.php`)
-- **Purpose:** Registry pattern for discount rule handlers
-- **Public Methods:**
-  - `registerHandler(string $type, DiscountHandlerInterface $handler): void`: Registers new discount handlers
-  - `getHandler(string $type): DiscountHandlerInterface`: Retrieves appropriate handler for discount type
+- **Purpose:** Registry that auto-discovers discount condition/action handlers by contract
+- **Mechanism:** Scans registered handlers grouped by interface — `DiscountConditionContract` (cart conditions), `DiscountActionContract` (cart actions), `ProductDiscountConditionContract` (product conditions), `ProductDiscountActionContract` (product actions). Resolves handlers by rule `key` from each group; results cached under `discounts.handler_registry.cache` via the `CACHE_KEY` constant.
+- **Consumers:** `OrderCalculationService`, `ProductDiscountIndexer`, `DiscountMetadataService`
 
 #### DiscountMetadataService (`app/Services/Discounts/DiscountMetadataService.php`)
-- **Purpose:** Manages discount rule metadata and configuration
+- **Purpose:** Exposes discount rule metadata and configuration schema for the admin discount-builder UI
 - **Public Methods:**
-  - `getAvailableConditions(): array`: Returns available discount conditions
-  - `getAvailableActions(): array`: Returns available discount actions
-  - `validateRuleConfiguration(array $rules): bool`: Validates discount rule syntax
+  - `getMetadata(): array` / `getConditions()` / `getActions()` / `getOperators()` / `getTypes()`: Catalog endpoints (back `DiscountInfoController`)
+  - `extractConfigSchema(string $configClass, string $key, array $visited = []): array`: Introspects a config Data class into a schema tree
+  - `getConfigurationClass(string $handlerClass): ?string` / `getParameterType(...)`: Resolve config class and parameter types for a handler
+- **i18n:** Label/description strings resolve through the `discount.php` language file (en/fa) via an auto-resolver, so handler labels localize without code changes.
 
 #### ProductDiscountIndexer (`app/Services/Discounts/ProductDiscountIndexer.php`)
 - **Purpose:** Indexes products for efficient discount application
 - **Public Methods:**
   - `indexProduct(Product $product): void`: Adds product to discount index
   - `reindexAll(): void`: Rebuilds complete discount index
+  - `getActivePromotions(Product $product, ?User $user = null): Collection`: Returns promotions whose `starts_at`/`ends_at` window is active (window enforcement lives in the indexer)
 
 #### ProductDiscountPriceCalculator (`app/Services/Discounts/ProductDiscountPriceCalculator.php`)
 - **Purpose:** Calculates discounted prices for individual products
@@ -420,25 +483,20 @@
   - `calculateDiscountedPrice(Product $product, User $user = null): float`: Calculates final price after discounts
   - `getApplicableDiscounts(Product $product): Collection`: Returns all applicable discounts for product
 
-#### PromotionFinder (`app/Services/Discounts/PromotionFinder.php`)
-- **Purpose:** Finds and matches promotions to orders and products
-- **Public Methods:**
-   - `findApplicablePromotions(Order $order): Collection`: Finds promotions applicable to order; enforces `usage_limit_total` — excludes promotions where `total_usage_count >= usage_limit_total`
-  - `findBestPromotion(Product $product): ?DiscountPromotion`: Returns best available promotion for product
+#### Cart Action Handlers (`app/Services/Discounts/Cart/Actions/`)
+- `AddGiftCreditAction`, `AddWalletCreditAction`, `ApplyFixedAmountOffAction`, `ApplyPercentageDiscountToItemsAction`, `ApplyTieredPercentageOffAction`, `GiftProductAction` — mutate cart totals per rule config.
 
-### Discount Cart Services (`app/Services/Discounts/Cart/`)
+#### Cart Condition Handlers (`app/Services/Discounts/Cart/Conditions/`)
+- `CartItemCountOverCondition`, `CartValueCondition`, `FirstOrderOnlyCondition`, `ProductCategoryCondition`, `SpecificProductsInCartCondition`, `UserNeverPurchasedCategoryCondition` — gate cart-level rule eligibility.
 
-#### Cart Actions (`app/Services/Discounts/Cart/Actions/`)
-- Contains cart-specific discount application logic
+#### Product Action Handlers (`app/Services/Discounts/Product/Actions/`)
+- `ApplyFixedDiscountToProductAction`, `ApplyFixedPriceProductAction`, `ApplyPercentageDiscountToProductAction`, `ApplyTieredPercentageOffProductAction` — adjust product pricing.
 
-#### Cart Conditions (`app/Services/Discounts/Cart/Conditions/`)
-- Contains cart-level discount condition validators
+#### Product Condition Handlers (`app/Services/Discounts/Product/Conditions/`)
+- `DeliveryMethodIsCondition`, `LowCapacityRemainingCondition`, `PriceBetweenCondition`, `ProductCategoryCondition`, `RegistrationClosingSoonCondition`, `VendorIsCondition` — gate product-level rule eligibility.
 
-### Discount Product Services (`app/Services/Discounts/Product/`)
-- Contains product-level discount calculation services
-
-### Discount Configuration Services (`app/Services/Discounts/Configs/`)
-- Contains discount system configuration and rule definitions
+#### Config Data Classes (`app/Services/Discounts/Configs/`)
+- Per-handler configuration DTOs (`ApplyTieredPercentageOffData`, `DeliveryMethodIsData`, `GiftProductData`, `ProductCategoryConditionConfigData`, `SpecificProductsInCartData`, `TierData`, `UserNeverPurchasedCategoryData`, etc.) define the typed `rules[].config` payload validated against each handler's schema.
 
 ### ProductPriceService (`app/Services/ProductPriceService.php`)
 - **Purpose:** Centralized product pricing logic with hierarchy support and caching
@@ -491,11 +549,15 @@
   - `addUserToRoom(int $roomId, int $skyroomUserId, string $role = 'normal'): void`: Enrolls user in a Skyroom room with specified role
 
 #### ImsService (`app/Services/Integrations/ImsService.php`)
-- **Purpose:** IMS (Internal Management System) REST API client for student & enrollment CRUD operations
+- **Purpose:** IMS (Internal Management System) REST API client for student & enrollment CRUD operations and teacher dashboard data
 - **Methods:**
   - `setConfig(array $config): void`: Injects runtime configuration (credentials, endpoint)
   - `storeStudent(array $payload): array`: Creates student record via POST `/api/v2/student`
   - `storeEnrollment(User $user, array $payload): array`: Creates enrollment record via POST `/api/v2/enrolment/{civil_id}`
+  - `getTeacherCourses(array $payload): array`: Lists courses taught by a teacher (drives teacher dashboard)
+  - `getAttendance(string $courseCode, string $teacherCivilId, CivilIdTypeEnum $civilIdType, array $queryParams): array`: Reads attendance sessions/records for a course
+  - `storeAttendance(...)`, `updateAttendance(...)`, `destroyAttendance(string $courseCode, string $teacherCivilId, CivilIdTypeEnum $civilIdType, array $payload): void`: Creates/updates/deletes attendance records
+  - `getGrades(...)`, `storeGrade(...)`, `storeBulkGrades(...)`: Course grade read/write operations
 - **Security:** PII redaction in logs (email, phone via `sanitizeBody()`); credentials resolved via `SettingsService`
 
 #### MoodleService (`app/Services/Integrations/MoodleService.php`)
@@ -596,7 +658,7 @@
 - `PermissionEnum` cases organized by resource domain. See `config/permission-generator.php` for full list. Run `sail artisan permission:sync` to synchronize enums with permissions.
 - `ENROLLMENT_RETRY_PROVISION` permission gates retry provisioning authorization.
 
-## Recent Behavior Clarifications
+## Behavior Clarifications
 
 ### Gateway Verification Gatekeeper
 - Verification starts with a gatekeeper in each processor: if `Payment.status` is already `COMPLETED`, returns early. If the order has any other completed payment, throws `RuntimeException` preventing double-verification.
@@ -663,6 +725,31 @@
   - `getProductsForCategory(Category $category, ProductableEnum $type, int $limit, bool $paginate = false)`: Returns limited or paginated product card DTO collections for a category/type combination, reusing `ProductQueryService` filters and `ProductPriceService` batch hydration
 - **Integration:** Backing service for category detail endpoints and curated block hydration (e.g., "good for start" lists)
 
+### ProductAvailabilityFilter (`app/Query/ProductAvailabilityFilter.php`)
+- **Purpose:** Static filter suite for product availability, each method transparently switching between denormalized snapshot columns and relationship-based queries based on `config('products.availability.use_denormalized')`
+- **Key Methods:**
+  - `applyPublishedAndVisible`: PUBLISHED + `is_visible`
+  - `applyHasPublishedDeliveryOption`: snapshot flag vs `whereHas` published delivery options
+  - `applyPublishedProductable`: snapshot `productable_status` vs `whereHasMorph` published productable
+  - `applyActiveTerm`: snapshot `is_term_active` vs term null-or-ACTIVE
+  - `applyAvailableNow`: snapshot date windows vs per-option registration + availability date windows (null = unbounded)
+  - `applyContentAvailableNow`: content-availability-only variant (availability window only, no registration)
+  - `applyEventStatus` / `applyEventNotEnded`: delegates to Product `availabilityStatus` / `eventNotEnded` scopes
+  - `applyRegistrationWindow` / `applyAvailabilityWindow`: overlap-aware date range filtering (snapshot or relationship mode)
+  - `applyNearCapacity(float $threshold = 0.8)`: snapshot `max_capacity_utilization >= threshold` vs raw ratio on `(enrolled_count + reserved_count) / capacity`
+
+### ProductListing (`app/Query/ProductListing.php`)
+- **Purpose:** Static facade over shared listing scopes and sorting used across listing/search entry points
+- **Methods:** `forListing()` / `forDetail()` delegate to Product scopes; `sortBy` validates field against `ProductSortFieldEnum::ALLOWED` and routes `capacity_utilization` / `price` to dedicated paths; `sortByCapacityUtilization`; `popular` (orderItems count); `paginate` (with query string preservation)
+
+### ProductSearch (`app/Services/ProductSearch.php`)
+- **Purpose:** Product listing/search orchestrator with Typesense → database graceful fallback
+- **Methods:**
+  - `search(ProductListRequestData $requestData): LengthAwarePaginator`: Entry point; uses Scout/Typesense when available (with warning-logged fallback on exceptions), otherwise database pipeline
+  - `searchDatabase(ProductListRequestData $requestData)`: Applies `ProductAvailabilityFilter` chain, `ProductListing::forListing`, category/price/difficulty/fulfillment filters, availability filters, scoring + `orderByScore()` for queries, price/capacity sort paths
+  - `searchScout(ProductListRequestData $requestData)`: Typesense query via `Product::scoutSearch()` with filterable fields (`category_slugs`, `difficulty_level`, `fulfillment_types`, price range, `has_discount`, `max_capacity_utilization`) and timestamp-based availability filters (`*_ts` fields)
+- **Typesense gating:** `config('scout.driver') === 'typesense'` with a non-empty API key and not running unit tests; injectable closure override for tests
+
 ### GlobalSearchService (`app/Services/GlobalSearchService.php`)
 - **Purpose:** Multi-model search façade that unifies products and blog posts with Scout, Typesense, and SQL fallbacks
 - **Public Methods:**
@@ -714,6 +801,24 @@
 - **Mechanism:** Reads `config/cache_invalidation.php` to map model classes (Product, Slider, Partner, HomePageBlock, Setting, etc.) to lists of `CacheKeysEnum`, literal keys, or wildcard patterns and delegates eviction to `CacheInvalidationService` (`SmartCache::forget` + `flushPatterns`).
 - **Usage:** Registered for multiple CMS/content models to keep SmartCache payloads (home page content, partner lists, settings, good-for-start lists) fresh without manual cache calls.
 
+### ProductableAvailabilityObserver (`app/Observers/ProductableAvailabilityObserver.php`)
+- **Purpose:** Keeps availability snapshots and search index in sync when productable (Course/Seminar/DigitalAsset) content changes
+- **Mechanism:** On `updated`:
+  - If `status` changed (either direction — PUBLISHED↔non-published both flip availability): dispatches `ProductAvailabilityCacheInvalidated` for all linked product IDs
+  - If any searchable field changed (`full_name`, `short_name`, `description`, `difficulty_level`, `slug`): dispatches `ProductSearchIndexInvalidated` for linked product IDs
+
+### TermAvailabilityObserver (`app/Observers/TermAvailabilityObserver.php`)
+- **Purpose:** Recomputes availability when a Term's status flips
+- **Mechanism:** On `updated` with a `status` change (ACTIVE↔non-active both flip availability), chunks all products linked via the term and dispatches `ProductAvailabilityCacheInvalidated` per chunk
+
+### CategorySearchIndexObserver (`app/Observers/CategorySearchIndexObserver.php`)
+- **Purpose:** Re-indexes products when a Category slug changes (slug is a search filter field)
+- **Mechanism:** On `updated` with a `slug` change, chunks linked products and dispatches `ProductSearchIndexInvalidated` per chunk
+
+### Availability & Search Invalidation Events
+- `ProductAvailabilityCacheInvalidated` (`app/Events/ProductAvailabilityCacheInvalidated.php`): carries `productIds`; dispatched after DB commit (`ShouldDispatchAfterCommit`); listeners invalidate availability snapshot caches so storefront availability reflects term/productable status changes
+- `ProductSearchIndexInvalidated` (`app/Events/ProductSearchIndexInvalidated.php`): carries `productIds`; dispatched after DB commit; listener runs `SynchronizeProductSearchIndexJob` to push/remove products from the Typesense index
+
 ### Review Aggregation Pipeline
 - **Event:** `ReviewableAggregatesChanged` (`app/Events/ReviewableAggregatesChanged.php`) carries the reviewable ID/type whenever reviews change.
 - **Listener:** `RecalculateReviewableAggregates` (`app/Listeners/RecalculateReviewableAggregates.php`) runs on the queue, filters to models using the `HasReview` trait, and recomputes `review_count` & `average_rating` from approved reviews.
@@ -742,24 +847,9 @@
   - `generate(): string`: Uses DB row-locking (`lockForUpdate()`) on the latest `PaymentTransaction` row to calculate the next sequential number. Starts from `config('payments.transaction_reference.start_from')` (default: 200000001). Returns as string.
 - **Usage:** Injected into all payment processors (Mellat, Wallet, BankTransfer) for unified transaction reference generation.
 
-### PaymentProcessorFactory (`app/Services/Payment/PaymentProcessorFactory.php`)
-- **Purpose:** Factory pattern for payment processor creation
-- **Public Methods:**
-  - `create(string $method): PaymentProcessorInterface`: Creates appropriate payment processor
-  - `getSupportedMethods(): array`: Returns list of supported payment methods
-
 #### PaymentProcessorContract (`app/Contracts/Payment/PaymentProcessorContract.php`)
 - **`process(Payment $payment): PaymentProcessResultData`**: Processes a pre-created Payment record. Payment is created by `PreparePendingPaymentAction` before processing. Returns redirect info or completion result.
 - **`verify(Payment $payment, array $callbackData): Payment`**: Verifies payment after gateway callback.
-
-#### WalletPaymentProcessor (`app/Services/Payment/WalletPaymentProcessor.php`)
-- **Purpose:** Processes wallet-based payments with transaction tracking
-- **`process(Payment $payment): PaymentProcessResultData`**: Accepts a pre-created PENDING Payment. Validates wallet balance (throws `InsufficientWalletBalanceException` with `orderIncrementId`), records debit with gift balance splitting (regular balance first, then gift balance), creates PaymentTransaction (COMPLETED), and dispatches `PaymentCompletedEvent`.
-- **`verify()`**: Unsupported — throws by design.
-
-#### BankTransferPaymentProcessor (`app/Services/Payment/BankTransferPaymentProcessor.php`)
-- **Purpose:** Handles bank transfer payment processing
-- **`process(Payment $payment): PaymentProcessResultData`**: Processes a pre-created PENDING Payment for bank transfers. Staff flows complete immediately; customer flows remain pending awaiting review.
 
 ### OtpManagerService (`app/Services/OtpManagerService.php`)
 - **Purpose:** Manages OTP generation, validation, and delivery
@@ -767,6 +857,11 @@
   - `generateOtp(string $identifier): string`: Creates time-limited OTP codes
   - `validateOtp(string $identifier, string $otp): bool`: Validates submitted OTP codes
   - `resendOtp(string $identifier): void`: Handles OTP resending with rate limiting
+- **Hardening:**
+  - Rate limiting per identifier (resend wait time from `config('otp.waiting_time')`, default 10 seconds)
+  - OTP validity window (`ttl_seconds`, default 300) and successful-use marker TTL (`marker_ttl_seconds`, default 900)
+  - OTP codes are one-time-use; successful validation invalidates the code and records a marker preventing immediate regeneration
+  - Resend limits enforced via `Illuminate\Support\RateLimiter`
 
 ### InsufficientWalletBalanceException (`app/Exceptions/Payment/InsufficientWalletBalanceException.php`)
 - **Purpose:** Domain exception for wallet balance validation failures
@@ -787,20 +882,6 @@
   - `sendSms(string $phone, string $message): bool`: Sends SMS messages via IP Panel service
   - `sendOtpSms(string $phone, string $otp): bool`: Specialized OTP SMS delivery
 
-## Console Commands (`app/Console/Commands/`)
-
-### PublishPostCommand (`app/Console/Commands/PublishPostCommand.php`)
-- **Purpose:** Automated blog post publication for scheduled content
-- **Signature:** `post:publish`
-- **Functionality:** Publishes blog posts with SCHEDULED status where `published_at` date has passed, updating status to PUBLISHED
-- **Usage:** Intended for cron job scheduling to automate content publication workflow
-
-### EncryptSettingSecretsCommand (`app/Console/Commands/EncryptSettingSecretsCommand.php`)
-- **Purpose:** One-time migration to encrypt legacy plaintext secret values in integration setting configurations
-- **Signature:** `settings:encrypt-secrets {--dry-run}`
-- **Functionality:** Targets all four integration keys (IMS, Moodle, BBB, SpotPlayer). Detects already-encrypted values via try-decrypt to ensure idempotency. Dry-run mode previews changes. Busts settings cache after write.
-- **Usage:** Run after deployment to ensure all stored secrets are encrypted at rest.
-
 ### ResponseService (`app/Services/ResponseService.php`)
 - **Purpose:** Centralized API response builder (`apiResponse()->success()`, etc.)
 - **Methods:**
@@ -812,6 +893,28 @@
   - `forbidden(?string $message = null): JsonResponse` — 403 shorthand
   - `unauthenticated(?string $message = null): JsonResponse` — 401 shorthand
 - **Usage:** All controllers use this service (via `apiResponse()` helper).
+
+## Middleware (`app/Http/Middleware/`)
+
+### AdminAuditMiddleware (`app/Http/Middleware/AdminAuditMiddleware.php`)
+- **Purpose:** Comprehensive audit trail for all admin actions, writing `AdminActionLog` records with rich metadata
+- **Mechanism:**
+  - Snapshots `auth('staff')->id()` before the request runs so endpoints that mutate auth state (logout, token revocation) still resolve the correct actor
+  - Skips logging for: `*.index` routes, `admin.select-option.*`, health/status endpoints, GET requests (only POST/PUT/PATCH/DELETE are logged)
+  - Resolves resource info from model-bound route parameters (implicit binding covers every model); falls back to explicit param→model mappings (user, wallet, walletCampaign, staff, category, course, teacher, term, seminar, discountPromotion)
+  - Action types: `deposit`, `withdrawal`, `adjustment`, `allocation` for wallet routes; CRUD `create`/`bulk_create`/`update`/`delete`/`view` otherwise
+- **Risk assessment:** `high` for 5xx responses, all DELETEs, and wallet amounts > 10M Toman; `medium` for wallet amounts > 1M Toman, bulk operations, and actions outside business hours (7 AM–10 PM); `low` otherwise
+- **Redaction:** Recursively sanitizes request data (any depth) replacing sensitive keys (`password`, `password_confirmation`, `current_password`, `new_password`, `token`, `api_key`, `secret`) with `[REDACTED]`; uploaded files logged as `[FILE: name]`; payloads over 10KB truncated
+- **Metadata:** execution time (ms), memory usage, timestamp, request/response sizes
+- **Failure safety:** Logging errors are caught and logged (never break the request)
+
+### EnsureAdminNumericIdsMiddleware (`app/Http/Middleware/EnsureAdminNumericIdsMiddleware.php`)
+- **Purpose:** Prevents non-numeric IDs on admin routes from triggering DB queries with invalid primary keys
+- **Mechanism:** For `api/v1/admin/*` routes, inspects each model type-hinted route parameter; if the parameter binds to the primary key of an integer-keyed model and the value is non-numeric, aborts with 404 before any database query runs
+
+### ProfileCheckMiddleware (`app/Http/Middleware/ProfileCheckMiddleware.php`)
+- **Purpose:** Enforces customer profile completion for protected actions
+- **Mechanism:** When an authenticated customer has an incomplete profile (`! User::profileCompleted()` — requires `is_profile_completed` flag AND civil ID), returns 403 with localized message and `error_code: PROFILE_INCOMPLETE`; unauthenticated users pass through
 
 ## Traits & Utilities
 

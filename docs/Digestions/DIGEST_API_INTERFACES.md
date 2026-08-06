@@ -161,12 +161,13 @@
 - `index(Order $order)`: **Route:** `GET /api/v1/admin/orders/{order}/order-items` - **Response DTO:** OrderItemData collection
 - `show(Order $order, OrderItem $orderItem)`: **Route:** `GET /api/v1/admin/orders/{order}/order-items/{order_item}` - **Response DTO:** OrderItemData
 
-### PaymentController (`app/Http/Controllers/Api/Admin/PaymentController.php`)
+### PaymentController (`app/Http/Controllers/Api/Admin/Order/PaymentController.php`)
 - `index(Order $order)`: **Route:** `GET /api/v1/admin/orders/{order}/payment` - **Delegates to:** Payment listing for order - **Response DTO:** PaymentData collection
-- `store(PaymentCreateData $request, Order $order)`: **Route:** `POST /api/v1/admin/orders/{order}/payment` - **Request DTO:** PaymentCreateData - **Delegates to:** CreatePaymentAction - **Response DTO:** PaymentData
+- `store(PaymentCreateData $request, Order $order)`: **Route:** `POST /api/v1/admin/orders/{order}/payment` - **Request DTO:** PaymentCreateData - **Delegates to:** CreatePaymentAction - **Response DTO:** envelope with `payment` (PaymentData), `requires_redirect`, `redirect_url`, `redirect_data`, `redirect_method`
 - `show(Order $order, Payment $payment)`: **Route:** `GET /api/v1/admin/orders/{order}/payment/{payment}` - **Response DTO:** PaymentData
 - `update(PaymentUpdateData $request, Order $order, Payment $payment)`: **Route:** `PUT /api/v1/admin/orders/{order}/payment/{payment}` - **Response DTO:** PaymentData
 - `destroy(Order $order, Payment $payment)`: **Route:** `DELETE /api/v1/admin/orders/{order}/payment/{payment}` - **Delegates to:** Payment deletion
+- **Nested ownership guard:** `show`/`update`/`destroy` call `ensurePaymentBelongsToOrder()` which throws 404 when `$payment->order_id !== $order->id`, preventing cross-order access to payments via nested routes
 
 ### NextPaymentDetailsController (`app/Http/Controllers/Api/Admin/Order/NextPaymentDetailsController.php`)
 - `__invoke(Order $order)`: **Route:** `GET /api/v1/admin/orders/{order}/next-payment-details` - **Response DTO:** NextPaymentData. Throws `OrderFullyPaidException` (returns 422) if order is already fully paid.
@@ -192,20 +193,19 @@
 - `types()`: **Route:** `GET /api/v1/admin/discount-info/types` - **Response DTO:** DiscountTypesData
 
 ### AdminWalletController (`app/Http/Controllers/Api/Admin/Wallet/AdminWalletController.php`)
-- `index()`: **Route:** `GET /api/v1/admin/wallet` - **Delegates to:** Wallet management actions - **Response DTO:** WalletData collection
-- `show(Wallet $wallet)`: **Route:** `GET /api/v1/admin/wallet/{wallet}` - **Response DTO:** WalletData
-
-### CreateWalletController (`app/Http/Controllers/Api/Admin/Wallet/CreateWalletController.php`)
-- `__invoke(CreateWalletData $request)`: **Route:** `POST /api/v1/admin/wallet/create` - **Request DTO:** CreateWalletData - **Response DTO:** WalletData
+- `show(User $user)`: **Route:** `GET /api/v1/admin/users/{user}/wallet` - **Delegates to:** Wallet retrieval for user - **Response DTO:** WalletData (loaded with user)
+- `store(CreateWalletData $data, User $user)`: **Route:** `POST /api/v1/admin/users/{user}/wallet` - **Request DTO:** CreateWalletData - **Delegates to:** CreateWalletAction - **Response DTO:** WalletData (201)
+- **Authorization:** `Gate::authorize('view', $wallet)` / `Gate::authorize('create', Wallet::class)`
 
 ### DepositToWalletController (`app/Http/Controllers/Api/Admin/Wallet/DepositToWalletController.php`)
-- `__invoke(WalletDepositData $request, Wallet $wallet)`: **Route:** `POST /api/v1/admin/wallet/deposit/{wallet}` - **Request DTO:** WalletDepositData - **Response DTO:** WalletTransactionData
+- `__invoke(DepositToWalletData $data, User $user, DepositToWalletAction $action)`: **Route:** `POST /api/v1/admin/users/{user}/wallet/deposit` - **Request DTO:** DepositToWalletData - **Response DTO:** WalletTransactionData (201, loaded with wallet/user/source)
+- **Authorization:** `Gate::authorize('deposit', $wallet)` via `WalletPolicy::deposit()`
 
 ### WithdrawFromWalletController (`app/Http/Controllers/Api/Admin/Wallet/WithdrawFromWalletController.php`)
-- `__invoke(WalletWithdrawalData $request, Wallet $wallet)`: **Route:** `POST /api/v1/admin/wallet/withdrawal/{wallet}` - **Request DTO:** WalletWithdrawalData - **Response DTO:** WalletTransactionData
+- `__invoke(WalletWithdrawalData $data, User $user, WithdrawFromWalletAction $action)`: **Route:** `POST /api/v1/admin/users/{user}/wallet/withdrawal` - **Request DTO:** WalletWithdrawalData - **Response DTO:** WalletTransactionData
 
 ### AdjustWalletController (`app/Http/Controllers/Api/Admin/Wallet/AdjustWalletController.php`)
-- `__invoke(WalletAdjustmentData $request, Wallet $wallet)`: **Route:** `POST /api/v1/admin/wallet/adjustment/{wallet}` - **Request DTO:** WalletAdjustmentData - **Response DTO:** WalletTransactionData
+- `__invoke(WalletAdjustmentData $data, User $user, AdjustWalletAction $action)`: **Route:** `POST /api/v1/admin/users/{user}/wallet/adjustment` - **Request DTO:** WalletAdjustmentData - **Response DTO:** WalletTransactionData
 
 ### AdminWalletCampaignController (`app/Http/Controllers/Api/Admin/WalletCampaign/AdminWalletCampaignController.php`)
 - `index()`: **Route:** `GET /api/v1/admin/wallet-campaigns` - **Response DTO:** WalletCampaignData collection
@@ -373,16 +373,28 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 ### Select Option Controllers
 
 #### CategorySelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/CategorySelectOptionController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/category` - **Response DTO:** CategorySelectOptionData collection
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/categories` - **Response DTO:** CategorySelectOptionData collection
+
+#### BlogCategorySelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/BlogCategorySelectOptionController.php`)
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/blog-categories` - **Response DTO:** BlogCategorySelectOptionData collection
 
 #### TermSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/TermSelectOptionController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/term` - **Response DTO:** TermSelectOptionData collection
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/terms` - **Response DTO:** TermSelectOptionData collection
 
 #### VendorSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/VendorSelectOptionController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/vendor` - **Response DTO:** VendorSelectOptionData collection
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/vendors` - **Response DTO:** VendorSelectOptionData collection
 
 #### TeacherSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/TeacherSelectOptionController.php`)
-- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/teacher` - **Response DTO:** TeacherSelectOptionData collection
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/teachers` - **Response DTO:** TeacherSelectOptionData collection
+
+#### ProductableSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/ProductableSelectOptionController.php`)
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/productables` - **Response DTO:** ProductableSelectOptionData collection
+
+#### StaffSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/StaffSelectOptionController.php`)
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/staff` - **Response DTO:** StaffSelectOptionData collection
+
+#### CustomerSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/CustomerSelectOptionController.php`)
+- `__invoke()`: **Route:** `GET /api/v1/admin/select-option/customers` - **Response DTO:** CustomerSelectOptionData collection
 
 #### ProductSelectOptionController (`app/Http/Controllers/Api/Admin/SelectOptions/ProductSelectOptionController.php`)
 - `__invoke(ProductQueryService $service, ?ProductableEnum $productableType = null)`: **Route:** `GET /api/v1/admin/select-option/products/{productableType?}` - **Path Param:** `productableType` (optional: course, seminar, digital_asset) - **Query Params:** `q` (search term for name/SKU matching), `limit` (default: 15) - **Response DTO:** ProductSelectOptionData collection (id, title=short_name, subtitle=slug, type=productable_type) - **Delegates to:** ProductQueryService for filtering and search with `whereLike()` matching - **Special Features:** Supports type filtering, search across product names, and configurable result limits; sorted by short_name ascending
@@ -417,12 +429,22 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 ### Shop Protected Endpoints (`/api/v1/shop/*`)
 **Middleware:** `auth:user`
 
-#### ProfileController (`app/Http/Controllers/Api/Shop/ProfileController.php`)
-- `show()`: **Route:** `GET /api/v1/shop/profile` - **Delegates to:** User profile retrieval - **Response DTO:** UserProfileData
-- `update(ProfileUpdateData $request)`: **Route:** `PUT /api/v1/shop/profile` - **Request DTO:** ProfileUpdateData - **Response DTO:** UserProfileData
+#### ProfileController (`app/Http/Controllers/Api/Shop/Profile/ProfileController.php`)
+- `show()`: **Route:** `GET /api/v1/shop/profile` (singleton) - **Delegates to:** User profile retrieval - **Response DTO:** UserProfileData
+- `update(ProfileUpdateData $request)`: **Route:** `PUT /api/v1/shop/profile` (singleton) - **Request DTO:** ProfileUpdateData - **Response DTO:** UserProfileData
+
+#### CustomerChangePasswordController (`app/Http/Controllers/Api/Shop/Profile/CustomerChangePasswordController.php`)
+- `__invoke(ChangePasswordRequest $request)`: **Route:** `PUT /api/v1/shop/change-password` - **Request DTO:** ChangePasswordRequest (current_password, new_password) - **Delegates to:** ChangePasswordAction - Validates current password when the account has one set; mismatches surface `validation.password.current_password_does_not_match`
+
+#### AvatarController (`app/Http/Controllers/Api/Shop/AvatarController.php`)
+- `update(Request $request)`: **Route:** `POST /api/v1/shop/customer/avatar` - Uploads/replaces the customer's avatar media
+- `destroy(Request $request)`: **Route:** `DELETE /api/v1/shop/customer/avatar` - Removes the customer's avatar
 
 #### GatewayListController (`app/Http/Controllers/Api/Shop/Sale/GatewayListController.php`)
 - `__invoke(GatewayService $service)`: **Route:** `GET /api/v1/shop/payment/gateways` - Returns available payment gateway options with labels and icons for checkout UI. Delegates to `GatewayService::getShopActiveGatewaysDetials()` which resolves gateway settings via `SettingsService` with `config/payments.php` defaults as fallback.
+
+#### WalletInfoController (`app/Http/Controllers/Api/Shop/Wallet/WalletInfoController.php`)
+- `__invoke()`: **Route:** `GET /api/v1/shop/wallet` - Returns the authenticated customer's wallet info (balance, gift balance, status)
 
 #### WalletTopupController (`app/Http/Controllers/Api/Shop/Wallet/WalletTopupController.php`)
 - `topup(WalletTopupRequestData $data)`: **Route:** `POST /api/v1/shop/wallet/topup` (throttled: 5/1min, requires `auth:user`) - Allows authenticated user to add funds to their wallet. Blocks WALLET as payment method for top-ups. Creates PENDING payment via `PreparePendingPaymentAction` with `WALLET_TOPUP` purpose, then processes via gateway. **Request DTO:** WalletTopupRequestData (amount min 10000, payment_method: mellat_gateway|digipay). **Response DTO:** Payment process result with redirect info.
@@ -462,12 +484,37 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 - `index()`: **Route:** `GET /api/v1/shop/student/payments` - Lists authenticated user's payments. **Response DTO:** `PaymentData` collection.
 - `show(string $uuid)`: **Route:** `GET /api/v1/shop/student/payments/{uuid}` - Returns single payment by UUID. **Response DTO:** `PaymentData`.
 
+#### Teacher Dashboard (`/api/v1/shop/teacher/*`)
+All teacher endpoints require a `auth:user` account linked to a `Teacher` profile (`Auth::user()->teacherData`); unlinked accounts receive 403. Most routes proxy requests to the external IMS system using the teacher's civil ID.
+
+##### CourseController (`app/Http/Controllers/Api/Shop/Teacher/CourseController.php`)
+- `index()`: **Route:** `GET /api/v1/shop/teacher/courses` - **Query Param:** `period` (current|past) - Fetches the teacher's courses from IMS via `ImsService::getTeacherCourses()`, enriches each with local product cover image and `product_delivery_option_uuid` when a matching `ProductDeliveryOption` (keyed by `details_json->ims_course_code`) exists. **Response DTO:** `TeacherCourseItemData` collection (code, name, start/end date, is_current, has_grades_enabled, has_attendance_enabled, product_image, product_delivery_option_uuid)
+
+##### TeacherMoodleSsoController (`app/Http/Controllers/Api/Shop/Teacher/TeacherMoodleSsoController.php`)
+- `__invoke(ProductDeliveryOption $deliveryOption)`: **Route:** `POST /api/v1/shop/teacher/courses/{deliveryOption:uuid}/moodle/sso` - Generates a Moodle SSO login URL for the teacher in the course's Moodle-linked delivery option. **Response DTO:** `MoodleSsoUrlData`.
+
+##### AttendanceController (`app/Http/Controllers/Api/Shop/Teacher/AttendanceController.php`)
+- `index(ShowAttendanceData $request, string $courseCode)`: **Route:** `GET /api/v1/shop/teacher/courses/{courseCode}/attendances` - Reads attendance records via `ImsService::getAttendance()`
+- `store(StoreAttendanceData $data, string $courseCode)`: **Route:** `POST /api/v1/shop/teacher/courses/{courseCode}/attendances` - Creates attendance records; `UnrecoverableProvisioningException` surfaces validation errors (422)
+- `update(StoreAttendanceData $data, string $courseCode)`: **Route:** `PUT /api/v1/shop/teacher/courses/{courseCode}/attendances/{attendance}` - Updates attendance records
+- `destroy(DeleteAttendanceData $attendanceData, string $courseCode)`: **Route:** `DELETE /api/v1/shop/teacher/courses/{courseCode}/attendances` - Removes attendance records (registered separately — the apiResource excludes `destroy`)
+
+##### GradeController (`app/Http/Controllers/Api/Shop/Teacher/GradeController.php`)
+- `index(Request $request, string $courseCode)`: **Route:** `GET /api/v1/shop/teacher/courses/{courseCode}/grades` - Lists grades via `ImsService::getGrades()`
+- `store(StoreGradeData $data, string $courseCode)`: **Route:** `POST /api/v1/shop/teacher/courses/{courseCode}/grades` - Stores a single grade
+- `update(StoreGradeData $data, string $courseCode)`: **Route:** `PUT /api/v1/shop/teacher/courses/{courseCode}/grades/{grade}` - Updates a grade
+- `destroy(Request $request, string $courseCode)`: **Route:** `DELETE /api/v1/shop/teacher/courses/{courseCode}/grades/{grade}` - Deletes a grade
+- `storeBulk(StoreBulkGradeData $data, string $courseCode)`: **Route:** `POST /api/v1/shop/teacher/courses/{courseCode}/grades/bulk` - Stores multiple grades in one request
+
+##### SeminarController (`app/Http/Controllers/Api/Shop/Teacher/SeminarController.php`)
+- `__invoke()`: **Route:** `GET /api/v1/shop/teacher/seminars` - **Query Param:** `per_page` - Lists seminars linked to the authenticated teacher (via teacher products with seminar delivery methods) from local data. **Response DTO:** `TeacherSeminarData` paginator.
+
 #### CartController (`app/Http/Controllers/Api/Shop/Sale/CartController.php`)
 - `index()`: **Route:** `GET /api/v1/shop/cart` - **Guards:** Supports authenticated users or guests (via `X-Guest-Token`) - **Response DTO:** `CartData`
 - `store(AddCartItemData $request)`: **Route:** `POST /api/v1/shop/cart/items` - Adds a delivery option to the cart after validating capacity/payment type - **Response DTO:** `CartData`
 - `update(UpdateCartItemData $request, CartItem $cartItem)`: **Route:** `PUT /api/v1/shop/cart/items/{cartItem}` - Updates quantity for an existing cart item - **Response DTO:** `CartData`
 - `destroy(CartItem $cartItem)`: **Route:** `DELETE /api/v1/shop/cart/items/{cartItem}` - Removes an item - **Response:** `204 No Content`
-- `applyCoupon(ApplyCouponData $request)`: **Route:** `POST /api/v1/shop/cart/coupon` - Applies a coupon using PromotionFinder - **Response DTO:** `CartData`
+- `applyCoupon(ApplyCouponData $request)`: **Route:** `POST /api/v1/shop/cart/coupon` - Applies a coupon via `PromotionService::findPromotionByCoupon()` + condition checks - **Response DTO:** `CartData`
 - `removeCoupon()`: **Route:** `DELETE /api/v1/shop/cart/coupon` - Clears any applied coupon - **Response DTO:** `CartData`
 
 #### CheckoutController (`app/Http/Controllers/Api/Shop/Sale/CheckoutController.php`)
@@ -508,6 +555,9 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 
 #### GoodForStartCoursesController (`app/Http/Controllers/Api/Shop/Product/GoodForStartCoursesController.php`)
 - `__invoke(Category $category, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/good-for-start/category/{category:slug}/courses` - **Query Param:** `limit` (default 10) - **Delegates to:** Cached `ProductQueryService::goodForStart()` lookup within SmartCache using `CacheKeysEnum::GoodForStart` - **Response DTO:** `ProductCardData` collection
+
+#### ProductDeliveryOptionController (`app/Http/Controllers/Api/Shop/Product/ProductDeliveryOptionController.php`)
+- `__invoke(ProductDeliveryOption $productDeliveryOption, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/product-delivery-option/{productDeliveryOption:uuid}` - Loads the delivery option with its product/productable/media and returns its card DTO for direct SKU display (used by checkout confirmation and shared delivery-option links). **Response DTO:** `ProductDeliveryOptionCardData`
 
 #### SearchController (`app/Http/Controllers/Api/Shop/SearchController.php`)
 - `__invoke(SearchData $request, GlobalSearchService $service, ProductPriceService $priceService)`: **Route:** `GET /api/v1/shop/search` - **Request DTO:** SearchData (query, per_page, result_types, productable_type, filter.*) - **Delegates to:** `GlobalSearchService::search()` with Typesense/PGroonga fallback; maps products to `ProductCardData` and blog posts to `BlogPostCardData` (each tagged with `type`)
@@ -577,10 +627,11 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 - `__invoke(Enrollment $enrollment, MoodleService $moodleService)`: **Route:** `POST /api/v1/shop/student/courses/{enrollment:uuid}/moodle/sso` - **Auth:** `auth:user` - **Delegates to:** MoodleService SSO URL generation via GetEnrollmentDetailAction - **Response DTO:** `MoodleSsoUrlData` with auto-login URL. Requires Moodle integration enabled and user enrolled in the course's Moodle-linked delivery option. Generates a `createUserKey` token valid for single-use login.
 
 ## CORS Configuration (`config/cors.php`)
-- **Pattern:** Schema-based allowed origins — reads `cors.allowed_origins` from config, parsing each into `scheme://host` format
+- **Paths:** `api/*` + `sanctum/csrf-cookie`
 - **Credentials:** `supports_credentials` set to `true` (allows cookies/auth headers)
-- **Allows all:** origins, headers, methods default to wildcard
-- **Usage:** Enables cross-origin API access from configured frontend domains with credential support
+- **Allowed origins (explicit list):** `https://dev-jedu.encel.ir`, `https://dev-admin-jedu.encel.ir`, `https://test-jedu.encel.ir`, `https://test-admin-jedu.encel.ir`, `https://api.jedu.ir`, `https://shop.jedu.ir`, `http://localhost:3000`, `http://185.141.133.114:8080`
+- **Allows all:** headers, methods (`*`); no origin patterns
+- **Usage:** Enables cross-origin API access from configured frontend domains (admin panel, shopfront, dev environments) with credential support
 
 ### Shop Form Submission Endpoints (`/api/v1/shop/*`)
 **Rate Limiting:** `throttle:10,1` (10 requests per minute)
@@ -617,11 +668,20 @@ Order routes use plural form: `/api/v1/admin/orders`, `/api/v1/admin/orders/prev
 #### StaffLogoutController (`app/Http/Controllers/Api/Admin/Auth/StaffLogoutController.php`)
 - `__invoke()`: **Route:** `POST /api/v1/admin/auth/logout` - **Middleware:** `auth:staff` - **Delegates to:** Staff token revocation - **Response DTO:** StaffLogoutResponseData
 
+### Staff Profile Endpoints (`/api/v1/admin/*`)
+
+#### StaffProfileController (`app/Http/Controllers/Api/Admin/Profile/StaffProfileController.php`)
+- `show()`: **Route:** `GET /api/v1/admin/profile` (singleton) - Returns the authenticated staff member's own profile. **Response DTO:** StaffProfileData
+- `update(UpdateStaffProfileData $data)`: **Route:** `PUT /api/v1/admin/profile` (singleton) - **Request DTO:** UpdateStaffProfileData (name, email, avatar) - **Delegates to:** UpdateStaffProfileAction
+
+#### StaffChangePasswordController (`app/Http/Controllers/Api/Admin/Profile/StaffChangePasswordController.php`)
+- `__invoke(ChangePasswordRequest $request)`: **Route:** `PUT /api/v1/admin/change-password` - **Request DTO:** ChangePasswordRequest (current_password, new_password) - **Delegates to:** ChangePasswordAction - Validates current password when the account has one set; mismatches surface `validation.password.current_password_does_not_match`
+
 ## Route Organization Pattern
 - **Base Routes:** `/api/v1/api.php` includes all interface route files
-- **Admin Routes:** `/api/v1/admin.php` - Complete platform management with `auth:staff` + `admin.audit`. All routes standardized to plural form. Individual route files: `admin/admin.php` (core CRUD), `admin/sale.php` (orders, payments, refunds, enrollments, Digipay admin), `admin/blog.php`, `admin/catalog.php`, `admin/setting.php`, `admin/wallet.php`, `admin/select_option.php`.
-- **Customer Routes:** `/api/v1/customer.php` - Protected customer operations with `auth:user`. Student dashboard grouped under `/api/v1/shop/student/*`.
-- **Public Routes:** `/api/v1/shop/shop.php` - CMS-driven public endpoints (home page blocks, sliders, partners, header/footer, about/contact/collaboration pages)
+- **Admin Routes:** `/api/v1/admin.php` - Complete platform management with `auth:staff` + `admin.audit`. All routes standardized to plural form. Individual route files: `admin/admin.php` (core CRUD + staff profile/wallet singleton), `admin/sale.php` (orders, payments, refunds, enrollments, Digipay admin), `admin/blog.php`, `admin/catalog.php`, `admin/file.php` (media upload/view/download), `admin/setting.php`, `admin/wallet.php` (wallet campaigns, audit, compliance), `admin/select_option.php`.
+- **Customer Routes:** `/api/v1/customer.php` - Protected customer operations with `auth:user`. Student dashboard grouped under `/api/v1/shop/student/*`, teacher dashboard under `/api/v1/shop/teacher/*`.
+- **Public Routes:** `/api/v1/shop/shop.php` - CMS-driven public endpoints (home page blocks, sliders, partners, header/footer, about/contact/collaboration pages, product listings, search)
 - **Rate-Limited Shop Routes:** `/api/v1/shop/rate-limited.php` - Public form submissions (contact us, collaboration) protected by `throttle:10,1`
 - **Auth Routes:** `/api/v1/auth.php` - Dual authentication system for both interfaces
-- **Select Options:** `/api/v1/select_option.php` - Dropdown/select data endpoints for admin interface
+- **Select Options:** `/api/v1/admin/select_option.php` - Dropdown/select data endpoints for admin interface

@@ -2,7 +2,7 @@
 
 ### User (`app/Models/User.php`)
 - **Purpose:** Customer accounts for the e-commerce platform
-- **Key Fields:** `uuid`, `first_name`, `last_name`, `email`, `phone`, `password`, `civil_id`, `date_of_birth`, `gender`, `education_level`
+- **Key Fields:** `uuid`, `first_name`, `last_name`, `email`, `phone`, `password`, `civil_id`, `civil_id_type`, `date_of_birth`, `gender`, `education_level`, `avatar_url`
 - **Relationships:** 
   - `hasOne(Teacher::class)` - teacherData
   - `hasMany(Enrollment::class, 'customer_id')` - enrollments
@@ -10,6 +10,8 @@
   - `hasMany(Review::class)` - reviews
   - `hasOne(Cart::class)` - cart
   - `hasMany(Order::class, 'customer_id')` - orders
+- **Helper Methods:** `hasSetPassword(): bool`, `profileCompleted(): bool` (requires `is_profile_completed` flag AND `civil_id` present), `routeNotificationForSms($notification): string` (returns phone)
+- **Casts:** `civil_id_type` cast to `CivilIdTypeEnum`
 - **Guard:** `user` (Sanctum authentication)
 
 ### Staff (`app/Models/Staff.php`)
@@ -19,6 +21,12 @@
   - Uses Spatie Permission package for roles/permissions
   - `hasMany(AdminActionLog::class, 'admin_id')` - actionLogs
 - **Guard:** `staff` (Sanctum authentication)
+
+### PersonalAccessToken (`app/Models/PersonalAccessToken.php`)
+- **Purpose:** Sanctum token model override with lookup caching
+- **Key Fields:** inherits Sanctum `personal_access_tokens` columns; token stored hashed
+- **Special Features:** `findToken()` caches token lookups under `AccessToken::{sha256(plainToken)}` (360s, `_null_` sentinel for misses); `getTokenableAttribute()` caches the polymorphic User/Staff resolution per environment under `token_{id}::id_{env}` (360s); `save()` skips the database write when the only dirty attributes are `last_used_at`/`updated_at` (activity heartbeat does not hit storage).
+- **Registration:** Bound in `AuthServiceProvider` so Sanctum resolves this class instead of the default token model.
 
 ### AdminActionLog (`app/Models/AdminActionLog.php`)
 - **Purpose:** Audit trail for admin actions and compliance monitoring
@@ -30,7 +38,7 @@
 
 ### Order (`app/Models/Order.php`)
 - **Purpose:** Sales transaction records implementing WalletTransactionSourceableContract
-- **Key Fields:** `increment_id`, `status`, `customer_id`, `total_item_count`, `subtotal`, `discount_amount`, `grand_total`, `full_value_grand_total`, `applied_coupon_code`
+- **Key Fields:** `increment_id`, `status`, `customer_id`, `total_item_count`, `subtotal`, `discount_amount`, `grand_total`, `full_value_grand_total`, `total_refunded`, `applied_coupon_code`
 - **Relationships:**
   - `hasMany(OrderItem::class)` - items
   - `hasMany(Payment::class)` - payments
@@ -41,11 +49,11 @@
   - `totalCartDiscount()` — alias for `discount_amount`; represents cart-level discount (coupon)
   - `totalDiscount()` — sum of `total_product_discount` + `total_cart_discount`
   - `fullValueGrandTotal()` — internal accessor deriving the sum of item prices at original base values before any discounts; used as reference for `balance_due` calculation
-- **Special Features:** Auto-incrementing order numbers generated via `OrderIncrementIdService` (transaction-safe), payment status calculations, two-layer discount tracking (product-level vs cart-level) with separate exposure via accessors
+- **Special Features:** Auto-incrementing order numbers generated via `OrderIncrementIdService` (transaction-safe), payment status calculations, two-layer discount tracking (product-level vs cart-level) with separate exposure via accessors. **Pre-payment model:** PENDING orders settle their remainder offline (in-person at the station), so a PENDING order's `balance_due` equals `full_value_grand_total`; partial online payments are not enabled — the `balance_due` accessor exists for future installment/rest-payment flows. `total_refunded` aggregates refunded amounts and feeds `balance_due` (`total_paid - total_refunded`).
 
 ### Product (`app/Models/Product.php`)
 - **Purpose:** Sellable instances of educational content with polymorphic relationships
-- **Key Fields:** `vendor_id`, `productable_id`, `productable_type`, `term_id`, `status`, `is_visible`, `short_name`, `name`, `slug`, `short_description`, `is_featured`, `price_data_cache`, `details_json`, `event_start_at`, `event_ended_at`
+- **Key Fields:** `vendor_id`, `productable_id`, `productable_type`, `term_id`, `status`, `is_visible`, `short_name`, `name`, `slug`, `short_description`, `is_featured`, `price_data_cache`, `details_json`, `event_start_at`, `event_ended_at`, denormalized availability snapshot columns: `has_published_delivery_option`, `productable_status`, `is_term_active`, `earliest_registration_start`, `latest_registration_end`, `earliest_availability_start`, `latest_availability_end`, `near_capacity`, `max_capacity_utilization`
 - **Relationships:**
   - `morphTo()` - productable (Course, Seminar, DigitalAsset)
   - `belongsTo(Vendor::class)` - vendor
@@ -56,8 +64,14 @@
   - `relatedProductsOfType()` - related products filtered by RELATED type
   - `crossSellProducts()` - related products filtered by CROSS_SELL type
   - `upsellProducts()` - related products filtered by UPSELL type
-- **Traits:** Uses `HasCategories`, `HasFactory`, and `Searchable` for taxonomy tagging, database seeding, and Scout/Typesense indexing
-- **Special Features:** Publication-aware scopes (`active*` helpers) combine status, visibility, and availability checks; SmartCache-backed price snapshots in `price_data_cache`; enum-backed casting for `status` with JSON casting on cached fields; supports product relationships (related, cross-sell, upsell) via pivot table with `relation_type` column; search index payload captures availability windows, discount flags, scores, and event timestamps (`earliest_event_start_ts`, `latest_event_ended_ts`) for Typesense and PGroonga powered relevance ordering. **Event date scopes** (`eventEnded()`, `eventNotStarted()`, `eventOngoing()`, `eventNotEnded()`) filter products by temporal event state; `event_start_at`/`event_ended_at` datetime fields with indexes enable efficient querying for event-based products (seminars, workshops).
+- **Traits:** Uses `HasCategories`, `HasFactory`, `HasProductListingPresets`, and `Searchable` (aliased `search as scoutSearch`) for taxonomy tagging, database seeding, listing presets, and Scout/Typesense indexing
+- **Attribute Scopes (Laravel `#[Scope]`):**
+  - `publishedAndVisible()` — published + visible (+ productable/term checks; denormalized when `config('products.availability.use_denormalized')` is on)
+  - `hasPublishedDeliveryOption()`, `publishedProductable()`, `activeTerm()` — component availability gates backed by denormalized columns or join-based fallbacks
+  - `availabilityStatus(AvailabilityStatusEnum)` — PAST/UPCOMING/ONGOING temporal filter
+  - `sortByCapacityUtilization(float $threshold = 0.8)` — orders by near-capacity flag then utilization ratio
+  - `ofType(ProductableEnum)`, `inCategory(int)`, `search(?string)` — catalog query helpers
+- **Special Features:** Publication-aware scopes combine status, visibility, and availability checks; SmartCache-backed price snapshots in `price_data_cache`; enum-backed casting for `status` with JSON casting on cached fields; supports product relationships (related, cross-sell, upsell) via pivot table with `relation_type` column. **Denormalized availability snapshot** (`has_published_delivery_option`, `productable_status`, `is_term_active`, `near_capacity`, `max_capacity_utilization`, window boundaries) is maintained by `UpdateProductAvailabilityJob` and used as an optional fast path via `config('products.availability.use_denormalized')` (default true) for `shouldBeSearchable()`, scopes, and search payloads. Search index payload captures availability windows (`earliest_registration_start_ts`, `latest_registration_end_ts`, `earliest_availability_start_ts`, `latest_availability_end_ts`), discount flags, scores, and event timestamps (`earliest_event_start_ts`, `latest_event_ended_ts`) for Typesense and PGroonga powered relevance ordering. **Event date scopes** (`eventEnded()`, `eventNotStarted()`, `eventOngoing()`, `eventNotEnded()`) filter products by temporal event state; `event_start_at`/`event_ended_at` datetime fields with indexes enable efficient querying for event-based products (seminars, workshops). `shouldBeSearchable()` returns true only when product is published, visible, productable published, has published delivery option, and term active (when denormalized mode enabled).
 
 ### Course (`app/Models/Course.php`)
 - **Purpose:** Educational course definitions and blueprints
@@ -93,14 +107,14 @@
 
 ### ProductDeliveryOption (`app/Models/ProductDeliveryOption.php`)
 - **Purpose:** Specific purchase/delivery methods per product with pricing
-- **Key Fields:** `uuid` (UUID v7 auto-generated), `sku` (optional, auto-generated if not provided), `name`, `price`, `capacity`, `enrolled_count`, `status`, `fulfillment_type`, `delivery_method`, `is_prepayment_available`, `prepayment_amount`, `is_featured`, `featured_price`, `featured_price_start_date`, `featured_price_end_date`, `registration_start_date`, `registration_end_date`, `available_from`, `available_to`, `access_days` (access duration from enrollment date), `details_json`
+- **Key Fields:** `uuid` (UUID v7 auto-generated), `sku` (optional, auto-generated if not provided), `name`, `price`, `capacity`, `enrolled_count`, `reserved_count`, `status`, `fulfillment_type`, `delivery_method`, `is_prepayment_available`, `prepayment_amount`, `is_featured`, `featured_price`, `featured_price_start_date`, `featured_price_end_date`, `registration_start_date`, `registration_end_date`, `available_from`, `available_to`, `access_days` (access duration from enrollment date), `details_json`
 - **Relationships:**
   - `belongsTo(Product::class)` - product
   - `hasMany(ProductDeliveryOptionDiscountPrice::class)` - discountPrices
   - `belongsToMany(Teacher::class, 'product_delivery_option_teacher')` - teachers
   - `hasMany(Enrollment::class, 'product_delivery_option_id')` - enrollments
   - `hasMany(OrderItem::class)` - orderItems
-- **Special Features:** UUID for external references, SKU auto-generation via `SkuGeneratorService` when not provided, capacity tracking backed by the persisted `enrolled_count` column (no more runtime `withCount`), and a `discountPrice` accessor that evaluates active discount windows using `starts_at`/`ends_at` timestamps on `ProductDeliveryOptionDiscountPrice`
+- **Special Features:** UUID for external references, SKU auto-generation via `SkuGeneratorService` when not provided, capacity tracking backed by the persisted `enrolled_count` column (no more runtime `withCount`), and a `discountPrice` accessor that evaluates active discount windows using `starts_at`/`ends_at` timestamps on `ProductDeliveryOptionDiscountPrice`. **Capacity reservations:** `reserved_count` holds seats held by PENDING orders; committed seats = `enrolled_count + reserved_count`, and capacity validity checks compare `capacity > (enrolled_count + reserved_count)`. Reservations are managed by `ProductReservationService` (`reserve`/`consume`/`release`).
 
 ### Cart (`app/Models/Cart.php`)
 - **Purpose:** Persistent shopping carts for both authenticated customers and guest sessions
@@ -146,7 +160,7 @@
   - `belongsTo(OrderItem::class)` - orderItem
   - `belongsTo(ProductDeliveryOption::class, 'product_delivery_option_id')` - productDeliveryOption
   - `hasOneThrough(Product::class, ProductDeliveryOption::class)` - product
-- **Special Features:** UUID (`uuid7`) generation on create for external references, enum-backed `enrollment_status`, date casting for access window, JSON provisioning payloads, and dispatches `EnrollmentStatusChanged` on save/delete to keep projections synchronized
+- **Special Features:** UUID (`uuid7`) generation on create for external references, enum-backed `enrollment_status`, date casting for access window, JSON provisioning payloads, and dispatches `EnrollmentStatusChanged` on save/delete to keep projections synchronized. Dispatch is narrowed to occupancy-relevant changes only — the event fires when the enrollment is newly created or when `enrollment_status`/`product_delivery_option_id` change; access-date, notes, and provisioning metadata updates do not dispatch (they do not affect `enrolled_count`/availability).
 
 ### Payment (`app/Models/Payment.php`)
 - **Purpose:** Financial transaction handling with multi-attempt transaction tracking
@@ -230,16 +244,17 @@
 
 ### DiscountPromotion (`app/Models/DiscountPromotion.php`)
 - **Purpose:** Advanced discount/coupon system
-- **Key Fields:** Discount rules, conditions, and actions
+- **Key Fields:** `name`, `description`, `type`, `is_active`, `starts_at`, `ends_at`, `priority` (higher runs first), `stop_processing_subsequent_rules` (blocks stacking), `requires_coupon`, `usage_limit_total`, `usage_limit_per_customer`, `total_usage_count`
 - **Relationships:** 
   - `hasMany(DiscountPromotionRule::class)` - rules
   - `hasMany(DiscountCoupon::class)` - coupons
-  - Complex rule-based discount system with conditions and actions
+- **Special Features:** Complex rule-based discount system with conditions and actions; index on `(is_active, starts_at, ends_at)` and `(type, priority)`; usage counters (`total_usage_count` for non-coupon promotions) increment only on successful checkout; coupon gating via `requires_coupon` with `findPromotionByCoupon()` on `PromotionService`.
 
 ### DiscountPromotionRule (`app/Models/DiscountPromotionRule.php`)
 - **Purpose:** Individual rules within discount promotions
 - **Key Fields:** Rule conditions, operators, values, rule types
 - **Relationships:** `belongsTo(DiscountPromotion::class)` - discountPromotion
+- **Special Features:** Condition/action structure resolved through `DiscountHandlerRegistry` auto-discovery against the `DiscountConditionContract`/`DiscountActionContract` (cart) and `ProductDiscountConditionContract`/`ProductDiscountActionContract` (product) handler contracts; rule configuration schema (operators, parameter types) exposed via `DiscountMetadataService`.
 
 ### DiscountCoupon (`app/Models/DiscountCoupon.php`)
 - **Purpose:** Coupon code management for discount promotions
@@ -248,17 +263,19 @@
 
 ### Wallet (`app/Models/Wallet.php`)
 - **Purpose:** User wallet system for credits and transactions
-- **Key Fields:** `user_id`, `balance`, wallet metadata
+- **Key Fields:** `user_id` (unique — one wallet per user), `balance` (available in rials), `gift_balance` (non-withdrawable gift amounts), `status` (`WalletStatusEnum`: active/suspended/closed), `created_by` (nullable staff)
 - **Relationships:**
   - `belongsTo(User::class)` - user
   - `hasMany(WalletTransaction::class)` - transactions
+- **Special Features:** Balance/gift_balance snapshots captured on every transaction (`balance_after`, `gift_balance_after`); immutability enforced via `RecordWalletTransactionAction` using row locking (`lockForUpdate`) inside a DB transaction, idempotency-key dedup, and status enforcement (inactive wallets reject transactions with `WalletNotActive`).
 
 ### WalletTransaction (`app/Models/WalletTransaction.php`)
-- **Purpose:** Individual wallet transaction records
-- **Key Fields:** Transaction amounts, types, source tracking
+- **Purpose:** Individual wallet transaction records (immutable ledger entries)
+- **Key Fields:** `wallet_id`, `user_id`, `type` (deposit/withdrawal/payment/refund/gift/bonus/adjustment), `amount` (positive=credit, negative=debit), `balance_after`, `gift_balance_after`, `source_type` (order/admin/promotion/refund/manual/system), `source_id`, `description`, `metadata` (JSONB), `expires_at` (promotional credits), `idempotency_key`, `created_by`
 - **Relationships:** 
   - `belongsTo(Wallet::class)` - wallet
-  - Polymorphic source tracking
+  - Polymorphic source tracking via `source_type`/`source_id`
+- **Special Features:** Immutable audit trail; debit split between regular and gift balance tracked in metadata for ORDER/PAYMENT transactions; idempotency_key prevents duplicate recordings.
 
 ### ProductPrice (`app/Models/ProductPrice.php`)
 - **Purpose:** Precomputed pricing index for fast product price lookups across the storefront
@@ -354,7 +371,7 @@
 - **Values:** `ONLINE_SERVICE`, `OFFLINE_SERVICE`, `DIGITAL`, etc.
 - **Purpose:** Groups delivery methods into fulfillment categories for filtering and provisioning
 
-## Recent Model Behavior Notes
+## Model Behavior Notes
 
 ### PaymentPurposeEnum (`app/Enums/Payment/PaymentPurposeEnum.php`)
 - **Values:** `ORDER`, `WALLET_TOPUP`
