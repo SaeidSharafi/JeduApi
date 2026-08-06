@@ -15,6 +15,10 @@ return [
             'details_json' => [
                 'array' => 'The product details must be an array and its fields must match the product type.',
             ],
+            'cannot_delete_delivery_option_with_orders' => 'Cannot delete a delivery option that has enrollments or order history.',
+        ],
+        'product' => [
+            'cannot_delete_product_with_orders' => 'Cannot delete a product that has order history.',
         ],
         'civil_id' => [
             'wrong' => 'the :type is invalid, please enter a valid :type',

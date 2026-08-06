@@ -20,6 +20,7 @@ test('to array', function (): void {
             'price'                     => $productDeliveryOption->price,
             'capacity'                  => $productDeliveryOption->capacity,
             'enrolled_count'            => $productDeliveryOption->enrolled_count,
+            'reserved_count'            => $productDeliveryOption->reserved_count,
             'status'                    => $productDeliveryOption->status->value,
             'is_prepayment_available'   => $productDeliveryOption->is_prepayment_available,
             'prepayment_amount'         => $productDeliveryOption->prepayment_amount,

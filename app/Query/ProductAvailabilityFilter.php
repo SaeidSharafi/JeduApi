@@ -157,7 +157,7 @@ final class ProductAvailabilityFilter
         return $query->whereHas('productDeliveryOptions', fn (Builder $optionQuery): Builder => $optionQuery
             ->whereNotNull('capacity')
             ->where('capacity', '>', 0)
-            ->whereRaw('((enrolled_count * 1.0) / NULLIF(capacity, 0)) >= ?', [$threshold]));
+            ->whereRaw('(((enrolled_count + reserved_count) * 1.0) / NULLIF(capacity, 0)) >= ?', [$threshold]));
     }
 
     private static function applyOptionDateWindow(Builder $query, string $startColumn, string $endColumn, CarbonInterface $date): void

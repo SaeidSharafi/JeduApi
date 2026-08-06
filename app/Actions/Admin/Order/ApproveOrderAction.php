@@ -12,6 +12,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Services\OrderStatusService;
 use App\Services\Payment\Digipay\DigipayAdminService;
+use App\Services\ProductReservationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -22,6 +23,7 @@ final readonly class ApproveOrderAction
     public function __construct(
         private OrderStatusService $orderStatusService,
         private DigipayAdminService $digipayService,
+        private ProductReservationService $productReservationService,
     ) {}
 
     /**
@@ -62,6 +64,8 @@ final readonly class ApproveOrderAction
                 // Manually mark each item as completed (manual approval provisioning)
                 foreach ($order->items as $item) {
                     if ($item->status !== OrderItemStatusEnum::COMPLETED) {
+                        // Payment coverage confirmed → reserved seat becomes occupied.
+                        $this->productReservationService->consume($item->product_delivery_option_id, $item->qty_ordered);
                         $item->status = OrderItemStatusEnum::COMPLETED;
                         $item->saveQuietly();
                     }

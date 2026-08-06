@@ -8,6 +8,7 @@ use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Events\OrderStatusUpdatedEvent;
 use App\Models\Order;
+use App\Services\ProductReservationService;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -29,6 +30,11 @@ final class CancelAbandonedOrdersCommand extends Command
      * @var string
      */
     protected $description = 'Cancel abandoned pending orders that have not received payment';
+
+    public function __construct(private ProductReservationService $productReservationService)
+    {
+        parent::__construct();
+    }
 
     /**
      * Execute the console command.
@@ -90,6 +96,9 @@ final class CancelAbandonedOrdersCommand extends Command
 
                     // Cancel all associated enrollments
                     foreach ($order->items as $item) {
+                        // Release the reserved seat back to the pool (unpaid order)
+                        $this->productReservationService->release($item->product_delivery_option_id, $item->qty_ordered);
+
                         if ($item->enrollment && (
                             $item->enrollment->enrollment_status    === EnrollmentStatusEnum::AWAITING_PAYMENT
                             || $item->enrollment->enrollment_status === EnrollmentStatusEnum::PENDING_PROVISIONING

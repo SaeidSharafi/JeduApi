@@ -217,7 +217,8 @@ final readonly class CreateOrderFromCartAction
             // Check capacity if applicable
             if ($deliveryOption->capacity !== null) {
                 $enrolledCount     = $deliveryOption->enrolled_count;
-                $availableCapacity = $deliveryOption->capacity - $enrolledCount;
+                $reservedCount     = $deliveryOption->reserved_count;
+                $availableCapacity = $deliveryOption->capacity - $enrolledCount - $reservedCount;
 
                 if ($availableCapacity <= 0) {
                     $errors["items.{$index}"] = [__('validation.custom.checkout.product_delivery_option_sold_out', ['product_name' => $deliveryOption->product->name])];

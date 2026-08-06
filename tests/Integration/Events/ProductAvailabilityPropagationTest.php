@@ -26,7 +26,7 @@ use App\Models\Term;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 
-it('propagates productable status only when leaving published', function (): void {
+it('propagates productable status in both directions (leave AND enter published)', function (): void {
     Queue::fake();
     $course  = Course::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
     $product = Product::factory()->withCourse($course)->create();
@@ -35,13 +35,14 @@ it('propagates productable status only when leaving published', function (): voi
 
     Queue::assertPushed(UpdateProductAvailabilityJob::class, fn (UpdateProductAvailabilityJob $job): bool => $job->productIds === [$product->id]);
 
-    Queue::fake();
     $course->update(['status' => PublicationStatusEnum::PUBLISHED]);
 
-    Queue::assertNotPushed(UpdateProductAvailabilityJob::class);
+    // First publish flips availability too: a DRAFT productable is invisible,
+    // publishing it makes every published shell purchasable.
+    Queue::assertPushed(UpdateProductAvailabilityJob::class, fn (UpdateProductAvailabilityJob $job): bool => $job->productIds === [$product->id]);
 });
 
-it('propagates term status only when leaving active', function (): void {
+it('propagates term status in both directions (leave AND enter active)', function (): void {
     Queue::fake();
     $term     = Term::factory()->create(['status' => TermStatusEnum::ACTIVE]);
     $products = Product::factory()->count(2)->create(['term_id' => $term->id]);
@@ -52,13 +53,14 @@ it('propagates term status only when leaving active', function (): void {
         return $job->productIds === $products->pluck('id')->all();
     });
 
-    Queue::fake();
     $term->update(['status' => TermStatusEnum::ACTIVE]);
 
-    Queue::assertNotPushed(UpdateProductAvailabilityJob::class);
+    Queue::assertPushed(UpdateProductAvailabilityJob::class, function (UpdateProductAvailabilityJob $job) use ($products): bool {
+        return $job->productIds === $products->pluck('id')->all();
+    });
 });
 
-it('propagates a delivery option status only when leaving published', function (): void {
+it('propagates a delivery option status in both directions (leave AND enter published)', function (): void {
     $deliveryOption = ProductDeliveryOption::factory()->create([
         'status' => PublicationStatusEnum::PUBLISHED,
     ]);
@@ -84,8 +86,10 @@ it('propagates a delivery option status only when leaving published', function (
     );
     restoreAfterCommitEventManager($transactionManager);
 
-    Queue::assertNotPushed(UpdateProductAvailabilityJob::class);
-    Event::assertNotDispatched(ProductSearchIndexInvalidated::class);
+    // First publish (DRAFT -> PUBLISHED) must invalidate availability + search:
+    // the option was not published before, so availability flips on publish.
+    Queue::assertPushed(UpdateProductAvailabilityJob::class, fn (UpdateProductAvailabilityJob $job): bool => $job->productIds === [$deliveryOption->product_id]);
+    Event::assertDispatched(ProductSearchIndexInvalidated::class, fn (ProductSearchIndexInvalidated $event): bool => $event->productIds === [$deliveryOption->product_id]);
 });
 
 it('synchronizes search after product category mutations', function (): void {

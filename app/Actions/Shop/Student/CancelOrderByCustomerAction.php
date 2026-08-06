@@ -9,12 +9,17 @@ use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\OrderStatusUpdatedEvent;
 use App\Models\Order;
+use App\Services\ProductReservationService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 final class CancelOrderByCustomerAction
 {
+    public function __construct(
+        private ProductReservationService $productReservationService,
+    ) {}
+
     /**
      * Cancel an order by the customer.
      *
@@ -52,6 +57,13 @@ final class CancelOrderByCustomerAction
             // Update order status to CANCELLED
             $order->status = OrderStatusEnum::CANCELLED;
             $order->save();
+
+            // Release any reserved seats back to the pool (order is unpaid at this point)
+            foreach ($order->items as $item) {
+                if ($item->status === \App\Enums\Order\OrderItemStatusEnum::PENDING) {
+                    $this->productReservationService->release($item->product_delivery_option_id, $item->qty_ordered);
+                }
+            }
 
             // Cancel any enrollments (if they exist, though they shouldn't for unpaid orders)
             // Use each() instead of update() to fire model events for enrolled_count tracking

@@ -41,7 +41,10 @@ final class UpdateProductAvailabilityJob implements ShouldQueue
             $options = $product->productDeliveryOptions;
             $ratios  = $options
                 ->filter(fn ($option): bool => $option->capacity !== null && $option->capacity > 0)
-                ->map(fn ($option): float => $option->enrolled_count / $option->capacity);
+                // Capacity utilization must count committed seats: enrolled (sold) plus
+                // reserved (held by unpaid orders). Otherwise a sold-out option can still
+                // look "not near capacity" and fail to flip its availability snapshot.
+                ->map(fn ($option): float => ($option->enrolled_count + $option->reserved_count) / $option->capacity);
 
             $registrationStarts = $options->pluck('registration_start_date');
             $registrationEnds   = $options->pluck('registration_end_date');

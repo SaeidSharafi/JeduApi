@@ -147,6 +147,65 @@ describe('CreateOrderAction', function (): void {
             ]));
     });
 
+    it('reserves seats on the delivery option when the order is created', function (): void {
+        $user           = User::factory()->create();
+        $product        = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'product_id'              => $product->id,
+            'status'                  => PublicationStatusEnum::PUBLISHED,
+            'capacity'                => 10,
+            'price'                   => 50000,
+            'allow_multiple_quantity' => true,
+        ]);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [new OrderItemCreateData(
+                product_delivery_option_id: $deliveryOption->id,
+                payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                qty_ordered: 2,
+            )],
+            applied_coupon_code: null,
+            admin_notes: null,
+        );
+
+        app(CreateOrderAction::class)->handle($data);
+
+        expect($deliveryOption->fresh()->reserved_count)->toBe(2);
+    });
+
+    it('blocks an order when seats are already reserved by an unpaid order', function (): void {
+        $user           = User::factory()->create();
+        $product        = Product::factory()->create(['status' => PublicationStatusEnum::PUBLISHED]);
+        $deliveryOption = ProductDeliveryOption::factory()->create([
+            'product_id' => $product->id,
+            'status'     => PublicationStatusEnum::PUBLISHED,
+            'capacity'   => 2,
+        ]);
+
+        // Simulate a prior pending order holding both seats
+        $deliveryOption->update(['reserved_count' => 2]);
+
+        $data = new OrderCreateData(
+            status: OrderStatusEnum::PENDING->value,
+            customer_id: $user->id,
+            items: [new OrderItemCreateData(
+                product_delivery_option_id: $deliveryOption->id,
+                payment_type: OrderItemPaymentTypeEnum::FULL_PAYMENT->value,
+                qty_ordered: 1,
+            )],
+            applied_coupon_code: null,
+            admin_notes: null,
+        );
+
+        expect(fn () => app(CreateOrderAction::class)->handle($data))
+            ->toThrow(ValidationException::class, __('messages.order.insufficient_capacity', [
+                'product'   => $deliveryOption->name,
+                'available' => 0,
+            ]));
+    });
+
     it('throws validation exception if product or delivery option is not published', function (): void {
         $user           = User::factory()->create();
         $product        = Product::factory()->create(['status' => PublicationStatusEnum::DRAFT]);

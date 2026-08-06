@@ -7,37 +7,50 @@ use App\Services\Discounts\Configs\LowCapacityRemainingData;
 use App\Services\Discounts\Product\Conditions\LowCapacityRemainingCondition;
 
 describe('LowCapacityRemainingCondition', function (): void {
-    test('it passes when capacity threshold is reached', function (): void {
+    it('passes when capacity threshold is reached', function (): void {
         $condition = new LowCapacityRemainingCondition();
-        $config = new LowCapacityRemainingData(threshold: 0.8); // 80% full
+        $config    = new LowCapacityRemainingData(threshold: 0.8); // 80% full
 
         $option = ProductDeliveryOption::factory()->make([
-            'capacity' => 10,
-            'enrolled_count' => 8 // 80%
+            'capacity'       => 10,
+            'enrolled_count' => 8, // 80%
         ]);
 
         expect($condition->passes($option, $config))->toBeTrue();
     });
 
-    test('it fails when capacity threshold is not reached', function (): void {
+    it('fails when capacity threshold is not reached', function (): void {
         $condition = new LowCapacityRemainingCondition();
-        $config = new LowCapacityRemainingData(threshold: 0.8);
+        $config    = new LowCapacityRemainingData(threshold: 0.8);
 
         $option = ProductDeliveryOption::factory()->make([
-            'capacity' => 10,
-            'enrolled_count' => 5 // 50%
+            'capacity'       => 10,
+            'enrolled_count' => 5, // 50%
         ]);
 
         expect($condition->passes($option, $config))->toBeFalse();
     });
 
-    test('it fails when capacity is null (unlimited)', function (): void {
+    it('does not include reserved_count', function (): void {
         $condition = new LowCapacityRemainingCondition();
-        $config = new LowCapacityRemainingData(threshold: 0.8);
+        $config    = new LowCapacityRemainingData(threshold: 0.8);
 
         $option = ProductDeliveryOption::factory()->make([
-            'capacity' => null,
-            'enrolled_count' => 100
+            'capacity'       => 10,
+            'enrolled_count' => 5, // 50%
+            'reserved_count' => 4, // 40%
+        ]);
+
+        expect($condition->passes($option, $config))->toBeFalse();
+    });
+
+    it('fails when capacity is null (unlimited)', function (): void {
+        $condition = new LowCapacityRemainingCondition();
+        $config    = new LowCapacityRemainingData(threshold: 0.8);
+
+        $option = ProductDeliveryOption::factory()->make([
+            'capacity'       => null,
+            'enrolled_count' => 100,
         ]);
 
         expect($condition->passes($option, $config))->toBeFalse();

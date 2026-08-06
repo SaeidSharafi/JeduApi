@@ -22,6 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger('price');
             $table->integer('capacity')->nullable();
             $table->unsignedInteger('enrolled_count')->index()->default(0);
+            $table->unsignedInteger('reserved_count')->default(0);
             $table->boolean('allow_multiple_quantity')->default(false);
             $table->tinyInteger('access_days')->nullable();
             $table->string('status')->default(App\Enums\Content\PublicationStatusEnum::DRAFT->value);
@@ -48,10 +49,22 @@ return new class extends Migration
             $table->index(['product_id', 'status'], 'idx_pdo_product_id_status');
             $table->index(['product_id', 'status', 'capacity', 'enrolled_count'], 'idx_pdo_capacity_utilization');
         });
+
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            DB::statement(
+                "CREATE UNIQUE INDEX products_single_published_shell
+                 ON products (productable_type, productable_id)
+                 WHERE status = 'published'"
+            );
+        }
     }
 
     public function down(): void
     {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            DB::statement('DROP INDEX IF EXISTS products_single_published_shell');
+        }
+
         Schema::dropIfExists('product_delivery_options');
     }
 };

@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 final class ProductDeliveryOption extends Model
@@ -32,6 +33,7 @@ final class ProductDeliveryOption extends Model
             'price',
             'capacity',
             'enrolled_count',
+            'reserved_count',
             'status',
             'is_prepayment_available',
             'prepayment_amount',
@@ -65,6 +67,11 @@ final class ProductDeliveryOption extends Model
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class, 'product_delivery_option_id');
+    }
+
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class, 'product_delivery_option_id');
     }
 
     public function productDeliveryOptionDiscountPrice(): HasOne
@@ -128,7 +135,9 @@ final class ProductDeliveryOption extends Model
         return $query->available() // Use the query builder method, not scope method directly
             ->where(function (Builder $q): void {
                 $q->whereNull('capacity')
-                    ->orWhereColumn('capacity', '>', 'enrolled_count');
+                    // enrolled_count + reserved_count = committed seats (sold OR held
+                    // by an unpaid order). Capacity must exceed both.
+                    ->orWhereColumn('capacity', '>', DB::raw('(enrolled_count + reserved_count)'));
             });
     }
 

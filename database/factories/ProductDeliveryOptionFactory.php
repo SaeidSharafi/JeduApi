@@ -63,6 +63,7 @@ final class ProductDeliveryOptionFactory extends Factory
             'price'                     => $price,
             'capacity'                  => random_int(1, 100),
             'enrolled_count'            => 0,
+            'reserved_count'            => 0,
             'status'                    => PublicationStatusEnum::PUBLISHED->value,
             'is_prepayment_available'   => $prepaymentAvailable,
             'prepayment_amount'         => $prepaymentAvailable ? $prepaymentAmount : 0,

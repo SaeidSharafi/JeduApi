@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\Admin\Product;
 
+use App\Actions\Admin\Product\ArchiveProductAction;
 use App\Contracts\ApiResponseInterface;
-use App\Enums\Content\PublicationStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Support\Facades\Gate;
@@ -32,11 +32,11 @@ final class ArchiveProductController extends Controller
      * @responseFile 403 resources/responses/403.json
      * @responseFile 404 resources/responses/404.json
      */
-    public function __invoke(Product $product): ApiResponseInterface
+    public function __invoke(Product $product, ArchiveProductAction $action): ApiResponseInterface
     {
         Gate::authorize('update', $product);
 
-        $product->update(['status' => PublicationStatusEnum::ARCHIVED]);
+        $action->handle($product);
 
         return apiResponse()->success(message: __('messages.product.acrhived'));
     }

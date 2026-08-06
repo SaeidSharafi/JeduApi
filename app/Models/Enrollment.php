@@ -71,9 +71,15 @@ final class Enrollment extends Model
         });
 
         self::saved(function (Enrollment $enrollment): void {
-            EnrollmentStatusChanged::dispatch(
-                $enrollment
-            );
+            // Only dispatch when occupancy-relevant data changed. Access dates,
+            // notes, provisioning_data and other metadata updates do NOT affect
+            // enrolled_count / availability, so dispatching on every save floods
+            // the queue with pointless recount + availability jobs.
+            if ($enrollment->wasRecentlyCreated
+                || $enrollment->wasChanged(['enrollment_status', 'product_delivery_option_id'])
+            ) {
+                EnrollmentStatusChanged::dispatch($enrollment);
+            }
         });
 
         self::deleting(function (Enrollment $enrollment): void {

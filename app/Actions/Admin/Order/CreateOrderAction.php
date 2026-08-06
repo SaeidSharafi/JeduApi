@@ -15,6 +15,7 @@ use App\Models\Order;
 use App\Models\ProductDeliveryOption;
 use App\Services\Discounts\OrderCalculationService;
 use App\Services\ProductPriceService;
+use App\Services\ProductReservationService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -25,6 +26,7 @@ final readonly class CreateOrderAction
         private OrderCalculationService $orderCalculationService,
         private ValidateNoDuplicatePurchasesAction $validateNoDuplicatePurchases,
         private ProductPriceService $productPriceService,
+        private ProductReservationService $productReservationService,
     ) {}
 
     /**
@@ -68,6 +70,11 @@ final readonly class CreateOrderAction
                 }
 
                 $this->validateItem($key, $originalItemData, $deliveryOption);
+
+                // --- RESERVE SEAT (capacity invariant) ---
+                // Seats are reserved atomically under the row lock so concurrent
+                // orders can never oversell a limited-capacity delivery option.
+                $this->productReservationService->reserve($deliveryOption->id, $calculatedItem->qty);
 
                 // --- GET PRICING METADATA ---
                 $priceData = $this->productPriceService->getPriceDataForOption($deliveryOption);
@@ -226,8 +233,10 @@ final readonly class CreateOrderAction
         }
         if ($deliveryOption->capacity !== null) {
             $enrolledCount = $deliveryOption->enrolled_count;
-            if (($enrolledCount + $itemData->qty_ordered) > $deliveryOption->capacity) {
-                $available = $deliveryOption->capacity - $enrolledCount;
+            $reservedCount = $deliveryOption->reserved_count;
+            $totalOccupied = $enrolledCount + $reservedCount;
+            if (($totalOccupied + $itemData->qty_ordered) > $deliveryOption->capacity) {
+                $available = max(0, $deliveryOption->capacity - $totalOccupied);
                 throw ValidationException::withMessages([
                     "items.{$key}" => __('messages.order.insufficient_capacity', [
                         'product'   => $deliveryOption->name,

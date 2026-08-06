@@ -7,7 +7,6 @@ namespace Tests\Unit\Services;
 use App\Enums\EnrollmentStatusEnum;
 use App\Enums\Order\OrderItemPaymentTypeEnum;
 use App\Enums\Order\OrderItemStatusEnum;
-use App\Enums\Order\OrderProvisioningTriggerEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Models\Enrollment;
@@ -18,11 +17,10 @@ use App\Services\OrderStatusService;
 
 describe('OrderStatusService', function (): void {
 
-
     it('sets order status to PENDING when there is no item', function (): void {
         $order = Order::factory()->create(['status' => OrderStatusEnum::PROCESSING]);
 
-        (new OrderStatusService())->updateParentOrderStatus($order);
+        app(OrderStatusService::class)->updateParentOrderStatus($order);
 
         expect($order->fresh()->status)->toBe(OrderStatusEnum::PENDING);
     });
@@ -33,7 +31,7 @@ describe('OrderStatusService', function (): void {
             'status' => OrderItemStatusEnum::REFUNDED,
         ]);
 
-        (new OrderStatusService())->updateParentOrderStatus($order);
+        app(OrderStatusService::class)->updateParentOrderStatus($order);
 
         expect($order->fresh()->status)->toBe(OrderStatusEnum::REFUNDED);
     });
@@ -43,7 +41,7 @@ describe('OrderStatusService', function (): void {
         OrderItem::factory()->for($order)->create(['status' => OrderItemStatusEnum::REFUNDED]);
         OrderItem::factory()->for($order)->create(['status' => OrderItemStatusEnum::COMPLETED]);
 
-        (new OrderStatusService())->updateParentOrderStatus($order);
+        app(OrderStatusService::class)->updateParentOrderStatus($order);
 
         expect($order->fresh()->status)->toBe(OrderStatusEnum::PARTIALLY_REFUNDED);
     });
@@ -54,7 +52,7 @@ describe('OrderStatusService', function (): void {
             'status' => OrderItemStatusEnum::COMPLETED,
         ]);
 
-        (new OrderStatusService())->updateParentOrderStatus($order);
+        app(OrderStatusService::class)->updateParentOrderStatus($order);
 
         expect($order->fresh()->status)->toBe(OrderStatusEnum::COMPLETED);
     });
@@ -64,7 +62,7 @@ describe('OrderStatusService', function (): void {
         OrderItem::factory()->for($order)->create(['status' => OrderItemStatusEnum::PENDING]);
         OrderItem::factory()->for($order)->create(['status' => OrderItemStatusEnum::COMPLETED]);
 
-        (new OrderStatusService())->updateParentOrderStatus($order);
+        app(OrderStatusService::class)->updateParentOrderStatus($order);
 
         expect($order->fresh()->status)->toBe(OrderStatusEnum::PROCESSING);
     });
@@ -75,18 +73,18 @@ describe('OrderStatusService', function (): void {
             'status' => OrderItemStatusEnum::CANCELLED,
         ]);
 
-        (new OrderStatusService())->updateParentOrderStatus($order);
+        app(OrderStatusService::class)->updateParentOrderStatus($order);
 
         expect($order->fresh()->status)->toBe(OrderStatusEnum::CANCELLED);
     });
 
     it('updates enrollment to PENDING_PROVISIONING when item becomes COMPLETED', function (): void {
-        $item = OrderItem::factory()->create(['status' => OrderItemStatusEnum::COMPLETED]);
+        $item       = OrderItem::factory()->create(['status' => OrderItemStatusEnum::COMPLETED]);
         $enrollment = Enrollment::factory()->for($item)->create([
             'enrollment_status' => EnrollmentStatusEnum::AWAITING_PAYMENT,
         ]);
 
-        (new OrderStatusService())->updateEnrollmentStatus($item);
+        app(OrderStatusService::class)->updateEnrollmentStatus($item);
 
         $enrollment->refresh();
         expect($enrollment->enrollment_status)->toBe(EnrollmentStatusEnum::PENDING_PROVISIONING)
@@ -94,23 +92,23 @@ describe('OrderStatusService', function (): void {
     });
 
     it('updates enrollment to CANCELLED when item becomes REFUNDED', function (): void {
-        $item = OrderItem::factory()->create(['status' => OrderItemStatusEnum::REFUNDED]);
+        $item       = OrderItem::factory()->create(['status' => OrderItemStatusEnum::REFUNDED]);
         $enrollment = Enrollment::factory()->for($item)->create([
             'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
         ]);
 
-        (new OrderStatusService())->updateEnrollmentStatus($item);
+        app(OrderStatusService::class)->updateEnrollmentStatus($item);
 
         expect($enrollment->fresh()->enrollment_status)->toBe(EnrollmentStatusEnum::CANCELLED);
     });
 
     it('does not change enrollment status when item is PENDING', function (): void {
-        $item = OrderItem::factory()->create(['status' => OrderItemStatusEnum::PENDING]);
+        $item       = OrderItem::factory()->create(['status' => OrderItemStatusEnum::PENDING]);
         $enrollment = Enrollment::factory()->for($item)->create([
             'enrollment_status' => EnrollmentStatusEnum::ACTIVE,
         ]);
 
-        (new OrderStatusService())->updateEnrollmentStatus($item);
+        app(OrderStatusService::class)->updateEnrollmentStatus($item);
 
         expect($enrollment->fresh()->enrollment_status)->toBe(EnrollmentStatusEnum::ACTIVE);
     });
@@ -140,7 +138,7 @@ describe('OrderStatusService', function (): void {
 
         expect(Enrollment::where('order_item_id', $item->id)->exists())->toBeFalse();
 
-        (new OrderStatusService())->handlePaymentCompletion($order);
+        app(OrderStatusService::class)->handlePaymentCompletion($order);
 
         expect(Enrollment::where('order_item_id', $item->id)->exists())->toBeTrue();
     });
@@ -160,29 +158,29 @@ describe('OrderStatusService', function (): void {
         ]);
         Enrollment::factory()->for($item2)->create(['enrollment_status' => EnrollmentStatusEnum::AWAITING_PAYMENT]);
 
-        (new OrderStatusService())->handlePaymentCompletion($order->fresh());
+        app(OrderStatusService::class)->handlePaymentCompletion($order->fresh());
 
         $this->assertDatabaseHas('order_items', [
             'id'     => $item1->id,
-            'status' => OrderItemStatusEnum::COMPLETED->value
+            'status' => OrderItemStatusEnum::COMPLETED->value,
         ]);
         $this->assertDatabaseHas('order_items', [
             'id'     => $item2->id,
-            'status' => OrderItemStatusEnum::COMPLETED->value
+            'status' => OrderItemStatusEnum::COMPLETED->value,
         ]);
 
         $this->assertDatabaseHas('enrollments', [
             'id'                => $item1->enrollment->id,
-            'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING->value
+            'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
         ]);
         $this->assertDatabaseHas('enrollments', [
             'id'                => $item2->enrollment->id,
-            'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING->value
+            'enrollment_status' => EnrollmentStatusEnum::PENDING_PROVISIONING->value,
         ]);
 
         $this->assertDatabaseHas('orders', [
             'id'     => $order->id,
-            'status' => OrderStatusEnum::COMPLETED->value
+            'status' => OrderStatusEnum::COMPLETED->value,
         ]);
     });
 
@@ -200,7 +198,7 @@ describe('OrderStatusService', function (): void {
 
         Enrollment::factory()->for($item)->create();
 
-        (new OrderStatusService())->handlePaymentCompletion($order->fresh());
+        app(OrderStatusService::class)->handlePaymentCompletion($order->fresh());
 
         $this->assertDatabaseHas('orders', [
             'id'     => $order->id,
@@ -219,12 +217,12 @@ describe('OrderStatusService', function (): void {
             config()->set('order.provisioning.trigger', 'manual_approval');
 
             $order = Order::factory()->create(['status' => OrderStatusEnum::PENDING]);
-            $item = OrderItem::factory()->for($order)->create([
+            $item  = OrderItem::factory()->for($order)->create([
                 'status' => OrderItemStatusEnum::PENDING,
             ]);
             Enrollment::factory()->for($item)->create();
 
-            (new OrderStatusService())->handlePaymentCompletion($order->fresh());
+            app(OrderStatusService::class)->handlePaymentCompletion($order->fresh());
 
             $this->assertDatabaseHas('orders', [
                 'id'     => $order->id,

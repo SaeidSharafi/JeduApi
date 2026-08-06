@@ -15,6 +15,10 @@ use Illuminate\Database\Eloquent\Collection;
 
 final class OrderStatusService
 {
+    public function __construct(
+        private ProductReservationService $productReservationService,
+    ) {}
+
     /**
      * The primary method called after a payment is confirmed.
      * It cascades all necessary status updates for the entire order.
@@ -104,6 +108,8 @@ final class OrderStatusService
         $newStatus = OrderItemStatusEnum::COMPLETED;
 
         if ($item->status !== $newStatus) {
+            // Payment received → the reserved seat is now occupied by this item.
+            $this->productReservationService->consume($item->product_delivery_option_id, $item->qty_ordered);
             $item->status = $newStatus;
             $item->saveQuietly();
         }

@@ -57,7 +57,7 @@ describe('UpdateRefundStatusAction', function (): void {
             tracking_code: 'TRACK123',
             admin_notes: 'Completed refund',
         );
-        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $action  = new UpdateRefundStatusAction(app(OrderStatusService::class), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
         expect($updated->status)->toBe(RefundStatusEnum::COMPLETED)
             ->and($updated->admin_notes)->toBe('Completed refund')
@@ -89,7 +89,7 @@ describe('UpdateRefundStatusAction', function (): void {
             tracking_code: null,
             admin_notes: 'Processing refund',
         );
-        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $action  = new UpdateRefundStatusAction(app(OrderStatusService::class), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
         expect($updated->status)->toBe(RefundStatusEnum::PROCESSING)
             ->and($updated->admin_notes)->toBe('Processing refund');
@@ -110,7 +110,7 @@ describe('UpdateRefundStatusAction', function (): void {
             tracking_code: 'TRACK456',
             admin_notes: null,
         );
-        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $action  = new UpdateRefundStatusAction(app(OrderStatusService::class), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
         expect($updated->status)->toBe(RefundStatusEnum::COMPLETED)
             ->and($updated->transaction_details['tracking_code'])->toBe('TRACK456');
@@ -131,7 +131,7 @@ describe('UpdateRefundStatusAction', function (): void {
             tracking_code: null,
             admin_notes: null,
         );
-        $action = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $action = new UpdateRefundStatusAction(app(OrderStatusService::class), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         expect(fn (): Refund => $action->handle($refund, $data))
             ->toThrow(ValidationException::class);
     });
@@ -150,7 +150,7 @@ describe('UpdateRefundStatusAction', function (): void {
             tracking_code: null,
             admin_notes: null,
         );
-        $action = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $action = new UpdateRefundStatusAction(app(OrderStatusService::class), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         expect(fn (): Refund => $action->handle($refund, $data))
             ->toThrow(ValidationException::class);
     });
@@ -169,7 +169,7 @@ describe('UpdateRefundStatusAction', function (): void {
             tracking_code: null,
             admin_notes: 'Failed refund',
         );
-        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $action  = new UpdateRefundStatusAction(app(OrderStatusService::class), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
         expect($updated->status)->toBe(RefundStatusEnum::FAILED)
             ->and($updated->admin_notes)->toBe('Failed refund');
@@ -189,7 +189,7 @@ describe('UpdateRefundStatusAction', function (): void {
             tracking_code: null,
             admin_notes: 'Cancelled refund',
         );
-        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $action  = new UpdateRefundStatusAction(app(OrderStatusService::class), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
         expect($updated->status)->toBe(RefundStatusEnum::CANCELLED)
             ->and($updated->admin_notes)->toBe('Cancelled refund');
@@ -210,7 +210,7 @@ describe('UpdateRefundStatusAction', function (): void {
             tracking_code: null,
             admin_notes: null,
         );
-        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $action  = new UpdateRefundStatusAction(app(OrderStatusService::class), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
         expect($updated->admin_notes)->toBe('Original note');
     });
@@ -261,7 +261,7 @@ describe('UpdateRefundStatusAction', function (): void {
             admin_notes: 'Completed via Digipay',
         );
 
-        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $action  = new UpdateRefundStatusAction(app(OrderStatusService::class), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
 
         expect($updated->status)->toBe(RefundStatusEnum::COMPLETED);
@@ -319,7 +319,7 @@ describe('UpdateRefundStatusAction', function (): void {
             admin_notes: 'try complete',
         );
 
-        $action = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $action = new UpdateRefundStatusAction(app(OrderStatusService::class), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
 
         expect(fn (): Refund => $action->handle($refund, $data))->toThrow(ValidationException::class);
 
@@ -363,7 +363,7 @@ describe('UpdateRefundStatusAction', function (): void {
             skip_gateway: true,
         );
 
-        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $action  = new UpdateRefundStatusAction(app(OrderStatusService::class), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
 
         expect($updated->status)->toBe(RefundStatusEnum::COMPLETED);
@@ -410,7 +410,7 @@ describe('UpdateRefundStatusAction', function (): void {
             admin_notes: 'Wallet completion',
         );
 
-        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $action  = new UpdateRefundStatusAction(app(OrderStatusService::class), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
 
         expect($updated->status)->toBe(RefundStatusEnum::COMPLETED);

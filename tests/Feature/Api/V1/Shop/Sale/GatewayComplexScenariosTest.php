@@ -189,22 +189,6 @@ describe('Gateway Payment Complex Scenarios', function (): void {
             'status'     => PublicationStatusEnum::PUBLISHED,
         ]);
 
-        $product2 = Product::factory()->create([
-            'vendor_id'        => $vendor->id,
-            'term_id'          => $term->id,
-            'productable_id'   => $course->id, // Same course as product1
-            'productable_type' => MorphTypeEnum::COURSE->value,
-            'status'           => PublicationStatusEnum::PUBLISHED,
-            'is_visible'       => true,
-            'name'             => 'Course Package B',
-        ]);
-        $option2 = ProductDeliveryOption::factory()->create([
-            'product_id' => $product2->id,
-            'price'      => 150000,
-            'uuid'       => Str::uuid()->toString(),
-            'status'     => PublicationStatusEnum::PUBLISHED,
-        ]);
-
         $customer = User::factory()->create();
         $this->customer($customer);
 
@@ -222,6 +206,33 @@ describe('Gateway Payment Complex Scenarios', function (): void {
             ],
         ]);
         $response->assertCreated();
+
+        // The single-published-shell invariant forbids two PUBLISHED products for the same
+        // productable. The production path to a new shell is force_create, which archives the
+        // current PUBLISHED shell and publishes the new one.
+        $product2 = app(App\Actions\Admin\Product\CreateProductAction::class)->handle(new App\Data\Admin\Product\ProductCreateData(
+            force_create: true,
+            productable_type: MorphTypeEnum::COURSE->value,
+            productable_id: $course->id,
+            vendor_id: $vendor->id,
+            term_id: $term->id,
+            status: PublicationStatusEnum::PUBLISHED->value,
+            is_visible: true,
+            short_description: 'Course Package B',
+            short_name: 'Package B',
+            name: 'Course Package B',
+            is_featured: false,
+            categories: [],
+            details_json: [],
+        ));
+        expect($product1->fresh()->status)->toBe(PublicationStatusEnum::ARCHIVED);
+
+        $option2 = ProductDeliveryOption::factory()->create([
+            'product_id' => $product2->id,
+            'price'      => 150000,
+            'uuid'       => Str::uuid()->toString(),
+            'status'     => PublicationStatusEnum::PUBLISHED,
+        ]);
 
         // Try to purchase second option (different delivery, same underlying course)
         postJson(route('api.v1.shop.cart.items.store'), [
