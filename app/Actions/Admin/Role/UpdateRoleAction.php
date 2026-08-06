@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Role;
 
-use App\Data\Admin\Role\CreateRoleData;
+use App\Data\Admin\Role\UpdateRoleData;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
@@ -13,7 +13,7 @@ final readonly class UpdateRoleAction
     /**
      * Execute the action.
      */
-    public function handle(CreateRoleData $data, Role $role): void
+    public function handle(UpdateRoleData $data, Role $role): void
     {
         DB::transaction(function () use ($role, $data): void {
             $role->update([

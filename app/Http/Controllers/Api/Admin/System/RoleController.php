@@ -10,6 +10,7 @@ use App\Actions\Admin\Role\UpdateRoleAction;
 use App\Data\Admin\Role\CreateRoleData;
 use App\Data\Admin\Role\RoleListItemData;
 use App\Data\Admin\Role\ShowRoleData;
+use App\Data\Admin\Role\UpdateRoleData;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Role;
@@ -84,7 +85,7 @@ final class RoleController extends Controller
      * @response 403
      * @response 404
      */
-    public function update(CreateRoleData $data, Role $role, UpdateRoleAction $action)
+    public function update(UpdateRoleData $data, Role $role, UpdateRoleAction $action)
     {
         Gate::authorize('update', $role);
         $role->load('permissions');

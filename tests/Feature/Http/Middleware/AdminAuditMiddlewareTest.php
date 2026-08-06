@@ -738,6 +738,55 @@ describe('AdminAuditMiddleware', function (): void {
         expect($requestData['avatar'])->toBe('[FILE: avatar.jpg]');
     });
 
+    test('it redacts sensitive fields nested at any depth', function (): void {
+        $requestData = [
+            'user' => [
+                'password' => 's3cret',
+                'profile'  => ['bio' => 'Developer'],
+            ],
+            'credentials' => [
+                'token'   => 'abc123',
+                'payload' => ['api_key' => 'key_value'],
+            ],
+            'safe' => ['nested' => ['value' => 'kept']],
+        ];
+
+        $request = Request::create('/test', 'POST', $requestData);
+        $route   = new Route('POST', '/test', ['as' => 'admin.test.store']);
+        $route->bind($request);
+        $request->setRouteResolver(fn (): Route => $route);
+
+        $this->middleware->handle($request, $this->next);
+
+        $log        = AdminActionLog::first();
+        $loggedData = $log->request_data;
+
+        expect($loggedData['user']['password'])->toBe('[REDACTED]');
+        expect($loggedData['user']['profile']['bio'])->toBe('Developer');
+        expect($loggedData['credentials']['token'])->toBe('[REDACTED]');
+        expect($loggedData['credentials']['payload']['api_key'])->toBe('[REDACTED]');
+        expect($loggedData['safe']['nested']['value'])->toBe('kept');
+    });
+
+    test('it derives resource info generically from any bound model parameter', function (): void {
+        $user = User::factory()->create();
+
+        $request = Request::create("/roles/{$user->id}", 'PUT', ['name' => 'admin']);
+        $route   = new Route('PUT', '/roles/{role}', ['as' => 'admin.roles.update']);
+        $route->bind($request);
+
+        // Simulate implicit model binding (SubstituteBindings) with a model object.
+        $route->setParameter('role', $user);
+        $request->setRouteResolver(fn (): Route => $route);
+
+        $this->middleware->handle($request, $this->next);
+
+        $this->assertDatabaseHas('admin_action_logs', [
+            'resource_type' => get_class($user),
+            'resource_id'   => $user->id,
+        ]);
+    });
+
     test('it calculates request size in metadata', function (): void {
 
         $largeContent = str_repeat('test', 100);

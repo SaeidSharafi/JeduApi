@@ -118,6 +118,46 @@ it('can update a role', function (): void {
         ->putJson(route('api.v1.admin.roles.update', $role), $data)
         ->assertOk();
 });
+it('can update a role without changing its name', function (): void {
+    $this->authorized_user([App\Enums\PermissionEnum::ROLE_UPDATE->value]);
+    $role = Spatie\Permission\Models\Role::create([
+        'name'       => 'TestRole',
+        'label'      => 'Test Role',
+        'guard_name' => 'staff',
+    ]);
+    $data = [
+        'name'        => 'TestRole', // Keep the same name
+        'label'       => 'Updated Role Label',
+        'guard_name'  => 'staff',
+        'permissions' => [
+            App\Enums\PermissionEnum::STAFF_VIEW_ANY->value,
+        ],
+    ];
+    $this
+        ->putJson(route('api.v1.admin.roles.update', $role), $data)
+        ->assertOk();
+
+    $this->assertDatabaseHas('roles', [
+        'name'  => 'TestRole',
+        'label' => 'Updated Role Label',
+    ]);
+});
+it('can create a role with a staff guard by default', function (): void {
+    $this->authorized_user([App\Enums\PermissionEnum::ROLE_CREATE->value]);
+    $data = [
+        'name'        => 'GuardRole',
+        'label'       => 'Guard Role',
+        'permissions' => [],
+    ];
+    $this
+        ->postJson(route('api.v1.admin.roles.store'), $data)
+        ->assertCreated();
+
+    $this->assertDatabaseHas('roles', [
+        'name'       => 'GuardRole',
+        'guard_name' => 'staff',
+    ]);
+});
 it('can not update it\'s own role', function (): void {
     $this->authorized_user([App\Enums\PermissionEnum::ROLE_UPDATE->value]);
     $role = Spatie\Permission\Models\Role::create([

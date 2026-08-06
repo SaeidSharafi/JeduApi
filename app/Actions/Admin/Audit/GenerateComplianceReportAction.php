@@ -15,6 +15,8 @@ final class GenerateComplianceReportAction
 {
     public function execute(ComplianceReportRequestData $data): array
     {
+        $this->normalizeDateRange($data);
+
         $report = [
             'report_period' => [
                 'from' => verta($data->date_from)->format('Y-m-d'),
@@ -45,6 +47,15 @@ final class GenerateComplianceReportAction
         }
 
         return $report;
+    }
+
+    /**
+     * Normalize the date range so the end-of-day of date_to is included.
+     */
+    private function normalizeDateRange(ComplianceReportRequestData $data): void
+    {
+        $data->date_from?->startOfDay();
+        $data->date_to?->endOfDay();
     }
 
     private function generateSummary(ComplianceReportRequestData $data): array
@@ -136,15 +147,15 @@ final class GenerateComplianceReportAction
 
         return [
             'total_admin_actions' => $query->count(),
-            'unique_admins'       => $query->distinct('admin_id')->count(),
+            'unique_admins'       => $query->clone()->distinct('admin_id')->count(),
             'by_action_type'      => $query->clone()
                 ->select('action_type', DB::raw('COUNT(*) as count'))
-                ->groupBy('action_type', 'admin_id')
+                ->groupBy('action_type')
                 ->pluck('count', 'action_type')
                 ->toArray(),
             'by_risk_level' => $query->clone()
                 ->select('risk_level', DB::raw('COUNT(*) as count'))
-                ->groupBy('risk_level', 'admin_id')
+                ->groupBy('risk_level')
                 ->pluck('count', 'risk_level')
                 ->toArray(),
             'failed_actions' => $query->clone()

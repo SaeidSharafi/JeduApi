@@ -16,6 +16,9 @@ final class DetectSuspiciousActivityAction
 {
     public function handle(SuspiciousActivityRequestData $data): SuspiciousActivityAggregatedData
     {
+        $data->date_from?->startOfDay();
+        $data->date_to?->endOfDay();
+
         if ($data->include_large_amounts) {
             $large_transactions = $this->detectLargeTransactions($data);
         }
@@ -122,6 +125,7 @@ final class DetectSuspiciousActivityAction
             ->join('users', 'wallet_transactions.user_id', '=', 'users.id')
             ->select(
                 'user_id',
+                DB::raw('DATE(wallet_transactions.created_at) as activity_date'),
                 DB::raw('COUNT(wallet_transactions.id) as transaction_count'),
                 DB::raw('SUM(ABS(wallet_transactions.amount)) as total_volume'),
                 DB::raw('MIN(wallet_transactions.created_at) as first_transaction'),
@@ -129,7 +133,7 @@ final class DetectSuspiciousActivityAction
             )
             ->whereBetween('wallet_transactions.created_at', [$data->date_from, $data->date_to])
             ->with('user')
-            ->groupBy('user_id')
+            ->groupBy('user_id', DB::raw('DATE(wallet_transactions.created_at)'))
             ->havingRaw('COUNT(wallet_transactions.id) >= ?', [$data->high_frequency_threshold]);
 
         if ($data->user_ids) {

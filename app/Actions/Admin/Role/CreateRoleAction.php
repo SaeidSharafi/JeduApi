@@ -17,8 +17,9 @@ final readonly class CreateRoleAction
     {
         DB::transaction(function () use ($data): void {
             $role = Role::query()->create([
-                'name'  => $data->name,
-                'label' => $data->label,
+                'name'       => $data->name,
+                'label'      => $data->label,
+                'guard_name' => 'staff',
             ]);
 
             if (! empty($data->permissions)) {

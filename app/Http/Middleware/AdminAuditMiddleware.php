@@ -7,6 +7,7 @@ namespace App\Http\Middleware;
 use App\Models\AdminActionLog;
 use Closure;
 use Exception;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
@@ -21,11 +22,15 @@ final class AdminAuditMiddleware
     {
         $startTime = microtime(true);
 
+        // Snapshot the actor before the request runs: endpoints that mutate
+        // auth state (logout, token revocation) would otherwise resolve null/wrong.
+        $adminId = auth('staff')->id();
+
         // Get the response
         $response = $next($request);
 
         // Only log if authenticated staff member
-        if (! auth('staff')->check()) {
+        if ($adminId === null) {
             return $response;
         }
 
@@ -37,7 +42,7 @@ final class AdminAuditMiddleware
         try {
             $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 
-            $this->logAdminAction($request, $response, $executionTime);
+            $this->logAdminAction($request, $response, $executionTime, $adminId);
         }
         // @codeCoverageIgnoreStart
         catch (Exception $e) {
@@ -45,7 +50,7 @@ final class AdminAuditMiddleware
             Log::error('AdminAuditMiddleware failed to log action', [
                 'error'    => $e->getMessage(),
                 'route'    => $request->route()?->getName(),
-                'admin_id' => auth('staff')->id(),
+                'admin_id' => $adminId,
             ]);
         }
         // @codeCoverageIgnoreEnd
@@ -89,14 +94,14 @@ final class AdminAuditMiddleware
     /**
      * Log the admin action to the database.
      */
-    private function logAdminAction(Request $request, Response $response, float $executionTime): void
+    private function logAdminAction(Request $request, Response $response, float $executionTime, ?int $adminId): void
     {
         $routeName    = $request->route()?->getName() ?? 'unknown';
         $resourceInfo = $this->extractResourceInfo($request);
         $riskLevel    = $this->assessRiskLevel($request, $response, $resourceInfo);
 
         AdminActionLog::create([
-            'admin_id'        => auth('staff')->id(),
+            'admin_id'        => $adminId,
             'action_type'     => $this->determineActionType($request->method(), $routeName),
             'resource_type'   => $resourceInfo['type'],
             'resource_id'     => $resourceInfo['id'],
@@ -128,7 +133,18 @@ final class AdminAuditMiddleware
         $route      = $request->route();
         $parameters = $route ? $route->parameters() : [];
 
-        // Common resource patterns
+        // Preferred: model-bound parameters (implicit binding) — derive generically
+        // so every route param (role, vendor, review, walletCampaign, ...) is covered.
+        foreach ($parameters as $resource) {
+            if ($resource instanceof Model) {
+                return [
+                    'type' => $resource::class,
+                    'id'   => $resource->getKey(),
+                ];
+            }
+        }
+
+        // Fallback: scalar parameters mapped explicitly (routes without implicit binding)
         $resourceMappings = [
             'user'              => 'App\\Models\\User',
             'wallet'            => 'App\\Models\\Wallet',
@@ -144,11 +160,9 @@ final class AdminAuditMiddleware
 
         foreach ($resourceMappings as $paramName => $modelClass) {
             if (isset($parameters[$paramName])) {
-                $resource = $parameters[$paramName];
-
                 return [
                     'type' => $modelClass,
-                    'id'   => is_object($resource) ? $resource->id : $resource,
+                    'id'   => $parameters[$paramName],
                 ];
             }
         }
@@ -252,6 +266,23 @@ final class AdminAuditMiddleware
      */
     private function sanitizeRequestData(array $data): array
     {
+        $sanitized = $this->sanitizeRecursive($data);
+
+        // Limit data size to prevent huge logs
+        $jsonData = json_encode($sanitized);
+        if ($jsonData !== false && mb_strlen($jsonData) > 10000) { // 10KB limit
+            return ['_large_request' => 'Request data too large, truncated'];
+        }
+
+        return $sanitized;
+    }
+
+    /**
+     * Recursively redact sensitive keys at any depth so nested secrets
+     * (e.g. user.password, credentials.token) never reach the audit log.
+     */
+    private function sanitizeRecursive(mixed $value, string $key = ''): mixed
+    {
         $sensitiveFields = [
             'password',
             'password_confirmation',
@@ -262,25 +293,20 @@ final class AdminAuditMiddleware
             'secret',
         ];
 
-        foreach ($data as $key => &$value) {
-            if (in_array($key, $sensitiveFields, true)) {
-                $value = '[REDACTED]';
-
-                continue;
-            }
-
-            if ($value instanceof UploadedFile) {
-                $value = sprintf('[FILE: %s]', $value->getClientOriginalName());
-            }
-        }
-        // Unset the reference to avoid potential side effects
-        unset($value);
-        // Limit data size to prevent huge logs
-        $jsonData = json_encode($data);
-        if ($jsonData !== false && mb_strlen($jsonData) > 10000) { // 10KB limit
-            return ['_large_request' => 'Request data too large, truncated'];
+        if (in_array($key, $sensitiveFields, true)) {
+            return '[REDACTED]';
         }
 
-        return $data;
+        if ($value instanceof UploadedFile) {
+            return sprintf('[FILE: %s]', $value->getClientOriginalName());
+        }
+
+        if (is_array($value)) {
+            foreach ($value as $childKey => $childValue) {
+                $value[$childKey] = $this->sanitizeRecursive($childValue, (string) $childKey);
+            }
+        }
+
+        return $value;
     }
 }

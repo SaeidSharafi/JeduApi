@@ -39,11 +39,11 @@ describe('ComplianceReportController', function (): void {
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_COMPLIANCE_REPORTS_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from'                   => $this->dateFrom,
-                'date_to'                     => $this->dateTo,
-                'include_transaction_summary' => true,
-                'include_admin_activity'      => true,
-                'include_risk_assessment'     => true,
+                'date_from'                    => $this->dateFrom,
+                'date_to'                      => $this->dateTo,
+                'include_transaction_analysis' => true,
+                'include_admin_activity'       => true,
+                'include_risk_assessment'      => true,
             ]);
 
         $response->assertSuccessful();
@@ -208,11 +208,11 @@ describe('ComplianceReportController', function (): void {
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_COMPLIANCE_REPORTS_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from'                   => $this->dateFrom,
-                'date_to'                     => $this->dateTo,
-                'include_transaction_summary' => true,
-                'include_admin_activity'      => true,
-                'include_risk_assessment'     => true,
+                'date_from'                    => $this->dateFrom,
+                'date_to'                      => $this->dateTo,
+                'include_transaction_analysis' => true,
+                'include_admin_activity'       => true,
+                'include_risk_assessment'      => true,
             ]);
 
         $response->assertSuccessful();
@@ -227,11 +227,11 @@ describe('ComplianceReportController', function (): void {
     it('excludes sections when flags are false', function (): void {
         $response = $this->authorized_user([PermissionEnum::AUDIT_COMPLIANCE_REPORTS_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from'                   => $this->dateFrom,
-                'date_to'                     => $this->dateTo,
-                'include_transaction_summary' => false,
-                'include_admin_activity'      => false,
-                'include_risk_assessment'     => false,
+                'date_from'                    => $this->dateFrom,
+                'date_to'                      => $this->dateTo,
+                'include_transaction_analysis' => false,
+                'include_admin_activity'       => false,
+                'include_risk_assessment'      => false,
             ]);
 
         $response->assertSuccessful();
@@ -262,11 +262,11 @@ describe('ComplianceReportController', function (): void {
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_COMPLIANCE_REPORTS_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from'                   => $this->dateFrom,
-                'date_to'                     => $this->dateTo,
-                'include_transaction_summary' => true,
-                'include_admin_activity'      => true,
-                'include_risk_assessment'     => true,
+                'date_from'                    => $this->dateFrom,
+                'date_to'                      => $this->dateTo,
+                'include_transaction_analysis' => true,
+                'include_admin_activity'       => true,
+                'include_risk_assessment'      => true,
             ]);
 
         $response->assertSuccessful();
@@ -292,9 +292,9 @@ describe('ComplianceReportController', function (): void {
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_COMPLIANCE_REPORTS_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from'                   => $this->dateFrom,
-                'date_to'                     => $this->dateTo,
-                'include_transaction_summary' => true,
+                'date_from'                    => $this->dateFrom,
+                'date_to'                      => $this->dateTo,
+                'include_transaction_analysis' => true,
             ]);
 
         $response->assertSuccessful();
@@ -327,9 +327,9 @@ describe('ComplianceReportController', function (): void {
 
         $response = $this->authorized_user([PermissionEnum::AUDIT_COMPLIANCE_REPORTS_VIEW])
             ->postJson($this->baseUrl, [
-                'date_from'                   => $this->dateFrom,
-                'date_to'                     => $this->dateTo,
-                'include_transaction_summary' => true,
+                'date_from'                    => $this->dateFrom,
+                'date_to'                      => $this->dateTo,
+                'include_transaction_analysis' => true,
             ]);
 
         $response->assertSuccessful();
