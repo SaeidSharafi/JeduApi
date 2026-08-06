@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Auth;
 
 use App\Enums\System\OtpType;
+use App\Rules\EmailOrPhoneRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,7 +22,7 @@ final class OtpRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'identifier' => ['required', 'string'],
+            'identifier' => ['required', 'string', new EmailOrPhoneRule()],
             'otp_type'   => ['required', 'string', Rule::enum(OtpType::class)],
         ];
     }

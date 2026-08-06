@@ -8,6 +8,7 @@ use App\Data\Auth\AuthInitiationResultData;
 use App\Enums\System\OtpType;
 use App\Exceptions\UserNotFoundException;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 
 final class InitiateAuthAction extends AuthAction
 {
@@ -24,11 +25,14 @@ final class InitiateAuthAction extends AuthAction
             if ($guard === 'staff' || $this->getIdentifierType($identifier) === 'email') {
                 throw new UserNotFoundException;
             }
-            $user = User::create(
-                [
-                    'phone' => $identifier,
-                ]
-            );
+            try {
+                $user = User::query()->firstOrCreate(
+                    ['phone' => $identifier],
+                    ['phone' => $identifier],
+                );
+            } catch (QueryException) {
+                $user = User::query()->where('phone', $identifier)->firstOrFail();
+            }
 
             return AuthInitiationResultData::otp(
                 $this->generateOtp->execute($user, OtpType::SIGNUP)

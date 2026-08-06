@@ -17,6 +17,11 @@ describe('OtpManagerService', function (): void {
     beforeEach(function (): void {
         Cache::flush();
         Event::fake();
+        config()->set('otp.ttl_seconds', 300);
+        config()->set('otp.marker_ttl_seconds', 900);
+        config()->set('otp.verify_attempt_window_seconds', 300);
+        config()->set('otp.lock_seconds', 5);
+        config()->set('otp.lock_block_seconds', 1);
         $this->expectedOtpCode      = 123456;
         $this->expectedTrackingCode = 'test-tracking';
         // Configure the FakeOtpGenerator
@@ -117,6 +122,53 @@ describe('OtpManagerService', function (): void {
         Cache::put($attemptsKey, config('otp.max_verify_attempts', 3));
         expect(fn () => $this->service->verify($identifier, $guard, 999999, $this->expectedTrackingCode, $otpType))->toThrow(ValidationException::class);
         expect($this->service->getVerifyCode($identifier, $guard, $otpType))->toBeNull();
+    });
+
+    it('fails verification with expired otp', function (): void {
+        config()->set('otp.ttl_seconds', 60);
+        config()->set('otp.marker_ttl_seconds', 600);
+        $this->service = app(OtpManagerService::class);
+
+        $identifier = '09123456789';
+        $guard      = 'user';
+        $otpType    = OtpType::SIGNIN;
+
+        $this->service->send($identifier, $guard, $otpType);
+
+        $createdKey = (new ReflectionClass($this->service))->getMethod('getCacheKey')->invoke($this->service, $identifier, $guard, 'created');
+        Cache::put($createdKey, Carbon::now()->subSeconds(120)->timestamp, 300);
+
+        expect(fn () => $this->service->verify($identifier, $guard, $this->expectedOtpCode, $this->expectedTrackingCode, $otpType))
+            ->toThrow(ValidationException::class);
+
+        expect($this->service->getVerifyCode($identifier, $guard, $otpType))->toBeNull();
+    });
+
+    it('keeps created marker after successful verification code deletion for cooldown semantics', function (): void {
+        $identifier = '09123456789';
+        $guard      = 'user';
+        $otpType    = OtpType::SIGNIN;
+
+        $this->service->send($identifier, $guard, $otpType);
+        $this->service->deleteVerifyCode($identifier, $guard, $otpType);
+
+        expect($this->service->getSentAt($identifier, $guard, $otpType))->toBeInstanceOf(Carbon::class);
+    });
+
+    it('tracks failed verification attempts across verify attempt window', function (): void {
+        config()->set('otp.verify_attempt_window_seconds', 600);
+
+        $identifier = '09123456789';
+        $guard      = 'user';
+        $otpType    = OtpType::SIGNIN;
+
+        $this->service->send($identifier, $guard, $otpType);
+
+        $attemptsKey = (new ReflectionClass($this->service))->getMethod('getCacheKey')->invoke($this->service, $identifier, $guard, 'verify_attempts');
+
+        $this->service->verify($identifier, $guard, 999999, $this->expectedTrackingCode, $otpType);
+
+        expect(Cache::get($attemptsKey))->toBe(1);
     });
 
     it('getVerifyCode and deleteVerifyCode work as expected', function (): void {

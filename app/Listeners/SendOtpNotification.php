@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Notifications\Auth\OtpEmailNotification;
 use App\Notifications\Auth\OtpSmsNotification;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 
 final class SendOtpNotification
 {
@@ -27,6 +28,16 @@ final class SendOtpNotification
             fn (Builder $q) => $q->where('email', $identifier),
             fn (Builder $q) => $q->where('phone', $identifier)
         )->first();
+
+        if (! $user) {
+            Log::warning('OTP notification skipped because user was not found.', [
+                'identifier' => $identifier,
+                'guard'      => $guard,
+            ]);
+
+            return;
+        }
+
         if (
             ! $user->email
             && (config('services.email.use_fake_email'))

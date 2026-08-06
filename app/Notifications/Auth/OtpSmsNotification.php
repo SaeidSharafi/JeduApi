@@ -7,7 +7,6 @@ namespace App\Notifications\Auth;
 use App\Events\OtpPrepared;
 use App\Notifications\SmsChannel;
 use App\Notifications\SmsMessage;
-use App\Services\IpPanelSmsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
@@ -16,13 +15,9 @@ final class OtpSmsNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    private IpPanelSmsService $smsService;
-
     public function __construct(
         protected OtpPrepared $otpCode,
-    ) {
-        $this->smsService = app(IpPanelSmsService::class);
-    }
+    ) {}
 
     /**
      * Get the notification's delivery channels.

@@ -9,6 +9,7 @@ use App\Contracts\OtpTypeInterface;
 use App\Data\OtpManager\OtpDto;
 use App\Data\OtpManager\SentOtpDto;
 use App\Events\OtpPrepared;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
@@ -21,12 +22,27 @@ final class OtpManagerService
 
     private int $waitingTime;
 
+    private int $ttlSeconds;
+
+    private int $markerTtlSeconds;
+
+    private int $verifyAttemptWindowSeconds;
+
+    private int $lockSeconds;
+
+    private int $lockBlockSeconds;
+
     private OtpGeneratorInterface $otpGenerator;
 
     public function __construct(OtpGeneratorInterface $otpGenerator)
     {
-        $this->otpGenerator = $otpGenerator;
-        $this->waitingTime  = config('otp.waiting_time');
+        $this->otpGenerator               = $otpGenerator;
+        $this->waitingTime                = config('otp.waiting_time');
+        $this->ttlSeconds                 = config('otp.ttl_seconds', 300);
+        $this->markerTtlSeconds           = config('otp.marker_ttl_seconds', 900);
+        $this->verifyAttemptWindowSeconds = config('otp.verify_attempt_window_seconds', 300);
+        $this->lockSeconds                = config('otp.lock_seconds', 5);
+        $this->lockBlockSeconds           = config('otp.lock_block_seconds', 1);
 
     }
 
@@ -75,23 +91,25 @@ final class OtpManagerService
 
         $this->type = $type;
 
-        $created = $this->getSentAt($identifier, $guard, $type);
-        if (! $created) {
-            return $this->send($identifier, $guard, $type, $params);
-        }
+        return $this->runWithinOtpLock($identifier, $guard, $type, function () use ($identifier, $guard, $type, $params): SentOtpDto {
+            $created = $this->getSentAt($identifier, $guard, $type);
+            if (! $created) {
+                return $this->send($identifier, $guard, $type, $params);
+            }
 
-        $retryAfter = $created->addSeconds($this->waitingTime);
-        if (Carbon::now()->greaterThan($retryAfter)) {
-            return $this->send($identifier, $guard, $type, $params);
-        }
+            $retryAfter = $created->copy()->addSeconds($this->waitingTime);
+            if (Carbon::now()->greaterThan($retryAfter)) {
+                return $this->send($identifier, $guard, $type, $params);
+            }
 
-        $remainingTime = (int) Carbon::now()->diffInSeconds($retryAfter);
+            $remainingTime = (int) Carbon::now()->diffInSeconds($retryAfter);
 
-        throw ValidationException::withMessages([
-            'otp' => [
-                trans('messages.auth.otp.throttle', ['seconds' => $remainingTime]),
-            ],
-        ]);
+            throw ValidationException::withMessages([
+                'otp' => [
+                    trans('messages.auth.otp.throttle', ['seconds' => $remainingTime]),
+                ],
+            ]);
+        });
     }
 
     public function verify(
@@ -105,20 +123,37 @@ final class OtpManagerService
         $this->type         = $type;
         $this->trackingCode = $trackingCode;
 
-        $otpDto = $this->getVerifyCode($identifier, $guard, $type);
+        return $this->runWithinOtpLock($identifier, $guard, $type, function () use ($identifier, $guard, $otp, $trackingCode, $type): bool {
+            $otpDto = $this->getVerifyCode($identifier, $guard, $type);
 
-        if (! $otpDto || $otp !== $otpDto->code || $trackingCode !== $otpDto->trackingCode) {
-            $this->handleVerificationAttempt($identifier, $guard); // Handle failed verification attempt
+            if (! $otpDto && $this->hasExpired($identifier, $guard, $type)) {
+                $this->resetSendAttempts($identifier, $guard);
 
-            return false;
-        }
+                throw ValidationException::withMessages([
+                    'otp' => [__('messages.auth.otp.expired_code')],
+                ]);
+            }
 
-        $this->resetSendAttempts($identifier, $guard); // Reset on successful verification
+            if ($this->hasExpired($identifier, $guard, $type)) {
+                $this->deleteVerifyCode($identifier, $guard, $type);
+                $this->resetSendAttempts($identifier, $guard);
 
-        // Auto-delete the OTP code after successful verification
-        $this->deleteVerifyCode($identifier, $guard, $type);
+                throw ValidationException::withMessages([
+                    'otp' => [__('messages.auth.otp.expired_code')],
+                ]);
+            }
 
-        return true;
+            if (! $otpDto || $otp !== $otpDto->code || $trackingCode !== $otpDto->trackingCode) {
+                $this->handleVerificationAttempt($identifier, $guard);
+
+                return false;
+            }
+
+            $this->resetSendAttempts($identifier, $guard);
+            $this->deleteVerifyCode($identifier, $guard, $type);
+
+            return true;
+        });
     }
 
     public function getVerifyCode(string $identifier, string $guard, ?OtpTypeInterface $type = null): ?OtpDto
@@ -132,7 +167,9 @@ final class OtpManagerService
     {
         $this->type = $type;
 
-        return Cache::delete($this->getCacheKey($identifier, $guard, 'value'));
+        $valueDeleted = Cache::delete($this->getCacheKey($identifier, $guard, 'value'));
+
+        return $valueDeleted;
     }
 
     public function getSentAt(string $identifier, string $guard, ?OtpTypeInterface $type = null): ?Carbon
@@ -166,20 +203,24 @@ final class OtpManagerService
     {
         $attemptsKey = $this->getCacheKey($identifier, $guard, 'verify_attempts');
 
-        $maxAttempts = config('otp.max_verify_attempts', 3);
+        $maxAttempts = config('otp.max_verify_attempts', 5);
 
-        $attempts = Cache::get($attemptsKey, 0) + 1;
+        if (! Cache::has($attemptsKey)) {
+            Cache::put($attemptsKey, 0, $this->verifyAttemptWindowSeconds);
+        }
+
+        $attempts = (int) Cache::increment($attemptsKey);
+
+        Cache::put($attemptsKey, $attempts, $this->verifyAttemptWindowSeconds);
 
         if ($attempts > $maxAttempts) {
             $this->deleteVerifyCode($identifier, $guard, $this->type);
             Cache::forget($attemptsKey);
 
             throw ValidationException::withMessages([
-                'otp' => [__('otp-manager::otp.request_new')],
+                'otp' => [__('messages.auth.otp.throttle', ['seconds' => $this->verifyAttemptWindowSeconds])],
             ]);
         }
-
-        Cache::put($attemptsKey, $attempts, $this->waitingTime);
     }
 
     private function resetSendAttempts(string $identifier, string $guard): void
@@ -195,10 +236,45 @@ final class OtpManagerService
 
         $otpDto = new OtpDto($otp, $this->trackingCode);
 
-        Cache::put($this->getCacheKey($identifier, $guard, 'value'), $otpDto);
-        Cache::put($this->getCacheKey($identifier, $guard, 'created'), time());
+        Cache::put($this->getCacheKey($identifier, $guard, 'value'), $otpDto, $this->ttlSeconds);
+        Cache::put($this->getCacheKey($identifier, $guard, 'created'), time(), $this->markerTtlSeconds);
 
         return $otp;
+    }
+
+    private function hasExpired(string $identifier, string $guard, ?OtpTypeInterface $type = null): bool
+    {
+        $sentAt = $this->getSentAt($identifier, $guard, $type);
+
+        if (! $sentAt) {
+            return Cache::get($this->getCacheKey($identifier, $guard, 'value')) === null;
+        }
+
+        return Carbon::now()->greaterThan($sentAt->copy()->addSeconds($this->ttlSeconds));
+    }
+
+    /**
+     * @template T
+     *
+     * @param  callable():T  $callback
+     * @return T
+     */
+    private function runWithinOtpLock(string $identifier, string $guard, ?OtpTypeInterface $type, callable $callback)
+    {
+        $lockKey = $this->getLockKey($identifier, $guard, $type);
+
+        try {
+            return Cache::lock($lockKey, $this->lockSeconds)->block($this->lockBlockSeconds, $callback);
+        } catch (LockTimeoutException) {
+            throw ValidationException::withMessages([
+                'otp' => [trans('messages.auth.otp.throttle', ['seconds' => $this->lockBlockSeconds])],
+            ]);
+        }
+    }
+
+    private function getLockKey(string $identifier, string $guard, ?OtpTypeInterface $type = null): string
+    {
+        return sprintf('otp_lock_%s_%s_%s', $identifier, $guard, $type?->identifier() ?? 'none');
     }
 
     private function getCacheKey(string $identifier, string $guard, string $for): string

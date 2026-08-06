@@ -18,6 +18,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | OTP Time To Live (seconds)
+    |--------------------------------------------------------------------------
+    |
+    | The actual validity lifetime of the generated OTP code.
+    |
+    */
+    'ttl_seconds' => 300,
+
+    /*
+    |--------------------------------------------------------------------------
+    | OTP Marker TTL (seconds)
+    |--------------------------------------------------------------------------
+    |
+    | Lifetime for send-marker metadata used for resend throttling and
+    | expired-code detection. Should be greater than or equal to otp ttl.
+    |
+    */
+    'marker_ttl_seconds' => 900,
+
+    /*
+    |--------------------------------------------------------------------------
     | OTP Code Range
     |--------------------------------------------------------------------------
     |
@@ -38,8 +59,18 @@ return [
     |
     */
     'rate_limiting' => [
-        'max_attempts'  => 5,
-        'decay_minutes' => 1,
+        'initiate' => [
+            'max_attempts'  => 30,
+            'decay_minutes' => 1,
+        ],
+        'resend' => [
+            'max_attempts'  => 20,
+            'decay_minutes' => 1,
+        ],
+        'verify' => [
+            'max_attempts'  => 60,
+            'decay_minutes' => 1,
+        ],
     ],
 
     /*
@@ -52,4 +83,25 @@ return [
     |
     */
     'max_verify_attempts' => 5,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Verification Attempt Window (seconds)
+    |--------------------------------------------------------------------------
+    |
+    | Controls how long failed verification attempts are tracked per OTP key.
+    |
+    */
+    'verify_attempt_window_seconds' => 300,
+
+    /*
+    |--------------------------------------------------------------------------
+    | OTP Lock Settings (seconds)
+    |--------------------------------------------------------------------------
+    |
+    | Distributed lock settings used to prevent resend / verify races.
+    |
+    */
+    'lock_seconds'       => 5,
+    'lock_block_seconds' => 1,
 ];

@@ -12,8 +12,11 @@ use App\Services\DefaultOtpGenerator;
 use App\Services\Discounts\DiscountHandlerRegistry;
 use App\Services\Discounts\DiscountMetadataService;
 use App\Services\RequestDataCacheService;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Intervention\Image\Image;
 use Plank\Mediable\Facades\ImageManipulator;
@@ -55,6 +58,45 @@ final class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         include_once __DIR__.'/../Helpers/helpers.php';
+
+        RateLimiter::for('otp-initiate', function (Request $request) {
+            $maxAttempts  = (int) config('otp.rate_limiting.initiate.max_attempts', 30);
+            $decayMinutes = (int) config('otp.rate_limiting.initiate.decay_minutes', 1);
+            $identifier   = mb_strtolower(mb_trim((string) $request->input('identifier')));
+
+            return [
+                Limit::perMinute($maxAttempts, $decayMinutes)
+                    ->by(sprintf('otp-initiate:ip:%s', $request->ip())),
+                Limit::perMinute($maxAttempts, $decayMinutes)
+                    ->by(sprintf('otp-initiate:id:%s:%s', $request->ip(), $identifier)),
+            ];
+        });
+
+        RateLimiter::for('otp-resend', function (Request $request) {
+            $maxAttempts  = (int) config('otp.rate_limiting.resend.max_attempts', 20);
+            $decayMinutes = (int) config('otp.rate_limiting.resend.decay_minutes', 1);
+            $identifier   = mb_strtolower(mb_trim((string) $request->input('identifier')));
+
+            return [
+                Limit::perMinute($maxAttempts, $decayMinutes)
+                    ->by(sprintf('otp-resend:ip:%s', $request->ip())),
+                Limit::perMinute($maxAttempts, $decayMinutes)
+                    ->by(sprintf('otp-resend:id:%s:%s', $request->ip(), $identifier)),
+            ];
+        });
+
+        RateLimiter::for('otp-verify', function (Request $request) {
+            $maxAttempts  = (int) config('otp.rate_limiting.verify.max_attempts', 60);
+            $decayMinutes = (int) config('otp.rate_limiting.verify.decay_minutes', 1);
+            $identifier   = mb_strtolower(mb_trim((string) $request->input('identifier')));
+
+            return [
+                Limit::perMinute($maxAttempts, $decayMinutes)
+                    ->by(sprintf('otp-verify:ip:%s', $request->ip())),
+                Limit::perMinute($maxAttempts, $decayMinutes)
+                    ->by(sprintf('otp-verify:id:%s:%s', $request->ip(), $identifier)),
+            ];
+        });
 
         Model::preventLazyLoading(! app()->isProduction());
         Relation::enforceMorphMap(MorphTypeEnum::forMorphMap());

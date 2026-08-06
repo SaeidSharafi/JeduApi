@@ -126,3 +126,31 @@ test('cannot use invalid auth token', function (): void {
 
     $response->assertStatus(401);
 });
+
+test('initiate auth is rate limited', function (): void {
+    config()->set('otp.rate_limiting.initiate.max_attempts', 1);
+    config()->set('otp.rate_limiting.initiate.decay_minutes', 1);
+
+    User::factory()->create([
+        'email'    => 'rate-limit@example.com',
+        'password' => Hash::make('password-123'),
+    ]);
+
+    $this->postJson('/api/v1/auth/initiate', [
+        'identifier' => 'rate-limit@example.com',
+    ])->assertStatus(200);
+
+    $this->postJson('/api/v1/auth/initiate', [
+        'identifier' => 'rate-limit@example.com',
+    ])->assertStatus(429);
+});
+
+test('otp resend requires valid identifier format', function (): void {
+    $response = $this->postJson('/api/v1/auth/otp/resend', [
+        'identifier' => 'invalid-identifier',
+        'otp_type'   => OtpType::SIGNIN->value,
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['identifier']);
+});

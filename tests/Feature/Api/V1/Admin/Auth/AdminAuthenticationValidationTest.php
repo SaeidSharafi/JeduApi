@@ -160,3 +160,26 @@ test('staff cannot use invalid auth token', function (): void {
             'message' => __('messages.unauthorized'),
         ]);
 });
+
+test('staff initiate auth is rate limited', function (): void {
+    config()->set('otp.rate_limiting.initiate.max_attempts', 1);
+    config()->set('otp.rate_limiting.initiate.decay_minutes', 1);
+
+    $this->postJson('/api/v1/admin/auth/initiate', [
+        'identifier' => 'missing-staff@example.com',
+    ])->assertStatus(404);
+
+    $this->postJson('/api/v1/admin/auth/initiate', [
+        'identifier' => 'missing-staff@example.com',
+    ])->assertStatus(429);
+});
+
+test('staff otp resend requires valid identifier format', function (): void {
+    $response = $this->postJson('/api/v1/admin/auth/otp/resend', [
+        'identifier' => 'invalid-identifier',
+        'otp_type'   => OtpType::SIGNIN->value,
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['identifier']);
+});
