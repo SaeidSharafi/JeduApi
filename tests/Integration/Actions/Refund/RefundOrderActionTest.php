@@ -3,16 +3,15 @@
 declare(strict_types=1);
 
 use App\Actions\Admin\Refund\RefundOrderAction;
+use App\Contracts\Payment\RefundProcessorInterface;
 use App\Data\Admin\Refund\RefundOrderData;
 use App\Enums\Content\PublicationStatusEnum;
 use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\RefundStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
-use App\Contracts\Payment\RefundProcessorInterface;
 use App\Events\RefundCompletedEvent;
 use App\Exceptions\Gateway\DigipayException;
-use App\Exceptions\RefundGatewayException;
 use App\Exceptions\RefundValidationException;
 use App\Models\Order;
 use App\Models\Payment;
@@ -190,6 +189,58 @@ it('processes full-order Digipay refund with gateway call', function (): void {
     expect($refunds)->toHaveCount(2);
     $this->assertDatabaseHas('refunds', [
         'transaction_details->gateway_tracking_code' => 'DGP-FULL-REF',
+    ]);
+
+    $storedRefund = Refund::query()->whereKey($refunds->first()->id)->firstOrFail();
+    expect($storedRefund->transaction_details)->toMatchArray([
+        'gateway_tracking_code' => 'DGP-FULL-REF',
+    ]);
+});
+
+it('preserves existing transaction details when appending gateway tracking code', function (): void {
+    $order = Order::factory()->withCalculatedTotals([
+        ['price' => 100000, 'total' => 100000],
+    ])->create();
+
+    $payment = $order->payments()->create([
+        'customer_id' => $order->customer_id,
+        'method'      => PaymentMethodEnum::DIGIPAY,
+        'amount'      => 100000,
+        'status'      => PaymentStatusEnum::COMPLETED,
+    ]);
+
+    $payment->transactions()->create([
+        'transaction_reference' => 'TXN-MERGE-META',
+        'initiated_at'          => now(),
+        'gateway_response'      => ['tracking_code' => 'DGP-META', 'payment_gateway' => 0],
+    ]);
+
+    $order->items->each->update(['status' => OrderItemStatusEnum::COMPLETED]);
+
+    $this->mock(DigipayAdminService::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('refund')
+            ->once()
+            ->andReturn(new RefundResponse(statusCode: 0, message: 'OK', trackingCode: 'DGP-MERGED-CODE'));
+    });
+
+    $data = new RefundOrderData(
+        deduction_amount: 0,
+        deduction_percent: null,
+        skip_gateway: false,
+        admin_notes: 'Metadata merge test',
+        receiver_name: 'John Doe',
+        card_number: '1234567812345678',
+        iban: 'DE89370400440532013000',
+    );
+
+    $refunds = (resolve(RefundOrderAction::class))->handle($order, $data);
+    $stored  = Refund::query()->whereKey($refunds->first()->id)->firstOrFail();
+
+    expect($stored->transaction_details)->toMatchArray([
+        'receiver_name'         => 'John Doe',
+        'card_number'           => '1234567812345678',
+        'iban'                  => 'DE89370400440532013000',
+        'gateway_tracking_code' => 'DGP-MERGED-CODE',
     ]);
 });
 

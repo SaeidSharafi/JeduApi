@@ -12,6 +12,7 @@ use App\Models\Payment;
 use App\Models\Refund;
 use App\Services\Payment\Digipay\DigipayAdminService;
 use Illuminate\Support\Facades\Log;
+use SmartCache\Facades\SmartCache;
 
 final readonly class DigipayRefundProcessor implements RefundProcessorInterface
 {
@@ -31,53 +32,59 @@ final readonly class DigipayRefundProcessor implements RefundProcessorInterface
             return null;
         }
 
-        // Cumulative cap check
-        $alreadyRefunded = Refund::query()
-            ->where('payment_id', $payment->id)
-            ->where('status', \App\Enums\Order\RefundStatusEnum::COMPLETED)
-            ->sum('amount');
+        $lockKey = "digipay_refund_payment_{$payment->id}";
 
-        if (($alreadyRefunded + $amount) > $payment->amount) {
-            throw new RefundGatewayException(__('messages.exceptions.refund_exceeds_payment', [
-                'amount'           => $amount,
-                'payment_id'       => $payment->id,
-                'payment_amount'   => $payment->amount,
-                'already_refunded' => $alreadyRefunded,
-            ]));
-        }
+        return SmartCache::lock($lockKey, 15)->block(5, function () use ($payment, $order, $amount): ?string {
+            // Cumulative cap check (serialized per payment to avoid concurrent over-refund race)
+            $alreadyRefunded = Refund::query()
+                ->where('payment_id', $payment->id)
+                ->where('status', \App\Enums\Order\RefundStatusEnum::COMPLETED)
+                ->sum('amount');
 
-        // BNPL/CREDIT delivery guard
-        $this->guardDeliveryConfirmation($payment, $order);
+            if (($alreadyRefunded + $amount) > $payment->amount) {
+                throw new RefundGatewayException(__('messages.exceptions.refund_exceeds_payment', [
+                    'amount'           => $amount,
+                    'payment_id'       => $payment->id,
+                    'payment_amount'   => $payment->amount,
+                    'already_refunded' => $alreadyRefunded,
+                ]));
+            }
 
-        try {
-            $response = $this->digipayService->refund($payment, $amount);
+            // BNPL/CREDIT delivery guard
+            $this->guardDeliveryConfirmation($payment, $order);
 
-            Log::channel('digipay')->info('[Digipay] Refund successful', [
-                'order_id'      => $order->id,
-                'amount'        => $amount,
-                'tracking_code' => $response->trackingCode,
-            ]);
+            try {
+                $response = $this->digipayService->refund($payment, $amount);
 
-            return $response->trackingCode;
-        } catch (DigipayException $e) {
-            Log::channel('digipay')->error('[Digipay] Refund failed', [
-                'order_id' => $order->id,
-                'amount'   => $amount,
-                'error'    => $e->getMessage(),
-            ]);
+                Log::channel('digipay')->info('[Digipay] Refund successful', [
+                    'order_id'      => $order->id,
+                    'amount'        => $amount,
+                    'tracking_code' => $response->trackingCode,
+                ]);
 
-            throw new RefundGatewayException(
-                __('payment_gateways.digipay.errors.refund_failed', ['details' => $e->getMessage()]),
-                previous: $e,
-            );
-        }
+                return $response->trackingCode;
+            } catch (DigipayException $e) {
+                Log::channel('digipay')->error('[Digipay] Refund failed', [
+                    'order_id' => $order->id,
+                    'amount'   => $amount,
+                    'error'    => $e->getMessage(),
+                ]);
+
+                throw new RefundGatewayException(
+                    __('payment_gateways.digipay.errors.refund_failed', ['details' => $e->getMessage()]),
+                    previous: $e,
+                );
+            }
+        });
     }
 
     private function resolvePayment(Refund $refund, Order $order): ?Payment
     {
         // Use refund.payment_id if populated, otherwise fall back to oldest completed Digipay payment
         if ($refund->payment_id) {
-            return $refund->payment;
+            $payment = $refund->payment;
+
+            return $payment instanceof Payment ? $payment : null;
         }
 
         return $order->payments()

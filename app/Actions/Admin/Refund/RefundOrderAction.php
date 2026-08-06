@@ -17,10 +17,10 @@ use App\Models\Payment;
 use App\Models\Refund;
 use App\Services\OrderStatusService;
 use App\Services\Payment\Refund\RefundProcessorFactory;
+use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Exception;
 
 final class RefundOrderAction
 {
@@ -95,7 +95,6 @@ final class RefundOrderAction
         });
 
         $gatewayTrackingCode = null;
-        $gatewayTrackingCode = null;
         if ($state->requiresGateway) {
             try {
                 // Digipay single bulk processing via HTTP API
@@ -138,9 +137,14 @@ final class RefundOrderAction
                         $adminNotes = mb_trim(($adminNotes ?? '')."\n".__('messages.admin.gateway_skipped_note', ['datetime' => now()]));
                     }
 
+                    $transactionDetails = $refund->transaction_details ?? [];
+                    if ($gatewayTrackingCode) {
+                        $transactionDetails = array_merge($transactionDetails, ['gateway_tracking_code' => $gatewayTrackingCode]);
+                    }
+
                     $refund->update([
                         'status'              => RefundStatusEnum::COMPLETED,
-                        'transaction_details' => $gatewayTrackingCode ? ['gateway_tracking_code' => $gatewayTrackingCode] : [],
+                        'transaction_details' => $transactionDetails,
                         'refunded_at'         => now(),
                         'admin_notes'         => $adminNotes,
                     ]);

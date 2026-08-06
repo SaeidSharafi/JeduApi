@@ -13,6 +13,7 @@ use App\Models\Refund;
 use App\Services\Payment\Digipay\Data\RefundResponse;
 use App\Services\Payment\Digipay\DigipayAdminService;
 use App\Services\Payment\Refund\DigipayRefundProcessor;
+use SmartCache\Facades\SmartCache;
 
 // ─── Success Cases ────────────────────────────────────────────────────
 
@@ -249,6 +250,55 @@ it('allows refund when cumulative cap is not exceeded', function (): void {
     $trackingCode = $processor->process($newRefund, $order, 150000);
 
     expect($trackingCode)->toBe('DGP-REF-OK');
+});
+
+it('serializes cumulative cap check with payment-level lock', function (): void {
+    $order   = Order::factory()->withCalculatedTotals([['total' => 200000]])->create();
+    $payment = Payment::factory()->for($order)->create([
+        'method'      => PaymentMethodEnum::DIGIPAY,
+        'amount'      => 200000,
+        'status'      => PaymentStatusEnum::COMPLETED,
+        'customer_id' => $order->customer_id,
+    ]);
+
+    $payment->transactions()->create([
+        'transaction_reference' => 'TXN-LOCK',
+        'initiated_at'          => now(),
+        'gateway_response'      => ['tracking_code' => 'DGP-LOCK', 'payment_gateway' => 0],
+    ]);
+
+    $refund = Refund::factory()->create([
+        'order_id'      => $order->id,
+        'payment_id'    => $payment->id,
+        'order_item_id' => $order->items->first()->id,
+        'amount'        => 50000,
+    ]);
+
+    $lockMock = Mockery::mock(\Illuminate\Contracts\Cache\Lock::class);
+    $lockMock->shouldReceive('block')
+        ->once()
+        ->with(5, Mockery::type(Closure::class))
+        ->andReturnUsing(fn (int $_timeout, Closure $callback) => $callback());
+
+    SmartCache::shouldReceive('lock')
+        ->once()
+        ->with("digipay_refund_payment_{$payment->id}", 15)
+        ->andReturn($lockMock);
+
+    $this->mock(DigipayAdminService::class, function ($mock): void {
+        $mock->shouldReceive('refund')
+            ->once()
+            ->andReturn(new RefundResponse(
+                statusCode: 0,
+                message: 'OK',
+                trackingCode: 'DGP-LOCK-OK',
+            ));
+    });
+
+    $processor    = resolve(DigipayRefundProcessor::class);
+    $trackingCode = $processor->process($refund, $order, 50000);
+
+    expect($trackingCode)->toBe('DGP-LOCK-OK');
 });
 
 // ─── BNPL/CREDIT Delivery Guard ──────────────────────────────────────
