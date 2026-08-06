@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Gate;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @group Admin - Payments
@@ -55,7 +56,7 @@ final class PaymentController extends Controller
         Gate::authorize('create', Order::class);
 
         /** @var \App\Models\Staff $admin */
-        $admin = auth()->user();
+        $admin = auth('staff')->user();
 
         $result = $action->handle($order, $data, $admin);
 
@@ -80,6 +81,7 @@ final class PaymentController extends Controller
     public function show(Order $order, Payment $payment): ApiResponseInterface
     {
         Gate::authorize('view', $order);
+        $this->ensurePaymentBelongsToOrder($order, $payment);
 
         return apiResponse()->success(PaymentData::from($payment));
     }
@@ -96,6 +98,7 @@ final class PaymentController extends Controller
     public function update(PaymentUpdateData $request, Order $order, Payment $payment, UpdatePaymentAction $action): ApiResponseInterface
     {
         Gate::authorize('update', $order);
+        $this->ensurePaymentBelongsToOrder($order, $payment);
         $payment = $action->handle($order, $payment, $request);
 
         return apiResponse()->success(PaymentData::from($payment));
@@ -114,8 +117,16 @@ final class PaymentController extends Controller
     public function destroy(Order $order, Payment $payment, DeletePaymentAction $action): \Illuminate\Http\JsonResponse
     {
         Gate::authorize('delete', $order);
+        $this->ensurePaymentBelongsToOrder($order, $payment);
         $action->handle($order, $payment);
 
         return apiResponse()->noContentJson();
+    }
+
+    private function ensurePaymentBelongsToOrder(Order $order, Payment $payment): void
+    {
+        if ($payment->order_id !== $order->id) {
+            throw new NotFoundHttpException();
+        }
     }
 }

@@ -9,11 +9,13 @@ use App\Enums\Order\OrderItemStatusEnum;
 use App\Enums\Order\OrderStatusEnum;
 use App\Exceptions\Gateway\DigipayException;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Services\OrderStatusService;
 use App\Services\Payment\Digipay\DigipayAdminService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use SmartCache\Facades\SmartCache;
 
 final readonly class ApproveOrderAction
 {
@@ -36,30 +38,57 @@ final readonly class ApproveOrderAction
      */
     public function handle(Order $order): Order
     {
-        return DB::transaction(function () use ($order): Order {
+        $lockKey = "approve_order_{$order->id}";
+
+        return SmartCache::lock($lockKey, 15)->block(5, function () use ($order): Order {
+            $order = Order::query()->whereKey($order->id)->with(['items', 'payments'])->firstOrFail();
             $this->validateOrderEligibility($order);
 
-            // Mark parent order completed
-            $order->status = OrderStatusEnum::COMPLETED;
-            $order->save();
-
-            // Confirm Digipay delivery for CREDIT/BNPL payment types
-            $this->confirmDigipayDelivery($order);
-
-            // Manually mark each item as completed (manual approval provisioning)
-            foreach ($order->items as $item) {
-                if ($item->status !== OrderItemStatusEnum::COMPLETED) {
-                    $item->status = OrderItemStatusEnum::COMPLETED;
-                    $item->saveQuietly();
-                }
-                $this->orderStatusService->updateEnrollmentStatus($item);
+            // External call first to avoid holding DB lock during long HTTP operations.
+            $deliveryPayment = $this->resolveDeliveryPayment($order);
+            if ($deliveryPayment) {
+                $this->confirmDigipayDelivery($order, $deliveryPayment);
             }
 
-            // Recalculate parent order status from items to keep single source of truth
-            $this->orderStatusService->updateParentOrderStatus($order->fresh());
+            return DB::transaction(function () use ($order): Order {
+                $order = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
+                $order->loadMissing('items', 'payments');
+                $this->validateOrderEligibility($order);
 
-            return $order->fresh();
+                // Mark parent order completed
+                $order->status = OrderStatusEnum::COMPLETED;
+                $order->save();
+
+                // Manually mark each item as completed (manual approval provisioning)
+                foreach ($order->items as $item) {
+                    if ($item->status !== OrderItemStatusEnum::COMPLETED) {
+                        $item->status = OrderItemStatusEnum::COMPLETED;
+                        $item->saveQuietly();
+                    }
+                    $this->orderStatusService->updateEnrollmentStatus($item);
+                }
+
+                // Recalculate parent order status from items to keep single source of truth
+                $this->orderStatusService->updateParentOrderStatus($order->fresh());
+
+                return $order->fresh();
+            });
         });
+    }
+
+    private function resolveDeliveryPayment(Order $order): ?Payment
+    {
+        $payment = $order->payments()->where('method', 'digipay')->latest()->first();
+
+        if (! $payment) {
+            return null;
+        }
+
+        if (! $this->digipayService->requiresDeliveryConfirmation($payment)) {
+            return null;
+        }
+
+        return $payment;
     }
 
     private function validateOrderEligibility(Order $order): void
@@ -103,14 +132,8 @@ final readonly class ApproveOrderAction
      *
      * @throws ValidationException On Digipay failure — rolls back the DB::transaction
      */
-    private function confirmDigipayDelivery(Order $order): void
+    private function confirmDigipayDelivery(Order $order, Payment $payment): void
     {
-        $payment = $order->payments()->where('method', 'digipay')->latest()->first();
-
-        if (! $payment || ! $this->digipayService->requiresDeliveryConfirmation($payment)) {
-            return;
-        }
-
         try {
             $this->digipayService->deliver($payment);
 

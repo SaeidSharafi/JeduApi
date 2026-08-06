@@ -266,3 +266,54 @@ it('returns validation error when Digipay delivery confirmation fails', function
     $order->refresh();
     expect($order->status)->toBe(OrderStatusEnum::PENDING); // Transaction rolled back
 });
+
+it('keeps order pending when Digipay delivery fails before DB completion transaction', function (): void {
+    $this->authorized_user([PermissionEnum::ORDER_APPROVE]);
+
+    $order = Order::factory()->create([
+        'customer_id'            => $this->customer->id,
+        'status'                 => OrderStatusEnum::PENDING,
+        'grand_total'            => 1000000,
+        'full_value_grand_total' => 1000000,
+    ]);
+
+    OrderItem::factory()->create([
+        'order_id' => $order->id,
+        'price'    => 1000000,
+        'total'    => 1000000,
+        'status'   => App\Enums\Order\OrderItemStatusEnum::PENDING,
+    ]);
+
+    $payment = Payment::factory()->create([
+        'order_id'    => $order->id,
+        'customer_id' => $this->customer->id,
+        'method'      => PaymentMethodEnum::DIGIPAY,
+        'amount'      => 1000000,
+        'status'      => PaymentStatusEnum::COMPLETED,
+    ]);
+
+    $payment->transactions()->create([
+        'transaction_reference' => 'TXN-DGP-FAIL-2',
+        'initiated_at'          => now(),
+        'gateway_response'      => [
+            'tracking_code'   => 'DGP-FAIL-2',
+            'payment_gateway' => 5,
+        ],
+    ]);
+
+    $this->mock(DigipayAdminService::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('requiresDeliveryConfirmation')
+            ->once()
+            ->andReturnTrue();
+        $mock->shouldReceive('deliver')
+            ->once()
+            ->andThrow(new DigipayException('Delivery failed', 500));
+    });
+
+    $response = postJson("/api/v1/admin/orders/{$order->id}/approve");
+
+    $response->assertStatus(422);
+    $order->refresh();
+    expect($order->status)->toBe(OrderStatusEnum::PENDING);
+    expect($order->items()->first()->status)->toBe(App\Enums\Order\OrderItemStatusEnum::PENDING);
+});

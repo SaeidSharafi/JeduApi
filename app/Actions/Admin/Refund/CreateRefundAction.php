@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use SmartCache\Facades\SmartCache;
-use Exception;
+use Throwable;
 
 final class CreateRefundAction
 {
@@ -78,11 +78,11 @@ final class CreateRefundAction
                     );
                 }
             } catch (DigipayException $e) {
-                $refund->update(['status' => RefundStatusEnum::FAILED, 'admin_notes' => ($refund->admin_notes ?? '').PHP_EOL.$e->getUserMessage()]);
+                $this->markRefundFailed($refund->id, $e->getUserMessage());
                 throw new RefundValidationException($e->getUserMessage());
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 // API Failed! Mark our refund as failed so we don't try again blindly.
-                $refund->update(['status' => RefundStatusEnum::FAILED]);
+                $this->markRefundFailed($refund->id, $e->getMessage());
                 throw $e;
             }
 
@@ -91,19 +91,33 @@ final class CreateRefundAction
                     $refund, $orderItem, $order, $refundAmount, $paymentMethod,
                     $processor, $gatewayTrackingCode, $isImmediateCompletion, $data
                 ) {
+                    $lockedRefund = Refund::query()->whereKey($refund->id)->lockForUpdate()->firstOrFail();
+
+                    if ($lockedRefund->status === RefundStatusEnum::COMPLETED) {
+                        return $lockedRefund->fresh();
+                    }
+
+                    if ($lockedRefund->status === RefundStatusEnum::FAILED || $lockedRefund->status === RefundStatusEnum::CANCELLED) {
+                        throw ValidationException::withMessages([
+                            'status' => __('messages.order.refund.invalid_status_transition', [
+                                'from' => $lockedRefund->status->translate(),
+                                'to'   => RefundStatusEnum::COMPLETED->translate(),
+                            ]),
+                        ]);
+                    }
 
                     // Update the Refund record
                     $transactionDetails = array_merge(
-                        $refund->transaction_details ?? [],
+                        $lockedRefund->transaction_details ?? [],
                         $gatewayTrackingCode ? ['gateway_tracking_code' => $gatewayTrackingCode] : []
                     );
 
-                    $adminNotes = $refund->admin_notes;
+                    $adminNotes = $lockedRefund->admin_notes;
                     if ($data->skip_gateway && $isImmediateCompletion) {
                         $adminNotes = mb_trim(($adminNotes ?? '').PHP_EOL.__('messages.order.refund.gateway_skipped_by_admin_at', ['date' => verta()->formatDatetime()]));
                     }
 
-                    $refund->update([
+                    $lockedRefund->update([
                         'status'              => $isImmediateCompletion ? RefundStatusEnum::COMPLETED : RefundStatusEnum::from($data->status),
                         'transaction_details' => $transactionDetails,
                         'refunded_at'         => $isImmediateCompletion ? now() : null,
@@ -113,10 +127,10 @@ final class CreateRefundAction
                     if ($isImmediateCompletion) {
                         // Process Wallet/Offline methods
                         if (! $data->skip_gateway && $paymentMethod === PaymentMethodEnum::WALLET->value) {
-                            $processor->process($refund, $order, $refundAmount);
+                            $processor->process($lockedRefund, $order, $refundAmount);
                         }
                         if (in_array($paymentMethod, [PaymentMethodEnum::BANK_TRANSFER->value, PaymentMethodEnum::MELLAT_GATEWAY->value], true)) {
-                            $processor->process($refund, $order, $refundAmount);
+                            $processor->process($lockedRefund, $order, $refundAmount);
                         }
 
                         // Update Order Item
@@ -130,13 +144,13 @@ final class CreateRefundAction
                         $this->orderStatusService->updateParentOrderStatus($order->fresh());
                         $this->updateOrderRefundedAmount->handle($order->fresh());
 
-                        RefundCompletedEvent::dispatch($refund);
+                        RefundCompletedEvent::dispatch($lockedRefund);
                     }
 
-                    return $refund;
+                    return $lockedRefund->fresh();
                 });
 
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 // CRITICAL FAILURE: Gateway succeeded, but DB failed to update to COMPLETED.
                 Log::emergency('Partial Failure: Refund API succeeded but DB update failed. Record is stuck in PROCESSING state.', [
                     'refund_id'     => $refund->id,
@@ -147,6 +161,29 @@ final class CreateRefundAction
                 // Optionally dispatch a retry job here, or just let your Reconciliation command handle it.
                 throw $e;
             }
+        });
+    }
+
+    private function markRefundFailed(int $refundId, ?string $errorMessage = null): void
+    {
+        DB::transaction(function () use ($refundId, $errorMessage): void {
+            $lockedRefund = Refund::query()->whereKey($refundId)->lockForUpdate()->first();
+            if (! $lockedRefund) {
+                return;
+            }
+
+            if ($lockedRefund->status === RefundStatusEnum::COMPLETED) {
+                return;
+            }
+
+            $adminNotes = $lockedRefund->admin_notes;
+            if ($errorMessage) {
+                $adminNotes = mb_trim(($adminNotes ?? '').PHP_EOL.$errorMessage);
+            }
+
+            $lockedRefund->status      = RefundStatusEnum::FAILED;
+            $lockedRefund->admin_notes = $adminNotes;
+            $lockedRefund->save();
         });
     }
 

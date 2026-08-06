@@ -97,6 +97,20 @@ it('returns order payment detail', function (): void {
         ],
     ]);
 });
+
+it('returns 404 when payment does not belong to routed order', function (): void {
+    $this->authorized_user([App\Enums\PermissionEnum::ORDER_VIEW->value]);
+
+    $orderA  = App\Models\Order::factory()->create();
+    $orderB  = App\Models\Order::factory()->create();
+    $payment = App\Models\Payment::factory()->create([
+        'order_id' => $orderB->id,
+    ]);
+
+    $response = \Pest\Laravel\getJson("/api/v1/admin/orders/{$orderA->id}/payments/{$payment->id}");
+
+    $response->assertNotFound();
+});
 it('create payment successfully', function (): void {
     $product1 = App\Models\ProductDeliveryOption::factory()
         ->create([

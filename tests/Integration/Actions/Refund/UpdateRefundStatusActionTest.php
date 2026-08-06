@@ -12,16 +12,15 @@ use App\Enums\Order\RefundStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\RefundCompletedEvent;
+use App\Exceptions\RefundGatewayException;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\User;
 use App\Services\OrderStatusService;
 use App\Services\Payment\Refund\RefundProcessorFactory;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
-use Mockery\MockInterface;
 
 describe('UpdateRefundStatusAction', function (): void {
     beforeEach(function (): void {
@@ -237,24 +236,24 @@ describe('UpdateRefundStatusAction', function (): void {
         ]);
 
         $orderItem = $order->items()->first();
-        $refund = Refund::factory()->create([
+        $refund    = Refund::factory()->create([
             'order_item_id' => $orderItem->id,
             'status'        => RefundStatusEnum::PENDING,
             'amount'        => 100000,
         ]);
 
-        $mockProcessor = \Mockery::mock(RefundProcessorInterface::class);
+        $mockProcessor = Mockery::mock(RefundProcessorInterface::class);
         $mockProcessor->shouldReceive('process')
             ->once()
             ->with(Mockery::type(Refund::class), Mockery::type(Order::class), 100000)
             ->andReturn('DGP-TRACK-001');
 
-        $this->mock(RefundProcessorFactory::class, function (MockInterface $mock) use ($mockProcessor): void {
-            $mock->shouldReceive('make')
-                ->with(PaymentMethodEnum::DIGIPAY->value)
-                ->once()
-                ->andReturn($mockProcessor);
-        });
+        $factoryMock = Mockery::mock(RefundProcessorFactory::class);
+        $factoryMock->shouldReceive('make')
+            ->with(PaymentMethodEnum::DIGIPAY->value)
+            ->twice()
+            ->andReturn($mockProcessor);
+        app()->instance(RefundProcessorFactory::class, $factoryMock);
 
         $data = new RefundStatusUpdateData(
             status: RefundStatusEnum::COMPLETED->value,
@@ -262,13 +261,74 @@ describe('UpdateRefundStatusAction', function (): void {
             admin_notes: 'Completed via Digipay',
         );
 
-        $action = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
 
         expect($updated->status)->toBe(RefundStatusEnum::COMPLETED);
         expect($updated->transaction_details['gateway_tracking_code'])->toBe('DGP-TRACK-001');
         expect($updated->transaction_details['tracking_code'])->toBe('TRK-999');
         Event::assertDispatched(RefundCompletedEvent::class);
+    });
+
+    it('marks refund failed and does not mark item refunded when Digipay completion throws', function (): void {
+        $order = Order::factory()->withCalculatedTotals([
+            [
+                'price'        => 100000,
+                'total'        => 100000,
+                'status'       => OrderItemStatusEnum::PENDING,
+                'payment_type' => App\Enums\Order\OrderItemPaymentTypeEnum::FULL_PAYMENT,
+                'tax_amount'   => 0,
+            ],
+        ])->create();
+
+        $payment = $order->payments()->create([
+            'customer_id' => $order->customer_id,
+            'method'      => PaymentMethodEnum::DIGIPAY,
+            'amount'      => 100000,
+            'status'      => PaymentStatusEnum::COMPLETED,
+        ]);
+
+        $payment->transactions()->create([
+            'transaction_reference' => 'TXN-DGP-FAIL-COMP',
+            'initiated_at'          => now(),
+            'gateway_response'      => ['tracking_code' => 'DGP-ORIG', 'payment_gateway' => 0],
+        ]);
+
+        $orderItem = $order->items()->first();
+        $refund    = Refund::factory()->create([
+            'order_item_id' => $orderItem->id,
+            'status'        => RefundStatusEnum::PENDING,
+            'amount'        => 100000,
+        ]);
+
+        $mockProcessor = Mockery::mock(RefundProcessorInterface::class);
+        $mockProcessor->shouldReceive('process')
+            ->once()
+            ->andThrow(new RefundGatewayException('gateway failed'));
+
+        $factoryMock = Mockery::mock(RefundProcessorFactory::class);
+        $factoryMock->shouldReceive('make')
+            ->with(PaymentMethodEnum::DIGIPAY->value)
+            ->once()
+            ->andReturn($mockProcessor);
+        app()->instance(RefundProcessorFactory::class, $factoryMock);
+
+        $data = new RefundStatusUpdateData(
+            status: RefundStatusEnum::COMPLETED->value,
+            tracking_code: null,
+            admin_notes: 'try complete',
+        );
+
+        $action = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+
+        expect(fn (): Refund => $action->handle($refund, $data))->toThrow(ValidationException::class);
+
+        $refund->refresh();
+        $orderItem->refresh();
+
+        expect($refund->status)->toBe(RefundStatusEnum::FAILED);
+        expect($orderItem->status)->toBe(OrderItemStatusEnum::PENDING);
+        Event::assertNotDispatched(RefundCompletedEvent::class);
     });
 
     it('appends gateway-skipped note when skip_gateway is true on completion', function (): void {
@@ -290,7 +350,7 @@ describe('UpdateRefundStatusAction', function (): void {
         ]);
 
         $orderItem = $order->items()->first();
-        $refund = Refund::factory()->create([
+        $refund    = Refund::factory()->create([
             'order_item_id' => $orderItem->id,
             'status'        => RefundStatusEnum::PENDING,
             'amount'        => 100000,
@@ -303,7 +363,7 @@ describe('UpdateRefundStatusAction', function (): void {
             skip_gateway: true,
         );
 
-        $action = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
 
         expect($updated->status)->toBe(RefundStatusEnum::COMPLETED);
@@ -325,24 +385,24 @@ describe('UpdateRefundStatusAction', function (): void {
         ]);
 
         $orderItem = $order->items()->first();
-        $refund = Refund::factory()->create([
+        $refund    = Refund::factory()->create([
             'order_item_id' => $orderItem->id,
             'status'        => RefundStatusEnum::PENDING,
             'amount'        => 50000,
         ]);
 
-        $mockProcessor = \Mockery::mock(RefundProcessorInterface::class);
+        $mockProcessor = Mockery::mock(RefundProcessorInterface::class);
         $mockProcessor->shouldReceive('process')
             ->once()
             ->with(Mockery::type(Refund::class), Mockery::type(Order::class), 50000)
             ->andReturnNull();
 
-        $this->mock(RefundProcessorFactory::class, function (MockInterface $mock) use ($mockProcessor): void {
-            $mock->shouldReceive('make')
-                ->with(PaymentMethodEnum::WALLET->value)
-                ->once()
-                ->andReturn($mockProcessor);
-        });
+        $factoryMock = Mockery::mock(RefundProcessorFactory::class);
+        $factoryMock->shouldReceive('make')
+            ->with(PaymentMethodEnum::WALLET->value)
+            ->twice()
+            ->andReturn($mockProcessor);
+        app()->instance(RefundProcessorFactory::class, $factoryMock);
 
         $data = new RefundStatusUpdateData(
             status: RefundStatusEnum::COMPLETED->value,
@@ -350,7 +410,7 @@ describe('UpdateRefundStatusAction', function (): void {
             admin_notes: 'Wallet completion',
         );
 
-        $action = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
+        $action  = new UpdateRefundStatusAction(new OrderStatusService(), app(RefundProcessorFactory::class), app(UpdateOrderRefundedAmountAction::class));
         $updated = $action->handle($refund, $data);
 
         expect($updated->status)->toBe(RefundStatusEnum::COMPLETED);

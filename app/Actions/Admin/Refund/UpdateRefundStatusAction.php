@@ -10,11 +10,15 @@ use App\Enums\Order\RefundStatusEnum;
 use App\Enums\Payment\PaymentMethodEnum;
 use App\Enums\Payment\PaymentStatusEnum;
 use App\Events\RefundCompletedEvent;
+use App\Exceptions\RefundGatewayException;
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Refund;
 use App\Services\OrderStatusService;
 use App\Services\Payment\Refund\RefundProcessorFactory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 final class UpdateRefundStatusAction
 {
@@ -26,20 +30,148 @@ final class UpdateRefundStatusAction
 
     public function handle(Refund $refund, RefundStatusUpdateData $data): Refund
     {
-        $this->validateStatusTransition($refund->status, $data->status);
-
         $newStatus = RefundStatusEnum::from($data->status);
 
-        return DB::transaction(function () use ($refund, $data, $newStatus) {
-            match ($newStatus) {
-                RefundStatusEnum::COMPLETED => $this->handleCompletion($refund, $data),
-                RefundStatusEnum::FAILED,
-                RefundStatusEnum::CANCELLED,
-                RefundStatusEnum::PROCESSING => $this->handleSimpleStatusUpdate($refund, $newStatus,
-                    $data->admin_notes),
-            };
+        if ($newStatus === RefundStatusEnum::COMPLETED) {
+            return $this->handleCompletionSafely($refund, $data);
+        }
 
-            return $refund->fresh();
+        return DB::transaction(function () use ($refund, $data, $newStatus): Refund {
+            $lockedRefund = Refund::query()->whereKey($refund->id)->lockForUpdate()->firstOrFail();
+            $this->validateStatusTransition($lockedRefund->status, $data->status);
+            $this->handleSimpleStatusUpdate($lockedRefund, $newStatus, $data->admin_notes);
+
+            return $lockedRefund->fresh();
+        });
+    }
+
+    private function handleCompletionSafely(Refund $refund, RefundStatusUpdateData $data): Refund
+    {
+        $state = DB::transaction(function () use ($refund, $data): object {
+            $lockedRefund = Refund::query()->whereKey($refund->id)->lockForUpdate()->firstOrFail();
+            $this->validateStatusTransition($lockedRefund->status, RefundStatusEnum::COMPLETED->value);
+
+            $lockedRefund->loadMissing('orderItem.order.payments');
+            /** @var OrderItem $orderItem */
+            $orderItem = $lockedRefund->orderItem;
+            /** @var Order $order */
+            $order = $orderItem->order;
+
+            $payment = $order->payments()
+                ->where('status', PaymentStatusEnum::COMPLETED)
+                ->oldest()
+                ->first();
+
+            $paymentMethod = $payment?->method?->value ?? PaymentMethodEnum::BANK_TRANSFER->value;
+            $processor     = $this->processorFactory->make($paymentMethod);
+
+            return (object) [
+                'refund'          => $lockedRefund,
+                'orderItem'       => $orderItem,
+                'order'           => $order,
+                'paymentMethod'   => $paymentMethod,
+                'processor'       => $processor,
+                'requiresGateway' => $paymentMethod === PaymentMethodEnum::DIGIPAY->value && ! ($data->skip_gateway ?? false),
+            ];
+        });
+
+        $gatewayTrackingCode = null;
+        if ($state->requiresGateway) {
+            try {
+                $gatewayTrackingCode = $state->processor->process($state->refund, $state->order, $state->refund->amount);
+            } catch (Throwable $e) {
+                DB::transaction(function () use ($refund, $e): void {
+                    $lockedRefund = Refund::query()->whereKey($refund->id)->lockForUpdate()->firstOrFail();
+
+                    if ($lockedRefund->status === RefundStatusEnum::COMPLETED) {
+                        return;
+                    }
+
+                    $notes                     = mb_trim(($lockedRefund->admin_notes ?? '')."\n".$e->getMessage());
+                    $lockedRefund->status      = RefundStatusEnum::FAILED;
+                    $lockedRefund->admin_notes = $notes;
+                    $lockedRefund->save();
+                });
+
+                if ($e instanceof RefundGatewayException) {
+                    throw ValidationException::withMessages([
+                        'status' => $e->getMessage(),
+                    ]);
+                }
+
+                throw $e;
+            }
+        }
+
+        return DB::transaction(function () use ($refund, $data, $gatewayTrackingCode): Refund {
+            $lockedRefund = Refund::query()->whereKey($refund->id)->lockForUpdate()->firstOrFail();
+
+            if ($lockedRefund->status === RefundStatusEnum::COMPLETED) {
+                return $lockedRefund->fresh();
+            }
+
+            if ($lockedRefund->status === RefundStatusEnum::FAILED || $lockedRefund->status === RefundStatusEnum::CANCELLED) {
+                throw ValidationException::withMessages([
+                    'status' => __('messages.order.refund.invalid_status_transition', [
+                        'from' => $lockedRefund->status->translate(),
+                        'to'   => RefundStatusEnum::COMPLETED->translate(),
+                    ]),
+                ]);
+            }
+
+            $lockedRefund->loadMissing('orderItem.order.payments');
+            /** @var OrderItem $orderItem */
+            $orderItem = $lockedRefund->orderItem;
+            /** @var Order $order */
+            $order = $orderItem->order;
+
+            $payment = $order->payments()
+                ->where('status', PaymentStatusEnum::COMPLETED)
+                ->oldest()
+                ->first();
+
+            $paymentMethod = $payment?->method?->value ?? PaymentMethodEnum::BANK_TRANSFER->value;
+            $processor     = $this->processorFactory->make($paymentMethod);
+
+            $details = $lockedRefund->transaction_details ?? [];
+            if ($data->tracking_code) {
+                $details['tracking_code'] = $data->tracking_code;
+            }
+            if ($gatewayTrackingCode) {
+                $details['gateway_tracking_code'] = $gatewayTrackingCode;
+            }
+
+            $adminNotes = $data->admin_notes ?? $lockedRefund->admin_notes;
+            if (($data->skip_gateway ?? false)) {
+                $adminNotes = mb_trim(($adminNotes ?? '')."\n".__('messages.admin.gateway_skipped_note', ['datetime' => now()]));
+            }
+
+            $lockedRefund->status              = RefundStatusEnum::COMPLETED;
+            $lockedRefund->refunded_at         = now();
+            $lockedRefund->admin_notes         = $adminNotes;
+            $lockedRefund->transaction_details = $details;
+            $lockedRefund->save();
+
+            $orderItem->total_refunded = $lockedRefund->amount;
+            $orderItem->qty_refunded   = $orderItem->qty_ordered;
+            $orderItem->status         = OrderItemStatusEnum::REFUNDED;
+            $orderItem->saveQuietly();
+
+            if ($paymentMethod === PaymentMethodEnum::WALLET->value && ! ($data->skip_gateway ?? false)) {
+                $processor->process($lockedRefund, $order, $lockedRefund->amount);
+            }
+
+            if (in_array($paymentMethod, [PaymentMethodEnum::BANK_TRANSFER->value, PaymentMethodEnum::MELLAT_GATEWAY->value], true)) {
+                $processor->process($lockedRefund, $order, $lockedRefund->amount);
+            }
+
+            $this->orderStatusService->updateEnrollmentStatus($orderItem);
+            $this->orderStatusService->updateParentOrderStatus($order);
+            $this->updateOrderRefundedAmount->handle($order->fresh());
+
+            RefundCompletedEvent::dispatch($lockedRefund);
+
+            return $lockedRefund->fresh();
         });
     }
 
@@ -69,73 +201,6 @@ final class UpdateRefundStatusAction
                 ]),
             ]);
         }
-    }
-
-    /**
-     * Handles the complex logic for when a refund is marked 'COMPLETED'.
-     * Gateway-first: call Digipay processor BEFORE DB writes inside this method.
-     */
-    private function handleCompletion(Refund $refund, RefundStatusUpdateData $data): void
-    {
-        $refund->loadMissing('orderItem.order.payments');
-        $orderItem = $refund->orderItem;
-        $order     = $orderItem->order;
-
-        // Resolve payment method and processor
-        $payment = $order->payments()
-            ->where('status', PaymentStatusEnum::COMPLETED)
-            ->oldest()
-            ->first();
-
-        $paymentMethod = $payment?->method?->value ?? PaymentMethodEnum::BANK_TRANSFER->value;
-        $processor     = $this->processorFactory->make($paymentMethod);
-
-        // ——— Gateway-first for Digipay (call BEFORE DB writes) ———
-        $gatewayTrackingCode = null;
-        if ($paymentMethod === PaymentMethodEnum::DIGIPAY->value && ! ($data->skip_gateway ?? false)) {
-            $gatewayTrackingCode = $processor->process($refund, $order, $refund->amount);
-        }
-
-        // Update tracking code in transaction_details
-        $details = $refund->transaction_details ?? [];
-        if ($data->tracking_code) {
-            $details['tracking_code'] = $data->tracking_code;
-        }
-        if ($gatewayTrackingCode) {
-            $details['gateway_tracking_code'] = $gatewayTrackingCode;
-        }
-
-        $adminNotes = $data->admin_notes ?? $refund->admin_notes;
-        if (($data->skip_gateway ?? false)) {
-            $adminNotes = mb_trim(($adminNotes ?? '')."\n".__('messages.admin.gateway_skipped_note', ['datetime' => now()]));
-        }
-
-        $refund->status              = RefundStatusEnum::COMPLETED;
-        $refund->refunded_at         = now();
-        $refund->admin_notes         = $adminNotes;
-        $refund->transaction_details = $details;
-        $refund->save();
-
-        $orderItem->total_refunded = $refund->amount;
-        $orderItem->qty_refunded   = $orderItem->qty_ordered;
-        $orderItem->status         = OrderItemStatusEnum::REFUNDED;
-        $orderItem->saveQuietly();
-
-        // Wallet: credit inside the same transaction
-        if ($paymentMethod === PaymentMethodEnum::WALLET->value && ! ($data->skip_gateway ?? false)) {
-            $processor->process($refund, $order, $refund->amount);
-        }
-
-        // Manual: log-only
-        if (in_array($paymentMethod, [PaymentMethodEnum::BANK_TRANSFER->value, PaymentMethodEnum::MELLAT_GATEWAY->value], true)) {
-            $processor->process($refund, $order, $refund->amount);
-        }
-
-        $this->orderStatusService->updateEnrollmentStatus($orderItem);
-        $this->orderStatusService->updateParentOrderStatus($order);
-        $this->updateOrderRefundedAmount->handle($order->fresh());
-
-        RefundCompletedEvent::dispatch($refund);
     }
 
     private function handleSimpleStatusUpdate(Refund $refund, RefundStatusEnum $newStatus, ?string $notes): void
